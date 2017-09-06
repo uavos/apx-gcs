@@ -1,0 +1,136 @@
+#!/bin/bash
+
+
+#-------------------------------------
+#default xplane location
+src_dir=$HOME/xplane
+
+#-------------------------------------
+#guess xplane location
+XPL_CFG=$HOME/.x-plane/x-plane_install_10.txt
+if [ -e "$XPL_CFG" ]; then
+  while read line
+  do
+    if [ -e "$line" ]; then
+      echo "Found X-Plane: $line"
+      echo "Edit file '$XPL_CFG' if you want to change default xplane location."
+      src_dir="$line"
+    fi
+  done < "$XPL_CFG"
+else
+  XPL_CFG=$HOME/.x-plane/x-plane_install.txt
+  if [ -e "$XPL_CFG" ]; then
+    while read line
+    do
+      if [ -e "$line" ]; then
+        echo "Found X-Plane: $line"
+        echo "Edit file '$XPL_CFG' if you want to change default xplane location."
+        src_dir="$line"
+      fi
+    done < "$XPL_CFG"
+  fi
+fi
+if [ -e "$src_dir" ]; then
+:
+else
+  echo "Error: X-Plane not found ($src_dir)"
+  exit 1
+fi
+
+#-------------------------------------
+#check ap-plugin
+plugin_dest="$src_dir/Resources/plugins"
+plugin_src="/usr/lib/uavos/xplane-plugins"
+plugin_file="shiva.xpl"
+
+function install_plugin {
+  if [ -e "$plugin_src" ]; then
+    ln -sft "$plugin_dest" "$plugin_src/*.xpl"
+    echo "AP Plugin updated."
+  else
+    echo "Warning: AP Plugin not found."
+  fi
+}
+
+rm -f "$plugin_dest/ap_plugin.xpl"
+if [ -e "$plugin_dest/$plugin_file" ]; then
+  LS_OUT=$(ls -l "$plugin_dest/$plugin_file")
+  LN_TRG=${LS_OUT#*-> }
+  LN_PTH=$(cd "$plugin_dest";cd $(dirname "$LN_TRG"); pwd)
+  if [ "$LN_PTH" != "$plugin_src" ]; then
+    install_plugin
+  else
+    echo "AP Plugin OK."
+  fi
+else
+  install_plugin
+fi
+
+#-------------------------------------
+#check model
+plugin_dest="$src_dir/Aircraft"
+plugin_src="/usr/share/uavos/xplane-models"
+plugin_file="uavos"
+
+function install_model {
+  if [ -e "$plugin_src" ]; then
+    ln -sft "$plugin_dest" "$plugin_src/$plugin_file"
+    echo "UAV model updated."
+  else
+    echo "Warning: UAV model not found."
+  fi
+}
+
+if [ -e "$plugin_dest/$plugin_file" ]; then
+  LS_OUT=$(ls -l "$plugin_dest/$plugin_file")
+  LN_TRG=${LS_OUT#*-> }
+  LN_PTH=$(cd "$plugin_dest";cd $(dirname "$LN_TRG"); pwd)
+  if [ "$LN_PTH" != "$plugin_src" ]; then
+    install_model
+  else
+    echo "UAV model OK."
+  fi
+else
+  install_model
+fi
+
+#-------------------------------------
+#mount iso image
+iso_file="$src_dir/x-plane.img"
+if [ -e "$iso_file" ]; then
+  mount_path=/media/cdrom
+  if `mount|grep -q "$mount_path"`; then
+    echo "ISO already mounted on $mount_path."
+  else
+    if [ -e "$iso_file" ]; then
+      echo "mounting $iso_file to $mount_path..."
+      kdesudo -c "mkdir -p "$mount_path" ; mount "$iso_file" "$mount_path" -o loop,ro"
+    else
+      echo "ISO file not found: $iso_file"
+      exit 1
+    fi
+  fi
+else
+  echo "Warning: ISO image not found."
+fi
+
+
+#-------------------------------------
+echo "Starting Simulator..."
+if [ -e "$src_dir/X-Plane-x86_64" ] ; then
+  echo "X-Plane-x86_64"
+  "$src_dir/X-Plane-x86_64"
+else
+if [ -e "$src_dir/X-Plane-i686" ] ; then
+  echo "X-Plane-i686"
+  "$src_dir/X-Plane-i686"
+else
+if [ -e "$src_dir/X-Plane-i386" ] ; then
+  echo "X-Plane-i386"
+  "$src_dir/X-Plane-i386"
+else
+echo "Error: X-Plane executable not found."
+fi
+fi
+fi
+

@@ -1,0 +1,829 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MapFrame</class>
+ <widget class="QWidget" name="MapFrame">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>292</width>
+    <height>636</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Flight Plan</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QWidget" name="toolBarWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="MapView" name="mapView">
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="info" native="true">
+     <layout class="QHBoxLayout" name="infoLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="lbN">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Bebas Neue</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Lat</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbE">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Bebas Neue</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Lon</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbLevel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>30</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Bebas Neue</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Map level</string>
+        </property>
+        <property name="text">
+         <string>Level</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbFps">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>30</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Bebas Neue</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Map level</string>
+        </property>
+        <property name="text">
+         <string>FPS</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbDownload">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Bebas Neue</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Downloading..</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbDM">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Ubuntu Condensed</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Distance to mouse click</string>
+        </property>
+        <property name="text">
+         <string>DM</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbDH">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Ubuntu Condensed</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Distance to home</string>
+        </property>
+        <property name="text">
+         <string>DH</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbPD">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Ubuntu Condensed</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Flight plan travel distance</string>
+        </property>
+        <property name="text">
+         <string>PD</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbFD">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Ubuntu Condensed</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>UAV travelled distance from telemetry file</string>
+        </property>
+        <property name="text">
+         <string>FD</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbTD">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Ubuntu Condensed</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>UAV travelled distance</string>
+        </property>
+        <property name="text">
+         <string>TD</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+  <action name="aGoHome">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/gohome.png</normaloff>:/icons/old/gohome.png</iconset>
+   </property>
+   <property name="text">
+    <string>Home</string>
+   </property>
+   <property name="toolTip">
+    <string>Go to GCU location</string>
+   </property>
+  </action>
+  <action name="aDownload">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/download.png</normaloff>:/icons/old/download.png</iconset>
+   </property>
+   <property name="text">
+    <string>Download</string>
+   </property>
+   <property name="toolTip">
+    <string>Download visible map</string>
+   </property>
+  </action>
+  <action name="aAutoDownload">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/system-run.png</normaloff>:/icons/old/system-run.png</iconset>
+   </property>
+   <property name="text">
+    <string>Auto Download</string>
+   </property>
+   <property name="toolTip">
+    <string>Download map automatically</string>
+   </property>
+  </action>
+  <action name="aDownloadDeep">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/3downarrow.png</normaloff>:/icons/old/3downarrow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Download Deep..</string>
+   </property>
+   <property name="toolTip">
+    <string>Download all maps in clicked area</string>
+   </property>
+  </action>
+  <action name="aStop">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/process-stop.png</normaloff>:/icons/old/process-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop Downloading</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop Downloading</string>
+   </property>
+  </action>
+  <action name="aCookie">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/bt.png</normaloff>:/icons/old/bt.png</iconset>
+   </property>
+   <property name="text">
+    <string>Setup Cookie..</string>
+   </property>
+   <property name="toolTip">
+    <string>Setup cookies..</string>
+   </property>
+  </action>
+  <action name="aUpload">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/ark_extract.png</normaloff>:/icons/old/ark_extract.png</iconset>
+   </property>
+   <property name="text">
+    <string>Upload</string>
+   </property>
+   <property name="toolTip">
+    <string>Upload flight plan to UAV</string>
+   </property>
+  </action>
+  <action name="aZoomIn">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/zoom-in.png</normaloff>:/icons/old/zoom-in.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom In</string>
+   </property>
+  </action>
+  <action name="aZoomOut">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/zoom-out.png</normaloff>:/icons/old/zoom-out.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom Out</string>
+   </property>
+  </action>
+  <action name="aRefresh">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/transport_loop.png</normaloff>:/icons/old/transport_loop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="toolTip">
+    <string>Refresh maps from google</string>
+   </property>
+  </action>
+  <action name="aGoUAV">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/uav.png</normaloff>:/icons/old/uav.png</iconset>
+   </property>
+   <property name="text">
+    <string>UAV</string>
+   </property>
+   <property name="toolTip">
+    <string>Go to UAV position</string>
+   </property>
+  </action>
+  <action name="aFullScreen">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/view-fullscreen.png</normaloff>:/icons/old/view-fullscreen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle Full Screen</string>
+   </property>
+  </action>
+  <action name="aTraceReset">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/draw-bezier-curves.png</normaloff>:/icons/old/draw-bezier-curves.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reset Trace</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset UAV trace</string>
+   </property>
+  </action>
+  <action name="aTraceResetF">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/edit-guides.png</normaloff>:/icons/old/edit-guides.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear File Trace</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear UAV trace from telemetry file</string>
+   </property>
+  </action>
+  <action name="aTraceShow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/draw-path.png</normaloff>:/icons/old/draw-path.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Trace</string>
+   </property>
+   <property name="toolTip">
+    <string>Show UAV trace</string>
+   </property>
+  </action>
+  <action name="aRequest">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/go-down-search.png</normaloff>:/icons/old/go-down-search.png</iconset>
+   </property>
+   <property name="text">
+    <string>Request</string>
+   </property>
+   <property name="toolTip">
+    <string>Request flight plan from UAV</string>
+   </property>
+  </action>
+  <action name="aSetHome">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/home.png</normaloff>:/icons/old/home.png</iconset>
+   </property>
+   <property name="text">
+    <string>Set home</string>
+   </property>
+   <property name="toolTip">
+    <string>Set home position here</string>
+   </property>
+  </action>
+  <action name="aFlyHere">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/go-jump.png</normaloff>:/icons/old/go-jump.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fly here</string>
+   </property>
+   <property name="toolTip">
+    <string>Fly here</string>
+   </property>
+  </action>
+  <action name="aPosFix">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/snap-orthogonal.png</normaloff>:/icons/old/snap-orthogonal.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send position fix</string>
+   </property>
+   <property name="toolTip">
+    <string>Send a position update for inertial navigation</string>
+   </property>
+  </action>
+  <action name="aSave">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/document-save.png</normaloff>:/icons/old/document-save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save flight plan..</string>
+   </property>
+  </action>
+  <action name="aLoad">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/document-open.png</normaloff>:/icons/old/document-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load</string>
+   </property>
+   <property name="toolTip">
+    <string>Load flight plan..</string>
+   </property>
+  </action>
+  <action name="aSaveAs">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/document-save-as.png</normaloff>:/icons/old/document-save-as.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save As..</string>
+   </property>
+   <property name="toolTip">
+    <string>Save flight plan as..</string>
+   </property>
+  </action>
+  <action name="aNewFile">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/document-new.png</normaloff>:/icons/old/document-new.png</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+   <property name="toolTip">
+    <string>Create new flight plan</string>
+   </property>
+  </action>
+  <action name="aAddWaypoint">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/edit-node.png</normaloff>:/icons/old/edit-node.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Waypoint</string>
+   </property>
+  </action>
+  <action name="aAddRunway">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/insert-horizontal-rule.png</normaloff>:/icons/old/insert-horizontal-rule.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Runway</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Runway</string>
+   </property>
+  </action>
+  <action name="aWpAdj">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/document-edit.png</normaloff>:/icons/old/document-edit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Adjust waypoints altitude...</string>
+   </property>
+  </action>
+  <action name="aLand">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/go-bottom.png</normaloff>:/icons/old/go-bottom.png</iconset>
+   </property>
+   <property name="text">
+    <string>Land to selected runway</string>
+   </property>
+  </action>
+  <action name="aGoWpt">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/go-last.png</normaloff>:/icons/old/go-last.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fly to selected waypoint</string>
+   </property>
+  </action>
+  <action name="aFromTelemetry">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/document-export-table.png</normaloff>:/icons/old/document-export-table.png</iconset>
+   </property>
+   <property name="text">
+    <string>Telemetry</string>
+   </property>
+   <property name="toolTip">
+    <string>Load from telemetry file</string>
+   </property>
+  </action>
+  <action name="aAddTaxiway">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/draw-line.png</normaloff>:/icons/old/draw-line.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Taxiway</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Taxiway</string>
+   </property>
+  </action>
+  <action name="aAddPoint">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/layer-visible-on.png</normaloff>:/icons/old/layer-visible-on.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Point of Interest</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Point of Interest</string>
+   </property>
+  </action>
+  <action name="aGoPi">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/layer-visible-on.png</normaloff>:/icons/old/layer-visible-on.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fly to POI</string>
+   </property>
+   <property name="toolTip">
+    <string>Fly to selected Point of Interest</string>
+   </property>
+  </action>
+  <action name="aLookHere">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/layer-visible-on.png</normaloff>:/icons/old/layer-visible-on.png</iconset>
+   </property>
+   <property name="text">
+    <string>Look here</string>
+   </property>
+   <property name="toolTip">
+    <string>Turn gimbal to coordinates</string>
+   </property>
+  </action>
+  <action name="aAddRestricted">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/flag-red.png</normaloff>:/icons/old/flag-red.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add restricted area</string>
+   </property>
+   <property name="toolTip">
+    <string>Add restricted area</string>
+   </property>
+  </action>
+  <action name="aAddEmergency">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/flag.png</normaloff>:/icons/old/flag.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add emergency landing area</string>
+   </property>
+   <property name="toolTip">
+    <string>Add emergency landing area</string>
+   </property>
+  </action>
+  <action name="aRemove">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/edit-delete.png</normaloff>:/icons/old/edit-delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Remove selected items</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove selected items</string>
+   </property>
+  </action>
+  <action name="aAddAreaPoint">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/format-add-node.png</normaloff>:/icons/old/format-add-node.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add point to area</string>
+   </property>
+   <property name="toolTip">
+    <string>Add point to selected area</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MapView</class>
+   <extends>QGraphicsView</extends>
+   <header>MapView.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../resources/standard-icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

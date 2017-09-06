@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <file>components/MapStatusBar.qml</file>
+        <file>components/MapText.qml</file>
+        <file>components/MapWind.qml</file>
+        <file>components/Style.qml</file>
+        <file>components/qmldir</file>
+        <file>mission/Mission.qml</file>
+        <file>mission/Waypoint.qml</file>
+        <file>vehicle/Vehicle.qml</file>
+        <file>vehicle/Vehicles.qml</file>
+        <file>MapView.qml</file>
+        <file>mission/MissionPath.qml</file>
+        <file>qmldir</file>
+        <file>components/MapObject.qml</file>
+        <file>mission/Runway.qml</file>
+        <file>mission/Taxiway.qml</file>
+        <file>mission/Poi.qml</file>
+        <file>components/FlickableMap.qml</file>
+        <file>components/MapToolBar.qml</file>
+        <file>components/MapButton.qml</file>
+        <file>vehicle/CmdCircle.qml</file>
+        <file>components/MapImage.qml</file>
+        <file>components/MapMenu.qml</file>
+        <file>menu/MissionMenu.qml</file>
+        <file>menu/MissionMenuPage.qml</file>
+        <file>menu/MissionMenuMain.qml</file>
+        <file>menu/MissionMenuItem.qml</file>
+    </qresource>
+</RCC>

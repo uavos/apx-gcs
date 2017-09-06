@@ -1,0 +1,4 @@
+*.json
+app_process
+*.so
+android/

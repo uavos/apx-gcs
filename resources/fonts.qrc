@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>fonts/BebasNeue.otf</file>
+        <file>fonts/FreeMono.ttf</file>
+        <file>fonts/FreeMonoBold.ttf</file>
+        <file>fonts/Ubuntu-C.ttf</file>
+        <file>fonts/Bierahinia.ttf</file>
+    </qresource>
+</RCC>

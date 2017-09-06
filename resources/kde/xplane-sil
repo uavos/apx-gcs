@@ -1,0 +1,69 @@
+#!/bin/bash
+
+#-------------------------------------------------------------------------------
+# invoke-console
+if tty -s; then                 # Do we have a terminal?
+:
+else
+	if test x"$DISPLAY" != x -a x"$xterm_loop" = x; then  # No, but do we have X?
+		if xset q > /dev/null 2>&1; then # Check for valid DISPLAY variable
+			GUESS_XTERMS="xterm rxvt dtterm eterm Eterm kvt konsole aterm"
+			for a in $GUESS_XTERMS; do
+				if type $a >/dev/null 2>&1; then
+					XTERM=$a
+					break
+				fi
+			done
+			chmod a+x $0 || echo Please add execution rights on $0
+			if test `echo "$0" | cut -c1` = "/"; then # Spawn a terminal!
+				exec $XTERM -title "$label" -e "$0" "$@"
+			else
+				exec $XTERM -title "$label" -e "./$0" "$@"
+			fi
+		fi
+	fi
+fi
+#-------------------------------------------------------------------------------
+function clean {
+killall -q X-Plane-i686
+killall -q X-Plane-i386
+killall -q X-Plane-x86_64
+killall -q xplane
+killall -q gcu
+killall -q shiva
+rm -f /tmp/xplane_fifo
+}
+clean
+# catch if user hits control-c
+control_c()
+{
+  echo -en "\n*** Exiting ***\n"
+  clean
+  exit $?
+}
+# trap keyboard interrupt (control-c)
+trap control_c SIGINT
+
+
+#-------------------------------------------------------------------------------
+echo "Starting X-Plane..."
+mkfifo /tmp/xplane_fifo
+xplane > /tmp/xplane_fifo &
+while read -r line
+do
+  echo "xplane: $line"
+  if [[ $(echo "$line"|grep -c 'AP plugin version') > 0 ]] ; then
+  #if [ "$line" == "Simulation mode."  ]; then
+    break
+  fi
+done < /tmp/xplane_fifo
+rm -f /tmp/xplane_fifo
+#-------------------------------------------------------------------------------
+echo "Starting Autopilot and GCU..."
+(sleep 5 && gcu) &
+
+shiva -s -u -n
+
+#-------------------------------------------------------------------------------
+#exit
+clean

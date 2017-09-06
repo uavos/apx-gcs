@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BlackboxDownload</class>
+ <widget class="QWidget" name="BlackboxDownload">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>518</width>
+    <height>235</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Blackbox download</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="toolBarLayout"/>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Node:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lbNode">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Recorded size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lbSize">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>UAV name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="eUAV">
+       <property name="frame">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="format">
+      <string>%v/%m</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="killButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+  <action name="aRead">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/3downarrow.png</normaloff>:/icons/old/3downarrow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Read</string>
+   </property>
+   <property name="toolTip">
+    <string>Read memory</string>
+   </property>
+  </action>
+  <action name="aAbort">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/process-stop.png</normaloff>:/icons/old/process-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Abort</string>
+   </property>
+   <property name="toolTip">
+    <string>Abort operation</string>
+   </property>
+  </action>
+  <action name="aErase">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/edit-clear-list.png</normaloff>:/icons/old/edit-clear-list.png</iconset>
+   </property>
+   <property name="text">
+    <string>Erase</string>
+   </property>
+   <property name="toolTip">
+    <string>Erase memory</string>
+   </property>
+  </action>
+  <action name="aRefresh">
+   <property name="icon">
+    <iconset resource="../../resources/standard-icons.qrc">
+     <normaloff>:/icons/old/transport_loop.png</normaloff>:/icons/old/transport_loop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="toolTip">
+    <string>Refresh statistics</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../../resources/standard-icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

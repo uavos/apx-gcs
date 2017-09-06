@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd" 
+>
+<html>
+<head>
+<title>Flight Report</title><style type="text/css">
+body { font-size : 12px;}
+td { vertical-align: top; white-space:nowrap;}
+table { 
+border-bottom-style : hidden; 
+border-left-style : hidden; 
+border-right-style : hidden; 
+border-top-style : hidden; 
+margin-bottom : 0px; 
+margin-left : 0px; 
+margin-right : 0px; 
+margin-top : 0px; 
+padding-bottom : 0px; 
+padding-left : 0px; 
+padding-right : 0px; 
+padding-top : 0px; 
+width : 100%;
+}
+input, textarea, select, option {
+width: 100%;
+display: block; 
+border: solid 0px; 
+padding: 0px; 
+margin: 0px; 
+display : inline;
+background: none;
+}
+select { left : -7px; position : relative; top : -1px; cursor : pointer; float: left; width: 100%;}
+
+input:hover, textarea:hover {
+    background-color: #e0e0f0;
+}
+input:focus, textarea:focus {
+    background-color: #e0e0f0;
+}
+div.hideBtn {
+    background-color : #ffffff; width: 20%; position: relative; left: 80%;
+}
+
+</style>
+</head>
+<body>
+<div  style="float:left; width: 100%;">
+
+
+
+<div style="border-bottom-style : solid; border-bottom-width : 2px; float : left; font-size : 20px; font-weight : bold; width : 100%;">
+Flight Report #<input id="num" type="text" value="{num}" style="width: 10%;">
+<div style="float: right; font-size : 20px; width: 50%;"><input id="uav" type="text" value="{uav}" align="right" style="text-align : right;"> </div>
+</div>
+
+
+
+<div style="float:left; width: 55%;">
+<table>
+<TR>
+<TD align="right" width="30%"><strong>UAV name:</strong></TD>
+<TD><input id="uav" type="text" value="{uav}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Place name:</strong></TD>
+<TD><input id="place" type="text" value="{place}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Position:</strong></TD>
+<TD><input id="pos" type="text" value="{pos}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Flight Date:</strong></TD>
+<TD><input id="date" type="text" value="{date}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Duration:</strong></TD>
+<TD><input id="duration" type="text" value="{duration}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Distance:</strong></TD>
+<TD><input id="dist" type="text" value="{dist}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max MSL altitude:</strong></TD>
+<TD><input id="alt" type="text" value="{alt}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max AGL altitude:</strong></TD>
+<TD><input id="altAGL" type="text" value="{altAGL}"> </TD>
+</TD></TR>
+<TD align="right"><strong>Waypoints:</strong></TD>
+<TD><input id="wpt" type="text" value="{wpt}"> </TD>
+</TD></TR>
+</table>
+</div>
+
+<div style="float:right; width: 40%;">
+
+<table style="font-size : 11px;">
+<TR>
+<TD colspan="2" style="border-bottom-style : solid; border-bottom-width : 1px; "><strong>Ground Station</strong></TD>
+</TR><TR>
+<TD align="right"><strong>HMSL:</strong></TD>
+<TD><input id="gcuAlt" type="text" value="{gcuAlt}"> </TD>
+</TR><TR>
+<TD align="right" style="vertical-align : middle;"><strong>Weather:</strong></TD>
+<TD nowrap="true"><select value="clear">
+<option>clear</option>
+<option>cloudy</option>
+<option>rain</option>
+<option>storm</option>
+</select>
+</TD>
+</TR><TR>
+<TD align="right"><strong>Wind speed:</strong></TD>
+<TD><input type="text" value="0 m/s"> </TD>
+</TR><TR>
+<TD align="right"><strong>Ambient temp:</strong></TD>
+<TD><input id="temp" type="text" value="{temp}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max temp:</strong></TD>
+<TD><input id="tempMax" type="text" value="{tempMax}"> </TD>
+
+</TR>
+</table>
+</div>
+
+
+<div style="float : left; padding-top : 10px; width : 100%; border-bottom-style : solid; border-bottom-width : 1px;">
+<strong>Goal:</strong><br>
+<textarea style="width : 100%;">Scheduled test flight.</textarea>
+</div>
+
+<div style="float : left; padding-top : 10px; width : 100%; border-bottom-style : solid; border-bottom-width : 1px;">
+<strong>Results:</strong><br>
+<table style="float:left; width: 40%;">
+<TR>
+<TD align="right" style="vertical-align : middle;"><strong>Takeoff:</strong></TD>
+<TD><select value="manual">
+<option>manual</option>
+<option>autonomous</option>
+</select><div class=hideBtn>&nbsp;</div></TD>
+</TR><TR>
+<TD align="right" style="vertical-align : middle;"><strong>Landing:</strong></TD>
+<TD><select value="manual">
+<option>manual</option>
+<option>autonomous</option>
+<option>crash</option>
+</select><div class=hideBtn>&nbsp;</div></TD>
+</TR><TR>
+<TD align="right" style="vertical-align : middle;"><strong>Status:</strong></TD>
+<TD><select value="success">
+<option>success</option>
+<option>failed</option>
+</select><div class=hideBtn>&nbsp;</div></TD>
+
+</TR>
+</table>
+
+<div style="float:right; width: 55%;">
+<strong>Comments:</strong><br>
+<textarea rows=4 style="width : 100%;"></textarea>
+</div>
+
+</div>
+
+
+<div style="float : left; padding-top : 10px; width : 100%; border-bottom-style : solid; border-bottom-width : 1px;">
+<strong>Flight data:</strong><br>
+<table style="float:left; width: 10%; font-size : 10px;">
+<TR>
+<TD align="right"><strong>Takeoff battery voltage:</strong></TD>
+<TD><input id="bat" type="text" value="{bat}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Lowest battery voltage:</strong></TD>
+<TD><input id="batLow" type="text" value="{batLow}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max Acceleration X:</strong></TD>
+<TD><input id="accX" type="text" value="{accX}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max Acceleration Y:</strong></TD>
+<TD><input id="accY" type="text" value="{accY}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max Acceleration Z:</strong></TD>
+<TD><input id="accZ" type="text" value="{accZ}"> </TD>
+
+</TR>
+</table>
+<table style="float:left; width: 10%; font-size : 10px;">
+<TR>
+<TD align="right"><strong>Max pitch angle:</strong></TD>
+<TD><input id="maxPitch" type="text" value="{maxPitch}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Min pitch angle:</strong></TD>
+<TD><input id="minPitch" type="text" value="{minPitch}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max bank angle:</strong></TD>
+<TD><input id="maxRoll" type="text" value="{maxRoll}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max turn rate:</strong></TD>
+<TD><input id="maxTurnRate" type="text" value="{maxTurnRate}"> </TD>
+
+</TR>
+</table>
+</table>
+<table style="float:left; width: 10%; font-size : 10px;">
+<TR>
+<TD align="right"><strong>Max climbing rate:</strong></TD>
+<TD><input id="vspeedUp" type="text" value="{vspeedUp}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max descending rate:</strong></TD>
+<TD><input id="vspeedDown" type="text" value="{vspeedDown}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Takeoff speed:</strong></TD>
+<TD><input id="spdTakeoff" type="text" value="{spdTakeoff}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Touchdown speed:</strong></TD>
+<TD><input id="spdTouch" type="text" value="{spdTouch}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Max ground speed:</strong></TD>
+<TD><input id="spdMax" type="text" value="{spdMax}"> </TD>
+</TR><TR>
+<TD align="right"><strong>Min ground speed:</strong></TD>
+<TD><input id="spdMin" type="text" value="{spdMin}"> </TD>
+
+</TR>
+</table>
+</div>
+
+
+
+
+
+<div align="right" style="width: 100%; border-top-style : solid; border-top-width : 1px; float : right; font-size : 7px;">
+Report created: <a id="now">{now}</a>
+</div>
+
+</div>
+
+</body>
+</html>

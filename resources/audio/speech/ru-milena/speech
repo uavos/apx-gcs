@@ -1,0 +1,47 @@
+configuration updated,конфигурация обновлена
+waiting for gps,жду координаты
+flight plan finished,миссия завершена
+flight plan updated,обновление миссии получено
+waypoint passed,точка маршрута пройдена
+engine start,старт двигателя
+brake on,торможение
+brake off,тормоз отключен
+engine off,зажигание выключено
+engine on,зажигание включено
+ers on,парашют
+ers off,парашют заблокирован
+flaps on,закрылки выпущены
+flaps off,закрылки убраны
+flight mode angles control,полуавтоматический режим
+flight mode go back home,возврат домой
+flight mode heading control,управление курсом
+flight mode landing,посадка
+flight mode loiter around,полет по кругу
+flight mode realtime control,ручной режим
+flight mode waypoints navigation,полет по маршруту
+final approach,глиссада
+gps lost,gps отсутствует
+landing cancelled,отмена посадки
+landing finished,посадка завершена
+landing run,пробежка
+liftoff,отрыв
+payload off,полезная нагрузка отключена
+rc on,пилотирование
+rc off,автопилот включен
+takeoff finished,взлет закончен
+flight mode takeoff,процедура взлета
+gps available,местоположение определено
+payload activated,включена полезная нагрузка
+takeoff start,полный газ
+takeoff launcher engaged,взлет с катапульты
+takeoff run,разбег
+takeoff liftoff,отрыв
+takeoff climbing,набор
+takeoff cancelled,взлет отменен
+landing ta,подготовка оптимального маршрута
+landing ta_app,разворот на глиссаду
+landing final approach,глиссада
+landing flare,выравнивание
+landing touchdown,касание
+landing parachute,парашютная посадка
+landing descending,снижение

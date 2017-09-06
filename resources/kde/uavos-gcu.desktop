@@ -1,0 +1,12 @@
+[Desktop Entry]
+Comment=UAV Software
+Exec=gcu
+GenericName=GCU
+Icon=uavos-gcu
+MimeType=
+Name=Ground Control Unit
+StartupNotify=true
+Terminal=false
+Type=Application
+X-Ubuntu-Gettext-Domain=desktop_kdebase
+Categories=Education;

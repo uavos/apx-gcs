@@ -1,0 +1,1631 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes title="xplane-airplane" version="9.8.50" href="http://www.uavos.com/">
+  <hash>60704e727a20a8049e52e1945db9544c</hash>
+  <timestamp>Fri Apr 15 23:54:51 2016 GMT</timestamp>
+  <ident>
+    <callsign>SIM</callsign>
+    <class>UAV</class>
+    <squawk>509</squawk>
+    <uid>FE0000000000000000000000</uid>
+  </ident>
+  <node sn="FE0000000000000000000000" name="nav">
+    <info>
+      <version>9.8.50</version>
+      <hardware>all</hardware>
+    </info>
+    <hash>9bcf3eadca5a6f73adec5eda86544558</hash>
+    <timestamp>Fri Apr 15 23:54:51 2016 GMT</timestamp>
+    <command cmd="12">
+      <name>reconf</name>
+      <descr>Reset configuration</descr>
+    </command>
+    <fields size="1204" cnt="29" mn="4111237297">
+      <field idx="0" name="comment">
+        <struct>
+          <type>string</type>
+        </struct>
+        <value>xplane-airplane</value>
+      </field>
+      <field idx="1" name="dl_callsign">
+        <struct>
+          <type>string</type>
+          <descr>Downlink:Callsign</descr>
+        </struct>
+        <value>SIM</value>
+      </field>
+      <field idx="2" name="dl_mode">
+        <struct>
+          <type>option</type>
+          <descr>Downlink:mode</descr>
+          <opts>local,dlink</opts>
+        </struct>
+        <value>dlink</value>
+      </field>
+      <field idx="3" name="dl_vclass">
+        <struct>
+          <type>option</type>
+          <descr>Downlink:Vehicle class</descr>
+          <opts>UAV,GCU,UGV,USV,SAT,RELAY</opts>
+        </struct>
+        <value>UAV</value>
+      </field>
+      <field idx="4" name="dl_XPDR">
+        <struct>
+          <type>option</type>
+          <descr>Downlink:Transponder</descr>
+          <opts>auto,silent,1sec,5sec,10Hz</opts>
+        </struct>
+        <value>auto</value>
+      </field>
+      <field idx="5" name="dl_squawk">
+        <struct>
+          <type>uint</type>
+          <descr>Downlink:Squawk code [hex]</descr>
+        </struct>
+        <value>509</value>
+      </field>
+      <field idx="6" name="ctr_bind[24]">
+        <struct>
+          <type>varmsk</type>
+          <descr>Simulator:controls: control binding</descr>
+        </struct>
+        <value idx="0" name="1">ctr_ailerons</value>
+        <value idx="1" name="2">ctr_elevator</value>
+        <value idx="2" name="3">ctr_rudder</value>
+        <value idx="3" name="4">ctr_throttle</value>
+        <value idx="4" name="5">ctr_flaps</value>
+        <value idx="5" name="6">ctr_brake</value>
+        <value idx="6" name="7">ctr_airbrk</value>
+        <value idx="7" name="8"></value>
+        <value idx="8" name="9"></value>
+        <value idx="9" name="10"></value>
+        <value idx="10" name="11"></value>
+        <value idx="11" name="12"></value>
+        <value idx="12" name="13"></value>
+        <value idx="13" name="14"></value>
+        <value idx="14" name="15"></value>
+        <value idx="15" name="16"></value>
+        <value idx="16" name="17"></value>
+        <value idx="17" name="18"></value>
+        <value idx="18" name="19"></value>
+        <value idx="19" name="20"></value>
+        <value idx="20" name="21"></value>
+        <value idx="21" name="22"></value>
+        <value idx="22" name="23"></value>
+        <value idx="23" name="24"></value>
+      </field>
+      <field idx="7" name="ctr_mult[24]">
+        <struct>
+          <type>float</type>
+          <descr>Simulator:controls: control multiplier</descr>
+        </struct>
+        <value idx="0" name="1">1</value>
+        <value idx="1" name="2">1</value>
+        <value idx="2" name="3">1</value>
+        <value idx="3" name="4">1</value>
+        <value idx="4" name="5">1</value>
+        <value idx="5" name="6">1</value>
+        <value idx="6" name="7">1</value>
+        <value idx="7" name="8">0</value>
+        <value idx="8" name="9">0</value>
+        <value idx="9" name="10">0</value>
+        <value idx="10" name="11">0</value>
+        <value idx="11" name="12">0</value>
+        <value idx="12" name="13">0</value>
+        <value idx="13" name="14">0</value>
+        <value idx="14" name="15">0</value>
+        <value idx="15" name="16">0</value>
+        <value idx="16" name="17">0</value>
+        <value idx="17" name="18">0</value>
+        <value idx="18" name="19">0</value>
+        <value idx="19" name="20">0</value>
+        <value idx="20" name="21">0</value>
+        <value idx="21" name="22">0</value>
+        <value idx="22" name="23">0</value>
+        <value idx="23" name="24">0</value>
+      </field>
+      <field idx="8" name="ctr_diff[24]">
+        <struct>
+          <type>float</type>
+          <descr>Simulator:controls: control bias</descr>
+        </struct>
+        <value idx="0" name="1">0</value>
+        <value idx="1" name="2">0</value>
+        <value idx="2" name="3">0</value>
+        <value idx="3" name="4">0</value>
+        <value idx="4" name="5">0</value>
+        <value idx="5" name="6">0</value>
+        <value idx="6" name="7">0</value>
+        <value idx="7" name="8">0</value>
+        <value idx="8" name="9">0</value>
+        <value idx="9" name="10">0</value>
+        <value idx="10" name="11">0</value>
+        <value idx="11" name="12">0</value>
+        <value idx="12" name="13">0</value>
+        <value idx="13" name="14">0</value>
+        <value idx="14" name="15">0</value>
+        <value idx="15" name="16">0</value>
+        <value idx="16" name="17">0</value>
+        <value idx="17" name="18">0</value>
+        <value idx="18" name="19">0</value>
+        <value idx="19" name="20">0</value>
+        <value idx="20" name="21">0</value>
+        <value idx="21" name="22">0</value>
+        <value idx="22" name="23">0</value>
+        <value idx="23" name="24">0</value>
+      </field>
+      <field idx="9" name="ctr_speed[24]">
+        <struct>
+          <type>float</type>
+          <descr>Simulator:controls: control change speed</descr>
+        </struct>
+        <value idx="0" name="1">0</value>
+        <value idx="1" name="2">0</value>
+        <value idx="2" name="3">0</value>
+        <value idx="3" name="4">0</value>
+        <value idx="4" name="5">0.2</value>
+        <value idx="5" name="6">0</value>
+        <value idx="6" name="7">0</value>
+        <value idx="7" name="8">0</value>
+        <value idx="8" name="9">0</value>
+        <value idx="9" name="10">0</value>
+        <value idx="10" name="11">0</value>
+        <value idx="11" name="12">0</value>
+        <value idx="12" name="13">0</value>
+        <value idx="13" name="14">0</value>
+        <value idx="14" name="15">0</value>
+        <value idx="15" name="16">0</value>
+        <value idx="16" name="17">0</value>
+        <value idx="17" name="18">0</value>
+        <value idx="18" name="19">0</value>
+        <value idx="19" name="20">0</value>
+        <value idx="20" name="21">0</value>
+        <value idx="21" name="22">0</value>
+        <value idx="22" name="23">0</value>
+        <value idx="23" name="24">0</value>
+      </field>
+      <field idx="10" name="ctr_ch[24]">
+        <struct>
+          <type>byte</type>
+          <descr>Simulator:controls: control output channel</descr>
+        </struct>
+        <value idx="0" name="1">0</value>
+        <value idx="1" name="2">1</value>
+        <value idx="2" name="3">2</value>
+        <value idx="3" name="4">3</value>
+        <value idx="4" name="5">4</value>
+        <value idx="5" name="6">5</value>
+        <value idx="6" name="7">6</value>
+        <value idx="7" name="8">0</value>
+        <value idx="8" name="9">0</value>
+        <value idx="9" name="10">0</value>
+        <value idx="10" name="11">0</value>
+        <value idx="11" name="12">0</value>
+        <value idx="12" name="13">0</value>
+        <value idx="13" name="14">0</value>
+        <value idx="14" name="15">0</value>
+        <value idx="15" name="16">0</value>
+        <value idx="16" name="17">0</value>
+        <value idx="17" name="18">0</value>
+        <value idx="18" name="19">0</value>
+        <value idx="19" name="20">0</value>
+        <value idx="20" name="21">0</value>
+        <value idx="21" name="22">0</value>
+        <value idx="22" name="23">0</value>
+        <value idx="23" name="24">0</value>
+      </field>
+      <field idx="11" name="ctr_ch_min[10]">
+        <struct>
+          <type>float</type>
+          <descr>Simulator:controls: channel minimum [%]</descr>
+        </struct>
+        <value idx="0" name="1">-100</value>
+        <value idx="1" name="2">-100</value>
+        <value idx="2" name="3">-100</value>
+        <value idx="3" name="4">-100</value>
+        <value idx="4" name="5">-100</value>
+        <value idx="5" name="6">-100</value>
+        <value idx="6" name="7">-100</value>
+        <value idx="7" name="8">-100</value>
+        <value idx="8" name="9">-100</value>
+        <value idx="9" name="10">-100</value>
+      </field>
+      <field idx="12" name="ctr_ch_max[10]">
+        <struct>
+          <type>float</type>
+          <descr>Simulator:controls: channel maximum [%]</descr>
+        </struct>
+        <value idx="0" name="1">100</value>
+        <value idx="1" name="2">100</value>
+        <value idx="2" name="3">100</value>
+        <value idx="3" name="4">100</value>
+        <value idx="4" name="5">100</value>
+        <value idx="5" name="6">100</value>
+        <value idx="6" name="7">100</value>
+        <value idx="7" name="8">100</value>
+        <value idx="8" name="9">100</value>
+        <value idx="9" name="10">100</value>
+      </field>
+      <field idx="13" name="ctr_ch_zero[10]">
+        <struct>
+          <type>float</type>
+          <descr>Simulator:controls: channel zero position [%]</descr>
+        </struct>
+        <value idx="0" name="1">0</value>
+        <value idx="1" name="2">0</value>
+        <value idx="2" name="3">0</value>
+        <value idx="3" name="4">0</value>
+        <value idx="4" name="5">0</value>
+        <value idx="5" name="6">0</value>
+        <value idx="6" name="7">0</value>
+        <value idx="7" name="8">0</value>
+        <value idx="8" name="9">0</value>
+        <value idx="9" name="10">0</value>
+      </field>
+      <field idx="14" name="ports_mixer">
+        <struct>
+          <type>option</type>
+          <descr>Simulator:Hardware mixer</descr>
+          <opts>off,quadX</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="15" name="xpl[10]">
+        <struct>
+          <type>lstr</type>
+          <descr>Simulator: X-Plane controls assignments for PWM</descr>
+        </struct>
+        <value idx="0" name="1">sim/joystick/yoke_roll_ratio</value>
+        <value idx="1" name="2">sim/joystick/yoke_pitch_ratio</value>
+        <value idx="2" name="3">sim/joystick/yoke_heading_ratio</value>
+        <value idx="3" name="4">sim/flightmodel/engine/ENGN_thro_use[0]</value>
+        <value idx="4" name="5">sim/flightmodel/controls/flaprqst</value>
+        <value idx="5" name="6">sim/flightmodel/controls/parkbrake</value>
+        <value idx="6" name="7">sim/flightmodel/controls/sbrkrqst</value>
+        <value idx="7" name="8"></value>
+        <value idx="8" name="9"></value>
+        <value idx="9" name="10"></value>
+      </field>
+      <field idx="16" name="ahrs_align">
+        <struct>
+          <type>vec</type>
+          <descr>AHRS: body frame align [deg]</descr>
+          <opts>roll,pitch,yaw</opts>
+        </struct>
+        <value idx="0" name="roll">0</value>
+        <value idx="1" name="pitch">0</value>
+        <value idx="2" name="yaw">0</value>
+      </field>
+      <field idx="17" name="ahrs_gps_arm">
+        <struct>
+          <type>vec</type>
+          <descr>AHRS: gps lever arm [m]</descr>
+          <opts>x,y,z</opts>
+        </struct>
+        <value idx="0" name="x">0</value>
+        <value idx="1" name="y">0</value>
+        <value idx="2" name="z">0</value>
+      </field>
+      <field idx="18" name="ahrs_decl">
+        <struct>
+          <type>float</type>
+          <descr>AHRS: magnetic declination [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="19" name="ahrs_fgyr">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: gyro filter</descr>
+          <opts>off,soft,strong,mekf,raw</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="20" name="ahrs_facc">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: accelerometers vibrations filter</descr>
+          <opts>off,soft,strong</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="21" name="ahrs_hAGL">
+        <struct>
+          <type>uint</type>
+          <descr>AHRS: altitude to turn on AGL [m]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="22" name="ahrs_bAGL">
+        <struct>
+          <type>float</type>
+          <descr>AHRS: AGL altitude on ground level [m]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="23" name="ahrs_hGPS">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: preferred altitude source</descr>
+          <opts>auto,baro,gps</opts>
+        </struct>
+        <value>auto</value>
+      </field>
+      <field idx="24" name="ahrs_vsGPS">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: preferred vspeed source</descr>
+          <opts>auto,gps</opts>
+        </struct>
+        <value>auto</value>
+      </field>
+      <field idx="25" name="ahrs_noGPS">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: don't wait GPS</descr>
+          <opts>no,yes</opts>
+        </struct>
+        <value>no</value>
+      </field>
+      <field idx="26" name="ahrs_fbar">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: barometric altimeter filter</descr>
+          <opts>mekf,none</opts>
+        </struct>
+        <value>mekf</value>
+      </field>
+      <field idx="27" name="ahrs_crs">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: course source</descr>
+          <opts>mekf,smart,mag</opts>
+        </struct>
+        <value>smart</value>
+      </field>
+      <field idx="28" name="ahrs_cas">
+        <struct>
+          <type>option</type>
+          <descr>AHRS: CAS sensor</descr>
+          <opts>PsPt,Ps,Pt,off</opts>
+        </struct>
+        <value>PsPt</value>
+      </field>
+    </fields>
+  </node>
+  <node sn="FF0000000000000000000000" name="nav.shiva">
+    <info>
+      <version>9.8.50</version>
+      <hardware>all</hardware>
+    </info>
+    <hash>3d696e814929047963ffa10cff6ce6a3</hash>
+    <timestamp>Fri Apr 15 23:54:51 2016 GMT</timestamp>
+    <fields size="789" cnt="154" mn="4205124297">
+      <field idx="0" name="comment">
+        <struct>
+          <type>string</type>
+        </struct>
+        <value>xplane-airplane</value>
+      </field>
+      <field idx="1" name="redundancy">
+        <struct>
+          <type>option</type>
+          <descr>Redundancy</descr>
+          <opts>primary,secondary</opts>
+        </struct>
+        <value>primary</value>
+      </field>
+      <field idx="2" name="type">
+        <struct>
+          <type>option</type>
+          <descr>System:Type of control</descr>
+          <opts>airplane,helicopter,blimp,boat,car</opts>
+        </struct>
+        <value>airplane</value>
+      </field>
+      <field idx="3" name="telemetry">
+        <struct>
+          <type>option</type>
+          <descr>System:Default downlink period</descr>
+          <opts>10Hz,5Hz,1Hz,REQUEST</opts>
+        </struct>
+        <value>10Hz</value>
+      </field>
+      <field idx="4" name="frm_mode">
+        <struct>
+          <type>option</type>
+          <descr>System:Formation:mode</descr>
+          <opts>off,wingC,wingL,wingR</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="5" name="vsh_slipKp">
+        <struct>
+          <type>float</type>
+          <descr>System:Formation:Wing:Slip [deg] to vshape [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="6" name="vsh_rollKp">
+        <struct>
+          <type>float</type>
+          <descr>System:Formation:Wing:Roll [deg] to vshape [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="7" name="vsh_pitchKp">
+        <struct>
+          <type>float</type>
+          <descr>System:Formation:Wing:vshape pitch Kp [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="8" name="vsh_pitchLo">
+        <struct>
+          <type>float</type>
+          <descr>System:Formation:Wing:vshape limit [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="9" name="rudKp">
+        <struct>
+          <type>float</type>
+          <descr>System:Formation:Wing:rudder to pitch Kp [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="10" name="rudLo">
+        <struct>
+          <type>float</type>
+          <descr>System:Formation:Wing:rudder to pitch limit [deg]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="11" name="init_mode">
+        <struct>
+          <type>option</type>
+          <descr>Init:Initial flight mode</descr>
+          <opts>TAXI,TAKEOFF,EMG</opts>
+        </struct>
+        <value>TAXI</value>
+      </field>
+      <field idx="12" name="init_servo">
+        <struct>
+          <type>option</type>
+          <descr>Init:Servo power</descr>
+          <opts>on,off</opts>
+        </struct>
+        <value>on</value>
+      </field>
+      <field idx="13" name="init_ignition">
+        <struct>
+          <type>option</type>
+          <descr>Init:Ignition</descr>
+          <opts>on,off</opts>
+        </struct>
+        <value>on</value>
+      </field>
+      <field idx="14" name="init_thrcut">
+        <struct>
+          <type>option</type>
+          <descr>Init:Throttle cut</descr>
+          <opts>on,override,off</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="15" name="Roll">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Roll [deg] to Ailerons [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">8</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Kd">1</value>
+        <value idx="3" name="Ld">100</value>
+        <value idx="4" name="Ki">1.2</value>
+        <value idx="5" name="Li">25</value>
+        <value idx="6" name="Lo">100</value>
+      </field>
+      <field idx="16" name="Pitch">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Pitch [deg] to Elevator [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">5</value>
+        <value idx="1" name="Lp">20</value>
+        <value idx="2" name="Kd">2</value>
+        <value idx="3" name="Ld">100</value>
+        <value idx="4" name="Ki">0.5</value>
+        <value idx="5" name="Li">40</value>
+        <value idx="6" name="Lo">100</value>
+      </field>
+      <field idx="17" name="Yaw">
+        <struct>
+          <type>regPPI</type>
+          <descr>Regulator:Yaw [deg] to Rudder/Steering [%]</descr>
+        </struct>
+        <value idx="0" name="Kpp">0.5</value>
+        <value idx="1" name="Lpp">255</value>
+        <value idx="2" name="Kp">5</value>
+        <value idx="3" name="Lp">100</value>
+        <value idx="4" name="Ki">0</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">100</value>
+      </field>
+      <field idx="18" name="Thr">
+        <struct>
+          <type>regPI</type>
+          <descr>Regulator:Energy [m/s] to Throttle/RPM [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">5</value>
+        <value idx="1" name="Lp">30</value>
+        <value idx="2" name="Ki">2</value>
+        <value idx="3" name="Li">100</value>
+        <value idx="4" name="Lo">100</value>
+      </field>
+      <field idx="19" name="Airspeed">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Airspeed [m/s] to Pitch [deg]</descr>
+        </struct>
+        <value idx="0" name="Kp">2</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Kd">0</value>
+        <value idx="3" name="Ld">0</value>
+        <value idx="4" name="Ki">0.1</value>
+        <value idx="5" name="Li">8</value>
+        <value idx="6" name="Lo">30</value>
+      </field>
+      <field idx="20" name="Altitude">
+        <struct>
+          <type>regP</type>
+          <descr>Regulator:Altitude [m] to Energy/Vertical Speed [m/s]</descr>
+        </struct>
+        <value idx="0" name="Kp">0.05</value>
+        <value idx="1" name="Lo">5</value>
+      </field>
+      <field idx="21" name="VSpeed">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Vertical Speed [m/s] to Pitch/Collective [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">0</value>
+        <value idx="1" name="Lp">0</value>
+        <value idx="2" name="Kd">0</value>
+        <value idx="3" name="Ld">0</value>
+        <value idx="4" name="Ki">0</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">0</value>
+      </field>
+      <field idx="22" name="Course">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Course [deg] to Roll [deg]</descr>
+        </struct>
+        <value idx="0" name="Kp">2</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Kd">0.5</value>
+        <value idx="3" name="Ld">100</value>
+        <value idx="4" name="Ki">0.1</value>
+        <value idx="5" name="Li">2</value>
+        <value idx="6" name="Lo">35</value>
+      </field>
+      <field idx="23" name="Line">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Line Path Displacement [m] to Course [deg]</descr>
+        </struct>
+        <value idx="0" name="Kp">1.1</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Kd">0.35</value>
+        <value idx="3" name="Ld">60</value>
+        <value idx="4" name="Ki">0</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">80</value>
+      </field>
+      <field idx="24" name="Path">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Trajectory Path [m] to Course [deg]</descr>
+        </struct>
+        <value idx="0" name="Kp">0.3</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Kd">0</value>
+        <value idx="3" name="Ld">0</value>
+        <value idx="4" name="Ki">6</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">50</value>
+      </field>
+      <field idx="25" name="Slip">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Slip [deg] to Rudder [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">1.2</value>
+        <value idx="1" name="Lp">10</value>
+        <value idx="2" name="Kd">0.3</value>
+        <value idx="3" name="Ld">5</value>
+        <value idx="4" name="Ki">100</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">0</value>
+      </field>
+      <field idx="26" name="Governor">
+        <struct>
+          <type>regPI</type>
+          <descr>Regulator:Engine Governor RPM [%] to Throttle [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">0</value>
+        <value idx="1" name="Lp">0</value>
+        <value idx="2" name="Ki">0</value>
+        <value idx="3" name="Li">0</value>
+        <value idx="4" name="Lo">0</value>
+      </field>
+      <field idx="27" name="Thermal">
+        <struct>
+          <type>regPI</type>
+          <descr>Regulator:Thermals:Venergy [m/s] to Roll [deg]</descr>
+        </struct>
+        <value idx="0" name="Kp">5</value>
+        <value idx="1" name="Lp">30</value>
+        <value idx="2" name="Ki">25</value>
+        <value idx="3" name="Li">35</value>
+        <value idx="4" name="Lo">45</value>
+      </field>
+      <field idx="28" name="therm_flt">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Thermals:venergy filter</descr>
+        </struct>
+        <value>0.1</value>
+      </field>
+      <field idx="29" name="therm_b">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Thermals:venergy bias</descr>
+        </struct>
+        <value>-1</value>
+      </field>
+      <field idx="30" name="Taxi">
+        <struct>
+          <type>regPID</type>
+          <descr>Regulator:Runway:Runway Displacement [m] to Yaw [deg]</descr>
+        </struct>
+        <value idx="0" name="Kp">1.5</value>
+        <value idx="1" name="Lp">25</value>
+        <value idx="2" name="Kd">0.5</value>
+        <value idx="3" name="Ld">15</value>
+        <value idx="4" name="Ki">0</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">100</value>
+      </field>
+      <field idx="31" name="Brakes">
+        <struct>
+          <type>regPI</type>
+          <descr>Regulator:Runway:Ground Speed [m/s] to Brakes [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">1</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Ki">0.5</value>
+        <value idx="3" name="Li">100</value>
+        <value idx="4" name="Lo">100</value>
+      </field>
+      <field idx="32" name="dbrk_steering">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Runway:DiffBrakes:Steering level [%]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="33" name="dbrk_Kp">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Runway:DiffBrakes:Steering Kp [%]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="34" name="HoverX">
+        <struct>
+          <type>regPPI</type>
+          <descr>Regulator:Helicopter:Hovering X Displacement [m] to Pitch [deg]</descr>
+        </struct>
+        <value idx="0" name="Kpp">0</value>
+        <value idx="1" name="Lpp">0</value>
+        <value idx="2" name="Kp">0</value>
+        <value idx="3" name="Lp">0</value>
+        <value idx="4" name="Ki">0</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">0</value>
+      </field>
+      <field idx="35" name="HoverY">
+        <struct>
+          <type>regPPI</type>
+          <descr>Regulator:Helicopter:Hovering Y Displacement [m] to Roll [deg]</descr>
+        </struct>
+        <value idx="0" name="Kpp">0</value>
+        <value idx="1" name="Lpp">0</value>
+        <value idx="2" name="Kp">0</value>
+        <value idx="3" name="Lp">0</value>
+        <value idx="4" name="Ki">0</value>
+        <value idx="5" name="Li">0</value>
+        <value idx="6" name="Lo">0</value>
+      </field>
+      <field idx="36" name="heli_yerr">
+        <struct>
+          <type>byte</type>
+          <descr>Regulator:Helicopter:Hover yaw cmd_yaw allowed error</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="37" name="heli_Kcrs">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Helicopter:Course error to yaw rate</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="38" name="heli_Khs">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Helicopter:Hover point Distnce to Airspeed Kp</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="39" name="heli_Ktc">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Helicopter:Throttle to Climbing rate limit Kp</descr>
+        </struct>
+        <value>1</value>
+      </field>
+      <field idx="40" name="cam_control">
+        <struct>
+          <type>option</type>
+          <descr>Regulator:Gimbal:control gimbal</descr>
+          <opts>off,front,down</opts>
+        </struct>
+        <value>down</value>
+      </field>
+      <field idx="41" name="cam_default">
+        <struct>
+          <type>option</type>
+          <descr>Regulator:Gimbal:default mode</descr>
+          <opts>stab,position</opts>
+        </struct>
+        <value>stab</value>
+      </field>
+      <field idx="42" name="cam_align">
+        <struct>
+          <type>vec</type>
+          <descr>Regulator:Gimbal:gimbal frame align [deg]</descr>
+          <opts>roll,pitch,yaw</opts>
+        </struct>
+        <value idx="0" name="roll">0</value>
+        <value idx="1" name="pitch">0</value>
+        <value idx="2" name="yaw">0</value>
+      </field>
+      <field idx="43" name="blimp_buoyancy">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Blimp:baloon pressure [kPa]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="44" name="blimp_buoyancy_hyst">
+        <struct>
+          <type>float</type>
+          <descr>Regulator:Blimp:baloon pressure control hysteresis [kPa]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="45" name="mix_elv_Kp">
+        <struct>
+          <type>float</type>
+          <descr>Mixer:Roll to Elevator mix</descr>
+        </struct>
+        <value>0.8</value>
+      </field>
+      <field idx="46" name="mix_elv_Lo">
+        <struct>
+          <type>byte</type>
+          <descr>Mixer:Roll to Elevator limit</descr>
+        </struct>
+        <value>50</value>
+      </field>
+      <field idx="47" name="mix_rud_Kp">
+        <struct>
+          <type>float</type>
+          <descr>Mixer:Roll to Rudder mix</descr>
+        </struct>
+        <value>0.9</value>
+      </field>
+      <field idx="48" name="mix_rud_Lo">
+        <struct>
+          <type>byte</type>
+          <descr>Mixer:Roll to Rudder limit</descr>
+        </struct>
+        <value>100</value>
+      </field>
+      <field idx="49" name="mix_grud_Kp">
+        <struct>
+          <type>float</type>
+          <descr>Mixer:Roll rate to Rudder mix</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="50" name="mix_grud_Lo">
+        <struct>
+          <type>byte</type>
+          <descr>Mixer:Roll rate to Rudder limit</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="51" name="mix_crud_Kp">
+        <struct>
+          <type>float</type>
+          <descr>Mixer:Collective to Rudder mix</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="52" name="mix_crud_Lo">
+        <struct>
+          <type>byte</type>
+          <descr>Mixer:Collective to Rudder limit</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="53" name="Ks_speed_low">
+        <struct>
+          <type>float</type>
+          <descr>Gain:low speed value for multiplier [m/s]</descr>
+        </struct>
+        <value>15</value>
+      </field>
+      <field idx="54" name="Ks_speed_high">
+        <struct>
+          <type>float</type>
+          <descr>Gain:high speed value for multiplier [m/s]</descr>
+        </struct>
+        <value>30</value>
+      </field>
+      <field idx="55" name="Ks_ailerons_low">
+        <struct>
+          <type>float</type>
+          <descr>Gain:low speed ailerons multiplier [K]</descr>
+        </struct>
+        <value>1.4</value>
+      </field>
+      <field idx="56" name="Ks_ailerons_high">
+        <struct>
+          <type>float</type>
+          <descr>Gain:high speed ailerons multiplier [K]</descr>
+        </struct>
+        <value>0.5</value>
+      </field>
+      <field idx="57" name="Ks_elevator_low">
+        <struct>
+          <type>float</type>
+          <descr>Gain:low speed elevator multiplier [K]</descr>
+        </struct>
+        <value>2.8</value>
+      </field>
+      <field idx="58" name="Ks_elevator_high">
+        <struct>
+          <type>float</type>
+          <descr>Gain:high speed elevator multiplier [K]</descr>
+        </struct>
+        <value>0.7</value>
+      </field>
+      <field idx="59" name="Ks_rudder_low">
+        <struct>
+          <type>float</type>
+          <descr>Gain:low speed rudder multiplier [K]</descr>
+        </struct>
+        <value>3</value>
+      </field>
+      <field idx="60" name="Ks_rudder_high">
+        <struct>
+          <type>float</type>
+          <descr>Gain:high speed rudder multiplier [K]</descr>
+        </struct>
+        <value>0.3</value>
+      </field>
+      <field idx="61" name="Ks_steering_low">
+        <struct>
+          <type>float</type>
+          <descr>Gain:low speed steering multiplier [K]</descr>
+        </struct>
+        <value>2</value>
+      </field>
+      <field idx="62" name="Ks_roll_gs_low">
+        <struct>
+          <type>float</type>
+          <descr>Gain:low gspeed bank angle multiplier [K]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="63" name="Ks_pitch_high">
+        <struct>
+          <type>float</type>
+          <descr>Gain:high speed pitch angle multiplier [K]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="64" name="Ks_rudder_rpm">
+        <struct>
+          <type>float</type>
+          <descr>Gain:helicopter rudder on low rpm [K]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="65" name="Ks_collective_rpm">
+        <struct>
+          <type>float</type>
+          <descr>Gain:helicopter collective divider on low rpm [1/K]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="66" name="dyn_roll">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:Roll change speed [deg/s]</descr>
+        </struct>
+        <value>15</value>
+      </field>
+      <field idx="67" name="dyn_pitch">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:Pitch change speed [deg/s]</descr>
+        </struct>
+        <value>20</value>
+      </field>
+      <field idx="68" name="dyn_yaw">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:Yaw change speed [deg/s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="69" name="dyn_vspeed">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:Vspeed change speed [m/s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="70" name="dyn_vspeedMin">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:max descending rate</descr>
+          <opts>&lt;0</opts>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="71" name="dyn_vspeedMax">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:max climbing rate</descr>
+          <opts>>0</opts>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="72" name="dyn_pitchDiff">
+        <struct>
+          <type>float</type>
+          <descr>Dynamics:Pitch down multiplier [K]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="73" name="dyn_pitchReg">
+        <struct>
+          <type>option</type>
+          <descr>Dynamics:Pitch control type</descr>
+          <opts>PID,PPI</opts>
+        </struct>
+        <value>PPI</value>
+      </field>
+      <field idx="74" name="dyn_rollReg">
+        <struct>
+          <type>option</type>
+          <descr>Dynamics:Roll control type</descr>
+          <opts>PID,PPI</opts>
+        </struct>
+        <value>PPI</value>
+      </field>
+      <field idx="75" name="dyn_slipReg">
+        <struct>
+          <type>option</type>
+          <descr>Dynamics:Slip control type</descr>
+          <opts>PID,PPI</opts>
+        </struct>
+        <value>PID</value>
+      </field>
+      <field idx="76" name="dyn_courseReg">
+        <struct>
+          <type>option</type>
+          <descr>Dynamics:Course control type</descr>
+          <opts>PID,PPI</opts>
+        </struct>
+        <value>PPI</value>
+      </field>
+      <field idx="77" name="wpt_snap">
+        <struct>
+          <type>float</type>
+          <descr>Waypoints:snap distance [m]</descr>
+        </struct>
+        <value>80</value>
+      </field>
+      <field idx="78" name="wpt_drv">
+        <struct>
+          <type>float</type>
+          <descr>Waypoints:course derivative threshold [deg/s]</descr>
+        </struct>
+        <value>5</value>
+      </field>
+      <field idx="79" name="sf_dHome">
+        <struct>
+          <type>float</type>
+          <descr>Safety:max distance to go home [m]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="80" name="sf_dHomeERS">
+        <struct>
+          <type>float</type>
+          <descr>Safety:max distance to activate ERS [m]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="81" name="sf_vspeedERS">
+        <struct>
+          <type>float</type>
+          <descr>Safety:max descending speed to launch ERS [m/s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="82" name="sfVe_action">
+        <struct>
+          <type>option</type>
+          <descr>Safety:voltage:action</descr>
+          <opts>off,landing</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="83" name="sf_Ve">
+        <struct>
+          <type>float</type>
+          <descr>Safety:voltage:min autopilot battery voltage [v]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="84" name="sf_Vs">
+        <struct>
+          <type>float</type>
+          <descr>Safety:voltage:min servo battery voltage [v]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="85" name="sf_VeERS">
+        <struct>
+          <type>float</type>
+          <descr>Safety:voltage:min autopilot battery voltage to launch ERS [v]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="86" name="sfdl_action">
+        <struct>
+          <type>option</type>
+          <descr>Safety:datalink:action</descr>
+          <opts>off,landing,ERS</opts>
+        </struct>
+        <value>off</value>
+      </field>
+      <field idx="87" name="sfdl_timeout">
+        <struct>
+          <type>byte</type>
+          <descr>Safety:datalink:timeout [s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="88" name="wrn_bind[8]">
+        <struct>
+          <type>varmsk</type>
+          <descr>Safety:warnings:binding</descr>
+        </struct>
+        <value idx="0" name="1"></value>
+        <value idx="1" name="2"></value>
+        <value idx="2" name="3"></value>
+        <value idx="3" name="4"></value>
+        <value idx="4" name="5"></value>
+        <value idx="5" name="6"></value>
+        <value idx="6" name="7"></value>
+        <value idx="7" name="8"></value>
+      </field>
+      <field idx="89" name="wrn_min[8]">
+        <struct>
+          <type>float</type>
+          <descr>Safety:warnings:min value</descr>
+        </struct>
+        <value idx="0" name="1">0</value>
+        <value idx="1" name="2">0</value>
+        <value idx="2" name="3">0</value>
+        <value idx="3" name="4">0</value>
+        <value idx="4" name="5">0</value>
+        <value idx="5" name="6">0</value>
+        <value idx="6" name="7">0</value>
+        <value idx="7" name="8">0</value>
+      </field>
+      <field idx="90" name="wrn_max[8]">
+        <struct>
+          <type>float</type>
+          <descr>Safety:warnings:max value</descr>
+        </struct>
+        <value idx="0" name="1">0</value>
+        <value idx="1" name="2">0</value>
+        <value idx="2" name="3">0</value>
+        <value idx="3" name="4">0</value>
+        <value idx="4" name="5">0</value>
+        <value idx="5" name="6">0</value>
+        <value idx="6" name="7">0</value>
+        <value idx="7" name="8">0</value>
+      </field>
+      <field idx="91" name="sf_NoFlyZones">
+        <struct>
+          <type>option</type>
+          <descr>Safety:avoid restricted areas</descr>
+          <opts>no,yes</opts>
+        </struct>
+        <value>yes</value>
+      </field>
+      <field idx="92" name="rpm">
+        <struct>
+          <type>uint</type>
+          <descr>Engine:cruise rpm [rpm]</descr>
+        </struct>
+        <value>5000</value>
+      </field>
+      <field idx="93" name="rpm_idle">
+        <struct>
+          <type>uint</type>
+          <descr>Engine:idle rpm [rpm]</descr>
+        </struct>
+        <value>3000</value>
+      </field>
+      <field idx="94" name="rpm_max">
+        <struct>
+          <type>uint</type>
+          <descr>Engine:max rpm [rpm]</descr>
+        </struct>
+        <value>6000</value>
+      </field>
+      <field idx="95" name="maxThr">
+        <struct>
+          <type>float</type>
+          <descr>Engine:max auto throttle [0..1]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="96" name="fuel">
+        <struct>
+          <type>float</type>
+          <descr>Engine:initial fuel capacity [u]</descr>
+        </struct>
+        <value>10</value>
+      </field>
+      <field idx="97" name="frate">
+        <struct>
+          <type>float</type>
+          <descr>Engine:fuel rate at max throttle [u/h]</descr>
+        </struct>
+        <value>10</value>
+      </field>
+      <field idx="98" name="st_time">
+        <struct>
+          <type>byte</type>
+          <descr>Engine:Starter:starter timeout [s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="99" name="st_pause">
+        <struct>
+          <type>byte</type>
+          <descr>Engine:Starter:pause before start [s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="100" name="st_thr">
+        <struct>
+          <type>float</type>
+          <descr>Engine:Starter:initial throttle [0..1]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="101" name="st_choke">
+        <struct>
+          <type>byte</type>
+          <descr>Engine:Starter:choke timeout [s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="102" name="spd_stall">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:VSO Velocity of Stall with everything hanging Out [m/s]</descr>
+        </struct>
+        <value>18</value>
+      </field>
+      <field idx="103" name="spd_cruise">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Cruise Velocity [m/s]</descr>
+        </struct>
+        <value>22</value>
+      </field>
+      <field idx="104" name="spd_VSI">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Velocity of the Stall with everything Inside [m/s]</descr>
+        </struct>
+        <value>20</value>
+      </field>
+      <field idx="105" name="spd_VFE">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Maximum Velocity with Flaps Extended [m/s]</descr>
+        </struct>
+        <value>30</value>
+      </field>
+      <field idx="106" name="spd_VNO">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Velocity of Normal Operations [m/s]</descr>
+        </struct>
+        <value>32</value>
+      </field>
+      <field idx="107" name="spd_VNE">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Velocity Never Exceed [m/s]</descr>
+        </struct>
+        <value>40</value>
+      </field>
+      <field idx="108" name="spd_VY">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Velocity of Best Rate of Climb [m/s]</descr>
+        </struct>
+        <value>23</value>
+      </field>
+      <field idx="109" name="spd_flapsMin">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Auto Flaps down Velocity [m/s]</descr>
+        </struct>
+        <value>18</value>
+      </field>
+      <field idx="110" name="spd_flapsMax">
+        <struct>
+          <type>float</type>
+          <descr>Speeds:Auto Flaps up Velocity [m/s]</descr>
+        </struct>
+        <value>23</value>
+      </field>
+      <field idx="111" name="altitude">
+        <struct>
+          <type>float</type>
+          <descr>Flight:safe altitude [m]</descr>
+        </struct>
+        <value>80</value>
+      </field>
+      <field idx="112" name="turnR">
+        <struct>
+          <type>float</type>
+          <descr>Flight:turn radius [m]</descr>
+        </struct>
+        <value>250</value>
+      </field>
+      <field idx="113" name="ldratioMin">
+        <struct>
+          <type>float</type>
+          <descr>Flight:gliding ratio minimum [Lift/Drag]</descr>
+        </struct>
+        <value>9</value>
+      </field>
+      <field idx="114" name="ldratioMax">
+        <struct>
+          <type>float</type>
+          <descr>Flight:gliding ratio maximum [Lift/Drag]</descr>
+        </struct>
+        <value>16</value>
+      </field>
+      <field idx="115" name="stab_est">
+        <struct>
+          <type>float</type>
+          <descr>Flight:stability:estimator [400]</descr>
+        </struct>
+        <value>20</value>
+      </field>
+      <field idx="116" name="stab_elv">
+        <struct>
+          <type>float</type>
+          <descr>Flight:stability:elevator multiplier</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="117" name="stab_ail">
+        <struct>
+          <type>float</type>
+          <descr>Flight:stability:ailerons multiplier [K]</descr>
+        </struct>
+        <value>0.5</value>
+      </field>
+      <field idx="118" name="stab_opt">
+        <struct>
+          <type>option</type>
+          <descr>Flight:stability:option</descr>
+          <opts>HPF,airspeed</opts>
+        </struct>
+        <value>HPF</value>
+      </field>
+      <field idx="119" name="flaps_auto">
+        <struct>
+          <type>float</type>
+          <descr>Flaps:maximum auto flaps level [0..1]</descr>
+        </struct>
+        <value>1</value>
+      </field>
+      <field idx="120" name="flaps_landing">
+        <struct>
+          <type>float</type>
+          <descr>Flaps:approach flaps level [0..1]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="121" name="flaps_takeoff">
+        <struct>
+          <type>float</type>
+          <descr>Flaps:takeoff flaps level [0..1]</descr>
+        </struct>
+        <value>0.1</value>
+      </field>
+      <field idx="122" name="taxi_gSpeed">
+        <struct>
+          <type>float</type>
+          <descr>Taxi:ground speed limit [m/s]</descr>
+        </struct>
+        <value>7</value>
+      </field>
+      <field idx="123" name="taxi_turnR">
+        <struct>
+          <type>float</type>
+          <descr>Taxi:turn radius [m]</descr>
+        </struct>
+        <value>20</value>
+      </field>
+      <field idx="124" name="to_type">
+        <struct>
+          <type>option</type>
+          <descr>Takeoff:type of procedure</descr>
+          <opts>runway,launcher,taxitest</opts>
+        </struct>
+        <value>runway</value>
+      </field>
+      <field idx="125" name="to_thrRise">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:initial throttle rise speed [1/s]</descr>
+        </struct>
+        <value>1</value>
+      </field>
+      <field idx="126" name="to_thrDelay">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:liftoff throttle rise delay [s]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="127" name="to_launcherAx">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:launcher acceleration [m/s^2]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="128" name="to_runPitch">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:running pitch angle [deg]</descr>
+        </struct>
+        <value>7</value>
+      </field>
+      <field idx="129" name="to_liftSpeed">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:airspeed to start liftoff [m/s]</descr>
+        </struct>
+        <value>15</value>
+      </field>
+      <field idx="130" name="to_liftPitch">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:liftoff pitch angle [deg]</descr>
+        </struct>
+        <value>10</value>
+      </field>
+      <field idx="131" name="to_liftAlt">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:final liftoff altitude [m]</descr>
+        </struct>
+        <value>5</value>
+      </field>
+      <field idx="132" name="to_liftAGL">
+        <struct>
+          <type>option</type>
+          <descr>Takeoff:liftoff use AGL sensor</descr>
+          <opts>no,yes</opts>
+        </struct>
+        <value>no</value>
+      </field>
+      <field idx="133" name="to_climbThr">
+        <struct>
+          <type>float</type>
+          <descr>Takeoff:climbing throttle setting [0..1]</descr>
+        </struct>
+        <value>1</value>
+      </field>
+      <field idx="134" name="ld_type">
+        <struct>
+          <type>option</type>
+          <descr>Landing:type of procedure</descr>
+          <opts>runway,parachute</opts>
+        </struct>
+        <value>runway</value>
+      </field>
+      <field idx="135" name="ld_autocancel">
+        <struct>
+          <type>option</type>
+          <descr>Landing:Auto cancel</descr>
+          <opts>no,yes</opts>
+        </struct>
+        <value>yes</value>
+      </field>
+      <field idx="136" name="ld_maxRun">
+        <struct>
+          <type>float</type>
+          <descr>Landing:maximum error to cancel [m]</descr>
+        </struct>
+        <value>500</value>
+      </field>
+      <field idx="137" name="ld_thr">
+        <struct>
+          <type>float</type>
+          <descr>Landing:approach throttle limit [0..1]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+      <field idx="138" name="ld_AGL">
+        <struct>
+          <type>option</type>
+          <descr>Landing:use AGL sensor</descr>
+          <opts>no,flare,always</opts>
+        </struct>
+        <value>no</value>
+      </field>
+      <field idx="139" name="ld_flareAlt">
+        <struct>
+          <type>float</type>
+          <descr>Landing:flare altitude [m]</descr>
+        </struct>
+        <value>20</value>
+      </field>
+      <field idx="140" name="ld_flarePitch">
+        <struct>
+          <type>float</type>
+          <descr>Landing:flare target pitch [deg]</descr>
+        </struct>
+        <value>5</value>
+      </field>
+      <field idx="141" name="ld_flareDS">
+        <struct>
+          <type>float</type>
+          <descr>Landing:flare descending speed [m/s]</descr>
+        </struct>
+        <value>0.5</value>
+      </field>
+      <field idx="142" name="ld_tdEvent">
+        <struct>
+          <type>option</type>
+          <descr>Landing:touchdown event</descr>
+          <opts>altitude,agl,command,hook</opts>
+        </struct>
+        <value>agl</value>
+      </field>
+      <field idx="143" name="ld_tdEngine">
+        <struct>
+          <type>option</type>
+          <descr>Landing:touchdown stage engine</descr>
+          <opts>auto,thrCut,ignOff</opts>
+        </struct>
+        <value>auto</value>
+      </field>
+      <field idx="144" name="ld_tdAlt">
+        <struct>
+          <type>float</type>
+          <descr>Landing:touchdown stage AGL altitude [m]</descr>
+        </struct>
+        <value>4</value>
+      </field>
+      <field idx="145" name="ld_tdPitch">
+        <struct>
+          <type>float</type>
+          <descr>Landing:touchdown pitch [deg]</descr>
+        </struct>
+        <value>6</value>
+      </field>
+      <field idx="146" name="ld_runSpeed">
+        <struct>
+          <type>float</type>
+          <descr>Landing:running stage speed [m/s]</descr>
+        </struct>
+        <value>10</value>
+      </field>
+      <field idx="147" name="ld_runAz">
+        <struct>
+          <type>float</type>
+          <descr>Landing:running stage acceleration [m/s^2]</descr>
+        </struct>
+        <value>2</value>
+      </field>
+      <field idx="148" name="ld_brkSpeed">
+        <struct>
+          <type>float</type>
+          <descr>Landing:running stage brakes speed [1/s]</descr>
+        </struct>
+        <value>0.2</value>
+      </field>
+      <field idx="149" name="ld_speedKp">
+        <struct>
+          <type>float</type>
+          <descr>Landing:circle airspeed Kp [K]</descr>
+        </struct>
+        <value>0.005</value>
+      </field>
+      <field idx="150" name="ld_windKp">
+        <struct>
+          <type>float</type>
+          <descr>Landing:wind to airspeed Kp [K]</descr>
+        </struct>
+        <value>0.001</value>
+      </field>
+      <field idx="151" name="ld_AirbrkApp">
+        <struct>
+          <type>regPI</type>
+          <descr>Landing:Airbrakes:Approach [m] to Airbrakes [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">1</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Ki">0.5</value>
+        <value idx="3" name="Li">100</value>
+        <value idx="4" name="Lo">100</value>
+      </field>
+      <field idx="152" name="ld_AirbrkDS">
+        <struct>
+          <type>regPI</type>
+          <descr>Landing:Airbrakes:Descending rate [m/s] to Airbrakes [%]</descr>
+        </struct>
+        <value idx="0" name="Kp">50</value>
+        <value idx="1" name="Lp">100</value>
+        <value idx="2" name="Ki">10</value>
+        <value idx="3" name="Li">100</value>
+        <value idx="4" name="Lo">100</value>
+      </field>
+      <field idx="153" name="ld_Airbrk_bias">
+        <struct>
+          <type>float</type>
+          <descr>Landing:Airbrakes:bias [0..1]</descr>
+        </struct>
+        <value>0</value>
+      </field>
+    </fields>
+  </node>
+</nodes>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="210" height="210" viewBox="0, 0, 210, 210">
+  <g id="Layer 1">
+    <g>
+      <g>
+        <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAABVCAYAAACmT6/6AAAFDUlEQVRYCa2Z6Y7UMBAGd2EBIf4g8f6PyX0sXT0up+PYyaygJY+dPsqfEzs7DI/Pz88P/9uezoCPYRGnVQsd50oeZ/ECEyqYZfW2gq+UCnsVkNfRKvR3XP+Jhk3v3RkUIHEaYwwY45+MWdFMrcmRc7O2dPwofBPtbTQgP9qYSYgdasOXNgu4VAoBAMVH7rtoQr1F4drbDEoGwKoUAPcP5bR/UirYJy4QP+aqblftc6UUP41ilguUh+TSjYXraCuo90soQLYSUJoK7cO12QxqomoAAxSq37yN1kYzKCEKbAlt+xEf15jx21X5nEFJxm97HcB6gvADJm9qM6iJqqpHkbHAF0MpEKpKJgPqCug5gAf4mdIsglSMCVB6VrcPtlmZmSIagKqUHSDUvHDt7WxGi+o9BeqE1t61fJIEogqQ9isG+A4gE+idTV8FCq7Qunxqp/ARKpzee1ehvFepUa0iyO+2gpo8Wz411t2tVKDF3EdNpebo3/XOqNNke5RWKH9SvC1jrYy+jO6IAUBsprRCndj8W1Ur7BdlIJACQGnxYmH5+IjbZ6x+rJZAAW1cPrWcMKFck7ezESqMnhitK22VbDFjByA5IxTfCGbJ1YROgSSO0BHIC7++UKhhkroDDq+/EUoRJryeplvk9i4wbq6x7GdQCvDTZlAPAHEUk7+zFZQkkmdQ31S1dgfugfKCVikqZlB2Azm1xeVmHdpczmhBPaJWAaWOVvONZ6BftAGJFq2gPn1zd4yqVHUqoF9BzVHpEloDTjBufHK8p4JrXY4JVBOGnzaDfg+/W0ml9smaQfEJX0GJO/HI2D2oOhuJqDlA49iyzfym4uS1dgeN3K5QJeMbihyMB+iK0lE/DtIjKJB+BUUttVPwChr5WcBDmRm3hUlr63kVWhN8uiulLr8rbcc8wRWKoycxbn+TMnH4QKkTK6anVChBjB7/7GVCHANKjs1aYunMQfkQOjuipnmqKqyPq1IKBL5EKTUdCKRCBZp0pZTasQbmDVqfXPNdKWWrkaOoU6UGST4c0fBp3FOePnnWGOsz4SBIU8HZ8lFa8+Nys1F+TTxT+i0Q1E73qtBtmi1xCY1DwfKtdXWdYQBHDeJfQlu1LxXqMPvdbDgF019BD+cfMjYqxSd49TIhBxNK/s4qlADXtiulxM2l71/UuBhNpat3qfmj0q5YKI7a8F8t3x1ArlsrJxTKhQrxMb6CsnxPVQzTqOsPSpX4MtD+anK9MqDW2WduVYqDIL6zI0oeVpefQsKXfYXicDlnb32AGFDzqRXcl0+SRvAeqK8/gRu0fNlFNY3Zr/ZopDz4pqKmAwm4fJ32L7mn1FiXvVAmwME17Z7l+/qzprMYOJNj+svlly1nnZy+/OCkqfYS2vLHo5puZsGcheu7lGbV9qZSbbqFciGY/l6l5NU6xqlqdDLR1bmnFgOqygSyRavSzIoPviXfC/X1mMCo60orjH8xs51MNrbqySO//srWnz4wgai8F/olctkBOzDLdxYCAL+2PrpLA8oh4N4qLH+0plKVKPwc7WPcb94B/gTvw0QAk9NQSA5gxOBLqz+3Mxuzkvgp2odo76PxPxL4MCYHBgQYAmhC/8RJe37iI1ShwOQY5pgJUOpP8KhVKbmIYGU0xijNW0kBhgKMGVWjavdhJrS4twu4t6ND+39ysWkjQcA4FkifaqIHzNieRWesQyOY1uCMAWP2t6sNynUHGaT/C6/xMczU8Nf6AAAAAElFTkSuQmCC" preserveAspectRatio="none" x="94.671" y="44.01" width="21" height="85"/>
+        <path d="M104.682,49.045 L104.682,49.045 L109.798,123.167 L100.202,123.167 z" fill="url(#Gradient_1)"/>
+        <path d="M104.682,49.045 L104.682,49.045 L109.798,123.167 L100.202,123.167 z" fill-opacity="0" stroke="#262427" stroke-width="1"/>
+      </g>
+      <g>
+        <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABr0lEQVQ4EZ2U60oDMRCFm9ZLvVVRFP8pCIL6/s9SEEREREURtFWxtV2/LyaLvWG7B05ndzNzMpnJNBRFUZuGEEKD73WoDTA7DngeEDfETiCMCyahFTw34Hayvosv2IWdZHvjwiOCiC3huAUPoWKv8AEqYpYteJDsC/YRdhE164hSMInt8PUYvuF0GT2m/OCr+BlswmuofxSNgqxbJ3c/gXcs3mP/BXFHOO3CK2imQ4surJHHdKe5xAzC9wbTh/sw1rmesosNwGHmMQmYhTYLCq6hVTdDmRvA42IgCWv3CS1ZI9+zTV7sZlU8E7gOY4Z2bBl6NarinUBrGHJTFFK4KspYBR0pJ8AaVIUl68F4bSyqx3UCqmKPQDWioEPubLZoe5k673OBEGvnxPwKprb74mw6TovinABn+gOtclI8vx+b7Og4zQV8T3G0ZF4bJ6b298/BefaCK+hiO2XP4yjSMS/4+g1vYSf7loKG4KioY+goSSfA3b1n1tdu2oBV+JToUc0yYkTQL4h6lbzo3nz/G90gDj7W0lhvm+hmfeuGLTEhmFeSsOKZLhkcOS7kovgBpsqoCEUginwAAAAASUVORK5CYII=" preserveAspectRatio="none" x="95.05" y="95.05" width="20" height="20"/>
+        <path d="M105,112.45 C100.886,112.45 97.55,109.114 97.55,105 C97.55,100.886 100.886,97.55 105,97.55 C109.114,97.55 112.45,100.886 112.45,105 C112.45,109.114 109.114,112.45 105,112.45 z" fill="url(#Gradient_2)"/>
+        <path d="M105,112.45 C100.886,112.45 97.55,109.114 97.55,105 C97.55,100.886 100.886,97.55 105,97.55 C109.114,97.55 112.45,100.886 112.45,105 C112.45,109.114 109.114,112.45 105,112.45 z" fill-opacity="0" stroke="#000A27" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+  <defs>
+    <linearGradient id="Gradient_1" gradientUnits="userSpaceOnUse" x1="105" y1="49.045" x2="105" y2="123.167">
+      <stop offset="0" stop-color="#B3B3B4"/>
+      <stop offset="0.442" stop-color="#7B7B7E"/>
+      <stop offset="0.449" stop-color="#8B8B8E"/>
+      <stop offset="1" stop-color="#737376"/>
+    </linearGradient>
+    <radialGradient id="Gradient_2" gradientUnits="userSpaceOnUse" cx="105" cy="105" r="7.45">
+      <stop offset="0" stop-color="#AAAAAA"/>
+      <stop offset="0.99" stop-color="#323232"/>
+      <stop offset="0.996" stop-color="#525C77"/>
+      <stop offset="1" stop-color="#45506D"/>
+      <stop offset="1" stop-color="#3B4665"/>
+    </radialGradient>
+  </defs>
+</svg>

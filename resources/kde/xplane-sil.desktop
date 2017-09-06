@@ -1,0 +1,12 @@
+[Desktop Entry]
+Comment=UAVOS SIL Simulation with X-Plane
+Exec=xplane-sil
+GenericName=UAVOS SIL Simulation
+Icon=X-Plane-SIL
+MimeType=
+Name=UAVOS SIL Simulation
+StartupNotify=true
+Terminal=false
+Type=Application
+X-Ubuntu-Gettext-Domain=desktop_kdebase
+Categories=Education;
