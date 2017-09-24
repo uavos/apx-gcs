@@ -14,7 +14,7 @@ unix {
 
 }
 
-!hpux {
+!hpux:!mac {
   QMAKE_COPY_FILE = $${QMAKE_COPY_FILE} -P -p timestamps
 }
 

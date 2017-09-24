@@ -1,15 +1,15 @@
 #!/bin/bash
 
 voice="$1"
-conf_file="speech"
+conf_file="phrases"
 ext="ogg"
-conf_file_voice="$voice/speech"
+conf_file_voice="$voice/$conf_file"
 speak_cmd="say"
 speak_cmd_fopt="-o"
 
 echo "Usage:"
-echo "$0 -u <voice>"
-echo "<voice> is a subfolder to be created."
+echo "$0 [-u] <voice>"
+echo "<voice> is a voice/folder to be created or updated."
 echo "Use option -u to update."
 echo "Edit file '$conf_file' to add/remove strings."
 
@@ -53,7 +53,7 @@ do
 			break
 		done < $conf_file_voice
 	fi
-  
+
   #--------------------------
   text="$say_text"
 	while true; do
@@ -90,7 +90,3 @@ do
   done
 #--------------------------
 done < $conf_file
-
-
-
-

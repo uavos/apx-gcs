@@ -1,24 +1,29 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.0
 import "./components"
 
-Item {
-    Pages {
-        id: pages
-        anchors.fill: parent
-        title: qsTr("Controls")
-        saveState: true
+GCSMenu {
+    //id: menu
+    //title: qsTr("Controls")
 
-        listModel: ListModel {
-            ListElement {
-                title: qsTr("HDG")
-                page: "HDG.qml"
-            }
-            ListElement {
-                title: qsTr("Video")
-                page: "video.qml"
-            }
+    menu: GCSMenuItem {
+        GCSMenuItem { title: qsTr("Commands"); subMenu: "MenuCommands.qml"}
+        GCSMenuItem { title: qsTr("HDG"); page: "HDG.qml"}
+        GCSMenuItem { title: qsTr("Video"); page: "video.qml"}
+        GCSMenuItem {
+            title: qsTr("Settings")
+            GCSMenuItem { title: qsTr("Shortcuts"); subMenu: "Shortcuts.qml" }
         }
     }
 
+    model: ListModel {
+        ListElement { title: qsTr("Commands"); subMenu: "MenuCommands.qml"}
+        ListElement { title: qsTr("HDG"); page: "HDG.qml"}
+        ListElement { title: qsTr("Video"); page: "video.qml"}
+        ListElement {
+            title: qsTr("Settings")
+            contents: [
+                ListElement { title: qsTr("Shortcuts"); subMenu: "Shortcuts.qml" }
+            ]
+        }
+    }
 }

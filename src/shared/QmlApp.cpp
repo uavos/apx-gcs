@@ -40,6 +40,8 @@ QmlApp::QmlApp(QString src, QObject *parent)
   qmlRegisterType<FlightDataFile>();
   qmlRegisterType<DatalinkServer>();
 
+  mandala=qApp->property("Mandala").value<QMandala*>();
+
   QQuickStyle::setStyle("Material");
 
   if(!QSettings().contains("smooth_instruments"))

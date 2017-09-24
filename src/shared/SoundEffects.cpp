@@ -36,7 +36,7 @@ SoundEffects::SoundEffects(QObject *parent)
     if(lang=="ru") voice="ru-milena";
     else voice="vicki";
   }
-  QDir fdir(QMandala::Global::res().filePath("sounds/speech/"+voice),"*.ogg *.wav");
+  QDir fdir(QMandala::Global::res().filePath("audio/speech/"+voice),"*.ogg *.wav");
   //qDebug()<<fdir.absolutePath();
   QStringList files=fdir.entryList();
   foreach(QString file,files){
@@ -54,7 +54,7 @@ SoundEffects::SoundEffects(QObject *parent)
   alias["connected"]="radar_lock";
   //load files and create effects
   //qDebug() << QSoundEffect::supportedMimeTypes();
-  fdir=QDir(QMandala::Global::res().filePath("sounds/alerts"),"*.ogg *.wav");
+  fdir=QDir(QMandala::Global::res().filePath("audio/alerts"),"*.ogg *.wav");
   foreach(QFileInfo fi,fdir.entryInfoList()){
     if(!alias.values().contains(fi.baseName()))continue;
     QSoundEffect *e=new QSoundEffect(this);

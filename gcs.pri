@@ -79,6 +79,7 @@ DEFINES += BRANCH=$$BRANCH
 mac {
   CONFIG -= app_bundle
 }
+
 #android {
 #  include(android.pri)
 #}

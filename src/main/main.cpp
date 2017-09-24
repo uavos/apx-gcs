@@ -37,6 +37,7 @@
 #include "MsgTranslator.h"
 #include "RunGuard.h"
 #include "SoundEffects.h"
+#include "AppShortcuts.h"
 //============================================================================
 //global variables
 QMandala *mandala;
@@ -214,6 +215,10 @@ int main(int argc, char *argv[])
   if(QMandala::Global::devMode())
     mainForm->setWindowTitle(mainForm->windowTitle()+" ("+QMandala::version+")");
   qDebug("%s: %s",QObject::tr("Version").toUtf8().data(),QMandala::version.toUtf8().data());
+
+  //hotkeys
+  new AppShortcuts(mainForm);
+  //QObject::connect(shortcuts,SIGNAL(exec(QString)),mandala->
 
   //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),datalink,SLOT(activate()));
 

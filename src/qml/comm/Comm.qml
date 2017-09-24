@@ -71,7 +71,7 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: menu.openSelectUAV() //menuUAV.open() //.popup(mouseX,mouseY)
+            onClicked: popupMenu.menu.openSelectUAV() //menuUAV.open() //.popup(mouseX,mouseY)
         }
     }
 
@@ -100,13 +100,13 @@ Rectangle {
             value: datalink.extConnected
             inverted: true
             toolTip: qsTr("External servers")
-            visible: datalink.serverNames.length>0
+            visible: mandala.test || datalink.serverNames.length>0
             width: height/0.5
             MouseArea {
                 id: menuServersArea
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: menu.openServers()  //menuServers.open() //popup(mouseX,mouseY)
+                onClicked: popupMenu.menu.openServers()  //menuServers.open() //popup(mouseX,mouseY)
             }
         }
 

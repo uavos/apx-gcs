@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 {
   QApplication application(argc, argv);
 
-  QFile styleSheet(":img/style-dark.css");
+  QFile styleSheet(":styles/style-dark.css");
   if (styleSheet.open(QIODevice::ReadOnly | QIODevice::Text)){
     qApp->setOverrideCursor(Qt::WaitCursor);
     qApp->setStyleSheet(styleSheet.readAll());

@@ -668,53 +668,53 @@
         <translation>Выйсці</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="150"/>
+        <location filename="../src/main/MainForm.cpp" line="138"/>
         <source>DEVELOPMENT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="162"/>
-        <location filename="../src/main/MainForm.cpp" line="262"/>
+        <location filename="../src/main/MainForm.cpp" line="150"/>
+        <location filename="../src/main/MainForm.cpp" line="250"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="256"/>
+        <location filename="../src/main/MainForm.cpp" line="244"/>
         <source>Duplicate plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="301"/>
+        <location filename="../src/main/MainForm.cpp" line="289"/>
         <source>Feature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="596"/>
+        <location filename="../src/main/MainForm.cpp" line="584"/>
         <source>Username</source>
         <translation>Імя карыстальніка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="598"/>
+        <location filename="../src/main/MainForm.cpp" line="586"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="603"/>
+        <location filename="../src/main/MainForm.cpp" line="591"/>
         <source>Login</source>
         <translation>Увайсці</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="651"/>
+        <location filename="../src/main/MainForm.cpp" line="639"/>
         <source>VPN connection initiated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="655"/>
+        <location filename="../src/main/MainForm.cpp" line="643"/>
         <source>VPN disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="706"/>
+        <location filename="../src/main/MainForm.cpp" line="669"/>
         <source>Host address</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1265,31 +1265,37 @@
     <name>MissionItemPi</name>
     <message>
         <location filename="../src/map/MissionItemPi.cpp" line="33"/>
+        <location filename="../src/gcu-map/MissionItemPi.cpp" line="37"/>
         <source>Point of interest global position (latitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemPi.cpp" line="34"/>
+        <location filename="../src/gcu-map/MissionItemPi.cpp" line="38"/>
         <source>Point of interest global position (longitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemPi.cpp" line="35"/>
+        <location filename="../src/gcu-map/MissionItemPi.cpp" line="36"/>
         <source>Camera view altitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemPi.cpp" line="36"/>
+        <location filename="../src/gcu-map/MissionItemPi.cpp" line="33"/>
         <source>Loiter radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemPi.cpp" line="37"/>
+        <location filename="../src/gcu-map/MissionItemPi.cpp" line="34"/>
         <source>Loiter loops limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemPi.cpp" line="38"/>
+        <location filename="../src/gcu-map/MissionItemPi.cpp" line="35"/>
         <source>Loiter time limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1298,41 +1304,49 @@
     <name>MissionItemRw</name>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="33"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="31"/>
         <source>Landing pattern turn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="34"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="32"/>
         <source>Approach (straight path) length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="35"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="33"/>
         <source>Runway ground altitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="36"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="36"/>
         <source>Runway global position (latitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="37"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="37"/>
         <source>Runway global position (longitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="38"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="34"/>
         <source>Runway direction point (north)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="39"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="35"/>
         <source>Runway direction point (east)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemRw.cpp" line="56"/>
+        <location filename="../src/gcu-map/MissionItemRw.cpp" line="58"/>
         <source>Runway</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1359,36 +1373,43 @@
     <name>MissionItemWp</name>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="33"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="34"/>
         <source>Waypoint altitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="34"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="35"/>
         <source>Maneuver type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="35"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="36"/>
         <source>Waypoint global position (latitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="36"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="37"/>
         <source>Waypoint global position (longitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="38"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="39"/>
         <source>Actions to perform on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="39"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="40"/>
         <source>Fly with this speed to waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="40"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="41"/>
         <source>Make a cam shot on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1399,31 +1420,37 @@
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="42"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="42"/>
         <source>Execute VM script (@function) on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="43"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="43"/>
         <source>Linked POI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="44"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="44"/>
         <source>Loiter around POI or waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="45"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="45"/>
         <source>Loiter radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="46"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="46"/>
         <source>Loiter loops limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionItemWp.cpp" line="47"/>
+        <location filename="../src/gcu-map/MissionItemWp.cpp" line="47"/>
         <source>Loiter time limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1462,46 +1489,55 @@
     <name>MissionModel</name>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="40"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="37"/>
         <source>Runways</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="41"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="38"/>
         <source>Waypoints</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="42"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="39"/>
         <source>Taxiways</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="43"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="40"/>
         <source>Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="44"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="41"/>
         <source>Restricted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="45"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="42"/>
         <source>Emergency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="130"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="127"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="149"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="145"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="154"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="150"/>
         <source>The file format is not correct.</source>
         <translation type="unfinished">Нядзейсны фармат файла.</translation>
     </message>
@@ -1512,12 +1548,23 @@
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="203"/>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="197"/>
         <source>Mission received from UAV.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/map/MissionModel.cpp" line="493"/>
         <source>Error extracting mission</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="175"/>
+        <source>telemetry mission</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gcu-map/MissionModel.cpp" line="428"/>
+        <source>no mission</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2168,22 +2215,22 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="342"/>
+        <location filename="../src/main/main.cpp" line="347"/>
         <source>Video</source>
         <translation type="unfinished">Відэа</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="345"/>
+        <location filename="../src/main/main.cpp" line="350"/>
         <source>EFIS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="348"/>
+        <location filename="../src/main/main.cpp" line="353"/>
         <source>HDG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="351"/>
+        <location filename="../src/main/main.cpp" line="356"/>
         <source>Controls</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2191,53 +2238,53 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="190"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="189"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="212"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="211"/>
         <source>identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="285"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="284"/>
         <source>UAV</source>
         <translation type="unfinished">БЛА</translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="315"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="314"/>
         <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="412"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="411"/>
         <source>Duplicate squawk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="419"/>
-        <location filename="../src/libgcs/QMandala.cpp" line="462"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="418"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="461"/>
         <source>UAV not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="424"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="423"/>
         <source>selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="471"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="470"/>
         <source>GCU not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="759"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="758"/>
         <source>Read only datalink</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/libgcs/QMandala.cpp" line="760"/>
+        <location filename="../src/libgcs/QMandala.cpp" line="759"/>
         <source>Uplink allowed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2321,42 +2368,42 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="153"/>
+        <location filename="../src/main/main.cpp" line="154"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="204"/>
+        <location filename="../src/main/main.cpp" line="205"/>
         <source>Developer mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="213"/>
+        <location filename="../src/main/main.cpp" line="214"/>
         <source>Ground Control Unit</source>
         <translation>Наземны Пункт Кіравання</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="216"/>
+        <location filename="../src/main/main.cpp" line="217"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="331"/>
+        <location filename="../src/main/main.cpp" line="336"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="332"/>
+        <location filename="../src/main/main.cpp" line="337"/>
         <source>User QML plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="384"/>
+        <location filename="../src/main/main.cpp" line="389"/>
         <source>Plugin excluded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="392"/>
+        <location filename="../src/main/main.cpp" line="397"/>
         <source>Loading plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2468,6 +2515,19 @@
     <message>
         <location filename="../src/libgcs/QMandalaItem.cpp" line="203"/>
         <source>reset local GPS altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QmlMapTileDownloader</name>
+    <message>
+        <location filename="../src/gcu-map/QmlMapTileDownloader.cpp" line="100"/>
+        <source>Download aborted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gcu-map/QmlMapTileDownloader.cpp" line="116"/>
+        <source>Error downloading map</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

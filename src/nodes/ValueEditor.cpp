@@ -37,7 +37,7 @@ void ValueEditor::showEditor()
 {
   dlg=new ValueEditorDialog(this);
   dlg->setObjectName(field->name);
-  dlg->setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
+  //dlg->setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
   dlg->setWindowTitle(field->descr.size()?field->descr:field->name);
 
   QVBoxLayout *verticalLayout;

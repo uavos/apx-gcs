@@ -81,6 +81,22 @@ QmlView::QmlView(QString src,QWindow *parent)
   e->rootContext()->setContextProperty("actions",QVariant::fromValue(actions));
   e->rootContext()->setContextObject(this);
 
+  //add app object
+  QJSValue jsApp=e->newQObject(qApp);
+  e->globalObject().setProperty("app",jsApp);
+  QQmlEngine::setObjectOwnership(qApp,QQmlEngine::CppOwnership);
+  //add all app child QObjects
+  foreach(QString s,qApp->dynamicPropertyNames()){
+    QVariant v=qApp->property(s.toUtf8().data());
+    //qDebug()<<s<<v;
+    if(v.canConvert(QMetaType::QObjectStar)){
+      //qDebug()<<s;
+      jsApp.setProperty(s,e->newQObject(v.value<QObject*>()));
+      QQmlEngine::setObjectOwnership(v.value<QObject*>(),QQmlEngine::CppOwnership);
+    }
+  }
+
+
   if(src.isEmpty())return;
 
   QString sbase=src.left(src.lastIndexOf('/'));

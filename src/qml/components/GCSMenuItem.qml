@@ -6,11 +6,16 @@ Item {
     property string title
     property bool checkable: false
     property bool checked: false
+    property bool separator: false
+    property var busy: "undefined"
+    property Component delegate
 
     signal clicked()
 
     //onCheckedChanged: console.log(checked);
 
+    property string page
+    property string subMenu
 
     //multi level
     default property alias contents: addItem.children

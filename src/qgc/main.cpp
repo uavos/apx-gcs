@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,SIGNAL(dataReceived(QByteArray)),mandala,SLOT(downlinkReceived(QByteArray)));
   QObject::connect(mandala,SIGNAL(sendUplink(QByteArray)),datalink,SLOT(dataSend(QByteArray)));
 
-  QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),var->rec,SLOT(record_uplink(QByteArray)));
+  QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),mandala->local->rec,SLOT(record_uplink(QByteArray)));
 
   QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),mandala,SLOT(upCntInc()));
   QObject::connect(datalink,SIGNAL(dataReceived(QByteArray)),mandala,SLOT(dlCntInc()));

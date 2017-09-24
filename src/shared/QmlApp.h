@@ -26,6 +26,7 @@
 #include <QAbstractItemModel>
 #include <QMenu>
 #include "svgimageprovider.h"
+class QMandala;
 class QMandalaItem;
 //=============================================================================
 class QmlApp : public QQmlApplicationEngine
@@ -39,6 +40,7 @@ public:
 
   QQuickWindow *qmlWindow;
 private:
+  QMandala *mandala;
   SvgImageProvider *svgProvider;
   QWidget *w;
 private slots:

@@ -1,10 +1,8 @@
 TEMPLATE = app
+TARGET = gcu-map
+
 include( ../../gcs.pri )
 include( ../../deploy.pri )
-
-#CONFIG += c++11
-
-LIBS -= -lgcu
 
 QT += qml quick widgets svg multimedia script quickcontrols2 quickwidgets
 QT += opengl
@@ -12,18 +10,14 @@ QT += opengl
 INCLUDEPATH += \
     ../shared
 
+RESOURCES += ../qml/qml.qrc $$RES_DIR/fonts.qrc
+
 RESOURCES += \
-    ../shared/qml/qml.qrc \
-    ../shared/fonts.qrc \
-    ../map/icons.qrc \
     qml/map-qml.qrc \
     qml/map-icons.qrc
 
 
 SOURCES += main.cpp \
-    ../shared/svgimageprovider.cpp \
-    ../shared/QmlView.cpp \
-    ../shared/SoundEffects.cpp \
     MissionItem.cpp \
     MissionItemArea.cpp \
     MissionItemAreaPoint.cpp \
@@ -44,9 +38,6 @@ SOURCES += main.cpp \
     QmlMapTileLoader.cpp
 
 HEADERS += \
-    ../shared/svgimageprovider.h \
-    ../shared/QmlView.h \
-    ../shared/SoundEffects.h \
     MissionItem.h \
     MissionItemArea.h \
     MissionItemAreaPoint.h \
@@ -76,11 +67,17 @@ SOURCES += \
     ../../../lib/Mandala.cpp \
     ../../../lib/MandalaCore.cpp \
     ../../../lib/MatrixMath.cpp \
-    ../libgcu/QMandalaItem.cpp \
-    ../libgcu/QMandalaField.cpp \
-    ../libgcu/QMandala.cpp \
+    ../libgcs/QMandalaItem.cpp \
+    ../libgcs/QMandalaField.cpp \
+    ../libgcs/QMandala.cpp \
     ../shared/DatalinkServer.cpp \
-    ../libgcu/FlightDataFile.cpp \
+    ../libgcs/FlightDataFile.cpp \
+    ../shared/svgimageprovider.cpp \
+    ../shared/QmlView.cpp \
+    ../shared/QmlApp.cpp \
+    ../shared/QmlWidget.cpp \
+    ../shared/SoundEffects.cpp
+
 
 HEADERS += \
     ../../../lib/Mandala.h \
@@ -89,11 +86,17 @@ HEADERS += \
     ../../../lib/MatrixMath.h \
     ../../../lib/preprocessor.h \
     ../../../lib/node.h \
-    ../libgcu/QMandalaItem.h \
-    ../libgcu/QMandalaField.h \
-    ../libgcu/QMandala.h \
+    ../libgcs/QMandalaItem.h \
+    ../libgcs/QMandalaField.h \
+    ../libgcs/QMandala.h \
     ../shared/DatalinkServer.h \
-    ../libgcu/FlightDataFile.h \
+    ../libgcs/FlightDataFile.h \
+    ../shared/svgimageprovider.h \
+    ../shared/QmlView.h \
+    ../shared/QmlApp.h \
+    ../shared/QmlWidget.h \
+    ../shared/SoundEffects.h
+
 
 DISTFILES += \
     ../android/AndroidManifest.xml

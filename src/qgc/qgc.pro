@@ -1,4 +1,6 @@
 TEMPLATE = app
+TARGET = qgc
+
 include( ../../gcs.pri )
 include( ../../deploy.pri )
 
@@ -10,9 +12,9 @@ QT += opengl
 INCLUDEPATH += \
     ../shared
 
+RESOURCES += ../qml/qml.qrc $$RES_DIR/fonts.qrc
+
 RESOURCES += \
-    ../shared/qml/qml.qrc \
-    ../shared/fonts.qrc \
     qgc.qrc
 
 OTHER_FILES += \
@@ -22,11 +24,11 @@ SOURCES += main.cpp \
     ../../../lib/Mandala.cpp \
     ../../../lib/MandalaCore.cpp \
     ../../../lib/MatrixMath.cpp \
-    ../shared/QMandalaItem.cpp \
-    ../shared/QMandalaField.cpp \
-    ../shared/QMandala.cpp \
+    ../libgcs/QMandalaItem.cpp \
+    ../libgcs/QMandalaField.cpp \
+    ../libgcs/QMandala.cpp \
     ../shared/DatalinkServer.cpp \
-    ../shared/FlightDataFile.cpp \
+    ../libgcs/FlightDataFile.cpp \
     ../shared/svgimageprovider.cpp \
     ../shared/QmlView.cpp \
     ../shared/QmlApp.cpp \
@@ -41,11 +43,11 @@ HEADERS += \
     ../../../lib/MatrixMath.h \
     ../../../lib/preprocessor.h \
     ../../../lib/node.h \
-    ../shared/QMandalaItem.h \
-    ../shared/QMandalaField.h \
-    ../shared/QMandala.h \
+    ../libgcs/QMandalaItem.h \
+    ../libgcs/QMandalaField.h \
+    ../libgcs/QMandala.h \
     ../shared/DatalinkServer.h \
-    ../shared/FlightDataFile.h \
+    ../libgcs/FlightDataFile.h \
     ../shared/svgimageprovider.h \
     ../shared/QmlView.h \
     ../shared/QmlApp.h \

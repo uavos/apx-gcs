@@ -125,8 +125,7 @@ QDir QMandala::Global::records()
 }
 QDir QMandala::Global::lang()
 {
-  //dirs.lang.setPath(QCoreApplication::applicationDirPath()+"/../lang");
-  return QDir(QCoreApplication::applicationDirPath()+(Global::devMode()?"/../lang":"/translations/gcu"));
+  return QDir(QCoreApplication::applicationDirPath()+"/../localization/gcs");
 }
 QDir QMandala::Global::missions()
 {

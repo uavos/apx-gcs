@@ -22,6 +22,8 @@ Rectangle {
     color: colorBG
     //color: "#225d9d"
     border.width: 0
+
+
     Rectangle {
         anchors.fill: parent
         anchors.margins: 1

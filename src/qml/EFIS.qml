@@ -13,7 +13,11 @@ Item{
                           nav.status === Loader.Ready
     Behavior on opacity { enabled: mandala.smooth; PropertyAnimation {duration: 500} }
 
-    PfdMenu { id: menu }
+    //PfdMenu { id: menu }
+    GCSMenuPopup {
+        id: popupMenu
+        menu: MenuCommands {  }
+    }
 
     Loader {
         id: comm
@@ -62,7 +66,7 @@ Item{
         height: 32
         width: height
         text: qsTr("+")
-        onClicked: menu.open()
+        onClicked: popupMenu.open()
     }
 
 

@@ -15,6 +15,7 @@ GCU.ini
 
 *.o
 
+build
 build-*
 *-build
 android-build

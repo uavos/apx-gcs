@@ -48,10 +48,6 @@ private:
   QMenu *mServers;
   QMenu *mUAV;
 
-  //shortcuts
-  void addShortcut(QString key,QString text_command);
-  QMap<QShortcut *,QString> shortcuts;
-
   QTimer saveStateTimer;
 
   DockWidget *splashScreen;
@@ -69,7 +65,6 @@ protected:
   void closeEvent(QCloseEvent *e);
 private slots:
   void loadPlugins();
-  void shortcut_activated();
   void arrange();
   void lock();
   void unlock();

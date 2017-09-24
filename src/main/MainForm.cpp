@@ -119,18 +119,6 @@ MainForm::MainForm(QWidget *parent)
   mFile->addSeparator();
   mFile->addAction(QIcon(":/icons/old/system-shutdown.png"),tr("Exit"),this,SLOT(close()));
 
-  // shortcuts
-  QSettings stt(QMandala::Global::config().filePath("shortcuts.conf"),QSettings::IniFormat);
-  foreach(QString key,stt.childKeys()){
-    if(key.trimmed().startsWith("#"))continue;
-    if(key.trimmed().isEmpty())continue;
-    if(!key.contains("shortcut"))addShortcut(key,stt.value(key).toString());
-    else{
-      QStringList st=stt.value(key).toStringList();
-      if(st.size()!=2)continue;
-      addShortcut(st.at(0),st.at(1));
-    }
-  }
 
   uavAdded(mandala->current);
 
@@ -661,31 +649,6 @@ void MainForm::mDoc_triggered()
 }
 //=============================================================================
 //=============================================================================
-//=============================================================================
-void MainForm::addShortcut(QString key,QString text_command)
-{
-  //qDebug()<<key<<text_command;
-  if(key.isEmpty()||text_command.isEmpty())return;
-  QShortcut *sc;
-  if(key.toLower().contains("ctrl")){
-    sc=new QShortcut(QKeySequence(key),this,0,0,Qt::ApplicationShortcut);
-    shortcuts[sc]=text_command;
-    connect(sc,SIGNAL(activated()),this,SLOT(shortcut_activated()));
-  }else{
-    sc=new QShortcut(QKeySequence(key),this,0,0,Qt::ApplicationShortcut);
-    shortcuts[sc]=text_command;
-    connect(sc,SIGNAL(activated()),this,SLOT(shortcut_activated()));
-    sc=new QShortcut(QKeySequence("Ctrl+"+key),this,0,0,Qt::ApplicationShortcut);
-    shortcuts[sc]=text_command;
-    connect(sc,SIGNAL(activated()),this,SLOT(shortcut_activated()));
-  }
-}
-//=============================================================================
-void MainForm::shortcut_activated()
-{
-  //qDebug()<<shortcuts.value(qobject_cast<QShortcut*>(sender()));
-  mandala->current->exec_script(shortcuts.value(qobject_cast<QShortcut*>(sender())));
-}
 //=============================================================================
 void MainForm::serverDiscovered(const QHostAddress address,const QString name)
 {

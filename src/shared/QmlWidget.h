@@ -26,6 +26,7 @@
 #include <QAbstractItemModel>
 #include <QMenu>
 #include "svgimageprovider.h"
+class QMandala;
 class QMandalaItem;
 //=============================================================================
 class QmlWidget : public QQuickWidget
@@ -37,6 +38,7 @@ public:
   void loadApp(QString file);
 
 private:
+  QMandala *mandala;
   SvgImageProvider *svgProvider;
 private slots:
   void loadMandala(QMandalaItem *mvar);
