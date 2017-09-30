@@ -1,106 +1,178 @@
 ﻿import QtQuick 2.6
+import QtQml.Models 2.2
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
+import QtGraphicalEffects 1.0
 
-Rectangle {
-    id: menuField
-    width: listView.width
-    height: sep?4:itemSize
-    border.width: 0
-    color: mouseArea.containsMouse?(mouseArea.pressed?colorBgPress:root.colorBgHover):"#80202020" //(index&1?colorBgAlt:"transparent")
-    radius: 2
+Item {
+    id: field
+    width: parent?parent.width:0
+    height: visible?(sep?4:itemSize):0
 
-    property bool sep: modelData.separator && (!sephdg)
-    property bool sephdg: modelData.separator && modelData.title
+    visible: true
+    //focus: visible
 
-    RowLayout {
-        id: menuFieldBody
+    //configurable properties
+    property string title
+    property bool separator: false
+    property var busy: false
+    property bool showBusy: !delegate
+
+    property bool checkable: false
+    property bool checked: false
+
+    property bool enabled: true
+
+    property Component delegate
+
+    property string page        //page file to be loaded in body
+    property string pageMenu    //page file to be loaded in stackView directly (nested menus)
+    property ObjectModel fields //sub menu fields
+
+    property var itemData
+
+    signal clicked()
+    signal toggled()
+
+
+    //internal
+    property bool sep: visible && separator && (!sephdg)
+    property bool sephdg: visible && separator && title
+    property bool showNext: visible && (fields || pageMenu || page) && (!delegate)
+
+
+    Rectangle {
         anchors.fill: parent
-        anchors.leftMargin: 4
-        anchors.rightMargin: 4
-        anchors.topMargin: 0
-        anchors.bottomMargin: 0
-        spacing: 0
-        clip: true
-        Text { //title
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: sephdg?Text.AlignHCenter:Text.AlignLeft
-            font.pixelSize: root.itemSize*0.6
-            color: sephdg?colorTitleSep:"#fff"
-            font.family: sephdg?font_narrow:font_condenced
-            text: modelData.title
+        anchors.topMargin: 1 //space between fields in list view
+        border.width: 0
+        color: mouseArea.containsMouse?(mouseArea.pressed?colorBgPress:colorBgHover):"#80202020" //(index&1?colorBgAlt:"transparent")
+        radius: 2
+        visible: field.visible
+
+        MouseArea {
+            id: mouseArea
+            anchors.fill: parent
+            hoverEnabled: enabled
+            enabled: field.visible && field.enabled && (!field.separator) //&& (!field.delegate)
+            onClicked: {
+                //console.log("click menu");
+                field.focus=true;
+                if(fields){
+                    //console.log("open: "+field);
+                    openMenuField(field)
+                }else if(field.checkable){
+                    //field.checked=!field.checked
+                    //menuItemSwitch.toggle()
+                }else if(field.pageMenu){
+                    pushUrl(field.pageMenu)
+                }else if(field.page){
+                    openPage({"page": Qt.resolvedUrl("../"+field.page),"title": field.title})
+                    //console.log("open: "+field.page);
+                }else if(closeable)root.close(); //click and close
+                field.clicked()
+            }
+        }
+
+        RowLayout {
+            id: fieldBody
+            anchors.fill: parent
+            anchors.leftMargin: 4
+            anchors.rightMargin: 4
+            anchors.topMargin: 0
+            anchors.bottomMargin: 0
+            spacing: 2
             clip: true
-        }
-        BusyIndicator {
-            id: menuFieldBusy
-            running: (modelData.busy!=="undefined")?modelData.busy:false
-            visible: running
-            Layout.fillHeight: true
-            implicitWidth: height
-            function start()
-            {
-                menuFieldBusy.running=true;
-                menuFieldBusyTimer.start();
+            Item { //field title text
+                Layout.fillHeight: true
+                Layout.fillWidth: !fieldDelegate.visible
+                Layout.preferredWidth: titleText.contentWidth+height/4
+                visible: field.visible?field.title:false
+                Text { //title
+                    id: titleText
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: sephdg?Text.AlignHCenter:Text.AlignLeft
+                    font.pixelSize: itemSize*0.6
+                    color: sephdg?colorTitleSep:"#fff"
+                    font.family: sephdg?font_narrow:font_condenced
+                    text: field.visible?field.title:""
+                    clip: true
+                }
             }
-            Timer {
-                id: menuFieldBusyTimer
-                interval: 500; running: false; repeat: false
-                onTriggered: menuFieldBusy.running=(modelData.busy!=="undefined")?Qt.binding(function() { return modelData.busy }):false
+
+            Item {
+                id: fieldDelegate
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                visible: field.delegate
             }
-        }
-        //optional field editors
-        Loader { //submenu
-            active: modelData.contents.length || modelData.subMenu || modelData.page
-            visible: active
-            Layout.fillHeight: true
-            Layout.margins: 4
-            sourceComponent: Image {
-                anchors.verticalCenter: parent.verticalCenter
-                sourceSize.height: root.btnSizeNext
-                source: "navigation_next_item.png"
+
+            BusyIndicator {
+                id: fieldBusy
+                running: field.busy||fieldBusyTimer.running
+                visible: running && field.showBusy
+                Layout.fillHeight: true
+                implicitWidth: height
+                Connections {
+                    target: mouseArea
+                    onClicked: fieldBusy.start()
+                }
+                Timer {
+                    id: fieldBusyTimer
+                    interval: 500; running: false; repeat: false
+                }
+                function start()
+                {
+                    if(field.showBusy)fieldBusyTimer.start();
+                }
             }
-        }
-        Loader { //switch
-            active: modelData.checkable
-            visible: active
-            Layout.fillHeight: true
-            sourceComponent: Component {
-                Switch {
+
+
+            Component.onCompleted: if(field.visible){
+                //optional field editors
+                if(field.delegate){
+                    field.delegate.createObject(fieldDelegate,{"anchors.fill": fieldDelegate, "modelData": field});
+                }
+                if(showNext){
+                    fieldNextC.createObject(fieldBody);
+                }
+                if(field.checkable){
+                    fieldSwitchC.createObject(fieldBody);
+                }
+            }
+
+            Component {
+                id: fieldNextC
+                Image {
+                    Layout.fillHeight: true
                     anchors.verticalCenter: parent.verticalCenter
-                    checked: modelData.checked
+                    sourceSize.height: itemSize*0.8
+                    source: "navigation_next_item.png"
+                }
+            }
+
+            Component {
+                id: fieldSwitchC
+                Switch {
+                    Layout.fillHeight: true
+                    //Layout.preferredWidth: height
+                    anchors.verticalCenter: parent.verticalCenter
+                    checked: field.checked
                     onClicked: {
-                        menuFieldBusy.start();
-                        modelData.clicked()
+                        fieldBusy.start();
+                        field.clicked();
+                        field.toggled();
                     }
                 }
             }
         }
-    }
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        enabled: !modelData.separator
-        //propagateComposedEvents: true
-        //cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            //console.log("click menu");
-            menuFieldBusy.start();
-            root.focus=true;
-            modelData.clicked()
-            if(modelData.contents.length>0){
-                openPage(modelData)
-            }else if(modelData.checkable){
-                //modelData.checked=!modelData.checked
-                //menuItemSwitch.toggle()
-            }else if(modelData.subMenu){
-                stackView.push(Qt.resolvedUrl("../"+modelData.subMenu),{"parentStack": stackView})
-            }else if(modelData.page){
-                stackView.push(pageDelegate.createObject(),{"page": Qt.resolvedUrl("../"+modelData.page),"title": modelData.title})
-            }else if(closeable)root.close();
+        FastBlur {
+            anchors.fill: fieldBody
+            transparentBorder: true
+            source: fieldBody
+            radius: fieldBody.height/2
+            visible: effects && (mouseArea.containsMouse || mouseArea.pressed || field.activeFocus)
         }
+
     }
 }

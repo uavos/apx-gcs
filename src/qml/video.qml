@@ -87,6 +87,7 @@ Item {
         autoLoad: false
         autoPlay: false
         //onStopped: play()
+        onError: console.log(errorString)
     }
 
     /*Text{

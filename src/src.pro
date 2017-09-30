@@ -22,7 +22,7 @@ SUBDIRS += serial
 # Utilities
 SUBDIRS += qgc
 #SUBDIRS += gcu-server
-#SUBDIRS += pawncc
+SUBDIRS += pawncc
 SUBDIRS += gcu-map
 
 #SUBDIRS += xplane

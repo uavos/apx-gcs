@@ -15,6 +15,7 @@ Rectangle {
         mode.value===mode_TAXI ||
         (mode.value===mode_WPT && mtype.value===mtype_line)
 
+    //Component.onDestruction: console.log("delete: "+this)
     HdgImage {
         id: hdg_triangle
         elementName: "hdg-triangle"

@@ -2153,32 +2153,32 @@
 <context>
     <name>PawnScript</name>
     <message>
-        <location filename="../src/nodes/PawnScript.cpp" line="205"/>
+        <location filename="../src/nodes/PawnScript.cpp" line="206"/>
         <source>Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/nodes/PawnScript.cpp" line="205"/>
+        <location filename="../src/nodes/PawnScript.cpp" line="206"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/nodes/PawnScript.cpp" line="296"/>
+        <location filename="../src/nodes/PawnScript.cpp" line="297"/>
         <source>Script upload started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/nodes/PawnScript.cpp" line="349"/>
+        <location filename="../src/nodes/PawnScript.cpp" line="350"/>
         <source>Script uploaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/nodes/PawnScript.cpp" line="389"/>
+        <location filename="../src/nodes/PawnScript.cpp" line="390"/>
         <source>Script error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/nodes/PawnScript.cpp" line="394"/>
+        <location filename="../src/nodes/PawnScript.cpp" line="395"/>
         <source>Script is downloading</source>
         <translation type="unfinished"></translation>
     </message>

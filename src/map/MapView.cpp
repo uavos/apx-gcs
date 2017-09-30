@@ -418,6 +418,7 @@ void MapView::mouseReleaseEvent(QMouseEvent * e)
 void MapView::mouseMoveEvent(QMouseEvent * e)
 {
   QGraphicsView::mouseMoveEvent(e);
+  QCoreApplication::processEvents(); //fix qml freeze on macos
   if(doZooming)return;
   curXY=mapToScene(e->pos());
   curLL=mapLLFromScene(curXY);

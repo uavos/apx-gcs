@@ -1,4 +1,5 @@
 ﻿import QtQuick 2.2
+import QtGraphicalEffects 1.0
 import "."
 
 Rectangle {
@@ -9,15 +10,18 @@ Rectangle {
     property variant option: "undefined"
     property string toolTip
     property string icon
+    property bool effects: true
+    property alias font: textItem.font
 
+    property alias active: mouseArea.enabled
 
     property bool doOpt: option!=="undefined"
 
     signal clicked
     opacity: 0.5
     Behavior on opacity { NumberAnimation { duration: 100 } }
-    width: textItem.width+height
-    height: 18
+    implicitWidth: textItem.width+implicitHeight
+    implicitHeight: 18
     radius: 4
     color: colorBG
     //color: "#225d9d"
@@ -25,6 +29,7 @@ Rectangle {
 
 
     Rectangle {
+        id: rect
         anchors.fill: parent
         anchors.margins: 1
         radius: root.radius
@@ -43,14 +48,17 @@ Rectangle {
         color: colorFG
     }
     Image {
+        id: img
         anchors.centerIn: parent
         source: icon
         sourceSize.height: parent.height*0.9
     }
 
     MouseArea {
+        id: mouseArea
         anchors.fill: parent
-        hoverEnabled: true
+        hoverEnabled: enabled
+        visible: enabled
         propagateComposedEvents: true
         onEntered: root.opacity=1
         onExited:  root.opacity=0.5
@@ -61,5 +69,30 @@ Rectangle {
             text: root.toolTip
         }
     }
+
+    FastBlur {
+        anchors.fill: root
+        transparentBorder: true
+        source: img
+        radius: img.height/2
+        visible: effects && icon && (mouseArea.containsMouse || mouseArea.pressed)
+    }
+
+    FastBlur {
+        anchors.fill: textItem
+        transparentBorder: true
+        source: textItem
+        radius: textItem.height/2
+        visible: effects && root.text && (mouseArea.containsMouse || mouseArea.pressed)
+    }
+
+    FastBlur {
+        anchors.fill: rect
+        transparentBorder: true
+        source: rect
+        radius: rect.height/2
+        visible: effects && (mouseArea.containsMouse || mouseArea.pressed)
+    }
+
 }
 

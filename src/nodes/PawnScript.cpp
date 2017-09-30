@@ -41,7 +41,6 @@ PawnScript::PawnScript(NodesItemField *field)
   tmpFile.open();
   outFileName=tmpFile.fileName()+"-compiled.amx";
   QStringList args;
-  QString path_inc=QMandala::Global::res().absoluteFilePath("scripts/include");
   //qDebug()<<path_inc;
   args<<"-d0";
   args<<"-O3";
@@ -57,7 +56,9 @@ PawnScript::PawnScript(NodesItemField *field)
 
   //args<<"-S"+QString::number((vm_data_size-256)/4);
   //args<<"-XD"+QString::number(vm_data_size);
-  args<<"-i"+path_inc;
+  args<<"-i"+QMandala::Global::res().absoluteFilePath("scripts/pawn/include");
+  args<<"-i"+QMandala::Global::local().absoluteFilePath("scripts/pawn");
+  args<<"-i"+QMandala::Global::local().absoluteFilePath(".");
   args<<"-o"+outFileName;
   args<<tmpFile.fileName();
   pawncc.setProgram(QCoreApplication::applicationDirPath()+"/pawncc");

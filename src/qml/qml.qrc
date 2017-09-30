@@ -49,5 +49,6 @@
         <file>components/GCSMenu.qml</file>
         <file>components/GCSMenuPopup.qml</file>
         <file>components/GCSMenuField.qml</file>
+        <file>components/GCSMenuList.qml</file>
     </qresource>
 </RCC>
