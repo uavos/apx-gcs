@@ -30,69 +30,107 @@ AppShortcuts::AppShortcuts(QWidget *parent)
   qmlRegisterType<AppShortcuts>();
   qmlRegisterType<AppShortcut>();
   qmlRegisterType<AppShortcutModel>();
+
+  saveTimer.setSingleShot(true);
+  saveTimer.setInterval(500);
+  connect(&saveTimer,SIGNAL(timeout()),this,SLOT(save()));
+
   load();
   qApp->setProperty("shortcuts",qVariantFromValue(this));
 }
 //=============================================================================
 void AppShortcuts::load()
 {
-  QSettings stt(QMandala::Global::config().filePath("shortcuts.conf"),QSettings::IniFormat);
-  foreach(QString key,stt.childKeys()){
+  QSettings settingsSystem(QMandala::Global::res().filePath("preferences/shortcuts.conf"),QSettings::IniFormat);
+  foreach(QString key,settingsSystem.childKeys()){
     if(key.trimmed().startsWith("#"))continue;
     if(key.trimmed().isEmpty())continue;
-    QString text_command;
+    QString cmd;
     if(!key.contains("shortcut")){
-      text_command=stt.value(key).toString();
+      cmd=settingsSystem.value(key).toString();
     }else{
-      QStringList st=stt.value(key).toStringList();
+      QStringList st=settingsSystem.value(key).toStringList();
       if(st.size()!=2)continue;
       key=st.at(0);
-      text_command=st.at(1);
+      cmd=st.at(1);
     }
-    /*QShortcut *sc;
-    if(key.toLower().contains("ctrl")){
-      sc=new QShortcut(QKeySequence(key),widget,0,0,Qt::ApplicationShortcut);
-      shortcuts.append(sc);
-      sc->setWhatsThis(text_command);
-      connect(sc,SIGNAL(activated()),this,SLOT(shortcutActivated()));
-    }else{
-      sc=new QShortcut(QKeySequence(key),widget,0,0,Qt::ApplicationShortcut);
-      shortcuts.append(sc);
-      sc->setWhatsThis(text_command);
-      connect(sc,SIGNAL(activated()),this,SLOT(shortcutActivated()));
-      sc=new QShortcut(QKeySequence("Ctrl+"+key),widget,0,0,Qt::ApplicationShortcut);
-      shortcuts.append(sc);
-      sc->setWhatsThis(text_command);
-      connect(sc,SIGNAL(activated()),this,SLOT(shortcutActivated()));
-    }*/
     AppShortcut *sc=new AppShortcut(this,widget);
     sc->setKey(key);
-    sc->setCmd(text_command);
+    sc->setCmd(cmd);
     m_systemShortcuts.addItem(sc);
   }
   m_newItem=new AppShortcut(this,widget);
-  //m_userShortcuts.addItem(m_newItem);
+  //user
+  QSettings settingsUser;
+  settingsUser.beginGroup("shortcuts");
+  int size=settingsUser.beginReadArray("shortcut");
+  for (int i = 0; i < size; ++i) {
+    settingsUser.setArrayIndex(i);
+    AppShortcut *sc=new AppShortcut(this,widget);
+    sc->setEnabled(settingsUser.value("enabled").toBool());
+    sc->setKey(settingsUser.value("key").toString());
+    sc->setCmd(settingsUser.value("cmd").toString());
+    m_userShortcuts.addItem(sc);
+  }
+  m_newItem=new AppShortcut(this,widget);
   emit shortcutsChanged();
-  connect(&m_userShortcuts,SIGNAL(changed()),this,SIGNAL(shortcutsChanged()));
+  //connect(&m_userShortcuts,SIGNAL(changed()),this,SIGNAL(shortcutsChanged()));
+  connect(&m_userShortcuts,SIGNAL(changed()),&saveTimer,SLOT(start()));
+  connect(&m_systemShortcuts,SIGNAL(changed()),&saveTimer,SLOT(start()));
 }
 //=============================================================================
-void AppShortcuts::save()
+void AppShortcuts::save() const
 {
+  QSettings settings;
+  //qDebug()<<"SAVE: "<<settings.fileName();
+  settings.beginGroup("shortcuts");
+  settings.remove("");
+  settings.beginWriteArray("shortcut");
+  int ai=0;
+  for(int i=0;i<m_userShortcuts.count();i++){
+    const AppShortcut *sc=m_userShortcuts.shortcut(i);
+    if(!sc->valid())continue;
+    settings.setArrayIndex(ai++);
+    settings.setValue("key", sc->key());
+    settings.setValue("cmd", sc->cmd());
+    settings.setValue("enabled", sc->enabled());
+  }
+  settings.endArray();
 }
 //=============================================================================
 void AppShortcuts::enableAllSystem(bool v)
 {
-  for(int i=0;i<m_systemShortcuts.rowCount();i++)m_systemShortcuts.item(i)->setEnabled(v);
+  for(int i=0;i<m_systemShortcuts.count();i++)m_systemShortcuts.shortcut(i)->setEnabled(v);
 }
 void AppShortcuts::enableAllUser(bool v)
 {
-  for(int i=0;i<m_userShortcuts.rowCount();i++)m_userShortcuts.item(i)->setEnabled(v);
+  for(int i=0;i<m_userShortcuts.count();i++)m_userShortcuts.shortcut(i)->setEnabled(v);
 }
 //=============================================================================
 void AppShortcuts::addNew()
 {
   if(!m_newItem->valid())return;
+  //disable system if any
+  for(int i=0;i<m_systemShortcuts.count();i++){
+    AppShortcut *sc=m_systemShortcuts.shortcut(i);
+    if(!sc->valid())continue;
+    if(sc->key()==m_newItem->key()) sc->setEnabled(false);
+  }
+  //fix exisiting if any
+  for(int i=0;i<m_userShortcuts.count();i++){
+    AppShortcut *sc=m_userShortcuts.shortcut(i);
+    if(!sc->valid())continue;
+    if(sc->key()==m_newItem->key()){
+      sc->setEnabled(m_newItem->enabled());
+      sc->setName(m_newItem->name());
+      sc->setCmd(m_newItem->cmd());
+      return;
+    }
+  }
+  //add new
   AppShortcut *sc=new AppShortcut(this,widget);
+  sc->setEnabled(m_newItem->enabled());
+  sc->setName(m_newItem->name());
   sc->setKey(m_newItem->key());
   sc->setCmd(m_newItem->cmd());
   m_userShortcuts.addItem(sc);
@@ -117,8 +155,8 @@ void AppShortcuts::setBlocked(bool v)
 {
   if(m_blocked==v)return;
   m_blocked=v;
-  for(int i=0;i<m_systemShortcuts.rowCount();i++)m_systemShortcuts.item(i)->updateShortcut();
-  for(int i=0;i<m_userShortcuts.rowCount();i++)m_userShortcuts.item(i)->updateShortcut();
+  for(int i=0;i<m_systemShortcuts.count();i++)m_systemShortcuts.shortcut(i)->updateShortcut();
+  for(int i=0;i<m_userShortcuts.count();i++)m_userShortcuts.shortcut(i)->updateShortcut();
   emit blockedChanged();
 }
 //=============================================================================
@@ -137,56 +175,15 @@ AppShortcut *AppShortcuts::newItem() const
 }
 //=============================================================================
 //=============================================================================
-AppShortcutModel::AppShortcutModel(QObject *parent)
-  : QAbstractListModel(parent)
-{
-}
-void AppShortcutModel::addItem(AppShortcut *item)
-{
-  beginInsertRows(QModelIndex(), rowCount(), rowCount());
-  m_items << item;
-  endInsertRows();
-  emit changed();
-}
-void AppShortcutModel::removeItem(AppShortcut *item)
-{
-  //qDebug()<<item;
-  int i=m_items.indexOf(item);
-  if(i<0)return;
-  beginRemoveRows(QModelIndex(), i, i);
-  m_items.removeOne(item);
-  endRemoveRows();
-  item->deleteLater();
-}
-int AppShortcutModel::rowCount(const QModelIndex & parent) const
-{
-  Q_UNUSED(parent);
-  return m_items.count();
-}
-QVariant AppShortcutModel::data(const QModelIndex & index, int role) const
-{
-  if (index.row() < 0 || index.row() >= m_items.count())
-    return QVariant();
-  if (role == ItemRole) return QVariant::fromValue(m_items[index.row()]);
-  return QVariant();
-}
-QHash<int, QByteArray> AppShortcutModel::roleNames() const {
-  QHash<int, QByteArray> roles;
-  roles[ItemRole] = "item";
-  return roles;
-}
-AppShortcut *AppShortcutModel::item(int row)
-{
-  if(row>m_items.count())return NULL;
-  return m_items[row];
-}
-//=============================================================================
-//=============================================================================
 AppShortcut::AppShortcut(AppShortcuts *parent, QWidget *widget)
   : QObject(parent), appShortcuts(parent), widget(widget),
     shortcut(NULL), m_enabled(true), m_valid(false)
 {
   mandala=qApp->property("Mandala").value<QMandala*>();
+  connect(this,SIGNAL(nameChanged()),this,SIGNAL(changed()));
+  connect(this,SIGNAL(keyChanged()),this,SIGNAL(changed()));
+  connect(this,SIGNAL(cmdChanged()),this,SIGNAL(changed()));
+  connect(this,SIGNAL(enabledChanged()),this,SIGNAL(changed()));
 }
 AppShortcut::~AppShortcut()
 {

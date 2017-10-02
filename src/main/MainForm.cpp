@@ -55,7 +55,6 @@ MainForm::MainForm(QWidget *parent)
   connect(this,SIGNAL(changeUAV(QMandalaItem*)),mandala,SLOT(setCurrent(QMandalaItem*)));
 
   mTools->addAction(QIcon(":/icons/old/configure.png"),tr("System Configuration"),this,SLOT(mSystem_triggered()));
-  mTools->addAction(QIcon(":/icons/old/configure.png"),tr("Shortcuts Configuration"),this,SLOT(mShortcuts_triggered()));
   mTools->addSeparator();
 
   mWindow->addAction(QIcon(":/icons/old/view-fullscreen.png"),tr("Toggle Full Screen"),this,SLOT(mFullScreen_triggered()),QKeySequence("F11"));
@@ -561,11 +560,6 @@ void MainForm::mSystem_triggered()
   connect(dlg->eAllowExt,SIGNAL(toggled(bool)),datalink,SLOT(setExtctrEnabled(bool)));
   dlg->exec();
   delete dlg;
-}
-//=============================================================================
-void MainForm::mShortcuts_triggered()
-{
-  QProcess::startDetached("kate",QStringList()<<(QMandala::Global::config().filePath("shortcuts.conf")));
 }
 //=============================================================================
 void MainForm::mVPN_triggered()

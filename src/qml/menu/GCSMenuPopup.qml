@@ -6,10 +6,11 @@ import "."
 Popup {
     id: root
     //modal: true
-    focus: true
+    //focus: true
     parent: window
 
     property GCSMenu menu
+    property string source
 
     //contentWidth: Math.min(window.width, window.height) / 3 * 2
     //contentHeight: Math.min(window.height, contents.length*menu.height)
@@ -27,12 +28,27 @@ Popup {
 
     onClosed: menu.close()
 
-    contentItem: menu
+    //contentItem: menu
 
     Component.onCompleted:{
-        menu.closeable=true
-        menu.closed.connect(root.close)
-        menu.opened.connect(root.open)
+        if(menu){
+            menu.closeable=true
+            menu.closed.connect(root.close)
+            menu.opened.connect(root.open)
+            contentItem=menu
+        }
+    }
+
+    onOpened: {
+        if(source){
+            var c=Qt.createComponent(source,Component.Asynchronous,root);
+            c.statusChanged.connect( function(status) {
+                if (status === Component.Ready) {
+                    root.contentItem=c.createObject(root);
+                }
+            })
+            c.statusChanged(c.status);
+        }
     }
 
 }

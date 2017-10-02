@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = gcu-map
+TARGET = qgc-map
 
 include( ../../gcs.pri )
 include( ../../deploy.pri )
@@ -62,7 +62,7 @@ HEADERS += \
 
 
 
-# libgcu
+# lib
 SOURCES += \
     ../../../lib/Mandala.cpp \
     ../../../lib/MandalaCore.cpp \

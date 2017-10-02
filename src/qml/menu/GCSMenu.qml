@@ -2,7 +2,7 @@
 import QtQuick.Controls 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
-import QtQml.Models 2.2
+import "../components"
 import "."
 
 Item {
@@ -61,6 +61,9 @@ Item {
     property color colorTitleSep: "#5c8fff"
     property color colorSep: "#667"
 
+    property url iconPrev: Qt.resolvedUrl("navigation_previous_item.png")
+    property url iconNext: Qt.resolvedUrl("../menu/navigation_next_item.png")
+
     property bool showTitle: title || showBtnBack || showBtnClose
 
     property bool showBtnBack: stackView.depth>1 || parentStack
@@ -69,7 +72,7 @@ Item {
     property int titleSize: closeable?itemSize*1.2:itemSize
     property int itemWidth: stackView.width-stackView.leftPadding*2
 
-    property ObjectModel fields
+    property GCSMenuModel fields
 
     signal pageDeleted()
 
@@ -78,7 +81,7 @@ Item {
     StackView {
         id: stackView
         anchors.fill: parent
-        anchors.margins: 4
+        //anchors.margins: 4
         clip: true
         // Implements back key navigation
         focus: true
@@ -107,14 +110,19 @@ Item {
         id: pageDelegate
         ColumnLayout {
             id: menuPage
-            property ObjectModel fields: root.fields //root.contents  //: listView.model
+
+            property GCSMenuModel fields: root.fields //root.contents  //: listView.model
             property string title: root.title //pageTitleLdr.title
             property string page
             //Component.onDestruction: console.log("page delete: "+title)
             StackView.onRemoved: { destroy(); root.pageDeleted(); }
 
+            property int padding: 4
             Item {
                 Layout.fillWidth: true
+                Layout.topMargin: padding
+                Layout.leftMargin: padding
+                Layout.rightMargin: padding
                 implicitHeight: titleSize //showTitle?titleSize:2
                 clip: true
                 visible: showTitle
@@ -150,7 +158,7 @@ Item {
                     anchors.leftMargin: 2
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: -2
-                    icon: "navigation_previous_item.png"
+                    icon: iconPrev
                     height: btnSize
                     width: height
                     onClicked: back()
@@ -162,7 +170,10 @@ Item {
                 id: menuBody
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                Layout.leftMargin: padding
+                Layout.rightMargin: padding
                 clip: true
+                //anchors.margins: 4
 
                 Component.onCompleted: {
                     if(page){

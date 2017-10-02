@@ -38,17 +38,17 @@
         <file>components/TextLine.qml</file>
         <file>controls.qml</file>
         <file>components/Pages.qml</file>
-        <file>components/navigation_next_item.png</file>
-        <file>components/navigation_previous_item.png</file>
         <file>qtquickcontrols2.conf</file>
-        <file>components/GCSMenuItem.qml</file>
         <file>AppWindow.qml</file>
-        <file>pfd/PfdMenu.qml</file>
-        <file>Shortcuts.qml</file>
-        <file>MenuCommands.qml</file>
-        <file>components/GCSMenu.qml</file>
-        <file>components/GCSMenuPopup.qml</file>
-        <file>components/GCSMenuField.qml</file>
-        <file>components/GCSMenuList.qml</file>
+        <file>menu/GCSMenu.qml</file>
+        <file>menu/GCSMenuPopup.qml</file>
+        <file>menu/GCSMenuField.qml</file>
+        <file>menu/GCSMenuList.qml</file>
+        <file>menu/GCSMenuModel.qml</file>
+        <file>menu/navigation_next_item.png</file>
+        <file>menu/navigation_previous_item.png</file>
+        <file>menu/MenuCommands.qml</file>
+        <file>menu/MenuPreferences.qml</file>
+        <file>menu/MenuShortcuts.qml</file>
     </qresource>
 </RCC>

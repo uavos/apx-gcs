@@ -72,7 +72,6 @@ private slots:
   void mDoc_triggered();
   void mFullScreen_triggered();
   void mSystem_triggered();
-  void mShortcuts_triggered();
   void mVPN_triggered();
 
   void vpn_disconnected();

@@ -133,9 +133,8 @@ QStringList NumbersPlugin::getConfig()
 //=============================================================================
 void NumbersPlugin::saveAs()
 {
-  QDir userp=QMandala::Global::local();
-  userp.mkpath("plugins");
-  if(!userp.cd("plugins"))return;
+  QDir userp=QMandala::Global::userPlugins();
+  if(!userp.exists())userp.mkpath(".");
   QFileDialog dlg(NULL,tr("User plugin name"),userp.canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
@@ -162,9 +161,8 @@ void NumbersPlugin::saveAs()
 //=============================================================================
 void NumbersPlugin::open()
 {
-  QDir userp=QMandala::Global::local();
-  userp.mkpath("plugins");
-  if(!userp.cd("plugins"))return;
+  QDir userp=QMandala::Global::userPlugins();
+  if(!userp.exists())userp.mkpath(".");
   QFileDialog dlg(NULL,tr("User plugin name"),userp.canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
   QStringList filters;

@@ -29,7 +29,7 @@ QmlMapTileLoader::QmlMapTileLoader()
 {
   m_tileSize=256;
 
-  pathMaps=QDir(QMandala::Global::local().filePath("maps"));
+  pathMaps=QDir(QMandala::Global::maps().filePath("google-tiles"));
   if(!pathMaps.exists())pathMaps.mkpath(".");
 
   //connect(&tileProvider,QmlMapTileProvider::

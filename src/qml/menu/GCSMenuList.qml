@@ -1,12 +1,12 @@
 ﻿import QtQuick 2.7
 import QtQml 2.2
-import QtQml.Models 2.2
+import "."
 
 Item {
-    property ObjectModel objModel
+    property GCSMenuModel objModel
     property alias model: instantiator.model
     property alias delegate: instantiator.delegate
-    property int listRow: ObjectModel.index+1 //objModel.children.indexOf(this)
+    property int listRow: GCSMenuModel.index+1 //objModel.children.indexOf(this)
     Instantiator {
         id: instantiator
         //asynchronous: true

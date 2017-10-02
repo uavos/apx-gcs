@@ -1,15 +1,15 @@
 ﻿import QtQuick 2.7
 import QtQml 2.2
-import QtQml.Models 2.2
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
-import "./components"
+import "."
+import "../components"
 
 GCSMenu {
     id: menuShortcuts
     title: qsTr("Shortcuts")
 
-    fields: ObjectModel {
+    fields: GCSMenuModel {
         id: objModel
         GCSMenuField { title: qsTr("User shortcuts"); separator: true; }
         GCSMenuField {
@@ -45,7 +45,7 @@ GCSMenu {
                 checked: item.enabled
                 onToggled: item.enabled=!item.enabled
                 itemData: item
-                Component.onCompleted: addEditor(this,item)
+                //Component.onCompleted: addEditor(this,item)
             }
         }
     }
@@ -74,7 +74,7 @@ GCSMenu {
                 effects: root.effects
                 font.family: font_condenced
                 font.pixelSize: root.itemSize*0.6
-                color: modelData.itemData.enabled?"#478fff":"transparent"
+                color: (modelData.itemData.enabled&&modelData.itemData.valid)?"#478fff":"transparent"
                 Shortcut {
                     id: scText
                     enabled: false
@@ -205,21 +205,21 @@ GCSMenu {
 
     Component {
         id: scEditor
-        ObjectModel {
+        GCSMenuModel {
             //title: qsTr("Edit Shortcut");
             GCSMenuField { title: qsTr("Enable"); checkable: true; checked: itemData.enabled; onClicked: itemData.enabled=!itemData.enabled; }
             GCSMenuField {
                 title: qsTr("Delete");
                 visible: itemData !== app.shortcuts.newItem
                 onClicked: {
-                    app.shortcuts.systemShortcuts.removeItem(itemData);
+                    app.shortcuts.userShortcuts.removeItem(itemData);
                     menuShortcuts.back();
                 }
             }
             GCSMenuField {
                 title: qsTr("Add");
                 visible: itemData === app.shortcuts.newItem
-                enabled: itemData.valid
+                //enabled: itemData.valid
                 onClicked: {
                     app.shortcuts.addNew();
                     menuShortcuts.back();

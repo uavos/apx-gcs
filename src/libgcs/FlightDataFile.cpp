@@ -35,7 +35,7 @@
 FlightDataFile::FlightDataFile(QMandalaItem *parent)
   :QObject(parent), mandala(QMandala::instance()),mvar((QMandalaItem*)parent)
 {
-  if(!QMandala::Global::records().exists()) QMandala::Global::records().mkpath(".");
+  if(!QMandala::Global::telemetry().exists()) QMandala::Global::telemetry().mkpath(".");
 
   recFileSuffix=".datalink";
   m_recording=false;
@@ -228,7 +228,7 @@ bool FlightDataFile::record_check(void)
     do {
       fname=sname+QString().sprintf("%.3u_",i++)+title+recFileSuffix;
     } while (list.contains(fname));
-    recFile.setFileName(QMandala::Global::records().filePath(fname));
+    recFile.setFileName(QMandala::Global::telemetry().filePath(fname));
     recFile.open(QIODevice::WriteOnly);
     xmlWriter.setDevice(&recFile);
     record_header();
@@ -280,14 +280,14 @@ void FlightDataFile::flush()
 //=============================================================================
 const QStringList FlightDataFile::recFileNames(void)
 {
-  return QDir(QMandala::Global::records().absolutePath(),"*"+recFileSuffix).entryList(QDir::Files,QDir::Name);
+  return QDir(QMandala::Global::telemetry().absolutePath(),"*"+recFileSuffix).entryList(QDir::Files,QDir::Name);
 }
 //=============================================================================
 bool FlightDataFile::loadFlight(int idx,QProgressBar *progressBar)
 {
   const QStringList &filesList=recFileNames();
   if ((idx<0)||(idx>=filesList.size()))return false;
-  return loadFlight(QMandala::Global::records().filePath(filesList.at(idx)),progressBar);
+  return loadFlight(QMandala::Global::telemetry().filePath(filesList.at(idx)),progressBar);
 }
 //=============================================================================
 bool FlightDataFile::loadFlight(const QString &fName,QProgressBar *progressBar)

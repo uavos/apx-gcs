@@ -2,6 +2,7 @@
 import QtQuick.Controls 2.1
 import "qrc:///pfd"
 import "qrc:///components"
+import "qrc:///menu"
 
 Item{
     id: window
@@ -13,10 +14,10 @@ Item{
                           nav.status === Loader.Ready
     Behavior on opacity { enabled: mandala.smooth; PropertyAnimation {duration: 500} }
 
-    //PfdMenu { id: menu }
     GCSMenuPopup {
         id: popupMenu
         menu: MenuCommands {  }
+        //source: "menu/MenuCommands.qml"
     }
 
     Loader {

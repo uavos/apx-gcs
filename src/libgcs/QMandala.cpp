@@ -33,11 +33,10 @@ QMandala::QMandala()
 
   //---------------------
   //create missing dirs
-  if(!Global::config().exists()) Global::config().mkpath(".");
-  if(!Global::uav().exists()) Global::uav().mkpath(".");
-  if(!Global::missions().exists())Global::missions().mkpath(".");
-  if(!Global::scr().exists()) Global::scr().mkpath(".");
-  if(!Global::records().exists())Global::records().mkpath(".");
+  //if(!Global::config().exists()) Global::config().mkpath(".");
+  //if(!Global::missions().exists())Global::missions().mkpath(".");
+  //if(!Global::scr().exists()) Global::scr().mkpath(".");
+  //if(!Global::records().exists())Global::records().mkpath(".");
 
 
   #define VSTR_IMPL(a) #a
@@ -111,17 +110,23 @@ QDir QMandala::Global::res()
   return QDir(QCoreApplication::applicationDirPath()+"/../resources");
 #endif
 }
-QDir QMandala::Global::local()
+QDir QMandala::Global::user()
 {
 #ifdef __ANDROID__
   return QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)+"/.gcu");
 #else
-  return QDir(QDir::homePath()+"/.gcu");
+  return QDir(QDir(
+    QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+    .absoluteFilePath("UAVOS") );
 #endif
 }
-QDir QMandala::Global::records()
+QDir QMandala::Global::telemetry()
 {
-  return QDir(Global::local().absolutePath()+"/data");
+  return QDir(Global::user().absoluteFilePath("Telemetry"));
+}
+QDir QMandala::Global::maps()
+{
+  return QDir(Global::user().absoluteFilePath("Maps"));
 }
 QDir QMandala::Global::lang()
 {
@@ -129,23 +134,23 @@ QDir QMandala::Global::lang()
 }
 QDir QMandala::Global::missions()
 {
-  return QDir(Global::local().absolutePath()+"/flightplans");
+  return QDir(Global::user().absoluteFilePath("Missions"));
 }
-QDir QMandala::Global::config()
+QDir QMandala::Global::configs()
 {
-  return QDir(Global::local().absolutePath()+"/config");
-}
-QDir QMandala::Global::uav()
-{
-  return QDir(Global::local().absolutePath()+"/config/uav.conf.d");
+  return QDir(Global::user().absoluteFilePath("Configs"));
 }
 QDir QMandala::Global::nodes()
 {
-  return QDir(Global::local().absolutePath()+"/nodes");
+  return QDir(Global::user().absoluteFilePath("Nodes"));
 }
-QDir QMandala::Global::scr()
+QDir QMandala::Global::scripts()
 {
-  return QDir(Global::local().absolutePath()+"/scripts");
+  return QDir(Global::user().absoluteFilePath("Scripts"));
+}
+QDir QMandala::Global::userPlugins()
+{
+  return QDir(Global::user().absoluteFilePath("Plugins"));
 }
 //=============================================================================
 //=============================================================================

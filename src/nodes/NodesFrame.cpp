@@ -503,11 +503,12 @@ void NodesFrame::syncProgress(uint cnt)
 //=============================================================================
 void NodesFrame::on_aSave_triggered(void)
 {
-  QFileDialog dlg(this,aSave->toolTip(),QMandala::Global::uav().canonicalPath());
+  if(!QMandala::Global::configs().exists()) QMandala::Global::configs().mkpath(".");
+  QFileDialog dlg(this,aSave->toolTip(),QMandala::Global::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
   if(!model->title().isEmpty())
-    dlg.selectFile(QMandala::Global::uav().filePath(model->title()+".nodes"));
+    dlg.selectFile(QMandala::Global::configs().filePath(model->title()+".nodes"));
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";
@@ -519,11 +520,12 @@ void NodesFrame::on_aSave_triggered(void)
 //=============================================================================
 void NodesFrame::on_aLoad_triggered(void)
 {
+  if(!QMandala::Global::configs().exists()) QMandala::Global::configs().mkpath(".");
   proxy.setFilterRegExp(QRegExp());
-  QFileDialog dlg(this,aLoad->toolTip(),QMandala::Global::uav().canonicalPath());
+  QFileDialog dlg(this,aLoad->toolTip(),QMandala::Global::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
   if(!model->title().isEmpty())
-    dlg.selectFile(QMandala::Global::uav().filePath(model->title()+".nodes"));
+    dlg.selectFile(QMandala::Global::configs().filePath(model->title()+".nodes"));
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";

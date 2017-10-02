@@ -49,7 +49,7 @@ android {
 }else:unix {
 
   plugin {
-    target.path = $$INSTALLBASE_LIB/plugins/gcu
+    target.path = $$INSTALLBASE_LIB/plugins/gcs
     qtlibs.extra = ../../copy-libs.sh $$DESTDIR/lib$${TARGET}.so $$INSTALLBASE_LIB/Qt/lib
   } else {
     target.path = $$INSTALLBASE_LIB

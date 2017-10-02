@@ -259,6 +259,7 @@ Item {
                 anchors.left: altitude_window.right
                 anchors.right: parent.right
                 height: altitude_window.height
+                anchors.leftMargin: altitude_window.width*0.05
             }
 
             RectNum {

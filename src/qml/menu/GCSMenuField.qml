@@ -1,5 +1,4 @@
 ﻿import QtQuick 2.6
-import QtQml.Models 2.2
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
@@ -27,7 +26,7 @@ Item {
 
     property string page        //page file to be loaded in body
     property string pageMenu    //page file to be loaded in stackView directly (nested menus)
-    property ObjectModel fields //sub menu fields
+    property GCSMenuModel fields //sub menu fields
 
     property var itemData
 
@@ -68,7 +67,7 @@ Item {
                 }else if(field.page){
                     openPage({"page": Qt.resolvedUrl("../"+field.page),"title": field.title})
                     //console.log("open: "+field.page);
-                }else if(closeable)root.close(); //click and close
+                }else if(closeable)close(); //click and close
                 field.clicked()
             }
         }
@@ -145,9 +144,9 @@ Item {
                 id: fieldNextC
                 Image {
                     Layout.fillHeight: true
-                    anchors.verticalCenter: parent.verticalCenter
+                    verticalAlignment: Image.AlignVCenter
                     sourceSize.height: itemSize*0.8
-                    source: "navigation_next_item.png"
+                    source: iconNext
                 }
             }
 

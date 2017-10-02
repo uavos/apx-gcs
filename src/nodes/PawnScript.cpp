@@ -57,8 +57,8 @@ PawnScript::PawnScript(NodesItemField *field)
   //args<<"-S"+QString::number((vm_data_size-256)/4);
   //args<<"-XD"+QString::number(vm_data_size);
   args<<"-i"+QMandala::Global::res().absoluteFilePath("scripts/pawn/include");
-  args<<"-i"+QMandala::Global::local().absoluteFilePath("scripts/pawn");
-  args<<"-i"+QMandala::Global::local().absoluteFilePath(".");
+  args<<"-i"+QMandala::Global::scripts().absoluteFilePath("pawn");
+  args<<"-i"+QMandala::Global::scripts().absoluteFilePath(".");
   args<<"-o"+outFileName;
   args<<tmpFile.fileName();
   pawncc.setProgram(QCoreApplication::applicationDirPath()+"/pawncc");

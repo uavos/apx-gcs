@@ -210,7 +210,7 @@ void TelemetryFrame::load(int idx)
 void TelemetryFrame::on_eNotes_returnPressed(void)
 {
   QDomDocument doc("telemetry");
-  QFile file(QMandala::Global::records().filePath(filesList.at(flightNo)));
+  QFile file(QMandala::Global::telemetry().filePath(filesList.at(flightNo)));
   if(!file.open(QIODevice::ReadWrite|QIODevice::Text))return;
   QString err;
   if(!doc.setContent(&file,&err)){
@@ -401,7 +401,7 @@ void TelemetryFrame::export_fdr(QString fileName)
   out << "\n\n";
   //export data...
   //read config
-  QSettings st(QMandala::Global::config().filePath("xplane-fdr.conf"),QSettings::IniFormat);
+  QSettings st(QMandala::Global::res().filePath("preferences/xplane-fdr.conf"),QSettings::IniFormat);
   uint colCount=st.value("columns").toUInt();
   st.beginGroup("columns");
   QMap<int,QString> map;
@@ -463,7 +463,7 @@ void TelemetryFrame::export_kml(QString fileName)
 //=============================================================================
 void TelemetryFrame::on_aFiles_triggered(void)
 {
-  QDesktopServices::openUrl(QUrl("file://"+QMandala::Global::records().absoluteFilePath(".")));
+  QDesktopServices::openUrl(QUrl("file://"+QMandala::Global::telemetry().absoluteFilePath(".")));
 }
 void TelemetryFrame::on_aEdit_triggered(void)
 {

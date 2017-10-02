@@ -48,10 +48,10 @@ QDir MapTiles::pathMaps;
 MapTiles::MapTiles(MapView *view)
   :QObject(),scene(NULL),view(view)
 {
-  pathMaps=QDir(QMandala::Global::local().filePath("maps"));
+  pathMaps=QDir(QMandala::Global::maps().absoluteFilePath("google-tiles"));
   if(!pathMaps.exists())pathMaps.mkpath(".");
   //check default maps
-  QDir pmLib(QMandala::Global::res());
+  /*QDir pmLib(QMandala::Global::res());
   if(pmLib.cd("maps")){
     bool bUpd=false;
     foreach(QFileInfo fi,pmLib.entryInfoList(QDir::Files)){
@@ -63,7 +63,7 @@ MapTiles::MapTiles(MapView *view)
       }
     }
     if(bUpd)qDebug("%s",tr("Default maps updated").toUtf8().data());
-  }
+  }*/
   //------
   level=maxLevel-2;
 
@@ -103,9 +103,9 @@ MapTiles::MapTiles(MapView *view)
   net.setNetworkAccessible(QNetworkAccessManager::NotAccessible);
   request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,QNetworkRequest::PreferCache);*/
   //load cookies file
-  QFile f(QMandala::Global::config().filePath(cookiesFileName));
+  /*QFile f(QMandala::Global::config().filePath(cookiesFileName));
   if (f.open(QIODevice::ReadOnly))
-    request.setRawHeader("Cookie",QString(f.readAll()).split("\n",QString::SkipEmptyParts).join(";").toUtf8());
+    request.setRawHeader("Cookie",QString(f.readAll()).split("\n",QString::SkipEmptyParts).join(";").toUtf8());*/
 
   request.setRawHeader("User-Agent",QString("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%1.0) Gecko/%2%3%4 Firefox/%5.0.%6").arg(QString::number(Random(3,14)), QString::number(Random(QDate().currentDate().year() - 4, QDate().currentDate().year())), QString::number(Random(11,12)), QString::number(Random(10,30)), QString::number(Random(3,14)), QString::number(Random(1,10))).toUtf8());
   request.setRawHeader("Accept","*/*");

@@ -25,6 +25,7 @@
 #include <QtCore>
 #include <QShortcut>
 #include <QQmlListProperty>
+#include <QmlListModel.h>
 class QMandala;
 class AppShortcuts;
 //=============================================================================
@@ -73,26 +74,38 @@ signals:
   void cmdChanged();
   void enabledChanged();
   void validChanged();
+  void changed();
 };
 //=============================================================================
-class AppShortcutModel : public QAbstractListModel
+class AppShortcutModel : public QmlListModel
 {
   Q_OBJECT
 public:
-  enum AppShortcutRoles {
-      ItemRole = Qt::UserRole + 1
-  };
-  AppShortcutModel(QObject *parent = 0);
-  Q_INVOKABLE void addItem(AppShortcut *item);
-  Q_INVOKABLE void removeItem(AppShortcut *item);
-  int rowCount(const QModelIndex & parent = QModelIndex()) const;
-  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+  AppShortcutModel(QObject *parent = 0)
+    : QmlListModel(parent)
+  {
+  }
 
-  AppShortcut *item(int row);
-protected:
-  QHash<int, QByteArray> roleNames() const;
-private:
-  QList<AppShortcut*> m_items;
+  int count() const {return rowCount();}
+
+  AppShortcut *shortcut(int row) const
+  {
+    return reinterpret_cast<AppShortcut*>(item(row));
+  }
+
+  Q_INVOKABLE void addItem(QObject *item)
+  {
+    QmlListModel::addItem(item);
+    emit changed();
+    connect(item,SIGNAL(changed()),this,SIGNAL(changed()));
+  }
+
+  Q_INVOKABLE void removeItem(QObject *item)
+  {
+    QmlListModel::removeItem(item);
+    emit changed();
+  }
+
 signals:
   void changed();
 };
@@ -108,14 +121,17 @@ public:
 
   Q_INVOKABLE void addNew();
 
-  Q_INVOKABLE void load();
-  Q_INVOKABLE void save();
-
   Q_INVOKABLE QString keyToPortableString(int key,int modifier) const;
+
+public slots:
+  void load();
+  void save() const;
 
 private:
   QWidget *widget;
   QMandala *mandala;
+
+  QTimer saveTimer;
 
   //PROPERTIES
 public:

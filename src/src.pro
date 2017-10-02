@@ -20,10 +20,10 @@ SUBDIRS += serial
 #SUBDIRS += joystick
 
 # Utilities
-SUBDIRS += qgc
-#SUBDIRS += gcu-server
 SUBDIRS += pawncc
-SUBDIRS += gcu-map
+SUBDIRS += qgc
+SUBDIRS += qgc-map
+#SUBDIRS += gcs-server
 
 #SUBDIRS += xplane
 

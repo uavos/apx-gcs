@@ -207,7 +207,7 @@ QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
     engine.globalObject().setProperty(name,constants.value(name),QScriptValue::ReadOnly|QScriptValue::Undeletable);
 
   // script include file (default)
-  QFile jsFile(QMandala::Global::config().filePath("default.js"));
+  QFile jsFile(QMandala::Global::res().filePath("scripts/gcs.js"));
   if (jsFile.open(QIODevice::ReadOnly)){
     QTextStream stream(&jsFile);
     QString contents = stream.readAll();
@@ -215,7 +215,7 @@ QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
     engine.evaluate(contents,jsFile.fileName());
   }
   // script include file (user commands)
-  QFile jsFile2(QMandala::Global::scr().filePath("gcu.js"));
+  QFile jsFile2(QMandala::Global::scripts().filePath("gcs.js"));
   if (jsFile2.open(QIODevice::ReadOnly)){
     QTextStream stream(&jsFile2);
     QString contents = stream.readAll();

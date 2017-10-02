@@ -47,7 +47,7 @@ QMandala *mandala;
 void loadShortcuts();
 void loadPlugins();
 void loadFonts();
-void rsyncLib();
+void checkPaths();
 //----------------------------------------------------------------------------
 MainForm *mainForm;
 //Joystick *joystick;
@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
 
 
 
-  //Q_INIT_RESOURCE(gcu);
   //QApplication::setGraphicsSystem(QLatin1String("opengl"));
   QApplication app(argc, argv);
 
@@ -96,9 +95,9 @@ int main(int argc, char *argv[])
   qApp->setFont(QFont("Ubuntu",10));
 #endif
 
-  QCoreApplication::setOrganizationName("uavos.com");
-  QCoreApplication::setOrganizationDomain("www.uavos.com");
-  QCoreApplication::setApplicationName("GCU");
+  QCoreApplication::setOrganizationName("uavos");
+  QCoreApplication::setOrganizationDomain("uavos.com");
+  QCoreApplication::setApplicationName("gcs");
   QSettings().setDefaultFormat(QSettings::IniFormat);
 
   if(QSettings().value("qsg_basic").toBool()){
@@ -149,7 +148,7 @@ int main(int argc, char *argv[])
 
   //check instances
   if(!QSettings().value("multipleInstances").toBool()){
-    RunGuard guard("instance.gcu.uavos.com");
+    RunGuard guard("instance.gcs.uavos.com");
     if(!guard.tryToRun()){
       qWarning("%s",QObject::tr("Another application instance is running").toUtf8().data());
       if(!QSettings().value("multipleInstances").toBool()){
@@ -203,8 +202,8 @@ int main(int argc, char *argv[])
 
   // directories..
   if(QMandala::Global::devMode()) qDebug("%s",QObject::tr("Developer mode").toUtf8().data());
-  else
-    rsyncLib();
+  //else
+    checkPaths();
 
   if(QCoreApplication::arguments().contains("-x"))
     QSettings().setValue("maximized", true);
@@ -319,23 +318,24 @@ void loadPlugins()
   //collect all available plugins filenames
   QStringList allFiles;
   QStringList filters(QStringList()<<"*.so"<<"*.dylib"<<"*.qml");
-  QDir userp=QMandala::Global::local();
-  if(userp.cd("plugins")){
-    QStringList stRep,stRepQml;
-    foreach (QString fileName, userp.entryList(filters,QDir::Files)){
-      if(fileName.startsWith('-'))continue;
-      QString pname=QString(fileName).remove("lib");
-      if(!pname.endsWith(".qml")){
-        pname.truncate(pname.lastIndexOf('.'));
-        stRep.append(pname);
-      }else{
-        stRepQml.append(pname.left(pname.lastIndexOf('.')));
-      }
-      allFiles.append(userp.absoluteFilePath(fileName));
+
+  QDir userp=QMandala::Global::userPlugins();
+  if(!userp.exists())userp.mkpath(".");
+  QStringList stRep,stRepQml;
+  foreach (QString fileName, userp.entryList(filters,QDir::Files)){
+    if(fileName.startsWith('-'))continue;
+    QString pname=QString(fileName).remove("lib");
+    if(!pname.endsWith(".qml")){
+      pname.truncate(pname.lastIndexOf('.'));
+      stRep.append(pname);
+    }else{
+      stRepQml.append(pname.left(pname.lastIndexOf('.')));
     }
-    if(!stRep.isEmpty())qDebug("%s: %s",QObject::tr("User plugins").toUtf8().data(),stRep.join(',').toUtf8().data());
-    if(!stRepQml.isEmpty())qDebug("%s: %s",QObject::tr("User QML plugins").toUtf8().data(),stRepQml.join(',').toUtf8().data());
+    allFiles.append(userp.absoluteFilePath(fileName));
   }
+  if(!stRep.isEmpty())qDebug("%s: %s",QObject::tr("User plugins").toUtf8().data(),stRep.join(',').toUtf8().data());
+  if(!stRepQml.isEmpty())qDebug("%s: %s",QObject::tr("User QML plugins").toUtf8().data(),stRepQml.join(',').toUtf8().data());
+
   QDir pluginsDir=QMandala::Global::plugins();
   //qDebug()<<pluginsDir;
   foreach (QString fileName,pluginsDir.entryList(filters,QDir::Files)){
@@ -399,76 +399,113 @@ void loadPlugins()
 }
 //============================================================================
 //============================================================================
-void rsyncLib()
+void linkFiles(QDir src,QDir dest)
 {
-  // update user config files if needed..
-  if(!QMandala::Global::config().exists()) QMandala::Global::config().mkpath(".");
-  QDir cfg_src(QMandala::Global::res().absoluteFilePath("config"));
-  QFileInfoList list=cfg_src.entryInfoList(QStringList()<<"*",QDir::Files);
-  foreach(QFileInfo fi,list){
-    QFileInfo fiLocal(QMandala::Global::config().filePath(fi.fileName()));
-    if(!fiLocal.exists() || fiLocal.lastModified()<fi.lastModified()){
-      QFile::remove(fiLocal.absoluteFilePath());
-      QFile::copy(fi.absoluteFilePath(),fiLocal.absoluteFilePath());
-      qDebug("config file updated: %s",fiLocal.fileName().toUtf8().data());
+  if(!dest.exists()) dest.mkpath(".");
+  foreach(QFileInfo fi,src.entryInfoList(QDir::Files)){
+    QFileInfo fiDest(dest.filePath(fi.fileName()));
+    if(fiDest.exists() || fiDest.isSymLink()){
+      if(fiDest.isSymLink() && fiDest.symLinkTarget()==fi.absoluteFilePath())continue;
+      QFile::remove(fiDest.absoluteFilePath());
+    }
+    QFile::link(fi.absoluteFilePath(),fiDest.absoluteFilePath());
+    qDebug("Link updated: %s",fiDest.absoluteFilePath().toUtf8().data());
+  }
+}
+void linkDir(QDir src,QDir dest,QString suffix)
+{
+  if(!dest.exists()) dest.mkpath(".");
+  QFileInfo fiDest(dest.filePath(src.dirName()+suffix));
+  if(fiDest.exists() || fiDest.isSymLink()){
+    if(fiDest.isSymLink() && fiDest.symLinkTarget()==src.absolutePath())return;
+    QFile::remove(fiDest.absoluteFilePath());
+  }
+  QFile::link(src.absolutePath(),fiDest.absoluteFilePath());
+  qDebug("Link updated: %s",fiDest.absoluteFilePath().toUtf8().data());
+}
+bool copyPath(QDir src,QDir dest,bool deleteOnCopy=false)
+{
+  if(!src.exists()) return false;
+  if(!dest.exists()) dest.mkpath(".");
+
+  //qDebug()<<"copyPath"<<src.path()<<dest.path();
+  foreach(QFileInfo fi,src.entryInfoList(QDir::Dirs|QDir::NoDotAndDotDot)){
+    dest.mkpath(fi.fileName());
+    if(!src.cd(fi.fileName()))return false;
+    if(!dest.cd(fi.fileName()))return false;
+    if(!copyPath(src,dest,deleteOnCopy))return false; //recursion
+    src.cdUp();
+    dest.cdUp();
+  }
+  //qDebug()<<"files"<<src.absolutePath();
+  uint fcnt=0;
+  foreach(QFileInfo fi,src.entryInfoList(QDir::Files)){
+    //qDebug()<<"file"<<fi.absoluteFilePath();
+    const QString fndest(dest.absoluteFilePath(fi.fileName()));
+    if(QFile::exists(fndest))continue;
+    //QFile::copy(fi.absoluteFilePath(),fndest);
+    //if(deleteOnCopy)QFile::remove(fi.absoluteFilePath());
+    if(deleteOnCopy)QFile::rename(fi.absoluteFilePath(),dest.absoluteFilePath(fi.fileName()));
+    else QFile::copy(fi.absoluteFilePath(),fndest);
+    fcnt++;
+  }
+  // Possible race-condition mitigation?
+  dest.refresh();
+  if(!dest.exists()) return false;
+  if(fcnt>0){
+    qDebug("Updated %u user files in %s",fcnt,dest.absolutePath().toUtf8().data());
+  }
+  return true;
+}
+bool movePath(QDir src,QDir dest)
+{
+  if((!dest.exists())||dest.isEmpty()){
+    dest.mkpath(".");
+    QDir d(dest);
+    d.cdUp();
+    d.rmdir(dest.dirName());
+    if(QDir().rename(src.absolutePath(),dest.absolutePath())){
+      qWarning("Moved: '%s' to '%s'",src.path().toUtf8().data(),dest.path().toUtf8().data());
+      return true;
     }
   }
-
-  // update uav.conf.d
-  if(!QMandala::Global::uav().exists()) QMandala::Global::uav().mkpath(".");
-
-  //check xplane-sim.uav links
-  QDir pfLib(QMandala::Global::res());
-  QDir pfLocal(QMandala::Global::uav());
-  if(pfLib.cd(QMandala::Global::config().dirName()) && pfLib.cd(pfLocal.dirName())){
-    foreach(QFileInfo fi,pfLib.entryInfoList(QStringList()<<"*.nodes",QDir::Files)){
-      QFileInfo fiLocal(pfLocal.filePath(fi.fileName()));
-      if(fiLocal.exists() && fiLocal.isSymLink())continue;
-      if(!QFile::rename(fiLocal.absoluteFilePath(),fiLocal.absoluteDir().filePath(fiLocal.baseName()+".bak.nodes")))
-        QFile::remove(fiLocal.absoluteFilePath());
-      QFile::link(fi.absoluteFilePath(),fiLocal.absoluteFilePath());
-      qDebug("uav config file updated: %s",fiLocal.fileName().toUtf8().data());
-    }
+  if(copyPath(src,dest,true)){
+    if(src.rmpath(".")) return true;
   }
+  return false;
+}
+void fixDeprecatedPath(QString srcPath,QDir dest)
+{
+  QDir src(QDir(QDir::home().absoluteFilePath(".gcu")).absoluteFilePath(srcPath));
+  if(!src.exists())return;
+  if(movePath(src,dest))return;
+  qDebug("Deprecated user path: %s",src.absolutePath().toUtf8().data());
+}
+void checkPaths()
+{
+  //qDebug()<<"checkPaths";
 
-  //default flightplans
-  QDir pwLib(QMandala::Global::res());
-  QDir pwLocal(QMandala::Global::missions());
-  if(!pwLocal.exists())pwLocal.mkpath(".");
-  if(pwLib.cd(pwLocal.dirName())){
-    foreach(QFileInfo fi,pwLib.entryInfoList(QDir::Files)){
-      QFileInfo fiLocal(pwLocal.filePath(fi.fileName()));
-      if(fiLocal.exists() && fiLocal.isSymLink())continue;
-      QFile::link(fi.absoluteFilePath(),fiLocal.absoluteFilePath());
-      qDebug("flight plan file updated: %s",fiLocal.fileName().toUtf8().data());
-    }
-  }
+  //fix old paths
+  fixDeprecatedPath("config/uav.conf.d",QMandala::Global::configs());
+  fixDeprecatedPath("flightplans",QMandala::Global::missions());
+  fixDeprecatedPath("maps",QDir(QMandala::Global::maps().absoluteFilePath("google-tiles")));
+  fixDeprecatedPath("nodes",QMandala::Global::nodes());
+  fixDeprecatedPath("plugins",QMandala::Global::userPlugins());
+  fixDeprecatedPath("scripts",QMandala::Global::scripts());
+  fixDeprecatedPath("data",QMandala::Global::telemetry());
 
-  // update scr files if needed..
-  if(!QMandala::Global::scr().exists()) QMandala::Global::scr().mkpath(".");
-  QDir scr_src(QMandala::Global::res().absoluteFilePath("scripts"));
-  QFileInfoList scr_list=scr_src.entryInfoList(QStringList()<<"*",QDir::Files);
-  foreach(QFileInfo fi,scr_list){
-    QFileInfo fiLocal(QMandala::Global::scr().filePath(fi.fileName()));
-    if(!fiLocal.exists()){
-      QFile::link(fi.absoluteFilePath(),fiLocal.absoluteFilePath());
-      qDebug("script file updated: %s",fiLocal.fileName().toUtf8().data());
-    }
-  }
+  // link sample files
+  linkFiles(QMandala::Global::res().absoluteFilePath("nodes/sample-configs"),QMandala::Global::configs());
+  linkFiles(QMandala::Global::res().absoluteFilePath("missions"),QMandala::Global::missions());
+  linkFiles(QMandala::Global::res().absoluteFilePath("telemetry"),QMandala::Global::telemetry());
+  linkDir(QMandala::Global::res().absoluteFilePath("scripts/pawn"),QMandala::Global::scripts(),"-examples");
 
-
-  //sample telemetry data
-  QDir ptLib(QMandala::Global::res());
-  QDir ptLocal(QMandala::Global::records());
-  if(!ptLocal.exists())ptLocal.mkpath(".");
-  if(ptLib.cd(ptLocal.dirName())){
-    foreach(QFileInfo fi,ptLib.entryInfoList(QDir::Files)){
-      QFileInfo fiLocal(ptLocal.filePath(fi.fileName()));
-      if(fiLocal.exists())continue;
-      QFile::link(fi.absoluteFilePath(),fiLocal.absoluteFilePath());
-      qDebug("sample telemetry file updated: %s",fiLocal.fileName().toUtf8().data());
-    }
-  }
+  //warn if exists old dir
+  QDir src(QDir::home().absoluteFilePath(".gcu"));
+  if(!src.exists())return;
+  if(src.isEmpty() && src.rmdir("."))return;
+  qWarning("Deprecated storage directory: %s",src.absolutePath().toUtf8().data());
+  qWarning("New storage directory: %s",QMandala::Global::user().absolutePath().toUtf8().data());
 }
 //============================================================================
 

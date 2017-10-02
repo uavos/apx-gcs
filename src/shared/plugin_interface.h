@@ -37,7 +37,7 @@ public:
 };
 //=============================================================================
 QT_BEGIN_NAMESPACE
-Q_DECLARE_INTERFACE(PluginInterface,"com.uavos.gcu.PluginInterface/1.0")
+Q_DECLARE_INTERFACE(PluginInterface,"com.uavos.gcs.PluginInterface/1.0")
 QT_END_NAMESPACE
 //=============================================================================
 #endif

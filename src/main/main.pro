@@ -39,7 +39,7 @@ FORMS += \
 RESOURCES += ../qml/qml.qrc $$RES_DIR/fonts.qrc
 
 
-# libgcu
+# libgcs
 SOURCES += \
     ../shared/DatalinkServer.cpp \
     ../shared/HttpService.cpp
@@ -54,7 +54,7 @@ first.depends += $(first)
 QMAKE_EXTRA_TARGETS += first
 
 # COPY RESOURCES
-resource_dirs = audio conf map-tiles missions nodes scripts telemetry vpn xplane
+resource_dirs = audio preferences maps missions nodes scripts telemetry vpn xplane
 copydata.target = $$OBJECTS_DIR/copydata.stamp
 copydata.commands = touch $$copydata.target && $(MKDIR) \"$$shell_path($$DESTDIR/../resources)\" &&
 for(a, resource_dirs){
@@ -90,14 +90,14 @@ resources_data.path = $$INSTALLBASE_RES/$$TARGET
 uavos-data: INSTALLS += resources_data
 
 # GCU SDK
-gcusdk.files =  ../gcu-sdk/*
-gcusdk.path = $$INSTALLBASE_RES/$$TARGET/sdk
-gcusdk_inc.files = ../shared/*.h $${APX_TOP}/lib/*.h
-gcusdk_inc.files+= $${APX_TOP}/lib/MandalaCore.cpp
-gcusdk_inc.files+= $${APX_TOP}/lib/tcp_*.cpp
-gcusdk_inc.files+= $${APX_TOP}/lib/Mission.cpp
-gcusdk_inc.path = $$INSTALLBASE_RES/$$TARGET/sdk/inc
-INSTALLS += gcusdk gcusdk_inc
+sdk.files =  ../SDK/*
+sdk.path = $$INSTALLBASE_RES/$$TARGET/sdk
+sdk_inc.files = ../shared/*.h $${APX_TOP}/lib/*.h
+sdk_inc.files+= $${APX_TOP}/lib/MandalaCore.cpp
+sdk_inc.files+= $${APX_TOP}/lib/tcp_*.cpp
+sdk_inc.files+= $${APX_TOP}/lib/Mission.cpp
+sdk_inc.path = $$INSTALLBASE_RES/$$TARGET/sdk/inc
+INSTALLS += sdk sdk_inc
 
 # Translations (install)
 localization.files =  localization/*

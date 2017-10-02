@@ -117,6 +117,13 @@ void MapTile::loadImage()
   emit download_request(tile_name);
   pixmap=QPixmap();
 
+  //look for image in reources
+  fname=QMandala::Global::res().absoluteFilePath("maps/google-tiles/"+tile_name+".jpg");
+  if(QFile::exists(fname)) {
+    pixmap.load(fname);
+    return;
+  }
+
   //compose image from lower res..
   QString bname=tile_name;
   const QStringList lp=bname.split('_');

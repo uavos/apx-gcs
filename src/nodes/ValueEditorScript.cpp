@@ -92,11 +92,11 @@ void ValueEditorScript::aUndo_triggered(void)
 //=============================================================================
 void ValueEditorScript::aSave_triggered(void)
 {
-  QFileDialog dlg(this,aSave->toolTip(),QMandala::Global::scr().canonicalPath());
+  QFileDialog dlg(this,aSave->toolTip(),QMandala::Global::scripts().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
   if(!scrName.isEmpty())
-    dlg.selectFile(QMandala::Global::scr().filePath(scrName+".p"));
+    dlg.selectFile(QMandala::Global::scripts().filePath(scrName+".p"));
   QStringList filters;
   filters << tr("Script files")+" (*.p)"
           << tr("Any files")+" (*)";
@@ -107,10 +107,10 @@ void ValueEditorScript::aSave_triggered(void)
 //=============================================================================
 void ValueEditorScript::aLoad_triggered(void)
 {
-  QFileDialog dlg(this,aLoad->toolTip(),QMandala::Global::scr().canonicalPath());
+  QFileDialog dlg(this,aLoad->toolTip(),QMandala::Global::scripts().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
   if(!scrName.isEmpty())
-    dlg.selectFile(QMandala::Global::scr().filePath(scrName+".p"));
+    dlg.selectFile(QMandala::Global::scripts().filePath(scrName+".p"));
   QStringList filters;
   filters << tr("Script files")+" (*.p)"
           << tr("Any files")+" (*)";
