@@ -80,7 +80,7 @@ Item {
             anchors.topMargin: 0
             anchors.bottomMargin: 0
             spacing: 2
-            clip: true
+            //clip: true
             Item { //field title text
                 Layout.fillHeight: true
                 Layout.fillWidth: !fieldDelegate.visible

@@ -1,28 +1,28 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS += libgcs
+SUBDIRS += lib
 
 SUBDIRS += main
-main.depends += libgcs
+main.depends += lib
 
 
 # Plugins
-SUBDIRS += console
-SUBDIRS += nodes
-SUBDIRS += map
-SUBDIRS += telemetry
-SUBDIRS += signal
-SUBDIRS += compass
-SUBDIRS += servos
-SUBDIRS += numbers
-SUBDIRS += serial
+SUBDIRS += Plugins/console
+SUBDIRS += Plugins/nodes
+SUBDIRS += Plugins/map
+SUBDIRS += Plugins/telemetry
+SUBDIRS += Plugins/signal
+SUBDIRS += Plugins/compass
+SUBDIRS += Plugins/servos
+SUBDIRS += Plugins/numbers
+SUBDIRS += Plugins/serial
 #SUBDIRS += joystick
 
 # Utilities
 SUBDIRS += pawncc
-SUBDIRS += qgc
-SUBDIRS += qgc-map
+#SUBDIRS += qgc
+#SUBDIRS += qgc-map
 #SUBDIRS += gcs-server
 
 #SUBDIRS += xplane

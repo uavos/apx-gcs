@@ -5,10 +5,10 @@ TARGET = gcs
 # make symbols available for plugins
 QMAKE_LFLAGS += -rdynamic
 
-LIBS += -lgcs
-
 include( ../../gcs.pri )
 include( ../../localization.pri )
+
+LIBS += -lgcs
 
 RESOURCES += $$RES_DIR/standard-icons.qrc
 RESOURCES += $$RES_DIR/styles.qrc
@@ -17,36 +17,17 @@ SOURCES += main.cpp \
     MainForm.cpp \
     Config.cpp \
     RunGuard.cpp \
-    ../shared/svgimageprovider.cpp \
-    ../shared/QmlView.cpp \
-    ../shared/SoundEffects.cpp \
-    ../shared/MsgTranslator.cpp \
-    ../shared/AppShortcuts.cpp
+    AppShortcuts.cpp \
 
 HEADERS += MainForm.h \
     Config.h \
     RunGuard.h \
-    ../shared/svgimageprovider.h \
-    ../shared/QmlView.h \
-    ../shared/SoundEffects.h \
-    ../shared/QMandalaStrings.h \
-    ../shared/MsgTranslator.h \
-    ../shared/AppShortcuts.h
+    AppShortcuts.h \
 
 FORMS += \
     Config.ui
 
-RESOURCES += ../qml/qml.qrc $$RES_DIR/fonts.qrc
-
-
-# libgcs
-SOURCES += \
-    ../shared/DatalinkServer.cpp \
-    ../shared/HttpService.cpp
-
-HEADERS += \
-    ../shared/DatalinkServer.h \
-    ../shared/HttpService.h
+RESOURCES += $${SRC_DIR}/QML/qml.qrc $$RES_DIR/fonts.qrc
 
 
 # COPY on BUILD
@@ -54,7 +35,7 @@ first.depends += $(first)
 QMAKE_EXTRA_TARGETS += first
 
 # COPY RESOURCES
-resource_dirs = audio preferences maps missions nodes scripts telemetry vpn xplane
+resource_dirs = audio preferences maps missions nodes scripts telemetry vpn xplane ../src/SDK
 copydata.target = $$OBJECTS_DIR/copydata.stamp
 copydata.commands = touch $$copydata.target && $(MKDIR) \"$$shell_path($$DESTDIR/../resources)\" &&
 for(a, resource_dirs){
@@ -92,7 +73,7 @@ uavos-data: INSTALLS += resources_data
 # GCU SDK
 sdk.files =  ../SDK/*
 sdk.path = $$INSTALLBASE_RES/$$TARGET/sdk
-sdk_inc.files = ../shared/*.h $${APX_TOP}/lib/*.h
+sdk_inc.files = $${SHARED_DIR}/*.h $${APX_TOP}/lib/*.h
 sdk_inc.files+= $${APX_TOP}/lib/MandalaCore.cpp
 sdk_inc.files+= $${APX_TOP}/lib/tcp_*.cpp
 sdk_inc.files+= $${APX_TOP}/lib/Mission.cpp

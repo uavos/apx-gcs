@@ -8,3 +8,7 @@ message(Qt version $$[QT_VERSION])
 !equals(QT_MAJOR_VERSION, 5) | !greaterThan(QT_MINOR_VERSION, 7) {
     error("Unsupported Qt version, 5.8+ is required")
 }
+
+exists($${OUT_PWD}/*.pro) {
+    error("You must use shadow build (e.g. mkdir build; cd build; qmake ../gcs.pro).")
+}

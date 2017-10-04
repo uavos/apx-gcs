@@ -1,9 +1,24 @@
 #include( common.pri )
 
+plugin {
+GCS_TOP = ../../..
+} else {
 GCS_TOP = ../..
+}
+
+
 APX_TOP = $${GCS_TOP}/..
 
+SRC_DIR = $$GCS_TOP/src
+LIB_DIR = $$SRC_DIR/lib
+
+#message($$GCS_TOP)
+
 #CONFIG += silent
+
+exists($${OUT_PWD}/*.pro) {
+    error("You must use shadow build (e.g. mkdir build; cd build; qmake ../gcs.pro).")
+}
 
 
 plugin:!mac {
@@ -13,10 +28,12 @@ plugin:!mac {
 # Directories and paths
 
 INCLUDEPATH += \
-    ../libgcs \
-    ../shared \
     $${APX_TOP}/ \
-    $${APX_TOP}/lib
+    $${APX_TOP}/lib \
+    $${LIB_DIR} \
+    $${LIB_DIR}/comm \
+    $${LIB_DIR}/FactSystem \
+    $${LIB_DIR}/Mandala \
 
 BUILD_DIR = $${GCS_TOP} #/build
 
@@ -26,14 +43,21 @@ OBJECTS_DIR = $$BUILD_DIR/obj/$$TEMPLATE/$$TARGET
 
 plugin {
   DESTDIR = $$BUILD_DIR/plugins/gcs
+  #GCS_TOP = $$GCS_TOP
+  HEADERS += ../../lib/plugin_interface.h
   LIBS += -lgcs
-  HEADERS += ../shared/plugin_interface.h
 
 } else {
   DESTDIR = $$BUILD_DIR/bin
+
+  # make symbols available for plugins
+  #mac: QMAKE_LFLAGS += -flat_namespace -undefined suppress
+
 }
 
 DESTDIR_LIB = $$BUILD_DIR/lib
+
+LIBS += -Wl,-L$$DESTDIR_LIB
 
 UI_DIR = $$OBJECTS_DIR
 MOC_DIR = $$OBJECTS_DIR
@@ -44,8 +68,6 @@ QMAKE_CFLAGS_RELEASE -= -g
 QMAKE_CXXFLAGS_RELEASE -= -g
 
 QT += network xml widgets script
-
-LIBS += -Wl,-L$$DESTDIR_LIB
 
 # VERSION DEFINITION
 #unix:!mac{

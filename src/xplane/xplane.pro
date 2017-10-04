@@ -1,6 +1,7 @@
 TEMPLATE = lib
 include( ../../gcs.pri )
-include( ../../deploy.pri )
+
+DESTDIR = $$DESTDIR_LIB
 
 LIBS =
 QT = core network
@@ -51,9 +52,9 @@ macx {
 
 HEADERS += \
     plugin.h \
-    ../shared/DatalinkServer.h \
+    ../lib/comm/DatalinkServer.h \
 
 SOURCES += \
     plugin.cpp \
-    ../shared/DatalinkServer.cpp \
+    ../lib/comm/DatalinkServer.cpp \
 

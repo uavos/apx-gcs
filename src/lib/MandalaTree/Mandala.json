@@ -1,0 +1,101 @@
+{
+"sns": {
+    "label": "Sensors",
+
+    "imu": {
+        "label": "Inertial Measurement Unit",
+
+        "ax": {
+            "label": "Acceleration X",
+            "units": "m/s2",
+            "type": "float",
+            "prec": 2,
+            "sprec": "f2"
+        },
+        "ay": {
+            "label": "Acceleration Y",
+            "units": "m/s2",
+            "type": "float",
+            "prec": 2,
+            "sprec": "f2"
+        },
+        "az": {
+            "label": "Acceleration Z",
+            "units": "m/s2",
+            "type": "float",
+            "prec": 2,
+            "sprec": "f2"
+        }
+    },
+    "gps": {
+        "label": "Global Positioning System",
+
+        "lat": {
+            "label": "GPS latitude",
+            "units": "deg",
+            "type": "float",
+            "prec": 6,
+            "sprec": "f4"
+        },
+        "lon": {
+            "label": "GPS longitude",
+            "units": "deg",
+            "type": "float",
+            "prec": 6,
+            "sprec": "f4"
+        },
+        "hmsl": {
+            "label": "GPS altitude MSL",
+            "units": "m",
+            "type": "float",
+            "prec": 1,
+            "sprec": "f4"
+        }
+    }
+},
+"ctr": {
+    "label": "Control outputs",
+
+    "stab": {
+        "label": "Stability fast controls",
+
+        "ail": {
+            "label": "Ailerons",
+            "units": "-1..+1",
+            "type": "float",
+            "prec": 0,
+            "sprec": "s001"
+        },
+    }
+},
+"state": {
+    "label": "System state",
+
+    "ahrs": {
+        "label": "Attitude and position estimation",
+
+        "roll": {
+            "label": "Attitude roll",
+            "units": "deg",
+            "type": "float",
+            "prec": 1,
+            "sprec": "f2"
+        },
+    }
+},
+"cmd": {
+    "label": "Command",
+
+    "reg": {
+        "label": "Commanded regulator values",
+
+        "roll": {
+            "label": "Commanded roll",
+            "units": "deg",
+            "type": "float",
+            "prec": 1,
+            "sprec": "f2"
+        },
+    }
+}
+}

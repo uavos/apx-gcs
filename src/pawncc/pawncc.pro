@@ -1,6 +1,5 @@
 TEMPLATE = app
 include( ../../gcs.pri )
-include( ../../deploy.pri )
 
 LIBS =
 QT =

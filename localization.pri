@@ -30,13 +30,14 @@ SOURCES += \
     ../shared/qml/nav/*.qml \
     ../shared/qml/pfd/*.qml \
     $$OBJECTS_DIR/QMandalaStrings.h
+    RESOURCES =
 }
 
 TRANSLATION_TARGET_DIR = $$DESTDIR/../localization/$$TARGET
 TS_FILES = $$PWD/localization/*.ts
 
 trstrings.target = $$OBJECTS_DIR/QMandalaStrings.h
-trstrings.commands = gcc -E -dD $$PWD/src/shared/QMandalaStrings.h > $$trstrings.target
+trstrings.commands = gcc -E -dD $$PWD/src/lib/Mandala/QMandalaStrings.h > $$trstrings.target
 QMAKE_EXTRA_TARGETS += trstrings
 
 translations.input = TS_FILES
