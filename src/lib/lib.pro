@@ -41,11 +41,11 @@ HEADERS += \
     Mandala/QMandala.h \
 
 # Fact System
-#SOURCES += \
-#    FactSystem/FactTree.cpp \
+SOURCES += \
+    FactSystem/FactTree.cpp \
 
-#HEADERS += \
-#    FactSystem/FactTree.h \
+HEADERS += \
+    FactSystem/FactTree.h \
 
 # Communication
 SOURCES += \

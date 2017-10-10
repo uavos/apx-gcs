@@ -20,18 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "AppPropertiesTree.h"
+#include "FactTree.h"
 //=============================================================================
 //root mandala
-AppPropertiesTree::AppPropertiesTree(QObject *parent, QString name, QString descr)
+FactTree::FactTree(QObject *parent, QString name, QString descr)
  : QAbstractListModel(parent),m_parentItem(NULL),m_level(0),
    m_name(name),m_descr(descr)
 {
   setObjectName(m_name);
+  connect(this,&FactTree::structChanged,this,&FactTree::sizeChanged);
 }
 //=============================================================================
 //group or class parent of field
-AppPropertiesTree::AppPropertiesTree(AppPropertiesTree *parent, QString name, QString descr, QString alias)
+FactTree::FactTree(FactTree *parent, QString name, QString descr, QString alias)
  : QAbstractListModel(parent),m_parentItem(parent),m_level(0),
    m_name(name),m_descr(descr),m_alias(alias)
 {
@@ -39,66 +40,78 @@ AppPropertiesTree::AppPropertiesTree(AppPropertiesTree *parent, QString name, QS
   parent->addItem(this);
 
   //find tree item type
-  for(AppPropertiesTree *item=m_parentItem;item;item=item->m_parentItem){
+  for(FactTree *item=m_parentItem;item;item=item->m_parentItem){
     m_level++;
   }
 
   emit structChanged(this);
+  connect(this,&FactTree::structChanged,this,&FactTree::sizeChanged);
 }
 //=============================================================================
-AppPropertiesTree::~AppPropertiesTree()
+FactTree::~FactTree()
 {
   if(m_parentItem){
-    m_parentItem->m_items.removeAll(this);
+    m_parentItem->removeItem(this);
   }
 }
 //=============================================================================
-void AppPropertiesTree::addItem(AppPropertiesTree *item)
+void FactTree::addItem(FactTree *item)
 {
   beginInsertRows(QModelIndex(), rowCount(), rowCount());
   m_items << item;
   item->m_parentItem=this;
-  connect(item,&AppPropertiesTree::valueChanged,this,&AppPropertiesTree::valueChanged);
-  connect(item,&AppPropertiesTree::structChanged,this,&AppPropertiesTree::structChanged);
+  connect(item,&FactTree::valueChanged,this,&FactTree::valueChanged);
+  connect(item,&FactTree::structChanged,this,&FactTree::structChanged);
   setProperty(item->name().toUtf8().data(),qVariantFromValue(item));
   endInsertRows();
-  emit sizeChanged(this);
+  emit structChanged(this);
 }
-void AppPropertiesTree::removeItem(AppPropertiesTree *item)
+void FactTree::removeItem(FactTree *item)
 {
-  beginInsertRows(QModelIndex(), rowCount(), rowCount());
-  m_items << item;
-  item->m_parentItem=this;
-  connect(item,&AppPropertiesTree::valueChanged,this,&AppPropertiesTree::valueChanged);
-  connect(item,&AppPropertiesTree::structChanged,this,&AppPropertiesTree::structChanged);
-  setProperty(item->name().toUtf8().data(),qVariantFromValue(item));
-  endInsertRows();
-  emit sizeChanged(this);
+  int i=m_items.indexOf(item);
+  if(i<0)return;
+  beginRemoveRows(QModelIndex(), i, i);
+  m_items.removeOne(item);
+  item->m_parentItem=NULL;
+  endRemoveRows();
+  disconnect(item,&FactTree::valueChanged,this,&FactTree::valueChanged);
+  disconnect(item,&FactTree::structChanged,this,&FactTree::structChanged);
+  setProperty(item->name().toUtf8().data(),QVariant());
+  item->deleteLater();
+  emit structChanged(this);
 }
 //=============================================================================
-void AppPropertiesTree::clear(void)
+void FactTree::clear(void)
 {
-  foreach(AppPropertiesTree *i,m_items){
+  foreach(FactTree *i,m_items){
     i->clear();
+  }
+  beginRemoveRows(QModelIndex(), 0, m_items.size());
+  foreach (FactTree *item, m_items) {
+    item->m_parentItem=NULL;
+    disconnect(item,&FactTree::valueChanged,this,&FactTree::valueChanged);
+    disconnect(item,&FactTree::structChanged,this,&FactTree::structChanged);
   }
   qDeleteAll(m_items);
   m_items.clear();
+  endRemoveRows();
+  emit structChanged(this);
 }
 //=============================================================================
-void AppPropertiesTree::reset(void)
+void FactTree::reset(void)
 {
-  foreach(AppPropertiesTree *i,m_items){
+  foreach(FactTree *i,m_items){
     i->reset();
   }
   setValue(QVariant());
 }
 //=============================================================================
-QVariant AppPropertiesTree::value(void) const
+QVariant FactTree::value(void) const
 {
   return m_value;
 }
 //=============================================================================
-bool AppPropertiesTree::setValue(const QVariant &v)
+bool FactTree::setValue(const QVariant &v)
 {
   if(m_value==v)return false;
   m_value=v;
@@ -106,72 +119,72 @@ bool AppPropertiesTree::setValue(const QVariant &v)
   return true;
 }
 //=============================================================================
-int AppPropertiesTree::num() const
+int FactTree::num() const
 {
   if(!m_parentItem) return 0;
-  return m_parentItem->m_items.indexOf(const_cast<AppPropertiesTree*>(this));
+  return m_parentItem->m_items.indexOf(const_cast<FactTree*>(this));
 }
 //=============================================================================
 //=============================================================================
-QString AppPropertiesTree::name(void) const
+QString FactTree::name(void) const
 {
   return m_name;
 }
-QString AppPropertiesTree::descr(void) const
+QString FactTree::descr(void) const
 {
   return m_descr;
 }
-QString AppPropertiesTree::alias(void) const
+QString FactTree::alias(void) const
 {
   return m_alias;
 }
-int AppPropertiesTree::level(void) const
+int FactTree::level(void) const
 {
   return m_level;
 }
-QString AppPropertiesTree::valueText(void) const
+QString FactTree::valueText(void) const
 {
   return value().toString();
 }
-int AppPropertiesTree::size() const
+int FactTree::size() const
 {
   return m_items.size();
 }
 //=============================================================================
-bool AppPropertiesTree::isField(void) const
+bool FactTree::isField(void) const
 {
   return m_items.isEmpty();
 }
-bool AppPropertiesTree::isFieldsGroup(void) const
+bool FactTree::isFieldsGroup(void) const
 {
   return (!m_items.isEmpty())&&m_items.first()->isField();
 }
-bool AppPropertiesTree::isRoot(void) const
+bool FactTree::isRoot(void) const
 {
   return (!m_parentItem);
 }
 //=============================================================================
-AppPropertiesTree *AppPropertiesTree::parentItem() const
+FactTree *FactTree::parentItem() const
 {
   return m_parentItem;
 }
-AppPropertiesTree *AppPropertiesTree::child(int n)
+FactTree *FactTree::child(int n)
 {
   if(n>=m_items.size())return NULL;
   return m_items.at(n);
 }
 //=============================================================================
-AppPropertiesTree * AppPropertiesTree::childByName(const QString &itemName) const
+FactTree * FactTree::childByName(const QString &itemName) const
 {
-  foreach(AppPropertiesTree *item,m_items){
+  foreach(FactTree *item,m_items){
     if(item->name()==itemName)return item;
   }
-  return const_cast<AppPropertiesTree*>(this);
+  return const_cast<FactTree*>(this);
 }
-AppPropertiesTree * AppPropertiesTree::find(const QString &itemNamePath) const
+FactTree * FactTree::find(const QString &itemNamePath) const
 {
   QString s=itemNamePath;
-  AppPropertiesTree *item=const_cast<AppPropertiesTree*>(this);
+  FactTree *item=const_cast<FactTree*>(this);
   while(!s.isEmpty()){
     if(item->isFieldsGroup()){
       item=item->childByName(s);
@@ -185,29 +198,29 @@ AppPropertiesTree * AppPropertiesTree::find(const QString &itemNamePath) const
   }
   return item;
 }
-AppPropertiesTree * AppPropertiesTree::findByAlias(const QString &itemAlias) const
+FactTree * FactTree::findByAlias(const QString &itemAlias) const
 {
-  foreach(AppPropertiesTree *i,m_items){
+  foreach(FactTree *i,m_items){
     if(i->alias()==itemAlias)return i;
     i=i->findByAlias(itemAlias);
     if(i)return i;
   }
   return NULL;
 }
-QString AppPropertiesTree::path(int fromLevel) const
+QString FactTree::path(int fromLevel) const
 {
   QString s=name();
-  for(const AppPropertiesTree *i=parentItem();i && i->level()>=fromLevel;i=i->parentItem()){
+  for(const FactTree *i=parentItem();i && i->level()>=fromLevel;i=i->parentItem()){
     s.prepend(i->name()+".");
   }
   return s;
 }
-QList<AppPropertiesTree *> AppPropertiesTree::allFields() const
+QList<FactTree *> FactTree::allFields() const
 {
-  QList<AppPropertiesTree*> list;
-  foreach(AppPropertiesTree *i,m_items){
+  QList<FactTree*> list;
+  foreach(FactTree *i,m_items){
     if(i->isField()){
-      list.append(static_cast<AppPropertiesTree*>(i));
+      list.append(static_cast<FactTree*>(i));
     }else{
       list.append(i->allFields());
     }
@@ -217,55 +230,57 @@ QList<AppPropertiesTree *> AppPropertiesTree::allFields() const
 //=============================================================================
 // LIST MODEL
 //=============================================================================
-int AppPropertiesTree::rowCount(const QModelIndex & parent) const
+int FactTree::rowCount(const QModelIndex & parent) const
 {
   Q_UNUSED(parent)
   return size();
 }
-QHash<int, QByteArray> AppPropertiesTree::roleNames() const
+QHash<int, QByteArray> FactTree::roleNames() const
 {
   QHash<int, QByteArray> roles;
   roles[ItemRole]   = "item";
   roles[NameRole]   = "name";
   roles[ValueRole]  = "value";
   roles[DescrRole]  = "descr";
+  roles[ValueTextRole]  = "valueText";
   return roles;
 }
-QVariant AppPropertiesTree::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant FactTree::headerData(int section, Qt::Orientation orientation, int role) const
 {
   Q_UNUSED(orientation)
   if(role==Qt::DisplayRole){
     switch(section){
-      case MANDALA_ITEM_COLUMN_NAME: return tr("Name");
-      case MANDALA_ITEM_COLUMN_VALUE: return tr("Value");
-      case MANDALA_ITEM_COLUMN_DESCR: return tr("Description");
+      case FACT_ITEM_COLUMN_NAME: return tr("Name");
+      case FACT_ITEM_COLUMN_VALUE: return tr("Value");
+      case FACT_ITEM_COLUMN_DESCR: return tr("Description");
     }
   }
   return QVariant();
 }
-Qt::ItemFlags AppPropertiesTree::flags(const QModelIndex &index) const
+Qt::ItemFlags FactTree::flags(const QModelIndex &index) const
 {
   Qt::ItemFlags f=Qt::ItemIsEnabled|Qt::ItemIsSelectable;
   if(isField()){
     f|=Qt::ItemNeverHasChildren;
-    if(index.column()==MANDALA_ITEM_COLUMN_VALUE) f|=Qt::ItemIsEditable;
+    if(index.column()==FACT_ITEM_COLUMN_VALUE) f|=Qt::ItemIsEditable;
   }
   return f;
 }
-QVariant AppPropertiesTree::data(const QModelIndex & index, int role) const
+QVariant FactTree::data(const QModelIndex & index, int role) const
 {
   if (index.row() < 0 || index.row() >= m_items.count())
     return QVariant();
-  AppPropertiesTree *item=m_items[index.row()];
+  FactTree *item=m_items[index.row()];
   switch(role){
     case ItemRole: return QVariant::fromValue(item);
     case NameRole: return item->name();
     case ValueRole: return item->value();
     case DescrRole: return item->descr();
+    case ValueTextRole: return item->value().toString(); // TODO: expand enums
   }
   return QVariant();
 }
-bool AppPropertiesTree::setData(const QModelIndex &index, const QVariant &value, int role)
+bool FactTree::setData(const QModelIndex &index, const QVariant &value, int role)
 {
   if (index.row() < 0 || index.row() >= m_items.count() || role != Qt::EditRole)
     return false;

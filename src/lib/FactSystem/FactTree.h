@@ -20,33 +20,33 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppPropertiesTree_H
-#define AppPropertiesTree_H
+#ifndef FactTree_H
+#define FactTree_H
 //=============================================================================
 #include <QtCore>
 //=============================================================================
-class AppPropertiesTree: public QAbstractListModel
+class FactTree: public QAbstractListModel
 {
   Q_OBJECT
 
 public:
   //root
-  explicit AppPropertiesTree(QObject *parent, QString name, QString descr);
+  explicit FactTree(QObject *parent, QString name, QString descr);
   //any
-  explicit AppPropertiesTree(AppPropertiesTree *parent, QString name, QString descr, QString alias=QString());
+  explicit FactTree(FactTree *parent, QString name, QString descr, QString alias=QString());
 
-  ~AppPropertiesTree();
+  ~FactTree();
 
   //internal tree
-  Q_INVOKABLE AppPropertiesTree * child(int n);
-  Q_INVOKABLE AppPropertiesTree * parentItem() const;
+  Q_INVOKABLE FactTree * child(int n);
+  Q_INVOKABLE FactTree * parentItem() const;
   Q_INVOKABLE int num() const;
 
   //deep search
-  Q_INVOKABLE AppPropertiesTree * childByName(const QString &itemName) const;
-  QList<AppPropertiesTree*> allFields() const;
-  Q_INVOKABLE AppPropertiesTree * find(const QString &itemNamePath) const;
-  Q_INVOKABLE AppPropertiesTree * findByAlias(const QString &itemAlias) const;
+  Q_INVOKABLE FactTree * childByName(const QString &itemName) const;
+  QList<FactTree*> allFields() const;
+  Q_INVOKABLE FactTree * find(const QString &itemNamePath) const;
+  Q_INVOKABLE FactTree * findByAlias(const QString &itemAlias) const;
 
   Q_INVOKABLE QString path(int fromLevel=0) const;
 
@@ -61,19 +61,20 @@ public:
 
 
   //tree structure
-  Q_INVOKABLE void addItem(AppPropertiesTree *child);
-  Q_INVOKABLE void removeItem(AppPropertiesTree *child);
+  Q_INVOKABLE void addItem(FactTree *child);
+  Q_INVOKABLE void removeItem(FactTree *child);
 
   enum MandalaListModelRoles {
     ItemRole = Qt::UserRole + 1,
     NameRole,
     ValueRole,
     DescrRole,
+    ValueTextRole,
   };
   enum { //model columns
-    MANDALA_ITEM_COLUMN_NAME=0,
-    MANDALA_ITEM_COLUMN_VALUE,
-    MANDALA_ITEM_COLUMN_DESCR,
+    FACT_ITEM_COLUMN_NAME=0,
+    FACT_ITEM_COLUMN_VALUE,
+    FACT_ITEM_COLUMN_DESCR,
   };
 
 protected:
@@ -86,15 +87,15 @@ protected:
   virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
 private:
-  QList<AppPropertiesTree*> m_items;
+  QList<FactTree*> m_items;
 
-  AppPropertiesTree *m_parentItem;
+  FactTree *m_parentItem;
 
 public slots:
   virtual void clear(void);
   virtual void reset(void);
 signals:
-  void structChanged(AppPropertiesTree *item);
+  void structChanged(FactTree *item);
 
 
   //-----------------------------------------
@@ -136,9 +137,9 @@ protected:
   QString  m_alias;
 
 signals:
-  void valueChanged(AppPropertiesTree *item);
-  void usedChanged(AppPropertiesTree *item);
-  void sizeChanged(AppPropertiesTree *item);
+  void valueChanged(FactTree *item);
+  void usedChanged(FactTree *item);
+  void sizeChanged(FactTree *item);
 };
 //=============================================================================
 #endif

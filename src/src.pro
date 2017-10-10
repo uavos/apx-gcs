@@ -8,15 +8,15 @@ main.depends += lib
 
 
 # Plugins
-SUBDIRS += Plugins/console
-SUBDIRS += Plugins/nodes
-SUBDIRS += Plugins/map
-SUBDIRS += Plugins/telemetry
-SUBDIRS += Plugins/signal
-SUBDIRS += Plugins/compass
-SUBDIRS += Plugins/servos
-SUBDIRS += Plugins/numbers
-SUBDIRS += Plugins/serial
+PLUGINS += console
+PLUGINS += nodes
+PLUGINS += map
+PLUGINS += telemetry
+PLUGINS += signal
+PLUGINS += compass
+PLUGINS += servos
+PLUGINS += numbers
+PLUGINS += serial
 #SUBDIRS += joystick
 
 # Utilities
@@ -27,15 +27,6 @@ SUBDIRS += pawncc
 
 #SUBDIRS += xplane
 
-#for(subdirs, 1) {
-#    entries = $$files($$subdirs)
-#    for(entry, entries) {
-#        name = $$replace(entry, [/\\\\], _)
-#        SUBDIRS += $$name
-#        eval ($${name}.subdir = $$entry)
-#        for(dep, 2):eval ($${name}.depends += $$replace(dep, [/\\\\], _))
-#        export ($${name}.subdir)
-#        export ($${name}.depends)
-#    }
-#}
-#export (SUBDIRS)
+for(subdir, PLUGINS) {
+    SUBDIRS += Plugins/$$subdir
+}
