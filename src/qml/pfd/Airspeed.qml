@@ -13,7 +13,7 @@ ControlArea {
     doWheel: false
 
     //instrument item
-    property double anumation_duration: mandala.smooth?200:0
+    property double anumation_duration: app.settings.smooth.value?200:0
     //anchors.fill: none
     //anchors.verticalCenter: parent.verticalCenter
     //anchors.verticalCenterOffset: parent.anchors.verticalCenterOffset

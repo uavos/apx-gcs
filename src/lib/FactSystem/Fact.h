@@ -20,65 +20,24 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactTree_H
-#define FactTree_H
+#ifndef Fact_H
+#define Fact_H
 //=============================================================================
-#include <QtCore>
+#include "FactData.h"
 //=============================================================================
-class FactTree: public QAbstractListModel
+class Fact: public FactData
 {
   Q_OBJECT
-  Q_ENUMS(ItemType)
-
-  Q_PROPERTY(ItemType treeItemType READ treeItemType CONSTANT)
-  Q_PROPERTY(int level READ level CONSTANT)
-  Q_PROPERTY(int size READ size NOTIFY sizeChanged)
-
-
 public:
+  explicit Fact(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType);
 
-  enum ItemType {
-    RootItem =0,
-    GroupItem,
-    FactItem,
-    ConstItem,
-  };
-
-  explicit FactTree(FactTree *parent, ItemType treeItemType);
-
-  //tree structure manipulation
-  virtual void addItem(FactTree *child);
-  virtual void removeItem(FactTree *child);
-
-  //internal tree
-  int num() const;
-  FactTree * child(int n) const;
-  FactTree * parentItem() const;
-  QList<FactTree*> childItems() const;
+  Q_INVOKABLE Fact * fact(const QString &factName) const;
+  //Q_INVOKABLE Fact * byPath(const QString &itemNamePath) const;
 
 public slots:
-  virtual void clear(void);
+  virtual void trigger(void); //execute fact event (onClick)
 signals:
-  void structChanged(FactTree *item);
-
-protected:
-  //ListModel override
-  virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
-
-  QList<FactTree*> m_items;
-  FactTree *m_parentItem;
-
-  //-----------------------------------------
-  //PROPERTIES
-public:
-  virtual ItemType treeItemType() const;
-  virtual int level(void) const;
-  virtual int size() const;
-protected:
-  ItemType m_treeItemType;
-  int m_level;
-signals:
-  void sizeChanged();
+  void triggered();
 };
 //=============================================================================
 #endif

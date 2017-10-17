@@ -31,7 +31,7 @@ Item {
         property double flagHeight: txtHeight*0.65
         property double topFramesMargin: (width-width*0.6)*0.6*0.2
 
-        property color power_color: (mandala.test||error_power.value)?"red":"transparent"
+        property color power_color: (app.test.value||error_power.value)?"red":"transparent"
 
         Horizon {
             id: horizon
@@ -136,7 +136,7 @@ Item {
                 property double modeHeight: pfdScene.flagHeight
 
                 Number {
-                    visible: mandala.test || value>1 || error_power.value>0
+                    visible: app.test.value || value>1 || error_power.value>0
                     height: modeFlags.modeHeight
                     mfield: Vs
                     precision: 1
@@ -144,7 +144,7 @@ Item {
                     blinking: true
                 }
                 Number {
-                    visible: mandala.test || value>1 || error_power.value>0
+                    visible: app.test.value || value>1 || error_power.value>0
                     height: modeFlags.modeHeight
                     mfield: Vm
                     precision: 1
@@ -152,7 +152,7 @@ Item {
                     blinking: true
                 }
                 Number {
-                    visible: mandala.test || value>1 || error_power.value>0
+                    visible: app.test.value || value>1 || error_power.value>0
                     height: modeFlags.modeHeight
                     mfield: Vp
                     precision: 1
@@ -166,7 +166,7 @@ Item {
                     radius: 3
                     height: pfdScene.flagHeight
                     width: text.width+3 //left_window.width*0.8
-                    visible: mandala.test || sb_ers_disarm.value > 0 || sb_ers_err.value > 0
+                    visible: app.test.value || sb_ers_disarm.value > 0 || sb_ers_err.value > 0
                     Text {
                         id: text
                         anchors.top: parent.top
@@ -277,12 +277,12 @@ Item {
                 anchors.bottomMargin: 2
 
                 Number {
-                    visible: mandala.test || value>0
+                    visible: app.test.value || value>0
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
                     mfield: altps_gnd
                     label: qsTr("PS")
-                    color: (mandala.test || error_pstatic.value>0)?"red":"transparent"
+                    color: (app.test.value || error_pstatic.value>0)?"red":"transparent"
                     blinking: true
                     MouseArea {
                         anchors.fill: parent
@@ -291,7 +291,7 @@ Item {
                     }
                 }
                 Number {
-                    visible: mandala.test || value>0
+                    visible: app.test.value || value>0
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
                     mfield: gps_hmsl
@@ -299,7 +299,7 @@ Item {
                 }
             }
             Number {
-                visible: mandala.test || value>0
+                visible: app.test.value || value>0
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
@@ -344,7 +344,7 @@ Item {
                 text: qsTr("AIRBR")
                 toolTip: ctr_airbrk.descr
                 Text {
-                    visible: mandala.test || (airbrkFlag.show && (ctr_airbrk.value>0) && (ctr_airbrk.value<1))
+                    visible: app.test.value || (airbrkFlag.show && (ctr_airbrk.value>0) && (ctr_airbrk.value<1))
                     color: "white"
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
@@ -374,7 +374,7 @@ Item {
             }
             Flag {
                 id: flag_CAS
-                show: mandala.test||error_cas.value > 0
+                show: app.test.value||error_cas.value > 0
                 blinking: true
                 visible: show
                 height: pfdScene.flagHeight
@@ -475,7 +475,7 @@ Item {
             width: parent.width*0.33
             Number {
                 id: rpm_number
-                visible: mandala.test || value>0 || error_rpm.value>0
+                visible: app.test.value || value>0 || error_rpm.value>0
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
@@ -483,7 +483,7 @@ Item {
                 value: rpm.value/1000
                 precision: 1
                 toolTip: rpm.descr +"[x1000]"
-                color: (mandala.test || error_rpm.value>0)?"red":"transparent"
+                color: (app.test.value || error_rpm.value>0)?"red":"transparent"
                 blinking: true
                 MouseArea {
                     anchors.fill: parent
@@ -493,7 +493,7 @@ Item {
             }
             /*Number {
                 id: rpm_number
-                visible: mandala.test || (value>0 && (!(rpm_error.blink && rpm_error.show)))
+                visible: app.test.value || (value>0 && (!(rpm_error.blink && rpm_error.show)))
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
@@ -550,17 +550,17 @@ Item {
                 anchors.bottom: thr_number.bottom
                 height: pfdScene.txtHeight
                 label: qsTr("R")
-                opacity: mandala.smooth?((show||mandala.test)?1:0):1
-                visible: mandala.smooth?opacity:(show||mandala.test)
+                opacity: app.settings.smooth.value?((show||app.test.value)?1:0):1
+                visible: app.settings.smooth.value?opacity:(show||app.test.value)
                 valueColor: "magenta"
                 color: "#80000000"
                 value: (rc_throttle.value*100).toFixed()
                 toolTip: rc_throttle.descr +"[x100]"
-                Behavior on opacity { PropertyAnimation {duration: mandala.smooth?500:0} }
+                Behavior on opacity { PropertyAnimation {duration: app.settings.smooth.value?500:0} }
             }
 
             Number {
-                visible: mandala.test || value>0 || error_power.value>0
+                visible: app.test.value || value>0 || error_power.value>0
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight

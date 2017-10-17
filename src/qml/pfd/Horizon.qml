@@ -16,7 +16,7 @@ Item {
     transform: Translate {x: center_shift}
 
     property double sf: 3   //2.8
-    property double anumation_duration: mandala.smooth?100:0
+    property double anumation_duration: app.settings.smooth.value?100:0
 
     property int diagonal: Math.sqrt(Math.pow(height, 2) + Math.pow(width, 2)) + 50
     property double pitchDeg2img:
@@ -25,7 +25,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: mandala.smooth?((mandala.dlcnt>0 && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
+    opacity: app.settings.smooth.value?((mandala.dlcnt>0 && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
 
     Item{
         id: horizon_bg
@@ -160,7 +160,7 @@ Item {
     //Flight directors
     Rectangle {
         //ailerons
-        antialiasing: mandala.smooth
+        antialiasing: app.settings.smooth.value
         width: fd_roll.width*0.7
         height: fd_roll.height*0.25
         color: "#990099"
@@ -171,7 +171,7 @@ Item {
     }
     Rectangle {
         //elevator
-        antialiasing: mandala.smooth
+        antialiasing: app.settings.smooth.value
         width: fd_pitch.width*0.25
         height: fd_pitch.height*0.7
         color: "#990099"
@@ -183,7 +183,7 @@ Item {
     Rectangle {
         //roll
         id: fd_roll
-        antialiasing: mandala.smooth
+        antialiasing: app.settings.smooth.value
         width: mandala.limit(diagonal*0.006,2,8)
         height: parent.width*0.2
         color: "magenta"
@@ -195,7 +195,7 @@ Item {
     Rectangle {
         //pitch
         id: fd_pitch
-        antialiasing: mandala.smooth
+        antialiasing: app.settings.smooth.value
         height: mandala.limit(diagonal*0.006,2,8)
         width: parent.width*0.2
         color: "magenta"

@@ -30,6 +30,7 @@
 #include <QGLFormat>
 #include "DatalinkServer.h"
 #include <QQuickStyle>
+#include "FactSystem.h"
 //#ifdef OLDLINUX
 //#define FIX_WINDOWID
 //#endif
@@ -83,7 +84,7 @@ QmlView::QmlView(QString src,QWindow *parent)
 
   //add app object
   QJSValue jsApp=e->newQObject(qApp);
-  e->globalObject().setProperty("app",jsApp);
+  e->globalObject().setProperty("xapp",jsApp);
   QQmlEngine::setObjectOwnership(qApp,QQmlEngine::CppOwnership);
   //add all app child QObjects
   foreach(QString s,qApp->dynamicPropertyNames()){
@@ -95,6 +96,9 @@ QmlView::QmlView(QString src,QWindow *parent)
       QQmlEngine::setObjectOwnership(v.value<QObject*>(),QQmlEngine::CppOwnership);
     }
   }
+
+  FactSystem::syncJS(e);
+
 
 
   if(src.isEmpty())return;

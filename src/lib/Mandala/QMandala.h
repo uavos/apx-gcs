@@ -146,14 +146,6 @@ public:
   uint errcnt();
   Q_PROPERTY(uint upcnt READ upcnt WRITE setUpcnt NOTIFY upcntChanged)
   uint upcnt();
-  Q_PROPERTY(bool soundsEnabled READ soundsEnabled WRITE setsoundsEnabled NOTIFY soundsEnabledChanged)
-  bool soundsEnabled();
-  Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly NOTIFY readOnlyChanged)
-  bool readOnly();
-  Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
-  bool smooth();
-  Q_PROPERTY(bool test READ test WRITE setTest NOTIFY testChanged)
-  bool test();
   Q_PROPERTY(QString uavName READ uavName WRITE setUavName NOTIFY uavNameChanged)
   QString uavName();
   Q_PROPERTY(bool isLocal READ isLocal NOTIFY isLocalChanged)
@@ -171,10 +163,6 @@ private:
   bool m_online;
   uint m_dlcnt;
   uint m_upcnt;
-  bool m_soundsEnabled;
-  bool m_readOnly;
-  bool m_smooth;
-  bool m_test;
   QString m_uavName;
   uint m_size;
 signals:
@@ -186,10 +174,6 @@ signals:
   void dlcntChanged(uint);
   void errcntChanged(uint);
   void upcntChanged(uint);
-  void soundsEnabledChanged(bool);
-  void smoothChanged(bool);
-  void readOnlyChanged(bool);
-  void testChanged(bool);
   void uavNameChanged(QString);
   void isLocalChanged(bool);
   void sizeChanged(uint);
@@ -199,10 +183,6 @@ public slots:
   Q_INVOKABLE void setDlcnt(uint v);
   Q_INVOKABLE void setErrcnt(uint v);
   Q_INVOKABLE void setUpcnt(uint v);
-  Q_INVOKABLE void setsoundsEnabled(bool v);
-  Q_INVOKABLE void setSmooth(bool v);
-  Q_INVOKABLE void setReadOnly(bool v);
-  Q_INVOKABLE void setTest(bool v);
   Q_INVOKABLE void setUavName(QString v);
   Q_INVOKABLE void setSize(uint v);
 private:

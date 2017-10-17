@@ -20,65 +20,55 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactTree_H
-#define FactTree_H
+#ifndef AppSettings_H
+#define AppSettings_H
 //=============================================================================
 #include <QtCore>
+#include "FactSystem.h"
 //=============================================================================
-class FactTree: public QAbstractListModel
+class AppSettings: public Fact
 {
   Q_OBJECT
-  Q_ENUMS(ItemType)
-
-  Q_PROPERTY(ItemType treeItemType READ treeItemType CONSTANT)
-  Q_PROPERTY(int level READ level CONSTANT)
-  Q_PROPERTY(int size READ size NOTIFY sizeChanged)
-
-
 public:
 
-  enum ItemType {
-    RootItem =0,
-    GroupItem,
-    FactItem,
-    ConstItem,
-  };
+  explicit AppSettings(FactSystem *parent=0);
 
-  explicit FactTree(FactTree *parent, ItemType treeItemType);
+  static QVariant value(const QString &name)
+  {
+    return _instance->fact(name)->value();
+  }
+  static QSettings *settings()
+  {
+    return _instance->m_settings;
+  }
 
-  //tree structure manipulation
-  virtual void addItem(FactTree *child);
-  virtual void removeItem(FactTree *child);
+  QSettings *m_settings;
 
-  //internal tree
-  int num() const;
-  FactTree * child(int n) const;
-  FactTree * parentItem() const;
-  QList<FactTree*> childItems() const;
+  //static helpers
+  static AppSettings * _instance;
 
-public slots:
-  virtual void clear(void);
-signals:
-  void structChanged(FactTree *item);
-
-protected:
-  //ListModel override
-  virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
-
-  QList<FactTree*> m_items;
-  FactTree *m_parentItem;
-
-  //-----------------------------------------
-  //PROPERTIES
+private slots:
+  void readonlyChanged();
+};
+//=============================================================================
+class AppSettingFact: public Fact
+{
+  Q_OBJECT
 public:
-  virtual ItemType treeItemType() const;
-  virtual int level(void) const;
-  virtual int size() const;
+  explicit AppSettingFact(QSettings *settings,Fact *parent, QString name, QString label, QString descr, QString section, DataType dataType, QVariant defaultValue=QVariant());
+
+  static QList<AppSettingFact*> list;
+
+  void load();
+  void save();
+private:
+  QSettings *m_settings;
+  QVariant m_defaultValue;
 protected:
-  ItemType m_treeItemType;
-  int m_level;
-signals:
-  void sizeChanged();
+  //Fact override
+  bool setValue(const QVariant &v);
 };
 //=============================================================================
 #endif
+
+

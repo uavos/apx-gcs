@@ -12,7 +12,7 @@ Item{
     property bool loaded: comm.status === Loader.Ready &&
                           pfd.status === Loader.Ready &&
                           nav.status === Loader.Ready
-    Behavior on opacity { enabled: mandala.smooth; PropertyAnimation {duration: 500} }
+    Behavior on opacity { enabled: app.settings.smooth.value; PropertyAnimation {duration: 500} }
 
     GCSMenuPopup {
         id: popupMenu
@@ -22,7 +22,7 @@ Item{
 
     Loader {
         id: comm
-        asynchronous: mandala.smooth
+        asynchronous: app.settings.smooth.value
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -32,7 +32,7 @@ Item{
 
     Loader {
         id: pfd
-        asynchronous: mandala.smooth
+        asynchronous: app.settings.smooth.value
         anchors.fill: parent
         anchors.topMargin: comm.height
         anchors.bottomMargin: mandala.limit(comm.height,20,comm.height)
@@ -51,7 +51,7 @@ Item{
 
     Loader {
         id: nav
-        asynchronous: mandala.smooth
+        asynchronous: app.settings.smooth.value
         anchors.top: btm_sep.bottom
         anchors.bottom: parent.bottom
         anchors.left: parent.left

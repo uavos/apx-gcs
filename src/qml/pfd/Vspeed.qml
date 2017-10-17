@@ -7,7 +7,7 @@ ControlArea {
 
     //instrument item
     id: vsi_window
-    property double anumation_duration: mandala.smooth?200:0
+    property double anumation_duration: app.settings.smooth.value?200:0
     anchors.verticalCenter: parent.verticalCenter
 
     property double scaleFactor: vsi_scale.height/svgRenderer.elementBounds("pfd/pfd.svg", "vsi-scale").height

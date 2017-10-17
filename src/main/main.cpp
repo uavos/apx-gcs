@@ -38,6 +38,8 @@
 #include "RunGuard.h"
 #include "SoundEffects.h"
 #include "AppShortcuts.h"
+#include "FactSystem.h"
+#include "AppSettings.h"
 //============================================================================
 //global variables
 QMandala *mandala;
@@ -99,6 +101,10 @@ int main(int argc, char *argv[])
   QCoreApplication::setOrganizationDomain("uavos.com");
   QCoreApplication::setApplicationName("gcs");
   QSettings().setDefaultFormat(QSettings::IniFormat);
+
+  FactSystem *factSystem=new FactSystem();
+
+  new AppSettings(factSystem);
 
   if(QSettings().value("qsg_basic").toBool()){
     qputenv("QSG_RENDER_LOOP","basic");
@@ -187,7 +193,7 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),mandala,SLOT(upCntInc()));
   QObject::connect(datalink,SIGNAL(dataReceived(QByteArray)),mandala,SLOT(dlCntInc()));
 
-  QObject::connect(mandala,SIGNAL(readOnlyChanged(bool)),datalink,SLOT(setReadOnly(bool)));
+  //QObject::connect(mandala,SIGNAL(readOnlyChanged(bool)),datalink,SLOT(setReadOnly(bool)));
 
   //gate serial ports?
   //QObject::connect(serial1,SIGNAL(received(QByteArray)),serial2,SLOT(send(QByteArray)));
@@ -260,6 +266,8 @@ int main(int argc, char *argv[])
 
   delete serial1;
   delete serial2;
+
+  delete factSystem;
 
   /*delete httpService;
   delete mainForm;

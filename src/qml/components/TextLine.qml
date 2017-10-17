@@ -78,7 +78,7 @@ Item {
         font.family: font_condenced
         color: textLine.color
         onTextChanged: { fallTimer.stop(); textItem.opacity=1; fallTimer.start();}
-        Behavior on opacity { enabled: mandala.smooth; PropertyAnimation {duration: 200} }
+        Behavior on opacity { enabled: app.settings.smooth.value; PropertyAnimation {duration: 200} }
         Timer {
             id: fallTimer
             interval: textLine.showTime-200; running: false; repeat: false

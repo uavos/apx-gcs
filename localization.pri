@@ -2,11 +2,11 @@
 #               $$PWD/localization/by.ts
 
 CONFIG(release, debug|release) {
-    TRANSLATION_TARGET_DIR = $${OUT_PWD}/localization/$$TARGET
+    TRANSLATION_TARGET_DIR = $${OUT_PWD}/Localization/$$TARGET
     LANGUPD_OPTIONS = -locations relative -no-ui-lines
     LANGREL_OPTIONS = -compress -nounfinished -removeidentical
 } else {
-    TRANSLATION_TARGET_DIR = $${OUT_PWD}/localization/$$TARGET
+    TRANSLATION_TARGET_DIR = $${OUT_PWD}/Localization/$$TARGET
     LANGUPD_OPTIONS =
     LANGREL_OPTIONS = #-markuntranslated "MISS_TR "
 }
@@ -33,7 +33,7 @@ SOURCES += \
     RESOURCES =
 }
 
-TRANSLATION_TARGET_DIR = $$DESTDIR/../localization/$$TARGET
+TRANSLATION_TARGET_DIR = $$DESTDIR/../Localization/$$TARGET
 TS_FILES = $$PWD/localization/*.ts
 
 trstrings.target = $$OBJECTS_DIR/QMandalaStrings.h

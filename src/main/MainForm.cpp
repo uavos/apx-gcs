@@ -28,6 +28,7 @@
 #include "Config.h"
 #include "QmlView.h"
 #include "DatalinkServer.h"
+#include "AppSettings.h"
 //=============================================================================
 MainForm::MainForm(QWidget *parent)
   : QMainWindow(parent),
@@ -85,11 +86,11 @@ MainForm::MainForm(QWidget *parent)
   mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),mandala->current->rec,SLOT(discard()));
   mFile->addSeparator();
 
-  a=new QAction(tr("Sounds"),this);
+  /*a=new QAction(tr("Sounds"),this);
   a->setCheckable(true);
-  a->setChecked(mandala->soundsEnabled());
-  connect(a,SIGNAL(triggered(bool)),mandala,SLOT(setsoundsEnabled(bool)));
-  connect(mandala,SIGNAL(soundsEnabledChanged(bool)),a,SLOT(setChecked(bool)));
+  a->setChecked(AppSettings::value("sounds").toBool());
+  connect(a,SIGNAL(triggered(bool)),AppSettings::fact("sounds"),SLOT(setValue(bool)));
+  connect(AppSettings::fact("sounds"),SIGNAL(valueChanged(bool)),a,SLOT(setChecked(bool)));
   mFile->addAction(a);
 
   a=new QAction(tr("Read only"),this);
@@ -97,14 +98,14 @@ MainForm::MainForm(QWidget *parent)
   a->setChecked(mandala->readOnly());
   connect(a,SIGNAL(triggered(bool)),mandala,SLOT(setReadOnly(bool)));
   connect(mandala,SIGNAL(readOnlyChanged(bool)),a,SLOT(setChecked(bool)));
-  mFile->addAction(a);
+  mFile->addAction(a);*/
 
-  a=new QAction(tr("Allow external controls"),this);
+  /*a=new QAction(tr("Allow external controls"),this);
   a->setCheckable(true);
   a->setChecked(datalink->extctrEnabled());
   QObject::connect(a,SIGNAL(triggered(bool)),datalink,SLOT(setExtctrEnabled(bool)));
   connect(datalink,SIGNAL(extctrEnabledChanged(bool)),a,SLOT(setChecked(bool)));
-  mFile->addAction(a);
+  mFile->addAction(a);*/
 
   mServers=new QMenu(tr("Servers"),mFile);
   mServers->setIcon(QIcon(":/icons/old/bt.png"));
@@ -357,6 +358,7 @@ void MainForm::qmlPluginActionToggled(bool checked)
   plugins_qml.append(pname);
   QDockWidget *dock=static_cast<QDockWidget*>(sender()->parent());
   dock->setWidget(view->createWidget(a->text()));
+  plugins_qmlviews.insert(dock,view); //for focus bugfix
   //qDebug("Plugin loaded: %s",pname.toUtf8().data());
 }
 //=============================================================================
@@ -385,6 +387,21 @@ DockWidget * MainForm::addDock(QString name,QWidget *w)
   plugins_docks.insertMulti(dock->windowTitle(),dock);
   if(w)dock->setWidget(w);
   return dock;
+}
+//=============================================================================
+bool MainForm::event(QEvent *event)
+{ //ACTIVE FOCUS CHANGE QML BUG
+  if (event->type() == QEvent::ActivationChange ||
+       event->type() == QEvent::WindowUnblocked) {
+    //qDebug()<<event;
+    foreach(QmlView *view,plugins_qmlviews.values()){
+      if(view->isActive()){
+        plugins_qmlviews.key(view)->activateWindow();
+        return true;
+      }
+    }
+  }
+  return QMainWindow::event(event);
 }
 //=============================================================================
 void DockWidget::resizeEvent(QResizeEvent * event)

@@ -29,4 +29,5 @@ SUBDIRS += pawncc
 
 for(subdir, PLUGINS) {
     SUBDIRS += Plugins/$$subdir
+    Plugins/$$subdir.depends += lib
 }

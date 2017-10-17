@@ -22,6 +22,7 @@
  */
 #include "SoundEffects.h"
 #include "QMandala.h"
+#include "AppSettings.h"
 //=============================================================================
 SoundEffects::SoundEffects(QObject *parent)
     :QObject(parent)
@@ -77,7 +78,7 @@ void SoundEffects::play(QString text)
     while(st.size())play(st.takeFirst());
     return;
   }
-  if(!mandala->soundsEnabled())return;
+  if(!AppSettings::value("sounds").toBool())return;
   //qDebug()<<"play"<<text;
   text.remove(':');
   QStringList st;

@@ -76,7 +76,7 @@ Item {
         source: mediaplayer
 
         rotation: mandala.angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0))
-        Behavior on rotation { RotationAnimation {duration: mandala.smooth?200:0; direction: RotationAnimation.Shortest; } }
+        Behavior on rotation { RotationAnimation {duration: app.settings.smooth.value?200:0; direction: RotationAnimation.Shortest; } }
         scale: 1.0+(autoScale?Math.abs(Math.sin(rotation*3.14/180))*width/height:0)
     }
 

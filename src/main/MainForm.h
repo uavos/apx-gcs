@@ -29,6 +29,7 @@
 //=============================================================================
 class DatalinkServer;
 class DockWidget;
+class QmlView;
 class MainForm: public QMainWindow
 {
   Q_OBJECT
@@ -42,6 +43,7 @@ private:
   QHash<QString,PluginInterface*> plugins_so;
   QList<QString> plugins_qml;
   QMultiMap<QString,DockWidget*> plugins_docks;
+  QMap<QDockWidget*,QmlView*> plugins_qmlviews;
 
   QMenu *mFile,*mEdit,*mTools,*mWindow,*mHelp;
 
@@ -62,6 +64,7 @@ private:
 
   DatalinkServer *datalink;
 protected:
+  bool event(QEvent *event);
   void closeEvent(QCloseEvent *e);
 private slots:
   void loadPlugins();

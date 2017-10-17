@@ -11,7 +11,7 @@ GCSMenu {
 
     fields: GCSMenuModel {
         GCSMenuField { title: qsTr("Connectivity"); separator: true; }
-        GCSMenuField { title: qsTr("Read only"); onClicked: mandala.readOnly=!mandala.readOnly; checked: mandala.readOnly; checkable: true; }
+        GCSMenuField { fact: app.settings.readonly } //title: qsTr("Read only"); onClicked: app.settings.readonly.value=!app.settings.readonly.value; checked: app.settings.readonly.value; checkable: true; }
         GCSMenuField {
             title: qsTr("Serial Ports");
             fields: GCSMenuModel {
@@ -35,14 +35,14 @@ GCSMenu {
             }
         }
         GCSMenuField { title: qsTr("Application"); separator: true; }
-        GCSMenuField { title: qsTr("Sounds"); onClicked: mandala.soundsEnabled=!mandala.soundsEnabled; checked: mandala.soundsEnabled; checkable: true; }
+        GCSMenuField { fact: app.settings.sounds } //title: qsTr("Sounds"); onClicked: mandala.soundsEnabled=!mandala.soundsEnabled; checked: mandala.soundsEnabled; checkable: true; }
         GCSMenuField { title: "Language"; }
         GCSMenuField { title: qsTr("Voice");  }
         GCSMenuField { title: qsTr("Shortcuts"); pageMenu: "menu/MenuShortcuts.qml" }
 
         GCSMenuField { title: qsTr("Graphics"); separator: true; }
-        GCSMenuField { title: qsTr("Accelerate graphics"); checkable: true; }
-        GCSMenuField { title: qsTr("Smooth animations"); onClicked: mandala.smooth=!mandala.smooth; checked: mandala.smooth; checkable: true; }
+        GCSMenuField { fact: app.settings.opengl } //title: qsTr("Accelerate graphics"); checkable: true; }
+        GCSMenuField { fact: app.settings.smooth } //title: qsTr("Smooth animations"); onClicked: app.settings.smooth.value=!app.settings.smooth.value; checked: app.settings.smooth.value; checkable: true; }
     }
 
 }

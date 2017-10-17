@@ -35,7 +35,7 @@ private:
 protected:
     void paintEvent(QPaintEvent *p);
     void resizeEvent(QResizeEvent *event);
-    int heightForWidth( int w ) { return w; }
+    int heightForWidth( int w ) const { return w; }
 };
 
 #endif // DRAWINGAREA_H

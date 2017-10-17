@@ -15,7 +15,7 @@ Item {
     property double bottomHeight: height*0.4
     clip: true
     property double value: mandala.angle(yaw.value)
-    Behavior on value { enabled: mandala.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+    Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
 
     /*Rectangle {
         color: "#40000000"
@@ -92,7 +92,7 @@ Item {
             id: hdg_crs_bug
             elementName: "hdg-crs-bug"
             property double value: mandala.angle(course.value-yaw.value)
-            Behavior on value { enabled: mandala.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             smooth: true
             border: 1
             fillMode: Image.PreserveAspectFit
@@ -108,7 +108,7 @@ Item {
             id: hdg_cmd_bug
             elementName: "hdg-cmd-bug"
             property double value: mandala.angle(cmd_course.value-yaw.value)
-            Behavior on value { enabled: mandala.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             smooth: true
             border: 1
             fillMode: Image.PreserveAspectFit
@@ -129,7 +129,7 @@ Item {
                 (mode.value===mode_WPT && mtype.value===mtype_line)
             elementName: "hdg-rw-bug"
             property double value: mandala.angle(tgHDG.value-yaw.value)
-            Behavior on value { enabled: mandala.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             smooth: true
             border: 1
             fillMode: Image.PreserveAspectFit
@@ -189,7 +189,7 @@ Item {
         anchors.topMargin: scale_top.height
         property double maxW: 0.95*elementBounds.width*height/elementBounds.height/2
         property double valueW: mandala.limit(turn_calc.derivative*num2scaleWidth,-hdg_turnrate.maxW,hdg_turnrate.maxW)
-        Behavior on valueW { enabled: mandala.smooth; PropertyAnimation {duration: 500; } }
+        Behavior on valueW { enabled: app.settings.smooth.value; PropertyAnimation {duration: 500; } }
         //derivative
         Item {
             id: turn_calc
@@ -237,7 +237,7 @@ Item {
         }
         //steering yaw control
         property double valueR: mandala.limit(ctr_rudder.value*hdg_turnrate.maxW,-hdg_turnrate.maxW,hdg_turnrate.maxW)
-        Behavior on valueR { enabled: mandala.smooth; PropertyAnimation {duration: 100; } }
+        Behavior on valueR { enabled: app.settings.smooth.value; PropertyAnimation {duration: 100; } }
         Rectangle {
             anchors.top: parent.top
             anchors.bottom: parent.bottom

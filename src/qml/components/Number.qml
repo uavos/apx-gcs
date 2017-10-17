@@ -77,7 +77,7 @@ Item {
         radius: 3
         color: numValue.color
         opacity: numValue.blink?1:0
-        Behavior on opacity { PropertyAnimation {duration: mandala.smooth?100:0} }
+        Behavior on opacity { PropertyAnimation {duration: app.settings.smooth.value?100:0} }
     }
 
     Text {

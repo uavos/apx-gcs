@@ -20,65 +20,68 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactTree_H
-#define FactTree_H
+#ifndef AppSettingsPorts_H
+#define AppSettingsPorts_H
 //=============================================================================
 #include <QtCore>
+#include "FactSystem.h"
+class AppSettingsPorts;
 //=============================================================================
-class FactTree: public QAbstractListModel
+class AppSettingsPort: public Fact
 {
   Q_OBJECT
-  Q_ENUMS(ItemType)
-
-  Q_PROPERTY(ItemType treeItemType READ treeItemType CONSTANT)
-  Q_PROPERTY(int level READ level CONSTANT)
-  Q_PROPERTY(int size READ size NOTIFY sizeChanged)
-
-
 public:
+  explicit AppSettingsPort(AppSettingsPorts *parent,const AppSettingsPort *port=NULL);
 
-  enum ItemType {
-    RootItem =0,
-    GroupItem,
-    FactItem,
-    ConstItem,
-  };
+  Fact *_enabled;
+  Fact *_type;
+  Fact *_dev;
+  Fact *_baud;
+  Fact *_host;
+  Fact *_save;
+  Fact *_remove;
 
-  explicit FactTree(FactTree *parent, ItemType treeItemType);
+private:
+  AppSettingsPorts *container;
+  bool _new;
 
-  //tree structure manipulation
-  virtual void addItem(FactTree *child);
-  virtual void removeItem(FactTree *child);
+protected:
+  QString name(void) const;
+  QString title(void) const;
+  QString descr(void) const;
+private slots:
+  void typeChanged();
+public slots:
+  void defaults();
+};
+//=============================================================================
+class AppSettingsPorts: public Fact
+{
+  Q_OBJECT
+public:
+  explicit AppSettingsPorts(Fact *parent,const QString &sect=QString());
 
-  //internal tree
-  int num() const;
-  FactTree * child(int n) const;
-  FactTree * parentItem() const;
-  QList<FactTree*> childItems() const;
+  QList<AppSettingsPort*> ports;
+
+private:
+  AppSettingsPort *_add;
+  Fact *_allon;
+  Fact *_alloff;
+
+private slots:
+  void allonTriggered();
+  void alloffTriggered();
+
+  void portsChanged();
 
 public slots:
-  virtual void clear(void);
-signals:
-  void structChanged(FactTree *item);
+  void addTriggered();
+  void removeTriggered();
 
-protected:
-  //ListModel override
-  virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
+  void load();
+  void save();
 
-  QList<FactTree*> m_items;
-  FactTree *m_parentItem;
-
-  //-----------------------------------------
-  //PROPERTIES
-public:
-  virtual ItemType treeItemType() const;
-  virtual int level(void) const;
-  virtual int size() const;
-protected:
-  ItemType m_treeItemType;
-  int m_level;
-signals:
-  void sizeChanged();
 };
 //=============================================================================
 #endif
+

@@ -26,7 +26,7 @@ Item {
         smooth: true
         fillMode: Image.PreserveAspectFit
         rotation: value
-        Behavior on rotation { enabled: mandala.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+        Behavior on rotation { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
     }
     Item {
         anchors.fill: wind_arrow

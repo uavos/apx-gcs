@@ -41,7 +41,7 @@ AppShortcuts::AppShortcuts(QWidget *parent)
 //=============================================================================
 void AppShortcuts::load()
 {
-  QSettings settingsSystem(QMandala::Global::res().filePath("preferences/shortcuts.conf"),QSettings::IniFormat);
+  QSettings settingsSystem(QMandala::Global::res().filePath("templates/shortcuts.conf"),QSettings::IniFormat);
   foreach(QString key,settingsSystem.childKeys()){
     if(key.trimmed().startsWith("#"))continue;
     if(key.trimmed().isEmpty())continue;

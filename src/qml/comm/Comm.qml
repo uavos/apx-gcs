@@ -67,7 +67,7 @@ Rectangle {
         font.pixelSize: parent.height   //*0.99
         font.family: font_narrow
         color: mandala.isLocal?"yellow":"#5f5"
-        visible: mandala.test || mandala.dlcnt>0
+        visible: app.test.value || mandala.dlcnt>0
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
@@ -100,7 +100,7 @@ Rectangle {
             value: datalink.extConnected
             inverted: true
             toolTip: qsTr("External servers")
-            visible: mandala.test || datalink.serverNames.length>0
+            visible: app.test.value || datalink.serverNames.length>0
             width: height/0.5
             MouseArea {
                 id: menuServersArea
@@ -115,21 +115,21 @@ Rectangle {
             id: btn_ctr
             text: qsTr("CTR")
             color: "#5f5"
-            value: !mandala.readOnly
+            value: !app.settings.readonly.value
             inverted: true
             toolTip: qsTr("Enable controls")
             width: height/0.5
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: mandala.readOnly=!mandala.readOnly
+                onClicked: app.settings.readonly.value=!app.settings.readonly.value
             }
         }
 
         //comm stats
         CommNum {
             property string cRX: mandala.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
-            property string cTX: mandala.readOnly?"red":"cyan"
+            property string cTX: app.settings.readonly.value?"red":"cyan"
             property string cER: mandala.errcnt>1?"yellow":"gray"
             height: parent.height
             label: qsTr("DL")
@@ -161,7 +161,7 @@ Rectangle {
                 propagateComposedEvents: true
                 onClicked: mandala.errcnt=0
             }
-            Behavior on color { ColorAnimation {duration: mandala.smooth?250:0} }
+            Behavior on color { ColorAnimation {duration: app.settings.smooth.value?250:0} }
             Timer {
                 id: errTimer
                 interval: 5000
@@ -176,7 +176,7 @@ Rectangle {
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
-            color: mandala.readOnly?"red":"cyan"
+            color: app.settings.readonly.value?"red":"cyan"
             ToolTipArea { text: qsTr("Transmitted packets") }
         }
 
@@ -187,7 +187,7 @@ Rectangle {
             value: gcu_Ve.value.toFixed(1)
             valueColor: gcu_Ve.value>1?(gcu_Ve.value<7.4?"red":"yellow"):"gray"
             toolTip: gcu_Ve.descr
-            //visible: mandala.test || gcu_Ve.value>1
+            //visible: app.test.value || gcu_Ve.value>1
         }
 
 
@@ -209,7 +209,7 @@ Rectangle {
                 width: mandala.limit(v*parent.width*0.6,1,parent.width*0.6)
                 color: v<0.3?"red":v<0.7?"yellow":"green"
                 ToolTipArea { text: RSS.descr }
-                property int anim: (mandala.smooth)?200:0
+                property int anim: (app.settings.smooth.value)?200:0
                 Behavior on width { PropertyAnimation {duration: rss_bar.anim} }
                 Behavior on color { ColorAnimation {duration: rss_bar.anim} }
             }
@@ -226,7 +226,7 @@ Rectangle {
                 width: mandala.limit(v*parent.width*0.6,1,parent.width*0.6)
                 color: v<0.3?"red":v<0.7?"yellow":"green"
                 ToolTipArea { text: gcu_RSS.descr }
-                property int anim: (mandala.smooth)?200:0
+                property int anim: (app.settings.smooth.value)?200:0
                 Behavior on width { PropertyAnimation {duration: gcu_rss_bar.anim} }
                 Behavior on color { ColorAnimation {duration: gcu_rss_bar.anim} }
             }

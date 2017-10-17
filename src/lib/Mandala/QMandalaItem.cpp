@@ -23,6 +23,7 @@
 #include "QMandala.h"
 #include <QToolTip>
 #include "QMandala.h"
+#include "AppSettings.h"
 //=============================================================================
 //=============================================================================
 QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
@@ -399,7 +400,7 @@ QByteArray QMandalaItem::scrToArray(QScriptValue data)
 //=============================================================================
 void QMandalaItem::send(unsigned char var_idx, const QByteArray &data)
 {
-  if(QMandala::instance()->readOnly())return;
+  if(AppSettings::value("readonly").toBool())return;
   QByteArray ba;
   ba.append((unsigned char)var_idx);
   ba.append(data);

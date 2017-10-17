@@ -35,11 +35,11 @@ first.depends += $(first)
 QMAKE_EXTRA_TARGETS += first
 
 # COPY RESOURCES
-resource_dirs = audio preferences maps missions nodes scripts telemetry vpn xplane ../src/SDK
+resource_dirs = audio templates maps missions nodes scripts telemetry vpn xplane ../src/SDK
 copydata.target = $$OBJECTS_DIR/copydata.stamp
-copydata.commands = touch $$copydata.target && $(MKDIR) \"$$shell_path($$DESTDIR/../resources)\" &&
+copydata.commands = touch $$copydata.target && $(MKDIR) \"$$shell_path($$DESTDIR/../Resources)\" &&
 for(a, resource_dirs){
-  copydata.commands += $(COPY_DIR) \"$$shell_path($$PWD/$$RES_DIR/$${a})\" \"$$shell_path($$DESTDIR/../resources)\" &&
+  copydata.commands += $(COPY_DIR) \"$$shell_path($$PWD/$$RES_DIR/$${a})\" \"$$shell_path($$DESTDIR/../Resources)\" &&
 }
 copydata.commands += true
 copydata.depends += $$files($$PWD/$$RES_DIR/*, true)

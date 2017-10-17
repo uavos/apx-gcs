@@ -51,8 +51,8 @@ Item {
         fillMode: VideoOutput.PreserveAspectCrop
         source: mediaPlayer
 
-        rotation: mandala.smooth_angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0),"videoOutput")
-        Behavior on rotation { PropertyAnimation {duration: mandala.smooth?200:0} }
+        rotation: app.settings.smooth.value_angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0),"videoOutput")
+        Behavior on rotation { PropertyAnimation {duration: app.settings.smooth.value?200:0} }
         scale: 1.0+(autoScale?Math.abs(Math.sin(rotation*3.14/180))*width/height:0)
     }
 

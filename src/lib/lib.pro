@@ -42,10 +42,16 @@ HEADERS += \
 
 # Fact System
 SOURCES += \
+    FactSystem/FactSystem.cpp \
     FactSystem/FactTree.cpp \
+    FactSystem/FactData.cpp \
+    FactSystem/Fact.cpp \
 
 HEADERS += \
+    FactSystem/FactSystem.h \
     FactSystem/FactTree.h \
+    FactSystem/FactData.h \
+    FactSystem/Fact.h \
 
 # Communication
 SOURCES += \
@@ -59,6 +65,17 @@ HEADERS += \
     comm/EscReader.h \
     comm/HttpService.h \
     comm/Serial.h \
+
+# settings
+SOURCES += \
+    AppSettings/AppDirs.cpp \
+    AppSettings/AppSettings.cpp \
+    AppSettings/AppSettingsPorts.cpp \
+
+HEADERS += \
+    AppSettings/AppDirs.h \
+    AppSettings/AppSettings.h \
+    AppSettings/AppSettingsPorts.h \
 
 # other
 SOURCES += \

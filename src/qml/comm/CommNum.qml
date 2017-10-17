@@ -8,7 +8,7 @@ Item {
     property string toolTip
     property string labelColor: "gray"
     property string valueColor: "white"
-    property double anumation_duration: mandala.smooth?200:0
+    property double anumation_duration: app.settings.smooth.value?200:0
     property string valueFont: font_narrow //font_mono
     width: numValue_label.width+numValue_value.width+(value?8:0)
     Text {

@@ -16,7 +16,7 @@ ControlArea {
     stepLimit: 100
 
     //instrument item
-    property double anumation_duration: mandala.smooth?200:0
+    property double anumation_duration: app.settings.smooth.value?200:0
     anchors.fill: parent
     //anchors.verticalCenter: parent.verticalCenter
 
@@ -192,7 +192,7 @@ ControlArea {
         id: altitude_triangle
         elementName: "altitude-triangle"
         smooth: true
-        visible: mandala.test || mandala.dlcnt>0
+        visible: app.test.value || mandala.dlcnt>0
         width: elementBounds.width*altitude_window.strip_scale
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left

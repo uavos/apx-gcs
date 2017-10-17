@@ -50,14 +50,7 @@ QMandala::QMandala()
   m_online=false;
   m_dlcnt=0;
   m_upcnt=0;
-  m_soundsEnabled=false;
-  m_readOnly=false;
-  m_test=false;
   m_size=0;
-
-  setsoundsEnabled(QSettings().value("sounds",false).toBool());
-  setReadOnly(QSettings().value("readOnly",false).toBool());
-  setSmooth(QSettings().value("smooth_instruments",true).toBool());
 
   onlineTimer.setSingleShot(true);
   onlineTimer.setInterval(7000);
@@ -99,7 +92,7 @@ bool QMandala::Global::devMode()
 //=============================================================================
 QDir QMandala::Global::plugins()
 {
-  return QDir(QCoreApplication::applicationDirPath()+"/../plugins/gcs");
+  return QDir(QCoreApplication::applicationDirPath()+"/../Plugins/gcs");
 }
 QDir QMandala::Global::res()
 {
@@ -107,7 +100,7 @@ QDir QMandala::Global::res()
   const QString hpath=QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
   return QDir("assets:/data/");
 #else
-  return QDir(QCoreApplication::applicationDirPath()+"/../resources");
+  return QDir(QCoreApplication::applicationDirPath()+"/../Resources");
 #endif
 }
 QDir QMandala::Global::user()
@@ -130,7 +123,7 @@ QDir QMandala::Global::maps()
 }
 QDir QMandala::Global::lang()
 {
-  return QDir(QCoreApplication::applicationDirPath()+"/../localization/gcs");
+  return QDir(QCoreApplication::applicationDirPath()+"/../Localization/gcs");
 }
 QDir QMandala::Global::missions()
 {
@@ -738,51 +731,6 @@ void QMandala::setUpcnt(uint v)
   if(m_upcnt==v)return;
   m_upcnt=v;
   emit upcntChanged(v);
-}
-bool QMandala::soundsEnabled()
-{
-  return m_soundsEnabled;
-}
-void QMandala::setsoundsEnabled(bool v)
-{
-  if(m_soundsEnabled==v)return;
-  m_soundsEnabled=v;
-  QSettings().setValue("sounds",v);
-  emit soundsEnabledChanged(v);
-}
-bool QMandala::readOnly()
-{
-  return m_readOnly;
-}
-void QMandala::setReadOnly(bool v)
-{
-  if(m_readOnly==v)return;
-  m_readOnly=v;
-  QSettings().setValue("readOnly",v);
-  emit readOnlyChanged(v);
-  if(v)qDebug("%s",tr("Read only datalink").toUtf8().data());
-  else qDebug("%s",tr("Uplink allowed").toUtf8().data());
-}
-bool QMandala::smooth()
-{
-  return m_smooth;
-}
-void QMandala::setSmooth(bool v)
-{
-  if(m_smooth==v)return;
-  m_smooth=v;
-  QSettings().setValue("smooth_instruments",v);
-  emit smoothChanged(v);
-}
-bool QMandala::test()
-{
-  return m_test;
-}
-void QMandala::setTest(bool v)
-{
-  if(m_test==v)return;
-  m_test=v;
-  emit testChanged(v);
 }
 QString QMandala::uavName()
 {

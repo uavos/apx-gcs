@@ -7,7 +7,7 @@ Rectangle {
     color: "black"
     anchors.fill: parent
     clip: true
-    property double anumation_duration: mandala.smooth?100:0
+    property double anumation_duration: app.settings.smooth.value?100:0
     property double txtHeight: mandala.limit(hdg_deg_rect.height,8,50)
     property bool isLanding:
         mode.value===mode_LANDING ||
@@ -157,7 +157,7 @@ Rectangle {
             id: wpt_home
             elementName: "hdg-wpt-green"
             smooth: true
-            visible: mandala.test || dHome.value>5
+            visible: app.test.value || dHome.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
@@ -169,7 +169,7 @@ Rectangle {
         HdgImage {
             elementName: "hdg-wpt-blue"
             smooth: true
-            visible: mandala.test || dWPT.value>5
+            visible: app.test.value || dWPT.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
@@ -219,7 +219,7 @@ Rectangle {
         NumberHdg {
             id: fuel_text
             property double v: fuel.value
-            visible: mandala.test || v>0
+            visible: app.test.value || v>0
             anchors.right: parent.right
             anchors.bottom: lat_lon_text.top
             height: hdg.txtHeight
@@ -231,7 +231,7 @@ Rectangle {
         NumberHdg {
             id: frate_text
             property double v: frate.value
-            visible: mandala.test || v>0
+            visible: app.test.value || v>0
             anchors.right: parent.right
             anchors.bottom: fuel_text.top
             height: hdg.txtHeight
@@ -252,7 +252,7 @@ Rectangle {
         }
         NumberHdg {
             id: rd_text
-            visible: mandala.test || isLanding
+            visible: app.test.value || isLanding
             property double v: rwDelta.value
             anchors.left: parent.left
             anchors.bottom: dh_text.top
@@ -295,7 +295,7 @@ Rectangle {
 
             NumberHdg {
                 id: wpt_text
-                visible: mandala.test || mode.value===mode_WPT
+                visible: app.test.value || mode.value===mode_WPT
                 smooth: true
                 height: hdg.txtHeight
                 mfield: wpidx
@@ -306,7 +306,7 @@ Rectangle {
 
             NumberHdg {
                 id: poi_text
-                visible: mandala.test || (mode.value===mode_STBY && loops.value>0)
+                visible: app.test.value || (mode.value===mode_STBY && loops.value>0)
                 smooth: true
                 height: hdg.txtHeight
                 mfield: loops

@@ -2,6 +2,300 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="be_BY">
 <context>
+    <name>AppSettings</name>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
+        <source>Application settings and preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="43"/>
+        <source>Connectivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
+        <source>Read only</source>
+        <translation type="unfinished">Толькі чытанне</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
+        <source>Block all uplink data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="49"/>
+        <source>Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="49"/>
+        <source>Networking preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="51"/>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="52"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="52"/>
+        <source>Local server customized name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="53"/>
+        <source>Password</source>
+        <translation type="unfinished">Пароль</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="53"/>
+        <source>Local server access password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="54"/>
+        <source>Allow external controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="54"/>
+        <source>Don&apos;t block uplink from clients</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="55"/>
+        <source>Client</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="56"/>
+        <source>Master host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="56"/>
+        <source>Remote server address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="57"/>
+        <source>Master Password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="57"/>
+        <source>Remote server password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="58"/>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="59"/>
+        <source>HTTP proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="59"/>
+        <source>Proxy for web data requests</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="63"/>
+        <source>Sounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="63"/>
+        <source>Enable all application sounds and voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="65"/>
+        <source>Language</source>
+        <translation type="unfinished">Мова</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="65"/>
+        <source>Interface localization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="71"/>
+        <source>Voice</source>
+        <translation type="unfinished">Голас</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="71"/>
+        <source>Speaking voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="77"/>
+        <source>Show descriptions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="77"/>
+        <source>Enable menu items description text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="79"/>
+        <source>Graphics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="80"/>
+        <source>Accelerate graphics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="80"/>
+        <source>Enable OpenGL graphics when supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="81"/>
+        <source>Smooth animations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="81"/>
+        <source>Enable animations and antialiasing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="92"/>
+        <source>Read only datalink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="93"/>
+        <source>Uplink allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AppSettingsPort</name>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="26"/>
+        <source>add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="26"/>
+        <source>Add new port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="26"/>
+        <source>Configure new port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="29"/>
+        <source>Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="33"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="33"/>
+        <source>Link type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="34"/>
+        <source>System serial port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="35"/>
+        <source>Network server address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="40"/>
+        <source>Port path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="40"/>
+        <source>Device name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="45"/>
+        <source>Baud rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="45"/>
+        <source>Serial port speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="48"/>
+        <source>Host address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="48"/>
+        <source>Remote server IP</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AppSettingsPorts</name>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="81"/>
+        <source>Datalink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="81"/>
+        <source>Modems and network servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="86"/>
+        <source>Enable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="86"/>
+        <source>Turn on all communication ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="88"/>
+        <source>Disable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="88"/>
+        <source>Turn off all communication ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>BlackboxDownload</name>
     <message>
         <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="14"/>
@@ -356,6 +650,73 @@
     </message>
 </context>
 <context>
+    <name>FactSystem</name>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="37"/>
+        <source>System tree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="43"/>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="43"/>
+        <source>Application version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="45"/>
+        <source>unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="49"/>
+        <source>Branch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="49"/>
+        <source>Source code repository branch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="53"/>
+        <source>Development mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="61"/>
+        <source>Test visual elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="74"/>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="75"/>
+        <source>Application</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FactTree</name>
+    <message>
+        <location filename="../src/lib/FactSystem/FactTree.cpp" line="134"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactTree.cpp" line="135"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactTree.cpp" line="136"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Filter</name>
     <message>
         <location filename="../src/Plugins/telemetry/Filter.ui" line="14"/>
@@ -573,32 +934,32 @@
 <context>
     <name>MainForm</name>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="42"/>
+        <location filename="../src/main/MainForm.cpp" line="43"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="43"/>
+        <location filename="../src/main/MainForm.cpp" line="44"/>
         <source>&amp;UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="46"/>
+        <location filename="../src/main/MainForm.cpp" line="47"/>
         <source>&amp;Tools</source>
         <translation>&amp;Інструменты</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="47"/>
+        <location filename="../src/main/MainForm.cpp" line="48"/>
         <source>&amp;Window</source>
         <translation>&amp;Акно</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="48"/>
+        <location filename="../src/main/MainForm.cpp" line="49"/>
         <source>&amp;Help</source>
         <translation>&amp;Даведка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="57"/>
+        <location filename="../src/main/MainForm.cpp" line="58"/>
         <source>System Configuration</source>
         <translation>Настáўленні</translation>
     </message>
@@ -607,118 +968,107 @@
         <translation type="vanished">Настáўленні скаротаў</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="60"/>
+        <location filename="../src/main/MainForm.cpp" line="61"/>
         <source>Toggle Full Screen</source>
         <translation>На ўвесь экран</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="61"/>
+        <location filename="../src/main/MainForm.cpp" line="62"/>
         <source>Auto arrange</source>
         <translation>Аўтарасстаноўка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="66"/>
+        <location filename="../src/main/MainForm.cpp" line="67"/>
         <source>Mandala Report</source>
         <translation>Значэнні Mandala</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="67"/>
+        <location filename="../src/main/MainForm.cpp" line="68"/>
         <source>Documentation</source>
         <translation>Дакументацыя</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="69"/>
+        <location filename="../src/main/MainForm.cpp" line="70"/>
         <source>VPN support</source>
         <translation>Падтрымка VPN</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="78"/>
+        <location filename="../src/main/MainForm.cpp" line="79"/>
         <source>Record data</source>
         <translation>Запісваць даныя</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="85"/>
+        <location filename="../src/main/MainForm.cpp" line="86"/>
         <source>Discard current file</source>
         <translation>Закрыць дзейны файл без захоўвання</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="88"/>
-        <source>Sounds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/main/MainForm.cpp" line="95"/>
         <source>Read only</source>
-        <translation>Толькі чытанне</translation>
+        <translation type="vanished">Толькі чытанне</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="102"/>
-        <source>Allow external controls</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/main/MainForm.cpp" line="113"/>
+        <location filename="../src/main/MainForm.cpp" line="114"/>
         <source>Connect to...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="119"/>
+        <location filename="../src/main/MainForm.cpp" line="120"/>
         <source>Exit</source>
         <translation>Выйсці</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="137"/>
+        <location filename="../src/main/MainForm.cpp" line="138"/>
         <source>DEVELOPMENT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="149"/>
-        <location filename="../src/main/MainForm.cpp" line="249"/>
+        <location filename="../src/main/MainForm.cpp" line="150"/>
+        <location filename="../src/main/MainForm.cpp" line="250"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="243"/>
+        <location filename="../src/main/MainForm.cpp" line="244"/>
         <source>Duplicate plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="288"/>
+        <location filename="../src/main/MainForm.cpp" line="289"/>
         <source>Feature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="578"/>
+        <location filename="../src/main/MainForm.cpp" line="595"/>
         <source>Username</source>
         <translation>Імя карыстальніка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="580"/>
+        <location filename="../src/main/MainForm.cpp" line="597"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="585"/>
+        <location filename="../src/main/MainForm.cpp" line="602"/>
         <source>Login</source>
         <translation>Увайсці</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="633"/>
+        <location filename="../src/main/MainForm.cpp" line="650"/>
         <source>VPN connection initiated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="637"/>
+        <location filename="../src/main/MainForm.cpp" line="654"/>
         <source>VPN disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="663"/>
+        <location filename="../src/main/MainForm.cpp" line="680"/>
         <source>Host address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="109"/>
+        <location filename="../src/main/MainForm.cpp" line="110"/>
         <source>Servers</source>
         <translation>Серверы</translation>
     </message>
@@ -2162,22 +2512,22 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="347"/>
+        <location filename="../src/main/main.cpp" line="355"/>
         <source>Video</source>
         <translation type="unfinished">Відэа</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="350"/>
+        <location filename="../src/main/main.cpp" line="358"/>
         <source>EFIS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="353"/>
+        <location filename="../src/main/main.cpp" line="361"/>
         <source>HDG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="356"/>
+        <location filename="../src/main/main.cpp" line="364"/>
         <source>Controls</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2185,129 +2535,119 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="194"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="187"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="216"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="209"/>
         <source>identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="289"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="282"/>
         <source>UAV</source>
         <translation type="unfinished">БЛА</translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="319"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="312"/>
         <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="416"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="409"/>
         <source>Duplicate squawk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="423"/>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="466"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="416"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="459"/>
         <source>UAV not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="428"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="421"/>
         <source>selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="475"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="468"/>
         <source>GCU not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="763"/>
-        <source>Read only datalink</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="764"/>
-        <source>Uplink allowed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QMandalaItem</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="281"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="282"/>
         <source>Function not registered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="295"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="296"/>
         <source>Syntax error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="334"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="355"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="367"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="335"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="356"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="368"/>
         <source>Can&apos;t parse command parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="491"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="492"/>
         <source>Error creating backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="555"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="556"/>
         <source>error serial data received</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="679"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="680"/>
         <source>GCU accessible names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="680"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
         <source>TextName</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="680"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="680"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
         <source>Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="680"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
         <source>Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="685"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
         <source>Structure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
         <source>Index [hex]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
         <source>Values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2315,152 +2655,152 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="153"/>
+        <location filename="../src/main/main.cpp" line="159"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="204"/>
+        <location filename="../src/main/main.cpp" line="210"/>
         <source>Developer mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="213"/>
+        <location filename="../src/main/main.cpp" line="219"/>
         <source>Ground Control Unit</source>
         <translation>Наземны Пункт Кіравання</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="216"/>
+        <location filename="../src/main/main.cpp" line="222"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="336"/>
+        <location filename="../src/main/main.cpp" line="344"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="337"/>
+        <location filename="../src/main/main.cpp" line="345"/>
         <source>User QML plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="389"/>
+        <location filename="../src/main/main.cpp" line="397"/>
         <source>Plugin excluded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="397"/>
+        <location filename="../src/main/main.cpp" line="405"/>
         <source>Loading plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="180"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="181"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="181"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="182"/>
         <source>set var n to value v and send to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="182"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="183"/>
         <source>request var n from UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="183"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="184"/>
         <source>send var n to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="184"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="185"/>
         <source>rescan bus nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="185"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="186"/>
         <source>print nodes status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="186"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="187"/>
         <source>send data v to serial port ID p</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="187"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="188"/>
         <source>send data v to CAN ID i with IDE e</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="188"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="189"/>
         <source>execute function on VMs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="189"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="190"/>
         <source>sleep n milliseconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="190"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="191"/>
         <source>switch to next vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="191"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="192"/>
         <source>switch to previous vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="193"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="194"/>
         <source>trigger value of v to a or b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="194"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="195"/>
         <source>wrap angle -180..+180</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="195"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="196"/>
         <source>print members of type b for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="196"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="197"/>
         <source>print variables for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="197"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="198"/>
         <source>print functions for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="199"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="200"/>
         <source>reset AHRS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="200"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="201"/>
         <source>reset pilot controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="201"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="202"/>
         <source>reset barometric altitude on ground</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="202"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="203"/>
         <source>reset local GPS coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="203"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="204"/>
         <source>reset local GPS altitude</source>
         <translation type="unfinished"></translation>
     </message>

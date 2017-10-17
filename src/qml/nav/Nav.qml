@@ -58,7 +58,7 @@ Rectangle {
                 width: parent.width*0.05
                 color: v<0.2?"red":v<0.3?"yellow":"green"
                 ToolTipArea { text: fuel.descr }
-                property int anim: (mandala.smooth)?200:0
+                property int anim: (app.settings.smooth.value)?200:0
                 Behavior on width { PropertyAnimation {duration: fuel_bar.anim} }
                 Behavior on color { ColorAnimation {duration: fuel_bar.anim} }
             }
@@ -116,7 +116,7 @@ Rectangle {
         }
         CommNum {
             id: wpt_text
-            visible: mandala.test || mode.value===mode_WPT
+            visible: app.test.value || mode.value===mode_WPT
             height: parent.height
             label: qsTr("WPT")
             valueColor: "cyan"
@@ -126,7 +126,7 @@ Rectangle {
 
         CommNum {
             id: poi_text
-            visible: mandala.test || (mode.value===mode_STBY && loops.value>0)
+            visible: app.test.value || (mode.value===mode_STBY && loops.value>0)
             height: parent.height
             label: qsTr("LPS")
             valueColor: "cyan"
@@ -135,7 +135,7 @@ Rectangle {
         }
         CommNum {
             id: rd_text
-            visible: mandala.test || isLanding
+            visible: app.test.value || isLanding
             property double v: rwDelta.value
             height: parent.height
             label: qsTr("RD")
@@ -145,7 +145,7 @@ Rectangle {
         }
         CommNum {
             id: turnR_text
-            visible: mandala.test || mode.value===mode_STBY || mode.value===mode_LANDING
+            visible: app.test.value || mode.value===mode_STBY || mode.value===mode_LANDING
             property double v: turnR.value
             height: parent.height
             label: qsTr("R")

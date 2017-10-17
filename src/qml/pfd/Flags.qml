@@ -14,7 +14,7 @@ Column {
         toolTip: ctr_flaps.descr
         //control: ctr_flaps
         Text {
-            visible: mandala.test || flaps.show
+            visible: app.test.value || flaps.show
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -35,7 +35,7 @@ Column {
         toolTip: ctr_brake.descr
         //control: ctr_brake
         Text {
-            visible: mandala.test || (brakes.show && (ctr_brake.value>0) && (ctr_brake.value<1))
+            visible: app.test.value || (brakes.show && (ctr_brake.value>0) && (ctr_brake.value<1))
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom

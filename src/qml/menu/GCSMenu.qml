@@ -2,12 +2,13 @@
 import QtQuick.Controls 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
+import GCS.FactSystem 1.0
 import "../components"
 import "."
 
 Item {
     id: root
-    //focus: true
+    focus: true
 
     signal closed()
     signal opened()
@@ -16,6 +17,11 @@ Item {
     function openMenuField(field)
     {
         openPage({"fields": field.fields,"title": field.title})
+    }
+
+    function openFact(factItem)
+    {
+        openPage({"fact": factItem})
     }
 
     function openPage(opts)
@@ -48,18 +54,21 @@ Item {
 
     property bool effects: true
 
-    property string title
+    property string title: fact?fact.title:""
 
     property int itemSize: 32
 
     property int btnSize: itemSize*0.9
 
     property color colorBg: "#C0000000"
-    property color colorBgAlt: "transparent" //"#15f0f0f0"
-    property color colorBgHover: "#30f0f0f0"
+    property color colorBgField: "#80303030"
+    property color colorBgHover: "#40f0f0f0"
     property color colorBgPress: "#5530FF60"
     property color colorTitleSep: "#5c8fff"
     property color colorSep: "#667"
+    property color colorValueText:      "#30FF60"
+    property color colorValueTextEdit:  "#FFFF60"
+    property color colorActionRemove:   "#a55"
 
     property url iconPrev: Qt.resolvedUrl("navigation_previous_item.png")
     property url iconNext: Qt.resolvedUrl("../menu/navigation_next_item.png")
@@ -73,6 +82,7 @@ Item {
     property int itemWidth: stackView.width-stackView.leftPadding*2
 
     property GCSMenuModel fields
+    property Fact fact
 
     signal pageDeleted()
 
@@ -112,7 +122,8 @@ Item {
             id: menuPage
 
             property GCSMenuModel fields: root.fields //root.contents  //: listView.model
-            property string title: root.title //pageTitleLdr.title
+            property Fact fact: root.fact
+            property string title: fact?fact.title:root.title //pageTitleLdr.title
             property string page
             //Component.onDestruction: console.log("page delete: "+title)
             StackView.onRemoved: { destroy(); root.pageDeleted(); }
@@ -192,11 +203,14 @@ Item {
                     id: listViewC
                     ListView {
                         id: listView
-                        model: menuPage.fields
+                        model: menuPage.fact?menuPage.fact:menuPage.fields
                         spacing: 0
                         //cacheBuffer: 0
                         //focus: true
-                        //delegate: GCSMenuField { }
+                        delegate: GCSMenuField { fact: modelData }
+                        section.property: "modelData.section"
+                        section.criteria: ViewSection.FullString
+                        section.delegate: GCSMenuField { title: section; separator: true; }
                         /*Connections {
                             target: root
                             onUpdateListView: {
@@ -208,6 +222,12 @@ Item {
                         }*/
                     }
                 }
+                Component {
+                    id: listViewDelegate
+                    GCSMenuField {
+                    }
+                }
+
             }
         }
     }

@@ -13,13 +13,13 @@ Rectangle {
 
     property bool blink: true
 
-    color: inverted?"black":((mandala.test||show)&&blink)?flagColor:"transparent" //flagColor //(show&&blink)?flagColor:"transparent"
+    color: inverted?"black":((app.test.value||show)&&blink)?flagColor:"transparent" //flagColor //(show&&blink)?flagColor:"transparent"
     width: height/0.35
     onBlinkingChanged: blink=true
 
-    opacity: ((mandala.test||show)&&blink)?1:0
-    //visible: ((mandala.test||show)&&blink)?1:0
-    //Behavior on opacity { PropertyAnimation {duration: mandala.smooth?100:0} }
+    opacity: ((app.test.value||show)&&blink)?1:0
+    //visible: ((app.test.value||show)&&blink)?1:0
+    //Behavior on opacity { PropertyAnimation {duration: app.settings.smooth.value?100:0} }
 
     SequentialAnimation on show {
         running: blinking

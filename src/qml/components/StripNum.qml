@@ -26,7 +26,7 @@ Item {
             property double numSize: stripRect.height*stripRect.numScale
             property double numStep: numSize*stripRect.numGapScale
 
-            Behavior on dspValue { enabled: mandala.smooth && divider>0; PropertyAnimation {duration: 100; } }
+            Behavior on dspValue { enabled: app.settings.smooth.value && divider>0; PropertyAnimation {duration: 100; } }
 
             function mod(x,y) {
                 return x-y*Math.floor(x/y);

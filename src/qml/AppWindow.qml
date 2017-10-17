@@ -15,7 +15,7 @@ ApplicationWindow {
     title: app_title    //context property
 
     Loader {
-        asynchronous: mandala.smooth
+        asynchronous: app.settings.smooth.value
         anchors.fill: parent
         source: app_source //context property
     }

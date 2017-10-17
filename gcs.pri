@@ -33,6 +33,7 @@ INCLUDEPATH += \
     $${LIB_DIR} \
     $${LIB_DIR}/comm \
     $${LIB_DIR}/FactSystem \
+    $${LIB_DIR}/AppSettings \
     $${LIB_DIR}/Mandala \
 
 BUILD_DIR = $${GCS_TOP} #/build
@@ -42,7 +43,7 @@ RES_DIR = $${GCS_TOP}/resources
 OBJECTS_DIR = $$BUILD_DIR/obj/$$TEMPLATE/$$TARGET
 
 plugin {
-  DESTDIR = $$BUILD_DIR/plugins/gcs
+  DESTDIR = $$BUILD_DIR/Plugins/gcs
   #GCS_TOP = $$GCS_TOP
   HEADERS += ../../lib/plugin_interface.h
   LIBS += -lgcs

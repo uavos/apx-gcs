@@ -87,7 +87,7 @@ GCSMenu {
                         id: objModelVehicles
                         GCSMenuList {
                             objModel: objModelVehicles
-                            model: mandala.uavNames
+                            //model: mandala.uavNames
                             delegate: GCSMenuField {
                                 title: model.modelData
                                 onClicked: mandala.setCurrent(model.modelData)
