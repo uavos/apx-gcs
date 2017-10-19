@@ -22,16 +22,13 @@
  */
 #include "AppSettings.h"
 #include "AppDirs.h"
-#include "AppSettingsPorts.h"
 //=============================================================================
 AppSettings::AppSettings(FactSystem *parent)
- : Fact(parent->tree(),"settings",tr("Settings"),tr("Application settings and preferences"),RootItem,NoData) //root
+ : Fact(parent->tree(),"settings",tr("Application settings"),tr("Global application preferences"),RootItem,NoData) //root
 {
   _instance=this;
 
   setSection(FactSystem::ApplicationSection);
-
-  setObjectName(name());
 
   QDir spath(AppDirs::user().absoluteFilePath("Preferences"));
   if(!spath.exists())spath.mkpath(".");
@@ -40,23 +37,7 @@ AppSettings::AppSettings(FactSystem *parent)
   Fact *item, *item2;
   QString sect, sect2;
 
-  sect=tr("Connectivity");
-  item=new AppSettingFact(m_settings,this,"readonly",tr("Read only"),tr("Block all uplink data"),sect,BoolData,false);
-  connect(item,&AppSettingFact::valueChanged,this,&AppSettings::readonlyChanged);
-
-  item=new AppSettingsPorts(this,sect);
-
-  item=new Fact(this,"network",tr("Network"),tr("Networking preferences"),GroupItem,NoData);
-  item->setSection(sect);
-  sect2=tr("Server");
-  item2=new AppSettingFact(m_settings,item,"name",tr("Name"),tr("Local server customized name"),sect2,TextData);
-  item2=new AppSettingFact(m_settings,item,"pass",tr("Password"),tr("Local server access password"),sect2,TextData);
-  item2=new AppSettingFact(m_settings,item,"extctr",tr("Allow external controls"),tr("Don't block uplink from clients"),sect2,BoolData,true);
-  sect2=tr("Other");
-  item2=new AppSettingFact(m_settings,item,"proxy",tr("HTTP proxy"),tr("Proxy for web data requests"),sect2,TextData);
-
-
-  sect=section();
+  //sect=tr("Interface");
   item=new AppSettingFact(m_settings,this,"sounds",tr("Sounds"),tr("Enable all application sounds and voice"),sect,BoolData,true);
 
   item=new AppSettingFact(m_settings,this,"lang",tr("Language"),tr("Interface localization"),sect,EnumData,0);
@@ -71,23 +52,33 @@ AppSettings::AppSettings(FactSystem *parent)
   foreach(QString s,voicep.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
     item2=new Fact(item,s,"","",ConstItem,ItemIndexData);
 
-  sect=tr("Interface");
   item=new AppSettingFact(m_settings,this,"opengl",tr("Accelerate graphics"),tr("Enable OpenGL graphics when supported"),sect,BoolData,false);
   item=new AppSettingFact(m_settings,this,"smooth",tr("Smooth animations"),tr("Enable animations and antialiasing"),sect,BoolData,true);
   item=new AppSettingFact(m_settings,this,"showdescr",tr("Show descriptions"),tr("Enable menu items description text"),sect,BoolData,true);
 
+
+/*
+  sect=tr("Datalink");
+  item=new AppSettingFact(m_settings,this,"readonly",tr("Read only"),tr("Block all uplink data"),sect,BoolData,false);
+  connect(item,&AppSettingFact::valueChanged,this,&AppSettings::readonlyChanged);
+
+  item=new AppSettingsPorts(this,sect);
+
+  item=new Fact(this,"network",tr("Network"),tr("Networking preferences"),GroupItem,NoData);
+  item->setSection(sect);
+  sect2=tr("Server");
+  item2=new AppSettingFact(m_settings,item,"name",tr("Name"),tr("Local server customized name"),sect2,TextData);
+  item2=new AppSettingFact(m_settings,item,"pass",tr("Password"),tr("Local server access password"),sect2,TextData);
+  item2=new AppSettingFact(m_settings,item,"extctr",tr("Allow external controls"),tr("Don't block uplink from clients"),sect2,BoolData,true);
+  sect2=tr("Other");
+  item2=new AppSettingFact(m_settings,item,"proxy",tr("HTTP proxy"),tr("Proxy for web data requests"),sect2,TextData);
+*/
+
+
   //load all settings
-  foreach(AppSettingFact *i,AppSettingFact::list){
-    i->load();
-  }
+  AppSettingFact::loadSettings(this);
 }
 AppSettings * AppSettings::_instance=NULL;
-//=============================================================================
-void AppSettings::readonlyChanged()
-{
-  if(static_cast<Fact*>(sender())->value().toBool())qDebug("%s",tr("Read only datalink").toUtf8().data());
-  else qDebug("%s",tr("Uplink allowed").toUtf8().data());
-}
 //=============================================================================
 //=============================================================================
 AppSettingFact::AppSettingFact(QSettings *settings, Fact *parent, QString name, QString label, QString descr, QString section, DataType dataType, QVariant defaultValue)
@@ -112,7 +103,7 @@ bool AppSettingFact::setValue(const QVariant &v)
 void AppSettingFact::load()
 {
   m_value=m_defaultValue;
-  m_settings->beginGroup(static_cast<Fact*>(parentItem())->name());
+  m_settings->beginGroup(static_cast<Fact*>(parentItem())->path());
   if((!m_settings->contains(name())) && (!m_defaultValue.isNull())){
     m_settings->setValue(name(),text());
   }
@@ -121,9 +112,25 @@ void AppSettingFact::load()
 }
 void AppSettingFact::save()
 {
-  m_settings->beginGroup(static_cast<Fact*>(parentItem())->name());
+  m_settings->beginGroup(static_cast<Fact*>(parentItem())->path());
   m_settings->setValue(name(),text());
   m_settings->endGroup();
+}
+void AppSettingFact::loadSettings(const Fact *group)
+{
+  foreach(AppSettingFact *i,AppSettingFact::list){
+    if(group){
+      bool ok=false;
+      for(const FactTree *ip=i->parentItem();ip;ip=ip->parentItem()){
+        if(ip==group){
+          ok=true;
+          break;
+        }
+      }
+      if(!ok)continue;
+    }
+    i->load();
+  }
 }
 //=============================================================================
 //=============================================================================

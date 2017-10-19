@@ -24,8 +24,7 @@
 //=============================================================================
 FactData::FactData(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType)
  : FactTree(parent,treeItemType),m_dataType(dataType),
-   m_name(name),m_title(title),m_descr(descr),
-   m_enabled(true), m_visible(true)
+   m_name(name),m_title(title),m_descr(descr)
 {
   setObjectName(m_name);
   if(dataType==EnumData){
@@ -41,17 +40,28 @@ QVariant FactData::value(void) const
 bool FactData::setValue(const QVariant &v)
 {
   QVariant vx=v;
-  if(m_treeItemType==FactItem && dataType()==EnumData && size()>0){
-    //list or enum
-    FactTree *item=this;
-    QString s=v.toString();
-    bool ok=false;
-    uint i=s.toUInt(&ok);
-    if(ok && (int)i<size()) item=FactTree::child(i);
-    else item=child(v.toString());
-    //qDebug()<<s<<item->name();
-    if(item!=this)vx=item->num();
-    else return false;
+  if(m_treeItemType==FactItem){
+    switch(dataType()){
+      case EnumData: {
+        if(size()<=0)break;
+        //list or enum
+        FactTree *item=this;
+        QString s=v.toString();
+        bool ok=false;
+        uint i=s.toUInt(&ok);
+        if(ok && (int)i<size()) item=FactTree::child(i);
+        else item=child(v.toString());
+        //qDebug()<<s<<item->name();
+        if(item!=this)vx=item->num();
+        else return false;
+        break;
+      }
+      case BoolData: {
+        QString s=v.toString().toLower();
+        vx=((s=="true"||s=="1"||s=="on"||s=="yes")||v.toUInt())?true:false;
+      }
+      default: break;
+    }
   }
   if(m_value==vx)return false;
   m_value=vx;
@@ -77,36 +87,6 @@ QString FactData::descr(void) const
 {
   return m_descr;
 }
-bool FactData::enabled() const
-{
-  return m_enabled;
-}
-void FactData::setEnabled(const bool &v)
-{
-  if(m_enabled==v)return;
-  m_enabled=v;
-  emit enabledChanged();
-}
-bool FactData::visible() const
-{
-  return m_visible;
-}
-void FactData::setVisible(const bool &v)
-{
-  if(m_visible==v)return;
-  m_visible=v;
-  emit visibleChanged();
-}
-QString FactData::section() const
-{
-  return m_section;
-}
-void FactData::setSection(const QString &v)
-{
-  if(m_section==v)return;
-  m_section=v;
-  emit sectionChanged();
-}
 QString FactData::text() const
 {
   FactData *item=valueEnumItem();
@@ -124,15 +104,6 @@ FactData * FactData::child(const QString &name) const
     if(static_cast<FactData*>(item)->name()==name)return static_cast<FactData*>(item);
   }
   return const_cast<FactData*>(this);
-}
-QString FactData::path(int fromLevel, const QChar pathDelimiter) const
-{
-  QString s=name();
-  for(const FactData *i=static_cast<FactData*>(parentItem());i && i->level()>=fromLevel;i=static_cast<FactData*>(i->parentItem())){
-    s.prepend(i->name()+pathDelimiter);
-    if(i->treeItemType()==RootItem && fromLevel>=0)break;
-  }
-  return s;
 }
 FactData * FactData::valueEnumItem() const
 {

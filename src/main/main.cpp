@@ -40,6 +40,7 @@
 #include "AppShortcuts.h"
 #include "FactSystem.h"
 #include "AppSettings.h"
+#include "DatalinkFacts.h"
 //============================================================================
 //global variables
 QMandala *mandala;
@@ -105,6 +106,7 @@ int main(int argc, char *argv[])
   FactSystem *factSystem=new FactSystem();
 
   new AppSettings(factSystem);
+  new DatalinkFacts(factSystem);
 
   if(QSettings().value("qsg_basic").toBool()){
     qputenv("QSG_RENDER_LOOP","basic");

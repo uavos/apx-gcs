@@ -55,27 +55,31 @@ HEADERS += \
 
 # Communication
 SOURCES += \
-    comm/DatalinkServer.cpp \
-    comm/EscReader.cpp \
-    comm/HttpService.cpp \
-    comm/Serial.cpp \
+    Datalink/DatalinkFacts.cpp \
+    Datalink/DatalinkPorts.cpp \
+    Datalink/DatalinkPort.cpp \
+    Datalink/DatalinkServer.cpp \
+    Datalink/EscReader.cpp \
+    Datalink/HttpService.cpp \
+    Datalink/Serial.cpp \
 
 HEADERS += \
-    comm/DatalinkServer.h \
-    comm/EscReader.h \
-    comm/HttpService.h \
-    comm/Serial.h \
+    Datalink/DatalinkFacts.h \
+    Datalink/DatalinkPorts.h \
+    Datalink/DatalinkPort.h \
+    Datalink/DatalinkServer.h \
+    Datalink/EscReader.h \
+    Datalink/HttpService.h \
+    Datalink/Serial.h \
 
 # settings
 SOURCES += \
     AppSettings/AppDirs.cpp \
     AppSettings/AppSettings.cpp \
-    AppSettings/AppSettingsPorts.cpp \
 
 HEADERS += \
     AppSettings/AppDirs.h \
     AppSettings/AppSettings.h \
-    AppSettings/AppSettingsPorts.h \
 
 # other
 SOURCES += \

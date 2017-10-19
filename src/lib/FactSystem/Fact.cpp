@@ -23,8 +23,20 @@
 #include "Fact.h"
 //=============================================================================
 Fact::Fact(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType)
- : FactData(parent,name,title,descr,treeItemType,dataType)
+ : FactData(parent,name,title,descr,treeItemType,dataType),
+   m_enabled(true), m_visible(true)
 {
+}
+//=============================================================================
+QString Fact::path(int fromLevel, const QChar pathDelimiter) const
+{
+  QString s;
+  for(const Fact *i=this;i && i->level()>=fromLevel;i=static_cast<Fact*>(i->parentItem())){
+    if(s.isEmpty())s=i->name();
+    else s.prepend(i->name()+pathDelimiter);
+    if(i->treeItemType()==RootItem && fromLevel>=0)break;
+  }
+  return s.isEmpty()?name():s;
 }
 //=============================================================================
 Fact * Fact::fact(const QString &factNamePath) const
@@ -65,4 +77,36 @@ void Fact::trigger(void)
   //qDebug()<<"trigger"<<name();
   emit triggered();
 }
+//=============================================================================
+bool Fact::enabled() const
+{
+  return m_enabled;
+}
+void Fact::setEnabled(const bool &v)
+{
+  if(m_enabled==v)return;
+  m_enabled=v;
+  emit enabledChanged();
+}
+bool Fact::visible() const
+{
+  return m_visible;
+}
+void Fact::setVisible(const bool &v)
+{
+  if(m_visible==v)return;
+  m_visible=v;
+  emit visibleChanged();
+}
+QString Fact::section() const
+{
+  return m_section;
+}
+void Fact::setSection(const QString &v)
+{
+  if(m_section==v)return;
+  m_section=v;
+  emit sectionChanged();
+}
+//=============================================================================
 //=============================================================================

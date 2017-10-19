@@ -115,21 +115,21 @@ Rectangle {
             id: btn_ctr
             text: qsTr("CTR")
             color: "#5f5"
-            value: !app.settings.readonly.value
+            value: !app.datalink.readonly.value
             inverted: true
             toolTip: qsTr("Enable controls")
             width: height/0.5
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: app.settings.readonly.value=!app.settings.readonly.value
+                onClicked: app.datalink.readonly.value=!app.datalink.readonly.value
             }
         }
 
         //comm stats
         CommNum {
             property string cRX: mandala.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
-            property string cTX: app.settings.readonly.value?"red":"cyan"
+            property string cTX: app.datalink.readonly.value?"red":"cyan"
             property string cER: mandala.errcnt>1?"yellow":"gray"
             height: parent.height
             label: qsTr("DL")
@@ -176,7 +176,7 @@ Rectangle {
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
-            color: app.settings.readonly.value?"red":"cyan"
+            color: app.datalink.readonly.value?"red":"cyan"
             ToolTipArea { text: qsTr("Transmitted packets") }
         }
 

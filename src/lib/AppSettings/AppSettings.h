@@ -33,6 +33,11 @@ public:
 
   explicit AppSettings(FactSystem *parent=0);
 
+  static AppSettings * instance()
+  {
+    return _instance;
+  }
+
   static QVariant value(const QString &name)
   {
     return _instance->fact(name)->value();
@@ -42,13 +47,12 @@ public:
     return _instance->m_settings;
   }
 
+private:
   QSettings *m_settings;
 
   //static helpers
   static AppSettings * _instance;
 
-private slots:
-  void readonlyChanged();
 };
 //=============================================================================
 class AppSettingFact: public Fact
@@ -58,6 +62,7 @@ public:
   explicit AppSettingFact(QSettings *settings,Fact *parent, QString name, QString label, QString descr, QString section, DataType dataType, QVariant defaultValue=QVariant());
 
   static QList<AppSettingFact*> list;
+  static void loadSettings(const Fact *group);
 
   void load();
   void save();

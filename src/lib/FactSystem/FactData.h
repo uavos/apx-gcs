@@ -40,11 +40,6 @@ class FactData: public FactTree
   Q_PROPERTY(QString title READ title NOTIFY titleChanged)
   Q_PROPERTY(QString descr READ descr NOTIFY descrChanged)
 
-  Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
-  Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
-
-  Q_PROPERTY(QString section READ section WRITE setSection NOTIFY sectionChanged)
-
   Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
 public:
@@ -55,8 +50,8 @@ public:
     FloatData,
     IntData,
     BoolData,
-    EnumData,       // value=text of child item name (set by name or index)
-    ItemIndexData,  // value=index of const item
+    EnumData,       // value=index of child item(set by name or index)
+    ItemIndexData,  // value=index in parent item container
     ActionData,     // button, value=action type
   };
 
@@ -71,7 +66,6 @@ public:
 
   Q_INVOKABLE FactData * child(const QString &name) const;
   Q_INVOKABLE FactData * valueEnumItem() const;
-  Q_INVOKABLE QString path(int fromLevel=0,const QChar pathDelimiter=QChar('.')) const;
 
   Q_INVOKABLE void copyValuesFrom(const FactData *item);
   Q_INVOKABLE void bindValue(FactData *item);
@@ -116,15 +110,6 @@ public:
   virtual QString title(void) const;
   virtual QString descr(void) const;
 
-  virtual bool enabled() const;
-  virtual void setEnabled(const bool &v);
-
-  virtual bool visible() const;
-  virtual void setVisible(const bool &v);
-
-  virtual QString section() const;
-  virtual void setSection(const QString &v);
-
   virtual QString text() const;
   virtual void setText(const QString &v);
 
@@ -137,21 +122,12 @@ protected:
   QString  m_title;
   QString  m_descr;
 
-  bool m_enabled;
-  bool m_visible;
-  QString  m_section;
-
 signals:
   void valueChanged();
 
   void nameChanged();
   void titleChanged();
   void descrChanged();
-
-  void enabledChanged();
-  void visibleChanged();
-
-  void sectionChanged();
 
   void textChanged();
 };
