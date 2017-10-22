@@ -31,6 +31,7 @@
 #include "QMandalaField.h"
 class QProgressBar;
 class QMandala;
+class Fact;
 //=============================================================================
 class QMandalaItem : public QObject, public Mandala
 {
@@ -62,6 +63,8 @@ private:
   QHash<uint,QMandalaField *>fieldsByVarmsk;   //excl. enums
   QMandalaField *field_void;
   void registerField(uint varmsk,QString name,QString descr,QString units);
+
+  const Fact *datalinkReadonly;
 
   //QtScript support
 private:

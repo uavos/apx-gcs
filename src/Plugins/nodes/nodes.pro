@@ -4,6 +4,7 @@ CONFIG += plugin
 
 include( ../../../gcs.pri )
 
+QT += quick
 
 SOURCES += NodesFrame.cpp \
     NodesPlugin.cpp \

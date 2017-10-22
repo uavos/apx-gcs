@@ -30,12 +30,13 @@
 #include <math.h>
 #include <cmath>
 #include <cfloat>
+#include "AppDirs.h"
 //using namespace std;
 //=============================================================================
 FlightDataFile::FlightDataFile(QMandalaItem *parent)
   :QObject(parent), mandala(QMandala::instance()),mvar((QMandalaItem*)parent)
 {
-  if(!QMandala::Global::telemetry().exists()) QMandala::Global::telemetry().mkpath(".");
+  if(!AppDirs::telemetry().exists()) AppDirs::telemetry().mkpath(".");
 
   recFileSuffix=".datalink";
   m_recording=false;
@@ -228,7 +229,7 @@ bool FlightDataFile::record_check(void)
     do {
       fname=sname+QString().sprintf("%.3u_",i++)+title+recFileSuffix;
     } while (list.contains(fname));
-    recFile.setFileName(QMandala::Global::telemetry().filePath(fname));
+    recFile.setFileName(AppDirs::telemetry().filePath(fname));
     recFile.open(QIODevice::WriteOnly);
     xmlWriter.setDevice(&recFile);
     record_header();
@@ -280,14 +281,14 @@ void FlightDataFile::flush()
 //=============================================================================
 const QStringList FlightDataFile::recFileNames(void)
 {
-  return QDir(QMandala::Global::telemetry().absolutePath(),"*"+recFileSuffix).entryList(QDir::Files,QDir::Name);
+  return QDir(AppDirs::telemetry().absolutePath(),"*"+recFileSuffix).entryList(QDir::Files,QDir::Name);
 }
 //=============================================================================
 bool FlightDataFile::loadFlight(int idx,QProgressBar *progressBar)
 {
   const QStringList &filesList=recFileNames();
   if ((idx<0)||(idx>=filesList.size()))return false;
-  return loadFlight(QMandala::Global::telemetry().filePath(filesList.at(idx)),progressBar);
+  return loadFlight(AppDirs::telemetry().filePath(filesList.at(idx)),progressBar);
 }
 //=============================================================================
 bool FlightDataFile::loadFlight(const QString &fName,QProgressBar *progressBar)

@@ -35,10 +35,10 @@ class FactData: public FactTree
 
   Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
-  Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+  Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
-  Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-  Q_PROPERTY(QString descr READ descr NOTIFY descrChanged)
+  Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
+  Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
 
   Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
@@ -46,6 +46,7 @@ public:
 
   enum DataType {
     NoData =0,      // no editor
+    ConstData,
     TextData,
     FloatData,
     IntData,
@@ -53,6 +54,7 @@ public:
     EnumData,       // value=index of child item(set by name or index)
     ItemIndexData,  // value=index in parent item container
     ActionData,     // button, value=action type
+    KeySequenceData,
   };
 
   enum ActionType {
@@ -85,6 +87,14 @@ public:
     FACT_ITEM_COLUMN_DESCR,
   };
 
+  //FactTree override
+  virtual void insertItem(int i, FactTree *item);
+  virtual void removeItem(FactTree *item);
+
+signals:
+  void childValueChanged(void);
+
+
 protected:
   //ListModel override
   virtual QHash<int, QByteArray> roleNames() const;
@@ -107,8 +117,11 @@ public:
   virtual bool setValue(const QVariant &v);
 
   virtual QString name(void) const;
+  virtual void setName(const QString &v);
   virtual QString title(void) const;
+  virtual void setTitle(const QString &v);
   virtual QString descr(void) const;
+  virtual void setDescr(const QString &v);
 
   virtual QString text() const;
   virtual void setText(const QString &v);

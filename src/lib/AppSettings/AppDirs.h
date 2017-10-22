@@ -30,10 +30,10 @@ class AppDirs: public QObject
 public:
   explicit AppDirs(QObject *parent=0) : QObject(parent) {}
 
-  static QDir user();         // local user files (Documents)
-  static QDir res();          // resources
   static QDir plugins();      // plugins
   static QDir userPlugins();  // user plugins
+  static QDir res();          // bitmaps,sounds
+  static QDir user();         // local user files (Documents)
   static QDir telemetry();    // saved flight data
   static QDir maps();         // maps and tilesets
   static QDir lang();         // translations

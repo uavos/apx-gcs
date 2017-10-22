@@ -8,7 +8,7 @@ import "."
 
 Item {
     id: root
-    focus: true
+    //focus: true
 
     signal closed()
     signal opened()
@@ -94,7 +94,7 @@ Item {
         //anchors.margins: 4
         clip: true
         // Implements back key navigation
-        focus: true
+        //focus: true
         /*Keys.onReleased: if (event.key === Qt.Key_Back && stackView.depth > 1) {
                              back();
                          }*/
@@ -203,6 +203,7 @@ Item {
                     id: listViewC
                     ListView {
                         id: listView
+                        //anchors.fill: parent
                         model: menuPage.fact?menuPage.fact:menuPage.fields
                         spacing: 0
                         //cacheBuffer: 0

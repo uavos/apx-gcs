@@ -1,6 +1,8 @@
 ﻿#include "NodesFrame.h"
 #include "QMandala.h"
 #include "NodesView.h"
+#include "AppDirs.h"
+#include "FactSystem.h"
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent) :
   QWidget(parent)
@@ -216,7 +218,7 @@ void NodesFrame::on_tree_customContextMenuRequested(const QPoint &pos)
         QString adata=QByteArray(sn).append((unsigned char)i).toHex();
         if(item->commands.name.at(i)=="mhxfw"){
           cmdHashMHX[aname].append(QByteArray(sn).append((unsigned char)NodesModel::UpgradeMHX).toHex());
-        }else if(QMandala::Global::devMode()||(!item->commands.name.at(i).contains("_dev_"))){
+        }else if(FactSystem::value("dev").toBool()||(!item->commands.name.at(i).contains("_dev_"))){
           cmdHash[aname].append(adata);
           if(!cmdKeys.contains(aname))cmdKeys.append(aname);
         }
@@ -503,12 +505,12 @@ void NodesFrame::syncProgress(uint cnt)
 //=============================================================================
 void NodesFrame::on_aSave_triggered(void)
 {
-  if(!QMandala::Global::configs().exists()) QMandala::Global::configs().mkpath(".");
-  QFileDialog dlg(this,aSave->toolTip(),QMandala::Global::configs().canonicalPath());
+  if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
+  QFileDialog dlg(this,aSave->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
   if(!model->title().isEmpty())
-    dlg.selectFile(QMandala::Global::configs().filePath(model->title()+".nodes"));
+    dlg.selectFile(AppDirs::configs().filePath(model->title()+".nodes"));
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";
@@ -520,12 +522,12 @@ void NodesFrame::on_aSave_triggered(void)
 //=============================================================================
 void NodesFrame::on_aLoad_triggered(void)
 {
-  if(!QMandala::Global::configs().exists()) QMandala::Global::configs().mkpath(".");
+  if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
   proxy.setFilterRegExp(QRegExp());
-  QFileDialog dlg(this,aLoad->toolTip(),QMandala::Global::configs().canonicalPath());
+  QFileDialog dlg(this,aLoad->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
   if(!model->title().isEmpty())
-    dlg.selectFile(QMandala::Global::configs().filePath(model->title()+".nodes"));
+    dlg.selectFile(AppDirs::configs().filePath(model->title()+".nodes"));
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";

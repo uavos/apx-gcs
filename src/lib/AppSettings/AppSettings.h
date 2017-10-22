@@ -33,15 +33,11 @@ public:
 
   explicit AppSettings(FactSystem *parent=0);
 
-  static AppSettings * instance()
+  /*static AppSettings * instance()
   {
     return _instance;
-  }
+  }*/
 
-  static QVariant value(const QString &name)
-  {
-    return _instance->fact(name)->value();
-  }
   static QSettings *settings()
   {
     return _instance->m_settings;

@@ -29,6 +29,7 @@
 #include "QmlView.h"
 #include "DatalinkServer.h"
 #include "AppSettings.h"
+#include "AppDirs.h"
 //=============================================================================
 MainForm::MainForm(QWidget *parent)
   : QMainWindow(parent),
@@ -134,7 +135,7 @@ MainForm::MainForm(QWidget *parent)
   //splashLayout->setMargin(50);
   splashWidget->setLayout(splashLayout);
 
-  if(QMandala::Global::devMode()){
+  if(FactSystem::tree()->fact("dev")->value().toBool()){
     QLabel *devLabel=new QLabel(tr("DEVELOPMENT").toUpper(),this);
     devLabel->setAlignment(Qt::AlignCenter);
     devLabel->setFont(QFont("BebasNeue",22));
@@ -630,7 +631,7 @@ void MainForm::mVPN_triggered()
   QTextStream sfs(&sf);
   sfs.setPadChar('\n');
   sfs<<"#!/bin/bash\n";
-  QDir vpnp(QMandala::Global::res());
+  QDir vpnp(AppDirs::res());
   vpnp.cd("vpn");
   sfs<<"sudo killall -q openvpn\n";
   sfs<<"cd "+vpnp.absolutePath()+"\n";

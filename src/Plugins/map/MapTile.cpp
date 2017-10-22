@@ -23,6 +23,7 @@
 #include "MapTile.h"
 #include "MapView.h"
 #include <QStyleOptionGraphicsItem>
+#include "AppDirs.h"
 //=============================================================================
 MapTile::MapTile(MapTiles *tiles)
   :QObject(),QGraphicsItem(),tiles(tiles),counter(0)
@@ -118,7 +119,7 @@ void MapTile::loadImage()
   pixmap=QPixmap();
 
   //look for image in reources
-  fname=QMandala::Global::res().absoluteFilePath("maps/google-tiles/"+tile_name+".jpg");
+  fname=AppDirs::res().absoluteFilePath("maps/google-tiles/"+tile_name+".jpg");
   if(QFile::exists(fname)) {
     pixmap.load(fname);
     return;

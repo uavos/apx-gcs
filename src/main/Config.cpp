@@ -3,6 +3,7 @@
 #include <QtCore>
 #include <QComboBox>
 #include <QSerialPortInfo>
+#include "AppDirs.h"
 //=============================================================================
 Config::Config(QWidget *parent) :
     QDialog(parent)
@@ -60,7 +61,7 @@ void Config::load()
   eMulti->setChecked(st.value("multipleInstances").toBool());
 
   //languages
-  QDir langp(QMandala::Global::lang());
+  QDir langp(AppDirs::lang());
   eLang->clear();
   eLang->addItem("default");
   foreach(QFileInfo f,langp.entryInfoList(QStringList()<<"*.qm"))
@@ -69,7 +70,7 @@ void Config::load()
   eLang->setCurrentIndex(eLi>=0?eLi:0);
 
   //speech
-  QDir voicep(QMandala::Global::res());
+  QDir voicep(AppDirs::res());
   voicep.cd("sounds");
   voicep.cd("speech");
   eVoice->clear();

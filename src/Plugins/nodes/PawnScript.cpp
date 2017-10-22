@@ -25,6 +25,7 @@
 #include "NodesItemNode.h"
 #include "NodesModel.h"
 #include "crc.h"
+#include "AppDirs.h"
 //=============================================================================
 PawnScript::PawnScript(NodesItemField *field)
  : QObject(field),field(field)
@@ -56,9 +57,9 @@ PawnScript::PawnScript(NodesItemField *field)
 
   //args<<"-S"+QString::number((vm_data_size-256)/4);
   //args<<"-XD"+QString::number(vm_data_size);
-  args<<"-i"+QMandala::Global::res().absoluteFilePath("scripts/pawn/include");
-  args<<"-i"+QMandala::Global::scripts().absoluteFilePath("pawn");
-  args<<"-i"+QMandala::Global::scripts().absoluteFilePath(".");
+  args<<"-i"+AppDirs::res().absoluteFilePath("scripts/pawn/include");
+  args<<"-i"+AppDirs::scripts().absoluteFilePath("pawn");
+  args<<"-i"+AppDirs::scripts().absoluteFilePath(".");
   args<<"-o"+outFileName;
   args<<tmpFile.fileName();
   pawncc.setProgram(QCoreApplication::applicationDirPath()+"/pawncc");

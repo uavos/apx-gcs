@@ -40,13 +40,13 @@ FactSystem::FactSystem(QObject *parent)
   // app constants and global facts
   Fact *item;
 
-  item=new Fact(_tree,"version",tr("Version"),tr("Application version"),Fact::FactItem,Fact::TextData);
+  item=new Fact(_tree,"version",tr("Version"),tr("Application version"),Fact::FactItem,Fact::ConstData);
   QString s=VSTR(VERSION);
   if(s.isEmpty())s=tr("unknown");
   item->setValue(s);
   item->setEnabled(false);
 
-  item=new Fact(_tree,"branch",tr("Branch"),tr("Source code repository branch"),Fact::FactItem,Fact::TextData);
+  item=new Fact(_tree,"branch",tr("Branch"),tr("Source code repository branch"),Fact::FactItem,Fact::ConstData);
   item->setValue(VSTR(BRANCH));
   item->setEnabled(false);
 
@@ -103,4 +103,9 @@ void FactSystem::syncJS(QQmlEngine *e)
   _instance->_syncJS(e,FactSystem::tree(),e->globalObject());
 }
 //=============================================================================
+//=============================================================================
+QVariant FactSystem::value(const QString &name)
+{
+  return tree()->fact(name)->value();
+}
 //=============================================================================

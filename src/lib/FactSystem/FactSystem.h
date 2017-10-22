@@ -40,6 +40,8 @@ public:
   static void appendTree(Fact *tree);
   static void syncJS(QQmlEngine *e);
 
+  static QVariant value(const QString &name);
+
   //constants
   static const QString ApplicationSection;
   static const QString MandalaSection;

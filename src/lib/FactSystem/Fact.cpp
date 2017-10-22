@@ -41,12 +41,12 @@ QString Fact::path(int fromLevel, const QChar pathDelimiter) const
 //=============================================================================
 Fact * Fact::fact(const QString &factNamePath) const
 {
-  foreach(FactTree *item,m_items){
+  foreach(FactTree *item,childItems()){
     Fact *f=static_cast<Fact*>(item);
     if(f->treeItemType()==FactItem && (f->name()==factNamePath || f->path().endsWith(factNamePath)))
       return f;
   }
-  foreach(FactTree *item,m_items){
+  foreach(FactTree *item,childItems()){
     Fact *f=static_cast<Fact*>(item);
     f=f->fact(factNamePath);
     if(f)return f;

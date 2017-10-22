@@ -41,6 +41,7 @@
 #include "FactSystem.h"
 #include "AppSettings.h"
 #include "DatalinkFacts.h"
+#include "AppDirs.h"
 //============================================================================
 //global variables
 QMandala *mandala;
@@ -119,7 +120,7 @@ int main(int argc, char *argv[])
   //translate lang
   if(QLocale().country()==QLocale::Belarus&&(QSettings().value("lang").toString()=="ru"))
     QSettings().setValue("lang","by");
-  QDir langp(QMandala::Global::lang());
+  QDir langp(AppDirs::lang());
   QString langf;
   /*langf=langp.filePath(QSettings().value("lang").toString()+"_msg.ts");
   if(QFile::exists(langf)){
@@ -209,9 +210,10 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,SIGNAL(httpRequest(QTextStream&,QString,bool*)),httpService,SLOT(httpRequest(QTextStream&,QString,bool*)));
 
   // directories..
-  if(QMandala::Global::devMode()) qDebug("%s",QObject::tr("Developer mode").toUtf8().data());
-  //else
-    checkPaths();
+  if(FactSystem::value("dev").toBool())
+    qDebug("%s",QObject::tr("Developer mode").toUtf8().data());
+
+  checkPaths();
 
   if(QCoreApplication::arguments().contains("-x"))
     QSettings().setValue("maximized", true);
@@ -219,12 +221,14 @@ int main(int argc, char *argv[])
   // main window..
   mainForm=new MainForm();
   mainForm->setWindowTitle(QObject::tr("Ground Control Unit"));
-  if(QMandala::Global::devMode())
+  if(FactSystem::value("dev").toBool())
     mainForm->setWindowTitle(mainForm->windowTitle()+" ("+QMandala::version+")");
   qDebug("%s: %s",QObject::tr("Version").toUtf8().data(),QMandala::version.toUtf8().data());
 
   //hotkeys
-  new AppShortcuts(mainForm);
+  new AppShortcuts(factSystem,mainForm);
+
+  //new AppShortcuts(mainForm);
   //QObject::connect(shortcuts,SIGNAL(exec(QString)),mandala->
 
   //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),datalink,SLOT(activate()));
@@ -329,7 +333,7 @@ void loadPlugins()
   QStringList allFiles;
   QStringList filters(QStringList()<<"*.so"<<"*.dylib"<<"*.qml");
 
-  QDir userp=QMandala::Global::userPlugins();
+  QDir userp=AppDirs::userPlugins();
   if(!userp.exists())userp.mkpath(".");
   QStringList stRep,stRepQml;
   foreach (QString fileName, userp.entryList(filters,QDir::Files)){
@@ -346,7 +350,7 @@ void loadPlugins()
   if(!stRep.isEmpty())qDebug("%s: %s",QObject::tr("User plugins").toUtf8().data(),stRep.join(',').toUtf8().data());
   if(!stRepQml.isEmpty())qDebug("%s: %s",QObject::tr("User QML plugins").toUtf8().data(),stRepQml.join(',').toUtf8().data());
 
-  QDir pluginsDir=QMandala::Global::plugins();
+  QDir pluginsDir=AppDirs::plugins();
   //qDebug()<<pluginsDir;
   foreach (QString fileName,pluginsDir.entryList(filters,QDir::Files)){
     //qDebug()<<fileName;
@@ -496,26 +500,26 @@ void checkPaths()
   //qDebug()<<"checkPaths";
 
   //fix old paths
-  fixDeprecatedPath("config/uav.conf.d",QMandala::Global::configs());
-  fixDeprecatedPath("flightplans",QMandala::Global::missions());
-  fixDeprecatedPath("maps",QDir(QMandala::Global::maps().absoluteFilePath("google-tiles")));
-  fixDeprecatedPath("nodes",QMandala::Global::nodes());
-  fixDeprecatedPath("plugins",QMandala::Global::userPlugins());
-  fixDeprecatedPath("scripts",QMandala::Global::scripts());
-  fixDeprecatedPath("data",QMandala::Global::telemetry());
+  fixDeprecatedPath("config/uav.conf.d",AppDirs::configs());
+  fixDeprecatedPath("flightplans",AppDirs::missions());
+  fixDeprecatedPath("maps",QDir(AppDirs::maps().absoluteFilePath("google-tiles")));
+  fixDeprecatedPath("nodes",AppDirs::nodes());
+  fixDeprecatedPath("plugins",AppDirs::userPlugins());
+  fixDeprecatedPath("scripts",AppDirs::scripts());
+  fixDeprecatedPath("data",AppDirs::telemetry());
 
   // link sample files
-  linkFiles(QMandala::Global::res().absoluteFilePath("nodes/sample-configs"),QMandala::Global::configs());
-  linkFiles(QMandala::Global::res().absoluteFilePath("missions"),QMandala::Global::missions());
-  linkFiles(QMandala::Global::res().absoluteFilePath("telemetry"),QMandala::Global::telemetry());
-  linkDir(QMandala::Global::res().absoluteFilePath("scripts/pawn"),QMandala::Global::scripts(),"-examples");
+  linkFiles(AppDirs::res().absoluteFilePath("nodes/sample-configs"),AppDirs::configs());
+  linkFiles(AppDirs::res().absoluteFilePath("missions"),AppDirs::missions());
+  linkFiles(AppDirs::res().absoluteFilePath("telemetry"),AppDirs::telemetry());
+  linkDir(AppDirs::res().absoluteFilePath("scripts/pawn"),AppDirs::scripts(),"-examples");
 
   //warn if exists old dir
   QDir src(QDir::home().absoluteFilePath(".gcu"));
   if(!src.exists())return;
   if(src.isEmpty() && src.rmdir("."))return;
   qWarning("Deprecated storage directory: %s",src.absolutePath().toUtf8().data());
-  qWarning("New storage directory: %s",QMandala::Global::user().absolutePath().toUtf8().data());
+  qWarning("New storage directory: %s",AppDirs::user().absolutePath().toUtf8().data());
 }
 //============================================================================
 

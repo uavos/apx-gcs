@@ -25,6 +25,8 @@
 #include "NodesItemField.h"
 #include "QMandala.h"
 #include "BlackboxDownload.h"
+#include "AppDirs.h"
+#include "FactSystem.h"
 //=============================================================================
 NodesItemNode::NodesItemNode(NodesItem *parent, NodesModel *model, QByteArray sn, _node_info *ninfo)
  : NodesItem(parent),sn(sn),
@@ -42,7 +44,7 @@ NodesItemNode::NodesItemNode(NodesItem *parent, NodesModel *model, QByteArray sn
 
   name=QString((char*)node_info.name);
   //init backup directory
-  backup_dir.setPath(QMandala::Global::nodes().path());
+  backup_dir.setPath(AppDirs::nodes().path());
   QString spath=QString("%1/%2").arg(name).arg(QString(sn.toHex().toUpper()));
   if(!(backup_dir.mkpath(spath)&&backup_dir.cd(spath))){
     qWarning("%s",tr("Can't create backup path").toUtf8().data());
@@ -653,9 +655,9 @@ void NodesItemNode::saveBackupFile(void)
   //check version
   //QString node_version((const char*)node_info.version);
   if(isUpgradable()){
-    if(!QMandala::Global::devMode())
+    if(!FactSystem::value("dev").toBool())
       qWarning("%s %s: %s",tr("Version").toUtf8().data(),node_info.name,node_info.version);
-    /*if(!(QMandala::Global::devMode() || node_version.contains('-'))){
+    /*if(!(AppDirs::devMode() || node_version.contains('-'))){
       qWarning("%s",tr("Backup not saved").toUtf8().data());
       return;
     }*/

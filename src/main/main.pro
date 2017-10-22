@@ -17,12 +17,10 @@ SOURCES += main.cpp \
     MainForm.cpp \
     Config.cpp \
     RunGuard.cpp \
-    AppShortcuts.cpp \
 
 HEADERS += MainForm.h \
     Config.h \
     RunGuard.h \
-    AppShortcuts.h \
 
 FORMS += \
     Config.ui

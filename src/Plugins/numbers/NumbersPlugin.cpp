@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "NumbersForm.h"
+#include "AppDirs.h"
 #define NUMBERS_CONF_NAME "Numbers"
 //=============================================================================
 void NumbersPlugin::init(void)
@@ -133,7 +134,7 @@ QStringList NumbersPlugin::getConfig()
 //=============================================================================
 void NumbersPlugin::saveAs()
 {
-  QDir userp=QMandala::Global::userPlugins();
+  QDir userp=AppDirs::userPlugins();
   if(!userp.exists())userp.mkpath(".");
   QFileDialog dlg(NULL,tr("User plugin name"),userp.canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
@@ -161,7 +162,7 @@ void NumbersPlugin::saveAs()
 //=============================================================================
 void NumbersPlugin::open()
 {
-  QDir userp=QMandala::Global::userPlugins();
+  QDir userp=AppDirs::userPlugins();
   if(!userp.exists())userp.mkpath(".");
   QFileDialog dlg(NULL,tr("User plugin name"),userp.canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);

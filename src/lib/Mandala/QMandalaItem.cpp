@@ -24,10 +24,12 @@
 #include <QToolTip>
 #include "QMandala.h"
 #include "AppSettings.h"
+#include "FactSystem.h"
+#include "AppDirs.h"
 //=============================================================================
 //=============================================================================
 QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
-:QObject(parent), Mandala(),bbox(bbox)
+:QObject(parent), Mandala(),bbox(bbox),datalinkReadonly(NULL)
 {
   setObjectName("mandala");
 
@@ -208,7 +210,7 @@ QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
     engine.globalObject().setProperty(name,constants.value(name),QScriptValue::ReadOnly|QScriptValue::Undeletable);
 
   // script include file (default)
-  QFile jsFile(QMandala::Global::res().filePath("scripts/gcs.js"));
+  QFile jsFile(AppDirs::res().filePath("scripts/gcs.js"));
   if (jsFile.open(QIODevice::ReadOnly)){
     QTextStream stream(&jsFile);
     QString contents = stream.readAll();
@@ -216,7 +218,7 @@ QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
     engine.evaluate(contents,jsFile.fileName());
   }
   // script include file (user commands)
-  QFile jsFile2(QMandala::Global::scripts().filePath("gcs.js"));
+  QFile jsFile2(AppDirs::scripts().filePath("gcs.js"));
   if (jsFile2.open(QIODevice::ReadOnly)){
     QTextStream stream(&jsFile2);
     QString contents = stream.readAll();
@@ -400,7 +402,10 @@ QByteArray QMandalaItem::scrToArray(QScriptValue data)
 //=============================================================================
 void QMandalaItem::send(unsigned char var_idx, const QByteArray &data)
 {
-  if(AppSettings::value("readonly").toBool())return;
+  if(!datalinkReadonly){
+    datalinkReadonly=FactSystem::tree()->fact("datalink.readonly");
+  }
+  if((!datalinkReadonly) || datalinkReadonly->value().toBool())return;
   QByteArray ba;
   ba.append((unsigned char)var_idx);
   ba.append(data);
@@ -487,7 +492,7 @@ void QMandalaItem::downlinkReceived(const QByteArray &ba)
           node_info[sn]=node;
           if(QMandala::instance()->current==this){
             //save name-by-sn file (cache)
-            QDir backup_dir(QMandala::Global::nodes().filePath("all"));
+            QDir backup_dir(AppDirs::nodes().filePath("all"));
             if(!backup_dir.mkpath(".")){
               qWarning("%s",tr("Error creating backup path").toUtf8().data());
             }else{
@@ -616,7 +621,7 @@ const char * QMandalaItem::node_name(const QByteArray &sn)
   if(node_info.contains(sn)) return (const char*)node_info.value(sn)->name;
   //try cache lookup
   QString ssn=sn.toHex().toUpper();
-  QString fname=QMandala::Global::nodes().filePath("all/%1").arg(ssn);
+  QString fname=AppDirs::nodes().filePath("all/%1").arg(ssn);
   if(!QFile::exists(fname))return "";
   QSettings s(fname,QSettings::IniFormat);
   s.beginGroup(ssn);

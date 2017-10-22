@@ -4,7 +4,7 @@ import "./menu"
 
 GCSMenu {
     id: window
-    title: qsTr("Controls")
+    /*title: qsTr("Controls")
 
     fields: GCSMenuModel {
         GCSMenuField { title: qsTr("Commands"); pageMenu: "menu/MenuCommands.qml"}
@@ -14,9 +14,10 @@ GCSMenu {
         GCSMenuField { title: qsTr("Video"); page: "video.qml"}
 
         GCSMenuField { title: qsTr("System"); separator: true; }
-        GCSMenuField { title: qsTr("Preferences"); pageMenu: "menu/MenuPreferences.qml" }
+        //GCSMenuField { title: qsTr("Preferences"); pageMenu: "menu/MenuPreferences.qml" }
 
         //GCSMenuField { title: app.prefs.title; }
         GCSMenuField { fact: app; }
-    }
+    }*/
+    fact: app
 }

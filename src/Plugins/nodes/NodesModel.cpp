@@ -28,6 +28,7 @@
 #include "ValueEditorArray.h"
 #include "ValueEditorScript.h"
 #include "ValueEditorNgrp.h"
+#include "AppDirs.h"
 QAction *NodesModel::aUpload=NULL;
 //=============================================================================
 NodesModel::NodesModel(QMandalaItem *m, QObject *parent)
@@ -43,7 +44,7 @@ NodesModel::NodesModel(QMandalaItem *m, QObject *parent)
   backup_dir_ok=false;
   QString callsign(m->ident.callsign);
   if(callsign.size()){
-    backup_dir.setPath(QMandala::Global::nodes().path());
+    backup_dir.setPath(AppDirs::nodes().path());
     QString spath=QString("vehicle/%1").arg(callsign);
     if(!(backup_dir.mkpath(spath)&&backup_dir.cd(spath))){
       qWarning("%s",tr("Can't create vehicle backup path").toUtf8().data());
@@ -283,7 +284,7 @@ void NodesModel::create_node(QByteArray sn, _node_info *ninfo)
 //=============================================================================
 void NodesModel::cacheClear(void)
 {
-  QDir backup_dir(QMandala::Global::nodes());
+  QDir backup_dir(AppDirs::nodes());
   foreach(QString sname,backup_dir.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
     foreach(QString dsn,QDir(backup_dir.filePath(sname)).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
       QFile::remove(backup_dir.filePath(QString("%1/%2/%3").arg(sname).arg(dsn).arg("cache")));

@@ -35,25 +35,6 @@ public:
   QMandalaItem *current;
   QMandalaItem *local;
 
-  //----------------------------------
-  // global information
-  class Global
-  {
-  public:
-    static bool devMode();      // development run (i.e. from user home folder)
-    static QDir plugins();      // plugins
-    static QDir userPlugins();  // user plugins
-    static QDir res();          // bitmaps,sounds
-    static QDir user();         // local user files (Documents)
-    static QDir telemetry();    // saved flight data
-    static QDir maps();         // maps and tilesets
-    static QDir lang();         // translations
-    static QDir missions();     // saved flight plans
-    static QDir configs();      // user saved nodes config files
-    static QDir nodes();        // nodes backups
-    static QDir scripts();      // user saved scripts
-
-  };
   static QString version;    //software version
   static QString branch;    //software branch
 

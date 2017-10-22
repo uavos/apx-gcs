@@ -30,6 +30,7 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
 #include "MapView.h"
+#include "AppDirs.h"
 //=============================================================================
 //=============================================================================
 QString MapTiles::cookiesFileName="google-cookies";
@@ -48,10 +49,10 @@ QDir MapTiles::pathMaps;
 MapTiles::MapTiles(MapView *view)
   :QObject(),scene(NULL),view(view)
 {
-  pathMaps=QDir(QMandala::Global::maps().absoluteFilePath("google-tiles"));
+  pathMaps=QDir(AppDirs::maps().absoluteFilePath("google-tiles"));
   if(!pathMaps.exists())pathMaps.mkpath(".");
   //check default maps
-  /*QDir pmLib(QMandala::Global::res());
+  /*QDir pmLib(AppDirs::res());
   if(pmLib.cd("maps")){
     bool bUpd=false;
     foreach(QFileInfo fi,pmLib.entryInfoList(QDir::Files)){
@@ -93,17 +94,17 @@ MapTiles::MapTiles(MapView *view)
 
   net.setProxy(QNetworkProxy::applicationProxy());
   //cache
-  /*dbfile=QMandala::Global::local.filePath("maps.qmdb");
+  /*dbfile=AppDirs::local.filePath("maps.qmdb");
   if(!QFileInfo(dbfile).exists())
     if(!createEmptyDB(dbfile))dbfile="";*/
 
   /*QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
-  diskCache->setCacheDirectory(QMandala::Global::local.filePath("maps_cache"));
+  diskCache->setCacheDirectory(AppDirs::local.filePath("maps_cache"));
   net.setCache(diskCache);
   net.setNetworkAccessible(QNetworkAccessManager::NotAccessible);
   request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,QNetworkRequest::PreferCache);*/
   //load cookies file
-  /*QFile f(QMandala::Global::config().filePath(cookiesFileName));
+  /*QFile f(AppDirs::config().filePath(cookiesFileName));
   if (f.open(QIODevice::ReadOnly))
     request.setRawHeader("Cookie",QString(f.readAll()).split("\n",QString::SkipEmptyParts).join(";").toUtf8());*/
 

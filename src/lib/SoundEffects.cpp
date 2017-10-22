@@ -22,7 +22,8 @@
  */
 #include "SoundEffects.h"
 #include "QMandala.h"
-#include "AppSettings.h"
+#include "FactSystem.h"
+#include "AppDirs.h"
 //=============================================================================
 SoundEffects::SoundEffects(QObject *parent)
     :QObject(parent)
@@ -37,7 +38,7 @@ SoundEffects::SoundEffects(QObject *parent)
     if(lang=="ru") voice="ru-milena";
     else voice="vicki";
   }
-  QDir fdir(QMandala::Global::res().filePath("audio/speech/"+voice),"*.ogg *.wav");
+  QDir fdir(AppDirs::res().filePath("audio/speech/"+voice),"*.ogg *.wav");
   //qDebug()<<fdir.absolutePath();
   QStringList files=fdir.entryList();
   foreach(QString file,files){
@@ -55,7 +56,7 @@ SoundEffects::SoundEffects(QObject *parent)
   alias["connected"]="radar_lock";
   //load files and create effects
   //qDebug() << QSoundEffect::supportedMimeTypes();
-  fdir=QDir(QMandala::Global::res().filePath("audio/alerts"),"*.ogg *.wav");
+  fdir=QDir(AppDirs::res().filePath("audio/alerts"),"*.ogg *.wav");
   foreach(QFileInfo fi,fdir.entryInfoList()){
     if(!alias.values().contains(fi.baseName()))continue;
     QSoundEffect *e=new QSoundEffect(this);
@@ -78,7 +79,7 @@ void SoundEffects::play(QString text)
     while(st.size())play(st.takeFirst());
     return;
   }
-  if(!AppSettings::value("sounds").toBool())return;
+  if(!FactSystem::value("settings.sounds").toBool())return;
   //qDebug()<<"play"<<text;
   text.remove(':');
   QStringList st;

@@ -25,6 +25,7 @@
 #include <math.h>
 #include "QMandala.h"
 #include "MissionItemWp.h"
+#include "AppDirs.h"
 //=============================================================================
 MapFrame::MapFrame(QWidget *parent)
   :QWidget(parent)
@@ -167,7 +168,7 @@ MapFrame::MapFrame(QWidget *parent)
   aTraceShow->setChecked(QSettings().value("showTrace",true).toBool());
 
   //try load last file
-  QString fname=QSettings().value("missionFile",QMandala::Global::missions().absoluteFilePath("xplane-seattle.xml")).toString();
+  QString fname=QSettings().value("missionFile",AppDirs::missions().absoluteFilePath("xplane-seattle.xml")).toString();
   if(QFile::exists(fname))
     model->loadFromFile(fname);
 
@@ -399,10 +400,10 @@ void MapFrame::on_aSaveAs_triggered()
 {
   if(model->isEmpty())return;
 
-  QFileDialog dlg(this,aSave->toolTip(),QMandala::Global::missions().canonicalPath());
+  QFileDialog dlg(this,aSave->toolTip(),AppDirs::missions().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
-  dlg.selectFile(QMandala::Global::missions().filePath(model->missionName+".xml"));
+  dlg.selectFile(AppDirs::missions().filePath(model->missionName+".xml"));
   QStringList filters;
   filters << tr("XML Files")+" (*.xml)"
           << tr("Any files")+" (*)";
@@ -421,7 +422,7 @@ void MapFrame::on_aNewFile_triggered()
 void MapFrame::on_aLoad_triggered()
 {
   if(!saveChanges())return;
-  QString fname =QFileDialog::getOpenFileName(this,aSave->toolTip(),QSettings().value("wptFileDir",QMandala::Global::missions().canonicalPath()).toString(),tr("XML Files")+" (*.xml)");
+  QString fname =QFileDialog::getOpenFileName(this,aSave->toolTip(),QSettings().value("wptFileDir",AppDirs::missions().canonicalPath()).toString(),tr("XML Files")+" (*.xml)");
   if (!QFile::exists(fname))return;
   model->loadFromFile(fname);
   QSettings().setValue("missionFileDir",QFileInfo(fname).absolutePath());

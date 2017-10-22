@@ -4,294 +4,201 @@
 <context>
     <name>AppSettings</name>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
-        <source>Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
-        <source>Application settings and preferences</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="43"/>
-        <source>Connectivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
         <source>Read only</source>
-        <translation type="unfinished">Толькі чытанне</translation>
+        <translation type="obsolete">Толькі чытанне</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
-        <source>Block all uplink data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="49"/>
-        <source>Network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="49"/>
-        <source>Networking preferences</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="51"/>
-        <source>Server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="52"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="52"/>
-        <source>Local server customized name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="53"/>
         <source>Password</source>
-        <translation type="unfinished">Пароль</translation>
+        <translation type="obsolete">Пароль</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="53"/>
-        <source>Local server access password</source>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
+        <source>Application settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="54"/>
-        <source>Allow external controls</source>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
+        <source>Global application preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="54"/>
-        <source>Don&apos;t block uplink from clients</source>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="41"/>
+        <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="55"/>
-        <source>Client</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="56"/>
-        <source>Master host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="56"/>
-        <source>Remote server address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="57"/>
-        <source>Master Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="57"/>
-        <source>Remote server password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="58"/>
-        <source>Other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="59"/>
-        <source>HTTP proxy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="59"/>
-        <source>Proxy for web data requests</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="63"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="42"/>
         <source>Sounds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="63"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="42"/>
         <source>Enable all application sounds and voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="65"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
         <source>Language</source>
         <translation type="unfinished">Мова</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="65"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
         <source>Interface localization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="71"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="50"/>
         <source>Voice</source>
         <translation type="unfinished">Голас</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="71"/>
-        <source>Speaking voice</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="77"/>
-        <source>Show descriptions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="77"/>
-        <source>Enable menu items description text</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="79"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="59"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="80"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="62"/>
+        <source>Show descriptions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="62"/>
+        <source>Enable menu items description text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="60"/>
         <source>Accelerate graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="80"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="50"/>
+        <source>Speech voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="60"/>
         <source>Enable OpenGL graphics when supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="81"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="61"/>
         <source>Smooth animations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="81"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="61"/>
         <source>Enable animations and antialiasing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="92"/>
-        <source>Read only datalink</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="93"/>
-        <source>Uplink allowed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>AppSettingsPort</name>
+    <name>AppShortcut</name>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="26"/>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="32"/>
         <source>add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="26"/>
-        <source>Add new port</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="32"/>
+        <source>Add new shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="26"/>
-        <source>Configure new port</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="32"/>
+        <source>Configure new hotkey</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="29"/>
-        <source>Ports</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="37"/>
+        <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="33"/>
-        <source>Type</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="37"/>
+        <source>Connectwhen available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="33"/>
-        <source>Link type</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="40"/>
+        <source>Key sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="34"/>
-        <source>System serial port</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="41"/>
+        <source>Java script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="35"/>
-        <source>Network server address</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="44"/>
+        <source>Save</source>
+        <translation type="unfinished">Захаваць</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="40"/>
-        <source>Port path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="40"/>
-        <source>Device name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="45"/>
-        <source>Baud rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="45"/>
-        <source>Serial port speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="48"/>
-        <source>Host address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="48"/>
-        <source>Remote server IP</source>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="49"/>
+        <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>AppSettingsPorts</name>
+    <name>AppShortcuts</name>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="81"/>
-        <source>Datalink</source>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="29"/>
+        <source>Shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="81"/>
-        <source>Modems and network servers</source>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="29"/>
+        <source>Keyboard hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="86"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="38"/>
+        <source>Block all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="38"/>
+        <source>Temporally block all shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="42"/>
+        <source>User</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="45"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="54"/>
         <source>Enable all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="86"/>
-        <source>Turn on all communication ports</source>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="45"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="54"/>
+        <source>Turn on all shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="88"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="48"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="57"/>
         <source>Disable all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettingsPorts.cpp" line="88"/>
-        <source>Turn off all communication ports</source>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="48"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="57"/>
+        <source>Turn off all shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="52"/>
+        <source>System</source>
+        <translation type="unfinished">Сістэма</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="112"/>
+        <source>Duplicate shortcut</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -417,7 +324,7 @@
 <context>
     <name>Config</name>
     <message>
-        <location filename="../src/main/Config.cpp" line="11"/>
+        <location filename="../src/main/Config.cpp" line="12"/>
         <source>Edit..</source>
         <translation>Рэдагаваць...</translation>
     </message>
@@ -582,70 +489,345 @@
     </message>
 </context>
 <context>
+    <name>DatalinkFacts</name>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="29"/>
+        <source>Datalink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="29"/>
+        <source>Communication and networks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="38"/>
+        <source>Read only</source>
+        <translation type="unfinished">Толькі чытанне</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="38"/>
+        <source>Block all uplink data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="41"/>
+        <source>Server activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="43"/>
+        <source>Server listening</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="50"/>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="61"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="61"/>
+        <source>Local server customized name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="62"/>
+        <source>Password</source>
+        <translation type="unfinished">Пароль</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="62"/>
+        <source>Local server access password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="63"/>
+        <source>Allow external controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="63"/>
+        <source>Don&apos;t block uplink from remote clients</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="64"/>
+        <source>Internet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="65"/>
+        <source>HTTP proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="65"/>
+        <source>Proxy for web data requests</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="73"/>
+        <source>Read only datalink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="74"/>
+        <source>Uplink allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DatalinkHosts</name>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="28"/>
+        <source>Hosts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="28"/>
+        <source>Discovered remote servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="78"/>
+        <source>found server</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DatalinkPort</name>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="28"/>
+        <source>add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="28"/>
+        <source>Add new port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="28"/>
+        <source>Configure new port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="31"/>
+        <source>Connect when available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="58"/>
+        <source>Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="31"/>
+        <source>Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="34"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="34"/>
+        <source>Link type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="35"/>
+        <source>System serial port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="36"/>
+        <source>Supported USB device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="37"/>
+        <source>Network server address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="39"/>
+        <source>Port path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="39"/>
+        <source>Device name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="40"/>
+        <source>Enumerate available serial ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="44"/>
+        <source>Baud rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="44"/>
+        <source>Serial port speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="49"/>
+        <source>Host address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="49"/>
+        <source>Remote server IP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="51"/>
+        <source>Send uplink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="51"/>
+        <source>Port connects to vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="54"/>
+        <source>Save</source>
+        <translation type="unfinished">Захаваць</translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="60"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DatalinkPorts</name>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="28"/>
+        <source>Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="28"/>
+        <source>Modems and remote servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="32"/>
+        <source>Enable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="32"/>
+        <source>Turn on all communication ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="34"/>
+        <source>Disable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="34"/>
+        <source>Turn off all communication ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DatalinkServer</name>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="57"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="57"/>
         <source>Linked to master GCU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="175"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="175"/>
         <source>Unable to start server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="185"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="185"/>
         <source>Server binded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="194"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="194"/>
         <source>Server inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="198"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="198"/>
         <source>Can&apos;t connect to local server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="388"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="388"/>
         <source>server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="409"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="409"/>
         <source>Client connection refused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="416"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="416"/>
         <source>client</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="418"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="418"/>
         <source>Local client controls enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="419"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="419"/>
         <source>External client controls disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="537"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="537"/>
         <source>found server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="585"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="585"/>
         <source>Datalink server activated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/DatalinkServer.cpp" line="595"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="595"/>
         <source>Datalink server inactive</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FactData</name>
+    <message>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="207"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="208"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="209"/>
+        <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -687,32 +869,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="61"/>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="62"/>
         <source>Test visual elements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="74"/>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="75"/>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="76"/>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="77"/>
         <source>Application</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>FactTree</name>
-    <message>
-        <location filename="../src/lib/FactSystem/FactTree.cpp" line="134"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/FactSystem/FactTree.cpp" line="135"/>
-        <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/FactSystem/FactTree.cpp" line="136"/>
-        <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -903,22 +1067,22 @@
 <context>
     <name>FlightDataFile</name>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="302"/>
+        <location filename="../src/lib/FlightDataFile.cpp" line="303"/>
         <source>Telemetry file is too big (%1 MB). Load it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="345"/>
+        <location filename="../src/lib/FlightDataFile.cpp" line="346"/>
         <source>The file format is not correct.</source>
         <translation type="unfinished">Нядзейсны фармат файла.</translation>
     </message>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="443"/>
+        <location filename="../src/lib/FlightDataFile.cpp" line="444"/>
         <source>Telemetry file end tag fixed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="463"/>
+        <location filename="../src/lib/FlightDataFile.cpp" line="464"/>
         <source>Old telemetry file format detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -934,32 +1098,32 @@
 <context>
     <name>MainForm</name>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="43"/>
+        <location filename="../src/main/MainForm.cpp" line="44"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="44"/>
+        <location filename="../src/main/MainForm.cpp" line="45"/>
         <source>&amp;UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="47"/>
+        <location filename="../src/main/MainForm.cpp" line="48"/>
         <source>&amp;Tools</source>
         <translation>&amp;Інструменты</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="48"/>
+        <location filename="../src/main/MainForm.cpp" line="49"/>
         <source>&amp;Window</source>
         <translation>&amp;Акно</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="49"/>
+        <location filename="../src/main/MainForm.cpp" line="50"/>
         <source>&amp;Help</source>
         <translation>&amp;Даведка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="58"/>
+        <location filename="../src/main/MainForm.cpp" line="59"/>
         <source>System Configuration</source>
         <translation>Настáўленні</translation>
     </message>
@@ -968,37 +1132,37 @@
         <translation type="vanished">Настáўленні скаротаў</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="61"/>
+        <location filename="../src/main/MainForm.cpp" line="62"/>
         <source>Toggle Full Screen</source>
         <translation>На ўвесь экран</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="62"/>
+        <location filename="../src/main/MainForm.cpp" line="63"/>
         <source>Auto arrange</source>
         <translation>Аўтарасстаноўка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="67"/>
+        <location filename="../src/main/MainForm.cpp" line="68"/>
         <source>Mandala Report</source>
         <translation>Значэнні Mandala</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="68"/>
+        <location filename="../src/main/MainForm.cpp" line="69"/>
         <source>Documentation</source>
         <translation>Дакументацыя</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="70"/>
+        <location filename="../src/main/MainForm.cpp" line="71"/>
         <source>VPN support</source>
         <translation>Падтрымка VPN</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="79"/>
+        <location filename="../src/main/MainForm.cpp" line="80"/>
         <source>Record data</source>
         <translation>Запісваць даныя</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="86"/>
+        <location filename="../src/main/MainForm.cpp" line="87"/>
         <source>Discard current file</source>
         <translation>Закрыць дзейны файл без захоўвання</translation>
     </message>
@@ -1007,68 +1171,68 @@
         <translation type="vanished">Толькі чытанне</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="114"/>
+        <location filename="../src/main/MainForm.cpp" line="115"/>
         <source>Connect to...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="120"/>
+        <location filename="../src/main/MainForm.cpp" line="121"/>
         <source>Exit</source>
         <translation>Выйсці</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="138"/>
+        <location filename="../src/main/MainForm.cpp" line="139"/>
         <source>DEVELOPMENT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="150"/>
-        <location filename="../src/main/MainForm.cpp" line="250"/>
+        <location filename="../src/main/MainForm.cpp" line="151"/>
+        <location filename="../src/main/MainForm.cpp" line="251"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="244"/>
+        <location filename="../src/main/MainForm.cpp" line="245"/>
         <source>Duplicate plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="289"/>
+        <location filename="../src/main/MainForm.cpp" line="290"/>
         <source>Feature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="595"/>
+        <location filename="../src/main/MainForm.cpp" line="596"/>
         <source>Username</source>
         <translation>Імя карыстальніка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="597"/>
+        <location filename="../src/main/MainForm.cpp" line="598"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="602"/>
+        <location filename="../src/main/MainForm.cpp" line="603"/>
         <source>Login</source>
         <translation>Увайсці</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="650"/>
+        <location filename="../src/main/MainForm.cpp" line="651"/>
         <source>VPN connection initiated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="654"/>
+        <location filename="../src/main/MainForm.cpp" line="655"/>
         <source>VPN disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="680"/>
+        <location filename="../src/main/MainForm.cpp" line="681"/>
         <source>Host address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="110"/>
+        <location filename="../src/main/MainForm.cpp" line="111"/>
         <source>Servers</source>
         <translation>Серверы</translation>
     </message>
@@ -1115,13 +1279,13 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="100"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="198"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="199"/>
         <source>Lat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="130"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="200"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="201"/>
         <source>Lon</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1138,7 +1302,7 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="196"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="204"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="205"/>
         <source>FPS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1154,7 +1318,7 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="251"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="209"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="210"/>
         <source>DM</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1165,7 +1329,7 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="278"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="210"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="211"/>
         <source>DH</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1176,7 +1340,7 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="305"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="211"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="212"/>
         <source>PD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1187,7 +1351,7 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="332"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="213"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="214"/>
         <source>FD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1198,7 +1362,7 @@
     </message>
     <message>
         <location filename="../src/Plugins/map/MapFrame.ui" line="359"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="214"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="215"/>
         <source>TD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1513,38 +1677,38 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="158"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="159"/>
         <source>Show heading wheel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="193"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="194"/>
         <source>Downloading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="202"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="203"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="346"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="347"/>
         <source>Change %1 waypoint(s):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="380"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="381"/>
         <source>Mission &apos;%1&apos; was modified. Save changes?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="407"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="424"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="408"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="425"/>
         <source>XML Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="408"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="409"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1552,18 +1716,18 @@
 <context>
     <name>MapTiles</name>
     <message>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="178"/>
+        <location filename="../src/Plugins/map/MapTiles.cpp" line="179"/>
         <source>Download aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="196"/>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="232"/>
+        <location filename="../src/Plugins/map/MapTiles.cpp" line="197"/>
+        <location filename="../src/Plugins/map/MapTiles.cpp" line="233"/>
         <source>Error downloading map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="232"/>
+        <location filename="../src/Plugins/map/MapTiles.cpp" line="233"/>
         <source>not an image</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1974,59 +2138,59 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="73"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="75"/>
         <source>Firmware upgrade in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="171"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="173"/>
         <source>Backups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="187"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="189"/>
         <source>Restore recent backup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="196"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="198"/>
         <source>Vehicle backups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="285"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="287"/>
         <source>Firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="288"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="290"/>
         <source>Loader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="294"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="296"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="328"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="330"/>
         <source>Reboot all nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="371"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="373"/>
         <source>Backup not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="513"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="530"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="515"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="532"/>
         <source>Node conf files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="514"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="531"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="516"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="533"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2144,139 +2308,139 @@
 <context>
     <name>NodesItemNode</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="48"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="50"/>
         <source>Can&apos;t create backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="107"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="109"/>
         <source>bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="108"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="110"/>
         <source>fields</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="109"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
         <source>conf reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="109"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="110"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="115"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="116"/>
         <source>yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="109"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="110"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
         <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="115"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="116"/>
         <source>no</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="110"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
         <source>loader support</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
         <source>in loader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
         <source>addressing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="115"/>
         <source>reboot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="116"/>
         <source>busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="120"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="122"/>
         <source>CAN address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="121"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="123"/>
         <source>CAN rx packets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="122"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="124"/>
         <source>System errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="123"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="125"/>
         <source>CAN errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="124"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="126"/>
         <source>MCU load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="126"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="128"/>
         <source>Power</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="138"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="140"/>
         <source>LOADER</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="367"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="369"/>
         <source>Field missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="372"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="507"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="374"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="509"/>
         <source>Field map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="544"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="546"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="657"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="659"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="694"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="696"/>
         <source>The file format is not correct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="698"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="729"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="700"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="731"/>
         <source>Backup restored for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="783"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="785"/>
         <source>Can&apos;t send command (unknown command)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2284,58 +2448,58 @@
 <context>
     <name>NodesModel</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="49"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="50"/>
         <source>Can&apos;t create vehicle backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="95"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="96"/>
         <source>Can&apos;t clear while upgrading firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="184"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="185"/>
         <source>Everything is up-to-date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="185"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="186"/>
         <source>Firmware upgrade finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="336"/>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="370"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="337"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="371"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="445"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="446"/>
         <source>Field modified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="453"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="454"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="458"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="459"/>
         <source>The file format is not correct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="465"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="466"/>
         <source>Loaded %1 nodes of %2. Importing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="468"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="469"/>
         <source>Nodes didn&apos;t match, nothing to import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="471"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="472"/>
         <source>Imported %1 nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2384,65 +2548,65 @@
 <context>
     <name>NumbersPlugin</name>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="17"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="18"/>
         <source>Numbers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="18"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="19"/>
         <source>Configure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="19"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="20"/>
         <source>Export as plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="20"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="21"/>
         <source>Load exported plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="138"/>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="166"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="139"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="167"/>
         <source>User plugin name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="143"/>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="169"/>
-        <source>QML files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="144"/>
         <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="170"/>
+        <source>QML files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="145"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="171"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="152"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="153"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="159"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="160"/>
         <source>Plugin &apos;%1&apos; exported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="178"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="179"/>
         <source>Cannot open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="195"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="196"/>
         <source>Content of &apos;%1&apos; loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="196"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="197"/>
         <source>Content in &apos;%1&apos; not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2450,32 +2614,32 @@
 <context>
     <name>PawnScript</name>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="206"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="207"/>
         <source>Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="206"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="207"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="297"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="298"/>
         <source>Script upload started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="350"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="351"/>
         <source>Script uploaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="390"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="391"/>
         <source>Script error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="395"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="396"/>
         <source>Script is downloading</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2512,22 +2676,22 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="355"/>
+        <location filename="../src/main/main.cpp" line="361"/>
         <source>Video</source>
         <translation type="unfinished">Відэа</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="358"/>
+        <location filename="../src/main/main.cpp" line="364"/>
         <source>EFIS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="361"/>
+        <location filename="../src/main/main.cpp" line="367"/>
         <source>HDG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="364"/>
+        <location filename="../src/main/main.cpp" line="370"/>
         <source>Controls</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2535,43 +2699,43 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="187"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="119"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="209"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="141"/>
         <source>identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="282"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="214"/>
         <source>UAV</source>
         <translation type="unfinished">БЛА</translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="312"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="244"/>
         <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="409"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="341"/>
         <source>Duplicate squawk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="416"/>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="459"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="348"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="391"/>
         <source>UAV not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="421"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="353"/>
         <source>selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="468"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="400"/>
         <source>GCU not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2579,75 +2743,75 @@
 <context>
     <name>QMandalaItem</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="282"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="284"/>
         <source>Function not registered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="296"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="298"/>
         <source>Syntax error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="335"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="356"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="368"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="337"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="358"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="370"/>
         <source>Can&apos;t parse command parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="492"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="497"/>
         <source>Error creating backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="556"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="561"/>
         <source>error serial data received</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="680"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="685"/>
         <source>GCU accessible names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
         <source>TextName</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
         <source>Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="681"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
         <source>Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="691"/>
         <source>Structure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
         <source>Index [hex]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="687"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
         <source>Values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2655,152 +2819,152 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="159"/>
+        <location filename="../src/main/main.cpp" line="162"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="210"/>
+        <location filename="../src/main/main.cpp" line="214"/>
         <source>Developer mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="219"/>
+        <location filename="../src/main/main.cpp" line="223"/>
         <source>Ground Control Unit</source>
         <translation>Наземны Пункт Кіравання</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="222"/>
+        <location filename="../src/main/main.cpp" line="226"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="344"/>
+        <location filename="../src/main/main.cpp" line="350"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="345"/>
+        <location filename="../src/main/main.cpp" line="351"/>
         <source>User QML plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="397"/>
+        <location filename="../src/main/main.cpp" line="403"/>
         <source>Plugin excluded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="405"/>
+        <location filename="../src/main/main.cpp" line="411"/>
         <source>Loading plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="181"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="183"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="182"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="184"/>
         <source>set var n to value v and send to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="183"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="185"/>
         <source>request var n from UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="184"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="186"/>
         <source>send var n to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="185"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="187"/>
         <source>rescan bus nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="186"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="188"/>
         <source>print nodes status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="187"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="189"/>
         <source>send data v to serial port ID p</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="188"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="190"/>
         <source>send data v to CAN ID i with IDE e</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="189"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="191"/>
         <source>execute function on VMs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="190"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="192"/>
         <source>sleep n milliseconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="191"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="193"/>
         <source>switch to next vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="192"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="194"/>
         <source>switch to previous vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="194"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="196"/>
         <source>trigger value of v to a or b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="195"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="197"/>
         <source>wrap angle -180..+180</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="196"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="198"/>
         <source>print members of type b for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="197"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="199"/>
         <source>print variables for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="198"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="200"/>
         <source>print functions for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="200"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="202"/>
         <source>reset AHRS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="201"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="203"/>
         <source>reset pilot controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="202"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="204"/>
         <source>reset barometric altitude on ground</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="203"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="205"/>
         <source>reset local GPS coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="204"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="206"/>
         <source>reset local GPS altitude</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2920,14 +3084,14 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>SerialWorker</name>
     <message>
-        <location filename="../src/lib/comm/Serial.cpp" line="163"/>
-        <location filename="../src/lib/comm/Serial.cpp" line="165"/>
+        <location filename="../src/lib/Datalink/Serial.cpp" line="163"/>
+        <location filename="../src/lib/Datalink/Serial.cpp" line="165"/>
         <source>Serial port connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/comm/Serial.cpp" line="339"/>
-        <location filename="../src/lib/comm/Serial.cpp" line="341"/>
+        <location filename="../src/lib/Datalink/Serial.cpp" line="339"/>
+        <location filename="../src/lib/Datalink/Serial.cpp" line="341"/>
         <source>Serial port disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3222,66 +3386,66 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="132"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="133"/>
         <source>File &apos;%s&apos; moved to trash.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="134"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="135"/>
         <source>File &apos;%s&apos; deleted permanently.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="181"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="182"/>
         <source>Flight number to load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="235"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="236"/>
         <source>Telemetry file updated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="319"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="320"/>
         <source>Comma separated values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="320"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="321"/>
         <source>X-plane flight data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="321"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="322"/>
         <source>Google Earth KML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="332"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="333"/>
         <source>Unknown filter selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="334"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="335"/>
         <source>File exported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="341"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="386"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="450"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="342"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="387"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="451"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="348"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="414"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="349"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="415"/>
         <source>Exporting telemetry file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="348"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="414"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="349"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="415"/>
         <source>Abort</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3375,29 +3539,29 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="101"/>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="115"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="102"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="116"/>
         <source>Script files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="102"/>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="116"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="103"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="117"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="143"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="144"/>
         <source>Success</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="153"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="154"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="169"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="170"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>

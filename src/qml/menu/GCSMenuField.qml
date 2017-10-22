@@ -11,7 +11,7 @@ Item {
     height: visible?(sep?4:fieldItemSize):0
 
     visible: fact?fact.visible:true
-    focus: visible && enabled
+    //focus: visible && enabled
 
     property int fieldItemSize: (showDescr||bAction)?itemSize*1.3:itemSize
 
@@ -56,13 +56,15 @@ Item {
     //internal
     property bool sep: visible && separator && (!sephdg)
     property bool sephdg: visible && separator && title
-    property bool showNext: visible && (fields || pageMenu || page || (fact && fact.size)) && (!delegate) && (!bEditList) && (!bEditListText)
+    property bool showNext: visible && (fields || pageMenu || page || (fact && (fact.size || fact.treeItemType==Fact.GroupItem))) && (!delegate) && (!bEditList) && (!bEditListText)
 
     //editor types
     property bool bEditText:     field.fact && field.fact.dataType==Fact.TextData && field.fact.size === 0
     property bool bEditList:     field.fact && field.fact.dataType==Fact.EnumData && field.fact.size>0
     property bool bEditListText: field.fact && field.fact.dataType==Fact.TextData && field.fact.size>0
     property bool bAction:       field.fact && field.fact.dataType==Fact.ActionData
+    property bool bEditKey:      field.fact && field.fact.dataType==Fact.KeySequenceData
+    property bool bConstData:    field.fact && field.fact.dataType==Fact.ConstData
 
     Button {
         id: fieldButton
@@ -85,9 +87,11 @@ Item {
 
         text: bAction?field.title:""
 
-        onClicked: {
+        //focus: false
+
+        onClicked: if(activeFocus){
             //console.log("click menu");
-            field.focus=true;
+            //field.focus=true;
             if(fact)fact.trigger();
             if(fact && (fact.treeItemType!=Fact.FactItem)){
                 //console.log("open: "+field);
@@ -103,7 +107,7 @@ Item {
             }else if(field.page){
                 openPage({"page": Qt.resolvedUrl("../"+field.page),"title": field.title})
                 //console.log("open: "+field.page);
-            }else if(bEditText){
+            }else if(bEditText || bEditKey){
                 //editTextDialog.open()
             }else if(closeable)close(); //click and close
             field.clicked()
@@ -133,6 +137,7 @@ Item {
                     spacing: 0
                     Label { //title
                         id: titleText
+                        enabled: field.enabled
                         Layout.fillWidth: true
                         Layout.fillHeight: !showDescr
                         height: font.pixelSize
@@ -140,7 +145,7 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: sephdg?Text.AlignHCenter:Text.AlignLeft
                         font.pixelSize: itemSize*0.6
-                        color: sephdg?colorTitleSep:"#fff"
+                        color: sephdg?colorTitleSep:(enabled?"#fff":"#aaa")
                         font.family: sephdg?font_narrow:font_condenced
                         text: field.visible?field.title:""
                         clip: true
@@ -183,7 +188,7 @@ Item {
                 implicitWidth: height
                 Connections {
                     target: fieldButton
-                    onClicked: fieldBusy.start()
+                    onClicked: if(fieldButton.activeFocus)fieldBusy.start()
                 }
                 Timer {
                     id: fieldBusyTimer
@@ -201,11 +206,17 @@ Item {
                 if(field.delegate){
                     field.delegate.createObject(fieldDelegate,{"anchors.fill": fieldDelegate, "modelData": field});
                 }
+                if(bConstData){
+                    fieldConstC.createObject(fieldBody);
+                }
                 if(bEditText){
                     fieldTextC.createObject(fieldBody);
                 }
                 if(bEditList || bEditListText){
                     fieldListC.createObject(fieldBody);
+                }
+                if(bEditKey){
+                    fieldKeyC.createObject(fieldBody);
                 }
                 if(field.checkable){
                     fieldSwitchC.createObject(fieldBody);
@@ -232,6 +243,21 @@ Item {
             }
 
             Component {
+                id: fieldConstC
+                Text {
+                    id: textInput
+                    Layout.fillHeight: true
+                    Layout.minimumWidth: itemSize*2
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                    font.pixelSize: itemSize*0.6
+                    color: colorValueText
+                    font.family: font_condenced
+                    text: field.fact.text
+                }
+            }
+
+            Component {
                 id: fieldSwitchC
                 Switch {
                     Layout.fillHeight: true
@@ -245,9 +271,11 @@ Item {
                     }
                 }
             }
+
             Component {
                 id: fieldTextC
                 TextInput {
+                    id: textInput
                     Layout.fillHeight: true
                     Layout.minimumWidth: itemSize*2
                     //Layout.fillWidth: true
@@ -263,7 +291,10 @@ Item {
                         field.fact.value=text;
                         parent.forceActiveFocus();
                     }
-                    onActiveFocusChanged: if(activeFocus)selectAll();
+                    onActiveFocusChanged: {
+                        if(activeFocus)selectAll();
+                        //fieldButton.enabled=!activeFocus
+                    }
                     Rectangle {
                         visible: field.enabled
                         anchors.left: parent.left
@@ -285,7 +316,7 @@ Item {
                     Dialog {
                         id: dialog
                         modal: true
-                        title: field.title + " ("+field.fact.descr+")"
+                        title: field.title + (field.fact.descr?" ("+field.fact.descr+")":"")
                         standardButtons: Dialog.Ok | Dialog.Cancel
                         parent: menuPage
                         x: (parent.width - width) / 2
@@ -308,6 +339,7 @@ Item {
                     }
                 }
             }
+
             Component {
                 id: fieldListC
                 ComboBox {
@@ -316,15 +348,10 @@ Item {
                     Layout.fillWidth: editable
                     editable: field.bEditListText
                     model: field.fact
-                    textRole: "name"
-                    //currentIndex: find("by")
+                    textRole: "text"
                     contentItem: editable?textInputC.createObject(editor):editor.contentItem
                     background: editable?textInputBgC.createObject(editor):editor.background
                     Component.onCompleted: currentIndex=find(field.fact.text)
-                    /*onAccepted: {
-                        field.fact.value=editText
-                        parent.forceActiveFocus();
-                    }*/
                     onActivated: {
                         field.fact.value=textAt(index)
                         parent.forceActiveFocus();
@@ -349,6 +376,76 @@ Item {
                     Component {
                         id: textInputBgC
                         Item {}
+                    }
+                }
+            }
+
+            Component {
+                id: fieldKeyC
+                RowLayout {
+                    id: editor
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    Shortcut {
+                        id: scText
+                        enabled: false
+                        sequence: control.text
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        Layout.fillWidth: true
+                        anchors.leftMargin: font.pixelSize
+                        verticalAlignment: Qt.AlignVCenter
+                        font.family: font_condenced
+                        font.pixelSize: itemSize*0.6
+                        color: colorBgPress
+                        text: scText.nativeText
+                    }
+                    TextField {
+                        id: control
+                        focus: true
+                        Layout.alignment: Qt.AlignRight
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        //anchors.verticalCenter: parent.verticalCenter
+                        topPadding: 0
+                        bottomPadding: 0
+                        height: itemSize
+                        font.family: font_condenced
+                        font.pixelSize: itemSize*0.6
+                        placeholderText: qsTr("Key Sequence")
+                        text: field.fact.text
+                        hoverEnabled: true
+                        verticalAlignment: Qt.AlignVCenter
+                        horizontalAlignment: Qt.AlignRight
+                        selectByMouse: true
+                        persistentSelection: true
+                        background: Rectangle {
+                            anchors.fill: parent
+                            color: control.activeFocus ? colorBgHover : "transparent"
+                            border.width: 0
+                        }
+                        onActiveFocusChanged: {
+                            app.shortcuts.blocked.value=activeFocus;
+                            if(activeFocus && control.selectedText===""){
+                                control.selectAll();
+                            }
+                        }
+                        onEditingFinished: {
+                            app.shortcuts.blocked.value=false;
+                            if(modelData) field.fact.value=text
+                        }
+                        //Keys.onEscapePressed: editor.parent.forceActiveFocus();
+                        Keys.onPressed: {
+                            //console.log("key: "+event.key+" text: "+event.text)
+                            event.accepted=true
+                            control.remove(control.selectionStart,control.selectionEnd);
+                            var s=app.shortcuts.keyToPortableString(event.key,event.modifiers);
+                            var i=control.cursorPosition;
+                            if(control.text.endsWith('+'))i=control.text.length;
+                            control.insert(i,s);
+                            if(!control.text.endsWith('+'))control.selectAll();
+                        }
                     }
                 }
             }
