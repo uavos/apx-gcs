@@ -20,17 +20,23 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "DatalinkFacts.h"
+#include "Datalink.h"
 #include "DatalinkHosts.h"
 #include "DatalinkHost.h"
 #include "tcp_ports.h"
 //=============================================================================
-DatalinkHosts::DatalinkHosts(DatalinkFacts *parent)
+DatalinkHosts::DatalinkHosts(Datalink *parent)
   : Fact(parent,"hosts",tr("Remote servers"),tr("Discovered remote hosts"),GroupItem,ConstData)
 {
-  f_server=parent;
+  setFlatModel(true);
 
-  connect(this,&Fact::structChanged,this,&DatalinkHosts::updateStats);
+  f_datalink=parent;
+
+  f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all remote server connections"),FactItem,NoData);
+
+  f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
+  bindValue(f_list);
+  connect(f_list,&Fact::structChanged,this,&DatalinkHosts::updateStats);
 
   //udp discover
   udpReader=new QUdpSocket(this);
@@ -40,7 +46,9 @@ DatalinkHosts::DatalinkHosts(DatalinkFacts *parent)
   udpAnnounce=new QUdpSocket(this);
   announceTimer.setInterval(20000);
   connect(&announceTimer,&QTimer::timeout,this,&DatalinkHosts::announce);
-  connect(f_server->f_binded,&Fact::valueChanged,this,&DatalinkHosts::serverBindedChanged);
+  connect(f_datalink->f_binded,&Fact::valueChanged,this,&DatalinkHosts::serverBindedChanged);
+
+  updateStats();
 }
 //=============================================================================
 void DatalinkHosts::tryBind(void)
@@ -63,21 +71,21 @@ void DatalinkHosts::udpRead(void)
     udpReader->readDatagram(datagram.data(),datagram.size(),&srcHost,&srcPort);
     //qDebug()<<datagram;
     if(datagram.endsWith(QByteArray("@server.gcs.uavos.com"))){
-      if(f_server->f_binded->value().toBool() && f_server->isLocalHost(srcHost))continue;
+      //if(f_datalink->f_binded->value().toBool() && DatalinkSocket::isLocalHost(srcHost))continue;
       const QString &uname=QString(datagram).left(datagram.indexOf('@'));
       //try to find and update existing
       DatalinkHost *host=NULL;
-      foreach (FactTree *i , childItems()) {
-        Fact *f=static_cast<Fact*>(i);
-        if(f->text()!=srcHost.toString())continue;
-        host=static_cast<DatalinkHost*>(f);
+      foreach (FactTree *i , f_list->childItems()) {
+        DatalinkHost *h=static_cast<DatalinkHost*>(i);
+        if(!h->host.isEqual(srcHost))continue;
+        host=h;
         break;
       }
       QString sname=QString("%1@%2").arg(uname).arg(srcHost.toString());
       if(host){
         host->setTitle(sname);
       }else{
-        host=new DatalinkHost(this,sname,srcHost.toString());
+        host=new DatalinkHost(this,sname,srcHost);
         qDebug("#%s: %s",tr("found server").toUtf8().data(),sname.toUtf8().data());
         announceTimer.setInterval(3000);
       }
@@ -89,8 +97,8 @@ void DatalinkHosts::udpRead(void)
 //=============================================================================
 void DatalinkHosts::announce(void)
 {
-  if(f_server->f_binded->value().toBool()){
-    udpAnnounce->writeDatagram(QByteArray(QString("%1@server.gcs.uavos.com").arg(f_server->f_name->value().toString()).toUtf8()),QHostAddress::Broadcast,UDP_PORT_DISCOVER);
+  if(f_datalink->f_binded->value().toBool()){
+    udpAnnounce->writeDatagram(QByteArray(QString("%1@server.gcs.uavos.com").arg(f_datalink->f_name->value().toString()).toUtf8()),QHostAddress::Broadcast,UDP_PORT_DISCOVER);
     announceTimer.setInterval(20000);
     //qDebug()<<"announce";
   }else{
@@ -100,7 +108,7 @@ void DatalinkHosts::announce(void)
 //=============================================================================
 void DatalinkHosts::serverBindedChanged()
 {
-  bool binded=f_server->f_binded->value().toBool();
+  bool binded=f_datalink->f_binded->value().toBool();
   if(binded){
     announce();
     announceTimer.start();
@@ -112,7 +120,7 @@ void DatalinkHosts::serverBindedChanged()
 //=============================================================================
 void DatalinkHosts::updateStats()
 {
-  //setValue(size());
+  f_alloff->setEnabled(f_list->size()>0);
 }
 //=============================================================================
 

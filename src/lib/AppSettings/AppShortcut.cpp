@@ -29,7 +29,7 @@
 #include "QMandala.h"
 //=============================================================================
 AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
- : Fact(parent,sc?"":tr("add"),sc?"":tr("Add new shortcut"),sc?"":tr("Configure new hotkey"),GroupItem,sc?BoolData:NoData),
+ : Fact(sc?(bUsr?parent->f_usr:parent->f_sys):parent,sc?(bUsr?"usr#":"f_sys#"):tr("add"),sc?"":tr("Add new shortcut"),sc?"":tr("Configure new hotkey"),GroupItem,sc?BoolData:NoData),
    container(parent),_new(sc?false:true),bUsr(bUsr), shortcut(NULL)
 {
   mandala=qApp->property("Mandala").value<QMandala*>();
@@ -45,13 +45,17 @@ AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
     connect(_save,&Fact::triggered,parent,&AppShortcuts::addTriggered);
     defaults();
   }else{
+    setSection(bUsr?parent->f_usr->section():parent->f_sys->section());
     copyValuesFrom(sc);
     _remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
     connect(_remove,&Fact::triggered,parent,&AppShortcuts::removeTriggered);
     _remove->setValue(RemoveAction);
     connect(parent,&Fact::structChanged,this,&AppShortcut::updateStats);
-    connect(parent->_blocked,&Fact::valueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);
+    connect(parent->f_blocked,&Fact::valueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);
     connect(this,&Fact::childValueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);
+
+    connect(bUsr?parent->f_allonUsr:parent->f_allonSys,&Fact::triggered,this,&AppShortcut::enable);
+    connect(bUsr?parent->f_alloffUsr:parent->f_alloffSys,&Fact::triggered,this,&AppShortcut::disable);
     updateShortcut();
   }
 
@@ -76,8 +80,6 @@ void AppShortcut::updateStats()
     _save->setEnabled(!(_key->text().isEmpty()||_cmd->text().isEmpty()));
   }else{
     _remove->setVisible(bUsr);
-    if(bUsr)setName(QString("usr%1").arg(container->usrList.indexOf(const_cast<AppShortcut*>(this))+1));
-    else setName(QString("sys%1").arg(container->sysList.indexOf(const_cast<AppShortcut*>(this))+1));
     setTitle(QString("%1 -> %2").arg(_key->text()).arg(_cmd->text()));
     _key->setEnabled(bUsr);
     _cmd->setEnabled(bUsr);
@@ -91,7 +93,7 @@ void AppShortcut::updateShortcut()
     shortcut=NULL;
   }
   bool valid=(!(_key->text().isEmpty() || _cmd->text().isEmpty()));
-  if((!valid) || (!_enabled->value().toBool()) || container->_blocked->value().toBool() || _new)return;
+  if((!valid) || (!_enabled->value().toBool()) || container->f_blocked->value().toBool() || _new)return;
   shortcut=new QShortcut(QKeySequence(_key->text()),container->widget,0,0,Qt::ApplicationShortcut);
   connect(shortcut,&QShortcut::activated,this,&AppShortcut::shortcutActivated);
   //qDebug()<<shortcut;
@@ -101,6 +103,15 @@ void AppShortcut::shortcutActivated()
 {
   //qDebug()<<sender();//qobject_cast<QShortcut*>(sender())->whatsThis();
   mandala->current->exec_script(_cmd->text());
+}
+//=============================================================================
+void AppShortcut::enable()
+{
+  _enabled->setValue(true);
+}
+void AppShortcut::disable()
+{
+  _enabled->setValue(false);
 }
 //=============================================================================
 

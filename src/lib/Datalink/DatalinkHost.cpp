@@ -21,18 +21,33 @@
  *
  */
 #include "AppSettings.h"
+#include "Datalink.h"
 #include "DatalinkHost.h"
 #include "DatalinkHosts.h"
+#include "tcp_ports.h"
 //=============================================================================
-DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QVariant host)
- : Fact(parent,"host#",title,"",FactItem,NoData),
+DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress host)
+  : DatalinkSocket(parent->f_list,title,new QTcpSocket(),false,parent->f_datalink->f_name->text()),
+   host(host),
    container(parent)
 {
-  setValue(host);
-  connect(this,&Fact::childValueChanged,this,&DatalinkHost::updateStats);
+  setValue(host.toString());
+  //connect(this,&Fact::childValueChanged,this,&DatalinkHost::updateStats);
+
+  setSection(parent->f_list->title());
 
   updateStatsTimer.setSingleShot(true);
   connect(&updateStatsTimer,&QTimer::timeout,this,&DatalinkHost::updateStats);
+
+  connect(parent->f_alloff,&Fact::triggered,this,&DatalinkSocket::disconnectSocket);
+
+  connect(this,&DatalinkSocket::disconnected,this,&DatalinkHost::disconnected);
+  connect(this,&DatalinkSocket::datalinkConnected,this,&DatalinkHost::datalinkConnected);
+
+  connect(this,&DatalinkSocket::triggered,this,&DatalinkHost::connectToServer);
+
+  connect(this,&DatalinkSocket::packetReceived,parent->f_datalink,&Datalink::packetReceivedFromHost);
+  connect(parent->f_datalink,&Datalink::sendPacketToHosts,this,&DatalinkSocket::sendPacket);
 
   updateStats();
 }
@@ -52,5 +67,23 @@ void DatalinkHost::updateTimeout()
 {
   time.start();
   updateStats();
+}
+//=============================================================================
+void DatalinkHost::disconnected()
+{
+  setStatus(QString());
+}
+void DatalinkHost::datalinkConnected()
+{
+  setStatus(tr("Connected"));
+}
+//=============================================================================
+void DatalinkHost::connectToServer()
+{
+  if(socket->isOpen()){
+    disconnectSocket();
+    return;
+  }
+  socket->connectToHost(host,TCP_PORT_SERVER);
 }
 //=============================================================================

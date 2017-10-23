@@ -36,6 +36,9 @@ FactTree::FactTree(FactTree *parent, ItemType treeItemType)
     m_level++;
   }
   connect(this,&FactTree::structChanged,this,&FactTree::sizeChanged);
+  if(parent && parent->flatModel()){
+    //connect(this,&FactTree::structChanged,parent,&FactTree::structChanged);
+  }
 }
 //=============================================================================
 void FactTree::bindChilds(FactTree *item)
@@ -52,10 +55,16 @@ void FactTree::removeItem(FactTree *item)
   }
   int i=m_items.indexOf(item);
   if(i<0)return;
+  bool bFlat=m_parentItem->flatModel();
+  if(bFlat){
+    int i2=m_parentItem->childItems().indexOf(item);
+    m_parentItem->beginRemoveRows(QModelIndex(), i2 ,i2);
+  }
   beginRemoveRows(QModelIndex(), i, i);
   m_items.removeOne(item);
   item->m_parentItem=NULL;
   endRemoveRows();
+  if(bFlat) m_parentItem->endRemoveRows();
   item->deleteLater();
   emit structChanged(this);
 }
@@ -67,13 +76,19 @@ void FactTree::insertItem(int i, FactTree *item)
   }
   beginInsertRows(QModelIndex(), i, i);
   m_items.insert(i,item);
+  bool bFlat=m_parentItem && m_parentItem->flatModel();
+  if(bFlat){
+    int i2=m_parentItem->childItems().indexOf(item);
+    m_parentItem->beginInsertRows(QModelIndex(), i2 ,i2);
+  }
   item->m_parentItem=this;
   endInsertRows();
+  if(bFlat) m_parentItem->endInsertRows();
   emit structChanged(this);
 }
 void FactTree::addItem(FactTree *item)
 {
-  insertItem(rowCount(),item);
+  insertItem(m_items.size(),item);
 }
 void FactTree::moveItem(FactTree *item,int dest)
 {
@@ -99,9 +114,10 @@ QList<FactTree*> FactTree::childItems() const
 {
   if(m_flatModel){
     QList<FactTree*> list;
-    foreach(FactTree*i,m_items){
-      if(i->treeItemType()==GroupItem) list.append(i->childItems());
-      else list.append(i);
+    foreach(FactTree *item,m_items){
+      if(item->treeItemType()==SectionItem) {
+        list.append(item->childItems());
+      }else list.append(item);
     }
     return list;
   }
@@ -140,7 +156,7 @@ int FactTree::size(void) const
   if(m_flatModel){
     int sz=0;
     foreach(const FactTree*i,m_items){
-      if(i->treeItemType()==GroupItem) sz+=i->size();
+      if(i->treeItemType()==SectionItem) sz+=i->size();
       else sz++;
     }
     return sz;
@@ -157,8 +173,17 @@ void FactTree::setFlatModel(const bool &v)
   if(m_flatModel==v)return;
   m_flatModel=v;
   if(v){
-    //connect(this,%FactTree
+    foreach(const FactTree*i,m_items){
+      if(i->treeItemType()==SectionItem){
+        //connect(i,&FactTree::structChanged,this,&FactTree::structChanged);
+      }
+    }
   }else{
+    foreach(const FactTree*i,m_items){
+      if(i->treeItemType()==SectionItem){
+        //disconnect(i,&FactTree::structChanged,this,&FactTree::structChanged);
+      }
+    }
   }
   emit flatModelChanged();
   emit structChanged(this);

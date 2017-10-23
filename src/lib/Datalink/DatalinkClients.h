@@ -20,39 +20,36 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkHosts_H
-#define DatalinkHosts_H
+#ifndef DatalinkClients_H
+#define DatalinkClients_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class DatalinkFacts;
+class Datalink;
 //=============================================================================
-class DatalinkHosts: public Fact
+class DatalinkClients: public Fact
 {
   Q_OBJECT
 public:
-  explicit DatalinkHosts(DatalinkFacts *parent);
+  explicit DatalinkClients(Datalink *parent);
 
-  QList<Fact*> list;
+  Fact *f_alloff;
+  Fact *f_list;
+
+  Datalink *f_datalink;
+
+  QTcpServer *server;
 
 private:
-  QUdpSocket *udpReader;
-  QUdpSocket *udpAnnounce;
-
-  DatalinkFacts *f_server;
-
-  QTimer announceTimer;
+  uint retryBind;
 
 private slots:
-  //UDP discover service
-  void announce(void);
-  void tryBind(void);
-  void udpRead(void);
-
-  void serverBindedChanged();
-
   void updateStats();
-public slots:
+  void serverActiveChanged();
+  void tryBindServer();
+
+  //tcp server
+  void newConnection();
 };
 //=============================================================================
 #endif

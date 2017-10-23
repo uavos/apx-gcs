@@ -33,18 +33,14 @@ class DatalinkPorts: public Fact
 public:
   explicit DatalinkPorts(Fact *parent);
 
-  QList<DatalinkPort*> portsList;
+  Fact *f_allon;
+  Fact *f_alloff;
+  Fact *f_list;
 
 private:
-  DatalinkPort *_add;
-  Fact *_allon;
-  Fact *_alloff;
-  Fact *_ports;
+  DatalinkPort *f_add;
 
 private slots:
-  void allonTriggered();
-  void alloffTriggered();
-
   void updateStats();
 
 public slots:

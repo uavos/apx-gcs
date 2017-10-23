@@ -56,11 +56,12 @@ HEADERS += \
 # Communication
 SOURCES += \
     Datalink/Datalink.cpp \
-    Datalink/DatalinkFacts.cpp \
     Datalink/DatalinkPorts.cpp \
     Datalink/DatalinkPort.cpp \
+    Datalink/DatalinkSocket.cpp \
     Datalink/DatalinkHosts.cpp \
     Datalink/DatalinkHost.cpp \
+    Datalink/DatalinkClients.cpp \
     Datalink/DatalinkClient.cpp \
     Datalink/DatalinkServer.cpp \
     Datalink/EscReader.cpp \
@@ -69,11 +70,12 @@ SOURCES += \
 
 HEADERS += \
     Datalink/Datalink.h \
-    Datalink/DatalinkFacts.h \
     Datalink/DatalinkPorts.h \
     Datalink/DatalinkPort.h \
+    Datalink/DatalinkSocket.h \
     Datalink/DatalinkHosts.h \
     Datalink/DatalinkHost.h \
+    Datalink/DatalinkClients.h \
     Datalink/DatalinkClient.h \
     Datalink/DatalinkServer.h \
     Datalink/EscReader.h \

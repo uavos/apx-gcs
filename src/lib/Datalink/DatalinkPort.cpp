@@ -23,11 +23,11 @@
 #include "AppSettings.h"
 #include "DatalinkPort.h"
 #include "DatalinkPorts.h"
-#include "DatalinkFacts.h"
+#include "Datalink.h"
 //=============================================================================
 DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
- : Fact(parent,port?"":tr("add"),port?"":tr("Add new port"),port?"":tr("Configure new port"),GroupItem,port?BoolData:NoData),
-   container(parent),_new(port?false:true)
+ : Fact(port?parent->f_list:parent,port?"port#":tr("add"),port?"":tr("Add new port"),port?"":tr("Configure new port"),GroupItem,port?BoolData:NoData),
+   _new(port?false:true)
 {
   _enabled=new Fact(this,"enabled",tr("Enabled"),tr("Connect when available"),FactItem,BoolData);
   if(!_new)bindValue(_enabled);
@@ -48,7 +48,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
   new Fact(_baud,"115200","","",ConstItem,NoData);
 
   _host=new Fact(this,"host",tr("Host address"),tr("Remote server IP"),FactItem,TextData);
-  _host->bindChilds(static_cast<DatalinkFacts*>(parent->parentItem())->f_hosts);
+  _host->bindChilds(static_cast<Datalink*>(parent->parentItem())->f_hosts->f_list);
 
   _share=new Fact(this,"fwd",tr("Share data"),tr("Send all received data to other ports"),FactItem,BoolData);
 
@@ -57,13 +57,15 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
     connect(_save,&Fact::triggered,parent,&DatalinkPorts::addTriggered);
     defaults();
   }else{
-    setSection(tr("Ports"));
+    setSection(parent->f_list->title());
     copyValuesFrom(port);
     _remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
     connect(_remove,&Fact::triggered,parent,&DatalinkPorts::removeTriggered);
     _remove->setValue(RemoveAction);
     connect(this,&Fact::childValueChanged,parent,&DatalinkPorts::save);
     connect(parent,&Fact::structChanged,this,&DatalinkPort::updateStats);
+    connect(parent->f_allon,&Fact::triggered,this,&DatalinkPort::enable);
+    connect(parent->f_alloff,&Fact::triggered,this,&DatalinkPort::disable);
   }
 
   connect(this,&Fact::childValueChanged,this,&DatalinkPort::updateStats);
@@ -88,9 +90,17 @@ void DatalinkPort::updateStats()
   _baud->setVisible(bSerial);
   _host->setVisible((!bSerial)&&(!bUsb));
   if(!_new){
-    setName(QString("port%1").arg(container->portsList.indexOf(const_cast<DatalinkPort*>(this))+1));
     setTitle(QString("%1: %2").arg(_type->text()).arg(_type->value().toUInt()==0?_dev->text():_type->value().toUInt()==1?"auto":_host->text()));
     setDescr(_share->value().toBool()?tr("Share received data"):tr("Local data"));
   }
+}
+//=============================================================================
+void DatalinkPort::enable()
+{
+  _enabled->setValue(true);
+}
+void DatalinkPort::disable()
+{
+  _enabled->setValue(false);
 }
 //=============================================================================

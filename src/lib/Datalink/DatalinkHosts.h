@@ -25,21 +25,22 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class DatalinkFacts;
+class Datalink;
 //=============================================================================
 class DatalinkHosts: public Fact
 {
   Q_OBJECT
 public:
-  explicit DatalinkHosts(DatalinkFacts *parent);
+  explicit DatalinkHosts(Datalink *parent);
 
-  QList<Fact*> list;
+  Fact *f_alloff;
+  Fact *f_list;
+
+  Datalink *f_datalink;
 
 private:
   QUdpSocket *udpReader;
   QUdpSocket *udpAnnounce;
-
-  DatalinkFacts *f_server;
 
   QTimer announceTimer;
 

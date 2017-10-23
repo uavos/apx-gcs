@@ -45,11 +45,12 @@ public:
   Fact *_remove;
 
 private:
-  DatalinkPorts *container;
   bool _new;
 
 private slots:
   void updateStats();
+  void enable();
+  void disable();
 public slots:
   void defaults();
 };

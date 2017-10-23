@@ -24,24 +24,31 @@
 #define DatalinkHost_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
+#include "DatalinkSocket.h"
 class DatalinkHosts;
 //=============================================================================
-class DatalinkHost: public Fact
+class DatalinkHost: public DatalinkSocket
 {
   Q_OBJECT
 public:
-  explicit DatalinkHost(DatalinkHosts *parent, QString title, QVariant host);
+  explicit DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress host);
+
+  QHostAddress host;
 
 private:
   DatalinkHosts *container;
   QTime time;
   QTimer updateStatsTimer;
 
+
 private slots:
+  void disconnected();
+  void datalinkConnected();
   void updateStats();
+
 public slots:
   void updateTimeout();
+  void connectToServer();
 };
 //=============================================================================
 #endif

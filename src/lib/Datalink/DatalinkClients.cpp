@@ -20,101 +20,83 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "DatalinkFacts.h"
-#include "DatalinkHosts.h"
-#include "DatalinkHost.h"
+#include "Datalink.h"
+#include "DatalinkClients.h"
+#include "DatalinkClient.h"
 #include "tcp_ports.h"
 //=============================================================================
-DatalinkHosts::DatalinkHosts(DatalinkFacts *parent)
-  : Fact(parent,"hosts",tr("Hosts"),tr("Discovered remote servers"),GroupItem,ConstData)
+DatalinkClients::DatalinkClients(Datalink *parent)
+  : Fact(parent,"clients",tr("Connected clients"),tr("Remote clients connections"),GroupItem,ConstData)
 {
-  f_server=parent;
+  setFlatModel(true);
 
-  connect(this,&Fact::structChanged,this,&DatalinkHosts::updateStats);
+  f_datalink=parent;
 
-  //udp discover
-  udpReader=new QUdpSocket(this);
-  connect(udpReader,&QUdpSocket::readyRead,this, &DatalinkHosts::udpRead);
-  tryBind();
+  f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),FactItem,NoData);
 
-  udpAnnounce=new QUdpSocket(this);
-  announceTimer.setInterval(20000);
-  connect(&announceTimer,&QTimer::timeout,this,&DatalinkHosts::announce);
-  connect(f_server->f_binded,&Fact::valueChanged,this,&DatalinkHosts::serverBindedChanged);
+  f_list=new Fact(this,"list",tr("Clients list"),tr("Active connections"),SectionItem,ConstData);
+  bindValue(f_list);
+  connect(f_list,&Fact::structChanged,this,&DatalinkClients::updateStats);
+
+  server=new QTcpServer(this);
+  connect(server,&QTcpServer::newConnection,this,&DatalinkClients::newConnection);
+
+  connect(f_datalink->f_active,&Fact::valueChanged,this,&DatalinkClients::serverActiveChanged);
+
+  serverActiveChanged();
 }
 //=============================================================================
-void DatalinkHosts::tryBind(void)
+void DatalinkClients::updateStats()
 {
-  if(udpReader->bind(QHostAddress::Any,UDP_PORT_DISCOVER)){
-    //qDebug()<<"udp discover binded";
+  f_alloff->setEnabled(f_list->size()>0);
+}
+//=============================================================================
+void DatalinkClients::serverActiveChanged()
+{
+  bool active=f_datalink->f_active->value().toBool();
+  if(!active){
+    f_alloff->trigger();
+    server->close();
+    f_datalink->f_binded->setValue(false);
+    qDebug("%s",tr("Datalink server disabled").toUtf8().data());
     return;
   }
-  QTimer::singleShot(5000, this, SLOT(tryBind()));
-  //qWarning()<<"udp discover bind retry"<<udpReader->errorString();
+  //activate server
+  qDebug("%s",tr("Datalink server enabled").toUtf8().data());
+  retryBind=0;
+  tryBindServer();
 }
 //=============================================================================
-void DatalinkHosts::udpRead(void)
+//=============================================================================
+void DatalinkClients::tryBindServer()
 {
-  while(udpReader->hasPendingDatagrams()) {
-    QHostAddress srcHost;
-    quint16 srcPort;
-    QByteArray datagram;
-    datagram.resize(udpReader->pendingDatagramSize());
-    udpReader->readDatagram(datagram.data(),datagram.size(),&srcHost,&srcPort);
-    //qDebug()<<datagram;
-    if(datagram.endsWith(QByteArray("@server.gcs.uavos.com"))){
-      if(f_server->f_binded->value().toBool() && f_server->isLocalHost(srcHost))continue;
-      const QString &uname=QString(datagram).left(datagram.indexOf('@'));
-      //try to find and update existing
-      DatalinkHost *host=NULL;
-      foreach (FactTree *i , childItems()) {
-        Fact *f=static_cast<Fact*>(i);
-        if(f->text()!=srcHost.toString())continue;
-        host=static_cast<DatalinkHost*>(f);
-        break;
-      }
-      QString sname=QString("%1@%2").arg(uname).arg(srcHost.toString());
-      if(host){
-        host->setTitle(sname);
-      }else{
-        host=new DatalinkHost(this,sname,srcHost.toString());
-        qDebug("#%s: %s",tr("found server").toUtf8().data(),sname.toUtf8().data());
-        announceTimer.setInterval(3000);
-      }
-      host->updateTimeout();
+  if(!f_datalink->f_active->value().toBool())return;
+  if(!server->listen(QHostAddress::Any,TCP_PORT_SERVER)) {
+    f_datalink->f_binded->setValue(false);
+    //server port is busy by another local GCU
+    if(++retryBind<=1){
+      qWarning("%s: %s",tr("Unable to start server").toUtf8().data(),server->errorString().toUtf8().data());
+    }
+    uint to=1000+(retryBind/10)*1000;
+    QTimer::singleShot(to>10000?10000:to,this,SLOT(tryBindServer()));
+    return;
+  }
+  f_datalink->f_binded->setValue(true);
+  if(retryBind)qDebug("%s",tr("Server binded").toUtf8().data());
+  retryBind=0;
+}
+//=============================================================================
+void DatalinkClients::newConnection()
+{
+  while(server->hasPendingConnections()){
+    QTcpSocket *socket=server->nextPendingConnection();
+    if(!f_datalink->f_active->value().toBool()){
+      socket->disconnectFromHost();
       continue;
     }
+    new DatalinkClient(this,socket);
   }
 }
 //=============================================================================
-void DatalinkHosts::announce(void)
-{
-  if(f_server->f_binded->value().toBool()){
-    udpAnnounce->writeDatagram(QByteArray(QString("%1@server.gcs.uavos.com").arg(f_server->f_name->value().toString()).toUtf8()),QHostAddress::Broadcast,UDP_PORT_DISCOVER);
-    announceTimer.setInterval(20000);
-    //qDebug()<<"announce";
-  }else{
-    announceTimer.stop();
-  }
-}
-//=============================================================================
-void DatalinkHosts::serverBindedChanged()
-{
-  bool binded=f_server->f_binded->value().toBool();
-  if(binded){
-    announce();
-    announceTimer.start();
-  }else{
-    announceTimer.stop();
-  }
-}
-//=============================================================================
-//=============================================================================
-void DatalinkHosts::updateStats()
-{
-  //setValue(size());
-}
-//=============================================================================
-
 
 

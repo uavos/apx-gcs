@@ -35,31 +35,26 @@ public:
 
   Q_INVOKABLE QString keyToPortableString(int key,int modifier) const;
 
-  QList<AppShortcut*> sysList,usrList;
-
   QWidget *widget;
-  Fact *_blocked;
+  Fact *f_blocked;
+
+  Fact *f_allonSys;
+  Fact *f_alloffSys;
+  Fact *f_allonUsr;
+  Fact *f_alloffUsr;
+
+
+  Fact *f_usr;
+  Fact *f_sys;
 
 private:
-  AppShortcut *_add;
+  AppShortcut *f_add;
 
-  Fact *_allonSys;
-  Fact *_alloffSys;
-  Fact *_allonUsr;
-  Fact *_alloffUsr;
-
-  QString sysSect;
-  QString usrSect;
   QTimer saveTimer;
 
   void addUserShortcut();
 
 private slots:
-  void allonSysTriggered();
-  void alloffSysTriggered();
-  void allonUsrTriggered();
-  void alloffUsrTriggered();
-
   void updateStats();
 
 public slots:

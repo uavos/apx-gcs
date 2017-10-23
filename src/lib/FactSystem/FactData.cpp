@@ -39,14 +39,25 @@ FactData::FactData(FactTree *parent, QString name, QString title, QString descr,
   if(parent && m_name.contains('#')){
     connect(parent,&FactData::structChanged,this,&FactData::nameChanged);
   }
-  if(treeItemType==GroupItem && m_dataType==ConstData){
-    connect(this,&FactData::structChanged,this,&FactData::textChanged);
+  if((treeItemType==GroupItem || treeItemType==SectionItem) && m_dataType==ConstData){
+    connect(this,&FactData::sizeChanged,this,&FactData::valueChanged);
+    connect(this,&FactData::valueChanged,this,&FactData::textChanged);
   }
 }
 //=============================================================================
 QVariant FactData::value(void) const
 {
-  return m_dataType==ItemIndexData?num():m_value;
+  switch(m_dataType){
+    case ItemIndexData: return num();
+    case ConstData: {
+      int sz=size();
+      if(m_value.isNull())return _bindedFact?m_value:sz>0?sz:QVariant();
+      break;
+    }
+    default: break;
+
+  }
+  return m_value;
 }
 //=============================================================================
 bool FactData::setValue(const QVariant &v)
@@ -124,7 +135,7 @@ QString FactData::text() const
     if(value().isNull())return name();
     return value().toString();
   }
-  if(treeItemType()==GroupItem && m_dataType==ConstData && value().isNull()){
+  if((treeItemType()==GroupItem||treeItemType()==SectionItem) && m_dataType==ConstData && (value().isNull() && (!_bindedFact))){
     return size()>0?QString::number(size()):QString();
   }
   FactData *item=valueEnumItem();
@@ -175,8 +186,13 @@ void FactData::copyValuesFrom(const FactData *item)
 void FactData::bindValue(FactData *item)
 {
   _bindedFact=item;
-  connect(this,&FactData::valueChanged,this,&FactData::updateBindedValue);
   connect(item,&FactData::valueChanged,this,&FactData::bindedValueChanged);
+  if((treeItemType()==GroupItem||treeItemType()==SectionItem) && m_dataType==ConstData){
+    //only show stats
+    connect(item,&FactData::valueChanged,this,&FactData::valueChanged);
+  }else{
+    connect(this,&FactData::valueChanged,this,&FactData::updateBindedValue);
+  }
 }
 void FactData::updateBindedValue()
 {
@@ -233,7 +249,7 @@ Qt::ItemFlags FactData::flags(const QModelIndex &index) const
 }
 QVariant FactData::data(const QModelIndex & index, int role) const
 {
-  if (index.row() < 0 || index.row() >= childItems().count())
+  if (index.row() < 0 || index.row() >= size())
     return QVariant();
   FactData *item=static_cast<FactData*>(childItems().at(index.row()));
   switch(role){
@@ -246,7 +262,7 @@ QVariant FactData::data(const QModelIndex & index, int role) const
 }
 bool FactData::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-  if (index.row() < 0 || index.row() >= childItems().count() || role != Qt::EditRole)
+  if (index.row() < 0 || index.row() >= size() || role != Qt::EditRole)
     return false;
   static_cast<FactData*>(childItems().at(index.row()))->setValue(value);
   return true;

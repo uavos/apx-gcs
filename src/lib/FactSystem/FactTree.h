@@ -41,6 +41,7 @@ public:
   enum ItemType {
     RootItem =0,
     GroupItem,
+    SectionItem,
     FactItem,
     ConstItem,
   };

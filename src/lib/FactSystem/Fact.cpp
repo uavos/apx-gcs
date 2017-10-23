@@ -108,5 +108,15 @@ void Fact::setSection(const QString &v)
   m_section=v;
   emit sectionChanged();
 }
+QString Fact::status() const
+{
+  return m_status;
+}
+void Fact::setStatus(const QString &v)
+{
+  if(m_status==v)return;
+  m_status=v;
+  emit statusChanged();
+}
 //=============================================================================
 //=============================================================================

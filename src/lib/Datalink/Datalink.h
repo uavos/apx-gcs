@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -22,73 +22,64 @@
  */
 #ifndef Datalink_H
 #define Datalink_H
-#include <QtCore>
-#include <QtNetwork>
-#include "DatalinkFacts.h"
-//-----------------------------------------------------------------------------
-class QTcpServer;
-class QNetworkSession;
-class QTcpSocket;
-class QUdpSocket;
 //=============================================================================
-class Datalink : public DatalinkFacts
+#include <QtCore>
+#include "FactSystem.h"
+#include "DatalinkHosts.h"
+#include "DatalinkPorts.h"
+#include "DatalinkClients.h"
+//=============================================================================
+class Datalink: public Fact
 {
   Q_OBJECT
 public:
   explicit Datalink(FactSystem *parent=0);
 
+  Fact *f_readonly;
+
+  Fact *f_active;
+  Fact *f_binded;
+  Fact *f_name;
+  Fact *f_pass;
+  Fact *f_extctr;
+  Fact *f_hbeat;
+
+  DatalinkHosts *f_hosts;
+  DatalinkPorts *f_ports;
+  DatalinkClients *f_clients;
+
+  Fact *f_stats;
+  Fact *f_upcnt;
+  Fact *f_dncnt;
+  Fact *f_uprate;
+  Fact *f_dnrate;
+
 private:
-  QTcpServer *tcpServer;
-
-  typedef struct {
-    quint16 size;   //packet size
-    quint16 crc16;  //packet qChecksum
-    bool datalink;  //datalink stream connected
-    bool local;     //datalink stream connected
-    QStringList hdr;//http header response
-  }Client;
-
-  QHash<QTcpSocket *,Client> connections;
-
-  uint retryBind;
-  void httpRequest(QTcpSocket *socket);
-
-  void sendUplinkLocal(const QByteArray &ba);
-  void sendPacket(QTcpSocket *socket,const QByteArray &ba);
-  void forwardPacket(QTcpSocket *src_socket,const QByteArray &ba);
-
-  QByteArray makeTcpPacket(const QByteArray &ba) const;
-
-  QTimer heartbeatTimer; //data link alive timer for udp
+  QTimer heartbeatTimer; //data link alive for vehicle
 
 private slots:
-  void tryBind(void);
-
-  void newConnection();
-  void socketReadyRead();
-  void socketDisconnected();
-  void socketError(QAbstractSocket::SocketError socketError);
-
-  void heartbeatTimeout(void);
-
-  //facts change
-  void activeChanged();
+  void readonlyChanged();
+  void heartbeatTimeout();
   void hbeatChanged();
 
+
+  //internal connections
 public slots:
-  Q_INVOKABLE void localDataReceived(const QByteArray &ba); //connect iface/uart rx here
-  Q_INVOKABLE void dataSend(const QByteArray &ba); //connect GCU tx here
-
+  void packetReceivedFromClient(const QByteArray &ba);
+  void packetReceivedFromHost(const QByteArray &ba);
+  void packetReceivedFromPort(const QByteArray &ba);
 signals:
-  void loacalDataSend(const QByteArray &ba); //connect iface/uart tx here
-  void dataReceived(const QByteArray &ba); //connect GCU rx here
+  void sendPacketToClients(const QByteArray &ba);
+  void sendPacketToHosts(const QByteArray &ba);
+  void sendPacketToPorts(const QByteArray &ba);
 
-  void heartbeat(const QByteArray &ba); //send ping
-
-  void httpRequest(QTextStream &stream,QString req,bool *ok);
-
-  void serverDiscovered(const QHostAddress address,const QString name);
+  //external connections
+public slots:
+  void write(const QByteArray &ba);
+signals:
+  void read(const QByteArray &ba);
 
 };
 //=============================================================================
 #endif
+

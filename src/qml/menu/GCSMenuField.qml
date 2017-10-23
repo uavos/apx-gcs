@@ -65,6 +65,7 @@ Item {
     property bool bAction:       field.fact && field.fact.dataType==Fact.ActionData
     property bool bEditKey:      field.fact && field.fact.dataType==Fact.KeySequenceData
     property bool bConstData:    field.fact && field.fact.dataType==Fact.ConstData
+    property bool bStatus:       field.fact
 
     Button {
         id: fieldButton
@@ -209,6 +210,9 @@ Item {
                 if(bConstData){
                     fieldConstC.createObject(fieldBody);
                 }
+                if(bStatus){
+                    fieldStatusC.createObject(fieldBody);
+                }
                 if(bEditText){
                     fieldTextC.createObject(fieldBody);
                 }
@@ -253,7 +257,22 @@ Item {
                     font.pixelSize: itemSize*0.6
                     color: colorValueText
                     font.family: font_condenced
-                    text: field.fact.text
+                    text: field.fact?field.fact.text:""
+                }
+            }
+
+            Component {
+                id: fieldStatusC
+                Text {
+                    visible: text
+                    Layout.fillHeight: true
+                    Layout.minimumWidth: itemSize*2
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                    font.pixelSize: itemSize*0.6
+                    color: colorValueText
+                    font.family: font_condenced
+                    text: field.fact?field.fact.status:""
                 }
             }
 

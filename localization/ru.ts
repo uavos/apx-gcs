@@ -16,82 +16,82 @@
         <translation type="obsolete">Разрешить внешнее управление</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
+        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="+28"/>
         <source>Application settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="28"/>
+        <location line="+0"/>
         <source>Global application preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="41"/>
+        <location line="+13"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="42"/>
+        <location line="+1"/>
         <source>Sounds</source>
         <translation type="unfinished">Звуки</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="42"/>
+        <location line="+0"/>
         <source>Enable all application sounds and voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
+        <location line="+2"/>
         <source>Language</source>
         <translation type="unfinished">Язык</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="44"/>
+        <location line="+0"/>
         <source>Interface localization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="50"/>
+        <location line="+6"/>
         <source>Voice</source>
         <translation type="unfinished">Голос</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="59"/>
+        <location line="+9"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="62"/>
+        <location line="+3"/>
         <source>Show descriptions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="62"/>
+        <location line="+0"/>
         <source>Enable menu items description text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="60"/>
+        <location line="-2"/>
         <source>Accelerate graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="50"/>
+        <location line="-10"/>
         <source>Speech voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="60"/>
+        <location line="+10"/>
         <source>Enable OpenGL graphics when supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="61"/>
+        <location line="+1"/>
         <source>Smooth animations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppSettings.cpp" line="61"/>
+        <location line="+0"/>
         <source>Enable animations and antialiasing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -106,47 +106,47 @@
 <context>
     <name>AppShortcut</name>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="32"/>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="+32"/>
         <source>add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="32"/>
+        <location line="+0"/>
         <source>Add new shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="32"/>
+        <location line="+0"/>
         <source>Configure new hotkey</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="37"/>
+        <location line="+5"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="37"/>
+        <location line="+0"/>
         <source>Connectwhen available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="40"/>
+        <location line="+3"/>
         <source>Key sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="41"/>
+        <location line="+1"/>
         <source>Java script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="44"/>
+        <location line="+3"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="49"/>
+        <location line="+6"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -154,61 +154,71 @@
 <context>
     <name>AppShortcuts</name>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="29"/>
+        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="+29"/>
         <source>Shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="29"/>
+        <location line="+0"/>
         <source>Keyboard hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="38"/>
+        <location line="+11"/>
         <source>Block all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="38"/>
+        <location line="+0"/>
         <source>Temporally block all shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="42"/>
+        <location line="+4"/>
         <source>User</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="45"/>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="54"/>
+        <location line="+2"/>
+        <location line="+9"/>
         <source>Enable all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="45"/>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="54"/>
+        <location line="-9"/>
+        <location line="+9"/>
         <source>Turn on all shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="48"/>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="57"/>
+        <location line="-7"/>
+        <location line="+9"/>
         <source>Disable all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="48"/>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="57"/>
+        <location line="-9"/>
+        <location line="+9"/>
         <source>Turn off all shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="52"/>
+        <location line="-7"/>
+        <source>User defined shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>System</source>
         <translation type="unfinished">Система</translation>
     </message>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcuts.cpp" line="112"/>
+        <location line="+5"/>
+        <source>System default shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
         <source>Duplicate shortcut</source>
         <translation type="unfinished"></translation>
     </message>
@@ -216,87 +226,87 @@
 <context>
     <name>BlackboxDownload</name>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="14"/>
+        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="+14"/>
         <source>Blackbox download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="25"/>
+        <location line="+11"/>
         <source>Node:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="39"/>
+        <location line="+14"/>
         <source>Recorded size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="53"/>
+        <location line="+14"/>
         <source>UAV name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="69"/>
+        <location line="+16"/>
         <source>%v/%m</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="104"/>
+        <location line="+35"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="117"/>
+        <location line="+13"/>
         <source>Read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="120"/>
+        <location line="+3"/>
         <source>Read memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="129"/>
+        <location line="+9"/>
         <source>Abort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="132"/>
+        <location line="+3"/>
         <source>Abort operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="141"/>
+        <location line="+9"/>
         <source>Erase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="144"/>
+        <location line="+3"/>
         <source>Erase memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="153"/>
+        <location line="+9"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="156"/>
+        <location line="+3"/>
         <source>Refresh statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.cpp" line="179"/>
+        <location filename="../src/Plugins/nodes/BlackboxDownload.cpp" line="+179"/>
         <source>Download finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.cpp" line="192"/>
+        <location line="+13"/>
         <source>Download aborted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.cpp" line="205"/>
+        <location line="+13"/>
         <source>Download started</source>
         <translation type="unfinished"></translation>
     </message>
@@ -304,22 +314,22 @@
 <context>
     <name>CompassFrame</name>
     <message>
-        <location filename="../src/Plugins/compass/CompassFrame.cpp" line="31"/>
+        <location filename="../src/Plugins/compass/CompassFrame.cpp" line="+31"/>
         <source>Compass Calibration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/compass/CompassFrame.cpp" line="35"/>
+        <location line="+4"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/compass/CompassFrame.cpp" line="36"/>
+        <location line="+1"/>
         <source>Trace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/compass/CompassFrame.cpp" line="43"/>
+        <location line="+7"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -327,7 +337,7 @@
 <context>
     <name>CompassPlugin</name>
     <message>
-        <location filename="../src/Plugins/compass/CompassPlugin.cpp" line="30"/>
+        <location filename="../src/Plugins/compass/CompassPlugin.cpp" line="+30"/>
         <source>Compass Calibration</source>
         <translation type="unfinished"></translation>
     </message>
@@ -335,7 +345,7 @@
 <context>
     <name>Config</name>
     <message>
-        <location filename="../src/main/Config.cpp" line="12"/>
+        <location filename="../src/main/Config.cpp" line="+12"/>
         <source>Edit..</source>
         <translation type="unfinished">Редактирование..</translation>
     </message>
@@ -343,150 +353,150 @@
 <context>
     <name>ConfigDlg</name>
     <message>
-        <location filename="../src/main/Config.ui" line="23"/>
+        <location filename="../src/main/Config.ui" line="+23"/>
         <source>System Configuration</source>
         <translation type="unfinished">Системные настройки</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="29"/>
+        <location line="+6"/>
         <source>Communication</source>
         <translation type="unfinished">Связь</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="166"/>
-        <location filename="../src/main/Config.ui" line="246"/>
+        <location line="+137"/>
+        <location line="+80"/>
         <source>Baudrate</source>
         <translation type="unfinished">Частота</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="183"/>
-        <location filename="../src/main/Config.ui" line="263"/>
+        <location line="-63"/>
+        <location line="+80"/>
         <source>460800</source>
         <translation type="unfinished">460800</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="188"/>
-        <location filename="../src/main/Config.ui" line="268"/>
+        <location line="-75"/>
+        <location line="+80"/>
         <source>921600</source>
         <translation type="unfinished">921600</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="316"/>
+        <location line="+48"/>
         <source>OpenGL acceleration</source>
         <translation type="unfinished">OpenGL ускорение</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="282"/>
+        <location line="-34"/>
         <source>HTTP Proxy</source>
         <translation type="unfinished">HTTP Прокси</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="292"/>
+        <location line="+10"/>
         <source>user:pass@proxy:port</source>
         <translation type="unfinished">пользователь:пароль@прокси:порт</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="333"/>
+        <location line="+41"/>
         <source>System</source>
         <translation type="unfinished">Система</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="342"/>
+        <location line="+9"/>
         <source>Language</source>
         <translation type="unfinished">Язык</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="359"/>
+        <location line="+17"/>
         <source>Voice</source>
         <translation type="unfinished">Голос</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="40"/>
+        <location line="-319"/>
         <source>Allow external controls</source>
         <translation type="unfinished">Разрешить внешнее управление</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="59"/>
+        <location line="+19"/>
         <source>Password</source>
         <translation type="unfinished">Пароль</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="81"/>
+        <location line="+22"/>
         <source>Server password</source>
         <translation type="unfinished">Пароль сервера</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="91"/>
+        <location line="+10"/>
         <source>Master GCU host</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="108"/>
+        <location line="+17"/>
         <source>Serial Port1</source>
         <translation type="unfinished">Последовательный порт1</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="198"/>
+        <location line="+90"/>
         <source>Server name</source>
         <translation type="unfinished">Имя сервера</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="218"/>
+        <location line="+20"/>
         <source>Serial Port2</source>
         <translation type="unfinished">Последовательный порт2</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="307"/>
+        <location line="+89"/>
         <source>Application</source>
         <translation type="unfinished">Приложение</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="323"/>
+        <location line="+16"/>
         <source>Allow multiple instances</source>
         <translation type="unfinished">Разрешить запуск нескольких экземпляров программы</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="408"/>
+        <location line="+85"/>
         <source>Warning: restart GCU for changes to take effect.</source>
         <translation type="unfinished">Предупреждение: перезапустите GCU для того чтобы изменения вступили в силу.</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="426"/>
+        <location line="+18"/>
         <source>Request</source>
         <translation type="unfinished">Запрос</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="429"/>
+        <location line="+3"/>
         <source>Request Current configurations..</source>
         <translation type="unfinished">Запрос текущей конфигурации ..</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="438"/>
+        <location line="+9"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="441"/>
+        <location line="+3"/>
         <source>Upload configurations</source>
         <translation type="unfinished">Загрузить конфигурацию</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="450"/>
+        <location line="+9"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="453"/>
+        <location line="+3"/>
         <source>Save to file..</source>
         <translation type="unfinished">Сохранить в файл ..</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="462"/>
+        <location line="+9"/>
         <source>Load</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/main/Config.ui" line="465"/>
+        <location line="+3"/>
         <source>Load from file..</source>
         <translation type="unfinished">Загрузить из файла ..</translation>
     </message>
@@ -494,118 +504,249 @@
 <context>
     <name>Console</name>
     <message>
-        <location filename="../src/Plugins/console/Console.cpp" line="56"/>
+        <location filename="../src/Plugins/console/Console.cpp" line="+56"/>
         <source>Console</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Datalink</name>
+    <message>
+        <location filename="../src/lib/Datalink/Datalink.cpp" line="+31"/>
+        <source>Datalink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Communication and networks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Read only</source>
+        <translation type="unfinished">Только чтение</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Block all uplink data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Server active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Server listening</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Server settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Local server customized name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Password</source>
+        <translation type="unfinished">Пароль</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Local server access password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Allow external controls</source>
+        <translation type="unfinished">Разрешить внешнее управление</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Don&apos;t block uplink from remote clients</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Send heartbeat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Vehicle datalink available status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Internet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTTP proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Proxy for web data requests</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Read only datalink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Uplink allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DatalinkClients</name>
+    <message>
+        <location filename="../src/lib/Datalink/DatalinkClients.cpp" line="+29"/>
+        <source>Connected clients</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Remote clients connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Disconnect all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Drop all client connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clients list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Active connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Datalink server inactive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Datalink server activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Unable to start server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Server binded</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DatalinkFacts</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="29"/>
-        <source>Datalink</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="29"/>
-        <source>Communication and networks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="38"/>
         <source>Read only</source>
-        <translation type="unfinished">Только чтение</translation>
+        <translation type="obsolete">Только чтение</translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="38"/>
-        <source>Block all uplink data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="41"/>
-        <source>Server activated</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="43"/>
-        <source>Server listening</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="50"/>
-        <source>Server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="61"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="61"/>
-        <source>Local server customized name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="62"/>
         <source>Password</source>
-        <translation type="unfinished">Пароль</translation>
+        <translation type="obsolete">Пароль</translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="62"/>
-        <source>Local server access password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="63"/>
         <source>Allow external controls</source>
-        <translation type="unfinished">Разрешить внешнее управление</translation>
+        <translation type="obsolete">Разрешить внешнее управление</translation>
     </message>
+</context>
+<context>
+    <name>DatalinkHost</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="63"/>
-        <source>Don&apos;t block uplink from remote clients</source>
+        <location filename="../src/lib/Datalink/DatalinkHost.cpp" line="+60"/>
+        <source>No service</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="64"/>
-        <source>Internet</source>
+        <location line="+0"/>
+        <source>Alive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="65"/>
-        <source>HTTP proxy</source>
+        <location line="+0"/>
+        <source>now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="65"/>
-        <source>Proxy for web data requests</source>
+        <location line="+0"/>
+        <source>min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="73"/>
-        <source>Read only datalink</source>
+        <location line="+0"/>
+        <source>sec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkFacts.cpp" line="74"/>
-        <source>Uplink allowed</source>
+        <location line="+18"/>
+        <source>Connected</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DatalinkHosts</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="28"/>
-        <source>Hosts</source>
+        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="+29"/>
+        <source>Remote servers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="28"/>
-        <source>Discovered remote servers</source>
+        <location line="+0"/>
+        <source>Discovered remote hosts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="78"/>
+        <location line="+6"/>
+        <source>Disconnect all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Drop all remote server connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Servers list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Found servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+52"/>
         <source>found server</source>
         <translation type="unfinished"></translation>
     </message>
@@ -613,112 +754,117 @@
 <context>
     <name>DatalinkPort</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="28"/>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="+29"/>
         <source>add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="28"/>
+        <location line="+0"/>
         <source>Add new port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="28"/>
+        <location line="+0"/>
         <source>Configure new port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="31"/>
+        <location line="+3"/>
         <source>Connect when available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="58"/>
-        <source>Ports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="31"/>
+        <location line="+0"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="34"/>
+        <location line="+3"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="34"/>
+        <location line="+0"/>
         <source>Link type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="35"/>
+        <location line="+1"/>
         <source>System serial port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="36"/>
+        <location line="+1"/>
         <source>Supported USB device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="37"/>
+        <location line="+1"/>
         <source>Network server address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="39"/>
+        <location line="+2"/>
         <source>Port path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="39"/>
+        <location line="+0"/>
         <source>Device name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="40"/>
+        <location line="+1"/>
         <source>Enumerate available serial ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="44"/>
+        <location line="+4"/>
         <source>Baud rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="44"/>
+        <location line="+0"/>
         <source>Serial port speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="49"/>
+        <location line="+5"/>
         <source>Host address</source>
         <translation type="unfinished">Адрес хоста </translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="49"/>
+        <location line="+0"/>
         <source>Remote server IP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="51"/>
-        <source>Send uplink</source>
+        <location line="+3"/>
+        <source>Share data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="51"/>
-        <source>Port connects to vehicle</source>
+        <location line="+0"/>
+        <source>Send all received data to other ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="54"/>
+        <location line="+41"/>
+        <source>Share received data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Local data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-38"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="60"/>
+        <location line="+6"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -726,100 +872,110 @@
 <context>
     <name>DatalinkPorts</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="28"/>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="+37"/>
         <source>Ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="28"/>
-        <source>Modems and remote servers</source>
+        <location line="-9"/>
+        <source>Local ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="32"/>
+        <location line="+0"/>
+        <source>Modems and persistent remotes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Enable all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="32"/>
+        <location line="+0"/>
         <source>Turn on all communication ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="34"/>
+        <location line="+1"/>
         <source>Disable all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="34"/>
+        <location line="+0"/>
         <source>Turn off all communication ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Configured ports</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DatalinkServer</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="57"/>
+        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="+57"/>
         <source>Linked to master GCU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="175"/>
+        <location line="+118"/>
         <source>Unable to start server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="185"/>
+        <location line="+10"/>
         <source>Server binded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="194"/>
+        <location line="+9"/>
         <source>Server inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="198"/>
+        <location line="+4"/>
         <source>Can&apos;t connect to local server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="388"/>
+        <location line="+190"/>
         <source>server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="409"/>
+        <location line="+21"/>
         <source>Client connection refused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="416"/>
+        <location line="+7"/>
         <source>client</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="418"/>
+        <location line="+2"/>
         <source>Local client controls enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="419"/>
+        <location line="+1"/>
         <source>External client controls disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="537"/>
+        <location line="+123"/>
         <source>found server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="585"/>
+        <location line="+49"/>
         <source>Datalink server activated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="595"/>
+        <location line="+10"/>
         <source>Datalink server inactive</source>
         <translation type="unfinished"></translation>
     </message>
@@ -827,17 +983,17 @@
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="207"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+234"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="208"/>
+        <location line="+1"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="209"/>
+        <location line="+1"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
@@ -845,48 +1001,48 @@
 <context>
     <name>FactSystem</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="37"/>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="+37"/>
         <source>System tree</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="43"/>
+        <location line="+6"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="43"/>
+        <location line="+0"/>
         <source>Application version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="45"/>
+        <location line="+2"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="49"/>
+        <location line="+4"/>
         <source>Branch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="49"/>
+        <location line="+0"/>
         <source>Source code repository branch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="53"/>
+        <location line="+4"/>
         <source>Development mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="62"/>
+        <location line="+9"/>
         <source>Test visual elements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="76"/>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="77"/>
+        <location line="+14"/>
+        <location line="+1"/>
         <source>Application</source>
         <translation type="unfinished">Приложение</translation>
     </message>
@@ -894,39 +1050,39 @@
 <context>
     <name>Filter</name>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="14"/>
+        <location filename="../src/Plugins/telemetry/Filter.ui" line="+14"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="20"/>
+        <location line="+6"/>
         <source>SL Filter [filter]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="46"/>
+        <location line="+26"/>
         <source>Freq </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="49"/>
+        <location line="+3"/>
         <source>Hz</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="74"/>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="128"/>
+        <location line="+25"/>
+        <location line="+54"/>
         <source>S </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="99"/>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="153"/>
+        <location line="-29"/>
+        <location line="+54"/>
         <source>L </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="118"/>
+        <location line="-35"/>
         <source>Derivative Filter [filter_dt]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -934,143 +1090,143 @@
 <context>
     <name>FirmwareLoader</name>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="47"/>
+        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="+47"/>
         <source>Firmware upgrade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="58"/>
+        <location line="+11"/>
         <source>Loader upgrade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="69"/>
+        <location line="+11"/>
         <source>MHX radio upgrade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="80"/>
+        <location line="+11"/>
         <source>Initializing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="102"/>
+        <location line="+22"/>
         <source>Can&apos;t initialize loader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="114"/>
+        <location line="+12"/>
         <source>Can&apos;t initialize upgrade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="124"/>
+        <location line="+10"/>
         <source>Invalid start address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="128"/>
+        <location line="+4"/>
         <source>File too long</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="134"/>
+        <location line="+6"/>
         <source>Can&apos;t setup loader file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="144"/>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="188"/>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="201"/>
+        <location line="+10"/>
+        <location line="+44"/>
+        <location line="+13"/>
         <source>No response from device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="158"/>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="196"/>
+        <location line="-43"/>
+        <location line="+38"/>
         <source>Retrying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="171"/>
+        <location line="-25"/>
         <source>Can&apos;t initialize MHX update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="179"/>
+        <location line="+8"/>
         <source>Can&apos;t initialize MHX file write</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="205"/>
+        <location line="+26"/>
         <source>WAIT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="245"/>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="295"/>
+        <location line="+40"/>
+        <location line="+50"/>
         <source>Writing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="285"/>
+        <location line="-10"/>
         <source>Update not needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="306"/>
+        <location line="+21"/>
         <source>Success</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="354"/>
+        <location line="+48"/>
         <source>Firmware upgrade aborted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="399"/>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="523"/>
+        <location line="+45"/>
+        <location line="+124"/>
         <source>Loading file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="402"/>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="526"/>
+        <location line="-121"/>
+        <location line="+124"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="431"/>
+        <location line="-95"/>
         <source>Data address too low</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="436"/>
+        <location line="+5"/>
         <source>Data address too high</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="461"/>
+        <location line="+25"/>
         <source>Unknown hex record type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="491"/>
+        <location line="+30"/>
         <source>Error parsing MHX version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="508"/>
+        <location line="+17"/>
         <source>Older firmware file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="511"/>
+        <location line="+3"/>
         <source>New firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="519"/>
+        <location line="+8"/>
         <source>MHX firmware files not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1078,22 +1234,22 @@
 <context>
     <name>FlightDataFile</name>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="303"/>
+        <location filename="../src/lib/FlightDataFile.cpp" line="+303"/>
         <source>Telemetry file is too big (%1 MB). Load it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="346"/>
+        <location line="+43"/>
         <source>The file format is not correct.</source>
         <translation type="unfinished">Неверный формат файла.</translation>
     </message>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="444"/>
+        <location line="+98"/>
         <source>Telemetry file end tag fixed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FlightDataFile.cpp" line="464"/>
+        <location line="+20"/>
         <source>Old telemetry file format detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1101,7 +1257,7 @@
 <context>
     <name>ItemHome</name>
     <message>
-        <location filename="../src/Plugins/map/ItemHome.cpp" line="30"/>
+        <location filename="../src/Plugins/map/ItemHome.cpp" line="+30"/>
         <source>Home position</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1109,7 +1265,7 @@
 <context>
     <name>MainForm</name>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="59"/>
+        <location filename="../src/main/MainForm.cpp" line="+59"/>
         <source>System Configuration</source>
         <translation type="unfinished">Настройки программы</translation>
     </message>
@@ -1118,62 +1274,62 @@
         <translation type="obsolete">Настройка горячих клавиш</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="44"/>
+        <location line="-15"/>
         <source>&amp;File</source>
         <translation type="unfinished">&amp;Файл</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="45"/>
+        <location line="+1"/>
         <source>&amp;UAV</source>
         <translation>БЛА</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="48"/>
+        <location line="+3"/>
         <source>&amp;Tools</source>
         <translation type="unfinished">&amp;Инструменты</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="49"/>
+        <location line="+1"/>
         <source>&amp;Window</source>
         <translation type="unfinished">&amp;Окно</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="50"/>
+        <location line="+1"/>
         <source>&amp;Help</source>
         <translation type="unfinished">&amp;Справка</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="62"/>
+        <location line="+12"/>
         <source>Toggle Full Screen</source>
         <translation type="unfinished">Полноэкранный режим</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="63"/>
+        <location line="+1"/>
         <source>Auto arrange</source>
         <translation type="unfinished">Авторазмещение</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="68"/>
+        <location line="+5"/>
         <source>Mandala Report</source>
         <translation type="unfinished">Перечень переменных</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="69"/>
+        <location line="+1"/>
         <source>Documentation</source>
         <translation type="unfinished">Документация</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="71"/>
+        <location line="+2"/>
         <source>VPN support</source>
         <translation type="unfinished">Поддержка VPN</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="80"/>
+        <location line="+9"/>
         <source>Record data</source>
         <translation type="unfinished">Запись данных</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="87"/>
+        <location line="+7"/>
         <source>Discard current file</source>
         <translation type="unfinished">Закрыть текущий файл без сохранения</translation>
     </message>
@@ -1190,68 +1346,68 @@
         <translation type="obsolete">Разрешить внешнее управление</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="115"/>
+        <location line="+28"/>
         <source>Connect to...</source>
         <translation type="unfinished">Подключиться к...</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="121"/>
+        <location line="+6"/>
         <source>Exit</source>
         <translation type="unfinished">Выход</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="139"/>
+        <location line="+18"/>
         <source>DEVELOPMENT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="151"/>
-        <location filename="../src/main/MainForm.cpp" line="251"/>
+        <location line="+12"/>
+        <location line="+100"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="245"/>
+        <location line="-6"/>
         <source>Duplicate plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="290"/>
+        <location line="+45"/>
         <source>Feature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="596"/>
+        <location line="+306"/>
         <source>Username</source>
         <translation type="unfinished">Имя пользователя</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="598"/>
+        <location line="+2"/>
         <source>Password</source>
         <translation type="unfinished">Пароль</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="603"/>
+        <location line="+5"/>
         <source>Login</source>
         <translation type="unfinished">Логин</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="651"/>
+        <location line="+48"/>
         <source>VPN connection initiated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="655"/>
+        <location line="+4"/>
         <source>VPN disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="681"/>
+        <location line="+26"/>
         <source>Host address</source>
         <translation type="unfinished">Адрес хоста </translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="111"/>
+        <location line="-570"/>
         <source>Servers</source>
         <translation type="unfinished">Серверы</translation>
     </message>
@@ -1259,32 +1415,32 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/SDK/example/example.ui" line="14"/>
+        <location filename="../src/SDK/example/example.ui" line="+14"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SDK/example/example.ui" line="37"/>
+        <location line="+23"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SDK/example/example.ui" line="67"/>
+        <location line="+30"/>
         <source>STBY</source>
         <translation type="unfinished">Круг</translation>
     </message>
     <message>
-        <location filename="../src/SDK/example/example.ui" line="70"/>
+        <location line="+3"/>
         <source>Standby mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SDK/example/example.ui" line="75"/>
+        <location line="+5"/>
         <source>HOME</source>
         <translation type="unfinished">Домой</translation>
     </message>
     <message>
-        <location filename="../src/SDK/example/example.ui" line="78"/>
+        <location line="+3"/>
         <source>Home mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1292,442 +1448,442 @@
 <context>
     <name>MapFrame</name>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="20"/>
+        <location filename="../src/Plugins/map/MapFrame.ui" line="+20"/>
         <source>Flight Plan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="100"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="199"/>
+        <location line="+80"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+199"/>
         <source>Lat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="130"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="201"/>
+        <location line="+30"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+2"/>
         <source>Lon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="160"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="193"/>
+        <location line="+30"/>
+        <location line="+33"/>
         <source>Map level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="163"/>
+        <location line="-30"/>
         <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="196"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="205"/>
+        <location line="+33"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+4"/>
         <source>FPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="220"/>
+        <location line="+24"/>
         <source>Downloading..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="248"/>
+        <location line="+28"/>
         <source>Distance to mouse click</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="251"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="210"/>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+5"/>
         <source>DM</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="275"/>
+        <location line="+24"/>
         <source>Distance to home</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="278"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="211"/>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+1"/>
         <source>DH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="302"/>
+        <location line="+24"/>
         <source>Flight plan travel distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="305"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="212"/>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+1"/>
         <source>PD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="329"/>
+        <location line="+24"/>
         <source>UAV travelled distance from telemetry file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="332"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="214"/>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+2"/>
         <source>FD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="356"/>
+        <location line="+24"/>
         <source>UAV travelled distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="359"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="215"/>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+1"/>
         <source>TD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="379"/>
+        <location line="+20"/>
         <source>Home</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="382"/>
+        <location line="+3"/>
         <source>Go to GCU location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="391"/>
+        <location line="+9"/>
         <source>Download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="394"/>
+        <location line="+3"/>
         <source>Download visible map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="406"/>
+        <location line="+12"/>
         <source>Auto Download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="409"/>
+        <location line="+3"/>
         <source>Download map automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="421"/>
+        <location line="+12"/>
         <source>Download Deep..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="424"/>
+        <location line="+3"/>
         <source>Download all maps in clicked area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="433"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="436"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Stop Downloading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="445"/>
+        <location line="+9"/>
         <source>Setup Cookie..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="448"/>
+        <location line="+3"/>
         <source>Setup cookies..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="457"/>
+        <location line="+9"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="460"/>
+        <location line="+3"/>
         <source>Upload flight plan to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="469"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="472"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="481"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="484"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="496"/>
+        <location line="+12"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="499"/>
+        <location line="+3"/>
         <source>Refresh maps from google</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="508"/>
+        <location line="+9"/>
         <source>UAV</source>
         <translation type="unfinished">БЛА</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="511"/>
+        <location line="+3"/>
         <source>Go to UAV position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="520"/>
+        <location line="+9"/>
         <source>Full Screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="523"/>
+        <location line="+3"/>
         <source>Toggle Full Screen</source>
         <translation type="unfinished">Полноэкранный режим</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="532"/>
+        <location line="+9"/>
         <source>Reset Trace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="535"/>
+        <location line="+3"/>
         <source>Reset UAV trace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="544"/>
+        <location line="+9"/>
         <source>Clear File Trace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="547"/>
+        <location line="+3"/>
         <source>Clear UAV trace from telemetry file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="559"/>
+        <location line="+12"/>
         <source>Show Trace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="562"/>
+        <location line="+3"/>
         <source>Show UAV trace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="571"/>
+        <location line="+9"/>
         <source>Request</source>
         <translation type="unfinished">Запрос</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="574"/>
+        <location line="+3"/>
         <source>Request flight plan from UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="583"/>
+        <location line="+9"/>
         <source>Set home</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="586"/>
+        <location line="+3"/>
         <source>Set home position here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="595"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="598"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Fly here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="607"/>
+        <location line="+9"/>
         <source>Send position fix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="610"/>
+        <location line="+3"/>
         <source>Send a position update for inertial navigation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="619"/>
+        <location line="+9"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="622"/>
+        <location line="+3"/>
         <source>Save flight plan..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="631"/>
+        <location line="+9"/>
         <source>Load</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="634"/>
+        <location line="+3"/>
         <source>Load flight plan..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="643"/>
+        <location line="+9"/>
         <source>Save As..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="646"/>
+        <location line="+3"/>
         <source>Save flight plan as..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="655"/>
+        <location line="+9"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="658"/>
+        <location line="+3"/>
         <source>Create new flight plan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="667"/>
+        <location line="+9"/>
         <source>Add Waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="676"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="679"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Add Runway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="688"/>
+        <location line="+9"/>
         <source>Adjust waypoints altitude...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="697"/>
+        <location line="+9"/>
         <source>Land to selected runway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="706"/>
+        <location line="+9"/>
         <source>Fly to selected waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="715"/>
+        <location line="+9"/>
         <source>Telemetry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="718"/>
+        <location line="+3"/>
         <source>Load from telemetry file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="727"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="730"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Add Taxiway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="739"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="742"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Add Point of Interest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="751"/>
+        <location line="+9"/>
         <source>Fly to POI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="754"/>
+        <location line="+3"/>
         <source>Fly to selected Point of Interest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="763"/>
+        <location line="+9"/>
         <source>Look here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="766"/>
+        <location line="+3"/>
         <source>Turn gimbal to coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="775"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="778"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Add restricted area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="787"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="790"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Add emergency landing area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="799"/>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="802"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Remove selected items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="811"/>
+        <location line="+9"/>
         <source>Add point to area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.ui" line="814"/>
+        <location line="+3"/>
         <source>Add point to selected area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="159"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="-56"/>
         <source>Show heading wheel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="194"/>
+        <location line="+35"/>
         <source>Downloading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="203"/>
+        <location line="+9"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="347"/>
+        <location line="+144"/>
         <source>Change %1 waypoint(s):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="381"/>
+        <location line="+34"/>
         <source>Mission &apos;%1&apos; was modified. Save changes?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="408"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="425"/>
+        <location line="+27"/>
+        <location line="+17"/>
         <source>XML Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="409"/>
+        <location line="-16"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1735,18 +1891,18 @@
 <context>
     <name>MapTiles</name>
     <message>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="179"/>
+        <location filename="../src/Plugins/map/MapTiles.cpp" line="+179"/>
         <source>Download aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="197"/>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="233"/>
+        <location line="+18"/>
+        <location line="+36"/>
         <source>Error downloading map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MapTiles.cpp" line="233"/>
+        <location line="+0"/>
         <source>not an image</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1754,12 +1910,12 @@
 <context>
     <name>MissionItemArea</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemArea.cpp" line="55"/>
+        <location filename="../src/Plugins/map/MissionItemArea.cpp" line="+55"/>
         <source>area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemArea.cpp" line="74"/>
+        <location line="+19"/>
         <source>DH</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1767,7 +1923,7 @@
 <context>
     <name>MissionItemAreaPoint</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemAreaPoint.cpp" line="76"/>
+        <location filename="../src/Plugins/map/MissionItemAreaPoint.cpp" line="+76"/>
         <source>DH</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1775,7 +1931,7 @@
 <context>
     <name>MissionItemField</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemField.cpp" line="45"/>
+        <location filename="../src/Plugins/map/MissionItemField.cpp" line="+45"/>
         <source>off</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1783,7 +1939,7 @@
 <context>
     <name>MissionItemHome</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemHome.cpp" line="29"/>
+        <location filename="../src/Plugins/map/MissionItemHome.cpp" line="+29"/>
         <source>Home</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1791,32 +1947,32 @@
 <context>
     <name>MissionItemPi</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="33"/>
+        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="+33"/>
         <source>Point of interest global position (latitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="34"/>
+        <location line="+1"/>
         <source>Point of interest global position (longitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="35"/>
+        <location line="+1"/>
         <source>Camera view altitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="36"/>
+        <location line="+1"/>
         <source>Loiter radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="37"/>
+        <location line="+1"/>
         <source>Loiter loops limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="38"/>
+        <location line="+1"/>
         <source>Loiter time limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1824,42 +1980,42 @@
 <context>
     <name>MissionItemRw</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="33"/>
+        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="+33"/>
         <source>Landing pattern turn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="34"/>
+        <location line="+1"/>
         <source>Approach (straight path) length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="35"/>
+        <location line="+1"/>
         <source>Runway ground altitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="36"/>
+        <location line="+1"/>
         <source>Runway global position (latitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="37"/>
+        <location line="+1"/>
         <source>Runway global position (longitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="38"/>
+        <location line="+1"/>
         <source>Runway direction point (north)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="39"/>
+        <location line="+1"/>
         <source>Runway direction point (east)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="56"/>
+        <location line="+17"/>
         <source>Runway</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1867,17 +2023,17 @@
 <context>
     <name>MissionItemTw</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemTw.cpp" line="78"/>
+        <location filename="../src/Plugins/map/MissionItemTw.cpp" line="+78"/>
         <source>DH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemTw.cpp" line="79"/>
+        <location line="+1"/>
         <source>DW</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemTw.cpp" line="81"/>
+        <location line="+2"/>
         <source>DT</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1885,93 +2041,93 @@
 <context>
     <name>MissionItemWp</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="33"/>
+        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="+33"/>
         <source>Waypoint altitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="34"/>
+        <location line="+1"/>
         <source>Maneuver type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="35"/>
+        <location line="+1"/>
         <source>Waypoint global position (latitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="36"/>
+        <location line="+1"/>
         <source>Waypoint global position (longitude)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="38"/>
+        <location line="+2"/>
         <source>Actions to perform on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="39"/>
+        <location line="+1"/>
         <source>Fly with this speed to waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="40"/>
+        <location line="+1"/>
         <source>Make a cam shot on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="41"/>
+        <location line="+1"/>
         <source>Start continuous cam shots on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="42"/>
+        <location line="+1"/>
         <source>Execute VM script (@function) on waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="43"/>
+        <location line="+1"/>
         <source>Linked POI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="44"/>
+        <location line="+1"/>
         <source>Loiter around POI or waypoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="45"/>
+        <location line="+1"/>
         <source>Loiter radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="46"/>
+        <location line="+1"/>
         <source>Loiter loops limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="47"/>
+        <location line="+1"/>
         <source>Loiter time limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="110"/>
+        <location line="+63"/>
         <source>DH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="111"/>
+        <location line="+1"/>
         <source>DW</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="113"/>
+        <location line="+2"/>
         <source>DT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="115"/>
-        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="116"/>
+        <location line="+2"/>
+        <location line="+1"/>
         <source>ETA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1979,8 +2135,8 @@
 <context>
     <name>MissionListView</name>
     <message>
-        <location filename="../src/Plugins/map/MissionListView.ui" line="35"/>
-        <location filename="../src/Plugins/map/MissionListView.ui" line="38"/>
+        <location filename="../src/Plugins/map/MissionListView.ui" line="+35"/>
+        <location line="+3"/>
         <source>Mission</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1988,62 +2144,62 @@
 <context>
     <name>MissionModel</name>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="40"/>
+        <location filename="../src/Plugins/map/MissionModel.cpp" line="+40"/>
         <source>Runways</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="41"/>
+        <location line="+1"/>
         <source>Waypoints</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="42"/>
+        <location line="+1"/>
         <source>Taxiways</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="43"/>
+        <location line="+1"/>
         <source>Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="44"/>
+        <location line="+1"/>
         <source>Restricted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="45"/>
+        <location line="+1"/>
         <source>Emergency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="130"/>
+        <location line="+85"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="149"/>
+        <location line="+19"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="154"/>
+        <location line="+5"/>
         <source>The file format is not correct.</source>
         <translation type="unfinished">Неверный формат файла.</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="180"/>
+        <location line="+26"/>
         <source>From Telemetry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="203"/>
+        <location line="+23"/>
         <source>Mission received from UAV.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="493"/>
+        <location line="+290"/>
         <source>Error extracting mission</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2051,165 +2207,165 @@
 <context>
     <name>NodesFrame</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="20"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="+20"/>
         <source>AP Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="71"/>
+        <location line="+51"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="143"/>
+        <location line="+72"/>
         <source>Request</source>
         <translation type="unfinished">Запрос</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="146"/>
+        <location line="+3"/>
         <source>Request nodes for configuration..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="155"/>
+        <location line="+9"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="158"/>
+        <location line="+3"/>
         <source>Upload configurations</source>
         <translation type="unfinished">Загрузить конфигурацию</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="167"/>
+        <location line="+9"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="170"/>
+        <location line="+3"/>
         <source>Save to file..</source>
         <translation type="unfinished">Сохранить в файл ..</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="179"/>
+        <location line="+9"/>
         <source>Load</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="182"/>
+        <location line="+3"/>
         <source>Load from file..</source>
         <translation type="unfinished">Загрузить из файла ..</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="191"/>
+        <location line="+9"/>
         <source>Restore data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="194"/>
+        <location line="+3"/>
         <source>Undo changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="203"/>
+        <location line="+9"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="206"/>
+        <location line="+3"/>
         <source>Reload everything</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="215"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="218"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Clear Cache</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="227"/>
+        <location line="+9"/>
         <source>Load from telemetry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="230"/>
+        <location line="+3"/>
         <source>Load nodes config from telemetry file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="239"/>
+        <location line="+9"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="242"/>
+        <location line="+3"/>
         <source>Stop syncronization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="251"/>
+        <location line="+9"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.ui" line="254"/>
+        <location line="+3"/>
         <source>Request node statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="75"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+75"/>
         <source>Firmware upgrade in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="173"/>
+        <location line="+98"/>
         <source>Backups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="189"/>
+        <location line="+16"/>
         <source>Restore recent backup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="198"/>
+        <location line="+9"/>
         <source>Vehicle backups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="287"/>
+        <location line="+89"/>
         <source>Firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="290"/>
+        <location line="+3"/>
         <source>Loader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="296"/>
+        <location line="+6"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="330"/>
+        <location line="+34"/>
         <source>Reboot all nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="373"/>
+        <location line="+43"/>
         <source>Backup not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="515"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="532"/>
+        <location line="+142"/>
+        <location line="+17"/>
         <source>Node conf files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="516"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="533"/>
+        <location line="-16"/>
+        <location line="+17"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2217,109 +2373,109 @@
 <context>
     <name>NodesItemField</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="32"/>
+        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="+32"/>
         <source>downloading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="97"/>
+        <location line="+65"/>
         <source>PID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="98"/>
+        <location line="+1"/>
         <source>PI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="99"/>
+        <location line="+1"/>
         <source>P</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="100"/>
+        <location line="+1"/>
         <source>PPI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="104"/>
+        <location line="+4"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="105"/>
+        <location line="+1"/>
         <source>empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="115"/>
+        <location line="+10"/>
         <source>data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="117"/>
+        <location line="+2"/>
         <source>default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="559"/>
+        <location line="+442"/>
         <source>Field modified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="628"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="639"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="648"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="656"/>
+        <location line="+69"/>
+        <location line="+11"/>
+        <location line="+9"/>
+        <location line="+8"/>
         <source>Proportional</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="629"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="640"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="657"/>
+        <location line="-27"/>
+        <location line="+11"/>
+        <location line="+17"/>
         <source>Proportional limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="630"/>
+        <location line="-27"/>
         <source>Derivative</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="631"/>
+        <location line="+1"/>
         <source>Derivative limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="632"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="641"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="658"/>
+        <location line="+1"/>
+        <location line="+9"/>
+        <location line="+17"/>
         <source>Integral</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="633"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="642"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="659"/>
+        <location line="-25"/>
+        <location line="+9"/>
+        <location line="+17"/>
         <source>Integral limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="634"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="643"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="649"/>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="660"/>
+        <location line="-25"/>
+        <location line="+9"/>
+        <location line="+6"/>
+        <location line="+11"/>
         <source>Output limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="654"/>
+        <location line="-6"/>
         <source>Error to speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="655"/>
+        <location line="+1"/>
         <source>Speed limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2327,139 +2483,139 @@
 <context>
     <name>NodesItemNode</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="50"/>
+        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="+50"/>
         <source>Can&apos;t create backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="109"/>
+        <location line="+59"/>
         <source>bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="110"/>
+        <location line="+1"/>
         <source>fields</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
+        <location line="+1"/>
         <source>conf reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="115"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="116"/>
+        <location line="+0"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
         <source>yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="111"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="115"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="116"/>
+        <location line="-5"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
         <source>no</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="112"/>
+        <location line="-4"/>
         <source>loader support</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="113"/>
+        <location line="+1"/>
         <source>in loader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="114"/>
+        <location line="+1"/>
         <source>addressing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="115"/>
+        <location line="+1"/>
         <source>reboot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="116"/>
+        <location line="+1"/>
         <source>busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="122"/>
+        <location line="+6"/>
         <source>CAN address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="123"/>
+        <location line="+1"/>
         <source>CAN rx packets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="124"/>
+        <location line="+1"/>
         <source>System errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="125"/>
+        <location line="+1"/>
         <source>CAN errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="126"/>
+        <location line="+1"/>
         <source>MCU load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="128"/>
+        <location line="+2"/>
         <source>Power</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="140"/>
+        <location line="+12"/>
         <source>LOADER</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="369"/>
+        <location line="+229"/>
         <source>Field missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="374"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="509"/>
+        <location line="+5"/>
+        <location line="+135"/>
         <source>Field map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="546"/>
+        <location line="+37"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="659"/>
+        <location line="+113"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="696"/>
+        <location line="+37"/>
         <source>The file format is not correct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="700"/>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="731"/>
+        <location line="+4"/>
+        <location line="+31"/>
         <source>Backup restored for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="785"/>
+        <location line="+54"/>
         <source>Can&apos;t send command (unknown command)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2467,58 +2623,58 @@
 <context>
     <name>NodesModel</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="50"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="+50"/>
         <source>Can&apos;t create vehicle backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="96"/>
+        <location line="+46"/>
         <source>Can&apos;t clear while upgrading firmware</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="185"/>
+        <location line="+89"/>
         <source>Everything is up-to-date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="186"/>
+        <location line="+1"/>
         <source>Firmware upgrade finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="337"/>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="371"/>
+        <location line="+151"/>
+        <location line="+34"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="446"/>
+        <location line="+75"/>
         <source>Field modified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="454"/>
+        <location line="+8"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="459"/>
+        <location line="+5"/>
         <source>The file format is not correct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="466"/>
+        <location line="+7"/>
         <source>Loaded %1 nodes of %2. Importing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="469"/>
+        <location line="+3"/>
         <source>Nodes didn&apos;t match, nothing to import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="472"/>
+        <location line="+3"/>
         <source>Imported %1 nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2526,7 +2682,7 @@
 <context>
     <name>NodesRequest</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesRequestManager.cpp" line="88"/>
+        <location filename="../src/Plugins/nodes/NodesRequestManager.cpp" line="+88"/>
         <source>Timeout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2534,32 +2690,32 @@
 <context>
     <name>NumbersForm</name>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="14"/>
+        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="+14"/>
         <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="48"/>
+        <location line="+34"/>
         <source>Binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="53"/>
+        <location line="+5"/>
         <source>Label</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="58"/>
+        <location line="+5"/>
         <source>Precision</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="63"/>
+        <location line="+5"/>
         <source>Warn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="68"/>
+        <location line="+5"/>
         <source>Alarm</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2567,65 +2723,65 @@
 <context>
     <name>NumbersPlugin</name>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="18"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="+18"/>
         <source>Numbers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="19"/>
+        <location line="+1"/>
         <source>Configure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="20"/>
+        <location line="+1"/>
         <source>Export as plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="21"/>
+        <location line="+1"/>
         <source>Load exported plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="139"/>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="167"/>
+        <location line="+118"/>
+        <location line="+28"/>
         <source>User plugin name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="144"/>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="170"/>
+        <location line="-23"/>
+        <location line="+26"/>
         <source>QML files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="145"/>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="171"/>
+        <location line="-25"/>
+        <location line="+26"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="153"/>
+        <location line="-18"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="160"/>
+        <location line="+7"/>
         <source>Plugin &apos;%1&apos; exported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="179"/>
+        <location line="+19"/>
         <source>Cannot open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="196"/>
+        <location line="+17"/>
         <source>Content of &apos;%1&apos; loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="197"/>
+        <location line="+1"/>
         <source>Content in &apos;%1&apos; not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2633,32 +2789,32 @@
 <context>
     <name>PawnScript</name>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="207"/>
+        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="+207"/>
         <source>Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="207"/>
+        <location line="+0"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="298"/>
+        <location line="+91"/>
         <source>Script upload started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="351"/>
+        <location line="+53"/>
         <source>Script uploaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="391"/>
+        <location line="+40"/>
         <source>Script error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="396"/>
+        <location line="+5"/>
         <source>Script is downloading</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2666,28 +2822,28 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="14"/>
+        <location filename="../src/Plugins/telemetry/Player.ui" line="+14"/>
         <source>Flight Player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="38"/>
+        <location line="+24"/>
         <source>00:00:00/00:00:00</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="54"/>
+        <location line="+16"/>
         <source>Play/Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="57"/>
+        <location line="+3"/>
         <source>Play/Pause telemetry data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="66"/>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="69"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2695,22 +2851,22 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="361"/>
+        <location filename="../src/main/main.cpp" line="+361"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="364"/>
+        <location line="+3"/>
         <source>EFIS</source>
         <translation>Приборы</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="367"/>
+        <location line="+3"/>
         <source>HDG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="370"/>
+        <location line="+3"/>
         <source>Controls</source>
         <translation>Управление</translation>
     </message>
@@ -2718,43 +2874,43 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="119"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="+119"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="141"/>
+        <location line="+22"/>
         <source>identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="214"/>
+        <location line="+73"/>
         <source>UAV</source>
         <translation type="unfinished">БЛА</translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="244"/>
+        <location line="+30"/>
         <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="341"/>
+        <location line="+97"/>
         <source>Duplicate squawk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="348"/>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="391"/>
+        <location line="+7"/>
+        <location line="+43"/>
         <source>UAV not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="353"/>
+        <location line="-38"/>
         <source>selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="400"/>
+        <location line="+47"/>
         <source>GCU not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2762,75 +2918,75 @@
 <context>
     <name>QMandalaItem</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="284"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="+284"/>
         <source>Function not registered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="298"/>
+        <location line="+14"/>
         <source>Syntax error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="337"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="358"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="370"/>
+        <location line="+39"/>
+        <location line="+21"/>
+        <location line="+12"/>
         <source>Can&apos;t parse command parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="497"/>
+        <location line="+127"/>
         <source>Error creating backup path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="561"/>
+        <location line="+64"/>
         <source>error serial data received</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="685"/>
+        <location line="+124"/>
         <source>GCU accessible names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location line="+1"/>
         <source>TextName</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
+        <location line="+0"/>
+        <location line="+6"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location line="-6"/>
         <source>Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="686"/>
+        <location line="+0"/>
         <source>Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="691"/>
+        <location line="+5"/>
         <source>Structure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
+        <location line="+1"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
+        <location line="+0"/>
         <source>Index [hex]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="692"/>
+        <location line="+0"/>
         <source>Values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2838,152 +2994,152 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="162"/>
+        <location filename="../src/main/main.cpp" line="-208"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="214"/>
+        <location line="+52"/>
         <source>Developer mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="223"/>
+        <location line="+9"/>
         <source>Ground Control Unit</source>
         <translation type="unfinished">Наземный Пункт Управления</translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="226"/>
+        <location line="+3"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="350"/>
+        <location line="+124"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="351"/>
+        <location line="+1"/>
         <source>User QML plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="403"/>
+        <location line="+52"/>
         <source>Plugin excluded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/main.cpp" line="411"/>
+        <location line="+8"/>
         <source>Loading plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="183"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="-509"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="184"/>
+        <location line="+1"/>
         <source>set var n to value v and send to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="185"/>
+        <location line="+1"/>
         <source>request var n from UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="186"/>
+        <location line="+1"/>
         <source>send var n to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="187"/>
+        <location line="+1"/>
         <source>rescan bus nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="188"/>
+        <location line="+1"/>
         <source>print nodes status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="189"/>
+        <location line="+1"/>
         <source>send data v to serial port ID p</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="190"/>
+        <location line="+1"/>
         <source>send data v to CAN ID i with IDE e</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="191"/>
+        <location line="+1"/>
         <source>execute function on VMs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="192"/>
+        <location line="+1"/>
         <source>sleep n milliseconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="193"/>
+        <location line="+1"/>
         <source>switch to next vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="194"/>
+        <location line="+1"/>
         <source>switch to previous vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="196"/>
+        <location line="+2"/>
         <source>trigger value of v to a or b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="197"/>
+        <location line="+1"/>
         <source>wrap angle -180..+180</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="198"/>
+        <location line="+1"/>
         <source>print members of type b for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="199"/>
+        <location line="+1"/>
         <source>print variables for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="200"/>
+        <location line="+1"/>
         <source>print functions for scope a</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="202"/>
+        <location line="+2"/>
         <source>reset AHRS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="203"/>
+        <location line="+1"/>
         <source>reset pilot controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="204"/>
+        <location line="+1"/>
         <source>reset barometric altitude on ground</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="205"/>
+        <location line="+1"/>
         <source>reset local GPS coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="206"/>
+        <location line="+1"/>
         <source>reset local GPS altitude</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2991,19 +3147,19 @@
 <context>
     <name>QwtPlotRenderer</name>
     <message>
-        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="979"/>
-        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="982"/>
-        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="985"/>
+        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="+979"/>
+        <location line="+3"/>
+        <location line="+3"/>
         <source>Documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="990"/>
+        <location line="+5"/>
         <source>Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="1005"/>
+        <location line="+15"/>
         <source>Export File Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3011,83 +3167,83 @@
 <context>
     <name>SerialForm</name>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="14"/>
+        <location filename="../src/Plugins/serial/SerialForm.ui" line="+14"/>
         <source>Serial Port console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="22"/>
+        <location line="+8"/>
         <source>Port:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="39"/>
+        <location line="+17"/>
         <source>Read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="50"/>
+        <location line="+11"/>
         <source>ASCII</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="55"/>
+        <location line="+5"/>
         <source>HEX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="63"/>
+        <location line="+8"/>
         <source>Clear received data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="66"/>
+        <location line="+3"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="86"/>
+        <location line="+20"/>
         <source>Device to forward data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="89"/>
+        <location line="+3"/>
         <source>/dev/pts/3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="96"/>
+        <location line="+7"/>
         <source>Forward port to device
 socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="100"/>
+        <location line="+4"/>
         <source>Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="145"/>
+        <location line="+45"/>
         <source>CR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="152"/>
+        <location line="+7"/>
         <source>LF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.ui" line="178"/>
+        <location line="+26"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.cpp" line="46"/>
+        <location filename="../src/Plugins/serial/SerialForm.cpp" line="+46"/>
         <source>Serial port forwarding stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.cpp" line="126"/>
+        <location line="+80"/>
         <source>Serial port forwarding started</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3095,7 +3251,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>SerialPlugin</name>
     <message>
-        <location filename="../src/Plugins/serial/SerialPlugin.cpp" line="12"/>
+        <location filename="../src/Plugins/serial/SerialPlugin.cpp" line="+12"/>
         <source>Serial Port Console</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3103,14 +3259,14 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>SerialWorker</name>
     <message>
-        <location filename="../src/lib/Datalink/Serial.cpp" line="163"/>
-        <location filename="../src/lib/Datalink/Serial.cpp" line="165"/>
+        <location filename="../src/lib/Datalink/Serial.cpp" line="+163"/>
+        <location line="+2"/>
         <source>Serial port connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Datalink/Serial.cpp" line="339"/>
-        <location filename="../src/lib/Datalink/Serial.cpp" line="341"/>
+        <location line="+174"/>
+        <location line="+2"/>
         <source>Serial port disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3118,62 +3274,62 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>ServosForm</name>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="22"/>
+        <location filename="../src/Plugins/servos/ServosForm.ui" line="+22"/>
         <source>Port:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="41"/>
+        <location line="+19"/>
         <source>Volz</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="55"/>
+        <location line="+14"/>
         <source>Find Servos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="73"/>
+        <location line="+18"/>
         <source>Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="119"/>
+        <location line="+46"/>
         <source>Futaba SBUS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="146"/>
+        <location line="+27"/>
         <source>Servo label</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="160"/>
+        <location line="+14"/>
         <source>-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.ui" line="198"/>
+        <location line="+38"/>
         <source>Set Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.cpp" line="46"/>
+        <location filename="../src/Plugins/servos/ServosForm.cpp" line="+46"/>
         <source>Scanning for servos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.cpp" line="53"/>
+        <location line="+7"/>
         <source>Servo moved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.cpp" line="66"/>
+        <location line="+13"/>
         <source>Address set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/servos/ServosForm.cpp" line="81"/>
+        <location line="+15"/>
         <source>Scan finished</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3181,7 +3337,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>ServosPlugin</name>
     <message>
-        <location filename="../src/Plugins/servos/ServosPlugin.cpp" line="12"/>
+        <location filename="../src/Plugins/servos/ServosPlugin.cpp" line="+12"/>
         <source>Generic Servo config</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3189,8 +3345,8 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>SignalFrame</name>
     <message>
-        <location filename="../src/SDK/example-plugin/SignalFrame.ui" line="26"/>
-        <location filename="../src/Plugins/signal/SignalFrame.ui" line="26"/>
+        <location filename="../src/SDK/example-plugin/SignalFrame.ui" line="+26"/>
+        <location filename="../src/Plugins/signal/SignalFrame.ui" line="+26"/>
         <source>Signals</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3198,273 +3354,273 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>TelemetryFrame</name>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="20"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="+20"/>
         <source>Telemetry Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="72"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="86"/>
+        <location line="+52"/>
+        <location line="+14"/>
         <source>0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="79"/>
+        <location line="-7"/>
         <source>/</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="98"/>
+        <location line="+19"/>
         <source>Notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="121"/>
+        <location line="+23"/>
         <source>Top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="124"/>
+        <location line="+3"/>
         <source>Load the most recent flight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="133"/>
+        <location line="+9"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="136"/>
+        <location line="+3"/>
         <source>Delete current flight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="145"/>
+        <location line="+9"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="148"/>
+        <location line="+3"/>
         <source>Open in external editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="157"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="160"/>
+        <location line="+9"/>
+        <location line="+3"/>
         <source>Export data..</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="169"/>
+        <location line="+9"/>
         <source>Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="172"/>
+        <location line="+3"/>
         <source>Create Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="181"/>
+        <location line="+9"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="184"/>
+        <location line="+3"/>
         <source>Cut file to fit current view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="193"/>
+        <location line="+9"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="196"/>
+        <location line="+3"/>
         <source>Show filter configuration...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="205"/>
+        <location line="+9"/>
         <source>Full Screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="208"/>
+        <location line="+3"/>
         <source>Toggle Full Screen</source>
         <translation type="unfinished">Полноэкранный режим</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="217"/>
+        <location line="+9"/>
         <source>Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="220"/>
+        <location line="+3"/>
         <source>Load previous flight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="229"/>
+        <location line="+9"/>
         <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="232"/>
+        <location line="+3"/>
         <source>Load next flight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="241"/>
+        <location line="+9"/>
         <source>Show Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="244"/>
+        <location line="+3"/>
         <source>Show file manager...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="253"/>
+        <location line="+9"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="256"/>
+        <location line="+3"/>
         <source>Reload current file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="268"/>
+        <location line="+12"/>
         <source>Split Vertically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="271"/>
+        <location line="+3"/>
         <source>Split view vertically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="280"/>
+        <location line="+9"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="283"/>
+        <location line="+3"/>
         <source>Play telemetry data...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="295"/>
+        <location line="+12"/>
         <source>Filter UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="298"/>
+        <location line="+3"/>
         <source>Filter data files by UAV name...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="303"/>
+        <location line="+5"/>
         <source>STD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="306"/>
+        <location line="+3"/>
         <source>Show common plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="311"/>
+        <location line="+5"/>
         <source>IMU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="314"/>
+        <location line="+3"/>
         <source>Show IMU sensors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="319"/>
+        <location line="+5"/>
         <source>CTR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="322"/>
+        <location line="+3"/>
         <source>Show controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="327"/>
+        <location line="+5"/>
         <source>CLR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="330"/>
+        <location line="+3"/>
         <source>Clear visible plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="133"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="+133"/>
         <source>File &apos;%s&apos; moved to trash.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="135"/>
+        <location line="+2"/>
         <source>File &apos;%s&apos; deleted permanently.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="182"/>
+        <location line="+47"/>
         <source>Flight number to load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="236"/>
+        <location line="+54"/>
         <source>Telemetry file updated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="320"/>
+        <location line="+84"/>
         <source>Comma separated values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="321"/>
+        <location line="+1"/>
         <source>X-plane flight data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="322"/>
+        <location line="+1"/>
         <source>Google Earth KML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="333"/>
+        <location line="+11"/>
         <source>Unknown filter selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="335"/>
+        <location line="+2"/>
         <source>File exported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="342"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="387"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="451"/>
+        <location line="+7"/>
+        <location line="+45"/>
+        <location line="+64"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="349"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="415"/>
+        <location line="-102"/>
+        <location line="+66"/>
         <source>Exporting telemetry file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="349"/>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="415"/>
+        <location line="-66"/>
+        <location line="+66"/>
         <source>Abort</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3472,22 +3628,22 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>TelemetryPlot</name>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="109"/>
+        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="+109"/>
         <source>Calculated user variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="250"/>
+        <location line="+141"/>
         <source>Calculated field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="251"/>
+        <location line="+1"/>
         <source>QtScript expression:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="329"/>
+        <location line="+78"/>
         <source> (view copy)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3495,7 +3651,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>ValueEditor</name>
     <message>
-        <location filename="../src/Plugins/map/ValueEditor.cpp" line="62"/>
+        <location filename="../src/Plugins/map/ValueEditor.cpp" line="+62"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -3503,84 +3659,84 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>ValueEditorScript</name>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="14"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="+14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="87"/>
+        <location line="+73"/>
         <source>Load</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="90"/>
+        <location line="+3"/>
         <source>Load from file..</source>
         <translation type="unfinished">Загрузить из файла ..</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="99"/>
+        <location line="+9"/>
         <source>Restore data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="102"/>
+        <location line="+3"/>
         <source>Undo changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="111"/>
+        <location line="+9"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="114"/>
+        <location line="+3"/>
         <source>Save to file..</source>
         <translation type="unfinished">Сохранить в файл ..</translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="123"/>
+        <location line="+9"/>
         <source>Compile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="126"/>
+        <location line="+3"/>
         <source>Compile script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="135"/>
+        <location line="+9"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="138"/>
+        <location line="+3"/>
         <source>Clear script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="102"/>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="116"/>
+        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="+102"/>
+        <location line="+14"/>
         <source>Script files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="103"/>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="117"/>
+        <location line="-13"/>
+        <location line="+14"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="144"/>
+        <location line="+27"/>
         <source>Success</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="154"/>
+        <location line="+10"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="170"/>
+        <location line="+16"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>

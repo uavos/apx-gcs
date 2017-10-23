@@ -34,7 +34,7 @@ class AppShortcut: public Fact
   Q_OBJECT
 
 public:
-  explicit AppShortcut(AppShortcuts *parent, const AppShortcut *sc=NULL, bool bUsr=false);
+  explicit AppShortcut(AppShortcuts *parent, const AppShortcut *sc, bool bUsr);
   ~AppShortcut();
 
   Fact *_enabled;
@@ -57,6 +57,8 @@ private slots:
   void updateStats();
   void shortcutActivated();
   void updateShortcut();
+  void enable();
+  void disable();
 
 public slots:
   void defaults();

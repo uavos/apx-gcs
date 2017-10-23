@@ -23,45 +23,24 @@
 #ifndef DatalinkClient_H
 #define DatalinkClient_H
 #include <QtCore>
-#include <QtNetwork>
-#include "DatalinkFacts.h"
+#include "Datalink.h"
+#include "DatalinkSocket.h"
+class DatalinkClients;
 //=============================================================================
-class DatalinkClient : public Fact
+class DatalinkClient : public DatalinkSocket
 {
   Q_OBJECT
 public:
-  explicit DatalinkClient(DatalinkFacts *datalink,QTcpSocket *socket);
+  explicit DatalinkClient(DatalinkClients *parent, QTcpSocket *tcp);
 
   static QByteArray makeTcpPacket(const QByteArray &ba);
 
 private:
-  DatalinkFacts *datalink;
-  QTcpSocket *socket;
-
-
-  typedef struct {
-    quint16 size;   //packet size
-    quint16 crc16;  //packet qChecksum
-    bool datalink;  //datalink stream connected
-    QStringList hdr;//http header response
-  }ClientData;
-
-  ClientData clientData;
-  QString serverName;
+  Datalink *f_datalink;
 
 private slots:
-  void socketConnected();
-  void socketReadyRead();
-  void socketDisconnected();
-  void socketError(QAbstractSocket::SocketError socketError);
-  void httpRequest();
-
-signals:
-  void dataReceived(const QByteArray &ba);
-  void datalinkConnected();
   void disconnected();
-public slots:
-  void sendPacket(const QByteArray &ba);
+  void datalinkConnected();
 };
 //=============================================================================
 #endif

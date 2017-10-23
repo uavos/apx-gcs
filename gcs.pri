@@ -28,13 +28,13 @@ plugin:!mac {
 # Directories and paths
 
 INCLUDEPATH += \
-    $${APX_TOP}/ \
-    $${APX_TOP}/lib \
-    $${LIB_DIR} \
     $${LIB_DIR}/Datalink \
     $${LIB_DIR}/FactSystem \
     $${LIB_DIR}/AppSettings \
     $${LIB_DIR}/Mandala \
+    $${LIB_DIR} \
+    $${APX_TOP}/ \
+    $${APX_TOP}/lib \
 
 BUILD_DIR = $${GCS_TOP} #/build
 

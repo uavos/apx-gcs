@@ -27,53 +27,39 @@
 DatalinkPorts::DatalinkPorts(Fact *parent)
   : Fact(parent,"ports",tr("Local ports"),tr("Modems and persistent remotes"),GroupItem,ConstData)
 {
-  _add=new DatalinkPort(this);
+  setFlatModel(true);
 
-  _allon=new Fact(this,"allon",tr("Enable all"),tr("Turn on all communication ports"),FactItem,NoData);
-  connect(_allon,&Fact::triggered,this,&DatalinkPorts::allonTriggered);
-  _alloff=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all communication ports"),FactItem,NoData);
-  connect(_alloff,&Fact::triggered,this,&DatalinkPorts::alloffTriggered);
+  f_add=new DatalinkPort(this);
+
+  f_allon=new Fact(this,"allon",tr("Enable all"),tr("Turn on all communication ports"),FactItem,NoData);
+  f_alloff=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all communication ports"),FactItem,NoData);
+
+  f_list=new Fact(this,"ports",tr("Ports"),tr("Configured ports"),SectionItem,ConstData);
+  bindValue(f_list);
 
   load();
 
-  connect(this,&Fact::structChanged,this,&DatalinkPorts::updateStats);
+  connect(f_list,&Fact::structChanged,this,&DatalinkPorts::updateStats);
   updateStats();
-}
-//=============================================================================
-void DatalinkPorts::allonTriggered()
-{
-  foreach (DatalinkPort *item, portsList) {
-    item->_enabled->setValue(true);
-  }
-}
-void DatalinkPorts::alloffTriggered()
-{
-  foreach (DatalinkPort *item, portsList) {
-    item->_enabled->setValue(false);
-  }
 }
 //=============================================================================
 void DatalinkPorts::updateStats()
 {
-  bool bSz=portsList.size();
-  _allon->setVisible(bSz);
-  _alloff->setVisible(bSz);
-  setValue(portsList.size());
+  uint bSz=f_list->size();
+  f_allon->setVisible(bSz);
+  f_alloff->setVisible(bSz);
 }
 //=============================================================================
 void DatalinkPorts::addTriggered()
 {
-  DatalinkPort *item=new DatalinkPort(this,_add);
-  portsList.append(item);
+  new DatalinkPort(this,f_add);
   updateStats();
   save();
-  _add->defaults();
+  f_add->defaults();
 }
 void DatalinkPorts::removeTriggered()
 {
-  DatalinkPort *item=static_cast<DatalinkPort*>(static_cast<FactTree*>(sender())->parentItem());
-  portsList.removeAll(item);
-  removeItem(item);
+  f_list->removeItem(static_cast<FactTree*>(sender())->parentItem());
   save();
 }
 //=============================================================================
@@ -85,16 +71,15 @@ void DatalinkPorts::load()
   int size=settings->beginReadArray("port");
   for (int i = 0; i < size; ++i) {
     settings->setArrayIndex(i);
-    _add->defaults();
-    foreach(FactTree *i,_add->childItems()){
+    f_add->defaults();
+    foreach(FactTree *i,f_add->childItems()){
       Fact *fact=static_cast<Fact*>(i);
       if(fact->dataType()==ActionData)continue;
       fact->setValue(settings->value(fact->name()));
     }
-    DatalinkPort *item=new DatalinkPort(this,_add);
-    portsList.append(item);
+    new DatalinkPort(this,f_add);
   }
-  _add->defaults();
+  f_add->defaults();
   settings->endArray();
   settings->endGroup();
 }
@@ -105,9 +90,10 @@ void DatalinkPorts::save()
   settings->remove(""); //all
   settings->beginWriteArray("port");
   int ai=0;
-  foreach(const DatalinkPort *item,portsList){
+  foreach (FactTree *i, f_list->childItems()) {
+    DatalinkPort *port=static_cast<DatalinkPort*>(i);
     settings->setArrayIndex(ai++);
-    foreach(const FactTree *i,item->childItems()){
+    foreach(const FactTree *i,port->childItems()){
       const Fact *fact=static_cast<const Fact*>(i);
       if((!fact->visible())||fact->dataType()==ActionData)continue;
       settings->setValue(fact->name(),fact->text());

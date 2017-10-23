@@ -33,6 +33,7 @@ class Fact: public FactData
   Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
 
   Q_PROPERTY(QString section READ section WRITE setSection NOTIFY sectionChanged)
+  Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
 
 public:
   explicit Fact(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType);
@@ -58,16 +59,21 @@ public:
   virtual QString section() const;
   virtual void setSection(const QString &v);
 
+  virtual QString status() const;
+  virtual void setStatus(const QString &v);
+
 protected:
   bool m_enabled;
   bool m_visible;
   QString  m_section;
+  QString  m_status;
 
 signals:
   void enabledChanged();
   void visibleChanged();
 
   void sectionChanged();
+  void statusChanged();
 
 };
 //=============================================================================

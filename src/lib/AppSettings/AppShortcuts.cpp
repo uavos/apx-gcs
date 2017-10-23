@@ -29,34 +29,35 @@ AppShortcuts::AppShortcuts(FactSystem *parent, QWidget *widget)
   : Fact(parent->tree(),"shortcuts",tr("Shortcuts"),tr("Keyboard hotkeys"),RootItem,NoData),
     widget(widget)
 {
+  setFlatModel(true);
+
   setSection(FactSystem::ApplicationSection);
 
   // QML types register
   qmlRegisterUncreatableType<AppShortcuts>("GCS.AppShortcuts", 1, 0, "AppShortcuts", "Reference only");
 
-  _add=new AppShortcut(this);
-  _blocked=new Fact(this,"blocked",tr("Block all"),tr("Temporally block all shortcuts"),FactItem,BoolData);
-  //_blocked->setVisible(false);
+  f_add=new AppShortcut(this,NULL,false);
+  f_blocked=new Fact(this,"blocked",tr("Block all"),tr("Temporally block all shortcuts"),FactItem,BoolData);
+  //f_blocked->setVisible(false);
 
   QString sect;
   sect=tr("User");
-  usrSect=sect;
 
-  _allonUsr=new Fact(this,"allon",tr("Enable all"),tr("Turn on all shortcuts"),FactItem,NoData);
-  _allonUsr->setSection(sect);
-  connect(_allonUsr,&Fact::triggered,this,&AppShortcuts::allonUsrTriggered);
-  _alloffUsr=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all shortcuts"),FactItem,NoData);
-  _alloffUsr->setSection(sect);
-  connect(_alloffUsr,&Fact::triggered,this,&AppShortcuts::alloffUsrTriggered);
+  f_allonUsr=new Fact(this,"allonUsr",tr("Enable all"),tr("Turn on all shortcuts"),FactItem,NoData);
+  f_allonUsr->setSection(sect);
+  f_alloffUsr=new Fact(this,"alloffUsr",tr("Disable all"),tr("Turn off all shortcuts"),FactItem,NoData);
+  f_alloffUsr->setSection(sect);
+  f_usr=new Fact(this,"user",sect,tr("User defined shortcuts"),SectionItem,NoData);
+  f_usr->setSection(sect);
+
 
   sect=tr("System");
-  sysSect=sect;
-  _allonSys=new Fact(this,"allon",tr("Enable all"),tr("Turn on all shortcuts"),FactItem,NoData);
-  _allonSys->setSection(sect);
-  connect(_allonSys,&Fact::triggered,this,&AppShortcuts::allonSysTriggered);
-  _alloffSys=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all shortcuts"),FactItem,NoData);
-  _alloffSys->setSection(sect);
-  connect(_alloffSys,&Fact::triggered,this,&AppShortcuts::alloffSysTriggered);
+  f_allonSys=new Fact(this,"allonSys",tr("Enable all"),tr("Turn on all shortcuts"),FactItem,NoData);
+  f_allonSys->setSection(sect);
+  f_alloffSys=new Fact(this,"alloffSys",tr("Disable all"),tr("Turn off all shortcuts"),FactItem,NoData);
+  f_alloffSys->setSection(sect);
+  f_sys=new Fact(this,"f_system",sect,tr("System default shortcuts"),SectionItem,NoData);
+  f_sys->setSection(sect);
 
   load();
 
@@ -70,46 +71,23 @@ AppShortcuts::AppShortcuts(FactSystem *parent, QWidget *widget)
   updateStats();
 }
 //=============================================================================
-void AppShortcuts::allonSysTriggered()
-{
-  foreach (AppShortcut *item, sysList) {
-    item->_enabled->setValue(true);
-  }
-}
-void AppShortcuts::alloffSysTriggered()
-{
-  foreach (AppShortcut *item, sysList) {
-    item->_enabled->setValue(false);
-  }
-}
-void AppShortcuts::allonUsrTriggered()
-{
-  foreach (AppShortcut *item, usrList) {
-    item->_enabled->setValue(true);
-  }
-}
-void AppShortcuts::alloffUsrTriggered()
-{
-  foreach (AppShortcut *item, usrList) {
-    item->_enabled->setValue(false);
-  }
-}
-//=============================================================================
 void AppShortcuts::updateStats()
 {
-  bool bSz=sysList.size();
-  _allonSys->setEnabled(bSz);
-  _alloffSys->setEnabled(bSz);
-  bSz=usrList.size();
-  _allonUsr->setEnabled(bSz);
-  _alloffUsr->setEnabled(bSz);
-  //disable sys shortcuts found in user
-  foreach (AppShortcut *item, usrList) {
+  bool bSz=f_sys->size();
+  f_allonSys->setEnabled(bSz);
+  f_alloffSys->setEnabled(bSz);
+  bSz=f_usr->size();
+  f_allonUsr->setEnabled(bSz);
+  f_alloffUsr->setEnabled(bSz);
+  //disable f_sys shortcuts found in user
+  foreach (FactTree *i, f_usr->childItems()) {
+    AppShortcut *item=static_cast<AppShortcut*>(i);
     if(item->_enabled->value().toBool()==false)continue;
-    foreach (AppShortcut *sys, sysList) {
-      if(sys->_enabled->value().toBool()==false)continue;
-      if(sys->_key->text()==item->_key->text()){
-        qWarning("%s: %s",tr("Duplicate shortcut").toUtf8().data(),sys->_key->text().toUtf8().data());
+    foreach (FactTree *i, f_sys->childItems()) {
+      AppShortcut *f_sys=static_cast<AppShortcut*>(i);
+      if(f_sys->_enabled->value().toBool()==false)continue;
+      if(f_sys->_key->text()==item->_key->text()){
+        qWarning("%s: %s",tr("Duplicate shortcut").toUtf8().data(),f_sys->_key->text().toUtf8().data());
         item->_enabled->setValue(false);
       }
     }
@@ -120,24 +98,18 @@ void AppShortcuts::updateStats()
 void AppShortcuts::addTriggered()
 {
   addUserShortcut();
-  updateStats();
   save();
-  _add->defaults();
+  f_add->defaults();
 }
 void AppShortcuts::removeTriggered()
 {
-  AppShortcut *item=static_cast<AppShortcut*>(static_cast<FactTree*>(sender())->parentItem());
-  usrList.removeAll(item);
-  removeItem(item);
+  f_usr->removeItem(static_cast<FactTree*>(sender())->parentItem());
   save();
 }
 //=============================================================================
 void AppShortcuts::addUserShortcut()
 {
-  AppShortcut *item=new AppShortcut(this,_add,true);
-  moveItem(item,_allonSys->num());
-  item->setSection(usrSect);
-  usrList.append(item);
+  new AppShortcut(this,f_add,true);
 }
 //=============================================================================
 void AppShortcuts::load()
@@ -155,12 +127,10 @@ void AppShortcuts::load()
       key=st.at(0);
       cmd=st.at(1);
     }
-    _add->defaults();
-    _add->_key->setValue(key);
-    _add->_cmd->setValue(cmd);
-    AppShortcut *item=new AppShortcut(this,_add);
-    item->setSection(sysSect);
-    sysList.append(item);
+    f_add->defaults();
+    f_add->_key->setValue(key);
+    f_add->_cmd->setValue(cmd);
+    new AppShortcut(this,f_add,false);
   }
 
   QSettings *settings=AppSettings::settings();
@@ -169,8 +139,8 @@ void AppShortcuts::load()
   int size=settings->beginReadArray("usr");
   for (int i = 0; i < size; ++i) {
     settings->setArrayIndex(i);
-    _add->defaults();
-    foreach(FactTree *i,_add->childItems()){
+    f_add->defaults();
+    foreach(FactTree *i,f_add->childItems()){
       Fact *fact=static_cast<Fact*>(i);
       if(fact->dataType()==ActionData)continue;
       fact->setValue(settings->value(fact->name()));
@@ -178,11 +148,12 @@ void AppShortcuts::load()
     addUserShortcut();
   }
   settings->endArray();
-  //read sys enable/disable
-  size=settings->beginReadArray("sys");
+  //read f_sys enable/disable
+  size=settings->beginReadArray("f_sys");
   for (int i = 0; i < size; ++i) {
     settings->setArrayIndex(i);
-    foreach (AppShortcut *item, sysList) {
+    foreach (FactTree *i, f_sys->childItems()) {
+      AppShortcut *item=static_cast<AppShortcut*>(i);
       if(item->_key->value().toString()!=settings->value(item->_key->name()).toString())continue;
       if(item->_cmd->value().toString()!=settings->value(item->_cmd->name()).toString())continue;
       if(settings->value(item->_enabled->name()).toBool())continue;
@@ -190,7 +161,7 @@ void AppShortcuts::load()
     }
   }
   //close
-  _add->defaults();
+  f_add->defaults();
   settings->endArray();
   settings->endGroup();
 }
@@ -202,7 +173,8 @@ void AppShortcuts::save()
   //save usr
   settings->beginWriteArray("usr");
   int ai=0;
-  foreach(const AppShortcut *item,usrList){
+  foreach (FactTree *i, f_usr->childItems()) {
+    AppShortcut *item=static_cast<AppShortcut*>(i);
     settings->setArrayIndex(ai++);
     foreach(const FactTree *i,item->childItems()){
       const Fact *fact=static_cast<const Fact*>(i);
@@ -211,10 +183,11 @@ void AppShortcuts::save()
     }
   }
   settings->endArray();
-  //save sys enable/disable
-  settings->beginWriteArray("sys");
+  //save f_sys enable/disable
+  settings->beginWriteArray("f_sys");
   ai=0;
-  foreach(const AppShortcut *item,sysList){
+  foreach (FactTree *i, f_sys->childItems()) {
+    AppShortcut *item=static_cast<AppShortcut*>(i);
     if(item->_enabled->value().toBool())continue;
     settings->setArrayIndex(ai++);
     foreach(const FactTree *i,item->childItems()){

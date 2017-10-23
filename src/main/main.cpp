@@ -40,7 +40,7 @@
 #include "AppShortcuts.h"
 #include "FactSystem.h"
 #include "AppSettings.h"
-#include "DatalinkFacts.h"
+#include "Datalink.h"
 #include "AppDirs.h"
 //============================================================================
 //global variables
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
   FactSystem *factSystem=new FactSystem();
 
   new AppSettings(factSystem);
-  new DatalinkFacts(factSystem);
+  new Datalink(factSystem);
 
   if(QSettings().value("qsg_basic").toBool()){
     qputenv("QSG_RENDER_LOOP","basic");
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
   SoundEffects *soundEffects=new SoundEffects(mandala);
   QObject::connect(mandala,SIGNAL(playSoundEffect(QString)),soundEffects,SLOT(play(QString)));
 
-  datalink->activate();
+  //datalink->activate();
   serial1->activate();
   serial2->activate();
 
