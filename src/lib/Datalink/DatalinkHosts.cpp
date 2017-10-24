@@ -23,20 +23,36 @@
 #include "Datalink.h"
 #include "DatalinkHosts.h"
 #include "DatalinkHost.h"
+#include "AppSettings.h"
 #include "tcp_ports.h"
 //=============================================================================
 DatalinkHosts::DatalinkHosts(Datalink *parent)
-  : Fact(parent,"hosts",tr("Remote servers"),tr("Discovered remote hosts"),GroupItem,ConstData)
+  : Fact(parent,"hosts",tr("Remote servers"),tr("Discovered remote hosts"),GroupItem,NoData),
+    m_connectedCount(0)
 {
   setFlatModel(true);
 
   f_datalink=parent;
+  f_localhost=NULL;
+
+  QSettings *settings=AppSettings::settings();
+
+  f_add=new Fact(this,"add",tr("Connect to host"),tr("Create new connection"),GroupItem,NoData);
+  f_host=new AppSettingFact(settings,f_add,"host",tr("Host address"),tr("IP address of remote server"),"",TextData,QString());
+  //f_host=new Fact(f_add,"host",tr("Host address"),tr("IP address of remote server"),FactItem,TextData);
+  f_connect=new Fact(f_add,"connect",tr("Connect"),"",FactItem,ActionData);
+  connect(f_connect,&Fact::triggered,this,&DatalinkHosts::connectTriggered);
+
+  AppSettingFact::loadSettings(this);
 
   f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all remote server connections"),FactItem,NoData);
 
   f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
   bindValue(f_list);
-  connect(f_list,&Fact::structChanged,this,&DatalinkHosts::updateStats);
+  connect(f_list,&Fact::sizeChanged,this,&DatalinkHosts::updateStats);
+  connect(f_list,&Fact::sizeChanged,this,&DatalinkHosts::availableCountChanged);
+  connect(this,&DatalinkHosts::availableCountChanged,this,&DatalinkHosts::updateConnectedStatus);
+  connect(this,&DatalinkHosts::connectedCountChanged,this,&DatalinkHosts::updateConnectedStatus);
 
   //udp discover
   udpReader=new QUdpSocket(this);
@@ -48,7 +64,61 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   connect(&announceTimer,&QTimer::timeout,this,&DatalinkHosts::announce);
   connect(f_datalink->f_binded,&Fact::valueChanged,this,&DatalinkHosts::serverBindedChanged);
 
+  // QML types register
+  qmlRegisterUncreatableType<Fact>("GCS.DatalinkHosts", 1, 0, "DatalinkHosts", "Reference only");
+
   updateStats();
+}
+//=============================================================================
+DatalinkHost * DatalinkHosts::registerHost(QHostAddress addr, QString sname, bool bPort)
+{
+  DatalinkHost *host=hostByAddr(addr);
+  if(host){
+    if(host->enabled()) host->setTitle(sname);
+    if(bPort){ //found host which is forced to be port
+      disconnect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);
+      disconnect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
+      disconnect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
+    }
+  }else{
+    host=new DatalinkHost(this,sname,addr);
+    if(!bPort){
+      qDebug("#%s: %s",tr("found server").toUtf8().data(),sname.toUtf8().data());
+      announceTimer.setInterval(3000);
+      connect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);
+      connect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
+      connect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
+    }
+  }
+  if(bPort){
+    host->setTitle(sname);
+    host->setEnabled(false);
+  }
+  return host;
+}
+DatalinkHost * DatalinkHosts::hostByAddr(QHostAddress addr)
+{
+  foreach (FactTree *i , f_list->childItems()) {
+    DatalinkHost *h=static_cast<DatalinkHost*>(i);
+    if(!h->host.isEqual(addr))continue;
+    return h;
+  }
+  return NULL;
+}
+//=============================================================================
+void DatalinkHosts::connectLocalhost()
+{
+  if(f_localhost)return;
+  //create default localhost for second app on one machine
+  DatalinkHost *host=hostByAddr(QHostAddress::LocalHost);
+  if(!host)host=new DatalinkHost(this,"localhost",QHostAddress::LocalHost);
+  if(host->enabled()){
+    f_localhost=host;
+    connect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);
+    connect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
+    connect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
+  }
+  if(!host->active())host->connectToServer();
 }
 //=============================================================================
 void DatalinkHosts::tryBind(void)
@@ -71,24 +141,11 @@ void DatalinkHosts::udpRead(void)
     udpReader->readDatagram(datagram.data(),datagram.size(),&srcHost,&srcPort);
     //qDebug()<<datagram;
     if(datagram.endsWith(QByteArray("@server.gcs.uavos.com"))){
-      //if(f_datalink->f_binded->value().toBool() && DatalinkSocket::isLocalHost(srcHost))continue;
+      if(f_datalink->f_binded->value().toBool() && DatalinkSocket::isLocalHost(srcHost))continue;
       const QString &uname=QString(datagram).left(datagram.indexOf('@'));
       //try to find and update existing
-      DatalinkHost *host=NULL;
-      foreach (FactTree *i , f_list->childItems()) {
-        DatalinkHost *h=static_cast<DatalinkHost*>(i);
-        if(!h->host.isEqual(srcHost))continue;
-        host=h;
-        break;
-      }
       QString sname=QString("%1@%2").arg(uname).arg(srcHost.toString());
-      if(host){
-        host->setTitle(sname);
-      }else{
-        host=new DatalinkHost(this,sname,srcHost);
-        qDebug("#%s: %s",tr("found server").toUtf8().data(),sname.toUtf8().data());
-        announceTimer.setInterval(3000);
-      }
+      DatalinkHost *host=registerHost(srcHost,sname);
       host->updateTimeout();
       continue;
     }
@@ -120,7 +177,55 @@ void DatalinkHosts::serverBindedChanged()
 //=============================================================================
 void DatalinkHosts::updateStats()
 {
-  f_alloff->setEnabled(f_list->size()>0);
+  //count connected
+  int cnt=0;
+  foreach (FactTree *i , f_list->childItems()) {
+    DatalinkHost *h=static_cast<DatalinkHost*>(i);
+    if(h->active())cnt++;
+  }
+  f_alloff->setEnabled(cnt>0);
+  if(m_connectedCount!=cnt){
+    m_connectedCount=cnt;
+    emit connectedCountChanged();
+  }
+}
+//=============================================================================
+void DatalinkHosts::updateConnectedStatus()
+{
+  int cnt=availableCount();
+  if(cnt>0) setStatus(QString("%1/%2").arg(m_connectedCount).arg(availableCount()));
+  else setStatus(QString());
+}
+//=============================================================================
+void DatalinkHosts::connectTriggered()
+{
+  connectToServer(QHostAddress(f_host->text()));
+}
+//=============================================================================
+bool DatalinkHosts::connectToServer(QHostAddress haddr)
+{
+  if(haddr.isNull())return false;
+  //if(addr.isNull() || addr.isLoopback())return;
+  DatalinkHost *host=NULL;
+  foreach (FactTree *i , f_list->childItems()) {
+    DatalinkHost *h=static_cast<DatalinkHost*>(i);
+    if(!h->host.isEqual(haddr))continue;
+    host=h;
+    break;
+  }
+  if(!host) host=new DatalinkHost(this,haddr.toString(),haddr);
+  host->connectToServer();
+  return true;
+}
+//=============================================================================
+//=============================================================================
+int DatalinkHosts::connectedCount() const
+{
+  return m_connectedCount;
+}
+int DatalinkHosts::availableCount() const
+{
+  return f_list->size();
 }
 //=============================================================================
 

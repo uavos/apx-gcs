@@ -48,8 +48,6 @@ QMandala::QMandala()
   //properties
   m_jsValid=false;
   m_online=false;
-  m_dlcnt=0;
-  m_upcnt=0;
   m_size=0;
 
   onlineTimer.setSingleShot(true);
@@ -304,15 +302,6 @@ void QMandala::identReqTimeout(void)
 }
 //=============================================================================
 //=============================================================================
-void QMandala::upCntInc()
-{
-  setUpcnt(upcnt()+1);
-}
-void QMandala::dlCntInc()
-{
-  setDlcnt(dlcnt()+1);
-}
-//=============================================================================
 QMandalaItem *QMandala::append(void)
 {
   QMandalaItem *m=new QMandalaItem(this);
@@ -455,146 +444,6 @@ void QMandala::sound(QString text)
 }
 //=============================================================================
 //=============================================================================
-QString QMandala::latToString(double v)
-{
-  double lat=fabs(v);
-  double lat_m=60*(lat-floor(lat)),lat_s=60*(lat_m-floor(lat_m)),lat_ss=100*(lat_s-floor(lat_s));
-  return QString().sprintf("%c %g%c%02g'%02g.%02g\"",(v>=0)?'N':'S',floor(lat),176,floor(lat_m),floor(lat_s),floor(lat_ss));
-}
-QString QMandala::lonToString(double v)
-{
-  double lat=fabs(v);
-  double lat_m=60*(lat-floor(lat)),lat_s=60*(lat_m-floor(lat_m)),lat_ss=100*(lat_s-floor(lat_s));
-  return QString().sprintf("%c %g%c%02g'%02g.%02g\"",(v>=0)?'E':'W',floor(lat),176,floor(lat_m),floor(lat_s),floor(lat_ss));
-}
-double QMandala::latFromString(QString s)
-{
-  bool ok;
-  int i;
-  s=s.simplified();
-  if(QString("NS").contains(s.at(0))){
-    bool bN=s.at(0)=='N';
-    s=s.remove(0,1).trimmed();
-    i=s.indexOf(QChar(176));
-    double deg=s.left(i).toDouble(&ok);
-    if(!ok)return 0;
-    s=s.remove(0,i+1).trimmed();
-    i=s.indexOf('\'');
-    double min=s.left(i).toDouble(&ok);
-    if(!ok)return 0;
-    s=s.remove(0,i+1).trimmed();
-    i=s.indexOf('\"');
-    double sec=s.left(i).toDouble(&ok);
-    if(!ok)return 0;
-    deg=deg+min/60.0+sec/3600.0;
-    return bN?deg:-deg;
-  }
-  return s.toDouble();
-}
-double QMandala::lonFromString(QString s)
-{
-  s=s.simplified();
-  if(QString("EW").contains(s.at(0)))
-    s[0]=(s.at(0)=='E')?'N':'S';
-  return latFromString(s);
-}
-QString QMandala::distanceToString(uint v)
-{
-  if(v>=1000000)return QString("%1km").arg(v/1000.0,0,'f',0);
-  if(v>=1000)return QString("%1km").arg(v/1000.0,0,'f',1);
-  return QString("%1m").arg((uint)v);
-}
-QString QMandala::timeToString(uint v)
-{
-  if(v==0)return "--:--";
-  qint64 d=(qint64)v/(24*60*60);
-  if(d<=0)return QString("%1").arg(QTime(0,0,0).addSecs(v).toString("hh:mm"));
-  return QString("%1d%2").arg(d).arg(QTime(0,0,0).addSecs(v).toString("hh:mm"));
-}
-uint QMandala::timeFromString(QString s)
-{
-  uint t=0;
-  s=s.trimmed().toLower();
-  if(s.contains('d')){
-    QString ds=s.left(s.indexOf('d')).trimmed();
-    s=s.remove(0,s.indexOf('d')+1).trimmed();
-    bool ok=false;
-    double dv=ds.toDouble(&ok);
-    if(ok && dv>0)t+=floor(dv*(double)(24*60*60));
-  }
-  if(s.contains('h')){
-    QString ds=s.left(s.indexOf('h')).trimmed();
-    s=s.remove(0,s.indexOf('h')+1).trimmed();
-    bool ok=false;
-    double dv=ds.toDouble(&ok);
-    if(ok && dv>0)t+=floor(dv*(double)(60*60));
-  }
-  if(s.contains('m')){
-    QString ds=s.left(s.indexOf('m')).trimmed();
-    s=s.remove(0,s.indexOf('m')+1).trimmed();
-    bool ok=false;
-    double dv=ds.toDouble(&ok);
-    if(ok && dv>0)t+=floor(dv*(double)(60));
-  }
-  if(s.contains('s')){
-    QString ds=s.left(s.indexOf('s')).trimmed();
-    s=s.remove(0,s.indexOf('s')+1).trimmed();
-    bool ok=false;
-    double dv=ds.toDouble(&ok);
-    if(ok && dv>0)t+=floor(dv);
-    s.clear();
-  }
-  if(s.contains(':')){
-    QString ds=s.left(s.indexOf(':')).trimmed();
-    s=s.remove(0,s.indexOf(':')+1).trimmed();
-    bool ok=false;
-    double dv=ds.toDouble(&ok);
-    if(ok && dv>0)t+=floor(dv*(double)(60*60));
-    if(s.contains(':')){
-      QString ds=s.left(s.indexOf(':')).trimmed();
-      s=s.remove(0,s.indexOf(':')+1).trimmed();
-      bool ok=false;
-      double dv=ds.toDouble(&ok);
-      if(ok && dv>0)t+=floor(dv*(double)(60));
-    }else{
-      bool ok=false;
-      double dv=s.toDouble(&ok);
-      if(ok && dv>0)t+=floor(dv*(double)(60));
-      s.clear();
-    }
-  }
-  if(!s.isEmpty()){
-    bool ok=false;
-    double dv=s.toDouble(&ok);
-    if(ok && dv>0)t+=floor(dv);
-  }
-  return t;
-}
-//=============================================================================
-void QMandala::toolTip(QString tooltip)
-{
-  qDebug()<<":: "<<tooltip;
-}
-double QMandala::limit(double v,double min,double max)
-{
-  if(v<min)return min;
-  if(v>max)return max;
-  return v;
-}
-double QMandala::angle(double v)
-{
-  return Mandala::boundAngle(v);
-}
-double QMandala::angle360(double v)
-{
-  return Mandala::boundAngle360(v);
-}
-double QMandala::angle90(double v)
-{
-  return Mandala::boundAngle(v,90);
-}
-//=============================================================================
-//=============================================================================
 bool QMandala::jsValid()
 {
   return m_jsValid;
@@ -634,16 +483,6 @@ bool QMandala::replayData()
 {
   return current->replayData();
 }
-uint QMandala::dlcnt()
-{
-  return m_dlcnt;
-}
-void QMandala::setDlcnt(uint v)
-{
-  if(m_dlcnt==v)return;
-  m_dlcnt=v;
-  emit dlcntChanged(v);
-}
 uint QMandala::errcnt()
 {
   return current->dl_errcnt;
@@ -653,16 +492,6 @@ void QMandala::setErrcnt(uint v)
   if(current->dl_errcnt==v)return;
   current->dl_errcnt=v;
   emit errcntChanged(v);
-}
-uint QMandala::upcnt()
-{
-  return m_upcnt;
-}
-void QMandala::setUpcnt(uint v)
-{
-  if(m_upcnt==v)return;
-  m_upcnt=v;
-  emit upcntChanged(v);
 }
 QString QMandala::uavName()
 {

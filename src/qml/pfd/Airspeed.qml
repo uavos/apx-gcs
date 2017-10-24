@@ -144,7 +144,7 @@ ControlArea {
 
             anchors.right: speed_scale.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: mandala.limit(speed_window.num2scaleHeight * (airspeed.value - cmd_airspeed.value),-parent.height/2,parent.height/2)
+            anchors.verticalCenterOffset: sys.limit(speed_window.num2scaleHeight * (airspeed.value - cmd_airspeed.value),-parent.height/2,parent.height/2)
             Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
             ToolTipArea {text: cmd_airspeed.descr}
         }
@@ -194,7 +194,7 @@ ControlArea {
         height: elementBounds.height*speed_window.strip_scale
         anchors.left: speed_window.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: mandala.limit(speed_window.num2scaleHeight * (airspeed.value - gSpeed.value),-speed_window.height/2,speed_window.height/2)
+        anchors.verticalCenterOffset: sys.limit(speed_window.num2scaleHeight * (airspeed.value - gSpeed.value),-speed_window.height/2,speed_window.height/2)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
         Text {
             visible: Math.abs(airspeed.value - gSpeed.value)>3 || gSpeed.value<10

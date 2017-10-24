@@ -26,19 +26,23 @@
 #include <QtCore>
 #include "FactSystem.h"
 class DatalinkPort;
+class Datalink;
 //=============================================================================
 class DatalinkPorts: public Fact
 {
   Q_OBJECT
 public:
-  explicit DatalinkPorts(Fact *parent);
+  explicit DatalinkPorts(Datalink *parent);
+
+  Datalink *f_datalink;
 
   Fact *f_allon;
   Fact *f_alloff;
   Fact *f_list;
 
-private:
   DatalinkPort *f_add;
+
+private:
 
 private slots:
   void updateStats();
@@ -49,6 +53,9 @@ public slots:
 
   void load();
   void save();
+
+  void forward(DatalinkPort *src, const QByteArray &ba);
+
 
 };
 //=============================================================================

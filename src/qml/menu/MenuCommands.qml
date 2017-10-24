@@ -7,7 +7,7 @@ GCSMenu {
     title: qsTr("Commands")
 
     function openSelectUAV() { openMenuField(menuVehicles) }
-    function openServers() { openMenuField(menuServers) }
+    function openServers() { openPage({"fact": menuServers.fact}) }//openMenuField(menuServers) }
 
 
     fields: GCSMenuModel {
@@ -28,21 +28,21 @@ GCSMenu {
         GCSMenuField {
             title: qsTr("Controls")
             fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Parking brake"); onClicked: ctr_brake.setValue(!ctr_brake.value); checked: ctr_brake.value; checkable: true; }
-                GCSMenuField { title: qsTr("Flaps"); onClicked: ctr_flaps.setValue(!ctr_flaps.value); checked: ctr_flaps.value; checkable: true; }
-                GCSMenuField { title: qsTr("Interceptors"); onClicked: ctr_airbrk.setValue(!ctr_airbrk.value); checked: ctr_airbrk.value; checkable: true; }
+                GCSMenuField { title: qsTr("Parking brake"); onToggled: ctr_brake.setValue(!ctr_brake.value); checked: ctr_brake.value; checkable: true; }
+                GCSMenuField { title: qsTr("Flaps"); onToggled: ctr_flaps.setValue(!ctr_flaps.value); checked: ctr_flaps.value; checkable: true; }
+                GCSMenuField { title: qsTr("Interceptors"); onToggled: ctr_airbrk.setValue(!ctr_airbrk.value); checked: ctr_airbrk.value; checkable: true; }
                 GCSMenuField {
                     title: qsTr("Emergency")
                     fields: GCSMenuModel {
-                        GCSMenuField { title: qsTr("ERS"); onClicked: ctrb_ers.setValue(!ctrb_ers.value); checked: ctrb_ers.value; checkable: true; }
-                        GCSMenuField { title: qsTr("Release"); onClicked: ctrb_rel.setValue(!ctrb_rel.value); checked: ctrb_rel.value; checkable: true; }
+                        GCSMenuField { title: qsTr("ERS"); onToggled: ctrb_ers.setValue(!ctrb_ers.value); checked: ctrb_ers.value; checkable: true; }
+                        GCSMenuField { title: qsTr("Release"); onToggled: ctrb_rel.setValue(!ctrb_rel.value); checked: ctrb_rel.value; checkable: true; }
                     }
                 }
                 GCSMenuField {
                     title: qsTr("Lights")
                     fields: GCSMenuModel {
-                        GCSMenuField { title: qsTr("Navigation"); onClicked: sw_lights.setValue(!sw_lights.value); checked: sw_lights.value; checkable: true; }
-                        GCSMenuField { title: qsTr("Taxi"); onClicked: sw_taxi.setValue(!sw_taxi.value); checked: sw_taxi.value; checkable: true; }
+                        GCSMenuField { title: qsTr("Navigation"); onToggled: sw_lights.setValue(!sw_lights.value); checked: sw_lights.value; checkable: true; }
+                        GCSMenuField { title: qsTr("Taxi"); onToggled: sw_taxi.setValue(!sw_taxi.value); checked: sw_taxi.value; checkable: true; }
                     }
                 }
             }
@@ -50,10 +50,10 @@ GCSMenu {
         GCSMenuField {
             title: qsTr("Engine")
             fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Mixture"); onClicked: ctr_mixture.setValue(!ctr_mixture.value); checked: ctr_mixture.value; checkable: true; }
-                GCSMenuField { title: qsTr("Ignition"); onClicked: power_ignition.setValue(!power_ignition.value); checked: power_ignition.value; checkable: true; }
-                GCSMenuField { title: qsTr("Cut throttle"); onClicked: cmode_thrcut.setValue(!cmode_thrcut.value); checked: cmode_thrcut.value; checkable: true;}
-                GCSMenuField { title: qsTr("Override throttle"); onClicked: cmode_throvr.setValue(!cmode_throvr.value); checked: cmode_throvr.value; checkable: true;}
+                GCSMenuField { title: qsTr("Mixture"); onToggled: ctr_mixture.setValue(!ctr_mixture.value); checked: ctr_mixture.value; checkable: true; }
+                GCSMenuField { title: qsTr("Ignition"); onToggled: power_ignition.setValue(!power_ignition.value); checked: power_ignition.value; checkable: true; }
+                GCSMenuField { title: qsTr("Cut throttle"); onToggled: cmode_thrcut.setValue(!cmode_thrcut.value); checked: cmode_thrcut.value; checkable: true;}
+                GCSMenuField { title: qsTr("Override throttle"); onToggled: cmode_throvr.setValue(!cmode_throvr.value); checked: cmode_throvr.value; checkable: true;}
                 GCSMenuField { separator: true;}
                 GCSMenuField { title: qsTr("Start engine"); onClicked: ctrb_starter.setValue(!ctrb_starter.value); busy: sw_starter.value; }
             }
@@ -61,9 +61,9 @@ GCSMenu {
         GCSMenuField {
             title: qsTr("Power")
             fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Servo"); onClicked: power_servo.setValue(!power_servo.value); checked: power_servo.value; checkable: true; }
-                GCSMenuField { title: qsTr("Payload"); onClicked: power_payload.setValue(!power_payload.value); checked: power_payload.value; checkable: true; }
-                GCSMenuField { title: qsTr("XPDR"); onClicked: power_xpdr.setValue(!power_xpdr.value); checked: power_xpdr.value; checkable: true; }
+                GCSMenuField { title: qsTr("Servo"); onToggled: power_servo.setValue(!power_servo.value); checked: power_servo.value; checkable: true; }
+                GCSMenuField { title: qsTr("Payload"); onToggled: power_payload.setValue(!power_payload.value); checked: power_payload.value; checkable: true; }
+                GCSMenuField { title: qsTr("XPDR"); onToggled: power_xpdr.setValue(!power_xpdr.value); checked: power_xpdr.value; checkable: true; }
             }
         }
         GCSMenuField { separator: true; }
@@ -73,7 +73,7 @@ GCSMenu {
                 GCSMenuField { title: qsTr("Reset gps home altitude"); onClicked: mandala.current.exec_script("hmsl()"); }
                 GCSMenuField { title: qsTr("Reset static pressure"); onClicked: mandala.current.exec_script("zps()"); }
                 GCSMenuField { separator: true;}
-                GCSMenuField { title: cmode_ahrs.descr; onClicked: cmode_ahrs.setValue(!cmode_ahrs.value); checked: cmode_ahrs.value; checkable: true;}
+                GCSMenuField { title: cmode_ahrs.descr; onToggled: cmode_ahrs.setValue(!cmode_ahrs.value); checked: cmode_ahrs.value; checkable: true;}
             }
         }
         GCSMenuField { separator: true; }
@@ -97,26 +97,14 @@ GCSMenu {
                 }
                 GCSMenuField {
                     id: menuServers
-                    title: qsTr("Servers")
-                    fields: GCSMenuModel {
-                        id: objModelServers
-                        GCSMenuField { title: qsTr("Disconnect"); onClicked: datalink.disconnect(); }
-                        GCSMenuList {
-                            objModel: objModelServers
-                            model: datalink.serverNames
-                            delegate: GCSMenuField {
-                                title: model.modelData
-                                onClicked: datalink.connectToServer(title)
-                            }
-                        }
-                    }
+                    fact: app.datalink.hosts
                 }
             }
         }
         GCSMenuField {
             title: qsTr("Telemetry")
             fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Record data"); onClicked: mandala.current.recorder.recording=!mandala.current.recorder.recording; checked: mandala.current.recorder.recording; checkable: true;}
+                GCSMenuField { title: qsTr("Record data"); onToggled: mandala.current.recorder.recording=!mandala.current.recorder.recording; checked: mandala.current.recorder.recording; checkable: true;}
                 GCSMenuField { title: qsTr("Discard current file"); onClicked: mandala.current.recorder.discard(); }
             }
         }

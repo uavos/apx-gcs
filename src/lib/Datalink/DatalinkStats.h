@@ -20,72 +20,62 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkHosts_H
-#define DatalinkHosts_H
+#ifndef DatalinkStats_H
+#define DatalinkStats_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
 class Datalink;
-class DatalinkHost;
+class DatalinkStatsCounter;
 //=============================================================================
-class DatalinkHosts: public Fact
+class DatalinkStats: public Fact
 {
   Q_OBJECT
-
-  Q_PROPERTY(int connectedCount READ connectedCount NOTIFY connectedCountChanged)
-  Q_PROPERTY(int availableCount READ availableCount NOTIFY availableCountChanged)
-
 public:
-  explicit DatalinkHosts(Datalink *parent);
-
-  Fact *f_add;
-  Fact *f_host;
-  Fact *f_connect;
-
-
-  Fact *f_alloff;
-  Fact *f_list;
+  explicit DatalinkStats(Datalink *parent);
 
   Datalink *f_datalink;
 
-  DatalinkHost *f_localhost;
+  DatalinkStatsCounter *f_uplink;
+  DatalinkStatsCounter *f_dnlink;
 
-  DatalinkHost *registerHost(QHostAddress addr, QString sname,bool bPort=false);
-  DatalinkHost *hostByAddr(QHostAddress addr);
+  DatalinkStatsCounter *f_total;
+
+};
+//=============================================================================
+class DatalinkStatsCounter: public Fact
+{
+  Q_OBJECT
+public:
+  explicit DatalinkStatsCounter(DatalinkStats *parent, QString name, QString title, QString descr);
+
+  Fact *f_cnt;
+  Fact *f_rate;
+  Fact *f_datacnt;
+  Fact *f_datarate;
 
 private:
-  QUdpSocket *udpReader;
-  QUdpSocket *udpAnnounce;
 
-  QTimer announceTimer;
+  uint packetCnt;
+  uint packetCntT;
+  double packetRate;
+
+  uint dataCnt;
+  uint dataCntT;
+  double dataRate;
+
+  QTime time;
+  QTimer updateTimer;
+
+  QString dataToString(uint v);
+  double getRate(double *v, uint dcnt, uint t);
 
 private slots:
-  //UDP discover service
-  void announce(void);
-  void tryBind(void);
-  void udpRead(void);
-
-  void serverBindedChanged();
-
-  void connectTriggered();
+  void updateTimerTimeout();
 
 public slots:
-  bool connectToServer(QHostAddress haddr);
-  void updateStats();
-  void updateConnectedStatus();
-  void connectLocalhost();
+  void countData(const QByteArray &ba);
 
-
-  //-----------------------------------------
-  //PROPERTIES
-public:
-  virtual int connectedCount() const;
-  virtual int availableCount() const;
-protected:
-  int m_connectedCount;
-signals:
-  void connectedCountChanged();
-  void availableCountChanged();
 };
 //=============================================================================
 #endif

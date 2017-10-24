@@ -28,7 +28,6 @@
 #include <QAction>
 #include <QPushButton>
 #include <QGLFormat>
-#include "DatalinkServer.h"
 #include <QQuickStyle>
 //=============================================================================
 QmlApp::QmlApp(QString src, QObject *parent)
@@ -38,14 +37,11 @@ QmlApp::QmlApp(QString src, QObject *parent)
   qmlRegisterType<QMandala>();
   qmlRegisterType<QMandalaField>();
   qmlRegisterType<FlightDataFile>();
-  qmlRegisterType<DatalinkServer>();
+  //qmlRegisterType<DatalinkServer>();
 
   mandala=qApp->property("Mandala").value<QMandala*>();
 
   QQuickStyle::setStyle("Material");
-
-  if(!QSettings().contains("smooth_instruments"))
-    QSettings().setValue("smooth_instruments",true);
 
   //if(QSettings().value("opengl",true).toBool()&&QGLFormat::openGLVersionFlags()){
     //setSurfaceType(QSurface::OpenGLSurface);

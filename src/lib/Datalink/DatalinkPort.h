@@ -26,6 +26,8 @@
 #include <QtCore>
 #include "FactSystem.h"
 class DatalinkPorts;
+class DatalinkHost;
+class Serial;
 //=============================================================================
 class DatalinkPort: public Fact
 {
@@ -33,16 +35,23 @@ class DatalinkPort: public Fact
 public:
   explicit DatalinkPort(DatalinkPorts *parent,const DatalinkPort *port=NULL);
 
-  Fact *_enabled;
-  Fact *_type;
-  Fact *_dev;
-  Fact *_baud;
-  Fact *_host;
+  DatalinkPorts *f_ports;
 
-  Fact *_share;
+  Fact *f_enabled;
+  Fact *f_type;
+  Fact *f_dev;
+  Fact *f_baud;
+  Fact *f_host;
 
-  Fact *_save;
-  Fact *_remove;
+  Fact *f_local;
+
+  Fact *f_save;
+  Fact *f_remove;
+
+  DatalinkHost *if_host;
+  Serial *if_serial;
+
+  bool active();
 
 private:
   bool _new;
@@ -51,8 +60,29 @@ private slots:
   void updateStats();
   void enable();
   void disable();
+  void enabledChanged();
+  void syncDevEnum();
+  void syncHostEnum();
 public slots:
   void defaults();
+
+  //iface connect
+private slots:
+  void ifacePacketReceived(const QByteArray &ba);
+  void disconnectAll();
+  void serialConnected(QString pname);
+  void serialDisconnected();
+  void hostStatusChanged();
+
+public slots:
+  void connectPort();
+
+  //data
+signals:
+  void packetReceived(const QByteArray &ba);
+public slots:
+  void sendPacket(const QByteArray &ba);
+
 };
 //=============================================================================
 #endif

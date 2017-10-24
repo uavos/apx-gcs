@@ -24,6 +24,7 @@
 #include "MissionItemRw.h"
 #include "MissionItemField.h"
 #include "QMandala.h"
+#include "FactSystem.h"
 #include "ItemRw.h"
 #include "MapView.h"
 //=============================================================================
@@ -60,7 +61,7 @@ QVariant MissionItemRw::value(void) const
 {
   QStringList st;
   st.append(descr());
-  st.append(QString("%1%2").arg(f_turn->data(tc_value).toString().at(0).toUpper()).arg((int)QMandala::angle360(QMandala::instance()->current->heading(f_dN->value().toDouble(),f_dE->value().toDouble()))));
+  st.append(QString("%1%2").arg(f_turn->data(tc_value).toString().at(0).toUpper()).arg((int)FactSystem::angle360(QMandala::instance()->current->heading(f_dN->value().toDouble(),f_dE->value().toDouble()))));
   st.append(getDistanceString(f_approach->value().toDouble()));
   st.removeAll("");
   return st.join(' ');

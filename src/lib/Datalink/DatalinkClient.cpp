@@ -32,20 +32,20 @@ DatalinkClient::DatalinkClient(DatalinkClients *parent, QTcpSocket *tcp)
 {
   connect(parent->f_alloff,&Fact::triggered,this,&DatalinkSocket::disconnectSocket);
 
+  connect(this,&Fact::triggered,this,&DatalinkClient::disconnectSocket);
+
   connect(this,&DatalinkSocket::disconnected,this,&DatalinkClient::disconnected,Qt::QueuedConnection);
-  connect(this,&DatalinkSocket::datalinkConnected,this,&DatalinkClient::datalinkConnected);
 
   connect(this,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromClient);
   connect(f_datalink,&Datalink::sendPacketToClients,this,&DatalinkSocket::sendPacket);
+
+  connect(this,&DatalinkSocket::httpRequest,f_datalink,&Datalink::httpRequest);
 }
 //=============================================================================
 void DatalinkClient::disconnected()
 {
   //delete on disconnect
   if(parentItem())parentItem()->removeItem(this);
-}
-void DatalinkClient::datalinkConnected()
-{
 }
 //=============================================================================
 //=============================================================================

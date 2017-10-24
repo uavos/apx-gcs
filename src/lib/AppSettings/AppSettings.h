@@ -43,6 +43,23 @@ public:
     return _instance->m_settings;
   }
 
+  static QVariant value(const QString &namePath)
+  {
+    Fact *f=_instance->fact(namePath);
+    if(!f){
+      qWarning("AppSettings fact not found: %s",namePath.toUtf8().data());
+      return QVariant();
+    }
+    if(f->dataType()==EnumData)return f->text();
+    return f->value();
+  }
+  static bool setValue(QString namePath,const QVariant &v)
+  {
+    Fact *f=_instance->fact(namePath);
+    if(!f)return false;
+    return f->setValue(v);
+  }
+
 private:
   QSettings *m_settings;
 

@@ -17,7 +17,7 @@ MouseArea {
     property double stepLimit: span/10
     property bool doWheel: true
 
-    property double ptr_size: mandala.limit(height*0.1,25,100)
+    property double ptr_size: sys.limit(height*0.1,25,100)
     //anchors.fill: parent
     hoverEnabled: true
     propagateComposedEvents: true
@@ -63,8 +63,8 @@ MouseArea {
 
     //mvar op (throttle like)
     function adj(v,vstep) {
-        vstep=mandala.limit(vstep,-stepLimit,stepLimit);
-        mvar_s=mandala.limit(v+vstep,min,max);
+        vstep=sys.limit(vstep,-stepLimit,stepLimit);
+        mvar_s=sys.limit(v+vstep,min,max);
         return mvar_s;
     }
     function mvar_set(v) {

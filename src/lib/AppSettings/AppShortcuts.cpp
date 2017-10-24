@@ -26,7 +26,7 @@
 #include "AppDirs.h"
 //=============================================================================
 AppShortcuts::AppShortcuts(FactSystem *parent, QWidget *widget)
-  : Fact(parent->tree(),"shortcuts",tr("Shortcuts"),tr("Keyboard hotkeys"),RootItem,NoData),
+  : Fact(parent->tree()->child("settings"),"shortcuts",tr("Shortcuts"),tr("Keyboard hotkeys"),GroupItem,NoData),
     widget(widget)
 {
   setFlatModel(true);
@@ -56,7 +56,7 @@ AppShortcuts::AppShortcuts(FactSystem *parent, QWidget *widget)
   f_allonSys->setSection(sect);
   f_alloffSys=new Fact(this,"alloffSys",tr("Disable all"),tr("Turn off all shortcuts"),FactItem,NoData);
   f_alloffSys->setSection(sect);
-  f_sys=new Fact(this,"f_system",sect,tr("System default shortcuts"),SectionItem,NoData);
+  f_sys=new Fact(this,"system",sect,tr("System default shortcuts"),SectionItem,NoData);
   f_sys->setSection(sect);
 
   load();
@@ -149,7 +149,7 @@ void AppShortcuts::load()
   }
   settings->endArray();
   //read f_sys enable/disable
-  size=settings->beginReadArray("f_sys");
+  size=settings->beginReadArray("sys");
   for (int i = 0; i < size; ++i) {
     settings->setArrayIndex(i);
     foreach (FactTree *i, f_sys->childItems()) {
@@ -184,7 +184,7 @@ void AppShortcuts::save()
   }
   settings->endArray();
   //save f_sys enable/disable
-  settings->beginWriteArray("f_sys");
+  settings->beginWriteArray("sys");
   ai=0;
   foreach (FactTree *i, f_sys->childItems()) {
     AppShortcut *item=static_cast<AppShortcut*>(i);

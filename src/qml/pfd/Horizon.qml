@@ -25,12 +25,12 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: app.settings.smooth.value?((mandala.dlcnt>0 && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
+    opacity: app.settings.smooth.value?((app.datalink.stats.dnlink.cnt.value>0 && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
 
     Item{
         id: horizon_bg
         anchors.fill: parent
-        rotation: mandala.angle(-roll.value)
+        rotation: sys.angle(-roll.value)
         Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
 
         PfdImage {
@@ -165,8 +165,8 @@ Item {
         height: fd_roll.height*0.25
         color: "#990099"
         anchors.centerIn: parent
-        //anchors.horizontalCenterOffset: mandala.limit(fd_roll.pos+(ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
-        anchors.horizontalCenterOffset: mandala.limit((ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
+        //anchors.horizontalCenterOffset: sys.limit(fd_roll.pos+(ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: sys.limit((ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
@@ -176,32 +176,32 @@ Item {
         height: fd_pitch.height*0.7
         color: "#990099"
         anchors.centerIn: parent
-        //anchors.verticalCenterOffset: mandala.limit(fd_pitch.pos-(ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
-        anchors.verticalCenterOffset: mandala.limit(-(ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
+        //anchors.verticalCenterOffset: sys.limit(fd_pitch.pos-(ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: sys.limit(-(ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
         //roll
         id: fd_roll
         antialiasing: app.settings.smooth.value
-        width: mandala.limit(diagonal*0.006,2,8)
+        width: sys.limit(diagonal*0.006,2,8)
         height: parent.width*0.2
         color: "magenta"
         property double pos: -(roll.value-cmd_roll.value)*rollDeg2img
         anchors.centerIn: parent
-        anchors.horizontalCenterOffset: mandala.limit(pos,-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: sys.limit(pos,-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
         //pitch
         id: fd_pitch
         antialiasing: app.settings.smooth.value
-        height: mandala.limit(diagonal*0.006,2,8)
+        height: sys.limit(diagonal*0.006,2,8)
         width: parent.width*0.2
         color: "magenta"
         property double pos: (pitch.value-cmd_pitch.value)*pitchDeg2img
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: mandala.limit(pos,-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: sys.limit(pos,-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
 
@@ -213,7 +213,7 @@ Item {
         width: parent.width*0.2
         height: width
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: mandala.limit((pitch.value-cmd_pitch.value)*pitchDeg2img,-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: sys.limit((pitch.value-cmd_pitch.value)*pitchDeg2img,-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
 
@@ -225,7 +225,7 @@ Item {
         width: fd_pitch_image.height
         height: fd_pitch_image.width
         anchors.centerIn: parent
-        anchors.horizontalCenterOffset: mandala.limit(-(roll.value-cmd_roll.value)*rollDeg2img,-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: sys.limit(-(roll.value-cmd_roll.value)*rollDeg2img,-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }*/
 

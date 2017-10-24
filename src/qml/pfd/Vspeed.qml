@@ -26,7 +26,7 @@ ControlArea {
         elementName: "vsi-scale"
         smooth: true
         width: elementBounds.width*vsi_window.scaleFactor  //parent.width*0.8
-        height: mandala.limit(1.2*parent.width*elementBounds.height/elementBounds.width,0,parent.height*0.8)  //elementBounds.height*vsi_window.scaleFactor
+        height: sys.limit(1.2*parent.width*elementBounds.height/elementBounds.width,0,parent.height*0.8)  //elementBounds.height*vsi_window.scaleFactor
         //anchors.left: parent.left
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: -parent.width*0.3

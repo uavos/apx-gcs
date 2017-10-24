@@ -23,6 +23,7 @@
 #include "Datalink.h"
 #include "DatalinkClients.h"
 #include "DatalinkClient.h"
+#include "DatalinkHost.h"
 #include "tcp_ports.h"
 //=============================================================================
 DatalinkClients::DatalinkClients(Datalink *parent)
@@ -43,7 +44,8 @@ DatalinkClients::DatalinkClients(Datalink *parent)
 
   connect(f_datalink->f_active,&Fact::valueChanged,this,&DatalinkClients::serverActiveChanged);
 
-  serverActiveChanged();
+  updateStats();
+  QTimer::singleShot(500,this,&DatalinkClients::serverActiveChanged);
 }
 //=============================================================================
 void DatalinkClients::updateStats()
@@ -57,7 +59,9 @@ void DatalinkClients::serverActiveChanged()
   if(!active){
     f_alloff->trigger();
     server->close();
+    f_datalink->f_binded->setVisible(false);
     f_datalink->f_binded->setValue(false);
+    f_datalink->f_binded->setStatus(QString());
     qDebug("%s",tr("Datalink server disabled").toUtf8().data());
     return;
   }
@@ -72,16 +76,21 @@ void DatalinkClients::tryBindServer()
 {
   if(!f_datalink->f_active->value().toBool())return;
   if(!server->listen(QHostAddress::Any,TCP_PORT_SERVER)) {
+    f_datalink->f_binded->setVisible(false);
     f_datalink->f_binded->setValue(false);
+    f_datalink->f_binded->setStatus(QString());
     //server port is busy by another local GCU
     if(++retryBind<=1){
       qWarning("%s: %s",tr("Unable to start server").toUtf8().data(),server->errorString().toUtf8().data());
     }
     uint to=1000+(retryBind/10)*1000;
     QTimer::singleShot(to>10000?10000:to,this,SLOT(tryBindServer()));
+    emit bindError();
     return;
   }
   f_datalink->f_binded->setValue(true);
+  f_datalink->f_binded->setStatus(QString("%1:%2").arg(server->serverAddress().toString()).arg(server->serverPort()));
+  f_datalink->f_binded->setVisible(true);
   if(retryBind)qDebug("%s",tr("Server binded").toUtf8().data());
   retryBind=0;
 }
@@ -94,7 +103,22 @@ void DatalinkClients::newConnection()
       socket->disconnectFromHost();
       continue;
     }
+    DatalinkHost *host=f_datalink->f_hosts->hostByAddr(socket->peerAddress());
+    if(host && host->active()){
+      qWarning("%s: %s",tr("Client refused").toUtf8().data(),socket->peerAddress().toString().toUtf8().data());
+      socket->disconnectFromHost();
+      continue;
+    }
     new DatalinkClient(this,socket);
+  }
+}
+//=============================================================================
+void DatalinkClients::forward(DatalinkClient *src, const QByteArray &ba)
+{
+  foreach (FactTree *i, f_list->childItems()) {
+    DatalinkClient *port=static_cast<DatalinkClient*>(i);
+    if(port==src) continue;
+    port->sendPacket(ba);
   }
 }
 //=============================================================================

@@ -29,8 +29,13 @@
 class DatalinkSocket: public Fact
 {
   Q_OBJECT
+
+  Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
+
 public:
   explicit DatalinkSocket(Fact *parent, QString title, QTcpSocket *socket, bool bServer, QString serverName);
+
+  static bool isLocalHost(const QHostAddress address);
 
 protected:
 
@@ -44,7 +49,6 @@ protected:
   bool checkDatalinkRequestHeader();
   bool checkDatalinkResponseHeader();
 
-  static bool isLocalHost(const QHostAddress address);
 
 private:
   typedef struct {
@@ -64,6 +68,8 @@ private slots:
   void socketReadyRead();
   void socketClientConnected();
 
+  void socketStateChanged(QAbstractSocket::SocketState socketState);
+
 signals:
   void packetReceived(const QByteArray &ba);
   void datalinkConnected();
@@ -74,6 +80,18 @@ public slots:
   void sendPacket(const QByteArray &ba);
   void disconnectSocket();
   void readDatalinkData();
+
+
+  //-----------------------------------------
+  //PROPERTIES
+public:
+  bool connected() const;
+protected:
+  void setConnected(const bool &v);
+  bool m_connected;
+signals:
+  void connectedChanged();
+
 };
 //=============================================================================
 #endif

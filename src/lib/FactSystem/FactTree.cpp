@@ -90,6 +90,10 @@ void FactTree::addItem(FactTree *item)
 {
   insertItem(m_items.size(),item);
 }
+void FactTree::remove()
+{
+  if(m_parentItem)m_parentItem->removeItem(this);
+}
 void FactTree::moveItem(FactTree *item,int dest)
 {
   moveRows(QModelIndex(),item->num(),1,QModelIndex(),dest);
@@ -121,6 +125,10 @@ QList<FactTree*> FactTree::childItems() const
     }
     return list;
   }
+  return childItemsTree();
+}
+QList<FactTree*> FactTree::childItemsTree() const
+{
   if(_bindedChildsFact)return _bindedChildsFact->childItems();
   return m_items;
 }

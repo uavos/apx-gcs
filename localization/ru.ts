@@ -51,12 +51,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>Voice</source>
         <translation type="unfinished">Голос</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+12"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -76,12 +76,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-10"/>
+        <location line="-13"/>
         <source>Speech voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+13"/>
         <source>Enable OpenGL graphics when supported</source>
         <translation type="unfinished"></translation>
     </message>
@@ -512,7 +512,7 @@
 <context>
     <name>Datalink</name>
     <message>
-        <location filename="../src/lib/Datalink/Datalink.cpp" line="+31"/>
+        <location filename="../src/lib/Datalink/Datalink.cpp" line="+34"/>
         <source>Datalink</source>
         <translation type="unfinished"></translation>
     </message>
@@ -537,12 +537,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+0"/>
+        <source>Enable network features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Server listening</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+14"/>
         <source>Server settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -602,7 +607,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+17"/>
         <source>Read only datalink</source>
         <translation type="unfinished"></translation>
     </message>
@@ -615,7 +620,7 @@
 <context>
     <name>DatalinkClients</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkClients.cpp" line="+29"/>
+        <location filename="../src/lib/Datalink/DatalinkClients.cpp" line="+30"/>
         <source>Connected clients</source>
         <translation type="unfinished"></translation>
     </message>
@@ -645,23 +650,28 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
-        <source>Datalink server inactive</source>
+        <location line="+27"/>
+        <source>Datalink server disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>Datalink server activated</source>
+        <source>Datalink server enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+15"/>
         <source>Unable to start server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Server binded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Client refused</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -683,7 +693,7 @@
 <context>
     <name>DatalinkHost</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkHost.cpp" line="+60"/>
+        <location filename="../src/lib/Datalink/DatalinkHost.cpp" line="+63"/>
         <source>No service</source>
         <translation type="unfinished"></translation>
     </message>
@@ -708,15 +718,20 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>Connected</source>
+        <location line="+15"/>
+        <source>Retry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Connection to local host not allowed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DatalinkHosts</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="+29"/>
+        <location filename="../src/lib/Datalink/DatalinkHosts.cpp" line="+30"/>
         <source>Remote servers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -726,7 +741,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
+        <source>Connect to host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Create new connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Host address</source>
+        <translation type="unfinished">Адрес хоста </translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>IP address of remote server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Connect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Disconnect all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -746,7 +786,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+36"/>
         <source>found server</source>
         <translation type="unfinished"></translation>
     </message>
@@ -754,7 +794,7 @@
 <context>
     <name>DatalinkPort</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="+29"/>
+        <location filename="../src/lib/Datalink/DatalinkPort.cpp" line="+31"/>
         <source>add</source>
         <translation type="unfinished"></translation>
     </message>
@@ -769,7 +809,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Connect when available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -789,22 +829,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>System serial port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Supported USB device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Network server address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+7"/>
         <source>Port path</source>
         <translation type="unfinished"></translation>
     </message>
@@ -814,12 +839,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Enumerate available serial ports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Baud rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -829,7 +849,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Host address</source>
         <translation type="unfinished">Адрес хоста </translation>
     </message>
@@ -839,17 +859,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Share data</source>
+        <location line="+128"/>
+        <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Send all received data to other ports</source>
+        <location line="+23"/>
+        <source>Serial port closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+19"/>
+        <source>Disconnected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-118"/>
         <source>Share received data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -859,12 +884,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-46"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-3"/>
+        <source>Local data only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Never share received data with other connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -872,12 +907,12 @@
 <context>
     <name>DatalinkPorts</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="+37"/>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="+40"/>
         <source>Ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-9"/>
+        <location line="-11"/>
         <source>Local ports</source>
         <translation type="unfinished"></translation>
     </message>
@@ -887,7 +922,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>Enable all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -913,77 +948,60 @@
     </message>
 </context>
 <context>
-    <name>DatalinkServer</name>
+    <name>DatalinkStats</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkServer.cpp" line="+57"/>
-        <source>Linked to master GCU</source>
+        <location filename="../src/lib/Datalink/DatalinkStats.cpp" line="+27"/>
+        <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+118"/>
-        <source>Unable to start server</source>
+        <location line="+0"/>
+        <source>Data traffic usage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Server binded</source>
+        <location line="+6"/>
+        <source>Uplink</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Server inactive</source>
+        <location line="+3"/>
+        <source>Downlink</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Can&apos;t connect to local server</source>
+        <location line="+3"/>
+        <source>Total</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DatalinkStatsCounter</name>
+    <message>
+        <location line="+11"/>
+        <source>Packets counter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+190"/>
-        <source>server</source>
+        <location line="+3"/>
+        <source>Packets rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
-        <source>Client connection refused</source>
+        <location line="+3"/>
+        <source>Data counter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>client</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Local client controls enabled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>External client controls disabled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+123"/>
-        <source>found server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+49"/>
-        <source>Datalink server activated</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Datalink server inactive</source>
+        <location line="+3"/>
+        <source>Data rate</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+234"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+224"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1265,16 +1283,15 @@
 <context>
     <name>MainForm</name>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="+59"/>
         <source>System Configuration</source>
-        <translation type="unfinished">Настройки программы</translation>
+        <translation type="obsolete">Настройки программы</translation>
     </message>
     <message>
         <source>Shortcuts Configuration</source>
         <translation type="obsolete">Настройка горячих клавиш</translation>
     </message>
     <message>
-        <location line="-15"/>
+        <location filename="../src/main/MainForm.cpp" line="+42"/>
         <source>&amp;File</source>
         <translation type="unfinished">&amp;Файл</translation>
     </message>
@@ -1299,7 +1316,7 @@
         <translation type="unfinished">&amp;Справка</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+9"/>
         <source>Toggle Full Screen</source>
         <translation type="unfinished">Полноэкранный режим</translation>
     </message>
@@ -1346,12 +1363,11 @@
         <translation type="obsolete">Разрешить внешнее управление</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>Connect to...</source>
-        <translation type="unfinished">Подключиться к...</translation>
+        <translation type="obsolete">Подключиться к...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+26"/>
         <source>Exit</source>
         <translation type="unfinished">Выход</translation>
     </message>
@@ -1377,7 +1393,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+306"/>
+        <location line="+280"/>
         <source>Username</source>
         <translation type="unfinished">Имя пользователя</translation>
     </message>
@@ -1402,14 +1418,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>Host address</source>
-        <translation type="unfinished">Адрес хоста </translation>
+        <translation type="obsolete">Адрес хоста </translation>
     </message>
     <message>
-        <location line="-570"/>
         <source>Servers</source>
-        <translation type="unfinished">Серверы</translation>
+        <translation type="obsolete">Серверы</translation>
     </message>
 </context>
 <context>
@@ -1454,7 +1468,7 @@
     </message>
     <message>
         <location line="+80"/>
-        <location filename="../src/Plugins/map/MapFrame.cpp" line="+199"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+200"/>
         <source>Lat</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1931,7 +1945,7 @@
 <context>
     <name>MissionItemField</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemField.cpp" line="+45"/>
+        <location filename="../src/Plugins/map/MissionItemField.cpp" line="+46"/>
         <source>off</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1980,7 +1994,7 @@
 <context>
     <name>MissionItemRw</name>
     <message>
-        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="+33"/>
+        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="+34"/>
         <source>Landing pattern turn</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2851,7 +2865,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+361"/>
+        <location filename="../src/main/main.cpp" line="+359"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
@@ -2874,7 +2888,7 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="+119"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="+117"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2894,7 +2908,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+97"/>
+        <location line="+88"/>
         <source>Duplicate squawk</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2994,12 +3008,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-208"/>
+        <location filename="../src/main/main.cpp" line="-214"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+57"/>
         <source>Developer mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3014,7 +3028,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+125"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3260,14 +3274,12 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
     <name>SerialWorker</name>
     <message>
         <location filename="../src/lib/Datalink/Serial.cpp" line="+163"/>
-        <location line="+2"/>
         <source>Serial port connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+174"/>
-        <location line="+2"/>
-        <source>Serial port disconnected.</source>
+        <location line="+193"/>
+        <source>Serial port disconnected</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

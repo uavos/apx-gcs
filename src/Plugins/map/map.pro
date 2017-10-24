@@ -76,7 +76,7 @@ FORMS += MapFrame.ui \
 QT += opengl
 
 #QT += sql
-#QT += quick svg opengl
+QT += quick svg opengl
 
 #RESOURCES += icons.qrc
 

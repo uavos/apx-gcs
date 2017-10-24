@@ -59,9 +59,9 @@ Item {
     property bool showNext: visible && (fields || pageMenu || page || (fact && (fact.size || fact.treeItemType==Fact.GroupItem))) && (!delegate) && (!bEditList) && (!bEditListText)
 
     //editor types
-    property bool bEditText:     field.fact && field.fact.dataType==Fact.TextData && field.fact.size === 0
-    property bool bEditList:     field.fact && field.fact.dataType==Fact.EnumData && field.fact.size>0
-    property bool bEditListText: field.fact && field.fact.dataType==Fact.TextData && field.fact.size>0
+    property bool bEditText:     field.fact && field.fact.dataType==Fact.TextData && field.fact.enumStrings.length === 0
+    property bool bEditList:     field.fact && field.fact.dataType==Fact.EnumData
+    property bool bEditListText: field.fact && field.fact.dataType==Fact.TextData && field.fact.enumStrings.length > 0
     property bool bAction:       field.fact && field.fact.dataType==Fact.ActionData
     property bool bEditKey:      field.fact && field.fact.dataType==Fact.KeySequenceData
     property bool bConstData:    field.fact && field.fact.dataType==Fact.ConstData
@@ -254,7 +254,7 @@ Item {
                     Layout.minimumWidth: itemSize*2
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
-                    font.pixelSize: itemSize*0.6
+                    font.pixelSize: itemSize*0.5
                     color: colorValueText
                     font.family: font_condenced
                     text: field.fact?field.fact.text:""
@@ -269,7 +269,7 @@ Item {
                     Layout.minimumWidth: itemSize*2
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
-                    font.pixelSize: itemSize*0.6
+                    font.pixelSize: itemSize*0.5
                     color: colorValueText
                     font.family: font_condenced
                     text: field.fact?field.fact.status:""
@@ -365,9 +365,9 @@ Item {
                     id: editor
                     Layout.fillHeight: true
                     Layout.fillWidth: editable
+                    Layout.preferredWidth: editable?fieldBody.width:Layout.preferredWidth
                     editable: field.bEditListText
-                    model: field.fact
-                    textRole: "text"
+                    model: field.fact.enumStrings
                     contentItem: editable?textInputC.createObject(editor):editor.contentItem
                     background: editable?textInputBgC.createObject(editor):editor.background
                     Component.onCompleted: currentIndex=find(field.fact.text)

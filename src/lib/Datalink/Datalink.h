@@ -28,6 +28,7 @@
 #include "DatalinkHosts.h"
 #include "DatalinkPorts.h"
 #include "DatalinkClients.h"
+#include "DatalinkStats.h"
 //=============================================================================
 class Datalink: public Fact
 {
@@ -48,14 +49,11 @@ public:
   DatalinkPorts *f_ports;
   DatalinkClients *f_clients;
 
-  Fact *f_stats;
-  Fact *f_upcnt;
-  Fact *f_dncnt;
-  Fact *f_uprate;
-  Fact *f_dnrate;
+  DatalinkStats *f_stats;
 
 private:
   QTimer heartbeatTimer; //data link alive for vehicle
+  bool bReadOnly;
 
 private slots:
   void readonlyChanged();
@@ -73,11 +71,16 @@ signals:
   void sendPacketToHosts(const QByteArray &ba);
   void sendPacketToPorts(const QByteArray &ba);
 
+  //counters
+  void transmittedData(const QByteArray &ba);
+  void receivedData(const QByteArray &ba);
+
   //external connections
 public slots:
   void write(const QByteArray &ba);
 signals:
   void read(const QByteArray &ba);
+  void httpRequest(QTextStream &stream,QString req,bool *ok);
 
 };
 //=============================================================================

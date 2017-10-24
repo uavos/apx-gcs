@@ -40,7 +40,6 @@ private:
 
 private slots:
   void disconnected();
-  void datalinkConnected();
 };
 //=============================================================================
 #endif

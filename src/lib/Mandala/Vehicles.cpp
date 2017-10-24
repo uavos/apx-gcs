@@ -20,42 +20,30 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkClients_H
-#define DatalinkClients_H
+#include "Vehicles.h"
+#include "Vehicle.h"
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
-class Datalink;
-class DatalinkClient;
-//=============================================================================
-class DatalinkClients: public Fact
+Vehicles::Vehicles(FactSystem *parent)
+  : Fact(parent->tree(),"vehicles",tr("Vehicles"),tr("Discovered unmanned vehicles"),SectionItem,NoData)
 {
-  Q_OBJECT
-public:
-  explicit DatalinkClients(Datalink *parent);
 
-  Fact *f_alloff;
-  Fact *f_list;
+  Vehicle *v;
+  v=new Vehicle(this,"LOCAL",NULL);
+  v->setDescr("UAV Squawk: E2E4");
+  v->setStatus("XPDR");
 
-  Datalink *f_datalink;
+  v=new Vehicle(this,"SGCU",NULL);
+  v->setDescr("GCU Squawk: E2E4");
+  v->setStatus("XPDR");
 
-  QTcpServer *server;
-private:
-  uint retryBind;
+  v=new Vehicle(this,"SAKER-1B2",NULL);
+  v->setDescr("UAV Squawk: E2E4");
+  v->setStatus("DLINK");
 
-private slots:
-  void updateStats();
-  void serverActiveChanged();
-  void tryBindServer();
-
-  //tcp server
-  void newConnection();
-
-public slots:
-  void forward(DatalinkClient *src, const QByteArray &ba);
-signals:
-  void bindError();
-};
+}
 //=============================================================================
-#endif
-
+void Vehicles::downlinkReceived(const QByteArray &ba)
+{
+}
+//=============================================================================
+//=============================================================================

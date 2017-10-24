@@ -24,6 +24,7 @@
 #include "MapFrame.h"
 #include <math.h>
 #include "QMandala.h"
+#include "FactSystem.h"
 #include "MissionItemWp.h"
 #include "AppDirs.h"
 //=============================================================================
@@ -195,9 +196,9 @@ void MapFrame::updateStats()
 
   //cursor pos
   double lat=mapView->curLL.x(),lon=mapView->curLL.y();
-  lbN->setText(QMandala::latToString(lat));
+  lbN->setText(FactSystem::latToString(lat));
   lbN->setToolTip(QString().sprintf("%s: %f",tr("Lat").toUtf8().data(),lat));
-  lbE->setText(QMandala::lonToString(lon));
+  lbE->setText(FactSystem::lonToString(lon));
   lbE->setToolTip(QString().sprintf("%s: %f",tr("Lon").toUtf8().data(),lon));
 
   lbLevel->setText(QString().sprintf("%s:%u",tr("L").toUtf8().data(),mapView->mapTiles.level));

@@ -27,7 +27,6 @@
 #include "QMandala.h"
 #include "Config.h"
 #include "QmlView.h"
-#include "DatalinkServer.h"
 #include "AppSettings.h"
 #include "AppDirs.h"
 //=============================================================================
@@ -36,7 +35,6 @@ MainForm::MainForm(QWidget *parent)
   closing(false),loading(true)
 {
   mandala=qApp->property("Mandala").value<QMandala*>();
-  datalink=qApp->property("DatalinkServer").value<DatalinkServer*>();
   setDockNestingEnabled(true);
   //setDockOptions(dockOptions()&(~QMainWindow::AnimatedDocks)); <- BUG in yakkety?
   //setTabPosition(Qt::AllDockWidgetAreas,QTabWidget::North);
@@ -49,15 +47,12 @@ MainForm::MainForm(QWidget *parent)
   mWindow=menuBar()->addMenu(tr("&Window"));
   mHelp=menuBar()->addMenu(tr("&Help"));
 
-  connect(mandala,SIGNAL(serverDiscovered(QHostAddress,QString)),this,SLOT(serverDiscovered(QHostAddress,QString)));
-  connect(this,SIGNAL(connectToServer(QHostAddress)),mandala,SIGNAL(connectToServer(QHostAddress)));
+  //connect(mandala,SIGNAL(serverDiscovered(QHostAddress,QString)),this,SLOT(serverDiscovered(QHostAddress,QString)));
+  //connect(this,SIGNAL(connectToServer(QHostAddress)),mandala,SIGNAL(connectToServer(QHostAddress)));
 
   connect(mandala,SIGNAL(uavAdded(QMandalaItem*)),this,SLOT(uavAdded(QMandalaItem*)));
   connect(mandala,SIGNAL(uavRemoved(QMandalaItem*)),this,SLOT(uavRemoved(QMandalaItem*)));
   connect(this,SIGNAL(changeUAV(QMandalaItem*)),mandala,SLOT(setCurrent(QMandalaItem*)));
-
-  mTools->addAction(QIcon(":/icons/old/configure.png"),tr("System Configuration"),this,SLOT(mSystem_triggered()));
-  mTools->addSeparator();
 
   mWindow->addAction(QIcon(":/icons/old/view-fullscreen.png"),tr("Toggle Full Screen"),this,SLOT(mFullScreen_triggered()),QKeySequence("F11"));
   mWindow->addAction(tr("Auto arrange"),this,SLOT(arrange()));
@@ -107,14 +102,6 @@ MainForm::MainForm(QWidget *parent)
   QObject::connect(a,SIGNAL(triggered(bool)),datalink,SLOT(setExtctrEnabled(bool)));
   connect(datalink,SIGNAL(extctrEnabledChanged(bool)),a,SLOT(setChecked(bool)));
   mFile->addAction(a);*/
-
-  mServers=new QMenu(tr("Servers"),mFile);
-  mServers->setIcon(QIcon(":/icons/old/bt.png"));
-  mFile->addMenu(mServers);
-
-  a=new QAction(QIcon(":/icons/old/connect.png"),tr("Connect to..."),this);
-  QObject::connect(a,SIGNAL(triggered(bool)),this,SLOT(serverActionConnectTo()));
-  mServers->addAction(a);
 
 
   mFile->addSeparator();
@@ -335,26 +322,8 @@ void MainForm::qmlPluginActionToggled(bool checked)
   QCoreApplication::processEvents();
   QCoreApplication::processEvents();
 
-  /*QmlWidget *qmlWidget=new QmlWidget(QStringLiteral("qrc:///"));
-  if(!fileName.startsWith("qrc:"))fileName.prepend("file://");
-  qmlWidget->rootContext()->setContextProperty("datalink",datalink);
-  qmlWidget->loadApp(fileName);
-  plugins_qml.append(pname);
-  QDockWidget *dock=static_cast<QDockWidget*>(sender()->parent());
-  dock->setWidget(qmlWidget);*/
-
-  /*QmlApp *qmlApp=new QmlApp(QStringLiteral("qrc:///"));
-  if(!fileName.startsWith("qrc:"))fileName.prepend("file://");
-  qmlApp->rootContext()->setContextProperty("datalink",datalink);
-  QQuickWindow *qmlWindow=qmlApp->loadApp(fileName);
-  plugins_qml[pname]=qmlApp;
-  QDockWidget *dock=static_cast<QDockWidget*>(sender()->parent());
-  dock->setWidget(qmlApp->createWidget(a->text()));
-  //qmlApp->resyncDraw();*/
-
   QmlView *view=new QmlView(QStringLiteral("qrc:///"));
   if(!fileName.startsWith("qrc:"))fileName.prepend("file://");
-  view->engine()->rootContext()->setContextProperty("datalink",datalink);
   view->setSource(fileName);
   plugins_qml.append(pname);
   QDockWidget *dock=static_cast<QDockWidget*>(sender()->parent());
@@ -572,14 +541,6 @@ void MainForm::mFullScreen_triggered()
   QSettings().setValue("fullscreen",bFullScreen);
 }
 //=============================================================================
-void MainForm::mSystem_triggered()
-{
-  Config *dlg=new Config(this);
-  connect(dlg->eAllowExt,SIGNAL(toggled(bool)),datalink,SLOT(setExtctrEnabled(bool)));
-  dlg->exec();
-  delete dlg;
-}
-//=============================================================================
 void MainForm::mVPN_triggered()
 {
   if(vpnProcess.state()==QProcess::Running) vpnProcess.close();
@@ -661,27 +622,6 @@ void MainForm::mDoc_triggered()
 }
 //=============================================================================
 //=============================================================================
-//=============================================================================
-void MainForm::serverDiscovered(const QHostAddress address,const QString name)
-{
-  mServers->setEnabled(true);
-  QAction *a=new QAction(QIcon(":/icons/old/connect_creating.png"),name,this);
-  a->setData(address.toString());
-  connect(a,SIGNAL(triggered()),this,SLOT(serverAction()));
-  mServers->addAction(a);
-}
-//=============================================================================
-void MainForm::serverAction()
-{
-  QAction *a=static_cast<QAction*>(sender());
-  emit connectToServer(QHostAddress(a->data().toString()));
-}
-void MainForm::serverActionConnectTo()
-{
-  QString s=QInputDialog::getText(this,static_cast<QAction*>(sender())->text(),tr("Host address")+":");
-  if(s.isNull())return;
-  emit connectToServer(QHostAddress(s));
-}
 //=============================================================================
 void MainForm::uavAdded(QMandalaItem *m)
 {

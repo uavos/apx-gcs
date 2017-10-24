@@ -104,7 +104,7 @@ Item {
                 anchors.right: parent.right
                 horizontalAlignment: TextInput.AlignHCenter
                 color: (activeFocus||mouse.containsMouse)?"white":"yellow"
-                font.pointSize: mandala.limit(parent.width/50,textErr.font.pointSize,25)
+                font.pointSize: sys.limit(parent.width/50,textErr.font.pointSize,25)
                 wrapMode: Text.WordWrap
                 selectByMouse: true
                 activeFocusOnPress: true

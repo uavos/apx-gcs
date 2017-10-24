@@ -29,7 +29,7 @@
 #include "QMandala.h"
 //=============================================================================
 AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
- : Fact(sc?(bUsr?parent->f_usr:parent->f_sys):parent,sc?(bUsr?"usr#":"f_sys#"):tr("add"),sc?"":tr("Add new shortcut"),sc?"":tr("Configure new hotkey"),GroupItem,sc?BoolData:NoData),
+ : Fact(sc?(bUsr?parent->f_usr:parent->f_sys):parent,sc?(bUsr?"usr#":"sys#"):tr("add"),sc?"":tr("Add new shortcut"),sc?"":tr("Configure new hotkey"),GroupItem,sc?BoolData:NoData),
    container(parent),_new(sc?false:true),bUsr(bUsr), shortcut(NULL)
 {
   mandala=qApp->property("Mandala").value<QMandala*>();

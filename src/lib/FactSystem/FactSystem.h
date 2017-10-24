@@ -40,7 +40,7 @@ public:
   static void appendTree(Fact *tree);
   static void syncJS(QQmlEngine *e);
 
-  static QVariant value(const QString &name);
+  static QVariant value(const QString &namePath);
 
   //constants
   static const QString ApplicationSection;
@@ -51,6 +51,25 @@ public:
   static FactSystem * _instance;
   Fact * _tree;
   QJSValue _syncJS(QQmlEngine *e, Fact *factItem, QJSValue parent); //recursive
+
+
+
+  //----------------------------------
+  //extra math related methods
+  Q_INVOKABLE static QString latToString(double v);
+  Q_INVOKABLE static QString lonToString(double v);
+  Q_INVOKABLE double static latFromString(QString s);
+  Q_INVOKABLE double static lonFromString(QString s);
+  Q_INVOKABLE static QString distanceToString(uint v);
+  Q_INVOKABLE static QString timeToString(uint v);
+  Q_INVOKABLE uint static timeFromString(QString s);
+
+  Q_INVOKABLE static void toolTip(QString tooltip);
+  Q_INVOKABLE static double limit(double v,double min,double max);
+  Q_INVOKABLE static double angle360(double v);
+  Q_INVOKABLE static double angle90(double v);
+  Q_INVOKABLE static double angle(double v);
+
 };
 //=============================================================================
 #endif

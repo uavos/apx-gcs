@@ -25,7 +25,7 @@
 #include "AppShortcuts.h"
 //=============================================================================
 AppSettings::AppSettings(FactSystem *parent)
- : Fact(parent->tree(),"settings",tr("Application settings"),tr("Global application preferences"),RootItem,NoData) //root
+ : Fact(parent->tree(),"settings",tr("Preferences"),tr("Application settings"),RootItem,NoData) //root
 {
   _instance=this;
 
@@ -35,26 +35,32 @@ AppSettings::AppSettings(FactSystem *parent)
   if(!spath.exists())spath.mkpath(".");
   m_settings=new QSettings(spath.absoluteFilePath(QCoreApplication::applicationName()+".ini"),QSettings::IniFormat,this);
 
-  Fact *item, *item2;
-  QString sect, sect2;
+  Fact *item;
+  QString sect;
 
   sect=tr("Interface");
   item=new AppSettingFact(m_settings,this,"sounds",tr("Sounds"),tr("Enable all application sounds and voice"),sect,BoolData,true);
 
   item=new AppSettingFact(m_settings,this,"lang",tr("Language"),tr("Interface localization"),sect,EnumData,0);
-  item2=new Fact(item,"default","","",ConstItem,ItemIndexData);
+  QStringList st;
+  st<<"default";
   QDir langp(AppDirs::lang());
   foreach(QFileInfo f,langp.entryInfoList(QStringList()<<"*.qm"))
-    item2=new Fact(item,f.baseName(),"","",ConstItem,ItemIndexData);
+    st<<f.baseName();
+  item->setEnumStrings(st);
 
   item=new AppSettingFact(m_settings,this,"voice",tr("Voice"),tr("Speech voice"),sect,EnumData,0);
-  item2=new Fact(item,"default","","",ConstItem,ItemIndexData);
+  st.clear();
+  st<<"default";
   QDir voicep(AppDirs::res().filePath("audio/speech"));
   foreach(QString s,voicep.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
-    item2=new Fact(item,s,"","",ConstItem,ItemIndexData);
+    st<<s;
+  item->setEnumStrings(st);
 
-  //item=new AppShortcuts(this);
-  //item->setSection(sect);
+  item=new Fact(this,"test",tr("Test visual elements"),"",Fact::FactItem,Fact::BoolData);
+  item->setValue(false);
+  item->setSection(sect);
+
 
   sect=tr("Graphics");
   item=new AppSettingFact(m_settings,this,"opengl",tr("Accelerate graphics"),tr("Enable OpenGL graphics when supported"),sect,BoolData,false);

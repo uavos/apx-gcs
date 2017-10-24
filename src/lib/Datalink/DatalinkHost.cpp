@@ -29,7 +29,8 @@
 DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress host)
   : DatalinkSocket(parent->f_list,title,new QTcpSocket(),false,parent->f_datalink->f_name->text()),
    host(host),
-   container(parent)
+   container(parent),
+   bReconnect(false)
 {
   setValue(host.toString());
   //connect(this,&Fact::childValueChanged,this,&DatalinkHost::updateStats);
@@ -39,17 +40,19 @@ DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress ho
   updateStatsTimer.setSingleShot(true);
   connect(&updateStatsTimer,&QTimer::timeout,this,&DatalinkHost::updateStats);
 
-  connect(parent->f_alloff,&Fact::triggered,this,&DatalinkSocket::disconnectSocket);
-
   connect(this,&DatalinkSocket::disconnected,this,&DatalinkHost::disconnected);
-  connect(this,&DatalinkSocket::datalinkConnected,this,&DatalinkHost::datalinkConnected);
 
   connect(this,&DatalinkSocket::triggered,this,&DatalinkHost::connectToServer);
 
-  connect(this,&DatalinkSocket::packetReceived,parent->f_datalink,&Datalink::packetReceivedFromHost);
-  connect(parent->f_datalink,&Datalink::sendPacketToHosts,this,&DatalinkSocket::sendPacket);
+  connect(this,&DatalinkSocket::statusChanged,parent,&DatalinkHosts::updateStats);
+
+  connect(this,&DatalinkSocket::packetReceived,this,&DatalinkHost::updateTimeout);
+
+  reconnectTimer.setSingleShot(true);
+  connect(&reconnectTimer,&QTimer::timeout,this,&DatalinkHost::reconnect);
 
   updateStats();
+  parent->updateStats();
 }
 //=============================================================================
 void DatalinkHost::updateStats()
@@ -66,24 +69,51 @@ void DatalinkHost::updateStats()
 void DatalinkHost::updateTimeout()
 {
   time.start();
-  updateStats();
+  updateStatsTimer.start(1000);
 }
 //=============================================================================
 void DatalinkHost::disconnected()
 {
-  setStatus(QString());
-}
-void DatalinkHost::datalinkConnected()
-{
-  setStatus(tr("Connected"));
+  if(bReconnect){
+    setStatus(QString("%1 %2").arg(tr("Retry")).arg(retry));
+    reconnectTimer.start(1000+(retry>100?100:retry)*200);
+  }else{
+    setStatus(QString());
+  }
 }
 //=============================================================================
 void DatalinkHost::connectToServer()
 {
-  if(socket->isOpen()){
-    disconnectSocket();
+  if(active()){
+    disconnectAll();
     return;
   }
+  bReconnect=true;
+  retry=0;
+  reconnect();
+}
+void DatalinkHost::reconnect()
+{
+  if(host.isEqual(container->f_datalink->f_clients->server->serverAddress()) ||
+     (container->f_datalink->f_binded->value().toBool() && isLocalHost(host))
+     ){
+    qWarning("%s: %s",tr("Connection to local host not allowed").toUtf8().data(),title().toUtf8().data());
+    disconnectAll();
+    return;
+  }
+  retry++;
+  socket->abort();
   socket->connectToHost(host,TCP_PORT_SERVER);
+}
+//=============================================================================
+void DatalinkHost::disconnectAll()
+{
+  bReconnect=false;
+  disconnectSocket();
+}
+//=============================================================================
+bool DatalinkHost::active()
+{
+  return connected()||bReconnect;
 }
 //=============================================================================

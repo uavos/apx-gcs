@@ -24,6 +24,7 @@
 #include "QMandala.h"
 #include "FactSystem.h"
 #include "AppDirs.h"
+#include "AppSettings.h"
 //=============================================================================
 SoundEffects::SoundEffects(QObject *parent)
     :QObject(parent)
@@ -31,9 +32,8 @@ SoundEffects::SoundEffects(QObject *parent)
   mandala=qApp->property("Mandala").value<QMandala*>();
 
   //load SoundEffects files
-  QSettings st;
-  QString lang=st.value("lang","default").toString();
-  QString voice=st.value("voice","default").toString();
+  QString lang=AppSettings::value("lang").toString();
+  QString voice=AppSettings::value("voice").toString();
   if(voice=="default"){
     if(lang=="ru") voice="ru-milena";
     else voice="vicki";
@@ -79,7 +79,7 @@ void SoundEffects::play(QString text)
     while(st.size())play(st.takeFirst());
     return;
   }
-  if(!FactSystem::value("settings.sounds").toBool())return;
+  if(!AppSettings::value("sounds").toBool())return;
   //qDebug()<<"play"<<text;
   text.remove(':');
   QStringList st;

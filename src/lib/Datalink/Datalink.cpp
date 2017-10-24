@@ -26,6 +26,8 @@
 #include "DatalinkPorts.h"
 #include "DatalinkHosts.h"
 #include "DatalinkClients.h"
+#include "DatalinkClient.h"
+#include "DatalinkStats.h"
 #include "Mandala.h"
 //=============================================================================
 Datalink::Datalink(FactSystem *parent)
@@ -41,23 +43,20 @@ Datalink::Datalink(FactSystem *parent)
   f_readonly=new AppSettingFact(settings,this,"readonly",tr("Read only"),tr("Block all uplink data"),sect,BoolData,false);
   connect(f_readonly,&Fact::valueChanged,this,&Datalink::readonlyChanged);
 
-  f_active=new Fact(this,"active",tr("Server active"),"",FactItem,BoolData);
-  //f_active->setEnabled(false);
-  f_binded=new Fact(this,"binded",tr("Server listening"),"",FactItem,ConstData);
-  //f_binded->setEnabled(false);
+  f_active=new AppSettingFact(settings,this,"active",tr("Server active"),tr("Enable network features"),sect,BoolData,true);
+
+  f_binded=new Fact(this,"binded",tr("Server listening"),"",FactItem,NoData);
+  f_binded->setEnabled(false);
+  f_binded->setVisible(false);
 
 
   f_hosts=new DatalinkHosts(this);
   f_ports=new DatalinkPorts(this);
   f_clients=new DatalinkClients(this);
 
-  f_stats=new Fact(this,"stats",tr("Statistics"),"",GroupItem,NoData);
-  sect=tr("Downlink");
-  f_dncnt=new Fact(f_stats,"dncnt",tr("Downlink packets"),"",FactItem,ConstData);
-  f_dnrate=new Fact(f_stats,"dnrate",tr("Downlink rate"),"",FactItem,ConstData);
-  sect=tr("Uplink");
-  f_upcnt=new Fact(f_stats,"upcnt",tr("Uplink packets"),"",FactItem,ConstData);
-  f_uprate=new Fact(f_stats,"upcnt",tr("Uplink rate"),"",FactItem,ConstData);
+  connect(f_clients,&DatalinkClients::bindError,f_hosts,&DatalinkHosts::connectLocalhost);
+
+  f_stats=new DatalinkStats(this);
 
 
   sect=tr("Server settings");
@@ -93,7 +92,8 @@ Datalink::Datalink(FactSystem *parent)
 //=============================================================================
 void Datalink::readonlyChanged()
 {
-  if(static_cast<Fact*>(sender())->value().toBool())qDebug("%s",tr("Read only datalink").toUtf8().data());
+  bReadOnly=static_cast<Fact*>(sender())->value().toBool();
+  if(bReadOnly)qDebug("%s",tr("Read only datalink").toUtf8().data());
   else qDebug("%s",tr("Uplink allowed").toUtf8().data());
 }
 //=============================================================================
@@ -102,8 +102,11 @@ void Datalink::heartbeatTimeout()
 {
   if(!f_active->value().toBool())return;
   if(!f_hbeat->value().toBool())return;
-  f_upcnt->setValue(f_upcnt->value().toUInt()+1);
-  emit sendPacketToPorts(QByteArray().append((char)idx_ping).append((char)0));
+  //f_upcnt->setValue(f_upcnt->value().toUInt()+1);
+  QByteArray ba;
+  ba.append((char)idx_ping).append((char)0);
+  emit transmittedData(ba);
+  emit sendPacketToPorts(ba);
 }
 void Datalink::hbeatChanged()
 {
@@ -114,21 +117,42 @@ void Datalink::hbeatChanged()
 //=============================================================================
 void Datalink::packetReceivedFromClient(const QByteArray &ba)
 {
+  //uplink read from a client
+  emit receivedData(ba);
+
+  if(!f_extctr->value().toBool())return;
+  emit read(ba);
+  emit sendPacketToPorts(ba);   //share to all local ports
+  emit sendPacketToHosts(ba);   //share to remote gcs
+  f_clients->forward(static_cast<DatalinkClient*>(sender()),ba);   //share to other clients
 }
 void Datalink::packetReceivedFromHost(const QByteArray &ba)
 {
-  f_dncnt->setValue(f_dncnt->value().toUInt()+1);
+  //downlink/uplink from remote server
+  emit receivedData(ba);
+
+  emit read(ba);
+  emit sendPacketToClients(ba); //share downlink from remote host
 }
 void Datalink::packetReceivedFromPort(const QByteArray &ba)
 {
+  //downlink from local port
+  emit receivedData(ba);
+
   DatalinkPort *port=static_cast<DatalinkPort*>(sender());
-  f_dncnt->setValue(f_dncnt->value().toUInt()+1);
+  emit read(ba);
+  if(port->f_local->value().toBool()==false){
+    emit sendPacketToClients(ba); //share all downlink from port
+    emit sendPacketToHosts(ba);   //share all downlink from port
+  }
 }
 //=============================================================================
 //=============================================================================
 void Datalink::write(const QByteArray &ba)
 {
-  f_upcnt->setValue(f_upcnt->value().toUInt()+1);
+  if(bReadOnly)return;
+  emit transmittedData(ba);
+
   //send uplink from gcs plugins
   emit sendPacketToPorts(ba);
   emit sendPacketToHosts(ba);   //send to remote gcs

@@ -23,13 +23,15 @@
 #include "FactData.h"
 //=============================================================================
 FactData::FactData(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType)
- : FactTree(parent,treeItemType),m_dataType(dataType),
+ : FactTree(parent,treeItemType),
+   _bindedFact(NULL),
+   m_dataType(dataType),
    m_name(name),m_title(title),m_descr(descr)
 {
   setObjectName(m_name);
   switch(dataType){
     case EnumData:
-      connect(this,&FactData::structChanged,this,&FactData::textChanged);
+      connect(this,&FactData::enumStringsChanged,this,&FactData::textChanged);
     break;
     case BoolData:
       m_value=false;
@@ -47,11 +49,11 @@ FactData::FactData(FactTree *parent, QString name, QString title, QString descr,
 //=============================================================================
 QVariant FactData::value(void) const
 {
+  if(_bindedFact)return _bindedFact->value();
   switch(m_dataType){
-    case ItemIndexData: return num();
     case ConstData: {
       int sz=size();
-      if(m_value.isNull())return _bindedFact?m_value:sz>0?sz:QVariant();
+      if(m_value.isNull())return sz>0?sz:QVariant();
       break;
     }
     default: break;
@@ -62,21 +64,22 @@ QVariant FactData::value(void) const
 //=============================================================================
 bool FactData::setValue(const QVariant &v)
 {
+  if(_bindedFact) return _bindedFact->setValue(v);
   QVariant vx=v;
   if(m_treeItemType==FactItem){
     switch(dataType()){
       case EnumData: {
-        if(size()<=0)break;
+        if(m_enumStrings.size()<=0)break;
         //list or enum
-        FactTree *item=this;
         QString s=v.toString();
-        bool ok=false;
-        uint i=s.toUInt(&ok);
-        if(ok && (int)i<size()) item=FactTree::child(i);
-        else item=child(v.toString());
-        //qDebug()<<s<<item->name();
-        if(item!=this)vx=item->num();
-        else return false;
+        int idx=m_enumStrings.indexOf(s);
+        if(idx<0){
+          bool ok=false;
+          uint i=s.toUInt(&ok);
+          if(ok && (int)i<m_enumStrings.size())idx=i;
+        }
+        if(idx<0)return false;
+        vx=idx;
         break;
       }
       case BoolData: {
@@ -131,37 +134,37 @@ void FactData::setDescr(const QString &v)
 QString FactData::text() const
 {
   if(treeItemType()==ConstItem){
-    if(m_dataType==ItemIndexData)return name();//value().toString();
     if(value().isNull())return name();
     return value().toString();
   }
   if((treeItemType()==GroupItem||treeItemType()==SectionItem) && m_dataType==ConstData && (value().isNull() && (!_bindedFact))){
     return size()>0?QString::number(size()):QString();
   }
-  FactData *item=valueEnumItem();
-  if(item) return item->text();
+  if(treeItemType()==FactItem && dataType()==EnumData && m_enumStrings.size()>0){
+    int i=value().toInt();
+    if(i<m_enumStrings.size())return m_enumStrings.at(i);
+  }
   return value().toString();
 }
 void FactData::setText(const QString &v)
 {
   setValue(v);
 }
+QStringList FactData::enumStrings() const
+{
+  return m_enumStrings;
+}
+void FactData::setEnumStrings(const QStringList &v)
+{
+  if(m_enumStrings==v)return;
+  m_enumStrings=v;
+  emit enumStringsChanged();
+}
 //=============================================================================
 FactData * FactData::child(const QString &name) const
 {
   foreach(FactTree *item,childItems()){
     if(static_cast<FactData*>(item)->name()==name)return static_cast<FactData*>(item);
-  }
-  return const_cast<FactData*>(this);
-}
-FactData * FactData::valueEnumItem() const
-{
-  if(treeItemType()==FactItem && dataType()==EnumData && size()>0){
-    //list or enum
-    uint n=value().toUInt();
-    if((int)n<size()){
-      return static_cast<FactData*>(FactTree::child(n));
-    }
   }
   return NULL;
 }
@@ -186,21 +189,8 @@ void FactData::copyValuesFrom(const FactData *item)
 void FactData::bindValue(FactData *item)
 {
   _bindedFact=item;
-  connect(item,&FactData::valueChanged,this,&FactData::bindedValueChanged);
-  if((treeItemType()==GroupItem||treeItemType()==SectionItem) && m_dataType==ConstData){
-    //only show stats
-    connect(item,&FactData::valueChanged,this,&FactData::valueChanged);
-  }else{
-    connect(this,&FactData::valueChanged,this,&FactData::updateBindedValue);
-  }
-}
-void FactData::updateBindedValue()
-{
-  _bindedFact->setValue(value());
-}
-void FactData::bindedValueChanged()
-{
-  setValue(static_cast<FactData*>(sender())->value());
+  connect(item,&FactData::valueChanged,this,&FactData::valueChanged);
+  connect(item,&FactData::textChanged,this,&FactData::textChanged);
 }
 //=============================================================================
 void FactData::insertItem(int i, FactTree *item)

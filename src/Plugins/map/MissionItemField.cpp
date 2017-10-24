@@ -22,6 +22,7 @@
  */
 #include "MissionItemField.h"
 #include "QMandala.h"
+#include "FactSystem.h"
 //=============================================================================
 MissionItemField::MissionItemField(MissionItem *parent, QString name, uint ftype, QStringList opts,QString descr)
  : MissionItem(parent,name),ftype(ftype),opts(opts)
@@ -40,16 +41,16 @@ QVariant MissionItemField::data(int column,int role) const
       case dt_option:   return v.toUInt()<(uint)opts.size()?opts.at(v.toUInt()):opts.first();
       case dt_distance: return v.toUInt()<(uint)opts.size()?opts.at(v.toUInt()):QString("%1 m").arg(v.toInt());
       case dt_angle:    return QString("%1 deg").arg(v.toInt());
-      case dt_lat:      return QMandala::latToString(v.toDouble());
-      case dt_lon:      return QMandala::lonToString(v.toDouble());
+      case dt_lat:      return FactSystem::latToString(v.toDouble());
+      case dt_lon:      return FactSystem::lonToString(v.toDouble());
       case dt_time:     return v.toUInt()?QTime(0,0).addSecs(v.toUInt()).toString("HH:mm:ss"):QString(tr("off"));
       case dt_varmsk:   return QMandala::instance()->current->field(v.toInt())->name();
       case dt_byte:     return v.toUInt()<(uint)opts.size()?opts.at(v.toUInt()):v.toString();
     }
   }else if(role==Qt::EditRole){
     switch(ftype){
-      case dt_lat:      return QMandala::latToString(v.toDouble());
-      case dt_lon:      return QMandala::lonToString(v.toDouble());
+      case dt_lat:      return FactSystem::latToString(v.toDouble());
+      case dt_lon:      return FactSystem::lonToString(v.toDouble());
       case dt_time:     return QTime(0,0).addSecs(v.toUInt());
       case dt_option:   return v.toUInt()<(uint)opts.size()?opts.at(v.toUInt()):opts.first();
       case dt_varmsk:   return QMandala::instance()->current->field(v.toInt())->name();
@@ -85,7 +86,7 @@ bool MissionItemField::setValue(QVariant value)
       bool ok=false;
       double vf=v.toDouble(&ok);
       if(!ok){
-        vf=(ftype==dt_lat)?QMandala::latFromString(v.toString()):QMandala::lonFromString(v.toString());
+        vf=(ftype==dt_lat)?FactSystem::latFromString(v.toString()):FactSystem::lonFromString(v.toString());
       }else vf=QMandala::instance()->current->boundAngle(vf);
       v=vf;
     }break;

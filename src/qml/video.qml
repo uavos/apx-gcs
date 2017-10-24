@@ -75,7 +75,7 @@ Item {
         fillMode: VideoOutput.PreserveAspectCrop //PreserveAspectFit
         source: mediaplayer
 
-        rotation: mandala.angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0))
+        rotation: sys.angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0))
         Behavior on rotation { RotationAnimation {duration: app.settings.smooth.value?200:0; direction: RotationAnimation.Shortest; } }
         scale: 1.0+(autoScale?Math.abs(Math.sin(rotation*3.14/180))*width/height:0)
     }
@@ -122,7 +122,7 @@ Item {
                 anchors.right: parent.right
                 horizontalAlignment: TextInput.AlignHCenter
                 color: (activeFocus||mouse.containsMouse)?"white":"yellow"
-                font.pointSize: mandala.limit(parent.width/50,textErr.font.pointSize,25)
+                font.pointSize: sys.limit(parent.width/50,textErr.font.pointSize,25)
                 wrapMode: Text.WordWrap
                 selectByMouse: true
                 activeFocusOnPress: true

@@ -34,16 +34,19 @@
 #endif
 #endif*/
 //=============================================================================
-Serial::Serial(int num,QObject * parent,bool active)
+Serial::Serial(QString pname, uint brate, QObject * parent, bool active)
   : QObject(parent)
 {
-  worker=new SerialWorker(num);
+  worker=new SerialWorker(pname,brate);
   worker->moveToThread(&thr);
+  connect(&thr, &QThread::finished, worker, &SerialWorker::errClose,Qt::QueuedConnection);
   connect(&thr, &QThread::finished, worker, &QObject::deleteLater);
   connect(this, &Serial::w_activate, worker, &SerialWorker::activate);
   connect(this, &Serial::w_close, worker, &SerialWorker::closePort);//,Qt::BlockingQueuedConnection);
   connect(this, &Serial::w_send, worker, &SerialWorker::send,Qt::QueuedConnection);
   connect(worker, &SerialWorker::received, this, &Serial::w_received,Qt::BlockingQueuedConnection);
+  connect(worker, &SerialWorker::connected, this, &Serial::w_connected,Qt::BlockingQueuedConnection);
+  connect(worker, &SerialWorker::disconnected, this, &Serial::w_disconnected,Qt::BlockingQueuedConnection);
   thr.start();
   if(active)QTimer::singleShot(2000,this,SIGNAL(w_activate()));
 }
@@ -63,6 +66,14 @@ void Serial::w_received(QByteArray ba)
 {
   emit received(ba);
 }
+void Serial::w_connected(QString pname)
+{
+  emit connected(pname);
+}
+void Serial::w_disconnected()
+{
+  emit disconnected();
+}
 Serial::~Serial()
 {
   emit w_close();
@@ -70,10 +81,11 @@ Serial::~Serial()
   thr.wait();
 }
 //=============================================================================
-SerialWorker::SerialWorker(int num)
+SerialWorker::SerialWorker(QString pname, uint brate)
   : QSerialPort(), _escaped(),
-    num(num), o_brate(0)
+    pname(pname), brate(brate)
 {
+  lock=NULL;
   m_open=false;
   scan_idx=0;
 
@@ -81,17 +93,8 @@ SerialWorker::SerialWorker(int num)
 
   txba.reserve(8192);
 
-  fd=-1;
-
   sp=this;//new QSerialPort(0);
   //sp->moveToThread(thread);
-
-  //default settings
-  if (!settings.contains("serial1_baudrate"))settings.setValue("serial1_baudrate","460800");
-  if (!settings.contains("serial2_baudrate"))settings.setValue("serial2_baudrate","460800");
-  if(num<=0){
-    if (!settings.contains("serial1"))settings.setValue("serial1","auto");
-  }
 
   connect(sp,SIGNAL(readyRead()),this,SLOT(newDataAvailable()));
   connect(sp,SIGNAL(errorOccurred(QSerialPort::SerialPortError)),this,SLOT(serialError(QSerialPort::SerialPortError)));
@@ -127,8 +130,6 @@ bool SerialWorker::isOpen(void)
 void SerialWorker::tryOpen()
 {
   if (isOpen()) return;
-  const QString & srkey=QString("serial%1").arg(num+1);
-  QString pname=o_pname.isEmpty()?settings.value(srkey).toString().trimmed():o_pname;
 
   while(1){
     QSerialPortInfo spi;
@@ -142,7 +143,7 @@ void SerialWorker::tryOpen()
       if(scan_idx>=list.size())scan_idx=0;
       for(int i=0;i<list.size();i++){
         QSerialPortInfo lspi=list.at(scan_idx);
-        if(lspi.portName().contains("USB",Qt::CaseInsensitive) && lspi.portName().contains("tty",Qt::CaseInsensitive) && isAvailable(lspi)){
+        if(lspi.portName().contains("usb",Qt::CaseInsensitive) && lspi.portName().contains("tty",Qt::CaseInsensitive) && isAvailable(lspi)){
           spi=lspi;
           break;
         }
@@ -153,18 +154,15 @@ void SerialWorker::tryOpen()
     if(!isAvailable(spi))break;
     //try to open valid spi port
     //qDebug("Trying to open %s (%s)",spi.portName().toUtf8().data(),spi.systemLocation().toUtf8().data());
-    if(!openPort(spi,o_brate?o_brate:settings.value(srkey+"_baudrate",460800).toUInt())){
+    if(!openPort(spi,brate)){
       qDebug("Serial port open failed (%s)",spi.portName().toUtf8().data());
       break;
     }
     portInfo=spi;
     openPorts.append(portInfo.portName());
-    if(num<0){
-      qDebug("%s: %s",tr("Serial port connected").toUtf8().data(),portInfo.portName().toUtf8().data());
-    }else{
-      qDebug("%s: %s (#%u)",tr("Serial port connected").toUtf8().data(),portInfo.portName().toUtf8().data(),num+1);
-    }
+    qDebug("%s: %s",tr("Serial port connected").toUtf8().data(),portInfo.portName().toUtf8().data());
     m_open=true;
+    emit connected(portInfo.portName());
     return;
   }
   //continue to watch for ports to be available
@@ -184,23 +182,37 @@ bool SerialWorker::isAvailable(const QSerialPortInfo &spi)
   if(spi.isNull())return false;
   if(openPorts.contains(spi.portName()))return false;
 
-  /*const char *portname=spi.systemLocation().toUtf8().data();
-  int fdx = ::open(portname, O_RDWR | O_NOCTTY );
-  if(fdx<0) return false;
-  if(::flock(fdx,LOCK_EX|LOCK_NB)!=0){
-    ::close(fdx);
-    return false;
-  }
-  ::flock(fdx,LOCK_UN);
-  ::close(fdx);*/
+  QLockFile tlock(QDir::tempPath()+"/"+QString(QCryptographicHash::hash(QByteArray(spi.systemLocation().toUtf8()),QCryptographicHash::Md5).toHex())+".lock");
+  if(!tlock.tryLock(10))return false;
+  tlock.unlock();
   return true;
 }
 bool SerialWorker::openPort(const QSerialPortInfo &spi, int baudrate)
 {
   sp->setPort(spi);
   sp->setBaudRate(baudrate);
-  return sp->open(QIODevice::ReadWrite);
+  if(!sp->open(QIODevice::ReadWrite))return false;
+  //lock
+  if(lock){
+    lock->unlock();
+    delete lock;
+  }
+  lock=new QLockFile(QDir::tempPath()+"/"+QString(QCryptographicHash::hash(QByteArray(spi.systemLocation().toUtf8()),QCryptographicHash::Md5).toHex())+".lock");
+  if(!lock->tryLock()){
+    closePort();
+    qWarning("Unable to lock %s",spi.systemLocation().toUtf8().data());
+    return false;
+  }
+  return true;
 
+
+  /*const char *portname=spi.systemLocation().toUtf8().data();
+  if(::flock(sp->handle(),LOCK_EX|LOCK_NB)!=0){
+    closePort();
+    qWarning("Unable to lock %s - %s",portname,strerror(errno));
+    return false;
+  }
+  return true;*/
   /*const char *portname=spi.systemLocation().toUtf8().data();
 
   fd = ::open(portname, O_RDWR | O_NOCTTY );// | O_NONBLOCK | O_NDELAY);
@@ -243,6 +255,11 @@ bool SerialWorker::openPort(const QSerialPortInfo &spi, int baudrate)
 }
 void SerialWorker::closePort(void)
 {
+  if(lock){
+    lock->unlock();
+    delete lock;
+    lock=NULL;
+  }
   if(isOpen()) sp->close();
   m_open=false;
   if(openTimer)openTimer->stop();
@@ -335,11 +352,8 @@ void SerialWorker::escWriteDone(void)
 void SerialWorker::errClose()
 {
   if(!isOpen()) return;
-  if(num<0){
-    qWarning("%s",tr("Serial port disconnected.").toUtf8().data());
-  }else{
-    qWarning("%s (#%u)",tr("Serial port disconnected.").toUtf8().data(),num+1);
-  }
+  emit disconnected();
+  qWarning("%s: %s",tr("Serial port disconnected").toUtf8().data(),portInfo.portName().toUtf8().data());
   closePort();
   m_open=false;
   openTimer->start();

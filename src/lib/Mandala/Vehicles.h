@@ -20,72 +20,26 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkHosts_H
-#define DatalinkHosts_H
+#ifndef Vehicles_H
+#define Vehicles_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class Datalink;
-class DatalinkHost;
+class Vehicle;
 //=============================================================================
-class DatalinkHosts: public Fact
+class Vehicles: public Fact
 {
   Q_OBJECT
 
-  Q_PROPERTY(int connectedCount READ connectedCount NOTIFY connectedCountChanged)
-  Q_PROPERTY(int availableCount READ availableCount NOTIFY availableCountChanged)
-
 public:
-  explicit DatalinkHosts(Datalink *parent);
-
-  Fact *f_add;
-  Fact *f_host;
-  Fact *f_connect;
+  explicit Vehicles(FactSystem *parent);
 
 
-  Fact *f_alloff;
-  Fact *f_list;
-
-  Datalink *f_datalink;
-
-  DatalinkHost *f_localhost;
-
-  DatalinkHost *registerHost(QHostAddress addr, QString sname,bool bPort=false);
-  DatalinkHost *hostByAddr(QHostAddress addr);
-
-private:
-  QUdpSocket *udpReader;
-  QUdpSocket *udpAnnounce;
-
-  QTimer announceTimer;
-
-private slots:
-  //UDP discover service
-  void announce(void);
-  void tryBind(void);
-  void udpRead(void);
-
-  void serverBindedChanged();
-
-  void connectTriggered();
-
+  //datalink
 public slots:
-  bool connectToServer(QHostAddress haddr);
-  void updateStats();
-  void updateConnectedStatus();
-  void connectLocalhost();
-
-
-  //-----------------------------------------
-  //PROPERTIES
-public:
-  virtual int connectedCount() const;
-  virtual int availableCount() const;
-protected:
-  int m_connectedCount;
+  void downlinkReceived(const QByteArray &ba);
 signals:
-  void connectedCountChanged();
-  void availableCountChanged();
+  void sendUplink(const QByteArray &ba);
 };
 //=============================================================================
 #endif

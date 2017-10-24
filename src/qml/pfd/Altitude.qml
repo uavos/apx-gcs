@@ -135,7 +135,7 @@ ControlArea {
 
             anchors.left: altitude_scale.left
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: mandala.limit(altitude_window.num2scaleHeight * (altitude.value - cmd_altitude.value)/altitude_window.strip_factor,-parent.height/2,parent.height/2)
+            anchors.verticalCenterOffset: sys.limit(altitude_window.num2scaleHeight * (altitude.value - cmd_altitude.value)/altitude_window.strip_factor,-parent.height/2,parent.height/2)
             Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
             ToolTipArea {text: cmd_altitude.descr}
         }
@@ -192,12 +192,12 @@ ControlArea {
         id: altitude_triangle
         elementName: "altitude-triangle"
         smooth: true
-        visible: app.test.value || mandala.dlcnt>0
+        visible: app.settings.test.value || app.datalink.stats.dnlink.cnt.value>0
         width: elementBounds.width*altitude_window.strip_scale
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: mandala.limit(altitude_window.num2scaleHeight * (altitude.value - (gps_hmsl.value-home_hmsl.value))/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
+        anchors.verticalCenterOffset: sys.limit(altitude_window.num2scaleHeight * (altitude.value - (gps_hmsl.value-home_hmsl.value))/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
         Text {
             visible: Math.abs(altitude.value - (gps_hmsl.value-home_hmsl.value))>10
@@ -224,7 +224,7 @@ ControlArea {
         anchors.right: altitude_window.left
         //anchors.rightMargin: 4
         anchors.top: parent.verticalCenter
-        anchors.topMargin: mandala.limit(5*altitude_window.num2scaleHeight * (agl.value)/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
+        anchors.topMargin: sys.limit(5*altitude_window.num2scaleHeight * (agl.value)/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.topMargin { PropertyAnimation {duration: anumation_duration} }
         Text {
             visible: agl.value>0

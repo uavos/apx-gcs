@@ -54,11 +54,13 @@ public:
 
   //internal tree
   void addItem(FactTree *item);
+  void remove();
   void moveItem(FactTree *item, int dest);
   int num() const;
   FactTree * child(int n) const;
   FactTree * parentItem() const;
   QList<FactTree*> childItems() const;
+  QList<FactTree*> childItemsTree() const; //no flat model
 
   Q_INVOKABLE void bindChilds(FactTree *item);
 private:

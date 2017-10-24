@@ -27,7 +27,6 @@
 #include "plugin_interface.h"
 #include "QMandala.h"
 //=============================================================================
-class DatalinkServer;
 class DockWidget;
 class QmlView;
 class MainForm: public QMainWindow
@@ -47,7 +46,6 @@ private:
 
   QMenu *mFile,*mEdit,*mTools,*mWindow,*mHelp;
 
-  QMenu *mServers;
   QMenu *mUAV;
 
   QTimer saveStateTimer;
@@ -62,7 +60,6 @@ private:
   bool closing;
   bool loading;
 
-  DatalinkServer *datalink;
 protected:
   bool event(QEvent *event);
   void closeEvent(QCloseEvent *e);
@@ -74,7 +71,6 @@ private slots:
   void mMandala_triggered();
   void mDoc_triggered();
   void mFullScreen_triggered();
-  void mSystem_triggered();
   void mVPN_triggered();
 
   void vpn_disconnected();
@@ -85,10 +81,6 @@ private slots:
   void dockWidget_dockLocationChanged(Qt::DockWidgetArea area);
   void dockWidget_visibilityChanged(bool visible);
   void dockWidget_viewActionToggled(bool visible);
-
-  void serverDiscovered(const QHostAddress address,const QString name);
-  void serverAction();
-  void serverActionConnectTo();
 
   void uavAdded(QMandalaItem *m);
   void uavRemoved(QMandalaItem *m);
@@ -101,7 +93,6 @@ signals:
   void windowLoaded();
   //void pluginsLoaded();
   void aboutToQuit();
-  void connectToServer(const QHostAddress address);
   void changeUAV(QMandalaItem *m);
 };
 //=============================================================================

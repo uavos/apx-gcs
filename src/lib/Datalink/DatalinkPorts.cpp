@@ -23,13 +23,16 @@
 #include "AppSettings.h"
 #include "DatalinkPorts.h"
 #include "DatalinkPort.h"
+#include "Datalink.h"
 //=============================================================================
-DatalinkPorts::DatalinkPorts(Fact *parent)
-  : Fact(parent,"ports",tr("Local ports"),tr("Modems and persistent remotes"),GroupItem,ConstData)
+DatalinkPorts::DatalinkPorts(Datalink *parent)
+  : Fact(parent,"ports",tr("Local ports"),tr("Modems and persistent remotes"),GroupItem,ConstData),
+    f_datalink(parent)
 {
   setFlatModel(true);
 
   f_add=new DatalinkPort(this);
+  connect(f_add,&Fact::triggered,f_add,&DatalinkPort::defaults);
 
   f_allon=new Fact(this,"allon",tr("Enable all"),tr("Turn on all communication ports"),FactItem,NoData);
   f_alloff=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all communication ports"),FactItem,NoData);
@@ -101,6 +104,15 @@ void DatalinkPorts::save()
   }
   settings->endArray();
   settings->endGroup();
+}
+//=============================================================================
+void DatalinkPorts::forward(DatalinkPort *src, const QByteArray &ba)
+{
+  foreach (FactTree *i, f_list->childItems()) {
+    DatalinkPort *port=static_cast<DatalinkPort*>(i);
+    if(port==src) continue;
+    port->sendPacket(ba);
+  }
 }
 //=============================================================================
 

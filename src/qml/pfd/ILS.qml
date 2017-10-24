@@ -5,7 +5,7 @@ Item {
     id: ils_window
     property double anumation_duration: 1000
 
-    property bool isRW: app.test.value ||
+    property bool isRW: app.settings.test.value ||
         mode.value===mode_LANDING ||
         mode.value===mode_TAKEOFF ||
         mode.value===mode_TAXI ||
@@ -20,7 +20,7 @@ Item {
     }*/
     PfdImage {
         id: ils_bar_vertical
-        visible: app.test.value || mode.value===mode_LANDING
+        visible: app.settings.test.value || mode.value===mode_LANDING
         elementName: "ils-bar-vertical"
         fillMode: Image.PreserveAspectFit
         anchors.left: parent.left
@@ -36,7 +36,7 @@ Item {
             width: parent.width*1.5
             height: parent.width*0.5
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: mandala.limit(delta.value/500*parent.height/2,-parent.height*0.6,parent.height*0.6)
+            anchors.verticalCenterOffset: sys.limit(delta.value/500*parent.height/2,-parent.height*0.6,parent.height*0.6)
             Behavior on anchors.verticalCenterOffset { enabled: app.settings.smooth.value; PropertyAnimation {duration: anumation_duration; } }
             Text {
                 property double value: Math.abs(delta.value.toFixed())
@@ -69,7 +69,7 @@ Item {
             width: parent.height*0.5
             height: parent.height*1.5
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: mandala.limit(-rwDelta.value/20*parent.width/2,-parent.width*0.6,parent.width*0.6)
+            anchors.horizontalCenterOffset: sys.limit(-rwDelta.value/20*parent.width/2,-parent.width*0.6,parent.width*0.6)
             Behavior on anchors.horizontalCenterOffset { enabled: app.settings.smooth.value; PropertyAnimation {duration: anumation_duration; } }
             Text {
                 property double value: Math.abs(rwDelta.value.toFixed())

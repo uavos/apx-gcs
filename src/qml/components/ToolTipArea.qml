@@ -14,7 +14,7 @@ MouseArea {
     hoverEnabled: true
     function show(){
         visible = true;
-        mandala.toolTip(text);
+        sys.toolTip(text);
     }
     Timer {
         id:showTimer

@@ -30,6 +30,7 @@ DatalinkSocket::DatalinkSocket(Fact *parent, QString title, QTcpSocket *socket, 
     socket(socket),
     bServer(bServer),serverName(serverName)
 {
+  m_connected=socket->isOpen();
   socket->setSocketOption(QAbstractSocket::LowDelayOption,1);
   socket->setSocketOption(QAbstractSocket::KeepAliveOption,1);
 
@@ -40,19 +41,34 @@ DatalinkSocket::DatalinkSocket(Fact *parent, QString title, QTcpSocket *socket, 
   connect(socket,&QTcpSocket::readyRead,this,&DatalinkSocket::socketReadyRead);
   connect(socket,&QTcpSocket::disconnected,this,&DatalinkSocket::socketDisconnected);
   connect(socket,static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),this,&DatalinkSocket::socketError);
+  connect(socket,&QTcpSocket::stateChanged,this,&DatalinkSocket::socketStateChanged);
 
   if(!bServer){
     connect(socket,&QTcpSocket::connected,this,&DatalinkSocket::socketClientConnected);
   }
 }
 //=============================================================================
+bool DatalinkSocket::connected() const
+{
+  return m_connected;
+}
+void DatalinkSocket::setConnected(const bool &v)
+{
+  if(m_connected==v)return;
+  m_connected=v;
+  emit connectedChanged();
+}
+//=============================================================================
 void DatalinkSocket::disconnectSocket()
 {
   socket->abort();
+  socket->close();
+  socketDisconnected();
 }
 //=============================================================================
 void DatalinkSocket::socketClientConnected()
 {
+  setConnected(true);
   data.size=0;
   data.datalink=false;
   data.hdr.clear();
@@ -78,6 +94,7 @@ void DatalinkSocket::socketReadyRead()
 //=============================================================================
 void DatalinkSocket::socketDisconnected()
 {
+  setConnected(false);
   emit disconnected();
   if(bServer){
     socket->deleteLater();
@@ -96,8 +113,8 @@ void DatalinkSocket::socketError(QAbstractSocket::SocketError socketError)
   Q_UNUSED(socketError)
   if(data.datalink)
     qDebug("#%s (%s:%u).",socket->errorString().toUtf8().data(),socket->peerAddress().toString().toUtf8().data(),socket->peerPort());
-  socket->abort();
-  socketDisconnected();
+  setStatus("Error");
+  disconnectSocket();
 }
 //=============================================================================
 bool DatalinkSocket::readHeader()
@@ -168,10 +185,12 @@ bool DatalinkSocket::checkDatalinkRequestHeader()
         }*/
         qDebug("#client: %s",sname.toUtf8().data());
         setTitle(sname);
+        setStatus("Datalink");
         emit datalinkConnected();
         return true;
       }else{
         bool ok=false;
+        setStatus("HTTP");
         emit httpRequest(stream,req,&ok);
         if(!ok){
           stream << "HTTP/1.1 404 Not Found\r\n";
@@ -215,6 +234,7 @@ bool DatalinkSocket::checkDatalinkResponseHeader()
     data.size=0;
     data.crc16=0;
     qDebug("#server: %s",sname.toUtf8().data());
+    setStatus("Datalink");
     emit datalinkConnected();
     return true;
   }
@@ -282,5 +302,22 @@ bool DatalinkSocket::isLocalHost(const QHostAddress address)
     if(address.isEqual(a)) return true;
   return false;
 }
+//=============================================================================
+void DatalinkSocket::socketStateChanged(QAbstractSocket::SocketState socketState)
+{
+  QString s;
+  switch(socketState){
+    default:
+    case QAbstractSocket::UnconnectedState: break;
+    case QAbstractSocket::HostLookupState:  s="Lookup"; break;
+    case QAbstractSocket::ConnectingState:  s="Connecting"; break;
+    case QAbstractSocket::ConnectedState:   s="Connected"; break;
+    case QAbstractSocket::BoundState:       s="Bound"; break;
+    case QAbstractSocket::ClosingState:     s="Closing"; break;
+    case QAbstractSocket::ListeningState:   s="Listening"; break;
+  }
+  setStatus(s);
+}
+//=============================================================================
 //=============================================================================
 

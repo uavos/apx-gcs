@@ -20,41 +20,20 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkClients_H
-#define DatalinkClients_H
+#ifndef Vehicle_H
+#define Vehicle_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class Datalink;
-class DatalinkClient;
+#include "node.h"
+class Vehicles;
 //=============================================================================
-class DatalinkClients: public Fact
+class Vehicle: public Fact
 {
   Q_OBJECT
 public:
-  explicit DatalinkClients(Datalink *parent);
+  explicit Vehicle(Vehicles *parent, QString title,IDENT::_ident *ident);
 
-  Fact *f_alloff;
-  Fact *f_list;
-
-  Datalink *f_datalink;
-
-  QTcpServer *server;
-private:
-  uint retryBind;
-
-private slots:
-  void updateStats();
-  void serverActiveChanged();
-  void tryBindServer();
-
-  //tcp server
-  void newConnection();
-
-public slots:
-  void forward(DatalinkClient *src, const QByteArray &ba);
-signals:
-  void bindError();
 };
 //=============================================================================
 #endif

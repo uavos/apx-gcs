@@ -30,7 +30,6 @@
 #include "QMandala.h"
 #include "MainForm.h"
 #include "Serial.h"
-#include "DatalinkServer.h"
 #include "Config.h"
 #include "HttpService.h"
 #include <QTranslator>
@@ -42,6 +41,7 @@
 #include "AppSettings.h"
 #include "Datalink.h"
 #include "AppDirs.h"
+#include "Vehicles.h"
 //============================================================================
 //global variables
 QMandala *mandala;
@@ -55,8 +55,8 @@ void checkPaths();
 //----------------------------------------------------------------------------
 MainForm *mainForm;
 //Joystick *joystick;
-Serial *serial1=NULL;
-Serial *serial2=NULL;
+//Serial *serial1=NULL;
+//Serial *serial2=NULL;
 HttpService *httpService;
 //============================================================================
 /*void crash_handler(int sig) {
@@ -88,9 +88,6 @@ int main(int argc, char *argv[])
   QString qmlcache = QStandardPaths::standardLocations(QStandardPaths::CacheLocation).first();
   QDir qmlCacheDir(qmlcache);
   qmlCacheDir.removeRecursively();
-  qmlRegisterType<DatalinkServer>();
-
-
 
   //QApplication::setGraphicsSystem(QLatin1String("opengl"));
   QApplication app(argc, argv);
@@ -107,7 +104,7 @@ int main(int argc, char *argv[])
   FactSystem *factSystem=new FactSystem();
 
   new AppSettings(factSystem);
-  new Datalink(factSystem);
+  Datalink *datalink=new Datalink(factSystem);
 
   if(QSettings().value("qsg_basic").toBool()){
     qputenv("QSG_RENDER_LOOP","basic");
@@ -118,18 +115,14 @@ int main(int argc, char *argv[])
   QQuickStyle::setStyle("Material");
 
   //translate lang
-  if(QLocale().country()==QLocale::Belarus&&(QSettings().value("lang").toString()=="ru"))
-    QSettings().setValue("lang","by");
+  QString lang=AppSettings::value("lang").toString();
+  if(QLocale().country()==QLocale::Belarus&&(lang=="ru")){
+    lang="by";
+    AppSettings::setValue("lang",lang);
+  }
   QDir langp(AppDirs::lang());
   QString langf;
-  /*langf=langp.filePath(QSettings().value("lang").toString()+"_msg.ts");
-  if(QFile::exists(langf)){
-    MsgTranslator *translator=new MsgTranslator();
-    translator->loadXml(langf);
-    app.installTranslator(translator);
-    qDebug("Translator added: %s",langf.toUtf8().data());
-  }*/
-  langf=langp.filePath(QSettings().value("lang").toString()+".qm");
+  langf=langp.filePath(lang+".qm");
   if(QFile::exists(langf)){
     QTranslator *translator=new QTranslator();
     translator->load(langf);
@@ -137,7 +130,7 @@ int main(int argc, char *argv[])
     qDebug("Translator added: %s",langf.toUtf8().data());
   }
   QDir langsp("/usr/share/qt5/translations/");
-  QString qt_langf=langsp.filePath("qt_"+QSettings().value("lang").toString()+".qm");
+  QString qt_langf=langsp.filePath("qt_"+lang+".qm");
   if(QFile::exists(qt_langf)){
     QTranslator *translator=new QTranslator();
     translator->load(qt_langf);
@@ -186,6 +179,11 @@ int main(int argc, char *argv[])
   //create main objects
   mandala=new QMandala;
 
+  QObject::connect(datalink,&Datalink::read,mandala,&QMandala::downlinkReceived);
+  QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
+
+
+/*
   DatalinkServer *datalink=new DatalinkServer;
 
   QObject::connect(datalink,SIGNAL(dataReceived(QByteArray)),mandala,SLOT(downlinkReceived(QByteArray)));
@@ -204,10 +202,10 @@ int main(int argc, char *argv[])
   //wrapper/forwarder
   QObject::connect(datalink,SIGNAL(serverDiscovered(QHostAddress,QString)),mandala,SIGNAL(serverDiscovered(QHostAddress,QString)));
   QObject::connect(mandala,SIGNAL(connectToServer(QHostAddress)),datalink,SLOT(connectToServer(QHostAddress)));
-
+*/
   //Http service
   httpService=new HttpService();
-  QObject::connect(datalink,SIGNAL(httpRequest(QTextStream&,QString,bool*)),httpService,SLOT(httpRequest(QTextStream&,QString,bool*)));
+  QObject::connect(datalink,&Datalink::httpRequest,httpService,&HttpService::httpRequest);
 
   // directories..
   if(FactSystem::value("dev").toBool())
@@ -228,17 +226,18 @@ int main(int argc, char *argv[])
   //hotkeys
   new AppShortcuts(factSystem,mainForm);
 
-  //new AppShortcuts(mainForm);
-  //QObject::connect(shortcuts,SIGNAL(exec(QString)),mandala->
 
-  //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),datalink,SLOT(activate()));
+  Vehicles *vehicles=new Vehicles(factSystem);
+  QObject::connect(datalink,&Datalink::read,vehicles,&Vehicles::downlinkReceived);
+  QObject::connect(vehicles,&Vehicles::sendUplink,datalink,&Datalink::write);
+
 
   //PLUGINS
   loadPlugins();
 
   //other objects
   //joystick=new Joystick();
-
+/*
   serial1=new Serial(0,qApp,false);
   QObject::connect(serial1,SIGNAL(received(QByteArray)),datalink,SLOT(localDataReceived(QByteArray)));
   QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),serial1,SLOT(send(QByteArray)));
@@ -250,14 +249,15 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),serial2,SLOT(send(QByteArray)));
   QObject::connect(datalink,SIGNAL(heartbeat(QByteArray)),serial2,SLOT(send(QByteArray)));
   //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),serial2,SLOT(activate()));
-
+*/
 
   SoundEffects *soundEffects=new SoundEffects(mandala);
   QObject::connect(mandala,SIGNAL(playSoundEffect(QString)),soundEffects,SLOT(play(QString)));
 
+  //datalink->f_active->setValue(true);
   //datalink->activate();
-  serial1->activate();
-  serial2->activate();
+  //serial1->activate();
+  //serial2->activate();
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //  exec
@@ -269,10 +269,10 @@ int main(int argc, char *argv[])
 
   //serial1->close();
   //serial2->close();
-
+/*
   delete serial1;
   delete serial2;
-
+*/
   delete factSystem;
 
   /*delete httpService;

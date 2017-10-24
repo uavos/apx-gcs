@@ -24,10 +24,10 @@
 #define Serial_H
 #include <inttypes.h>
 #include <QtCore>
-#include <QSettings>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <escaped.h>
+#include <QLockFile>
 //-----------------------------------------------------------------------------
 class SerialWorker;
 //=============================================================================
@@ -35,7 +35,7 @@ class Serial : public QObject
 {
   Q_OBJECT
 public:
-  Serial(int num=-1,QObject * parent = 0,bool active=true);
+  Serial(QString pname=QString("auto"),uint brate=460800,QObject * parent = 0,bool active=true);
   ~Serial();
 
 private:
@@ -47,6 +47,8 @@ signals:
   void w_send(const QByteArray ba);
 private slots:
   void w_received(QByteArray ba);
+  void w_connected(QString pname);
+  void w_disconnected();
 
 
 public slots:
@@ -55,26 +57,25 @@ public slots:
   void send(const QByteArray ba);
 signals:
   void received(QByteArray ba);
+  void connected(QString pname);
+  void disconnected();
 };
 //=============================================================================
 class SerialWorker : public QSerialPort, public _escaped
 {
   Q_OBJECT
 public:
-  SerialWorker(int num=-1);
+  SerialWorker(QString pname,uint brate);
   ~SerialWorker();
 
-private:
-  int num;
+private:  
+  QString pname;
+  uint brate;
+
   QSerialPort *sp;
   QSocketNotifier *socketNotifier;
 
-  //options
-  QString o_pname;
-  uint o_brate;
-
   QTimer *openTimer;
-  QSettings settings;
 
   bool isOpen();
   bool m_open;
@@ -82,7 +83,8 @@ private:
   QByteArray txba;
 
   QSerialPortInfo portInfo;
-  int fd;
+
+  QLockFile *lock;
 
 
   //[auto] ports scanner
@@ -90,7 +92,6 @@ private:
   static QStringList openPorts;
   int scan_idx;
 
-  void errClose();
 
   bool openPort(const QSerialPortInfo &spi,int baudrate);
 
@@ -113,9 +114,12 @@ public slots:
   void activate();
   void closePort();
   void send(const QByteArray ba);
+  void errClose();
 signals:
   void received(QByteArray ba);
   void startOpenWorker();
+  void connected(QString pname);
+  void disconnected();
 };
 //=============================================================================
 #endif

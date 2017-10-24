@@ -35,20 +35,27 @@ public:
 
   QHostAddress host;
 
+  bool active();
+
 private:
   DatalinkHosts *container;
   QTime time;
   QTimer updateStatsTimer;
+  QTimer reconnectTimer;
 
+  bool bReconnect;
+  uint retry;
 
 private slots:
-  void disconnected();
-  void datalinkConnected();
   void updateStats();
+
+  void disconnected();
+  void reconnect();
 
 public slots:
   void updateTimeout();
   void connectToServer();
+  void disconnectAll();
 };
 //=============================================================================
 #endif

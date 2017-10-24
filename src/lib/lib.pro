@@ -34,11 +34,15 @@ SOURCES += \
     Mandala/QMandalaField.cpp \
     Mandala/QMandalaItem.cpp \
     Mandala/QMandala.cpp \
+    Mandala/Vehicles.cpp \
+    Mandala/Vehicle.cpp \
 
 HEADERS += \
     Mandala/QMandalaField.h \
     Mandala/QMandalaItem.h \
     Mandala/QMandala.h \
+    Mandala/Vehicles.h \
+    Mandala/Vehicle.h \
 
 # Fact System
 SOURCES += \
@@ -63,7 +67,7 @@ SOURCES += \
     Datalink/DatalinkHost.cpp \
     Datalink/DatalinkClients.cpp \
     Datalink/DatalinkClient.cpp \
-    Datalink/DatalinkServer.cpp \
+    Datalink/DatalinkStats.cpp \
     Datalink/EscReader.cpp \
     Datalink/HttpService.cpp \
     Datalink/Serial.cpp \
@@ -77,7 +81,7 @@ HEADERS += \
     Datalink/DatalinkHost.h \
     Datalink/DatalinkClients.h \
     Datalink/DatalinkClient.h \
-    Datalink/DatalinkServer.h \
+    Datalink/DatalinkStats.h \
     Datalink/EscReader.h \
     Datalink/HttpService.h \
     Datalink/Serial.h \

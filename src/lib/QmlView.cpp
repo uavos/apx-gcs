@@ -28,7 +28,6 @@
 #include <QAction>
 #include <QPushButton>
 #include <QGLFormat>
-#include "DatalinkServer.h"
 #include <QQuickStyle>
 #include "FactSystem.h"
 //#ifdef OLDLINUX
@@ -48,9 +47,6 @@ QmlView::QmlView(QString src,QWindow *parent)
   //QQuickStyle::setStyle("Material");
 
   settings=new QMLSettings();
-
-  if(!QSettings().contains("smooth_instruments"))
-    QSettings().setValue("smooth_instruments",true);
 
   //if(QSettings().value("opengl",true).toBool()&&QGLFormat::openGLVersionFlags()){
     //setSurfaceType(QSurface::OpenGLSurface);
@@ -80,7 +76,7 @@ QmlView::QmlView(QString src,QWindow *parent)
 
   e->rootContext()->setContextProperty("settings",settings);
   e->rootContext()->setContextProperty("actions",QVariant::fromValue(actions));
-  e->rootContext()->setContextObject(this);
+  //e->rootContext()->setContextObject(this);
 
   //add app object
   QJSValue jsApp=e->newQObject(qApp);

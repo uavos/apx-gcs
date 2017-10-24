@@ -14,7 +14,7 @@ Column {
         toolTip: ctr_flaps.descr
         //control: ctr_flaps
         Text {
-            visible: app.test.value || flaps.show
+            visible: app.settings.test.value || flaps.show
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -35,7 +35,7 @@ Column {
         toolTip: ctr_brake.descr
         //control: ctr_brake
         Text {
-            visible: app.test.value || (brakes.show && (ctr_brake.value>0) && (ctr_brake.value<1))
+            visible: app.settings.test.value || (brakes.show && (ctr_brake.value>0) && (ctr_brake.value<1))
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -72,7 +72,7 @@ Column {
         }
     }
     Flag {
-        show: power_ignition.value <= 0 && mandala.dlcnt>0
+        show: power_ignition.value <= 0 && app.datalink.stats.dnlink.cnt.value>0
         height: txtHeight
         flagColor: "red"
         text: qsTr("IGN")

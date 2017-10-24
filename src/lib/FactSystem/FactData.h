@@ -42,6 +42,8 @@ class FactData: public FactTree
 
   Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
+  Q_PROPERTY(QStringList enumStrings READ enumStrings WRITE setEnumStrings NOTIFY enumStringsChanged)
+
 public:
 
   enum DataType {
@@ -51,8 +53,7 @@ public:
     FloatData,
     IntData,
     BoolData,
-    EnumData,       // value=index of child item(set by name or index)
-    ItemIndexData,  // value=index in parent item container
+    EnumData,       // value=index of enumStrings (set by text or index)
     ActionData,     // button, value=action type
     KeySequenceData,
   };
@@ -67,7 +68,6 @@ public:
 
 
   Q_INVOKABLE FactData * child(const QString &name) const;
-  Q_INVOKABLE FactData * valueEnumItem() const;
 
   Q_INVOKABLE void copyValuesFrom(const FactData *item);
   Q_INVOKABLE void bindValue(FactData *item);
@@ -105,26 +105,26 @@ protected:
 
 private:
   FactData *_bindedFact;
-private slots:
-  void updateBindedValue();
-  void bindedValueChanged();
 
 public:
   //---------------------------------------
-  virtual DataType dataType() const;
+  DataType dataType() const;
 
   virtual QVariant value(void) const;
   virtual bool setValue(const QVariant &v);
 
-  virtual QString name(void) const;
-  virtual void setName(const QString &v);
-  virtual QString title(void) const;
-  virtual void setTitle(const QString &v);
-  virtual QString descr(void) const;
-  virtual void setDescr(const QString &v);
+  QString name(void) const;
+  void setName(const QString &v);
+  QString title(void) const;
+  void setTitle(const QString &v);
+  QString descr(void) const;
+  void setDescr(const QString &v);
 
-  virtual QString text() const;
-  virtual void setText(const QString &v);
+  QString text() const;
+  void setText(const QString &v);
+
+  QStringList enumStrings() const;
+  void setEnumStrings(const QStringList &v);
 
 protected:
   DataType m_dataType;
@@ -135,6 +135,8 @@ protected:
   QString  m_title;
   QString  m_descr;
 
+  QStringList  m_enumStrings;
+
 signals:
   void valueChanged();
 
@@ -143,6 +145,7 @@ signals:
   void descrChanged();
 
   void textChanged();
+  void enumStringsChanged();
 };
 //=============================================================================
 #endif

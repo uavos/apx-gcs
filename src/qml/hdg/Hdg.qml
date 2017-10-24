@@ -8,7 +8,7 @@ Rectangle {
     anchors.fill: parent
     clip: true
     property double anumation_duration: app.settings.smooth.value?100:0
-    property double txtHeight: mandala.limit(hdg_deg_rect.height,8,50)
+    property double txtHeight: sys.limit(hdg_deg_rect.height,8,50)
     property bool isLanding:
         mode.value===mode_LANDING ||
         mode.value===mode_TAKEOFF ||
@@ -42,7 +42,7 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: ("00"+mandala.angle360(yaw.value).toFixed()).slice(-3)
+            text: ("00"+sys.angle360(yaw.value).toFixed()).slice(-3)
             font.pixelSize: parent.height
             font.family: font_mono
             font.bold: true
@@ -70,7 +70,7 @@ Rectangle {
             elementName: "hdg-wheel"
             smooth: true
             anchors.fill: parent
-            rotation: mandala.angle(-yaw.value)
+            rotation: sys.angle(-yaw.value)
             Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
         }
         HdgImage {
@@ -85,7 +85,7 @@ Rectangle {
             transform: Rotation{
                 origin.x: course_arrow.width/2
                 origin.y: course_arrow.height
-                angle: mandala.angle(-(yaw.value-course.value))
+                angle: sys.angle(-(yaw.value-course.value))
                 Behavior on angle { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             }
         }
@@ -101,7 +101,7 @@ Rectangle {
             transform: Rotation{
                 origin.x: cmd_arrow.width/2
                 origin.y: cmd_arrow.height
-                angle: mandala.angle(-(yaw.value-cmd_course.value))
+                angle: sys.angle(-(yaw.value-cmd_course.value))
                 Behavior on angle { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             }
         }
@@ -129,7 +129,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: elementBounds.width*wheel.sf+border*2
                 height: elementBounds.height*wheel.sf+border*2
-                rotation: mandala.angle(-(yaw.value-tgHDG.value))
+                rotation: sys.angle(-(yaw.value-tgHDG.value))
                 Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
                 ToolTipArea {
                     text: tgHDG.descr
@@ -143,7 +143,7 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: elementBounds.width*wheel.sf+border*2
                     height: elementBounds.height*wheel.sf+border*2
-                    anchors.horizontalCenterOffset: mandala.limit(-rwDelta.value*width*0.5,-height,height)
+                    anchors.horizontalCenterOffset: sys.limit(-rwDelta.value*width*0.5,-height,height)
                     Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
                     ToolTipArea {
                         text: rwDelta.descr
@@ -157,24 +157,24 @@ Rectangle {
             id: wpt_home
             elementName: "hdg-wpt-green"
             smooth: true
-            visible: app.test.value || dHome.value>5
+            visible: app.settings.test.value || dHome.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
             height: elementBounds.height*wheel.sf
-            rotation: mandala.angle(-(yaw.value-homeHDG.value))
+            rotation: sys.angle(-(yaw.value-homeHDG.value))
             Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
         }
 
         HdgImage {
             elementName: "hdg-wpt-blue"
             smooth: true
-            visible: app.test.value || dWPT.value>5
+            visible: app.settings.test.value || dWPT.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
             height: elementBounds.height*wheel.sf
-            rotation: mandala.angle(-(yaw.value-wpHDG.value))
+            rotation: sys.angle(-(yaw.value-wpHDG.value))
             Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
         }
 
@@ -193,7 +193,7 @@ Rectangle {
             height: hdg.txtHeight
             mfield: course
             label: qsTr("CRS")
-            text: ("00"+mandala.angle360(course.value).toFixed()).slice(-3)
+            text: ("00"+sys.angle360(course.value).toFixed()).slice(-3)
             valueColor: "cyan"
         }
         NumberHdg {
@@ -202,7 +202,7 @@ Rectangle {
             height: hdg.txtHeight
             mfield: cmd_course
             label: ""
-            text: ("00"+mandala.angle360(cmd_course.value).toFixed()).slice(-3)
+            text: ("00"+sys.angle360(cmd_course.value).toFixed()).slice(-3)
             valueColor: "magenta"
         }
 
@@ -210,8 +210,8 @@ Rectangle {
             id: lat_lon_text
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            height: mandala.limit(hdg.txtHeight*0.5,8,50)
-            text: mandala.latToString(gps_lat.value)+" "+mandala.lonToString(gps_lon.value)
+            height: sys.limit(hdg.txtHeight*0.5,8,50)
+            text: sys.latToString(gps_lat.value)+" "+sys.lonToString(gps_lon.value)
             valueColor: "gray"
             toolTip: gps_lat.descr+", "+gps_lon.descr
         }
@@ -219,7 +219,7 @@ Rectangle {
         NumberHdg {
             id: fuel_text
             property double v: fuel.value
-            visible: app.test.value || v>0
+            visible: app.settings.test.value || v>0
             anchors.right: parent.right
             anchors.bottom: lat_lon_text.top
             height: hdg.txtHeight
@@ -231,7 +231,7 @@ Rectangle {
         NumberHdg {
             id: frate_text
             property double v: frate.value
-            visible: app.test.value || v>0
+            visible: app.settings.test.value || v>0
             anchors.right: parent.right
             anchors.bottom: fuel_text.top
             height: hdg.txtHeight
@@ -252,7 +252,7 @@ Rectangle {
         }
         NumberHdg {
             id: rd_text
-            visible: app.test.value || isLanding
+            visible: app.settings.test.value || isLanding
             property double v: rwDelta.value
             anchors.left: parent.left
             anchors.bottom: dh_text.top
@@ -295,7 +295,7 @@ Rectangle {
 
             NumberHdg {
                 id: wpt_text
-                visible: app.test.value || mode.value===mode_WPT
+                visible: app.settings.test.value || mode.value===mode_WPT
                 smooth: true
                 height: hdg.txtHeight
                 mfield: wpidx
@@ -306,7 +306,7 @@ Rectangle {
 
             NumberHdg {
                 id: poi_text
-                visible: app.test.value || (mode.value===mode_STBY && loops.value>0)
+                visible: app.settings.test.value || (mode.value===mode_STBY && loops.value>0)
                 smooth: true
                 height: hdg.txtHeight
                 mfield: loops
@@ -322,7 +322,7 @@ Rectangle {
         anchors.rightMargin: parent.width/2
         onClicked: {
             if(isLanding) rwAdj.setValue(rwAdj.value-1)
-            else cmd_course.setValue(mandala.angle(cmd_course.value-15))
+            else cmd_course.setValue(sys.angle(cmd_course.value-15))
         }
     }
     MouseArea {
@@ -330,7 +330,7 @@ Rectangle {
         anchors.leftMargin: parent.width/2
         onClicked: {
             if(isLanding) rwAdj.setValue(rwAdj.value+1)
-            else cmd_course.setValue(mandala.angle(cmd_course.value+15))
+            else cmd_course.setValue(sys.angle(cmd_course.value+15))
         }
     }
 

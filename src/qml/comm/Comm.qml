@@ -67,7 +67,7 @@ Rectangle {
         font.pixelSize: parent.height   //*0.99
         font.family: font_narrow
         color: mandala.isLocal?"yellow":"#5f5"
-        visible: app.test.value || mandala.dlcnt>0
+        visible: app.settings.test.value || app.datalink.stats.dnlink.cnt.value>0
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
@@ -97,10 +97,10 @@ Rectangle {
             id: btn_servers
             text: qsTr("EXT")
             color: "#5f5"
-            value: datalink.extConnected
+            value: app.datalink.hosts.connectedCount>0
             inverted: true
             toolTip: qsTr("External servers")
-            visible: app.test.value || datalink.serverNames.length>0
+            visible: app.settings.test.value || app.datalink.hosts.availableCount>0
             width: height/0.5
             MouseArea {
                 id: menuServersArea
@@ -138,7 +138,7 @@ Rectangle {
         Text {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            text: "0%1".arg(mandala.dlcnt%100).slice(-2)+" "
+            text: "0%1".arg(app.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
@@ -172,7 +172,7 @@ Rectangle {
         Text {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            text: "0%1".arg(mandala.upcnt%100).slice(-2)+" "
+            text: "0%1".arg(app.datalink.stats.uplink.cnt.value % 100).slice(-2)+" "
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
@@ -187,7 +187,7 @@ Rectangle {
             value: gcu_Ve.value.toFixed(1)
             valueColor: gcu_Ve.value>1?(gcu_Ve.value<7.4?"red":"yellow"):"gray"
             toolTip: gcu_Ve.descr
-            //visible: app.test.value || gcu_Ve.value>1
+            //visible: app.settings.test.value || gcu_Ve.value>1
         }
 
 
@@ -206,7 +206,7 @@ Rectangle {
                 anchors.topMargin: 2
                 anchors.bottomMargin: parent.height*0.1
                 //height: parent.height*0.2
-                width: mandala.limit(v*parent.width*0.6,1,parent.width*0.6)
+                width: sys.limit(v*parent.width*0.6,1,parent.width*0.6)
                 color: v<0.3?"red":v<0.7?"yellow":"green"
                 ToolTipArea { text: RSS.descr }
                 property int anim: (app.settings.smooth.value)?200:0
@@ -223,7 +223,7 @@ Rectangle {
                 anchors.topMargin: 1
                 //anchors.bottomMargin: parent.height*0.1+1
                 height: rss_bar.height
-                width: mandala.limit(v*parent.width*0.6,1,parent.width*0.6)
+                width: sys.limit(v*parent.width*0.6,1,parent.width*0.6)
                 color: v<0.3?"red":v<0.7?"yellow":"green"
                 ToolTipArea { text: gcu_RSS.descr }
                 property int anim: (app.settings.smooth.value)?200:0

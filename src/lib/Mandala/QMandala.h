@@ -38,23 +38,6 @@ public:
   static QString version;    //software version
   static QString branch;    //software branch
 
-  //----------------------------------
-  //extra math related methods
-  Q_INVOKABLE static QString latToString(double v);
-  Q_INVOKABLE static QString lonToString(double v);
-  Q_INVOKABLE double static latFromString(QString s);
-  Q_INVOKABLE double static lonFromString(QString s);
-  Q_INVOKABLE static QString distanceToString(uint v);
-  Q_INVOKABLE static QString timeToString(uint v);
-  Q_INVOKABLE uint static timeFromString(QString s);
-
-  Q_INVOKABLE static void toolTip(QString tooltip);
-  Q_INVOKABLE static double limit(double v,double min,double max);
-  Q_INVOKABLE static double angle360(double v);
-  Q_INVOKABLE static double angle90(double v);
-  Q_INVOKABLE static double angle(double v);
-
-
   static QString vclassToString(IDENT::_vclass vclass);
 
   static MandalaCore::_vars_list vars_gcu;
@@ -97,8 +80,6 @@ signals:
   void sendUplink(const QByteArray &ba);
 public slots:
   void downlinkReceived(const QByteArray &ba);
-  void upCntInc();
-  void dlCntInc();
 private slots:
   void uavSendUplink(const QByteArray &ba);
   void dlinkReqTimeout(void);
@@ -121,12 +102,8 @@ public:
   bool dlinkData();
   Q_PROPERTY(bool replayData READ replayData NOTIFY replayDataChanged)
   bool replayData();
-  Q_PROPERTY(uint dlcnt READ dlcnt WRITE setDlcnt NOTIFY dlcntChanged)
-  uint dlcnt();
   Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
   uint errcnt();
-  Q_PROPERTY(uint upcnt READ upcnt WRITE setUpcnt NOTIFY upcntChanged)
-  uint upcnt();
   Q_PROPERTY(QString uavName READ uavName WRITE setUavName NOTIFY uavNameChanged)
   QString uavName();
   Q_PROPERTY(bool isLocal READ isLocal NOTIFY isLocalChanged)
@@ -142,8 +119,6 @@ public:
 private:
   bool m_jsValid;
   bool m_online;
-  uint m_dlcnt;
-  uint m_upcnt;
   QString m_uavName;
   uint m_size;
 signals:
@@ -152,18 +127,14 @@ signals:
   void dlinkDataChanged(bool);
   void xpdrDataChanged(bool);
   void replayDataChanged(bool);
-  void dlcntChanged(uint);
   void errcntChanged(uint);
-  void upcntChanged(uint);
   void uavNameChanged(QString);
   void isLocalChanged(bool);
   void sizeChanged(uint);
 public slots:
   Q_INVOKABLE void setJsValid(bool v);
   Q_INVOKABLE void setOnline(bool v);
-  Q_INVOKABLE void setDlcnt(uint v);
   Q_INVOKABLE void setErrcnt(uint v);
-  Q_INVOKABLE void setUpcnt(uint v);
   Q_INVOKABLE void setUavName(QString v);
   Q_INVOKABLE void setSize(uint v);
 private:
