@@ -45,13 +45,7 @@ public:
 
   static QVariant value(const QString &namePath)
   {
-    Fact *f=_instance->fact(namePath);
-    if(!f){
-      qWarning("AppSettings fact not found: %s",namePath.toUtf8().data());
-      return QVariant();
-    }
-    if(f->dataType()==EnumData)return f->text();
-    return f->value();
+    return _instance->findValue(namePath);
   }
   static bool setValue(QString namePath,const QVariant &v)
   {

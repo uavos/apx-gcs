@@ -20,49 +20,33 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactSystem_H
-#define FactSystem_H
+#ifndef FactSystemJS_H
+#define FactSystemJS_H
 //=============================================================================
 #include <QtCore>
-#include <QtQuick>
+#include <QtQml>
+#include <QJSEngine>
 #include "Fact.h"
-#include "FactSystemUtils.h"
-#include "FactSystemJS.h"
-class QJSEngine;
 //=============================================================================
-class FactSystem: public FactSystemUtils, public FactSystemJS
+class FactSystemJS
 {
-  Q_OBJECT
 public:
-  //root
-  explicit FactSystem(QObject *parent=0);
-  ~FactSystem();
+  FactSystemJS(QObject *parent);
 
-  static FactSystem * instance() { return _instance; }
+  QJSValue jsexec(const QString &s);
 
-  //methods
-  Fact * tree() { return _tree; }
-  void syncJS(QQmlEngine *e);
+protected:
+  //js engine
+  QJSEngine *js;
+  QHash<QString,QString> js_descr; //helper commands alias,descr
 
-  Q_INVOKABLE void sound(const QString &v) { emit playSoundEffect(v); }
+  void jsSync(QQmlEngine *e, QObject *obj);
+  QJSValue jsSync(QQmlEngine *e, Fact *factItem, QJSValue parent); //recursive
 
-  Q_INVOKABLE QJSValue jsexec(const QString &s) { return FactSystemJS::jsexec(s); }
-
-
-  //static values mapping
-  static bool devMode()     { return _instance->_tree->findValue("dev").toBool(); }
-  static QString version()  { return _instance->_tree->findValue("version").toString(); }
-  static QString branch()   { return _instance->_tree->findValue("branch").toString(); }
-
-  //constants
-  static const QString ApplicationSection;
+  void jsRegister(QString fname,QString description,QString body);
 
 private:
-  static FactSystem * _instance;
-  Fact * _tree;
-
-signals:
-  void playSoundEffect(const QString &v);
+  void jsRegisterFunctions();
 };
 //=============================================================================
 #endif

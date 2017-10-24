@@ -208,9 +208,6 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,&Datalink::httpRequest,httpService,&HttpService::httpRequest);
 
   // directories..
-  if(FactSystem::value("dev").toBool())
-    qDebug("%s",QObject::tr("Developer mode").toUtf8().data());
-
   checkPaths();
 
   if(QCoreApplication::arguments().contains("-x"))
@@ -219,9 +216,8 @@ int main(int argc, char *argv[])
   // main window..
   mainForm=new MainForm();
   mainForm->setWindowTitle(QObject::tr("Ground Control Unit"));
-  if(FactSystem::value("dev").toBool())
-    mainForm->setWindowTitle(mainForm->windowTitle()+" ("+QMandala::version+")");
-  qDebug("%s: %s",QObject::tr("Version").toUtf8().data(),QMandala::version.toUtf8().data());
+  if(FactSystem::devMode())
+    mainForm->setWindowTitle(mainForm->windowTitle()+" ("+FactSystem::version()+")");
 
   //hotkeys
   new AppShortcuts(factSystem,mainForm);
@@ -252,7 +248,7 @@ int main(int argc, char *argv[])
 */
 
   SoundEffects *soundEffects=new SoundEffects(mandala);
-  QObject::connect(mandala,SIGNAL(playSoundEffect(QString)),soundEffects,SLOT(play(QString)));
+  QObject::connect(factSystem,&FactSystem::playSoundEffect,soundEffects,&SoundEffects::play);
 
   //datalink->f_active->setValue(true);
   //datalink->activate();

@@ -35,9 +35,6 @@ public:
   QMandalaItem *current;
   QMandalaItem *local;
 
-  static QString version;    //software version
-  static QString branch;    //software branch
-
   static QString vclassToString(IDENT::_vclass vclass);
 
   static MandalaCore::_vars_list vars_gcu;
@@ -66,14 +63,10 @@ public slots:
 
   void testUAV();
 
-  Q_INVOKABLE void sound(QString text);
-
 signals:
   void uavAdded(QMandalaItem *m);
   void uavRemoved(QMandalaItem *m);
   void currentChanged(QMandalaItem *m);
-
-  void playSoundEffect(QString v);
 
   //Datalink
 signals:
@@ -85,17 +78,11 @@ private slots:
   void dlinkReqTimeout(void);
   void identReqTimeout(void);
 
-  //wrappers
-signals:
-  void serverDiscovered(const QHostAddress address,const QString name);
-  void connectToServer(const QHostAddress address);
 
   //PROPERTIES
 public:
   Q_PROPERTY(bool jsValid READ jsValid WRITE setJsValid NOTIFY jsChanged)
   bool jsValid();
-  Q_PROPERTY(bool online READ online WRITE setOnline NOTIFY onlineChanged)
-  bool online();
   Q_PROPERTY(bool xpdrData READ xpdrData NOTIFY xpdrDataChanged)
   bool xpdrData();
   Q_PROPERTY(bool dlinkData READ dlinkData NOTIFY dlinkDataChanged)
@@ -118,12 +105,10 @@ public:
   QMandalaItem * mcurrent();
 private:
   bool m_jsValid;
-  bool m_online;
   QString m_uavName;
   uint m_size;
 signals:
   void jsChanged(bool);
-  void onlineChanged(bool);
   void dlinkDataChanged(bool);
   void xpdrDataChanged(bool);
   void replayDataChanged(bool);
@@ -133,14 +118,9 @@ signals:
   void sizeChanged(uint);
 public slots:
   Q_INVOKABLE void setJsValid(bool v);
-  Q_INVOKABLE void setOnline(bool v);
   Q_INVOKABLE void setErrcnt(uint v);
   Q_INVOKABLE void setUavName(QString v);
   Q_INVOKABLE void setSize(uint v);
-private:
-  QTimer onlineTimer;
-private slots:
-  void onlineTimeout();
 };
 //=============================================================================
 #endif

@@ -47,12 +47,16 @@ HEADERS += \
 # Fact System
 SOURCES += \
     FactSystem/FactSystem.cpp \
+    FactSystem/FactSystemUtils.cpp \
+    FactSystem/FactSystemJS.cpp \
     FactSystem/FactTree.cpp \
     FactSystem/FactData.cpp \
     FactSystem/Fact.cpp \
 
 HEADERS += \
     FactSystem/FactSystem.h \
+    FactSystem/FactSystemUtils.h \
+    FactSystem/FactSystemJS.h \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
     FactSystem/Fact.h \

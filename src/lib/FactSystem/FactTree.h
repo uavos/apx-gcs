@@ -62,10 +62,6 @@ public:
   QList<FactTree*> childItems() const;
   QList<FactTree*> childItemsTree() const; //no flat model
 
-  Q_INVOKABLE void bindChilds(FactTree *item);
-private:
-  FactTree *_bindedChildsFact;
-
 public slots:
   virtual void clear(void);
 signals:

@@ -25,7 +25,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: app.settings.smooth.value?((app.datalink.stats.dnlink.cnt.value>0 && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
+    opacity: app.settings.smooth.value?((app.datalink.valid && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
 
     Item{
         id: horizon_bg

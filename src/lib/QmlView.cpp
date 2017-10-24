@@ -93,7 +93,7 @@ QmlView::QmlView(QString src,QWindow *parent)
     }
   }
 
-  FactSystem::syncJS(e);
+  FactSystem::instance()->syncJS(e);
 
 
 

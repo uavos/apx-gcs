@@ -48,7 +48,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all remote server connections"),FactItem,NoData);
 
   f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
-  bindValue(f_list);
+  bind(f_list);
   connect(f_list,&Fact::sizeChanged,this,&DatalinkHosts::updateStats);
   connect(f_list,&Fact::sizeChanged,this,&DatalinkHosts::availableCountChanged);
   connect(this,&DatalinkHosts::availableCountChanged,this,&DatalinkHosts::updateConnectedStatus);
@@ -65,7 +65,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   connect(f_datalink->f_binded,&Fact::valueChanged,this,&DatalinkHosts::serverBindedChanged);
 
   // QML types register
-  qmlRegisterUncreatableType<Fact>("GCS.DatalinkHosts", 1, 0, "DatalinkHosts", "Reference only");
+  //qmlRegisterUncreatableType<Fact>("GCS.DatalinkHosts", 1, 0, "DatalinkHosts", "Reference only");
 
   updateStats();
 }
@@ -111,7 +111,10 @@ void DatalinkHosts::connectLocalhost()
   if(f_localhost)return;
   //create default localhost for second app on one machine
   DatalinkHost *host=hostByAddr(QHostAddress::LocalHost);
-  if(!host)host=new DatalinkHost(this,"localhost",QHostAddress::LocalHost);
+  if(!host){
+    host=new DatalinkHost(this,"localhost",QHostAddress::LocalHost);
+    qDebug("%s",tr("Connecting to localhost by default").toUtf8().data());
+  }
   if(host->enabled()){
     f_localhost=host;
     connect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);

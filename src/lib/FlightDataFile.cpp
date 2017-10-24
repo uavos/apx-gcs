@@ -31,7 +31,7 @@
 #include <cmath>
 #include <cfloat>
 #include "AppDirs.h"
-//using namespace std;
+#include "Datalink.h"
 //=============================================================================
 FlightDataFile::FlightDataFile(QMandalaItem *parent)
   :QObject(parent), mandala(QMandala::instance()),mvar((QMandalaItem*)parent)
@@ -186,7 +186,7 @@ bool FlightDataFile::record_check(void)
     setRecording(false);
     return false;
   }
-  if (mandala->online()) {
+  if (Datalink::instance()->online()) {
     if((mvar->mode==mode_TAKEOFF)&&(mvar->stage>=2)&&(mvar->stage<100)){
       if(!recTrigger){
         close();
@@ -254,7 +254,7 @@ void FlightDataFile::record_header(void)
   xmlWriter.writeAttribute("time_ms",QString::number(mvar->dl_timestamp));
 
   xmlWriter.writeStartElement("mandala");
-  xmlWriter.writeTextElement("version",QMandala::version);
+  xmlWriter.writeTextElement("version",FactSystem::version());
   xmlWriter.writeTextElement("hash",mvar->md5.toHex());
   xmlWriter.writeTextElement("fields",QStringList(mvar->names).join(","));
   xmlWriter.writeEndElement();

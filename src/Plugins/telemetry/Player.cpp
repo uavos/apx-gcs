@@ -2,6 +2,7 @@
 #include <QtWidgets>
 #include <QUdpSocket>
 #include "QMandala.h"
+#include "FactSystem.h"
 //#include "tcp_ports.h"
 //==============================================================================
 Player::Player(QWidget *parent)
@@ -122,7 +123,7 @@ void Player::timerStep()
     }else if(sname=="nodes"){
       //QMandala::instance()->local->dataRead(QByteArray::fromHex(svalue.toUtf8()));
     }else if(sname=="msg"){
-      QMandala::instance()->sound(svalue);
+      FactSystem::instance()->sound(svalue);
       qDebug("<[RE]%s",svalue.toUtf8().data());
     }else{
       if(s.startsWith("gcu_")){

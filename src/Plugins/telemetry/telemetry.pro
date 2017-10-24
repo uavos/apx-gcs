@@ -19,6 +19,8 @@ FORMS += TelemetryFrame.ui \
     Filter.ui \
     Player.ui
 
+QT += quick
+
 
 # QWT static includes
 QWT_CONFIG = QwtPlot

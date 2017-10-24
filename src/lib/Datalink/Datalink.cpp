@@ -31,8 +31,11 @@
 #include "Mandala.h"
 //=============================================================================
 Datalink::Datalink(FactSystem *parent)
-  : Fact(parent->tree(),"datalink",tr("Datalink"),tr("Communication and networks"),RootItem,NoData)
+  : Fact(parent->tree(),"datalink",tr("Datalink"),tr("Communication and networks"),RootItem,NoData),
+    m_valid(false),m_online(false),m_errcnt(0)
 {
+  _instance=this;
+
   setSection(FactSystem::ApplicationSection);
 
   Fact *item;
@@ -88,7 +91,20 @@ Datalink::Datalink(FactSystem *parent)
   heartbeatTimer.setInterval(1500);
   hbeatChanged();
 
+  //online timeout
+  onlineTimer.setSingleShot(true);
+  onlineTimer.setInterval(7000);
+  connect(&onlineTimer,&QTimer::timeout,[=](){ setOnline(false); });
+  connect(this,&Datalink::read,[=](){ setOnline(true); });
+  connect(this,&Datalink::onlineChanged,[=](){
+    if(!m_online)setErrcnt(0);
+    FactSystem::instance()->sound(m_online?"connected":"error");
+  });
+
+  connect(this,&Datalink::read,[=](){ setValid(true); });
+
 }
+Datalink * Datalink::_instance=NULL;
 //=============================================================================
 void Datalink::readonlyChanged()
 {
@@ -139,8 +155,8 @@ void Datalink::packetReceivedFromPort(const QByteArray &ba)
   //downlink from local port
   emit receivedData(ba);
 
-  DatalinkPort *port=static_cast<DatalinkPort*>(sender());
   emit read(ba);
+  DatalinkPort *port=static_cast<DatalinkPort*>(sender());
   if(port->f_local->value().toBool()==false){
     emit sendPacketToClients(ba); //share all downlink from port
     emit sendPacketToHosts(ba);   //share all downlink from port
@@ -159,3 +175,37 @@ void Datalink::write(const QByteArray &ba)
   emit sendPacketToClients(ba); //sync uplink
 }
 //=============================================================================
+//=============================================================================
+bool Datalink::valid() const
+{
+  return m_valid;
+}
+void Datalink::setValid(const bool &v)
+{
+  if(m_valid==v)return;
+  m_valid=v;
+  emit validChanged();
+}
+bool Datalink::online() const
+{
+  return m_online;
+}
+void Datalink::setOnline(const bool &v)
+{
+  if(v) onlineTimer.start();
+  if(m_online==v)return;
+  m_online=v;
+  emit onlineChanged();
+}
+uint Datalink::errcnt() const
+{
+  return m_errcnt;
+}
+void Datalink::setErrcnt(const uint &v)
+{
+  if(m_errcnt==v)return;
+  m_errcnt=v;
+  emit errcntChanged();
+}
+//=============================================================================
+

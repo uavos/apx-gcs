@@ -26,6 +26,13 @@
 Vehicles::Vehicles(FactSystem *parent)
   : Fact(parent->tree(),"vehicles",tr("Vehicles"),tr("Discovered unmanned vehicles"),SectionItem,NoData)
 {
+  setFlatModel(true);
+
+  f_select=new Fact(this,"select",tr("Select vehicle"),tr("Change the active vehicle"),GroupItem,NoData);
+  f_select->setSection(title());
+
+  f_list=new Fact(this,"list",tr("Vehicles list"),"",SectionItem,ConstData);
+  bind(f_list);
 
   Vehicle *v;
   v=new Vehicle(this,"LOCAL",NULL);
@@ -38,7 +45,7 @@ Vehicles::Vehicles(FactSystem *parent)
 
   v=new Vehicle(this,"SAKER-1B2",NULL);
   v->setDescr("UAV Squawk: E2E4");
-  v->setStatus("DLINK");
+  v->setStatus("ACTIVE");
 
 }
 //=============================================================================

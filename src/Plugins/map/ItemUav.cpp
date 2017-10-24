@@ -24,6 +24,7 @@
 #include "QMandala.h"
 #include <QAction>
 #include "MapView.h"
+#include "Datalink.h"
 //=============================================================================
 ItemUav::ItemUav(MapView *view,QMandalaItem *mvar)
   :ItemBase(view,mvar,QPixmap(getIconPixmap(mvar).size()),true,QSettings().value("smooth_uav").toBool()),
@@ -572,7 +573,7 @@ void ItemUav::mandalaFileLoaded()
 //=============================================================================
 void ItemUav::trace(double lat, double lon, double hmsl)
 {
-  if(!QMandala::instance()->online())return;
+  if(!Datalink::instance()->online())return;
   if(mvar->airspeed<5.0)return;
   Vect llh=Vect(lat,lon,hmsl);
   if(!trace_llh_prev.isNull()) dist+=mvar->distance(mvar->llh2ne(llh,trace_llh_prev));

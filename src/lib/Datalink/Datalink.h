@@ -33,8 +33,15 @@
 class Datalink: public Fact
 {
   Q_OBJECT
+
+  Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged) //true when any data ever received
+  Q_PROPERTY(bool online READ online WRITE setOnline NOTIFY onlineChanged) //timeout received data
+  Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged) //global stream protocol errors
+
 public:
   explicit Datalink(FactSystem *parent=0);
+
+  static Datalink * instance() {return _instance;}
 
   Fact *f_readonly;
 
@@ -52,8 +59,10 @@ public:
   DatalinkStats *f_stats;
 
 private:
+  static Datalink * _instance;
   QTimer heartbeatTimer; //data link alive for vehicle
   bool bReadOnly;
+  QTimer onlineTimer;
 
 private slots:
   void readonlyChanged();
@@ -82,6 +91,23 @@ signals:
   void read(const QByteArray &ba);
   void httpRequest(QTextStream &stream,QString req,bool *ok);
 
+  //-----------------------------------------
+  //PROPERTIES
+public:
+  bool valid() const;
+  void setValid(const bool &v);
+  bool online() const;
+  void setOnline(const bool &v);
+  uint errcnt() const;
+  void setErrcnt(const uint &v);
+private:
+  bool m_valid;
+  bool m_online;
+  uint m_errcnt;
+signals:
+  void validChanged();
+  void onlineChanged();
+  void errcntChanged();
 };
 //=============================================================================
 #endif

@@ -35,7 +35,7 @@ AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
   mandala=qApp->property("Mandala").value<QMandala*>();
 
   _enabled=new Fact(this,"enabled",tr("Enabled"),tr("Connectwhen available"),FactItem,BoolData);
-  if(!_new)bindValue(_enabled);
+  if(!_new)bind(_enabled);
 
   _key=new Fact(this,"key",tr("Key sequence"),"",FactItem,KeySequenceData);
   _cmd=new Fact(this,"Command",tr("Java script"),"",FactItem,TextData);

@@ -61,14 +61,14 @@ MainForm::MainForm(QWidget *parent)
   mWindow->addSeparator();
 
   mHelp->addAction(QIcon(":/icons/old/application-pdf.png"),tr("Mandala Report"),this,SLOT(mMandala_triggered()));
-  mHelp->addAction(QIcon(":/icons/old/text-html.png"),tr("Documentation"),this,SLOT(mDoc_triggered()));
+  mHelp->addAction(QIcon(":/icons/old/text-html.png"),tr("Documentation"),[=](){ QDesktopServices::openUrl(QUrl("http://wiki.uavos.com")); });
   mHelp->addSeparator();
   mHelp->addAction(QIcon(":/icons/old/connect_creating.png"),tr("VPN support"),this,SLOT(mVPN_triggered()));
   connect(&vpnProcess,SIGNAL(finished(int,QProcess::ExitStatus)),SLOT(vpn_disconnected()));
   vpnProcess.setEnvironment(QProcess::systemEnvironment());
 
   mHelp->addSeparator();
-  mHelp->addAction(QString(QMandala::version));
+  mHelp->addAction(FactSystem::version()+" ("+FactSystem::branch()+")",[=](){ QDesktopServices::openUrl(QUrl("https://groups.google.com/forum/#!forum/uavos-updates")); });
 
   //app menu actions
   QAction *a;
@@ -81,28 +81,6 @@ MainForm::MainForm(QWidget *parent)
   //mFile->addAction(QIcon(":/icons/old/transport_range.png"),tr("Record new file"),var->rec,SLOT(close()));
   mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),mandala->current->rec,SLOT(discard()));
   mFile->addSeparator();
-
-  /*a=new QAction(tr("Sounds"),this);
-  a->setCheckable(true);
-  a->setChecked(AppSettings::value("sounds").toBool());
-  connect(a,SIGNAL(triggered(bool)),AppSettings::fact("sounds"),SLOT(setValue(bool)));
-  connect(AppSettings::fact("sounds"),SIGNAL(valueChanged(bool)),a,SLOT(setChecked(bool)));
-  mFile->addAction(a);
-
-  a=new QAction(tr("Read only"),this);
-  a->setCheckable(true);
-  a->setChecked(mandala->readOnly());
-  connect(a,SIGNAL(triggered(bool)),mandala,SLOT(setReadOnly(bool)));
-  connect(mandala,SIGNAL(readOnlyChanged(bool)),a,SLOT(setChecked(bool)));
-  mFile->addAction(a);*/
-
-  /*a=new QAction(tr("Allow external controls"),this);
-  a->setCheckable(true);
-  a->setChecked(datalink->extctrEnabled());
-  QObject::connect(a,SIGNAL(triggered(bool)),datalink,SLOT(setExtctrEnabled(bool)));
-  connect(datalink,SIGNAL(extctrEnabledChanged(bool)),a,SLOT(setChecked(bool)));
-  mFile->addAction(a);*/
-
 
   mFile->addSeparator();
   mFile->addAction(QIcon(":/icons/old/system-shutdown.png"),tr("Exit"),this,SLOT(close()));
@@ -122,7 +100,7 @@ MainForm::MainForm(QWidget *parent)
   //splashLayout->setMargin(50);
   splashWidget->setLayout(splashLayout);
 
-  if(FactSystem::tree()->fact("dev")->value().toBool()){
+  if(FactSystem::devMode()){
     QLabel *devLabel=new QLabel(tr("DEVELOPMENT").toUpper(),this);
     devLabel->setAlignment(Qt::AlignCenter);
     devLabel->setFont(QFont("BebasNeue",22));
@@ -139,23 +117,14 @@ MainForm::MainForm(QWidget *parent)
   loadingLabel->setAlignment(Qt::AlignCenter);
   splashLayout->addWidget(loadingLabel);
 
-  QString sVer=mandala->version;
-  if((!mandala->branch.isEmpty())&&mandala->branch!="master")
-    sVer+=" "+mandala->branch.toUpper();
+  QString sVer=FactSystem::version();
+  QString sBranch=FactSystem::branch();
+  if((!sBranch.isEmpty()) && sBranch!="master")
+    sVer+=" "+sBranch.toUpper();
   QLabel *verLabel=new QLabel(sVer,this);
   verLabel->setAlignment(Qt::AlignTop|Qt::AlignRight);
   verLabel->setFont(QFont("FreeMonoBold"));
   splashLayout->addWidget(verLabel);
-}
-//=============================================================================
-MainForm::~MainForm()
-{
-  //qDeleteAll(plugins.values());
-  /*while(shortcuts.keys().size()){
-    QShortcut *sc=shortcuts.keys().at(0);
-    shortcuts.take(sc);
-    delete sc;
-  }*/
 }
 //=============================================================================
 void MainForm::closeEvent(QCloseEvent *e)
@@ -614,11 +583,6 @@ void MainForm::mVPN_triggered()
 void MainForm::vpn_disconnected()
 {
   qDebug("%s",tr("VPN disconnected").toUtf8().data());
-}
-//=============================================================================
-void MainForm::mDoc_triggered()
-{
-  QDesktopServices::openUrl(QUrl("http://wiki.uavos.com"));
 }
 //=============================================================================
 //=============================================================================

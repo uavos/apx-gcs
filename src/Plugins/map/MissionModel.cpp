@@ -28,6 +28,7 @@
 #include "MissionItemWp.h"
 #include "MissionItemRw.h"
 #include "ValueEditorArray.h"
+#include "FactSystem.h"
 //=============================================================================
 MissionModel::MissionModel(MapView *mapView)
   :QAbstractItemModel(mapView),mapView(mapView)
@@ -211,7 +212,7 @@ void MissionModel::saveToXml(QDomNode dom) const
   dom=doc.appendChild(doc.createElement(rootItem->objectName()));
   dom.toElement().setAttribute("href","http://www.uavos.com/");
   dom.toElement().setAttribute("title",missionName);
-  dom.toElement().setAttribute("version",QMandala::version);
+  dom.toElement().setAttribute("version",FactSystem::version());
   dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(rootItem->md5().toHex()));
   dom.appendChild(doc.createElement("timestamp")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
   QDomNode e=dom.appendChild(doc.createElement("home"));

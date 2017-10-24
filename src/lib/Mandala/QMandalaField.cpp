@@ -23,6 +23,7 @@
 #include "QMandalaField.h"
 #include "QMandalaItem.h"
 #include "QMandala.h"
+#include "Datalink.h"
 #include <math.h>
 //=============================================================================
 char QMandalaField::skipWriteFields[]={idx_stage,0};
@@ -188,7 +189,7 @@ void QMandalaField::setValue_do(double v)
       mvar->send(m_varmsk&0xFF);
   }
   //restore value for some vars
-  if(isSkipWriteField && QMandala::instance()->online()){
+  if(isSkipWriteField && Datalink::instance()->online()){
     mvar->set_data(m_varmsk,m_type,value_ptr,prev_v);
   }
   setValue_done(v);

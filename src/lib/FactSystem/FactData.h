@@ -69,8 +69,9 @@ public:
 
   Q_INVOKABLE FactData * child(const QString &name) const;
 
-  Q_INVOKABLE void copyValuesFrom(const FactData *item);
-  Q_INVOKABLE void bindValue(FactData *item);
+  void copyValuesFrom(const FactData *item);
+
+  virtual void bind(FactData *item);
 
 
 

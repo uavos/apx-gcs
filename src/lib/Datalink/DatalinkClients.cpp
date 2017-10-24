@@ -36,7 +36,7 @@ DatalinkClients::DatalinkClients(Datalink *parent)
   f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),FactItem,NoData);
 
   f_list=new Fact(this,"list",tr("Clients list"),tr("Active connections"),SectionItem,ConstData);
-  bindValue(f_list);
+  bind(f_list);
   connect(f_list,&Fact::structChanged,this,&DatalinkClients::updateStats);
 
   server=new QTcpServer(this);

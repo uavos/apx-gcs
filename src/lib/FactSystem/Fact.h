@@ -40,8 +40,13 @@ public:
 
   Q_INVOKABLE QString path(int fromLevel=0,const QChar pathDelimiter=QChar('.')) const;
 
+  Q_INVOKABLE QVariant findValue(const QString &namePath);
+
   Q_INVOKABLE Fact * fact(const QString &factName) const;
   //Q_INVOKABLE Fact * byPath(const QString &itemNamePath) const;
+
+
+  virtual void bind(FactData *item);
 
 public slots:
   virtual void trigger(void); //execute fact event (onClick)

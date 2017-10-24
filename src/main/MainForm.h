@@ -34,8 +34,9 @@ class MainForm: public QMainWindow
   Q_OBJECT
 public:
   MainForm(QWidget *parent = 0);
-  ~MainForm();
+
   void setPlugins(QStringList pfiles);
+
 private:
   QMandala *mandala;
   QStringList plugins_files;
@@ -69,7 +70,6 @@ private slots:
   void lock();
   void unlock();
   void mMandala_triggered();
-  void mDoc_triggered();
   void mFullScreen_triggered();
   void mVPN_triggered();
 

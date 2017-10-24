@@ -24,7 +24,6 @@
 //=============================================================================
 FactTree::FactTree(FactTree *parent, ItemType treeItemType)
  : QAbstractListModel(parent),
-   _bindedChildsFact(NULL),
    m_parentItem(parent),
    m_treeItemType(treeItemType),
    m_level(0),m_flatModel(false)
@@ -41,18 +40,8 @@ FactTree::FactTree(FactTree *parent, ItemType treeItemType)
   }
 }
 //=============================================================================
-void FactTree::bindChilds(FactTree *item)
-{
-  _bindedChildsFact=item;
-  connect(item,&FactTree::structChanged,this,&FactTree::structChanged);
-}
-//=============================================================================
 void FactTree::removeItem(FactTree *item)
 {
-  if(_bindedChildsFact){
-    _bindedChildsFact->removeItem(item);
-    return;
-  }
   int i=m_items.indexOf(item);
   if(i<0)return;
   bool bFlat=m_parentItem->flatModel();
@@ -70,10 +59,6 @@ void FactTree::removeItem(FactTree *item)
 }
 void FactTree::insertItem(int i, FactTree *item)
 {
-  if(_bindedChildsFact){
-    _bindedChildsFact->insertItem(i,item);
-    return;
-  }
   beginInsertRows(QModelIndex(), i, i);
   m_items.insert(i,item);
   bool bFlat=m_parentItem && m_parentItem->flatModel();
@@ -129,14 +114,11 @@ QList<FactTree*> FactTree::childItems() const
 }
 QList<FactTree*> FactTree::childItemsTree() const
 {
-  if(_bindedChildsFact)return _bindedChildsFact->childItems();
   return m_items;
 }
 //=============================================================================
 void FactTree::clear(void)
 {
-  if(_bindedChildsFact) return;
-
   foreach(FactTree *i,m_items){
     i->clear();
   }
@@ -169,7 +151,6 @@ int FactTree::size(void) const
     }
     return sz;
   }
-  if(_bindedChildsFact)return _bindedChildsFact->size();
   return m_items.size();
 }
 bool FactTree::flatModel() const
@@ -208,7 +189,6 @@ int FactTree::rowCount(const QModelIndex & parent) const
 bool FactTree::moveRows(const QModelIndex &sourceParent, int src, int cnt, const QModelIndex &destinationParent, int dst)
 {
   if(m_flatModel)return false;
-  if(_bindedChildsFact)return _bindedChildsFact->moveRows(sourceParent,src,cnt,destinationParent,dst);
   if((src+cnt)>m_items.size())return false;
   if(dst>m_items.size())return false;
   if(src==dst)return true;

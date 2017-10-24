@@ -211,8 +211,8 @@ Item {
                     property bool isErr: status_home.value && (!status_gps.value)
                     property bool isOk:  status_home.value && gps_SU.value>4 && gps_SU.value<=gps_SV.value && (gps_SV.value/gps_SU.value)<1.8
 
-                    //color: (app.datalink.stats.dnlink.cnt.value>0 || status_gps.value)?(status_gps.value>0?"transparent":"red"):"#80000000"
-                    //blinking: app.datalink.stats.dnlink.cnt.value>0 && (status_gps.value<=0)
+                    //color: (app.datalink.valid || status_gps.value)?(status_gps.value>0?"transparent":"red"):"#80000000"
+                    //blinking: app.datalink.valid && (status_gps.value<=0)
                     //valueColor: (status_home.value && gps_SU.value>4 && (gps_SV.value/gps_SU.value)<1.8)?"white":"yellow"
                     color: isOff?"#80000000":isErr?"red":"transparent"
                     blinking: isErr
@@ -432,8 +432,8 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
-            visible: (!mandala.replayData) && (!mandala.online)
-            font.pixelSize: app.datalink.stats.dnlink.cnt.value>0?(parent.height*0.5*0.35):10
+            visible: (!mandala.replayData) && (!app.datalink.online)
+            font.pixelSize: app.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font.family: font_narrow
@@ -446,7 +446,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: mandala.xpdrData?qsTr("XPDR"):qsTr("NO DATA")
-            visible: (!mandala.replayData) && app.datalink.stats.dnlink.cnt.value>0 && (!mandala.dlinkData)
+            visible: (!mandala.replayData) && app.datalink.valid && (!mandala.dlinkData)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow

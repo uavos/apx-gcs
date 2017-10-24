@@ -290,6 +290,7 @@ QByteArray DatalinkSocket::makeTcpPacket(const QByteArray &ba) const
 void DatalinkSocket::sendPacket(const QByteArray &ba)
 {
   if(!data.datalink)return;
+  if(!socket->isOpen())return;
   socket->write(makeTcpPacket(ba));
 }
 //=============================================================================

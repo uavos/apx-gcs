@@ -28,6 +28,12 @@ Fact::Fact(FactTree *parent, QString name, QString title, QString descr, ItemTyp
 {
 }
 //=============================================================================
+void Fact::bind(FactData *item)
+{
+  FactData::bind(item);
+  //connect(item,&Fact::statusChanged,this,&Fact::statusChanged);
+}
+//=============================================================================
 QString Fact::path(int fromLevel, const QChar pathDelimiter) const
 {
   QString s;
@@ -37,6 +43,17 @@ QString Fact::path(int fromLevel, const QChar pathDelimiter) const
     if(i->treeItemType()==RootItem && fromLevel>=0)break;
   }
   return s.isEmpty()?name():s;
+}
+//=============================================================================
+QVariant Fact::findValue(const QString &namePath)
+{
+  Fact *f=fact(namePath);
+  if(!f){
+    qWarning("FactSystem fact not found: %s",namePath.toUtf8().data());
+    return QVariant();
+  }
+  if(f->dataType()==Fact::EnumData)return f->text();
+  return f->value();
 }
 //=============================================================================
 Fact * Fact::fact(const QString &factNamePath) const

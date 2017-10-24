@@ -24,7 +24,7 @@
 #include "Vehicles.h"
 //=============================================================================
 Vehicle::Vehicle(Vehicles *parent, QString title, IDENT::_ident *ident)
-  : Fact(parent,"vehicle#",title,"",GroupItem,NoData)
+  : Fact(parent->f_list,"vehicle#",title,"",GroupItem,NoData)
 {
   setSection(parent->title());
 }

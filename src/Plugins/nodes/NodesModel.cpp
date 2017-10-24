@@ -29,6 +29,7 @@
 #include "ValueEditorScript.h"
 #include "ValueEditorNgrp.h"
 #include "AppDirs.h"
+#include "FactSystem.h"
 QAction *NodesModel::aUpload=NULL;
 //=============================================================================
 NodesModel::NodesModel(QMandalaItem *m, QObject *parent)
@@ -323,7 +324,7 @@ void NodesModel::saveToXml(QDomNode dom) const
   dom=dom.appendChild(doc.createElement("nodes"));
   dom.toElement().setAttribute("href","http://www.uavos.com/");
   dom.toElement().setAttribute("title",title());
-  dom.toElement().setAttribute("version",QMandala::version);
+  dom.toElement().setAttribute("version",FactSystem::version());
   dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(QString(md5().toHex())));
   dom.appendChild(doc.createElement("timestamp")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
   saveIdentToXml(dom);

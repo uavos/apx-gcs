@@ -67,7 +67,7 @@ Rectangle {
         font.pixelSize: parent.height   //*0.99
         font.family: font_narrow
         color: mandala.isLocal?"yellow":"#5f5"
-        visible: app.settings.test.value || app.datalink.stats.dnlink.cnt.value>0
+        visible: app.settings.test.value || app.datalink.valid
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
@@ -128,7 +128,7 @@ Rectangle {
 
         //comm stats
         CommNum {
-            property string cRX: mandala.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
+            property string cRX: app.datalink.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
             property string cTX: app.datalink.readonly.value?"red":"cyan"
             property string cER: mandala.errcnt>1?"yellow":"gray"
             height: parent.height
@@ -142,7 +142,7 @@ Rectangle {
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
-            color: mandala.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
+            color: app.datalink.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
             ToolTipArea { text: qsTr("Received packets") }
         }
         Text {

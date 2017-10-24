@@ -10,4 +10,4 @@ SOURCES += ConsolePlugin.cpp \
 HEADERS += ConsolePlugin.h \
     Console.h
 
-#QT += multimedia
+QT += quick

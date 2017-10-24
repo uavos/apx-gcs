@@ -403,7 +403,7 @@ QByteArray QMandalaItem::scrToArray(QScriptValue data)
 void QMandalaItem::send(unsigned char var_idx, const QByteArray &data)
 {
   if(!datalinkReadonly){
-    datalinkReadonly=FactSystem::tree()->fact("datalink.readonly");
+    datalinkReadonly=FactSystem::instance()->tree()->fact("datalink.readonly");
   }
   if((!datalinkReadonly) || datalinkReadonly->value().toBool())return;
   QByteArray ba;
@@ -542,7 +542,7 @@ void QMandalaItem::downlinkReceived(const QByteArray &ba)
           s=s.trimmed();
           if(s.isEmpty())continue;
           qDebug("<[%s]%s\n",ns.toUtf8().data(),qApp->translate("msg",s.toUtf8().data()).toUtf8().data());
-          QMandala::instance()->sound(s);
+          FactSystem::instance()->sound(s);
           if(s.contains("error",Qt::CaseInsensitive)) setAlarm(s);
           else if(s.contains("fail",Qt::CaseInsensitive)) setAlarm(s);
           else if(s.contains("timeout",Qt::CaseInsensitive)) setWarning(s);
@@ -820,7 +820,7 @@ void QMandalaItem::setAlarm(QString v)
 {
   m_alarm=v;
   emit alarmChanged(v);
-  QMandala::instance()->sound("error");
+  FactSystem::instance()->sound("error");
 }
 QString QMandalaItem::warning()
 {
@@ -830,7 +830,7 @@ void QMandalaItem::setWarning(QString v)
 {
   m_warning=v;
   emit warningChanged(v);
-  QMandala::instance()->sound("warning");
+  FactSystem::instance()->sound("warning");
 }
 //=============================================================================
 //=============================================================================

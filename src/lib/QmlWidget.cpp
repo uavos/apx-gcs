@@ -38,7 +38,6 @@ QmlWidget::QmlWidget(QString src, QWidget *parent)
   qmlRegisterType<QMandala>();
   qmlRegisterType<QMandalaField>();
   qmlRegisterType<FlightDataFile>();
-  //qmlRegisterType<DatalinkServer>();
 
   mandala=qApp->property("Mandala").value<QMandala*>();
 

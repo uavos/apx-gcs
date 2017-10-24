@@ -34,6 +34,9 @@ class Vehicles: public Fact
 public:
   explicit Vehicles(FactSystem *parent);
 
+  Fact *f_list;
+
+  Fact *f_select;
 
   //datalink
 public slots:

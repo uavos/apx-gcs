@@ -39,20 +39,9 @@ QMandala::QMandala()
   //if(!Global::records().exists())Global::records().mkpath(".");
 
 
-  #define VSTR_IMPL(a) #a
-  #define VSTR(a) VSTR_IMPL(a)
-  version=VSTR(VERSION);
-  if(version.isEmpty())version="unknown version";
-  branch=VSTR(BRANCH);
-
   //properties
   m_jsValid=false;
-  m_online=false;
   m_size=0;
-
-  onlineTimer.setSingleShot(true);
-  onlineTimer.setInterval(7000);
-  connect(&onlineTimer,SIGNAL(timeout()),SLOT(onlineTimeout()));
 
   prevUAV=NULL;
   //local mandala
@@ -73,8 +62,6 @@ QMandala::QMandala()
   identReqTimer.setSingleShot(true);
 }
 //=============================================================================
-QString QMandala::version;
-QString QMandala::branch;
 const MandalaCore::_vars_list QMandala::vars_gcu = { idx_gcu_RSS, idx_gcu_Ve, idx_gcu_MT,0};
 //=============================================================================
 void QMandala::downlinkReceived(const QByteArray &ba)
@@ -82,7 +69,6 @@ void QMandala::downlinkReceived(const QByteArray &ba)
   _bus_packet *packet=(_bus_packet*)ba.data();
   uint data_cnt=ba.size();
   if(data_cnt<=bus_packet_size_hdr)return;
-  setOnline(true);
   data_cnt-=bus_packet_size_hdr;
   switch(packet->id){
     case idx_xpdr:{      //transponder from UAV received
@@ -438,12 +424,6 @@ void QMandala::testUAV()
   setCurrent(m);
 }
 //=============================================================================
-void QMandala::sound(QString text)
-{
-  emit playSoundEffect(text);
-}
-//=============================================================================
-//=============================================================================
 bool QMandala::jsValid()
 {
   return m_jsValid;
@@ -453,23 +433,6 @@ void QMandala::setJsValid(bool v)
   if(m_jsValid==v)return;
   m_jsValid=v;
   emit jsChanged(v);
-}
-bool QMandala::online()
-{
-  return m_online;
-}
-void QMandala::setOnline(bool v)
-{
-  if(v)onlineTimer.start();
-  if(m_online==v)return;
-  m_online=v;
-  emit onlineChanged(v);
-  sound(v?"connected":"error");
-}
-void QMandala::onlineTimeout()
-{
-  setOnline(false);
-  setErrcnt(0);
 }
 bool QMandala::dlinkData()
 {

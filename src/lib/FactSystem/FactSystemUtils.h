@@ -20,49 +20,32 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactSystem_H
-#define FactSystem_H
+#ifndef FactSystemUtils_H
+#define FactSystemUtils_H
 //=============================================================================
 #include <QtCore>
-#include <QtQuick>
-#include "Fact.h"
-#include "FactSystemUtils.h"
-#include "FactSystemJS.h"
-class QJSEngine;
 //=============================================================================
-class FactSystem: public FactSystemUtils, public FactSystemJS
+class FactSystemUtils: public QObject
 {
   Q_OBJECT
+
 public:
-  //root
-  explicit FactSystem(QObject *parent=0);
-  ~FactSystem();
+  explicit FactSystemUtils(QObject *parent=0);
 
-  static FactSystem * instance() { return _instance; }
+  //----------------------------------
+  Q_INVOKABLE static QString latToString(double v);
+  Q_INVOKABLE static QString lonToString(double v);
+  Q_INVOKABLE double static latFromString(QString s);
+  Q_INVOKABLE double static lonFromString(QString s);
+  Q_INVOKABLE static QString distanceToString(uint v);
+  Q_INVOKABLE static QString timeToString(uint v);
+  Q_INVOKABLE uint static timeFromString(QString s);
 
-  //methods
-  Fact * tree() { return _tree; }
-  void syncJS(QQmlEngine *e);
-
-  Q_INVOKABLE void sound(const QString &v) { emit playSoundEffect(v); }
-
-  Q_INVOKABLE QJSValue jsexec(const QString &s) { return FactSystemJS::jsexec(s); }
-
-
-  //static values mapping
-  static bool devMode()     { return _instance->_tree->findValue("dev").toBool(); }
-  static QString version()  { return _instance->_tree->findValue("version").toString(); }
-  static QString branch()   { return _instance->_tree->findValue("branch").toString(); }
-
-  //constants
-  static const QString ApplicationSection;
-
-private:
-  static FactSystem * _instance;
-  Fact * _tree;
-
-signals:
-  void playSoundEffect(const QString &v);
+  Q_INVOKABLE static void toolTip(QString tooltip);
+  Q_INVOKABLE static double limit(double v,double min,double max);
+  Q_INVOKABLE static double angle360(double v);
+  Q_INVOKABLE static double angle90(double v);
+  Q_INVOKABLE static double angle(double v);
 };
 //=============================================================================
 #endif

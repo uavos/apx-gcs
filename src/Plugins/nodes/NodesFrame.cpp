@@ -3,6 +3,7 @@
 #include "NodesView.h"
 #include "AppDirs.h"
 #include "FactSystem.h"
+#include "Datalink.h"
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent) :
   QWidget(parent)
@@ -58,7 +59,7 @@ NodesFrame::NodesFrame(QWidget *parent) :
   connect(tree->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),SLOT(updateActions()));
 
   connect(mandala->local->rec,SIGNAL(fileLoaded()),SLOT(updateActions()),Qt::QueuedConnection);
-  connect(mandala,SIGNAL(onlineChanged(bool)),SLOT(updateActions()),Qt::QueuedConnection);
+  connect(Datalink::instance(),&Datalink::onlineChanged,this,&NodesFrame::updateActions,Qt::QueuedConnection);
 
   restoreGeometry(QSettings().value(objectName()).toByteArray());
 
@@ -218,7 +219,7 @@ void NodesFrame::on_tree_customContextMenuRequested(const QPoint &pos)
         QString adata=QByteArray(sn).append((unsigned char)i).toHex();
         if(item->commands.name.at(i)=="mhxfw"){
           cmdHashMHX[aname].append(QByteArray(sn).append((unsigned char)NodesModel::UpgradeMHX).toHex());
-        }else if(FactSystem::value("dev").toBool()||(!item->commands.name.at(i).contains("_dev_"))){
+        }else if(FactSystem::devMode()||(!item->commands.name.at(i).contains("_dev_"))){
           cmdHash[aname].append(adata);
           if(!cmdKeys.contains(aname))cmdKeys.append(aname);
         }

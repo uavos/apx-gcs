@@ -72,7 +72,7 @@ Column {
         }
     }
     Flag {
-        show: power_ignition.value <= 0 && app.datalink.stats.dnlink.cnt.value>0
+        show: power_ignition.value <= 0 && app.datalink.valid
         height: txtHeight
         flagColor: "red"
         text: qsTr("IGN")

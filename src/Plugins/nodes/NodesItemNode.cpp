@@ -185,7 +185,7 @@ bool NodesItemNode::isUpgrading(void) const
 //=============================================================================
 bool NodesItemNode::isUpgradable(void) const
 {
-  return QMandala::version!=QString((const char*)node_info.version);
+  return FactSystem::version()!=QString((const char*)node_info.version);
 }
 //=============================================================================
 bool NodesItemNode::isUpgradePending(void) const
@@ -551,7 +551,7 @@ void NodesItemNode::saveToCache(void)
   QDomNode dom=doc.appendChild(doc.createElement("nodes"));
   dom.toElement().setAttribute("href","http://www.uavos.com/");
   dom.toElement().setAttribute("title",QFileInfo(fname).baseName());
-  dom.toElement().setAttribute("version",QMandala::version);
+  dom.toElement().setAttribute("version",FactSystem::version());
   saveToXml(dom);
   QTextStream stream(&file);
   doc.save(stream,2);
@@ -655,7 +655,7 @@ void NodesItemNode::saveBackupFile(void)
   //check version
   //QString node_version((const char*)node_info.version);
   if(isUpgradable()){
-    if(!FactSystem::value("dev").toBool())
+    if(!FactSystem::devMode())
       qWarning("%s %s: %s",tr("Version").toUtf8().data(),node_info.name,node_info.version);
     /*if(!(AppDirs::devMode() || node_version.contains('-'))){
       qWarning("%s",tr("Backup not saved").toUtf8().data());

@@ -34,7 +34,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
    _new(port?false:true)
 {
   f_enabled=new Fact(this,"enabled",tr("Enabled"),tr("Connect when available"),FactItem,BoolData);
-  if(!_new)bindValue(f_enabled);
+  if(!_new)bind(f_enabled);
 
   f_type=new Fact(this,"type",tr("Type"),tr("Link type"),FactItem,EnumData);
   f_type->setEnumStrings(QStringList()

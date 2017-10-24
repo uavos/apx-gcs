@@ -37,7 +37,6 @@ QmlApp::QmlApp(QString src, QObject *parent)
   qmlRegisterType<QMandala>();
   qmlRegisterType<QMandalaField>();
   qmlRegisterType<FlightDataFile>();
-  //qmlRegisterType<DatalinkServer>();
 
   mandala=qApp->property("Mandala").value<QMandala*>();
 
