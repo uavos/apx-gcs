@@ -30,7 +30,7 @@ Item {
     Item{
         id: horizon_bg
         anchors.fill: parent
-        rotation: sys.angle(-roll.value)
+        rotation: app.angle(-m.roll.value)
         Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
 
         PfdImage {
@@ -41,7 +41,7 @@ Item {
             fillMode: Image.PreserveAspectFit
             width: diagonal*sf
             height: width
-            property double value: pitch.value
+            property double value: m.pitch.value
             anchors.centerIn: parent
             anchors.verticalCenterOffset: value*pitchDeg2img
             Behavior on value { PropertyAnimation {duration: anumation_duration} }
@@ -118,7 +118,7 @@ Item {
             id: sideslip_moving_image
             elementName: "sideslip-moving"
             smooth: true
-            rotation: -slip.value
+            rotation: -m.slip.value
             fillMode: Image.PreserveAspectFit
             width: roll_scale_image.width
             height: roll_scale_image.height
@@ -130,14 +130,14 @@ Item {
 
         Rectangle {
             id: rc_ptr
-            property bool active: rc_roll.value!==0 || rc_pitch.value!==0
+            property bool active: m.rc_roll.value!==0 || m.rc_pitch.value!==0
             width: rc_ctr.ptr_size+5
             height: width
             radius: width*0.5
             color: "#80101010"
             visible: active
-            x: (rc_roll.value+1)/2*rc_ctr.width-width/2
-            y: rc_ctr.anchors.topMargin+(rc_pitch.value+1)/2*rc_ctr.height-height/2
+            x: (m.rc_roll.value+1)/2*rc_ctr.width-width/2
+            y: rc_ctr.anchors.topMargin+(m.rc_pitch.value+1)/2*rc_ctr.height-height/2
             Behavior on x { PropertyAnimation {duration: anumation_duration*0.8} }
             Behavior on y { PropertyAnimation {duration: anumation_duration*0.8} }
 
@@ -150,8 +150,8 @@ Item {
             anchors.fill: parent
             //anchors.verticalCenterOffset: -anchors.topMargin
             //anchors.centerIn: parent
-            mvarX:  rc_roll
-            mvarY:  rc_pitch
+            mvarX: m.rc_roll
+            mvarY: m.rc_pitch
         }
 
     }
@@ -165,8 +165,8 @@ Item {
         height: fd_roll.height*0.25
         color: "#990099"
         anchors.centerIn: parent
-        //anchors.horizontalCenterOffset: sys.limit(fd_roll.pos+(ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
-        anchors.horizontalCenterOffset: sys.limit((ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
+        //anchors.horizontalCenterOffset: app.limit(fd_roll.pos+(m.ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: app.limit((m.ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
@@ -176,32 +176,32 @@ Item {
         height: fd_pitch.height*0.7
         color: "#990099"
         anchors.centerIn: parent
-        //anchors.verticalCenterOffset: sys.limit(fd_pitch.pos-(ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
-        anchors.verticalCenterOffset: sys.limit(-(ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
+        //anchors.verticalCenterOffset: app.limit(fd_pitch.pos-(m.ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: app.limit(-(m.ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
         //roll
         id: fd_roll
         antialiasing: app.settings.smooth.value
-        width: sys.limit(diagonal*0.006,2,8)
+        width: app.limit(diagonal*0.006,2,8)
         height: parent.width*0.2
         color: "magenta"
-        property double pos: -(roll.value-cmd_roll.value)*rollDeg2img
+        property double pos: -(m.roll.value-m.cmd_roll.value)*rollDeg2img
         anchors.centerIn: parent
-        anchors.horizontalCenterOffset: sys.limit(pos,-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: app.limit(pos,-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
         //pitch
         id: fd_pitch
         antialiasing: app.settings.smooth.value
-        height: sys.limit(diagonal*0.006,2,8)
+        height: app.limit(diagonal*0.006,2,8)
         width: parent.width*0.2
         color: "magenta"
-        property double pos: (pitch.value-cmd_pitch.value)*pitchDeg2img
+        property double pos: (m.pitch.value-m.cmd_pitch.value)*pitchDeg2img
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: sys.limit(pos,-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: app.limit(pos,-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
 
@@ -213,7 +213,7 @@ Item {
         width: parent.width*0.2
         height: width
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: sys.limit((pitch.value-cmd_pitch.value)*pitchDeg2img,-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: app.limit((m.pitch.value-m.cmd_pitch.value)*pitchDeg2img,-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }
 
@@ -225,7 +225,7 @@ Item {
         width: fd_pitch_image.height
         height: fd_pitch_image.width
         anchors.centerIn: parent
-        anchors.horizontalCenterOffset: sys.limit(-(roll.value-cmd_roll.value)*rollDeg2img,-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: app.limit(-(m.roll.value-m.cmd_roll.value)*rollDeg2img,-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
     }*/
 

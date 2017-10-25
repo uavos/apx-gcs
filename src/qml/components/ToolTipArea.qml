@@ -14,7 +14,7 @@ MouseArea {
     hoverEnabled: true
     function show(){
         visible = true;
-        sys.toolTip(text);
+        app.toolTip(text);
     }
     Timer {
         id:showTimer

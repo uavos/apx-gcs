@@ -5,12 +5,12 @@ import QtQuick.Controls 2.1
 import "../components"
 
 ControlArea {
-    mvar: cmd_altitude   //ControlArea
+    mvar: m.cmd_altitude   //ControlArea
     span: 20
     min:0
     max: 50000
     fixedPoint: true
-    step: (cmd_altitude.value<100)?1:cmd_altitude.value<800?10:100
+    step: (m.cmd_altitude.value<100)?1:m.cmd_altitude.value<800?10:100
     stepDrag: step*2
     stepWheel: step*0.0001
     stepLimit: 100
@@ -22,9 +22,9 @@ ControlArea {
 
     /*function adj(v) {
         v=parseInt(v)
-        if(cmd_altitude.value<100) cmd_altitude.setValue(cmd_altitude.value+v*1);
-        else if(cmd_altitude.value<800) cmd_altitude.setValue(((cmd_altitude.value+(v*10))/10).toFixed()*10);
-        else cmd_altitude.setValue(((cmd_altitude.value+(v*100))/100).toFixed()*100);
+        if(m.cmd_altitude.value<100) m.cmd_altitude.setValue(m.cmd_altitude.value+v*1);
+        else if(m.cmd_altitude.value<800) m.cmd_altitude.setValue(((m.cmd_altitude.value+(v*10))/10).toFixed()*10);
+        else m.cmd_altitude.setValue(((m.cmd_altitude.value+(v*100))/100).toFixed()*100);
     }
     onWheel: adj((wheel.angleDelta.y>0)?1:-1)
     onClicked: adj(out_yv<0?+1:-1)
@@ -52,7 +52,7 @@ ControlArea {
         property double strip_width: 0.2
         property double strip_factor: 10
 
-        property real altitude_value : altitude.value   //pitch.value //Math.abs(pitch.value)
+        property real altitude_value : m.altitude.value   //m.pitch.value //Math.abs(m.pitch.value)
         Behavior on altitude_value { PropertyAnimation {duration: anumation_duration} }
 
         property variant scale_bounds: svgRenderer.elementBounds("pfd/pfd.svg", "altitude-scale")
@@ -129,15 +129,15 @@ ControlArea {
             id: altitude_waypoint
             elementName: "altitude-waypoint"
             smooth: true
-            //visible: cmd_airaltitude.value !== 0.0
+            //visible: m.cmd_airaltitude.value !== 0.0
             width: elementBounds.width*height/elementBounds.height  //altitude_window.strip_scale
             height: altitude_box.height    //elementBounds.height*altitude_window.strip_scale
 
             anchors.left: altitude_scale.left
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: sys.limit(altitude_window.num2scaleHeight * (altitude.value - cmd_altitude.value)/altitude_window.strip_factor,-parent.height/2,parent.height/2)
+            anchors.verticalCenterOffset: app.limit(altitude_window.num2scaleHeight * (m.altitude.value - m.cmd_altitude.value)/altitude_window.strip_factor,-parent.height/2,parent.height/2)
             Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
-            ToolTipArea {text: cmd_altitude.descr}
+            ToolTipArea {text: m.cmd_altitude.descr}
         }
 
         PfdImage {
@@ -183,7 +183,7 @@ ControlArea {
                     }
                 }
             }
-            ToolTipArea {text: altitude.descr}
+            ToolTipArea {text: m.altitude.descr}
         }
 
     }
@@ -197,11 +197,11 @@ ControlArea {
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: sys.limit(altitude_window.num2scaleHeight * (altitude.value - (gps_hmsl.value-home_hmsl.value))/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
+        anchors.verticalCenterOffset: app.limit(altitude_window.num2scaleHeight * (m.altitude.value - (m.gps_hmsl.value-m.home_hmsl.value))/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
         Text {
-            visible: Math.abs(altitude.value - (gps_hmsl.value-home_hmsl.value))>10
-            text: (gps_hmsl.value-home_hmsl.value).toFixed()
+            visible: Math.abs(m.altitude.value - (m.gps_hmsl.value-m.home_hmsl.value))>10
+            text: (m.gps_hmsl.value-m.home_hmsl.value).toFixed()
             color: "white"
             anchors.right: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -211,24 +211,24 @@ ControlArea {
             verticalAlignment: Text.AlignVCenter
             font.family: font_narrow
         }
-        ToolTipArea {text: gps_hmsl.descr}
+        ToolTipArea {text: m.gps_hmsl.descr}
     }
 
     PfdImage {
         id: agl_image
         elementName: "agl"
         smooth: true
-        visible: status_agl.value>0
+        visible: m.status_agl.value>0
         width: elementBounds.width*altitude_window.strip_scale
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left
         //anchors.rightMargin: 4
         anchors.top: parent.verticalCenter
-        anchors.topMargin: sys.limit(5*altitude_window.num2scaleHeight * (agl.value)/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
+        anchors.topMargin: app.limit(5*altitude_window.num2scaleHeight * (m.agl.value)/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.topMargin { PropertyAnimation {duration: anumation_duration} }
         Text {
-            visible: agl.value>0
-            text: agl.value.toFixed(agl.value>10?0:1)
+            visible: m.agl.value>0
+            text: m.agl.value.toFixed(m.agl.value>10?0:1)
             color: "yellow"
             anchors.right: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -237,7 +237,7 @@ ControlArea {
             verticalAlignment: Text.AlignVCenter
             font.family: font_narrow
         }
-        ToolTipArea {text: agl.descr}
+        ToolTipArea {text: m.agl.descr}
     }
 
 }

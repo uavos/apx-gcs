@@ -370,10 +370,16 @@ Item {
                     model: field.fact.enumStrings
                     contentItem: editable?textInputC.createObject(editor):editor.contentItem
                     background: editable?textInputBgC.createObject(editor):editor.background
-                    Component.onCompleted: currentIndex=find(field.fact.text)
+                    Component.onCompleted: currentIndex=find(value)
                     onActivated: {
                         field.fact.value=textAt(index)
                         parent.forceActiveFocus();
+                    }
+                    property string value: field.fact.text
+                    onValueChanged: currentIndex=find(value)
+                    Connections {
+                        target: listView
+                        onMovementStarted: editor.popup.close()
                     }
                     Component {
                         id: textInputC
@@ -445,13 +451,13 @@ Item {
                             border.width: 0
                         }
                         onActiveFocusChanged: {
-                            app.shortcuts.blocked.value=activeFocus;
+                            app.settings.shortcuts.blocked.value=activeFocus;
                             if(activeFocus && control.selectedText===""){
                                 control.selectAll();
                             }
                         }
                         onEditingFinished: {
-                            app.shortcuts.blocked.value=false;
+                            app.settings.shortcuts.blocked.value=false;
                             if(modelData) field.fact.value=text
                         }
                         //Keys.onEscapePressed: editor.parent.forceActiveFocus();
@@ -459,7 +465,7 @@ Item {
                             //console.log("key: "+event.key+" text: "+event.text)
                             event.accepted=true
                             control.remove(control.selectionStart,control.selectionEnd);
-                            var s=app.shortcuts.keyToPortableString(event.key,event.modifiers);
+                            var s=app.settings.shortcuts.keyToPortableString(event.key,event.modifiers);
                             var i=control.cursorPosition;
                             if(control.text.endsWith('+'))i=control.text.length;
                             control.insert(i,s);

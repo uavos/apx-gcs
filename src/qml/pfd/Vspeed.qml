@@ -2,7 +2,7 @@ import QtQuick 2.2
 import "../components"
 
 ControlArea {
-    mvar: rc_throttle   //ControlArea
+    mvar: m.rc_throttle   //ControlArea
     //speed: 0.8
 
     //instrument item
@@ -26,7 +26,7 @@ ControlArea {
         elementName: "vsi-scale"
         smooth: true
         width: elementBounds.width*vsi_window.scaleFactor  //parent.width*0.8
-        height: sys.limit(1.2*parent.width*elementBounds.height/elementBounds.width,0,parent.height*0.8)  //elementBounds.height*vsi_window.scaleFactor
+        height: app.limit(1.2*parent.width*elementBounds.height/elementBounds.width,0,parent.height*0.8)  //elementBounds.height*vsi_window.scaleFactor
         //anchors.left: parent.left
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: -parent.width*0.3
@@ -45,10 +45,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_arrow.width
             origin.y: vsi_arrow.height/2
-            angle: get_deg(vspeed.value)
+            angle: get_deg(m.vspeed.value)
             Behavior on angle { PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: vspeed.descr}
+        ToolTipArea {text: m.vspeed.descr}
     }
 
     PfdImage {
@@ -62,10 +62,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_gps.width
             origin.y: vsi_gps.height/2
-            angle: get_deg(-gps_Vdown.value)
+            angle: get_deg(-m.gps_Vdown.value)
             Behavior on angle { PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: gps_Vdown.descr}
+        ToolTipArea {text: m.gps_Vdown.descr}
     }
 
     PfdImage {
@@ -79,10 +79,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_triangle.width
             origin.y: vsi_triangle.height/2
-            angle: get_deg(venergy.value)
+            angle: get_deg(m.venergy.value)
             Behavior on angle { PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: venergy.descr}
+        ToolTipArea {text: m.venergy.descr}
     }
 
     PfdImage {
@@ -97,16 +97,16 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_waypoint.width
             origin.y: vsi_waypoint.height/2
-            angle: get_deg(cmd_vspeed.value)
+            angle: get_deg(m.cmd_vspeed.value)
             Behavior on angle { PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: cmd_vspeed.descr}
+        ToolTipArea {text: m.cmd_vspeed.descr}
     }
 
     Text {
         id: vsi_text_low
-        visible: vspeed.value<-0.5
-        text: vspeed.value.toFixed(1)
+        visible: m.vspeed.value<-0.5
+        text: m.vspeed.value.toFixed(1)
         color: "white"
         anchors.horizontalCenter: vsi_scale.right
         anchors.horizontalCenterOffset: -vsi_scale.width*0.1
@@ -119,8 +119,8 @@ ControlArea {
     }
 
     Text {
-        visible: vspeed.value>0.5
-        text: "+"+vspeed.value.toFixed(1)
+        visible: m.vspeed.value>0.5
+        text: "+"+m.vspeed.value.toFixed(1)
         color: "white"
         anchors.horizontalCenter: vsi_scale.right
         anchors.bottom: vsi_scale.top

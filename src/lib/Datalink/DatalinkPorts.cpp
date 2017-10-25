@@ -37,7 +37,7 @@ DatalinkPorts::DatalinkPorts(Datalink *parent)
   f_allon=new Fact(this,"allon",tr("Enable all"),tr("Turn on all communication ports"),FactItem,NoData);
   f_alloff=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all communication ports"),FactItem,NoData);
 
-  f_list=new Fact(this,"ports",tr("Ports"),tr("Configured ports"),SectionItem,ConstData);
+  f_list=new Fact(this,"list",tr("Ports"),tr("Configured ports"),SectionItem,ConstData);
   bind(f_list);
 
   load();

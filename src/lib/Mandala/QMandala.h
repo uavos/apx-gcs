@@ -47,7 +47,7 @@ private:
   QTimer dlinkReqTimer;
   QList<QByteArray> req_list;
   void reqIDENT(IDENT::_squawk squawk);
-  void jsexec(QString scr);
+  //void jsexec(QString scr);
   bool checkSquawk(QMandalaItem *m_current,QMandalaItem *m,bool silent=false);
   void assignIDENT(IDENT::_ident *ident);
 
@@ -61,7 +61,7 @@ public slots:
   Q_INVOKABLE void changeCurrentNext(void);
   Q_INVOKABLE void changeCurrentPrev(void);
 
-  void testUAV();
+  Q_INVOKABLE void testUAV();
 
 signals:
   void uavAdded(QMandalaItem *m);

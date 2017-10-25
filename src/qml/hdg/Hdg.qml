@@ -8,12 +8,12 @@ Rectangle {
     anchors.fill: parent
     clip: true
     property double anumation_duration: app.settings.smooth.value?100:0
-    property double txtHeight: sys.limit(hdg_deg_rect.height,8,50)
+    property double txtHeight: app.limit(hdg_deg_rect.height,8,50)
     property bool isLanding:
-        mode.value===mode_LANDING ||
-        mode.value===mode_TAKEOFF ||
-        mode.value===mode_TAXI ||
-        (mode.value===mode_WPT && mtype.value===mtype_line)
+        m.mode.value===mode_LANDING ||
+        m.mode.value===mode_TAKEOFF ||
+        m.mode.value===mode_TAXI ||
+        (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
 
     //Component.onDestruction: console.log("delete: "+this)
     HdgImage {
@@ -42,7 +42,7 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: ("00"+sys.angle360(yaw.value).toFixed()).slice(-3)
+            text: ("00"+app.angle360(m.yaw.value).toFixed()).slice(-3)
             font.pixelSize: parent.height
             font.family: font_mono
             font.bold: true
@@ -50,7 +50,7 @@ Rectangle {
 
         }
         ToolTipArea {
-            text: yaw.descr
+            text: m.yaw.descr
         }
     }
 
@@ -70,7 +70,7 @@ Rectangle {
             elementName: "hdg-wheel"
             smooth: true
             anchors.fill: parent
-            rotation: sys.angle(-yaw.value)
+            rotation: app.angle(-m.yaw.value)
             Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
         }
         HdgImage {
@@ -85,7 +85,7 @@ Rectangle {
             transform: Rotation{
                 origin.x: course_arrow.width/2
                 origin.y: course_arrow.height
-                angle: sys.angle(-(yaw.value-course.value))
+                angle: app.angle(-(m.yaw.value-m.course.value))
                 Behavior on angle { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             }
         }
@@ -101,7 +101,7 @@ Rectangle {
             transform: Rotation{
                 origin.x: cmd_arrow.width/2
                 origin.y: cmd_arrow.height
-                angle: sys.angle(-(yaw.value-cmd_course.value))
+                angle: app.angle(-(m.yaw.value-m.cmd_course.value))
                 Behavior on angle { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
             }
         }
@@ -129,10 +129,10 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: elementBounds.width*wheel.sf+border*2
                 height: elementBounds.height*wheel.sf+border*2
-                rotation: sys.angle(-(yaw.value-tgHDG.value))
+                rotation: app.angle(-(m.yaw.value-m.tgHDG.value))
                 Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
                 ToolTipArea {
-                    text: tgHDG.descr
+                    text: m.tgHDG.descr
                 }
                 HdgImage {
                     id: ils_bar
@@ -143,10 +143,10 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: elementBounds.width*wheel.sf+border*2
                     height: elementBounds.height*wheel.sf+border*2
-                    anchors.horizontalCenterOffset: sys.limit(-rwDelta.value*width*0.5,-height,height)
+                    anchors.horizontalCenterOffset: app.limit(-m.rwDelta.value*width*0.5,-height,height)
                     Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
                     ToolTipArea {
-                        text: rwDelta.descr
+                        text: m.rwDelta.descr
                     }
                 }
 
@@ -157,24 +157,24 @@ Rectangle {
             id: wpt_home
             elementName: "hdg-wpt-green"
             smooth: true
-            visible: app.settings.test.value || dHome.value>5
+            visible: app.settings.test.value || m.dHome.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
             height: elementBounds.height*wheel.sf
-            rotation: sys.angle(-(yaw.value-homeHDG.value))
+            rotation: app.angle(-(m.yaw.value-m.homeHDG.value))
             Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
         }
 
         HdgImage {
             elementName: "hdg-wpt-blue"
             smooth: true
-            visible: app.settings.test.value || dWPT.value>5
+            visible: app.settings.test.value || m.dWPT.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
             height: elementBounds.height*wheel.sf
-            rotation: sys.angle(-(yaw.value-wpHDG.value))
+            rotation: app.angle(-(m.yaw.value-m.wpHDG.value))
             Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
         }
 
@@ -191,18 +191,18 @@ Rectangle {
             anchors.right: parent.right
             anchors.top: parent.top
             height: hdg.txtHeight
-            mfield: course
+            mfield: m.course
             label: qsTr("CRS")
-            text: ("00"+sys.angle360(course.value).toFixed()).slice(-3)
+            text: ("00"+app.angle360(m.course.value).toFixed()).slice(-3)
             valueColor: "cyan"
         }
         NumberHdg {
             anchors.right: parent.right
             anchors.top: crs_text.bottom
             height: hdg.txtHeight
-            mfield: cmd_course
+            mfield: m.cmd_course
             label: ""
-            text: ("00"+sys.angle360(cmd_course.value).toFixed()).slice(-3)
+            text: ("00"+app.angle360(m.cmd_course.value).toFixed()).slice(-3)
             valueColor: "magenta"
         }
 
@@ -210,56 +210,56 @@ Rectangle {
             id: lat_lon_text
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            height: sys.limit(hdg.txtHeight*0.5,8,50)
-            text: sys.latToString(gps_lat.value)+" "+sys.lonToString(gps_lon.value)
+            height: app.limit(hdg.txtHeight*0.5,8,50)
+            text: app.latToString(m.gps_lat.value)+" "+app.lonToString(m.gps_lon.value)
             valueColor: "gray"
-            toolTip: gps_lat.descr+", "+gps_lon.descr
+            toolTip: m.gps_lat.descr+", "+m.gps_lon.descr
         }
 
         NumberHdg {
             id: fuel_text
-            property double v: fuel.value
+            property double v: m.fuel.value
             visible: app.settings.test.value || v>0
             anchors.right: parent.right
             anchors.bottom: lat_lon_text.top
             height: hdg.txtHeight
-            mfield: fuel
+            mfield: m.fuel
             label: qsTr("FL")
             text: v>=10?v.toFixed():v.toFixed(1)
         }
 
         NumberHdg {
             id: frate_text
-            property double v: frate.value
+            property double v: m.frate.value
             visible: app.settings.test.value || v>0
             anchors.right: parent.right
             anchors.bottom: fuel_text.top
             height: hdg.txtHeight
-            mfield: frate
+            mfield: m.frate
             label: qsTr("FR")
             text: v>=10?v.toFixed():v.toFixed(1)
         }
 
         NumberHdg {
             id: dh_text
-            property double v: (mode.value===mode_TAXI)?delta.value:dHome.value
+            property double v: (m.mode.value===mode_TAXI)?m.delta.value:m.dHome.value
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             height: hdg.txtHeight
-            mfield: dHome
+            mfield: m.dHome
             label: qsTr("DH")
             text: v>=1000?(v/1000).toFixed(1)+"km":v.toFixed()
         }
         NumberHdg {
             id: rd_text
             visible: app.settings.test.value || isLanding
-            property double v: rwDelta.value
+            property double v: m.rwDelta.value
             anchors.left: parent.left
             anchors.bottom: dh_text.top
             height: hdg.txtHeight
-            mfield: rwDelta
+            mfield: m.rwDelta
             label: qsTr("RD")
-            text: rwDelta.value.toFixed()+(rwAdj.value>0?"+"+rwAdj.value.toFixed():rwAdj.value<0?"-"+(-rwAdj.value).toFixed():"")
+            text: m.rwDelta.value.toFixed()+(m.rwAdj.value>0?"+"+m.rwAdj.value.toFixed():m.rwAdj.value<0?"-"+(-m.rwAdj.value).toFixed():"")
         }
         Column{
             anchors.left: parent.left
@@ -268,10 +268,10 @@ Rectangle {
 
             NumberHdg {
                 id: dme_text
-                property double v: dWPT.value
+                property double v: m.dWPT.value
                 smooth: true
                 height: hdg.txtHeight
-                mfield: dWPT
+                mfield: m.dWPT
                 label: qsTr("DME")
                 text: v>=1000?(v/1000).toFixed(1)+"km":v.toFixed()
             }
@@ -279,8 +279,8 @@ Rectangle {
             Text {
                 id: eta_text
                 smooth: true
-                property double valid: gSpeed.value>1 && value>0
-                property int value: ETA.value
+                property double valid: m.gSpeed.value>1 && value>0
+                property int value: m.ETA.value
                 property int tsec: ("0"+Math.floor(value%60)).slice(-2)
                 property int tmin: ("0"+Math.floor(value/60)%60).slice(-2)
                 property int thrs: Math.floor(value/60/60)
@@ -290,29 +290,29 @@ Rectangle {
                 font.pixelSize: hdg.txtHeight*0.8
                 font.family: dme_text.valueFont
                 color: dme_text.labelColor
-                ToolTipArea { text: ETA.descr }
+                ToolTipArea { text: m.ETA.descr }
             }
 
             NumberHdg {
                 id: wpt_text
-                visible: app.settings.test.value || mode.value===mode_WPT
+                visible: app.settings.test.value || m.mode.value===mode_WPT
                 smooth: true
                 height: hdg.txtHeight
-                mfield: wpidx
+                mfield: m.wpidx
                 label: qsTr("WPT")
                 valueColor: "cyan"
-                value: wpidx.value+1
+                value: m.wpidx.value+1
             }
 
             NumberHdg {
                 id: poi_text
-                visible: app.settings.test.value || (mode.value===mode_STBY && loops.value>0)
+                visible: app.settings.test.value || (m.mode.value===mode_STBY && m.loops.value>0)
                 smooth: true
                 height: hdg.txtHeight
-                mfield: loops
+                mfield: m.loops
                 label: qsTr("LPS")
                 valueColor: "cyan"
-                value: loops.value
+                value: m.loops.value
             }
         }
     }
@@ -321,16 +321,16 @@ Rectangle {
         anchors.fill: parent
         anchors.rightMargin: parent.width/2
         onClicked: {
-            if(isLanding) rwAdj.setValue(rwAdj.value-1)
-            else cmd_course.setValue(sys.angle(cmd_course.value-15))
+            if(isLanding) m.rwAdj.setValue(m.rwAdj.value-1)
+            else m.cmd_course.setValue(app.angle(m.cmd_course.value-15))
         }
     }
     MouseArea {
         anchors.fill: parent
         anchors.leftMargin: parent.width/2
         onClicked: {
-            if(isLanding) rwAdj.setValue(rwAdj.value+1)
-            else cmd_course.setValue(sys.angle(cmd_course.value+15))
+            if(isLanding) m.rwAdj.setValue(m.rwAdj.value+1)
+            else m.cmd_course.setValue(app.angle(m.cmd_course.value+15))
         }
     }
 

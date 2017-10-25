@@ -20,18 +20,37 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactSystemUtils_H
-#define FactSystemUtils_H
+#ifndef FactSystemApp_H
+#define FactSystemApp_H
 //=============================================================================
 #include <QtCore>
+#include "Fact.h"
 //=============================================================================
-class FactSystemUtils: public QObject
+class FactSystemApp: public Fact
 {
   Q_OBJECT
 
 public:
-  explicit FactSystemUtils(QObject *parent=0);
+  explicit FactSystemApp(QObject *parent=0);
 
+  static FactSystemApp * instance() { return _instance; }
+
+  //constants
+  static const QString ApplicationSection;
+
+  static bool devMode()     { return _instance->m_dev; }
+  static QString version()  { return _instance->m_version; }
+  static QString branch()   { return _instance->m_branch; }
+
+protected:
+  static FactSystemApp * _instance;
+
+  bool m_dev;
+  QString m_version;
+  QString m_branch;
+
+public:
+  // static app utils
   //----------------------------------
   Q_INVOKABLE static QString latToString(double v);
   Q_INVOKABLE static QString lonToString(double v);

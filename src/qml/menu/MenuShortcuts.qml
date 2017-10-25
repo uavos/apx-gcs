@@ -14,13 +14,13 @@ GCSMenu {
         GCSMenuField { title: qsTr("User shortcuts"); separator: true; }
         GCSMenuField {
             title: qsTr("Add new");
-            Component.onCompleted: addEditor(this,xapp.shortcuts.newItem)
+            Component.onCompleted: addEditor(this,xapp.settings.shortcuts.newItem)
         }
-        GCSMenuField { title: qsTr("Enable all"); onClicked: xapp.shortcuts.enableAllUser(true);}
-        GCSMenuField { title: qsTr("Disable all"); onClicked: xapp.shortcuts.enableAllUser(false);}
+        GCSMenuField { title: qsTr("Enable all"); onClicked: xapp.settings.shortcuts.enableAllUser(true);}
+        GCSMenuField { title: qsTr("Disable all"); onClicked: xapp.settings.shortcuts.enableAllUser(false);}
         GCSMenuList {
             objModel: objModel
-            model: xapp.shortcuts.userShortcuts
+            model: xapp.settings.shortcuts.userShortcuts
             delegate: GCSMenuField {
                 showBusy: false
                 delegate: scElement
@@ -33,11 +33,11 @@ GCSMenu {
         }
 
         GCSMenuField { title: qsTr("System shortcuts"); separator: true; }
-        GCSMenuField { title: qsTr("Enable all"); onClicked: xapp.shortcuts.enableAllSystem(true);}
-        GCSMenuField { title: qsTr("Disable all"); onClicked: xapp.shortcuts.enableAllSystem(false);}
+        GCSMenuField { title: qsTr("Enable all"); onClicked: xapp.settings.shortcuts.enableAllSystem(true);}
+        GCSMenuField { title: qsTr("Disable all"); onClicked: xapp.settings.shortcuts.enableAllSystem(false);}
         GCSMenuList {
             objModel: objModel
-            model: xapp.shortcuts.systemShortcuts
+            model: xapp.settings.shortcuts.systemShortcuts
             delegate: GCSMenuField {
                 showBusy: false
                 delegate: scElement
@@ -67,7 +67,7 @@ GCSMenu {
             property variant modelData
             Btn {
                 active: false
-                //onClicked: xapp.shortcuts.systemShortcuts.removeItem(modelData.itemData);
+                //onClicked: xapp.settings.shortcuts.systemShortcuts.removeItem(modelData.itemData);
                 Layout.alignment: Qt.AlignLeft
                 Layout.fillHeight: true
                 text: scText.nativeText
@@ -139,22 +139,22 @@ GCSMenu {
                     border.width: 0
                 }
                 onActiveFocusChanged: {
-                    xapp.shortcuts.blocked=activeFocus;
+                    xapp.settings.shortcuts.blocked=activeFocus;
                     if(activeFocus && control.selectedText===""){
                         control.selectAll();
                     }
                 }
                 onEditingFinished: {
-                    xapp.shortcuts.blocked=false;
+                    xapp.settings.shortcuts.blocked=false;
                     if(modelData) modelData.itemData.key=text
                 }
                 Keys.onPressed: {
                     //console.log("key: "+event.key+" text: "+event.text)
                     event.accepted=true
-                    //control.text=xapp.shortcuts.keyToPortableString(event.key,event.modifiers)
+                    //control.text=xapp.settings.shortcuts.keyToPortableString(event.key,event.modifiers)
                     //control.selectAll();
                     control.remove(control.selectionStart,control.selectionEnd);
-                    var s=xapp.shortcuts.keyToPortableString(event.key,event.modifiers);
+                    var s=xapp.settings.shortcuts.keyToPortableString(event.key,event.modifiers);
                     var i=control.cursorPosition;
                     if(control.text.endsWith('+'))i=control.text.length;
                     control.insert(i,s);
@@ -210,18 +210,18 @@ GCSMenu {
             GCSMenuField { title: qsTr("Enable"); checkable: true; checked: itemData.enabled; onClicked: itemData.enabled=!itemData.enabled; }
             GCSMenuField {
                 title: qsTr("Delete");
-                visible: itemData !== xapp.shortcuts.newItem
+                visible: itemData !== xapp.settings.shortcuts.newItem
                 onClicked: {
-                    xapp.shortcuts.userShortcuts.removeItem(itemData);
+                    xapp.settings.shortcuts.userShortcuts.removeItem(itemData);
                     menuShortcuts.back();
                 }
             }
             GCSMenuField {
                 title: qsTr("Add");
-                visible: itemData === xapp.shortcuts.newItem
+                visible: itemData === xapp.settings.shortcuts.newItem
                 //enabled: itemData.valid
                 onClicked: {
-                    xapp.shortcuts.addNew();
+                    xapp.settings.shortcuts.addNew();
                     menuShortcuts.back();
                 }
             }

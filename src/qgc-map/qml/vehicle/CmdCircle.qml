@@ -6,18 +6,18 @@ import "../components"
 Item {
     id: cmdCircleItem
     //property var m: vehicleItem.m
-    //property var f_lat: m.field("home_lat")
-    //property var f_lon: m.field("home_lon")
+    //property var f_lat: field("home_lat")
+    //property var f_lon: field("home_lon")
 
-    property var f_cmd_north: m.field("cmd_north")
-    property var f_cmd_east: m.field("cmd_east")
+    property var f_cmd_north: field("cmd_north")
+    property var f_cmd_east: field("cmd_east")
 
-    property double home_x: mapProvider.lonToX(home_lon.value)
-    property double home_y: mapProvider.latToY(home_lat.value)
+    property double home_x: mapProvider.lonToX(m.home_lon.value)
+    property double home_y: mapProvider.latToY(m.home_lat.value)
 
     property double msf: mapProvider.metersToX(home_y)
-    property double cmd_x: home_x+msf*cmd_east.value //mapProvider.lonToX(home_lon.value)
-    property double cmd_y: home_y-msf*cmd_north.value //mapProvider.latToY(home_lat.value)
+    property double cmd_x: home_x+msf*m.cmd_east.value //mapProvider.lonToX(m.home_lon.value)
+    property double cmd_y: home_y-msf*m.cmd_north.value //mapProvider.latToY(m.home_lat.value)
 
     MapImage {
         z: -99
@@ -35,8 +35,8 @@ Item {
         interactive: false
         //visible: mapProvider.level>10
         parent: vehicleItem.parent
-        lat: f_home_lat.value
-        lon: f_home_lon.value
+        lat: m.f_home_lat.value
+        lon: m.f_home_lon.value
         color: "blue"
         textColor: "white"
         opacity: 0.6
@@ -50,7 +50,7 @@ Item {
         Rectangle {
             z: -1000
             anchors.centerIn: parent
-            width: mapProvider.metersToX(cmd_y)*map.constSceneXY*2*100//f_turnR.value
+            width: mapProvider.metersToX(cmd_y)*map.constSceneXY*2*100//m.f_turnR.value
             height: width
             color: "#1000FF00"
             border.color: "magenta"

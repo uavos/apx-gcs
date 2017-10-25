@@ -184,10 +184,10 @@ Rectangle {
         CommNum {
             height: parent.height
             label: qsTr("VG")
-            value: gcu_Ve.value.toFixed(1)
-            valueColor: gcu_Ve.value>1?(gcu_Ve.value<7.4?"red":"yellow"):"gray"
-            toolTip: gcu_Ve.descr
-            //visible: app.settings.test.value || gcu_Ve.value>1
+            value: m.gcu_Ve.value.toFixed(1)
+            valueColor: m.gcu_Ve.value>1?(m.gcu_Ve.value<7.4?"red":"yellow"):"gray"
+            toolTip: m.gcu_Ve.descr
+            //visible: app.settings.test.value || m.gcu_Ve.value>1
         }
 
 
@@ -195,10 +195,10 @@ Rectangle {
             height: parent.height
             width: comm.itemWidth*1.5
             label: qsTr("RSS")
-            ToolTipArea { text: RSS.descr + ", " + gcu_RSS.descr }
+            ToolTipArea { text: m.RSS.descr + ", " + m.gcu_RSS.descr }
             Rectangle{
                 id: rss_bar
-                property double v: RSS.value
+                property double v: m.RSS.value
                 anchors.right: parent.right
                 anchors.rightMargin: 2
                 anchors.top: parent.top
@@ -206,16 +206,16 @@ Rectangle {
                 anchors.topMargin: 2
                 anchors.bottomMargin: parent.height*0.1
                 //height: parent.height*0.2
-                width: sys.limit(v*parent.width*0.6,1,parent.width*0.6)
+                width: app.limit(v*parent.width*0.6,1,parent.width*0.6)
                 color: v<0.3?"red":v<0.7?"yellow":"green"
-                ToolTipArea { text: RSS.descr }
+                ToolTipArea { text: m.RSS.descr }
                 property int anim: (app.settings.smooth.value)?200:0
                 Behavior on width { PropertyAnimation {duration: rss_bar.anim} }
                 Behavior on color { ColorAnimation {duration: rss_bar.anim} }
             }
             Rectangle{
                 id: gcu_rss_bar
-                property double v: gcu_RSS.value
+                property double v: m.gcu_RSS.value
                 anchors.right: parent.right
                 anchors.rightMargin: 2
                 anchors.top: parent.verticalCenter
@@ -223,9 +223,9 @@ Rectangle {
                 anchors.topMargin: 1
                 //anchors.bottomMargin: parent.height*0.1+1
                 height: rss_bar.height
-                width: sys.limit(v*parent.width*0.6,1,parent.width*0.6)
+                width: app.limit(v*parent.width*0.6,1,parent.width*0.6)
                 color: v<0.3?"red":v<0.7?"yellow":"green"
-                ToolTipArea { text: gcu_RSS.descr }
+                ToolTipArea { text: m.gcu_RSS.descr }
                 property int anim: (app.settings.smooth.value)?200:0
                 Behavior on width { PropertyAnimation {duration: gcu_rss_bar.anim} }
                 Behavior on color { ColorAnimation {duration: gcu_rss_bar.anim} }

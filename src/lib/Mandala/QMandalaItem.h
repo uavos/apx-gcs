@@ -64,9 +64,7 @@ private:
   QMandalaField *field_void;
   void registerField(uint varmsk,QString name,QString descr,QString units);
 
-  const Fact *datalinkReadonly;
-
-  //QtScript support
+/*  //QtScript support
 private:
   void add_scr(QString name,QString description,QString body);
   QHash<QString,QString> scr_descr; //alias,descr
@@ -78,7 +76,7 @@ public:
   Q_INVOKABLE void scr_can(QScriptValue can_ID,QScriptValue can_IDE,QScriptValue data);
   Q_INVOKABLE void scr_vmexec(QScriptValue func);
   Q_INVOKABLE void scr_sleep(uint ms);
-
+*/
 public:
   //----------------------------------
   // nodes and service
@@ -112,7 +110,7 @@ public slots:
   void request(uint var_idx);
 
   Q_INVOKABLE void send_vmexec(const QString &func);
-  Q_INVOKABLE void exec_script(const QString &script);
+  //Q_INVOKABLE void exec_script(const QString &script);
 
   void emitUpdated(uint var_idx=idx_downstream);
 

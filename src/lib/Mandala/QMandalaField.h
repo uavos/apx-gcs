@@ -52,6 +52,7 @@ public:
   uint precision();
   QString text();
 
+  QStringList enumStrings() const;
   //MandalaTreeField *treeField;
 
 private:

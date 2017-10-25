@@ -27,11 +27,11 @@ Item {
         height: parent.height
         anchors.centerIn: parent
 
-        property double txtHeight: sys.limit(left_window.width*0.2,0,parent.height*0.1)
+        property double txtHeight: app.limit(left_window.width*0.2,0,parent.height*0.1)
         property double flagHeight: txtHeight*0.65
         property double topFramesMargin: (width-width*0.6)*0.6*0.2
 
-        property color power_color: (app.settings.test.value||error_power.value)?"red":"transparent"
+        property color power_color: (app.settings.test.value||m.error_power.value)?"red":"transparent"
 
         Horizon {
             id: horizon
@@ -47,7 +47,7 @@ Item {
             anchors.bottomMargin: parent.height*0.2
             width: parent.width*0.05
             height: width
-            value: windHdg.value-yaw.value
+            value: m.windHdg.value-m.yaw.value
         }
 
         ILS {
@@ -57,7 +57,7 @@ Item {
             anchors.centerIn: parent
             anchors.horizontalCenterOffset: parent.width*(horizon.margin_left-horizon.margin_right)/2
             width: parent.width*0.3
-            height: sys.limit(width,0,parent.height*0.6)
+            height: app.limit(width,0,parent.height*0.6)
         }
 
         //flight mode text
@@ -67,12 +67,12 @@ Item {
             anchors.left: parent.horizontalCenter
             anchors.right: right_window.left
             anchors.topMargin: pfdScene.flagHeight*1.5
-            text: mode.text
+            text: m.mode.text
             font.pixelSize: pfdScene.txtHeight
             horizontalAlignment: Text.AlignHCenter
             //verticalAlignment: Text.AlignVCenter
             font.family: font_narrow
-            ToolTipArea { text: mode.descr }
+            ToolTipArea { text: m.mode.descr }
         }
 
 
@@ -94,8 +94,8 @@ Item {
             }
 
             RectNum {
-                value: cmd_airspeed.value.toFixed()
-                toolTip: cmd_airspeed.descr
+                value: m.cmd_airspeed.value.toFixed()
+                toolTip: m.cmd_airspeed.descr
                 anchors.left: speed_window.left
                 anchors.right: speed_window.right
                 anchors.top: parent.top
@@ -136,37 +136,37 @@ Item {
                 property double modeHeight: pfdScene.flagHeight
 
                 Number {
-                    visible: app.settings.test.value || value>1 || error_power.value>0
+                    visible: app.settings.test.value || value>1 || m.error_power.value>0
                     height: modeFlags.modeHeight
-                    mfield: Vs
+                    mfield: m.Vs
                     precision: 1
-                    color: power_servo.value>0?pfdScene.power_color:"#80000000"
+                    color: m.power_servo.value>0?pfdScene.power_color:"#80000000"
                     blinking: true
                 }
                 Number {
-                    visible: app.settings.test.value || value>1 || error_power.value>0
+                    visible: app.settings.test.value || value>1 || m.error_power.value>0
                     height: modeFlags.modeHeight
-                    mfield: Vm
+                    mfield: m.Vm
                     precision: 1
                     color: pfdScene.power_color
                     blinking: true
                 }
                 Number {
-                    visible: app.settings.test.value || value>1 || error_power.value>0
+                    visible: app.settings.test.value || value>1 || m.error_power.value>0
                     height: modeFlags.modeHeight
-                    mfield: Vp
+                    mfield: m.Vp
                     precision: 1
-                    color: power_payload.value>0?pfdScene.power_color:"#80000000"
-                    blinking: error_power.value>0
+                    color: m.power_payload.value>0?pfdScene.power_color:"#80000000"
+                    blinking: m.error_power.value>0
                 }
 
                 Rectangle {
-                    color: sb_ers_err.value > 0?"red":"green"
+                    color: m.sb_ers_err.value > 0?"red":"green"
                     border.width: 0
                     radius: 3
                     height: pfdScene.flagHeight
                     width: text.width+3 //left_window.width*0.8
-                    visible: app.settings.test.value || sb_ers_disarm.value > 0 || sb_ers_err.value > 0
+                    visible: app.settings.test.value || m.sb_ers_disarm.value > 0 || m.sb_ers_err.value > 0
                     Text {
                         id: text
                         anchors.top: parent.top
@@ -174,8 +174,8 @@ Item {
                         anchors.left: parent.left
                         anchors.leftMargin: 1
                         anchors.topMargin: 1
-                        text: sb_ers_disarm.value>0?qsTr("ERS DISARMED"):qsTr("ERS ERROR")
-                        color: sb_ers_disarm.value>0?"white":"yellow"
+                        text: m.sb_ers_disarm.value>0?qsTr("ERS DISARMED"):qsTr("ERS ERROR")
+                        color: m.sb_ers_disarm.value>0?"white":"yellow"
                         font.pixelSize: parent.height
                         verticalAlignment: Text.AlignVCenter
                         font.family: font_narrow
@@ -186,7 +186,7 @@ Item {
                     id: at_num
                     height: modeFlags.modeHeight
                     //height: pfdScene.txtHeight
-                    mfield: AT
+                    mfield: m.AT
                     visible: false
                     onValueChanged: visible=visible || (mfield.value !== 0)
                 }
@@ -194,9 +194,9 @@ Item {
                     id: rt_num
                     height: modeFlags.modeHeight
                     //height: pfdScene.txtHeight
-                    mfield: RT
-                    color: RT.value>=70?"red":RT.value>=50?"#40ffff30":"transparent"
-                    blinking: RT.value>=60
+                    mfield: m.RT
+                    color: m.RT.value>=70?"red":m.RT.value>=50?"#40ffff30":"transparent"
+                    blinking: m.RT.value>=60
                     visible: false
                     onValueChanged: visible=visible || (mfield.value !== 0)
                 }
@@ -205,15 +205,15 @@ Item {
                     //height: pfdScene.txtHeight
                     height: modeFlags.modeHeight
                     label: qsTr("GPS")
-                    text: gps_SU.value+"/"+gps_SV.value
-                    toolTip: status_gps.descr+", "+gps_SU.descr+"/"+gps_SV.descr
-                    property bool isOff: (!status_gps.value) && (!status_home.value)
-                    property bool isErr: status_home.value && (!status_gps.value)
-                    property bool isOk:  status_home.value && gps_SU.value>4 && gps_SU.value<=gps_SV.value && (gps_SV.value/gps_SU.value)<1.8
+                    text: m.gps_SU.value+"/"+m.gps_SV.value
+                    toolTip: m.status_gps.descr+", "+m.gps_SU.descr+"/"+m.gps_SV.descr
+                    property bool isOff: (!m.status_gps.value) && (!m.status_home.value)
+                    property bool isErr: m.status_home.value && (!m.status_gps.value)
+                    property bool isOk:  m.status_home.value && m.gps_SU.value>4 && m.gps_SU.value<=m.gps_SV.value && (m.gps_SV.value/m.gps_SU.value)<1.8
 
-                    //color: (app.datalink.valid || status_gps.value)?(status_gps.value>0?"transparent":"red"):"#80000000"
-                    //blinking: app.datalink.valid && (status_gps.value<=0)
-                    //valueColor: (status_home.value && gps_SU.value>4 && (gps_SV.value/gps_SU.value)<1.8)?"white":"yellow"
+                    //color: (app.datalink.valid || m.status_gps.value)?(m.status_gps.value>0?"transparent":"red"):"#80000000"
+                    //blinking: app.datalink.valid && (m.status_gps.value<=0)
+                    //valueColor: (m.status_home.value && m.gps_SU.value>4 && (m.gps_SV.value/m.gps_SU.value)<1.8)?"white":"yellow"
                     color: isOff?"#80000000":isErr?"red":"transparent"
                     blinking: isErr
                     valueColor: isOk?"white":"yellow"
@@ -244,12 +244,12 @@ Item {
                     //anchors.rightMargin: 4
                     anchors.centerIn: parent
                     opacity: 0.6
-                    show: status_landed.value > 0
+                    show: m.status_landed.value > 0
                     visible: show
                     height: pfdScene.flagHeight
                     flagColor: "#8f8"
                     text: qsTr("LAND")
-                    toolTip: status_landed.descr
+                    toolTip: m.status_landed.descr
                 }
 
             }
@@ -263,8 +263,8 @@ Item {
             }
 
             RectNum {
-                value: cmd_altitude.value.toFixed()
-                toolTip: cmd_altitude.descr
+                value: m.cmd_altitude.value.toFixed()
+                toolTip: m.cmd_altitude.descr
                 anchors.left: altitude_window.left
                 anchors.right: altitude_window.right
                 anchors.top: parent.top
@@ -280,21 +280,21 @@ Item {
                     visible: app.settings.test.value || value>0
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
-                    mfield: altps_gnd
+                    mfield: m.altps_gnd
                     label: qsTr("PS")
-                    color: (app.settings.test.value || error_pstatic.value>0)?"red":"transparent"
+                    color: (app.settings.test.value || m.error_pstatic.value>0)?"red":"transparent"
                     blinking: true
                     MouseArea {
                         anchors.fill: parent
-                        enabled: error_pstatic.value
-                        onClicked: error_pstatic.setValue(0)
+                        enabled: m.error_pstatic.value
+                        onClicked: m.error_pstatic.setValue(0)
                     }
                 }
                 Number {
                     visible: app.settings.test.value || value>0
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
-                    mfield: gps_hmsl
+                    mfield: m.gps_hmsl
                     label: qsTr("MSL")
                 }
             }
@@ -305,7 +305,7 @@ Item {
                 anchors.bottomMargin: 2
                 anchors.rightMargin: 4
                 height: pfdScene.txtHeight
-                mfield: ldratio
+                mfield: m.ldratio
                 label: qsTr("LD")
                 precision: 1
             }
@@ -325,13 +325,13 @@ Item {
                 //anchors.topMargin: 4
                 //anchors.left: left_window.right
                 //anchors.leftMargin: 4
-                show: cmode_hover.value > 0
+                show: m.cmode_hover.value > 0
                 visible: opacity
                 //blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "#8f8"
                 text: qsTr("HOVER")
-                toolTip: cmode_hover.descr
+                toolTip: m.cmode_hover.descr
             }
             Flag {
                 id: airbrkFlag
@@ -339,18 +339,18 @@ Item {
                 //anchors.topMargin: 4
                 //anchors.left: left_window.right
                 //anchors.leftMargin: 4
-                show: ctr_airbrk.value > 0
+                show: m.ctr_airbrk.value > 0
                 height: pfdScene.flagHeight
                 text: qsTr("AIRBR")
-                toolTip: ctr_airbrk.descr
+                toolTip: m.ctr_airbrk.descr
                 Text {
-                    visible: app.settings.test.value || (airbrkFlag.show && (ctr_airbrk.value>0) && (ctr_airbrk.value<1))
+                    visible: app.settings.test.value || (airbrkFlag.show && (m.ctr_airbrk.value>0) && (m.ctr_airbrk.value<1))
                     color: "white"
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.left: parent.right
                     anchors.leftMargin: 2
-                    text: (ctr_airbrk.value*100).toFixed()
+                    text: (m.ctr_airbrk.value*100).toFixed()
                     font.pixelSize: height
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
@@ -365,22 +365,22 @@ Item {
             anchors.left: left_window.right
             anchors.leftMargin: 4
             Flag {
-                show: (cas2tas.value!==0) && (cas2tas.value<0.5||cas2tas.value>1.8)
+                show: (m.cas2tas.value!==0) && (m.cas2tas.value<0.5||m.cas2tas.value>1.8)
                 blinking: false
                 height: pfdScene.flagHeight
                 flagColor: "yellow"
                 text: qsTr("TAS")
-                toolTip: cas2tas.descr
+                toolTip: m.cas2tas.descr
             }
             Flag {
                 id: flag_CAS
-                show: app.settings.test.value||error_cas.value > 0
+                show: app.settings.test.value||m.error_cas.value > 0
                 blinking: true
                 visible: show
                 height: pfdScene.flagHeight
                 flagColor: "red"
                 text: qsTr("CAS")
-                toolTip: error_cas.descr
+                toolTip: m.error_cas.descr
             }
         }
         Column {
@@ -390,37 +390,37 @@ Item {
             anchors.horizontalCenter: horizon.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             Flag {
-                show: stab.value > 0.5
-                blinking: stab.value>0.8
+                show: m.stab.value > 0.5
+                blinking: m.stab.value>0.8
                 height: pfdScene.flagHeight
                 flagColor: blinking?"red":"yellow"
                 text: qsTr("STALL")
-                toolTip: stab.descr
+                toolTip: m.stab.descr
             }
             Flag {
-                show: mode.value<mode_UAV && error_gyro.value > 0
+                show: m.mode.value<mode_UAV && m.error_gyro.value > 0
                 blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "red"
                 text: qsTr("GYRO")
-                toolTip: error_gyro.descr
+                toolTip: m.error_gyro.descr
             }
             Flag {
                 anchors.topMargin: pfdScene.flagHeight*2
-                show: sb_bat_err.value > 0
+                show: m.sb_bat_err.value > 0
                 blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "red"
                 text: qsTr("BAT")
-                toolTip: sb_bat_err.descr
+                toolTip: m.sb_bat_err.descr
             }
             Flag {
-                show: status_rc.value > 0
+                show: m.status_rc.value > 0
                 blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "yellow"
                 text: qsTr("RC")
-                toolTip: status_rc.descr
+                toolTip: m.status_rc.descr
             }
         }
 
@@ -475,20 +475,20 @@ Item {
             width: parent.width*0.33
             Number {
                 id: rpm_number
-                visible: app.settings.test.value || value>0 || error_rpm.value>0
+                visible: app.settings.test.value || value>0 || m.error_rpm.value>0
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
                 label: qsTr("RPM")
-                value: rpm.value/1000
+                value: m.rpm.value/1000
                 precision: 1
-                toolTip: rpm.descr +"[x1000]"
-                color: (app.settings.test.value || error_rpm.value>0)?"red":"transparent"
+                toolTip: m.rpm.descr +"[x1000]"
+                color: (app.settings.test.value || m.error_rpm.value>0)?"red":"transparent"
                 blinking: true
                 MouseArea {
                     anchors.fill: parent
-                    enabled: error_rpm.value
-                    onClicked: error_rpm.setValue(0)
+                    enabled: m.error_rpm.value
+                    onClicked: m.error_rpm.setValue(0)
                 }
             }
             /*Number {
@@ -498,52 +498,52 @@ Item {
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
                 label: qsTr("RPM")
-                value: rpm.value/1000
+                value: m.rpm.value/1000
                 precision: 1
-                toolTip: rpm.descr +"[x1000]"
+                toolTip: m.rpm.descr +"[x1000]"
             }
             Flag {
                 id: rpm_error
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
-                show: error_rpm.value > 0
+                show: m.error_rpm.value > 0
                 visible: show
                 blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "red"
                 text: qsTr("RPM")
-                toolTip: error_rpm.descr
+                toolTip: m.error_rpm.descr
             }*/
             Flag {
                 id: rpm_starter
                 anchors.bottom: rpm_number.top
                 anchors.bottomMargin: 1
                 anchors.left: rpm_number.left
-                show: sw_starter.value
+                show: m.sw_starter.value
                 blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "red"
                 text: qsTr("START")
-                toolTip: sw_starter.descr
+                toolTip: m.sw_starter.descr
             }
 
             Number {
                 id: thr_number
-                visible: true //value>0 || cmode_throvr.value || cmode_thrcut.value
+                visible: true //value>0 || m.cmode_throvr.value || m.cmode_thrcut.value
                 anchors.left: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
                 label: qsTr("T")
-                text: cmode_thrcut.value?qsTr("CUT"):(ctr_throttle.value*100).toFixed()
-                //valueColor: cmode_thrcut.value?"red":"white"
-                toolTip: ctr_throttle.descr +"[x100]"+", "+cmode_thrcut.descr+" ("+qsTr("red")+"), "+cmode_throvr.descr+" ("+qsTr("blue")+")"
-                color: cmode_throvr.value?"blue":cmode_thrcut.value?"red":ctr_throttle.value>=0.9?"#80000000":"transparent"
-                blinking: ctr_throttle.value>=0.98
-                //valueColor: ctr_throttle.value>=0.9?"#822":"white"
+                text: m.cmode_thrcut.value?qsTr("CUT"):(m.ctr_throttle.value*100).toFixed()
+                //valueColor: m.cmode_thrcut.value?"red":"white"
+                toolTip: m.ctr_throttle.descr +"[x100]"+", "+m.cmode_thrcut.descr+" ("+qsTr("red")+"), "+m.cmode_throvr.descr+" ("+qsTr("blue")+")"
+                color: m.cmode_throvr.value?"blue":m.cmode_thrcut.value?"red":m.ctr_throttle.value>=0.9?"#80000000":"transparent"
+                blinking: m.ctr_throttle.value>=0.98
+                //valueColor: m.ctr_throttle.value>=0.9?"#822":"white"
             }
             Number {
                 id: rc_thr_number
-                property bool show: rc_throttle.value && (value!=thr_number.value) //&& (cmode_thrcut.value || (!cmode_throvr.value))
+                property bool show: m.rc_throttle.value && (value!=thr_number.value) //&& (m.cmode_thrcut.value || (!m.cmode_throvr.value))
                 anchors.right: thr_number.left
                 anchors.rightMargin: 4
                 anchors.top: thr_number.top
@@ -554,25 +554,25 @@ Item {
                 visible: app.settings.smooth.value?opacity:(show||app.settings.test.value)
                 valueColor: "magenta"
                 color: "#80000000"
-                value: (rc_throttle.value*100).toFixed()
-                toolTip: rc_throttle.descr +"[x100]"
+                value: (m.rc_throttle.value*100).toFixed()
+                toolTip: m.rc_throttle.descr +"[x100]"
                 Behavior on opacity { PropertyAnimation {duration: app.settings.smooth.value?500:0} }
             }
 
             Number {
-                visible: app.settings.test.value || value>0 || error_power.value>0
+                visible: app.settings.test.value || value>0 || m.error_power.value>0
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
-                mfield: Ve
+                mfield: m.Ve
                 label: qsTr("V")
                 precision: 1
                 color: pfdScene.power_color
                 blinking: true
                 MouseArea {
                     anchors.fill: parent
-                    enabled: error_power.value
-                    onClicked: error_power.setValue(0)
+                    enabled: m.error_power.value
+                    onClicked: m.error_power.setValue(0)
                 }
             }
         }

@@ -25,8 +25,8 @@
 #include "AppShortcut.h"
 #include "AppDirs.h"
 //=============================================================================
-AppShortcuts::AppShortcuts(FactSystem *parent, QWidget *widget)
-  : Fact(parent->tree()->child("settings"),"shortcuts",tr("Shortcuts"),tr("Keyboard hotkeys"),GroupItem,NoData),
+AppShortcuts::AppShortcuts(AppSettings *parent, QWidget *widget)
+  : Fact(parent,"shortcuts",tr("Shortcuts"),tr("Keyboard hotkeys"),GroupItem,NoData),
     widget(widget)
 {
   setFlatModel(true);

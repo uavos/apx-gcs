@@ -49,7 +49,7 @@ export(first.depends)
 
 
 # QT
-QT += script quick svg opengl multimedia quickcontrols2 quickwidgets
+QT += quick svg opengl multimedia quickcontrols2 quickwidgets
 QT += serialport
 
 #######################################

@@ -26,40 +26,24 @@
 #include <QtCore>
 #include <QtQuick>
 #include "Fact.h"
-#include "FactSystemUtils.h"
+#include "FactSystemApp.h"
 #include "FactSystemJS.h"
 class QJSEngine;
 //=============================================================================
-class FactSystem: public FactSystemUtils, public FactSystemJS
+class FactSystem: public FactSystemJS
 {
   Q_OBJECT
 public:
   //root
   explicit FactSystem(QObject *parent=0);
-  ~FactSystem();
 
-  static FactSystem * instance() { return _instance; }
+  static FactSystem * instance() { return static_cast<FactSystem*>(_instance); }
 
   //methods
-  Fact * tree() { return _tree; }
-  void syncJS(QQmlEngine *e);
-
   Q_INVOKABLE void sound(const QString &v) { emit playSoundEffect(v); }
 
   Q_INVOKABLE QJSValue jsexec(const QString &s) { return FactSystemJS::jsexec(s); }
 
-
-  //static values mapping
-  static bool devMode()     { return _instance->_tree->findValue("dev").toBool(); }
-  static QString version()  { return _instance->_tree->findValue("version").toString(); }
-  static QString branch()   { return _instance->_tree->findValue("branch").toString(); }
-
-  //constants
-  static const QString ApplicationSection;
-
-private:
-  static FactSystem * _instance;
-  Fact * _tree;
 
 signals:
   void playSoundEffect(const QString &v);

@@ -13,8 +13,8 @@ MapObject {
     color: Style.cNormal
     textColor: "white"
 
-    property bool current: twidx.value === (index-1)
-    property bool taxiing: mode.value === mode_TAXI
+    property bool current: m.twidx.value === (index-1)
+    property bool taxiing: m.mode.value === mode_TAXI
 
     property bool showDetails: mapProvider.level>13 || mItem.distance*mapProvider.metersToX(gy)*map.constSceneXY>height
 

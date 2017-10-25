@@ -21,26 +21,69 @@
  *
  */
 #include <QtCore>
-#include "FactSystemUtils.h"
+#include "FactSystemApp.h"
 //=============================================================================
-FactSystemUtils::FactSystemUtils(QObject *parent)
- : QObject(parent)
+FactSystemApp * FactSystemApp::_instance=NULL;
+FactSystemApp::FactSystemApp(QObject *parent)
+ : Fact(NULL,"app",tr("System tree"),QCoreApplication::applicationName(),RootItem,NoData)
 {
+  _instance=this;
+  setParent(parent);
+
+  setFlatModel(true);
+
+  // app constants and global facts
+  Fact *item;
+
+  item=new Fact(this,"version",tr("Version"),tr("Application version"),Fact::FactItem,Fact::ConstData);
+#define VSTR_IMPL(a) #a
+#define VSTR(a) VSTR_IMPL(a)
+  QString s=VSTR(VERSION);
+  if(s.isEmpty())s=tr("unknown");
+  item->setValue(s);
+  item->setEnabled(false);
+  qDebug("%s: %s",item->title().toUtf8().data(),s.toUtf8().data());
+  m_version=s;
+
+  item=new Fact(this,"branch",tr("Branch"),tr("Source code repository branch"),Fact::FactItem,Fact::ConstData);
+  s=VSTR(BRANCH);
+  item->setValue(s);
+  item->setEnabled(false);
+  qDebug("%s: %s",item->title().toUtf8().data(),s.toUtf8().data());
+  m_branch=s;
+
+  item=new Fact(this,"dev",tr("Developer mode"),"",Fact::FactItem,Fact::NoData);
+#ifdef __ANDROID__
+  m_dev=false;
+#else
+  m_dev=QCoreApplication::applicationDirPath().startsWith(QDir::homePath());
+#endif
+  item->setEnabled(false);
+  item->setValue(m_dev);
+  item->setVisible(m_dev);
+
+  if(m_dev){
+    qDebug("%s",item->title().toUtf8().data());
+  }
 }
 //=============================================================================
-QString FactSystemUtils::latToString(double v)
+const QString FactSystemApp::ApplicationSection=tr("Application");
+//=============================================================================
+// utils library
+//=============================================================================
+QString FactSystemApp::latToString(double v)
 {
   double lat=fabs(v);
   double lat_m=60*(lat-floor(lat)),lat_s=60*(lat_m-floor(lat_m)),lat_ss=100*(lat_s-floor(lat_s));
   return QString().sprintf("%c %g%c%02g'%02g.%02g\"",(v>=0)?'N':'S',floor(lat),176,floor(lat_m),floor(lat_s),floor(lat_ss));
 }
-QString FactSystemUtils::lonToString(double v)
+QString FactSystemApp::lonToString(double v)
 {
   double lat=fabs(v);
   double lat_m=60*(lat-floor(lat)),lat_s=60*(lat_m-floor(lat_m)),lat_ss=100*(lat_s-floor(lat_s));
   return QString().sprintf("%c %g%c%02g'%02g.%02g\"",(v>=0)?'E':'W',floor(lat),176,floor(lat_m),floor(lat_s),floor(lat_ss));
 }
-double FactSystemUtils::latFromString(QString s)
+double FactSystemApp::latFromString(QString s)
 {
   bool ok;
   int i;
@@ -64,27 +107,27 @@ double FactSystemUtils::latFromString(QString s)
   }
   return s.toDouble();
 }
-double FactSystemUtils::lonFromString(QString s)
+double FactSystemApp::lonFromString(QString s)
 {
   s=s.simplified();
   if(QString("EW").contains(s.at(0)))
     s[0]=(s.at(0)=='E')?'N':'S';
   return latFromString(s);
 }
-QString FactSystemUtils::distanceToString(uint v)
+QString FactSystemApp::distanceToString(uint v)
 {
   if(v>=1000000)return QString("%1km").arg(v/1000.0,0,'f',0);
   if(v>=1000)return QString("%1km").arg(v/1000.0,0,'f',1);
   return QString("%1m").arg((uint)v);
 }
-QString FactSystemUtils::timeToString(uint v)
+QString FactSystemApp::timeToString(uint v)
 {
   if(v==0)return "--:--";
   qint64 d=(qint64)v/(24*60*60);
   if(d<=0)return QString("%1").arg(QTime(0,0,0).addSecs(v).toString("hh:mm"));
   return QString("%1d%2").arg(d).arg(QTime(0,0,0).addSecs(v).toString("hh:mm"));
 }
-uint FactSystemUtils::timeFromString(QString s)
+uint FactSystemApp::timeFromString(QString s)
 {
   uint t=0;
   s=s.trimmed().toLower();
@@ -144,29 +187,29 @@ uint FactSystemUtils::timeFromString(QString s)
   return t;
 }
 //=============================================================================
-void FactSystemUtils::toolTip(QString tooltip)
+void FactSystemApp::toolTip(QString tooltip)
 {
   qDebug()<<":: "<<tooltip;
 }
-double FactSystemUtils::limit(double v,double min,double max)
+double FactSystemApp::limit(double v,double min,double max)
 {
   if(v<min)return min;
   if(v>max)return max;
   return v;
 }
-double FactSystemUtils::angle(double v)
+double FactSystemApp::angle(double v)
 {
   const double span=180.0;
   const double dspan=span*2.0;
   return v-floor(v/dspan+0.5)*dspan;
 }
-double FactSystemUtils::angle360(double v)
+double FactSystemApp::angle360(double v)
 {
   while(v<0) v+=360.0;
   while(v>=360.0) v-=360.0;
   return v;
 }
-double FactSystemUtils::angle90(double v)
+double FactSystemApp::angle90(double v)
 {
   const double span=90.0;
   const double dspan=span*2.0;

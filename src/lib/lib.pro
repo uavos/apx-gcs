@@ -9,7 +9,7 @@ include( ../../gcs.pri )
 
 DESTDIR = $$DESTDIR_LIB
 
-QT += network script
+QT += network
 QT += serialport
 QT += quick quickwidgets quickcontrols2 svg multimedia opengl
 
@@ -47,19 +47,21 @@ HEADERS += \
 # Fact System
 SOURCES += \
     FactSystem/FactSystem.cpp \
-    FactSystem/FactSystemUtils.cpp \
+    FactSystem/FactSystemApp.cpp \
     FactSystem/FactSystemJS.cpp \
     FactSystem/FactTree.cpp \
     FactSystem/FactData.cpp \
     FactSystem/Fact.cpp \
+    FactSystem/FactMandalaField.cpp \
 
 HEADERS += \
     FactSystem/FactSystem.h \
-    FactSystem/FactSystemUtils.h \
+    FactSystem/FactSystemApp.h \
     FactSystem/FactSystemJS.h \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
     FactSystem/Fact.h \
+    FactSystem/FactMandalaField.h \
 
 # Communication
 SOURCES += \
@@ -106,17 +108,13 @@ HEADERS += \
 # other
 SOURCES += \
     FlightDataFile.cpp \
-    QmlApp.cpp \
     QmlView.cpp \
-    QmlWidget.cpp \
     SoundEffects.cpp \
     SvgImageProvider.cpp \
 
 HEADERS += \
     FlightDataFile.h \
-    QmlApp.h \
     QmlView.h \
-    QmlWidget.h \
     SoundEffects.h \
     SvgImageProvider.h \
 

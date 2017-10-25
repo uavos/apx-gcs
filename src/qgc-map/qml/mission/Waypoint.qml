@@ -15,8 +15,8 @@ MapObject {
     property var f_altitude: mItem.child("altitude")
     property var f_actions: mItem.child("actions")
 
-    property int type: f_type?f_type.value:0
-    property int altitude: f_altitude?f_altitude.value:0
+    property int type: f_type?m.f_type.value:0
+    property int altitude: f_altitude?m.f_altitude.value:0
 
     color: Style.cYellow
     textColor: "black"

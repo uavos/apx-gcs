@@ -52,7 +52,7 @@ void NumbersPlugin::make()
   si+=sia;
   s<<si+"anchors.fill: parent";
   s<<si+"spacing: -3";
-  s<<si+"property double txtHeight: sys.limit(-spacing+height/"+QString::number(slist.size())+",10,width/4)";
+  s<<si+"property double txtHeight: app.limit(-spacing+height/"+QString::number(slist.size())+",10,width/4)";
   foreach(QString sx,slist){
     QStringList st=sx.trimmed().split(':');
     if(st.isEmpty())continue;

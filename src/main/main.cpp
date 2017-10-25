@@ -182,6 +182,8 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,&Datalink::read,mandala,&QMandala::downlinkReceived);
   QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
 
+  factSystem->loadMandala(mandala->current);
+
 
 /*
   DatalinkServer *datalink=new DatalinkServer;
@@ -220,7 +222,7 @@ int main(int argc, char *argv[])
     mainForm->setWindowTitle(mainForm->windowTitle()+" ("+FactSystem::version()+")");
 
   //hotkeys
-  new AppShortcuts(factSystem,mainForm);
+  new AppShortcuts(AppSettings::instance(),mainForm);
 
 
   Vehicles *vehicles=new Vehicles(factSystem);
@@ -269,7 +271,7 @@ int main(int argc, char *argv[])
   delete serial1;
   delete serial2;
 */
-  delete factSystem;
+  //delete factSystem;
 
   /*delete httpService;
   delete mainForm;

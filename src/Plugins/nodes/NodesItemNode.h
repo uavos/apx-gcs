@@ -22,7 +22,6 @@
  */
 #ifndef NodesItemNode_H
 #define NodesItemNode_H
-#include <QScriptValue>
 #include "NodesItem.h"
 #include "node.h"
 #include "FirmwareLoader.h"
@@ -107,7 +106,7 @@ private:
   void loadFromCache(void);
 
   QTimer sync_apcfg_timer;
-  void sync_apcfg_scr(NodesItem *item, QScriptValue mobj);
+  //void sync_apcfg_scr(NodesItem *item, QScriptValue mobj);
 
   QTimer chk_inf_timer;
 

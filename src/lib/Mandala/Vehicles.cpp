@@ -24,7 +24,7 @@
 #include "Vehicle.h"
 //=============================================================================
 Vehicles::Vehicles(FactSystem *parent)
-  : Fact(parent->tree(),"vehicles",tr("Vehicles"),tr("Discovered unmanned vehicles"),SectionItem,NoData)
+  : Fact(parent,"vehicles",tr("Vehicles"),tr("Discovered unmanned vehicles"),SectionItem,NoData)
 {
   setFlatModel(true);
 

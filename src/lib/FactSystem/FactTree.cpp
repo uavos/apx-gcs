@@ -22,24 +22,52 @@
  */
 #include "FactTree.h"
 //=============================================================================
-FactTree::FactTree(FactTree *parent, ItemType treeItemType)
+FactTree::FactTree(FactTree *parent, QString name, ItemType treeItemType)
  : QAbstractListModel(parent),
    m_parentItem(parent),
    m_treeItemType(treeItemType),
-   m_level(0),m_flatModel(false)
+   m_level(0),m_flatModel(false),
+   m_name(name)
 {
-  if(parent)parent->addItem(this);
-
   //find tree item level
-  for(FactTree *item=this;item->treeItemType()!=RootItem;item=item->m_parentItem){
+  if(parent && treeItemType!=RootItem){
     m_level++;
+    for(FactTree *item=parent;item && item->treeItemType()==RootItem;item=item->m_parentItem){
+      m_level++;
+    }
   }
+
+  //qRegisterMetaType<FactTree>();
+
+  if(parent){
+    //QMetaObject::invokeMethod(parent,"addItem", Qt::QueuedConnection, Q_ARG(FactTree*, this));
+    parent->addItem(this);
+  }
+
   connect(this,&FactTree::structChanged,this,&FactTree::sizeChanged);
-  if(parent && parent->flatModel()){
+  /*if(parent && parent->flatModel()){
     //connect(this,&FactTree::structChanged,parent,&FactTree::structChanged);
-  }
+  }*/
 }
 //=============================================================================
+void FactTree::insertItem(int i, FactTree *item)
+{
+  beginInsertRows(QModelIndex(), i, i);
+  m_items.insert(i,item);
+  bool bFlat=m_parentItem && m_parentItem->flatModel();
+  if(bFlat){
+    int i2=m_parentItem->childItems().indexOf(item);
+    if(i2<0)i2=0;
+    m_parentItem->beginInsertRows(QModelIndex(), i2 ,i2);
+  }
+  connect(item,&FactTree::itemAdded,this,&FactTree::itemAdded);
+  connect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);
+  item->m_parentItem=this;
+  endInsertRows();
+  if(bFlat) m_parentItem->endInsertRows();
+  emit structChanged();
+  emit itemAdded(item);
+}
 void FactTree::removeItem(FactTree *item)
 {
   int i=m_items.indexOf(item);
@@ -49,28 +77,18 @@ void FactTree::removeItem(FactTree *item)
     int i2=m_parentItem->childItems().indexOf(item);
     m_parentItem->beginRemoveRows(QModelIndex(), i2 ,i2);
   }
+  disconnect(item,&FactTree::itemAdded,this,&FactTree::itemAdded);
+  disconnect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);
+  emit itemRemoved(item);
   beginRemoveRows(QModelIndex(), i, i);
   m_items.removeOne(item);
   item->m_parentItem=NULL;
   endRemoveRows();
   if(bFlat) m_parentItem->endRemoveRows();
   item->deleteLater();
-  emit structChanged(this);
+  emit structChanged();
 }
-void FactTree::insertItem(int i, FactTree *item)
-{
-  beginInsertRows(QModelIndex(), i, i);
-  m_items.insert(i,item);
-  bool bFlat=m_parentItem && m_parentItem->flatModel();
-  if(bFlat){
-    int i2=m_parentItem->childItems().indexOf(item);
-    m_parentItem->beginInsertRows(QModelIndex(), i2 ,i2);
-  }
-  item->m_parentItem=this;
-  endInsertRows();
-  if(bFlat) m_parentItem->endInsertRows();
-  emit structChanged(this);
-}
+//=============================================================================
 void FactTree::addItem(FactTree *item)
 {
   insertItem(m_items.size(),item);
@@ -117,6 +135,34 @@ QList<FactTree*> FactTree::childItemsTree() const
   return m_items;
 }
 //=============================================================================
+FactTree * FactTree::child(const QString &name) const
+{
+  foreach(FactTree *item,childItems()){
+    if(item->name()==name)return item;
+  }
+  return NULL;
+}
+//=============================================================================
+QString FactTree::path(int fromLevel, const QChar pathDelimiter) const
+{
+  QString s;
+  for(const FactTree *i=this;i && i->level()>=fromLevel;i=i->parentItem()){
+    if(s.isEmpty())s=i->name();
+    else s.prepend(i->name()+pathDelimiter);
+    if(i->treeItemType()==RootItem && fromLevel>=0)break;
+  }
+  return s.isEmpty()?name():s;
+}
+QList<FactTree*> FactTree::pathList() const
+{
+  QList<FactTree*> list;
+  for(const FactTree *i=this;i;i=i->parentItem()){
+    list.append(const_cast<FactTree*>(i));
+    if(i->treeItemType()==RootItem)break;
+  }
+  return list;
+}
+//=============================================================================
 void FactTree::clear(void)
 {
   foreach(FactTree *i,m_items){
@@ -125,11 +171,12 @@ void FactTree::clear(void)
   beginRemoveRows(QModelIndex(), 0, m_items.size());
   foreach (FactTree *item, m_items) {
     item->m_parentItem=NULL;
+    emit itemRemoved(item);
   }
   qDeleteAll(m_items);
   m_items.clear();
   endRemoveRows();
-  emit structChanged(this);
+  emit structChanged();
 }
 //=============================================================================
 //=============================================================================
@@ -175,7 +222,17 @@ void FactTree::setFlatModel(const bool &v)
     }
   }
   emit flatModelChanged();
-  emit structChanged(this);
+  emit structChanged();
+}
+QString FactTree::name(void) const
+{
+  return m_name.contains('#')?QString(m_name).replace('#',QString::number(num())):m_name;
+}
+void FactTree::setName(const QString &v)
+{
+  if(m_name==v)return;
+  m_name=v;
+  emit nameChanged();
 }
 //=============================================================================
 // LIST MODEL
@@ -199,7 +256,7 @@ bool FactTree::moveRows(const QModelIndex &sourceParent, int src, int cnt, const
     m_items.insert(dst-1, m_items.takeAt(src));
   }
   endMoveRows();
-  emit structChanged(this);
+  emit structChanged();
   return true;
 }
 //=============================================================================

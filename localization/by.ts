@@ -17,11 +17,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Global application preferences</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+13"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
@@ -52,7 +47,12 @@
         <translation type="unfinished">Голас</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+8"/>
+        <source>Test visual elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -72,12 +72,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location line="-38"/>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>Speech voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Enable OpenGL graphics when supported</source>
         <translation type="unfinished"></translation>
     </message>
@@ -95,7 +100,7 @@
 <context>
     <name>AppShortcut</name>
     <message>
-        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="+32"/>
+        <location filename="../src/lib/AppSettings/AppShortcut.cpp" line="+31"/>
         <source>add</source>
         <translation type="unfinished"></translation>
     </message>
@@ -110,7 +115,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -511,7 +516,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+12"/>
         <source>Read only</source>
         <translation type="unfinished">Толькі чытанне</translation>
     </message>
@@ -596,7 +601,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+30"/>
         <source>Read only datalink</source>
         <translation type="unfinished"></translation>
     </message>
@@ -773,6 +778,11 @@
     <message>
         <location line="+36"/>
         <source>found server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Connecting to localhost by default</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -986,7 +996,7 @@
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+224"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+217"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1004,12 +1014,20 @@
 <context>
     <name>FactSystem</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="+37"/>
+        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="+39"/>
+        <source>Application</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FactSystemApp</name>
+    <message>
+        <location filename="../src/lib/FactSystem/FactSystemApp.cpp" line="+28"/>
         <source>System tree</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1019,12 +1037,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Branch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1034,19 +1052,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Development mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Test visual elements</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+1"/>
-        <source>Application</source>
+        <location line="+7"/>
+        <source>Developer mode</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1340,7 +1347,7 @@
         <translation type="vanished">Толькі чытанне</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+4"/>
         <source>Exit</source>
         <translation>Выйсці</translation>
     </message>
@@ -1351,7 +1358,7 @@
     </message>
     <message>
         <location line="+12"/>
-        <location line="+100"/>
+        <location line="+91"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2127,7 +2134,7 @@
 <context>
     <name>MissionModel</name>
     <message>
-        <location filename="../src/Plugins/map/MissionModel.cpp" line="+40"/>
+        <location filename="../src/Plugins/map/MissionModel.cpp" line="+41"/>
         <source>Runways</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2296,7 +2303,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+75"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+76"/>
         <source>Firmware upgrade in progress</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2582,7 +2589,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+114"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2606,7 +2613,7 @@
 <context>
     <name>NodesModel</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="+50"/>
+        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="+51"/>
         <source>Can&apos;t create vehicle backup path</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2834,7 +2841,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+359"/>
+        <location filename="../src/main/main.cpp" line="+357"/>
         <source>Video</source>
         <translation type="unfinished">Відэа</translation>
     </message>
@@ -2857,7 +2864,7 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="+117"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="+104"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2901,24 +2908,7 @@
 <context>
     <name>QMandalaItem</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="+284"/>
-        <source>Function not registered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Syntax error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <location line="+21"/>
-        <location line="+12"/>
-        <source>Can&apos;t parse command parameters</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+127"/>
+        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="+492"/>
         <source>Error creating backup path</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2977,27 +2967,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-214"/>
+        <location filename="../src/main/main.cpp" line="-211"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+57"/>
-        <source>Developer mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+63"/>
         <source>Ground Control Unit</source>
         <translation>Наземны Пункт Кіравання</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+125"/>
+        <location line="+128"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3017,13 +2997,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/Mandala/QMandalaItem.cpp" line="-509"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+109"/>
         <source>print commands help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>set var n to value v and send to UAV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3077,7 +3052,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>trigger value of v to a or b</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3719,6 +3694,34 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
     <message>
         <location line="+16"/>
         <source>Cannot read file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Vehicles</name>
+    <message>
+        <location filename="../src/lib/Mandala/Vehicles.cpp" line="+27"/>
+        <source>Vehicles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Discovered unmanned vehicles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Select vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Change the active vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Vehicles list</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

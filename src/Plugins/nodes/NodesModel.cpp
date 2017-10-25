@@ -74,8 +74,8 @@ NodesModel::NodesModel(QMandalaItem *m, QObject *parent)
   syncTimer.setInterval(500);
   //connect(&syncTimer,SIGNAL(timeout()),this,SLOT(sync()));
 
-  QScriptValue mobj=mvar->engine.newQObject(this,QScriptEngine::QtOwnership,QScriptEngine::ExcludeSuperClassMethods);
-  mvar->engine.globalObject().setProperty(objectName(),mobj);
+  //QScriptValue mobj=mvar->engine.newQObject(this,QScriptEngine::QtOwnership,QScriptEngine::ExcludeSuperClassMethods);
+  //mvar->engine.globalObject().setProperty(objectName(),mobj);
 }
 NodesModel::~NodesModel()
 {

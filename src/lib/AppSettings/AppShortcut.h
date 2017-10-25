@@ -27,7 +27,6 @@
 #include "FactSystem.h"
 class AppShortcuts;
 class QShortcut;
-class QMandala;
 //=============================================================================
 class AppShortcut: public Fact
 {
@@ -50,8 +49,6 @@ private:
   bool bUsr;
 
   QShortcut *shortcut;
-
-  QMandala *mandala;
 
 private slots:
   void updateStats();

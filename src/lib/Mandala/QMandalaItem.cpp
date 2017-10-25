@@ -24,12 +24,11 @@
 #include <QToolTip>
 #include "QMandala.h"
 #include "AppSettings.h"
-#include "FactSystem.h"
 #include "AppDirs.h"
 //=============================================================================
 //=============================================================================
 QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
-:QObject(parent), Mandala(),bbox(bbox),datalinkReadonly(NULL)
+:QObject(parent), Mandala(),bbox(bbox)
 {
   setObjectName("mandala");
 
@@ -153,7 +152,7 @@ QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
   if(bbox)return;
 
   //Scrpting
-  QScriptValue mobj=engine.newQObject(this,QScriptEngine::QtOwnership,QScriptEngine::ExcludeChildObjects|QScriptEngine::ExcludeSuperClassMethods|QScriptEngine::ExcludeSuperClassProperties);
+  /*QScriptValue mobj=engine.newQObject(this,QScriptEngine::QtOwnership,QScriptEngine::ExcludeChildObjects|QScriptEngine::ExcludeSuperClassMethods|QScriptEngine::ExcludeSuperClassProperties);
   engine.globalObject().setProperty("mandala",mobj);
   foreach(QMandalaField *f,fields)
     mobj.setProperty(f->name(),engine.newQObject(f,QScriptEngine::QtOwnership,QScriptEngine::ExcludeChildObjects|QScriptEngine::ExcludeSuperClassMethods|QScriptEngine::ExcludeSuperClassProperties),QScriptValue::Undeletable);
@@ -225,7 +224,7 @@ QMandalaItem::QMandalaItem(QObject *parent,bool bbox)
     jsFile2.close();
     engine.evaluate(contents,jsFile2.fileName());
   }
-
+*/
 
   //timeouts
   dlinkDataTimer.setSingleShot(true);
@@ -276,7 +275,7 @@ QString QMandalaItem::enumName(uint8_t varidx,int value) const
 }
 //=============================================================================
 //=============================================================================
-void QMandalaItem::add_scr(QString name, QString description, QString body)
+/*void QMandalaItem::add_scr(QString name, QString description, QString body)
 {
   QString fn=name;
   if(fn.contains('('))fn.remove(fn.indexOf('('),fn.size());
@@ -398,14 +397,10 @@ QByteArray QMandalaItem::scrToArray(QScriptValue data)
     ba.append((unsigned char)data.toInteger());
   }else return QByteArray();
   return ba;
-}
+}*/
 //=============================================================================
 void QMandalaItem::send(unsigned char var_idx, const QByteArray &data)
 {
-  if(!datalinkReadonly){
-    datalinkReadonly=FactSystem::instance()->tree()->fact("datalink.readonly");
-  }
-  if((!datalinkReadonly) || datalinkReadonly->value().toBool())return;
   QByteArray ba;
   ba.append((unsigned char)var_idx);
   ba.append(data);

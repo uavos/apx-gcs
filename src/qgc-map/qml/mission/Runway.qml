@@ -15,13 +15,13 @@ MapObject {
     property var f_HMSL: mItem.child("HMSL")
     property var f_approach: mItem.child("approach")
 
-    property int turn: f_turn?f_turn.value:0
-    property int hmsl: f_HMSL?f_HMSL.value:0
-    property int approach: f_approach?f_approach.value:0
+    property int turn: f_turn?m.f_turn.value:0
+    property int hmsl: f_HMSL?m.f_HMSL.value:0
+    property int approach: f_approach?m.f_approach.value:0
 
 
-    property bool current: rwidx.value === index
-    property bool landing: mode.value === mode_LANDING && current
+    property bool current: m.rwidx.value === index
+    property bool landing: m.mode.value === mode_LANDING && current
 
 
     text: (approach>0?"":"H")+mItem.name
@@ -105,7 +105,7 @@ MapObject {
         id: deltaRect
         z: -999
         visible: landing && height>10
-        property int v: delta.value
+        property int v: m.delta.value
         Behavior on v { NumberAnimation {duration: map.animation_duration; } }
         anchors.left: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter

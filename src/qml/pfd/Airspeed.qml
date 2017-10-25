@@ -2,7 +2,7 @@ import QtQuick 2.2
 import "../components"
 
 ControlArea {
-    mvar: cmd_airspeed   //ControlArea
+    mvar: m.cmd_airspeed   //ControlArea
     span: 10
     min:0
     max: 100
@@ -20,9 +20,9 @@ ControlArea {
 
     /*function adj(v) {
         v=parseInt(v)
-        v=cmd_airspeed.value+v*1
+        v=m.cmd_airspeed.value+v*1
         if(v<0)v=0;
-        cmd_airspeed.setValue(v);
+        m.cmd_airspeed.setValue(v);
     }
     onWheel: adj(wheel.angleDelta.y>0?1:-1)
     onClicked: adj(out_yv<0?1:-1)
@@ -48,7 +48,7 @@ ControlArea {
 
         property double strip_width: 0.3
 
-        property real speed_value: airspeed.value   //pitch.value //Math.abs(pitch.value)
+        property real speed_value: m.airspeed.value   //m.pitch.value //Math.abs(m.pitch.value)
         Behavior on speed_value { PropertyAnimation {duration: anumation_duration} }
 
         property double strip_scale: width*strip_width/svgRenderer.elementBounds("pfd/pfd.svg", "speed-scale").width
@@ -138,15 +138,15 @@ ControlArea {
             id: speed_waypoint
             elementName: "speed-waypoint"
             smooth: true
-            //visible: cmd_airspeed.value !== 0.0
+            //visible: m.cmd_airspeed.value !== 0.0
             width: elementBounds.width*height/elementBounds.height  //speed_window.strip_scale
             height: speed_box.height    //elementBounds.height*speed_window.strip_scale
 
             anchors.right: speed_scale.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: sys.limit(speed_window.num2scaleHeight * (airspeed.value - cmd_airspeed.value),-parent.height/2,parent.height/2)
+            anchors.verticalCenterOffset: app.limit(speed_window.num2scaleHeight * (m.airspeed.value - m.cmd_airspeed.value),-parent.height/2,parent.height/2)
             Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
-            ToolTipArea {text: cmd_airspeed.descr}
+            ToolTipArea {text: m.cmd_airspeed.descr}
         }
 
         PfdImage {
@@ -181,7 +181,7 @@ ControlArea {
                 divider: 10
                 value: speed_window.speed_value //+(speed_window.speed_value>=0?0.5:-0.5)
             }
-            ToolTipArea {text: airspeed.descr}
+            ToolTipArea {text: m.airspeed.descr}
         }
 
 
@@ -194,11 +194,11 @@ ControlArea {
         height: elementBounds.height*speed_window.strip_scale
         anchors.left: speed_window.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: sys.limit(speed_window.num2scaleHeight * (airspeed.value - gSpeed.value),-speed_window.height/2,speed_window.height/2)
+        anchors.verticalCenterOffset: app.limit(speed_window.num2scaleHeight * (m.airspeed.value - m.gSpeed.value),-speed_window.height/2,speed_window.height/2)
         Behavior on anchors.verticalCenterOffset { PropertyAnimation {duration: anumation_duration} }
         Text {
-            visible: Math.abs(airspeed.value - gSpeed.value)>3 || gSpeed.value<10
-            text: gSpeed.value.toFixed()
+            visible: Math.abs(m.airspeed.value - m.gSpeed.value)>3 || m.gSpeed.value<10
+            text: m.gSpeed.value.toFixed()
             color: "white"
             anchors.left: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -208,7 +208,7 @@ ControlArea {
             verticalAlignment: Text.AlignVCenter
             font.family: font_narrow
         }
-        ToolTipArea {text: gSpeed.descr}
+        ToolTipArea {text: m.gSpeed.descr}
     }
 
 }

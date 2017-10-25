@@ -26,14 +26,11 @@
 #include <QShortcut>
 #include <QApplication>
 #include <QDesktopWidget>
-#include "QMandala.h"
 //=============================================================================
 AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
  : Fact(sc?(bUsr?parent->f_usr:parent->f_sys):parent,sc?(bUsr?"usr#":"sys#"):tr("add"),sc?"":tr("Add new shortcut"),sc?"":tr("Configure new hotkey"),GroupItem,sc?BoolData:NoData),
    container(parent),_new(sc?false:true),bUsr(bUsr), shortcut(NULL)
 {
-  mandala=qApp->property("Mandala").value<QMandala*>();
-
   _enabled=new Fact(this,"enabled",tr("Enabled"),tr("Connectwhen available"),FactItem,BoolData);
   if(!_new)bind(_enabled);
 
@@ -102,7 +99,7 @@ void AppShortcut::updateShortcut()
 void AppShortcut::shortcutActivated()
 {
   //qDebug()<<sender();//qobject_cast<QShortcut*>(sender())->whatsThis();
-  mandala->current->exec_script(_cmd->text());
+  FactSystem::instance()->jsexec(_cmd->text());
 }
 //=============================================================================
 void AppShortcut::enable()

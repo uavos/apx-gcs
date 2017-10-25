@@ -25,7 +25,7 @@
 #include "AppShortcuts.h"
 //=============================================================================
 AppSettings::AppSettings(FactSystem *parent)
- : Fact(parent->tree(),"settings",tr("Preferences"),tr("Application settings"),RootItem,NoData) //root
+ : Fact(parent,"settings",tr("Preferences"),tr("Application settings"),GroupItem,NoData) //root
 {
   _instance=this;
 

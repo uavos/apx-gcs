@@ -35,8 +35,6 @@ class FactData: public FactTree
 
   Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
-  Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
   Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
 
@@ -66,8 +64,6 @@ public:
 
   explicit FactData(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType);
 
-
-  Q_INVOKABLE FactData * child(const QString &name) const;
 
   void copyValuesFrom(const FactData *item);
 
@@ -114,8 +110,6 @@ public:
   virtual QVariant value(void) const;
   virtual bool setValue(const QVariant &v);
 
-  QString name(void) const;
-  void setName(const QString &v);
   QString title(void) const;
   void setTitle(const QString &v);
   QString descr(void) const;
@@ -132,7 +126,6 @@ protected:
 
   QVariant m_value;
 
-  QString  m_name;
   QString  m_title;
   QString  m_descr;
 
@@ -141,7 +134,6 @@ protected:
 signals:
   void valueChanged();
 
-  void nameChanged();
   void titleChanged();
   void descrChanged();
 

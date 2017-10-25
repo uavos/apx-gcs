@@ -20,52 +20,30 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppShortcuts_H
-#define AppShortcuts_H
+#ifndef FactMandalaField_H
+#define FactMandalaField_H
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
-class AppShortcut;
-class AppSettings;
+#include "Fact.h"
+class QMandalaField;
 //=============================================================================
-class AppShortcuts: public Fact
+class FactMandalaField: public Fact
 {
   Q_OBJECT
+
 public:
-  explicit AppShortcuts(AppSettings *parent, QWidget *widget);
-
-  Q_INVOKABLE QString keyToPortableString(int key,int modifier) const;
-
-  QWidget *widget;
-  Fact *f_blocked;
-
-  Fact *f_allonSys;
-  Fact *f_alloffSys;
-  Fact *f_allonUsr;
-  Fact *f_alloffUsr;
+  explicit FactMandalaField(Fact *parent, QMandalaField *field);
 
 
-  Fact *f_usr;
-  Fact *f_sys;
+  void setField(QMandalaField *f);
 
 private:
-  AppShortcut *f_add;
-
-  QTimer saveTimer;
-
-  void addUserShortcut();
-
-private slots:
-  void updateStats();
+  QMandalaField *field;
+protected:
+  virtual QVariant value(void) const;
 
 public slots:
-  void addTriggered();
-  void removeTriggered();
-
-  void load();
-  void save();
+  Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
 };
 //=============================================================================
 #endif
-

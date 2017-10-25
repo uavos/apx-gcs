@@ -31,7 +31,7 @@
 #include "Mandala.h"
 //=============================================================================
 Datalink::Datalink(FactSystem *parent)
-  : Fact(parent->tree(),"datalink",tr("Datalink"),tr("Communication and networks"),RootItem,NoData),
+  : Fact(parent,"datalink",tr("Datalink"),tr("Communication and networks"),GroupItem,NoData),
     m_valid(false),m_online(false),m_errcnt(0)
 {
   _instance=this;
@@ -166,7 +166,7 @@ void Datalink::packetReceivedFromPort(const QByteArray &ba)
 //=============================================================================
 void Datalink::write(const QByteArray &ba)
 {
-  if(bReadOnly)return;
+  //if(bReadOnly)return;
   emit transmittedData(ba);
 
   //send uplink from gcs plugins

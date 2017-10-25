@@ -33,10 +33,8 @@ public:
 
   explicit AppSettings(FactSystem *parent=0);
 
-  /*static AppSettings * instance()
-  {
-    return _instance;
-  }*/
+  static AppSettings * instance() {return _instance;}
+
 
   static QSettings *settings()
   {
@@ -55,11 +53,8 @@ public:
   }
 
 private:
-  QSettings *m_settings;
-
-  //static helpers
   static AppSettings * _instance;
-
+  QSettings *m_settings;
 };
 //=============================================================================
 class AppSettingFact: public Fact

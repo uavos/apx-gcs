@@ -15,13 +15,13 @@ MapObject {
     property var f_loops: mItem.child("loops")
     property var f_time: mItem.child("time")
 
-    property int turnR: f_turnR?f_turnR.value:0
-    property int hmsl: f_HMSL?f_HMSL.value:0
-    property int loops: f_loops?f_loops.value:0
-    property int time: f_time?f_time.value:0
+    property int turnR: f_turnR?m.f_turnR.value:0
+    property int hmsl: f_HMSL?m.f_HMSL.value:0
+    property int loops: f_loops?m.f_loops.value:0
+    property int time: f_time?m.f_time.value:0
 
-    //property bool current: piidx.value === index
-    //property bool watching: mode.value === mode_STBY
+    //property bool current: m.piidx.value === index
+    //property bool watching: m.mode.value === mode_STBY
 
     color: Style.cBlue
     textColor: "white"

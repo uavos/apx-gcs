@@ -23,6 +23,7 @@
 #include "HttpService.h"
 #include "QMandala.h"
 #include "AppDirs.h"
+#include "FactSystem.h"
 //=============================================================================
 HttpService::HttpService(QObject* parent)
  : QObject(parent)
@@ -109,10 +110,10 @@ QString HttpService::reply_mandala(const QString &req)
       }else if(s.contains('=')){
         QString sname=s.left(s.indexOf('='));
         if(sname=="scr"){
-          mandala->current->exec_script(s.mid(sname.size()+1));
+          FactSystem::instance()->jsexec(s.mid(sname.size()+1));
           s="";
         }else{
-          mandala->current->exec_script(QString("set('%1',%2)").arg(sname).arg(s.mid(sname.size()+1)));
+          FactSystem::instance()->jsexec(s);//QString("set('%1',%2)").arg(sname).arg(s.mid(sname.size()+1)));
           s=sname;
         }
       }

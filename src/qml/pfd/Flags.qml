@@ -7,11 +7,11 @@ Column {
     //anchors.fill: parent
     Flag {
         id: flaps
-        show: ctr_flaps.value > 0
+        show: m.ctr_flaps.value > 0
         height: txtHeight
         flagColor: "cyan"
         text: qsTr("FLAPS")
-        toolTip: ctr_flaps.descr
+        toolTip: m.ctr_flaps.descr
         //control: ctr_flaps
         Text {
             visible: app.settings.test.value || flaps.show
@@ -20,7 +20,7 @@ Column {
             anchors.bottom: parent.bottom
             anchors.left: parent.right
             anchors.leftMargin: 2
-            text: (ctr_flaps.value*100).toFixed()
+            text: (m.ctr_flaps.value*100).toFixed()
             font.pixelSize: height
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
@@ -29,19 +29,19 @@ Column {
     }
     Flag {
         id: brakes
-        show: ctr_brake.value > 0
+        show: m.ctr_brake.value > 0
         height: txtHeight
         text: qsTr("BRAKE")
-        toolTip: ctr_brake.descr
+        toolTip: m.ctr_brake.descr
         //control: ctr_brake
         Text {
-            visible: app.settings.test.value || (brakes.show && (ctr_brake.value>0) && (ctr_brake.value<1))
+            visible: app.settings.test.value || (brakes.show && (m.ctr_brake.value>0) && (m.ctr_brake.value<1))
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: parent.right
             anchors.leftMargin: 2
-            text: (ctr_brake.value*100).toFixed()
+            text: (m.ctr_brake.value*100).toFixed()
             font.pixelSize: height
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
@@ -52,52 +52,52 @@ Column {
         spacing: 1
         Flag {
             id: ers_flag
-            show: ctrb_ers.value > 0
+            show: m.ctrb_ers.value > 0
             visible: opacity
             height: txtHeight
             flagColor: "red"
             text: qsTr("ERS")
-            toolTip: ctrb_ers.descr
+            toolTip: m.ctrb_ers.descr
             //control: ctrb_ers
         }
         Flag {
-            show: ctrb_rel.value > 0
+            show: m.ctrb_rel.value > 0
             //anchors.left: ers_flag.show?ers_flag.right:ers_flag.left
             //anchors.top: ers_flag.top
             height: txtHeight
             flagColor: "yellow"
             text: qsTr("REL")
-            toolTip: ctrb_rel.descr
+            toolTip: m.ctrb_rel.descr
             //control: ctrb_rel
         }
     }
     Flag {
-        show: power_ignition.value <= 0 && app.datalink.valid
+        show: m.power_ignition.value <= 0 && app.datalink.valid
         height: txtHeight
         flagColor: "red"
         text: qsTr("IGN")
-        toolTip: power_ignition.descr
+        toolTip: m.power_ignition.descr
         //control: power_ignition
     }
     Flag {
-        show: power_payload.value > 0
+        show: m.power_payload.value > 0
         height: txtHeight
         text: qsTr("PYLD")
-        toolTip: power_payload.descr
+        toolTip: m.power_payload.descr
         //control: power_payload
     }
     Flag {
-        show: sw_taxi.value > 0
+        show: m.sw_taxi.value > 0
         height: txtHeight
         text: qsTr("TAXI")
-        toolTip: sw_taxi.descr
+        toolTip: m.sw_taxi.descr
         //control: sw_taxi
     }
     /*Flag {
-        show: sw_lights.value > 0
+        show: m.sw_lights.value > 0
         height: txtHeight
         text: qsTr("LGHT")
-        toolTip: cmode_throvr.descr
+        toolTip: m.cmode_throvr.descr
     }*/
 }
 

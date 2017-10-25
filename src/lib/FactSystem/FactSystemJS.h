@@ -26,27 +26,50 @@
 #include <QtCore>
 #include <QtQml>
 #include <QJSEngine>
-#include "Fact.h"
+#include "FactSystemApp.h"
+class QMandalaItem;
 //=============================================================================
-class FactSystemJS
+class FactSystemJS: public FactSystemApp
 {
+  Q_OBJECT
 public:
-  FactSystemJS(QObject *parent);
+  explicit FactSystemJS(QObject *parent);
 
   QJSValue jsexec(const QString &s);
 
+  void jsSync();
+
+  QQmlEngine *engine() {return js;}
+
+  Q_INVOKABLE void help();
+  Q_INVOKABLE void vmexec(QString func);
+  Q_INVOKABLE void serial(quint8 portID,QJSValue data);
+  Q_INVOKABLE void sleep(quint16 ms);
+
 protected:
   //js engine
-  QJSEngine *js;
+  QQmlEngine *js;
   QHash<QString,QString> js_descr; //helper commands alias,descr
 
-  void jsSync(QQmlEngine *e, QObject *obj);
-  QJSValue jsSync(QQmlEngine *e, Fact *factItem, QJSValue parent); //recursive
+  void jsSync(QObject *obj);
+  void jsSync(Fact *fact);
+  QJSValue jsSync(Fact *factItem, QJSValue parent); //recursive
 
   void jsRegister(QString fname,QString description,QString body);
 
+  Fact *f_m;
+
 private:
   void jsRegisterFunctions();
+  QByteArray jsToArray(QJSValue data);
+
+private slots:
+  void jsAddItem(FactTree *item);
+  void jsRemoveItem(FactTree *item);
+
+public slots:
+  void loadMandala(QMandalaItem *mvar);
+
 };
 //=============================================================================
 #endif

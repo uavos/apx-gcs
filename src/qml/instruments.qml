@@ -26,7 +26,7 @@ Item {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: sys.limit(parent.height*0.05,10,width/32)
+                height: app.limit(parent.height*0.05,10,width/32)
                 //source: "./comm/Comm.qml"
             }
 

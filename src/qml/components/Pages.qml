@@ -17,14 +17,14 @@ Item {
     {
         stackView.pop()
         currentTitle=title;
-        settings.setValue(pagesItem.title+"Page","");
+        m.settings.setValue(pagesItem.title+"Page","");
     }
 
     function go(title,page)
     {
         currentTitle=title;
         stackView.push(Qt.resolvedUrl("../"+page))
-        if(saveState) settings.setValue(pagesItem.title+"Page",title);
+        if(saveState) m.settings.setValue(pagesItem.title+"Page",title);
     }
 
 

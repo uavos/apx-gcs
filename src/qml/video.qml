@@ -26,10 +26,10 @@ Item {
 
     signal config
 
-    onSrcChanged: settings.setValue("src",src);
-    onFlipChanged: settings.setValue("flip",flip);
-    onAutoRotateChanged: settings.setValue("autoRotate",autoRotate);
-    onAutoScaleChanged: settings.setValue("autoScale",autoScale);
+    onSrcChanged: m.settings.setValue("src",src);
+    onFlipChanged: m.settings.setValue("flip",flip);
+    onAutoRotateChanged: m.settings.setValue("autoRotate",autoRotate);
+    onAutoScaleChanged: m.settings.setValue("autoScale",autoScale);
 
 
     /*Settings {
@@ -75,7 +75,7 @@ Item {
         fillMode: VideoOutput.PreserveAspectCrop //PreserveAspectFit
         source: mediaplayer
 
-        rotation: sys.angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0))
+        rotation: app.angle((flip?180:0)+(autoRotate?(m.cam_roll.value+m.roll.value):0))
         Behavior on rotation { RotationAnimation {duration: app.settings.smooth.value?200:0; direction: RotationAnimation.Shortest; } }
         scale: 1.0+(autoScale?Math.abs(Math.sin(rotation*3.14/180))*width/height:0)
     }
@@ -122,7 +122,7 @@ Item {
                 anchors.right: parent.right
                 horizontalAlignment: TextInput.AlignHCenter
                 color: (activeFocus||mouse.containsMouse)?"white":"yellow"
-                font.pointSize: sys.limit(parent.width/50,textErr.font.pointSize,25)
+                font.pointSize: app.limit(parent.width/50,textErr.font.pointSize,25)
                 wrapMode: Text.WordWrap
                 selectByMouse: true
                 activeFocusOnPress: true

@@ -20,52 +20,39 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppShortcuts_H
-#define AppShortcuts_H
+#include "FactMandalaField.h"
+#include "QMandala.h"
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
-class AppShortcut;
-class AppSettings;
-//=============================================================================
-class AppShortcuts: public Fact
+FactMandalaField::FactMandalaField(Fact *parent, QMandalaField *field)
+ : Fact(parent,field->name(),"",field->descr(),FactItem,TextData),
+   field(field)
 {
-  Q_OBJECT
-public:
-  explicit AppShortcuts(AppSettings *parent, QWidget *widget);
-
-  Q_INVOKABLE QString keyToPortableString(int key,int modifier) const;
-
-  QWidget *widget;
-  Fact *f_blocked;
-
-  Fact *f_allonSys;
-  Fact *f_alloffSys;
-  Fact *f_allonUsr;
-  Fact *f_alloffUsr;
+  QStringList st=field->enumStrings();
+  if(st.size()){
+    m_dataType=EnumData;
+    setEnumStrings(st);
+  }
 
 
-  Fact *f_usr;
-  Fact *f_sys;
-
-private:
-  AppShortcut *f_add;
-
-  QTimer saveTimer;
-
-  void addUserShortcut();
-
-private slots:
-  void updateStats();
-
-public slots:
-  void addTriggered();
-  void removeTriggered();
-
-  void load();
-  void save();
-
-};
+  connect(field,&QMandalaField::changed,this,&Fact::valueChanged);
+  connect(this,&Fact::valueChanged,this,&Fact::textChanged);
+}
 //=============================================================================
-#endif
-
+QVariant FactMandalaField::value(void) const
+{
+  return field->value();
+}
+//=============================================================================
+bool FactMandalaField::setValue(const QVariant &v)
+{
+  Fact::setValue(v);
+  field->setValue(m_value.toDouble());
+  return true;
+}
+//=============================================================================
+void FactMandalaField::setField(QMandalaField *f)
+{
+  field=f;
+  emit valueChanged();
+}
+//=============================================================================

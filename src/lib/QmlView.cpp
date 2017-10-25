@@ -35,7 +35,7 @@
 //#endif
 //=============================================================================
 QmlView::QmlView(QString src,QWindow *parent)
-  : QQuickView(parent),menu(NULL),blockShowEvt(true)
+  : QQuickView(FactSystem::instance()->engine(),parent),menu(NULL),blockShowEvt(true)
 {
   qmlRegisterType<QMandalaItem>();
   qmlRegisterType<QMandala>();
@@ -66,20 +66,20 @@ QmlView::QmlView(QString src,QWindow *parent)
   connect(mandala,SIGNAL(sizeChanged(uint)),this,SIGNAL(vehiclesChanged()));
 
 
-  loadMandala(mandala->current);
-  connect(mandala,SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(loadMandala(QMandalaItem*)));
+  //loadMandala(mandala->current);
+  //connect(mandala,SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(loadMandala(QMandalaItem*)));
 
   QQmlEngine *e=engine();
-  e->rootContext()->setContextProperty("font_narrow","Bebas Neue");
+  /*e->rootContext()->setContextProperty("font_narrow","Bebas Neue");
   e->rootContext()->setContextProperty("font_mono","FreeMono");
-  e->rootContext()->setContextProperty("font_condenced","Ubuntu Condensed");
+  e->rootContext()->setContextProperty("font_condenced","Ubuntu Condensed");*/
 
   e->rootContext()->setContextProperty("settings",settings);
   e->rootContext()->setContextProperty("actions",QVariant::fromValue(actions));
   //e->rootContext()->setContextObject(this);
 
   //add app object
-  QJSValue jsApp=e->newQObject(qApp);
+  /*QJSValue jsApp=e->newQObject(qApp);
   e->globalObject().setProperty("xapp",jsApp);
   QQmlEngine::setObjectOwnership(qApp,QQmlEngine::CppOwnership);
   //add all app child QObjects
@@ -91,9 +91,9 @@ QmlView::QmlView(QString src,QWindow *parent)
       jsApp.setProperty(s,e->newQObject(v.value<QObject*>()));
       QQmlEngine::setObjectOwnership(v.value<QObject*>(),QQmlEngine::CppOwnership);
     }
-  }
+  }*/
 
-  FactSystem::instance()->syncJS(e);
+  //FactSystem::instance()->FactSystemJS::jsSync(e);
 
 
 
@@ -146,12 +146,35 @@ QWidget *QmlView::createWidget(QString title)
 void QmlView::loadMandala(QMandalaItem *mvar)
 {
   QQmlEngine *e=engine();
-  foreach(QMandalaField *f,mvar->fields)
-    e->rootContext()->setContextProperty(f->name(),f);
-  foreach(QString key,mvar->constants.keys())
-    e->rootContext()->setContextProperty(key,mvar->constants.value(key));
 
-  e->rootContext()->setContextProperty("mandala",mandala);
+  QQmlEngine::setObjectOwnership(mandala,QQmlEngine::CppOwnership);
+  QJSValue js_mandala=e->newQObject(mandala);
+  e->globalObject().setProperty("mandala",js_mandala);
+
+  QQmlEngine::setObjectOwnership(mvar,QQmlEngine::CppOwnership);
+  js_mandala=e->newQObject(mvar);
+  e->globalObject().setProperty("m",js_mandala);
+
+  foreach(QMandalaField *f,mvar->fields){
+    QQmlEngine::setObjectOwnership(f,QQmlEngine::CppOwnership);
+    QJSValue fobj=e->newQObject(f);
+    js_mandala.setProperty(f->name(),fobj);
+
+    e->evaluate(QString("this.__defineGetter__('%1', function(){ return m.%1.value; });").arg(f->name()));
+    e->evaluate(QString("this.__defineSetter__('%1', function(v){ m.%1.setValue(v); });").arg(f->name()));
+
+    //e->rootContext()->setContextProperty(f->name(),f);
+  }
+  foreach(QString key,mvar->constants.keys()){
+    e->globalObject().setProperty(key,mvar->constants.value(key));
+
+    //e->rootContext()->setContextProperty(key,mvar->constants.value(key));
+  }
+
+  //QQmlEngine::setObjectOwnership(mandala,QQmlEngine::CppOwnership);
+  //e->globalObject().setProperty("mandala",js_mandala);
+
+  //e->rootContext()->setContextProperty("mandala",mandala);
 }
 //=============================================================================
 void QmlView::showEvent(QShowEvent *e)

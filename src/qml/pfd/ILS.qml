@@ -6,10 +6,10 @@ Item {
     property double anumation_duration: 1000
 
     property bool isRW: app.settings.test.value ||
-        mode.value===mode_LANDING ||
-        mode.value===mode_TAKEOFF ||
-        mode.value===mode_TAXI ||
-        (mode.value===mode_WPT && mtype.value===mtype_line)
+        m.mode.value===mode_LANDING ||
+        m.mode.value===mode_TAKEOFF ||
+        m.mode.value===mode_TAXI ||
+        (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
 
     property double sz: (width>height?height:width)*0.6
 
@@ -20,7 +20,7 @@ Item {
     }*/
     PfdImage {
         id: ils_bar_vertical
-        visible: app.settings.test.value || mode.value===mode_LANDING
+        visible: app.settings.test.value || m.mode.value===mode_LANDING
         elementName: "ils-bar-vertical"
         fillMode: Image.PreserveAspectFit
         anchors.left: parent.left
@@ -36,10 +36,10 @@ Item {
             width: parent.width*1.5
             height: parent.width*0.5
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: sys.limit(delta.value/500*parent.height/2,-parent.height*0.6,parent.height*0.6)
+            anchors.verticalCenterOffset: app.limit(m.delta.value/500*parent.height/2,-parent.height*0.6,parent.height*0.6)
             Behavior on anchors.verticalCenterOffset { enabled: app.settings.smooth.value; PropertyAnimation {duration: anumation_duration; } }
             Text {
-                property double value: Math.abs(delta.value.toFixed())
+                property double value: Math.abs(m.delta.value.toFixed())
                 visible: value>25
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.left
@@ -69,10 +69,10 @@ Item {
             width: parent.height*0.5
             height: parent.height*1.5
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: sys.limit(-rwDelta.value/20*parent.width/2,-parent.width*0.6,parent.width*0.6)
+            anchors.horizontalCenterOffset: app.limit(-m.rwDelta.value/20*parent.width/2,-parent.width*0.6,parent.width*0.6)
             Behavior on anchors.horizontalCenterOffset { enabled: app.settings.smooth.value; PropertyAnimation {duration: anumation_duration; } }
             Text {
-                property double value: Math.abs(rwDelta.value.toFixed())
+                property double value: Math.abs(m.rwDelta.value.toFixed())
                 visible: value>5 && value<100
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.bottom

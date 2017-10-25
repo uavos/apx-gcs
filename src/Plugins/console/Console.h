@@ -25,7 +25,7 @@
 //=============================================================================
 #include <QtCore>
 #include <QTextEdit>
-class QMandala;
+//class QMandala;
 //=============================================================================
 class Console : public  QTextEdit
 {
@@ -36,7 +36,8 @@ public:
   static QTextCharFormat fPrompt,fUser,fAutocomplete,fResult,fStdOut,fStdErr,fStdWarn,fNode;
 
 private:
-  QMandala *mandala;
+
+  //QMandala *mandala;
   void replaceCurrentCommand(QString newCommand);
   QString getCurrentCommand(void);
 

@@ -34,17 +34,6 @@ void Fact::bind(FactData *item)
   //connect(item,&Fact::statusChanged,this,&Fact::statusChanged);
 }
 //=============================================================================
-QString Fact::path(int fromLevel, const QChar pathDelimiter) const
-{
-  QString s;
-  for(const Fact *i=this;i && i->level()>=fromLevel;i=static_cast<Fact*>(i->parentItem())){
-    if(s.isEmpty())s=i->name();
-    else s.prepend(i->name()+pathDelimiter);
-    if(i->treeItemType()==RootItem && fromLevel>=0)break;
-  }
-  return s.isEmpty()?name():s;
-}
-//=============================================================================
 QVariant Fact::findValue(const QString &namePath)
 {
   Fact *f=fact(namePath);

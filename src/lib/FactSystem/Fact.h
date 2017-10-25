@@ -38,8 +38,6 @@ class Fact: public FactData
 public:
   explicit Fact(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType);
 
-  Q_INVOKABLE QString path(int fromLevel=0,const QChar pathDelimiter=QChar('.')) const;
-
   Q_INVOKABLE QVariant findValue(const QString &namePath);
 
   Q_INVOKABLE Fact * fact(const QString &factName) const;

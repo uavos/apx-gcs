@@ -22,7 +22,7 @@
  */
 #include "TelemetryPlot.h"
 #include <QtGui>
-#include <QScriptEngine>
+#include <QJSEngine>
 #include "QMandala.h"
 //=============================================================================
 TelemetryPlot::TelemetryPlot(QWidget *parent)
@@ -247,7 +247,7 @@ void TelemetryPlot::refreshCalculated(void)
 {
   bool ok;
   if(expCalc.isEmpty())expCalc="altitude+down";
-  QString exp=QInputDialog::getText(this, tr("Calculated field"),
+  QString exp=QInputDialog::getText(NULL, tr("Calculated field"),
                                     tr("QtScript expression:"), QLineEdit::Normal,
                                     expCalc, &ok);
   if(!ok)return;
@@ -258,7 +258,7 @@ void TelemetryPlot::refreshCalculated(void)
   //fill internal data
   _telemetry_field &fcalc=fields["calculated"];
   fcalc.fdata.clear();
-  QScriptEngine engine;
+  QJSEngine engine;
 
   uint cnt=0,i=0;
   foreach(uint time,QMandala::instance()->local->rec->file.time){
@@ -267,10 +267,10 @@ void TelemetryPlot::refreshCalculated(void)
       progressBar.setValue(progressBar.maximum()*0.8+time*0.2);
     }
 
-    engine.globalObject().setProperty("time",time/1000.0,QScriptValue::ReadOnly);
+    engine.globalObject().setProperty("time",time/1000.0);
     const FlightDataFile::ListDouble &vlist=QMandala::instance()->local->rec->file.data.at(i++);
     for(int i=0;i<QMandala::instance()->local->fields.size();i++)
-      engine.globalObject().setProperty(QMandala::instance()->local->fields.at(i)->name(),vlist.at(i),QScriptValue::ReadOnly);
+      engine.globalObject().setProperty(QMandala::instance()->local->fields.at(i)->name(),vlist.at(i));
     fcalc.fdata.append(engine.evaluate(expCalc).toNumber());
   }
   //install data

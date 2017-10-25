@@ -27,10 +27,10 @@ Item {
 
     signal config
 
-    onSrcChanged: settings.setValue("src",src);
-    onFlipChanged: settings.setValue("flip",flip);
-    onAutoRotateChanged: settings.setValue("autoRotate",autoRotate);
-    onAutoScaleChanged: settings.setValue("autoScale",autoScale);
+    onSrcChanged: m.settings.setValue("src",src);
+    onFlipChanged: m.settings.setValue("flip",flip);
+    onAutoRotateChanged: m.settings.setValue("autoRotate",autoRotate);
+    onAutoScaleChanged: m.settings.setValue("autoScale",autoScale);
 
     function connect() {
         src = textSrc.text ? textSrc.text : src_default
@@ -51,7 +51,7 @@ Item {
         fillMode: VideoOutput.PreserveAspectCrop
         source: mediaPlayer
 
-        rotation: app.settings.smooth.value_angle((flip?180:0)+(autoRotate?(cam_roll.value+roll.value):0),"videoOutput")
+        rotation: app.settings.smooth.value_angle((flip?180:0)+(autoRotate?(m.cam_roll.value+m.roll.value):0),"videoOutput")
         Behavior on rotation { PropertyAnimation {duration: app.settings.smooth.value?200:0} }
         scale: 1.0+(autoScale?Math.abs(Math.sin(rotation*3.14/180))*width/height:0)
     }
@@ -104,7 +104,7 @@ Item {
                 anchors.right: parent.right
                 horizontalAlignment: TextInput.AlignHCenter
                 color: (activeFocus||mouse.containsMouse)?"white":"yellow"
-                font.pointSize: sys.limit(parent.width/50,textErr.font.pointSize,25)
+                font.pointSize: app.limit(parent.width/50,textErr.font.pointSize,25)
                 wrapMode: Text.WordWrap
                 selectByMouse: true
                 activeFocusOnPress: true

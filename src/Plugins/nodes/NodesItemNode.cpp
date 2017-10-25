@@ -609,7 +609,7 @@ void NodesItemNode::field_changed()
 //=============================================================================
 void NodesItemNode::sync_apcfg()
 {
-  sync_apcfg_scr(this,model->mvar->engine.evaluate("conf"));
+  //sync_apcfg_scr(this,model->mvar->engine.evaluate("conf"));
   //update apcfg fields in Mandala
   if(! (name.contains(".shiva") || name == "shiva") )return;
   foreach(NodesItemField *i,fields){
@@ -620,7 +620,7 @@ void NodesItemNode::sync_apcfg()
   model->mvar->apcfgUpdated();
   //qDebug("sync_apcfg (%s)",model->mvar->apcfg.value("name").toString().toUtf8().data());
 }
-void NodesItemNode::sync_apcfg_scr(NodesItem *item,QScriptValue mobj)
+/*void NodesItemNode::sync_apcfg_scr(NodesItem *item,QScriptValue mobj)
 {
   if(item->childCount()){
     QScriptValue gobj=model->mvar->engine.newObject();
@@ -640,7 +640,7 @@ void NodesItemNode::sync_apcfg_scr(NodesItem *item,QScriptValue mobj)
     return;
   }
   mobj.setProperty(item->name,model->mvar->engine.newQObject(item,QScriptEngine::QtOwnership,QScriptEngine::ExcludeSuperClassMethods|QScriptEngine::ExcludeSuperClassProperties));
-}
+}*/
 //=============================================================================
 void NodesItemNode::saveBackupFile(void)
 {

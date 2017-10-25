@@ -67,8 +67,8 @@ MissionModel::~MissionModel()
 //=============================================================================
 void MissionModel::mandalaCurrentChanged(QMandalaItem *m)
 {
-  QScriptValue mobj=m->engine.newQObject(this,QScriptEngine::QtOwnership,QScriptEngine::ExcludeSuperClassMethods);
-  m->engine.globalObject().setProperty(objectName(),mobj);
+  //QScriptValue mobj=m->engine.newQObject(this,QScriptEngine::QtOwnership,QScriptEngine::ExcludeSuperClassMethods);
+  //m->engine.globalObject().setProperty(objectName(),mobj);
 
   foreach(QMetaObject::Connection c,mcon) disconnect(c);
   mcon.clear();

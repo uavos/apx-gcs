@@ -19,13 +19,13 @@ MouseArea {
     }
     onReleased: {
         mouse_ptr.visible = false;
-        rc_roll.setValue(0);
-        rc_pitch.setValue(0);
+        m.rc_roll.setValue(0);
+        m.rc_pitch.setValue(0);
     }
     onPositionChanged: {
         if(drag.active){
-            rc_roll.setValue(out_x);
-            rc_pitch.setValue(out_y);
+            m.rc_roll.setValue(out_x);
+            m.rc_pitch.setValue(out_y);
         }
     }
     Rectangle {

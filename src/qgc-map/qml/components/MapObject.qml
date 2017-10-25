@@ -127,8 +127,8 @@ Item {
     property double lat: 0
     property double lon: 0
 
-    property double glat: f_lat?f_lat.value:lat
-    property double glon: f_lon?f_lon.value:lon
+    property double glat: f_lat?m.f_lat.value:lat
+    property double glon: f_lon?m.f_lon.value:lon
     //onLatChanged: updateGlobalPosition();
     //onLonChanged: updateGlobalPosition();
 
@@ -211,8 +211,8 @@ Item {
                 var y=objectItem.y+height/2;
                 var vlat=mapProvider.yToLat(map.sceneToGlobalY(y));
                 var vlon=mapProvider.xToLon(map.sceneToGlobalX(x));
-                if(f_lat)f_lat.value=vlat;
-                if(f_lon)f_lon.value=vlon;
+                if(f_lat)m.f_lat.value=vlat;
+                if(f_lon)m.f_lon.value=vlon;
                 objectMoved(vlat,vlon);
 
                 //flick when dragging to edges

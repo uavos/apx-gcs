@@ -121,6 +121,11 @@ void QMandalaField::updateValue(double v)
   //if(treeField)treeField->setValue(v);
   emit changed();
 }
+QStringList QMandalaField::enumStrings() const
+{
+  if(m_type!=vt_enum) return QStringList();
+  return mvar->enumnames.value(m_varmsk);
+}
 uint QMandalaField::type()
 {
   return m_type;

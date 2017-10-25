@@ -35,6 +35,7 @@ class FactTree: public QAbstractListModel
   Q_PROPERTY(int size READ size NOTIFY sizeChanged)
   Q_PROPERTY(bool flatModel READ flatModel WRITE setFlatModel NOTIFY flatModelChanged)
 
+  Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
 public:
 
@@ -46,26 +47,35 @@ public:
     ConstItem,
   };
 
-  explicit FactTree(FactTree *parent, ItemType treeItemType);
+  explicit FactTree(FactTree *parent, QString name, ItemType treeItemType);
 
   //tree structure manipulation
   virtual void insertItem(int i, FactTree *item);
   virtual void removeItem(FactTree *item);
 
   //internal tree
-  void addItem(FactTree *item);
-  void remove();
-  void moveItem(FactTree *item, int dest);
-  int num() const;
-  FactTree * child(int n) const;
-  FactTree * parentItem() const;
-  QList<FactTree*> childItems() const;
-  QList<FactTree*> childItemsTree() const; //no flat model
+  Q_INVOKABLE void addItem(FactTree *item);
+  Q_INVOKABLE void remove();
+  Q_INVOKABLE void moveItem(FactTree *item, int dest);
+  Q_INVOKABLE int num() const;
+  Q_INVOKABLE FactTree * child(int n) const;
+  Q_INVOKABLE FactTree * parentItem() const;
+  Q_INVOKABLE QList<FactTree*> childItems() const;
+  Q_INVOKABLE QList<FactTree*> childItemsTree() const; //no flat model
+
+  Q_INVOKABLE FactTree * child(const QString &name) const;
+  Q_INVOKABLE QString path(int fromLevel=0,const QChar pathDelimiter=QChar('.')) const;
+
+  QList<FactTree*> pathList() const;
 
 public slots:
   virtual void clear(void);
 signals:
-  void structChanged(FactTree *item);
+  void structChanged();
+
+  //signals forwarded to parents globally
+  void itemRemoved(FactTree *item);
+  void itemAdded(FactTree *item);
 
 protected:
   //ListModel override
@@ -84,11 +94,18 @@ public:
   virtual int size() const;
   virtual bool flatModel() const;
   virtual void setFlatModel(const bool &v);
+
+  QString name(void) const;
+  void setName(const QString &v);
+
 protected:
   ItemType m_treeItemType;
   int m_level;
   bool m_flatModel;
+  QString  m_name;
+
 signals:
+  void nameChanged();
   void sizeChanged();
   void flatModelChanged();
 };

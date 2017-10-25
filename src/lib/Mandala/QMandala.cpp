@@ -21,6 +21,7 @@
  *
  */
 #include "QMandala.h"
+#include "FactSystem.h"
 //=============================================================================
 QMandala *QMandala::_instance=NULL;
 //=============================================================================
@@ -155,7 +156,7 @@ void QMandala::downlinkReceived(const QByteArray &ba)
       }else if(packet->id==idx_jsexec){
         //joystick jsw panel qtscript
         QByteArray sba((const char*)packet->data,pdata.size()-bus_packet_size_hdr);
-        jsexec(QString(sba));
+        FactSystem::instance()->jsexec(QString(sba));
         //qDebug()<<"js:"<<sba.toHex();
       }else{
         if(packet->id==idx_service && packet->srv.cmd!=apc_msg){
@@ -184,7 +185,7 @@ void QMandala::downlinkReceived(const QByteArray &ba)
   }else if(packet->id==idx_jsexec){
     //joystick jsw panel qtscript
     QByteArray sba((const char*)packet->data,data_cnt);
-    jsexec(QString(sba));
+    FactSystem::instance()->jsexec(QString(sba));
     //qDebug()<<"js:"<<sba.toHex();
   }else local->downlinkReceived(ba);
 }
@@ -240,30 +241,13 @@ void QMandala::assignIDENT(IDENT::_ident *ident)
   emit sendUplink(ba);
 }
 //=============================================================================
-void QMandala::jsexec(QString scr)
+void QMandala::testUAV()
 {
-  QString s=scr.simplified();
-  if(s.startsWith('!')){
-    current->exec_script(s.remove(0,1));
-    return;
-  }
-  if(s.contains(';')){
-    foreach(const QString &tcmd,s.split(';',QString::SkipEmptyParts))
-      jsexec(tcmd);
-    return;
-  }
-  if(s.contains("(")||s.contains("=")){
-    current->exec_script(scr);
-    return;
-  }
-  QStringList st=s.split(' ');
-  if(!st.size())return;
-  QString sc=st.takeFirst();
-  if((sc.startsWith("set")||sc.startsWith("req")||sc.startsWith("send")) && st.size()){
-    st.insert(0,"'"+st.takeFirst()+"'"); //quote var name
-    current->exec_script(sc+"("+st.join(",")+")");
-  }else
-    current->exec_script(sc+"("+st.join(",")+")");
+  QMandalaItem *m=append();
+  strncat(m->ident.callsign,"X-test UAV",sizeof(m->ident.callsign));
+  m->setObjectName("test");
+  emit uavAdded(m);
+  setCurrent(m);
 }
 //=============================================================================
 void QMandala::uavSendUplink(const QByteArray &ba)
@@ -414,15 +398,6 @@ void QMandala::changeCurrentPrev(void)
   setCurrent(items.at(i));
 }
 //=============================================================================
-//=============================================================================
-void QMandala::testUAV()
-{
-  QMandalaItem *m=append();
-  strncat(m->ident.callsign,"X-test UAV",sizeof(m->ident.callsign));
-  m->setObjectName("test");
-  emit uavAdded(m);
-  setCurrent(m);
-}
 //=============================================================================
 bool QMandala::jsValid()
 {

@@ -23,10 +23,10 @@
 #include "FactData.h"
 //=============================================================================
 FactData::FactData(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType)
- : FactTree(parent,treeItemType),
+ : FactTree(parent,name,treeItemType),
    _bindedFact(NULL),
    m_dataType(dataType),
-   m_name(name),m_title(title),m_descr(descr)
+   m_title(title),m_descr(descr)
 {
   setObjectName(m_name);
   switch(dataType){
@@ -57,7 +57,6 @@ QVariant FactData::value(void) const
       break;
     }
     default: break;
-
   }
   return m_value;
 }
@@ -100,16 +99,6 @@ bool FactData::setValue(const QVariant &v)
 FactData::DataType FactData::dataType() const
 {
   return m_dataType;
-}
-QString FactData::name(void) const
-{
-  return m_name.contains('#')?QString(m_name).replace('#',QString::number(num())):m_name;
-}
-void FactData::setName(const QString &v)
-{
-  if(m_name==v)return;
-  m_name=v;
-  emit nameChanged();
 }
 QString FactData::title(void) const
 {
@@ -171,14 +160,6 @@ void FactData::setEnumStrings(const QStringList &v)
   emit enumStringsChanged();
 }
 //=============================================================================
-FactData * FactData::child(const QString &name) const
-{
-  foreach(FactTree *item,childItems()){
-    if(static_cast<FactData*>(item)->name()==name)return static_cast<FactData*>(item);
-  }
-  return NULL;
-}
-//=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
 {
   foreach(FactTree *i,childItems()){
@@ -198,6 +179,11 @@ void FactData::copyValuesFrom(const FactData *item)
 //=============================================================================
 void FactData::bind(FactData *item)
 {
+  if(_bindedFact){
+    disconnect(_bindedFact,&FactData::valueChanged,this,&FactData::valueChanged);
+    disconnect(_bindedFact,&FactData::textChanged,this,&FactData::textChanged);
+    disconnect(_bindedFact,&FactData::enumStringsChanged,this,&FactData::enumStringsChanged);
+  }
   _bindedFact=item;
   connect(item,&FactData::valueChanged,this,&FactData::valueChanged);
   connect(item,&FactData::textChanged,this,&FactData::textChanged);

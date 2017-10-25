@@ -21,7 +21,7 @@
  *
  */
 #include "Console.h"
-#include "QMandala.h"
+#include "FactSystem.h"
 //=============================================================================
 #include <QtGui>
 #include <QApplication>
@@ -55,7 +55,7 @@ Console::Console(QWidget *parent)
 {
   setWindowTitle(tr("Console"));
 
-  mandala=qApp->property("Mandala").value<QMandala*>();
+  //mandala=qApp->property("Mandala").value<QMandala*>();
 
   qRegisterMetaType<QTextCharFormat>();
 
@@ -359,19 +359,22 @@ void Console::get_hints(QString *command,QStringList *hints)
   else cmd=cmd.trimmed();
 
   QString scope="this";
+  QJSValue result;
   QRegExp del("[\\ \\,\\:\\t\\{\\}\\[\\]\\(\\)\\=]");
   if(!(cmd.contains(del)||prefix.startsWith('!')||cmd.contains('.'))){
     //first word input (std command?)
-    QStringList st(mandala->current->engine.evaluate(QString("var s='';for(var v in %1)if(typeof(%1[v])=='function')s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',QString::SkipEmptyParts));
+    result=FactSystem::instance()->jsexec(QString("(function(){var s='';for(var v in %1)if(typeof(%1[v])=='function')s+=v+';';return s;})()").arg(scope));
+    QStringList st(result.toString().replace('\n',',').split(';',QString::SkipEmptyParts));
     st=st.filter(QRegExp("^"+cmd));
     if(st.size()){
       if(st.size()==1) st.append(prefix.left(prefix.size()-cmd.size())+st.takeFirst()+" ");
     }else{
-      st=mandala->current->engine.evaluate(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',QString::SkipEmptyParts);
+      result=FactSystem::instance()->jsexec(QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
+      st=result.toString().replace('\n',',').split(';',QString::SkipEmptyParts);
       st=st.filter(QRegExp("^"+cmd));
       if(st.size()==1) st.append(prefix.left(prefix.size()-cmd.size())+st.takeFirst());
     }
-    *hints=st;
+    if(!result.isError()) *hints=st;
   }else{
     //parameter or not a command
     cmd=cmd.remove(0,cmd.lastIndexOf(del)+1).trimmed();
@@ -380,15 +383,19 @@ void Console::get_hints(QString *command,QStringList *hints)
       scope=cmd.left(cmd.lastIndexOf('.'));
       cmd.remove(0,cmd.lastIndexOf('.')+1);
     }
-    QStringList st(mandala->current->engine.evaluate(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',QString::SkipEmptyParts));
+    result=FactSystem::instance()->jsexec(QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
+    QStringList st(result.toString().replace('\n',',').split(';',QString::SkipEmptyParts));
+    //QStringList st(FactSystem::instance()->jsexec(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',QString::SkipEmptyParts));
     st=st.filter(QRegExp("^"+cmd));
     if(st.size()==1)
       st.append(prefix.left(prefix.size()-cmd.size())+st.takeFirst()+(bDot?"":" "));
-    *hints=st;
+    if(!result.isError()) *hints=st;
+
   }
+  if(hints->size()<=1)return;
   hints->sort();
   //partial autocompletion
-  if(hints->size()>1 && cmd.size()>0){
+  if(cmd.size()>0){
     //partial autocompletion
     bool bMatch=true;
     QString s=cmd;
@@ -406,25 +413,23 @@ void Console::get_hints(QString *command,QStringList *hints)
     }
   }
   //hints output formatting
-  if(hints->size()>1){
-    for(int i=0;i<hints->size();i++){
-      if(mandala->current->engine.evaluate(QString("typeof(%1['%2'])=='function'").arg(scope).arg(hints->at(i))).toBool()){
-        (*hints)[i]="<font color='white'><b>"+hints->at(i)+"</b></font>";
-      }else if(mandala->current->engine.evaluate(QString("typeof(%1['%2'])=='object'").arg(scope).arg(hints->at(i))).toBool()){
-        (*hints)[i]="<font color='yellow'>"+hints->at(i)+"</font>";
-      }else if(mandala->current->engine.evaluate(QString("typeof(%1['%2'])=='number'").arg(scope).arg(hints->at(i))).toBool()){
-        (*hints)[i]="<font color='cyan'>"+hints->at(i)+"</font>";
-      }else (*hints)[i]="<font color='gray'>"+hints->at(i)+"</font>";
-    }
-    hints->sort();
+  for(int i=0;i<hints->size();i++){
+    if(FactSystem::instance()->jsexec(QString("typeof(%1['%2'])=='function'").arg(scope).arg(hints->at(i))).toBool()){
+      (*hints)[i]="<font color='white'><b>"+hints->at(i)+"</b></font>";
+    }else if(FactSystem::instance()->jsexec(QString("typeof(%1['%2'])=='object'").arg(scope).arg(hints->at(i))).toBool()){
+      (*hints)[i]="<font color='yellow'>"+hints->at(i)+"</font>";
+    }else if(FactSystem::instance()->jsexec(QString("typeof(%1['%2'])=='number'").arg(scope).arg(hints->at(i))).toBool()){
+      (*hints)[i]="<font color='cyan'>"+hints->at(i)+"</font>";
+    }else (*hints)[i]="<font color='gray'>"+hints->at(i)+"</font>";
   }
+  hints->sort();
 }
 //=============================================================================
 void Console::exec_command(const QString &command)
 {
   QString s=command.simplified();
   if(s.startsWith('!')){
-    mandala->current->exec_script(s.remove(0,1));
+    FactSystem::instance()->jsexec(s.remove(0,1));
     return;
   }
   if(s.contains(';')){
@@ -433,7 +438,7 @@ void Console::exec_command(const QString &command)
     return;
   }
   if(s.contains("(")||s.contains("=")){
-    mandala->current->exec_script(command);
+    FactSystem::instance()->jsexec(command);
     return;
   }
   QStringList st=s.split(' ');
@@ -441,9 +446,9 @@ void Console::exec_command(const QString &command)
   QString sc=st.takeFirst();
   if((sc.startsWith("set")||sc.startsWith("req")||sc.startsWith("send")) && st.size()){
     st.insert(0,"'"+st.takeFirst()+"'"); //quote var name
-    mandala->current->exec_script(sc+"("+st.join(",")+")");
+    FactSystem::instance()->jsexec(sc+"("+st.join(",")+")");
   }else
-    mandala->current->exec_script(sc+"("+st.join(",")+")");
+    FactSystem::instance()->jsexec(sc+"("+st.join(",")+")");
 }
 //=============================================================================
 void Console::escPressed()

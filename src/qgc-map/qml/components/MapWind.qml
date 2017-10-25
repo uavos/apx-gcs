@@ -14,7 +14,7 @@ Item {
         scale: 1
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
-        text: windSpd.value.toFixed(1)+"m/s"
+        text: m.windSpd.value.toFixed(1)+"m/s"
         bold: true
         textSize: 16
     }
@@ -41,7 +41,7 @@ Item {
             }
             color: "yellow"
         }
-        rotation: windHdg.value
+        rotation: m.windHdg.value
         Behavior on rotation { RotationAnimation {duration: 1000; direction: RotationAnimation.Shortest; } }
     }
 }

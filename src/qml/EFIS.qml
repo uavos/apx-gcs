@@ -26,7 +26,7 @@ Item{
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        height: sys.limit(parent.height*0.05,10,width/32)
+        height: app.limit(parent.height*0.05,10,width/32)
         source: "qrc:///comm/Comm.qml"
     }
 
@@ -35,7 +35,7 @@ Item{
         asynchronous: app.settings.smooth.value
         anchors.fill: parent
         anchors.topMargin: comm.height
-        anchors.bottomMargin: sys.limit(comm.height,20,comm.height)
+        anchors.bottomMargin: app.limit(comm.height,20,comm.height)
         source: "qrc:///pfd/Pfd.qml"
     }
 

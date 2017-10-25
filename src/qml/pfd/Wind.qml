@@ -3,11 +3,11 @@ import "../components"
 
 Item {
     id: wind_window
-    property double value: windHdg.value
+    property double value: m.windHdg.value
     property double anumation_duration: 1000
     property bool simplified: false
 
-    visible: windSpd.value>0.5
+    visible: m.windSpd.value>0.5
     //width: simplified?simple_rect.width:height
 
     /*Rectangle { //debug
@@ -36,7 +36,7 @@ Item {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: -wind_arrow.height*0.7
             rotation: -parent.rotation
-            text: windSpd.value.toFixed(windSpd.value>=10?0:1)
+            text: m.windSpd.value.toFixed(m.windSpd.value>=10?0:1)
             color: "white"
             font.family: font_narrow
             font.pixelSize: parent.height*0.5
@@ -52,7 +52,7 @@ Item {
         Text {
             id: simple_text
             anchors.left: parent.right
-            text: windSpd.value.toFixed(windSpd.value>=10?0:1)
+            text: m.windSpd.value.toFixed(m.windSpd.value>=10?0:1)
             color: "white"
             font.family: font_narrow
             font.pixelSize: wind_window.height
