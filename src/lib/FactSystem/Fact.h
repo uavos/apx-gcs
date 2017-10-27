@@ -34,9 +34,10 @@ class Fact: public FactData
 
   Q_PROPERTY(QString section READ section WRITE setSection NOTIFY sectionChanged)
   Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
+  Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
 
 public:
-  explicit Fact(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType);
+  explicit Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
   Q_INVOKABLE QVariant findValue(const QString &namePath);
 
@@ -65,11 +66,15 @@ public:
   virtual QString status() const;
   virtual void setStatus(const QString &v);
 
+  virtual bool active() const;
+  virtual void setActive(const bool &v);
+
 protected:
   bool m_enabled;
   bool m_visible;
   QString  m_section;
   QString  m_status;
+  bool m_active;
 
 signals:
   void enabledChanged();
@@ -77,6 +82,7 @@ signals:
 
   void sectionChanged();
   void statusChanged();
+  void activeChanged();
 
 };
 //=============================================================================

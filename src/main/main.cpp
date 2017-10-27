@@ -30,7 +30,6 @@
 #include "QMandala.h"
 #include "MainForm.h"
 #include "Serial.h"
-#include "Config.h"
 #include "HttpService.h"
 #include <QTranslator>
 #include "MsgTranslator.h"
@@ -106,6 +105,16 @@ int main(int argc, char *argv[])
   new AppSettings(factSystem);
   Datalink *datalink=new Datalink(factSystem);
 
+  Vehicles *vehicles=new Vehicles(factSystem);
+
+  QObject::connect(datalink,&Datalink::read,vehicles,&Vehicles::downlinkReceived);
+  QObject::connect(vehicles,&Vehicles::sendUplink,datalink,&Datalink::write);
+
+
+
+
+
+
   if(QSettings().value("qsg_basic").toBool()){
     qputenv("QSG_RENDER_LOOP","basic");
   }
@@ -146,7 +155,7 @@ int main(int argc, char *argv[])
   QGLFormat::setDefaultFormat(f);
 
   //Settings
-  Config::defaults(false);
+  //Config::defaults(false);
 
   //check instances
   if(!QSettings().value("multipleInstances").toBool()){
@@ -182,7 +191,8 @@ int main(int argc, char *argv[])
   QObject::connect(datalink,&Datalink::read,mandala,&QMandala::downlinkReceived);
   QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
 
-  factSystem->loadMandala(mandala->current);
+  //factSystem->loadMandala(mandala->current);
+  factSystem->jsSync(mandala);
 
 
 /*
@@ -225,10 +235,6 @@ int main(int argc, char *argv[])
   new AppShortcuts(AppSettings::instance(),mainForm);
 
 
-  Vehicles *vehicles=new Vehicles(factSystem);
-  QObject::connect(datalink,&Datalink::read,vehicles,&Vehicles::downlinkReceived);
-  QObject::connect(vehicles,&Vehicles::sendUplink,datalink,&Datalink::write);
-
 
   //PLUGINS
   loadPlugins();
@@ -249,9 +255,9 @@ int main(int argc, char *argv[])
   //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),serial2,SLOT(activate()));
 */
 
-  SoundEffects *soundEffects=new SoundEffects(mandala);
+/*  SoundEffects *soundEffects=new SoundEffects(mandala);
   QObject::connect(factSystem,&FactSystem::playSoundEffect,soundEffects,&SoundEffects::play);
-
+*/
   //datalink->f_active->setValue(true);
   //datalink->activate();
   //serial1->activate();

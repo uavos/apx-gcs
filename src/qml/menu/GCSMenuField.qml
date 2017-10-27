@@ -41,9 +41,9 @@ Item {
     signal toggled()
 
     onClicked: {
-        if(fact && fact.dataType==Fact.BoolData && (!showNext)){
+        /*if(fact && fact.dataType==Fact.BoolData && (!showNext)){
             fact.value = !fact.value
-        }
+        }*/
     }
 
     onToggled: {
@@ -65,7 +65,10 @@ Item {
     property bool bAction:       field.fact && field.fact.dataType==Fact.ActionData
     property bool bEditKey:      field.fact && field.fact.dataType==Fact.KeySequenceData
     property bool bConstData:    field.fact && field.fact.dataType==Fact.ConstData
+    property bool bIntData:      field.fact && field.fact.dataType==Fact.IntData
+    property bool bFloatData:    field.fact && field.fact.dataType==Fact.FloatData
     property bool bStatus:       field.fact
+    property bool bActive:       field.fact && field.fact.active
 
     Button {
         id: fieldButton
@@ -146,8 +149,9 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: sephdg?Text.AlignHCenter:Text.AlignLeft
                         font.pixelSize: itemSize*0.6
-                        color: sephdg?colorTitleSep:(enabled?"#fff":"#aaa")
+                        color: sephdg?colorTitleSep:(enabled?(bActive?colorValueText:"#fff"):"#aaa")
                         font.family: sephdg?font_narrow:font_condenced
+                        font.weight: bActive?Font.ExtraBold:Font.Normal
                         text: field.visible?field.title:""
                         clip: true
                     }
@@ -207,7 +211,7 @@ Item {
                 if(field.delegate){
                     field.delegate.createObject(fieldDelegate,{"anchors.fill": fieldDelegate, "modelData": field});
                 }
-                if(bConstData){
+                if(bConstData || bIntData || bFloatData){
                     fieldConstC.createObject(fieldBody);
                 }
                 if(bStatus){
@@ -270,7 +274,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
                     font.pixelSize: itemSize*0.5
-                    color: colorValueText
+                    color: colorStatusText
                     font.family: font_condenced
                     text: field.fact?field.fact.status:""
                 }

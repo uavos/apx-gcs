@@ -15,11 +15,9 @@ RESOURCES += $$RES_DIR/styles.qrc
 
 SOURCES += main.cpp \
     MainForm.cpp \
-    Config.cpp \
     RunGuard.cpp \
 
 HEADERS += MainForm.h \
-    Config.h \
     RunGuard.h \
 
 FORMS += \

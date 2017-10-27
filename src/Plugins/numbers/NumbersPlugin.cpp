@@ -64,7 +64,7 @@ void NumbersPlugin::make()
     if(smvar.contains(".value")){
       s<<si+"value: "+smvar;
     }else{
-      s<<si+"mfield: "+smvar;
+      s<<si+"mfield: m."+smvar;
     }
     QString slabel=st.size()>1?st.at(1).trimmed():"";
     if(!slabel.isEmpty()){

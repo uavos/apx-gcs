@@ -145,7 +145,7 @@ QWidget *QmlView::createWidget(QString title)
 //=============================================================================
 void QmlView::loadMandala(QMandalaItem *mvar)
 {
-  QQmlEngine *e=engine();
+  /*QQmlEngine *e=engine();
 
   QQmlEngine::setObjectOwnership(mandala,QQmlEngine::CppOwnership);
   QJSValue js_mandala=e->newQObject(mandala);
@@ -174,7 +174,7 @@ void QmlView::loadMandala(QMandalaItem *mvar)
   //QQmlEngine::setObjectOwnership(mandala,QQmlEngine::CppOwnership);
   //e->globalObject().setProperty("mandala",js_mandala);
 
-  //e->rootContext()->setContextProperty("mandala",mandala);
+  //e->rootContext()->setContextProperty("mandala",mandala);*/
 }
 //=============================================================================
 void QmlView::showEvent(QShowEvent *e)

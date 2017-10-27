@@ -422,6 +422,7 @@ void Console::get_hints(QString *command,QStringList *hints)
       (*hints)[i]="<font color='cyan'>"+hints->at(i)+"</font>";
     }else (*hints)[i]="<font color='gray'>"+hints->at(i)+"</font>";
   }
+  hints->removeDuplicates();
   hints->sort();
 }
 //=============================================================================

@@ -36,6 +36,8 @@ SOURCES += \
     Mandala/QMandala.cpp \
     Mandala/Vehicles.cpp \
     Mandala/Vehicle.cpp \
+    Mandala/VehicleMandala.cpp \
+    Mandala/MandalaFact.cpp \
 
 HEADERS += \
     Mandala/QMandalaField.h \
@@ -43,6 +45,8 @@ HEADERS += \
     Mandala/QMandala.h \
     Mandala/Vehicles.h \
     Mandala/Vehicle.h \
+    Mandala/VehicleMandala.h \
+    Mandala/MandalaFact.h \
 
 # Fact System
 SOURCES += \
@@ -52,7 +56,6 @@ SOURCES += \
     FactSystem/FactTree.cpp \
     FactSystem/FactData.cpp \
     FactSystem/Fact.cpp \
-    FactSystem/FactMandalaField.cpp \
 
 HEADERS += \
     FactSystem/FactSystem.h \
@@ -61,7 +64,6 @@ HEADERS += \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
     FactSystem/Fact.h \
-    FactSystem/FactMandalaField.h \
 
 # Communication
 SOURCES += \

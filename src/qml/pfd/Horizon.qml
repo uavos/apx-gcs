@@ -1,4 +1,5 @@
 import QtQuick 2.2
+import GCS.Vehicle 1.0
 import "../components"
 import "."
 //import QtGraphicalEffects 1.0
@@ -25,7 +26,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: app.settings.smooth.value?((app.datalink.valid && !(mandala.xpdrData||mandala.dlinkData))?0.7:1):1
+    opacity: app.settings.smooth.value?((app.datalink.valid && !(app.vehicles.CURRENT.stream.value==Vehicle.XPDR||app.vehicles.CURRENT.stream.value==Vehicle.TELEMETRY))?0.7:1):1
 
     Item{
         id: horizon_bg

@@ -94,7 +94,7 @@ MapObject {
         property int v: approach.toFixed()
         text: v>0?(v+"m"):"H----"
         property double r: runwayItem.mItem.heading-90;
-        rotation: v>0?mandala.angle90(r):mandala.angle(r);
+        rotation: v>0?app.angle90(r):app.angle(r);
         onObjectMoved: {
             snapFromModel(mlat,mlon);
             runwayItem.mItem.rwAppPoint=Qt.point(mlat,mlon);

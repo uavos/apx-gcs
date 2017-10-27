@@ -62,7 +62,7 @@ public:
     UplinkAction,
   };
 
-  explicit FactData(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType);
+  explicit FactData(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
 
   void copyValuesFrom(const FactData *item);
@@ -100,7 +100,6 @@ protected:
   virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
   virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
-private:
   FactData *_bindedFact;
 
 public:
@@ -108,7 +107,7 @@ public:
   DataType dataType() const;
 
   virtual QVariant value(void) const;
-  virtual bool setValue(const QVariant &v);
+  Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
   QString title(void) const;
   void setTitle(const QString &v);
@@ -120,6 +119,7 @@ public:
 
   QStringList enumStrings() const;
   void setEnumStrings(const QStringList &v);
+  void setEnumStrings(const QMetaEnum &v);
 
 protected:
   DataType m_dataType;

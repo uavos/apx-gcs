@@ -3,6 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 //import QtQuick 2.2
 //import QtQuick.Controls 1.1
+import GCS.Vehicle 1.0
 import "."
 import "../components"
 
@@ -31,7 +32,7 @@ Item {
         property double flagHeight: txtHeight*0.65
         property double topFramesMargin: (width-width*0.6)*0.6*0.2
 
-        property color power_color: (app.settings.test.value||m.error_power.value)?"red":"transparent"
+        property color power_color: (testUI.value||m.error_power.value)?"red":"transparent"
 
         Horizon {
             id: horizon
@@ -136,7 +137,7 @@ Item {
                 property double modeHeight: pfdScene.flagHeight
 
                 Number {
-                    visible: app.settings.test.value || value>1 || m.error_power.value>0
+                    visible: testUI.value || value>1 || m.error_power.value>0
                     height: modeFlags.modeHeight
                     mfield: m.Vs
                     precision: 1
@@ -144,7 +145,7 @@ Item {
                     blinking: true
                 }
                 Number {
-                    visible: app.settings.test.value || value>1 || m.error_power.value>0
+                    visible: testUI.value || value>1 || m.error_power.value>0
                     height: modeFlags.modeHeight
                     mfield: m.Vm
                     precision: 1
@@ -152,7 +153,7 @@ Item {
                     blinking: true
                 }
                 Number {
-                    visible: app.settings.test.value || value>1 || m.error_power.value>0
+                    visible: testUI.value || value>1 || m.error_power.value>0
                     height: modeFlags.modeHeight
                     mfield: m.Vp
                     precision: 1
@@ -166,7 +167,7 @@ Item {
                     radius: 3
                     height: pfdScene.flagHeight
                     width: text.width+3 //left_window.width*0.8
-                    visible: app.settings.test.value || m.sb_ers_disarm.value > 0 || m.sb_ers_err.value > 0
+                    visible: testUI.value || m.sb_ers_disarm.value > 0 || m.sb_ers_err.value > 0
                     Text {
                         id: text
                         anchors.top: parent.top
@@ -277,12 +278,12 @@ Item {
                 anchors.bottomMargin: 2
 
                 Number {
-                    visible: app.settings.test.value || value>0
+                    visible: testUI.value || value>0
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
                     mfield: m.altps_gnd
                     label: qsTr("PS")
-                    color: (app.settings.test.value || m.error_pstatic.value>0)?"red":"transparent"
+                    color: (testUI.value || m.error_pstatic.value>0)?"red":"transparent"
                     blinking: true
                     MouseArea {
                         anchors.fill: parent
@@ -291,7 +292,7 @@ Item {
                     }
                 }
                 Number {
-                    visible: app.settings.test.value || value>0
+                    visible: testUI.value || value>0
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
                     mfield: m.gps_hmsl
@@ -299,7 +300,7 @@ Item {
                 }
             }
             Number {
-                visible: app.settings.test.value || value>0
+                visible: testUI.value || value>0
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
@@ -344,7 +345,7 @@ Item {
                 text: qsTr("AIRBR")
                 toolTip: m.ctr_airbrk.descr
                 Text {
-                    visible: app.settings.test.value || (airbrkFlag.show && (m.ctr_airbrk.value>0) && (m.ctr_airbrk.value<1))
+                    visible: testUI.value || (airbrkFlag.show && (m.ctr_airbrk.value>0) && (m.ctr_airbrk.value<1))
                     color: "white"
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
@@ -374,7 +375,7 @@ Item {
             }
             Flag {
                 id: flag_CAS
-                show: app.settings.test.value||m.error_cas.value > 0
+                show: testUI.value||m.error_cas.value > 0
                 blinking: true
                 visible: show
                 height: pfdScene.flagHeight
@@ -432,7 +433,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
-            visible: (!mandala.replayData) && (!app.datalink.online)
+            visible: (app.vehicles.CURRENT.stream.value!=Vehicle.REPLAY) && (!app.datalink.online)
             font.pixelSize: app.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -445,8 +446,8 @@ Item {
             anchors.bottom: parent.verticalCenter
             anchors.left: left_window.right
             anchors.right: right_window.left
-            text: mandala.xpdrData?qsTr("XPDR"):qsTr("NO DATA")
-            visible: (!mandala.replayData) && app.datalink.valid && (!mandala.dlinkData)
+            text: app.vehicles.CURRENT.stream.value==Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
+            visible: (app.vehicles.CURRENT.stream.value!=Vehicle.REPLAY) && app.datalink.valid && (app.vehicles.CURRENT.stream.value!=Vehicle.TELEMETRY)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
@@ -459,7 +460,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("REPLAY")
-            visible: mandala.replayData
+            visible: app.vehicles.CURRENT.stream.value==Vehicle.REPLAY
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
@@ -475,7 +476,7 @@ Item {
             width: parent.width*0.33
             Number {
                 id: rpm_number
-                visible: app.settings.test.value || value>0 || m.error_rpm.value>0
+                visible: testUI.value || value>0 || m.error_rpm.value>0
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
@@ -483,7 +484,7 @@ Item {
                 value: m.rpm.value/1000
                 precision: 1
                 toolTip: m.rpm.descr +"[x1000]"
-                color: (app.settings.test.value || m.error_rpm.value>0)?"red":"transparent"
+                color: (testUI.value || m.error_rpm.value>0)?"red":"transparent"
                 blinking: true
                 MouseArea {
                     anchors.fill: parent
@@ -493,7 +494,7 @@ Item {
             }
             /*Number {
                 id: rpm_number
-                visible: app.settings.test.value || (value>0 && (!(rpm_error.blink && rpm_error.show)))
+                visible: testUI.value || (value>0 && (!(rpm_error.blink && rpm_error.show)))
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
@@ -543,15 +544,15 @@ Item {
             }
             Number {
                 id: rc_thr_number
-                property bool show: m.rc_throttle.value && (value!=thr_number.value) //&& (m.cmode_thrcut.value || (!m.cmode_throvr.value))
+                property bool show: m.rc_throttle.value && (value!=(m.ctr_throttle.value*100).toFixed()) //&& (m.cmode_thrcut.value || (!m.cmode_throvr.value))
                 anchors.right: thr_number.left
                 anchors.rightMargin: 4
                 anchors.top: thr_number.top
                 anchors.bottom: thr_number.bottom
                 height: pfdScene.txtHeight
                 label: qsTr("R")
-                opacity: app.settings.smooth.value?((show||app.settings.test.value)?1:0):1
-                visible: app.settings.smooth.value?opacity:(show||app.settings.test.value)
+                opacity: app.settings.smooth.value?((show||testUI.value)?1:0):1
+                visible: app.settings.smooth.value?opacity:(show||testUI.value)
                 valueColor: "magenta"
                 color: "#80000000"
                 value: (m.rc_throttle.value*100).toFixed()
@@ -560,7 +561,7 @@ Item {
             }
 
             Number {
-                visible: app.settings.test.value || value>0 || m.error_power.value>0
+                visible: testUI.value || value>0 || m.error_power.value>0
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight

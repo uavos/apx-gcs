@@ -47,7 +47,7 @@ public:
     ConstItem,
   };
 
-  explicit FactTree(FactTree *parent, QString name, ItemType treeItemType);
+  explicit FactTree(FactTree *parent, const QString &name, ItemType treeItemType);
 
   //tree structure manipulation
   virtual void insertItem(int i, FactTree *item);
@@ -65,6 +65,8 @@ public:
 
   Q_INVOKABLE FactTree * child(const QString &name) const;
   Q_INVOKABLE QString path(int fromLevel=0,const QChar pathDelimiter=QChar('.')) const;
+
+  Q_INVOKABLE FactTree * flatModelParent() const;
 
   QList<FactTree*> pathList() const;
 

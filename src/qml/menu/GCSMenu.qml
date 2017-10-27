@@ -69,6 +69,7 @@ Item {
     property color colorValueText:      "#30FF60"
     property color colorValueTextEdit:  "#FFFF60"
     property color colorActionRemove:   "#a55"
+    property color colorStatusText: "#aaa"
 
     property url iconPrev: Qt.resolvedUrl("navigation_previous_item.png")
     property url iconNext: Qt.resolvedUrl("../menu/navigation_next_item.png")

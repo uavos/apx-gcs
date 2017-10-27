@@ -48,7 +48,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all remote server connections"),FactItem,NoData);
 
   f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
-  bind(f_list);
+  //bind(f_list);
   connect(f_list,&Fact::sizeChanged,this,&DatalinkHosts::updateStats);
   connect(f_list,&Fact::sizeChanged,this,&DatalinkHosts::availableCountChanged);
   connect(this,&DatalinkHosts::availableCountChanged,this,&DatalinkHosts::updateConnectedStatus);
@@ -195,7 +195,18 @@ void DatalinkHosts::updateStats()
 //=============================================================================
 void DatalinkHosts::updateConnectedStatus()
 {
-  int cnt=availableCount();
+  //count connected
+  int cnt=0;
+  foreach (FactTree *i , f_list->childItems()) {
+    DatalinkHost *h=static_cast<DatalinkHost*>(i);
+    if(h->active())cnt++;
+  }
+  f_alloff->setEnabled(cnt>0);
+  if(m_connectedCount!=cnt){
+    m_connectedCount=cnt;
+    emit connectedCountChanged();
+  }
+  cnt=availableCount();
   if(cnt>0) setStatus(QString("%1/%2").arg(m_connectedCount).arg(availableCount()));
   else setStatus(QString());
 }

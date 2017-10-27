@@ -3,6 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Layouts 1.3
+import GCS.Vehicle 1.0
 
 //import QtQuick 2.2
 //import QtQuick.Controls 1.1
@@ -63,11 +64,11 @@ Rectangle {
         anchors.topMargin: 1
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        text: mandala.uavName
+        text: app.vehicles.CURRENT.callsign.text
         font.pixelSize: parent.height   //*0.99
         font.family: font_narrow
-        color: mandala.isLocal?"yellow":"#5f5"
-        visible: app.settings.test.value || app.datalink.valid
+        color: app.vehicles.CURRENT.vclass.value==Vehicle.LOCAL?"yellow":"#5f5"
+        visible: testUI.value || app.datalink.valid
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
@@ -85,11 +86,11 @@ Rectangle {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             verticalAlignment: Text.AlignVCenter
-            text: mandala.size+" "
+            text: app.vehicles.list.size+" "
             font.pixelSize: parent.height
             font.family: font_narrow
             color: "yellow"
-            visible: mandala.size>1
+            visible: app.vehicles.list.size>0
         }
 
         //ext servers
@@ -100,7 +101,7 @@ Rectangle {
             value: app.datalink.hosts.connectedCount>0
             inverted: true
             toolTip: qsTr("External servers")
-            visible: app.settings.test.value || app.datalink.hosts.availableCount>0
+            visible: testUI.value || app.datalink.hosts.availableCount>0
             width: height/0.5
             MouseArea {
                 id: menuServersArea
@@ -128,7 +129,7 @@ Rectangle {
 
         //comm stats
         CommNum {
-            property string cRX: app.datalink.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
+            property string cRX: app.datalink.online?(app.vehicles.CURRENT.stream.value==Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
             property string cTX: app.datalink.readonly.value?"red":"cyan"
             property string cER: mandala.errcnt>1?"yellow":"gray"
             height: parent.height
@@ -142,7 +143,7 @@ Rectangle {
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
-            color: app.datalink.online?(mandala.dlinkData?"#8f8":"#aaf"):"red"
+            color: app.datalink.online?(app.vehicles.CURRENT.stream.value==Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
             ToolTipArea { text: qsTr("Received packets") }
         }
         Text {
@@ -187,7 +188,7 @@ Rectangle {
             value: m.gcu_Ve.value.toFixed(1)
             valueColor: m.gcu_Ve.value>1?(m.gcu_Ve.value<7.4?"red":"yellow"):"gray"
             toolTip: m.gcu_Ve.descr
-            //visible: app.settings.test.value || m.gcu_Ve.value>1
+            //visible: testUI.value || m.gcu_Ve.value>1
         }
 
 

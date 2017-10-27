@@ -212,7 +212,7 @@ void DatalinkPort::disconnectAll()
   setStatus(QString());
 }
 //=============================================================================
-bool DatalinkPort::active()
+bool DatalinkPort::active() const
 {
   return (if_host && if_host->active()) || if_serial;
 }

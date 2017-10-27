@@ -20,39 +20,41 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "FactMandalaField.h"
-#include "QMandala.h"
+#include "MandalaFact.h"
+#include "Mandala.h"
+#include "VehicleMandala.h"
 //=============================================================================
-FactMandalaField::FactMandalaField(Fact *parent, QMandalaField *field)
- : Fact(parent,field->name(),"",field->descr(),FactItem,TextData),
-   field(field)
+MandalaFact::MandalaFact(VehicleMandala *parent, Mandala *m, quint16 id, DataType dataType, const QString &name, const QString &title, const QString &descr, const QString &units)
+  : Fact(parent,name,title,descr,FactItem,dataType),
+    vehicle(parent),m(m),m_id(id),
+    m_units(units)
 {
-  QStringList st=field->enumStrings();
-  if(st.size()){
-    m_dataType=EnumData;
-    setEnumStrings(st);
-  }
+}
+//=============================================================================
+//=============================================================================
+QString MandalaFact::units(void) const
+{
+  return m_units;
+}
+//=============================================================================
+void MandalaFact::saveValue()
+{
+  m->set_data(m_id,value().toDouble());
+}
+//=============================================================================
+void MandalaFact::loadValue()
+{
+  setValueLocal(m->get_data(m_id));
+}
+//=============================================================================
+//=============================================================================
+bool MandalaFact::setValue(const QVariant &v)
+{
 
-
-  connect(field,&QMandalaField::changed,this,&Fact::valueChanged);
-  connect(this,&Fact::valueChanged,this,&Fact::textChanged);
 }
 //=============================================================================
-QVariant FactMandalaField::value(void) const
+bool MandalaFact::setValueLocal(const QVariant &v)
 {
-  return field->value();
-}
-//=============================================================================
-bool FactMandalaField::setValue(const QVariant &v)
-{
-  Fact::setValue(v);
-  field->setValue(m_value.toDouble());
-  return true;
-}
-//=============================================================================
-void FactMandalaField::setField(QMandalaField *f)
-{
-  field=f;
-  emit valueChanged();
+  return Fact::setValue(v);
 }
 //=============================================================================

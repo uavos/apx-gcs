@@ -157,7 +157,7 @@ Rectangle {
             id: wpt_home
             elementName: "hdg-wpt-green"
             smooth: true
-            visible: app.settings.test.value || m.dHome.value>5
+            visible: testUI.value || m.dHome.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
@@ -169,7 +169,7 @@ Rectangle {
         HdgImage {
             elementName: "hdg-wpt-blue"
             smooth: true
-            visible: app.settings.test.value || m.dWPT.value>5
+            visible: testUI.value || m.dWPT.value>5
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             width: elementBounds.width*wheel.sf
@@ -219,7 +219,7 @@ Rectangle {
         NumberHdg {
             id: fuel_text
             property double v: m.fuel.value
-            visible: app.settings.test.value || v>0
+            visible: testUI.value || v>0
             anchors.right: parent.right
             anchors.bottom: lat_lon_text.top
             height: hdg.txtHeight
@@ -231,7 +231,7 @@ Rectangle {
         NumberHdg {
             id: frate_text
             property double v: m.frate.value
-            visible: app.settings.test.value || v>0
+            visible: testUI.value || v>0
             anchors.right: parent.right
             anchors.bottom: fuel_text.top
             height: hdg.txtHeight
@@ -252,7 +252,7 @@ Rectangle {
         }
         NumberHdg {
             id: rd_text
-            visible: app.settings.test.value || isLanding
+            visible: testUI.value || isLanding
             property double v: m.rwDelta.value
             anchors.left: parent.left
             anchors.bottom: dh_text.top
@@ -295,7 +295,7 @@ Rectangle {
 
             NumberHdg {
                 id: wpt_text
-                visible: app.settings.test.value || m.mode.value===mode_WPT
+                visible: testUI.value || m.mode.value===mode_WPT
                 smooth: true
                 height: hdg.txtHeight
                 mfield: m.wpidx
@@ -306,7 +306,7 @@ Rectangle {
 
             NumberHdg {
                 id: poi_text
-                visible: app.settings.test.value || (m.mode.value===mode_STBY && m.loops.value>0)
+                visible: testUI.value || (m.mode.value===mode_STBY && m.loops.value>0)
                 smooth: true
                 height: hdg.txtHeight
                 mfield: m.loops

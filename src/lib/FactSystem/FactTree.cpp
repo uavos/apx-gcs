@@ -22,7 +22,7 @@
  */
 #include "FactTree.h"
 //=============================================================================
-FactTree::FactTree(FactTree *parent, QString name, ItemType treeItemType)
+FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
  : QAbstractListModel(parent),
    m_parentItem(parent),
    m_treeItemType(treeItemType),
@@ -52,19 +52,20 @@ FactTree::FactTree(FactTree *parent, QString name, ItemType treeItemType)
 //=============================================================================
 void FactTree::insertItem(int i, FactTree *item)
 {
+  if(i<0)i=0;
   beginInsertRows(QModelIndex(), i, i);
   m_items.insert(i,item);
-  bool bFlat=m_parentItem && m_parentItem->flatModel();
-  if(bFlat){
-    int i2=m_parentItem->childItems().indexOf(item);
-    if(i2<0)i2=0;
-    m_parentItem->beginInsertRows(QModelIndex(), i2 ,i2);
-  }
   connect(item,&FactTree::itemAdded,this,&FactTree::itemAdded);
   connect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);
   item->m_parentItem=this;
+  FactTree *fParent=flatModelParent();
+  if(fParent){
+    int i2=fParent->childItems().indexOf(item);
+    fParent->beginInsertRows(QModelIndex(), i2 ,i2);
+    //qDebug()<<item->name()<<fParent->name()<<i<<i2;
+  }
   endInsertRows();
-  if(bFlat) m_parentItem->endInsertRows();
+  if(fParent) fParent->endInsertRows();
   emit structChanged();
   emit itemAdded(item);
 }
@@ -72,10 +73,10 @@ void FactTree::removeItem(FactTree *item)
 {
   int i=m_items.indexOf(item);
   if(i<0)return;
-  bool bFlat=m_parentItem->flatModel();
-  if(bFlat){
-    int i2=m_parentItem->childItems().indexOf(item);
-    m_parentItem->beginRemoveRows(QModelIndex(), i2 ,i2);
+  FactTree *fParent=flatModelParent();
+  if(fParent){
+    int i2=fParent->childItems().indexOf(item);
+    fParent->beginRemoveRows(QModelIndex(), i2 ,i2);
   }
   disconnect(item,&FactTree::itemAdded,this,&FactTree::itemAdded);
   disconnect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);
@@ -84,9 +85,18 @@ void FactTree::removeItem(FactTree *item)
   m_items.removeOne(item);
   item->m_parentItem=NULL;
   endRemoveRows();
-  if(bFlat) m_parentItem->endRemoveRows();
+  if(fParent) fParent->endRemoveRows();
   item->deleteLater();
   emit structChanged();
+}
+//=============================================================================
+FactTree * FactTree::flatModelParent() const
+{
+  if(m_treeItemType!=SectionItem)return NULL;
+  FactTree *fParent=NULL;
+  for(FactTree *i=m_parentItem;i && i->flatModel();i=i->parentItem())
+    fParent=i;
+  return fParent;
 }
 //=============================================================================
 void FactTree::addItem(FactTree *item)

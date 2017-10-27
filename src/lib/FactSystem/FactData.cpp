@@ -22,7 +22,7 @@
  */
 #include "FactData.h"
 //=============================================================================
-FactData::FactData(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType)
+FactData::FactData(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactTree(parent,name,treeItemType),
    _bindedFact(NULL),
    m_dataType(dataType),
@@ -41,23 +41,19 @@ FactData::FactData(FactTree *parent, QString name, QString title, QString descr,
   if(parent && m_name.contains('#')){
     connect(parent,&FactData::structChanged,this,&FactData::nameChanged);
   }
-  if((treeItemType==GroupItem || treeItemType==SectionItem) && m_dataType==ConstData){
-    connect(this,&FactData::sizeChanged,this,&FactData::valueChanged);
-    connect(this,&FactData::valueChanged,this,&FactData::textChanged);
+  //default data
+  switch(dataType){
+    case FloatData: m_value=0.0; break;
+    case IntData: m_value=0; break;
+    case BoolData: m_value=false; break;
+    case EnumData: m_value=0; break;
+    default: break;
   }
 }
 //=============================================================================
 QVariant FactData::value(void) const
 {
   if(_bindedFact)return _bindedFact->value();
-  switch(m_dataType){
-    case ConstData: {
-      int sz=size();
-      if(m_value.isNull())return sz>0?sz:QVariant();
-      break;
-    }
-    default: break;
-  }
   return m_value;
 }
 //=============================================================================
@@ -127,10 +123,7 @@ QString FactData::text() const
     if(value().isNull())return name();
     return value().toString();
   }
-  if((treeItemType()==GroupItem||treeItemType()==SectionItem) && m_dataType==ConstData && (value().isNull() )){
-    return size()>0?QString::number(size()):QString();
-  }
-  if(treeItemType()==FactItem && dataType()==EnumData && m_enumStrings.size()>0){
+  if(treeItemType()==FactItem && m_enumStrings.size()>0){
     int i=value().toInt();
     if(i<m_enumStrings.size())return m_enumStrings.at(i);
   }
@@ -159,6 +152,13 @@ void FactData::setEnumStrings(const QStringList &v)
   m_enumStrings=v;
   emit enumStringsChanged();
 }
+void FactData::setEnumStrings(const QMetaEnum &v)
+{
+  QStringList st;
+  for(int i=0;i<v.keyCount();++i)
+    st.append(v.valueToKey(v.value(i)));
+  setEnumStrings(st);
+}
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
 {
@@ -184,10 +184,23 @@ void FactData::bind(FactData *item)
     disconnect(_bindedFact,&FactData::textChanged,this,&FactData::textChanged);
     disconnect(_bindedFact,&FactData::enumStringsChanged,this,&FactData::enumStringsChanged);
   }
+  if(item==this)return;
   _bindedFact=item;
   connect(item,&FactData::valueChanged,this,&FactData::valueChanged);
   connect(item,&FactData::textChanged,this,&FactData::textChanged);
   connect(item,&FactData::enumStringsChanged,this,&FactData::enumStringsChanged);
+  emit valueChanged();
+  emit textChanged();
+  emit enumStringsChanged();
+  //bind all matched children
+  foreach(FactTree *i,childItemsTree()){
+    FactData *childFact=static_cast<FactData*>(i);
+    foreach(FactTree *i2,item->childItemsTree()){
+      FactData *itemChildFact=static_cast<FactData*>(i2);
+      if(childFact->name()!=itemChildFact->name())continue;
+      childFact->bind(itemChildFact);
+    }
+  }
 }
 //=============================================================================
 void FactData::insertItem(int i, FactTree *item)

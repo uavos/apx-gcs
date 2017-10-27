@@ -13,12 +13,12 @@ Rectangle {
 
     property bool blink: true
 
-    color: inverted?"black":((app.settings.test.value||show)&&blink)?flagColor:"transparent" //flagColor //(show&&blink)?flagColor:"transparent"
+    color: inverted?"black":((testUI.value||show)&&blink)?flagColor:"transparent" //flagColor //(show&&blink)?flagColor:"transparent"
     width: height/0.35
     onBlinkingChanged: blink=true
 
-    opacity: ((app.settings.test.value||show)&&blink)?1:0
-    //visible: ((app.settings.test.value||show)&&blink)?1:0
+    opacity: ((testUI.value||show)&&blink)?1:0
+    //visible: ((testUI.value||show)&&blink)?1:0
     //Behavior on opacity { PropertyAnimation {duration: app.settings.smooth.value?100:0} }
 
     SequentialAnimation on show {

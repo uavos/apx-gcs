@@ -192,7 +192,7 @@ ControlArea {
         id: altitude_triangle
         elementName: "altitude-triangle"
         smooth: true
-        visible: app.settings.test.value || app.datalink.valid
+        visible: testUI.value || app.datalink.valid
         width: elementBounds.width*altitude_window.strip_scale
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left

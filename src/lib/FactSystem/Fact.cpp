@@ -22,16 +22,24 @@
  */
 #include "Fact.h"
 //=============================================================================
-Fact::Fact(FactTree *parent, QString name, QString title, QString descr, ItemType treeItemType, DataType dataType)
+Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactData(parent,name,title,descr,treeItemType,dataType),
-   m_enabled(true), m_visible(true)
+   m_enabled(true), m_visible(true), m_active(false)
 {
+  if((treeItemType==GroupItem || treeItemType==SectionItem) && m_dataType==ConstData){
+    connect(this,&Fact::sizeChanged,this,&Fact::statusChanged);
+  }
 }
 //=============================================================================
 void Fact::bind(FactData *item)
 {
+  if(_bindedFact){
+    disconnect(static_cast<Fact*>(_bindedFact),&Fact::statusChanged,this,&Fact::statusChanged);
+  }
+  if(item==this)return;
   FactData::bind(item);
-  //connect(item,&Fact::statusChanged,this,&Fact::statusChanged);
+  connect(static_cast<Fact*>(item),&Fact::statusChanged,this,&Fact::statusChanged);
+  emit statusChanged();
 }
 //=============================================================================
 QVariant Fact::findValue(const QString &namePath)
@@ -116,13 +124,36 @@ void Fact::setSection(const QString &v)
 }
 QString Fact::status() const
 {
+  if(_bindedFact) return static_cast<Fact*>(_bindedFact)->status();
+  if((treeItemType()==GroupItem||treeItemType()==SectionItem) && m_dataType==ConstData && m_status.isEmpty()){
+    return size()>0?QString::number(size()):QString();
+  }
   return m_status;
 }
 void Fact::setStatus(const QString &v)
 {
+  if(_bindedFact){
+    static_cast<Fact*>(_bindedFact)->setStatus(v);
+    return;
+  }
   if(m_status==v)return;
   m_status=v;
   emit statusChanged();
+}
+bool Fact::active() const
+{
+  if(_bindedFact) return static_cast<Fact*>(_bindedFact)->active();
+  return m_active;
+}
+void Fact::setActive(const bool &v)
+{
+  if(_bindedFact){
+    static_cast<Fact*>(_bindedFact)->setActive(v);
+    return;
+  }
+  if(m_active==v)return;
+  m_active=v;
+  emit activeChanged();
 }
 //=============================================================================
 //=============================================================================

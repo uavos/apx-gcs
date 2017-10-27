@@ -87,7 +87,7 @@ MapObject {
             scale: 1
             textColor: "white"
             color: Style.cNormal
-            text: mandala.distanceToString(mItem.DW)+"/"+mandala.distanceToString(mItem.DT)
+            text: app.distanceToString(mItem.DW)+"/"+app.distanceToString(mItem.DT)
             opacity: (dragging||hover)?1:0
             visible: opacity
             font.family: font_mono
@@ -96,7 +96,7 @@ MapObject {
             scale: 1
             textColor: "white"
             color: Style.cNormal
-            text: mandala.timeToString(mItem.time)+"/"+mandala.timeToString(mItem.ETA)
+            text: app.timeToString(mItem.time)+"/"+app.timeToString(mItem.ETA)
             opacity: (dragging||hover)?1:0
             visible: opacity
             font.family: font_mono

@@ -34,11 +34,35 @@ class Vehicles: public Fact
 public:
   explicit Vehicles(FactSystem *parent);
 
+  static Vehicles * instance() {return _instance;}
+
   Fact *f_list;
 
   Fact *f_select;
 
-  //datalink
+  Vehicle *f_current;
+  Vehicle *f_local;
+
+private:
+  static Vehicles * _instance;
+
+  //IDENT procedures
+  QTimer reqTimer;
+  QList<QByteArray> reqList;
+  void reqIDENT(quint16 squawk);
+  void assignIDENT(QString callsign, QByteArray uid);
+  void scheduleRequest(const QByteArray &ba);
+
+  //ident lookup
+  QMap<quint16,Vehicle*> squawkMap;
+
+public slots:
+  void selectVehicle(Vehicle *v);
+signals:
+  void vehicleRegistered(Vehicle*);
+  void currentChanged(Vehicle*);
+
+  //data connection
 public slots:
   void downlinkReceived(const QByteArray &ba);
 signals:

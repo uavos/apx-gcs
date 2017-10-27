@@ -20,30 +20,52 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactMandalaField_H
-#define FactMandalaField_H
+#ifndef MandalaFact_H
+#define MandalaFact_H
 //=============================================================================
-#include "Fact.h"
-class QMandalaField;
+#include <QtCore>
+#include "FactSystem.h"
+class Mandala;
+class VehicleMandala;
 //=============================================================================
-class FactMandalaField: public Fact
+class MandalaFact: public Fact
 {
   Q_OBJECT
+  Q_PROPERTY(QString units READ units CONSTANT)
 
 public:
-  explicit FactMandalaField(Fact *parent, QMandalaField *field);
+  explicit MandalaFact(
+      VehicleMandala *parent,
+      Mandala *m,
+      quint16 id,
+      DataType dataType,
+      const QString &name,
+      const QString &title,
+      const QString &descr,
+      const QString &units
+      );
 
-
-  void setField(QMandalaField *f);
+  bool setValue(const QVariant &v); //override
+  bool setValueLocal(const QVariant &v);
 
 private:
-  QMandalaField *field;
+  VehicleMandala *vehicle;
+  Mandala *m;
+  quint16 m_id;
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QString units(void) const;
+
 protected:
-  virtual QVariant value(void) const;
+  QString m_units;
 
 public slots:
-  Q_INVOKABLE virtual bool setValue(const QVariant &v);
+  void saveValue();
+  void loadValue();
 
 };
 //=============================================================================
 #endif
+

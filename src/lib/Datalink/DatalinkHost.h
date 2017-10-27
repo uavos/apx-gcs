@@ -35,7 +35,7 @@ public:
 
   QHostAddress host;
 
-  bool active();
+  bool active() const;
 
 private:
   DatalinkHosts *container;
@@ -49,7 +49,7 @@ private:
 private slots:
   void updateStats();
 
-  void disconnected();
+  void socketDisconnected();
   void reconnect();
 
 public slots:

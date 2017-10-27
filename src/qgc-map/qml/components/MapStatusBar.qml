@@ -18,7 +18,7 @@ Item {
             Text {
                 font.family: textFont
                 font.pixelSize: fontSize
-                text: mandala.latToString(mapProvider.mouseLL.x)+mandala.lonToString(mapProvider.mouseLL.y)
+                text: app.latToString(mapProvider.mouseLL.x)+app.lonToString(mapProvider.mouseLL.y)
                 color: "white"
             }
             Text {

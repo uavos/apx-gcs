@@ -14,7 +14,7 @@ Column {
         toolTip: m.ctr_flaps.descr
         //control: ctr_flaps
         Text {
-            visible: app.settings.test.value || flaps.show
+            visible: testUI.value || flaps.show
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -35,7 +35,7 @@ Column {
         toolTip: m.ctr_brake.descr
         //control: ctr_brake
         Text {
-            visible: app.settings.test.value || (brakes.show && (m.ctr_brake.value>0) && (m.ctr_brake.value<1))
+            visible: testUI.value || (brakes.show && (m.ctr_brake.value>0) && (m.ctr_brake.value<1))
             color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom

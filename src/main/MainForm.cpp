@@ -25,7 +25,6 @@
 #include <QGLWidget>
 #include "MainForm.h"
 #include "QMandala.h"
-#include "Config.h"
 #include "QmlView.h"
 #include "AppSettings.h"
 #include "AppDirs.h"

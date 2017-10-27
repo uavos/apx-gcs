@@ -116,7 +116,7 @@ Rectangle {
         }
         CommNum {
             id: wpt_text
-            visible: app.settings.test.value || m.mode.value===mode_WPT
+            visible: testUI.value || m.mode.value===mode_WPT
             height: parent.height
             label: qsTr("WPT")
             valueColor: "cyan"
@@ -126,7 +126,7 @@ Rectangle {
 
         CommNum {
             id: poi_text
-            visible: app.settings.test.value || (m.mode.value===mode_STBY && m.loops.value>0)
+            visible: testUI.value || (m.mode.value===mode_STBY && m.loops.value>0)
             height: parent.height
             label: qsTr("LPS")
             valueColor: "cyan"
@@ -135,7 +135,7 @@ Rectangle {
         }
         CommNum {
             id: rd_text
-            visible: app.settings.test.value || isLanding
+            visible: testUI.value || isLanding
             property double v: m.rwDelta.value
             height: parent.height
             label: qsTr("RD")
@@ -145,7 +145,7 @@ Rectangle {
         }
         CommNum {
             id: turnR_text
-            visible: app.settings.test.value || m.mode.value===mode_STBY || m.mode.value===mode_LANDING
+            visible: testUI.value || m.mode.value===mode_STBY || m.mode.value===mode_LANDING
             property double v: m.turnR.value
             height: parent.height
             label: qsTr("R")

@@ -350,9 +350,8 @@
 <context>
     <name>Config</name>
     <message>
-        <location filename="../src/main/Config.cpp" line="+12"/>
         <source>Edit..</source>
-        <translation type="unfinished">Редактирование..</translation>
+        <translation type="obsolete">Редактирование..</translation>
     </message>
 </context>
 <context>
@@ -728,7 +727,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
         <source>Connection to local host not allowed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1011,7 +1010,7 @@
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+217"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+221"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1029,9 +1028,8 @@
 <context>
     <name>FactSystem</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystem.cpp" line="+39"/>
         <source>Application</source>
-        <translation type="unfinished">Приложение</translation>
+        <translation type="obsolete">Приложение</translation>
     </message>
 </context>
 <context>
@@ -1057,7 +1055,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Branch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1070,6 +1068,11 @@
         <location line="+7"/>
         <source>Developer mode</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Application</source>
+        <translation type="unfinished">Приложение</translation>
     </message>
 </context>
 <context>
@@ -1298,7 +1301,7 @@
         <translation type="obsolete">Настройка горячих клавиш</translation>
     </message>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="+42"/>
+        <location filename="../src/main/MainForm.cpp" line="+41"/>
         <source>&amp;File</source>
         <translation type="unfinished">&amp;Файл</translation>
     </message>
@@ -2620,7 +2623,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+113"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2872,7 +2875,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+357"/>
+        <location filename="../src/main/main.cpp" line="+364"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
@@ -2915,7 +2918,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+71"/>
         <source>Duplicate squawk</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2998,17 +3001,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-211"/>
+        <location filename="../src/main/main.cpp" line="-209"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Ground Control Unit</source>
         <translation type="unfinished">Наземный Пункт Управления</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+124"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3028,7 +3031,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+109"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+177"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3055,11 +3058,6 @@
     <message>
         <location line="+1"/>
         <source>send data v to serial port ID p</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>send data v to CAN ID i with IDE e</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3731,17 +3729,17 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>Vehicles</name>
     <message>
-        <location filename="../src/lib/Mandala/Vehicles.cpp" line="+27"/>
+        <location filename="../src/lib/Mandala/Vehicles.cpp" line="+32"/>
         <source>Vehicles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+0"/>
-        <source>Discovered unmanned vehicles</source>
+        <source>Discovered vehicles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>Select vehicle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3753,6 +3751,21 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
     <message>
         <location line="+3"/>
         <source>Vehicles list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+69"/>
+        <source>Assigning squawk to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Vehicle identified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

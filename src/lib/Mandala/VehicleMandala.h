@@ -20,68 +20,60 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkPort_H
-#define DatalinkPort_H
+#ifndef VehicleMandala_H
+#define VehicleMandala_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class DatalinkPorts;
-class DatalinkHost;
-class Serial;
+class Vehicle;
+class Mandala;
+class MandalaFact;
 //=============================================================================
-class DatalinkPort: public Fact
+class VehicleMandala: public Fact
 {
   Q_OBJECT
+
+  Q_PROPERTY(QByteArray md5 READ md5 WRITE setMd5 NOTIFY md5Changed)
+
 public:
-  explicit DatalinkPort(DatalinkPorts *parent,const DatalinkPort *port=NULL);
+  explicit VehicleMandala(Vehicle *parent);
+  ~VehicleMandala();
 
-  DatalinkPorts *f_ports;
+  QHash<QString,QVariant> constants; // <name,value> enums in form varname_ENUM
+  QList<MandalaFact*> allFacts() { return idMap.values(); }
 
-  Fact *f_enabled;
-  Fact *f_type;
-  Fact *f_dev;
-  Fact *f_baud;
-  Fact *f_host;
+  QVariant valueById(quint16 id) const;
+  bool setValueById(quint16 id,const QVariant &v);
 
-  Fact *f_local;
-
-  Fact *f_save;
-  Fact *f_remove;
-
-  DatalinkHost *if_host;
-  Serial *if_serial;
-
-  bool active() const;
+  bool unpackService(const QByteArray &ba);
+  bool unpackData(const QByteArray &ba);
+  bool unpackTelemetry(const QByteArray &ba);
+  bool unpackXPDR(const QByteArray &ba);
 
 private:
-  bool _new;
+  Mandala *m;
+  MandalaFact * registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units);
+  QHash<quint16,MandalaFact*> idMap;
 
-private slots:
-  void updateStats();
-  void enable();
-  void disable();
-  void enabledChanged();
-  void syncDevEnum();
-  void syncHostEnum();
-public slots:
-  void defaults();
+  void collectValues();
 
-  //iface connect
-private slots:
-  void ifacePacketReceived(const QByteArray &ba);
-  void disconnectAll();
-  void serialConnected(QString pname);
-  void serialDisconnected();
-  void hostStatusChanged();
-
-public slots:
-  void connectPort();
-
-  //data
+  //EXPORTED
 signals:
-  void packetReceived(const QByteArray &ba);
-public slots:
-  void sendPacket(const QByteArray &ba);
+  void serialData(uint portNo,const QByteArray &ba);
+
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QByteArray md5(void) const;
+  bool setMd5(const QByteArray &v);
+
+protected:
+  QByteArray m_md5;
+
+signals:
+  void md5Changed();
 
 };
 //=============================================================================

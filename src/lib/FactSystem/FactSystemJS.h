@@ -37,7 +37,9 @@ public:
 
   QJSValue jsexec(const QString &s);
 
-  void jsSync();
+  void jsSync(QObject *obj);
+
+  Q_INVOKABLE void alias(FactTree *item,QString aliasName);
 
   QQmlEngine *engine() {return js;}
 
@@ -51,7 +53,6 @@ protected:
   QQmlEngine *js;
   QHash<QString,QString> js_descr; //helper commands alias,descr
 
-  void jsSync(QObject *obj);
   void jsSync(Fact *fact);
   QJSValue jsSync(Fact *factItem, QJSValue parent); //recursive
 
@@ -63,13 +64,9 @@ private:
   void jsRegisterFunctions();
   QByteArray jsToArray(QJSValue data);
 
-private slots:
+public slots:
   void jsAddItem(FactTree *item);
   void jsRemoveItem(FactTree *item);
-
-public slots:
-  void loadMandala(QMandalaItem *mvar);
-
 };
 //=============================================================================
 #endif

@@ -54,16 +54,11 @@ FactSystemJS::FactSystemJS(QObject *parent)
     jsexec(contents);
   }
 
-  jsSync();
+  jsSync(this);
 
   //add is queued to wait inherited constructors
   connect(this,&Fact::itemAdded,this,&FactSystemJS::jsAddItem,Qt::QueuedConnection);
   connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem);
-}
-//=============================================================================
-void FactSystemJS::jsSync()
-{
-  jsSync(js);
 }
 //=============================================================================
 void FactSystemJS::jsSync(QObject *obj)
@@ -137,37 +132,9 @@ void FactSystemJS::jsRemoveItem(FactTree *item)
   v.deleteProperty(item->name());
 }
 //=============================================================================
-void FactSystemJS::loadMandala(QMandalaItem *mvar)
+void FactSystemJS::alias(FactTree *item,QString aliasName)
 {
-  qDebug()<<"loadMandala";
-  QQmlEngine *e=engine();
-
-  //Mandala
-  QMandala *mandala=QMandala::instance();
-  if(!e->globalObject().hasProperty(mandala->objectName())){
-    connect(mandala,&QMandala::currentChanged,this,&FactSystemJS::loadMandala);
-    jsSync(mandala);
-    //create facts
-    f_m=new Fact(this,"m","Current Mandala","",RootItem,NoData);
-    f_m->setSection(ApplicationSection);
-    foreach(QMandalaField *f,mvar->fields){
-      new FactMandalaField(f_m,f);
-      e->evaluate(QString("this.__defineGetter__('%1', function(){ return m.%1.value; });").arg(f->name()));
-      e->evaluate(QString("this.__defineSetter__('%1', function(v){ m.%1.setValue(v); });").arg(f->name()));
-    }
-    //constants
-    foreach(QString key,mvar->constants.keys()){
-      e->globalObject().setProperty(key,mvar->constants.value(key));
-    }
-  }else{
-    //rebind f_m to another mandala
-    foreach(QMandalaField *f,mvar->fields){
-      FactTree *i=f_m->child(f->name());
-      if(!i)continue;
-      static_cast<FactMandalaField*>(i)->setField(f);
-    }
-
-  }
+  jsexec(QString("var %1=%2").arg(aliasName).arg(item->path()));
 }
 //=============================================================================
 //=============================================================================

@@ -25,14 +25,70 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-#include "node.h"
 class Vehicles;
+class VehicleMandala;
 //=============================================================================
 class Vehicle: public Fact
 {
   Q_OBJECT
+  Q_ENUMS(VehicleClass)
+  Q_ENUMS(StreamType)
+
 public:
-  explicit Vehicle(Vehicles *parent, QString title,IDENT::_ident *ident);
+  enum VehicleClass {
+    //must match the IDENT::_vclass type
+    UAV =0,
+    GCU,
+
+    //internal use
+    CURRENT,
+    LOCAL
+  };
+  Q_ENUM(VehicleClass)
+
+  enum StreamType {
+    OFFLINE =0,
+    REPLAY,
+    SERVICE,
+    DATA,
+    XPDR,
+    TELEMETRY
+  };
+  Q_ENUM(StreamType)
+
+
+
+  explicit Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal);
+
+  Fact * f_select; //fact action to select this vehicle
+  Fact * f_squawk;
+  Fact * f_uid;
+  Fact * f_callsign;
+  Fact * f_vclass;
+  Fact * f_streamType;
+
+  VehicleMandala *f_mandala;
+
+  Fact * f_selectAction;
+
+
+private:
+  QTimer onlineTimer;
+
+  //data connection
+public slots:
+  void xpdrReceived(const QByteArray &ba);
+  void downlinkReceived(const QByteArray &ba);
+signals:
+  void sendUplink(const QByteArray &ba);
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+protected:
+
+
 
 };
 //=============================================================================

@@ -60,6 +60,8 @@ AppSettings::AppSettings(FactSystem *parent)
   item=new Fact(this,"test",tr("Test visual elements"),"",Fact::FactItem,Fact::BoolData);
   item->setValue(false);
   item->setSection(sect);
+  parent->jsAddItem(item);
+  parent->alias(item,"testUI");
 
 
   sect=tr("Graphics");
@@ -70,6 +72,7 @@ AppSettings::AppSettings(FactSystem *parent)
 
   //load all settings
   AppSettingFact::loadSettings(this);
+
 }
 AppSettings * AppSettings::_instance=NULL;
 //=============================================================================

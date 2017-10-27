@@ -6,7 +6,7 @@ GCSMenu {
     id: menuCommands
     title: qsTr("Commands")
 
-    function openSelectUAV() { openMenuField(menuVehicles) }
+    function openSelectUAV() { openPage({"fact": menuVehicles.fact}) }//openMenuField(menuVehicles) }
     function openServers() { openPage({"fact": menuServers.fact}) }//openMenuField(menuServers) }
 
 
@@ -82,18 +82,7 @@ GCSMenu {
             fields: GCSMenuModel {
                 GCSMenuField {
                     id: menuVehicles
-                    title: qsTr("Select Vehicle")
-                    fields: GCSMenuModel {
-                        id: objModelVehicles
-                        GCSMenuList {
-                            objModel: objModelVehicles
-                            //model: mandala.uavNames
-                            delegate: GCSMenuField {
-                                title: model.modelData
-                                onClicked: mandala.setCurrent(model.modelData)
-                            }
-                        }
-                    }
+                    fact: app.vehicles.select
                 }
                 GCSMenuField {
                     id: menuServers

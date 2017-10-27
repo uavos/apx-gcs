@@ -101,7 +101,7 @@ void QMandala::downlinkReceived(const QByteArray &ba)
         //squawk match, check uid
         if(memcmp(&m->ident.uid,ident->uid,sizeof(IDENT::_uid))!=0){
           //same squawk on different uid => duplicate squawk
-          qDebug("%s %s: %s (%.4X)",tr("Assigning squawk to").toUtf8().data(),vclassToString(ident->vclass).toUtf8().data(),ident->callsign,ident->squawk);
+          //qDebug("QMandala %s %s: %s (%.4X)",tr("Assigning squawk to").toUtf8().data(),vclassToString(ident->vclass).toUtf8().data(),ident->callsign,ident->squawk);
           assignIDENT(ident);
           return;
         }
@@ -123,7 +123,7 @@ void QMandala::downlinkReceived(const QByteArray &ba)
       //new UAV ident found
       QMandalaItem *m=append();
       memcpy(&m->ident,ident,sizeof(IDENT::_ident));
-      qDebug("%s %s: %s (%.4X)",vclassToString(ident->vclass).toUtf8().data(),tr("identified").toUtf8().data(),m->ident.callsign,m->ident.squawk);
+      //qDebug("QMandala %s %s: %s (%.4X)",vclassToString(ident->vclass).toUtf8().data(),tr("identified").toUtf8().data(),m->ident.callsign,m->ident.squawk);
       emit uavAdded(m);
       if(size()==1) setCurrent(m);
       else if(isGCU() && (m->ident.vclass!=IDENT::GCU)) setCurrent(m);
@@ -201,7 +201,7 @@ QString QMandala::vclassToString(IDENT::_vclass vclass)
 }
 //=============================================================================
 void QMandala::reqIDENT(IDENT::_squawk squawk)
-{
+{return;
   QByteArray ba=QByteArray().append((unsigned char)idx_ident).append((unsigned char)squawk).append((unsigned char)(squawk>>8));
   if(!req_list.contains(ba)){
     req_list.append(ba);
@@ -209,7 +209,7 @@ void QMandala::reqIDENT(IDENT::_squawk squawk)
   }
 }
 void QMandala::assignIDENT(IDENT::_ident *ident)
-{
+{return;
   //fix and update ident
   uint tcnt=1000000;
   while(tcnt--){

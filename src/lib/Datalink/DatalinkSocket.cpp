@@ -40,6 +40,7 @@ DatalinkSocket::DatalinkSocket(Fact *parent, QString title, QTcpSocket *socket, 
 
   connect(socket,&QTcpSocket::readyRead,this,&DatalinkSocket::socketReadyRead);
   connect(socket,&QTcpSocket::disconnected,this,&DatalinkSocket::socketDisconnected);
+  connect(socket,&QTcpSocket::disconnected,this,&DatalinkSocket::disconnected);
   connect(socket,static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),this,&DatalinkSocket::socketError);
   connect(socket,&QTcpSocket::stateChanged,this,&DatalinkSocket::socketStateChanged);
 
@@ -95,7 +96,7 @@ void DatalinkSocket::socketReadyRead()
 void DatalinkSocket::socketDisconnected()
 {
   setConnected(false);
-  emit disconnected();
+  //emit disconnected();
   if(bServer){
     socket->deleteLater();
   }else{
@@ -233,7 +234,7 @@ bool DatalinkSocket::checkDatalinkResponseHeader()
     data.datalink=true;
     data.size=0;
     data.crc16=0;
-    qDebug("#server: %s",sname.toUtf8().data());
+    qDebug("#server connected: %s",sname.toUtf8().data());
     setStatus("Datalink");
     emit datalinkConnected();
     return true;

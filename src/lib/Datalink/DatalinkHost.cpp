@@ -40,7 +40,11 @@ DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress ho
   updateStatsTimer.setSingleShot(true);
   connect(&updateStatsTimer,&QTimer::timeout,this,&DatalinkHost::updateStats);
 
-  connect(this,&DatalinkSocket::disconnected,this,&DatalinkHost::disconnected);
+  connect(parent->f_alloff,&Fact::triggered,this,&DatalinkHost::disconnectAll);
+
+  connect(this,&DatalinkSocket::connectedChanged,container,&DatalinkHosts::updateConnectedStatus);
+
+  connect(this,&DatalinkSocket::disconnected,this,&DatalinkHost::socketDisconnected);
 
   connect(this,&DatalinkSocket::triggered,this,&DatalinkHost::connectToServer);
 
@@ -72,7 +76,7 @@ void DatalinkHost::updateTimeout()
   updateStatsTimer.start(1000);
 }
 //=============================================================================
-void DatalinkHost::disconnected()
+void DatalinkHost::socketDisconnected()
 {
   if(bReconnect){
     setStatus(QString("%1 %2").arg(tr("Retry")).arg(retry));
@@ -80,6 +84,7 @@ void DatalinkHost::disconnected()
   }else{
     setStatus(QString());
   }
+  qDebug("#server disconnected: %s",title().toUtf8().data());
 }
 //=============================================================================
 void DatalinkHost::connectToServer()
@@ -112,7 +117,7 @@ void DatalinkHost::disconnectAll()
   disconnectSocket();
 }
 //=============================================================================
-bool DatalinkHost::active()
+bool DatalinkHost::active() const
 {
   return connected()||bReconnect;
 }

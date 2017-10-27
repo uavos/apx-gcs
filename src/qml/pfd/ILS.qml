@@ -5,7 +5,7 @@ Item {
     id: ils_window
     property double anumation_duration: 1000
 
-    property bool isRW: app.settings.test.value ||
+    property bool isRW: testUI.value ||
         m.mode.value===mode_LANDING ||
         m.mode.value===mode_TAKEOFF ||
         m.mode.value===mode_TAXI ||
@@ -20,7 +20,7 @@ Item {
     }*/
     PfdImage {
         id: ils_bar_vertical
-        visible: app.settings.test.value || m.mode.value===mode_LANDING
+        visible: testUI.value || m.mode.value===mode_LANDING
         elementName: "ils-bar-vertical"
         fillMode: Image.PreserveAspectFit
         anchors.left: parent.left

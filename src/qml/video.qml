@@ -26,10 +26,10 @@ Item {
 
     signal config
 
-    onSrcChanged: m.settings.setValue("src",src);
-    onFlipChanged: m.settings.setValue("flip",flip);
-    onAutoRotateChanged: m.settings.setValue("autoRotate",autoRotate);
-    onAutoScaleChanged: m.settings.setValue("autoScale",autoScale);
+    onSrcChanged: settings.setValue("src",src);
+    onFlipChanged: settings.setValue("flip",flip);
+    onAutoRotateChanged: settings.setValue("autoRotate",autoRotate);
+    onAutoScaleChanged: settings.setValue("autoScale",autoScale);
 
 
     /*Settings {
