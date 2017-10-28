@@ -23,7 +23,7 @@
 #include "Vehicles.h"
 #include "Vehicle.h"
 #include "VehicleMandala.h"
-#include "MandalaFact.h"
+#include "VehicleMandalaFact.h"
 //---------------------------
 // deprecate
 #include "node.h"
@@ -34,6 +34,8 @@ Vehicles::Vehicles(FactSystem *parent)
   : Fact(parent,"vehicles",tr("Vehicles"),tr("Discovered vehicles"),SectionItem,NoData)
 {
   _instance=this;
+
+  qmlRegisterUncreatableType<Vehicle>("GCS.Vehicle", 1, 0, "Vehicle", "Reference only");
 
   setFlatModel(true);
 
@@ -51,7 +53,7 @@ Vehicles::Vehicles(FactSystem *parent)
   parent->alias(f_current->f_mandala,"m");
   foreach(QString key,f_current->f_mandala->constants.keys())
     parent->engine()->globalObject().setProperty(key,parent->engine()->toScriptValue(f_current->f_mandala->constants.value(key)));
-  foreach (MandalaFact *f, f_current->f_mandala->allFacts()) {
+  foreach (VehicleMandalaFact *f, f_current->f_mandala->allFacts()) {
     parent->jsexec(QString("this.__defineGetter__('%1', function(){ return m.%1.value; });").arg(f->name()));
     parent->jsexec(QString("this.__defineSetter__('%1', function(v){ m.%1.value=v; });").arg(f->name()));
   }
@@ -74,9 +76,6 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
   if(data_cnt<=bus_packet_size_hdr)return;
   data_cnt-=bus_packet_size_hdr;
   switch(packet->id){
-    default:
-      f_local->downlinkReceived(ba);
-    break;
     case idx_xpdr:{      //transponder from UAV received
       if(data_cnt!=sizeof(IDENT::_xpdr))return;
       IDENT::_xpdr *xpdr=(IDENT::_xpdr*)packet->data;
@@ -153,8 +152,22 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
       if(v) v->downlinkReceived(pdata);
       else reqIDENT(squawk);
     }break;
+    default:
+      f_local->downlinkReceived(ba);
   }
 }
+//=============================================================================
+void Vehicles::vehicleSendUplink(Vehicle *v, const QByteArray &ba)
+{
+  qDebug()<<"VS"<<v->title()<<v->squawk()<<ba.toHex().toUpper();
+  if(v==f_local){
+    emit sendUplink(ba);
+    return;
+  }
+  //prepend idx_dlink+squawk
+  emit sendUplink(QByteArray().append((unsigned char)idx_dlink).append((unsigned char)v->squawk()).append((unsigned char)(v->squawk()>>8)).append(ba));
+}
+//=============================================================================
 //=============================================================================
 void Vehicles::scheduleRequest(const QByteArray &ba)
 {
@@ -205,7 +218,7 @@ void Vehicles::selectVehicle(Vehicle *v)
 {
   qDebug("%s: %s '%s' (%s)",tr("Vehicle selected").toUtf8().data(),v->f_vclass->text().toUtf8().data(),v->f_callsign->text().toUtf8().data(),v->f_squawk->text().toUtf8().data());
   f_current->bind(v);
-  emit currentChanged(v);
+  emit vehicleSelected(v);
   f_select->setStatus(v->title());
 }
 //=============================================================================

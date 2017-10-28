@@ -29,25 +29,6 @@ HEADERS += \
     $${APX_TOP}/lib/MandalaVars.h \
 
 
-# GCS Mandala
-SOURCES += \
-    Mandala/QMandalaField.cpp \
-    Mandala/QMandalaItem.cpp \
-    Mandala/QMandala.cpp \
-    Mandala/Vehicles.cpp \
-    Mandala/Vehicle.cpp \
-    Mandala/VehicleMandala.cpp \
-    Mandala/MandalaFact.cpp \
-
-HEADERS += \
-    Mandala/QMandalaField.h \
-    Mandala/QMandalaItem.h \
-    Mandala/QMandala.h \
-    Mandala/Vehicles.h \
-    Mandala/Vehicle.h \
-    Mandala/VehicleMandala.h \
-    Mandala/MandalaFact.h \
-
 # Fact System
 SOURCES += \
     FactSystem/FactSystem.cpp \
@@ -64,6 +45,35 @@ HEADERS += \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
     FactSystem/Fact.h \
+
+# Vehicles & Mandala
+SOURCES += \
+    Vehicles/QMandalaField.cpp \
+    Vehicles/QMandalaItem.cpp \
+    Vehicles/QMandala.cpp \
+    Vehicles/Vehicles.cpp \
+    Vehicles/Vehicle.cpp \
+    Vehicles/VehicleMandala.cpp \
+    Vehicles/VehicleMandalaFact.cpp \
+
+HEADERS += \
+    Vehicles/QMandalaField.h \
+    Vehicles/QMandalaItem.h \
+    Vehicles/QMandala.h \
+    Vehicles/Vehicles.h \
+    Vehicles/Vehicle.h \
+    Vehicles/VehicleMandala.h \
+    Vehicles/VehicleMandalaFact.h \
+
+# Nodes
+SOURCES += \
+    Nodes/Nodes.cpp \
+    Nodes/NodeFact.cpp \
+
+HEADERS += \
+    Nodes/Nodes.h \
+    Nodes/NodeFact.h \
+
 
 # Communication
 SOURCES += \

@@ -23,7 +23,6 @@
 #include "FactSystemJS.h"
 #include "AppDirs.h"
 #include "QMandala.h"
-#include "FactMandalaField.h"
 //=============================================================================
 FactSystemJS::FactSystemJS(QObject *parent)
  : FactSystemApp(parent)

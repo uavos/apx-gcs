@@ -20,60 +20,37 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef VehicleMandala_H
-#define VehicleMandala_H
+#ifndef NodeFact_H
+#define NodeFact_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class Vehicle;
-class Mandala;
-class MandalaFact;
+class Nodes;
 //=============================================================================
-class VehicleMandala: public Fact
+class NodeFact: public Fact
 {
   Q_OBJECT
 
-  Q_PROPERTY(QByteArray md5 READ md5 WRITE setMd5 NOTIFY md5Changed)
-
 public:
-  explicit VehicleMandala(Vehicle *parent);
-  ~VehicleMandala();
-
-  QHash<QString,QVariant> constants; // <name,value> enums in form varname_ENUM
-  QList<MandalaFact*> allFacts() { return idMap.values(); }
-
-  QVariant valueById(quint16 id) const;
-  bool setValueById(quint16 id,const QVariant &v);
+  explicit NodeFact(Nodes *parent,const QByteArray &sn);
 
   bool unpackService(const QByteArray &ba);
-  bool unpackData(const QByteArray &ba);
-  bool unpackTelemetry(const QByteArray &ba);
-  bool unpackXPDR(const QByteArray &ba);
 
 private:
-  Mandala *m;
-  MandalaFact * registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units);
-  QHash<quint16,MandalaFact*> idMap;
+  QByteArray sn;
 
-  void collectValues();
-
-  //EXPORTED
+  //data comm
 signals:
-  void serialData(uint portNo,const QByteArray &ba);
 
 
 
   //---------------------------------------
   // PROPERTIES
 public:
-  QByteArray md5(void) const;
-  bool setMd5(const QByteArray &v);
 
 protected:
-  QByteArray m_md5;
 
 signals:
-  void md5Changed();
 
 };
 //=============================================================================

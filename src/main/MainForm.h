@@ -29,6 +29,7 @@
 //=============================================================================
 class DockWidget;
 class QmlView;
+class Vehicle;
 class MainForm: public QMainWindow
 {
   Q_OBJECT
@@ -82,9 +83,9 @@ private slots:
   void dockWidget_visibilityChanged(bool visible);
   void dockWidget_viewActionToggled(bool visible);
 
-  void uavAdded(QMandalaItem *m);
-  void uavRemoved(QMandalaItem *m);
-  void uavAction();
+  void vehicleRegistered(Vehicle *v);
+  void vehicleRemoved(Vehicle *v);
+  void vehicleSelected(Vehicle *v);
 
 public slots:
   void restoreGeometry();
@@ -93,7 +94,7 @@ signals:
   void windowLoaded();
   //void pluginsLoaded();
   void aboutToQuit();
-  void changeUAV(QMandalaItem *m);
+  //void changeUAV(QMandalaItem *m);
 };
 //=============================================================================
 class DockWidget: public QDockWidget

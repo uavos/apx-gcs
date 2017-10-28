@@ -20,50 +20,49 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MandalaFact_H
-#define MandalaFact_H
+#ifndef Nodes_H
+#define Nodes_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class Mandala;
-class VehicleMandala;
+#include "NodeFact.h"
+class Vehicle;
 //=============================================================================
-class MandalaFact: public Fact
+class Nodes: public Fact
 {
   Q_OBJECT
-  Q_PROPERTY(QString units READ units CONSTANT)
 
 public:
-  explicit MandalaFact(
-      VehicleMandala *parent,
-      Mandala *m,
-      quint16 id,
-      DataType dataType,
-      const QString &name,
-      const QString &title,
-      const QString &descr,
-      const QString &units
-      );
+  explicit Nodes(Vehicle *parent);
 
-  bool setValue(const QVariant &v); //override
-  bool setValueLocal(const QVariant &v);
+  bool unpackService(const QByteArray &ba);
+
+
+  Fact *f_request;
+
+  Fact *f_list;
 
 private:
-  VehicleMandala *vehicle;
-  Mandala *m;
-  quint16 m_id;
+  bool isBroadcast(const QByteArray &sn) const;
+  NodeFact * nodeCheck(const QByteArray &sn);
+
+  //sn lookup
+  QMap<QByteArray,NodeFact*> snMap;
+
+
+  //data comm
+signals:
+  void sendUplink(const QByteArray &ba);
+
+
 
   //---------------------------------------
   // PROPERTIES
 public:
-  QString units(void) const;
 
 protected:
-  QString m_units;
 
-public slots:
-  void saveValue();
-  void loadValue();
+signals:
 
 };
 //=============================================================================

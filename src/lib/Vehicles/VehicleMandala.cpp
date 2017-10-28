@@ -23,7 +23,7 @@
 #include "VehicleMandala.h"
 #include "Vehicle.h"
 #include "Mandala.h"
-#include "MandalaFact.h"
+#include "VehicleMandalaFact.h"
 #include "Mandala.h"
 #include "node.h"
 //=============================================================================
@@ -72,7 +72,7 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
             constants[QString("%1_%2").arg(name).arg(sFalse)]=false;
             constants[QString("%1_%2").arg(name).arg(sTrue)]=true;
           }
-          MandalaFact *f=registerFact(var_idx|(msk<<8),enumStrings.size()?EnumData:BoolData,QString("%1_%2").arg(var_name).arg(name),QString("%1 (%2)").arg(qApp->translate("MandalaVars",descr)).arg(var_name),"bit");
+          VehicleMandalaFact *f=registerFact(var_idx|(msk<<8),enumStrings.size()?EnumData:BoolData,QString("%1_%2").arg(var_name).arg(name),QString("%1 (%2)").arg(qApp->translate("MandalaVars",descr)).arg(var_name),"bit");
           f->setEnumStrings(enumStrings);
           msk<<=1;
         }
@@ -86,7 +86,7 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
           msk++;
         }
         QString su="{"+enumStrings.join(", ")+"}";
-        MandalaFact *f=registerFact(var_idx,EnumData,var_name,QString("%1 (enum)").arg(qApp->translate("MandalaVars",var_descr)),"enum");
+        VehicleMandalaFact *f=registerFact(var_idx,EnumData,var_name,QString("%1 (enum)").arg(qApp->translate("MandalaVars",var_descr)),"enum");
         f->setEnumStrings(enumStrings);
       }break;
       case vt_vect:
@@ -156,9 +156,9 @@ VehicleMandala::~VehicleMandala()
   delete m;
 }
 //=============================================================================
-MandalaFact * VehicleMandala::registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units)
+VehicleMandalaFact * VehicleMandala::registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units)
 {
-  MandalaFact *f=new MandalaFact(this,m,id,dataType,name,"",descr,units);
+  VehicleMandalaFact *f=new VehicleMandalaFact(this,m,id,dataType,name,"",descr,units);
   idMap[id]=f;
   return f;
 }
@@ -234,7 +234,7 @@ bool VehicleMandala::unpackData(const QByteArray &ba)
       return true;
   }
   if(!m->unpack(packet.data,data_cnt,packet.id)) return false;
-  MandalaFact *fact=NULL;
+  VehicleMandalaFact *fact=NULL;
   if(packet.id==idx_set){
     fact=idMap.value((uint16_t)packet.data[0]|(uint16_t)packet.data[1]<<8);
     if(fact)fact->loadValue();
@@ -251,7 +251,7 @@ bool VehicleMandala::unpackTelemetry(const QByteArray &ba)
   if(data_cnt<4)return false;
   if(packet.id!=idx_downstream) return false;
   if(!m->extract_downstream(packet.data,data_cnt)) return false;
-  foreach (MandalaFact *f, idMap.values()) {
+  foreach (VehicleMandalaFact *f, idMap.values()) {
     f->loadValue();
   }
   return true;

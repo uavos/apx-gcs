@@ -29,7 +29,8 @@
 SoundEffects::SoundEffects(QObject *parent)
     :QObject(parent)
 {
-  mandala=qApp->property("Mandala").value<QMandala*>();
+  player=new QMediaPlayer(this,QMediaPlayer::LowLatency);
+  connect(player,&QMediaPlayer::stateChanged,this,&SoundEffects::effectPlayingChanged);
 
   //load SoundEffects files
   QString lang=AppSettings::value("lang").toString();
@@ -42,10 +43,10 @@ SoundEffects::SoundEffects(QObject *parent)
   //qDebug()<<fdir.absolutePath();
   QStringList files=fdir.entryList();
   foreach(QString file,files){
-    QSoundEffect *e=new QSoundEffect(this);
-    e->setSource(QUrl::fromLocalFile(fdir.absoluteFilePath(file)));
-    connect(e,&QSoundEffect::playingChanged,this,&SoundEffects::effectPlayingChanged);
-    speech.insert(file.left(file.indexOf('.')),e);
+    //QSoundEffect *e=new QSoundEffect(this);
+    //e->setSource(QUrl::fromLocalFile(fdir.absoluteFilePath(file)));
+    //connect(e,&QSoundEffect::playingChanged,this,&SoundEffects::effectPlayingChanged);
+    speech.insert(file.left(file.indexOf('.')),QMediaContent(QUrl::fromLocalFile(fdir.absoluteFilePath(file))));
     //qDebug()<<file;
   }
   //add alarms
@@ -59,11 +60,11 @@ SoundEffects::SoundEffects(QObject *parent)
   fdir=QDir(AppDirs::res().filePath("audio/alerts"),"*.ogg *.wav");
   foreach(QFileInfo fi,fdir.entryInfoList()){
     if(!alias.values().contains(fi.baseName()))continue;
-    QSoundEffect *e=new QSoundEffect(this);
+    //QSoundEffect *e=new QSoundEffect(this);
     //qDebug()<<fi.absoluteFilePath();
-    e->setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
-    connect(e,&QSoundEffect::playingChanged,this,&SoundEffects::effectPlayingChanged);
-    effects.insert(alias.key(fi.baseName()),e);
+    //e->setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
+    //connect(e,&QSoundEffect::playingChanged,this,&SoundEffects::effectPlayingChanged);
+    effects.insert(alias.key(fi.baseName()),QMediaContent(QUrl::fromLocalFile(fi.absoluteFilePath())));
     //qDebug()<<alias.key(fi.baseName())<<fi.baseName();
   }
   //last_file timeout timer
@@ -83,7 +84,7 @@ void SoundEffects::play(QString text)
   //qDebug()<<"play"<<text;
   text.remove(':');
   QStringList st;
-  QHash<QString,QSoundEffect*> *elist=NULL;
+  QHash<QString,QMediaContent> *elist=NULL;
   foreach(QString key,speech.keys()){
     if(text.contains(key,Qt::CaseInsensitive))
       st.append(key);
@@ -104,14 +105,18 @@ void SoundEffects::play(QString text)
   if(st.isEmpty())return;
   st.sort();
   //qDebug()<<st;
-  QSoundEffect *e=elist->value(st.last());
-  if(!e)return;
+  QMediaContent e=elist->value(st.last());
+  if(e.isNull())return;
   if(lastEffect==e)return;
   lastEffect=e;
   if(!timeoutTimer.isActive())timeoutTimer.start();
   if(effectsQueue.contains(e))return;
   effectsQueue.append(e);
-  if(effectsQueue.size()==1) e->play();
+  if(effectsQueue.size()==1) {
+    player->setMedia(e);
+    player->play();
+    //qDebug()<<"play"<<player->media().canonicalUrl();
+  }
 }
 //=============================================================================
 void SoundEffects::timeout()
@@ -121,10 +126,13 @@ void SoundEffects::timeout()
 //=============================================================================
 void SoundEffects::effectPlayingChanged()
 {
-  QSoundEffect *e=static_cast<QSoundEffect*>(sender());
-  if((!e) || e->isPlaying())return;
+  //QSoundEffect *e=static_cast<QSoundEffect*>(sender());
+  //if((!e) || e->isPlaying())return;
+  if(player->state()==QMediaPlayer::PlayingState)return;
   effectsQueue.takeFirst();
   if(effectsQueue.isEmpty())return;
-  effectsQueue.first()->play();
+  player->setMedia(effectsQueue.first());
+  player->play();
+  //qDebug()<<"play"<<player->media().canonicalUrl();
 }
 //=============================================================================

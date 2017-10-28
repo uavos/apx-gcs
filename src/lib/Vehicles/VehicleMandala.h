@@ -20,53 +20,65 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Vehicles_H
-#define Vehicles_H
+#ifndef VehicleMandala_H
+#define VehicleMandala_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
 class Vehicle;
+class Mandala;
+class VehicleMandalaFact;
 //=============================================================================
-class Vehicles: public Fact
+class VehicleMandala: public Fact
 {
   Q_OBJECT
 
+  Q_PROPERTY(QByteArray md5 READ md5 WRITE setMd5 NOTIFY md5Changed)
+
 public:
-  explicit Vehicles(FactSystem *parent);
+  explicit VehicleMandala(Vehicle *parent);
+  ~VehicleMandala();
 
-  static Vehicles * instance() {return _instance;}
+  QHash<QString,QVariant> constants; // <name,value> enums in form varname_ENUM
+  QList<VehicleMandalaFact*> allFacts() { return idMap.values(); }
 
-  Fact *f_list;
+  QVariant valueById(quint16 id) const;
+  bool setValueById(quint16 id,const QVariant &v);
 
-  Fact *f_select;
-
-  Vehicle *f_current;
-  Vehicle *f_local;
+  bool unpackService(const QByteArray &ba);
+  bool unpackData(const QByteArray &ba);
+  bool unpackTelemetry(const QByteArray &ba);
+  bool unpackXPDR(const QByteArray &ba);
 
 private:
-  static Vehicles * _instance;
+  Mandala *m;
+  VehicleMandalaFact * registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units);
+  QHash<quint16,VehicleMandalaFact*> idMap;
 
-  //IDENT procedures
-  QTimer reqTimer;
-  QList<QByteArray> reqList;
-  void reqIDENT(quint16 squawk);
-  void assignIDENT(QString callsign, QByteArray uid);
-  void scheduleRequest(const QByteArray &ba);
+  void collectValues();
 
-  //ident lookup
-  QMap<quint16,Vehicle*> squawkMap;
-
-public slots:
-  void selectVehicle(Vehicle *v);
+  //EXPORTED
 signals:
-  void vehicleRegistered(Vehicle*);
-  void currentChanged(Vehicle*);
+  void serialData(uint portNo,const QByteArray &ba);
 
-  //data connection
-public slots:
-  void downlinkReceived(const QByteArray &ba);
+  //data comm
 signals:
   void sendUplink(const QByteArray &ba);
+
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QByteArray md5(void) const;
+  bool setMd5(const QByteArray &v);
+
+protected:
+  QByteArray m_md5;
+
+signals:
+  void md5Changed();
+
 };
 //=============================================================================
 #endif

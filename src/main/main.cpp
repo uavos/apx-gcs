@@ -255,9 +255,9 @@ int main(int argc, char *argv[])
   //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),serial2,SLOT(activate()));
 */
 
-/*  SoundEffects *soundEffects=new SoundEffects(mandala);
-  QObject::connect(factSystem,&FactSystem::playSoundEffect,soundEffects,&SoundEffects::play);
-*/
+  SoundEffects soundEffects;
+  QObject::connect(factSystem,&FactSystem::playSoundEffect,&soundEffects,&SoundEffects::play);
+
   //datalink->f_active->setValue(true);
   //datalink->activate();
   //serial1->activate();

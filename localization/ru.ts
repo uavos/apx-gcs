@@ -56,7 +56,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -76,7 +76,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-40"/>
         <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
@@ -86,7 +86,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+16"/>
         <source>Enable OpenGL graphics when supported</source>
         <translation type="unfinished"></translation>
     </message>
@@ -697,7 +697,7 @@
 <context>
     <name>DatalinkHost</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkHost.cpp" line="+63"/>
+        <location filename="../src/lib/Datalink/DatalinkHost.cpp" line="+67"/>
         <source>No service</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1010,7 +1010,7 @@
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+221"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+234"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2875,7 +2875,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+364"/>
+        <location filename="../src/main/main.cpp" line="+365"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
@@ -2898,17 +2898,7 @@
 <context>
     <name>QMandala</name>
     <message>
-        <location filename="../src/lib/Mandala/QMandala.cpp" line="+104"/>
-        <source>Assigning squawk to</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>identified</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+73"/>
+        <location filename="../src/lib/Mandala/QMandala.cpp" line="+199"/>
         <source>UAV</source>
         <translation type="unfinished">БЛА</translation>
     </message>
@@ -3001,12 +2991,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-209"/>
+        <location filename="../src/main/main.cpp" line="-210"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+66"/>
         <source>Ground Control Unit</source>
         <translation type="unfinished">Наземный Пункт Управления</translation>
     </message>
@@ -3031,7 +3021,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+177"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+143"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3727,9 +3717,75 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
     </message>
 </context>
 <context>
+    <name>Vehicle</name>
+    <message>
+        <location filename="../src/lib/Mandala/Vehicle.cpp" line="+32"/>
+        <source>Stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Current data stream type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>SQUAWK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Dynamic vehicle ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Callsign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Vehicle name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Vehicle class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Unique ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VehicleMandala</name>
+    <message>
+        <location filename="../src/lib/Mandala/VehicleMandala.cpp" line="+31"/>
+        <source>Vehicle data tree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+199"/>
+        <source>Received serial data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Vehicles</name>
     <message>
-        <location filename="../src/lib/Mandala/Vehicles.cpp" line="+32"/>
+        <location filename="../src/lib/Mandala/Vehicles.cpp" line="+34"/>
         <source>Vehicles</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3749,22 +3805,27 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+6"/>
         <source>Vehicles list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+89"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+71"/>
+        <source>Vehicle selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-78"/>
         <source>Vehicle identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+57"/>
         <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>

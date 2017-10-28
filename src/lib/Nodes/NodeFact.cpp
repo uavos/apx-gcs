@@ -20,41 +20,20 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "MandalaFact.h"
-#include "Mandala.h"
-#include "VehicleMandala.h"
+#include "NodeFact.h"
+#include "Nodes.h"
+#include <node.h>
 //=============================================================================
-MandalaFact::MandalaFact(VehicleMandala *parent, Mandala *m, quint16 id, DataType dataType, const QString &name, const QString &title, const QString &descr, const QString &units)
-  : Fact(parent,name,title,descr,FactItem,dataType),
-    vehicle(parent),m(m),m_id(id),
-    m_units(units)
+NodeFact::NodeFact(Nodes *parent, const QByteArray &sn)
+  : Fact(parent->f_list,"node#","",sn.toHex().toUpper(),GroupItem,NoData),
+    sn(sn)
 {
+  setSection(parent->f_list->title());
 }
 //=============================================================================
-//=============================================================================
-QString MandalaFact::units(void) const
+bool NodeFact::unpackService(const QByteArray &ba)
 {
-  return m_units;
+  return true;
 }
 //=============================================================================
-void MandalaFact::saveValue()
-{
-  m->set_data(m_id,value().toDouble());
-}
-//=============================================================================
-void MandalaFact::loadValue()
-{
-  setValueLocal(m->get_data(m_id));
-}
-//=============================================================================
-//=============================================================================
-bool MandalaFact::setValue(const QVariant &v)
-{
-
-}
-//=============================================================================
-bool MandalaFact::setValueLocal(const QVariant &v)
-{
-  return Fact::setValue(v);
-}
 //=============================================================================

@@ -23,9 +23,11 @@
 #include "Vehicle.h"
 #include "Vehicles.h"
 #include "VehicleMandala.h"
+#include "Nodes.h"
 //=============================================================================
 Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal)
-  : Fact(bLocal?parent:parent->f_list,bLocal?callsign:"vehicle#",callsign,"",GroupItem,NoData)
+  : Fact(bLocal?parent:parent->f_list,bLocal?callsign:"vehicle#",callsign,"",GroupItem,NoData),
+    m_squawk(squawk)
 {
   setSection(parent->title());
 
@@ -50,6 +52,12 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_uid->setVisible(vclass!=LOCAL);
 
   f_mandala=new VehicleMandala(this);
+  f_nodes=new Nodes(this);
+
+  connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
+
+  //datalink
+  connect(f_mandala,&VehicleMandala::sendUplink,[=](const QByteArray &ba){ parent->vehicleSendUplink(this,ba); });
 
   if(vclass!=CURRENT){
     //selection action fact
@@ -58,9 +66,12 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
     connect(f_select,&Fact::triggered,[=](){ parent->selectVehicle(this); });
 
     connect(this,&Vehicle::activeChanged,[=](){ f_select->setActive(active()); });
-    connect(parent,&Vehicles::currentChanged,[=](Vehicle *v){ setActive(v==this); });
+    connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ setActive(v==this); });
 
     connect(this,&Fact::statusChanged,[=](){ f_select->setStatus(status()); });
+
+    connect(f_streamType,&Fact::valueChanged,[=](){ f_mandala->setStatus(f_streamType->text()); });
+
     f_streamType->setValue(0);
 
     onlineTimer.setSingleShot(true);
@@ -72,21 +83,27 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
     f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,NoData);
     connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
-    connect(parent,&Vehicles::currentChanged,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
+    connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
   }
-
-  qmlRegisterUncreatableType<Vehicle>("GCS.Vehicle", 1, 0, "Vehicle", "Reference only");
+}
+//=============================================================================
+quint16 Vehicle::squawk(void) const
+{
+  return m_squawk;
 }
 //=============================================================================
 //=============================================================================
 void Vehicle::downlinkReceived(const QByteArray &ba)
 {
-  if(f_mandala->unpackService(ba)){
-    f_streamType->setValue(SERVICE);
+  if(f_nodes->unpackService(ba)){
+    if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
+      f_streamType->setValue(SERVICE);
   }else if(f_mandala->unpackTelemetry(ba)){
     f_streamType->setValue(TELEMETRY);
+    telemetryTime.start();
   }else if(f_mandala->unpackData(ba)){
-    f_streamType->setValue(DATA);
+    if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
+      f_streamType->setValue(DATA);
   }else return;
   onlineTimer.start();
 }
@@ -95,6 +112,7 @@ void Vehicle::xpdrReceived(const QByteArray &ba)
 {
   if(f_mandala->unpackXPDR(ba)){
     f_streamType->setValue(XPDR);
+    xpdrTime.start();
   }else return;
   onlineTimer.start();
 }

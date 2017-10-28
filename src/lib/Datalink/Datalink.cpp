@@ -166,6 +166,7 @@ void Datalink::packetReceivedFromPort(const QByteArray &ba)
 //=============================================================================
 void Datalink::write(const QByteArray &ba)
 {
+  //qDebug()<<"W"<<ba.toHex().toUpper();
   //if(bReadOnly)return;
   emit transmittedData(ba);
 

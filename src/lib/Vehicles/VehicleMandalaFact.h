@@ -20,33 +20,72 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef SoundEffects_H
-#define SoundEffects_H
-#include <QtCore>
-#include <QMediaPlayer>
+#ifndef VehicleMandalaFact_H
+#define VehicleMandalaFact_H
 //=============================================================================
 #include <QtCore>
-#include <QMediaPlayer>
-class QMandala;
+#include "FactSystem.h"
+class Mandala;
+class VehicleMandala;
 //=============================================================================
-class SoundEffects : public QObject
+class VehicleMandalaFact: public Fact
 {
   Q_OBJECT
-public:
-  SoundEffects(QObject *parent=0);
-private:
-  QHash<QString, QMediaContent> speech;
-  QHash<QString, QMediaContent> effects;
-  QList<QMediaContent> effectsQueue;
-  QMediaContent lastEffect;
-  QMediaPlayer *player;
+  Q_PROPERTY(QString units READ units CONSTANT)
 
-  QTimer timeoutTimer;
+public:
+  explicit VehicleMandalaFact(
+      VehicleMandala *parent,
+      Mandala *m,
+      quint16 id,
+      DataType dataType,
+      const QString &name,
+      const QString &title,
+      const QString &descr,
+      const QString &units
+      );
+
+  bool setValue(const QVariant &v); //override
+  bool setValueLocal(const QVariant &v);
+
+private:
+  VehicleMandala *vehicle;
+  Mandala *m;
+  quint16 m_id;
+
+  uint _vtype;
+  void *_value_ptr;
+
+  bool pack();
+  QByteArray packed;
+  uint8_t tmp[32];
+
+  //local value change by telemetry delay
+  QTimer loadValueTimer;
+  QTimer sendValueTimer;
+  QTime sendValueTime;
+  int setValueCnt;
+
 private slots:
-  void timeout();
-  void effectPlayingChanged();
+  void loadValueDo();
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QString units(void) const;
+
+protected:
+  QString m_units;
+
 public slots:
-  void play(QString text);
+  void saveValue();
+  void loadValue();
+
+signals:
+  void sendUplink(const QByteArray &ba);
+
 };
 //=============================================================================
 #endif
+

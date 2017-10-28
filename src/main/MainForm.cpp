@@ -28,6 +28,7 @@
 #include "QmlView.h"
 #include "AppSettings.h"
 #include "AppDirs.h"
+#include "Vehicles.h"
 //=============================================================================
 MainForm::MainForm(QWidget *parent)
   : QMainWindow(parent),
@@ -49,9 +50,13 @@ MainForm::MainForm(QWidget *parent)
   //connect(mandala,SIGNAL(serverDiscovered(QHostAddress,QString)),this,SLOT(serverDiscovered(QHostAddress,QString)));
   //connect(this,SIGNAL(connectToServer(QHostAddress)),mandala,SIGNAL(connectToServer(QHostAddress)));
 
-  connect(mandala,SIGNAL(uavAdded(QMandalaItem*)),this,SLOT(uavAdded(QMandalaItem*)));
-  connect(mandala,SIGNAL(uavRemoved(QMandalaItem*)),this,SLOT(uavRemoved(QMandalaItem*)));
-  connect(this,SIGNAL(changeUAV(QMandalaItem*)),mandala,SLOT(setCurrent(QMandalaItem*)));
+  connect(Vehicles::instance(),&Vehicles::vehicleRegistered,this,&MainForm::vehicleRegistered);
+  connect(Vehicles::instance(),&Vehicles::vehicleRemoved,this,&MainForm::vehicleRemoved);
+  connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&MainForm::vehicleSelected);
+  vehicleRegistered(Vehicles::instance()->f_local);
+
+  //connect(mandala,SIGNAL(uavRemoved(QMandalaItem*)),this,SLOT(uavRemoved(QMandalaItem*)));
+  //connect(this,SIGNAL(changeUAV(QMandalaItem*)),mandala,SLOT(setCurrent(QMandalaItem*)));
 
   mWindow->addAction(QIcon(":/icons/old/view-fullscreen.png"),tr("Toggle Full Screen"),this,SLOT(mFullScreen_triggered()),QKeySequence("F11"));
   mWindow->addAction(tr("Auto arrange"),this,SLOT(arrange()));
@@ -84,8 +89,6 @@ MainForm::MainForm(QWidget *parent)
   mFile->addSeparator();
   mFile->addAction(QIcon(":/icons/old/system-shutdown.png"),tr("Exit"),this,SLOT(close()));
 
-
-  uavAdded(mandala->current);
 
   //splash screen setup
   splashScreen = new DockWidget("",this);
@@ -586,29 +589,31 @@ void MainForm::vpn_disconnected()
 //=============================================================================
 //=============================================================================
 //=============================================================================
-void MainForm::uavAdded(QMandalaItem *m)
+void MainForm::vehicleRegistered(Vehicle *v)
 {
-  mUAV->setEnabled(mandala->size()>0);
-  QAction *a=new QAction(QIcon(":/icons/old/connect_creating.png"),QString(m->ident.callsign),this);
-  a->setData(QVariant::fromValue(m));
-  connect(a,SIGNAL(triggered()),this,SLOT(uavAction()));
+  mUAV->setEnabled(Vehicles::instance()->f_list->size()>0);
+  QAction *a=new QAction(QIcon(":/icons/old/connect_creating.png"),QString(v->f_callsign->text()),this);
+  a->setData(QVariant::fromValue(v));
+  a->setCheckable(true);
+  connect(a,&QAction::triggered,v->f_select,&Fact::trigger);
   mUAV->addAction(a);
 }
-void MainForm::uavAction()
-{
-  QAction *a=static_cast<QAction*>(sender());
-  emit changeUAV(qvariant_cast<QMandalaItem*>(a->data()));
-}
-//=============================================================================
-void MainForm::uavRemoved(QMandalaItem *m)
+void MainForm::vehicleRemoved(Vehicle *v)
 {
   QList<QAction*>list;
   foreach(QAction *a,mUAV->actions()){
-    if(qvariant_cast<QMandalaItem*>(a->data())==m)
+    if(qvariant_cast<Vehicle*>(a->data())==v)
       list.append(a);
   }
   foreach(QAction *a,list)mUAV->removeAction(a);
-  mUAV->setEnabled(mandala->size()>0);
+  mUAV->setEnabled(Vehicles::instance()->f_list->size()>0);
+}
+void MainForm::vehicleSelected(Vehicle *v)
+{
+  foreach(QAction *a,mUAV->actions()){
+    if(qvariant_cast<Vehicle*>(a->data())==v)a->setChecked(true);
+    else a->setChecked(false);
+  }
 }
 //=============================================================================
 //=============================================================================

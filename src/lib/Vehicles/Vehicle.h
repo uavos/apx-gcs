@@ -27,12 +27,15 @@
 #include "FactSystem.h"
 class Vehicles;
 class VehicleMandala;
+class Nodes;
 //=============================================================================
 class Vehicle: public Fact
 {
   Q_OBJECT
   Q_ENUMS(VehicleClass)
   Q_ENUMS(StreamType)
+
+  Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
 
 public:
   enum VehicleClass {
@@ -68,26 +71,32 @@ public:
   Fact * f_streamType;
 
   VehicleMandala *f_mandala;
+  Nodes *f_nodes;
 
   Fact * f_selectAction;
 
 
 private:
   QTimer onlineTimer;
+  QTime telemetryTime;
+  QTime xpdrTime;
 
   //data connection
 public slots:
   void xpdrReceived(const QByteArray &ba);
   void downlinkReceived(const QByteArray &ba);
-signals:
-  void sendUplink(const QByteArray &ba);
 
 
   //---------------------------------------
   // PROPERTIES
 public:
-protected:
+  quint16 squawk(void) const;
 
+protected:
+  quint16 m_squawk;
+
+signals:
+  void squawkChanged();
 
 
 };

@@ -20,33 +20,56 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef SoundEffects_H
-#define SoundEffects_H
-#include <QtCore>
-#include <QMediaPlayer>
+#ifndef Vehicles_H
+#define Vehicles_H
 //=============================================================================
 #include <QtCore>
-#include <QMediaPlayer>
-class QMandala;
+#include "FactSystem.h"
+#include "Vehicle.h"
 //=============================================================================
-class SoundEffects : public QObject
+class Vehicles: public Fact
 {
   Q_OBJECT
-public:
-  SoundEffects(QObject *parent=0);
-private:
-  QHash<QString, QMediaContent> speech;
-  QHash<QString, QMediaContent> effects;
-  QList<QMediaContent> effectsQueue;
-  QMediaContent lastEffect;
-  QMediaPlayer *player;
 
-  QTimer timeoutTimer;
-private slots:
-  void timeout();
-  void effectPlayingChanged();
+public:
+  explicit Vehicles(FactSystem *parent);
+
+  static Vehicles * instance() {return _instance;}
+
+  Fact *f_list;
+
+  Fact *f_select;
+
+  Vehicle *f_current;
+  Vehicle *f_local;
+
+private:
+  static Vehicles * _instance;
+
+  //IDENT procedures
+  QTimer reqTimer;
+  QList<QByteArray> reqList;
+  void reqIDENT(quint16 squawk);
+  void assignIDENT(QString callsign, QByteArray uid);
+  void scheduleRequest(const QByteArray &ba);
+
+  //ident lookup
+  QMap<quint16,Vehicle*> squawkMap;
+
 public slots:
-  void play(QString text);
+  void selectVehicle(Vehicle *v);
+signals:
+  void vehicleRegistered(Vehicle*);
+  void vehicleRemoved(Vehicle*);
+  void vehicleSelected(Vehicle*);
+
+  //data connection
+public slots:
+  void downlinkReceived(const QByteArray &ba);
+  void vehicleSendUplink(Vehicle *v,const QByteArray &ba);
+signals:
+  void sendUplink(const QByteArray &ba);
 };
 //=============================================================================
 #endif
+

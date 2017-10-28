@@ -31,7 +31,8 @@ INCLUDEPATH += \
     $${LIB_DIR}/Datalink \
     $${LIB_DIR}/FactSystem \
     $${LIB_DIR}/AppSettings \
-    $${LIB_DIR}/Mandala \
+    $${LIB_DIR}/Vehicles \
+    $${LIB_DIR}/Nodes \
     $${LIB_DIR} \
     $${APX_TOP}/ \
     $${APX_TOP}/lib \
