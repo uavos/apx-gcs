@@ -155,5 +155,15 @@ void Fact::setActive(const bool &v)
   m_active=v;
   emit activeChanged();
 }
+QString Fact::qmlMenu() const
+{
+  return m_qmlMenu;
+}
+void Fact::setQmlMenu(const QString &v)
+{
+  if(m_qmlMenu==v)return;
+  m_qmlMenu=v;
+  emit qmlMenuChanged();
+}
 //=============================================================================
 //=============================================================================

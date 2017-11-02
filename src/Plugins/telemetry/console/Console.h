@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,50 +20,60 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#ifndef CONSOLE_H
+#define CONSOLE_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-#include "NodeFact.h"
-class Vehicle;
+#include <QTextEdit>
+//class QMandala;
 //=============================================================================
-class Nodes: public Fact
+class Console : public  QTextEdit
 {
   Q_OBJECT
-
 public:
-  explicit Nodes(Vehicle *parent);
+  Console(QWidget *parent = NULL);
 
-  bool unpackService(const QByteArray &ba);
-
-
-  Fact *f_request;
-
-  Fact *f_list;
+  static QTextCharFormat fPrompt,fUser,fAutocomplete,fResult,fStdOut,fStdErr,fStdWarn,fNode;
 
 private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeFact * nodeCheck(const QByteArray &sn);
 
-  //sn lookup
-  QHash<QByteArray,NodeFact*> snMap;
+  //QMandala *mandala;
+  void replaceCurrentCommand(QString newCommand);
+  QString getCurrentCommand(void);
 
-  //data comm
-signals:
-  void sendUplink(const QByteArray &ba);
+  void displayPrompt();
 
+  QString prompt;
 
+  QStringList history;
+  int historyIndex;
+  QString replacedHistory;
 
-  //---------------------------------------
-  // PROPERTIES
-public:
+  void wheelEvent ( QWheelEvent * e );
 
+  QString last_msg;
+  uint last_msg_cnt;
+  QTime last_msg_time;
+
+  //right aligned text
+  QTextTableFormat fTable;
+  QTextBlockFormat fRight;
+
+  void exec_command(const QString &command); //linux style syntax
+
+  void get_hints(QString *command,QStringList *hints);
 protected:
+  void keyPressEvent(QKeyEvent* e);
+private slots:
+  void on_cursorPositionChanged();
+  void escPressed();
+  void linesLimit();
 
-signals:
-
+public slots:
+  void message(QString msg,QTextCharFormat fmt=fStdOut);  //on top of prompt
+  void setFocus();
+  void message_impl(QString msg,QTextCharFormat fmt);
 };
+Q_DECLARE_METATYPE(QTextCharFormat)
 //=============================================================================
 #endif
-

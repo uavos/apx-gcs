@@ -22,6 +22,7 @@
  */
 #include "Nodes.h"
 #include "NodeFact.h"
+#include "NodeField.h"
 #include "Vehicle.h"
 #include "Mandala.h"
 #include "node.h"
@@ -47,28 +48,8 @@ bool Nodes::unpackService(const QByteArray &ba)
   uint data_cnt=ba.size()-bus_packet_size_hdr_srv;
 
   if(isBroadcast(sn))return true; //request?
-
-  switch(packet.srv.cmd){
-    case apc_search:
-      nodeCheck(sn);
-    return true;
-    case apc_info: {
-      //fill available nodes
-      if(!data_cnt)break;  //request
-      if(data_cnt<sizeof(_node_name))break;
-      if(data_cnt<sizeof(_node_info)){
-        memset(packet.srv.data+data_cnt,0,sizeof(_node_info)-data_cnt);
-      }
-      NodeFact *node=nodeCheck(sn);
-      _node_info ninfo;
-      memcpy(&ninfo,packet.srv.data,sizeof(_node_info));
-      ninfo.name[sizeof(_node_name)-1]=0;
-      node->setTitle((const char*)ninfo.name);
-    }break;
-  }
-  //error
-
-  return true;
+  NodeFact *node=nodeCheck(sn);
+  return node->unpackService(packet.srv.cmd,QByteArray((const char*)packet.srv.data,data_cnt));
 }
 //=============================================================================
 bool Nodes::isBroadcast(const QByteArray &sn) const
@@ -87,4 +68,5 @@ NodeFact * Nodes::nodeCheck(const QByteArray &sn)
   }
   return node;
 }
+//=============================================================================
 //=============================================================================

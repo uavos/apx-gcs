@@ -20,50 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#include "Sim.h"
+#include "Mandala.h"
+#include "node.h"
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
-#include "NodeFact.h"
-class Vehicle;
-//=============================================================================
-class Nodes: public Fact
+Sim::Sim(FactSystem *parent)
+  : Fact(parent,"sim","Simulator",tr("Software in the loop sim"),GroupItem,NoData)
 {
-  Q_OBJECT
-
-public:
-  explicit Nodes(Vehicle *parent);
-
-  bool unpackService(const QByteArray &ba);
-
-
-  Fact *f_request;
-
-  Fact *f_list;
-
-private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeFact * nodeCheck(const QByteArray &sn);
-
-  //sn lookup
-  QHash<QByteArray,NodeFact*> snMap;
-
-  //data comm
-signals:
-  void sendUplink(const QByteArray &ba);
-
-
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-
-protected:
-
-signals:
-
-};
+  setSection(FactSystem::ToolsSection);
+}
 //=============================================================================
-#endif
-

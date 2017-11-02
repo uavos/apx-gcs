@@ -37,6 +37,7 @@ public:
 
   //constants
   static const QString ApplicationSection;
+  static const QString ToolsSection;
 
   static bool devMode()     { return _instance->m_dev; }
   static QString version()  { return _instance->m_version; }

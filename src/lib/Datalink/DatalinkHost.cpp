@@ -99,13 +99,13 @@ void DatalinkHost::connectToServer()
 }
 void DatalinkHost::reconnect()
 {
-  if(host.isEqual(container->f_datalink->f_clients->server->serverAddress()) ||
+  /*if(host.isEqual(container->f_datalink->f_clients->server->serverAddress()) ||
      (container->f_datalink->f_binded->value().toBool() && isLocalHost(host))
      ){
     qWarning("%s: %s",tr("Connection to local host not allowed").toUtf8().data(),title().toUtf8().data());
     disconnectAll();
     return;
-  }
+  }*/
   retry++;
   socket->abort();
   socket->connectToHost(host,TCP_PORT_SERVER);

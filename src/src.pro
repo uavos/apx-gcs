@@ -10,13 +10,14 @@ main.depends += lib
 # Plugins
 PLUGINS += console
 PLUGINS += nodes
-PLUGINS += map
-PLUGINS += telemetry
-PLUGINS += signal
-PLUGINS += compass
-PLUGINS += servos
-PLUGINS += numbers
-PLUGINS += serial
+#PLUGINS += map
+#PLUGINS += telemetry
+#PLUGINS += signal
+#PLUGINS += compass
+#PLUGINS += servos
+#PLUGINS += numbers
+#PLUGINS += serial
+#PLUGINS += sim
 
 #SUBDIRS += joystick
 

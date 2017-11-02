@@ -25,9 +25,9 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
+#include "VehicleMandalaFact.h"
 class Vehicle;
 class Mandala;
-class VehicleMandalaFact;
 //=============================================================================
 class VehicleMandala: public Fact
 {
@@ -53,7 +53,7 @@ public:
 private:
   Mandala *m;
   VehicleMandalaFact * registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units);
-  QHash<quint16,VehicleMandalaFact*> idMap;
+  QMap<quint16,VehicleMandalaFact*> idMap;
 
   void collectValues();
 

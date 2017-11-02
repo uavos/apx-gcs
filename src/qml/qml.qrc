@@ -49,5 +49,6 @@
         <file>menu/navigation_previous_item.png</file>
         <file>menu/MenuCommands.qml</file>
         <file>menu/MenuShortcuts.qml</file>
+        <file>nodes/NodeMenuItem.qml</file>
     </qresource>
 </RCC>

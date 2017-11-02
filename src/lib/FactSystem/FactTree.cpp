@@ -30,13 +30,7 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
    m_name(name)
 {
   //find tree item level
-  if(parent && treeItemType!=RootItem){
-    m_level++;
-    for(FactTree *item=parent;item && item->treeItemType()==RootItem;item=item->m_parentItem){
-      m_level++;
-    }
-  }
-
+  updateLevel();
   //qRegisterMetaType<FactTree>();
 
   if(parent){
@@ -66,10 +60,11 @@ void FactTree::insertItem(int i, FactTree *item)
   }
   endInsertRows();
   if(fParent) fParent->endInsertRows();
+  item->updateLevel();
   emit structChanged();
   emit itemAdded(item);
 }
-void FactTree::removeItem(FactTree *item)
+void FactTree::removeItem(FactTree *item, bool deleteLater)
 {
   int i=m_items.indexOf(item);
   if(i<0)return;
@@ -86,7 +81,7 @@ void FactTree::removeItem(FactTree *item)
   item->m_parentItem=NULL;
   endRemoveRows();
   if(fParent) fParent->endRemoveRows();
-  item->deleteLater();
+  if(deleteLater)item->deleteLater();
   emit structChanged();
 }
 //=============================================================================
@@ -110,6 +105,42 @@ void FactTree::remove()
 void FactTree::moveItem(FactTree *item,int dest)
 {
   moveRows(QModelIndex(),item->num(),1,QModelIndex(),dest);
+}
+//=============================================================================
+QString FactTree::makeNameUnique(const QString &s)
+{
+  QString sr=QString(s).replace(' ','_').replace('.','_').replace('-','_').replace('+','_');
+  if(!m_parentItem) return sr;
+  int i=0;
+  nameSuffix=QString();
+  QString suffix;
+  while(1){
+    FactTree *dup=NULL;
+    foreach(FactTree *item,m_parentItem->childItemsTree()){
+      if(item==this)continue;
+      if(item->name()==(s+suffix)){
+        dup=item;
+        break;
+      }
+    }
+    if(!dup)break;
+    suffix=QString("_%1").arg(++i,3);
+  }
+  nameSuffix=suffix;
+  return sr;
+}
+void FactTree::updateLevel()
+{
+  int lev=0;
+  if(m_parentItem && m_treeItemType!=RootItem){
+    lev++;
+    for(FactTree *item=m_parentItem;item && item->treeItemType()!=RootItem;item=item->m_parentItem){
+      lev++;
+    }
+  }
+  if(m_level==lev)return;
+  m_level=lev;
+  emit levelChanged();
 }
 //=============================================================================
 int FactTree::num() const
@@ -147,7 +178,7 @@ QList<FactTree*> FactTree::childItemsTree() const
 //=============================================================================
 FactTree * FactTree::child(const QString &name) const
 {
-  foreach(FactTree *item,childItems()){
+  foreach(FactTree *item,childItemsTree()){
     if(item->name()==name)return item;
   }
   return NULL;
@@ -175,10 +206,16 @@ QList<FactTree*> FactTree::pathList() const
 //=============================================================================
 void FactTree::clear(void)
 {
+  if(!m_items.size())return;
   foreach(FactTree *i,m_items){
     i->clear();
   }
   beginRemoveRows(QModelIndex(), 0, m_items.size());
+  FactTree *fParent=flatModelParent();
+  if(fParent){
+    int i2=fParent->childItems().indexOf(m_items.first());
+    fParent->beginRemoveRows(QModelIndex(), i2 ,i2+m_items.size()-1);
+  }
   foreach (FactTree *item, m_items) {
     item->m_parentItem=NULL;
     emit itemRemoved(item);
@@ -186,6 +223,7 @@ void FactTree::clear(void)
   qDeleteAll(m_items);
   m_items.clear();
   endRemoveRows();
+  if(fParent) fParent->endRemoveRows();
   emit structChanged();
 }
 //=============================================================================
@@ -193,6 +231,12 @@ void FactTree::clear(void)
 FactTree::ItemType FactTree::treeItemType(void) const
 {
   return m_treeItemType;
+}
+void FactTree::setTreeItemType(const FactTree::ItemType &v)
+{
+  if(m_treeItemType==v)return;
+  m_treeItemType=v;
+  emit treeItemTypeChanged();
 }
 int FactTree::level(void) const
 {
@@ -236,12 +280,16 @@ void FactTree::setFlatModel(const bool &v)
 }
 QString FactTree::name(void) const
 {
-  return m_name.contains('#')?QString(m_name).replace('#',QString::number(num())):m_name;
+  return (m_name.contains('#')?QString(m_name).replace('#',QString::number(num())):m_name)+nameSuffix;
 }
 void FactTree::setName(const QString &v)
 {
-  if(m_name==v)return;
-  m_name=v;
+  QString s=makeNameUnique(v);
+  if(m_name==s && nameSuffix.isEmpty())return;
+  emit itemRemoved(this);
+  m_name=s;
+  setObjectName(m_name);
+  emit itemAdded(this);
   emit nameChanged();
 }
 //=============================================================================

@@ -25,29 +25,14 @@
 FactData::FactData(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactTree(parent,name,treeItemType),
    _bindedFact(NULL),
-   m_dataType(dataType),
+   m_dataType(NoData),
    m_title(title),m_descr(descr)
 {
   setObjectName(m_name);
-  switch(dataType){
-    case EnumData:
-      connect(this,&FactData::enumStringsChanged,this,&FactData::textChanged);
-    break;
-    case BoolData:
-      m_value=false;
-    break;
-    default: break;
-  }
+  setDataType(dataType);
+  connect(this,&FactData::enumStringsChanged,this,&FactData::textChanged);
   if(parent && m_name.contains('#')){
     connect(parent,&FactData::structChanged,this,&FactData::nameChanged);
-  }
-  //default data
-  switch(dataType){
-    case FloatData: m_value=0.0; break;
-    case IntData: m_value=0; break;
-    case BoolData: m_value=false; break;
-    case EnumData: m_value=0; break;
-    default: break;
   }
 }
 //=============================================================================
@@ -61,27 +46,29 @@ bool FactData::setValue(const QVariant &v)
 {
   if(_bindedFact) return _bindedFact->setValue(v);
   QVariant vx=v;
+  int ev=enumValue(v);
   if(m_treeItemType==FactItem){
     switch(dataType()){
-      case EnumData: {
-        if(m_enumStrings.size()<=0)break;
-        //list or enum
-        QString s=v.toString();
-        int idx=m_enumStrings.indexOf(s);
-        if(idx<0){
-          bool ok=false;
-          uint i=s.toUInt(&ok);
-          if(ok && (int)i<m_enumStrings.size())idx=i;
-        }
-        if(idx<0)return false;
-        vx=idx;
-        break;
-      }
-      case BoolData: {
-        QString s=v.toString().toLower();
-        vx=((s=="true"||s=="1"||s=="on"||s=="yes")||v.toUInt()>0)?true:false;
-      }
-      default: break;
+      case EnumData:
+        if(ev<0)return false;
+        vx=ev;
+      break;
+      case BoolData:
+        if(ev<0){
+          QString s=v.toString().toLower();
+          vx=((s=="true"||s=="1"||s=="on"||s=="yes")||v.toUInt()>0)?true:false;
+        }else vx=ev;
+      break;
+      case TextData:
+        if(ev>=0)vx=enumText(ev);
+      break;
+      case IntData:
+        if(ev>=0)vx=ev;
+        else if(!m_enumStrings.isEmpty())vx=QVariant();
+      break;
+      default:
+        if(ev>=0)vx=ev;
+      break;
     }
   }
   if(m_value==vx)return false;
@@ -91,10 +78,54 @@ bool FactData::setValue(const QVariant &v)
   return true;
 }
 //=============================================================================
+int FactData::enumValue(const QVariant &v) const
+{
+  if(m_enumStrings.isEmpty())return -1;
+  QString s=v.toString();
+  int idx=m_enumStrings.indexOf(s);
+  if(idx>=0){
+    if(!m_enumValues.isEmpty())idx=m_enumValues.at(idx);
+  }else{
+    bool ok=false;
+    int i=s.toInt(&ok);
+    if(ok){
+      if(!m_enumValues.isEmpty()){
+        if(m_enumValues.contains(i))idx=i;
+      }else if(i>=0 && i<m_enumStrings.size())idx=i;
+    }
+  }
+  return idx;
+}
+QString FactData::enumText(int v) const
+{
+  if(!m_enumValues.isEmpty()){
+    if(m_enumValues.contains(v))return m_enumStrings.at(m_enumValues.indexOf(v));
+  }else{
+    if(v>=0 && v<m_enumStrings.size())return m_enumStrings.at(v);
+  }
+  return QString();
+}
+//=============================================================================
 //=============================================================================
 FactData::DataType FactData::dataType() const
 {
   return m_dataType;
+}
+void FactData::setDataType(const DataType &v)
+{
+  if(m_dataType==v)return;
+  m_dataType=v;
+  //default data
+  switch(m_dataType){
+    case FloatData: m_value=0.0; break;
+    case IntData: m_value=0; break;
+    case BoolData: m_value=false; break;
+    case EnumData: m_value=0; break;
+    default: m_value=QVariant();
+  }
+  emit dataTypeChanged();
+  emit valueChanged();
+  emit textChanged();
 }
 QString FactData::title(void) const
 {
@@ -105,6 +136,7 @@ void FactData::setTitle(const QString &v)
   if(m_title==v)return;
   m_title=v;
   emit titleChanged();
+  //emit dataChanged(QModelIndex(nu
 }
 QString FactData::descr(void) const
 {
@@ -119,13 +151,10 @@ void FactData::setDescr(const QString &v)
 QString FactData::text() const
 {
   if(_bindedFact) return _bindedFact->text();
-  if(treeItemType()==ConstItem){
-    if(value().isNull())return name();
-    return value().toString();
-  }
-  if(treeItemType()==FactItem && m_enumStrings.size()>0){
-    int i=value().toInt();
-    if(i<m_enumStrings.size())return m_enumStrings.at(i);
+  if(treeItemType()==FactItem && (!m_enumStrings.isEmpty())){
+    int ev=enumValue(value());
+    if(ev>=0)return enumText(ev);
+    if(m_dataType==IntData)return QString();
   }
   return value().toString();
 }
@@ -142,22 +171,28 @@ QStringList FactData::enumStrings() const
   if(_bindedFact) return _bindedFact->enumStrings();
   return m_enumStrings;
 }
-void FactData::setEnumStrings(const QStringList &v)
+void FactData::setEnumStrings(const QStringList &v, const QList<int> &enumValues)
 {
   if(_bindedFact){
-    _bindedFact->setEnumStrings(v);
+    _bindedFact->setEnumStrings(v,enumValues);
     return;
   }
   if(m_enumStrings==v)return;
   m_enumStrings=v;
+  if(v.size()==enumValues.size()) m_enumValues=enumValues;
+  else m_enumValues.clear();
   emit enumStringsChanged();
 }
 void FactData::setEnumStrings(const QMetaEnum &v)
 {
   QStringList st;
-  for(int i=0;i<v.keyCount();++i)
-    st.append(v.valueToKey(v.value(i)));
-  setEnumStrings(st);
+  QList<int> vlist;
+  for(int i=0;i<v.keyCount();++i){
+    int vi=v.value(i);
+    st.append(v.valueToKey(vi));
+    vlist.append(vi);
+  }
+  setEnumStrings(st,vlist);
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
@@ -209,10 +244,10 @@ void FactData::insertItem(int i, FactTree *item)
   connect(static_cast<FactData*>(item),&FactData::valueChanged,this,&FactData::childValueChanged);
   connect(static_cast<FactData*>(item),&FactData::childValueChanged,this,&FactData::childValueChanged);
 }
-void FactData::removeItem(FactTree *item)
+void FactData::removeItem(FactTree *item, bool deleteLater)
 {
   disconnect(static_cast<FactData*>(item),&FactData::valueChanged,this,&FactData::childValueChanged);
-  FactTree::removeItem(item);
+  FactTree::removeItem(item,deleteLater);
 }
 //=============================================================================
 // LIST MODEL

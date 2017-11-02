@@ -25,8 +25,8 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
+#include "VehicleMandala.h"
 class Vehicles;
-class VehicleMandala;
 class Nodes;
 //=============================================================================
 class Vehicle: public Fact
@@ -85,6 +85,8 @@ private:
 public slots:
   void xpdrReceived(const QByteArray &ba);
   void downlinkReceived(const QByteArray &ba);
+signals:
+  void sendUplink(const QByteArray &ba);
 
 
   //---------------------------------------

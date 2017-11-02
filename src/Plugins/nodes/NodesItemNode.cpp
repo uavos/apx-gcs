@@ -905,7 +905,8 @@ void NodesItemNode::response_received(unsigned char cmd,const QByteArray data)
     }break;
     case apc_conf_dsc:
     case apc_conf_read:
-    case apc_conf_write: {
+    case apc_conf_write:
+    {
       if(!data.size()){
         if(cmd==apc_conf_write)
           save_bkp_timer.start(); //write confirm

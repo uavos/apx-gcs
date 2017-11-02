@@ -57,7 +57,9 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
   //datalink
-  connect(f_mandala,&VehicleMandala::sendUplink,[=](const QByteArray &ba){ parent->vehicleSendUplink(this,ba); });
+  connect(this,&Vehicle::sendUplink,[=](const QByteArray &ba){ parent->vehicleSendUplink(this,ba); });
+  connect(f_mandala,&VehicleMandala::sendUplink,this,&Vehicle::sendUplink);
+  connect(f_nodes,&Nodes::sendUplink,this,&Vehicle::sendUplink);
 
   if(vclass!=CURRENT){
     //selection action fact

@@ -68,6 +68,7 @@ FactSystemApp::FactSystemApp(QObject *parent)
 }
 //=============================================================================
 const QString FactSystemApp::ApplicationSection=tr("Application");
+const QString FactSystemApp::ToolsSection=tr("Tools");
 //=============================================================================
 // utils library
 //=============================================================================

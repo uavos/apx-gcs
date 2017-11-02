@@ -57,7 +57,7 @@ FactSystemJS::FactSystemJS(QObject *parent)
 
   //add is queued to wait inherited constructors
   connect(this,&Fact::itemAdded,this,&FactSystemJS::jsAddItem,Qt::QueuedConnection);
-  connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem);
+  connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem,Qt::QueuedConnection);
 }
 //=============================================================================
 void FactSystemJS::jsSync(QObject *obj)
@@ -101,6 +101,7 @@ void FactSystemJS::jsRegister(QString fname, QString description, QString body)
 void FactSystemJS::jsAddItem(FactTree *item)
 {
   //qDebug()<<static_cast<Fact*>(item)->path();
+  QQmlEngine::setObjectOwnership(item,QQmlEngine::CppOwnership);
   QJSEngine *e=js;
   //find the parents tree, last item in list = this
   QList<FactTree*> list=item->pathList();

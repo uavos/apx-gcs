@@ -31,7 +31,7 @@ class FactData: public FactTree
   Q_ENUMS(DataType)
   Q_ENUMS(ActionType)
 
-  Q_PROPERTY(DataType dataType READ dataType CONSTANT)
+  Q_PROPERTY(DataType dataType READ dataType WRITE setDataType NOTIFY dataTypeChanged)
 
   Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
@@ -51,7 +51,7 @@ public:
     FloatData,
     IntData,
     BoolData,
-    EnumData,       // value=index of enumStrings (set by text or index)
+    EnumData,       // value=value of enumStrings (set by text or index or enumValues)
     ActionData,     // button, value=action type
     KeySequenceData,
   };
@@ -66,6 +66,9 @@ public:
 
 
   void copyValuesFrom(const FactData *item);
+
+  int enumValue(const QVariant &v) const;
+  QString enumText(int v) const;
 
   virtual void bind(FactData *item);
 
@@ -86,7 +89,7 @@ public:
 
   //FactTree override
   virtual void insertItem(int i, FactTree *item);
-  virtual void removeItem(FactTree *item);
+  virtual void removeItem(FactTree *item, bool deleteLater=true);
 
 signals:
   void childValueChanged(void);
@@ -105,6 +108,7 @@ protected:
 public:
   //---------------------------------------
   DataType dataType() const;
+  void setDataType(const DataType &v);
 
   virtual QVariant value(void) const;
   Q_INVOKABLE virtual bool setValue(const QVariant &v);
@@ -118,7 +122,7 @@ public:
   void setText(const QString &v);
 
   QStringList enumStrings() const;
-  void setEnumStrings(const QStringList &v);
+  void setEnumStrings(const QStringList &v, const QList<int> &enumValues=QList<int>());
   void setEnumStrings(const QMetaEnum &v);
 
 protected:
@@ -130,8 +134,11 @@ protected:
   QString  m_descr;
 
   QStringList  m_enumStrings;
+  QList<int>   m_enumValues;
 
 signals:
+  void dataTypeChanged();
+
   void valueChanged();
 
   void titleChanged();

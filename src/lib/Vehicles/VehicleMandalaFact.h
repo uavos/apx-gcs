@@ -48,6 +48,7 @@ public:
   bool setValue(const QVariant &v); //override
   bool setValueLocal(const QVariant &v);
 
+  Q_INVOKABLE quint16 id() {return m_id;}
 private:
   VehicleMandala *vehicle;
   Mandala *m;

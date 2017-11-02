@@ -30,8 +30,8 @@ class FactTree: public QAbstractListModel
   Q_OBJECT
   Q_ENUMS(ItemType)
 
-  Q_PROPERTY(ItemType treeItemType READ treeItemType CONSTANT)
-  Q_PROPERTY(int level READ level CONSTANT)
+  Q_PROPERTY(ItemType treeItemType READ treeItemType WRITE setTreeItemType NOTIFY treeItemTypeChanged)
+  Q_PROPERTY(int level READ level NOTIFY levelChanged)
   Q_PROPERTY(int size READ size NOTIFY sizeChanged)
   Q_PROPERTY(bool flatModel READ flatModel WRITE setFlatModel NOTIFY flatModelChanged)
 
@@ -44,14 +44,13 @@ public:
     GroupItem,
     SectionItem,
     FactItem,
-    ConstItem,
   };
 
   explicit FactTree(FactTree *parent, const QString &name, ItemType treeItemType);
 
   //tree structure manipulation
   virtual void insertItem(int i, FactTree *item);
-  virtual void removeItem(FactTree *item);
+  virtual void removeItem(FactTree *item, bool deleteLater=true);
 
   //internal tree
   Q_INVOKABLE void addItem(FactTree *item);
@@ -83,15 +82,18 @@ protected:
   //ListModel override
   virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
   virtual bool moveRows(const QModelIndex &sourceParent, int src, int cnt, const QModelIndex &destinationParent, int dst);
-
 private:
   QList<FactTree*> m_items;
   FactTree *m_parentItem;
+  void updateLevel();
+  QString makeNameUnique(const QString &s);
+  QString nameSuffix;
 
   //-----------------------------------------
   //PROPERTIES
 public:
   virtual ItemType treeItemType() const;
+  virtual void setTreeItemType(const ItemType &v);
   virtual int level(void) const;
   virtual int size() const;
   virtual bool flatModel() const;
@@ -107,9 +109,11 @@ protected:
   QString  m_name;
 
 signals:
+  void treeItemTypeChanged();
   void nameChanged();
   void sizeChanged();
   void flatModelChanged();
+  void levelChanged();
 };
 //=============================================================================
 #endif

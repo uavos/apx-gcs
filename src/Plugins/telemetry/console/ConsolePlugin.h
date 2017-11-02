@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,50 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
-//=============================================================================
+#ifndef CONSOLEPLUGIN_H
+#define CONSOLEPLUGIN_H
+
 #include <QtCore>
-#include "FactSystem.h"
-#include "NodeFact.h"
-class Vehicle;
+#include "plugin_interface.h"
 //=============================================================================
-class Nodes: public Fact
+class ConsolePlugin: public PluginInterface
 {
   Q_OBJECT
-
+  Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+  Q_INTERFACES(PluginInterface)
 public:
-  explicit Nodes(Vehicle *parent);
-
-  bool unpackService(const QByteArray &ba);
-
-
-  Fact *f_request;
-
-  Fact *f_list;
-
-private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeFact * nodeCheck(const QByteArray &sn);
-
-  //sn lookup
-  QHash<QByteArray,NodeFact*> snMap;
-
-  //data comm
-signals:
-  void sendUplink(const QByteArray &ba);
-
-
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-
-protected:
-
-signals:
-
+  void init(void);
 };
 //=============================================================================
-#endif
-
+#endif // ConsolePlugin_H

@@ -20,49 +20,57 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#ifndef NodeField_H
+#define NodeField_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-#include "NodeFact.h"
-class Vehicle;
+class NodeFact;
 //=============================================================================
-class Nodes: public Fact
+class NodeField: public Fact
 {
   Q_OBJECT
+  Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
+  Q_PROPERTY(int array READ array WRITE setArray NOTIFY arrayChanged)
+  Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
 
 public:
-  explicit Nodes(Vehicle *parent);
+  explicit NodeField(NodeFact *node,quint16 id);
+  explicit NodeField(NodeFact *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype);
 
-  bool unpackService(const QByteArray &ba);
-
-
-  Fact *f_request;
-
-  Fact *f_list;
+  bool unpackService(uint ncmd, const QByteArray &data);
 
 private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeFact * nodeCheck(const QByteArray &sn);
+  NodeFact *node;
+  quint16 id;
+  int ftype;
 
-  //sn lookup
-  QHash<QByteArray,NodeFact*> snMap;
+  bool unpackValue(const QByteArray &data);
+  int ftypeSize() const;
+  void updateDataType();
 
-  //data comm
-signals:
-  void sendUplink(const QByteArray &ba);
-
+  void createSubFields(void);
 
 
   //---------------------------------------
   // PROPERTIES
 public:
+  bool valid() const;
+  void setValid(const bool &v);
+  int array() const;
+  void setArray(const int &v);
+  bool dataValid() const;
+  void setDataValid(const bool &v);
 
 protected:
+  bool m_valid;
+  int m_array;
+  bool m_dataValid;
 
 signals:
-
+  void validChanged();
+  void arrayChanged();
+  void dataValidChanged();
 };
 //=============================================================================
 #endif

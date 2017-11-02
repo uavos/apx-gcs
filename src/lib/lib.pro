@@ -69,10 +69,14 @@ HEADERS += \
 SOURCES += \
     Nodes/Nodes.cpp \
     Nodes/NodeFact.cpp \
+    Nodes/NodeData.cpp \
+    Nodes/NodeField.cpp \
 
 HEADERS += \
     Nodes/Nodes.h \
     Nodes/NodeFact.h \
+    Nodes/NodeData.h \
+    Nodes/NodeField.h \
 
 
 # Communication

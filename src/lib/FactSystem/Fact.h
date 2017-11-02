@@ -36,6 +36,8 @@ class Fact: public FactData
   Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
   Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
 
+  Q_PROPERTY(QString qmlMenu READ qmlMenu WRITE setQmlMenu NOTIFY qmlMenuChanged)
+
 public:
   explicit Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
@@ -69,12 +71,16 @@ public:
   virtual bool active() const;
   virtual void setActive(const bool &v);
 
+  virtual QString qmlMenu() const;
+  virtual void setQmlMenu(const QString &v);
+
 protected:
   bool m_enabled;
   bool m_visible;
   QString  m_section;
   QString  m_status;
   bool m_active;
+  QString  m_qmlMenu;
 
 signals:
   void enabledChanged();
@@ -83,6 +89,8 @@ signals:
   void sectionChanged();
   void statusChanged();
   void activeChanged();
+
+  void qmlMenuChanged();
 
 };
 //=============================================================================
