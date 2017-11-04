@@ -21,35 +21,39 @@
  *
  */
 #include "Nodes.h"
-#include "NodeFact.h"
+#include "NodeItem.h"
 #include "NodeField.h"
 #include "Vehicle.h"
 #include "Mandala.h"
 #include "node.h"
 //=============================================================================
 Nodes::Nodes(Vehicle *parent)
-  : Fact(parent,"nodes","Nodes",tr("Vehicle components"),GroupItem,NoData)
+  : Fact(parent,"nodes","Nodes",tr("Vehicle components"),GroupItem,NoData),
+    vehicle(parent)
 {
   setFlatModel(true);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,NoData);
+  connect(f_request,&Fact::triggered,this,&Nodes::search);
 
   f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,ConstData);
   bind(f_list);
 
+  if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
+    search();
 }
 //=============================================================================
-bool Nodes::unpackService(const QByteArray &ba)
+bool Nodes::unpackService(const QByteArray &packet)
 {
-  if(ba.size()<(int)bus_packet_size_hdr_srv)return false;
-  _bus_packet &packet=*(_bus_packet*)ba.data();
-  if(packet.id!=idx_service)return false;
-  QByteArray sn((const char*)packet.srv.sn,sizeof(_node_sn));
-  uint data_cnt=ba.size()-bus_packet_size_hdr_srv;
-
+  if(packet.size()<(int)bus_packet_size_hdr_srv)return false;
+  _bus_packet &bus_packet=*(_bus_packet*)packet.data();
+  if(bus_packet.id!=idx_service)return false;
+  QByteArray sn((const char*)bus_packet.srv.sn,sizeof(_node_sn));
+  uint data_cnt=packet.size()-bus_packet_size_hdr_srv;
+  //qDebug()<<"SRV"<<ba.toHex().toUpper();
   if(isBroadcast(sn))return true; //request?
-  NodeFact *node=nodeCheck(sn);
-  return node->unpackService(packet.srv.cmd,QByteArray((const char*)packet.srv.data,data_cnt));
+  NodeItem *node=nodeCheck(sn);
+  return node->unpackService(bus_packet.srv.cmd,QByteArray((const char*)bus_packet.srv.data,data_cnt));
 }
 //=============================================================================
 bool Nodes::isBroadcast(const QByteArray &sn) const
@@ -59,14 +63,19 @@ bool Nodes::isBroadcast(const QByteArray &sn) const
   return true;
 }
 //=============================================================================
-NodeFact * Nodes::nodeCheck(const QByteArray &sn)
+NodeItem * Nodes::nodeCheck(const QByteArray &sn)
 {
-  NodeFact *node=snMap.value(sn);
+  NodeItem *node=snMap.value(sn);
   if(!node){
-    node=new NodeFact(this,sn);
+    node=new NodeItem(this,sn);
     snMap.insert(sn,node);
   }
   return node;
 }
 //=============================================================================
+//=============================================================================
+void Nodes::search()
+{
+  vehicle->nmtManager->request(apc_search,QByteArray(),QByteArray(),0,true);
+}
 //=============================================================================

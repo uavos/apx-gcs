@@ -21,30 +21,31 @@
  *
  */
 #include "NodeField.h"
-#include "NodeFact.h"
+#include "NodeItem.h"
 #include "node.h"
 #include "Vehicles.h"
 //=============================================================================
-NodeField::NodeField(NodeFact *node, quint16 id)
+NodeField::NodeField(NodeItem *node, quint16 id)
   : Fact(node->f_fields,"field#","","",FactItem,NoData),
-    node(node),
     id(id),
+    node(node),
     ftype(-1),
     m_valid(false),
-    m_array(0),
-    m_dataValid(false)
+    m_dataValid(false),
+    m_array(0)
 {
   setSection(node->f_fields->title());
+  //node->request(apc_conf_dsc,QByteArray().append((unsigned char)id),node->timeout_ms,false);
 }
 //child of expanded field
-NodeField::NodeField(NodeFact *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype)
+NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype)
   : Fact(parent,name,title,descr,FactItem,NoData),
-    node(node),
     id(parent->id),
+    node(node),
     ftype(ftype),
     m_valid(true),
-    m_array(0),
-    m_dataValid(false)
+    m_dataValid(false),
+    m_array(0)
 {
   updateDataType();
 }
@@ -59,16 +60,6 @@ void NodeField::setValid(const bool &v)
   m_valid=v;
   emit validChanged();
 }
-int NodeField::array() const
-{
-  return m_array;
-}
-void NodeField::setArray(const int &v)
-{
-  if(m_array==v)return;
-  m_array=v;
-  emit arrayChanged();
-}
 bool NodeField::dataValid() const
 {
   return m_dataValid;
@@ -78,6 +69,16 @@ void NodeField::setDataValid(const bool &v)
   if(m_dataValid==v)return;
   m_dataValid=v;
   emit dataValidChanged();
+}
+int NodeField::array() const
+{
+  return m_array;
+}
+void NodeField::setArray(const int &v)
+{
+  if(m_array==v)return;
+  m_array=v;
+  emit arrayChanged();
 }
 //=============================================================================
 //=============================================================================
@@ -140,6 +141,8 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       updateDataType();
       createSubFields();
       setValid(true);
+      node->request(apc_conf_read,QByteArray().append((unsigned char)id),node->timeout_ms,false);
+      //check all node fields validity
       bool ok=true;
       foreach (NodeField *f, node->allFields) {
         if(f->valid())continue;
@@ -147,18 +150,29 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
         break;
       }
       if(!ok)return true;
-      node->setValid(true);
       //all fields downloaded
-      //qDebug()<<"fields downloaded"<<node->f_fields->size();
+      node->setValid(true);
       node->groupFields();
+      //qDebug()<<"fields downloaded"<<node->f_fields->size();
     }return true;
     case apc_conf_read: {
       if(!data.size())return true; //requests
       if(!valid())break;
       if(dataValid())return true;
-      //qDebug()<<packet.srv.data[0]<<data_cnt;
+      //qDebug()<<name()<<data.size();
       int sz=ftypeSize();
       if(!unpackValue(data))break;
+      setDataValid(true);
+      //check all node fields data validity
+      if(!node->dataValid()){
+        bool ok=true;
+        foreach (NodeField *f, node->allFields) {
+          if(f->valid())continue;
+          ok=false;
+          break;
+        }
+        if(ok)node->setDataValid(true);
+      }
       if(data.size()==sz)return true;
       const int fnum=(unsigned char)data.at(sz);
       if(fnum>=node->allFields.size())break;

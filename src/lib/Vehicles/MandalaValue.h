@@ -20,69 +20,46 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Vehicles_H
-#define Vehicles_H
+#ifndef MandalaValue_H
+#define MandalaValue_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
+#include <QVariant>
+#include "Mandala.h"
+#include "FactValue.h"
+#include "Vehicles.h"
 #include "Vehicle.h"
+#include "VehicleMandala.h"
+#include "VehicleMandalaFact.h"
 //=============================================================================
-class Vehicles: public Fact
+template<int id,typename T>
+class VehicleMandalaValue : public FactValue<T>
 {
-  Q_OBJECT
-
-  Q_PROPERTY(Vehicle * current READ current NOTIFY currentChanged)
-
 public:
-  explicit Vehicles(FactSystem *parent);
-
-  static Vehicles * instance() {return _instance;}
-
-  Fact *f_list;
-
-  Fact *f_select;
-
-  Vehicle *f_local;
-
-private:
-  static Vehicles * _instance;
-
-  //IDENT procedures
-  QTimer reqTimer;
-  QList<QByteArray> reqList;
-  void reqIDENT(quint16 squawk);
-  void assignIDENT(QString callsign, QByteArray uid);
-  void scheduleRequest(const QByteArray &ba);
-
-  //ident lookup
-  QMap<quint16,Vehicle*> squawkMap;
-
-public slots:
-  void selectVehicle(Vehicle *v);
-signals:
-  void vehicleRegistered(Vehicle*);
-  void vehicleRemoved(Vehicle*);
-  void vehicleSelected(Vehicle*);
-
-  //data connection
-public slots:
-  void downlinkReceived(const QByteArray &ba);
-  void vehicleSendUplink(Vehicle *v,const QByteArray &packet);
-signals:
-  void sendUplink(const QByteArray &packet);
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-  Vehicle * current(void) const;
-
+  VehicleMandalaValue(Vehicle *vehicle)
+    : FactValue<T>(NULL)
+  {
+    updateFact(vehicle);
+  }
 protected:
-  Vehicle * m_current;
-
-signals:
-  void currentChanged();
-
-
+  void updateFact(Vehicle *vehicle)
+  {
+    FactValue<T>::f=vehicle->f_mandala->factById(id);
+    if(!FactValue<T>::f){
+      qWarning("MandalaValue ID(%u) not found for vehicle %s",id,vehicle->title().toUtf8().data());
+    }
+  }
+};
+//=============================================================================
+template<int id,typename T>
+class MandalaValue : public QObject, public VehicleMandalaValue<id,T>
+{
+public:
+  MandalaValue(QObject *parent =0)
+   : QObject(parent), VehicleMandalaValue<id,T>(Vehicles::instance()->current())
+  {
+    connect(Vehicles::instance(),&Vehicles::vehicleSelected,[=](Vehicle *v){ VehicleMandalaValue<id,T>::updateFact(v); });
+  }
 };
 //=============================================================================
 #endif

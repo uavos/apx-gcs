@@ -48,6 +48,8 @@ public:
   bool setValue(const QVariant &v); //override
   bool setValueLocal(const QVariant &v);
 
+  double unpackedValue();
+
   Q_INVOKABLE quint16 id() {return m_id;}
 private:
   VehicleMandala *vehicle;
@@ -56,6 +58,7 @@ private:
 
   uint _vtype;
   void *_value_ptr;
+  double _unpackedValue;
 
   bool pack();
   QByteArray packed;

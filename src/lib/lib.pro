@@ -44,6 +44,7 @@ HEADERS += \
     FactSystem/FactSystemJS.h \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
+    FactSystem/FactValue.h \
     FactSystem/Fact.h \
 
 # Vehicles & Mandala
@@ -55,6 +56,8 @@ SOURCES += \
     Vehicles/Vehicle.cpp \
     Vehicles/VehicleMandala.cpp \
     Vehicles/VehicleMandalaFact.cpp \
+    Vehicles/VehicleNmtManager.cpp \
+    Vehicles/VehicleRecorder.cpp \
 
 HEADERS += \
     Vehicles/QMandalaField.h \
@@ -64,17 +67,20 @@ HEADERS += \
     Vehicles/Vehicle.h \
     Vehicles/VehicleMandala.h \
     Vehicles/VehicleMandalaFact.h \
+    Vehicles/MandalaValue.h \
+    Vehicles/VehicleNmtManager.h \
+    Vehicles/VehicleRecorder.h \
 
 # Nodes
 SOURCES += \
     Nodes/Nodes.cpp \
-    Nodes/NodeFact.cpp \
+    Nodes/NodeItem.cpp \
     Nodes/NodeData.cpp \
     Nodes/NodeField.cpp \
 
 HEADERS += \
     Nodes/Nodes.h \
-    Nodes/NodeFact.h \
+    Nodes/NodeItem.h \
     Nodes/NodeData.h \
     Nodes/NodeField.h \
 

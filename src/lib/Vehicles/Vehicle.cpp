@@ -23,13 +23,21 @@
 #include "Vehicle.h"
 #include "Vehicles.h"
 #include "VehicleMandala.h"
+#include "VehicleNmtManager.h"
+#include "VehicleRecorder.h"
 #include "Nodes.h"
+#include "Mandala.h"
 //=============================================================================
 Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal)
   : Fact(bLocal?parent:parent->f_list,bLocal?callsign:"vehicle#",callsign,"",GroupItem,NoData),
     m_squawk(squawk)
 {
   setSection(parent->title());
+
+  //requests manager
+  nmtManager=new VehicleNmtManager(this);
+  connect(nmtManager,&VehicleNmtManager::sendUplink,this,&Vehicle::sendUplink);
+  connect(this,&Vehicle::nmtReceived,nmtManager,&VehicleNmtManager::nmtReceived);
 
   f_streamType=new Fact(this,"stream",tr("Stream"),tr("Current data stream type"),FactItem,ConstData);
   f_streamType->setEnumStrings(QMetaEnum::fromType<StreamType>());
@@ -41,6 +49,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_callsign=new Fact(this,"callsign",tr("Callsign"),tr("Vehicle name"),FactItem,ConstData);
   f_callsign->setValue(callsign);
   f_callsign->setVisible(vclass!=LOCAL);
+  connect(f_callsign,&Fact::valueChanged,[=](){ setTitle(f_callsign->text()); });
 
   f_vclass=new Fact(this,"vclass",tr("Class"),tr("Vehicle class"),FactItem,ConstData);
   f_vclass->setEnumStrings(QMetaEnum::fromType<VehicleClass>());
@@ -51,42 +60,46 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_uid->setStatus(uid.toHex().toUpper());
   f_uid->setVisible(vclass!=LOCAL);
 
-  f_mandala=new VehicleMandala(this);
-  f_nodes=new Nodes(this);
-
   connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
+  f_mandala=new VehicleMandala(this);
+  f_nodes=new Nodes(this);
+  f_recorder=new VehicleRecorder(this);
+
   //datalink
-  connect(this,&Vehicle::sendUplink,[=](const QByteArray &ba){ parent->vehicleSendUplink(this,ba); });
-  connect(f_mandala,&VehicleMandala::sendUplink,this,&Vehicle::sendUplink);
-  connect(f_nodes,&Nodes::sendUplink,this,&Vehicle::sendUplink);
+  connect(this,&Vehicle::sendUplink,[=](const QByteArray &ba){
+    parent->vehicleSendUplink(this,ba);
+    f_recorder->record_uplink(ba);
+  });
 
-  if(vclass!=CURRENT){
-    //selection action fact
-    f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,NoData);
-    connect(this,&Vehicle::destroyed,[=](){ parent->f_select->removeItem(f_select); });
-    connect(f_select,&Fact::triggered,[=](){ parent->selectVehicle(this); });
 
-    connect(this,&Vehicle::activeChanged,[=](){ f_select->setActive(active()); });
-    connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ setActive(v==this); });
+  //selection action fact
+  f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,NoData);
+  connect(this,&Vehicle::destroyed,[=](){ parent->f_select->removeItem(f_select); });
+  connect(f_select,&Fact::triggered,[=](){ parent->selectVehicle(this); });
 
-    connect(this,&Fact::statusChanged,[=](){ f_select->setStatus(status()); });
+  connect(this,&Vehicle::activeChanged,[=](){ f_select->setActive(active()); });
+  connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ setActive(v==this); });
 
-    connect(f_streamType,&Fact::valueChanged,[=](){ f_mandala->setStatus(f_streamType->text()); });
+  connect(this,&Fact::statusChanged,[=](){ f_select->setStatus(status()); });
 
-    f_streamType->setValue(0);
+  connect(f_streamType,&Fact::valueChanged,[=](){ f_mandala->setStatus(f_streamType->text()); });
 
-    onlineTimer.setSingleShot(true);
-    onlineTimer.setInterval(7000);
-    connect(&onlineTimer,&QTimer::timeout,[=](){ f_streamType->setValue(OFFLINE); });
+  f_streamType->setValue(0);
 
-    connect(f_streamType,&Fact::valueChanged,[=](){ setStatus(f_streamType->text()); });
-    f_streamType->setValue(0);
+  onlineTimer.setSingleShot(true);
+  onlineTimer.setInterval(7000);
+  connect(&onlineTimer,&QTimer::timeout,[=](){ f_streamType->setValue(OFFLINE); });
 
-    f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,NoData);
-    connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
-    connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
-  }
+  connect(f_streamType,&Fact::valueChanged,[=](){ setStatus(f_streamType->text()); });
+  f_streamType->setValue(0);
+
+  f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,NoData);
+  connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
+  connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
+
+  //register JS new vehicles instantly
+  FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
 quint16 Vehicle::squawk(void) const
@@ -95,24 +108,26 @@ quint16 Vehicle::squawk(void) const
 }
 //=============================================================================
 //=============================================================================
-void Vehicle::downlinkReceived(const QByteArray &ba)
+void Vehicle::downlinkReceived(const QByteArray &packet)
 {
-  if(f_nodes->unpackService(ba)){
+  f_recorder->record_downlink(packet);
+  if(f_nodes->unpackService(packet)){
+    emit nmtReceived(packet);
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
       f_streamType->setValue(SERVICE);
-  }else if(f_mandala->unpackTelemetry(ba)){
+  }else if(f_mandala->unpackTelemetry(packet)){
     f_streamType->setValue(TELEMETRY);
     telemetryTime.start();
-  }else if(f_mandala->unpackData(ba)){
+  }else if(f_mandala->unpackData(packet)){
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
       f_streamType->setValue(DATA);
   }else return;
   onlineTimer.start();
 }
 //=============================================================================
-void Vehicle::xpdrReceived(const QByteArray &ba)
+void Vehicle::xpdrReceived(const QByteArray &data)
 {
-  if(f_mandala->unpackXPDR(ba)){
+  if(f_mandala->unpackXPDR(data)){
     f_streamType->setValue(XPDR);
     xpdrTime.start();
   }else return;

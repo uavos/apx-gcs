@@ -89,7 +89,7 @@ void DatalinkHost::socketDisconnected()
 //=============================================================================
 void DatalinkHost::connectToServer()
 {
-  if(active()){
+  if(connectionActive()){
     disconnectAll();
     return;
   }
@@ -117,7 +117,7 @@ void DatalinkHost::disconnectAll()
   disconnectSocket();
 }
 //=============================================================================
-bool DatalinkHost::active() const
+bool DatalinkHost::connectionActive() const
 {
   return connected()||bReconnect;
 }

@@ -20,17 +20,21 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "NodeFact.h"
+#include "NodeItem.h"
 #include "Nodes.h"
 #include "NodeField.h"
+#include "Vehicle.h"
 #include <node.h>
 //=============================================================================
-NodeFact::NodeFact(Nodes *parent, const QByteArray &sn)
+NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   : NodeData(parent,sn),
     conf_uid(-1),
-    m_valid(false)
+    timeout_ms(500),
+    m_valid(false),
+    m_dataValid(false),
+    m_progress(0)
 {
-  qmlRegisterUncreatableType<NodeFact>("GCS.Node", 1, 0, "Node", "Reference only");
+  qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
 
   setSection(parent->f_list->title());
   setFlatModel(true);
@@ -42,21 +46,25 @@ NodeFact::NodeFact(Nodes *parent, const QByteArray &sn)
 
   f_fields=new Fact(this,"fields",tr("Parameters"),"",SectionItem,NoData);
 
-  connect(f_version,&Fact::valueChanged,this,&NodeFact::updateStats);
-  connect(f_hardware,&Fact::valueChanged,this,&NodeFact::updateStats);
+  connect(f_version,&Fact::valueChanged,this,&NodeItem::updateStats);
+  connect(f_hardware,&Fact::valueChanged,this,&NodeItem::updateStats);
 
-  //new NodeField(this);
+  //datalink
+  connect(this,&NodeItem::nmtRequest,parent->vehicle->nmtManager,&VehicleNmtManager::request);
+
+  request(apc_info,QByteArray(),timeout_ms,true);
 }
 //=============================================================================
-void NodeFact::updateStats()
+void NodeItem::updateStats()
 {
   setDescr(QString("%1 %2\t%3").arg(f_hardware->text()).arg(f_version->text()).arg(QString(sn.toHex().toUpper())));
 }
 //=============================================================================
-bool NodeFact::unpackService(uint ncmd, const QByteArray &ba)
+bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 {
   switch(ncmd){
     case apc_search:
+      request(apc_info,QByteArray(),timeout_ms,true);
     return true;
     case apc_info: {
       //fill available nodes
@@ -80,6 +88,7 @@ bool NodeFact::unpackService(uint ncmd, const QByteArray &ba)
       setRebooting(ninfo.flags.reboot);
       setBusy(ninfo.flags.busy);
       setFailure(false);
+      request(apc_conf_inf,QByteArray(),timeout_ms,true);
     }return true;
     case apc_nstat: {
       if(ba.size()!=(sizeof(_node_name)+sizeof(_node_status)))break;
@@ -100,12 +109,20 @@ bool NodeFact::unpackService(uint ncmd, const QByteArray &ba)
       _conf_inf conf_inf;
       memcpy(&conf_inf,ba.data(),sizeof(_conf_inf));
       if(conf_inf.cnt!=allFields.size() || uid!=conf_uid){
+        allFields.clear();
         f_fields->clear();
         conf_uid=uid;
         for(quint16 id=0;id<conf_inf.cnt;id++){
           allFields.append(new NodeField(this,id));
         }
         //qDebug()<<"fields created"<<conf_inf.cnt;
+      }
+      //sync all conf if needed
+      if(!(valid() && dataValid())){
+        foreach (NodeField *f, allFields) {
+          if(!f->valid()) request(apc_conf_dsc,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+          else if(!f->dataValid()) request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+        }
       }
     }return true;
     case apc_conf_dsc:
@@ -123,7 +140,7 @@ bool NodeFact::unpackService(uint ncmd, const QByteArray &ba)
   return true;
 }
 //=============================================================================
-void NodeFact::groupFields(void)
+void NodeItem::groupFields(void)
 {
   foreach (FactTree *i, allFields) {
     NodeField *f=static_cast<NodeField*>(i);
@@ -132,9 +149,15 @@ void NodeFact::groupFields(void)
     while(f->descr().contains(':')){
       QString group=f->descr().left(f->descr().indexOf(':'));
       f->setDescr(f->descr().remove(0,f->descr().indexOf(':')+1).trimmed());
-      Fact *groupItem=static_cast<Fact*>(groupParent->child(group.toLower()));
+      Fact *groupItem=NULL;
+      QString gname=group.toLower();
+      foreach(FactTree *i,groupParent->childItemsTree()){
+        if(!(i->treeItemType()==GroupItem && i->name()==gname))continue;
+        groupItem=static_cast<Fact*>(i);
+        break;
+      }
       if(!groupItem)
-        groupItem=new Fact(groupParent,group.toLower(),group,"",GroupItem,NoData);
+        groupItem=new Fact(groupParent,gname,group,"",GroupItem,NoData);
       if(groupParent==f_fields)
         groupItem->setSection(groupParent->title());
       groupParent=groupItem;
@@ -147,16 +170,41 @@ void NodeFact::groupFields(void)
   }//foreach field
 }
 //=============================================================================
+void NodeItem::request(uint cmd,const QByteArray &data,uint timeout_ms,bool highprio)
+{
+  emit nmtRequest(cmd,sn,data,timeout_ms,highprio);
+}
 //=============================================================================
-bool NodeFact::valid() const
+//=============================================================================
+bool NodeItem::valid() const
 {
   return m_valid;
 }
-void NodeFact::setValid(const bool &v)
+void NodeItem::setValid(const bool &v)
 {
   if(m_valid==v)return;
   m_valid=v;
   emit validChanged();
+}
+bool NodeItem::dataValid() const
+{
+  return m_dataValid;
+}
+void NodeItem::setDataValid(const bool &v)
+{
+  if(m_dataValid==v)return;
+  m_dataValid=v;
+  emit dataValidChanged();
+}
+int NodeItem::progress() const
+{
+  return m_progress;
+}
+void NodeItem::setProgress(const int &v)
+{
+  if(m_progress==v)return;
+  m_progress=v;
+  emit progressChanged();
 }
 //=============================================================================
 //=============================================================================

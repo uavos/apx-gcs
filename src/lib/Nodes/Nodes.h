@@ -25,7 +25,7 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-#include "NodeFact.h"
+#include "NodeItem.h"
 class Vehicle;
 //=============================================================================
 class Nodes: public Fact
@@ -35,24 +35,25 @@ class Nodes: public Fact
 public:
   explicit Nodes(Vehicle *parent);
 
-  bool unpackService(const QByteArray &ba);
-
-
   Fact *f_request;
 
   Fact *f_list;
 
+  Vehicle *vehicle;
+
+  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
 private:
   bool isBroadcast(const QByteArray &sn) const;
-  NodeFact * nodeCheck(const QByteArray &sn);
+  NodeItem * nodeCheck(const QByteArray &sn);
 
   //sn lookup
-  QHash<QByteArray,NodeFact*> snMap;
+  QHash<QByteArray,NodeItem*> snMap;
+private slots:
+  void search();
 
   //data comm
-signals:
-  void sendUplink(const QByteArray &ba);
-
+public slots:
+  bool unpackService(const QByteArray &packet);
 
 
   //---------------------------------------

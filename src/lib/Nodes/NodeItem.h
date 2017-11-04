@@ -20,69 +20,69 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef VehicleMandala_H
-#define VehicleMandala_H
+#ifndef NodeItem_H
+#define NodeItem_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-#include "VehicleMandalaFact.h"
-class Vehicle;
-class Mandala;
+#include "NodeData.h"
+#include "NodeField.h"
+class Nodes;
 //=============================================================================
-class VehicleMandala: public Fact
+class NodeItem: public NodeData
 {
   Q_OBJECT
-
-  Q_PROPERTY(QByteArray md5 READ md5 WRITE setMd5 NOTIFY md5Changed)
+  Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
+  Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
+  Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
 public:
-  explicit VehicleMandala(Vehicle *parent);
-  ~VehicleMandala();
+  explicit NodeItem(Nodes *parent,const QByteArray &sn);
 
-  QHash<QString,QVariant> constants; // <name,value> enums in form varname_ENUM
-  QHash<QString,quint16> special; // <name,id>
-  QStringList names;
 
-  QList<VehicleMandalaFact*> allFacts() { return idMap.values(); }
+  Fact * f_version;
+  Fact * f_hardware;
 
-  QVariant valueById(quint16 id) const;
-  bool setValueById(quint16 id,const QVariant &v);
+  Fact * f_fields;
 
-  VehicleMandalaFact * factById(quint16 id) const;
+  quint64 conf_uid;
 
-  bool unpackData(const QByteArray &ba);
-  bool unpackTelemetry(const QByteArray &ba);
-  bool unpackXPDR(const QByteArray &ba);
+  QList<NodeField*> allFields;
 
-private:
-  Mandala *m;
-  VehicleMandalaFact * registerFact(quint16 id, DataType dataType, const QString &name, const QString &descr, const QString &units);
-  QMap<quint16,VehicleMandalaFact*> idMap;
+  void groupFields(void);
 
-  void collectValues();
+  int timeout_ms;
+  void request(uint cmd, const QByteArray &data, uint timeout_ms, bool highprio=false);
 
-  //EXPORTED
-signals:
-  void serialData(uint portNo,const QByteArray &ba);
+private slots:
+  void updateStats();
 
   //data comm
+public slots:
+  bool unpackService(uint ncmd, const QByteArray &ba);
 signals:
-  void sendUplink(const QByteArray &ba);
+  void nmtRequest(uint cmd,const QByteArray &sn,const QByteArray &data,uint timeout_ms, bool highprio);
 
 
 
   //---------------------------------------
   // PROPERTIES
 public:
-  QByteArray md5(void) const;
-  bool setMd5(const QByteArray &v);
+  bool valid() const;
+  void setValid(const bool &v);
+  bool dataValid() const;
+  void setDataValid(const bool &v);
+  int progress() const;
+  void setProgress(const int &v);
 
 protected:
-  QByteArray m_md5;
+  bool m_valid;
+  bool m_dataValid;
+  int m_progress;
 
 signals:
-  void md5Changed();
-
+  void validChanged();
+  void dataValidChanged();
+  void progressChanged();
 };
 //=============================================================================
 #endif

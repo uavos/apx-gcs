@@ -26,8 +26,10 @@
 #include <QtCore>
 #include "FactSystem.h"
 #include "VehicleMandala.h"
+#include "VehicleNmtManager.h"
 class Vehicles;
 class Nodes;
+class VehicleRecorder;
 //=============================================================================
 class Vehicle: public Fact
 {
@@ -44,8 +46,7 @@ public:
     GCU,
 
     //internal use
-    CURRENT,
-    LOCAL
+    LOCAL=100
   };
   Q_ENUM(VehicleClass)
 
@@ -72,21 +73,25 @@ public:
 
   VehicleMandala *f_mandala;
   Nodes *f_nodes;
+  VehicleRecorder *f_recorder;
 
   Fact * f_selectAction;
 
+  VehicleNmtManager *nmtManager;
 
 private:
   QTimer onlineTimer;
   QTime telemetryTime;
   QTime xpdrTime;
 
+
   //data connection
 public slots:
-  void xpdrReceived(const QByteArray &ba);
-  void downlinkReceived(const QByteArray &ba);
+  void xpdrReceived(const QByteArray &data);
+  void downlinkReceived(const QByteArray &packet);
 signals:
-  void sendUplink(const QByteArray &ba);
+  void sendUplink(const QByteArray &packet);
+  void nmtReceived(const QByteArray &packet);
 
 
   //---------------------------------------

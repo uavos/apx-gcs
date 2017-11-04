@@ -35,7 +35,7 @@ public:
 
   QHostAddress host;
 
-  bool active() const;
+  bool connectionActive() const;
 
 private:
   DatalinkHosts *container;

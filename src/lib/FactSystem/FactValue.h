@@ -20,54 +20,25 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeFact_H
-#define NodeFact_H
+#ifndef FactValue_H
+#define FactValue_H
 //=============================================================================
 #include <QtCore>
-#include "NodeData.h"
-#include "NodeField.h"
-class Nodes;
+#include <QVariant>
+#include "Fact.h"
 //=============================================================================
-class NodeFact: public NodeData
+template<typename T>
+class FactValue
 {
-  Q_OBJECT
-  Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
-
 public:
-  explicit NodeFact(Nodes *parent,const QByteArray &sn);
-
-  bool unpackService(uint ncmd, const QByteArray &ba);
-
-  Fact * f_version;
-  Fact * f_hardware;
-
-  Fact * f_fields;
-
-  quint64 conf_uid;
-
-  QList<NodeField*> allFields;
-
-  void groupFields(void);
-
-private slots:
-  void updateStats();
-
-  //data comm
-signals:
-
-
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-  bool valid() const;
-  void setValid(const bool &v);
-
+  FactValue(Fact *fact)
+    : f(fact)
+  {
+  }
+  T & operator=(const T &v){f->setValue(v);return f->value();}
+  operator T() const {return qvariant_cast<T>(f->value());}
 protected:
-  bool m_valid;
-
-signals:
-  void validChanged();
+  Fact *f;
 };
 //=============================================================================
 #endif

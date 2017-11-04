@@ -25,24 +25,25 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class NodeFact;
+class NodeItem;
 //=============================================================================
 class NodeField: public Fact
 {
   Q_OBJECT
   Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
-  Q_PROPERTY(int array READ array WRITE setArray NOTIFY arrayChanged)
   Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
+  Q_PROPERTY(int array READ array WRITE setArray NOTIFY arrayChanged)
 
 public:
-  explicit NodeField(NodeFact *node,quint16 id);
-  explicit NodeField(NodeFact *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype);
+  explicit NodeField(NodeItem *node,quint16 id);
+  explicit NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype);
 
   bool unpackService(uint ncmd, const QByteArray &data);
 
-private:
-  NodeFact *node;
   quint16 id;
+
+private:
+  NodeItem *node;
   int ftype;
 
   bool unpackValue(const QByteArray &data);
@@ -57,20 +58,20 @@ private:
 public:
   bool valid() const;
   void setValid(const bool &v);
-  int array() const;
-  void setArray(const int &v);
   bool dataValid() const;
   void setDataValid(const bool &v);
+  int array() const;
+  void setArray(const int &v);
 
 protected:
   bool m_valid;
-  int m_array;
   bool m_dataValid;
+  int m_array;
 
 signals:
   void validChanged();
-  void arrayChanged();
   void dataValidChanged();
+  void arrayChanged();
 };
 //=============================================================================
 #endif

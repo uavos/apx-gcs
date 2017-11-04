@@ -121,7 +121,7 @@ void DatalinkHosts::connectLocalhost()
     connect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
     connect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
   }
-  if(!host->active())host->connectToServer();
+  if(!host->connectionActive())host->connectToServer();
 }
 //=============================================================================
 void DatalinkHosts::tryBind(void)
@@ -184,7 +184,7 @@ void DatalinkHosts::updateStats()
   int cnt=0;
   foreach (FactTree *i , f_list->childItems()) {
     DatalinkHost *h=static_cast<DatalinkHost*>(i);
-    if(h->active())cnt++;
+    if(h->connectionActive())cnt++;
   }
   f_alloff->setEnabled(cnt>0);
   if(m_connectedCount!=cnt){
@@ -199,7 +199,7 @@ void DatalinkHosts::updateConnectedStatus()
   int cnt=0;
   foreach (FactTree *i , f_list->childItems()) {
     DatalinkHost *h=static_cast<DatalinkHost*>(i);
-    if(h->active())cnt++;
+    if(h->connectionActive())cnt++;
   }
   f_alloff->setEnabled(cnt>0);
   if(m_connectedCount!=cnt){

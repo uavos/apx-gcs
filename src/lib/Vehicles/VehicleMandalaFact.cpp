@@ -33,6 +33,7 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint
 
   packed.reserve(sizeof(tmp));
   m->get_ptr(id,&_value_ptr,&_vtype);
+  _unpackedValue=0;
 
   loadValueTimer.setSingleShot(true);
   loadValueTimer.setInterval(2000);
@@ -58,13 +59,19 @@ void VehicleMandalaFact::saveValue()
 //=============================================================================
 void VehicleMandalaFact::loadValue() //value arrived from telemetry
 {
+  _unpackedValue=m->get_data(m_id,_vtype,_value_ptr);
   if(loadValueTimer.isActive())return;
   loadValueDo();
 }
 void VehicleMandalaFact::loadValueDo()
 {
   setValueCnt=0;
-  Fact::setValue(m->get_data(m_id,_vtype,_value_ptr));
+  Fact::setValue(unpackedValue());
+}
+//=============================================================================
+double VehicleMandalaFact::unpackedValue()
+{
+  return _unpackedValue;
 }
 //=============================================================================
 //=============================================================================

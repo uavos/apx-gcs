@@ -20,6 +20,7 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "FactSystem.h"
 #include "AppSettings.h"
 #include "Datalink.h"
 #include "DatalinkPort.h"
@@ -46,7 +47,7 @@ Datalink::Datalink(FactSystem *parent)
   f_readonly=new AppSettingFact(settings,this,"readonly",tr("Read only"),tr("Block all uplink data"),sect,BoolData,false);
   connect(f_readonly,&Fact::valueChanged,this,&Datalink::readonlyChanged);
 
-  f_active=new AppSettingFact(settings,this,"active",tr("Server active"),tr("Enable network features"),sect,BoolData,true);
+  f_listen=new AppSettingFact(settings,this,"listen",tr("Server active"),tr("Enable network features"),sect,BoolData,true);
 
   f_binded=new Fact(this,"binded",tr("Server listening"),"",FactItem,NoData);
   f_binded->setEnabled(false);
@@ -103,6 +104,7 @@ Datalink::Datalink(FactSystem *parent)
 
   connect(this,&Datalink::read,[=](){ setValid(true); });
 
+  parent->jsSync(this);
 }
 Datalink * Datalink::_instance=NULL;
 //=============================================================================
@@ -116,7 +118,6 @@ void Datalink::readonlyChanged()
 //=============================================================================
 void Datalink::heartbeatTimeout()
 {
-  if(!f_active->value().toBool())return;
   if(!f_hbeat->value().toBool())return;
   //f_upcnt->setValue(f_upcnt->value().toUInt()+1);
   QByteArray ba;

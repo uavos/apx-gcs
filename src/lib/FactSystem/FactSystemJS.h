@@ -37,7 +37,8 @@ public:
 
   QJSValue jsexec(const QString &s);
 
-  void jsSync(QObject *obj);
+  void jsSyncObject(QObject *obj);
+  void jsSync(Fact *item);
 
   Q_INVOKABLE void alias(FactTree *item,QString aliasName);
 
@@ -53,7 +54,6 @@ protected:
   QQmlEngine *js;
   QHash<QString,QString> js_descr; //helper commands alias,descr
 
-  void jsSync(Fact *fact);
   QJSValue jsSync(Fact *factItem, QJSValue parent); //recursive
 
   void jsRegister(QString fname,QString description,QString body);

@@ -42,7 +42,7 @@ DatalinkClients::DatalinkClients(Datalink *parent)
   server=new QTcpServer(this);
   connect(server,&QTcpServer::newConnection,this,&DatalinkClients::newConnection);
 
-  connect(f_datalink->f_active,&Fact::valueChanged,this,&DatalinkClients::serverActiveChanged);
+  connect(f_datalink->f_listen,&Fact::valueChanged,this,&DatalinkClients::serverActiveChanged);
 
   updateStats();
   QTimer::singleShot(500,this,&DatalinkClients::serverActiveChanged);
@@ -55,7 +55,7 @@ void DatalinkClients::updateStats()
 //=============================================================================
 void DatalinkClients::serverActiveChanged()
 {
-  bool active=f_datalink->f_active->value().toBool();
+  bool active=f_datalink->f_listen->value().toBool();
   if(!active){
     f_alloff->trigger();
     server->close();
@@ -74,7 +74,7 @@ void DatalinkClients::serverActiveChanged()
 //=============================================================================
 void DatalinkClients::tryBindServer()
 {
-  if(!f_datalink->f_active->value().toBool())return;
+  if(!f_datalink->f_listen->value().toBool())return;
   if(!server->listen(QHostAddress::Any,TCP_PORT_SERVER)) {
     f_datalink->f_binded->setVisible(false);
     f_datalink->f_binded->setValue(false);
@@ -99,7 +99,7 @@ void DatalinkClients::newConnection()
 {
   while(server->hasPendingConnections()){
     QTcpSocket *socket=server->nextPendingConnection();
-    if(!f_datalink->f_active->value().toBool()){
+    if(!f_datalink->f_listen->value().toBool()){
       socket->disconnectFromHost();
       continue;
     }

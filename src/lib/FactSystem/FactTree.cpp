@@ -26,12 +26,9 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
  : QAbstractListModel(parent),
    m_parentItem(parent),
    m_treeItemType(treeItemType),
-   m_level(0),m_flatModel(false),
+   m_flatModel(false),
    m_name(name)
 {
-  //find tree item level
-  updateLevel();
-  //qRegisterMetaType<FactTree>();
 
   if(parent){
     //QMetaObject::invokeMethod(parent,"addItem", Qt::QueuedConnection, Q_ARG(FactTree*, this));
@@ -60,7 +57,6 @@ void FactTree::insertItem(int i, FactTree *item)
   }
   endInsertRows();
   if(fParent) fParent->endInsertRows();
-  item->updateLevel();
   emit structChanged();
   emit itemAdded(item);
 }
@@ -129,19 +125,6 @@ QString FactTree::makeNameUnique(const QString &s)
   nameSuffix=suffix;
   return sr;
 }
-void FactTree::updateLevel()
-{
-  int lev=0;
-  if(m_parentItem && m_treeItemType!=RootItem){
-    lev++;
-    for(FactTree *item=m_parentItem;item && item->treeItemType()!=RootItem;item=item->m_parentItem){
-      lev++;
-    }
-  }
-  if(m_level==lev)return;
-  m_level=lev;
-  emit levelChanged();
-}
 //=============================================================================
 int FactTree::num() const
 {
@@ -184,13 +167,13 @@ FactTree * FactTree::child(const QString &name) const
   return NULL;
 }
 //=============================================================================
-QString FactTree::path(int fromLevel, const QChar pathDelimiter) const
+QString FactTree::path(const QChar pathDelimiter) const
 {
   QString s;
-  for(const FactTree *i=this;i && i->level()>=fromLevel;i=i->parentItem()){
+  for(const FactTree *i=this;i;i=i->parentItem()){
     if(s.isEmpty())s=i->name();
     else s.prepend(i->name()+pathDelimiter);
-    if(i->treeItemType()==RootItem && fromLevel>=0)break;
+    if(i->treeItemType()==RootItem)break;
   }
   return s.isEmpty()?name():s;
 }
@@ -237,10 +220,6 @@ void FactTree::setTreeItemType(const FactTree::ItemType &v)
   if(m_treeItemType==v)return;
   m_treeItemType=v;
   emit treeItemTypeChanged();
-}
-int FactTree::level(void) const
-{
-  return m_level;
 }
 int FactTree::size(void) const
 {

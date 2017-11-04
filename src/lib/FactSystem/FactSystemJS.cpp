@@ -60,19 +60,32 @@ FactSystemJS::FactSystemJS(QObject *parent)
   connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem,Qt::QueuedConnection);
 }
 //=============================================================================
-void FactSystemJS::jsSync(QObject *obj)
+void FactSystemJS::jsSyncObject(QObject *obj)
 {
   QQmlEngine::setObjectOwnership(obj,QQmlEngine::CppOwnership);
   js->globalObject().setProperty(obj->objectName(),js->newQObject(obj));
 }
 //=============================================================================
-void FactSystemJS::jsSync(Fact *fact)
+void FactSystemJS::jsSync(Fact *item)
 {
-  jsSync(fact,js->globalObject());
+  QList<FactTree*> list=item->pathList();
+  QJSEngine *e=js;
+  QJSValue v=e->globalObject();
+  for(int i=list.size()-1;i>0;--i){
+    Fact *fact=static_cast<Fact*>(list.at(i));
+    QJSValue vp=v.property(fact->name());
+    if(vp.isUndefined() || vp.toQObject()!=fact){
+      vp=e->newQObject(fact);
+      v.setProperty(fact->name(),vp);
+    }
+    v=vp;
+  }
+  jsSync(item,v);
 }
 //=============================================================================
 QJSValue FactSystemJS::jsSync(Fact *factItem, QJSValue parent) //recursive
 {
+  //qDebug()<<factItem->path();
   QQmlEngine::setObjectOwnership(factItem,QQmlEngine::CppOwnership);
   QJSValue js_factItem=js->newQObject(factItem);
   parent.setProperty(factItem->name(),js_factItem);
@@ -109,7 +122,7 @@ void FactSystemJS::jsAddItem(FactTree *item)
   for(int i=list.size()-1;i>=0;--i){
     Fact *fact=static_cast<Fact*>(list.at(i));
     QJSValue vp=v.property(fact->name());
-    if(vp.isUndefined()){
+    if(vp.isUndefined() || vp.toQObject()!=fact){
       vp=e->newQObject(fact);
       v.setProperty(fact->name(),vp);
     }
@@ -134,7 +147,9 @@ void FactSystemJS::jsRemoveItem(FactTree *item)
 //=============================================================================
 void FactSystemJS::alias(FactTree *item,QString aliasName)
 {
-  jsexec(QString("var %1=%2").arg(aliasName).arg(item->path()));
+  //jsexec(QString("var %1=%2").arg(aliasName).arg(item->path()));
+  //QML only
+  js->rootContext()->setContextProperty(aliasName,item);
 }
 //=============================================================================
 //=============================================================================
@@ -142,7 +157,7 @@ void FactSystemJS::jsRegisterFunctions()
 {
   //system functions and objects
   jsRegister("help()",QObject::tr("print commands help"),"app.help();");
-  jsRegister("req(n)",QObject::tr("request var n from UAV"),"m[n].request();");
+  jsRegister("req(n)",QObject::tr("request var n from UAV"),"app.vehicles.current.mandala[n].request();");
   jsRegister("send(n)",QObject::tr("send var n to UAV"),"m[n].send();");
   jsRegister("nodes()",QObject::tr("rescan bus nodes"),"print('nodes:');m.req_nodes();");
   jsRegister("nstat()",QObject::tr("print nodes status"),"print('nodes statistics:');m.req_nstat();");

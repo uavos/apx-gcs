@@ -21,6 +21,7 @@
  *
  */
 #include "Fact.h"
+#include "FactSystem.h"
 //=============================================================================
 Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactData(parent,name,title,descr,treeItemType,dataType),
@@ -154,6 +155,21 @@ void Fact::setActive(const bool &v)
   if(m_active==v)return;
   m_active=v;
   emit activeChanged();
+}
+int Fact::progress() const
+{
+  if(_bindedFact) return static_cast<Fact*>(_bindedFact)->progress();
+  return m_progress;
+}
+void Fact::setProgress(const int &v)
+{
+  if(_bindedFact){
+    static_cast<Fact*>(_bindedFact)->setProgress(v);
+    return;
+  }
+  if(m_progress==v)return;
+  m_progress=v;
+  emit progressChanged();
 }
 QString Fact::qmlMenu() const
 {

@@ -60,9 +60,7 @@ AppSettings::AppSettings(FactSystem *parent)
   item=new Fact(this,"test",tr("Test visual elements"),"",Fact::FactItem,Fact::BoolData);
   item->setValue(false);
   item->setSection(sect);
-  parent->jsAddItem(item);
-  parent->alias(item,"testUI");
-
+  Fact *itemTest=item;
 
   sect=tr("Graphics");
   item=new AppSettingFact(m_settings,this,"opengl",tr("Accelerate graphics"),tr("Enable OpenGL graphics when supported"),sect,BoolData,false);
@@ -73,6 +71,8 @@ AppSettings::AppSettings(FactSystem *parent)
   //load all settings
   AppSettingFact::loadSettings(this);
 
+  parent->jsSync(this);
+  parent->alias(itemTest,"testUI");
 }
 AppSettings * AppSettings::_instance=NULL;
 //=============================================================================

@@ -52,7 +52,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -72,7 +72,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-40"/>
+        <location line="-38"/>
         <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
@@ -82,7 +82,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+14"/>
         <source>Enable OpenGL graphics when supported</source>
         <translation type="unfinished"></translation>
     </message>
@@ -474,7 +474,7 @@
 <context>
     <name>Datalink</name>
     <message>
-        <location filename="../src/lib/Datalink/Datalink.cpp" line="+34"/>
+        <location filename="../src/lib/Datalink/Datalink.cpp" line="+35"/>
         <source>Datalink</source>
         <translation type="unfinished"></translation>
     </message>
@@ -569,7 +569,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+31"/>
         <source>Read only datalink</source>
         <translation type="unfinished"></translation>
     </message>
@@ -959,7 +959,7 @@
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+238"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+269"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1387,57 +1387,9 @@
     </message>
 </context>
 <context>
-    <name>NodeFact</name>
+    <name>NodeField</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeFact.cpp" line="+40"/>
-        <source>Version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Firmware version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hardware</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Hardware generation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Parameters</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Nodes</name>
-    <message>
-        <location filename="../src/lib/Nodes/Nodes.cpp" line="+31"/>
-        <source>Vehicle components</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Request</source>
-        <translation type="unfinished">Запыт</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Download from vehicle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Nodes list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+237"/>
+        <location filename="../src/lib/Nodes/NodeField.cpp" line="+253"/>
         <location line="+10"/>
         <location line="+8"/>
         <location line="+7"/>
@@ -1491,6 +1443,57 @@
     <message>
         <location line="+1"/>
         <source>Speed limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NodeItem</name>
+    <message>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+44"/>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Firmware version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hardware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Hardware generation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Nodes</name>
+    <message>
+        <location filename="../src/lib/Nodes/Nodes.cpp" line="+31"/>
+        <source>Vehicle components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Request</source>
+        <translation type="unfinished">Запыт</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Download from vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2166,7 +2169,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+143"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+159"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2393,7 +2396,7 @@
 <context>
     <name>Vehicle</name>
     <message>
-        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+34"/>
+        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+44"/>
         <source>Stream</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2438,7 +2441,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+32"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2451,8 +2454,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+199"/>
+        <location line="+190"/>
         <source>Received serial data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VehicleNmt</name>
+    <message>
+        <location filename="../src/lib/Vehicles/VehicleNmtManager.cpp" line="+95"/>
+        <source>Timeout</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2469,7 +2480,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Select vehicle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2479,12 +2490,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Vehicles list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+95"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>

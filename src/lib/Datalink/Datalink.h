@@ -45,7 +45,7 @@ public:
 
   Fact *f_readonly;
 
-  Fact *f_active;
+  Fact *f_listen;
   Fact *f_binded;
   Fact *f_name;
   Fact *f_pass;

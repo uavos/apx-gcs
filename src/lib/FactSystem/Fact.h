@@ -24,6 +24,7 @@
 #define Fact_H
 //=============================================================================
 #include "FactData.h"
+class FactSystem;
 //=============================================================================
 class Fact: public FactData
 {
@@ -35,6 +36,7 @@ class Fact: public FactData
   Q_PROPERTY(QString section READ section WRITE setSection NOTIFY sectionChanged)
   Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
   Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
+  Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
   Q_PROPERTY(QString qmlMenu READ qmlMenu WRITE setQmlMenu NOTIFY qmlMenuChanged)
 
@@ -71,6 +73,9 @@ public:
   virtual bool active() const;
   virtual void setActive(const bool &v);
 
+  virtual int progress() const;
+  virtual void setProgress(const int &v);
+
   virtual QString qmlMenu() const;
   virtual void setQmlMenu(const QString &v);
 
@@ -80,6 +85,7 @@ protected:
   QString  m_section;
   QString  m_status;
   bool m_active;
+  int m_progress;
   QString  m_qmlMenu;
 
 signals:
@@ -89,6 +95,7 @@ signals:
   void sectionChanged();
   void statusChanged();
   void activeChanged();
+  void progressChanged();
 
   void qmlMenuChanged();
 

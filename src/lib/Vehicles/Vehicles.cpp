@@ -35,6 +35,7 @@ Vehicles::Vehicles(FactSystem *parent)
 {
   _instance=this;
 
+  qmlRegisterUncreatableType<Vehicles>("GCS.Vehicles", 1, 0, "Vehicles", "Reference only");
   qmlRegisterUncreatableType<Vehicle>("GCS.Vehicle", 1, 0, "Vehicle", "Reference only");
 
   setFlatModel(true);
@@ -42,24 +43,24 @@ Vehicles::Vehicles(FactSystem *parent)
   f_select=new Fact(this,"select",tr("Select vehicle"),tr("Change the active vehicle"),GroupItem,NoData);
   f_select->setSection(title());
 
-  f_current=new Vehicle(this,"CURRENT",0,QByteArray(),Vehicle::CURRENT,true);
   f_local=new Vehicle(this,"LOCAL",0,QByteArray(),Vehicle::LOCAL,true);
 
   f_list=new Fact(this,"list",tr("Vehicles list"),"",SectionItem,ConstData);
   bind(f_list);
 
-  // register JS items
-  parent->jsAddItem(f_current->f_mandala);
-  parent->alias(f_current->f_mandala,"m");
-  foreach(QString key,f_current->f_mandala->constants.keys())
-    parent->engine()->globalObject().setProperty(key,parent->engine()->toScriptValue(f_current->f_mandala->constants.value(key)));
-  foreach (VehicleMandalaFact *f, f_current->f_mandala->allFacts()) {
-    parent->jsexec(QString("this.__defineGetter__('%1', function(){ return m.%1.value; });").arg(f->name()));
-    parent->jsexec(QString("this.__defineSetter__('%1', function(v){ m.%1.value=v; });").arg(f->name()));
+  //JS register mandala
+  parent->jsSync(this);
+  foreach(QString key,f_local->f_mandala->constants.keys())
+    parent->engine()->globalObject().setProperty(key,parent->engine()->toScriptValue(f_local->f_mandala->constants.value(key)));
+  foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts()) {
+    parent->jsexec(QString("this.__defineGetter__('%1', function(){ return app.vehicles.current.mandala.%1.value; });").arg(f->name()));
+    parent->jsexec(QString("this.__defineSetter__('%1', function(v){ app.vehicles.current.mandala.%1.value=v; });").arg(f->name()));
   }
 
 
   selectVehicle(f_local);
+  //parent->jsexec("var m=app.vehicles.current.mandala");
+
   //ident request timer
   reqTimer.setInterval(1000);
   connect(&reqTimer,&QTimer::timeout,[=](){
@@ -110,7 +111,6 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
       Vehicle *v=NULL;
       foreach(FactTree *i,f_list->childItemsTree()){
         Vehicle *f=static_cast<Vehicle*>(i);
-        if(f==f_current)continue;
         if(f->f_uid->value().toByteArray().toHex()==uid.toHex()){
           v=f;
           break;
@@ -157,15 +157,15 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
   }
 }
 //=============================================================================
-void Vehicles::vehicleSendUplink(Vehicle *v, const QByteArray &ba)
+void Vehicles::vehicleSendUplink(Vehicle *v, const QByteArray &packet)
 {
-  qDebug()<<"VS"<<v->title()<<v->squawk()<<ba.toHex().toUpper();
+  //qDebug()<<"VS"<<v->title()<<v->squawk()<<packet.toHex().toUpper();
   if(v==f_local){
-    emit sendUplink(ba);
+    emit sendUplink(packet);
     return;
   }
   //prepend idx_dlink+squawk
-  emit sendUplink(QByteArray().append((unsigned char)idx_dlink).append((unsigned char)v->squawk()).append((unsigned char)(v->squawk()>>8)).append(ba));
+  emit sendUplink(QByteArray().append((unsigned char)idx_dlink).append((unsigned char)v->squawk()).append((unsigned char)(v->squawk()>>8)).append(packet));
 }
 //=============================================================================
 //=============================================================================
@@ -217,9 +217,24 @@ void Vehicles::assignIDENT(QString callsign, QByteArray uid)
 void Vehicles::selectVehicle(Vehicle *v)
 {
   qDebug("%s: %s '%s' (%s)",tr("Vehicle selected").toUtf8().data(),v->f_vclass->text().toUtf8().data(),v->f_callsign->text().toUtf8().data(),v->f_squawk->text().toUtf8().data());
-  f_current->bind(v);
+  m_current=v;
+  //update JSengine
+  QQmlEngine *e=FactSystem::instance()->engine();
+  //for QML
+  e->rootContext()->setContextProperty("m",v->f_mandala);
+  //for console
+  //e->globalObject().setProperty("m",e->newQObject(v->f_mandala));
+
+  emit currentChanged();
   emit vehicleSelected(v);
   f_select->setStatus(v->title());
 }
+//=============================================================================
+//=============================================================================
+Vehicle * Vehicles::current(void) const
+{
+  return m_current;
+}
+//=============================================================================
 //=============================================================================
 

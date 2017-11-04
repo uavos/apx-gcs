@@ -34,6 +34,7 @@ class FactData: public FactTree
   Q_PROPERTY(DataType dataType READ dataType WRITE setDataType NOTIFY dataTypeChanged)
 
   Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+  Q_PROPERTY(int precision READ precision WRITE setPrecision NOTIFY precisionChanged)
 
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
   Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
@@ -113,6 +114,9 @@ public:
   virtual QVariant value(void) const;
   Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
+  int precision(void) const;
+  void setPrecision(const int &v);
+
   QString title(void) const;
   void setTitle(const QString &v);
   QString descr(void) const;
@@ -129,6 +133,7 @@ protected:
   DataType m_dataType;
 
   QVariant m_value;
+  int  m_precision;
 
   QString  m_title;
   QString  m_descr;
@@ -140,6 +145,7 @@ signals:
   void dataTypeChanged();
 
   void valueChanged();
+  void precisionChanged();
 
   void titleChanged();
   void descrChanged();

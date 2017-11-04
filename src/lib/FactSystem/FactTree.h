@@ -31,7 +31,6 @@ class FactTree: public QAbstractListModel
   Q_ENUMS(ItemType)
 
   Q_PROPERTY(ItemType treeItemType READ treeItemType WRITE setTreeItemType NOTIFY treeItemTypeChanged)
-  Q_PROPERTY(int level READ level NOTIFY levelChanged)
   Q_PROPERTY(int size READ size NOTIFY sizeChanged)
   Q_PROPERTY(bool flatModel READ flatModel WRITE setFlatModel NOTIFY flatModelChanged)
 
@@ -63,7 +62,7 @@ public:
   Q_INVOKABLE QList<FactTree*> childItemsTree() const; //no flat model
 
   Q_INVOKABLE FactTree * child(const QString &name) const;
-  Q_INVOKABLE QString path(int fromLevel=0,const QChar pathDelimiter=QChar('.')) const;
+  Q_INVOKABLE QString path(const QChar pathDelimiter=QChar('.')) const;
 
   Q_INVOKABLE FactTree * flatModelParent() const;
 
@@ -85,7 +84,6 @@ protected:
 private:
   QList<FactTree*> m_items;
   FactTree *m_parentItem;
-  void updateLevel();
   QString makeNameUnique(const QString &s);
   QString nameSuffix;
 
@@ -94,7 +92,6 @@ private:
 public:
   virtual ItemType treeItemType() const;
   virtual void setTreeItemType(const ItemType &v);
-  virtual int level(void) const;
   virtual int size() const;
   virtual bool flatModel() const;
   virtual void setFlatModel(const bool &v);
@@ -104,7 +101,6 @@ public:
 
 protected:
   ItemType m_treeItemType;
-  int m_level;
   bool m_flatModel;
   QString  m_name;
 
@@ -113,7 +109,6 @@ signals:
   void nameChanged();
   void sizeChanged();
   void flatModelChanged();
-  void levelChanged();
 };
 //=============================================================================
 #endif

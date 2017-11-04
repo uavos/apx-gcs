@@ -26,6 +26,7 @@ FactData::FactData(FactTree *parent, const QString &name, const QString &title, 
  : FactTree(parent,name,treeItemType),
    _bindedFact(NULL),
    m_dataType(NoData),
+   m_precision(-1),
    m_title(title),m_descr(descr)
 {
   setObjectName(m_name);
@@ -125,6 +126,17 @@ void FactData::setDataType(const DataType &v)
   }
   emit dataTypeChanged();
   emit valueChanged();
+  emit textChanged();
+}
+int FactData::precision(void) const
+{
+  return m_precision;
+}
+void FactData::setPrecision(const int &v)
+{
+  if(m_precision==v)return;
+  m_precision=v;
+  emit precisionChanged();
   emit textChanged();
 }
 QString FactData::title(void) const

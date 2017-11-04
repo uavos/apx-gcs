@@ -45,6 +45,18 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
   //unique version ID
   m_md5=QCryptographicHash::hash(QByteArray(dscString.toUtf8()),QCryptographicHash::Md5);
 
+  //sig fields (for request & send)
+  for(uint var_idx=0;var_idx<idxPAD;var_idx++){
+    uint type;
+    void *value_ptr;
+    if(!m->get_ptr(var_idx,&value_ptr,&type))break;
+    if(type!=vt_idx)continue;
+    const char *var_name;
+    const char *var_descr;
+    if(!m->get_text_names(var_idx|0xFF00,&var_name,&var_descr))continue;
+    special.insert(var_name,var_idx);
+  }
+
   //data facts
   for(uint var_idx=idxPAD;var_idx<idx_vars_top;var_idx++){
     uint type;
@@ -150,6 +162,8 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
   }//for
 
 
+  connect(this,&VehicleMandala::sendUplink,parent,&Vehicle::sendUplink);
+
 }
 VehicleMandala::~VehicleMandala()
 {
@@ -160,6 +174,7 @@ VehicleMandalaFact * VehicleMandala::registerFact(quint16 id, DataType dataType,
 {
   VehicleMandalaFact *f=new VehicleMandalaFact(this,m,id,dataType,name,"",descr,units);
   idMap[id]=f;
+  names.append(name);
   return f;
 }
 //=============================================================================
@@ -178,11 +193,15 @@ bool VehicleMandala::setMd5(const QByteArray &v)
 //=============================================================================
 QVariant VehicleMandala::valueById(quint16 id) const
 {
-  return idMap.value(id)->value();
+  return factById(id)->value();
 }
 bool VehicleMandala::setValueById(quint16 id,const QVariant &v)
 {
-  return idMap.value(id)->setValue(v);
+  return factById(id)->setValue(v);
+}
+VehicleMandalaFact * VehicleMandala::factById(quint16 id) const
+{
+  return idMap.value(id);
 }
 //=============================================================================
 bool VehicleMandala::unpackXPDR(const QByteArray &ba)
@@ -202,17 +221,6 @@ bool VehicleMandala::unpackXPDR(const QByteArray &ba)
   setValueById(idx_course,crs);
   setValueById(idx_theta|(2<<8),crs);
   setValueById(idx_mode,xpdr->mode);
-  return true;
-}
-//=============================================================================
-bool VehicleMandala::unpackService(const QByteArray &ba)
-{
-  _bus_packet &packet=*(_bus_packet*)ba.data();
-  uint data_cnt=ba.size();
-  if(data_cnt<bus_packet_size_hdr_srv)return false;
-  data_cnt-=bus_packet_size_hdr_srv;
-  if(packet.id!=idx_service)return false;
-
   return true;
 }
 //=============================================================================

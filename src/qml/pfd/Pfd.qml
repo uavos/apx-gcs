@@ -433,7 +433,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
-            visible: (app.vehicles.CURRENT.stream.value!==Vehicle.REPLAY) && (!app.datalink.online)
+            visible: (app.vehicles.current.stream.value!==Vehicle.REPLAY) && (!app.datalink.online)
             font.pixelSize: app.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -446,8 +446,8 @@ Item {
             anchors.bottom: parent.verticalCenter
             anchors.left: left_window.right
             anchors.right: right_window.left
-            text: app.vehicles.CURRENT.stream.value===Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
-            visible: (app.vehicles.CURRENT.stream.value!==Vehicle.REPLAY) && app.datalink.valid && (app.vehicles.CURRENT.stream.value!==Vehicle.TELEMETRY)
+            text: app.vehicles.current.stream.value===Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
+            visible: (app.vehicles.current.stream.value!==Vehicle.REPLAY) && app.datalink.valid && (app.vehicles.current.stream.value!==Vehicle.TELEMETRY)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
@@ -460,7 +460,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("REPLAY")
-            visible: app.vehicles.CURRENT.stream.value==Vehicle.REPLAY
+            visible: app.vehicles.current.stream.value===Vehicle.REPLAY
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow

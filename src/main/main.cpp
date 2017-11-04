@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
   QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
 
   //factSystem->loadMandala(mandala->current);
-  factSystem->jsSync(mandala);
+  factSystem->jsSyncObject(mandala);
 
 
 /*
