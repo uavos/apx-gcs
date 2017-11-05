@@ -335,7 +335,7 @@ void NodeField::updateDataType()
     case ft_varmsk:{
       QStringList st;
       QList<int> vlist;
-      foreach (VehicleMandalaFact *mf, Vehicles::instance()->f_local->f_mandala->allFacts()) {
+      foreach (VehicleMandalaFact *mf, Vehicles::instance()->f_local->f_mandala->allFacts) {
         st.append(mf->name());
         vlist.append(mf->id());
       }

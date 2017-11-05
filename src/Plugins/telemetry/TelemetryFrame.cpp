@@ -21,11 +21,10 @@
  *
  */
 #include "TelemetryFrame.h"
-#include "QMandala.h"
-#include "QMandala.h"
 #include <QtGui>
 #include <QtNetwork>
 #include <QDomDocument>
+#include <Vehicles>
 #include "AppDirs.h"
 //=============================================================================
 TelemetryFrame::TelemetryFrame(QWidget *parent)
@@ -126,14 +125,14 @@ void TelemetryFrame::on_aReload_triggered(void)
 //=============================================================================
 void TelemetryFrame::on_aDelete_triggered(void)
 {
-  QMandala::instance()->local->rec->close();
+  Vehicles::instance()->f_local->f_recorder->close();
   QProcess p;
-  QStringList arg=QStringList()<<"move"<<QUrl().fromLocalFile(QMandala::instance()->local->rec->loadFile.fileName()).toString()<<"trash:/";
+  QStringList arg=QStringList()<<"move"<<QUrl().fromLocalFile(Vehicles::instance()->f_local->f_recorder->loadFile.fileName()).toString()<<"trash:/";
   p.start("kioclient",arg);
-  if(p.waitForFinished(5000)) qDebug(tr("File '%s' moved to trash.").toUtf8().data(),QFileInfo(QMandala::instance()->local->rec->loadFile).baseName().toUtf8().data());
+  if(p.waitForFinished(5000)) qDebug(tr("File '%s' moved to trash.").toUtf8().data(),QFileInfo(Vehicles::instance()->f_local->f_recorder->loadFile).baseName().toUtf8().data());
   else{
-    qDebug(tr("File '%s' deleted permanently.").toUtf8().data(),QFileInfo(QMandala::instance()->local->rec->loadFile).baseName().toUtf8().data());
-    QMandala::instance()->local->rec->loadFile.remove();
+    qDebug(tr("File '%s' deleted permanently.").toUtf8().data(),QFileInfo(Vehicles::instance()->f_local->f_recorder->loadFile).baseName().toUtf8().data());
+    Vehicles::instance()->f_local->f_recorder->loadFile.remove();
     }
   rescan();
   if(flightCnt) load(flightNo>=flightCnt?flightCnt-1:flightNo);
@@ -142,8 +141,8 @@ void TelemetryFrame::on_aDelete_triggered(void)
 //=============================================================================
 void TelemetryFrame::rescan(void)
 {
-  QMandala::instance()->local->rec->flush();
-  filesList=QMandala::instance()->local->rec->recFileNames();
+  Vehicles::instance()->f_local->f_recorder->flush();
+  filesList=Vehicles::instance()->f_local->f_recorder->recFileNames();
   //find UAV names..
   uavNames.clear();
   foreach(const QString &fname,filesList){
@@ -204,7 +203,7 @@ void TelemetryFrame::load(int idx)
   aNext->setEnabled((flightNo+1)<flightCnt);
   aPrev->setEnabled(flightNo>0);
   setEnabled(true);
-  eNotes->setText(QMandala::instance()->local->rec->file.notes);
+  eNotes->setText(Vehicles::instance()->f_local->f_recorder->file.notes);
 }
 //=============================================================================
 //=============================================================================
@@ -274,7 +273,7 @@ void TelemetryFrame::on_avIMU_triggered(void)
 void TelemetryFrame::on_avCTR_triggered(void)
 {
   QStringList st;
-  foreach (QString vn,QMandala::instance()->local->names)
+  foreach (QString vn,Vehicles::instance()->f_local->f_mandala->names)
     if(vn.startsWith("ctr"))st.append(vn);
   plot.showCurves(true,st,true);
 }
@@ -284,7 +283,7 @@ void TelemetryFrame::on_aCut_triggered(void)
   QwtScaleDiv *sx=plot.axisScaleDiv(QwtPlot::xBottom);
   double stime=plot.time_start+sx->lowerBound();
   double etime=plot.time_start+sx->upperBound();
-  QFile f(QMandala::instance()->local->rec->loadFile.fileName());
+  QFile f(Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
   f.open(QIODevice::ReadOnly);
   QTextStream stream(&f);
   QStringList dest;
@@ -309,8 +308,8 @@ void TelemetryFrame::on_aCut_triggered(void)
 //=============================================================================
 void TelemetryFrame::on_aExport_triggered(void)
 {
-  if (!QMandala::instance()->local->rec->file.time.size())return;
-  QString fileName(QMandala::instance()->local->rec->loadFile.fileName());
+  if (!Vehicles::instance()->f_local->f_recorder->file.time.size())return;
+  QString fileName(Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
 
   QFileDialog dlg(this,aExport->toolTip(),QSettings().value("saveXplaneFileDir").toString());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
@@ -344,13 +343,13 @@ void TelemetryFrame::export_csv(QString fileName)
   }
   QTextStream out(&file);
   //write file header..
-  out << "time,"+QStringList(QMandala::instance()->local->names).join(",")+QString("\n");
+  out << "time,"+QStringList(Vehicles::instance()->f_local->f_mandala->names).join(",")+QString("\n");
 
-  QProgressDialog progress(tr("Exporting telemetry file..."),tr("Abort"), 0, QMandala::instance()->local->rec->file.time.last());
+  QProgressDialog progress(tr("Exporting telemetry file..."),tr("Abort"), 0, Vehicles::instance()->f_local->f_recorder->file.time.last());
   progress.setWindowModality(Qt::WindowModal);
 
   uint cnt=0,i=0;
-  foreach(uint time,QMandala::instance()->local->rec->file.time){
+  foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
     if(((cnt++)&0x00FF)==0){
       QCoreApplication::processEvents();
       progress.setValue(time);
@@ -361,7 +360,7 @@ void TelemetryFrame::export_csv(QString fileName)
       file.remove();
       return;
     }
-    const FlightDataFile::ListDouble &vlist=QMandala::instance()->local->rec->file.data.at(i++);
+    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->f_local->f_recorder->file.data.at(i++);
     QStringList slist;
     slist.append(QString::number(time));
     foreach(double v,vlist){
@@ -407,16 +406,16 @@ void TelemetryFrame::export_fdr(QString fileName)
   st.beginGroup("columns");
   QMap<int,QString> map;
   foreach(QString vname,st.childKeys()){
-    if(QMandala::instance()->local->names.contains(vname))
+    if(Vehicles::instance()->f_local->f_mandala->names.contains(vname))
       map[st.value(vname).toUInt()]=vname;
   }
   st.endGroup();
 
-  QProgressDialog progress(tr("Exporting telemetry file..."),tr("Abort"), 0, QMandala::instance()->local->rec->file.time.last());
+  QProgressDialog progress(tr("Exporting telemetry file..."),tr("Abort"), 0, Vehicles::instance()->f_local->f_recorder->file.time.last());
   progress.setWindowModality(Qt::WindowModal);
 
   uint cnt=0,i=0;
-  foreach(uint time,QMandala::instance()->local->rec->file.time){
+  foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
     if(((cnt++)&0x00FF)==0){
       QCoreApplication::processEvents();
       progress.setValue(time);
@@ -428,11 +427,11 @@ void TelemetryFrame::export_fdr(QString fileName)
       return;
     }
 
-    const FlightDataFile::ListDouble &vlist=QMandala::instance()->local->rec->file.data.at(i++);
+    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->f_local->f_recorder->file.data.at(i++);
     out << "DATA,";
     for (uint iv=0;iv<colCount;iv++) {
       if(map.contains(iv)){
-        out << QString::number(vlist.at(QMandala::instance()->local->names.indexOf(map.value(iv))),'f',8);
+        out << QString::number(vlist.at(Vehicles::instance()->f_local->f_mandala->names.indexOf(map.value(iv))),'f',8);
       }else{
         out << QString::number(0);
       }
@@ -468,7 +467,7 @@ void TelemetryFrame::on_aFiles_triggered(void)
 }
 void TelemetryFrame::on_aEdit_triggered(void)
 {
-  QProcess::startDetached("kate",QStringList()<<QMandala::instance()->local->rec->loadFile.fileName());
+  QProcess::startDetached("kate",QStringList()<<Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
 }
 //=============================================================================
 void TelemetryFrame::on_aFullScreen_triggered(void)
@@ -493,7 +492,7 @@ void TelemetryFrame::closeEvent(QCloseEvent *event)
 //=============================================================================
 void TelemetryFrame::on_aReport_triggered(void)
 {/*
-  QFileInfo finfo(QMandala::instance()->local->rec->loadFile);
+  QFileInfo finfo(Vehicles::instance()->f_local->f_recorder->loadFile);
 
   QMap<QString,QString> data;
 
@@ -534,35 +533,35 @@ void TelemetryFrame::on_aReport_triggered(void)
   double vAccX,vAccY,vAccZ,accX=0,accY=0,accZ=0;
   double homeLat=0,homeLon=0,vLat,vLon;
   uint cnt=0;
-  foreach(uint time_ms,QMandala::instance()->local->rec->file.time) {
+  foreach(uint time_ms,Vehicles::instance()->f_local->f_recorder->file.time) {
     double time=time_ms/1000.0;
     //-------------------
     // fetch data...
     vTime=time;
-    vAlt=QMandala::instance()->local->rec->value("gps_hmsl",cnt);
-    vBat=QMandala::instance()->local->rec->value("Vs",cnt);
-    vTemp=QMandala::instance()->local->rec->value("AT",cnt);
-    vSpd=QMandala::instance()->local->rec->value("airspeed",cnt);
-    vVspeed=QMandala::instance()->local->rec->value("vspeed",cnt);
-    vDist=QMandala::instance()->local->rec->value("dHome",cnt);
-    vTurnRate=fabs(QMandala::instance()->local->rec->value("crsRate",cnt));
+    vAlt=Vehicles::instance()->f_local->f_recorder->value("gps_hmsl",cnt);
+    vBat=Vehicles::instance()->f_local->f_recorder->value("Vs",cnt);
+    vTemp=Vehicles::instance()->f_local->f_recorder->value("AT",cnt);
+    vSpd=Vehicles::instance()->f_local->f_recorder->value("airspeed",cnt);
+    vVspeed=Vehicles::instance()->f_local->f_recorder->value("vspeed",cnt);
+    vDist=Vehicles::instance()->f_local->f_recorder->value("dHome",cnt);
+    vTurnRate=fabs(Vehicles::instance()->f_local->f_recorder->value("crsRate",cnt));
     Vect theta=Vect(
-        QMandala::instance()->local->rec->value("theta[0]",cnt),
-        QMandala::instance()->local->rec->value("theta[1]",cnt),
-        QMandala::instance()->local->rec->value("theta[2]",cnt)
+        Vehicles::instance()->f_local->f_recorder->value("theta[0]",cnt),
+        Vehicles::instance()->f_local->f_recorder->value("theta[1]",cnt),
+        Vehicles::instance()->f_local->f_recorder->value("theta[2]",cnt)
         );
     vRoll=fabs(theta[0]);
     vPitch=theta[1];
     Vect acc=Vect(
-        QMandala::instance()->local->rec->value("aXYZ[0]",cnt),
-        QMandala::instance()->local->rec->value("aXYZ[1]",cnt),
-        QMandala::instance()->local->rec->value("aXYZ[2]",cnt)
+        Vehicles::instance()->f_local->f_recorder->value("aXYZ[0]",cnt),
+        Vehicles::instance()->f_local->f_recorder->value("aXYZ[1]",cnt),
+        Vehicles::instance()->f_local->f_recorder->value("aXYZ[2]",cnt)
         );
     vAccX=fabs(acc[0]);
     vAccY=fabs(acc[1]);
     vAccZ=fabs(acc[2]);
-    vLat=QMandala::instance()->local->rec->value("gps_lat",cnt);
-    vLon=QMandala::instance()->local->rec->value("gps_lon",cnt);
+    vLat=Vehicles::instance()->f_local->f_recorder->value("gps_lat",cnt);
+    vLon=Vehicles::instance()->f_local->f_recorder->value("gps_lon",cnt);
 
     cnt++;
     //-------------------

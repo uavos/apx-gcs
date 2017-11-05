@@ -44,7 +44,7 @@ public:
   QHash<QString,quint16> special; // <name,id>
   QStringList names;
 
-  QList<VehicleMandalaFact*> allFacts() { return idMap.values(); }
+  QList<VehicleMandalaFact*> allFacts;
 
   QVariant valueById(quint16 id) const;
   bool setValueById(quint16 id,const QVariant &v);

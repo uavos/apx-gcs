@@ -175,6 +175,7 @@ VehicleMandalaFact * VehicleMandala::registerFact(quint16 id, DataType dataType,
 {
   VehicleMandalaFact *f=new VehicleMandalaFact(this,m,id,dataType,name,"",descr,units);
   idMap[id]=f;
+  allFacts.append(f);
   names.append(name);
   return f;
 }

@@ -51,12 +51,13 @@ public:
   double unpackedValue();
 
   Q_INVOKABLE quint16 id() {return m_id;}
+
+  uint _vtype;
 private:
   VehicleMandala *vehicle;
   Mandala *m;
   quint16 m_id;
 
-  uint _vtype;
   void *_value_ptr;
   double _unpackedValue;
 

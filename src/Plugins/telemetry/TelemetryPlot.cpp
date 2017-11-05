@@ -21,9 +21,10 @@
  *
  */
 #include "TelemetryPlot.h"
+#include <Vehicles>
 #include <QtGui>
 #include <QJSEngine>
-#include "QMandala.h"
+//#include "QMandala.h"
 //=============================================================================
 TelemetryPlot::TelemetryPlot(QWidget *parent)
   :QwtPlot(parent),isCopy(false)
@@ -82,10 +83,10 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
 
   canvas()->setCursor(Qt::ArrowCursor);
 
-  foreach(QMandalaField *f,QMandala::instance()->local->fields){
+  foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts){
     //fill params
-    uint type=f->type();
-    uint varmsk=f->varmsk();
+    uint type=f->_vtype;
+    uint varmsk=f->id();
     QString sn=f->name();
     uint ci=0;
     if(type==vt_vect || type==vt_point) ci=(varmsk>>8)+1;
@@ -194,11 +195,11 @@ void TelemetryPlot::load(int idx)
   QCoreApplication::flush();
   QCoreApplication::processEvents();
   QCoreApplication::flush();
-  QMandala::instance()->local->rec->loadFlight(idx,&progressBar);
-  lbFileName.setText(QFileInfo(QMandala::instance()->local->rec->loadFile.fileName()).baseName());
-  lbFileName.setToolTip(QMandala::instance()->local->rec->loadFile.fileName());
+  Vehicles::instance()->f_local->f_recorder->loadFlight(idx,&progressBar);
+  lbFileName.setText(QFileInfo(Vehicles::instance()->f_local->f_recorder->loadFile.fileName()).baseName());
+  lbFileName.setToolTip(Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
   lbFileName.adjustSize();
-  QSettings().setValue("telemetryFile",QFileInfo(QMandala::instance()->local->rec->loadFile.fileName()).fileName());
+  QSettings().setValue("telemetryFile",QFileInfo(Vehicles::instance()->f_local->f_recorder->loadFile.fileName()).fileName());
   setAutoReplot(false);
 
   showCurve(itemToInfo(fields["calculated"].curve), false);
@@ -211,7 +212,7 @@ void TelemetryPlot::load(int idx)
 
   //fill internal data
   uint cnt=0,ti=0;
-  foreach(uint time,QMandala::instance()->local->rec->file.time){
+  foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
     if(((cnt++)&0x00FF)==0){
       QCoreApplication::flush();
       QCoreApplication::processEvents();
@@ -220,10 +221,10 @@ void TelemetryPlot::load(int idx)
     }
     QCoreApplication::processEvents();
     data_x.append(time/1000.0); //time
-    if(QMandala::instance()->local->rec->file.data.size()<=(int)ti)break;
-    const FlightDataFile::ListDouble &vlist=QMandala::instance()->local->rec->file.data.at(ti++);
-    for(int i=0;i<QMandala::instance()->local->fields.size();i++){
-      const QString &name=QMandala::instance()->local->fields.at(i)->name();
+    if(Vehicles::instance()->f_local->f_recorder->file.data.size()<=(int)ti)break;
+    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->f_local->f_recorder->file.data.at(ti++);
+    for(int i=0;i<Vehicles::instance()->f_local->f_mandala->allFacts.size();i++){
+      const QString &name=Vehicles::instance()->f_local->f_mandala->allFacts.at(i)->name();
       if(fields.contains(name))
         fields[name].fdata.append(vlist.at(i));
     }
@@ -261,16 +262,16 @@ void TelemetryPlot::refreshCalculated(void)
   QJSEngine engine;
 
   uint cnt=0,i=0;
-  foreach(uint time,QMandala::instance()->local->rec->file.time){
+  foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
     if(((cnt++)&0x00FF)==0){
       QCoreApplication::processEvents();
       progressBar.setValue(progressBar.maximum()*0.8+time*0.2);
     }
 
     engine.globalObject().setProperty("time",time/1000.0);
-    const FlightDataFile::ListDouble &vlist=QMandala::instance()->local->rec->file.data.at(i++);
-    for(int i=0;i<QMandala::instance()->local->fields.size();i++)
-      engine.globalObject().setProperty(QMandala::instance()->local->fields.at(i)->name(),vlist.at(i));
+    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->f_local->f_recorder->file.data.at(i++);
+    for(int i=0;i<Vehicles::instance()->f_local->f_mandala->allFacts.size();i++)
+      engine.globalObject().setProperty(Vehicles::instance()->f_local->f_mandala->allFacts.at(i)->name(),vlist.at(i));
     fcalc.fdata.append(engine.evaluate(expCalc).toNumber());
   }
   //install data
@@ -285,7 +286,7 @@ void TelemetryPlot::initProgressBar(QProgressBar *progressBar)
   progressBar->setStyleSheet("QProgressBar {text-align: left; border: 1px solid lightGray;padding: 0px;background: black;height: 5px;} QProgressBar::chunk {background: gray;border: 0px;}");
   progressBar->setGeometry(0,12,width()/2,10);
   progressBar->setVisible(true);
-  progressBar->setMaximum(QMandala::instance()->local->rec->file.time.size()?QMandala::instance()->local->rec->file.time.last():0);
+  progressBar->setMaximum(Vehicles::instance()->f_local->f_recorder->file.time.size()?Vehicles::instance()->f_local->f_recorder->file.time.last():0);
 }
 //=============================================================================
 //=============================================================================
@@ -372,7 +373,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos)const
     QColor c=f.curve->pen().color();
     if(f.curve->pen().style()!=Qt::SolidLine)
       c=c.darker();
-    s+="<tr><td align=right><font size=+2 color="+c.name()+">"+f.curve->title().text()+"</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"+QString().sprintf("%.2f",v)+" "+QMandala::instance()->local->field(name)->units()+"</font></td></tr>";
+    s+="<tr><td align=right><font size=+2 color="+c.name()+">"+f.curve->title().text()+"</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"+QString().sprintf("%.2f",v)+" "+Vehicles::instance()->f_local->f_mandala->factByName(name)->units()+"</font></td></tr>";
   }
   s+="</table>";
   return QwtText(s);

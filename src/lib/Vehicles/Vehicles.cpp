@@ -50,7 +50,7 @@ Vehicles::Vehicles(FactSystem *parent)
   parent->jsSync(this);
   foreach(QString key,f_local->f_mandala->constants.keys())
     parent->engine()->globalObject().setProperty(key,parent->engine()->toScriptValue(f_local->f_mandala->constants.value(key)));
-  foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts()) {
+  foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts) {
     parent->jsexec(QString("this.__defineGetter__('%1', function(){ return app.vehicles.current.mandala.%1.value; });").arg(f->name()));
     parent->jsexec(QString("this.__defineSetter__('%1', function(v){ app.vehicles.current.mandala.%1.value=v; });").arg(f->name()));
   }

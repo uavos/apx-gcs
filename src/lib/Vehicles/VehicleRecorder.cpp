@@ -103,7 +103,7 @@ void VehicleRecorder::record_data(QString tag,const QByteArray &data)
     case idx_downstream: {
       if(streamList.size()){
         int i=0;
-        foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts()){
+        foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts){
           double v=f->unpackedValue();
           if(streamList.at(i)==v)sv+=',';
           else{
@@ -113,7 +113,7 @@ void VehicleRecorder::record_data(QString tag,const QByteArray &data)
           i++;
         }
       }else{
-        foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts()){
+        foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts){
           double v=f->unpackedValue();
           streamList.append(v);
           sv+=valueToString(v,f->precision())+",";
@@ -370,7 +370,7 @@ void VehicleRecorder::loadFromXml(QProgressBar *progressBar)
         if(xml.name()=="fields"){
           const QStringList &st=xml.readElementText().split(',');
           map.clear();
-          foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts()){
+          foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts){
             int i=st.indexOf(f->name());
             map.append(i);
             if(f->id()==idx_dl_timestamp)
@@ -398,7 +398,7 @@ void VehicleRecorder::loadFromXml(QProgressBar *progressBar)
           file.time.append(time_ms);
           //append data
           ListDouble vlist;
-          int fcnt=vehicle->f_mandala->allFacts().size();
+          int fcnt=vehicle->f_mandala->allFacts.size();
           if(tag=="S"){
             for(int i=0;i<fcnt;i++){
               int mi=map.at(i);
@@ -488,7 +488,7 @@ void VehicleRecorder::loadFromText(QProgressBar *progressBar)
         if(cnt<5){err=true;break;}
         const QByteArray &ba=qUncompress(QByteArray::fromHex(QByteArray(buf+1,cnt-1)));
         if(ba.size()!=dlsz){err=true;break;}
-        const int fcnt=vehicle->f_mandala->allFacts().size();
+        const int fcnt=vehicle->f_mandala->allFacts.size();
         if(map.size()!=fcnt){err=true;break;}
         const uint8_t *p=(const uint8_t*)ba.data();
         uint32_t t=*((uint32_t*)p);
@@ -548,7 +548,7 @@ void VehicleRecorder::loadFromText(QProgressBar *progressBar)
            const QStringList &st=svalue.split(',');
            dlsz=sizeof(uint32_t)+st.size()*sizeof(float);
            map.clear();
-           foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts())
+           foreach(VehicleMandalaFact *f,vehicle->f_mandala->allFacts)
              map.append(st.indexOf(f->name()));
         }
       }//default

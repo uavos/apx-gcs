@@ -1,12 +1,10 @@
 #include "Player.h"
 #include <QtWidgets>
 #include <QUdpSocket>
-#include "QMandala.h"
-#include "FactSystem.h"
-//#include "tcp_ports.h"
+#include <Vehicles>
 //==============================================================================
 Player::Player(QWidget *parent)
-  : QDialog(parent),rec(QMandala::instance()->local->rec)
+  : QDialog(parent),rec(Vehicles::instance()->f_local->f_recorder)
 {
   setupUi(this);
   setWindowFlags(Qt::Tool);
@@ -25,6 +23,8 @@ Player::Player(QWidget *parent)
   connect(&timer,SIGNAL(timeout()),this,SLOT(timerStep()));
   pos_ms=total_ms=0;
   timer.setInterval(10);  //100Hz
+
+  connect(this,&Player::frameUpdated,Vehicles::instance()->f_local->f_mandala,&VehicleMandala::dataReceived);
 }
 void Player::closeEvent(QCloseEvent *event)
 {
@@ -77,8 +77,8 @@ void Player::on_aStop_triggered()
 void Player::on_aPlay_toggled(bool checked)
 {
   if(checked){
-    if(!QMandala::instance()->isLocal())
-      QMandala::instance()->setCurrent(QMandala::instance()->local);
+    if(Vehicles::instance()->current()->f_vclass->value().toInt()!=Vehicle::LOCAL)
+      Vehicles::instance()->selectVehicle(Vehicles::instance()->f_local);
     rec->recDisable=true;
     time.start();
     play_ms=pos_ms;
@@ -117,11 +117,11 @@ void Player::timerStep()
         QMandala::instance()->local->dataRead(ba);*/
     }else if(sname==">service"){
       //qDebug("service request");
-      QMandala::instance()->local->downlinkReceived(QByteArray::fromHex(svalue.toUtf8()));
+      Vehicles::instance()->f_local->downlinkReceived(QByteArray::fromHex(svalue.toUtf8()));
     }else if(sname.contains("flightplan")){
-      QMandala::instance()->local->downlinkReceived(QByteArray::fromHex(svalue.toUtf8()));
+      Vehicles::instance()->f_local->downlinkReceived(QByteArray::fromHex(svalue.toUtf8()));
     }else if(sname=="nodes"){
-      //QMandala::instance()->local->dataRead(QByteArray::fromHex(svalue.toUtf8()));
+      //Vehicles::instance()->f_local->dataRead(QByteArray::fromHex(svalue.toUtf8()));
     }else if(sname=="msg"){
       FactSystem::instance()->sound(svalue);
       qDebug("<[RE]%s",svalue.toUtf8().data());
@@ -157,12 +157,12 @@ void Player::sendData()
 {
   int i=rec->file.time.indexOf(pos_ms);
   if(i<0)return;
-  const FlightDataFile::ListDouble &vlist=rec->file.data.at(i);
+  const VehicleRecorder::ListDouble &vlist=rec->file.data.at(i);
   i=0;
-  QMandala::instance()->local->setReplayData(true);
-  foreach(QMandalaField *f,QMandala::instance()->local->fields)
+  Vehicles::instance()->f_local->f_streamType->setValue(Vehicle::REPLAY);
+  foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts)
     f->setValueLocal(vlist.at(i++));
-  QMandala::instance()->local->emitUpdated();
+  emit frameUpdated(idx_downstream);
 }
 //=============================================================================
 

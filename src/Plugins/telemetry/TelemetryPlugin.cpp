@@ -21,7 +21,6 @@
  *
  */
 #include "TelemetryPlugin.h"
-#include "QMandala.h"
 //=============================================================================
 void TelemetryPlugin::init(void)
 {

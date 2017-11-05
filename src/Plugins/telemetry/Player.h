@@ -24,8 +24,8 @@
 #define PLAYER_H
 //==============================================================================
 #include <QtCore>
-#include "FlightDataFile.h"
 #include "ui_Player.h"
+class VehicleRecorder;
 //==============================================================================
 class Player : public QDialog, public Ui::Player
 {
@@ -35,7 +35,7 @@ public:
 protected:
   void closeEvent(QCloseEvent *event);
 private:
-  FlightDataFile *rec;
+  VehicleRecorder *rec;
   uint pos_ms,total_ms,play_ms;  //time in ms
   QTime  time;
   QTimer timer;
@@ -51,6 +51,7 @@ private slots:
 signals:
   void timeTrack(uint time_ms); //current position
   void replay_progress(uint time_ms);
+  void frameUpdated(uint id);
 };
 //==============================================================================
 #endif // PLAYER_H
