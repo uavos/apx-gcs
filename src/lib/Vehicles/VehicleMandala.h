@@ -51,6 +51,9 @@ public:
 
   VehicleMandalaFact * factById(quint16 id) const;
 
+  QVariant valueByName(const QString &vname) const;
+  VehicleMandalaFact * factByName(const QString &vnam) const;
+
   bool unpackData(const QByteArray &ba);
   bool unpackTelemetry(const QByteArray &ba);
   bool unpackXPDR(const QByteArray &ba);
@@ -64,7 +67,8 @@ private:
 
   //EXPORTED
 signals:
-  void serialData(uint portNo,const QByteArray &ba);
+  void dataReceived(uint id);
+  void serialReceived(uint portNo,const QByteArray &ba);
 
   //data comm
 signals:

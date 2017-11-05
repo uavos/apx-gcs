@@ -27,7 +27,6 @@
 #include <QtQml>
 #include <QJSEngine>
 #include "FactSystemApp.h"
-class QMandalaItem;
 //=============================================================================
 class FactSystemJS: public FactSystemApp
 {
@@ -45,9 +44,9 @@ public:
   QQmlEngine *engine() {return js;}
 
   Q_INVOKABLE void help();
-  Q_INVOKABLE void vmexec(QString func);
-  Q_INVOKABLE void serial(quint8 portID,QJSValue data);
   Q_INVOKABLE void sleep(quint16 ms);
+
+  Q_INVOKABLE QByteArray jsToArray(QJSValue data);
 
 protected:
   //js engine
@@ -62,7 +61,6 @@ protected:
 
 private:
   void jsRegisterFunctions();
-  QByteArray jsToArray(QJSValue data);
 
 public slots:
   void jsAddItem(FactTree *item);

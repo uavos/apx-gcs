@@ -1,6 +1,6 @@
+#include <Vehicles>
 #include "ServosForm.h"
 #include "ui_ServosForm.h"
-#include "QMandala.h"
 
 //==============================================================================
 ServosForm::ServosForm(QWidget *parent) :
@@ -15,15 +15,7 @@ ServosForm::ServosForm(QWidget *parent) :
 
   restoreGeometry(QSettings().value(objectName()).toByteArray());
 
-  connect(QMandala::instance(),SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(mandalaCurrentChanged(QMandalaItem*)));
-  mandalaCurrentChanged(QMandala::instance()->current);
-}
-//==============================================================================
-void ServosForm::mandalaCurrentChanged(QMandalaItem *m)
-{
-  foreach(QMetaObject::Connection c,mcon) disconnect(c);
-  mcon.clear();
-  mcon.append(connect(m, SIGNAL(serialData(uint,QByteArray)),SLOT(serialData(uint,QByteArray))));
+  connect(Vehicles::instance(),&Vehicles::currentSerialReceived,this,&ServosForm::serialData);
 }
 //=============================================================================
 ServosForm::~ServosForm()
@@ -103,7 +95,7 @@ void ServosForm::sendVolz(uint cmd, uint id, uint arg)
   }
   pack[4]=(crc>>8)&0xFF;
   pack[5]= crc&0xFF;
-  QMandala::instance()->current->send_serial(ui->ePortID->value(),pack);
+  Vehicles::instance()->current()->sendSerial(ui->ePortID->value(),pack);
 }
 //==============================================================================
 void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
@@ -142,7 +134,7 @@ void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
     }
     pack[i]=vx;
   }
-  QMandala::instance()->current->send_serial(ui->ePortID->value(),pack);
+  Vehicles::instance()->current()->sendSerial(ui->ePortID->value(),pack);
 }
 //==============================================================================
 

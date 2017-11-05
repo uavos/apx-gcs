@@ -23,7 +23,7 @@
 #ifndef HTTPSERVICE_H
 #define HTTPSERVICE_H
 #include <QtCore>
-class QMandala;
+class Vehicles;
 //=============================================================================
 class HttpService : public QObject
 {
@@ -31,7 +31,6 @@ class HttpService : public QObject
 public:
   HttpService(QObject* parent = 0);
 private:
-  QMandala *mandala;
   //mandala
   QString reply_mandala(const QString &req);
 

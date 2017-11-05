@@ -21,7 +21,6 @@
  *
  */
 #include "ConsolePlugin.h"
-#include "QMandala.h"
 #include "Console.h"
 //=============================================================================
 void ConsolePlugin::init(void)

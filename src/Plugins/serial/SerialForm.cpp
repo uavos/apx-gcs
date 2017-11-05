@@ -1,14 +1,12 @@
+#include <Vehicles>
 #include "SerialForm.h"
 #include "ui_SerialForm.h"
-#include "QMandala.h"
 
 //==============================================================================
 SerialForm::SerialForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SerialForm)
 {
-  mandala=qApp->property("Mandala").value<QMandala*>();
-
   ui->setupUi(this);
 
   connect(ui->btnReset,SIGNAL(pressed()),this,SLOT(btnReset()));
@@ -21,17 +19,9 @@ SerialForm::SerialForm(QWidget *parent) :
 
   ui->eForward->setText(QSettings().value(objectName()+"_fwdDev").toString());
 
-  connect(mandala,SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(mandalaCurrentChanged(QMandalaItem*)));
-  mandalaCurrentChanged(mandala->current);
+  connect(Vehicles::instance(),&Vehicles::currentSerialReceived,this,&SerialForm::serialData);
 }
 //==============================================================================
-void SerialForm::mandalaCurrentChanged(QMandalaItem *m)
-{
-  foreach(QMetaObject::Connection c,mcon) disconnect(c);
-  mcon.clear();
-  mcon.append(connect(m, SIGNAL(serialData(uint,QByteArray)),SLOT(serialData(uint,QByteArray))));
-}
-//=============================================================================
 SerialForm::~SerialForm()
 {
     delete ui;
@@ -81,7 +71,7 @@ void SerialForm::btnSend()
   if(ba.isEmpty())return;
   if(ui->cbCR->isChecked())ba.append('\r');
   if(ui->cbLF->isChecked())ba.append('\n');
-  mandala->current->send_serial(ui->ePortID->value(),ba);
+  Vehicles::instance()->current()->sendSerial(ui->ePortID->value(),ba);
 }
 //==============================================================================
 void SerialForm::serialData(uint portNo,const QByteArray &ba)
@@ -133,7 +123,7 @@ void SerialForm::uartRead()
   ba.resize(64);
   ba.resize(uart.read((uint8_t*)ba.data(),ba.size()));
   if(ba.size()<=0)return;
-  mandala->current->send_serial(ui->ePortID->value(),ba);
+  Vehicles::instance()->current()->sendSerial(ui->ePortID->value(),ba);
   QTimer::singleShot(100,this,SLOT(uartRead()));
 }
 //=============================================================================

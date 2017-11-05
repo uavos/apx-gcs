@@ -1,5 +1,4 @@
 ﻿#include "NumbersPlugin.h"
-#include <QMandala.h>
 #include <QmlView.h>
 #include <QAction>
 #include <QInputDialog>
@@ -45,6 +44,8 @@ void NumbersPlugin::make()
   QString si;
   QString sia(2,' ');
   s<<"import QtQuick 2.2";
+  s<<"import GCS.FactSystem 1.0";
+  s<<"import GCS.Vehicles 1.0";
   s<<"import \"qrc:///components\"";
   s<<"Item {";
   si+=sia;

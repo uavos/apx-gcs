@@ -53,6 +53,9 @@ public:
   int timeout_ms;
   void request(uint cmd, const QByteArray &data, uint timeout_ms, bool highprio=false);
 
+private:
+  Nodes *nodes;
+
 private slots:
   void updateStats();
 

@@ -216,6 +216,14 @@ VehicleMandalaFact * VehicleMandala::factById(quint16 id) const
 {
   return idMap.value(id);
 }
+QVariant VehicleMandala::valueByName(const QString &vname) const
+{
+  return factByName(vname)->value();
+}
+VehicleMandalaFact * VehicleMandala::factByName(const QString &vname) const
+{
+  return static_cast<VehicleMandalaFact*>(child(vname));
+}
 //=============================================================================
 bool VehicleMandala::unpackXPDR(const QByteArray &ba)
 {
@@ -251,7 +259,7 @@ bool VehicleMandala::unpackData(const QByteArray &ba)
         qWarning("Mandala: %s",tr("Received serial data").toUtf8().data());
         return true;
       }
-      emit serialData(packet.data[0],QByteArray((const char*)(packet.data+1),data_cnt-1));
+      emit serialReceived(packet.data[0],QByteArray((const char*)(packet.data+1),data_cnt-1));
       return true;
   }
   if(!m->unpack(packet.data,data_cnt,packet.id)) return false;
@@ -260,6 +268,7 @@ bool VehicleMandala::unpackData(const QByteArray &ba)
     fact=idMap.value((uint16_t)packet.data[0]|(uint16_t)packet.data[1]<<8);
     if(fact)fact->loadValue();
   }
+  emit dataReceived(fact?fact->id():packet.id);
   return true;
 }
 //=============================================================================
@@ -276,6 +285,7 @@ bool VehicleMandala::unpackTelemetry(const QByteArray &ba)
     f->loadValue();
   }
   setErrcnt(m->dl_errcnt);
+  emit dataReceived(packet.id);
   return true;
 }
 //=============================================================================

@@ -95,6 +95,11 @@ signals:
   void sendUplink(const QByteArray &packet);
   void nmtReceived(const QByteArray &packet);
 
+  //provided methods
+public slots:
+  void vmexec(QString func);
+  void sendSerial(quint8 portID, QByteArray data);
+
 
   //---------------------------------------
   // PROPERTIES

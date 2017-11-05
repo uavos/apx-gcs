@@ -21,7 +21,6 @@
  *
  */
 #include "SoundEffects.h"
-#include "QMandala.h"
 #include "FactSystem.h"
 #include "AppDirs.h"
 #include "AppSettings.h"

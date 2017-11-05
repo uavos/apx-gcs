@@ -188,33 +188,10 @@ int main(int argc, char *argv[])
   //create main objects
   mandala=new QMandala;
 
-  //QObject::connect(datalink,&Datalink::read,mandala,&QMandala::downlinkReceived);
-  //QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
-
   //factSystem->loadMandala(mandala->current);
   factSystem->jsSyncObject(mandala);
 
 
-/*
-  DatalinkServer *datalink=new DatalinkServer;
-
-  QObject::connect(datalink,SIGNAL(dataReceived(QByteArray)),mandala,SLOT(downlinkReceived(QByteArray)));
-  QObject::connect(mandala,SIGNAL(sendUplink(QByteArray)),datalink,SLOT(dataSend(QByteArray)));
-
-  //QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),var->rec,SLOT(record_uplink(QByteArray)));
-
-  QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),mandala,SLOT(upCntInc()));
-  QObject::connect(datalink,SIGNAL(dataReceived(QByteArray)),mandala,SLOT(dlCntInc()));
-
-  //QObject::connect(mandala,SIGNAL(readOnlyChanged(bool)),datalink,SLOT(setReadOnly(bool)));
-
-  //gate serial ports?
-  //QObject::connect(serial1,SIGNAL(received(QByteArray)),serial2,SLOT(send(QByteArray)));
-
-  //wrapper/forwarder
-  QObject::connect(datalink,SIGNAL(serverDiscovered(QHostAddress,QString)),mandala,SIGNAL(serverDiscovered(QHostAddress,QString)));
-  QObject::connect(mandala,SIGNAL(connectToServer(QHostAddress)),datalink,SLOT(connectToServer(QHostAddress)));
-*/
   //Http service
   httpService=new HttpService();
   QObject::connect(datalink,&Datalink::httpRequest,httpService,&HttpService::httpRequest);
@@ -241,27 +218,10 @@ int main(int argc, char *argv[])
 
   //other objects
   //joystick=new Joystick();
-/*
-  serial1=new Serial(0,qApp,false);
-  QObject::connect(serial1,SIGNAL(received(QByteArray)),datalink,SLOT(localDataReceived(QByteArray)));
-  QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),serial1,SLOT(send(QByteArray)));
-  QObject::connect(datalink,SIGNAL(heartbeat(QByteArray)),serial1,SLOT(send(QByteArray)));
-  //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),serial1,SLOT(activate()));
-
-  serial2=new Serial(1,qApp,false);
-  QObject::connect(serial2,SIGNAL(received(QByteArray)),datalink,SLOT(localDataReceived(QByteArray)));
-  QObject::connect(datalink,SIGNAL(loacalDataSend(QByteArray)),serial2,SLOT(send(QByteArray)));
-  QObject::connect(datalink,SIGNAL(heartbeat(QByteArray)),serial2,SLOT(send(QByteArray)));
-  //QObject::connect(mainForm,SIGNAL(pluginsLoaded()),serial2,SLOT(activate()));
-*/
 
   SoundEffects soundEffects;
   QObject::connect(factSystem,&FactSystem::playSoundEffect,&soundEffects,&SoundEffects::play);
 
-  //datalink->f_active->setValue(true);
-  //datalink->activate();
-  //serial1->activate();
-  //serial2->activate();
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //  exec
@@ -271,21 +231,8 @@ int main(int argc, char *argv[])
 
   qInstallMessageHandler(0);
 
-  //serial1->close();
-  //serial2->close();
-/*
-  delete serial1;
-  delete serial2;
-*/
   //delete factSystem;
 
-  /*delete httpService;
-  delete mainForm;
-  delete datalink;
-  delete serial1;
-  delete serial2;
-  delete joystick;
-  delete mandala;*/
   return rv;
 }
 /*catch (std::exception & e)
@@ -372,6 +319,8 @@ void loadPlugins()
 
   allFiles.append("qrc:///controls.qml");
   (void)QT_TRANSLATE_NOOP("Plugins","Controls");
+
+  allFiles.append("qrc:///Rotax914.qml");
 
   //allFiles.append("qrc:///videoCV.qml");
 

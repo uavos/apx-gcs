@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <QtCore>
-#include "QMandala.h"
 
 namespace Ui {
 class ServosForm;
@@ -25,9 +24,7 @@ private:
     uint counter;
     void sendVolz(uint cmd, uint id, uint arg);
     void sendFutabaAddr(uint servoID,uint newAddr);
-    QList<QMetaObject::Connection>mcon;
 private slots:
-    void mandalaCurrentChanged(QMandalaItem *m);
     void btnFind();
     void btnMove();
     void btnSetAdr();

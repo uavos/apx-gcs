@@ -1192,7 +1192,7 @@
 <context>
     <name>MainForm</name>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="+43"/>
+        <location filename="../src/main/MainForm.cpp" line="+42"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
@@ -1225,7 +1225,7 @@
         <translation type="vanished">Настáўленні скаротаў</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+7"/>
         <source>Toggle Full Screen</source>
         <translation>На ўвесь экран</translation>
     </message>
@@ -1255,7 +1255,7 @@
         <translation>Запісваць даныя</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Discard current file</source>
         <translation>Закрыць дзейны файл без захоўвання</translation>
     </message>
@@ -1290,7 +1290,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+280"/>
+        <location line="+270"/>
         <source>Username</source>
         <translation>Імя карыстальніка</translation>
     </message>
@@ -1449,7 +1449,7 @@
 <context>
     <name>NodeItem</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+44"/>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+45"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2016,7 +2016,7 @@
 <context>
     <name>NumbersPlugin</name>
     <message>
-        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="+18"/>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="+17"/>
         <source>Numbers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2036,7 +2036,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+118"/>
+        <location line="+120"/>
         <location line="+28"/>
         <source>User plugin name</source>
         <translation type="unfinished"></translation>
@@ -2122,7 +2122,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+365"/>
+        <location filename="../src/main/main.cpp" line="+312"/>
         <source>Video</source>
         <translation type="unfinished">Відэа</translation>
     </message>
@@ -2238,17 +2238,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-210"/>
+        <location filename="../src/main/main.cpp" line="-157"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+43"/>
         <source>Ground Control Unit</source>
         <translation>Наземны Пункт Кіравання</translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+94"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2258,7 +2258,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+54"/>
         <source>Plugin excluded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2369,6 +2369,98 @@
     </message>
 </context>
 <context>
+    <name>SerialForm</name>
+    <message>
+        <location filename="../src/Plugins/serial/SerialForm.ui" line="+14"/>
+        <source>Serial Port console</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Port:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Read</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>ASCII</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>HEX</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Clear received data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Device to forward data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>/dev/pts/3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Forward port to device
+socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>CR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>LF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/serial/SerialForm.cpp" line="+35"/>
+        <source>Serial port forwarding stopped</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
+        <source>Serial port forwarding started</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialPlugin</name>
+    <message>
+        <location filename="../src/Plugins/serial/SerialPlugin.cpp" line="+11"/>
+        <source>Serial Port Console</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SerialWorker</name>
     <message>
         <location filename="../src/lib/Datalink/Serial.cpp" line="+163"/>
@@ -2382,9 +2474,81 @@
     </message>
 </context>
 <context>
+    <name>ServosForm</name>
+    <message>
+        <location filename="../src/Plugins/servos/ServosForm.ui" line="+22"/>
+        <source>Port:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Volz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Find Servos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Move</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Futaba SBUS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Servo label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Set Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/servos/ServosForm.cpp" line="+38"/>
+        <source>Scanning for servos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Servo moved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Address set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Scan finished</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ServosPlugin</name>
+    <message>
+        <location filename="../src/Plugins/servos/ServosPlugin.cpp" line="+11"/>
+        <source>Generic Servo config</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SignalFrame</name>
     <message>
         <location filename="../src/SDK/example-plugin/SignalFrame.ui" line="+26"/>
+        <location filename="../src/Plugins/signal/SignalFrame.ui" line="+26"/>
         <source>Signals</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2540,7 +2704,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+7"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2553,7 +2717,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+228"/>
         <source>Received serial data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2579,7 +2743,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+269"/>
+        <location line="+268"/>
         <source>Telemetry file is too big (%1 MB). Load it?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2612,7 +2776,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+5"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Remove all messages from list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2640,7 +2819,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+6"/>
         <source>Select vehicle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2655,7 +2834,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+90"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>

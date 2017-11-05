@@ -72,6 +72,7 @@ HEADERS += \
     Vehicles/VehicleNmtManager.h \
     Vehicles/VehicleRecorder.h \
     Vehicles/VehicleWarnings.h \
+    Vehicles/Vehicles \
 
 # Nodes
 SOURCES += \

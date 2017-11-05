@@ -29,15 +29,15 @@ SOURCES += \
     ../shared/qml/hdg/*.qml \
     ../shared/qml/nav/*.qml \
     ../shared/qml/pfd/*.qml \
-    $$OBJECTS_DIR/QMandalaStrings.h
+    $$OBJECTS_DIR/VehicleMandalaStrings.h
     RESOURCES =
 }
 
 TRANSLATION_TARGET_DIR = $$DESTDIR/../Localization/$$TARGET
 TS_FILES = $$PWD/localization/*.ts
 
-trstrings.target = $$OBJECTS_DIR/QMandalaStrings.h
-trstrings.commands = gcc -E -dD $$PWD/src/lib/Mandala/QMandalaStrings.h > $$trstrings.target
+trstrings.target = $$OBJECTS_DIR/VehicleMandalaStrings.h
+trstrings.commands = gcc -E -dD $$PWD/src/lib/Vehicles/VehicleMandalaStrings.h > $$trstrings.target
 QMAKE_EXTRA_TARGETS += trstrings
 
 translations.input = TS_FILES

@@ -23,13 +23,14 @@
 #include "NodeItem.h"
 #include "Nodes.h"
 #include "NodeField.h"
-#include "Vehicle.h"
+#include <Vehicles>
 #include <node.h>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   : NodeData(parent,sn),
     conf_uid(-1),
     timeout_ms(500),
+    nodes(parent),
     m_valid(false),
     m_dataValid(false),
     m_progress(0)
@@ -101,6 +102,22 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       setCanAdr(nstatus.can_adr);
       setCanErr(nstatus.can_err);
       setCpuLoad(nstatus.load);
+    }return true;
+    case apc_msg: { //message from autopilot
+      QString ns;
+      if(Vehicles::instance()->f_list->size()>0) ns=QString("%1/%2").arg(nodes->vehicle->f_callsign->text()).arg(title());
+      else ns=title();
+      QStringList st=QString(ba).trimmed().split('\n',QString::SkipEmptyParts);
+      foreach(QString s,st){
+        s=s.trimmed();
+        if(s.isEmpty())continue;
+        qDebug("<[%s]%s\n",ns.toUtf8().data(),qApp->translate("msg",s.toUtf8().data()).toUtf8().data());
+        FactSystem::instance()->sound(s);
+        if(s.contains("error",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
+        else if(s.contains("fail",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
+        else if(s.contains("timeout",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->warning(s);
+        else if(s.contains("warning",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->warning(s);
+      }
     }return true;
     case apc_conf_inf: {
       if(ba.size()!=sizeof(_conf_inf))break;

@@ -3,7 +3,6 @@
  *
  */
 #include "ServosPlugin.h"
-#include "QMandala.h"
 #include <QtWidgets>
 //=============================================================================
 void ServosPlugin::init(void)

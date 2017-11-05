@@ -227,6 +227,12 @@ void Vehicles::selectVehicle(Vehicle *v)
   //for console
   //e->globalObject().setProperty("m",e->newQObject(v->f_mandala));
 
+  //current vehicle signals wrappers
+  foreach(QMetaObject::Connection c,currentVehicleConnections) disconnect(c);
+  currentVehicleConnections.clear();
+  currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::dataReceived,this,&Vehicles::currentDataReceived));
+  currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::serialReceived,this,&Vehicles::currentSerialReceived));
+
   emit currentChanged();
   emit vehicleSelected(v);
   f_select->setStatus(v->title());

@@ -57,6 +57,8 @@ private:
   //ident lookup
   QMap<quint16,Vehicle*> squawkMap;
 
+  QList<QMetaObject::Connection> currentVehicleConnections;
+
 public slots:
   void selectVehicle(Vehicle *v);
 signals:
@@ -70,6 +72,12 @@ public slots:
   void vehicleSendUplink(Vehicle *v,const QByteArray &packet);
 signals:
   void sendUplink(const QByteArray &packet);
+
+  //current vehicle signals wrappers
+signals:
+  void currentDataReceived(uint id);
+  void currentSerialReceived(uint portNo,const QByteArray &ba);
+
 
   //---------------------------------------
   // PROPERTIES

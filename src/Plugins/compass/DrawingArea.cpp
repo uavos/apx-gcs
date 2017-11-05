@@ -1,5 +1,5 @@
+#include <FactSystem.h>
 #include "DrawingArea.h"
-#include "QMandala.h"
 
 DrawingArea::DrawingArea()
   :QWidget()
@@ -265,7 +265,7 @@ void DrawingArea::DrawData()
     pen.setColor(QColor(errcolor, 120 - errcolor / 2, 255 - errcolor));
     pen.setWidth(2);
     painter->setPen(pen);
-    painter->drawText(QPointF(10, 60), QString().sprintf("e: %.0f%c",QMandala::instance()->current->boundAngle(angError),176));
+    painter->drawText(QPointF(10, 60), QString().sprintf("e: %.0f%c",FactSystem::angle(angError),176));
 
 }
 void DrawingArea::paintEvent(QPaintEvent *p)

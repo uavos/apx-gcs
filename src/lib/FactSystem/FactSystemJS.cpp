@@ -22,7 +22,7 @@
  */
 #include "FactSystemJS.h"
 #include "AppDirs.h"
-#include "QMandala.h"
+#include <Vehicles>
 //=============================================================================
 FactSystemJS::FactSystemJS(QObject *parent)
  : FactSystemApp(parent)
@@ -161,8 +161,8 @@ void FactSystemJS::jsRegisterFunctions()
   jsRegister("send(n)",QObject::tr("send var n to UAV"),"m[n].send();");
   jsRegister("nodes()",QObject::tr("rescan bus nodes"),"print('nodes:');m.req_nodes();");
   jsRegister("nstat()",QObject::tr("print nodes status"),"print('nodes statistics:');m.req_nstat();");
-  jsRegister("serial(p,v)",QObject::tr("send data v to serial port ID p"),"app.serial(p,v);");
-  jsRegister("vmexec(f)",QObject::tr("execute function on VMs"),"app.vmexec(f);");
+  jsRegister("serial(p,v)",QObject::tr("send data v to serial port ID p"),"app.vehicles.current.sendSerial(p,v);");
+  jsRegister("vmexec(f)",QObject::tr("execute function on VMs"),"app.vehicles.current.vmexec(f);");
   jsRegister("sleep(n)",QObject::tr("sleep n milliseconds"),"app.sleep(n);");
   jsRegister("next()",QObject::tr("switch to next vehicle"),"app.vehicles.selectNext();");
   jsRegister("prev()",QObject::tr("switch to previous vehicle"),"app.vehicles.selectPrev();");
@@ -195,22 +195,6 @@ void FactSystemJS::help()
   }
   s+="</table></font>";
   qDebug("%s",s.toUtf8().data());
-}
-//=============================================================================
-void FactSystemJS::vmexec(QString func)
-{
-  QMandala::instance()->current->send_vmexec(func);
-}
-//=============================================================================
-void FactSystemJS::serial(quint8 portID,QJSValue data)
-{
-  QMandala::instance()->current->send_serial(portID,jsToArray(data));
-}
-void FactSystemJS::sleep(quint16 ms)
-{
-  QEventLoop loop;
-  QTimer::singleShot(ms,&loop,SLOT(quit()));
-  loop.exec();
 }
 //=============================================================================
 //=============================================================================

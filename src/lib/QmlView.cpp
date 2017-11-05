@@ -21,7 +21,6 @@
  *
  */
 #include "QmlView.h"
-#include <QMandala.h>
 #include <QWidget>
 #include <QSurface>
 #include <QLayout>

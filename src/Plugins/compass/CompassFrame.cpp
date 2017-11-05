@@ -21,6 +21,7 @@
  *
  */
 #include <QtCore>
+#include <Vehicles>
 #include "CompassFrame.h"
 //==============================================================================
 CompassFrame::CompassFrame(QWidget *parent) :
@@ -42,11 +43,11 @@ CompassFrame::CompassFrame(QWidget *parent) :
   vbLayout->addWidget(toolBar);
   buttonClose.setText(tr("Close"));
   buttonClose.setObjectName("killButton");
-  toolBar->addWidget(&buttonClose);
+  //toolBar->addWidget(&buttonClose);
+  //toolBar->addSeparator();
+  toolBar->addWidget(&checkBoxTrace);
   toolBar->addSeparator();
   toolBar->addWidget(&buttonClear);
-  toolBar->addSeparator();
-  toolBar->addWidget(&checkBoxTrace);
 
   vbLayout->addWidget(&lbInfo);
   vbLayout->addLayout(hbLayoutBottom);
@@ -76,8 +77,7 @@ CompassFrame::CompassFrame(QWidget *parent) :
 
   checkBoxTrace.setChecked(true);
 
-  connect(QMandala::instance(),SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(mandalaCurrentChanged(QMandalaItem*)));
-  mandalaCurrentChanged(QMandala::instance()->current);
+  connect(Vehicles::instance(),&Vehicles::currentDataReceived,this,&CompassFrame::dataReceived);
 }
 void CompassFrame::closeEvent(QCloseEvent *event)
 {
@@ -87,21 +87,13 @@ void CompassFrame::closeEvent(QCloseEvent *event)
   emit closed();
 }
 //=============================================================================
-void CompassFrame::mandalaCurrentChanged(QMandalaItem *m)
+void CompassFrame::dataReceived(uint id)
 {
-  onbuttonClearPressed();
-  foreach(QMetaObject::Connection c,mcon) disconnect(c);
-  mcon.clear();
-  mcon.append(connect(m, SIGNAL(updated(uint)), SLOT(dataReceived(uint)), Qt::QueuedConnection));
-}
-//=============================================================================
-void CompassFrame::dataReceived(uint var_idx)
-{
-  if (var_idx != idx_downstream)
+  if (id != idx_downstream)
     return;
-  dArea[0]->addData(QMandala::instance()->current->mag[0], QMandala::instance()->current->mag[1]);
-  dArea[1]->addData(QMandala::instance()->current->mag[0], QMandala::instance()->current->mag[2]);
-  dArea[2]->addData(QMandala::instance()->current->mag[2], QMandala::instance()->current->mag[1]);
+  dArea[0]->addData(c_Hx, c_Hy);
+  dArea[1]->addData(c_Hx, c_Hz);
+  dArea[2]->addData(c_Hz, c_Hy);
   lbInfo.setText(
         QString("bias {%1, %2, %3}\tscale {%4, %5, %6}")
         .arg(dArea[0]->bX,0,'f',2)

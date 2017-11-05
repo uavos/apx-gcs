@@ -24,8 +24,8 @@
 #define SIGNALFRAME_H
 //==============================================================================
 #include <QtWidgets>
-#include "QMandala.h"
 #include "ui_SignalFrame.h"
+class Vehicle;
 //==============================================================================
 class SignalFrame : public QWidget, public Ui::SignalFrame
 {
@@ -42,10 +42,8 @@ private:
   }_plot;
   QMap<QAction*,_plot>map;
   QAction* addPlot(QString name,const QList<QColor> &color,const QList<uint> &var_idx);
-  QList<QMetaObject::Connection>mcon;
 private slots:
-  void mandalaCurrentChanged(QMandalaItem *m);
-  void dataReceived(uint var_idx);
+  void dataReceived(uint id);
   void action_toggled(bool);
 };
 //==============================================================================

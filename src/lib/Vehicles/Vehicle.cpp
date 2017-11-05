@@ -136,3 +136,19 @@ void Vehicle::xpdrReceived(const QByteArray &data)
   onlineTimer.start();
 }
 //=============================================================================
+void Vehicle::vmexec(QString func)
+{
+  emit sendUplink(QByteArray().append((unsigned char)idx_vmexec).append(func));
+}
+//=============================================================================
+void Vehicle::sendSerial(quint8 portID,QByteArray data)
+{
+  emit sendUplink(QByteArray().append((unsigned char)idx_data).append((unsigned char)portID).append(data));
+}
+void FactSystemJS::sleep(quint16 ms)
+{
+  QEventLoop loop;
+  QTimer::singleShot(ms,&loop,SLOT(quit()));
+  loop.exec();
+}
+//=============================================================================

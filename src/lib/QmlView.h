@@ -26,8 +26,6 @@
 #include <QAbstractItemModel>
 #include <QMenu>
 #include "SvgImageProvider.h"
-class QMandalaItem;
-class QMandala;
 //=============================================================================
 class QMLSettings : public QSettings
 {
@@ -69,7 +67,6 @@ public:
   QList<QObject*> actions;
 
 private:
-  QMandala *mandala;
   SvgImageProvider *svgProvider;
   bool blockShowEvt;
   QWidget *w;

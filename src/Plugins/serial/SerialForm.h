@@ -3,11 +3,7 @@
 
 #include <QWidget>
 #include <QtCore>
-//#include "QMandala.h"
 #include "comm.h"
-
-class QMandalaItem;
-class QMandala;
 
 namespace Ui {
 class SerialForm;
@@ -24,13 +20,10 @@ protected:
   void closeEvent(QCloseEvent *event);
 private:
     Ui::SerialForm *ui;
-    QMandala *mandala;
-    QList<QMetaObject::Connection>mcon;
     Comm uart;
     QSocketNotifier *socketNotifier;
 
 private slots:
-    void mandalaCurrentChanged(QMandalaItem *m);
     void btnReset();
     void btnSend();
     void btnForward();

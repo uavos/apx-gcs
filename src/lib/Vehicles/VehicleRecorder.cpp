@@ -98,7 +98,6 @@ void VehicleRecorder::record_data(QString tag,const QByteArray &data)
   data_cnt-=bus_packet_size_hdr;
   QString sv;
   QHash<QString,QString> attrs;
-  //QMandalaField *f=mvar->field(packet.id);
   //if(packet.id==idx_data)qDebug()<<tag<<data.toHex();
   switch(packet.id){
     case idx_downstream: {

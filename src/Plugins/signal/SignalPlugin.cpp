@@ -21,7 +21,6 @@
  *
  */
 #include "SignalPlugin.h"
-#include "QMandala.h"
 //=============================================================================
 void SignalPlugin::init(void)
 {

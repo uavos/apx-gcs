@@ -25,7 +25,6 @@
 #include <QtWidgets>
 #include <QtNetwork>
 #include "plugin_interface.h"
-#include "QMandala.h"
 //=============================================================================
 class DockWidget;
 class QmlView;
@@ -39,7 +38,6 @@ public:
   void setPlugins(QStringList pfiles);
 
 private:
-  QMandala *mandala;
   QStringList plugins_files;
   QHash<QString,PluginInterface*> plugins_so;
   QList<QString> plugins_qml;
@@ -70,7 +68,6 @@ private slots:
   void arrange();
   void lock();
   void unlock();
-  void mMandala_triggered();
   void mFullScreen_triggered();
   void mVPN_triggered();
 
@@ -92,9 +89,7 @@ public slots:
   void saveDockState();
 signals:
   void windowLoaded();
-  //void pluginsLoaded();
   void aboutToQuit();
-  //void changeUAV(QMandalaItem *m);
 };
 //=============================================================================
 class DockWidget: public QDockWidget

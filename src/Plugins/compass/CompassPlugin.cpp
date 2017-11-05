@@ -21,7 +21,6 @@
  *
  */
 #include "CompassPlugin.h"
-#include "QMandala.h"
 //=============================================================================
 void CompassPlugin::init(void)
 {

@@ -55,8 +55,6 @@ Console::Console(QWidget *parent)
 {
   setWindowTitle(tr("Console"));
 
-  //mandala=qApp->property("Mandala").value<QMandala*>();
-
   qRegisterMetaType<QTextCharFormat>();
 
   //setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Expanding);

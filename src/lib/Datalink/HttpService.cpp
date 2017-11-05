@@ -21,14 +21,12 @@
  *
  */
 #include "HttpService.h"
-#include "QMandala.h"
 #include "AppDirs.h"
-#include "FactSystem.h"
+#include <Vehicles>
 //=============================================================================
 HttpService::HttpService(QObject* parent)
  : QObject(parent)
 {
-  mandala=qApp->property("Mandala").value<QMandala*>();
 }
 //=============================================================================
 void HttpService::httpRequest(QTextStream &stream,QString req,bool *ok)
@@ -96,11 +94,11 @@ QString HttpService::reply_mandala(const QString &req)
   xml.writeStartDocument();
   xml.writeStartElement("mandala");
   //xml.writeTextElement("name","UAVOS GCU Mandala");
-  //xml.writeTextElement("version",QMandala::version);
+  //xml.writeTextElement("version",FactSystem::version());
   //------------------------------
   bool doDescr=false;
   QStringList sv=req.split('&',QString::SkipEmptyParts);
-  if(sv.isEmpty())sv=mandala->current->names;
+  if(sv.isEmpty())sv=Vehicles::instance()->current()->f_mandala->names;
   else{
     QStringList st;
     foreach(QString s,sv){
@@ -120,11 +118,11 @@ QString HttpService::reply_mandala(const QString &req)
       if(s.size())st.append(s);
     }
     if(st.size())sv=st;
-    else sv=mandala->current->names;
+    else sv=Vehicles::instance()->current()->f_mandala->names;
   }
   //mandala->currents
   foreach(QString vname,sv){
-    QString s=QString("%1").arg(mandala->current->field(vname)->value(),0,'f',10);
+    QString s=QString("%1").arg(Vehicles::instance()->current()->f_mandala->valueByName(vname).toDouble(),0,'f',10);
     while(s.at(s.size()-1)=='0'){ //remove trailing zeros
       s.remove(s.size()-1,1);
       if(s.at(s.size()-1)!='.')continue;
@@ -133,7 +131,11 @@ QString HttpService::reply_mandala(const QString &req)
     }
     if(doDescr){
       xml.writeStartElement(vname);
-      xml.writeAttribute("descr",mandala->current->field(vname)->descr());
+      xml.writeAttribute("descr",Vehicles::instance()->current()->f_mandala->factByName(vname)->descr());
+      uint idx=Vehicles::instance()->current()->f_mandala->factByName(vname)->id();
+      xml.writeAttribute("id",QString::number(idx&0xFF));
+      xml.writeAttribute("id_hex",QString::number(idx&0xFF,16).toUpper());
+      xml.writeAttribute("id_fact",QString::number(idx,16).toUpper());
       xml.writeCharacters(s);
       xml.writeEndElement();
     }else{
@@ -236,7 +238,7 @@ QString HttpService::reply_telemetry()
   //------------------------------
   // FLIGHT TRACE
   xml.writeStartElement("Placemark");
-  xml.writeTextElement("name",QFileInfo(mandala->current->rec->loadFile).baseName());
+  xml.writeTextElement("name",QFileInfo(Vehicles::instance()->current()->f_recorder->loadFile).baseName());
   xml.writeTextElement("styleUrl","#traceStyle");
   xml.writeTextElement("visibility","0");
   xml.writeTextElement("gx:balloonVisibility","0");
@@ -245,11 +247,11 @@ QString HttpService::reply_telemetry()
   xml.writeTextElement("altitudeMode","absolute");
 
   //fill trace coordinates
-  int igps_lat=mandala->current->names.indexOf("gps_lat");
-  int igps_lon=mandala->current->names.indexOf("gps_lon");
-  int igps_hmsl=mandala->current->names.indexOf("gps_hmsl");
+  int igps_lat=Vehicles::instance()->current()->f_mandala->names.indexOf("gps_lat");
+  int igps_lon=Vehicles::instance()->current()->f_mandala->names.indexOf("gps_lon");
+  int igps_hmsl=Vehicles::instance()->current()->f_mandala->names.indexOf("gps_hmsl");
   QStringList st;
-  foreach(const FlightDataFile::ListDouble &vlist,mandala->current->rec->file.data){
+  foreach(const VehicleRecorder::ListDouble &vlist,Vehicles::instance()->current()->f_recorder->file.data){
     const double lat=vlist.at(igps_lat);
     const double lon=vlist.at(igps_lon);
     const double hmsl=vlist.at(igps_hmsl);
@@ -266,7 +268,7 @@ QString HttpService::reply_telemetry()
   xml.writeTextElement("gx:balloonVisibility","0");
   xml.writeStartElement("Point");
   xml.writeTextElement("altitudeMode","relativeToGround");
-  xml.writeTextElement("coordinates",QString().sprintf("%.6f,%.6f,%.1f",mandala->current->rec->value("gps_home_lon"),mandala->current->rec->value("gps_home_lat"),0.0));
+  xml.writeTextElement("coordinates",QString().sprintf("%.6f,%.6f,%.1f",Vehicles::instance()->current()->f_recorder->fileValue("gps_home_lon"),Vehicles::instance()->current()->f_recorder->fileValue("gps_home_lat"),0.0));
   xml.writeEndElement();//Point
   xml.writeEndElement();//Placemark
   //------------------------------
@@ -280,9 +282,9 @@ QString HttpService::reply_telemetry()
   xml.writeTextElement("altitudeMode","absolute");
   xml.writeStartElement("Location");
   xml.writeAttribute("id","uavLoc");
-  xml.writeTextElement("longitude",QString().sprintf("%.6f",mandala->current->rec->value("gps_lon")));
-  xml.writeTextElement("latitude",QString().sprintf("%.6f",mandala->current->rec->value("gps_lat")));
-  xml.writeTextElement("altitude",QString().sprintf("%.1f",mandala->current->rec->value("gps_hmsl")));
+  xml.writeTextElement("longitude",QString().sprintf("%.6f",Vehicles::instance()->current()->f_recorder->fileValue("gps_lon")));
+  xml.writeTextElement("latitude",QString().sprintf("%.6f",Vehicles::instance()->current()->f_recorder->fileValue("gps_lat")));
+  xml.writeTextElement("altitude",QString().sprintf("%.1f",Vehicles::instance()->current()->f_recorder->fileValue("gps_hmsl")));
   xml.writeEndElement();//Location
   xml.writeStartElement("Orientation");
   xml.writeAttribute("id","uavOri");
@@ -301,21 +303,21 @@ QString HttpService::reply_telemetry()
   xml.writeStartElement("gx:Tour");
   xml.writeTextElement("name","Flight tour");
   xml.writeStartElement("gx:Playlist");
-  int iroll=mandala->current->names.indexOf("roll");
-  int ipitch=mandala->current->names.indexOf("pitch");
-  int iyaw=mandala->current->names.indexOf("yaw");
+  int iroll=Vehicles::instance()->current()->f_mandala->names.indexOf("roll");
+  int ipitch=Vehicles::instance()->current()->f_mandala->names.indexOf("pitch");
+  int iyaw=Vehicles::instance()->current()->f_mandala->names.indexOf("yaw");
   uint time_s=0;
   int i=-1,cam_i=-1;
-  foreach(uint time,mandala->current->rec->file.time){
+  foreach(uint time,Vehicles::instance()->current()->f_recorder->file.time){
     i++;
     if(cam_i>=0)cam_i++;
     //every second
     if((time-time_s)<1000)continue;
     time_s=time;
-    const FlightDataFile::ListDouble &vlist=mandala->current->rec->file.data.at(i);
+    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->current()->f_recorder->file.data.at(i);
     //find camera
     if(cam_i>=0){  //delay camera 2sec
-      FlightDataFile::ListDouble vlist_cam=mandala->current->rec->file.data.at(cam_i);
+      VehicleRecorder::ListDouble vlist_cam=Vehicles::instance()->current()->f_recorder->file.data.at(cam_i);
       xml.writeStartElement("gx:FlyTo");
       xml.writeTextElement("gx:flyToMode","smooth");
       xml.writeTextElement("gx:duration","1");  //1sec
@@ -345,7 +347,7 @@ QString HttpService::reply_telemetry()
     xml.writeEndElement();//Location
     xml.writeStartElement("Orientation");
     xml.writeAttribute("targetId","uavOri");
-    xml.writeTextElement("heading",QString().sprintf("%.0f",mandala->current->boundAngle360(vlist.at(iyaw)+180.0)));
+    xml.writeTextElement("heading",QString().sprintf("%.0f",FactSystem::angle360(vlist.at(iyaw)+180.0)));
     xml.writeTextElement("tilt",QString().sprintf("%.0f",vlist.at(ipitch)));
     xml.writeTextElement("roll",QString().sprintf("%.0f",vlist.at(iroll)));
     xml.writeEndElement();//Orientation
@@ -377,18 +379,18 @@ QString HttpService::reply_telemetry()
   xml.writeStartElement("gx:Track");
   xml.writeTextElement("altitudeMode","absolute");
   xml.writeTextElement("gx:horizFov","10");
-  QDateTime t=mandala->current->rec->file.timestamp;
+  QDateTime t=Vehicles::instance()->current()->f_recorder->file.timestamp;
   time_s=0;
   i=-1;
-  foreach(uint time,mandala->current->rec->file.time){
+  foreach(uint time,Vehicles::instance()->current()->f_recorder->file.time){
     i++;
     //every second
     if((time-time_s)<1000)continue;
     time_s=time;
-    const FlightDataFile::ListDouble &vlist=mandala->current->rec->file.data.at(i);
+    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->current()->f_recorder->file.data.at(i);
     xml.writeTextElement("when",t.toString("yyyy-MM-ddTHH:mm:ssZ"));
     xml.writeTextElement("gx:coord",QString().sprintf("%.6f,%.6f,%.1f",vlist.at(igps_lon),vlist.at(igps_lat),vlist.at(igps_hmsl)));
-    double crs=mandala->current->boundAngle(vlist.at(iyaw)+180.0);
+    double crs=FactSystem::angle(vlist.at(iyaw)+180.0);
     xml.writeTextElement("gx:angles",QString().sprintf("%.1f,%.1f,%.1f",crs,vlist.at(ipitch),vlist.at(iroll)));
     t=t.addSecs(1);
   }
@@ -431,13 +433,13 @@ QString HttpService::reply_flightplan()
   // waypoints
   xml.writeStartElement("Folder");
   xml.writeTextElement("name","Waypoints");
-  /*for(uint i=0;i<mandala->current->wpcnt;i++){
+  /*for(uint i=0;i<Vehicles::instance()->current()->f_mandala->wpcnt;i++){
     xml.writeStartElement("Placemark");
     xml.writeTextElement("name","W"+QString::number(i+1));
     xml.writeTextElement("visibility","1");
     xml.writeStartElement("Point");
     xml.writeTextElement("altitudeMode","absolute");
-    xml.writeTextElement("coordinates",QString().sprintf("%.6f,%.6f,%.0f",mandala->current->fp.waypoints[i].LLA[1],mandala->current->fp.waypoints[i].LLA[0],mandala->current->home_pos[2]+mandala->current->fp.waypoints[i].LLA[2]));
+    xml.writeTextElement("coordinates",QString().sprintf("%.6f,%.6f,%.0f",Vehicles::instance()->current()->f_mandala->fp.waypoints[i].LLA[1],Vehicles::instance()->current()->f_mandala->fp.waypoints[i].LLA[0],Vehicles::instance()->current()->f_mandala->home_pos[2]+Vehicles::instance()->current()->f_mandala->fp.waypoints[i].LLA[2]));
     xml.writeEndElement();//Point
     xml.writeEndElement();//Placemark
     }*/
@@ -453,8 +455,8 @@ QString HttpService::reply_flightplan()
   xml.writeTextElement("tessellate","0");
   xml.writeTextElement("altitudeMode","absolute");
   QStringList st;
-  /*for(uint i=0;i<mandala->current->wpcnt;i++)
-    st.append(QString().sprintf("%.6f,%.6f,%.1f",mandala->current->fp.waypoints[i].LLA[1],mandala->current->fp.waypoints[i].LLA[0],mandala->current->home_pos[2]+mandala->current->fp.waypoints[i].LLA[2]));
+  /*for(uint i=0;i<Vehicles::instance()->current()->f_mandala->wpcnt;i++)
+    st.append(QString().sprintf("%.6f,%.6f,%.1f",Vehicles::instance()->current()->f_mandala->fp.waypoints[i].LLA[1],Vehicles::instance()->current()->f_mandala->fp.waypoints[i].LLA[0],Vehicles::instance()->current()->f_mandala->home_pos[2]+Vehicles::instance()->current()->f_mandala->fp.waypoints[i].LLA[2]));
   xml.writeTextElement("coordinates",st.join("\n"));*/
   xml.writeEndElement();//LineString
   xml.writeEndElement();//Placemark
@@ -486,12 +488,12 @@ QString HttpService::reply_chase()
   //xml.writeTextElement("gx:duration","5.0");
   xml.writeStartElement("Camera");
   xml.writeAttribute("id","camChase");
-  xml.writeTextElement("longitude",QString().sprintf("%.6f",mandala->current->gps_pos[1]));
-  xml.writeTextElement("latitude",QString().sprintf("%.6f",mandala->current->gps_pos[0]));
-  xml.writeTextElement("altitude",QString().sprintf("%.1f",mandala->current->gps_pos[2]));
-  xml.writeTextElement("heading",QString().sprintf("%.0f",mandala->current->course<0?mandala->current->course+360.0:mandala->current->course));
-  xml.writeTextElement("tilt",QString().sprintf("%.0f",mandala->current->theta[1]+90.0));
-  xml.writeTextElement("roll",QString().sprintf("%.0f",-mandala->current->theta[0]));
+  xml.writeTextElement("longitude",QString().sprintf("%.6f",Vehicles::instance()->current()->f_mandala->valueById(idx_gps_pos|1<<8).toDouble()));
+  xml.writeTextElement("latitude",QString().sprintf("%.6f",Vehicles::instance()->current()->f_mandala->valueById(idx_gps_pos|0<<8).toDouble()));
+  xml.writeTextElement("altitude",QString().sprintf("%.1f",Vehicles::instance()->current()->f_mandala->valueById(idx_gps_pos|2<<8).toDouble()));
+  xml.writeTextElement("heading",QString().sprintf("%.0f",Vehicles::instance()->current()->f_mandala->valueById(idx_course).toDouble()<0?Vehicles::instance()->current()->f_mandala->valueById(idx_course).toDouble()+360.0:Vehicles::instance()->current()->f_mandala->valueById(idx_course).toDouble()));
+  xml.writeTextElement("tilt",QString().sprintf("%.0f",Vehicles::instance()->current()->f_mandala->valueById(idx_theta|1<<8).toDouble()+90.0));
+  xml.writeTextElement("roll",QString().sprintf("%.0f",-Vehicles::instance()->current()->f_mandala->valueById(idx_theta|0<<8).toDouble()));
   xml.writeTextElement("altitudeMode","absolute");
   xml.writeEndElement();//Camera
   //xml.writeEndElement();//FlyTo
@@ -528,12 +530,12 @@ QString HttpService::reply_chase_upd()
   xml.writeTextElement("gx:duration","2.0");
   xml.writeStartElement("Camera");
   xml.writeAttribute("id","camChase");
-  xml.writeTextElement("longitude",QString().sprintf("%.6f",mandala->current->gps_pos[1]));
-  xml.writeTextElement("latitude",QString().sprintf("%.6f",mandala->current->gps_pos[0]));
-  xml.writeTextElement("altitude",QString().sprintf("%.1f",mandala->current->gps_pos[2]));
-  xml.writeTextElement("heading",QString().sprintf("%.0f",mandala->current->course<0?mandala->current->course+360.0:mandala->current->course));
-  xml.writeTextElement("tilt",QString().sprintf("%.0f",mandala->current->theta[1]+90.0));
-  xml.writeTextElement("roll",QString().sprintf("%.0f",-mandala->current->theta[0]));
+  xml.writeTextElement("longitude",QString().sprintf("%.6f",Vehicles::instance()->current()->f_mandala->valueById(idx_gps_pos|1<<8).toDouble()));
+  xml.writeTextElement("latitude",QString().sprintf("%.6f",Vehicles::instance()->current()->f_mandala->valueById(idx_gps_pos|0<<8).toDouble()));
+  xml.writeTextElement("altitude",QString().sprintf("%.1f",Vehicles::instance()->current()->f_mandala->valueById(idx_gps_pos|2<<8).toDouble()));
+  xml.writeTextElement("heading",QString().sprintf("%.0f",Vehicles::instance()->current()->f_mandala->valueById(idx_course).toDouble()<0?Vehicles::instance()->current()->f_mandala->valueById(idx_course).toDouble()+360.0:Vehicles::instance()->current()->f_mandala->valueById(idx_course).toDouble()));
+  xml.writeTextElement("tilt",QString().sprintf("%.0f",Vehicles::instance()->current()->f_mandala->valueById(idx_theta|1<<8).toDouble()+90.0));
+  xml.writeTextElement("roll",QString().sprintf("%.0f",-Vehicles::instance()->current()->f_mandala->valueById(idx_theta|0<<8).toDouble()));
   xml.writeTextElement("altitudeMode","absolute");
   xml.writeEndElement();//Camera
   xml.writeEndElement();//FlyTo

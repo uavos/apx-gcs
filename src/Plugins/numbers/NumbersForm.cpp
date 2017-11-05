@@ -1,6 +1,7 @@
+#include <QtCore>
+#include <Vehicles>
 #include "NumbersForm.h"
 #include "ui_NumbersForm.h"
-#include "QMandala.h"
 //==============================================================================
 NumbersForm::NumbersForm(QWidget *parent)
  : QDialog(parent)
@@ -36,7 +37,7 @@ void NumbersForm::cleanTable()
 {//return;
   for(int row=0;row<tableWidget->rowCount();row++){
     QTableWidgetItem *i=tableWidget->item(row,0);
-    if((!i) || i->text().isEmpty() || (!(QMandala::instance()->current->field(i->text())->name()==i->text()||i->text().contains(".")))){
+    if((!i) || i->text().isEmpty() || (!(Vehicles::instance()->f_local->f_mandala->names.contains(i->text())||i->text().contains(".")))){
       tableWidget->removeRow(row);
       continue;
     }
@@ -72,7 +73,7 @@ QWidget *NumbersItemDelegate::createEditor(QWidget *parent,const QStyleOptionVie
   QComboBox *cb=new QComboBox(parent);
   cb->setFrame(false);
   cb->addItem("");
-  cb->addItems(QMandala::instance()->local->names);
+  cb->addItems(Vehicles::instance()->f_local->f_mandala->names);
   cb->setEditable(true);
   cb->view()->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Ignored);
   cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0)*2);

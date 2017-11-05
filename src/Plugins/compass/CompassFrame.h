@@ -24,7 +24,7 @@
 #define COMPASSFRAME_H
 //==============================================================================
 #include <QWidget>
-#include "QMandala.h"
+#include <MandalaValue.h>
 #include "DrawingArea.h"
 //==============================================================================
 class CompassFrame: public QWidget
@@ -35,6 +35,10 @@ public:
 protected:
   void closeEvent(QCloseEvent *event);
 private:
+  MandalaValue<idx_mag|0<<8,double> c_Hx;
+  MandalaValue<idx_mag|1<<8,double> c_Hy;
+  MandalaValue<idx_mag|2<<8,double> c_Hz;
+
     QToolBar *toolBar;
     QCheckBox checkBoxTrace;
     QPushButton buttonClear,buttonClose;
@@ -51,10 +55,8 @@ private:
     QHBoxLayout *hbLayoutBottom;
 
     uint tcounter;
-    QList<QMetaObject::Connection>mcon;
 private slots:
-    void mandalaCurrentChanged(QMandalaItem *m);
-    void dataReceived(uint var_idx);
+    void dataReceived(uint id);
     void action_toggled(bool);
     void oncheckBoxTraceChange(int);
     void onbuttonClearPressed();

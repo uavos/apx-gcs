@@ -24,7 +24,6 @@
 #include <QQuickView>
 #include <QGLWidget>
 #include "MainForm.h"
-#include "QMandala.h"
 #include "QmlView.h"
 #include "AppSettings.h"
 #include "AppDirs.h"
@@ -36,7 +35,6 @@ MainForm::MainForm(QWidget *parent)
   : QMainWindow(parent),
   closing(false),loading(true)
 {
-  mandala=qApp->property("Mandala").value<QMandala*>();
   setDockNestingEnabled(true);
   //setDockOptions(dockOptions()&(~QMainWindow::AnimatedDocks)); <- BUG in yakkety?
   //setTabPosition(Qt::AllDockWidgetAreas,QTabWidget::North);
@@ -49,16 +47,10 @@ MainForm::MainForm(QWidget *parent)
   mWindow=menuBar()->addMenu(tr("&Window"));
   mHelp=menuBar()->addMenu(tr("&Help"));
 
-  //connect(mandala,SIGNAL(serverDiscovered(QHostAddress,QString)),this,SLOT(serverDiscovered(QHostAddress,QString)));
-  //connect(this,SIGNAL(connectToServer(QHostAddress)),mandala,SIGNAL(connectToServer(QHostAddress)));
-
   connect(Vehicles::instance(),&Vehicles::vehicleRegistered,this,&MainForm::vehicleRegistered);
   connect(Vehicles::instance(),&Vehicles::vehicleRemoved,this,&MainForm::vehicleRemoved);
   connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&MainForm::vehicleSelected);
   vehicleRegistered(Vehicles::instance()->f_local);
-
-  //connect(mandala,SIGNAL(uavRemoved(QMandalaItem*)),this,SLOT(uavRemoved(QMandalaItem*)));
-  //connect(this,SIGNAL(changeUAV(QMandalaItem*)),mandala,SLOT(setCurrent(QMandalaItem*)));
 
   mWindow->addAction(QIcon(":/icons/old/view-fullscreen.png"),tr("Toggle Full Screen"),this,SLOT(mFullScreen_triggered()),QKeySequence("F11"));
   mWindow->addAction(tr("Auto arrange"),this,SLOT(arrange()));
@@ -66,7 +58,7 @@ MainForm::MainForm(QWidget *parent)
   //mWindow->addAction(tr("Lock widgets"),this,SLOT(lock()));
   mWindow->addSeparator();
 
-  mHelp->addAction(QIcon(":/icons/old/application-pdf.png"),tr("Mandala Report"),this,SLOT(mMandala_triggered()));
+  mHelp->addAction(QIcon(":/icons/old/application-pdf.png"),tr("Mandala Report"),[=](){ QDesktopServices::openUrl(QUrl("http://127.0.0.1:9080/mandala?descr")); });
   mHelp->addAction(QIcon(":/icons/old/text-html.png"),tr("Documentation"),[=](){ QDesktopServices::openUrl(QUrl("http://wiki.uavos.com")); });
   mHelp->addSeparator();
   mHelp->addAction(QIcon(":/icons/old/connect_creating.png"),tr("VPN support"),this,SLOT(mVPN_triggered()));
@@ -496,16 +488,6 @@ void MainForm::lock()
     dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 }
 //=============================================================================
-//=============================================================================
-void MainForm::mMandala_triggered()
-{
-  QString fname=QDir::tempPath()+"/mandala";
-  FILE *fd=fopen(fname.toUtf8().data(),"w");
-  if (!fd)return;
-  mandala->current->print_report(fd);
-  fclose(fd);
-  QProcess::startDetached("kate",QStringList()<<fname);
-}
 //=============================================================================
 void MainForm::mFullScreen_triggered()
 {

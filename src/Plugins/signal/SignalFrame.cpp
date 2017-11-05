@@ -21,8 +21,8 @@
  *
  */
 #include <QtCore>
+#include <Vehicles>
 #include "SignalFrame.h"
-#include "QMandala.h"
 //==============================================================================
 SignalFrame::SignalFrame(QWidget *parent) :
     QWidget(parent)
@@ -89,8 +89,7 @@ SignalFrame::SignalFrame(QWidget *parent) :
     }
   a->toggle();
 
-  mandalaCurrentChanged(QMandala::instance()->current);
-  connect(QMandala::instance(),SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(mandalaCurrentChanged(QMandalaItem*)));
+  connect(Vehicles::instance(),&Vehicles::currentDataReceived,this,&SignalFrame::dataReceived);
 }
 //==============================================================================
 QAction* SignalFrame::addPlot(QString name,const QList<QColor> &color,const QList<uint> &var_idx)
@@ -108,7 +107,7 @@ QAction* SignalFrame::addPlot(QString name,const QList<QColor> &color,const QLis
       if(c==QColor(cn))break;
       cn=c.name();
     }
-    s+="<b><font color="+cn+">"+cn.toUpper()+": </font></b>"+QString(QMandala::instance()->current->field(i)->descr())+"<br>\n";
+    s+="<b><font color="+cn+">"+cn.toUpper()+": </font></b>"+QString(Vehicles::instance()->current()->f_mandala->factById(i)->descr())+"<br>\n";
   }
   a->setToolTip(s);
   actionGroup->addAction(a);
@@ -121,21 +120,14 @@ QAction* SignalFrame::addPlot(QString name,const QList<QColor> &color,const QLis
   return a;
 }
 //==============================================================================
-void SignalFrame::mandalaCurrentChanged(QMandalaItem *m)
+void SignalFrame::dataReceived(uint id)
 {
-  foreach(QMetaObject::Connection c,mcon) disconnect(c);
-  mcon.clear();
-  mcon.append(connect(m, SIGNAL(updated(uint)), SLOT(dataReceived(uint))));//, Qt::QueuedConnection));
-}
-//=============================================================================
-void SignalFrame::dataReceived(uint var_idx)
-{
-  if(var_idx!=idx_downstream) return;
+  if(id!=idx_downstream)return;
   QList<double> list;
   if(!map.contains(curAction))return;
   const _plot &b=map.value(curAction);
   foreach(uint var_idx,b.var_idx)
-    list.append(QMandala::instance()->current->field(var_idx)->value());
+    list.append(Vehicles::instance()->current()->f_mandala->valueById(var_idx).toDouble());
   plot->addSample(list);
   plot->setUseAutoRange(true);
   plot->update();

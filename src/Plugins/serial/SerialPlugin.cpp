@@ -3,7 +3,6 @@
  *
  */
 #include "SerialPlugin.h"
-#include "QMandala.h"
 #include <QtWidgets>
 //=============================================================================
 void SerialPlugin::init(void)
