@@ -46,10 +46,13 @@ public:
   Q_INVOKABLE QVariant findValue(const QString &namePath);
 
   Q_INVOKABLE Fact * fact(const QString &factName) const;
+  Q_INVOKABLE Fact * childByTitle(const QString &factTitle) const;
   //Q_INVOKABLE Fact * byPath(const QString &itemNamePath) const;
 
 
   virtual void bind(FactData *item);
+
+  QVariant userData;
 
 public slots:
   virtual void trigger(void); //execute fact event (onClick)

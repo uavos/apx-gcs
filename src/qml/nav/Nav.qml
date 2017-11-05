@@ -1,5 +1,6 @@
 ﻿import QtQuick 2.2
 //import QtQuick.Controls 1.1
+import GCS.Vehicles 1.0
 import "../pfd"
 import "../comm"
 import "../components"
@@ -18,16 +19,38 @@ Rectangle {
         m.mode.value===mode_TAXI ||
         (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
 
-    TextLine {
-        id: warnings
+    //warnings and errors bottom panel
+    Text {
+        id: warningsText
         anchors.fill: parent
         anchors.leftMargin: comm_row.width
+        anchors.rightMargin: 1
+        horizontalAlignment: Text.AlignRight
+        verticalAlignment: Text.AlignVCenter
+        font.pixelSize: height
+        font.family: font_condenced
+        Behavior on opacity { enabled: app.settings.smooth.value; PropertyAnimation {duration: 200} }
+        Timer {
+            id: fallTimer
+            interval: 5000-200; running: false; repeat: false
+            onTriggered: warningsText.opacity=0
+        }
         Connections {
-            target: mandala.current
-            onWarningChanged: warnings.show(mandala.current.warning,"yellow")
-            onAlarmChanged: warnings.show(mandala.current.alarm,"red")
+            target: app.vehicles.current.warnings
+            onShowMore: {
+                switch(msgType){
+                    default: warningsText.color="white"; break;
+                    case VehicleWarnings.ERROR: warningsText.color="red"; break;
+                    case VehicleWarnings.WARNING: warningsText.color="yellow"; break;
+                }
+                warningsText.text=msg;
+                fallTimer.stop();
+                warningsText.opacity=1;
+                fallTimer.start();
+            }
         }
     }
+
 
     Row {
         id: comm_row

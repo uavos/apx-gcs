@@ -70,8 +70,8 @@ GCSMenu {
         GCSMenuField {
             title: qsTr("AHRS")
             fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Reset gps home altitude"); onClicked: mandala.current.exec_script("hmsl()"); }
-                GCSMenuField { title: qsTr("Reset static pressure"); onClicked: mandala.current.exec_script("zps()"); }
+                GCSMenuField { title: qsTr("Reset gps home altitude"); onClicked: app.jsexec("hmsl()"); }
+                GCSMenuField { title: qsTr("Reset static pressure"); onClicked: app.jsexec("zps()"); }
                 GCSMenuField { separator: true;}
                 GCSMenuField { title: m.cmode_ahrs.descr; onToggled: m.cmode_ahrs.setValue(!m.cmode_ahrs.value); checked: m.cmode_ahrs.value; checkable: true;}
             }
@@ -93,8 +93,8 @@ GCSMenu {
         GCSMenuField {
             title: qsTr("Telemetry")
             fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Record data"); onToggled: mandala.current.recorder.recording=!mandala.current.recorder.recording; checked: mandala.current.recorder.recording; checkable: true;}
-                GCSMenuField { title: qsTr("Discard current file"); onClicked: mandala.current.recorder.discard(); }
+                GCSMenuField { title: qsTr("Record data"); onToggled: app.vehicles.current.recorder.recording=!app.vehicles.current.recorder.recording; checked: app.vehicles.current.recorder.recording; checkable: true;}
+                GCSMenuField { title: qsTr("Discard current file"); onClicked: app.vehicles.current.recorder.discard(); }
             }
         }
         GCSMenuField { separator: true; }

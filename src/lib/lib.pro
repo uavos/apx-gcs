@@ -58,6 +58,7 @@ SOURCES += \
     Vehicles/VehicleMandalaFact.cpp \
     Vehicles/VehicleNmtManager.cpp \
     Vehicles/VehicleRecorder.cpp \
+    Vehicles/VehicleWarnings.cpp \
 
 HEADERS += \
     Vehicles/QMandalaField.h \
@@ -70,6 +71,7 @@ HEADERS += \
     Vehicles/MandalaValue.h \
     Vehicles/VehicleNmtManager.h \
     Vehicles/VehicleRecorder.h \
+    Vehicles/VehicleWarnings.h \
 
 # Nodes
 SOURCES += \

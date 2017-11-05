@@ -959,7 +959,7 @@
 <context>
     <name>FactData</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+269"/>
+        <location filename="../src/lib/FactSystem/FactData.cpp" line="+281"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1192,7 +1192,7 @@
 <context>
     <name>MainForm</name>
     <message>
-        <location filename="../src/main/MainForm.cpp" line="+42"/>
+        <location filename="../src/main/MainForm.cpp" line="+43"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
@@ -1389,7 +1389,7 @@
 <context>
     <name>NodeField</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeField.cpp" line="+253"/>
+        <location filename="../src/lib/Nodes/NodeField.cpp" line="+255"/>
         <location line="+10"/>
         <location line="+8"/>
         <location line="+7"/>
@@ -1981,6 +1981,105 @@
     </message>
 </context>
 <context>
+    <name>NumbersForm</name>
+    <message>
+        <location filename="../src/Plugins/numbers/NumbersForm.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Binding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Precision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Warn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Alarm</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NumbersPlugin</name>
+    <message>
+        <location filename="../src/Plugins/numbers/NumbersPlugin.cpp" line="+18"/>
+        <source>Numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export as plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Load exported plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+118"/>
+        <location line="+28"/>
+        <source>User plugin name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-23"/>
+        <location line="+26"/>
+        <source>QML files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <location line="+26"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-18"/>
+        <source>Cannot write file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Plugin &apos;%1&apos; exported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Cannot open file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Content of &apos;%1&apos; loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Content in &apos;%1&apos; not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PawnScript</name>
     <message>
         <location filename="../src/Plugins/nodes/PawnScript.cpp" line="+207"/>
@@ -2396,7 +2495,7 @@
 <context>
     <name>Vehicle</name>
     <message>
-        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+44"/>
+        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+43"/>
         <source>Stream</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2426,7 +2525,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Class</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2441,7 +2540,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+40"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2454,7 +2553,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+190"/>
+        <location line="+220"/>
         <source>Received serial data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2468,9 +2567,70 @@
     </message>
 </context>
 <context>
+    <name>VehicleRecorder</name>
+    <message>
+        <location filename="../src/lib/Vehicles/VehicleRecorder.cpp" line="+41"/>
+        <source>Recorder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Telemetry file recorder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+269"/>
+        <source>Telemetry file is too big (%1 MB). Load it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>The file format is not correct.</source>
+        <translation type="unfinished">Нядзейсны фармат файла.</translation>
+    </message>
+    <message>
+        <location line="+99"/>
+        <source>Telemetry file end tag fixed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Old telemetry file format detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VehicleWarnings</name>
+    <message>
+        <location filename="../src/lib/Vehicles/VehicleWarnings.cpp" line="+27"/>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Malfunctions and warnings list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Vehicles</name>
     <message>
-        <location filename="../src/lib/Vehicles/Vehicles.cpp" line="+34"/>
+        <location filename="../src/lib/Vehicles/Vehicles.cpp" line="+35"/>
         <source>Vehicles</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2480,7 +2640,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Select vehicle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2495,7 +2655,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="+86"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>

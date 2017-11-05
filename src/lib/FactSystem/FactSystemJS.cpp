@@ -164,8 +164,8 @@ void FactSystemJS::jsRegisterFunctions()
   jsRegister("serial(p,v)",QObject::tr("send data v to serial port ID p"),"app.serial(p,v);");
   jsRegister("vmexec(f)",QObject::tr("execute function on VMs"),"app.vmexec(f);");
   jsRegister("sleep(n)",QObject::tr("sleep n milliseconds"),"app.sleep(n);");
-  jsRegister("next()",QObject::tr("switch to next vehicle"),"mandala.changeCurrentNext();");
-  jsRegister("prev()",QObject::tr("switch to previous vehicle"),"mandala.changeCurrentPrev();");
+  jsRegister("next()",QObject::tr("switch to next vehicle"),"app.vehicles.selectNext();");
+  jsRegister("prev()",QObject::tr("switch to previous vehicle"),"app.vehicles.selectPrev();");
 
   //some helper functions
   jsRegister("trigger(v,a,b)",QObject::tr("trigger value of v to a or b"),"if(v==a)return b; else return a;");

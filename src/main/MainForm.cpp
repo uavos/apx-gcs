@@ -29,6 +29,7 @@
 #include "AppSettings.h"
 #include "AppDirs.h"
 #include "Vehicles.h"
+#include "Vehicle.h"
 //=============================================================================
 MainForm::MainForm(QWidget *parent)
   : QMainWindow(parent),

@@ -188,8 +188,8 @@ int main(int argc, char *argv[])
   //create main objects
   mandala=new QMandala;
 
-  QObject::connect(datalink,&Datalink::read,mandala,&QMandala::downlinkReceived);
-  QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
+  //QObject::connect(datalink,&Datalink::read,mandala,&QMandala::downlinkReceived);
+  //QObject::connect(mandala,&QMandala::sendUplink,datalink,&Datalink::write);
 
   //factSystem->loadMandala(mandala->current);
   factSystem->jsSyncObject(mandala);

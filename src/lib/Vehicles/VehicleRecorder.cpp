@@ -63,8 +63,10 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   //QTimer::singleShot(1000,this,SLOT(convertFormat()));
 
   //status change (size/time)
+  connect(this,&VehicleRecorder::recordingChanged,[=](){ setActive(recording()); });
   connect(this,&VehicleRecorder::fileSizeChanged,this,&VehicleRecorder::updateStatus);
   updateStatus();
+  recordingChanged();
 }
 //=============================================================================
 void VehicleRecorder::updateStatus()

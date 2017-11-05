@@ -34,7 +34,7 @@ Item {
         interval: 500; running: false; repeat: false
         onTriggered: {
             if(warning && (!alarm)){
-                mandala.current.setWarning(mfield?mfield.caption:label);
+                app.vehicles.current.warnings.warning(mfield?mfield.title:label);
             }
         }
     }
@@ -44,7 +44,7 @@ Item {
         onTriggered: {
             if(alarm){
                 showWarningTimer.stop();
-                mandala.current.setAlarm(mfield?mfield.caption:label);
+                app.vehicles.current.warnings.error(mfield?mfield.title:label);
             }else if(warning) showWarningTimer.start();
         }
     }

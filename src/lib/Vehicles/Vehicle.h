@@ -30,6 +30,7 @@
 class Vehicles;
 class Nodes;
 class VehicleRecorder;
+class VehicleWarnings;
 //=============================================================================
 class Vehicle: public Fact
 {
@@ -74,6 +75,7 @@ public:
   VehicleMandala *f_mandala;
   Nodes *f_nodes;
   VehicleRecorder *f_recorder;
+  VehicleWarnings *f_warnings;
 
   Fact * f_selectAction;
 

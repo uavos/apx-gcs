@@ -20,69 +20,47 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Vehicles_H
-#define Vehicles_H
+#ifndef VehicleWarnings_H
+#define VehicleWarnings_H
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
 class Vehicle;
 //=============================================================================
-class Vehicles: public Fact
+class VehicleWarnings: public Fact
 {
   Q_OBJECT
-
-  Q_PROPERTY(Vehicle * current READ current NOTIFY currentChanged)
+  Q_ENUMS(MsgType)
 
 public:
-  explicit Vehicles(FactSystem *parent);
+  explicit VehicleWarnings(Vehicle *parent);
 
-  static Vehicles * instance() {return _instance;}
+  enum MsgType {
+    INFO =0,
+    WARNING,
+    ERROR
+  };
+  Q_ENUM(MsgType)
 
-  Fact *f_list;
+  Fact * f_clear;
 
-  Fact *f_select;
-
-  Vehicle *f_local;
+  Fact * f_list;
 
 private:
-  static Vehicles * _instance;
+  QTimer showTimer;
+  Fact *createItem(const QString &msg, MsgType kind);
 
-  //IDENT procedures
-  QTimer reqTimer;
-  QList<QByteArray> reqList;
-  void reqIDENT(quint16 squawk);
-  void assignIDENT(QString callsign, QByteArray uid);
-  void scheduleRequest(const QByteArray &ba);
-
-  //ident lookup
-  QMap<quint16,Vehicle*> squawkMap;
-
+  QHash<Fact*,int> showMap;
+  QList<Fact*> showList;
+  int showNum;
+private slots:
+  void showTimerTimeout();
 public slots:
-  void selectVehicle(Vehicle *v);
+  void warning(const QString &msg);
+  void error(const QString &msg);
 signals:
-  void vehicleRegistered(Vehicle*);
-  void vehicleRemoved(Vehicle*);
-  void vehicleSelected(Vehicle*);
-
-  //data connection
-public slots:
-  void downlinkReceived(const QByteArray &ba);
-  void vehicleSendUplink(Vehicle *v,const QByteArray &packet);
-signals:
-  void sendUplink(const QByteArray &packet);
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-  Vehicle * current(void) const;
-
-protected:
-  Vehicle * m_current;
-
-signals:
-  void currentChanged();
-
-
+  void show(QString msg, MsgType msgType);
+  void showMore(QString msg, MsgType msgType);
 };
 //=============================================================================
 #endif

@@ -1,5 +1,5 @@
 import QtQuick 2.2
-import GCS.Vehicle 1.0
+import GCS.Vehicles 1.0
 import "../components"
 import "."
 //import QtGraphicalEffects 1.0

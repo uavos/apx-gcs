@@ -28,7 +28,8 @@
 #include "node.h"
 //=============================================================================
 VehicleMandala::VehicleMandala(Vehicle *parent)
-  : Fact(parent,"mandala","Mandala",tr("Vehicle data tree"),GroupItem,NoData)
+  : Fact(parent,"mandala","Mandala",tr("Vehicle data tree"),GroupItem,NoData),
+    m_errcnt(0)
 {
   m=new Mandala();
 
@@ -190,6 +191,18 @@ bool VehicleMandala::setMd5(const QByteArray &v)
   emit md5Changed();
   return true;
 }
+uint VehicleMandala::errcnt(void) const
+{
+  return m_errcnt;
+}
+bool VehicleMandala::setErrcnt(const uint &v)
+{
+  if(m_errcnt==v)return false;
+  m_errcnt=v;
+  m->dl_errcnt=v;
+  emit errcntChanged();
+  return true;
+}
 //=============================================================================
 QVariant VehicleMandala::valueById(quint16 id) const
 {
@@ -262,6 +275,7 @@ bool VehicleMandala::unpackTelemetry(const QByteArray &ba)
   foreach (VehicleMandalaFact *f, idMap.values()) {
     f->loadValue();
   }
+  setErrcnt(m->dl_errcnt);
   return true;
 }
 //=============================================================================

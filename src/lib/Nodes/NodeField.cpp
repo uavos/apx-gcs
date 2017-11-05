@@ -24,6 +24,8 @@
 #include "NodeItem.h"
 #include "node.h"
 #include "Vehicles.h"
+#include "Vehicle.h"
+#include "VehicleMandalaFact.h"
 //=============================================================================
 NodeField::NodeField(NodeItem *node, quint16 id)
   : Fact(node->f_fields,"field#","","",FactItem,NoData),

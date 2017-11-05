@@ -202,8 +202,8 @@ void FactTree::clear(void)
   foreach (FactTree *item, m_items) {
     item->m_parentItem=NULL;
     emit itemRemoved(item);
+    item->deleteLater();
   }
-  qDeleteAll(m_items);
   m_items.clear();
   endRemoveRows();
   if(fParent) fParent->endRemoveRows();

@@ -24,6 +24,7 @@
 #include "Vehicle.h"
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
+#include "VehicleWarnings.h"
 //---------------------------
 // deprecate
 #include "node.h"
@@ -34,9 +35,6 @@ Vehicles::Vehicles(FactSystem *parent)
   : Fact(parent,"vehicles",tr("Vehicles"),tr("Discovered vehicles"),SectionItem,NoData)
 {
   _instance=this;
-
-  qmlRegisterUncreatableType<Vehicles>("GCS.Vehicles", 1, 0, "Vehicles", "Reference only");
-  qmlRegisterUncreatableType<Vehicle>("GCS.Vehicle", 1, 0, "Vehicle", "Reference only");
 
   setFlatModel(true);
 
@@ -67,6 +65,10 @@ Vehicles::Vehicles(FactSystem *parent)
     if(reqList.isEmpty())reqTimer.stop();
     else emit sendUplink(reqList.takeFirst());
   });
+
+  qmlRegisterUncreatableType<Vehicles>("GCS.Vehicles", 1, 0, "Vehicles", "Reference only");
+  qmlRegisterUncreatableType<Vehicle>("GCS.Vehicles", 1, 0, "Vehicle", "Reference only");
+  qmlRegisterUncreatableType<VehicleWarnings>("GCS.Vehicles", 1, 0, "VehicleWarnings", "Reference only");
 }
 //=============================================================================
 void Vehicles::downlinkReceived(const QByteArray &ba)

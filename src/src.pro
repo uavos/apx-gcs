@@ -15,7 +15,7 @@ PLUGINS += nodes
 #PLUGINS += signal
 #PLUGINS += compass
 #PLUGINS += servos
-#PLUGINS += numbers
+PLUGINS += numbers
 #PLUGINS += serial
 #PLUGINS += sim
 

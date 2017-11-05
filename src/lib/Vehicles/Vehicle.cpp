@@ -25,6 +25,7 @@
 #include "VehicleMandala.h"
 #include "VehicleNmtManager.h"
 #include "VehicleRecorder.h"
+#include "VehicleWarnings.h"
 #include "Nodes.h"
 #include "Mandala.h"
 //=============================================================================
@@ -62,9 +63,14 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
   connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
+  f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,NoData);
+  connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
+  connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
+
   f_mandala=new VehicleMandala(this);
   f_nodes=new Nodes(this);
   f_recorder=new VehicleRecorder(this);
+  f_warnings=new VehicleWarnings(this);
 
   //datalink
   connect(this,&Vehicle::sendUplink,[=](const QByteArray &ba){
@@ -73,7 +79,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   });
 
 
-  //selection action fact
+  //selection action fact in separate group menu
   f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,NoData);
   connect(this,&Vehicle::destroyed,[=](){ parent->f_select->removeItem(f_select); });
   connect(f_select,&Fact::triggered,[=](){ parent->selectVehicle(this); });
@@ -93,10 +99,6 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
   connect(f_streamType,&Fact::valueChanged,[=](){ setStatus(f_streamType->text()); });
   f_streamType->setValue(0);
-
-  f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,NoData);
-  connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
-  connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
 
   //register JS new vehicles instantly
   FactSystem::instance()->jsSync(this);

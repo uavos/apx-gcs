@@ -3,7 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Layouts 1.3
-import GCS.Vehicle 1.0
+import GCS.Vehicles 1.0
 
 //import QtQuick 2.2
 //import QtQuick.Controls 1.1
@@ -31,28 +31,25 @@ Rectangle {
             id: btn_rec
             text: qsTr("REC")
             color: "#5f5"
-            value: mandala.current.recorder.recording
+            value: app.vehicles.current.recorder.recording
             toolTip: qsTr("Enable recording")
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: mandala.current.recorder.recording=!mandala.current.recorder.recording
+                onClicked: app.vehicles.current.recorder.recording=!app.vehicles.current.recorder.recording
             }
         }
 
         Text {
-            property double v: mandala.current.recorder.size
-            property string vSize: v>=(1024*1024)?(v/(1024*1024)).toFixed(1)+"MB":(v/1024).toFixed()+"KB"
-            property string vTime: (Qt.formatTime(mandala.current.recorder.time,"hh")==="00"?"":Qt.formatTime(mandala.current.recorder.time,"hh")+":")+Qt.formatTime(mandala.current.recorder.time,"mm:ss")
             anchors.leftMargin: 2
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
-            text: vSize + "/"+ vTime
+            text: app.vehicles.current.recorder.status
             font.pixelSize: parent.height   //*0.99
             font.family: font_narrow
-            color: v>=(30*1024*1024)?"yellow":"gray"
+            color: app.vehicles.current.recorder.size>=(30*1024*1024)?"yellow":"gray"
         }
     }
 
@@ -131,7 +128,7 @@ Rectangle {
         CommNum {
             property string cRX: app.datalink.online?(app.vehicles.current.stream.value===Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
             property string cTX: app.datalink.readonly.value?"red":"cyan"
-            property string cER: mandala.errcnt>1?"yellow":"gray"
+            property string cER: m.errcnt>1?"yellow":"gray"
             height: parent.height
             label: qsTr("DL")
             toolTip: qsTr("Datalink statistics")
@@ -147,20 +144,20 @@ Rectangle {
             ToolTipArea { text: qsTr("Received packets") }
         }
         Text {
-            property int value: mandala.errcnt%1000
+            property int value: m.errcnt%1000
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             text: value+" "
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
-            color: mandala.errcnt>1?(errTimer.running?"red":"yellow"):"gray"
+            color: m.errcnt>1?(errTimer.running?"red":"yellow"):"gray"
             ToolTipArea { text: qsTr("Stream errors") }
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 propagateComposedEvents: true
-                onClicked: mandala.errcnt=0
+                onClicked: m.errcnt=0
             }
             Behavior on color { ColorAnimation {duration: app.settings.smooth.value?250:0} }
             Timer {

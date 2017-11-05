@@ -34,6 +34,7 @@ class VehicleMandala: public Fact
   Q_OBJECT
 
   Q_PROPERTY(QByteArray md5 READ md5 WRITE setMd5 NOTIFY md5Changed)
+  Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
 
 public:
   explicit VehicleMandala(Vehicle *parent);
@@ -76,12 +77,16 @@ signals:
 public:
   QByteArray md5(void) const;
   bool setMd5(const QByteArray &v);
+  uint errcnt(void) const;
+  bool setErrcnt(const uint &v);
 
 protected:
   QByteArray m_md5;
+  uint m_errcnt;
 
 signals:
   void md5Changed();
+  void errcntChanged();
 
 };
 //=============================================================================

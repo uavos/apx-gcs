@@ -69,6 +69,16 @@ Fact * Fact::fact(const QString &factNamePath) const
   return NULL;
 }
 //=============================================================================
+Fact * Fact::childByTitle(const QString &factTitle) const
+{
+  foreach(FactTree *item,childItemsTree()){
+    Fact *f=static_cast<Fact*>(item);
+    if(f->title()==factTitle)
+      return f;
+  }
+  return NULL;
+}
+//=============================================================================
 /*Fact * Fact::byPath(const QString &itemNamePath) const
 {
   QString s=itemNamePath;

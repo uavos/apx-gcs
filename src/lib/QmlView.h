@@ -73,23 +73,12 @@ private:
   SvgImageProvider *svgProvider;
   bool blockShowEvt;
   QWidget *w;
-private slots:
-  void loadMandala(QMandalaItem *mvar);
 protected:
-  void showEvent(QShowEvent *e);
   void mousePressEvent(QMouseEvent *e);
-public slots:
-  void resyncDraw();
+
 signals:
   void customContextMenuRequested(const QPoint & pos);
 
-
-  //EXPOSED TO QML PROPERTIES
-public:
-  Q_PROPERTY(QQmlListProperty<QMandalaItem> vehicles READ vehicles NOTIFY vehiclesChanged)
-  QQmlListProperty<QMandalaItem> vehicles();
-signals:
-  void vehiclesChanged();
 };
 //=============================================================================
 #endif
