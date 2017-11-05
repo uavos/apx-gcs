@@ -30,6 +30,7 @@
 #include "AppDirs.h"
 #include "Vehicles.h"
 #include "Vehicle.h"
+#include "VehicleRecorder.h"
 //=============================================================================
 MainForm::MainForm(QWidget *parent)
   : QMainWindow(parent),
@@ -79,12 +80,13 @@ MainForm::MainForm(QWidget *parent)
   QAction *a;
   a=new QAction(tr("Record data"),this);
   a->setCheckable(true);
-  a->setChecked(mandala->current->rec->recording());
-  connect(a,SIGNAL(triggered(bool)),mandala->current->rec,SLOT(setRecording(bool)));
-  connect(mandala->current->rec,SIGNAL(recordingChanged(bool)),a,SLOT(setChecked(bool)));
+  a->setChecked(Vehicles::instance()->current()->f_recorder->recording());
+  connect(a,&QAction::triggered,[=](bool v){Vehicles::instance()->current()->f_recorder->setRecording(v);});
+  connect(Vehicles::instance()->current()->f_recorder,&VehicleRecorder::recordingChanged,[=](){a->setChecked(Vehicles::instance()->current()->f_recorder->recording());});
+  connect(Vehicles::instance(),&Vehicles::vehicleSelected,[=](Vehicle*v){a->setChecked(v->f_recorder->recording());});
   mFile->addAction(a);
-  //mFile->addAction(QIcon(":/icons/old/transport_range.png"),tr("Record new file"),var->rec,SLOT(close()));
-  mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),mandala->current->rec,SLOT(discard()));
+
+  mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),Vehicles::instance()->current()->f_recorder,&VehicleRecorder::discard);
   mFile->addSeparator();
 
   mFile->addSeparator();

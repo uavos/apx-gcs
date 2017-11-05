@@ -30,6 +30,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
   setFlatModel(true);
 
   f_clear=new Fact(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactItem,NoData);
+  f_clear->setEnabled(false);
   connect(f_clear,&Fact::triggered,[=](){
     f_list->clear();
   });
@@ -39,6 +40,8 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
   connect(f_list,&Fact::sizeChanged,[=](){
     f_clear->setEnabled(f_list->size()>0);
   });
+
+  connect(f_list,&Fact::sizeChanged,[=](){f_clear->setEnabled(f_list->size());});
 
   showTimer.setSingleShot(true);
   showTimer.setInterval(5000);
