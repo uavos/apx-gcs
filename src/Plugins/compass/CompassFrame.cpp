@@ -21,7 +21,7 @@
  *
  */
 #include <QtCore>
-#include <Vehicles>
+#include <Facts.h>
 #include "CompassFrame.h"
 //==============================================================================
 CompassFrame::CompassFrame(QWidget *parent) :

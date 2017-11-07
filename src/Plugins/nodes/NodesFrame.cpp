@@ -1,8 +1,8 @@
 ﻿#include "NodesFrame.h"
 #include "QMandala.h"
 #include "NodesView.h"
-#include "AppDirs.h"
-#include "FactSystem.h"
+#include <AppDirs.h>
+#include <Facts.h>
 #include "Datalink.h"
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent) :
@@ -52,7 +52,10 @@ NodesFrame::NodesFrame(QWidget *parent) :
   connect(mandala,SIGNAL(sizeChanged(uint)),SLOT(mandalaSizeChanged(uint)),Qt::QueuedConnection);
   lbUavName->setVisible(false);
 
-  tree->setModel(&proxy);
+  FactTreeModel *tm=new FactTreeModel(FactSystem::instance());
+  tree->setModel(tm);
+
+  //tree->setModel(&proxy);
 
   connect(eFilter,SIGNAL(textChanged(QString)),this,SLOT(filterChanged()));
 

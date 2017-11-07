@@ -317,7 +317,7 @@ void loadPlugins()
   allFiles.append("qrc:///HDG.qml");
   (void)QT_TRANSLATE_NOOP("Plugins","HDG");
 
-  allFiles.append("qrc:///controls.qml");
+  allFiles.append("qrc:///Facts.qml");
   (void)QT_TRANSLATE_NOOP("Plugins","Controls");
 
   allFiles.append("qrc:///Rotax914.qml");

@@ -21,10 +21,9 @@
  *
  */
 #include "TelemetryPlot.h"
-#include <Vehicles>
+#include <Facts.h>
 #include <QtGui>
 #include <QJSEngine>
-//#include "QMandala.h"
 //=============================================================================
 TelemetryPlot::TelemetryPlot(QWidget *parent)
   :QwtPlot(parent),isCopy(false)

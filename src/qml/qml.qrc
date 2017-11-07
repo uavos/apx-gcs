@@ -36,7 +36,6 @@
         <file>pfd/Wind.qml</file>
         <file>pfd/ILS.qml</file>
         <file>components/TextLine.qml</file>
-        <file>controls.qml</file>
         <file>components/Pages.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>AppWindow.qml</file>
@@ -51,5 +50,8 @@
         <file>menu/MenuShortcuts.qml</file>
         <file>nodes/NodeMenuItem.qml</file>
         <file>Rotax914.qml</file>
+        <file>menu/FactMenu.qml</file>
+        <file>menu/FactMenuItem.qml</file>
+        <file>Facts.qml</file>
     </qresource>
 </RCC>

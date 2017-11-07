@@ -23,8 +23,7 @@
 #ifndef Vehicles_H
 #define Vehicles_H
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
+#include <FactSystem.h>
 class Vehicle;
 //=============================================================================
 class Vehicles: public Fact

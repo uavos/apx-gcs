@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,75 +20,49 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef VehicleMandalaFact_H
-#define VehicleMandalaFact_H
+#ifndef FactTreeModel_H
+#define FactTreeModel_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-class Mandala;
-class VehicleMandala;
+#include <FactSystem.h>
 //=============================================================================
-class VehicleMandalaFact: public Fact
+class FactTreeModel : public QAbstractItemModel
 {
   Q_OBJECT
 public:
-  explicit VehicleMandalaFact(
-      VehicleMandala *parent,
-      Mandala *m,
-      quint16 id,
-      DataType dataType,
-      const QString &name,
-      const QString &title,
-      const QString &descr,
-      const QString &units
-      );
+  explicit FactTreeModel(Fact *root);
 
-  bool setValue(const QVariant &v); //override
-  bool setValueLocal(const QVariant &v);
+  Fact * fact(const QModelIndex &index) const;
+  QModelIndex factIndex(FactTree *item, int column=0) const;
 
-  double unpackedValue();
+  enum { //model columns
+    FACT_MODEL_COLUMN_NAME=0,
+    FACT_MODEL_COLUMN_VALUE,
+    FACT_MODEL_COLUMN_DESCR,
 
-  Q_INVOKABLE quint16 id() {return m_id;}
-
-  uint _vtype;
-private:
-  VehicleMandala *vehicle;
-  Mandala *m;
-  quint16 m_id;
-
-  void *_value_ptr;
-  double _unpackedValue;
-
-  bool pack();
-  QByteArray packed;
-  uint8_t tmp[32];
-
-  //local value change by telemetry delay
-  QTimer loadValueTimer;
-  QTimer sendValueTimer;
-  QTime sendValueTime;
-  int setValueCnt;
-
-  uint getPrecision();
-
-private slots:
-  void loadValueDo();
-
-
-  //---------------------------------------
-  // PROPERTIES
-public:
+    FACT_MODEL_COLUMN_CNT,
+  };
 
 protected:
+  Fact * root;
 
-public slots:
-  void saveValue();
-  void loadValue();
+  virtual void checkConnections(Fact *fact) const;
 
-signals:
-  void sendUplink(const QByteArray &ba);
+  //override
+  QVariant data(const QModelIndex &index, int role) const;
+  Qt::ItemFlags flags(const QModelIndex & index) const;
+  QVariant headerData(int section, Qt::Orientation orientation,int role = Qt::DisplayRole) const;
+  QModelIndex index(int row, int column,const QModelIndex &parent = QModelIndex()) const;
+  QModelIndex parent(const QModelIndex &index) const;
+  int rowCount(const QModelIndex &parent = QModelIndex()) const;
+  int columnCount(const QModelIndex &parent = QModelIndex()) const;
+  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+
+private slots:
+  void factTextChanged();
+  void factTitleChanged();
+  void factDescrChanged();
 
 };
 //=============================================================================
 #endif
-

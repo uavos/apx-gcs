@@ -40,6 +40,9 @@ class Fact: public FactData
 
   Q_PROPERTY(QString qmlMenu READ qmlMenu WRITE setQmlMenu NOTIFY qmlMenuChanged)
 
+  Q_PROPERTY(QString units READ units WRITE setUnits NOTIFY unitsChanged)
+  Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
+
 public:
   explicit Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
@@ -61,26 +64,32 @@ signals:
 
 public:
   //---------------------------------------
-  virtual bool enabled() const;
-  virtual void setEnabled(const bool &v);
+  bool enabled() const;
+  void setEnabled(const bool &v);
 
-  virtual bool visible() const;
-  virtual void setVisible(const bool &v);
+  bool visible() const;
+  void setVisible(const bool &v);
 
-  virtual QString section() const;
-  virtual void setSection(const QString &v);
+  QString section() const;
+  void setSection(const QString &v);
 
-  virtual QString status() const;
-  virtual void setStatus(const QString &v);
+  QString status() const;
+  void setStatus(const QString &v);
 
-  virtual bool active() const;
-  virtual void setActive(const bool &v);
+  bool active() const;
+  void setActive(const bool &v);
 
-  virtual int progress() const;
-  virtual void setProgress(const int &v);
+  int progress() const;
+  void setProgress(const int &v);
 
-  virtual QString qmlMenu() const;
-  virtual void setQmlMenu(const QString &v);
+  QString qmlMenu() const;
+  void setQmlMenu(const QString &v);
+
+  QString units() const;
+  void setUnits(const QString &v);
+
+  bool busy() const;
+  void setBusy(const bool &v);
 
 protected:
   bool m_enabled;
@@ -90,6 +99,8 @@ protected:
   bool m_active;
   int m_progress;
   QString  m_qmlMenu;
+  QString  m_units;
+  bool m_busy;
 
 signals:
   void enabledChanged();
@@ -101,6 +112,8 @@ signals:
   void progressChanged();
 
   void qmlMenuChanged();
+  void unitsChanged();
+  void busyChanged();
 
 };
 //=============================================================================

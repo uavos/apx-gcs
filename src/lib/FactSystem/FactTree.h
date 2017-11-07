@@ -74,8 +74,10 @@ signals:
   void structChanged();
 
   //signals forwarded to parents globally
-  void itemRemoved(FactTree *item);
+  void itemToBeAdded(int row, FactTree *item);
   void itemAdded(FactTree *item);
+  void itemToBeRemoved(int row,FactTree *item);
+  void itemRemoved(FactTree *item);
 
 protected:
   //ListModel override

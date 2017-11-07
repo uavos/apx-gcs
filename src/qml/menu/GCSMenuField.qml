@@ -72,6 +72,7 @@ Item {
     property bool bStatus:       field.fact
     property bool bActive:       field.fact && field.fact.active
     property bool bQmlMenu:      field.fact && field.fact.qmlMenu
+    property bool bUnits:        field.fact && field.fact.units
 
     Loader {
         anchors.fill: parent

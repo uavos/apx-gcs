@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Vehicles.h"
 #include "Vehicle.h"
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
 #include "VehicleWarnings.h"
+#include "Vehicles.h"
 //---------------------------
 // deprecate
 #include "node.h"
@@ -113,7 +113,7 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
       Vehicle *v=NULL;
       foreach(FactTree *i,f_list->childItemsTree()){
         Vehicle *f=static_cast<Vehicle*>(i);
-        if(f->f_uid->value().toByteArray().toHex()==uid.toHex()){
+        if(f->uid.toHex()==uid.toHex()){
           v=f;
           break;
         }

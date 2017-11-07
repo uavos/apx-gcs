@@ -82,28 +82,21 @@ public:
     ValueRole,
     TextRole,
   };
-  enum { //model columns
-    FACT_ITEM_COLUMN_NAME=0,
-    FACT_ITEM_COLUMN_VALUE,
-    FACT_ITEM_COLUMN_DESCR,
-  };
 
   //FactTree override
   virtual void insertItem(int i, FactTree *item);
   virtual void removeItem(FactTree *item, bool deleteLater=true);
+
+  //ListModel override
+  virtual QHash<int, QByteArray> roleNames() const;
+  virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+  virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
 signals:
   void childValueChanged(void);
 
 
 protected:
-  //ListModel override
-  virtual QHash<int, QByteArray> roleNames() const;
-  virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-  Qt::ItemFlags flags(const QModelIndex &index) const;
-  virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-  virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
   FactData *_bindedFact;
 
 public:
@@ -128,6 +121,7 @@ public:
   QStringList enumStrings() const;
   void setEnumStrings(const QStringList &v, const QList<int> &enumValues=QList<int>());
   void setEnumStrings(const QMetaEnum &v);
+
 
 protected:
   DataType m_dataType;

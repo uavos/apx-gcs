@@ -26,14 +26,17 @@
 //=============================================================================
 VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint16 id, DataType dataType, const QString &name, const QString &title, const QString &descr, const QString &units)
   : Fact(parent,name,title,descr,FactItem,dataType),
-    vehicle(parent),m(m),m_id(id),
-    m_units(units)
+    vehicle(parent),m(m),m_id(id)
 {
+  setUnits(units);
+
   connect(this,&VehicleMandalaFact::sendUplink,parent,&VehicleMandala::sendUplink);
 
   packed.reserve(sizeof(tmp));
   m->get_ptr(id,&_value_ptr,&_vtype);
   _unpackedValue=0;
+
+  setPrecision(getPrecision());
 
   loadValueTimer.setSingleShot(true);
   loadValueTimer.setInterval(2000);
@@ -46,10 +49,32 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint
   connect(this,&VehicleMandalaFact::sendUplink,[=](){ sendValueTime.restart(); });
 }
 //=============================================================================
-//=============================================================================
-QString VehicleMandalaFact::units(void) const
+uint VehicleMandalaFact::getPrecision()
 {
-  return m_units;
+  switch(_vtype){
+    case vt_byte:
+    case vt_uint:
+    case vt_flag:
+    case vt_enum:
+    case vt_void:
+    case vt_idx:
+      return 0;
+  }
+  if(m_name.contains("lat")||m_name.contains("lon"))return 8;
+  if(m_name=="ldratio") return 2;
+  if(m_name.startsWith("ctr")) return 3;
+  if(m_units=="0..1")   return 3;
+  if(m_units=="-1..0..+1")return 3;
+  if(m_units=="deg")    return 2;
+  if(m_units=="deg/s")  return 2;
+  if(m_units=="m")      return 2;
+  if(m_units=="m/s")    return 2;
+  if(m_units=="m/s2")   return 2;
+  if(m_units=="a.u.")   return 2;
+  if(m_units=="v")      return 2;
+  if(m_units=="A")      return 3;
+  if(m_units=="C")      return 1;
+  return 6;
 }
 //=============================================================================
 void VehicleMandalaFact::saveValue()

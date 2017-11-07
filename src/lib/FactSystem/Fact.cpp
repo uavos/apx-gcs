@@ -25,7 +25,7 @@
 //=============================================================================
 Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactData(parent,name,title,descr,treeItemType,dataType),
-   m_enabled(true), m_visible(true), m_active(false)
+   m_enabled(true), m_visible(true), m_active(false), m_busy(false)
 {
   if((treeItemType==GroupItem || treeItemType==SectionItem) && m_dataType==ConstData){
     connect(this,&Fact::sizeChanged,this,&Fact::statusChanged);
@@ -190,6 +190,31 @@ void Fact::setQmlMenu(const QString &v)
   if(m_qmlMenu==v)return;
   m_qmlMenu=v;
   emit qmlMenuChanged();
+}
+QString Fact::units() const
+{
+  if(_bindedFact) return static_cast<Fact*>(_bindedFact)->units();
+  return m_units;
+}
+void Fact::setUnits(const QString &v)
+{
+  if(_bindedFact){
+    static_cast<Fact*>(_bindedFact)->setUnits(v);
+    return;
+  }
+  if(m_units==v)return;
+  m_units=v;
+  emit unitsChanged();
+}
+bool Fact::busy() const
+{
+  return m_busy;
+}
+void Fact::setBusy(const bool &v)
+{
+  if(m_busy==v)return;
+  m_busy=v;
+  emit busyChanged();
 }
 //=============================================================================
 //=============================================================================

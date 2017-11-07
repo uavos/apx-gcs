@@ -67,7 +67,6 @@ public:
 
   Fact * f_select; //fact action to select this vehicle
   Fact * f_squawk;
-  Fact * f_uid;
   Fact * f_callsign;
   Fact * f_vclass;
   Fact * f_streamType;
@@ -80,6 +79,8 @@ public:
   Fact * f_selectAction;
 
   VehicleNmtManager *nmtManager;
+
+  QByteArray uid;
 
 private:
   QTimer onlineTimer;

@@ -22,7 +22,7 @@
  */
 #include "FactSystemJS.h"
 #include "AppDirs.h"
-#include <Vehicles>
+#include <Vehicles.h>
 //=============================================================================
 FactSystemJS::FactSystemJS(QObject *parent)
  : FactSystemApp(parent)

@@ -306,6 +306,37 @@
     </message>
 </context>
 <context>
+    <name>CompassFrame</name>
+    <message>
+        <location filename="../src/Plugins/compass/CompassFrame.cpp" line="+32"/>
+        <source>Compass Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CompassPlugin</name>
+    <message>
+        <location filename="../src/Plugins/compass/CompassPlugin.cpp" line="+29"/>
+        <source>Compass Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Config</name>
     <message>
         <source>Edit..</source>
@@ -957,24 +988,6 @@
     </message>
 </context>
 <context>
-    <name>FactData</name>
-    <message>
-        <location filename="../src/lib/FactSystem/FactData.cpp" line="+281"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Description</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>FactSystemApp</name>
     <message>
         <location filename="../src/lib/FactSystem/FactSystemApp.cpp" line="+28"/>
@@ -1019,6 +1032,64 @@
     <message>
         <location line="+1"/>
         <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FactTreeModel</name>
+    <message>
+        <location filename="../src/lib/FactSystem/FactTreeModel.cpp" line="+126"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Filter</name>
+    <message>
+        <location filename="../src/Plugins/telemetry/Filter.ui" line="+14"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>SL Filter [filter]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Freq </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <location line="+54"/>
+        <source>S </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+54"/>
+        <source>L </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-35"/>
+        <source>Derivative Filter [filter_dt]</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1606,7 +1677,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+76"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+80"/>
         <source>Firmware upgrade in progress</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2115,8 +2186,30 @@
 <context>
     <name>Player</name>
     <message>
+        <location filename="../src/Plugins/telemetry/Player.ui" line="+14"/>
+        <source>Flight Player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>00:00:00/00:00:00</source>
-        <translation type="obsolete">00:00:00/00:00:00</translation>
+        <translation type="unfinished">00:00:00/00:00:00</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Play/Pause</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Play/Pause telemetry data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2369,6 +2462,26 @@
     </message>
 </context>
 <context>
+    <name>QwtPlotRenderer</name>
+    <message>
+        <location filename="../src/Plugins/telemetry/qwt/qwt_plot_renderer.cpp" line="+979"/>
+        <location line="+3"/>
+        <location line="+3"/>
+        <source>Documents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Export File Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SerialForm</name>
     <message>
         <location filename="../src/Plugins/serial/SerialForm.ui" line="+14"/>
@@ -2442,7 +2555,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/serial/SerialForm.cpp" line="+35"/>
+        <location filename="../src/Plugins/serial/SerialForm.cpp" line="+36"/>
         <source>Serial port forwarding stopped</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2556,12 +2669,298 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>TelemetryFrame</name>
     <message>
-        <source>0</source>
-        <translation type="obsolete">0</translation>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="+20"/>
+        <source>Telemetry Chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+52"/>
+        <location line="+14"/>
+        <source>0</source>
+        <translation type="unfinished">0</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <source>/</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Load the most recent flight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Delete current flight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Open in external editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Export data..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Create Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cut file to fit current view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show filter configuration...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Full Screen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Toggle Full Screen</source>
-        <translation type="obsolete">На ўвесь экран</translation>
+        <translation type="unfinished">На ўвесь экран</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Previous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Load previous flight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Load next flight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Show Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show file manager...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reload current file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Split Vertically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Split view vertically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Play telemetry data...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Filter UAV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Filter data files by UAV name...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>STD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show common plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>IMU</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show IMU sensors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>CTR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>CLR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Clear visible plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="+132"/>
+        <source>File &apos;%s&apos; moved to trash.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>File &apos;%s&apos; deleted permanently.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <source>Flight number to load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>Telemetry file updated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+84"/>
+        <source>Comma separated values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X-plane flight data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Google Earth KML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Unknown filter selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>File exported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+45"/>
+        <location line="+64"/>
+        <source>Cannot write file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-102"/>
+        <location line="+66"/>
+        <source>Exporting telemetry file...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-66"/>
+        <location line="+66"/>
+        <source>Abort</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TelemetryPlot</name>
+    <message>
+        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="+110"/>
+        <source>Calculated user variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+141"/>
+        <source>Calculated field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>QtScript expression:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+78"/>
+        <source> (view copy)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2659,7 +3058,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>Vehicle</name>
     <message>
-        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+43"/>
+        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+44"/>
         <source>Stream</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2699,12 +3098,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Unique ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2717,7 +3111,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+228"/>
+        <location line="+229"/>
         <source>Received serial data</source>
         <translation type="unfinished"></translation>
     </message>

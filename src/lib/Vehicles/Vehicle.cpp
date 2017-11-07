@@ -31,6 +31,7 @@
 //=============================================================================
 Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal)
   : Fact(bLocal?parent:parent->f_list,bLocal?callsign:"vehicle#",callsign,"",GroupItem,NoData),
+    uid(uid),
     m_squawk(squawk)
 {
   setSection(parent->title());
@@ -55,11 +56,6 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_vclass=new Fact(this,"vclass",tr("Class"),tr("Vehicle class"),FactItem,ConstData);
   f_vclass->setEnumStrings(QMetaEnum::fromType<VehicleClass>());
   f_vclass->setValue(vclass);
-
-  f_uid=new Fact(this,"uid",tr("Unique ID"),"",FactItem,NoData);
-  f_uid->setValue(qVariantFromValue(uid));
-  f_uid->setStatus(uid.toHex().toUpper());
-  f_uid->setVisible(vclass!=LOCAL);
 
   connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
 

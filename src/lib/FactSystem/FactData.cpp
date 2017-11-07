@@ -168,7 +168,10 @@ QString FactData::text() const
     if(ev>=0)return enumText(ev);
     if(m_dataType==IntData)return QString();
   }
-  return value().toString();
+  const QVariant &v=value();
+  if(v.type()==QVariant::ByteArray) return v.toByteArray().toHex().toUpper();
+  if(v.type()==QVariant::Double) return QString::number(v.toDouble(),'f',m_precision);
+  return v.toString();
 }
 void FactData::setText(const QString &v)
 {
@@ -273,27 +276,6 @@ QHash<int, QByteArray> FactData::roleNames() const
   roles[TextRole]       = "text";
   return roles;
 }
-QVariant FactData::headerData(int section, Qt::Orientation orientation, int role) const
-{
-  Q_UNUSED(orientation)
-  if(role==Qt::DisplayRole){
-    switch(section){
-      case FACT_ITEM_COLUMN_NAME: return tr("Name");
-      case FACT_ITEM_COLUMN_VALUE: return tr("Value");
-      case FACT_ITEM_COLUMN_DESCR: return tr("Description");
-    }
-  }
-  return QVariant();
-}
-Qt::ItemFlags FactData::flags(const QModelIndex &index) const
-{
-  Qt::ItemFlags f=Qt::ItemIsEnabled|Qt::ItemIsSelectable;
-  if(m_treeItemType==FactItem){
-    f|=Qt::ItemNeverHasChildren;
-    if(index.column()==FACT_ITEM_COLUMN_VALUE) f|=Qt::ItemIsEditable;
-  }
-  return f;
-}
 QVariant FactData::data(const QModelIndex & index, int role) const
 {
   if (index.row() < 0 || index.row() >= size())
@@ -311,7 +293,7 @@ bool FactData::setData(const QModelIndex &index, const QVariant &value, int role
 {
   if (index.row() < 0 || index.row() >= size() || role != Qt::EditRole)
     return false;
-  static_cast<FactData*>(childItems().at(index.row()))->setValue(value);
+  static_cast<FactData*>(child(index.row()))->setValue(value);
   return true;
 }
 //=============================================================================

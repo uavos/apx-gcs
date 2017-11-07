@@ -24,8 +24,8 @@
 #include <QtGui>
 #include <QtNetwork>
 #include <QDomDocument>
-#include <Vehicles>
-#include "AppDirs.h"
+#include <Facts.h>
+#include <AppDirs.h>
 //=============================================================================
 TelemetryFrame::TelemetryFrame(QWidget *parent)
   :QWidget(parent)

@@ -32,6 +32,10 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
 
   if(parent){
     //QMetaObject::invokeMethod(parent,"addItem", Qt::QueuedConnection, Q_ARG(FactTree*, this));
+    connect(this,&FactTree::itemToBeAdded,parent,&FactTree::itemToBeAdded);
+    connect(this,&FactTree::itemAdded,parent,&FactTree::itemAdded);
+    connect(this,&FactTree::itemToBeRemoved,parent,&FactTree::itemToBeRemoved);
+    connect(this,&FactTree::itemRemoved,parent,&FactTree::itemRemoved);
     parent->addItem(this);
   }
 
@@ -44,11 +48,14 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
 void FactTree::insertItem(int i, FactTree *item)
 {
   if(i<0)i=0;
+  item->m_parentItem=this;
+  emit itemToBeAdded(i,item);
   beginInsertRows(QModelIndex(), i, i);
   m_items.insert(i,item);
+  /*connect(item,&FactTree::itemToBeAdded,this,&FactTree::itemToBeAdded);
   connect(item,&FactTree::itemAdded,this,&FactTree::itemAdded);
-  connect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);
-  item->m_parentItem=this;
+  connect(item,&FactTree::itemToBeRemoved,this,&FactTree::itemToBeRemoved);
+  connect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);*/
   FactTree *fParent=flatModelParent();
   if(fParent){
     int i2=fParent->childItems().indexOf(item);
@@ -64,13 +71,16 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
 {
   int i=m_items.indexOf(item);
   if(i<0)return;
+  emit itemToBeRemoved(i,item);
   FactTree *fParent=flatModelParent();
   if(fParent){
     int i2=fParent->childItems().indexOf(item);
     fParent->beginRemoveRows(QModelIndex(), i2 ,i2);
   }
+  /*disconnect(item,&FactTree::itemToBeAdded,this,&FactTree::itemToBeAdded);
   disconnect(item,&FactTree::itemAdded,this,&FactTree::itemAdded);
-  disconnect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);
+  disconnect(item,&FactTree::itemToBeRemoved,this,&FactTree::itemToBeRemoved);
+  disconnect(item,&FactTree::itemRemoved,this,&FactTree::itemRemoved);*/
   emit itemRemoved(item);
   beginRemoveRows(QModelIndex(), i, i);
   m_items.removeOne(item);
@@ -200,6 +210,7 @@ void FactTree::clear(void)
     fParent->beginRemoveRows(QModelIndex(), i2 ,i2+m_items.size()-1);
   }
   foreach (FactTree *item, m_items) {
+    emit itemToBeRemoved(m_items.indexOf(item),item);
     item->m_parentItem=NULL;
     emit itemRemoved(item);
     item->deleteLater();
@@ -265,10 +276,10 @@ void FactTree::setName(const QString &v)
 {
   QString s=makeNameUnique(v);
   if(m_name==s && nameSuffix.isEmpty())return;
-  emit itemRemoved(this);
+  //emit itemRemoved(this);
   m_name=s;
   setObjectName(m_name);
-  emit itemAdded(this);
+  //emit itemAdded(this);
   emit nameChanged();
 }
 //=============================================================================

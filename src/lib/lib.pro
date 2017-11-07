@@ -37,6 +37,7 @@ SOURCES += \
     FactSystem/FactTree.cpp \
     FactSystem/FactData.cpp \
     FactSystem/Fact.cpp \
+    FactSystem/FactTreeModel.cpp \
 
 HEADERS += \
     FactSystem/FactSystem.h \
@@ -46,6 +47,8 @@ HEADERS += \
     FactSystem/FactData.h \
     FactSystem/FactValue.h \
     FactSystem/Fact.h \
+    FactSystem/FactTreeModel.h \
+    Facts.h \
 
 # Vehicles & Mandala
 SOURCES += \
@@ -72,7 +75,6 @@ HEADERS += \
     Vehicles/VehicleNmtManager.h \
     Vehicles/VehicleRecorder.h \
     Vehicles/VehicleWarnings.h \
-    Vehicles/Vehicles \
 
 # Nodes
 SOURCES += \

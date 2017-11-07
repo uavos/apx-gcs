@@ -20,10 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <Facts.h>
 #include "NodeItem.h"
 #include "Nodes.h"
 #include "NodeField.h"
-#include <Vehicles>
 #include <node.h>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)

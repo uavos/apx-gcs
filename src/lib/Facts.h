@@ -20,33 +20,31 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactSystem_H
-#define FactSystem_H
+#ifndef Facts_H
+#define Facts_H
 //=============================================================================
-#include <QtCore>
-#include <QtQuick>
+#include <FactSystem.h>
+#include <FactTreeModel.h>
+#include <FactValue.h>
 
-#include "Fact.h"
-#include "FactSystemApp.h"
-#include "FactSystemJS.h"
-//=============================================================================
-class FactSystem: public FactSystemJS
-{
-  Q_OBJECT
-public:
-  //root
-  explicit FactSystem(QObject *parent=0);
+#include <AppSettings.h>
+#include <AppDirs.h>
 
-  static FactSystem * instance() { return static_cast<FactSystem*>(_instance); }
+#include <Vehicles.h>
+#include <Vehicle.h>
+#include <VehicleMandala.h>
+#include <VehicleMandalaFact.h>
+#include <VehicleRecorder.h>
+#include <VehicleWarnings.h>
+#include <MandalaValue.h>
 
-  //methods
-  Q_INVOKABLE void sound(const QString &v) { emit playSoundEffect(v); }
+#include <Datalink.h>
+#include <DatalinkHosts.h>
+#include <DatalinkStats.h>
 
-  Q_INVOKABLE QJSValue jsexec(const QString &s) { return FactSystemJS::jsexec(s); }
+#include <Nodes.h>
+#include <NodeItem.h>
+#include <NodeField.h>
 
-
-signals:
-  void playSoundEffect(const QString &v);
-};
 //=============================================================================
 #endif
