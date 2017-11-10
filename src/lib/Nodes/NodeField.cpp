@@ -28,15 +28,15 @@
 #include "VehicleMandalaFact.h"
 //=============================================================================
 NodeField::NodeField(NodeItem *node, quint16 id)
-  : Fact(node->f_fields,"field#","","",FactItem,NoData),
+  : Fact(node,"field#","","",FactItem,NoData),
     id(id),
     node(node),
+    parentField(NULL),
     ftype(-1),
     m_valid(false),
     m_dataValid(false),
     m_array(0)
 {
-  setSection(node->f_fields->title());
   //node->request(apc_conf_dsc,QByteArray().append((unsigned char)id),node->timeout_ms,false);
 }
 //child of expanded field
@@ -44,12 +44,15 @@ NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, cons
   : Fact(parent,name,title,descr,FactItem,NoData),
     id(parent->id),
     node(node),
+    parentField(parent),
     ftype(ftype),
     m_valid(true),
     m_dataValid(false),
     m_array(0)
 {
   updateDataType();
+  connect(this,&NodeField::valueChanged,parent,&NodeField::updateStatus);
+  parent->updateStatus();
 }
 //=============================================================================
 bool NodeField::valid() const
@@ -81,6 +84,18 @@ void NodeField::setArray(const int &v)
   if(m_array==v)return;
   m_array=v;
   emit arrayChanged();
+}
+//=============================================================================
+void NodeField::updateStatus()
+{
+  if(ftype==ft_vec){
+    QStringList st;
+    foreach (FactTree *i, childItems()) {
+      NodeField *f=static_cast<NodeField*>(i);
+      st.append(f->text());
+    }
+    setValue(st.join(','));
+  }
 }
 //=============================================================================
 //=============================================================================
@@ -143,7 +158,7 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       updateDataType();
       createSubFields();
       setValid(true);
-      node->request(apc_conf_read,QByteArray().append((unsigned char)id),node->timeout_ms,false);
+      //node->request(apc_conf_read,QByteArray().append((unsigned char)id),node->timeout_ms,false);
       //check all node fields validity
       bool ok=true;
       foreach (NodeField *f, node->allFields) {
@@ -154,10 +169,16 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       if(!ok)return true;
       //all fields downloaded
       node->setValid(true);
+      foreach (NodeField *f, node->allFields) {
+        if(f->dataValid())continue;
+        node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
+        break;
+      }
       node->groupFields();
       //qDebug()<<"fields downloaded"<<node->f_fields->size();
     }return true;
     case apc_conf_read: {
+      //qDebug()<<path();
       if(!data.size())return true; //requests
       if(!valid())break;
       if(dataValid())return true;
@@ -165,17 +186,26 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       int sz=ftypeSize();
       if(!unpackValue(data))break;
       setDataValid(true);
+      backup();
       //check all node fields data validity
       if(!node->dataValid()){
         bool ok=true;
         foreach (NodeField *f, node->allFields) {
-          if(f->valid())continue;
+          if(f->dataValid())continue;
           ok=false;
           break;
         }
         if(ok)node->setDataValid(true);
       }
-      if(data.size()==sz)return true;
+      if(data.size()==sz){
+        foreach (NodeField *f, node->allFields) {
+          if(f->dataValid())continue;
+          node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
+          break;
+        }
+        return true;
+      }
+      //continue bulk unpack
       const int fnum=(unsigned char)data.at(sz);
       if(fnum>=node->allFields.size())break;
       return node->allFields.at(fnum)->unpackService(ncmd,data.mid(sz+1));
@@ -189,7 +219,7 @@ bool NodeField::unpackValue(const QByteArray &data)
 {
   if(size()){
     QByteArray ba(data);
-    foreach (FactTree *i, childItemsTree()) {
+    foreach (FactTree *i, childItems()) {
       NodeField *f=static_cast<NodeField*>(i);
       if(!f->unpackValue(ba))return false;
       ba=ba.mid(f->ftypeSize());
@@ -328,8 +358,10 @@ void NodeField::updateDataType()
     case ft_float:
       setDataType(FloatData);
     break;
-    case ft_uint:
     case ft_byte:
+      setMin(0);
+      setMax(255);
+    case ft_uint:
       setDataType(IntData);
     break;
     case ft_varmsk:{

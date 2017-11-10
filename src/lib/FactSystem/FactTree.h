@@ -25,14 +25,13 @@
 //=============================================================================
 #include <QtCore>
 //=============================================================================
-class FactTree: public QAbstractListModel
+class FactTree: public QObject
 {
   Q_OBJECT
   Q_ENUMS(ItemType)
 
   Q_PROPERTY(ItemType treeItemType READ treeItemType WRITE setTreeItemType NOTIFY treeItemTypeChanged)
   Q_PROPERTY(int size READ size NOTIFY sizeChanged)
-  Q_PROPERTY(bool flatModel READ flatModel WRITE setFlatModel NOTIFY flatModelChanged)
 
   Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
@@ -54,35 +53,25 @@ public:
   //internal tree
   Q_INVOKABLE void addItem(FactTree *item);
   Q_INVOKABLE void remove();
-  Q_INVOKABLE void moveItem(FactTree *item, int dest);
   Q_INVOKABLE int num() const;
   Q_INVOKABLE FactTree * child(int n) const;
   Q_INVOKABLE FactTree * parentItem() const;
   Q_INVOKABLE QList<FactTree*> childItems() const;
-  Q_INVOKABLE QList<FactTree*> childItemsTree() const; //no flat model
 
   Q_INVOKABLE FactTree * child(const QString &name) const;
   Q_INVOKABLE QString path(const QChar pathDelimiter=QChar('.')) const;
-
-  Q_INVOKABLE FactTree * flatModelParent() const;
 
   QList<FactTree*> pathList() const;
 
 public slots:
   virtual void clear(void);
 signals:
-  void structChanged();
-
-  //signals forwarded to parents globally
-  void itemToBeAdded(int row, FactTree *item);
-  void itemAdded(FactTree *item);
+  //tree structure change signals for models
+  void itemToBeInserted(int row, FactTree *item);
+  void itemInserted(FactTree *item);
   void itemToBeRemoved(int row,FactTree *item);
   void itemRemoved(FactTree *item);
 
-protected:
-  //ListModel override
-  virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
-  virtual bool moveRows(const QModelIndex &sourceParent, int src, int cnt, const QModelIndex &destinationParent, int dst);
 private:
   QList<FactTree*> m_items;
   FactTree *m_parentItem;
@@ -95,22 +84,18 @@ public:
   virtual ItemType treeItemType() const;
   virtual void setTreeItemType(const ItemType &v);
   virtual int size() const;
-  virtual bool flatModel() const;
-  virtual void setFlatModel(const bool &v);
 
   QString name(void) const;
   void setName(const QString &v);
 
 protected:
   ItemType m_treeItemType;
-  bool m_flatModel;
   QString  m_name;
 
 signals:
   void treeItemTypeChanged();
   void nameChanged();
   void sizeChanged();
-  void flatModelChanged();
 };
 //=============================================================================
 #endif

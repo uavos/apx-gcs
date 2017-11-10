@@ -111,7 +111,7 @@ Item {
             id: menuPage
 
             property Fact fact: root.fact
-            property string title: fact.title
+            property string title: fact?fact.title:""
             property string page
             //Component.onDestruction: console.log("page delete: "+title)
             StackView.onRemoved: { destroy(); root.pageDeleted(); }
@@ -190,9 +190,9 @@ Item {
                     id: listViewC
                     ListView {
                         id: listView
-                        model: menuPage.fact
+                        model: menuPage.fact.model
                         spacing: 0
-                        delegate: FactMenuItem { fact: modelData }
+                        delegate: FactMenuItem { }
                         section.property: "modelData.section"
                         section.criteria: ViewSection.FullString
                         section.delegate: Label {

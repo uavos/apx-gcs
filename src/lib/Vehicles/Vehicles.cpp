@@ -36,7 +36,7 @@ Vehicles::Vehicles(FactSystem *parent)
 {
   _instance=this;
 
-  setFlatModel(true);
+  model()->setFlat(true);
 
   f_select=new Fact(this,"select",tr("Select vehicle"),tr("Change the active vehicle"),GroupItem,NoData);
   f_select->setSection(title());
@@ -111,7 +111,7 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
       }
       //find uav in list by uid
       Vehicle *v=NULL;
-      foreach(FactTree *i,f_list->childItemsTree()){
+      foreach(FactTree *i,f_list->childItems()){
         Vehicle *f=static_cast<Vehicle*>(i);
         if(f->uid.toHex()==uid.toHex()){
           v=f;

@@ -30,7 +30,7 @@ FactSystemApp::FactSystemApp(QObject *parent)
   _instance=this;
   setParent(parent);
 
-  setFlatModel(true);
+  model()->setFlat(true);
 
   // app constants and global facts
   Fact *item;

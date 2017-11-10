@@ -24,7 +24,7 @@
 #include "Nodes.h"
 //=============================================================================
 NodeData::NodeData(Nodes *parent, const QByteArray &sn)
-  : Fact(parent->f_list,"node#","","",GroupItem,NoData),
+  : Fact(parent,"node#","","",GroupItem,NoData),
     sn(sn),
     m_reconf(false),
     m_fwSupport(false),

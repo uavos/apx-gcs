@@ -1,3 +1,5 @@
+#include <FactDelegate.h>
+
 #include "NodesView.h"
 #include "ValueEditor.h"
 #include "ValueEditorArray.h"
@@ -15,7 +17,9 @@ NodesTreeView::NodesTreeView(QWidget *parent)
   setEditTriggers(QAbstractItemView::AllEditTriggers);
   setSelectionBehavior(QAbstractItemView::SelectRows);
   setSelectionMode(QAbstractItemView::ExtendedSelection);
-  setItemDelegate(new NodesItemDelegate(this));
+  //setItemDelegate(new NodesItemDelegate(this));
+  setUniformRowHeights(true);
+  setItemDelegate(new FactDelegate(this));
 
   setAlternatingRowColors(true);
   setUniformRowHeights(true);

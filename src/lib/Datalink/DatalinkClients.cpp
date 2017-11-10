@@ -29,7 +29,7 @@
 DatalinkClients::DatalinkClients(Datalink *parent)
   : Fact(parent,"clients",tr("Connected clients"),tr("Remote clients connections"),GroupItem,ConstData)
 {
-  setFlatModel(true);
+  model()->setFlat(true);
 
   f_datalink=parent;
 
@@ -37,7 +37,7 @@ DatalinkClients::DatalinkClients(Datalink *parent)
 
   f_list=new Fact(this,"list",tr("Clients list"),tr("Active connections"),SectionItem,ConstData);
   bind(f_list);
-  connect(f_list,&Fact::structChanged,this,&DatalinkClients::updateStats);
+  connect(f_list,&Fact::sizeChanged,this,&DatalinkClients::updateStats);
 
   server=new QTcpServer(this);
   connect(server,&QTcpServer::newConnection,this,&DatalinkClients::newConnection);

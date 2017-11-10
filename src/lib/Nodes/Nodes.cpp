@@ -31,13 +31,14 @@ Nodes::Nodes(Vehicle *parent)
   : Fact(parent,"nodes","Nodes",tr("Vehicle components"),GroupItem,NoData),
     vehicle(parent)
 {
-  setFlatModel(true);
+  //setFlatModel(true);
 
-  f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,NoData);
+  f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,this,&Nodes::search);
 
-  f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,ConstData);
-  bind(f_list);
+  //f_list=new Fact(this,"list",tr("Nodes list"),"",Item,ConstData);
+  //bind(f_list);
+  connect(this,&Nodes::sizeChanged,[=](){setStatus(QString::number(size()-1));});
 
   if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
     search();
@@ -68,7 +69,6 @@ NodeItem * Nodes::nodeCheck(const QByteArray &sn)
   NodeItem *node=snMap.value(sn);
   if(!node){
     node=new NodeItem(this,sn);
-    snMap.insert(sn,node);
   }
   return node;
 }
@@ -76,6 +76,29 @@ NodeItem * Nodes::nodeCheck(const QByteArray &sn)
 //=============================================================================
 void Nodes::search()
 {
+  if(!snMap.isEmpty()){
+    //removeItem(snMap.values().first());
+    foreach(NodeItem *node,snMap.values()){
+      removeItem(node);
+    }
+    //endResetModel();
+    //FactSystem::instance()->jsSync(this);
+    return;
+  }
   vehicle->nmtManager->request(apc_search,QByteArray(),QByteArray(),0,true);
 }
+//=============================================================================
+void Nodes::updateProgress()
+{
+  int ncnt=0,v=0;
+  foreach(NodeItem *node,snMap.values()){
+    int np=node->progress();
+    if(np || (!node->dataValid()))ncnt++;
+    v+=np;
+  }
+  if(ncnt){
+    setProgress(v/ncnt);
+  }else setProgress(0);
+}
+//=============================================================================
 //=============================================================================

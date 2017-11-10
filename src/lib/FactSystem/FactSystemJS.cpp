@@ -56,8 +56,8 @@ FactSystemJS::FactSystemJS(QObject *parent)
   jsSync(this);
 
   //add is queued to wait inherited constructors
-  connect(this,&Fact::itemAdded,this,&FactSystemJS::jsAddItem,Qt::QueuedConnection);
-  connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem,Qt::QueuedConnection);
+  //connect(this,&Fact::itemAdded,this,&FactSystemJS::jsAddItem);//,Qt::QueuedConnection);
+  //connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem);//,Qt::QueuedConnection);
 }
 //=============================================================================
 void FactSystemJS::jsSyncObject(QObject *obj)
@@ -74,22 +74,24 @@ void FactSystemJS::jsSync(Fact *item)
   for(int i=list.size()-1;i>0;--i){
     Fact *fact=static_cast<Fact*>(list.at(i));
     QJSValue vp=v.property(fact->name());
-    if(vp.isUndefined() || vp.toQObject()!=fact){
+    if(vp.isUndefined() || (!vp.isQObject()) || vp.toQObject()!=fact){
+      if(vp.isQObject())vp.toQObject()->deleteLater();
       vp=e->newQObject(fact);
       v.setProperty(fact->name(),vp);
     }
     v=vp;
   }
   jsSync(item,v);
+  js->collectGarbage();
 }
 //=============================================================================
 QJSValue FactSystemJS::jsSync(Fact *factItem, QJSValue parent) //recursive
 {
   //qDebug()<<factItem->path();
   QQmlEngine::setObjectOwnership(factItem,QQmlEngine::CppOwnership);
-  QJSValue js_factItem=js->newQObject(factItem);
+  QJSValue js_factItem=js->newQObject(factItem);//js->toScriptValue<Fact*>(factItem);//
   parent.setProperty(factItem->name(),js_factItem);
-  foreach(FactTree *i,factItem->childItemsTree())
+  foreach(FactTree *i,factItem->childItems())
     jsSync(static_cast<Fact*>(i),js_factItem);
   return js_factItem;
 }
@@ -122,12 +124,14 @@ void FactSystemJS::jsAddItem(FactTree *item)
   for(int i=list.size()-1;i>=0;--i){
     Fact *fact=static_cast<Fact*>(list.at(i));
     QJSValue vp=v.property(fact->name());
-    if(vp.isUndefined() || vp.toQObject()!=fact){
+    if(vp.isUndefined() || (!vp.isQObject()) || vp.toQObject()!=fact){
       vp=e->newQObject(fact);
       v.setProperty(fact->name(),vp);
+      qDebug()<<fact->path();
     }
     v=vp;
   }
+  js->collectGarbage();
 }
 void FactSystemJS::jsRemoveItem(FactTree *item)
 {

@@ -47,6 +47,29 @@ public:
 
 signals:
   void playSoundEffect(const QString &v);
+
+  //forwarded Fact items signals
+  void nameChanged();
+  void sizeChanged();
+
+  void valueChanged();
+  void titleChanged();
+  void descrChanged();
+  void textChanged();
+
+  void enabledChanged();
+  void visibleChanged();
+  void statusChanged();
+  void activeChanged();
+  void progressChanged();
+  void busyChanged();
+
+
+  //tree structure change signals for models
+  void itemToBeInserted(int row, FactTree *item);
+  void itemInserted(FactTree *item);
+  void itemToBeRemoved(int row,FactTree *item);
+  void itemRemoved(FactTree *item);
 };
 //=============================================================================
 #endif

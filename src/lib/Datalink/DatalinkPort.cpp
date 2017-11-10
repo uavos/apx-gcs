@@ -55,12 +55,13 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
                          <<"115200" );
 
   f_host=new Fact(this,"host",tr("Host address"),tr("Remote server IP"),FactItem,TextData);
-  connect(static_cast<Datalink*>(parent->parentItem())->f_hosts->f_list,&Fact::structChanged,this,&DatalinkPort::syncHostEnum,Qt::QueuedConnection);
+  connect(static_cast<Datalink*>(parent->parentItem())->f_hosts->f_list,&Fact::sizeChanged,this,&DatalinkPort::syncHostEnum,Qt::QueuedConnection);
 
   f_local=new Fact(this,"local",tr("Local data only"),tr("Never share received data with other connections"),FactItem,BoolData);
 
   if(_new){
     f_save=new Fact(this,"save",tr("Save"),"",FactItem,ActionData);
+    f_save->setValue(ButtonAction);
     connect(f_save,&Fact::triggered,parent,&DatalinkPorts::addTriggered);
     defaults();
   }else{
@@ -70,7 +71,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
     connect(f_remove,&Fact::triggered,parent,&DatalinkPorts::removeTriggered);
     f_remove->setValue(RemoveAction);
     connect(this,&Fact::childValueChanged,parent,&DatalinkPorts::save);
-    connect(parent,&Fact::structChanged,this,&DatalinkPort::updateStats);
+    connect(parent,&Fact::sizeChanged,this,&DatalinkPort::updateStats);
     connect(parent->f_allon,&Fact::triggered,this,&DatalinkPort::enable);
     connect(parent->f_alloff,&Fact::triggered,this,&DatalinkPort::disable);
 

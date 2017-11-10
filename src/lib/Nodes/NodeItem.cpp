@@ -32,33 +32,33 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
     timeout_ms(500),
     nodes(parent),
     m_valid(false),
-    m_dataValid(false),
-    m_progress(0)
+    m_dataValid(false)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
 
-  setSection(parent->f_list->title());
-  setFlatModel(true);
+  setSection(tr("Nodes list"));
 
+  nodes->snMap.insert(sn,this);
   //setQmlMenu("nodes/NodeMenuItem.qml");
 
-  f_version=new Fact(this,"version",tr("Version"),tr("Firmware version"),FactItem,ConstData);
-  f_hardware=new Fact(this,"hardware",tr("Hardware"),tr("Hardware generation"),FactItem,ConstData);
+  connect(this,&NodeItem::versionChanged,this,&NodeItem::updateStats);
+  connect(this,&NodeItem::hardwareChanged,this,&NodeItem::updateStats);
 
-  f_fields=new Fact(this,"fields",tr("Parameters"),"",SectionItem,NoData);
-
-  connect(f_version,&Fact::valueChanged,this,&NodeItem::updateStats);
-  connect(f_hardware,&Fact::valueChanged,this,&NodeItem::updateStats);
+  connect(this,&NodeItem::progressChanged,parent,&Nodes::updateProgress);
 
   //datalink
   connect(this,&NodeItem::nmtRequest,parent->vehicle->nmtManager,&VehicleNmtManager::request);
 
   request(apc_info,QByteArray(),timeout_ms,true);
 }
+NodeItem::~NodeItem()
+{
+  nodes->snMap.remove(nodes->snMap.key(this));
+}
 //=============================================================================
 void NodeItem::updateStats()
 {
-  setDescr(QString("%1 %2\t%3").arg(f_hardware->text()).arg(f_version->text()).arg(QString(sn.toHex().toUpper())));
+  setDescr(QString("%1 %2\t%3").arg(m_hardware).arg(m_version).arg(QString(sn.toHex().toUpper())));
 }
 //=============================================================================
 bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
@@ -80,8 +80,8 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       ninfo.name[sizeof(_node_name)-1]=0;
       setName((const char*)ninfo.name);
       setTitle((const char*)ninfo.name);
-      f_version->setValue(QString((const char*)ninfo.version));
-      f_hardware->setValue(QString((const char*)ninfo.hardware));
+      setVersion(QString((const char*)ninfo.version));
+      setHardware(QString((const char*)ninfo.hardware));
       setReconf(ninfo.flags.conf_reset);
       setFwSupport(ninfo.flags.loader_support);
       setFwUpdating(ninfo.flags.in_loader);
@@ -127,7 +127,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       memcpy(&conf_inf,ba.data(),sizeof(_conf_inf));
       if(conf_inf.cnt!=allFields.size() || uid!=conf_uid){
         allFields.clear();
-        f_fields->clear();
+        clear();
         conf_uid=uid;
         for(quint16 id=0;id<conf_inf.cnt;id++){
           allFields.append(new NodeField(this,id));
@@ -138,7 +138,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       if(!(valid() && dataValid())){
         foreach (NodeField *f, allFields) {
           if(!f->valid()) request(apc_conf_dsc,QByteArray().append((unsigned char)f->id),timeout_ms,false);
-          else if(!f->dataValid()) request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+          //else if(!f->dataValid()) request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
         }
       }
     }return true;
@@ -149,7 +149,17 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       if(ba.size()<1)break;
       NodeField *field=allFields.value((unsigned char)ba.at(0),NULL);
       if(!field)return true;
-      if(field->unpackService(ncmd,ba.mid(1)))return true;
+      if(field->unpackService(ncmd,ba.mid(1))){
+        if(!(valid()&&dataValid())){
+          int ncnt=0;
+          foreach (NodeField *f, allFields) {
+            if(f->valid())ncnt+=7;
+            if(f->dataValid())ncnt+=3;
+          }
+          setProgress(ncnt?(ncnt*100)/allFields.size()/10:0);
+        }else setProgress(0);
+        return true;
+      }
     }break;
   }
   //error
@@ -162,21 +172,19 @@ void NodeItem::groupFields(void)
   foreach (FactTree *i, allFields) {
     NodeField *f=static_cast<NodeField*>(i);
     //grouping
-    Fact *groupParent=f_fields;
+    Fact *groupParent=this;
     while(f->descr().contains(':')){
       QString group=f->descr().left(f->descr().indexOf(':'));
       f->setDescr(f->descr().remove(0,f->descr().indexOf(':')+1).trimmed());
       Fact *groupItem=NULL;
       QString gname=group.toLower();
-      foreach(FactTree *i,groupParent->childItemsTree()){
+      foreach(FactTree *i,groupParent->childItems()){
         if(!(i->treeItemType()==GroupItem && i->name()==gname))continue;
         groupItem=static_cast<Fact*>(i);
         break;
       }
       if(!groupItem)
         groupItem=new Fact(groupParent,gname,group,"",GroupItem,NoData);
-      if(groupParent==f_fields)
-        groupItem->setSection(groupParent->title());
       groupParent=groupItem;
       if(f->title().contains('_') && f->title().left(f->title().indexOf('_'))==group)
         f->setTitle(f->title().remove(0,f->title().indexOf('_')+1));
@@ -193,6 +201,26 @@ void NodeItem::request(uint cmd,const QByteArray &data,uint timeout_ms,bool high
 }
 //=============================================================================
 //=============================================================================
+QString NodeItem::version() const
+{
+  return m_version;
+}
+void NodeItem::setVersion(const QString &v)
+{
+  if(m_version==v)return;
+  m_version=v;
+  emit versionChanged();
+}
+QString NodeItem::hardware() const
+{
+  return m_hardware;
+}
+void NodeItem::setHardware(const QString &v)
+{
+  if(m_hardware==v)return;
+  m_hardware=v;
+  emit hardwareChanged();
+}
 bool NodeItem::valid() const
 {
   return m_valid;
@@ -212,16 +240,6 @@ void NodeItem::setDataValid(const bool &v)
   if(m_dataValid==v)return;
   m_dataValid=v;
   emit dataValidChanged();
-}
-int NodeItem::progress() const
-{
-  return m_progress;
-}
-void NodeItem::setProgress(const int &v)
-{
-  if(m_progress==v)return;
-  m_progress=v;
-  emit progressChanged();
 }
 //=============================================================================
 //=============================================================================

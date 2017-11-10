@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,52 +20,29 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#ifndef FactDelegate_H
+#define FactDelegate_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-#include "NodeItem.h"
-class Vehicle;
+#include <QItemDelegate>
+#include <QStyledItemDelegate>
+#include <QProgressBar>
+#include <FactSystem.h>
 //=============================================================================
-class Nodes: public Fact
+class FactDelegate : public QItemDelegate//QStyledItemDelegate
 {
   Q_OBJECT
-
 public:
-  explicit Nodes(Vehicle *parent);
-
-  Fact *f_request;
-
-  //Fact *f_list;
-
-  Vehicle *vehicle;
-
-  //sn lookup
-  QHash<QByteArray,NodeItem*> snMap;
-
-  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
-private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeItem * nodeCheck(const QByteArray &sn);
-
-private slots:
-  void search();
-
-public slots:
-  bool unpackService(const QByteArray &packet); //data comm
-
-  void updateProgress();
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-
+  FactDelegate(QObject *parent = 0);
+  ~FactDelegate();
+  virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,const QModelIndex &index) const;
+  void setEditorData(QWidget *editor, const QModelIndex &index) const;
+  void setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const;
 protected:
-
-signals:
-
+  void paint(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index) const;
+private:
+  QProgressBar *progressBar;
+  bool drawProgress(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index,uint progress) const;
 };
 //=============================================================================
 #endif
-

@@ -59,7 +59,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
   connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
-  f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,NoData);
+  f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,ActionData);
   connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
   connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
 
@@ -76,7 +76,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
 
   //selection action fact in separate group menu
-  f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,NoData);
+  f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,ActionData);
   connect(this,&Vehicle::destroyed,[=](){ parent->f_select->removeItem(f_select); });
   connect(f_select,&Fact::triggered,[=](){ parent->selectVehicle(this); });
 

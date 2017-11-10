@@ -10,7 +10,7 @@ main.depends += lib
 # Plugins
 PLUGINS += console
 PLUGINS += nodes
-#PLUGINS += map
+PLUGINS += map
 PLUGINS += telemetry
 PLUGINS += signal
 PLUGINS += compass

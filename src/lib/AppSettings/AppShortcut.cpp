@@ -39,6 +39,7 @@ AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
 
   if(_new){
     _save=new Fact(this,"save",tr("Save"),"",FactItem,ActionData);
+    _save->setValue(ButtonAction);
     connect(_save,&Fact::triggered,parent,&AppShortcuts::addTriggered);
     defaults();
   }else{
@@ -47,7 +48,7 @@ AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
     _remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
     connect(_remove,&Fact::triggered,parent,&AppShortcuts::removeTriggered);
     _remove->setValue(RemoveAction);
-    connect(parent,&Fact::structChanged,this,&AppShortcut::updateStats);
+    connect(parent,&Fact::sizeChanged,this,&AppShortcut::updateStats);
     connect(parent->f_blocked,&Fact::valueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);
     connect(this,&Fact::childValueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);
 

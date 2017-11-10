@@ -46,7 +46,7 @@ public:
 protected:
   Fact * root;
 
-  virtual void checkConnections(Fact *fact) const;
+  void checkConnections(Fact *fact) const;
 
   //override
   QVariant data(const QModelIndex &index, int role) const;
@@ -58,10 +58,25 @@ protected:
   int columnCount(const QModelIndex &parent = QModelIndex()) const;
   bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
 
+private:
+  QTimer updateTimer;
+  QList<Fact*> updateList;
+
 private slots:
-  void factTextChanged();
-  void factTitleChanged();
-  void factDescrChanged();
+  void itemToBeInserted(int row, FactTree *item);
+  void itemInserted(FactTree *);
+  void itemToBeRemoved(int row, FactTree *item);
+  void itemRemoved(FactTree *);
+
+  void textChanged();
+  void titleChanged();
+  void descrChanged();
+  void enabledChanged();
+  void activeChanged();
+  void progressChanged();
+
+  void updateTimerTimeout();
+  void itemDestroyed();
 
 };
 //=============================================================================

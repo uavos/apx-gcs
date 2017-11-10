@@ -29,7 +29,7 @@ AppShortcuts::AppShortcuts(AppSettings *parent, QWidget *widget)
   : Fact(parent,"shortcuts",tr("Shortcuts"),tr("Keyboard hotkeys"),GroupItem,NoData),
     widget(widget)
 {
-  setFlatModel(true);
+  model()->setFlat(true);
 
   setSection(FactSystem::ApplicationSection);
 
@@ -66,7 +66,7 @@ AppShortcuts::AppShortcuts(AppSettings *parent, QWidget *widget)
   connect(&saveTimer,&QTimer::timeout,this,&AppShortcuts::save);
   connect(this,SIGNAL(childValueChanged()),&saveTimer,SLOT(start()));
 
-  connect(this,&Fact::structChanged,this,&AppShortcuts::updateStats);
+  connect(this,&Fact::sizeChanged,this,&AppShortcuts::updateStats);
   connect(this,&Fact::childValueChanged,this,&AppShortcuts::updateStats);
   updateStats();
 }

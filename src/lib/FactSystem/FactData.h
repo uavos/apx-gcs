@@ -34,7 +34,12 @@ class FactData: public FactTree
   Q_PROPERTY(DataType dataType READ dataType WRITE setDataType NOTIFY dataTypeChanged)
 
   Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+
+  Q_PROPERTY(bool modified READ modified WRITE setModified NOTIFY modifiedChanged)
+
   Q_PROPERTY(int precision READ precision WRITE setPrecision NOTIFY precisionChanged)
+  Q_PROPERTY(QVariant min READ min WRITE setMin NOTIFY minChanged)
+  Q_PROPERTY(QVariant max READ max WRITE setMax NOTIFY maxChanged)
 
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
   Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
@@ -59,6 +64,7 @@ public:
 
   enum ActionType {
     NormalAction =0,
+    ButtonAction,
     RemoveAction,
     UplinkAction,
   };
@@ -73,24 +79,14 @@ public:
 
   virtual void bind(FactData *item);
 
+  Q_INVOKABLE void backup();
+  Q_INVOKABLE void restore();
 
-
-  //LIST MODEL
-  enum FactModelRoles {
-    ModelDataRole = Qt::UserRole + 1,
-    NameRole,
-    ValueRole,
-    TextRole,
-  };
+  void defaults();
 
   //FactTree override
   virtual void insertItem(int i, FactTree *item);
   virtual void removeItem(FactTree *item, bool deleteLater=true);
-
-  //ListModel override
-  virtual QHash<int, QByteArray> roleNames() const;
-  virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-  virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
 signals:
   void childValueChanged(void);
@@ -98,6 +94,8 @@ signals:
 
 protected:
   FactData *_bindedFact;
+
+  QVariant backup_value;
 
 public:
   //---------------------------------------
@@ -107,8 +105,15 @@ public:
   virtual QVariant value(void) const;
   Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
+  bool modified() const;
+  void setModified(const bool &v);
+
   int precision(void) const;
   void setPrecision(const int &v);
+  QVariant min(void) const;
+  void setMin(const QVariant &v);
+  QVariant max(void) const;
+  void setMax(const QVariant &v);
 
   QString title(void) const;
   void setTitle(const QString &v);
@@ -127,7 +132,12 @@ protected:
   DataType m_dataType;
 
   QVariant m_value;
+
+  bool m_modified;
+
   int  m_precision;
+  QVariant m_min;
+  QVariant m_max;
 
   QString  m_title;
   QString  m_descr;
@@ -139,7 +149,12 @@ signals:
   void dataTypeChanged();
 
   void valueChanged();
+
+  void modifiedChanged();
+
   void precisionChanged();
+  void minChanged();
+  void maxChanged();
 
   void titleChanged();
   void descrChanged();

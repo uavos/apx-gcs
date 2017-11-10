@@ -24,11 +24,14 @@
 #define Fact_H
 //=============================================================================
 #include "FactData.h"
+#include "FactListModel.h"
 class FactSystem;
 //=============================================================================
 class Fact: public FactData
 {
   Q_OBJECT
+
+  Q_PROPERTY(FactListModel * model READ model CONSTANT)
 
   Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
   Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
@@ -57,6 +60,8 @@ public:
 
   QVariant userData;
 
+  bool treeModelSync;
+
 public slots:
   virtual void trigger(void); //execute fact event (onClick)
 signals:
@@ -64,6 +69,8 @@ signals:
 
 public:
   //---------------------------------------
+  FactListModel * model() const;
+
   bool enabled() const;
   void setEnabled(const bool &v);
 
@@ -92,6 +99,7 @@ public:
   void setBusy(const bool &v);
 
 protected:
+  FactListModel *m_model;
   bool m_enabled;
   bool m_visible;
   QString  m_section;

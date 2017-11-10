@@ -47,6 +47,8 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint
   sendValueTimer.setInterval(80);
   connect(&sendValueTimer,&QTimer::timeout,[=](){ emit sendUplink(packed); });
   connect(this,&VehicleMandalaFact::sendUplink,[=](){ sendValueTime.restart(); });
+
+  setValue(0.0);
 }
 //=============================================================================
 uint VehicleMandalaFact::getPrecision()

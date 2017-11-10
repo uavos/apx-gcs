@@ -26,15 +26,19 @@ FactData::FactData(FactTree *parent, const QString &name, const QString &title, 
  : FactTree(parent,name,treeItemType),
    _bindedFact(NULL),
    m_dataType(NoData),
+   m_modified(false),
    m_precision(-1),
    m_title(title),m_descr(descr)
 {
-  setObjectName(m_name);
-  setDataType(dataType);
+  m_dataType=dataType;
+  defaults();
   connect(this,&FactData::enumStringsChanged,this,&FactData::textChanged);
-  if(parent && m_name.contains('#')){
+  /*if(parent && m_name.contains('#')){
     connect(parent,&FactData::structChanged,this,&FactData::nameChanged);
   }
+  if(parent){
+    connect(this,&FactData::modifiedChanged,static_cast<FactData*>(parent),&FactData::modifiedChanged);
+  }*/
 }
 //=============================================================================
 QVariant FactData::value(void) const
@@ -48,6 +52,7 @@ bool FactData::setValue(const QVariant &v)
   if(_bindedFact) return _bindedFact->setValue(v);
   QVariant vx=v;
   int ev=enumValue(v);
+  bool ok=false;
   if(m_treeItemType==FactItem){
     switch(dataType()){
       case EnumData:
@@ -65,7 +70,24 @@ bool FactData::setValue(const QVariant &v)
       break;
       case IntData:
         if(ev>=0)vx=ev;
-        else if(!m_enumStrings.isEmpty())vx=QVariant();
+        else if(!m_enumStrings.isEmpty())return false;
+        if(v.type()!=QVariant::Int){
+          int i=v.toString().toInt(&ok);
+          if(!ok) return false;
+          if((!m_min.isNull()) && i<m_min.toInt())i=m_min.toInt();
+          if((!m_max.isNull()) && i>m_max.toInt())i=m_max.toInt();
+          vx=i;
+        }
+      break;
+      case FloatData:
+        if(v.type()!=QVariant::Double){
+          double d=v.toString().toDouble(&ok);
+          if(!ok) return false;
+          if((!m_min.isNull()) && d<m_min.toInt())d=m_min.toInt();
+          if((!m_max.isNull()) && d>m_max.toInt())d=m_max.toInt();
+          vx=d;
+        }
+        vx=v.toDouble();
       break;
       default:
         if(ev>=0)vx=ev;
@@ -74,6 +96,8 @@ bool FactData::setValue(const QVariant &v)
   }
   if(m_value==vx)return false;
   m_value=vx;
+  if(!backup_value.isNull())
+    setModified(backup_value!=m_value);
   emit valueChanged();
   emit textChanged();
   return true;
@@ -116,17 +140,20 @@ void FactData::setDataType(const DataType &v)
 {
   if(m_dataType==v)return;
   m_dataType=v;
-  //default data
-  switch(m_dataType){
-    case FloatData: m_value=0.0; break;
-    case IntData: m_value=0; break;
-    case BoolData: m_value=false; break;
-    case EnumData: m_value=0; break;
-    default: m_value=QVariant();
-  }
+  defaults();
   emit dataTypeChanged();
   emit valueChanged();
   emit textChanged();
+}
+bool FactData::modified() const
+{
+  return m_modified;
+}
+void FactData::setModified(const bool &v)
+{
+  if(m_modified==v)return;
+  m_modified=v;
+  emit modifiedChanged();
 }
 int FactData::precision(void) const
 {
@@ -138,6 +165,30 @@ void FactData::setPrecision(const int &v)
   m_precision=v;
   emit precisionChanged();
   emit textChanged();
+}
+QVariant FactData::min(void) const
+{
+  return m_min;
+}
+void FactData::setMin(const QVariant &v)
+{
+  if(m_min==v)return;
+  m_min=v;
+  emit minChanged();
+  if(v.isNull())return;
+  if(value()<m_min)setValue(m_min);
+}
+QVariant FactData::max(void) const
+{
+  return m_max;
+}
+void FactData::setMax(const QVariant &v)
+{
+  if(m_max==v)return;
+  m_max=v;
+  emit maxChanged();
+  if(v.isNull())return;
+  if(value()>m_max)setValue(m_max);
 }
 QString FactData::title(void) const
 {
@@ -170,7 +221,10 @@ QString FactData::text() const
   }
   const QVariant &v=value();
   if(v.type()==QVariant::ByteArray) return v.toByteArray().toHex().toUpper();
-  if(v.type()==QVariant::Double) return QString::number(v.toDouble(),'f',m_precision);
+  if(v.type()==QVariant::Double){
+    double vf=v.toDouble();
+    return QString("%1").arg(vf,0,'g',m_precision);
+  }
   return v.toString();
 }
 void FactData::setText(const QString &v)
@@ -243,13 +297,49 @@ void FactData::bind(FactData *item)
   emit textChanged();
   emit enumStringsChanged();
   //bind all matched children
-  foreach(FactTree *i,childItemsTree()){
+  foreach(FactTree *i,childItems()){
     FactData *childFact=static_cast<FactData*>(i);
-    foreach(FactTree *i2,item->childItemsTree()){
+    foreach(FactTree *i2,item->childItems()){
       FactData *itemChildFact=static_cast<FactData*>(i2);
       if(childFact->name()!=itemChildFact->name())continue;
       childFact->bind(itemChildFact);
     }
+  }
+}
+//=============================================================================
+void FactData::backup()
+{
+  if(size()){
+    foreach (FactTree *i, childItems()) {
+      static_cast<FactData*>(i)->backup();
+    }
+    return;
+  }
+  if(treeItemType()!=FactItem)return;
+  backup_value=m_value;
+  setModified(false);
+}
+void FactData::restore()
+{
+  if(!modified())return;
+  if(size()){
+    foreach (FactTree *i, childItems()) {
+      static_cast<FactData*>(i)->restore();
+    }
+    return;
+  }
+  if(treeItemType()!=FactItem)return;
+  setValue(backup_value);
+  setModified(false);
+}
+void FactData::defaults()
+{
+  switch(m_dataType){
+    case FloatData: m_value=0.0; break;
+    case IntData: m_value=0; break;
+    case BoolData: m_value=false; break;
+    case EnumData: m_value=0; break;
+    default: m_value=QVariant();
   }
 }
 //=============================================================================
@@ -263,37 +353,5 @@ void FactData::removeItem(FactTree *item, bool deleteLater)
 {
   disconnect(static_cast<FactData*>(item),&FactData::valueChanged,this,&FactData::childValueChanged);
   FactTree::removeItem(item,deleteLater);
-}
-//=============================================================================
-// LIST MODEL
-//=============================================================================
-QHash<int, QByteArray> FactData::roleNames() const
-{
-  QHash<int, QByteArray> roles;
-  roles[ModelDataRole]  = "modelData";
-  roles[NameRole]       = "name";
-  roles[ValueRole]      = "value";
-  roles[TextRole]       = "text";
-  return roles;
-}
-QVariant FactData::data(const QModelIndex & index, int role) const
-{
-  if (index.row() < 0 || index.row() >= size())
-    return QVariant();
-  FactData *item=static_cast<FactData*>(childItems().at(index.row()));
-  switch(role){
-    case ModelDataRole: return QVariant::fromValue(item);
-    case NameRole:      return item->name();
-    case ValueRole:     return item->value();
-    case TextRole:      return item->text();
-  }
-  return QVariant();
-}
-bool FactData::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-  if (index.row() < 0 || index.row() >= size() || role != Qt::EditRole)
-    return false;
-  static_cast<FactData*>(child(index.row()))->setValue(value);
-  return true;
 }
 //=============================================================================

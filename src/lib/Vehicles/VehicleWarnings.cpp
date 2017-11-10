@@ -27,7 +27,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
   : Fact(parent,"warnings",tr("Warnings"),tr("Malfunctions and warnings list"),GroupItem,ConstData),
     showNum(0)
 {
-  setFlatModel(true);
+  model()->setFlat(true);
 
   f_clear=new Fact(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactItem,NoData);
   f_clear->setEnabled(false);

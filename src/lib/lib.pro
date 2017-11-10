@@ -36,6 +36,7 @@ SOURCES += \
     FactSystem/FactSystemJS.cpp \
     FactSystem/FactTree.cpp \
     FactSystem/FactData.cpp \
+    FactSystem/FactListModel.cpp \
     FactSystem/Fact.cpp \
     FactSystem/FactTreeModel.cpp \
 
@@ -45,6 +46,7 @@ HEADERS += \
     FactSystem/FactSystemJS.h \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
+    FactSystem/FactListModel.h \
     FactSystem/FactValue.h \
     FactSystem/Fact.h \
     FactSystem/FactTreeModel.h \
@@ -138,12 +140,14 @@ SOURCES += \
     QmlView.cpp \
     SoundEffects.cpp \
     SvgImageProvider.cpp \
+    FactDelegate.cpp \
 
 HEADERS += \
     FlightDataFile.h \
     QmlView.h \
     SoundEffects.h \
     SvgImageProvider.h \
+    FactDelegate.h \
 
 
 

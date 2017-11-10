@@ -16,15 +16,19 @@ Item {
     property int factItemSize: (bDescr||bAction)?itemSize*1.3:itemSize
 
     //configurable properties
-    property Fact fact
+    property Fact fact: modelData
 
+    onFactChanged: {
+        if(!fact)fact=app
+        //console.log(fact);
+    }
 
     //internal
     property bool bNext: fact.size || fact.treeItemType==Fact.GroupItem
     property bool bDescr: fact.descr && app.settings.showdescr.value
 
     //editor types
-    property bool bAction:       fact.dataType==Fact.ActionData
+    property bool bAction:       fact.dataType==Fact.ActionData && (fact.value?fact.value:false)
     property bool bEditText:     fact.dataType==Fact.TextData && fact.enumStrings.length === 0
     property bool bEditList:     fact.dataType==Fact.EnumData
     property bool bEditListText: (fact.dataType==Fact.TextData || fact.dataType==Fact.IntData) && fact.enumStrings.length > 0
@@ -135,6 +139,14 @@ Item {
             //height: parent.height
             //clip: true
 
+
+            ProgressBar {
+                property int v: fact.progress
+                visible: v>0
+                value: v/100
+                indeterminate: v<0
+            }
+
             BusyIndicator {
                 id: factItemBusy
                 running: fact.busy||factBusyTimer.running
@@ -181,7 +193,7 @@ Item {
                     factEditor.destroy();
                     factEditor=undefined
                 }
-                if(fact.dataType!=Fact.NoData){
+                if(factItem.fact.dataType!=Fact.NoData){
                     factEditor=editorComponent.createObject(factItemBody);
                 }
             }

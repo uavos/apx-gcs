@@ -25,10 +25,41 @@
 //=============================================================================
 Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactData(parent,name,title,descr,treeItemType,dataType),
-   m_enabled(true), m_visible(true), m_active(false), m_busy(false)
+   treeModelSync(false),
+   m_enabled(true), m_visible(true), m_active(false), m_progress(0), m_busy(false)
 {
+  m_model=new FactListModel(this);
   if((treeItemType==GroupItem || treeItemType==SectionItem) && m_dataType==ConstData){
     connect(this,&Fact::sizeChanged,this,&Fact::statusChanged);
+  }
+
+  if(parent){
+    parent->addItem(this);
+    if(m_name.contains('#')){
+      connect(parent,&FactData::sizeChanged,this,&FactData::nameChanged);
+    }
+    connect(this,&FactData::modifiedChanged,static_cast<FactData*>(parent),&FactData::modifiedChanged);
+
+
+    /*FactSystem *fs=FactSystem::instance();
+    connect(this,&Fact::nameChanged,fs,&FactSystem::nameChanged);
+    connect(this,&Fact::sizeChanged,fs,&FactSystem::sizeChanged);
+
+    connect(this,&Fact::valueChanged,fs,&FactSystem::valueChanged);
+    connect(this,&Fact::titleChanged,fs,&FactSystem::titleChanged);
+    connect(this,&Fact::descrChanged,fs,&FactSystem::descrChanged);
+    connect(this,&Fact::textChanged,fs,&FactSystem::textChanged);
+
+    connect(this,&Fact::enabledChanged,fs,&FactSystem::enabledChanged);
+    connect(this,&Fact::visibleChanged,fs,&FactSystem::visibleChanged);
+    connect(this,&Fact::statusChanged,fs,&FactSystem::statusChanged);
+    connect(this,&Fact::activeChanged,fs,&FactSystem::activeChanged);
+    connect(this,&Fact::progressChanged,fs,&FactSystem::progressChanged);
+
+    connect(this,&Fact::itemToBeInserted,fs,&FactSystem::itemToBeInserted);
+    connect(this,&Fact::itemInserted,fs,&FactSystem::itemInserted);
+    connect(this,&Fact::itemToBeRemoved,fs,&FactSystem::itemToBeRemoved);
+    connect(this,&Fact::itemRemoved,fs,&FactSystem::itemRemoved);*/
   }
 }
 //=============================================================================
@@ -71,7 +102,7 @@ Fact * Fact::fact(const QString &factNamePath) const
 //=============================================================================
 Fact * Fact::childByTitle(const QString &factTitle) const
 {
-  foreach(FactTree *item,childItemsTree()){
+  foreach(FactTree *item,childItems()){
     Fact *f=static_cast<Fact*>(item);
     if(f->title()==factTitle)
       return f;
@@ -103,6 +134,10 @@ void Fact::trigger(void)
   emit triggered();
 }
 //=============================================================================
+FactListModel * Fact::model() const
+{
+  return m_model;
+}
 bool Fact::enabled() const
 {
   return m_enabled;

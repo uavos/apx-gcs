@@ -29,7 +29,7 @@ DatalinkPorts::DatalinkPorts(Datalink *parent)
   : Fact(parent,"ports",tr("Local ports"),tr("Modems and persistent remotes"),GroupItem,ConstData),
     f_datalink(parent)
 {
-  setFlatModel(true);
+  model()->setFlat(true);
 
   f_add=new DatalinkPort(this);
   connect(f_add,&Fact::triggered,f_add,&DatalinkPort::defaults);
@@ -42,7 +42,7 @@ DatalinkPorts::DatalinkPorts(Datalink *parent)
 
   load();
 
-  connect(f_list,&Fact::structChanged,this,&DatalinkPorts::updateStats);
+  connect(f_list,&Fact::sizeChanged,this,&DatalinkPorts::updateStats);
   updateStats();
 }
 //=============================================================================

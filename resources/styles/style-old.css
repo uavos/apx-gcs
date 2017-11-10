@@ -233,6 +233,19 @@ EButton:hover, ValueEditor:hover {
     border: 1px solid #5ff;
     background-color: transparent;
 }
+QPushButton#treeViewButton {
+    min-height: 5px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #155;
+    border-radius: 4px;
+    background-color: transparent;
+    color: #fff;
+}
+QPushButton:hover#treeViewButton {
+    border: 1px solid #5ff;
+    background-color: transparent;
+}
 /*========================================================================*/
 QPushButton#killButton {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #d02, stop: 1 #902);

@@ -31,18 +31,16 @@ class Nodes;
 class NodeItem: public NodeData
 {
   Q_OBJECT
+
+  Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
+  Q_PROPERTY(QString hardware READ hardware WRITE setHardware NOTIFY hardwareChanged)
+
   Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
   Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
-  Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
 public:
   explicit NodeItem(Nodes *parent,const QByteArray &sn);
-
-
-  Fact * f_version;
-  Fact * f_hardware;
-
-  Fact * f_fields;
+  ~NodeItem();
 
   quint64 conf_uid;
 
@@ -70,22 +68,26 @@ signals:
   //---------------------------------------
   // PROPERTIES
 public:
+  QString version() const;
+  void setVersion(const QString &v);
+  QString hardware() const;
+  void setHardware(const QString &v);
   bool valid() const;
   void setValid(const bool &v);
   bool dataValid() const;
   void setDataValid(const bool &v);
-  int progress() const;
-  void setProgress(const int &v);
 
 protected:
+  QString m_version;
+  QString m_hardware;
   bool m_valid;
   bool m_dataValid;
-  int m_progress;
 
 signals:
+  void versionChanged();
+  void hardwareChanged();
   void validChanged();
   void dataValidChanged();
-  void progressChanged();
 };
 //=============================================================================
 #endif

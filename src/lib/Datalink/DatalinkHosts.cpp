@@ -30,7 +30,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   : Fact(parent,"hosts",tr("Remote servers"),tr("Discovered remote hosts"),GroupItem,NoData),
     m_connectedCount(0)
 {
-  setFlatModel(true);
+  model()->setFlat(true);
 
   f_datalink=parent;
   f_localhost=NULL;
@@ -41,6 +41,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   f_host=new AppSettingFact(settings,f_add,"host",tr("Host address"),tr("IP address of remote server"),"",TextData,QString());
   //f_host=new Fact(f_add,"host",tr("Host address"),tr("IP address of remote server"),FactItem,TextData);
   f_connect=new Fact(f_add,"connect",tr("Connect"),"",FactItem,ActionData);
+  f_connect->setValue(ButtonAction);
   connect(f_connect,&Fact::triggered,this,&DatalinkHosts::connectTriggered);
 
   AppSettingFact::loadSettings(this);

@@ -20,61 +20,53 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeField_H
-#define NodeField_H
+#ifndef FactListModel_H
+#define FactListModel_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-class NodeItem;
+class Fact;
+class FactTree;
 //=============================================================================
-class NodeField: public Fact
+class FactListModel: public QAbstractListModel
 {
   Q_OBJECT
-  Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
-  Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
-  Q_PROPERTY(int array READ array WRITE setArray NOTIFY arrayChanged)
+  Q_PROPERTY(bool flat READ flat WRITE setFlat NOTIFY flatChanged)
 
 public:
-  explicit NodeField(NodeItem *node,quint16 id);
-  explicit NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype);
 
-  bool unpackService(uint ncmd, const QByteArray &data);
+  explicit FactListModel(Fact *parent);
 
-  quint16 id;
+  enum FactListModelRoles {
+    ModelDataRole = Qt::UserRole + 1,
+    NameRole,
+    ValueRole,
+    TextRole,
+  };
+
+
 
 private:
-  NodeItem *node;
-  NodeField *parentField;
-  int ftype;
+  Fact *fact;
 
-  bool unpackValue(const QByteArray &data);
-  int ftypeSize() const;
-  void updateDataType();
-
-  void createSubFields(void);
-private slots:
-  void updateStatus();
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-  bool valid() const;
-  void setValid(const bool &v);
-  bool dataValid() const;
-  void setDataValid(const bool &v);
-  int array() const;
-  void setArray(const int &v);
+  Fact * flatParent() const;
 
 protected:
-  bool m_valid;
-  bool m_dataValid;
-  int m_array;
+  //ListModel override
+  int rowCount(const QModelIndex & parent = QModelIndex()) const;
+  QHash<int, QByteArray> roleNames() const;
+  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+  bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
+
+  //-----------------------------------------
+  //PROPERTIES
+public:
+  bool flat() const;
+  void setFlat(const bool &v);
+protected:
+  bool m_flat;
 signals:
-  void validChanged();
-  void dataValidChanged();
-  void arrayChanged();
+  void flatChanged();
 };
 //=============================================================================
 #endif
-
