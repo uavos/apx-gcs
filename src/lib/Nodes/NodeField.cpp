@@ -356,6 +356,7 @@ void NodeField::updateDataType()
       setDataType(TextData);
     break;
     case ft_float:
+      setPrecision(5);
       setDataType(FloatData);
     break;
     case ft_byte:

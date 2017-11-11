@@ -117,6 +117,8 @@ VehicleNmtManager::VehicleNmtManager(QObject *parent)
   //doneTimer.setInterval(500);
   //connect(&doneTimer,SIGNAL(timeout()),this,SLOT(allDone()));
 }
+QList<VehicleNmt*> VehicleNmtManager::pool;
+QTimer VehicleNmtManager::timer;
 //=============================================================================
 void VehicleNmtManager::request(uint cmd, const QByteArray &sn, const QByteArray &data, uint timeout_ms, bool highprio)
 {

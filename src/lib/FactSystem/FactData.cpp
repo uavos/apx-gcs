@@ -56,7 +56,13 @@ bool FactData::setValue(const QVariant &v)
   if(m_treeItemType==FactItem){
     switch(dataType()){
       case EnumData:
-        if(ev<0)return false;
+        if(ev<0 && m_enumStrings.size()==2){
+          //try boolean strings
+          QString s=v.toString();
+          if(s=="true"||s=="on"||s=="yes")ev=enumValue(1);
+          else if(s=="false"||s=="off"||s=="no")ev=enumValue(0);
+          if(ev<0) return false;
+        }
         vx=ev;
       break;
       case BoolData:
@@ -81,8 +87,14 @@ bool FactData::setValue(const QVariant &v)
       break;
       case FloatData:
         if(v.type()!=QVariant::Double){
-          double d=v.toString().toDouble(&ok);
-          if(!ok) return false;
+          QString s=v.toString();
+          double d=s.toDouble(&ok);
+          if(!ok){
+            //try boolean
+            if(s=="true"||s=="on"||s=="yes")d=1;
+            else if(s=="false"||s=="off"||s=="no")d=0;
+            else return false;
+          }
           if((!m_min.isNull()) && d<m_min.toInt())d=m_min.toInt();
           if((!m_max.isNull()) && d>m_max.toInt())d=m_max.toInt();
           vx=d;
@@ -223,7 +235,15 @@ QString FactData::text() const
   if(v.type()==QVariant::ByteArray) return v.toByteArray().toHex().toUpper();
   if(v.type()==QVariant::Double){
     double vf=v.toDouble();
-    return QString("%1").arg(vf,0,'g',m_precision);
+    if(vf==0.0)return "0";
+    QString s=QString("%1").arg(vf,0,'f',m_precision>0?m_precision:8);
+    if(s.contains('.')){
+      if(m_precision>0)s=s.left(s.indexOf('.')+1+m_precision);
+      while(s.endsWith('0'))s.chop(1);
+      if(s.endsWith('.'))s.chop(1);
+    }
+    return s;
+    //return QString::asprintf("%f").arg(vf,0,'g',m_precision);
   }
   return v.toString();
 }

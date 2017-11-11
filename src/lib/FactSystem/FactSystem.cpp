@@ -32,6 +32,8 @@ FactSystem::FactSystem(QObject *parent)
  : FactSystemJS(parent)
 {
 
+  jsSync(this);
+
   // QML types register
   qmlRegisterUncreatableType<Fact>("GCS.FactSystem", 1, 0, "Fact", "Reference only");
 }

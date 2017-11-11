@@ -143,7 +143,7 @@ void SerialWorker::tryOpen()
       if(scan_idx>=list.size())scan_idx=0;
       for(int i=0;i<list.size();i++){
         QSerialPortInfo lspi=list.at(scan_idx);
-        if(lspi.portName().contains("usb",Qt::CaseInsensitive) && lspi.portName().contains("tty",Qt::CaseInsensitive) && isAvailable(lspi)){
+        if(lspi.portName().contains("usb",Qt::CaseInsensitive) && lspi.portName().contains("cu.",Qt::CaseInsensitive) && isAvailable(lspi)){
           spi=lspi;
           break;
         }
@@ -190,8 +190,11 @@ bool SerialWorker::isAvailable(const QSerialPortInfo &spi)
 bool SerialWorker::openPort(const QSerialPortInfo &spi, int baudrate)
 {
   sp->setPort(spi);
-  sp->setBaudRate(baudrate);
+  sp->setBaudRate(9600);
   if(!sp->open(QIODevice::ReadWrite))return false;
+  //sp->close();
+  sp->setBaudRate(baudrate);
+  //if(!sp->open(QIODevice::ReadWrite))return false;
   //lock
   if(lock){
     lock->unlock();

@@ -178,7 +178,8 @@ Qt::ItemFlags FactTreeModel::flags(const QModelIndex & index) const
     //f|=Qt::ItemNeverHasChildren;
     if(index.column()==FACT_MODEL_COLUMN_VALUE &&
        i->enabled() &&
-       i->dataType()!=Fact::NoData
+       i->dataType()!=Fact::NoData &&
+       i->dataType()!=Fact::ConstData
        ) f|=Qt::ItemIsEditable;
   }
   return f;

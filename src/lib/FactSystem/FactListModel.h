@@ -43,12 +43,15 @@ public:
     TextRole,
   };
 
+  QList<FactTree*> items() const;
 
 
 private:
   Fact *fact;
 
-  Fact * flatParent() const;
+  Fact * sectionParent(Fact *item) const;
+  int sectionRow(Fact *parent, Fact *sect) const;
+
 
 protected:
   //ListModel override

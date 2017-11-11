@@ -14,7 +14,7 @@ Item{
                           nav.status === Loader.Ready
     Behavior on opacity { enabled: app.settings.smooth.value; PropertyAnimation {duration: 500} }
 
-    GCSMenuPopup {
+    FactMenuPopup {
         id: popupMenu
         menu: MenuCommands {  }
         //source: "menu/MenuCommands.qml"

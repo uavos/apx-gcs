@@ -37,7 +37,7 @@ public:
 
   Fact *f_request;
 
-  //Fact *f_list;
+  Fact *f_list;
 
   Vehicle *vehicle;
 

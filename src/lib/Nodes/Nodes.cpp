@@ -31,14 +31,15 @@ Nodes::Nodes(Vehicle *parent)
   : Fact(parent,"nodes","Nodes",tr("Vehicle components"),GroupItem,NoData),
     vehicle(parent)
 {
-  //setFlatModel(true);
+  model()->setFlat(true);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,this,&Nodes::search);
 
-  //f_list=new Fact(this,"list",tr("Nodes list"),"",Item,ConstData);
-  //bind(f_list);
-  connect(this,&Nodes::sizeChanged,[=](){setStatus(QString::number(size()-1));});
+  f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,NoData);
+  connect(f_list,&Nodes::sizeChanged,this,[=](){
+    setStatus(f_list->size()>0?QString::number(f_list->size()):"");
+  });
 
   if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
     search();
@@ -79,7 +80,7 @@ void Nodes::search()
   if(!snMap.isEmpty()){
     //removeItem(snMap.values().first());
     foreach(NodeItem *node,snMap.values()){
-      removeItem(node);
+      f_list->removeItem(node);
     }
     //endResetModel();
     //FactSystem::instance()->jsSync(this);

@@ -53,5 +53,7 @@
         <file>menu/FactMenu.qml</file>
         <file>menu/FactMenuItem.qml</file>
         <file>Facts.qml</file>
+        <file>menu/FactMenuPopup.qml</file>
+        <file>menu/FactMenuElement.qml</file>
     </qresource>
 </RCC>

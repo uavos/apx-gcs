@@ -27,7 +27,7 @@
 #include <node.h>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
-  : NodeData(parent,sn),
+  : NodeData(parent->f_list,sn),
     conf_uid(-1),
     timeout_ms(500),
     nodes(parent),
@@ -44,7 +44,7 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   connect(this,&NodeItem::versionChanged,this,&NodeItem::updateStats);
   connect(this,&NodeItem::hardwareChanged,this,&NodeItem::updateStats);
 
-  connect(this,&NodeItem::progressChanged,parent,&Nodes::updateProgress);
+  connect(this,&NodeItem::progressChanged,nodes,&Nodes::updateProgress);
 
   //datalink
   connect(this,&NodeItem::nmtRequest,parent->vehicle->nmtManager,&VehicleNmtManager::request);

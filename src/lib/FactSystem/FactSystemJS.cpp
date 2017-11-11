@@ -53,7 +53,6 @@ FactSystemJS::FactSystemJS(QObject *parent)
     jsexec(contents);
   }
 
-  jsSync(this);
 
   //add is queued to wait inherited constructors
   //connect(this,&Fact::itemAdded,this,&FactSystemJS::jsAddItem);//,Qt::QueuedConnection);

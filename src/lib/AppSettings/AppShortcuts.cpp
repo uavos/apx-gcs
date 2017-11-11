@@ -69,6 +69,8 @@ AppShortcuts::AppShortcuts(AppSettings *parent, QWidget *widget)
   connect(this,&Fact::sizeChanged,this,&AppShortcuts::updateStats);
   connect(this,&Fact::childValueChanged,this,&AppShortcuts::updateStats);
   updateStats();
+
+  FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
 void AppShortcuts::updateStats()
@@ -206,8 +208,8 @@ QString AppShortcuts::keyToPortableString(int key,int modifier) const
   //qDebug()<<key<<modifier;
   if(key==Qt::Key_Control || key==Qt::Key_Shift || key==Qt::Key_Alt || key==Qt::Key_Meta)
     key=0;
-  QKeySequence s(key|modifier);
-  return s.toString();
+  QString s=QKeySequence(key|modifier).toString();
+  return s;
 }
 //=============================================================================
 

@@ -1,104 +1,78 @@
 ﻿import QtQuick 2.6
 import QtQml 2.2
+import QtQml.Models 2.2
+import GCS.FactSystem 1.0
 import "."
 
-GCSMenu {
-    id: menuCommands
-    title: qsTr("Commands")
-
+FactMenu {
     function openSelectUAV() { openPage({"fact": menuVehicles.fact}) }//openMenuField(menuVehicles) }
     function openServers() { openPage({"fact": menuServers.fact}) }//openMenuField(menuServers) }
 
-
-    fields: GCSMenuModel {
-        GCSMenuField {
+    fact: FactMenuElement {
+        title: qsTr("Commands")
+        FactMenuElement {
             title: qsTr("Flight Mode");
-            fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("EMG"); onClicked: m.mode.setValue(mode_EMG); }
-                GCSMenuField { title: qsTr("RPV"); onClicked: m.mode.setValue(mode_RPV); }
-                GCSMenuField { title: qsTr("UAV"); onClicked: m.mode.setValue(mode_UAV); }
-                GCSMenuField { title: qsTr("WPT"); onClicked: m.mode.setValue(mode_WPT); }
-                GCSMenuField { title: qsTr("HOME"); onClicked: m.mode.setValue(mode_HOME); }
-                GCSMenuField { title: qsTr("STBY"); onClicked: m.mode.setValue(mode_STBY); }
-                GCSMenuField { title: qsTr("TAXI"); onClicked: m.mode.setValue(mode_TAXI); }
-                GCSMenuField { title: qsTr("TAKEOFF"); onClicked: m.mode.setValue(mode_TAKEOFF); }
-                GCSMenuField { title: qsTr("LANDING"); onClicked: m.mode.setValue(mode_LANDING); }
-            }
+            fact: m.mode
         }
-        GCSMenuField {
+        FactMenuElement {
             title: qsTr("Controls")
-            fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Parking brake"); onToggled: m.ctr_brake.setValue(!m.ctr_brake.value); checked: m.ctr_brake.value; checkable: true; }
-                GCSMenuField { title: qsTr("Flaps"); onToggled: m.ctr_flaps.setValue(!m.ctr_flaps.value); checked: m.ctr_flaps.value; checkable: true; }
-                GCSMenuField { title: qsTr("Interceptors"); onToggled: m.ctr_airbrk.setValue(!m.ctr_airbrk.value); checked: m.ctr_airbrk.value; checkable: true; }
-                GCSMenuField {
-                    title: qsTr("Emergency")
-                    fields: GCSMenuModel {
-                        GCSMenuField { title: qsTr("ERS"); onToggled: m.ctrb_ers.setValue(!m.ctrb_ers.value); checked: m.ctrb_ers.value; checkable: true; }
-                        GCSMenuField { title: qsTr("Release"); onToggled: m.ctrb_rel.setValue(!m.ctrb_rel.value); checked: m.ctrb_rel.value; checkable: true; }
-                    }
-                }
-                GCSMenuField {
-                    title: qsTr("Lights")
-                    fields: GCSMenuModel {
-                        GCSMenuField { title: qsTr("Navigation"); onToggled: m.sw_lights.setValue(!m.sw_lights.value); checked: m.sw_lights.value; checkable: true; }
-                        GCSMenuField { title: qsTr("Taxi"); onToggled: m.sw_taxi.setValue(!m.sw_taxi.value); checked: m.sw_taxi.value; checkable: true; }
-                    }
-                }
+            FactMenuElement { title: qsTr("Parking brake"); fact: m.ctr_brake; dataType: Fact.BoolData; }
+            FactMenuElement { title: qsTr("Flaps"); fact: m.ctr_flaps; dataType: Fact.BoolData; }
+            FactMenuElement { title: qsTr("Interceptors"); fact: m.ctr_airbrk; dataType: Fact.BoolData; }
+            FactMenuElement {
+                title: qsTr("Emergency")
+                FactMenuElement { title: qsTr("ERS"); fact: m.ctrb_ers; dataType: Fact.BoolData; }
+                FactMenuElement { title: qsTr("Release"); fact: m.ctrb_rel; dataType: Fact.BoolData; }
+            }
+            FactMenuElement {
+                title: qsTr("Lights")
+                FactMenuElement { title: qsTr("Navigation"); fact: m.sw_lights; dataType: Fact.BoolData; }
+                FactMenuElement { title: qsTr("Taxi"); fact: m.sw_taxi; dataType: Fact.BoolData; }
             }
         }
-        GCSMenuField {
+        FactMenuElement {
             title: qsTr("Engine")
-            fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Mixture"); onToggled: m.ctr_mixture.setValue(!m.ctr_mixture.value); checked: m.ctr_mixture.value; checkable: true; }
-                GCSMenuField { title: qsTr("Ignition"); onToggled: m.power_ignition.setValue(!m.power_ignition.value); checked: m.power_ignition.value; checkable: true; }
-                GCSMenuField { title: qsTr("Cut throttle"); onToggled: m.cmode_thrcut.setValue(!m.cmode_thrcut.value); checked: m.cmode_thrcut.value; checkable: true;}
-                GCSMenuField { title: qsTr("Override throttle"); onToggled: m.cmode_throvr.setValue(!m.cmode_throvr.value); checked: m.cmode_throvr.value; checkable: true;}
-                GCSMenuField { separator: true;}
-                GCSMenuField { title: qsTr("Start engine"); onClicked: m.ctrb_starter.setValue(!m.ctrb_starter.value); busy: m.sw_starter.value; }
-            }
+            FactMenuElement { title: qsTr("Mixture"); fact: m.ctr_mixture; dataType: Fact.BoolData; }
+            FactMenuElement { title: qsTr("Ignition"); fact: m.power_ignition; dataType: Fact.BoolData; }
+            FactMenuElement { title: qsTr("Cut throttle"); fact: m.cmode_thrcut; dataType: Fact.BoolData; }
+            FactMenuElement { title: qsTr("Override throttle"); fact: m.cmode_throvr; dataType: Fact.BoolData; }
+            FactMenuElement { }
+            FactMenuElement { title: qsTr("Start engine"); fact: m.ctrb_starter; dataType: Fact.BoolData; busy: m.sw_starter.value; }
         }
-        GCSMenuField {
+        FactMenuElement {
             title: qsTr("Power")
-            fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Servo"); onToggled: m.power_servo.setValue(!m.power_servo.value); checked: m.power_servo.value; checkable: true; }
-                GCSMenuField { title: qsTr("Payload"); onToggled: m.power_payload.setValue(!m.power_payload.value); checked: m.power_payload.value; checkable: true; }
-                GCSMenuField { title: qsTr("XPDR"); onToggled: m.power_xpdr.setValue(!m.power_xpdr.value); checked: m.power_xpdr.value; checkable: true; }
-            }
+            FactMenuElement { title: qsTr("Payload"); fact: m.power_payload; dataType: Fact.BoolData; }
+            FactMenuElement { title: qsTr("XPDR"); fact: m.power_xpdr; dataType: Fact.BoolData; }
+            FactMenuElement { }
+            FactMenuElement { title: qsTr("Servo"); fact: m.power_servo; dataType: Fact.BoolData; }
         }
-        GCSMenuField { separator: true; }
-        GCSMenuField {
+        FactMenuElement {
             title: qsTr("AHRS")
-            fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Reset gps home altitude"); onClicked: app.jsexec("hmsl()"); }
-                GCSMenuField { title: qsTr("Reset static pressure"); onClicked: app.jsexec("zps()"); }
-                GCSMenuField { separator: true;}
-                GCSMenuField { title: m.cmode_ahrs.descr; onToggled: m.cmode_ahrs.setValue(!m.cmode_ahrs.value); checked: m.cmode_ahrs.value; checkable: true;}
-            }
+            FactMenuElement { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; dataType: Fact.ActionData; onTriggered: app.jsexec(descr); }
+            FactMenuElement { title: qsTr("Reset static pressure"); descr: "zps()"; dataType: Fact.ActionData; onTriggered: app.jsexec(descr); }
+            FactMenuElement { }
+            FactMenuElement { title: m.cmode_ahrs.descr; fact: m.cmode_ahrs; dataType: Fact.BoolData; }
         }
-        GCSMenuField { separator: true; }
-        GCSMenuField {
+        FactMenuElement {
             title: qsTr("Communication")
-            fields: GCSMenuModel {
-                GCSMenuField {
-                    id: menuVehicles
-                    fact: app.vehicles.select
-                }
-                GCSMenuField {
-                    id: menuServers
-                    fact: app.datalink.hosts
-                }
+            FactMenuElement {
+                id: menuVehicles
+                fact: app.vehicles.select
+                showDescr: true;
+            }
+            FactMenuElement {
+                id: menuServers
+                fact: app.datalink.hosts
+                showDescr: true;
             }
         }
-        GCSMenuField {
+        FactMenuElement {
             title: qsTr("Telemetry")
-            fields: GCSMenuModel {
-                GCSMenuField { title: qsTr("Record data"); onToggled: app.vehicles.current.recorder.recording=!app.vehicles.current.recorder.recording; checked: app.vehicles.current.recorder.recording; checkable: true;}
-                GCSMenuField { title: qsTr("Discard current file"); onClicked: app.vehicles.current.recorder.discard(); }
-            }
+            FactMenuElement { title: qsTr("Record data"); dataType: Fact.BoolData; m_value: app.vehicles.current.recorder.recording; onValueUpdated:  app.vehicles.current.recorder.recording=v; }
+            FactMenuElement { title: qsTr("Discard current file"); dataType: Fact.ActionData; onTriggered: app.vehicles.current.recorder.discard(); }
         }
-        GCSMenuField { separator: true; }
-        GCSMenuField { title: qsTr("RESET")+" "+m.mode.text; onClicked: m.stage.setValue(100); busy: m.stage.value===100; }
-        GCSMenuField { title: qsTr("NEXT STAGE")+" ("+m.stage.value+")"; onClicked: m.stage.setValue(m.stage.value+1); }
+        FactMenuElement { }
+        FactMenuElement { title: qsTr("RESET")+" "+m.mode.text; dataType: Fact.ActionData; onTriggered: m.stage.setValue(100); busy: m.stage.value===100; }
+        FactMenuElement { title: qsTr("NEXT STAGE")+" ("+m.stage.value+")"; dataType: Fact.ActionData; onTriggered: m.stage.setValue(m.stage.value+1); }
     }
 }

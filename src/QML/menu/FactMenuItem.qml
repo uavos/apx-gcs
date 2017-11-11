@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
 import QtQuick.Controls.Material 2.2
 import GCS.FactSystem 1.0
+import "."
 
 Item {
     id: factItem
@@ -16,21 +17,35 @@ Item {
     property int factItemSize: (bDescr||bAction)?itemSize*1.3:itemSize
 
     //configurable properties
-    property Fact fact: modelData
+    property var parentFact
+    property var fact: bEnumItemFact?factEnumElementC.createObject(factItem):modelData
+    property bool bEnumItemFact: false
 
     onFactChanged: {
         if(!fact)fact=app
         //console.log(fact);
     }
 
+    Component {
+        id: factEnumElementC
+        FactMenuElement {
+            title: modelData
+            onTriggered: {
+                parentFact.setValue(modelData)
+                back();
+            }
+        }
+    }
+
     //internal
-    property bool bNext: fact.size || fact.treeItemType==Fact.GroupItem
+    property bool bNext: fact.size || fact.treeItemType==Fact.GroupItem || bEnumChilds
     property bool bDescr: fact.descr && app.settings.showdescr.value
+    property bool bEnumChilds: fact.dataType===Fact.EnumData && fact.enumStrings.length>maxEnumListSize
 
     //editor types
     property bool bAction:       fact.dataType==Fact.ActionData && (fact.value?fact.value:false)
     property bool bEditText:     fact.dataType==Fact.TextData && fact.enumStrings.length === 0
-    property bool bEditList:     fact.dataType==Fact.EnumData
+    property bool bEditList:     fact.dataType==Fact.EnumData && (!bEnumChilds)
     property bool bEditListText: (fact.dataType==Fact.TextData || fact.dataType==Fact.IntData) && fact.enumStrings.length > 0
     property bool bEditBool:     fact.dataType==Fact.BoolData
     property bool bEditKey:      fact.dataType==Fact.KeySequenceData
@@ -64,7 +79,8 @@ Item {
             //factItem.focus=true;
             fact.trigger();
             if(bNext) openFact(fact)
-            else if(bAction) back();
+            else if(bEnumChilds) openFact(fact)
+            else if(bAction && fact.value!==Fact.RemoveAction) back();
         }
 
         Item { // title & descr text
@@ -223,7 +239,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     checked: fact.value
                     enabled: fact.enabled
-                    onClicked: fact.value=fact.value?false:true
+                    onClicked: fact.setValue(fact.value?false:true)
                 }
             }
 
@@ -244,7 +260,7 @@ Item {
                     //clip: true
                     selectByMouse: true
                     onEditingFinished: {
-                        fact.value=text;
+                        fact.setValue(text);
                         parent.forceActiveFocus();
                     }
                     onActiveFocusChanged: {
@@ -283,7 +299,7 @@ Item {
                             editor.selectAll();
                             editor.forceActiveFocus();
                         }
-                        onAccepted: fact.value=editor.text
+                        onAccepted: fact.setValue(editor.text)
                         TextField {
                             id: editor
                             anchors.left: parent.left
@@ -312,7 +328,7 @@ Item {
                     background: editable?textInputBgC.createObject(editor):editor.background
                     Component.onCompleted: currentIndex=find(value)
                     onActivated: {
-                        fact.value=textAt(index)
+                        fact.setValue(textAt(index))
                         parent.forceActiveFocus();
                     }
                     property string value: fact.text
@@ -332,7 +348,7 @@ Item {
                             text: fact.text
                             selectByMouse: true
                             onEditingFinished: {
-                                fact.value=text;
+                                fact.setValue(text);
                                 editor.parent.forceActiveFocus();
                             }
                             onActiveFocusChanged: if(activeFocus)selectAll();
@@ -354,7 +370,8 @@ Item {
                     Shortcut {
                         id: scText
                         enabled: false
-                        sequence: control.text
+                        sequence: (s.length>1 && s.endsWith("+"))?s.substr(0,s.length-1):s
+                        property alias s: control.text
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -391,14 +408,14 @@ Item {
                             border.width: 0
                         }
                         onActiveFocusChanged: {
-                            app.settings.shortcuts.blocked.value=activeFocus;
+                            app.settings.shortcuts.blocked.setValue(activeFocus);
                             if(activeFocus && control.selectedText===""){
                                 control.selectAll();
                             }
                         }
                         onEditingFinished: {
-                            app.settings.shortcuts.blocked.value=false;
-                            if(modelData) fact.value=text
+                            app.settings.shortcuts.blocked.setValue(false);
+                            if(modelData) fact.setValue(text)
                         }
                         //Keys.onEscapePressed: editor.parent.forceActiveFocus();
                         Keys.onPressed: {

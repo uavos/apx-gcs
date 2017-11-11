@@ -23,7 +23,7 @@
 #include "NodeData.h"
 #include "Nodes.h"
 //=============================================================================
-NodeData::NodeData(Nodes *parent, const QByteArray &sn)
+NodeData::NodeData(Fact *parent, const QByteArray &sn)
   : Fact(parent,"node#","","",GroupItem,NoData),
     sn(sn),
     m_reconf(false),

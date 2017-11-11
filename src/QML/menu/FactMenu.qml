@@ -52,6 +52,7 @@ Item {
     property string title: fact.title
 
     property int itemSize: 32
+    property int maxEnumListSize: 5
 
     property int btnSize: itemSize*0.9
 
@@ -77,7 +78,7 @@ Item {
     property int titleSize: closeable?itemSize*1.2:itemSize
     property int itemWidth: stackView.width-stackView.leftPadding*2
 
-    property Fact fact
+    property var fact
 
     signal pageDeleted()
 
@@ -110,11 +111,16 @@ Item {
         ColumnLayout {
             id: menuPage
 
-            property Fact fact: root.fact
+            property var fact: root.fact
             property string title: fact?fact.title:""
             property string page
             //Component.onDestruction: console.log("page delete: "+title)
             StackView.onRemoved: { destroy(); root.pageDeleted(); }
+
+            onFactChanged: {
+                if(!fact){fact=app;back();} //removedItem
+                //console.log(fact);
+            }
 
             property int padding: 4
             Item {
@@ -125,13 +131,6 @@ Item {
                 implicitHeight: titleSize
                 clip: true
                 visible: showTitle
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    height: 2
-                    color: colorTitleSep
-                }
                 Text {
                     id: titleText
                     anchors.top: parent.top
@@ -163,6 +162,26 @@ Item {
                     onClicked: back()
                     effects: root.effects
                 }
+                ProgressBar {
+                    anchors.right: parent.right
+                    anchors.left: titleText.left
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 1
+                    //anchors.leftMargin: itemSize
+                    //anchors.verticalCenter: parent.verticalCenter
+                    property int v: fact.progress
+                    visible: v>0
+                    value: v/100
+                    indeterminate: v<0
+                    //opacity: 0.7
+                }
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: 2
+                    color: colorTitleSep
+                }
             }
 
             Item {
@@ -190,9 +209,10 @@ Item {
                     id: listViewC
                     ListView {
                         id: listView
-                        model: menuPage.fact.model
+                        property bool bEnumItemFact: menuPage.fact.size===0 && menuPage.fact.enumStrings.length>0
+                        model: bEnumItemFact?menuPage.fact.enumStrings:menuPage.fact.model
                         spacing: 0
-                        delegate: FactMenuItem { }
+                        delegate: FactMenuItem { parentFact: menuPage.fact; bEnumItemFact: listView.bEnumItemFact; }
                         section.property: "modelData.section"
                         section.criteria: ViewSection.FullString
                         section.delegate: Label {
@@ -207,6 +227,10 @@ Item {
                         }
 
                     }
+                }
+                Component {
+                    id: listFactC
+                    FactMenuItem { }
                 }
             }// menuBody
         }// pageDelegate

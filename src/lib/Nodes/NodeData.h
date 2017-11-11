@@ -50,7 +50,7 @@ class NodeData: public Fact
   Q_PROPERTY(quint8 cpuLoad READ cpuLoad WRITE setCpuLoad NOTIFY cpuLoadChanged)
 
 public:
-  explicit NodeData(Nodes *parent,const QByteArray &sn);
+  explicit NodeData(Fact *parent, const QByteArray &sn);
 
 protected:
   QByteArray sn;

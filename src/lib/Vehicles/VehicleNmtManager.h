@@ -59,8 +59,8 @@ public:
   VehicleNmtManager(QObject *parent =0);
 
 private:
-  QList<VehicleNmt*>pool;
-  QTimer timer;
+  static QList<VehicleNmt*> pool;
+  static QTimer timer;
   uint activeCount;
 private slots:
   void next();
@@ -69,6 +69,7 @@ private slots:
 public slots:
   void request(uint cmd, const QByteArray &sn, const QByteArray &data, uint timeout_ms,bool highprio);
   void stop();
+
 signals:
   void sendUplink(const QByteArray &packet);
   void nmtReceived(const QByteArray &packet); //from vehicle
