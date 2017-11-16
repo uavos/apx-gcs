@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,54 +20,20 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#ifndef SvgIcon_H
+#define SvgIcon_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-#include "NodeItem.h"
-class Vehicle;
+#include <QtXml>
+#include <QIcon>
 //=============================================================================
-class Nodes: public Fact
+class SvgIcon : public QIcon
 {
-  Q_OBJECT
-
 public:
-  explicit Nodes(Vehicle *parent);
-
-  Fact *f_request;
-
-  Fact *f_list;
-
-  Vehicle *vehicle;
-
-  //sn lookup
-  QHash<QByteArray,NodeItem*> snMap;
-
-  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
+  SvgIcon(const QString &fileName,const QColor &color=QColor(Qt::white));
 private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeItem * nodeCheck(const QByteArray &sn);
-
-public slots:
-  void request();
-
-public slots:
-  bool unpackService(const QByteArray &packet); //data comm
-
-  void updateProgress();
-
-  void nstat();
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-
-protected:
-
-signals:
-
+  QPixmap renderSvgPixmap(const QString &fileName,const QColor &color) const;
+  void setAttrRecur(QDomElement elem, QString strtagname, QString strattr, QString strattrval) const;
 };
 //=============================================================================
 #endif
-

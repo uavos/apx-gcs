@@ -66,6 +66,16 @@ Vehicles::Vehicles(FactSystem *parent)
     else emit sendUplink(reqList.takeFirst());
   });
 
+  //downlink request timer
+  dlinkReqTimer.setInterval(1000);
+  dlinkReqTimer.start();
+  connect(&dlinkReqTimer,&QTimer::timeout,[=](){
+    if(m_current!=f_local){
+      vehicleSendUplink(m_current,QByteArray()); //request telemetry
+    }
+  });
+
+
   qmlRegisterUncreatableType<Vehicles>("GCS.Vehicles", 1, 0, "Vehicles", "Reference only");
   qmlRegisterUncreatableType<Vehicle>("GCS.Vehicles", 1, 0, "Vehicle", "Reference only");
   qmlRegisterUncreatableType<VehicleWarnings>("GCS.Vehicles", 1, 0, "VehicleWarnings", "Reference only");

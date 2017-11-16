@@ -158,6 +158,11 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       updateDataType();
       createSubFields();
       setValid(true);
+      //check if comment field and bind to node value
+      if(id==0 && name()=="comment"){
+        node->setValue(text());
+        connect(this,&NodeField::textChanged,[=](){node->setValue(text());});
+      }
       //node->request(apc_conf_read,QByteArray().append((unsigned char)id),node->timeout_ms,false);
       //check all node fields validity
       bool ok=true;

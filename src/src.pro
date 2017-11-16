@@ -17,6 +17,7 @@ PLUGINS += compass
 PLUGINS += servos
 PLUGINS += numbers
 PLUGINS += serial
+PLUGINS += systree
 
 #PLUGINS += sim
 #SUBDIRS += joystick

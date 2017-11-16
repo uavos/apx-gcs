@@ -153,5 +153,6 @@
         <file>icons/old/wind_arrow.png</file>
         <file>icons/old/wind.png</file>
         <file>icons/old/uavos-logo.png</file>
+        <file>icons/sets/ionicons/android-arrow-back.svg</file>
     </qresource>
 </RCC>

@@ -163,7 +163,7 @@ void FactSystemJS::jsRegisterFunctions()
   jsRegister("req(n)",QObject::tr("request var n from UAV"),"app.vehicles.current.mandala[n].request();");
   jsRegister("send(n)",QObject::tr("send var n to UAV"),"m[n].send();");
   jsRegister("nodes()",QObject::tr("rescan bus nodes"),"print('nodes:');m.req_nodes();");
-  jsRegister("nstat()",QObject::tr("print nodes status"),"print('nodes statistics:');m.req_nstat();");
+  jsRegister("nstat()",QObject::tr("print nodes status"),"print('nodes statistics:');app.vehicles.current.nodes.nstat();");
   jsRegister("serial(p,v)",QObject::tr("send data v to serial port ID p"),"app.vehicles.current.sendSerial(p,v);");
   jsRegister("vmexec(f)",QObject::tr("execute function on VMs"),"app.vehicles.current.vmexec(f);");
   jsRegister("sleep(n)",QObject::tr("sleep n milliseconds"),"app.sleep(n);");

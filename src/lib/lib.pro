@@ -15,6 +15,10 @@ QT += quick quickwidgets quickcontrols2 svg multimedia opengl
 
 target.path = $$INSTALLBASE_LIB/lib
 
+RESOURCES += $$RES_DIR/fonts.qrc
+RESOURCES += $$RES_DIR/styles.qrc
+RESOURCES += $$RES_DIR/standard-icons.qrc
+
 
 # Core APX shared lib
 SOURCES += \
@@ -38,7 +42,6 @@ SOURCES += \
     FactSystem/FactData.cpp \
     FactSystem/FactListModel.cpp \
     FactSystem/Fact.cpp \
-    FactSystem/FactTreeModel.cpp \
 
 HEADERS += \
     FactSystem/FactSystem.h \
@@ -49,7 +52,6 @@ HEADERS += \
     FactSystem/FactListModel.h \
     FactSystem/FactValue.h \
     FactSystem/Fact.h \
-    FactSystem/FactTreeModel.h \
     Facts.h \
 
 # Vehicles & Mandala
@@ -139,15 +141,21 @@ SOURCES += \
     FlightDataFile.cpp \
     QmlView.cpp \
     SoundEffects.cpp \
+    SvgIcon.cpp \
     SvgImageProvider.cpp \
     FactDelegate.cpp \
+    FactTreeModel.cpp \
+    FactTreeView.cpp \
 
 HEADERS += \
     FlightDataFile.h \
     QmlView.h \
     SoundEffects.h \
+    SvgIcon.h \
     SvgImageProvider.h \
     FactDelegate.h \
+    FactTreeModel.h \
+    FactTreeView.h \
 
 
 

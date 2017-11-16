@@ -43,6 +43,8 @@ public:
     FACT_MODEL_COLUMN_CNT,
   };
 
+  void recursiveDisconnect(Fact *fact);
+
 protected:
   Fact * root;
 

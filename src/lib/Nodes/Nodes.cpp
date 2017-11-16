@@ -34,7 +34,7 @@ Nodes::Nodes(Vehicle *parent)
   model()->setFlat(true);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
-  connect(f_request,&Fact::triggered,this,&Nodes::search);
+  connect(f_request,&Fact::triggered,this,&Nodes::request);
 
   f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,NoData);
   connect(f_list,&Nodes::sizeChanged,this,[=](){
@@ -42,7 +42,7 @@ Nodes::Nodes(Vehicle *parent)
   });
 
   if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
-    search();
+    request();
 }
 //=============================================================================
 bool Nodes::unpackService(const QByteArray &packet)
@@ -75,7 +75,7 @@ NodeItem * Nodes::nodeCheck(const QByteArray &sn)
 }
 //=============================================================================
 //=============================================================================
-void Nodes::search()
+void Nodes::request()
 {
   if(!snMap.isEmpty()){
     //removeItem(snMap.values().first());
@@ -100,6 +100,13 @@ void Nodes::updateProgress()
   if(ncnt){
     setProgress(v/ncnt);
   }else setProgress(0);
+}
+//=============================================================================
+void Nodes::nstat()
+{
+  foreach(NodeItem *node,snMap.values()){
+    node->nstat();
+  }
 }
 //=============================================================================
 //=============================================================================

@@ -69,15 +69,17 @@ QVariant FactTreeModel::data(const QModelIndex &index, int role) const
     //if(ftype==ft_string) return QFont("",-1,QFont::Normal,true);
     return QVariant();
   case Qt::ToolTipRole:
-    /*if(index.column()==tc_field) return conf_name;
-    else if(index.column()==tc_value){
-      if(childItems.size()){
-        QString s=name;
-        foreach(NodesItem *i,childItems)
-          s+=QString("\n%1: %2").arg(i->name).arg(i->data(tc_value,Qt::DisplayRole).toString());
+    if(index.column()==FACT_MODEL_COLUMN_NAME) return f->name();
+    else if(index.column()==FACT_MODEL_COLUMN_VALUE){
+      if(f->size()){
+        QString s=f->name();
+        foreach(FactTree *i,f->childItems()){
+          Fact *fc=static_cast<Fact*>(i);
+          s+=QString("\n%1: %2").arg(fc->title()).arg(fc->text());
+        }
         return s;
-      }else return data(tc_descr,Qt::DisplayRole);
-    }*/
+      }else f->descr();
+    }
     return data(index,Qt::DisplayRole);
   }
 
@@ -214,6 +216,18 @@ void FactTreeModel::checkConnections(Fact *fact) const
   connect(fact,&Fact::activeChanged, this, &FactTreeModel::activeChanged );
   connect(fact,&Fact::progressChanged, this, &FactTreeModel::progressChanged );
   fact->treeModelSync=true;
+}
+//=============================================================================
+void FactTreeModel::recursiveDisconnect(Fact *fact)
+{
+  foreach(FactTree *i,fact->childItems()){
+    Fact *f=static_cast<Fact*>(i);
+    recursiveDisconnect(f);
+  }
+  if(!fact->treeModelSync)return;
+  fact->treeModelSync=false;
+  disconnect(fact,0,this,0);
+  //qDebug()<<"dis"<<fact->path();
 }
 //=============================================================================
 void FactTreeModel::itemToBeInserted(int row, FactTree *item)

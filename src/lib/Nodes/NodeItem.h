@@ -57,6 +57,9 @@ private:
 private slots:
   void updateStats();
 
+public slots:
+  void nstat();
+
   //data comm
 public slots:
   bool unpackService(uint ncmd, const QByteArray &ba);

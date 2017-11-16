@@ -99,7 +99,7 @@ QString FactTree::makeNameUnique(const QString &s)
       }
     }
     if(!dup)break;
-    suffix=QString("_%1").arg(++i,3);
+    suffix=QString("_%1").arg(++i,3,10,QChar('0'));
   }
   nameSuffix=suffix;
   return sr;

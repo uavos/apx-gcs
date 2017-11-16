@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,54 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#include "SystreePlugin.h"
+#include <FactTreeView.h>
+#include <FactTreeModel.h>
+#include <FactDelegate.h>
+#include <QtWidgets>
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
-#include "NodeItem.h"
-class Vehicle;
-//=============================================================================
-class Nodes: public Fact
+void SystreePlugin::init(void)
 {
-  Q_OBJECT
+  FactTreeWidget *w=new FactTreeWidget();
+  w->setRoot(FactSystem::instance(),true,true);
 
-public:
-  explicit Nodes(Vehicle *parent);
-
-  Fact *f_request;
-
-  Fact *f_list;
-
-  Vehicle *vehicle;
-
-  //sn lookup
-  QHash<QByteArray,NodeItem*> snMap;
-
-  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
-private:
-  bool isBroadcast(const QByteArray &sn) const;
-  NodeItem * nodeCheck(const QByteArray &sn);
-
-public slots:
-  void request();
-
-public slots:
-  bool unpackService(const QByteArray &packet); //data comm
-
-  void updateProgress();
-
-  void nstat();
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-
-protected:
-
-signals:
-
-};
+  obj=w;
+}
 //=============================================================================
-#endif
-

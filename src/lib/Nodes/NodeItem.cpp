@@ -61,6 +61,11 @@ void NodeItem::updateStats()
   setDescr(QString("%1 %2\t%3").arg(m_hardware).arg(m_version).arg(QString(sn.toHex().toUpper())));
 }
 //=============================================================================
+void NodeItem::nstat()
+{
+  request(apc_nstat,QByteArray(),0,false);
+}
+//=============================================================================
 bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 {
   switch(ncmd){
@@ -95,13 +100,27 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       if(ba.size()!=(sizeof(_node_name)+sizeof(_node_status)))break;
       _node_status nstatus;
       memcpy(&nstatus,ba.data()+sizeof(_node_name),sizeof(_node_status));
-      setVbat(nstatus.power.VBAT);
-      setIbat(nstatus.power.IBAT);
+      setVbat(nstatus.power.VBAT/1000.0);
+      setIbat(nstatus.power.IBAT/1000.0);
       setErrCnt(nstatus.err_cnt);
       setCanRxc(nstatus.can_rxc);
       setCanAdr(nstatus.can_adr);
       setCanErr(nstatus.can_err);
-      setCpuLoad(nstatus.load);
+      setCpuLoad((uint)nstatus.load*100/255);
+      //print report
+      QString snode;
+      //snode=QString().sprintf("#[%s]%.2X:%.2X E:%.2X C:%.2X %*u%%",node_name,node_status.can_adr,node_status.can_rxc,node_status.err_cnt,node_status.can_err,2,(100*(uint)node_status.load)/255);
+      snode=QString("#[%1]%2:%3 E:%4 C:%5 %6%").arg(title()).arg(canAdr(),2,16,QChar('0')).arg(canRxc(),2,16,QChar('0')).arg(errCnt(),2,16,QChar('0')).arg(canErr(),2,16,QChar('0')).arg(cpuLoad()).toUpper();
+      if(vbat())
+        snode+=QString("\t%1V %2mA").arg(vbat(),0,'g',1).arg((int)(ibat()*1000.0));
+      if(nodes->vehicle==Vehicles::instance()->current()){
+        qDebug("%s",snode.toUtf8().data());
+        QByteArray ba((const char*)nstatus.dump,sizeof(nstatus.dump));
+        if(ba!=QByteArray(sizeof(nstatus.dump),(char)0)){
+          qDebug("#%s",ba.toHex().toUpper().data());
+        }
+      }
+
     }return true;
     case apc_msg: { //message from autopilot
       QString ns;

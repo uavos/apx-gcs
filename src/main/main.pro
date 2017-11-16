@@ -10,9 +10,6 @@ include( ../../localization.pri )
 
 LIBS += -lgcs
 
-RESOURCES += $$RES_DIR/standard-icons.qrc
-RESOURCES += $$RES_DIR/styles.qrc
-
 SOURCES += main.cpp \
     MainForm.cpp \
     RunGuard.cpp \
@@ -23,7 +20,7 @@ HEADERS += MainForm.h \
 FORMS += \
     Config.ui
 
-RESOURCES += $${SRC_DIR}/QML/qml.qrc $$RES_DIR/fonts.qrc
+RESOURCES += $${SRC_DIR}/QML/qml.qrc
 
 
 # COPY on BUILD

@@ -158,3 +158,10 @@ bool FactDelegate::drawProgress(QPainter *painter,const QStyleOptionViewItem &op
   return true;
 }
 //=============================================================================
+QSize FactDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+  QSize sz=QItemDelegate::sizeHint(option,index);
+  sz.setHeight(QFontMetrics(option.font).height());
+  return sz;
+}
+//=============================================================================

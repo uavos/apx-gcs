@@ -191,7 +191,7 @@ QComboBox QAbstractItemView {
 }
 /*========================================================================*/
 QPushButton, QToolButton {
-    min-height: 20px;
+    min-height: 10px;
     /*max-height: 20px;*/
     border: 1px solid #465158;
     margin: 1px;

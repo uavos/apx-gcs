@@ -235,14 +235,14 @@ bool VehicleMandala::unpackXPDR(const QByteArray &ba)
   _bus_packet &packet=*(_bus_packet*)ba.data();
   if(packet.id!=idx_xpdr) return false;
   IDENT::_xpdr *xpdr=(IDENT::_xpdr*)packet.data;
-  setValueById(idx_gps_pos|(0<<8),xpdr->lat);
-  setValueById(idx_gps_pos|(1<<8),xpdr->lon);
-  setValueById(idx_altitude,xpdr->alt);
-  setValueById(idx_gSpeed,xpdr->gSpeed/100.0);
+  factById(idx_gps_pos|(0<<8))->setValueLocal(xpdr->lat);
+  factById(idx_gps_pos|(1<<8))->setValueLocal(xpdr->lon);
+  factById(idx_altitude)->setValueLocal(xpdr->alt);
+  factById(idx_gSpeed)->setValueLocal(xpdr->gSpeed/100.0);
   double crs=xpdr->crs*(180.0/32768.0);
-  setValueById(idx_course,crs);
-  setValueById(idx_theta|(2<<8),crs);
-  setValueById(idx_mode,xpdr->mode);
+  factById(idx_course)->setValueLocal(crs);
+  factById(idx_theta|(2<<8))->setValueLocal(crs);
+  factById(idx_mode)->setValueLocal(xpdr->mode);
   return true;
 }
 //=============================================================================

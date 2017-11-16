@@ -128,6 +128,12 @@ Fact * Fact::childByTitle(const QString &factTitle) const
   return item;
 }*/
 //=============================================================================
+bool Fact::lessThan(Fact *rightFact) const
+{
+  //no sorting by default
+  return num()<rightFact->num();
+}
+//=============================================================================
 void Fact::trigger(void)
 {
   //qDebug()<<"trigger"<<name();

@@ -53,6 +53,8 @@ private:
   void assignIDENT(QString callsign, QByteArray uid);
   void scheduleRequest(const QByteArray &ba);
 
+  QTimer dlinkReqTimer;
+
   //ident lookup
   QMap<quint16,Vehicle*> squawkMap;
 

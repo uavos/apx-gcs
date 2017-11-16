@@ -62,6 +62,7 @@ public:
 
   bool treeModelSync;
 
+  virtual bool lessThan(Fact *rightFact) const; //sorting helper
 public slots:
   virtual void trigger(void); //execute fact event (onClick)
 signals:
