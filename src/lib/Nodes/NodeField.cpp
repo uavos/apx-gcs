@@ -22,30 +22,32 @@
  */
 #include "NodeField.h"
 #include "NodeItem.h"
+#include "Nodes.h"
 #include "node.h"
 #include "Vehicles.h"
 #include "Vehicle.h"
 #include "VehicleMandalaFact.h"
 //=============================================================================
 NodeField::NodeField(NodeItem *node, quint16 id)
-  : Fact(node,"field#","","",FactItem,NoData),
+  : Fact(NULL,"field#","","",FactItem,NoData),
     id(id),
+    ftype(-1),
     node(node),
     parentField(NULL),
-    ftype(-1),
     m_valid(false),
     m_dataValid(false),
     m_array(0)
 {
   //node->request(apc_conf_dsc,QByteArray().append((unsigned char)id),node->timeout_ms,false);
+  //connect(this,&NodeField::removed,[=](){updateModified(false);});
 }
 //child of expanded field
 NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype)
   : Fact(parent,name,title,descr,FactItem,NoData),
     id(parent->id),
+    ftype(ftype),
     node(node),
     parentField(parent),
-    ftype(ftype),
     m_valid(true),
     m_dataValid(false),
     m_array(0)
@@ -96,6 +98,65 @@ void NodeField::updateStatus()
     }
     setValue(st.join(','));
   }
+}
+//=============================================================================
+void NodeField::setModified(const bool &v)
+{
+  if(m_modified==v)return;
+  FactData::setModified(v);
+  if(v){
+    //set all parents to modified=true
+    for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
+      static_cast<Fact*>(i)->setModified(v);
+    }
+    return;
+  }
+  //refresh modified status of all parent items
+  for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
+    foreach (FactTree *c, i->childItems()) {
+      Fact *f=static_cast<Fact*>(c);
+      if(f->modified())return;
+    }
+    static_cast<Fact*>(i)->setModified(v);
+  }
+}
+//=============================================================================
+QString NodeField::text() const
+{
+  if(ftype!=ft_varmsk)return Fact::text();
+  VehicleMandalaFact *mf=node->nodes->vehicle->f_mandala->factById(value().toUInt());
+  return mf?mf->title():QString();
+}
+/*void NodeField::setText(const QString &v)
+{
+  if(ftype!=ft_varmsk){
+    Fact::setText(v);
+    return;
+  }
+}*/
+bool NodeField::setValue(const QVariant &v)
+{
+  if(ftype!=ft_varmsk)return Fact::setValue(v);
+  //set mandala index value
+  QString s=v.toString().trimmed();
+  if((!s.isEmpty()) && s!="0"){
+    VehicleMandalaFact *mf=node->nodes->vehicle->f_mandala->factByName(s);
+    if(mf)return Fact::setValue(mf->id());
+    //try int
+    bool ok=false;
+    int i=s.toInt(&ok);
+    if(ok){
+      mf=node->nodes->vehicle->f_mandala->factById(i);
+      if(mf)return Fact::setValue(mf->id());
+    }
+  }
+  return Fact::setValue(0);
+}
+//=============================================================================
+const QStringList & NodeField::enumStrings() const
+{
+  if(ftype!=ft_varmsk)return Fact::enumStrings();
+  return node->nodes->vehicle->f_mandala->names;
 }
 //=============================================================================
 //=============================================================================
@@ -180,6 +241,7 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
         break;
       }
       node->groupFields();
+      node->dbRegister(apc_conf_dsc);
       //qDebug()<<"fields downloaded"<<node->f_fields->size();
     }return true;
     case apc_conf_read: {
@@ -271,7 +333,7 @@ void NodeField::createSubFields(void)
       NodeField *fi=new NodeField(node,this,"item#",QString("%1[%2]").arg(name()).arg(i),"",ftype);
       if(st.size())fi->setEnumStrings(st);
     }
-    setDataType(ConstData);
+    setDataType(NoData);
     setTreeItemType(GroupItem);
   }
   //special expandable field types, non-arrays
@@ -283,6 +345,7 @@ void NodeField::createSubFields(void)
             //new NodesItemField(this,node,s,descr+" ("+s+")",ft_float,QStringList());
             new NodeField(node,this,s,s,descr()+" ("+s+")",ft_float);
           }
+          setDataType(NoData);
           setTreeItemType(GroupItem);
         }
       break;
@@ -294,6 +357,7 @@ void NodeField::createSubFields(void)
         new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
         new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
         new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+        setDataType(NoData);
         setTreeItemType(GroupItem);
       break;
       case ft_regPI:
@@ -302,11 +366,13 @@ void NodeField::createSubFields(void)
         new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
         new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
         new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+        setDataType(NoData);
         setTreeItemType(GroupItem);
       break;
       case ft_regP:
         new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
         new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+        setDataType(NoData);
         setTreeItemType(GroupItem);
       break;
       case ft_regPPI:
@@ -317,6 +383,7 @@ void NodeField::createSubFields(void)
         new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
         new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
         new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+        setDataType(NoData);
         setTreeItemType(GroupItem);
       break;
     }
@@ -348,6 +415,29 @@ int NodeField::ftypeSize() const
   if(array()>0)sz*=array();
   return sz;
 }
+QString NodeField::ftypeString() const
+{
+  switch(ftype){
+    case ft_option: return "option";
+    case ft_varmsk: return "varmsk";
+    case ft_uint:   return "uint";
+    case ft_float:  return "float";
+    case ft_vec:    return "vec";
+    case ft_ctr:    return "ctr";
+    case ft_pwm:    return "pwm";
+    case ft_gpio:   return "gpio";
+    case ft_byte:   return "byte";
+    case ft_string: return "string";
+    case ft_lstr:   return "lstr";
+    case ft_regPID: return "regPID";
+    case ft_regPI:  return "regPI";
+    case ft_regP:   return "regP";
+    case ft_regPPI: return "regPPI";
+    case ft_raw:    return "raw";
+    case ft_script: return "script";
+  }
+  return "";
+}
 //=============================================================================
 void NodeField::updateDataType()
 {
@@ -365,20 +455,23 @@ void NodeField::updateDataType()
       setDataType(FloatData);
     break;
     case ft_byte:
-      setMin(0);
       setMax(255);
     case ft_uint:
+      setMin(0);
       setDataType(IntData);
     break;
     case ft_varmsk:{
-      QStringList st;
-      QList<int> vlist;
+      //setDataType(EnumData);
+      //QStringList st;
+      /*QList<int> vlist;
       foreach (VehicleMandalaFact *mf, Vehicles::instance()->f_local->f_mandala->allFacts) {
-        st.append(mf->name());
+        //st.append(mf->name());
         vlist.append(mf->id());
       }
-      setEnumStrings(st,vlist);
+      //setEnumStrings(st,vlist);
+      m_enumValues=vlist;*/
       setDataType(IntData);
+      setQmlEditor("FactEditMID");
     }break;
   }
 }

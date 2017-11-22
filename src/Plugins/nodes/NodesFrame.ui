@@ -98,45 +98,10 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="NodesTreeView" name="tree">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <attribute name="headerVisible">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="headerDefaultSectionSize">
-      <number>50</number>
-     </attribute>
-     <attribute name="headerMinimumSectionSize">
-      <number>10</number>
-     </attribute>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="eFilter">
-     <property name="focusPolicy">
-      <enum>Qt::ClickFocus</enum>
-     </property>
-     <property name="frame">
-      <bool>false</bool>
-     </property>
-     <property name="clearButtonEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
   </layout>
   <action name="aRequest">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/3downarrow.png</normaloff>:/icons/old/3downarrow.png</iconset>
    </property>
    <property name="text">
@@ -148,7 +113,7 @@
   </action>
   <action name="aUpload">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/ark_extract.png</normaloff>:/icons/old/ark_extract.png</iconset>
    </property>
    <property name="text">
@@ -160,7 +125,7 @@
   </action>
   <action name="aSave">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/document-save.png</normaloff>:/icons/old/document-save.png</iconset>
    </property>
    <property name="text">
@@ -172,7 +137,7 @@
   </action>
   <action name="aLoad">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/document-open.png</normaloff>:/icons/old/document-open.png</iconset>
    </property>
    <property name="text">
@@ -184,7 +149,7 @@
   </action>
   <action name="aUndo">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/document-revert.png</normaloff>:/icons/old/document-revert.png</iconset>
    </property>
    <property name="text">
@@ -196,7 +161,7 @@
   </action>
   <action name="aReload">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/transport_loop.png</normaloff>:/icons/old/transport_loop.png</iconset>
    </property>
    <property name="text">
@@ -208,7 +173,7 @@
   </action>
   <action name="aClearCache">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/edit-clear-list.png</normaloff>:/icons/old/edit-clear-list.png</iconset>
    </property>
    <property name="text">
@@ -220,7 +185,7 @@
   </action>
   <action name="aLoadTelemetry">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/document-export-table.png</normaloff>:/icons/old/document-export-table.png</iconset>
    </property>
    <property name="text">
@@ -232,7 +197,7 @@
   </action>
   <action name="aStop">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/process-stop.png</normaloff>:/icons/old/process-stop.png</iconset>
    </property>
    <property name="text">
@@ -244,7 +209,7 @@
   </action>
   <action name="aStats">
    <property name="icon">
-    <iconset resource="../../resources/standard-icons.qrc">
+    <iconset resource="../../../resources/standard-icons.qrc">
      <normaloff>:/icons/old/document-edit-decrypt-verify.png</normaloff>:/icons/old/document-edit-decrypt-verify.png</iconset>
    </property>
    <property name="text">
@@ -261,14 +226,9 @@
    <extends>QLabel</extends>
    <header location="global">ClickableLabel.h</header>
   </customwidget>
-  <customwidget>
-   <class>NodesTreeView</class>
-   <extends>QTreeView</extends>
-   <header location="global">NodesView.h</header>
-  </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resources/standard-icons.qrc"/>
+  <include location="../../../resources/standard-icons.qrc"/>
  </resources>
  <connections/>
 </ui>

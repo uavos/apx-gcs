@@ -46,7 +46,7 @@ class FactData: public FactTree
 
   Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
-  Q_PROPERTY(QStringList enumStrings READ enumStrings WRITE setEnumStrings NOTIFY enumStringsChanged)
+  Q_PROPERTY(const QStringList & enumStrings READ enumStrings NOTIFY enumStringsChanged)
 
 public:
 
@@ -58,6 +58,7 @@ public:
     IntData,
     BoolData,
     EnumData,       // value=value of enumStrings (set by text or index or enumValues)
+    //MidxData,       // Mandala index
     ActionData,     // button, value=action type
     KeySequenceData,
   };
@@ -106,7 +107,7 @@ public:
   Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
   bool modified() const;
-  void setModified(const bool &v);
+  virtual void setModified(const bool &v);
 
   int precision(void) const;
   void setPrecision(const int &v);
@@ -120,10 +121,10 @@ public:
   QString descr(void) const;
   void setDescr(const QString &v);
 
-  QString text() const;
-  void setText(const QString &v);
+  virtual QString text() const;
+  virtual void setText(const QString &v);
 
-  QStringList enumStrings() const;
+  virtual const QStringList & enumStrings() const;
   void setEnumStrings(const QStringList &v, const QList<int> &enumValues=QList<int>());
   void setEnumStrings(const QMetaEnum &v);
 

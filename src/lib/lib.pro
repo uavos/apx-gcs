@@ -12,6 +12,7 @@ DESTDIR = $$DESTDIR_LIB
 QT += network
 QT += serialport
 QT += quick quickwidgets quickcontrols2 svg multimedia opengl
+QT += sql
 
 target.path = $$INSTALLBASE_LIB/lib
 

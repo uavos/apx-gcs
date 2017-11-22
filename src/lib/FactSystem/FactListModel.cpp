@@ -100,10 +100,10 @@ int FactListModel::rowCount(const QModelIndex & parent) const
 QHash<int, QByteArray> FactListModel::roleNames() const
 {
   QHash<int, QByteArray> roles;
-  roles[ModelDataRole]  = "modelData";
-  roles[NameRole]       = "name";
-  roles[ValueRole]      = "value";
-  roles[TextRole]       = "text";
+  roles[Fact::ModelDataRole]  = "modelData";
+  roles[Fact::NameRole]       = "name";
+  roles[Fact::ValueRole]      = "value";
+  roles[Fact::TextRole]       = "text";
   return roles;
 }
 //=============================================================================
@@ -112,13 +112,7 @@ QVariant FactListModel::data(const QModelIndex & index, int role) const
   if (index.row() < 0 || index.row() >= rowCount())
     return QVariant();
   Fact *item=static_cast<Fact*>(items().at(index.row()));
-  switch(role){
-    case ModelDataRole: return QVariant::fromValue(item);
-    case NameRole:      return item->name();
-    case ValueRole:     return item->value();
-    case TextRole:      return item->text();
-  }
-  return QVariant();
+  return item->data(index.column(),role);
 }
 //=============================================================================
 bool FactListModel::setData(const QModelIndex &index, const QVariant &value, int role)

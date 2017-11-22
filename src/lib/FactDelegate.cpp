@@ -39,53 +39,57 @@ FactDelegate::~FactDelegate()
 QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &option,const QModelIndex &index) const
 {
   Q_UNUSED(option);
-  Fact *f=index.data(FactListModel::ModelDataRole).value<Fact*>();
+  Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
   if(!f) return QItemDelegate::createEditor(parent,option,index);
   QWidget *e=NULL;
   QString su;
-  switch(f->dataType()){
-    case Fact::EnumData:{
-      QComboBox *cb=new QComboBox(parent);
-      cb->setFrame(false);
-      cb->addItems(f->enumStrings());
-      cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
-      //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
-      e=cb;
-    }break;
-    case Fact::BoolData:{
-      QComboBox *cb=new QComboBox(parent);
-      cb->setFrame(false);
-      cb->addItems(QStringList()<<QVariant(false).toString()<<QVariant(true).toString());
-      cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
-      //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
-      e=cb;
-    }break;
-    case Fact::ActionData:{
-      QPushButton *btn=new QPushButton(parent);
-      //btn->setFlat(true);
-      QPalette newPalette = btn->palette();
-      newPalette.setBrush(QPalette::Window, QBrush(QColor(255,255,255,80)));
-      btn->setPalette(newPalette);
-      btn->setBackgroundRole(QPalette::Window);
-      btn->setObjectName("treeViewButton");
-      connect(btn,&QPushButton::clicked,f,&Fact::trigger);
-      return btn;
-    }break;
-    /*case ft_varmsk:{
-      QComboBox *cb=new QComboBox(parent);
-      cb->setFrame(false);
-      cb->addItem("");
-      cb->addItems(QMandala::instance()->local->names);
+  if(!f->enumStrings().isEmpty()){
+    QComboBox *cb=new QComboBox(parent);
+    cb->setFrame(false);
+    cb->addItems(f->enumStrings());
+    cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
+    if(f->dataType()!=Fact::EnumData){
       cb->setEditable(true);
-      cb->view()->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Ignored);
-      cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0)*2);
-      e=cb;
-    }break;
-    case ft_script:
-      //e=new ValueEditorScript(f,parent);
-    break;*/
-    default:
-      su=f->units();
+    }
+    //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
+    e=cb;
+  }else{
+    switch(f->dataType()){
+      case Fact::BoolData:{
+        QComboBox *cb=new QComboBox(parent);
+        cb->setFrame(false);
+        cb->addItems(QStringList()<<QVariant(false).toString()<<QVariant(true).toString());
+        cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
+        //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
+        e=cb;
+      }break;
+      case Fact::ActionData:{
+        QPushButton *btn=new QPushButton(parent);
+        //btn->setFlat(true);
+        QPalette newPalette = btn->palette();
+        newPalette.setBrush(QPalette::Window, QBrush(QColor(255,255,255,80)));
+        btn->setPalette(newPalette);
+        btn->setBackgroundRole(QPalette::Window);
+        btn->setObjectName("treeViewButton");
+        connect(btn,&QPushButton::clicked,f,&Fact::trigger);
+        return btn;
+      }break;
+      /*case ft_varmsk:{
+        QComboBox *cb=new QComboBox(parent);
+        cb->setFrame(false);
+        cb->addItem("");
+        cb->addItems(QMandala::instance()->local->names);
+        cb->setEditable(true);
+        cb->view()->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Ignored);
+        cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0)*2);
+        e=cb;
+      }break;
+      case ft_script:
+        //e=new ValueEditorScript(f,parent);
+      break;*/
+      default:
+        su=f->units();
+    }
   }
   if(!e) e=QItemDelegate::createEditor(parent,option,index);
   //e->setAutoFillBackground(true);
@@ -116,15 +120,15 @@ void FactDelegate::setEditorData(QWidget *editor,const QModelIndex &index) const
 }
 void FactDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const
 {
-  Fact *f=index.data(FactListModel::ModelDataRole).value<Fact*>();
+  Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
   if(f->dataType()==Fact::ActionData)return;
   QItemDelegate::setModelData(editor,model,index);
 }
 //=============================================================================
 void FactDelegate::paint(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index) const
 {
-  if(index.column()==FactTreeModel::FACT_MODEL_COLUMN_DESCR){
-    Fact *f=index.data(FactListModel::ModelDataRole).value<Fact*>();
+  if(index.column()==Fact::FACT_MODEL_COLUMN_DESCR){
+    Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
     if(f->progress()>0){
       //qDebug()<<f<<f->progress();
       if(drawProgress(painter,option,index,f->progress()))

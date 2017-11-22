@@ -28,9 +28,7 @@
 //=============================================================================
 void SystreePlugin::init(void)
 {
-  FactTreeWidget *w=new FactTreeWidget();
-  w->setRoot(FactSystem::instance(),true,true);
-
+  FactTreeWidget *w=new FactTreeWidget(FactSystem::instance(),true,true);
   obj=w;
 }
 //=============================================================================

@@ -1,20 +1,14 @@
 ﻿#include "NodesFrame.h"
-#include "QMandala.h"
-#include "NodesView.h"
 #include <AppDirs.h>
 #include <Facts.h>
-#include "Datalink.h"
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent) :
   QWidget(parent)
 {
-  mandala=qApp->property("Mandala").value<QMandala*>();
-
   setupUi(this);
   setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
   progressBar->setVisible(false);
-  progressCnt=0;
   progressBar->setFormat("%v/%m");
   progressBar->setTextVisible(true);
   progressBar->setObjectName("nodeProgressBar");
@@ -45,7 +39,12 @@ NodesFrame::NodesFrame(QWidget *parent) :
   //toolBar->addSeparator();
   toolBar->addAction(aClearCache);
 
-  model=NULL;
+  treeWidget=new FactTreeWidget(FactSystem::instance(),true,false,this);
+  layout()->addWidget(treeWidget);
+  connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&NodesFrame::vehicleSelected);
+  vehicleSelected(Vehicles::instance()->current());
+
+  /*model=NULL;
   currentMandalaChanged(mandala->current);
   connect(mandala,SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(currentMandalaChanged(QMandalaItem*)));
   connect(mandala,SIGNAL(uavNameChanged(QString)),lbUavName,SLOT(setText(QString)));
@@ -58,11 +57,11 @@ NodesFrame::NodesFrame(QWidget *parent) :
   //tree->setModel(&proxy);
 
   connect(eFilter,SIGNAL(textChanged(QString)),this,SLOT(filterChanged()));
-
   connect(tree->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),SLOT(updateActions()));
 
   connect(mandala->local->rec,SIGNAL(fileLoaded()),SLOT(updateActions()),Qt::QueuedConnection);
   connect(Datalink::instance(),&Datalink::onlineChanged,this,&NodesFrame::updateActions,Qt::QueuedConnection);
+*/
 
   restoreGeometry(QSettings().value(objectName()).toByteArray());
 
@@ -73,7 +72,14 @@ NodesFrame::NodesFrame(QWidget *parent) :
   updateActions();
 }
 //=============================================================================
-void NodesFrame::currentMandalaChanged(QMandalaItem *m)
+void NodesFrame::vehicleSelected(Vehicle *v)
+{
+  vehicle=v;
+  treeWidget->setRoot(v->f_nodes->f_list);
+  lbUavName->setText(v->title());
+}
+//=============================================================================
+/*void NodesFrame::currentMandalaChanged(QMandalaItem *m)
 {
   if(model && model->isUpgrading()){
     qWarning("%s...",tr("Firmware upgrade in progress").toUtf8().data());
@@ -112,42 +118,14 @@ void NodesFrame::currentMandalaChanged(QMandalaItem *m)
 void NodesFrame::mandalaSizeChanged(uint sz)
 {
   lbUavName->setVisible(sz>0);
-}
+}*/
 //=============================================================================
 void NodesFrame::on_lbUavName_clicked()
 {
-  mandala->changeCurrent();
+  //mandala->changeCurrent();
 }
 //=============================================================================
-void NodesFrame::filterChanged()
-{
-  QString s=eFilter->text();
-  QRegExp regExp(s,Qt::CaseSensitive,QRegExp::WildcardUnix);
-  proxy.setFilterRegExp(regExp);
-  if(s.size()){
-    //tree->setIndentation(2);
-    tree->expandAll();
-  }else{
-    //tree->setIndentation(20);
-    tree->collapseAll();
-    resetTree();
-  }
-}
-//=============================================================================
-void NodesFrame::resetTree()
-{
-  //tree->collapseAll();
-  //if(tree->selectionModel())tree->selectionModel()->clearSelection();
-  QModelIndexList list=model->getGroupsIndexList();
-  foreach(QModelIndex index,list){
-    if(tree->isExpanded(proxy.mapFromSource(index)))return;
-  }
-  foreach(QModelIndex index,list){
-    tree->expand(proxy.mapFromSource(index));
-  }
-}
-//=============================================================================
-QList<NodesItem*> NodesFrame::selectedItems(NodesItem::_item_type item_type) const
+/*QList<NodesItem*> NodesFrame::selectedItems(NodesItem::_item_type item_type) const
 {
   QList<NodesItem*> list;
   foreach(QModelIndex index,tree->selectionModel()->selectedRows()){
@@ -156,11 +134,11 @@ QList<NodesItem*> NodesFrame::selectedItems(NodesItem::_item_type item_type) con
       list.append(item);
   }
   return list;
-}
+}*/
 //=============================================================================
 void NodesFrame::on_tree_customContextMenuRequested(const QPoint &pos)
 {
-  //scan selected items
+/*  //scan selected items
   QList<QByteArray> sn_list;
   foreach(NodesItem *i,selectedItems(NodesItem::it_node)){
     NodesItemNode *node=static_cast<NodesItemNode*>(i);
@@ -335,12 +313,12 @@ void NodesFrame::on_tree_customContextMenuRequested(const QPoint &pos)
   connect(a,SIGNAL(triggered()),this,SLOT(nodeRebootAll()));
   m.addAction(a);
 
-  if(!m.isEmpty())m.exec(tree->mapToGlobal(pos));
+  if(!m.isEmpty())m.exec(tree->mapToGlobal(pos));*/
 }
 //=============================================================================
 void NodesFrame::nodeCmdAction(void)
 {
-  QAction *a=(QAction*)sender();
+  /*QAction *a=(QAction*)sender();
   foreach(QString scmd,a->data().toStringList()) {
     QByteArray ba=QByteArray::fromHex(scmd.toUtf8());
     const QByteArray &sn=ba.left(sizeof(_node_sn));
@@ -352,53 +330,53 @@ void NodesFrame::nodeCmdAction(void)
     //model->setActive(true);
     model->requestManager.enableTemporary();
     item->command(cmd_idx);
-  }
+  }*/
 }
 //=============================================================================
 void NodesFrame::nodeRestoreBackup(void)
 {
-  QAction *a=(QAction*)sender();
+  /*QAction *a=(QAction*)sender();
   const QString bname=a->data().toString();
   QList<NodesItem*> sel=selectedItems(NodesItem::it_node);
   if(sel.size()!=1)return;
-  static_cast<NodesItemNode*>(sel.first())->restoreBackupFile(bname);
+  static_cast<NodesItemNode*>(sel.first())->restoreBackupFile(bname);*/
 }
 void NodesFrame::vehicleRestoreBackup(void)
 {
-  QAction *a=(QAction*)sender();
+  /*QAction *a=(QAction*)sender();
   const QString bname=a->data().toString();
-  model->restoreVehicleBackup(bname);
+  model->restoreVehicleBackup(bname);*/
 }
 //=============================================================================
 void NodesFrame::nodeRestoreRecentBackup(void)
 {
-  foreach(NodesItem *i,selectedItems(NodesItem::it_node)){
+  /*foreach(NodesItem *i,selectedItems(NodesItem::it_node)){
     QString bname=static_cast<NodesItemNode*>(i)->restoreRecentBackup();
     if(!bname.size())qWarning("%s",tr("Backup not found").toUtf8().data());
-  }
+  }*/
 }
 //=============================================================================
 void NodesFrame::nodeRebootAll(void)
 {
-  QAction *a=(QAction*)sender();
+  /*QAction *a=(QAction*)sender();
   qDebug("%s...",a->text().toUtf8().data());
-  model->mvar->send_srv(apc_reboot,QByteArray());
+  model->mvar->send_srv(apc_reboot,QByteArray());*/
 }
 //=============================================================================
 void NodesFrame::on_aUndo_triggered(void)
 {
-  updateActions();
+  /*updateActions();
   if(!aUndo->isEnabled())return;
   tree->setFocus();
   foreach(NodesItem *i,selectedItems()){
     if(i->isModified())i->restore();
-  }
+  }*/
 }
 //=============================================================================
 void NodesFrame::updateActionsDo(void)
 {
   //qDebug()<<"updateActions";
-  bool bMod=false;
+  /*bool bMod=false;
   foreach(NodesItem *i,selectedItems()){
     if(i->isModified()){
       bMod=true;
@@ -416,7 +394,7 @@ void NodesFrame::updateActionsDo(void)
   aLoadTelemetry->setEnabled((!(busy || upgrading))&&mandala->local->rec->file.xmlParts.contains("nodes"));
   aReload->setEnabled(!(upgrading||model->isEmpty()));
   aStats->setEnabled(!(model->isEmpty()));
-  aClearCache->setEnabled(!(busy));
+  aClearCache->setEnabled(!(busy));*/
 }
 void NodesFrame::updateActions(void)
 {
@@ -426,7 +404,7 @@ void NodesFrame::updateActions(void)
 //=============================================================================
 void NodesFrame::nodeUpdateFirmware()
 {
-  mandala->setCurrent(mandala->local);
+  /*mandala->setCurrent(mandala->local);
   resetTree();
   QAction *a=(QAction*)sender();
   QStringList scr;
@@ -445,71 +423,53 @@ void NodesFrame::nodeUpdateFirmware()
   if(!nodesListLoader.isEmpty())model->upgradeFirmware(nodesListLoader,NodesModel::UpgradeLoader);
   if(!nodesListFirmware.isEmpty())model->upgradeFirmware(nodesListFirmware,NodesModel::UpgradeFirmware);
   if(!nodesListMHX.isEmpty())model->upgradeFirmware(nodesListMHX,NodesModel::UpgradeMHX);
-  updateActions();
+  updateActions();*/
 }
 //=============================================================================
 void NodesFrame::on_aUpload_triggered(void)
 {
-  tree->setFocus();
+  /*tree->setFocus();
   model->requestManager.enableTemporary();
-  model->upload();
+  model->upload();*/
 }
 //=============================================================================
 void NodesFrame::on_aRequest_triggered(void)
 {
-  proxy.setFilterRegExp(QRegExp());
+  treeWidget->resetFilter();
+  vehicle->f_nodes->request();
+  /*proxy.setFilterRegExp(QRegExp());
   model->requestManager.enableTemporary();
-  model->sync();
+  model->sync();*/
 }
 //=============================================================================
 void NodesFrame::on_aReload_triggered(void)
 {
-  tree->setFocus();
+  treeWidget->resetFilter();
+  vehicle->f_nodes->reload();
+  /*tree->setFocus();
   model->clear();
-  aRequest->trigger();
+  aRequest->trigger();*/
 }
 //=============================================================================
 void NodesFrame::on_aStats_triggered(void)
 {
-  proxy.setFilterRegExp(QRegExp());
+  /*proxy.setFilterRegExp(QRegExp());
   tree->setFocus();
   model->requestManager.enableTemporary();
-  model->stats();
+  model->stats();*/
 }
 //=============================================================================
 void NodesFrame::on_aLoadTelemetry_triggered(void)
 {
-  proxy.setFilterRegExp(QRegExp());
+  /*proxy.setFilterRegExp(QRegExp());
   tree->setFocus();
   mandala->setCurrent(mandala->local);
-  model->loadFromTelemetry();
-}
-//=============================================================================
-void NodesFrame::syncProgress(uint cnt)
-{
-  updateActions();
-  if(!cnt){
-    progressCnt=0;
-    progressBar->setMaximum(0);
-    //qDebug()<<progressBar->value();
-  }
-  //detect cnt grow
-  if(progressCnt==cnt){
-    progressBar->setValue(progressBar->value()+1);
-  }else{
-    progressCnt=cnt;
-    if((int)cnt>progressBar->maximum())progressBar->setMaximum(cnt);
-    int pos=progressBar->maximum()-cnt;
-    int cur=progressBar->value();
-    int max=progressBar->maximum();
-    if(pos<=cur && cur<max)pos=progressBar->value()+1;
-    progressBar->setValue(pos);
-  }
+  model->loadFromTelemetry();*/
 }
 //=============================================================================
 void NodesFrame::on_aSave_triggered(void)
 {
-  if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
+  /*if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
   QFileDialog dlg(this,aSave->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
@@ -521,12 +481,12 @@ void NodesFrame::on_aSave_triggered(void)
   dlg.setNameFilters(filters);
   dlg.setDefaultSuffix("nodes");
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
-  model->saveToFile(dlg.selectedFiles().first());
+  model->saveToFile(dlg.selectedFiles().first());*/
 }
 //=============================================================================
 void NodesFrame::on_aLoad_triggered(void)
 {
-  if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
+  /*if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
   proxy.setFilterRegExp(QRegExp());
   QFileDialog dlg(this,aLoad->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -537,6 +497,6 @@ void NodesFrame::on_aLoad_triggered(void)
           << tr("Any files")+" (*)";
   dlg.setNameFilters(filters);
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
-  model->loadFromFile(dlg.selectedFiles().first());
+  model->loadFromFile(dlg.selectedFiles().first());*/
 }
 //=============================================================================

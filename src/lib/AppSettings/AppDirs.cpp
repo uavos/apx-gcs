@@ -88,3 +88,8 @@ QDir AppDirs::userPlugins()
   return QDir(user().absoluteFilePath("Plugins"));
 }
 //=============================================================================
+QString AppDirs::dbFileName()
+{
+  return user().absoluteFilePath("gcs.db");
+}
+//=============================================================================

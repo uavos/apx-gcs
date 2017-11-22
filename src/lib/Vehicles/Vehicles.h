@@ -46,6 +46,7 @@ public:
 private:
   static Vehicles * _instance;
 
+
   //IDENT procedures
   QTimer reqTimer;
   QList<QByteArray> reqList;

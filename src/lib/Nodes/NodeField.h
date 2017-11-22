@@ -41,11 +41,20 @@ public:
   bool unpackService(uint ncmd, const QByteArray &data);
 
   quint16 id;
+  int ftype;
+
+  QString ftypeString() const;
+
+  //Fact override
+  void setModified(const bool &v);
+  QString text() const;
+  //void setText(const QString &v);
+  bool setValue(const QVariant &v);
+  const QStringList & enumStrings() const;
 
 private:
   NodeItem *node;
   NodeField *parentField;
-  int ftype;
 
   bool unpackValue(const QByteArray &data);
   int ftypeSize() const;

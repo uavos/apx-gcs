@@ -36,21 +36,25 @@ public:
   explicit Nodes(Vehicle *parent);
 
   Fact *f_request;
+  Fact *f_reload;
 
   Fact *f_list;
 
   Vehicle *vehicle;
 
+  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
+
+private:
   //sn lookup
   QHash<QByteArray,NodeItem*> snMap;
 
-  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
-private:
   bool isBroadcast(const QByteArray &sn) const;
   NodeItem * nodeCheck(const QByteArray &sn);
 
+  void dbRegister();
 public slots:
   void request();
+  void reload();
 
 public slots:
   bool unpackService(const QByteArray &packet); //data comm

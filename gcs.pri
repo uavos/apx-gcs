@@ -69,7 +69,7 @@ RCC_DIR = $$OBJECTS_DIR
 QMAKE_CFLAGS_RELEASE -= -g
 QMAKE_CXXFLAGS_RELEASE -= -g
 
-QT += network xml widgets quick
+QT += network xml widgets quick sql
 
 # VERSION DEFINITION
 #unix:!mac{

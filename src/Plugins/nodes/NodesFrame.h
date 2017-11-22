@@ -23,11 +23,10 @@
 #ifndef NODESFRAME_H
 #define NODESFRAME_H
 //=============================================================================
-#include <QWidget>
+#include <QtWidgets>
 #include "ui_NodesFrame.h"
-#include "NodesModel.h"
-#include "NodesView.h"
-class QMandala;
+#include "Facts.h"
+#include "FactTreeView.h"
 //=============================================================================
 class NodesFrame : public QWidget, public Ui::NodesFrame
 {
@@ -36,23 +35,20 @@ public:
   NodesFrame(QWidget *parent = 0);
 
 private:
-  QMandala *mandala;
+  FactTreeWidget *treeWidget;
+
   QToolBar *toolBar;
   QToolButton *btnUpload;
-  NodesModel *model;
-  QHash<QMandalaItem*,NodesModel*>models;
-  NodesItemDelegate delegate;
-  NodesSortFilterProxyModel proxy;
 
-  QList<NodesItem*> selectedItems(NodesItem::_item_type item_type=NodesItem::it_root) const;
-
-  uint progressCnt;
+  //QList<NodesItem*> selectedItems(NodesItem::_item_type item_type=NodesItem::it_root) const;
 
   QTimer updateActionsTimer;
+  Vehicle *vehicle;
 
 private slots:
-  void currentMandalaChanged(QMandalaItem *m);
-  void mandalaSizeChanged(uint sz);
+  void vehicleSelected(Vehicle *v);
+
+
 
   void on_lbUavName_clicked();
 
@@ -66,8 +62,6 @@ private slots:
   void on_aLoadTelemetry_triggered(void);
   void on_tree_customContextMenuRequested(const QPoint &pos);
 
-  void syncProgress(uint cnt);
-
   void nodeCmdAction(void);
   void nodeRestoreBackup(void);
   void vehicleRestoreBackup(void);
@@ -78,10 +72,6 @@ private slots:
 
   void updateActions(void);
   void updateActionsDo(void);
-
-  void filterChanged();
-
-  void resetTree();
 
 };
 //=============================================================================

@@ -32,7 +32,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
   f_clear=new Fact(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactItem,ActionData);
   f_clear->setEnabled(false);
   connect(f_clear,&Fact::triggered,[=](){
-    f_list->clear();
+    f_list->removeAll();
   });
 
   f_list=new Fact(this,"messages",tr("Messages"),"",SectionItem,ConstData);

@@ -36,13 +36,6 @@ public:
 
   explicit FactListModel(Fact *parent);
 
-  enum FactListModelRoles {
-    ModelDataRole = Qt::UserRole + 1,
-    NameRole,
-    ValueRole,
-    TextRole,
-  };
-
   QList<FactTree*> items() const;
 
 

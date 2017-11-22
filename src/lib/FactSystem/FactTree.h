@@ -45,6 +45,7 @@ public:
   };
 
   explicit FactTree(FactTree *parent, const QString &name, ItemType treeItemType);
+  ~FactTree();
 
   //tree structure manipulation
   virtual void insertItem(int i, FactTree *item);
@@ -53,6 +54,7 @@ public:
   //internal tree
   Q_INVOKABLE void addItem(FactTree *item);
   Q_INVOKABLE void remove();
+  Q_INVOKABLE void removeAll(void);
   Q_INVOKABLE int num() const;
   Q_INVOKABLE FactTree * child(int n) const;
   Q_INVOKABLE FactTree * parentItem() const;
@@ -63,18 +65,17 @@ public:
 
   QList<FactTree*> pathList() const;
 
-public slots:
-  virtual void clear(void);
 signals:
   //tree structure change signals for models
   void itemToBeInserted(int row, FactTree *item);
   void itemInserted(FactTree *item);
   void itemToBeRemoved(int row,FactTree *item);
   void itemRemoved(FactTree *item);
+  void removed();
 
 private:
   QList<FactTree*> m_items;
-  FactTree *m_parentItem;
+  QPointer<FactTree> m_parentItem;
   QString makeNameUnique(const QString &s);
   QString nameSuffix;
 

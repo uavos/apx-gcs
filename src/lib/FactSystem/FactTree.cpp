@@ -30,6 +30,10 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
 {
   setObjectName(m_name);
 }
+FactTree::~FactTree()
+{
+  removeAll();
+}
 //=============================================================================
 void FactTree::insertItem(int i, FactTree *item)
 {
@@ -45,23 +49,25 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
 {
   int i=m_items.indexOf(item);
   if(i<0)return;
+  item->removed();
   emit itemToBeRemoved(i,item);
   m_items.removeAt(i);
   if(deleteLater){
-    item->disconnect();
+    //item->disconnect();
     item->deleteLater();
   }
   emit itemRemoved(item);
   emit sizeChanged();
 }
-void FactTree::clear(void)
+void FactTree::removeAll(void)
 {
   if(!m_items.size())return;
   foreach(FactTree *i,m_items){
-    i->clear();
+    i->removeAll();
   }
   while(m_items.size()) {
     FactTree *item=m_items.last();
+    item->removed();
     emit itemToBeRemoved(m_items.size()-1,item);
     m_items.takeLast();
     item->m_parentItem=NULL;

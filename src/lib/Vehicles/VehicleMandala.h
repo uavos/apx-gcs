@@ -43,6 +43,7 @@ public:
   QHash<QString,QVariant> constants; // <name,value> enums in form varname_ENUM
   QHash<QString,quint16> special; // <name,id>
   QStringList names;
+  QList<quint16> ids;
 
   QList<VehicleMandalaFact*> allFacts;
 
@@ -52,7 +53,7 @@ public:
   VehicleMandalaFact * factById(quint16 id) const;
 
   QVariant valueByName(const QString &vname) const;
-  VehicleMandalaFact * factByName(const QString &vnam) const;
+  VehicleMandalaFact * factByName(const QString &vname) const;
 
   bool unpackData(const QByteArray &ba);
   bool unpackTelemetry(const QByteArray &ba);

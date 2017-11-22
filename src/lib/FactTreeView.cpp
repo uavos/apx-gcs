@@ -11,7 +11,7 @@ FactTreeView::FactTreeView(QWidget *parent)
   setContextMenuPolicy(Qt::CustomContextMenu);
   setFrameShape(QFrame::NoFrame);
   setSortingEnabled(true);
-  sortByColumn(FactTreeModel::FACT_MODEL_COLUMN_NAME,Qt::AscendingOrder);
+  sortByColumn(Fact::FACT_MODEL_COLUMN_NAME,Qt::AscendingOrder);
   header()->setSectionResizeMode(QHeaderView::ResizeToContents);
   header()->setDefaultSectionSize(50);
   header()->setMinimumSectionSize(70);
@@ -31,15 +31,50 @@ FactTreeView::FactTreeView(QWidget *parent)
 //=============================================================================
 //=============================================================================
 FactProxyModel::FactProxyModel(QObject *parent)
-  : QSortFilterProxyModel(parent)
+  : QSortFilterProxyModel(parent),
+    m_rootFact(NULL)
 {
   sortNames<<"shiva"<<"nav"<<"ifc"<<"swc"<<"cas"<<"gps"<<"mhx"<<"servo"<<"bldc";
 }
 //=============================================================================
+void FactProxyModel::setRootFact(Fact *fact)
+{
+  m_rootFact=fact;
+  invalidate();
+}
+Fact * FactProxyModel::rootFact() const
+{
+  return m_rootFact;
+}
+//=============================================================================
 bool FactProxyModel::filterAcceptsRow(int sourceRow,const QModelIndex &sourceParent) const
 {
-  //if(!sourceParent.isValid())return true;
-  QModelIndex index = sourceModel()->index(sourceRow,FactTreeModel::FACT_MODEL_COLUMN_NAME,sourceParent);
+  QModelIndex index = sourceModel()->index(sourceRow,Fact::FACT_MODEL_COLUMN_NAME,sourceParent);
+  Fact *fact=index.data(Fact::ModelDataRole).value<Fact*>();
+  if(!fact)return false;
+  if(fact==m_rootFact)return true;
+  //accept all parents of rootFact
+  bool ok=false;
+  for(Fact *f=m_rootFact;f;f=static_cast<Fact*>(f->parentItem())){
+    if(fact==f){
+      ok=true;
+      break;
+    }
+  }
+  //check if index has parent as rootindex
+  if(!ok){
+    for(Fact *f=fact;f;f=static_cast<Fact*>(f->parentItem())){
+      if(f==m_rootFact){
+        //qDebug()<<"acc"<<fact->path();
+        ok=true;
+        break;
+      }
+    }
+  }
+  if(!ok){
+    //qDebug()<<"flt"<<fact->path();
+    return filterRegExp().isEmpty()?true:false;
+  }
   return showThis(index);
 }
 //=============================================================================
@@ -57,7 +92,7 @@ bool FactProxyModel::showThis(const QModelIndex index) const
   }
   //look for matching childs
   for(int i=0;i<sourceModel()->rowCount(index);i++){
-    QModelIndex childIndex=sourceModel()->index(i,FactTreeModel::FACT_MODEL_COLUMN_NAME,index);
+    QModelIndex childIndex=sourceModel()->index(i,Fact::FACT_MODEL_COLUMN_NAME,index);
     if(!childIndex.isValid())break;
     if(showThis(childIndex))return true;
   }
@@ -67,24 +102,23 @@ bool FactProxyModel::showThis(const QModelIndex index) const
 bool FactProxyModel::lessThan(const QModelIndex &left,const QModelIndex &right) const
 {
   //only first col sorted
-  if(left.column()!=FactTreeModel::FACT_MODEL_COLUMN_NAME || right.column()!=FactTreeModel::FACT_MODEL_COLUMN_NAME)
+  if(left.column()!=Fact::FACT_MODEL_COLUMN_NAME || right.column()!=Fact::FACT_MODEL_COLUMN_NAME)
     return left.row()<right.row();
-  Fact *item_left=left.data(FactListModel::ModelDataRole).value<Fact*>();
-  Fact *item_right=right.data(FactListModel::ModelDataRole).value<Fact*>();
+  Fact *item_left=left.data(Fact::ModelDataRole).value<Fact*>();
+  Fact *item_right=right.data(Fact::ModelDataRole).value<Fact*>();
   if(!(item_left && item_right))
     return QSortFilterProxyModel::lessThan(left,right);
   return item_left->lessThan(item_right);
 }
 //=============================================================================
 //=============================================================================
-FactTreeWidget::FactTreeWidget(QWidget *parent)
-  : QWidget(parent),
-    model(NULL)
+FactTreeWidget::FactTreeWidget(Fact *fact,bool filterEdit,bool backNavigation, QWidget *parent)
+  : QWidget(parent)
 {
-  setWindowTitle("FactTree");
-  QVBoxLayout *layout=new QVBoxLayout(this);
-  layout->setMargin(0);
-  layout->setSpacing(0);
+  setWindowTitle(fact->title());
+  vlayout=new QVBoxLayout(this);
+  vlayout->setMargin(0);
+  vlayout->setSpacing(0);
   tree=new FactTreeView(this);
   QSizePolicy sp=tree->sizePolicy();
   sp.setVerticalPolicy(QSizePolicy::Expanding);
@@ -99,48 +133,49 @@ FactTreeWidget::FactTreeWidget(QWidget *parent)
   toolBar->setIconSize(QSize(14,14));
   toolBar->layout()->setMargin(0);
   aBack=new QAction(SvgIcon(":/icons/sets/ionicons/android-arrow-back.svg"),tr("Back"),this);
-  aBack->setVisible(false);
+  aBack->setVisible(backNavigation);
   connect(aBack,&QAction::triggered,this,&FactTreeWidget::back);
   toolBar->addAction(aBack);
+  if(backNavigation){
+    connect(tree,&FactTreeView::doubleClicked,this,&FactTreeWidget::doubleClicked);
+  }
 
+  vlayout->addWidget(toolBar);
+  vlayout->addWidget(tree);
 
-  layout->addWidget(toolBar);
-  layout->addWidget(tree);
+  if(filterEdit){
+    eFilter->setVisible(true);
+    toolBar->addWidget(eFilter);
+    if(!backNavigation){
+      //move toolBar to bottom
+      vlayout->removeWidget(toolBar);
+      vlayout->addWidget(toolBar);
+    }
+  }
+  toolBar->setVisible(backNavigation||filterEdit);
 
   //model
   proxy=new FactProxyModel(this);
   tree->setModel(proxy);
+  model=new FactTreeModel(fact);
+  proxy->setRootFact(fact);
+  proxy->setSourceModel(model);
+
 
   updateActions();
 
   connect(eFilter,&QLineEdit::textChanged,this,&FactTreeWidget::filterChanged);
   connect(tree,&FactTreeView::collapsed,this,&FactTreeWidget::collapsed);
-}
-//=============================================================================
-void FactTreeWidget::setRoot(Fact *fact, bool filterEdit, bool backNavigation)
-{
-  setWindowTitle(fact->title());
-  if(model){
-    model->deleteLater();
-  }
-  model=new FactTreeModel(fact);
-  proxy->setSourceModel(model);
-  if(backNavigation){
-    aBack->setVisible(true);
-    connect(tree,&FactTreeView::doubleClicked,this,&FactTreeWidget::doubleClicked);
-  }
-  if(filterEdit){
-    eFilter->setVisible(true);
-    toolBar->addWidget(eFilter);
-  }
-  toolBar->setVisible(backNavigation||filterEdit);
+  connect(tree,&FactTreeView::expanded,this,&FactTreeWidget::expanded);
 }
 //=============================================================================
 void FactTreeWidget::filterChanged()
 {
   QString s=eFilter->text();
   QRegExp regExp(s,Qt::CaseSensitive,QRegExp::WildcardUnix);
+  //QModelIndex rootIndex=tree->rootIndex();
   proxy->setFilterRegExp(regExp);
+  tree->setRootIndex(proxy->mapFromSource(model->factIndex(proxy->rootFact())));
   updateActions();
   if(s.size()){
     tree->expandAll();
@@ -152,33 +187,88 @@ void FactTreeWidget::filterChanged()
 //=============================================================================
 void FactTreeWidget::doubleClicked(const QModelIndex &index)
 {
-  Fact *f=index.data(FactListModel::ModelDataRole).value<Fact*>();
+  QModelIndex idx=proxy->mapToSource(index);
+  Fact *f=idx.data(Fact::ModelDataRole).value<Fact*>();
   if(!f)return;
   if(!f->size())return;
-  rootList.append(tree->rootIndex());
-  tree->setRootIndex(index);
+  Fact *fPrev=proxy->rootFact();
+  setRoot(f);
+  rootList.append(QPointer<Fact>(fPrev));
   updateActions();
 }
 //=============================================================================
 void FactTreeWidget::collapsed(const QModelIndex &index)
 {
-  Fact *f=index.data(FactListModel::ModelDataRole).value<Fact*>();
-  if(f)model->recursiveDisconnect(f);
+  Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
+  //if(f)model->recursiveDisconnect(f);
+  model->expandedFacts.removeAll(f);
+}
+void FactTreeWidget::expanded(const QModelIndex &index)
+{
+  Fact *f=proxy->mapToSource(index).data(Fact::ModelDataRole).value<Fact*>();
+  if(!f)return;
+  if(!model->expandedFacts.contains(f))model->expandedFacts.append(f);
+  //qDebug()<<"exp"<<f->path();
 }
 //=============================================================================
 void FactTreeWidget::updateActions()
 {
   //Fact *f=tree->rootIndex().data(FactListModel::ModelDataRole).value<Fact*>();
-  rootList.removeAll(tree->rootIndex());
+  //rootList.removeAll(NULL);
   bool bBack=!rootList.isEmpty();
   aBack->setEnabled(bBack);
+  //qDebug()<<"upd";
+}
+//=============================================================================
+void FactTreeWidget::resetFilter()
+{
+  tree->setFocus();
+  eFilter->clear();
+}
+//=============================================================================
+void FactTreeWidget::setRoot(Fact *fact)
+{
+  if(!model->expandedFacts.contains(fact))model->expandedFacts.append(fact);
+  resetFilter();
+  //if(proxy->rootFact()) disconnect(proxy->rootFact(),&Fact::removed,this,&FactTreeWidget::factRemoved);
+  proxy->setRootFact(fact);
+  tree->setRootIndex(proxy->mapFromSource(model->factIndex(fact)));
+  connect(fact,&Fact::removed,this,&FactTreeWidget::factRemoved);
+  //qDebug()<<"root"<<fact->path();
+  //cut current path
+  for (int i=0;i<rootList.size();i++){
+    Fact *f=rootList.at(i);
+    if(f==NULL || f==fact){
+      while(rootList.size()>i)rootList.removeLast();
+      break;
+    }
+  }
+  updateActions();
 }
 //=============================================================================
 void FactTreeWidget::back()
 {
+  //qDebug()<<"back";
+  rootList.removeAll(NULL);
   if(rootList.isEmpty())return;
-  tree->setRootIndex(rootList.takeLast());
-  updateActions();
+  setRoot(rootList.last());
 }
 //=============================================================================
+void FactTreeWidget::factRemoved()
+{
+  resetFilter();
+  if(rootList.isEmpty())return;
+  Fact *fact=static_cast<Fact*>(sender());
+  Fact *rootFact=NULL;
+  //qDebug()<<"removed"<<fact;
+  for (int i=0;i<rootList.size();i++){
+    Fact *f=rootList.at(i);
+    if(f==NULL || f==fact){
+      if(rootFact)setRoot(rootFact);
+      return;
+    }
+    rootFact=f;
+  }
+  if(fact==proxy->rootFact())back();
+}
 //=============================================================================

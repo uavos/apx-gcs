@@ -228,6 +228,7 @@ void Vehicles::assignIDENT(QString callsign, QByteArray uid)
 //=============================================================================
 void Vehicles::selectVehicle(Vehicle *v)
 {
+  if(m_current==v)return;
   qDebug("%s: %s '%s' (%s)",tr("Vehicle selected").toUtf8().data(),v->f_vclass->text().toUtf8().data(),v->f_callsign->text().toUtf8().data(),v->f_squawk->text().toUtf8().data());
   m_current=v;
   //update JSengine

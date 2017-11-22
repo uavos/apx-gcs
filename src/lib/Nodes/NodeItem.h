@@ -42,7 +42,7 @@ public:
   explicit NodeItem(Nodes *parent,const QByteArray &sn);
   ~NodeItem();
 
-  quint64 conf_uid;
+  QString conf_hash;
 
   QList<NodeField*> allFields;
 
@@ -51,7 +51,11 @@ public:
   int timeout_ms;
   void request(uint cmd, const QByteArray &data, uint timeout_ms, bool highprio=false);
 
-private:
+  void dbRegister(int state);
+
+  //override
+  QVariant data(int col, int role) const;
+
   Nodes *nodes;
 
 private slots:

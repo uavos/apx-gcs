@@ -22,8 +22,11 @@
  */
 #include <QtCore>
 #include "FactSystemApp.h"
+#include <AppDirs.h>
 //=============================================================================
+const QString kSession = QLatin1String("GCSFactSystemSession");
 FactSystemApp * FactSystemApp::_instance=NULL;
+//=============================================================================
 FactSystemApp::FactSystemApp(QObject *parent)
  : Fact(NULL,"app",tr("System tree"),QCoreApplication::applicationName(),RootItem,NoData)
 {
@@ -64,6 +67,17 @@ FactSystemApp::FactSystemApp(QObject *parent)
 
   if(m_dev){
     qDebug("%s",item->title().toUtf8().data());
+  }
+
+  //database
+  m_db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE", kSession));
+  m_db->setDatabaseName(AppDirs::dbFileName());
+  m_db->setConnectOptions("QSQLITE_ENABLE_SHARED_CACHE");
+  if(!m_db->open()){
+    qWarning()<<m_db->lastError();
+    delete m_db;
+    m_db=NULL;
+    QSqlDatabase::removeDatabase(kSession);
   }
 }
 //=============================================================================

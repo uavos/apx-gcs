@@ -25,7 +25,6 @@
 //=============================================================================
 Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactData(parent,name,title,descr,treeItemType,dataType),
-   treeModelSync(false),
    m_enabled(true), m_visible(true), m_active(false), m_progress(0), m_busy(false)
 {
   m_model=new FactListModel(this);
@@ -38,7 +37,7 @@ Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QS
     if(m_name.contains('#')){
       connect(parent,&FactData::sizeChanged,this,&FactData::nameChanged);
     }
-    connect(this,&FactData::modifiedChanged,static_cast<FactData*>(parent),&FactData::modifiedChanged);
+    //connect(this,&FactData::modifiedChanged,static_cast<FactData*>(parent),&FactData::modifiedChanged);
 
 
     /*FactSystem *fs=FactSystem::instance();
@@ -62,6 +61,77 @@ Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QS
     connect(this,&Fact::itemRemoved,fs,&FactSystem::itemRemoved);*/
   }
 }
+//=============================================================================
+QVariant Fact::data(int col, int role) const
+{
+  switch(role){
+    case ModelDataRole: return QVariant::fromValue(const_cast<Fact*>(this));
+    case NameRole:      return name();
+    case ValueRole:     return value();
+    case TextRole:      return text();
+    case Qt::ForegroundRole:
+      if(col==Fact::FACT_MODEL_COLUMN_NAME){
+        if(modified())return QColor(Qt::red).lighter();
+        if(!enabled())return QColor(Qt::gray);
+        if(active())return QColor(Qt::green).lighter();
+        if(treeItemType()==Fact::FactItem) return QColor(Qt::gray).lighter(150);
+        return QVariant();
+      }
+      if(col==Fact::FACT_MODEL_COLUMN_VALUE){
+        if(!enabled())return QColor(Qt::darkGray);
+        if(dataType()==Fact::ActionData) return QColor(Qt::blue).lighter(170);
+        if(size()) return QColor(Qt::darkGray); //expandable
+        //if(ftype==ft_string) return QVariant();
+        //if(ftype==ft_varmsk) return QColor(Qt::cyan);
+        return QColor(Qt::cyan).lighter(180);
+      }
+      return QColor(Qt::darkCyan);
+    case Qt::BackgroundRole:
+      return QVariant();
+    case Qt::FontRole:
+      if(col==Fact::FACT_MODEL_COLUMN_DESCR) return QVariant();
+      if(treeItemType()!=Fact::FactItem) return QFont("",0,QFont::Bold,false);
+      //if(ftype>=ft_regPID) return QFont("Monospace",-1,column==tc_field?QFont::Bold:QFont::Normal);
+      //if(col==FACT_MODEL_COLUMN_NAME) return QFont("Monospace",-1,QFont::Normal,isModified());
+      //if(ftype==ft_string) return QFont("",-1,QFont::Normal,true);
+      return QVariant();
+    case Qt::ToolTipRole:
+      if(col==Fact::FACT_MODEL_COLUMN_NAME) return name();
+      else if(col==Fact::FACT_MODEL_COLUMN_VALUE){
+        if(size()){
+          QString s=name();
+          foreach(FactTree *i,childItems()){
+            Fact *fc=static_cast<Fact*>(i);
+            s+=QString("\n%1: %2").arg(fc->title()).arg(fc->text());
+          }
+          return s;
+        }else descr();
+      }
+      return data(col,Qt::DisplayRole);
+  }
+
+  //value roles
+  if(role!=Qt::DisplayRole && role!=Qt::EditRole)
+    return QVariant();
+
+  switch(col){
+    case Fact::FACT_MODEL_COLUMN_NAME: return title();
+    case Fact::FACT_MODEL_COLUMN_VALUE:{
+      if(dataType()==Fact::ActionData) return QString("<exec>");
+      const QString s=text();
+      if(s.isEmpty()) return status();
+      if(role==Qt::EditRole && enumStrings().isEmpty()){
+        //if(dataType()==FloatData)return value().toDouble();
+        if(dataType()==BoolData)return value().toBool();
+        if(dataType()==IntData)return value().toInt();
+      }
+      return s;
+    }
+    case Fact::FACT_MODEL_COLUMN_DESCR: return descr();
+  }
+  return QVariant();
+}
+//=============================================================================
 //=============================================================================
 void Fact::bind(FactData *item)
 {
@@ -231,6 +301,16 @@ void Fact::setQmlMenu(const QString &v)
   if(m_qmlMenu==v)return;
   m_qmlMenu=v;
   emit qmlMenuChanged();
+}
+QString Fact::qmlEditor() const
+{
+  return m_qmlEditor;
+}
+void Fact::setQmlEditor(const QString &v)
+{
+  if(m_qmlEditor==v)return;
+  m_qmlEditor=v;
+  emit qmlEditorChanged();
 }
 QString Fact::units() const
 {

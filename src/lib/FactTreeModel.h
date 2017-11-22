@@ -35,20 +35,13 @@ public:
   Fact * fact(const QModelIndex &index) const;
   QModelIndex factIndex(FactTree *item, int column=0) const;
 
-  enum { //model columns
-    FACT_MODEL_COLUMN_NAME=0,
-    FACT_MODEL_COLUMN_VALUE,
-    FACT_MODEL_COLUMN_DESCR,
-
-    FACT_MODEL_COLUMN_CNT,
-  };
-
   void recursiveDisconnect(Fact *fact);
+  void checkConnections(Fact *fact) const;
+
+  QList<Fact*> expandedFacts;
 
 protected:
   Fact * root;
-
-  void checkConnections(Fact *fact) const;
 
   //override
   QVariant data(const QModelIndex &index, int role) const;
@@ -62,7 +55,10 @@ protected:
 
 private:
   QTimer updateTimer;
-  QList<Fact*> updateList;
+  QList<QPointer<Fact>> updateList;
+  QMultiHash<Fact*,int> updateHash;
+
+  QList<Fact*> conFactLayout;
 
 private slots:
   void itemToBeInserted(int row, FactTree *item);

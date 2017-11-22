@@ -77,9 +77,14 @@ bool FactData::setValue(const QVariant &v)
       case IntData:
         if(ev>=0)vx=ev;
         else if(!m_enumStrings.isEmpty())return false;
-        if(v.type()!=QVariant::Int){
+        else if(v.type()!=QVariant::Int){
           int i=v.toString().toInt(&ok);
           if(!ok) return false;
+          if((!m_min.isNull()) && i<m_min.toInt())i=m_min.toInt();
+          if((!m_max.isNull()) && i>m_max.toInt())i=m_max.toInt();
+          vx=i;
+        }else{
+          int i=v.toInt();
           if((!m_min.isNull()) && i<m_min.toInt())i=m_min.toInt();
           if((!m_max.isNull()) && i>m_max.toInt())i=m_max.toInt();
           vx=i;
@@ -255,7 +260,7 @@ void FactData::setText(const QString &v)
   }
   setValue(v);
 }
-QStringList FactData::enumStrings() const
+const QStringList & FactData::enumStrings() const
 {
   if(_bindedFact) return _bindedFact->enumStrings();
   return m_enumStrings;

@@ -24,10 +24,8 @@
 #define FactTreeView_H
 //=============================================================================
 #include <QtCore>
-#include <QWidget>
-#include <QTreeView>
+#include <QtWidgets>
 #include <QStyledItemDelegate>
-#include <QToolBar>
 class Fact;
 class FactTreeModel;
 //=============================================================================
@@ -43,11 +41,13 @@ class FactProxyModel : public QSortFilterProxyModel
   Q_OBJECT
 public:
   FactProxyModel(QObject *parent = 0);
-
+  void setRootFact(Fact *fact);
+  Fact * rootFact() const;
 protected:
   bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
   bool lessThan(const QModelIndex &left, const QModelIndex &right) const Q_DECL_OVERRIDE;
 private:
+  QPointer<Fact> m_rootFact;
   QStringList sortNames;
   bool showThis(const QModelIndex index) const;
 };
@@ -56,9 +56,7 @@ class FactTreeWidget : public QWidget
 {
   Q_OBJECT
 public:
-  FactTreeWidget(QWidget *parent = 0);
-
-  void setRoot(Fact *fact,bool filterEdit=true,bool backNavigation=true);
+  FactTreeWidget(Fact *fact,bool filterEdit,bool backNavigation, QWidget *parent = 0);
 
   FactTreeView *tree;
   FactProxyModel *proxy;
@@ -66,17 +64,22 @@ public:
   QLineEdit *eFilter;
   QAction *aBack;
   QToolBar *toolBar;
+  QVBoxLayout *vlayout;
 
 private:
-  QList<QModelIndex> rootList;
+  QList<QPointer<Fact>> rootList;
 private slots:
   void filterChanged();
   void doubleClicked(const QModelIndex &index);
   void collapsed(const QModelIndex &index);
+  void expanded(const QModelIndex &index);
   void updateActions();
+  void factRemoved();
 
 public slots:
+  void resetFilter();
   void back();
+  void setRoot(Fact *fact);
 
 signals:
   void treeReset();

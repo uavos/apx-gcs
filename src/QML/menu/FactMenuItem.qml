@@ -38,20 +38,20 @@ Item {
     }
 
     //internal
-    property bool bNext: fact.size || fact.treeItemType==Fact.GroupItem || bEnumChilds
+    property bool bNext: fact.size || fact.treeItemType===Fact.GroupItem || bEnumChilds
     property bool bDescr: fact.descr && app.settings.showdescr.value
     property bool bEnumChilds: fact.dataType===Fact.EnumData && fact.enumStrings.length>maxEnumListSize
 
     //editor types
-    property bool bAction:       fact.dataType==Fact.ActionData && (fact.value?fact.value:false)
-    property bool bEditText:     fact.dataType==Fact.TextData && fact.enumStrings.length === 0
-    property bool bEditList:     fact.dataType==Fact.EnumData && (!bEnumChilds)
-    property bool bEditListText: (fact.dataType==Fact.TextData || fact.dataType==Fact.IntData) && fact.enumStrings.length > 0
-    property bool bEditBool:     fact.dataType==Fact.BoolData
-    property bool bEditKey:      fact.dataType==Fact.KeySequenceData
-    property bool bConst:        fact.dataType==Fact.ConstData
-    property bool bEditInt:      fact.dataType==Fact.IntData && fact.enumStrings.length === 0
-    property bool bEditFloat:    fact.dataType==Fact.FloatData
+    property bool bAction:       fact.dataType===Fact.ActionData && (fact.value?fact.value:false)
+    property bool bEditText:     fact.dataType===Fact.TextData && fact.enumStrings.length === 0
+    property bool bEditList:     fact.dataType===Fact.EnumData && (!bEnumChilds)
+    property bool bEditListText: fact.dataType===Fact.TextData && fact.enumStrings.length > 0
+    property bool bEditBool:     fact.dataType===Fact.BoolData
+    property bool bEditKey:      fact.dataType===Fact.KeySequenceData
+    property bool bConst:        fact.dataType===Fact.ConstData
+    property bool bEditInt:      fact.dataType===Fact.IntData && fact.enumStrings.length === 0
+    property bool bEditFloat:    fact.dataType===Fact.FloatData
 
     Button {
         id: factItemButton

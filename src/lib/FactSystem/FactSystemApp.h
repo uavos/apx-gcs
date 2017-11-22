@@ -24,6 +24,7 @@
 #define FactSystemApp_H
 //=============================================================================
 #include <QtCore>
+#include <QtSql>
 #include "Fact.h"
 //=============================================================================
 class FactSystemApp: public Fact
@@ -42,6 +43,7 @@ public:
   static bool devMode()     { return _instance->m_dev; }
   static QString version()  { return _instance->m_version; }
   static QString branch()   { return _instance->m_branch; }
+  static QSqlDatabase *db() { return _instance->m_db; }
 
 protected:
   static FactSystemApp * _instance;
@@ -49,6 +51,7 @@ protected:
   bool m_dev;
   QString m_version;
   QString m_branch;
+  QSqlDatabase * m_db;
 
 public:
   // static app utils

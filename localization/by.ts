@@ -140,7 +140,7 @@
         <translation type="unfinished">Захаваць</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -212,7 +212,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <source>Duplicate shortcut</source>
         <translation type="unfinished"></translation>
     </message>
@@ -750,7 +750,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Disconnect all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -848,7 +848,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+129"/>
         <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -873,7 +873,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-46"/>
+        <location line="-47"/>
         <source>Save</source>
         <translation type="unfinished">Захаваць</translation>
     </message>
@@ -888,7 +888,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -990,7 +990,7 @@
 <context>
     <name>FactSystemApp</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemApp.cpp" line="+28"/>
+        <location filename="../src/lib/FactSystem/FactSystemApp.cpp" line="+31"/>
         <source>System tree</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1025,7 +1025,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+26"/>
         <source>Application</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1038,7 +1038,7 @@
 <context>
     <name>FactTreeModel</name>
     <message>
-        <location filename="../src/lib/FactSystem/FactTreeModel.cpp" line="+126"/>
+        <location filename="../src/lib/FactTreeModel.cpp" line="+109"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1050,6 +1050,14 @@
     <message>
         <location line="+1"/>
         <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FactTreeWidget</name>
+    <message>
+        <location filename="../src/lib/FactTreeView.cpp" line="+135"/>
+        <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1261,6 +1269,14 @@
     </message>
 </context>
 <context>
+    <name>ItemHome</name>
+    <message>
+        <location filename="../src/Plugins/map/ItemHome.cpp" line="+30"/>
+        <source>Home position</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainForm</name>
     <message>
         <location filename="../src/main/MainForm.cpp" line="+42"/>
@@ -1426,56 +1442,781 @@
 <context>
     <name>MapFrame</name>
     <message>
+        <location filename="../src/Plugins/map/MapFrame.ui" line="+20"/>
+        <source>Flight Plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+200"/>
+        <source>Lat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+2"/>
+        <source>Lon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <location line="+33"/>
+        <source>Map level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-30"/>
+        <source>Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+4"/>
+        <source>FPS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Downloading..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Distance to mouse click</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+5"/>
+        <source>DM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Distance to home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+1"/>
+        <source>DH</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Flight plan travel distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+1"/>
+        <source>PD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>UAV travelled distance from telemetry file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+2"/>
+        <source>FD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>UAV travelled distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="+1"/>
+        <source>TD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Go to GCU location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Download visible map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Auto Download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Download map automatically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Download Deep..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Download all maps in clicked area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Stop Downloading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Setup Cookie..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Setup cookies..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Upload</source>
-        <translation type="obsolete">Даслаць</translation>
+        <translation type="unfinished">Даслаць</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>Upload flight plan to UAV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Zoom In</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Zoom Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Refresh maps from google</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>UAV</source>
-        <translation type="obsolete">БЛА</translation>
+        <translation type="unfinished">БЛА</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>Go to UAV position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Full Screen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Toggle Full Screen</source>
-        <translation type="obsolete">На ўвесь экран</translation>
+        <translation type="unfinished">На ўвесь экран</translation>
     </message>
     <message>
+        <location line="+9"/>
+        <source>Reset Trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset UAV trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Clear File Trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Clear UAV trace from telemetry file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Show Trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show UAV trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Request</source>
-        <translation type="obsolete">Запыт</translation>
+        <translation type="unfinished">Запыт</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>Request flight plan from UAV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Set home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Set home position here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Fly here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Send position fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Send a position update for inertial navigation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Save</source>
-        <translation type="obsolete">Захаваць</translation>
+        <translation type="unfinished">Захаваць</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>Save flight plan..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Load</source>
-        <translation type="obsolete">Загрузіць</translation>
+        <translation type="unfinished">Загрузіць</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Load flight plan..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Save As..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Save flight plan as..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Create new flight plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Add Waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Add Runway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Adjust waypoints altitude...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Land to selected runway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Fly to selected waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Telemetry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Load from telemetry file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Add Taxiway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Add Point of Interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Fly to POI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Fly to selected Point of Interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Look here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Turn gimbal to coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Add restricted area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Add emergency landing area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+3"/>
+        <source>Remove selected items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Add point to area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Add point to selected area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/map/MapFrame.cpp" line="-56"/>
+        <source>Show heading wheel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Downloading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>L</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+144"/>
+        <source>Change %1 waypoint(s):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Mission &apos;%1&apos; was modified. Save changes?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <location line="+17"/>
+        <source>XML Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-16"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MapTiles</name>
+    <message>
+        <location filename="../src/Plugins/map/MapTiles.cpp" line="+179"/>
+        <source>Download aborted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <location line="+36"/>
+        <source>Error downloading map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>not an image</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemArea</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemArea.cpp" line="+55"/>
+        <source>area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>DH</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemAreaPoint</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemAreaPoint.cpp" line="+76"/>
+        <source>DH</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemField</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemField.cpp" line="+46"/>
+        <source>off</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemHome</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemHome.cpp" line="+29"/>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemPi</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemPi.cpp" line="+33"/>
+        <source>Point of interest global position (latitude)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Point of interest global position (longitude)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Camera view altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter loops limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter time limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemRw</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemRw.cpp" line="+34"/>
+        <source>Landing pattern turn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approach (straight path) length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Runway ground altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Runway global position (latitude)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Runway global position (longitude)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Runway direction point (north)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Runway direction point (east)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Runway</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemTw</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemTw.cpp" line="+78"/>
+        <source>DH</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>DW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>DT</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionItemWp</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionItemWp.cpp" line="+33"/>
+        <source>Waypoint altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maneuver type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Waypoint global position (latitude)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Waypoint global position (longitude)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Actions to perform on waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fly with this speed to waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Make a cam shot on waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Start continuous cam shots on waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Execute VM script (@function) on waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Linked POI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter around POI or waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter loops limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Loiter time limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+63"/>
+        <source>DH</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>DW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>DT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+1"/>
+        <source>ETA</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionListView</name>
+    <message>
+        <location filename="../src/Plugins/map/MissionListView.ui" line="+35"/>
+        <location line="+3"/>
+        <source>Mission</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MissionModel</name>
     <message>
+        <location filename="../src/Plugins/map/MissionModel.cpp" line="+41"/>
+        <source>Runways</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Waypoints</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Taxiways</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restricted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Emergency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+85"/>
+        <source>Cannot write file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Cannot read file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>The file format is not correct.</source>
-        <translation type="obsolete">Нядзейсны фармат файла.</translation>
+        <translation type="unfinished">Нядзейсны фармат файла.</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>From Telemetry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Mission received from UAV.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+290"/>
+        <source>Error extracting mission</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>NodeField</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeField.cpp" line="+255"/>
-        <location line="+10"/>
+        <location filename="../src/lib/Nodes/NodeField.cpp" line="+353"/>
+        <location line="+11"/>
+        <location line="+9"/>
         <location line="+8"/>
-        <location line="+7"/>
         <source>Proportional</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-24"/>
-        <location line="+10"/>
-        <location line="+15"/>
+        <location line="-27"/>
+        <location line="+11"/>
+        <location line="+17"/>
         <source>Proportional limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-24"/>
+        <location line="-27"/>
         <source>Derivative</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1486,23 +2227,23 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+8"/>
-        <location line="+15"/>
+        <location line="+9"/>
+        <location line="+17"/>
         <source>Integral</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-22"/>
-        <location line="+8"/>
-        <location line="+15"/>
+        <location line="-25"/>
+        <location line="+9"/>
+        <location line="+17"/>
         <source>Integral limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-22"/>
-        <location line="+8"/>
-        <location line="+5"/>
-        <location line="+10"/>
+        <location line="-25"/>
+        <location line="+9"/>
+        <location line="+6"/>
+        <location line="+11"/>
         <source>Output limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1520,35 +2261,15 @@
 <context>
     <name>NodeItem</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+45"/>
-        <source>Version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Firmware version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hardware</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Hardware generation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Parameters</source>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+39"/>
+        <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Nodes</name>
     <message>
-        <location filename="../src/lib/Nodes/Nodes.cpp" line="+31"/>
+        <location filename="../src/lib/Nodes/Nodes.cpp" line="+33"/>
         <source>Vehicle components</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1581,7 +2302,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+37"/>
         <source>Request</source>
         <translation type="unfinished">Запыт</translation>
     </message>
@@ -1674,63 +2395,6 @@
     <message>
         <location line="+3"/>
         <source>Request node statistics</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+80"/>
-        <source>Firmware upgrade in progress</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+98"/>
-        <source>Backups</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Restore recent backup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Vehicle backups</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Firmware</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Loader</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+34"/>
-        <source>Reboot all nodes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>Backup not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+142"/>
-        <location line="+17"/>
-        <source>Node conf files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-16"/>
-        <location line="+17"/>
-        <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2361,7 +3025,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+159"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+162"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2581,7 +3245,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+193"/>
+        <location line="+196"/>
         <source>Serial port disconnected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2943,7 +3607,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>TelemetryPlot</name>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="+110"/>
+        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="+109"/>
         <source>Calculated user variable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2966,8 +3630,9 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>ValueEditor</name>
     <message>
+        <location filename="../src/Plugins/map/ValueEditor.cpp" line="+62"/>
         <source>Upload</source>
-        <translation type="obsolete">Даслаць</translation>
+        <translation type="unfinished">Даслаць</translation>
     </message>
 </context>
 <context>
@@ -3111,7 +3776,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+230"/>
         <source>Received serial data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3228,17 +3893,17 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+100"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+86"/>
         <source>Vehicle selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-92"/>
+        <location line="-93"/>
         <source>Vehicle identified</source>
         <translation type="unfinished"></translation>
     </message>

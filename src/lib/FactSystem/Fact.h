@@ -42,6 +42,7 @@ class Fact: public FactData
   Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
   Q_PROPERTY(QString qmlMenu READ qmlMenu WRITE setQmlMenu NOTIFY qmlMenuChanged)
+  Q_PROPERTY(QString qmlEditor READ qmlEditor WRITE setQmlEditor NOTIFY qmlEditorChanged)
 
   Q_PROPERTY(QString units READ units WRITE setUnits NOTIFY unitsChanged)
   Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
@@ -60,9 +61,26 @@ public:
 
   QVariant userData;
 
-  bool treeModelSync;
-
   virtual bool lessThan(Fact *rightFact) const; //sorting helper
+
+  //data model
+  enum {
+    FACT_MODEL_COLUMN_NAME=0,
+    FACT_MODEL_COLUMN_VALUE,
+    FACT_MODEL_COLUMN_DESCR,
+
+    FACT_MODEL_COLUMN_CNT,
+  };
+  enum FactModelRoles {
+    ModelDataRole = Qt::UserRole + 1,
+    NameRole,
+    ValueRole,
+    TextRole,
+  };
+  virtual QVariant data(int col, int role) const;
+
+
+
 public slots:
   virtual void trigger(void); //execute fact event (onClick)
 signals:
@@ -92,6 +110,8 @@ public:
 
   QString qmlMenu() const;
   void setQmlMenu(const QString &v);
+  QString qmlEditor() const;
+  void setQmlEditor(const QString &v);
 
   QString units() const;
   void setUnits(const QString &v);
@@ -108,6 +128,7 @@ protected:
   bool m_active;
   int m_progress;
   QString  m_qmlMenu;
+  QString  m_qmlEditor;
   QString  m_units;
   bool m_busy;
 
@@ -121,6 +142,7 @@ signals:
   void progressChanged();
 
   void qmlMenuChanged();
+  void qmlEditorChanged();
   void unitsChanged();
   void busyChanged();
 
