@@ -41,42 +41,53 @@ NodesFrame::NodesFrame(QWidget *parent) :
 
   treeWidget=new FactTreeWidget(FactSystem::instance(),true,false,this);
   layout()->addWidget(treeWidget);
+
+  connect(treeWidget->tree->selectionModel(),&QItemSelectionModel::selectionChanged,this,&NodesFrame::updateActions);
+
+  connect(lbUavName,&ClickableLabel::clicked,Vehicles::instance(),&Vehicles::selectNext);
   connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&NodesFrame::vehicleSelected);
   vehicleSelected(Vehicles::instance()->current());
 
-  /*model=NULL;
-  currentMandalaChanged(mandala->current);
-  connect(mandala,SIGNAL(currentChanged(QMandalaItem*)),this,SLOT(currentMandalaChanged(QMandalaItem*)));
-  connect(mandala,SIGNAL(uavNameChanged(QString)),lbUavName,SLOT(setText(QString)));
-  connect(mandala,SIGNAL(sizeChanged(uint)),SLOT(mandalaSizeChanged(uint)),Qt::QueuedConnection);
-  lbUavName->setVisible(false);
-
-  FactTreeModel *tm=new FactTreeModel(FactSystem::instance());
-  tree->setModel(tm);
-
-  //tree->setModel(&proxy);
-
-  connect(eFilter,SIGNAL(textChanged(QString)),this,SLOT(filterChanged()));
-  connect(tree->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),SLOT(updateActions()));
-
-  connect(mandala->local->rec,SIGNAL(fileLoaded()),SLOT(updateActions()),Qt::QueuedConnection);
-  connect(Datalink::instance(),&Datalink::onlineChanged,this,&NodesFrame::updateActions,Qt::QueuedConnection);
-*/
-
   restoreGeometry(QSettings().value(objectName()).toByteArray());
-
-  updateActionsTimer.setSingleShot(true);
-  updateActionsTimer.setInterval(100);
-  connect(&updateActionsTimer,SIGNAL(timeout()),this,SLOT(updateActionsDo()));
-
-  updateActions();
 }
 //=============================================================================
 void NodesFrame::vehicleSelected(Vehicle *v)
 {
   vehicle=v;
-  treeWidget->setRoot(v->f_nodes->f_list);
+  Nodes *fNodes=v->f_nodes;
+  treeWidget->setRoot(fNodes->f_list);
   lbUavName->setText(v->title());
+  lbUavName->setToolTip(QString("squawk: %1").arg(v->squawk(),4,16,QChar('0')).toUpper());
+  connect(fNodes,&Nodes::actionsUpdated,this,&NodesFrame::updateActions,Qt::UniqueConnection);
+  updateActions();
+}
+//=============================================================================
+void NodesFrame::updateActions(void)
+{
+
+  bool bMod=vehicle->f_nodes->modified();
+  if(!bMod){
+    foreach(Fact *i,selectedItems()){
+      if(i->modified()){
+        bMod=true;
+        break;
+      }
+    }
+  }
+  bool busy=false;//model->requestManager.busy();
+  bool upgrading=false;//model->isUpgrading();
+  bool bEmpty=treeWidget->rootFact()->size()<=0;
+  bool bTelemetry=false;//mandala->local->rec->file.xmlParts.contains("nodes")
+  aUndo->setEnabled(bMod);
+  aLoad->setEnabled(!(busy || upgrading));
+  aSave->setEnabled(!(bEmpty||busy));
+  aLoadTelemetry->setEnabled((!(busy || upgrading)) && bTelemetry);
+  aStats->setEnabled(!(bEmpty));
+  aClearCache->setEnabled(!(busy));
+
+  aReload->setEnabled(vehicle->f_nodes->f_reload->enabled());
+  aUpload->setEnabled(vehicle->f_nodes->f_upload->enabled());
+  aStop->setEnabled(vehicle->f_nodes->f_stop->enabled());
 }
 //=============================================================================
 /*void NodesFrame::currentMandalaChanged(QMandalaItem *m)
@@ -118,22 +129,6 @@ void NodesFrame::vehicleSelected(Vehicle *v)
 void NodesFrame::mandalaSizeChanged(uint sz)
 {
   lbUavName->setVisible(sz>0);
-}*/
-//=============================================================================
-void NodesFrame::on_lbUavName_clicked()
-{
-  //mandala->changeCurrent();
-}
-//=============================================================================
-/*QList<NodesItem*> NodesFrame::selectedItems(NodesItem::_item_type item_type) const
-{
-  QList<NodesItem*> list;
-  foreach(QModelIndex index,tree->selectionModel()->selectedRows()){
-    NodesItem *item = index.data(NodesModel::NodesItemRole).value<NodesItem*>();
-    if(item && (item_type==NodesItem::it_root||item->item_type==item_type))
-      list.append(item);
-  }
-  return list;
 }*/
 //=============================================================================
 void NodesFrame::on_tree_customContextMenuRequested(const QPoint &pos)
@@ -363,45 +358,6 @@ void NodesFrame::nodeRebootAll(void)
   model->mvar->send_srv(apc_reboot,QByteArray());*/
 }
 //=============================================================================
-void NodesFrame::on_aUndo_triggered(void)
-{
-  /*updateActions();
-  if(!aUndo->isEnabled())return;
-  tree->setFocus();
-  foreach(NodesItem *i,selectedItems()){
-    if(i->isModified())i->restore();
-  }*/
-}
-//=============================================================================
-void NodesFrame::updateActionsDo(void)
-{
-  //qDebug()<<"updateActions";
-  /*bool bMod=false;
-  foreach(NodesItem *i,selectedItems()){
-    if(i->isModified()){
-      bMod=true;
-      break;
-    }
-  }
-  bool busy=model->requestManager.busy();
-  bool upgrading=model->isUpgrading();
-  bool bModAll=model->isModified();
-  aUndo->setEnabled(bMod);
-  aUpload->setEnabled(bModAll && (!(busy)));
-  aStop->setEnabled(busy||upgrading);
-  aLoad->setEnabled(!(busy || upgrading));
-  aSave->setEnabled(!(model->isEmpty()||busy));
-  aLoadTelemetry->setEnabled((!(busy || upgrading))&&mandala->local->rec->file.xmlParts.contains("nodes"));
-  aReload->setEnabled(!(upgrading||model->isEmpty()));
-  aStats->setEnabled(!(model->isEmpty()));
-  aClearCache->setEnabled(!(busy));*/
-}
-void NodesFrame::updateActions(void)
-{
-  if(!updateActionsTimer.isActive())
-    updateActionsTimer.start();
-}
-//=============================================================================
 void NodesFrame::nodeUpdateFirmware()
 {
   /*mandala->setCurrent(mandala->local);
@@ -426,29 +382,39 @@ void NodesFrame::nodeUpdateFirmware()
   updateActions();*/
 }
 //=============================================================================
-void NodesFrame::on_aUpload_triggered(void)
-{
-  /*tree->setFocus();
-  model->requestManager.enableTemporary();
-  model->upload();*/
-}
 //=============================================================================
 void NodesFrame::on_aRequest_triggered(void)
 {
   treeWidget->resetFilter();
-  vehicle->f_nodes->request();
-  /*proxy.setFilterRegExp(QRegExp());
-  model->requestManager.enableTemporary();
-  model->sync();*/
+  vehicle->f_nodes->f_request->trigger();
 }
 //=============================================================================
 void NodesFrame::on_aReload_triggered(void)
 {
   treeWidget->resetFilter();
-  vehicle->f_nodes->reload();
-  /*tree->setFocus();
-  model->clear();
-  aRequest->trigger();*/
+  vehicle->f_nodes->f_reload->trigger();
+}
+//=============================================================================
+void NodesFrame::on_aUpload_triggered(void)
+{
+  treeWidget->tree->setFocus();
+  vehicle->f_nodes->f_upload->trigger();
+}
+//=============================================================================
+void NodesFrame::on_aStop_triggered(void)
+{
+  treeWidget->tree->setFocus();
+  vehicle->f_nodes->f_stop->trigger();
+}
+//=============================================================================
+void NodesFrame::on_aUndo_triggered(void)
+{
+  updateActions();
+  if(!aUndo->isEnabled())return;
+  treeWidget->tree->setFocus();
+  foreach(Fact *f,selectedItems()){
+    if(f->modified())f->restore();
+  }
 }
 //=============================================================================
 void NodesFrame::on_aStats_triggered(void)
@@ -469,19 +435,31 @@ void NodesFrame::on_aLoadTelemetry_triggered(void)
 //=============================================================================
 void NodesFrame::on_aSave_triggered(void)
 {
-  /*if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
+  if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
   QFileDialog dlg(this,aSave->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
-  if(!model->title().isEmpty())
-    dlg.selectFile(AppDirs::configs().filePath(model->title()+".nodes"));
+  //if(!model->title().isEmpty())
+    //dlg.selectFile(AppDirs::configs().filePath(model->title()+".nodes"));
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";
   dlg.setNameFilters(filters);
   dlg.setDefaultSuffix("nodes");
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
-  model->saveToFile(dlg.selectedFiles().first());*/
+  //model->saveToFile(dlg.selectedFiles().first());
+  QString fname=dlg.selectedFiles().first();
+  QFile file(fname);
+  if (!file.open(QFile::WriteOnly | QFile::Text)) {
+    qWarning("%s",QString(tr("Cannot write file")+" %1:\n%2.").arg(fname).arg(file.errorString()).toUtf8().data());
+    return;
+  }
+  QDomDocument doc;
+  doc.appendChild(doc.createProcessingInstruction("xml","version=\"1.0\" encoding=\"UTF-8\""));
+  vehicle->f_nodes->saveToXml(doc);
+  QTextStream stream(&file);
+  doc.save(stream,2);
+  file.close();
 }
 //=============================================================================
 void NodesFrame::on_aLoad_triggered(void)

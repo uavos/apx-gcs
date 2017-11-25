@@ -346,152 +346,88 @@
 <context>
     <name>ConfigDlg</name>
     <message>
-        <location filename="../src/main/Config.ui" line="+23"/>
         <source>System Configuration</source>
-        <translation>Настáўленні</translation>
+        <translation type="vanished">Настáўленні</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Communication</source>
-        <translation>Сувязь</translation>
+        <translation type="vanished">Сувязь</translation>
     </message>
     <message>
-        <location line="+137"/>
-        <location line="+80"/>
         <source>Baudrate</source>
-        <translation>Хуткасць, бод</translation>
+        <translation type="vanished">Хуткасць, бод</translation>
     </message>
     <message>
-        <location line="-63"/>
-        <location line="+80"/>
         <source>460800</source>
-        <translation>460800</translation>
+        <translation type="vanished">460800</translation>
     </message>
     <message>
-        <location line="-75"/>
-        <location line="+80"/>
         <source>921600</source>
-        <translation>921600</translation>
+        <translation type="vanished">921600</translation>
     </message>
     <message>
-        <location line="+48"/>
         <source>OpenGL acceleration</source>
-        <translation>OpenGL-паскарэнне</translation>
+        <translation type="vanished">OpenGL-паскарэнне</translation>
     </message>
     <message>
-        <location line="-34"/>
         <source>HTTP Proxy</source>
-        <translation>HTTP-проксі</translation>
+        <translation type="vanished">HTTP-проксі</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>user:pass@proxy:port</source>
-        <translation>карыстальнік:пароль@проксі:порт</translation>
+        <translation type="vanished">карыстальнік:пароль@проксі:порт</translation>
     </message>
     <message>
-        <location line="+41"/>
         <source>System</source>
-        <translation>Сістэма</translation>
+        <translation type="vanished">Сістэма</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Language</source>
-        <translation>Мова</translation>
+        <translation type="vanished">Мова</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Voice</source>
-        <translation>Голас</translation>
+        <translation type="vanished">Голас</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <source>Allow external controls</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
         <source>Password</source>
-        <translation type="unfinished">Пароль</translation>
+        <translation type="obsolete">Пароль</translation>
     </message>
     <message>
-        <location line="+22"/>
-        <source>Server password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Master GCU host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Serial Port1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+90"/>
-        <source>Server name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Serial Port2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Application</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Allow multiple instances</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+85"/>
         <source>Warning: restart GCU for changes to take effect.</source>
-        <translation>Папярэджанне: перазапусціце НПК, каб змены пачалі дзейнічаць.</translation>
+        <translation type="vanished">Папярэджанне: перазапусціце НПК, каб змены пачалі дзейнічаць.</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Request</source>
-        <translation>Запыт</translation>
+        <translation type="vanished">Запыт</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Request Current configurations..</source>
-        <translation>Запыт дзейнай канфігурацыі...</translation>
+        <translation type="vanished">Запыт дзейнай канфігурацыі...</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Upload</source>
-        <translation>Даслаць</translation>
+        <translation type="vanished">Даслаць</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Upload configurations</source>
-        <translation>Даслаць канфігурацыю</translation>
+        <translation type="vanished">Даслаць канфігурацыю</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Save to file..</source>
-        <translation>Захаваць у файл...</translation>
+        <translation type="vanished">Захаваць у файл...</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Load</source>
-        <translation>Загрузіць</translation>
+        <translation type="vanished">Загрузіць</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Load from file..</source>
-        <translation>Загрузіць з файла.</translation>
+        <translation type="vanished">Загрузіць з файла.</translation>
     </message>
 </context>
 <context>
@@ -1038,7 +974,7 @@
 <context>
     <name>FactTreeModel</name>
     <message>
-        <location filename="../src/lib/FactTreeModel.cpp" line="+109"/>
+        <location filename="../src/lib/TreeModel/FactTreeModel.cpp" line="+110"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1056,7 +992,7 @@
 <context>
     <name>FactTreeWidget</name>
     <message>
-        <location filename="../src/lib/FactTreeView.cpp" line="+135"/>
+        <location filename="../src/lib/TreeModel/FactTreeView.cpp" line="+136"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2201,7 +2137,12 @@
 <context>
     <name>NodeField</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeField.cpp" line="+353"/>
+        <location filename="../src/lib/Nodes/NodeField.cpp" line="+302"/>
+        <source>Field modified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+108"/>
         <location line="+11"/>
         <location line="+9"/>
         <location line="+8"/>
@@ -2261,7 +2202,7 @@
 <context>
     <name>NodeItem</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+39"/>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+43"/>
         <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2285,6 +2226,36 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Clear and download all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Upload</source>
+        <translation type="unfinished">Даслаць</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Upload modified values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Stop data requests</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2395,6 +2366,21 @@
     <message>
         <location line="+3"/>
         <source>Request node statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+445"/>
+        <source>Node conf files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2879,7 +2865,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+312"/>
+        <location filename="../src/main/main.cpp" line="+313"/>
         <source>Video</source>
         <translation type="unfinished">Відэа</translation>
     </message>
@@ -2995,12 +2981,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-157"/>
+        <location filename="../src/main/main.cpp" line="-162"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+48"/>
         <source>Ground Control Unit</source>
         <translation>Наземны Пункт Кіравання</translation>
     </message>

@@ -357,152 +357,116 @@
 <context>
     <name>ConfigDlg</name>
     <message>
-        <location filename="../src/main/Config.ui" line="+23"/>
         <source>System Configuration</source>
-        <translation type="unfinished">Системные настройки</translation>
+        <translation type="obsolete">Системные настройки</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Communication</source>
-        <translation type="unfinished">Связь</translation>
+        <translation type="obsolete">Связь</translation>
     </message>
     <message>
-        <location line="+137"/>
-        <location line="+80"/>
         <source>Baudrate</source>
-        <translation type="unfinished">Частота</translation>
+        <translation type="obsolete">Частота</translation>
     </message>
     <message>
-        <location line="-63"/>
-        <location line="+80"/>
         <source>460800</source>
-        <translation type="unfinished">460800</translation>
+        <translation type="obsolete">460800</translation>
     </message>
     <message>
-        <location line="-75"/>
-        <location line="+80"/>
         <source>921600</source>
-        <translation type="unfinished">921600</translation>
+        <translation type="obsolete">921600</translation>
     </message>
     <message>
-        <location line="+48"/>
         <source>OpenGL acceleration</source>
-        <translation type="unfinished">OpenGL ускорение</translation>
+        <translation type="obsolete">OpenGL ускорение</translation>
     </message>
     <message>
-        <location line="-34"/>
         <source>HTTP Proxy</source>
-        <translation type="unfinished">HTTP Прокси</translation>
+        <translation type="obsolete">HTTP Прокси</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>user:pass@proxy:port</source>
-        <translation type="unfinished">пользователь:пароль@прокси:порт</translation>
+        <translation type="obsolete">пользователь:пароль@прокси:порт</translation>
     </message>
     <message>
-        <location line="+41"/>
         <source>System</source>
-        <translation type="unfinished">Система</translation>
+        <translation type="obsolete">Система</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Language</source>
-        <translation type="unfinished">Язык</translation>
+        <translation type="obsolete">Язык</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Voice</source>
-        <translation type="unfinished">Голос</translation>
+        <translation type="obsolete">Голос</translation>
     </message>
     <message>
-        <location line="-319"/>
         <source>Allow external controls</source>
-        <translation type="unfinished">Разрешить внешнее управление</translation>
+        <translation type="obsolete">Разрешить внешнее управление</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Password</source>
-        <translation type="unfinished">Пароль</translation>
+        <translation type="obsolete">Пароль</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>Server password</source>
-        <translation type="unfinished">Пароль сервера</translation>
+        <translation type="obsolete">Пароль сервера</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Master GCU host</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+17"/>
         <source>Serial Port1</source>
-        <translation type="unfinished">Последовательный порт1</translation>
+        <translation type="obsolete">Последовательный порт1</translation>
     </message>
     <message>
-        <location line="+90"/>
         <source>Server name</source>
-        <translation type="unfinished">Имя сервера</translation>
+        <translation type="obsolete">Имя сервера</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Serial Port2</source>
-        <translation type="unfinished">Последовательный порт2</translation>
+        <translation type="obsolete">Последовательный порт2</translation>
     </message>
     <message>
-        <location line="+89"/>
         <source>Application</source>
-        <translation type="unfinished">Приложение</translation>
+        <translation type="obsolete">Приложение</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Allow multiple instances</source>
-        <translation type="unfinished">Разрешить запуск нескольких экземпляров программы</translation>
+        <translation type="obsolete">Разрешить запуск нескольких экземпляров программы</translation>
     </message>
     <message>
-        <location line="+85"/>
         <source>Warning: restart GCU for changes to take effect.</source>
-        <translation type="unfinished">Предупреждение: перезапустите GCU для того чтобы изменения вступили в силу.</translation>
+        <translation type="obsolete">Предупреждение: перезапустите GCU для того чтобы изменения вступили в силу.</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Request</source>
-        <translation type="unfinished">Запрос</translation>
+        <translation type="obsolete">Запрос</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Request Current configurations..</source>
-        <translation type="unfinished">Запрос текущей конфигурации ..</translation>
+        <translation type="obsolete">Запрос текущей конфигурации ..</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Upload</source>
-        <translation type="unfinished">Загрузить</translation>
+        <translation type="obsolete">Загрузить</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Upload configurations</source>
-        <translation type="unfinished">Загрузить конфигурацию</translation>
+        <translation type="obsolete">Загрузить конфигурацию</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Save</source>
-        <translation type="unfinished">Сохранить</translation>
+        <translation type="obsolete">Сохранить</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Save to file..</source>
-        <translation type="unfinished">Сохранить в файл ..</translation>
+        <translation type="obsolete">Сохранить в файл ..</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Load</source>
-        <translation type="unfinished">Загрузить</translation>
+        <translation type="obsolete">Загрузить</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Load from file..</source>
-        <translation type="unfinished">Загрузить из файла ..</translation>
+        <translation type="obsolete">Загрузить из файла ..</translation>
     </message>
 </context>
 <context>
@@ -1060,7 +1024,7 @@
 <context>
     <name>FactTreeModel</name>
     <message>
-        <location filename="../src/lib/FactTreeModel.cpp" line="+109"/>
+        <location filename="../src/lib/TreeModel/FactTreeModel.cpp" line="+110"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1078,7 +1042,7 @@
 <context>
     <name>FactTreeWidget</name>
     <message>
-        <location filename="../src/lib/FactTreeView.cpp" line="+135"/>
+        <location filename="../src/lib/TreeModel/FactTreeView.cpp" line="+136"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2239,7 +2203,12 @@
 <context>
     <name>NodeField</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeField.cpp" line="+353"/>
+        <location filename="../src/lib/Nodes/NodeField.cpp" line="+302"/>
+        <source>Field modified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+108"/>
         <location line="+11"/>
         <location line="+9"/>
         <location line="+8"/>
@@ -2299,7 +2268,7 @@
 <context>
     <name>NodeItem</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+39"/>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+43"/>
         <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2323,6 +2292,36 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Clear and download all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Upload</source>
+        <translation type="unfinished">Загрузить</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Upload modified values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Stop data requests</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2433,6 +2432,21 @@
     <message>
         <location line="+3"/>
         <source>Request node statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+445"/>
+        <source>Node conf files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2895,7 +2909,7 @@
     <message>
         <location line="+24"/>
         <source>00:00:00/00:00:00</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">00:00:00/00:00:00</translation>
     </message>
     <message>
         <location line="+16"/>
@@ -2917,7 +2931,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+312"/>
+        <location filename="../src/main/main.cpp" line="+313"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
@@ -3033,12 +3047,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-157"/>
+        <location filename="../src/main/main.cpp" line="-162"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+48"/>
         <source>Ground Control Unit</source>
         <translation type="unfinished">Наземный Пункт Управления</translation>
     </message>
@@ -3379,7 +3393,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <location line="+52"/>
         <location line="+14"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0</translation>
     </message>
     <message>
         <location line="-7"/>

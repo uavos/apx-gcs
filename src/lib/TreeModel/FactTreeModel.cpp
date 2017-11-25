@@ -46,10 +46,11 @@ bool FactTreeModel::setData(const QModelIndex & index, const QVariant & value, i
 {
   if ((!index.isValid()) || (role!=Qt::EditRole) || index.column()!=Fact::FACT_MODEL_COLUMN_VALUE)
     return false;
-  Fact *i = fact(index);
-  if(!i)return false;
+  Fact *f = fact(index);
+  if(!f)return false;
   if (data(index,role)==value)return true;
-  bool rv=i->setValue(value);
+  bool rv=f->setValue(value);
+  updateTimerTimeout();
   //if(rv)emit dataChanged(index,index);//layoutChanged();
   return rv;
 }
@@ -116,17 +117,23 @@ QVariant FactTreeModel::headerData(int section, Qt::Orientation orientation,int 
 //=============================================================================
 Qt::ItemFlags FactTreeModel::flags(const QModelIndex & index) const
 {
-  Qt::ItemFlags f=Qt::ItemIsEnabled|Qt::ItemIsSelectable;
-  Fact *i=fact(index);
-  if(i && i->treeItemType()==Fact::FactItem){
-    //f|=Qt::ItemNeverHasChildren;
-    if(index.column()==Fact::FACT_MODEL_COLUMN_VALUE &&
-       i->enabled() &&
-       i->dataType()!=Fact::NoData &&
-       i->dataType()!=Fact::ConstData
-       ) f|=Qt::ItemIsEditable;
+  Qt::ItemFlags fx=Qt::NoItemFlags;
+  Fact *f=fact(index);
+  if(!f) return fx;
+  if(f->enabled())fx|=Qt::ItemIsEnabled|Qt::ItemIsSelectable;
+  else return fx;
+  if(index.column()!=Fact::FACT_MODEL_COLUMN_VALUE) return fx;
+  if(f->treeItemType()==Fact::GroupItem &&
+     f->size()>1 &&
+     f->child(0)->treeItemType()==Fact::GroupItem &&
+     f->status().startsWith('[') && f->status().endsWith(']'))
+    return fx|Qt::ItemIsEditable; //array editor
+
+  if(f->treeItemType()!=Fact::FactItem)return fx;
+  if(f->dataType()!=Fact::NoData && f->dataType()!=Fact::ConstData){
+    fx|=Qt::ItemIsEditable;
   }
-  return f;
+  return fx;
 }
 //=============================================================================
 Fact * FactTreeModel::fact(const QModelIndex &index) const
@@ -154,8 +161,9 @@ void FactTreeModel::checkConnections(Fact *fact) const
     connect(fact,&Fact::descrChanged, this, &FactTreeModel::descrChanged);
     connect(fact,&Fact::enabledChanged, this, &FactTreeModel::enabledChanged);
     connect(fact,&Fact::activeChanged, this, &FactTreeModel::activeChanged);
-    connect(fact,&Fact::modifiedChanged, this, &FactTreeModel::activeChanged);
+    connect(fact,&Fact::modifiedChanged, this, &FactTreeModel::modifiedChanged);
     connect(fact,&Fact::progressChanged, this, &FactTreeModel::progressChanged);
+    connect(fact,&Fact::visibleChanged, this, &FactTreeModel::visibleChanged);
   }
 }
 //=============================================================================
@@ -236,6 +244,12 @@ void FactTreeModel::activeChanged()
   QModelIndex index=factIndex(static_cast<Fact*>(sender()),Fact::FACT_MODEL_COLUMN_NAME);
   dataChanged(index,index,QVector<int>()<<Qt::ForegroundRole);
 }
+void FactTreeModel::modifiedChanged()
+{
+  QModelIndex index1=factIndex(static_cast<Fact*>(sender()),Fact::FACT_MODEL_COLUMN_NAME);
+  QModelIndex index2=factIndex(static_cast<Fact*>(sender()),Fact::FACT_MODEL_COLUMN_VALUE);
+  dataChanged(index1,index2,QVector<int>()<<Qt::ForegroundRole);
+}
 void FactTreeModel::progressChanged()
 {
   Fact *fact=static_cast<Fact*>(sender());
@@ -246,9 +260,15 @@ void FactTreeModel::progressChanged()
   //if(!updateList.contains(fact))updateList.append(fact);
   //if(!updateHash.values(fact).contains(FACT_MODEL_COLUMN_DESCR)) updateHash.insertMulti(fact,FACT_MODEL_COLUMN_DESCR);
 }
+void FactTreeModel::visibleChanged()
+{
+  emit layoutAboutToBeChanged();
+  emit layoutChanged();
+}
 //=============================================================================
 void FactTreeModel::updateTimerTimeout()
 {
+  updateTimer.stop();
   foreach (Fact *f,updateList){
     if(!(f && f->size()))continue;
     if(!expandedFacts.contains(f))continue;

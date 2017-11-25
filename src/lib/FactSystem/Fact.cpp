@@ -81,6 +81,7 @@ QVariant Fact::data(int col, int role) const
         if(!enabled())return QColor(Qt::darkGray);
         if(dataType()==Fact::ActionData) return QColor(Qt::blue).lighter(170);
         if(size()) return QColor(Qt::darkGray); //expandable
+        if(modified())return QColor(Qt::yellow);
         //if(ftype==ft_string) return QVariant();
         //if(ftype==ft_varmsk) return QColor(Qt::cyan);
         return QColor(Qt::cyan).lighter(180);
@@ -88,16 +89,30 @@ QVariant Fact::data(int col, int role) const
       return QColor(Qt::darkCyan);
     case Qt::BackgroundRole:
       return QVariant();
-    case Qt::FontRole:
+    case Qt::FontRole: {
+      QFont font(qApp->font());
       if(col==Fact::FACT_MODEL_COLUMN_DESCR) return QVariant();
-      if(treeItemType()!=Fact::FactItem) return QFont("",0,QFont::Bold,false);
+      if(treeItemType()!=Fact::FactItem) font.setBold(true);
       //if(ftype>=ft_regPID) return QFont("Monospace",-1,column==tc_field?QFont::Bold:QFont::Normal);
       //if(col==FACT_MODEL_COLUMN_NAME) return QFont("Monospace",-1,QFont::Normal,isModified());
       //if(ftype==ft_string) return QFont("",-1,QFont::Normal,true);
-      return QVariant();
+      return font;
+    }
     case Qt::ToolTipRole:
-      if(col==Fact::FACT_MODEL_COLUMN_NAME) return name();
-      else if(col==Fact::FACT_MODEL_COLUMN_VALUE){
+      if(col==Fact::FACT_MODEL_COLUMN_NAME){
+        QStringList st;
+        QString sDataType;
+        if(m_dataType!=NoData)sDataType=QMetaEnum::fromType<DataType>().valueToKey(m_dataType);
+        if(!units().isEmpty())sDataType+=(sDataType.isEmpty()?"":", ")+units();
+        if(sDataType.isEmpty())st<<QString("%1").arg(name());
+        else st<<QString("%1 [%2]").arg(name()).arg(sDataType);
+        if(!descr().isEmpty()) st<<descr();
+        if(!m_enumStrings.isEmpty()){
+          if(m_enumStrings.size()>25)st<<QString("{%1}").arg(m_enumStrings.size());
+          else st<<QString("{%1}").arg(m_enumStrings.join(','));
+        }
+        return st.join('\n');
+      }else if(col==Fact::FACT_MODEL_COLUMN_VALUE){
         if(size()){
           QString s=name();
           foreach(FactTree *i,childItems()){
@@ -132,6 +147,31 @@ QVariant Fact::data(int col, int role) const
   return QVariant();
 }
 //=============================================================================
+QByteArray Fact::hash() const
+{
+  QCryptographicHash h(QCryptographicHash::Md5);
+  hashData(&h);
+  return h.result();
+}
+void Fact::hashData(QCryptographicHash *h) const
+{
+  foreach(FactTree *item,childItems()){
+    Fact *f=static_cast<Fact*>(item);
+    f->hashData(h);
+  }
+  h->addData(name().toUtf8());
+  h->addData(title().toUtf8());
+  h->addData(descr().toUtf8());
+  h->addData(section().toUtf8());
+  h->addData(QString::number(num()).toUtf8());
+  h->addData(QString::number(precision()).toUtf8());
+  h->addData(min().toString().toUtf8());
+  h->addData(max().toString().toUtf8());
+  h->addData(QString::number(dataType()).toUtf8());
+  h->addData(QString::number(treeItemType()).toUtf8());
+  h->addData(QString::number(size()).toUtf8());
+  h->addData(enumStrings().join("").toUtf8());
+}
 //=============================================================================
 void Fact::bind(FactData *item)
 {
@@ -198,6 +238,22 @@ Fact * Fact::childByTitle(const QString &factTitle) const
   return item;
 }*/
 //=============================================================================
+QString Fact::titlePath(const QChar pathDelimiter) const
+{
+  QString s;
+  for(const FactTree *i=this;i;i=i->parentItem()){
+    const Fact *f=static_cast<const Fact*>(i);
+    if(i->treeItemType()==RootItem){
+      s.prepend(pathDelimiter);
+      break;
+    }
+    if(i->treeItemType()==SectionItem)continue;
+    if(s.isEmpty())s=f->title();
+    else s.prepend(f->title()+pathDelimiter);
+  }
+  return s.isEmpty()?title():s;
+}
+//=============================================================================
 bool Fact::lessThan(Fact *rightFact) const
 {
   //no sorting by default
@@ -206,6 +262,7 @@ bool Fact::lessThan(Fact *rightFact) const
 //=============================================================================
 void Fact::trigger(void)
 {
+  if(!enabled())return;
   //qDebug()<<"trigger"<<name();
   emit triggered();
 }

@@ -40,11 +40,24 @@ Nodes::Nodes(Vehicle *parent)
 
   f_reload=new Fact(this,"reload",tr("Reload"),tr("Clear and download all"),FactItem,ActionData);
   connect(f_reload,&Fact::triggered,this,&Nodes::reload);
+  connect(f_reload,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
+
+  f_upload=new Fact(this,"upload",tr("Upload"),tr("Upload modified values"),FactItem,ActionData);
+  connect(f_upload,&Fact::triggered,this,&Nodes::upload);
+  connect(f_upload,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
+
+  f_stop=new Fact(this,"stop",tr("Stop"),tr("Stop data requests"),FactItem,ActionData);
+  connect(f_stop,&Fact::triggered,this,&Nodes::stop);
+  connect(f_stop,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
 
   f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,NoData);
   connect(f_list,&Nodes::sizeChanged,this,[=](){
     setStatus(f_list->size()>0?QString::number(f_list->size()):"");
   });
+
+  connect(this,&Fact::modifiedChanged,this,&Nodes::updateActions);
+  connect(this->f_list,&Fact::sizeChanged,this,&Nodes::updateActions);
+  updateActions();
 
   if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
     request();
@@ -97,6 +110,17 @@ void Nodes::updateProgress()
   }else setProgress(0);
 }
 //=============================================================================
+void Nodes::updateActions()
+{
+  bool busy=false;//model->requestManager.busy();
+  bool upgrading=false;//model->isUpgrading();
+  bool bModAll=modified();
+  bool bEmpty=f_list->size()<=0;
+  f_upload->setEnabled(bModAll && (!(busy)));
+  f_stop->setEnabled(busy||upgrading);
+  f_reload->setEnabled(!(upgrading||bEmpty));
+}
+//=============================================================================
 //=============================================================================
 void Nodes::request()
 {
@@ -113,6 +137,17 @@ void Nodes::reload()
     FactSystem::instance()->jsSync(this);
   }
   request();
+}
+//=============================================================================
+void Nodes::upload()
+{
+  foreach(NodeItem *node,snMap.values()){
+    node->upload();
+  }
+}
+//=============================================================================
+void Nodes::stop()
+{
 }
 //=============================================================================
 void Nodes::nstat()
@@ -171,5 +206,20 @@ void Nodes::dbRegister()
   }
   qWarning() << "Nodes SQL error:" << query.lastError().text();
   qWarning() << query.lastQuery();
+}
+//=============================================================================
+void Nodes::saveToXml(QDomNode dom) const
+{
+  QDomDocument doc=dom.ownerDocument();
+  dom=dom.appendChild(doc.createElement("nodes"));
+  dom.toElement().setAttribute("href","http://www.uavos.com/");
+  dom.toElement().setAttribute("vehicle",vehicle->title());
+  dom.toElement().setAttribute("version",FactSystem::version());
+  dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(QString(hash().toHex().toUpper())));
+  dom.appendChild(doc.createElement("timestamp")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
+  //saveIdentToXml(dom);
+  foreach(NodeItem *node,snMap.values()){
+    node->saveToXml(dom);
+  }
 }
 //=============================================================================

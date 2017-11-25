@@ -40,24 +40,32 @@ private:
   QToolBar *toolBar;
   QToolButton *btnUpload;
 
-  //QList<NodesItem*> selectedItems(NodesItem::_item_type item_type=NodesItem::it_root) const;
+  template <class T=Fact>
+  inline QList<T*> selectedItems() const
+  {
+    QList<T*> list;
+    foreach(QModelIndex index,treeWidget->tree->selectionModel()->selectedRows()){
+      Fact *i = index.data(Fact::ModelDataRole).value<Fact*>();
+      if(!i)continue;
+      T *f=qobject_cast<T*>(i);
+      if(f) list.append(f);
+    }
+    return list;
+  }
 
-  QTimer updateActionsTimer;
   Vehicle *vehicle;
 
 private slots:
   void vehicleSelected(Vehicle *v);
 
-
-
-  void on_lbUavName_clicked();
-
   void on_aRequest_triggered(void);
+  void on_aReload_triggered(void);
   void on_aUpload_triggered(void);
+  void on_aStop_triggered(void);
+
   void on_aSave_triggered(void);
   void on_aLoad_triggered(void);
   void on_aUndo_triggered(void);
-  void on_aReload_triggered(void);
   void on_aStats_triggered(void);
   void on_aLoadTelemetry_triggered(void);
   void on_tree_customContextMenuRequested(const QPoint &pos);
@@ -71,8 +79,6 @@ private slots:
   void nodeUpdateFirmware(void);
 
   void updateActions(void);
-  void updateActionsDo(void);
-
 };
 //=============================================================================
 #endif // CTRFRAME_H

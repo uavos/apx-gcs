@@ -24,6 +24,7 @@
 #define Nodes_H
 //=============================================================================
 #include <QtCore>
+#include <QDomDocument>
 #include "FactSystem.h"
 #include "NodeItem.h"
 class Vehicle;
@@ -37,12 +38,19 @@ public:
 
   Fact *f_request;
   Fact *f_reload;
+  Fact *f_upload;
+  Fact *f_stop;
 
   Fact *f_list;
 
   Vehicle *vehicle;
 
   NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
+
+
+  //data storage
+  void saveToXml(QDomNode dom) const;
+
 
 private:
   //sn lookup
@@ -52,9 +60,13 @@ private:
   NodeItem * nodeCheck(const QByteArray &sn);
 
   void dbRegister();
-public slots:
+
+private slots:
   void request();
   void reload();
+  void upload();
+  void stop();
+  void updateActions();
 
 public slots:
   bool unpackService(const QByteArray &packet); //data comm
@@ -62,6 +74,10 @@ public slots:
   void updateProgress();
 
   void nstat();
+
+signals:
+  void actionsUpdated();
+
 
   //---------------------------------------
   // PROPERTIES

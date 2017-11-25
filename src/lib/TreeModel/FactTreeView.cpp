@@ -25,7 +25,7 @@ FactTreeView::FactTreeView(QWidget *parent)
 
   setAlternatingRowColors(true);
   setUniformRowHeights(true);
-  setAnimated(false);
+  setAnimated(true);
   setIndentation(10);
 }
 //=============================================================================
@@ -34,7 +34,7 @@ FactProxyModel::FactProxyModel(QObject *parent)
   : QSortFilterProxyModel(parent),
     m_rootFact(NULL)
 {
-  sortNames<<"shiva"<<"nav"<<"ifc"<<"swc"<<"cas"<<"gps"<<"mhx"<<"servo"<<"bldc";
+  setDynamicSortFilter(false);
 }
 //=============================================================================
 void FactProxyModel::setRootFact(Fact *fact)
@@ -51,6 +51,7 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow,const QModelIndex &sourcePar
 {
   QModelIndex index = sourceModel()->index(sourceRow,Fact::FACT_MODEL_COLUMN_NAME,sourceParent);
   Fact *fact=index.data(Fact::ModelDataRole).value<Fact*>();
+  if(!fact->visible())return false;
   if(!fact)return false;
   if(fact==m_rootFact)return true;
   //accept all parents of rootFact

@@ -107,7 +107,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     //horizontalAlignment: Text.AlignLeft
                     font.pixelSize: itemSize*0.6
-                    color: enabled?(fact.active?colorValueText:"#fff"):"#aaa"
+                    color: enabled?(fact.active?colorValueText:(fact.modified?colorValueTextEdit:"#fff")):"#aaa"
                     font.family: font_condenced
                     text: fact.title
                 }

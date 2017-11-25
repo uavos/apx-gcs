@@ -36,6 +36,10 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
 
+  sortNames<<"shiva"<<"nav"<<"ifc"<<"swc"<<"cas"<<"gps"<<"mhx"<<"servo"<<"bldc";
+
+  commands.valid=false;
+
   setSection(tr("Nodes list"));
 
   //setQmlMenu("nodes/NodeMenuItem.qml");
@@ -51,9 +55,6 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   request(apc_info,QByteArray(),timeout_ms,true);
 
   dbRegister(apc_search);
-}
-NodeItem::~NodeItem()
-{
 }
 //=============================================================================
 void NodeItem::dbRegister(int state)
@@ -133,6 +134,16 @@ void NodeItem::nstat()
   request(apc_nstat,QByteArray(),0,false);
 }
 //=============================================================================
+void NodeItem::upload()
+{
+  if(!modified())return;
+  foreach(NodeField *f,allFields){
+    if(!f->modified())continue;
+    request(apc_conf_write,QByteArray().append((unsigned char)f->id).append(f->packValue()),1000);
+  }
+  request(apc_conf_write,QByteArray().append((unsigned char)0xFF),1000);
+}
+//=============================================================================
 bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 {
   switch(ncmd){
@@ -192,20 +203,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 
     }return true;
     case apc_msg: { //message from autopilot
-      QString ns;
-      if(Vehicles::instance()->f_list->size()>0) ns=QString("%1/%2").arg(nodes->vehicle->f_callsign->text()).arg(title());
-      else ns=title();
-      QStringList st=QString(ba).trimmed().split('\n',QString::SkipEmptyParts);
-      foreach(QString s,st){
-        s=s.trimmed();
-        if(s.isEmpty())continue;
-        qDebug("<[%s]%s\n",ns.toUtf8().data(),qApp->translate("msg",s.toUtf8().data()).toUtf8().data());
-        FactSystem::instance()->sound(s);
-        if(s.contains("error",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
-        else if(s.contains("fail",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
-        else if(s.contains("timeout",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->warning(s);
-        else if(s.contains("warning",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->warning(s);
-      }
+      message(QString(ba));
     }return true;
     case apc_conf_inf: {
       if(ba.size()!=sizeof(_conf_inf))break;
@@ -222,11 +220,44 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         //qDebug()<<"fields created"<<conf_inf.cnt;
       }
       dbRegister(apc_conf_inf);
-      //sync all conf if needed
-      if(!(valid() && dataValid())){
-        foreach (NodeField *f, allFields) {
-          if(!f->valid()) request(apc_conf_dsc,QByteArray().append((unsigned char)f->id),timeout_ms,false);
-          //else if(!f->dataValid()) request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+      if(!commands.valid){
+        request(apc_conf_cmds,QByteArray(),timeout_ms,false);
+      }else requestConfDsc();
+    }return true;
+    case apc_conf_cmds: {
+      if((!commands.valid)||ba.size()>0){
+        commands.cmd.clear();
+        commands.name.clear();
+        commands.descr.clear();
+        const char *str=(const char*)ba.data();
+        int cnt=ba.size();
+        int sz;
+        while(cnt>0){
+          uint cmd=(unsigned char)*str++;
+          cnt--;
+          sz=strlen(str)+1;
+          if(sz>cnt)break;
+          QString name(QByteArray(str,sz-1));
+          str+=sz;
+          cnt-=sz;
+          sz=strlen(str)+1;
+          if(sz>cnt)break;
+          QString descr(QByteArray(str,sz-1));
+          str+=sz;
+          cnt-=sz;
+          commands.cmd.append(cmd);
+          commands.name.append(name);
+          commands.descr.append(descr);
+        }
+        if(cnt!=0){
+          qWarning("Error node_conf commands received (cnt:%u)",cnt);
+          commands.cmd.clear();
+          commands.name.clear();
+          commands.descr.clear();
+        }else{
+          commands.valid=true;
+          requestConfDsc();
+          //qDebug()<<commands.name;
         }
       }
     }return true;
@@ -255,16 +286,46 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
   return true;
 }
 //=============================================================================
+void NodeItem::requestConfDsc()
+{
+  //sync all conf if needed
+  if(!(valid() && dataValid())){
+    foreach (NodeField *f, allFields) {
+      if(!f->valid()) request(apc_conf_dsc,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+      //else if(!f->dataValid()) request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+    }
+  }
+}
+//=============================================================================
+void NodeItem::message(QString msg)
+{
+  QString ns;
+  if(Vehicles::instance()->f_list->size()>0) ns=QString("%1/%2").arg(nodes->vehicle->f_callsign->text()).arg(title());
+  else ns=title();
+  QStringList st=msg.trimmed().split('\n',QString::SkipEmptyParts);
+  foreach(QString s,st){
+    s=s.trimmed();
+    if(s.isEmpty())continue;
+    qDebug("<[%s]%s\n",ns.toUtf8().data(),qApp->translate("msg",s.toUtf8().data()).toUtf8().data());
+    FactSystem::instance()->sound(s);
+    if(s.contains("error",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
+    else if(s.contains("fail",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
+    else if(s.contains("timeout",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->warning(s);
+    else if(s.contains("warning",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->warning(s);
+  }
+}
+//=============================================================================
 void NodeItem::groupFields(void)
 {
   foreach (FactTree *i, allFields) {
     NodeField *f=static_cast<NodeField*>(i);
     //grouping
+    Fact *groupItem=NULL;
     Fact *groupParent=this;
     while(f->descr().contains(':')){
       QString group=f->descr().left(f->descr().indexOf(':'));
       f->setDescr(f->descr().remove(0,f->descr().indexOf(':')+1).trimmed());
-      Fact *groupItem=NULL;
+      groupItem=NULL;
       QString gname=group.toLower();
       foreach(FactTree *i,groupParent->childItems()){
         if(!(i->treeItemType()==GroupItem && i->name()==gname))continue;
@@ -285,6 +346,30 @@ void NodeItem::groupFields(void)
     /*for(FactTree *i=f;i!=parentItem();i=i->parentItem()){
       connect(static_cast<Fact*>(i),&Fact::modifiedChanged,static_cast<Fact*>(i->parentItem()),&Fact::modifiedChanged);
     }*/
+    //hide grouped arrays (gpio, controls etc)
+    if(groupItem && groupItem->size()>=2){
+      bool bArray=false;
+      uint cnt=0;
+      foreach(FactTree *i,groupItem->childItems()){
+        NodeField *f=static_cast<NodeField*>(i);
+        bArray=false;
+        if(cnt<2 && f->array()<=1)break;
+        if((int)f->array()!=f->size())break;
+        //if(!array_sz)array_sz=field_item->array;
+        //if(field_item->array!=array_sz)break;
+        cnt++;
+        bArray=true;
+      }
+      if(bArray){
+        //qDebug()<<cnt<<groupItem->path();
+        foreach(FactTree *i,groupItem->childItems()){
+          NodeField *f=static_cast<NodeField*>(i);
+          //f->setVisible(false);
+        }
+        connect(static_cast<Fact*>(groupItem->child(0)),&Fact::statusChanged,[=](){groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());});
+        groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());
+      }
+    }
   }//foreach field
   FactSystem::instance()->jsSync(this);
 }
@@ -348,6 +433,8 @@ QVariant NodeItem::data(int col, int role) const
         return QVariant();
       }
       if(col==FACT_MODEL_COLUMN_VALUE)return QColor(Qt::yellow);//QVariant();
+      //descr col
+      return QColor(Qt::darkGray);
       //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
       //nstats
       //return statsWarn?QColor(Qt::yellow):QColor(Qt::green);
@@ -361,5 +448,95 @@ QVariant NodeItem::data(int col, int role) const
     return QColor(Qt::darkCyan).darker(200);//QColor(0x20,0x40,0x40);//isModified()?QColor(0x40,0x20,0x20):
   }
   return Fact::data(col,role);
+}
+//=============================================================================
+bool NodeItem::lessThan(Fact *rightFact) const
+{
+  //try to sort by sortNames
+  QString sleft=title();
+  if(sleft.contains('.'))sleft=sleft.remove(0,sleft.indexOf('.')+1).trimmed();
+  QString sright=rightFact->title();
+  if(sright.contains('.'))sright=sright.remove(0,sright.indexOf('.')+1).trimmed();
+  if(sortNames.contains(sleft)){
+    if(sortNames.contains(sright)){
+      int ileft=sortNames.indexOf(sleft);
+      int iright=sortNames.indexOf(sright);
+      if(ileft!=iright) return ileft<iright;
+    }else return true;
+  }else if(sortNames.contains(sright)) return false;
+
+  //compare names
+  int ncmp=QString::localeAwareCompare(title(),rightFact->title());
+  if(ncmp!=0)return ncmp<0;
+  //try to sort by comment same names
+  ncmp=QString::localeAwareCompare(text(), rightFact->text());
+  if(ncmp==0){
+    //try to sort by sn same names
+    ncmp=QString::localeAwareCompare(QString(sn.toHex()), QString(static_cast<NodeItem*>(rightFact)->sn.toHex()));
+  }
+  if(ncmp==0) return Fact::lessThan(rightFact);
+  return ncmp<0;
+}
+//=============================================================================
+void NodeItem::hashData(QCryptographicHash *h) const
+{
+  Fact::hashData(h);
+  h->addData(version().toUtf8());
+  h->addData(hardware().toUtf8());
+  h->addData(conf_hash.toUtf8());
+  h->addData(QString::number(fwSupport()).toUtf8());
+}
+//=============================================================================
+void NodeItem::saveToXml(QDomNode dom) const
+{
+  QDomDocument doc=dom.ownerDocument();
+  dom=dom.appendChild(doc.createElement("node"));
+  dom.toElement().setAttribute("sn",QString(sn.toHex().toUpper()));
+  dom.toElement().setAttribute("name",title());
+
+  QDomNode e=dom.appendChild(doc.createElement("info"));
+  e.appendChild(doc.createElement("version")).appendChild(doc.createTextNode(version()));
+  e.appendChild(doc.createElement("hardware")).appendChild(doc.createTextNode(hardware()));
+
+  dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(hash().toHex().toUpper()));
+  dom.appendChild(doc.createElement("timestamp")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
+
+  /*if(commands.cmd.size()){
+    for(int i=0;i<commands.cmd.size();i++){
+      QDomNode e=dom.appendChild(doc.createElement("command"));
+      e.toElement().setAttribute("cmd",QString::number(commands.cmd.at(i)));
+      e.appendChild(doc.createElement("name")).appendChild(doc.createTextNode(commands.name.at(i)));
+      e.appendChild(doc.createElement("descr")).appendChild(doc.createTextNode(commands.descr.at(i)));
+    }
+  }*/
+
+  e=dom.appendChild(doc.createElement("fields"));
+  e.toElement().setAttribute("cnt",QString::number(allFields.size()));
+  e.toElement().setAttribute("hash",conf_hash);
+
+  QDomNode domf=e;
+  foreach(NodeField *f,allFields){
+    //f->saveToXml(e);
+    QDomNode dom=domf.appendChild(doc.createElement("field"));
+    dom.toElement().setAttribute("idx",QString::number(f->id));
+    dom.toElement().setAttribute("name",f->conf_name);
+
+    QDomNode e=dom.appendChild(doc.createElement("struct"));
+    e.appendChild(doc.createElement("type")).appendChild(doc.createTextNode(f->ftypeString()));
+    if(f->conf_descr.size())e.appendChild(doc.createElement("descr")).appendChild(doc.createTextNode(f->conf_descr));
+    if(f->enumStrings().size() && f->ftype!=ft_varmsk)e.appendChild(doc.createElement("opts")).appendChild(doc.createTextNode(f->enumStrings().join(',')));
+    //value
+    if(f->size()){
+      foreach(FactTree *i,f->childItems()) {
+        Fact *subf=static_cast<Fact*>(i);
+        QDomNode e=dom.appendChild(doc.createElement("value"));
+        e.toElement().setAttribute("idx",QString::number(subf->num()));
+        e.toElement().setAttribute("name",subf->title());
+        e.appendChild(doc.createTextNode(subf->text()));
+      }
+    }else{
+      dom.appendChild(doc.createElement("value")).appendChild(doc.createTextNode(f->text()));
+    }
+  }
 }
 //=============================================================================

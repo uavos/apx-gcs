@@ -24,6 +24,7 @@
 #define NodeItem_H
 //=============================================================================
 #include <QtCore>
+#include <QDomDocument>
 #include "NodeData.h"
 #include "NodeField.h"
 class Nodes;
@@ -40,7 +41,6 @@ class NodeItem: public NodeData
 
 public:
   explicit NodeItem(Nodes *parent,const QByteArray &sn);
-  ~NodeItem();
 
   QString conf_hash;
 
@@ -53,16 +53,35 @@ public:
 
   void dbRegister(int state);
 
+  void message(QString msg);
+
+  void saveToXml(QDomNode dom) const;
+
   //override
   QVariant data(int col, int role) const;
+  bool lessThan(Fact *rightFact) const;
+  void hashData(QCryptographicHash *h) const;
 
   Nodes *nodes;
+
+  struct{
+    bool valid;
+    QList<uint> cmd;
+    QStringList name;
+    QStringList descr;
+  }commands;
+
+private:
+  QStringList sortNames;
+
+  void requestConfDsc();
 
 private slots:
   void updateStats();
 
 public slots:
   void nstat();
+  void upload();
 
   //data comm
 public slots:

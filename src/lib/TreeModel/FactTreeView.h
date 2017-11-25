@@ -48,7 +48,6 @@ protected:
   bool lessThan(const QModelIndex &left, const QModelIndex &right) const Q_DECL_OVERRIDE;
 private:
   QPointer<Fact> m_rootFact;
-  QStringList sortNames;
   bool showThis(const QModelIndex index) const;
 };
 //=============================================================================
@@ -65,6 +64,8 @@ public:
   QAction *aBack;
   QToolBar *toolBar;
   QVBoxLayout *vlayout;
+
+  Fact * rootFact() const {return proxy->rootFact();}
 
 private:
   QList<QPointer<Fact>> rootList;

@@ -96,7 +96,18 @@ void NodeField::updateStatus()
       NodeField *f=static_cast<NodeField*>(i);
       st.append(f->text());
     }
-    setValue(st.join(','));
+    setStatus(QString("(%1)").arg(st.join(',')));
+  }else if(array()>0){
+    int acnt=0;
+    foreach (FactTree *i, childItems()) {
+      NodeField *f=static_cast<NodeField*>(i);
+      QString s=f->text();
+      if(s.isEmpty())continue;
+      if(s=="0")continue;
+      acnt++;
+    }
+    if(acnt>0)setStatus(QString("[%1/%2]").arg(acnt).arg(size()));
+    else setStatus(QString("[%1]").arg(size()));
   }
 }
 //=============================================================================
@@ -193,6 +204,7 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
         if(r_opts.size()<2)r_opts.clear();
         else r_descr=r_descr.left(r_descr.indexOf('(')).trimmed();
       }
+      if(r_opts.size()==1)r_opts.clear();
       //truncate opts by '_'
       if(r_opts.size()&&r_opts.first().contains("_")){
         QStringList nopts;
@@ -212,12 +224,14 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       //ba_conf_bkp=QByteArray(getConfSize(),0);
       //conf_descr=r_descr;
       ftype=r_ftype;
+      conf_name=r_name;
+      conf_descr=r_descr;
       setName(r_name);
       setTitle(r_name);
       setDescr(r_descr);
       setEnumStrings(r_opts);
       updateDataType();
-      createSubFields();
+      //createSubFields();
       setValid(true);
       //check if comment field and bind to node value
       if(id==0 && name()=="comment"){
@@ -234,7 +248,12 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       }
       if(!ok)return true;
       //all fields downloaded
-      node->setValid(true);
+      foreach (NodeField *f, node->allFields) {
+        f->createSubFields();
+      }
+      if(node->commands.valid){
+        node->setValid(true);
+      }
       foreach (NodeField *f, node->allFields) {
         if(f->dataValid())continue;
         node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
@@ -277,6 +296,19 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       if(fnum>=node->allFields.size())break;
       return node->allFields.at(fnum)->unpackService(ncmd,data.mid(sz+1));
     }return true;
+    case apc_conf_write: {
+      if(!valid())break;
+      if(!dataValid())break;
+      if(data.size()){
+        //uplink write (player)
+        if(data.size()!=ftypeSize())break;
+        unpackValue(data);
+        node->message(QString("%1: %2=%3").arg(tr("Field modified")).arg(title()).arg(text()));
+        return true;
+      }
+      //zero data size - update confirmation
+      backup();
+    }return true;
   }
   //error
   return false;
@@ -310,28 +342,85 @@ bool NodeField::unpackValue(const QByteArray &data)
   return true;
 }
 //=============================================================================
+QByteArray NodeField::packValue() const
+{
+  QByteArray ba;
+  if(size()){
+    foreach (FactTree *i, childItems()) {
+      NodeField *f=static_cast<NodeField*>(i);
+      ba.append(f->packValue());
+    }
+    return ba;
+  }
+  ba.resize(ftypeSize());
+  void *ptr=ba.data();
+
+  switch(ftype){
+    case ft_uint:   *(_ft_uint*)ptr=value().toUInt();break;
+    case ft_float:  *(_ft_float*)ptr=value().toFloat();break;
+    case ft_byte:   *(_ft_byte*)ptr=value().toUInt();break;
+    case ft_string: strncpy((char*)*(_ft_string*)ptr,value().toString().toUtf8().data(),sizeof(_ft_string));break;
+    case ft_lstr:   strncpy((char*)*(_ft_lstr*)ptr,value().toString().toUtf8().data(),sizeof(_ft_lstr));break;
+    case ft_varmsk: *(_ft_varmsk*)ptr=value().toUInt();break;
+    case ft_option: *(_ft_option*)ptr=value().toUInt();break;
+    //case ft_script: if(script) rv=script->setSource(value.toString().toUtf8());break;
+  }
+  return ba;
+}
+//=============================================================================
 //=============================================================================
 void NodeField::createSubFields(void)
 {
-  //name truncate
-  if(title().contains("_")){
-    setTitle(title().remove(0,title().indexOf('_')+1));
-  }
-  //check for array
+  if(size()>0)return; //already created
+  //name truncate and array check
   bool force_array=false;
   if(name().contains("[")){
     setArray(name().section("[",1,1).section("]",0,0).toInt());
     setName(name().left(name().indexOf('[')));
-    //setTitle(title().left(title().indexOf('[')));
     force_array=true;
   }
+  //title truncate
+  if(title().contains("[")){
+    setTitle(title().left(title().indexOf('[')));
+  }
+  if(title().contains("_")){
+    setTitle(title().remove(0,title().indexOf('_')+1));
+  }
+  //units from descr
+  if(descr().contains('[')){
+    QString s=descr().mid(descr().lastIndexOf('[')+1);
+    s=s.left(s.indexOf(']'));
+    if(!s.contains("..")) setUnits(s);
+  }
+
   if((array()>1||force_array)){
+    //fact is array
+    QStringList stNames;
+    if(name()=="ctr_ch" && array()>0){
+      QStringList st;
+      int sz=0;
+      foreach (NodeField *f, node->allFields) {
+        if(!f->name().startsWith("ctr_ch_"))continue;
+        f->createSubFields();
+        sz=f->array();
+        break;
+      }
+      for(int i=0;i<sz;i++) st<<QString("CH%1").arg(i+1);
+      setEnumStrings(st);
+      setDataType(EnumData);
+    }else if(m_enumStrings.size()==array() && ftype!=ft_option){
+      stNames=m_enumStrings;
+    }
     //create array items
-    QStringList st;
-    if(enumStrings().size()==array() && ftype!=ft_option)st=enumStrings();
     for(int i=0;i<array();i++){
-      NodeField *fi=new NodeField(node,this,"item#",QString("%1[%2]").arg(name()).arg(i),"",ftype);
-      if(st.size())fi->setEnumStrings(st);
+      //NodeField *fi=new NodeField(node,this,"item#",QString("%1[%2]").arg(name()).arg(i),"",ftype);
+      NodeField *fi=new NodeField(node,this,QString("%1_%2").arg(name()).arg(i),stNames.value(i,QString::number(i+1)),QString("%1[%2]").arg(name()).arg(i),ftype);
+      fi->setUnits(units());
+      if(stNames.isEmpty() && (!m_enumStrings.isEmpty())){
+        fi->setEnumStrings(m_enumStrings);
+        fi->setDataType(EnumData);
+      }
+      //fi->setVisible(false);
     }
     setDataType(NoData);
     setTreeItemType(GroupItem);
@@ -444,6 +533,7 @@ void NodeField::updateDataType()
   switch(ftype){
     default: break;
     case ft_option:
+      setMin(0);
       setDataType(EnumData);
     break;
     case ft_string:
@@ -476,4 +566,12 @@ void NodeField::updateDataType()
   }
 }
 //=============================================================================
+//=============================================================================
+void NodeField::hashData(QCryptographicHash *h) const
+{
+  Fact::hashData(h);
+  h->addData(ftypeString().toUtf8());
+  h->addData(QString::number(id).toUtf8());
+  h->addData(QString::number(ftype).toUtf8());
+}
 //=============================================================================

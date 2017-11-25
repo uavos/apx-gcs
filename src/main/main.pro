@@ -17,9 +17,6 @@ SOURCES += main.cpp \
 HEADERS += MainForm.h \
     RunGuard.h \
 
-FORMS += \
-    Config.ui
-
 RESOURCES += $${SRC_DIR}/QML/qml.qrc
 
 

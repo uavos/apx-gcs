@@ -20,26 +20,36 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef CONFIG_H
-#define CONFIG_H
-//=============================================================================
-#include <QDialog>
+#ifndef FactDelegateDialog_H
+#define FactDelegateDialog_H
 #include <QtWidgets>
-#include "ui_Config.h"
+#include <FactSystem.h>
 //=============================================================================
-class Config : public QDialog, public Ui::ConfigDlg
+class FactDelegateDialog: public QDialog
 {
   Q_OBJECT
 public:
-  Config(QWidget *parent = 0);
-  static void defaults(bool force=true);
-private:
-  void load();
-  void save();
-  QMap <QString,QComboBox*> plugins;
+  explicit FactDelegateDialog(Fact *fact, QWidget *parent = 0);
+  ~FactDelegateDialog();
+
+  void setWidget(QWidget *w);
+
+  virtual bool aboutToUpload(void){return true;}
+  virtual bool aboutToClose(void){return true;}
+
+protected:
+  Fact *fact;
+  QWidget *widget;
+
+  QToolBar *toolBar;
+  QVBoxLayout *vlayout;
+  QPushButton *btnUpload;
+
+  void closeEvent(QCloseEvent * event);
+
 private slots:
-  void on_buttonBox_clicked(QAbstractButton *button);
-  void on_eLang_currentIndexChanged(const QString &text);
+  void doSaveGeometry();
+  void doRestoreGeometry();
 };
 //=============================================================================
-#endif // CTRFRAME_H
+#endif

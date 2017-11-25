@@ -270,6 +270,31 @@ QToolButton:pressed#uploadButton {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #62B84E, stop: 1 #148A47);
 }
 /*========================================================================*/
+QPushButton#redButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #d02, stop: 1 #902);
+}
+QPushButton:hover#redButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f03, stop: 1 #e03);
+}
+QPushButton:pressed#redButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #d03, stop: 1 #902);
+}
+QPushButton:disabled#redButton {
+    background-color: #300;
+}
+QPushButton#greenButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #73D95D, stop: 1 #18A154);
+}
+QPushButton:hover#greenButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #87FF6D, stop: 1 #1FD16D);
+}
+QPushButton:pressed#greenButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #62B84E, stop: 1 #148A47);
+}
+QPushButton:disabled#greenButton {
+    background-color: #030;
+}
+/*========================================================================*/
 QToolBar#toolBarSW QToolButton {
     margin: 0;
     padding: 0;

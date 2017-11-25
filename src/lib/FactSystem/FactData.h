@@ -62,6 +62,7 @@ public:
     ActionData,     // button, value=action type
     KeySequenceData,
   };
+  Q_ENUM(DataType)
 
   enum ActionType {
     NormalAction =0,
@@ -69,6 +70,7 @@ public:
     RemoveAction,
     UplinkAction,
   };
+  Q_ENUM(ActionType)
 
   explicit FactData(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 

@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include <FactTreeModel.h>
 #include "FactDelegate.h"
+#include "FactDelegateArray.h"
 //=============================================================================
 FactDelegate::FactDelegate(QObject *parent)
  : QItemDelegate(parent)
@@ -64,29 +65,24 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
         e=cb;
       }break;
       case Fact::ActionData:{
-        QPushButton *btn=new QPushButton(parent);
-        //btn->setFlat(true);
-        QPalette newPalette = btn->palette();
-        newPalette.setBrush(QPalette::Window, QBrush(QColor(255,255,255,80)));
-        btn->setPalette(newPalette);
-        btn->setBackgroundRole(QPalette::Window);
-        btn->setObjectName("treeViewButton");
+        QPushButton *btn=createButton(parent);
         connect(btn,&QPushButton::clicked,f,&Fact::trigger);
         return btn;
       }break;
-      /*case ft_varmsk:{
-        QComboBox *cb=new QComboBox(parent);
-        cb->setFrame(false);
-        cb->addItem("");
-        cb->addItems(QMandala::instance()->local->names);
-        cb->setEditable(true);
-        cb->view()->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Ignored);
-        cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0)*2);
-        e=cb;
+      case Fact::NoData:{
+        if(f->treeItemType()==Fact::GroupItem &&
+           f->size()>1 &&
+           f->child(0)->treeItemType()==Fact::GroupItem &&
+           f->status().startsWith('[') && f->status().endsWith(']')){
+
+          //return new FactDelegateArray(f,parent);
+          QPushButton *btn=createButton(parent);
+          connect(btn,&QPushButton::clicked,[=](){
+            new FactDelegateArray(f);//,parent->parentWidget());
+          });
+          return btn;
+        }
       }break;
-      case ft_script:
-        //e=new ValueEditorScript(f,parent);
-      break;*/
       default:
         su=f->units();
     }
@@ -97,9 +93,21 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
   static_cast<QFrame*>(e)->setLineWidth(0);
   static_cast<QFrame*>(e)->setMidLineWidth(0);*/
   e->setContentsMargins(-1,-1,-1,-1);
-  QFont font(index.data(Qt::FontRole).value<QFont>());
-  font.setPointSize(font.pointSize()+2);
-  e->setFont(font);
+  //QFont font(index.data(Qt::FontRole).value<QFont>());
+  //font.setPointSize(font.pointSize()+2);
+  //e->setFont(font);
+
+  //min-max
+  if(qobject_cast<QSpinBox*>(e)){
+    if(!f->min().isNull())static_cast<QSpinBox*>(e)->setMinimum(f->min().toInt());
+    if(!f->max().isNull())static_cast<QSpinBox*>(e)->setMaximum(f->max().toInt());
+  }
+  if(qobject_cast<QDoubleSpinBox*>(e)){
+    if(!f->min().isNull())static_cast<QDoubleSpinBox*>(e)->setMinimum(f->min().toDouble());
+    if(!f->max().isNull())static_cast<QDoubleSpinBox*>(e)->setMaximum(f->max().toDouble());
+  }
+
+  //units
   if(su.size()){
     if(su=="hex"){
       if(e->inherits("QSpinBox")){
@@ -114,6 +122,17 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
   }
   return e;
 }
+QPushButton * FactDelegate::createButton(QWidget *parent) const
+{
+  QPushButton *btn=new QPushButton(parent);
+  //btn->setFlat(true);
+  QPalette newPalette = btn->palette();
+  newPalette.setBrush(QPalette::Window, QBrush(QColor(255,255,255,80)));
+  btn->setPalette(newPalette);
+  btn->setBackgroundRole(QPalette::Window);
+  btn->setObjectName("treeViewButton");
+  return btn;
+}
 void FactDelegate::setEditorData(QWidget *editor,const QModelIndex &index) const
 {
   QItemDelegate::setEditorData(editor,index);
@@ -122,6 +141,7 @@ void FactDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const
 {
   Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
   if(f->dataType()==Fact::ActionData)return;
+  if(f->dataType()==Fact::NoData)return;
   QItemDelegate::setModelData(editor,model,index);
 }
 //=============================================================================

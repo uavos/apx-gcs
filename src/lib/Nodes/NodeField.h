@@ -40,8 +40,12 @@ public:
 
   bool unpackService(uint ncmd, const QByteArray &data);
 
+  QByteArray packValue() const;
+
   quint16 id;
   int ftype;
+  QString conf_name;
+  QString conf_descr;
 
   QString ftypeString() const;
 
@@ -51,9 +55,10 @@ public:
   //void setText(const QString &v);
   bool setValue(const QVariant &v);
   const QStringList & enumStrings() const;
+  void hashData(QCryptographicHash *h) const;
 
-private:
   NodeItem *node;
+private:
   NodeField *parentField;
 
   bool unpackValue(const QByteArray &data);

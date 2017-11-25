@@ -63,6 +63,8 @@ private:
 
 public slots:
   void selectVehicle(Vehicle *v);
+  void selectNext();
+  void selectPrev();
 signals:
   void vehicleRegistered(Vehicle*);
   void vehicleRemoved(Vehicle*);

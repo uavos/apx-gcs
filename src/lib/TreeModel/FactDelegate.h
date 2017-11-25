@@ -24,6 +24,7 @@
 #define FactDelegate_H
 //=============================================================================
 #include <QtCore>
+#include <QtWidgets>
 #include <QItemDelegate>
 #include <QStyledItemDelegate>
 #include <QProgressBar>
@@ -41,6 +42,8 @@ public:
   QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 protected:
   void paint(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index) const;
+
+  virtual QPushButton * createButton(QWidget *parent) const;
 private:
   QProgressBar *progressBar;
   bool drawProgress(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index,uint progress) const;

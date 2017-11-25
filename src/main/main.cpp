@@ -91,10 +91,6 @@ int main(int argc, char *argv[])
   //QApplication::setGraphicsSystem(QLatin1String("opengl"));
   QApplication app(argc, argv);
 
-#ifdef Q_OS_MAC
-  qApp->setFont(QFont("Ubuntu",10));
-#endif
-
   QCoreApplication::setOrganizationName("uavos");
   QCoreApplication::setOrganizationDomain("uavos.com");
   QCoreApplication::setApplicationName("gcs");
@@ -169,6 +165,11 @@ int main(int argc, char *argv[])
   }
 
   loadFonts();
+
+//#ifdef Q_OS_MAC
+  //qApp->setFont(QFont("Avenir",10));
+//#endif
+
 
   // Load the new stylesheet.
   QFile styleSheet(":styles/style-old.css");

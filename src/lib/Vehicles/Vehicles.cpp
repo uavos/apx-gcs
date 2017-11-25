@@ -249,6 +249,20 @@ void Vehicles::selectVehicle(Vehicle *v)
   f_select->setStatus(v->title());
 }
 //=============================================================================
+void Vehicles::selectNext()
+{
+  if(f_list->size()<=0)return;
+  int i=f_list->childItems().indexOf(m_current)+1;
+  if(i>=f_list->size())i=0;
+  selectVehicle(static_cast<Vehicle*>(f_list->child(i)));
+}
+void Vehicles::selectPrev()
+{
+  if(f_list->size()<=0)return;
+  int i=f_list->childItems().indexOf(m_current)-1;
+  if(i<0)i=f_list->size()-1;
+  selectVehicle(static_cast<Vehicle*>(f_list->child(i)));
+}
 //=============================================================================
 Vehicle * Vehicles::current(void) const
 {

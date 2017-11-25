@@ -71,7 +71,9 @@ private slots:
   void descrChanged();
   void enabledChanged();
   void activeChanged();
+  void modifiedChanged();
   void progressChanged();
+  void visibleChanged();
 
   void updateTimerTimeout();
   void itemDestroyed();

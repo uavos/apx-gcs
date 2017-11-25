@@ -40,6 +40,7 @@ QPixmap SvgIcon::renderSvgPixmap(const QString &fileName,const QColor &color) co
   doc.setContent(baData);
   // recurivelly change color
   setAttrRecur(doc.documentElement(), "path", "fill", color.name());
+  setAttrRecur(doc.documentElement(), "polygon", "fill", color.name());
   // create svg renderer with edited contents
   QSvgRenderer svgRenderer(doc.toByteArray());
   // create pixmap target (could be a QImage)

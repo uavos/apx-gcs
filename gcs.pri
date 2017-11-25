@@ -30,6 +30,7 @@ plugin:!mac {
 INCLUDEPATH += \
     $${LIB_DIR}/Datalink \
     $${LIB_DIR}/FactSystem \
+    $${LIB_DIR}/TreeModel \
     $${LIB_DIR}/AppSettings \
     $${LIB_DIR}/Vehicles \
     $${LIB_DIR}/Nodes \

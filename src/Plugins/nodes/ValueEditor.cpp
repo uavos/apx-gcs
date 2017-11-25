@@ -23,7 +23,7 @@
 #include "ValueEditor.h"
 //=============================================================================
 ValueEditor::ValueEditor(NodesItem *field, QWidget *parent)
-:QPushButton(parent),field(field)
+ : QPushButton(parent),field(field)
 {
   setFlat(true);
   QPalette newPalette = palette();

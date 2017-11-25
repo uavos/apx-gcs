@@ -55,6 +55,22 @@ HEADERS += \
     FactSystem/Fact.h \
     Facts.h \
 
+# Facts TreeModel
+SOURCES += \
+    TreeModel/FactTreeModel.cpp \
+    TreeModel/FactTreeView.cpp \
+    TreeModel/FactDelegate.cpp \
+    TreeModel/FactDelegateDialog.cpp \
+    TreeModel/FactDelegateArray.cpp \
+
+HEADERS += \
+    TreeModel/FactTreeModel.h \
+    TreeModel/FactTreeView.h \
+    TreeModel/FactDelegate.h \
+    TreeModel/FactDelegateDialog.h \
+    TreeModel/FactDelegateArray.h \
+
+
 # Vehicles & Mandala
 SOURCES += \
     Vehicles/QMandalaField.cpp \
@@ -144,9 +160,6 @@ SOURCES += \
     SoundEffects.cpp \
     SvgIcon.cpp \
     SvgImageProvider.cpp \
-    FactDelegate.cpp \
-    FactTreeModel.cpp \
-    FactTreeView.cpp \
 
 HEADERS += \
     FlightDataFile.h \
@@ -154,9 +167,6 @@ HEADERS += \
     SoundEffects.h \
     SvgIcon.h \
     SvgImageProvider.h \
-    FactDelegate.h \
-    FactTreeModel.h \
-    FactTreeView.h \
 
 
 

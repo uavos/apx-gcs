@@ -118,9 +118,7 @@ int FactTree::num() const
 }
 FactTree *FactTree::child(int n) const
 {
-  QList<FactTree*> list=childItems();
-  if(n>=list.size())return NULL;
-  return list.at(n);
+  return childItems().value(n,NULL);
 }
 FactTree *FactTree::parentItem() const
 {

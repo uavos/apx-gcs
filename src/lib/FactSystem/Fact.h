@@ -50,11 +50,15 @@ class Fact: public FactData
 public:
   explicit Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
+  Q_INVOKABLE QByteArray hash() const;
+
   Q_INVOKABLE QVariant findValue(const QString &namePath);
 
   Q_INVOKABLE Fact * fact(const QString &factName) const;
   Q_INVOKABLE Fact * childByTitle(const QString &factTitle) const;
   //Q_INVOKABLE Fact * byPath(const QString &itemNamePath) const;
+
+  Q_INVOKABLE QString titlePath(const QChar pathDelimiter=QChar('/')) const;
 
 
   virtual void bind(FactData *item);
@@ -79,6 +83,8 @@ public:
   };
   virtual QVariant data(int col, int role) const;
 
+protected:
+  virtual void hashData(QCryptographicHash *h) const;
 
 
 public slots:

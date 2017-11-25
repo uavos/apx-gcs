@@ -154,5 +154,7 @@
         <file>icons/old/wind.png</file>
         <file>icons/old/uavos-logo.png</file>
         <file>icons/sets/ionicons/android-arrow-back.svg</file>
+        <file>icons/sets/ionicons/android-close.svg</file>
+        <file>icons/sets/ionicons/android-upload.svg</file>
     </qresource>
 </RCC>
