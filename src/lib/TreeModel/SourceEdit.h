@@ -20,44 +20,53 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactDelegateDialog_H
-#define FactDelegateDialog_H
-#include <QtWidgets>
-#include <FactSystem.h>
+#ifndef SourceEdit_H
+#define SourceEdit_H
+#include <QPlainTextEdit>
+#include <QSyntaxHighlighter>
+class Highlighter;
 //=============================================================================
-class FactDelegateDialog: public QDialog
+class SourceEdit : public QPlainTextEdit
 {
   Q_OBJECT
 public:
-  explicit FactDelegateDialog(Fact *fact, QWidget *parent = 0);
-  ~FactDelegateDialog();
-
-  void setWidget(QWidget *w);
-
-  virtual bool aboutToUpload(void){return true;}
-  virtual bool aboutToClose(void){return true;}
-
+  explicit SourceEdit(QWidget *parent);
+  void addKeywords(const QStringList &words);
 private:
-  static QHash<QString,FactDelegateDialog*> dlgMap;
-
+  Highlighter *highlighter;
 protected:
-  Fact *fact;
-  QWidget *widget;
+  void keyPressEvent(QKeyEvent * event);
+public slots:
+  void cleanText();
+};
+//=============================================================================
+class Highlighter : public QSyntaxHighlighter
+{
+  Q_OBJECT
+public:
+  Highlighter(QTextDocument *parent = 0);
 
-  QToolBar *toolBar;
-  QVBoxLayout *vlayout;
+  struct HighlightingRule
+  {
+      QRegExp pattern;
+      QTextCharFormat format;
+  };
+  QTextCharFormat defaultCharFormat;
 
-  QAction *aUpload;
-  QAction *aUndo;
-  QAction *aSep;
+  HighlightingRule addRule(const QString &pattern,const QColor &color, const QString &style=QString());
+protected:
+  void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
+private:
+  QVector<HighlightingRule> highlightingRules;
 
-  void addAction(QAction *a);
+  QRegExp commentStartExpression;
+  QRegExp commentEndExpression;
+  enum{
+    f_bold=1,
+    f_italic=2
+  };
 
-  void closeEvent(QCloseEvent * event);
-
-private slots:
-  void doSaveGeometry();
-  void doRestoreGeometry();
+  QTextCharFormat multiLineCommentFormat;
 };
 //=============================================================================
 #endif

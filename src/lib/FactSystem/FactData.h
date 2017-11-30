@@ -44,9 +44,11 @@ class FactData: public FactTree
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
   Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
 
-  Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+  Q_PROPERTY(QString text READ text NOTIFY textChanged)
 
   Q_PROPERTY(const QStringList & enumStrings READ enumStrings NOTIFY enumStringsChanged)
+
+  Q_PROPERTY(QString units READ units WRITE setUnits NOTIFY unitsChanged)
 
 public:
 
@@ -80,10 +82,9 @@ public:
   int enumValue(const QVariant &v) const;
   QString enumText(int v) const;
 
-  virtual void bind(FactData *item);
+  virtual bool isZero() const;
 
-  Q_INVOKABLE void backup();
-  Q_INVOKABLE void restore();
+  virtual void bind(FactData *item);
 
   void defaults();
 
@@ -94,11 +95,17 @@ public:
 signals:
   void childValueChanged(void);
 
+public slots:
+  void backup();
+  void restore();
+
+
 
 protected:
   FactData *_bindedFact;
 
   QVariant backup_value;
+  bool backup_set;
 
 public:
   //---------------------------------------
@@ -124,11 +131,14 @@ public:
   void setDescr(const QString &v);
 
   virtual QString text() const;
-  virtual void setText(const QString &v);
+  QString valueToText() const;
 
   virtual const QStringList & enumStrings() const;
   void setEnumStrings(const QStringList &v, const QList<int> &enumValues=QList<int>());
   void setEnumStrings(const QMetaEnum &v);
+
+  QString units() const;
+  void setUnits(const QString &v);
 
 
 protected:
@@ -148,6 +158,8 @@ protected:
   QStringList  m_enumStrings;
   QList<int>   m_enumValues;
 
+  QString  m_units;
+
 signals:
   void dataTypeChanged();
 
@@ -164,6 +176,8 @@ signals:
 
   void textChanged();
   void enumStringsChanged();
+
+  void unitsChanged();
 };
 //=============================================================================
 #endif

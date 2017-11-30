@@ -31,6 +31,7 @@ FactData::FactData(FactTree *parent, const QString &name, const QString &title, 
    m_title(title),m_descr(descr)
 {
   m_dataType=dataType;
+  backup_set=false;
   defaults();
   connect(this,&FactData::enumStringsChanged,this,&FactData::textChanged);
   /*if(parent && m_name.contains('#')){
@@ -112,8 +113,19 @@ bool FactData::setValue(const QVariant &v)
     }
   }
   if(m_value==vx)return false;
-  m_value=vx;
-  if(!backup_value.isNull())
+  if(dataType()==FloatData){
+    QVariant vbak=m_value;
+    QString sv=text();
+    m_value=vx;
+    if(sv==text()){
+      m_value=vbak;
+      return false;
+    }
+  }else{
+    m_value=vx;
+  }
+
+  if(backup_set)
     setModified(backup_value!=m_value);
   emit valueChanged();
   emit textChanged();
@@ -146,6 +158,25 @@ QString FactData::enumText(int v) const
     if(v>=0 && v<m_enumStrings.size())return m_enumStrings.at(v);
   }
   return QString();
+}
+//=============================================================================
+bool FactData::isZero() const
+{
+  if(m_treeItemType==GroupItem || m_treeItemType==SectionItem){
+    for (int i=0;i<childItems().size();i++) {
+      FactData *f=static_cast<FactData*>(childItems().at(i));
+      if(!f->isZero()) return false;
+    }
+    return true;
+  }
+  if(dataType()==TextData) return text().isEmpty() && value().toString().isEmpty();
+  const QString &s=text();
+  if(s.isEmpty())return true;
+  //if(dataType()==EnumData)return m_value.toInt()==0 && (s=="off"||s=="on"||s=="true"||s=="false");
+  if(s=="0")return true;
+  if(dataType()==FloatData)return m_value.toDouble()==0.0;
+  if(m_value.toInt()==0)return true;
+  return false;
 }
 //=============================================================================
 //=============================================================================
@@ -230,13 +261,21 @@ void FactData::setDescr(const QString &v)
 }
 QString FactData::text() const
 {
+  return valueToText();
+}
+QString FactData::valueToText() const
+{
   if(_bindedFact) return _bindedFact->text();
+  const QVariant &v=value();
   if(treeItemType()==FactItem && (!m_enumStrings.isEmpty())){
-    int ev=enumValue(value());
+    int ev=enumValue(v);
     if(ev>=0)return enumText(ev);
     if(m_dataType==IntData)return QString();
   }
-  const QVariant &v=value();
+  if(m_dataType==IntData){
+    if(units()=="hex")return QString::number(v.toUInt(),16).toUpper();
+    return QString::number(v.toInt());
+  }
   if(v.type()==QVariant::ByteArray) return v.toByteArray().toHex().toUpper();
   if(v.type()==QVariant::Double){
     double vf=v.toDouble();
@@ -251,14 +290,6 @@ QString FactData::text() const
     //return QString::asprintf("%f").arg(vf,0,'g',m_precision);
   }
   return v.toString();
-}
-void FactData::setText(const QString &v)
-{
-  if(_bindedFact){
-    _bindedFact->setText(v);
-    return;
-  }
-  setValue(v);
 }
 const QStringList & FactData::enumStrings() const
 {
@@ -287,6 +318,16 @@ void FactData::setEnumStrings(const QMetaEnum &v)
     vlist.append(vi);
   }
   setEnumStrings(st,vlist);
+}
+QString FactData::units() const
+{
+  return m_units;
+}
+void FactData::setUnits(const QString &v)
+{
+  if(m_units==v)return;
+  m_units=v;
+  emit unitsChanged();
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
@@ -342,6 +383,7 @@ void FactData::backup()
   }
   if(treeItemType()!=FactItem)return;
   backup_value=m_value;
+  backup_set=true;
   setModified(false);
 }
 void FactData::restore()

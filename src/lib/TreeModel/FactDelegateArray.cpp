@@ -25,7 +25,7 @@
 FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
   :FactDelegateDialog(fact,parent)
 {
-  treeView = new QTreeView(parent);
+  treeView = new QTreeView(this);
   treeView->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
 
   treeView->setAlternatingRowColors(true);
@@ -35,9 +35,9 @@ FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
   treeView->header()->setMinimumSectionSize(50);
   treeView->setAutoFillBackground(false);
 
-  model=new FactDelegateArrayModel(fact,parent);
+  model=new FactDelegateArrayModel(fact,this);
   treeView->setModel(model);
-  treeView->setItemDelegate(new FactDelegate(parent));
+  treeView->setItemDelegate(new FactDelegate(this));
 
   setWidget(treeView);
 }
@@ -46,56 +46,43 @@ FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
 FactDelegateArrayModel::FactDelegateArrayModel(Fact *group, QObject *parent)
   :QAbstractItemModel(parent),group(group)
 {
+  connect(group,&Fact::modifiedChanged,[=](){emit layoutChanged();});
 }
 //=============================================================================
 QVariant FactDelegateArrayModel::data(const QModelIndex &index, int role) const
 {
-  /*int col=index.column();
-  uint item_n=index.row();
+  //check 'bind' column items
   bool binded=true;
-  Fact *bind_item=static_cast<Fact*>(group->child(0));
-  if(bind_item->ftype==ft_varmsk){
-    if(bind_item->child(item_n)->isZero()) binded=false;
-  }else bind_item=NULL;*/
+  Fact *bind_item=qobject_cast<Fact*>(group->child(0));
+  if(bind_item && bind_item->name().endsWith("_bind")){
+    bind_item=qobject_cast<Fact*>(bind_item->child(index.row()));
+    if(bind_item && bind_item->value().toInt()==0) binded=false;
+  }else bind_item=NULL;
 
-
-  /*switch(role){
-    case Qt::ForegroundRole:{
-      //check if binding exists & enabled
-      if(col==0){
-        //highlight binded numbers
-        //if(bind_item) return binded?QColor(Qt::darkCyan):QColor(Qt::gray);
-        return QColor(Qt::cyan).lighter(180);
-      }
+  if(role==Qt::ForegroundRole){
+    if(index.column()>0){
       if(bind_item && (!binded))return QColor(Qt::darkGray);
+
       Fact *f=field(index);
       if(!f)return QVariant();
       //zero values are gray
-      if(f->ftype==ft_varmsk || f->field->conf_name.startsWith("ctr_ch[")){
+      /*if(f->ftype==ft_varmsk || f->field->conf_name.startsWith("ctr_ch[")){
         //check if same vars binded to other numbers
         if(match(index,Qt::DisplayRole,data(index,Qt::DisplayRole),2,Qt::MatchFlags(Qt::MatchExactly|Qt::MatchWrap)).size()>1)
           return QColor(Qt::blue).lighter(180);
         else return QColor(Qt::cyan);
-      }
-      if(f->isModified()) return QColor(Qt::red).lighter();
-      if(f->isZero())return QColor(Qt::darkGray);
-      return QVariant();
+      }*/
+      return f->data(Fact::FACT_MODEL_COLUMN_VALUE,role);
     }
-    case Qt::FontRole:
-      if(showNum&&col==0) return QFont("",-1,QFont::Bold);
-      return QVariant();
-    default:
-      if(role==Qt::DisplayRole||role==Qt::EditRole) break;
-      return QVariant();
-  }*/
+  }
+
   if(index.column()==0){
-    while(role==Qt::DisplayRole){
+    while(1){
       Fact *f=qobject_cast<Fact*>(group->child(0));
       if(!f)break;
       f=qobject_cast<Fact*>(f->child(index.row()));
       if(!f)break;
-      return f->title();
-      //return index.row()+1;
+      return f->data(Fact::FACT_MODEL_COLUMN_NAME,role);
     }
     return QVariant();
   }
@@ -103,6 +90,7 @@ QVariant FactDelegateArrayModel::data(const QModelIndex &index, int role) const
   if(!index.internalPointer())return QVariant();
   Fact *f=field(index);
   if(!f)return QVariant();
+
 
   //if(col>0 && bind_item && (!binded) && f->isZero())return QVariant();
 

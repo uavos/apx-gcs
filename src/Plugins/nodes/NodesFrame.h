@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NODESFRAME_H
-#define NODESFRAME_H
+#ifndef NodesFrame_H
+#define NodesFrame_H
 //=============================================================================
 #include <QtWidgets>
 #include "ui_NodesFrame.h"
@@ -81,4 +81,4 @@ private slots:
   void updateActions(void);
 };
 //=============================================================================
-#endif // CTRFRAME_H
+#endif

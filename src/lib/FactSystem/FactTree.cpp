@@ -32,6 +32,7 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
 }
 FactTree::~FactTree()
 {
+  //qDebug()<<"~FactTree";
   removeAll();
 }
 //=============================================================================
@@ -62,8 +63,8 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
 void FactTree::removeAll(void)
 {
   if(!m_items.size())return;
-  foreach(FactTree *i,m_items){
-    i->removeAll();
+  for(int i=0;i<m_items.size();i++){
+    m_items.at(i)->removeAll();
   }
   while(m_items.size()) {
     FactTree *item=m_items.last();

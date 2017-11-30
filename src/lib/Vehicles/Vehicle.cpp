@@ -148,3 +148,16 @@ void FactSystemJS::sleep(quint16 ms)
   loop.exec();
 }
 //=============================================================================
+QString Vehicle::fileTitle() const
+{
+  QString confName;
+  foreach(NodeItem *node,f_nodes->snMap.values()){
+    if(!node->title().endsWith(".shiva"))continue;
+    confName=node->status().trimmed();
+    if(!confName.isEmpty())break;
+  }
+  if(confName.isEmpty())return title();
+  return confName;
+}
+//=============================================================================
+//=============================================================================

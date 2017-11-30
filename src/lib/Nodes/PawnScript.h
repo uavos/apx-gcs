@@ -20,44 +20,55 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactDelegateDialog_H
-#define FactDelegateDialog_H
-#include <QtWidgets>
-#include <FactSystem.h>
+#ifndef PawnScript_H
+#define PawnScript_H
+#include "NodeField.h"
+#include <node.h>
+class PawnCompiler;
 //=============================================================================
-class FactDelegateDialog: public QDialog
+class PawnScript: public QObject
 {
   Q_OBJECT
 public:
-  explicit FactDelegateDialog(Fact *fact, QWidget *parent = 0);
-  ~FactDelegateDialog();
+  PawnScript(NodeField *fact);
 
-  void setWidget(QWidget *w);
+  void unpackFlashData();
 
-  virtual bool aboutToUpload(void){return true;}
-  virtual bool aboutToClose(void){return true;}
+  int size() const;
+  bool error() const;
+
+  //field status forward
+  bool isBusy(void) const;
+
+  void download(void);
+  void upload(void);
+
+  //data comm
+  void unpackService(unsigned char cmd, const QByteArray &data);
 
 private:
-  static QHash<QString,FactDelegateDialog*> dlgMap;
+  NodeField *fact;
+  //ft_script field storage data
+  enum{op_idle,op_read_hdr,op_write_hdr,op_read_data,op_write_data}op;
 
-protected:
-  Fact *fact;
-  QWidget *widget;
+  //flash read/write
+  QByteArray flash_data_rd,flash_data_wr;   //all file data
+  _flash_file flash_rfile;
+  _flash_file flash_wfile;
+  _flash_data_hdr flash_block_hdr;
 
-  QToolBar *toolBar;
-  QVBoxLayout *vlayout;
+  bool request_download(void); //true if not done
+  bool request_upload(void); //true if not done
 
-  QAction *aUpload;
-  QAction *aUndo;
-  QAction *aSep;
-
-  void addAction(QAction *a);
-
-  void closeEvent(QCloseEvent * event);
+  //compiler
+  PawnCompiler *pawncc;
 
 private slots:
-  void doSaveGeometry();
-  void doRestoreGeometry();
+  void compile();
+  void modelDone(void);
+signals:
+  //void request(uint cmd,const QByteArray sn,const QByteArray data,uint timeout_ms);
+  void changed(void);
 };
 //=============================================================================
 #endif

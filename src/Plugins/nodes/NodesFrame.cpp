@@ -435,46 +435,69 @@ void NodesFrame::on_aLoadTelemetry_triggered(void)
 //=============================================================================
 void NodesFrame::on_aSave_triggered(void)
 {
+  treeWidget->resetFilter();
   if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
   QFileDialog dlg(this,aSave->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptSave);
   dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
-  //if(!model->title().isEmpty())
-    //dlg.selectFile(AppDirs::configs().filePath(model->title()+".nodes"));
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";
   dlg.setNameFilters(filters);
   dlg.setDefaultSuffix("nodes");
+  dlg.selectFile(AppDirs::configs().filePath(vehicle->fileTitle()+".nodes"));
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
-  //model->saveToFile(dlg.selectedFiles().first());
+
   QString fname=dlg.selectedFiles().first();
   QFile file(fname);
   if (!file.open(QFile::WriteOnly | QFile::Text)) {
     qWarning("%s",QString(tr("Cannot write file")+" %1:\n%2.").arg(fname).arg(file.errorString()).toUtf8().data());
     return;
   }
-  QDomDocument doc;
-  doc.appendChild(doc.createProcessingInstruction("xml","version=\"1.0\" encoding=\"UTF-8\""));
-  vehicle->f_nodes->saveToXml(doc);
   QTextStream stream(&file);
-  doc.save(stream,2);
+  vehicle->f_nodes->xml->write().save(stream,2);
   file.close();
 }
 //=============================================================================
 void NodesFrame::on_aLoad_triggered(void)
 {
-  /*if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
-  proxy.setFilterRegExp(QRegExp());
+  treeWidget->resetFilter();
+  if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
   QFileDialog dlg(this,aLoad->toolTip(),AppDirs::configs().canonicalPath());
   dlg.setAcceptMode(QFileDialog::AcceptOpen);
-  if(!model->title().isEmpty())
-    dlg.selectFile(AppDirs::configs().filePath(model->title()+".nodes"));
+  dlg.setFileMode(QFileDialog::ExistingFile);
   QStringList filters;
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";
   dlg.setNameFilters(filters);
+  if(vehicle->f_nodes->f_list->size()>0)
+    dlg.selectFile(vehicle->fileTitle()+".nodes");
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
-  model->loadFromFile(dlg.selectedFiles().first());*/
+
+  QString fname=dlg.selectedFiles().first();
+  QFile file(fname);
+  if (!file.open(QFile::ReadOnly | QFile::Text)) {
+    qWarning("%s",QString(tr("Cannot read file")+" %1:\n%2.").arg(fname).arg(file.errorString()).toUtf8().data());
+    return;
+  }
+  QDomDocument doc;
+  if(!doc.setContent(&file)){
+    qWarning("%s",QString(tr("The file format is not correct")).toUtf8().data());
+    file.close();
+    return;
+  }
+  file.close();
+
+  int icnt=vehicle->f_nodes->xml->read(doc.documentElement());
+  int nsz=vehicle->f_nodes->snMap.size();
+  if(nsz>0 && icnt!=nsz){
+    qDebug("%s",tr("Loaded %1 nodes of %2. Importing...").arg(icnt).arg(nsz).toUtf8().data());
+    icnt=vehicle->f_nodes->xml->import(doc.documentElement());
+    if(icnt>0){
+      qDebug("%s",tr("Imported %1 nodes of %2").arg(icnt).arg(nsz).toUtf8().data());
+    }else{
+      qDebug("%s",tr("Nodes didn't match, nothing to import").toUtf8().data());
+    }
+  }
 }
 //=============================================================================

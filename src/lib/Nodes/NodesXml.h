@@ -20,78 +20,34 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
+#ifndef NodesXml_H
+#define NodesXml_H
 //=============================================================================
 #include <QtCore>
 #include <QDomDocument>
-#include "FactSystem.h"
-#include "NodeItem.h"
-#include "NodesXml.h"
-class Vehicle;
+class Nodes;
+class NodeItem;
+class NodeField;
 //=============================================================================
-class Nodes: public Fact
+class NodesXml: public QObject
 {
   Q_OBJECT
 
-  Q_PROPERTY(int nodesCount READ nodesCount NOTIFY nodesCountChanged)
-
 public:
-  explicit Nodes(Vehicle *parent);
+  explicit NodesXml(Nodes *parent=0);
 
-  Fact *f_request;
-  Fact *f_reload;
-  Fact *f_upload;
-  Fact *f_stop;
+  void write(QDomNode dom, NodeItem *node) const;
+  void write(QDomNode dom) const;
+  QDomDocument write() const;
 
-  Fact *f_list;
+  int read(QDomNode dom) const;
+  int read(QDomNode dom, NodeItem *node) const;
+  bool read(QDomNode dom, NodeField *field) const;
 
-  Vehicle *vehicle;
-
-  NodeItem * node(const QByteArray &sn){return snMap.value(sn);}
-
-  //sn lookup
-  QHash<QByteArray,NodeItem*> snMap;
-  QList<Fact*> nGroups;
-
-  NodeItem * nodeCheck(const QByteArray &sn);
-
-  NodesXml *xml;
+  int import(QDomNode dom) const;
 
 private:
-
-  bool isBroadcast(const QByteArray &sn) const;
-
-  void dbRegister();
-
-private slots:
-  void request();
-  void reload();
-  void upload();
-  void stop();
-  void updateActions();
-
-public slots:
-  bool unpackService(const QByteArray &packet); //data comm
-
-  void updateProgress();
-
-  void nstat();
-
-signals:
-  void actionsUpdated();
-
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-  int nodesCount() const;
-
-protected:
-  int m_nodesCount;
-
-signals:
-  void nodesCountChanged();
+  Nodes *nodes;
 };
 //=============================================================================
 #endif

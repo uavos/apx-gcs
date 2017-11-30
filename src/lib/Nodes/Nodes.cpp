@@ -31,9 +31,12 @@
 //=============================================================================
 Nodes::Nodes(Vehicle *parent)
   : Fact(parent,"nodes","Nodes",tr("Vehicle components"),GroupItem,NoData),
-    vehicle(parent)
+    vehicle(parent),
+    m_nodesCount(0)
 {
   model()->setFlat(true);
+
+  xml=new NodesXml(this);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,this,&Nodes::request);
@@ -51,12 +54,13 @@ Nodes::Nodes(Vehicle *parent)
   connect(f_stop,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
 
   f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,NoData);
-  connect(f_list,&Nodes::sizeChanged,this,[=](){
-    setStatus(f_list->size()>0?QString::number(f_list->size()):"");
-  });
 
   connect(this,&Fact::modifiedChanged,this,&Nodes::updateActions);
-  connect(this->f_list,&Fact::sizeChanged,this,&Nodes::updateActions);
+
+  connect(this,&Nodes::nodesCountChanged,this,[=](){
+    setStatus(nodesCount()>0?QString::number(nodesCount()):"");
+    updateActions();
+  });
   updateActions();
 
   if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
@@ -65,6 +69,11 @@ Nodes::Nodes(Vehicle *parent)
   FactSystem::instance()->jsSync(this);
 
   dbRegister();
+}
+//=============================================================================
+int Nodes::nodesCount() const
+{
+  return m_nodesCount;
 }
 //=============================================================================
 bool Nodes::unpackService(const QByteArray &packet)
@@ -93,6 +102,8 @@ NodeItem * Nodes::nodeCheck(const QByteArray &sn)
   if(!node){
     node=new NodeItem(this,sn);
     snMap.insert(sn,node);
+    m_nodesCount++;
+    emit nodesCountChanged();
   }
   return node;
 }
@@ -115,7 +126,7 @@ void Nodes::updateActions()
   bool busy=false;//model->requestManager.busy();
   bool upgrading=false;//model->isUpgrading();
   bool bModAll=modified();
-  bool bEmpty=f_list->size()<=0;
+  bool bEmpty=nodesCount()<=0;
   f_upload->setEnabled(bModAll && (!(busy)));
   f_stop->setEnabled(busy||upgrading);
   f_reload->setEnabled(!(upgrading||bEmpty));
@@ -131,6 +142,7 @@ void Nodes::reload()
 {
   if(!snMap.isEmpty()){
     snMap.clear();
+    nGroups.clear();
     f_list->removeAll();
     setModified(false);
     f_list->setModified(false);
@@ -206,20 +218,5 @@ void Nodes::dbRegister()
   }
   qWarning() << "Nodes SQL error:" << query.lastError().text();
   qWarning() << query.lastQuery();
-}
-//=============================================================================
-void Nodes::saveToXml(QDomNode dom) const
-{
-  QDomDocument doc=dom.ownerDocument();
-  dom=dom.appendChild(doc.createElement("nodes"));
-  dom.toElement().setAttribute("href","http://www.uavos.com/");
-  dom.toElement().setAttribute("vehicle",vehicle->title());
-  dom.toElement().setAttribute("version",FactSystem::version());
-  dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(QString(hash().toHex().toUpper())));
-  dom.appendChild(doc.createElement("timestamp")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
-  //saveIdentToXml(dom);
-  foreach(NodeItem *node,snMap.values()){
-    node->saveToXml(dom);
-  }
 }
 //=============================================================================

@@ -156,5 +156,9 @@
         <file>icons/sets/ionicons/android-arrow-back.svg</file>
         <file>icons/sets/ionicons/android-close.svg</file>
         <file>icons/sets/ionicons/android-upload.svg</file>
+        <file>icons/sets/ionicons/ios-undo.svg</file>
+        <file>icons/sets/ionicons/android-open.svg</file>
+        <file>icons/sets/ionicons/compose.svg</file>
+        <file>icons/sets/ionicons/code-working.svg</file>
     </qresource>
 </RCC>

@@ -20,44 +20,42 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactDelegateDialog_H
-#define FactDelegateDialog_H
-#include <QtWidgets>
-#include <FactSystem.h>
+#ifndef FactDelegateScript_H
+#define FactDelegateScript_H
+#include "FactDelegateDialog.h"
+class PawnCompiler;
+class SourceEdit;
 //=============================================================================
-class FactDelegateDialog: public QDialog
+class FactDelegateScript: public FactDelegateDialog
 {
   Q_OBJECT
 public:
-  explicit FactDelegateDialog(Fact *fact, QWidget *parent = 0);
-  ~FactDelegateDialog();
-
-  void setWidget(QWidget *w);
-
-  virtual bool aboutToUpload(void){return true;}
-  virtual bool aboutToClose(void){return true;}
-
-private:
-  static QHash<QString,FactDelegateDialog*> dlgMap;
-
+  explicit FactDelegateScript(Fact *fact, QWidget *parent = 0);
 protected:
-  Fact *fact;
-  QWidget *widget;
+  bool aboutToUpload(void);
+  bool aboutToClose(void);
+private:
+  QString scrName;
+  bool saveToFile(QString fname);
+  bool loadFromFile(QString fname);
 
-  QToolBar *toolBar;
-  QVBoxLayout *vlayout;
+  PawnCompiler *pawncc;
 
-  QAction *aUpload;
-  QAction *aUndo;
-  QAction *aSep;
+  QAction *aCompile;
+  QAction *aLoad;
+  QAction *aSave;
 
-  void addAction(QAction *a);
+  SourceEdit *editor;
+  QListWidget *logList;
 
-  void closeEvent(QCloseEvent * event);
-
+  //data
 private slots:
-  void doSaveGeometry();
-  void doRestoreGeometry();
+  void aSave_triggered(void);
+  void aLoad_triggered(void);
+
+  void logView_itemClicked(QListWidgetItem *item);
+
+  void updateLog();
 };
 //=============================================================================
 #endif

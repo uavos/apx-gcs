@@ -26,6 +26,7 @@
 #include <QtCore>
 #include "FactSystem.h"
 class NodeItem;
+class PawnScript;
 //=============================================================================
 class NodeField: public Fact
 {
@@ -47,17 +48,19 @@ public:
   QString conf_name;
   QString conf_descr;
 
-  QString ftypeString() const;
+  QString ftypeString(int i=-1) const;
 
   //Fact override
   void setModified(const bool &v);
   QString text() const;
-  //void setText(const QString &v);
   bool setValue(const QVariant &v);
   const QStringList & enumStrings() const;
   void hashData(QCryptographicHash *h) const;
 
   NodeItem *node;
+  PawnScript *script;
+
+  void createSubFields(void);
 private:
   NodeField *parentField;
 
@@ -65,9 +68,11 @@ private:
   int ftypeSize() const;
   void updateDataType();
 
-  void createSubFields(void);
+
 private slots:
   void updateStatus();
+  void validate();
+  void validateData();
 
   //---------------------------------------
   // PROPERTIES

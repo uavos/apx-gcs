@@ -20,44 +20,36 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactDelegateDialog_H
-#define FactDelegateDialog_H
-#include <QtWidgets>
+#ifndef PawnCompiler_H
+#define PawnCompiler_H
 #include <FactSystem.h>
 //=============================================================================
-class FactDelegateDialog: public QDialog
+class PawnCompiler: public QObject
 {
   Q_OBJECT
 public:
-  explicit FactDelegateDialog(Fact *fact, QWidget *parent = 0);
-  ~FactDelegateDialog();
+  PawnCompiler(Fact *fact);
 
-  void setWidget(QWidget *w);
+  bool compile();
 
-  virtual bool aboutToUpload(void){return true;}
-  virtual bool aboutToClose(void){return true;}
+  QString getLog();
+  bool error();
+
+  const QByteArray & outData() const; //binary compiled data
+
 
 private:
-  static QHash<QString,FactDelegateDialog*> dlgMap;
-
-protected:
   Fact *fact;
-  QWidget *widget;
 
-  QToolBar *toolBar;
-  QVBoxLayout *vlayout;
-
-  QAction *aUpload;
-  QAction *aUndo;
-  QAction *aSep;
-
-  void addAction(QAction *a);
-
-  void closeEvent(QCloseEvent * event);
-
-private slots:
-  void doSaveGeometry();
-  void doRestoreGeometry();
+  //compiler
+  QProcess pawncc;
+  QTemporaryFile tmpFile;
+  QString outFileName;
+  QString pawncc_log;
+  QByteArray m_outData;
+  bool m_error;
+signals:
+  void compiled();
 };
 //=============================================================================
 #endif

@@ -24,6 +24,8 @@
 #include "SvgIcon.h"
 #include <Nodes.h>
 //=============================================================================
+QHash<QString,FactDelegateDialog*> FactDelegateDialog::dlgMap;
+//=============================================================================
 FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
  : QDialog(parent),fact(fact),widget(NULL)
 {
@@ -40,19 +42,35 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
   //toolBar->setIconSize(QSize(14,14));
   //toolBar->layout()->setMargin(0);
 
-  if(qobject_cast<NodeField*>(fact->child(0))){
-    Nodes *nodes=static_cast<NodeField*>(fact->child(0))->node->nodes;
-    btnUpload=new QPushButton(SvgIcon(":/icons/sets/ionicons/android-upload.svg"),tr("Upload"),this);
-    btnUpload->setObjectName("greenButton");
-    connect(btnUpload,&QToolButton::clicked,nodes->f_upload,&Fact::trigger);
+  NodeField *nodeField=qobject_cast<NodeField*>(fact->child(0));
+  if(!nodeField) nodeField=qobject_cast<NodeField*>(fact);
+  if(nodeField){
+    Nodes *nodes=nodeField->node->nodes;
+    aUpload=new QAction(SvgIcon(":/icons/sets/ionicons/android-upload.svg"),tr("Upload"),this);
+    connect(aUpload,&QAction::triggered,nodes->f_upload,&Fact::trigger);
     connect(nodes->f_upload,&Fact::enabledChanged,this,[=](){
       NodeField *nf=qobject_cast<NodeField*>(fact->child(0));
-      btnUpload->setEnabled(nf && nf->node->nodes->f_upload->enabled());
+      if(!nf) nf=qobject_cast<NodeField*>(fact);
+      aUpload->setEnabled(nf && nf->node->nodes->f_upload->enabled());
     });
-    btnUpload->setEnabled(nodes->f_upload->enabled());
-    toolBar->addWidget(btnUpload);
-    toolBar->addSeparator();
+    aUpload->setEnabled(nodes->f_upload->enabled());
+    toolBar->addAction(aUpload);
+    toolBar->widgetForAction(aUpload)->setObjectName("greenAction");
   }
+
+  aUndo=new QAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Undo"),this);
+  connect(aUndo,&QAction::triggered,fact,&Fact::restore);
+  connect(fact,&Fact::modifiedChanged,this,[=](){
+    aUndo->setEnabled(fact->modified());
+  });
+  aUndo->setEnabled(fact->modified());
+  toolBar->addAction(aUndo);
+
+  toolBar->addSeparator();
+
+  aSep=toolBar->addSeparator();
+
+
 
   //toolbar spacer
   /*QWidget* spacer = new QWidget();
@@ -60,12 +78,12 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
   toolBar->addWidget(spacer);*/
 
   //close button
-  QPushButton *btnClose=new QPushButton(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
-  btnClose->setObjectName("redButton");
-  connect(btnClose,&QToolButton::clicked,[=](){
+  QAction *aClose=new QAction(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
+  connect(aClose,&QAction::triggered,[=](){
     if(aboutToClose()) accept();
   });
-  toolBar->addWidget(btnClose);
+  toolBar->addAction(aClose);
+  toolBar->widgetForAction(aClose)->setObjectName("redAction");
 
   /*QAction *a=new QAction(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
   connect(a,&QAction::triggered,[=](){
@@ -85,6 +103,12 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
 FactDelegateDialog::~FactDelegateDialog()
 {
   //qDebug()<<"delete FactDelegateDialog";
+  dlgMap.remove(dlgMap.key(this));
+}
+//=============================================================================
+void FactDelegateDialog::addAction(QAction *a)
+{
+  toolBar->insertAction(aSep,a);
 }
 //=============================================================================
 void FactDelegateDialog::setWidget(QWidget *w)
@@ -95,6 +119,18 @@ void FactDelegateDialog::setWidget(QWidget *w)
   //vlayout->insertWidget(0,w);
   vlayout->addWidget(w);
   widget=w;
+
+  QString s=fact->titlePath();
+  if(dlgMap.contains(s)){
+    FactDelegateDialog *dlg=dlgMap.value(s);
+    dlg->show();
+    dlg->raise();
+    dlg->activateWindow();
+    deleteLater();
+    return;
+  }
+  dlgMap.insert(s,this);
+
   doRestoreGeometry();
   show();
 }

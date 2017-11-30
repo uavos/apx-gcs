@@ -44,7 +44,6 @@ class Fact: public FactData
   Q_PROPERTY(QString qmlMenu READ qmlMenu WRITE setQmlMenu NOTIFY qmlMenuChanged)
   Q_PROPERTY(QString qmlEditor READ qmlEditor WRITE setQmlEditor NOTIFY qmlEditorChanged)
 
-  Q_PROPERTY(QString units READ units WRITE setUnits NOTIFY unitsChanged)
   Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
 
 public:
@@ -83,6 +82,16 @@ public:
   };
   virtual QVariant data(int col, int role) const;
 
+  template<class T>
+  T parent_cast() const
+  {
+    for(FactTree *i=parentItem();i;i=i->parentItem()){
+      T p=qobject_cast<T>(i);
+      if(p)return p;
+    }
+    return NULL;
+  }
+
 protected:
   virtual void hashData(QCryptographicHash *h) const;
 
@@ -119,9 +128,6 @@ public:
   QString qmlEditor() const;
   void setQmlEditor(const QString &v);
 
-  QString units() const;
-  void setUnits(const QString &v);
-
   bool busy() const;
   void setBusy(const bool &v);
 
@@ -135,7 +141,6 @@ protected:
   int m_progress;
   QString  m_qmlMenu;
   QString  m_qmlEditor;
-  QString  m_units;
   bool m_busy;
 
 signals:
@@ -149,7 +154,6 @@ signals:
 
   void qmlMenuChanged();
   void qmlEditorChanged();
-  void unitsChanged();
   void busyChanged();
 
 };

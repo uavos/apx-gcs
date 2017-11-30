@@ -192,7 +192,7 @@ QComboBox QAbstractItemView {
 /*========================================================================*/
 QPushButton, QToolButton {
     min-height: 10px;
-    /*max-height: 20px;*/
+    max-height: 20px;
     border: 1px solid #465158;
     margin: 1px;
     border-radius: 4px;
@@ -270,28 +270,28 @@ QToolButton:pressed#uploadButton {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #62B84E, stop: 1 #148A47);
 }
 /*========================================================================*/
-QPushButton#redButton {
+QToolButton#redAction {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #d02, stop: 1 #902);
 }
-QPushButton:hover#redButton {
+QToolButton:hover#redAction {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f03, stop: 1 #e03);
 }
-QPushButton:pressed#redButton {
+QToolButton:pressed#redAction {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #d03, stop: 1 #902);
 }
-QPushButton:disabled#redButton {
+QToolButton:disabled#redAction {
     background-color: #300;
 }
-QPushButton#greenButton {
+QToolButton#greenAction {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #73D95D, stop: 1 #18A154);
 }
-QPushButton:hover#greenButton {
+QToolButton:hover#greenAction {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #87FF6D, stop: 1 #1FD16D);
 }
-QPushButton:pressed#greenButton {
+QToolButton:pressed#greenAction {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #62B84E, stop: 1 #148A47);
 }
-QPushButton:disabled#greenButton {
+QToolButton:disabled#greenAction {
     background-color: #030;
 }
 /*========================================================================*/

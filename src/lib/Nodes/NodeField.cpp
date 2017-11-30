@@ -23,23 +23,26 @@
 #include "NodeField.h"
 #include "NodeItem.h"
 #include "Nodes.h"
-#include "node.h"
-#include "Vehicles.h"
-#include "Vehicle.h"
-#include "VehicleMandalaFact.h"
+#include <node.h>
+#include <Vehicles.h>
+#include <Vehicle.h>
+#include <VehicleMandalaFact.h>
+#include "PawnScript.h"
 //=============================================================================
 NodeField::NodeField(NodeItem *node, quint16 id)
   : Fact(NULL,"field#","","",FactItem,NoData),
     id(id),
     ftype(-1),
     node(node),
+    script(NULL),
     parentField(NULL),
     m_valid(false),
     m_dataValid(false),
     m_array(0)
 {
-  //node->request(apc_conf_dsc,QByteArray().append((unsigned char)id),node->timeout_ms,false);
-  //connect(this,&NodeField::removed,[=](){updateModified(false);});
+  connect(this,&NodeField::validChanged,this,&NodeField::validate);
+  connect(this,&NodeField::dataValidChanged,this,&NodeField::validateData);
+
 }
 //child of expanded field
 NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype)
@@ -47,11 +50,13 @@ NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, cons
     id(parent->id),
     ftype(ftype),
     node(node),
+    script(NULL),
     parentField(parent),
     m_valid(true),
     m_dataValid(false),
     m_array(0)
 {
+  //connect(this,&NodeField::dataValidChanged,this,&NodeField::validateData);
   updateDataType();
   connect(this,&NodeField::valueChanged,parent,&NodeField::updateStatus);
   parent->updateStatus();
@@ -108,6 +113,10 @@ void NodeField::updateStatus()
     }
     if(acnt>0)setStatus(QString("[%1/%2]").arg(acnt).arg(size()));
     else setStatus(QString("[%1]").arg(size()));
+  }else if(ftype==ft_script){
+    if(script->error())setStatus("<"+tr("error")+">");
+    else if(value().toString().isEmpty())setStatus("<"+tr("empty")+">");
+    else setStatus(QString("%1 Kb").arg(script->size()/1024.0,0,'f',1));
   }
 }
 //=============================================================================
@@ -118,15 +127,19 @@ void NodeField::setModified(const bool &v)
   if(v){
     //set all parents to modified=true
     for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
-      static_cast<Fact*>(i)->setModified(v);
+      Fact *f=qobject_cast<Fact*>(i);
+      if(f)f->setModified(v);
+      else break;
     }
     return;
   }
   //refresh modified status of all parent items
-  for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
+  for(FactTree *i=parentItem();i && i!=node->nodes->parentItem();i=i->parentItem()){
     foreach (FactTree *c, i->childItems()) {
-      Fact *f=static_cast<Fact*>(c);
-      if(f->modified())return;
+      Fact *f=qobject_cast<Fact*>(c);
+      if(f){
+        if(f->modified())return;
+      }else break;
     }
     static_cast<Fact*>(i)->setModified(v);
   }
@@ -134,17 +147,11 @@ void NodeField::setModified(const bool &v)
 //=============================================================================
 QString NodeField::text() const
 {
+  if(ftype==ft_script) return QString();
   if(ftype!=ft_varmsk)return Fact::text();
   VehicleMandalaFact *mf=node->nodes->vehicle->f_mandala->factById(value().toUInt());
   return mf?mf->title():QString();
 }
-/*void NodeField::setText(const QString &v)
-{
-  if(ftype!=ft_varmsk){
-    Fact::setText(v);
-    return;
-  }
-}*/
 bool NodeField::setValue(const QVariant &v)
 {
   if(ftype!=ft_varmsk)return Fact::setValue(v);
@@ -175,126 +182,95 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
 {
   switch(ncmd){
     case apc_conf_dsc: {
-      if(node->valid() || valid())return true;
+      if(node->valid())return true;
       if(!data.size())return true;
-      int cnt=data.size();
-      const char *str=(const char*)(data.data());
-      int sz;
-      _node_ft r_ftype=(_node_ft)*str++;
-      cnt--;
-      sz=strlen(str)+1;
-      if(sz>cnt)break;
-      const QString r_name(QByteArray(str,sz-1));
-      str+=sz;
-      cnt-=sz;
-      sz=strlen(str)+1;
-      if(sz>cnt)break;
-      QString r_descr(QByteArray(str,sz-1));
-      str+=sz;
-      cnt-=sz;
-      sz=strlen(str)+1;
-      if(sz>cnt)break;
-      QStringList r_opts(QString(QByteArray(str,sz-1)).split(',',QString::SkipEmptyParts));
-      str+=sz;
-      cnt-=sz;
-      //extract opts from descr if any
-      if(r_opts.size()==0 && r_descr.contains('(')){
-        QString s(r_descr.mid(r_descr.indexOf('(')+1).trimmed());
-        r_opts=QStringList(s.left(s.lastIndexOf(')')).split(','));
-        if(r_opts.size()<2)r_opts.clear();
-        else r_descr=r_descr.left(r_descr.indexOf('(')).trimmed();
-      }
-      if(r_opts.size()==1)r_opts.clear();
-      //truncate opts by '_'
-      if(r_opts.size()&&r_opts.first().contains("_")){
-        QStringList nopts;
-        foreach(QString opt,r_opts)
-          nopts.append(opt.mid(opt.lastIndexOf('_')+1));
-        r_opts=nopts;
-      }
-      //default opts
-      if((r_ftype==ft_option)&&(!r_opts.size()))
-        r_opts=QStringList()<<"no"<<"yes";
-      if(cnt!=0){
-        qWarning("Error node_conf descriptor received (cnt:%u)",cnt);
-        break;
-      }
-      //ftype=r_ftype;
-      //ba_conf=QByteArray(getConfSize(),0);
-      //ba_conf_bkp=QByteArray(getConfSize(),0);
-      //conf_descr=r_descr;
-      ftype=r_ftype;
-      conf_name=r_name;
-      conf_descr=r_descr;
-      setName(r_name);
-      setTitle(r_name);
-      setDescr(r_descr);
-      setEnumStrings(r_opts);
-      updateDataType();
-      //createSubFields();
-      setValid(true);
-      //check if comment field and bind to node value
-      if(id==0 && name()=="comment"){
-        node->setValue(text());
-        connect(this,&NodeField::textChanged,[=](){node->setValue(text());});
-      }
-      //node->request(apc_conf_read,QByteArray().append((unsigned char)id),node->timeout_ms,false);
-      //check all node fields validity
-      bool ok=true;
-      foreach (NodeField *f, node->allFields) {
-        if(f->valid())continue;
-        ok=false;
-        break;
-      }
-      if(!ok)return true;
-      //all fields downloaded
-      foreach (NodeField *f, node->allFields) {
-        f->createSubFields();
-      }
-      if(node->commands.valid){
-        node->setValid(true);
+      if(!valid()){
+        int cnt=data.size();
+        const char *str=(const char*)(data.data());
+        int sz;
+        _node_ft r_ftype=(_node_ft)*str++;
+        cnt--;
+        sz=strlen(str)+1;
+        if(sz>cnt)break;
+        const QString r_name(QByteArray(str,sz-1));
+        str+=sz;
+        cnt-=sz;
+        sz=strlen(str)+1;
+        if(sz>cnt)break;
+        QString r_descr(QByteArray(str,sz-1));
+        str+=sz;
+        cnt-=sz;
+        sz=strlen(str)+1;
+        if(sz>cnt)break;
+        QStringList r_opts(QString(QByteArray(str,sz-1)).split(',',QString::SkipEmptyParts));
+        str+=sz;
+        cnt-=sz;
+        //extract opts from descr if any
+        if(r_opts.size()==0 && r_descr.contains('(')){
+          QString s(r_descr.mid(r_descr.indexOf('(')+1).trimmed());
+          r_opts=QStringList(s.left(s.lastIndexOf(')')).split(','));
+          if(r_opts.size()<2)r_opts.clear();
+          else r_descr=r_descr.left(r_descr.indexOf('(')).trimmed();
+        }
+        if(r_opts.size()==1)r_opts.clear();
+        //truncate opts by '_'
+        if(r_opts.size()&&r_opts.first().contains("_")){
+          QStringList nopts;
+          foreach(QString opt,r_opts)
+            nopts.append(opt.mid(opt.lastIndexOf('_')+1));
+          r_opts=nopts;
+        }
+        //default opts
+        if((r_ftype==ft_option)&&(!r_opts.size()))
+          r_opts=QStringList()<<"no"<<"yes";
+        if(cnt!=0){
+          qWarning("Error node_conf descriptor received (cnt:%u)",cnt);
+          break;
+        }
+        ftype=r_ftype;
+        conf_name=r_name;
+        conf_descr=r_descr;
+        setName(r_name);
+        setTitle(r_name);
+        setDescr(r_descr);
+        setEnumStrings(r_opts);
+        setValid(true);
+        if(node->valid())node->dbRegister(NodeItem::NODE_DB_DICT);
       }
       foreach (NodeField *f, node->allFields) {
         if(f->dataValid())continue;
         node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
         break;
       }
-      node->groupFields();
-      node->dbRegister(apc_conf_dsc);
       //qDebug()<<"fields downloaded"<<node->f_fields->size();
     }return true;
     case apc_conf_read: {
       //qDebug()<<path();
       if(!data.size())return true; //requests
       if(!valid())break;
-      if(dataValid())return true;
-      //qDebug()<<name()<<data.size();
       int sz=ftypeSize();
-      if(!unpackValue(data))break;
-      setDataValid(true);
-      backup();
-      //check all node fields data validity
-      if(!node->dataValid()){
-        bool ok=true;
-        foreach (NodeField *f, node->allFields) {
-          if(f->dataValid())continue;
-          ok=false;
-          break;
+      if(!dataValid()){
+        //qDebug()<<name()<<data.size();
+        if(!unpackValue(data))break;
+        if(ftype!=ft_script){
+          setDataValid(true);
         }
-        if(ok)node->setDataValid(true);
-      }
-      if(data.size()==sz){
-        foreach (NodeField *f, node->allFields) {
-          if(f->dataValid())continue;
-          node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
-          break;
+        if(data.size()==sz){
+          foreach (NodeField *f, node->allFields) {
+            if(f->dataValid())continue;
+            if(f->script && f->script->isBusy())continue;
+            node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
+            break;
+          }
+          return true;
         }
-        return true;
       }
-      //continue bulk unpack
-      const int fnum=(unsigned char)data.at(sz);
-      if(fnum>=node->allFields.size())break;
-      return node->allFields.at(fnum)->unpackService(ncmd,data.mid(sz+1));
+      if(data.size()>sz){
+        //continue bulk unpack
+        const int fnum=(unsigned char)data.at(sz);
+        if(fnum>=node->allFields.size())break;
+        return node->allFields.at(fnum)->unpackService(ncmd,data.mid(sz+1));
+      }
     }return true;
     case apc_conf_write: {
       if(!valid())break;
@@ -309,6 +285,11 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       //zero data size - update confirmation
       backup();
     }return true;
+    case apc_script_file:
+    case apc_script_read:
+    case apc_script_write:
+      if(script)script->unpackService(ncmd,data);
+      return true;
   }
   //error
   return false;
@@ -336,7 +317,20 @@ bool NodeField::unpackValue(const QByteArray &data)
     case ft_lstr:   v=QVariant(QString(QByteArray((const char*)*(_ft_lstr*)ptr,sizeof(_ft_lstr))));break;
     case ft_varmsk: v=QVariant((quint16)*(_ft_varmsk*)ptr);break; //node->model->mvar->field(*(_ft_varmsk*)ptr)->name();break;
     case ft_option: v=QVariant((quint8)*(_ft_option*)ptr);break; //(opts.size())?(*(_ft_option*)ptr<opts.size()?opts.at(*(_ft_option*)ptr):"???"):QString::number(*(_ft_option*)ptr);break;
-    //case ft_script: return script?script->getSource():QVariant();break;
+    case ft_script: {
+      if(!script) break;
+      _ft_script *scr=(_ft_script*)ptr;
+      //qDebug()<<"scr:"<<scr->code_size<<scr->size<<path();
+      if(!scr->size){
+        /*setValue(QString());
+        setDataValid(true);
+        updateStatus();*/
+        script->unpackFlashData();
+      }else{
+        script->download();
+      }
+      return true;
+    }break;
   }
   setValue(v);
   return true;
@@ -363,11 +357,35 @@ QByteArray NodeField::packValue() const
     case ft_lstr:   strncpy((char*)*(_ft_lstr*)ptr,value().toString().toUtf8().data(),sizeof(_ft_lstr));break;
     case ft_varmsk: *(_ft_varmsk*)ptr=value().toUInt();break;
     case ft_option: *(_ft_option*)ptr=value().toUInt();break;
-    //case ft_script: if(script) rv=script->setSource(value.toString().toUtf8());break;
+    //case ft_script: if(script) return script->setSource(value.toString().toUtf8());break;
   }
   return ba;
 }
 //=============================================================================
+//=============================================================================
+void NodeField::validate()
+{
+  if(!valid())return;
+  updateDataType();
+  node->validate();
+}
+//=============================================================================
+void NodeField::validateData()
+{
+  if(!dataValid())return;
+  backup();
+  //check all node fields data validity
+  if(!node->dataValid()){
+    bool ok=true;
+    foreach (NodeField *f, node->allFields) {
+      if(f->dataValid())continue;
+      ok=false;
+      break;
+    }
+    if(ok)node->setDataValid(true);
+  }
+  //qDebug()<<"dataValid"<<path();
+}
 //=============================================================================
 void NodeField::createSubFields(void)
 {
@@ -391,6 +409,11 @@ void NodeField::createSubFields(void)
     QString s=descr().mid(descr().lastIndexOf('[')+1);
     s=s.left(s.indexOf(']'));
     if(!s.contains("..")) setUnits(s);
+  }
+  //check if comment field and bind to node value
+  if(id==0 && name()=="comment"){
+    node->setStatus(text());
+    connect(this,&NodeField::textChanged,[=](){node->setStatus(text());});
   }
 
   if((array()>1||force_array)){
@@ -504,9 +527,9 @@ int NodeField::ftypeSize() const
   if(array()>0)sz*=array();
   return sz;
 }
-QString NodeField::ftypeString() const
+QString NodeField::ftypeString(int i) const
 {
-  switch(ftype){
+  switch(i<0?ftype:i){
     case ft_option: return "option";
     case ft_varmsk: return "varmsk";
     case ft_uint:   return "uint";
@@ -551,18 +574,18 @@ void NodeField::updateDataType()
       setDataType(IntData);
     break;
     case ft_varmsk:{
-      //setDataType(EnumData);
-      //QStringList st;
-      /*QList<int> vlist;
-      foreach (VehicleMandalaFact *mf, Vehicles::instance()->f_local->f_mandala->allFacts) {
-        //st.append(mf->name());
-        vlist.append(mf->id());
-      }
-      //setEnumStrings(st,vlist);
-      m_enumValues=vlist;*/
       setDataType(IntData);
       setQmlEditor("FactEditMID");
     }break;
+    case ft_script:
+      if(script)break;
+      script=new PawnScript(this);
+      setDataType(TextData);
+      setUnits("script");
+      setQmlEditor("FactEditScript");
+      connect(script,&PawnScript::changed,this,&NodeField::updateStatus);
+    break;
+
   }
 }
 //=============================================================================

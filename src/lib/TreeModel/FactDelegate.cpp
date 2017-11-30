@@ -24,6 +24,7 @@
 #include <FactTreeModel.h>
 #include "FactDelegate.h"
 #include "FactDelegateArray.h"
+#include "FactDelegateScript.h"
 //=============================================================================
 FactDelegate::FactDelegate(QObject *parent)
  : QItemDelegate(parent)
@@ -85,6 +86,13 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
       }break;
       default:
         su=f->units();
+        if(f->units()=="script"){
+          QPushButton *btn=createButton(parent);
+          connect(btn,&QPushButton::clicked,[=](){
+            new FactDelegateScript(f);//,parent->parentWidget());
+          });
+          return btn;
+        }
     }
   }
   if(!e) e=QItemDelegate::createEditor(parent,option,index);
@@ -135,10 +143,12 @@ QPushButton * FactDelegate::createButton(QWidget *parent) const
 }
 void FactDelegate::setEditorData(QWidget *editor,const QModelIndex &index) const
 {
+  if(qobject_cast<QPushButton*>(editor))return;
   QItemDelegate::setEditorData(editor,index);
 }
 void FactDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const
 {
+  if(qobject_cast<QPushButton*>(editor))return;
   Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
   if(f->dataType()==Fact::ActionData)return;
   if(f->dataType()==Fact::NoData)return;
@@ -184,8 +194,9 @@ bool FactDelegate::drawProgress(QPainter *painter,const QStyleOptionViewItem &op
 //=============================================================================
 QSize FactDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-  QSize sz=QItemDelegate::sizeHint(option,index);
+  return QItemDelegate::sizeHint(option,index);
+  /*QSize sz=QItemDelegate::sizeHint(option,index);
   sz.setHeight(QFontMetrics(option.font).height());
-  return sz;
+  return sz;*/
 }
 //=============================================================================

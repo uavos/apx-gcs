@@ -61,8 +61,6 @@ public:
   };
   Q_ENUM(StreamType)
 
-
-
   explicit Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal);
 
   Fact * f_select; //fact action to select this vehicle
@@ -81,6 +79,8 @@ public:
   VehicleNmtManager *nmtManager;
 
   QByteArray uid;
+
+  QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
 
 private:
   QTimer onlineTimer;

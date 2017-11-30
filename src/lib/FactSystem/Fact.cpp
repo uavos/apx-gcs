@@ -74,14 +74,17 @@ QVariant Fact::data(int col, int role) const
         if(modified())return QColor(Qt::red).lighter();
         if(!enabled())return QColor(Qt::gray);
         if(active())return QColor(Qt::green).lighter();
-        if(treeItemType()==Fact::FactItem) return QColor(Qt::gray).lighter(150);
-        return QVariant();
+        if(isZero())return QColor(Qt::gray);
+        //if(treeItemType()==Fact::FactItem) return QColor(Qt::white);
+        //return QColor(Qt::green).lighter(195);
+        return QColor(Qt::white);//QVariant();
       }
       if(col==Fact::FACT_MODEL_COLUMN_VALUE){
         if(!enabled())return QColor(Qt::darkGray);
         if(dataType()==Fact::ActionData) return QColor(Qt::blue).lighter(170);
         if(size()) return QColor(Qt::darkGray); //expandable
         if(modified())return QColor(Qt::yellow);
+        if(isZero())return QColor(Qt::gray);
         //if(ftype==ft_string) return QVariant();
         //if(ftype==ft_varmsk) return QColor(Qt::cyan);
         return QColor(Qt::cyan).lighter(180);
@@ -92,7 +95,8 @@ QVariant Fact::data(int col, int role) const
     case Qt::FontRole: {
       QFont font(qApp->font());
       if(col==Fact::FACT_MODEL_COLUMN_DESCR) return QVariant();
-      if(treeItemType()!=Fact::FactItem) font.setBold(true);
+      if(treeItemType()!=Fact::FactItem && col==Fact::FACT_MODEL_COLUMN_NAME)
+        font.setBold(true);
       //if(ftype>=ft_regPID) return QFont("Monospace",-1,column==tc_field?QFont::Bold:QFont::Normal);
       //if(col==FACT_MODEL_COLUMN_NAME) return QFont("Monospace",-1,QFont::Normal,isModified());
       //if(ftype==ft_string) return QFont("",-1,QFont::Normal,true);
@@ -134,7 +138,13 @@ QVariant Fact::data(int col, int role) const
     case Fact::FACT_MODEL_COLUMN_VALUE:{
       if(dataType()==Fact::ActionData) return QString("<exec>");
       const QString s=text();
-      if(s.isEmpty()) return status();
+      if(s.isEmpty()){
+        if(!status().isEmpty()) return status();
+        if(treeItemType()==GroupItem || treeItemType()==SectionItem){
+          //if(isZero())return tr("default");
+          return QVariant();
+        }
+      }
       if(role==Qt::EditRole && enumStrings().isEmpty()){
         //if(dataType()==FloatData)return value().toDouble();
         if(dataType()==BoolData)return value().toBool();
@@ -368,21 +378,6 @@ void Fact::setQmlEditor(const QString &v)
   if(m_qmlEditor==v)return;
   m_qmlEditor=v;
   emit qmlEditorChanged();
-}
-QString Fact::units() const
-{
-  if(_bindedFact) return static_cast<Fact*>(_bindedFact)->units();
-  return m_units;
-}
-void Fact::setUnits(const QString &v)
-{
-  if(_bindedFact){
-    static_cast<Fact*>(_bindedFact)->setUnits(v);
-    return;
-  }
-  if(m_units==v)return;
-  m_units=v;
-  emit unitsChanged();
 }
 bool Fact::busy() const
 {

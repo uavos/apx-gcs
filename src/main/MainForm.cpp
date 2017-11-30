@@ -144,6 +144,7 @@ void MainForm::closeEvent(QCloseEvent *e)
     return;
   }
   closing=true;
+  qApp->quit();
 }
 //=============================================================================
 void MainForm::saveDockState()

@@ -38,6 +38,7 @@ class NodeItem: public NodeData
 
   Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
   Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
+  Q_PROPERTY(bool infoValid READ infoValid WRITE setInfoValid NOTIFY infoValidChanged)
 
 public:
   explicit NodeItem(Nodes *parent,const QByteArray &sn);
@@ -46,16 +47,13 @@ public:
 
   QList<NodeField*> allFields;
 
-  void groupFields(void);
-
   int timeout_ms;
   void request(uint cmd, const QByteArray &data, uint timeout_ms, bool highprio=false);
 
-  void dbRegister(int state);
+  enum DBState {NODE_DB_INFO, NODE_DB_DICT};
+  void dbRegister(DBState state);
 
   void message(QString msg);
-
-  void saveToXml(QDomNode dom) const;
 
   //override
   QVariant data(int col, int role) const;
@@ -74,14 +72,22 @@ public:
 private:
   QStringList sortNames;
 
+  void groupFields(void);
+  void groupNodes(void);
   void requestConfDsc();
 
 private slots:
   void updateStats();
+  void updateProgress();
+
+  void validateData();
+  void validateInfo();
 
 public slots:
   void nstat();
   void upload();
+
+  void validate();
 
   //data comm
 public slots:
@@ -102,18 +108,22 @@ public:
   void setValid(const bool &v);
   bool dataValid() const;
   void setDataValid(const bool &v);
+  bool infoValid() const;
+  void setInfoValid(const bool &v);
 
 protected:
   QString m_version;
   QString m_hardware;
   bool m_valid;
   bool m_dataValid;
+  bool m_infoValid;
 
 signals:
   void versionChanged();
   void hardwareChanged();
   void validChanged();
   void dataValidChanged();
+  void infoValidChanged();
 };
 //=============================================================================
 #endif

@@ -25,6 +25,7 @@
 #include "NodeItem.h"
 #include "Nodes.h"
 #include "NodeField.h"
+#include "PawnScript.h"
 #include <node.h>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
@@ -32,7 +33,8 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
     timeout_ms(500),
     nodes(parent),
     m_valid(false),
-    m_dataValid(false)
+    m_dataValid(false),
+    m_infoValid(false)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
 
@@ -52,25 +54,25 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   //datalink
   connect(this,&NodeItem::nmtRequest,parent->vehicle->nmtManager,&VehicleNmtManager::request);
 
-  request(apc_info,QByteArray(),timeout_ms,true);
+  connect(this,&NodeItem::validChanged,this,&NodeItem::validate);
+  connect(this,&NodeItem::dataValidChanged,this,&NodeItem::validateData);
+  connect(this,&NodeItem::infoValidChanged,this,&NodeItem::validateInfo);
 
-  dbRegister(apc_search);
+  request(apc_info,QByteArray(),timeout_ms,true);
 }
 //=============================================================================
-void NodeItem::dbRegister(int state)
+void NodeItem::dbRegister(DBState state)
 {
   QSqlQuery query(*FactSystem::db());
   while(FactSystem::db()->isOpen()){
     switch(state){
-      case apc_search:
+      default: return;
+      case NODE_DB_INFO:
         //register node sn
         query.prepare("INSERT INTO Nodes(sn, date) VALUES(?, ?)");
         query.addBindValue(sn.toHex().toUpper());
         query.addBindValue(QDateTime::currentDateTime().toTime_t());
         query.exec();
-        FactSystem::db()->commit();
-      return;
-      case apc_info:
         //modify node info
         query.prepare("UPDATE Nodes SET date=?, name=?, version=?, hardware=? WHERE sn=?");
         query.addBindValue(QDateTime::currentDateTime().toTime_t());
@@ -79,8 +81,9 @@ void NodeItem::dbRegister(int state)
         query.addBindValue(hardware());
         query.addBindValue(sn.toHex().toUpper());
         query.exec();
+        FactSystem::db()->commit();
       break;
-      case apc_conf_inf:
+      case NODE_DB_DICT:
         //modify node conf hash
         query.prepare("UPDATE Nodes SET date=?, hash=?, fcnt=? WHERE sn=?");
         query.addBindValue(QDateTime::currentDateTime().toTime_t());
@@ -88,8 +91,6 @@ void NodeItem::dbRegister(int state)
         query.addBindValue(allFields.size());
         query.addBindValue(sn.toHex().toUpper());
         query.exec();
-      break;
-      case apc_conf_dsc:
         //save all fields structure in NodeFields table
         query.prepare("DELETE FROM NodesDict WHERE sn=? AND hash=?");
         query.addBindValue(sn.toHex().toUpper());
@@ -124,9 +125,47 @@ void NodeItem::dbRegister(int state)
   qWarning() << query.executedQuery();
 }
 //=============================================================================
+void NodeItem::validate()
+{
+  if(!valid()){
+    bool ok=true;
+    foreach (NodeField *f, allFields) {
+      if(f->valid())continue;
+      ok=false;
+      break;
+    }
+    if(!ok)return;
+    //all fields downloaded and valid
+    if(commands.valid){
+      setValid(true);
+      //qDebug()<<node->path();
+    }
+    return;
+  }
+  foreach (NodeField *f, allFields) {
+    f->createSubFields();
+  }
+  groupFields();
+  //qDebug()<<"Node valid"<<path();
+  FactSystem::instance()->jsSync(this);
+}
+void NodeItem::validateData()
+{
+  if(!dataValid())return;
+  setProgress(0);
+  //qDebug()<<"Node dataValid"<<path();
+}
+void NodeItem::validateInfo()
+{
+  if(!infoValid())return;
+  groupNodes();
+  //FactSystem::instance()->jsSync(this);
+  //qDebug()<<"Node infoValid"<<path();
+}
+//=============================================================================
 void NodeItem::updateStats()
 {
-  setDescr(QString("%1 %2\t%3").arg(m_hardware).arg(m_version).arg(QString(sn.toHex().toUpper())));
+  setDescr(QString("%1 %2 %3").arg(m_hardware).arg(m_version).arg(QString(sn.toHex().toUpper())));
 }
 //=============================================================================
 void NodeItem::nstat()
@@ -136,10 +175,12 @@ void NodeItem::nstat()
 //=============================================================================
 void NodeItem::upload()
 {
+  if(!(valid()&&dataValid()))return;
   if(!modified())return;
   foreach(NodeField *f,allFields){
     if(!f->modified())continue;
-    request(apc_conf_write,QByteArray().append((unsigned char)f->id).append(f->packValue()),1000);
+    if(f->script) f->script->upload();
+    else request(apc_conf_write,QByteArray().append((unsigned char)f->id).append(f->packValue()),1000);
   }
   request(apc_conf_write,QByteArray().append((unsigned char)0xFF),1000);
 }
@@ -172,9 +213,9 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       setRebooting(ninfo.flags.reboot);
       setBusy(ninfo.flags.busy);
       setFailure(false);
+      setInfoValid(true);
+      dbRegister(NodeItem::NODE_DB_INFO);
       request(apc_conf_inf,QByteArray(),timeout_ms,true);
-      FactSystem::instance()->jsSync(this);
-      dbRegister(apc_info);
     }return true;
     case apc_nstat: {
       if(ba.size()!=(sizeof(_node_name)+sizeof(_node_status)))break;
@@ -219,7 +260,6 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         }
         //qDebug()<<"fields created"<<conf_inf.cnt;
       }
-      dbRegister(apc_conf_inf);
       if(!commands.valid){
         request(apc_conf_cmds,QByteArray(),timeout_ms,false);
       }else requestConfDsc();
@@ -257,6 +297,10 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         }else{
           commands.valid=true;
           requestConfDsc();
+          if(!valid()){
+            validate();
+            if(valid())dbRegister(NodeItem::NODE_DB_DICT);
+          }
           //qDebug()<<commands.name;
         }
       }
@@ -269,21 +313,35 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       NodeField *field=allFields.value((unsigned char)ba.at(0),NULL);
       if(!field)return true;
       if(field->unpackService(ncmd,ba.mid(1))){
-        if(!(valid()&&dataValid())){
-          int ncnt=0;
-          foreach (NodeField *f, allFields) {
-            if(f->valid())ncnt+=7;
-            if(f->dataValid())ncnt+=3;
-          }
-          setProgress(ncnt?(ncnt*100)/allFields.size()/10:0);
-        }else setProgress(0);
+        updateProgress();
         return true;
       }
+    }break;
+    case apc_script_file:
+    case apc_script_read:
+    case apc_script_write: {
+      bool rv=false;
+      foreach (NodeField *f, allFields) {
+        if(f->unpackService(ncmd,ba)) rv=true;
+      }
+      return rv;
     }break;
   }
   //error
 
   return true;
+}
+//=============================================================================
+void NodeItem::updateProgress()
+{
+  if(!(valid()&&dataValid())){
+    int ncnt=0;
+    foreach (NodeField *f, allFields) {
+      if(f->valid())ncnt+=7;
+      if(f->dataValid())ncnt+=3;
+    }
+    setProgress(ncnt?(ncnt*100)/allFields.size()/10:0);
+  }
 }
 //=============================================================================
 void NodeItem::requestConfDsc()
@@ -364,14 +422,70 @@ void NodeItem::groupFields(void)
         //qDebug()<<cnt<<groupItem->path();
         foreach(FactTree *i,groupItem->childItems()){
           NodeField *f=static_cast<NodeField*>(i);
-          //f->setVisible(false);
+          f->setVisible(false);
         }
         connect(static_cast<Fact*>(groupItem->child(0)),&Fact::statusChanged,[=](){groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());});
         groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());
       }
     }
   }//foreach field
-  FactSystem::instance()->jsSync(this);
+}
+//=============================================================================
+void NodeItem::groupNodes(void)
+{
+  //check node grouping
+  //find same names with same parent
+  QList<NodeItem*>nlist;
+  Fact *group=NULL;
+  QString gname=title();
+  QStringList names;
+  names.append(title());
+  if(title()=="bldc"){
+    gname="servo";
+    names.append(gname);
+  }
+  foreach(NodeItem *i,nodes->snMap.values()){
+    if(names.contains(i->title()))
+      nlist.append(i);
+  }
+  foreach (Fact *f, nodes->nGroups) {
+    if(f->size()>0 && f->title()==gname.toUpper()){
+      group=f;
+      break;
+    }
+  }
+
+  if(group==NULL && nlist.size()<2){
+    //nodes->f_list->addItem(this);
+    return;
+  }
+  //qDebug()<<"-append-";
+  if(!group){
+    group=new Fact(nodes->f_list,gname,gname.toUpper(),"",GroupItem,NoData);
+    group->setSection(section());
+    nodes->nGroups.append(group);
+    //qDebug()<<"grp: "<<gname;
+  }
+
+  foreach(NodeItem *i,nlist){
+    if(i->parentItem()==group)continue;
+    nodes->f_list->removeItem(i,false);
+    group->addItem(i);
+    //qDebug()<<gname<<"<<"<<i->name;
+    //if(node->name.contains("shiva")) qDebug()<<node->name<<nlist.size()<<(group?group->name:"");
+  }
+  //update group descr
+  QStringList gNames,gHW;
+  foreach(FactTree *i,group->childItems()){
+    NodeItem *n=static_cast<NodeItem*>(i);
+    if(!gNames.contains(n->title()))gNames.append(n->title());
+    if(!gHW.contains(n->hardware()))gHW.append(n->hardware());
+  }
+  QStringList sdescr;
+  if(!gNames.isEmpty())sdescr.append(gNames.join(','));
+  if(!gHW.isEmpty())sdescr.append("("+gHW.join(',')+")");
+  if(!sdescr.isEmpty())group->setDescr(sdescr.join(' '));
+  group->setStatus(QString("[%1]").arg(group->size()));
 }
 //=============================================================================
 void NodeItem::request(uint cmd,const QByteArray &data,uint timeout_ms,bool highprio)
@@ -420,6 +534,16 @@ void NodeItem::setDataValid(const bool &v)
   m_dataValid=v;
   emit dataValidChanged();
 }
+bool NodeItem::infoValid() const
+{
+  return m_infoValid;
+}
+void NodeItem::setInfoValid(const bool &v)
+{
+  if(m_infoValid==v)return;
+  m_infoValid=v;
+  emit infoValidChanged();
+}
 //=============================================================================
 //=============================================================================
 QVariant NodeItem::data(int col, int role) const
@@ -432,7 +556,7 @@ QVariant NodeItem::data(int col, int role) const
         if(modified())return QColor(Qt::red).lighter();
         return QVariant();
       }
-      if(col==FACT_MODEL_COLUMN_VALUE)return QColor(Qt::yellow);//QVariant();
+      if(col==FACT_MODEL_COLUMN_VALUE)return QColor(Qt::yellow).lighter(170);//QVariant();
       //descr col
       return QColor(Qt::darkGray);
       //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
@@ -444,8 +568,10 @@ QVariant NodeItem::data(int col, int role) const
       //if(isUpgradePending())return QColor(0x40,0x00,0x00);
       //if(!inf_valid)return QVariant();//QColor(Qt::red).lighter();
       if(!valid())return QColor(50,50,0);
+      //if(!dataValid())return QColor(150,50,0);
       if(reconf())return QColor(Qt::darkGray).darker(200);
-    return QColor(Qt::darkCyan).darker(200);//QColor(0x20,0x40,0x40);//isModified()?QColor(0x40,0x20,0x20):
+      //return QColor(Qt::darkCyan).darker(200);//QColor(0x20,0x40,0x40);//isModified()?QColor(0x40,0x20,0x20):
+      return QColor(0x20,0x40,0x60);
   }
   return Fact::data(col,role);
 }
@@ -472,7 +598,8 @@ bool NodeItem::lessThan(Fact *rightFact) const
   ncmp=QString::localeAwareCompare(text(), rightFact->text());
   if(ncmp==0){
     //try to sort by sn same names
-    ncmp=QString::localeAwareCompare(QString(sn.toHex()), QString(static_cast<NodeItem*>(rightFact)->sn.toHex()));
+    NodeItem *rnode=qobject_cast<NodeItem*>(rightFact);
+    if(rnode) ncmp=QString::localeAwareCompare(QString(sn.toHex()), QString(rnode->sn.toHex()));
   }
   if(ncmp==0) return Fact::lessThan(rightFact);
   return ncmp<0;
@@ -485,58 +612,5 @@ void NodeItem::hashData(QCryptographicHash *h) const
   h->addData(hardware().toUtf8());
   h->addData(conf_hash.toUtf8());
   h->addData(QString::number(fwSupport()).toUtf8());
-}
-//=============================================================================
-void NodeItem::saveToXml(QDomNode dom) const
-{
-  QDomDocument doc=dom.ownerDocument();
-  dom=dom.appendChild(doc.createElement("node"));
-  dom.toElement().setAttribute("sn",QString(sn.toHex().toUpper()));
-  dom.toElement().setAttribute("name",title());
-
-  QDomNode e=dom.appendChild(doc.createElement("info"));
-  e.appendChild(doc.createElement("version")).appendChild(doc.createTextNode(version()));
-  e.appendChild(doc.createElement("hardware")).appendChild(doc.createTextNode(hardware()));
-
-  dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(hash().toHex().toUpper()));
-  dom.appendChild(doc.createElement("timestamp")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
-
-  /*if(commands.cmd.size()){
-    for(int i=0;i<commands.cmd.size();i++){
-      QDomNode e=dom.appendChild(doc.createElement("command"));
-      e.toElement().setAttribute("cmd",QString::number(commands.cmd.at(i)));
-      e.appendChild(doc.createElement("name")).appendChild(doc.createTextNode(commands.name.at(i)));
-      e.appendChild(doc.createElement("descr")).appendChild(doc.createTextNode(commands.descr.at(i)));
-    }
-  }*/
-
-  e=dom.appendChild(doc.createElement("fields"));
-  e.toElement().setAttribute("cnt",QString::number(allFields.size()));
-  e.toElement().setAttribute("hash",conf_hash);
-
-  QDomNode domf=e;
-  foreach(NodeField *f,allFields){
-    //f->saveToXml(e);
-    QDomNode dom=domf.appendChild(doc.createElement("field"));
-    dom.toElement().setAttribute("idx",QString::number(f->id));
-    dom.toElement().setAttribute("name",f->conf_name);
-
-    QDomNode e=dom.appendChild(doc.createElement("struct"));
-    e.appendChild(doc.createElement("type")).appendChild(doc.createTextNode(f->ftypeString()));
-    if(f->conf_descr.size())e.appendChild(doc.createElement("descr")).appendChild(doc.createTextNode(f->conf_descr));
-    if(f->enumStrings().size() && f->ftype!=ft_varmsk)e.appendChild(doc.createElement("opts")).appendChild(doc.createTextNode(f->enumStrings().join(',')));
-    //value
-    if(f->size()){
-      foreach(FactTree *i,f->childItems()) {
-        Fact *subf=static_cast<Fact*>(i);
-        QDomNode e=dom.appendChild(doc.createElement("value"));
-        e.toElement().setAttribute("idx",QString::number(subf->num()));
-        e.toElement().setAttribute("name",subf->title());
-        e.appendChild(doc.createTextNode(subf->text()));
-      }
-    }else{
-      dom.appendChild(doc.createElement("value")).appendChild(doc.createTextNode(f->text()));
-    }
-  }
 }
 //=============================================================================

@@ -52,9 +52,7 @@ class NodeData: public Fact
 public:
   explicit NodeData(Fact *parent, const QByteArray &sn);
 
-protected:
   QByteArray sn;
-
 
   //---------------------------------------
   // PROPERTIES

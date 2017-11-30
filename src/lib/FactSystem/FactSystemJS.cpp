@@ -74,7 +74,6 @@ void FactSystemJS::jsSync(Fact *item)
     Fact *fact=static_cast<Fact*>(list.at(i));
     QJSValue vp=v.property(fact->name());
     if(vp.isUndefined() || (!vp.isQObject()) || vp.toQObject()!=fact){
-      if(vp.isQObject())vp.toQObject()->deleteLater();
       vp=e->newQObject(fact);
       v.setProperty(fact->name(),vp);
     }

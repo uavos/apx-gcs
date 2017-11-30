@@ -62,6 +62,8 @@ SOURCES += \
     TreeModel/FactDelegate.cpp \
     TreeModel/FactDelegateDialog.cpp \
     TreeModel/FactDelegateArray.cpp \
+    TreeModel/FactDelegateScript.cpp \
+    TreeModel/SourceEdit.cpp \
 
 HEADERS += \
     TreeModel/FactTreeModel.h \
@@ -69,6 +71,8 @@ HEADERS += \
     TreeModel/FactDelegate.h \
     TreeModel/FactDelegateDialog.h \
     TreeModel/FactDelegateArray.h \
+    TreeModel/FactDelegateScript.h \
+    TreeModel/SourceEdit.h \
 
 
 # Vehicles & Mandala
@@ -103,12 +107,16 @@ SOURCES += \
     Nodes/NodeItem.cpp \
     Nodes/NodeData.cpp \
     Nodes/NodeField.cpp \
+    Nodes/PawnScript.cpp \
+    Nodes/NodesXml.cpp \
 
 HEADERS += \
     Nodes/Nodes.h \
     Nodes/NodeItem.h \
     Nodes/NodeData.h \
     Nodes/NodeField.h \
+    Nodes/PawnScript.h \
+    Nodes/NodesXml.h \
 
 
 # Communication
@@ -155,6 +163,7 @@ HEADERS += \
 
 # other
 SOURCES += \
+    PawnCompiler.cpp \
     FlightDataFile.cpp \
     QmlView.cpp \
     SoundEffects.cpp \
@@ -162,6 +171,7 @@ SOURCES += \
     SvgImageProvider.cpp \
 
 HEADERS += \
+    PawnCompiler.h \
     FlightDataFile.h \
     QmlView.h \
     SoundEffects.h \

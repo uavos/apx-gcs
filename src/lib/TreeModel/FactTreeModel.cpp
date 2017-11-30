@@ -63,7 +63,7 @@ QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent)
   if(!parent.isValid()) parentFact = root;
   else parentFact = fact(parent);
   if(!parentFact) return QModelIndex();
-  Fact *childFact = static_cast<Fact*>(parentFact->child(row));
+  Fact *childFact = qobject_cast<Fact*>(parentFact->child(row));
   if(!childFact) return QModelIndex();
   //QModelIndex i=createIndex(row, column, childFact);
   checkConnections(childFact);
@@ -138,7 +138,7 @@ Qt::ItemFlags FactTreeModel::flags(const QModelIndex & index) const
 //=============================================================================
 Fact * FactTreeModel::fact(const QModelIndex &index) const
 {
-  return static_cast<Fact*>(index.internalPointer());
+  return qobject_cast<Fact*>(static_cast<QObject*>(index.internalPointer()));
 }
 QModelIndex FactTreeModel::factIndex(FactTree * item, int column) const
 {
