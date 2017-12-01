@@ -41,6 +41,7 @@ NodesFrame::NodesFrame(QWidget *parent) :
 
   treeWidget=new FactTreeWidget(FactSystem::instance(),true,false,this);
   layout()->addWidget(treeWidget);
+  connect(treeWidget->tree,&FactTreeView::customContextMenuRequested,this,&NodesFrame::treeContextMenu);
 
   connect(treeWidget->tree->selectionModel(),&QItemSelectionModel::selectionChanged,this,&NodesFrame::updateActions);
 
@@ -131,7 +132,7 @@ void NodesFrame::mandalaSizeChanged(uint sz)
   lbUavName->setVisible(sz>0);
 }*/
 //=============================================================================
-void NodesFrame::on_tree_customContextMenuRequested(const QPoint &pos)
+void NodesFrame::treeContextMenu(const QPoint &pos)
 {
 /*  //scan selected items
   QList<QByteArray> sn_list;

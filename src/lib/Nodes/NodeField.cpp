@@ -125,6 +125,7 @@ void NodeField::setModified(const bool &v)
   if(m_modified==v)return;
   FactData::setModified(v);
   if(v){
+    qDebug()<<"mod"<<path();
     //set all parents to modified=true
     for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
       Fact *f=qobject_cast<Fact*>(i);
@@ -413,7 +414,7 @@ void NodeField::createSubFields(void)
   //check if comment field and bind to node value
   if(id==0 && name()=="comment"){
     node->setStatus(text());
-    connect(this,&NodeField::textChanged,[=](){node->setStatus(text());});
+    connect(this,&NodeField::textChanged,this,[=](){node->setStatus(text());});
   }
 
   if((array()>1||force_array)){

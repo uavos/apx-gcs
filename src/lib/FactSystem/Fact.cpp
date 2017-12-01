@@ -258,8 +258,9 @@ QString Fact::titlePath(const QChar pathDelimiter) const
       break;
     }
     if(i->treeItemType()==SectionItem)continue;
-    if(s.isEmpty())s=f->title();
-    else s.prepend(f->title()+pathDelimiter);
+    QString s2=f->title();
+    if(s.isEmpty())s=s2;
+    else s.prepend(s2+pathDelimiter);
   }
   return s.isEmpty()?title():s;
 }

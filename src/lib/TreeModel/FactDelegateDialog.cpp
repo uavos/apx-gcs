@@ -24,13 +24,13 @@
 #include "SvgIcon.h"
 #include <Nodes.h>
 //=============================================================================
-QHash<QString,FactDelegateDialog*> FactDelegateDialog::dlgMap;
+QHash<Fact*,FactDelegateDialog*> FactDelegateDialog::dlgMap;
 //=============================================================================
 FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
  : QDialog(parent),fact(fact),widget(NULL)
 {
   setObjectName(fact->title());
-  //setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
+  setWindowFlags(windowFlags()|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
   setWindowTitle((fact->descr().size()?fact->descr():fact->title())+QString(" (%1)").arg(fact->titlePath()));
 
   vlayout=new QVBoxLayout(this);
@@ -42,21 +42,24 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
   //toolBar->setIconSize(QSize(14,14));
   //toolBar->layout()->setMargin(0);
 
-  NodeField *nodeField=qobject_cast<NodeField*>(fact->child(0));
-  if(!nodeField) nodeField=qobject_cast<NodeField*>(fact);
-  if(nodeField){
-    Nodes *nodes=nodeField->node->nodes;
+  Nodes *nodes=fact->parent_cast<Nodes*>();
+  if(nodes){
     aUpload=new QAction(SvgIcon(":/icons/sets/ionicons/android-upload.svg"),tr("Upload"),this);
     connect(aUpload,&QAction::triggered,nodes->f_upload,&Fact::trigger);
     connect(nodes->f_upload,&Fact::enabledChanged,this,[=](){
-      NodeField *nf=qobject_cast<NodeField*>(fact->child(0));
-      if(!nf) nf=qobject_cast<NodeField*>(fact);
-      aUpload->setEnabled(nf && nf->node->nodes->f_upload->enabled());
+      Nodes *nodes=fact->parent_cast<Nodes*>();
+      aUpload->setEnabled(nodes && nodes->f_upload->enabled());
     });
     aUpload->setEnabled(nodes->f_upload->enabled());
     toolBar->addAction(aUpload);
     toolBar->widgetForAction(aUpload)->setObjectName("greenAction");
   }
+
+  NodeItem *node=fact->parent_cast<NodeItem*>();
+  if(node){
+    setWindowTitle(QString("%1-%2: %3").arg(node->title()).arg(node->status()).arg(windowTitle()));
+  }
+
 
   aUndo=new QAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Undo"),this);
   connect(aUndo,&QAction::triggered,fact,&Fact::restore);
@@ -79,14 +82,14 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
 
   //close button
   QAction *aClose=new QAction(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
-  connect(aClose,&QAction::triggered,[=](){
+  connect(aClose,&QAction::triggered,this,[=](){
     if(aboutToClose()) accept();
   });
   toolBar->addAction(aClose);
   toolBar->widgetForAction(aClose)->setObjectName("redAction");
 
   /*QAction *a=new QAction(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
-  connect(a,&QAction::triggered,[=](){
+  connect(a,&QAction::triggered,this,[=](){
     if(aboutToClose()) accept();
   });
   toolBar->addAction(a);*/
@@ -121,15 +124,15 @@ void FactDelegateDialog::setWidget(QWidget *w)
   widget=w;
 
   QString s=fact->titlePath();
-  if(dlgMap.contains(s)){
-    FactDelegateDialog *dlg=dlgMap.value(s);
+  if(dlgMap.contains(fact)){
+    FactDelegateDialog *dlg=dlgMap.value(fact);
     dlg->show();
     dlg->raise();
     dlg->activateWindow();
     deleteLater();
     return;
   }
-  dlgMap.insert(s,this);
+  dlgMap.insert(fact,this);
 
   doRestoreGeometry();
   show();

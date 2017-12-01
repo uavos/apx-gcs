@@ -29,22 +29,22 @@ FactListModel::FactListModel(Fact *parent)
    m_flat(false)
 {
 
-  connect(fact,&Fact::itemToBeInserted,[=](int row, FactTree *){
+  connect(fact,&Fact::itemToBeInserted,this,[=](int row, FactTree *){
     Fact *f=sectionParent(fact);
     row+=sectionRow(f,fact);
     f->model()->beginInsertRows(QModelIndex(), row ,row);
   });
-  connect(fact,&Fact::itemInserted,[=](FactTree *){
+  connect(fact,&Fact::itemInserted,this,[=](FactTree *){
     Fact *f=sectionParent(fact);
     f->model()->endInsertRows();
   });
 
-  connect(fact,&Fact::itemToBeRemoved,[=](int row, FactTree *){
+  connect(fact,&Fact::itemToBeRemoved,this,[=](int row, FactTree *){
     Fact *f=sectionParent(fact);
     row+=sectionRow(f,fact);
     f->model()->beginRemoveRows(QModelIndex(), row ,row);
   });
-  connect(fact,&Fact::itemRemoved,[=](FactTree *){
+  connect(fact,&Fact::itemRemoved,this,[=](FactTree *){
     Fact *f=sectionParent(fact);
     f->model()->endRemoveRows();
   });

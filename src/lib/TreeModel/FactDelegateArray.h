@@ -32,9 +32,17 @@ class FactDelegateArrayModel : public QAbstractItemModel
 public:
   FactDelegateArrayModel(Fact *group,QObject * parent = 0);
   Fact *group;
+  bool bNodesGroup;
   void emitReset(){emit layoutChanged();}
 private:
   Fact *field(const QModelIndex &index) const;
+
+  //special arrays (nodes)
+  QStringList fnames;
+  QHash<QString,QString> fdescr;
+  QHash<QString,Fact*> map;
+
+
   //override
   QVariant data(const QModelIndex &index, int role) const;
   QVariant headerData(int section, Qt::Orientation orientation,int role = Qt::DisplayRole) const;

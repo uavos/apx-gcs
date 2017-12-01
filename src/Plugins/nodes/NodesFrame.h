@@ -58,6 +58,8 @@ private:
 private slots:
   void vehicleSelected(Vehicle *v);
 
+  void treeContextMenu(const QPoint &pos);
+
   void on_aRequest_triggered(void);
   void on_aReload_triggered(void);
   void on_aUpload_triggered(void);
@@ -68,7 +70,6 @@ private slots:
   void on_aUndo_triggered(void);
   void on_aStats_triggered(void);
   void on_aLoadTelemetry_triggered(void);
-  void on_tree_customContextMenuRequested(const QPoint &pos);
 
   void nodeCmdAction(void);
   void nodeRestoreBackup(void);

@@ -21,6 +21,7 @@
  *
  */
 #include "FactDelegateArray.h"
+#include "Nodes.h"
 //=============================================================================
 FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
   :FactDelegateDialog(fact,parent)
@@ -46,7 +47,44 @@ FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
 FactDelegateArrayModel::FactDelegateArrayModel(Fact *group, QObject *parent)
   :QAbstractItemModel(parent),group(group)
 {
-  connect(group,&Fact::modifiedChanged,[=](){emit layoutChanged();});
+  bNodesGroup=qobject_cast<NodeItem*>(group->child(0));
+  connect(group,&Fact::modifiedChanged,this,[=](){emit layoutChanged();});
+
+  if(bNodesGroup){
+    //populate consolidated fnames list
+    int nidx=-1;
+    int fidx=0;
+    foreach(FactTree *i,group->childItems()){
+      NodeItem *node=static_cast<NodeItem*>(i);
+      nidx++;
+      foreach(NodeField *f,node->allFields){
+        QString s=f->conf_name;
+        if(f->size()){
+          //complex node field
+          int cidx=0;
+          foreach(FactTree *fi,f->childItems()){
+            NodeField *nfi=static_cast<NodeField*>(fi);
+            QString sf;
+            if(f->array()>1)sf=QString("%1/%2").arg(s.left(s.indexOf('['))).arg(QString::number(cidx++));
+            else sf=QString("%1/%2").arg(s.indexOf('[')>0?s.left(s.indexOf('[')):s).arg(nfi->title());
+            if(!fnames.contains(sf)){
+              fnames.insert(fidx,sf);
+              fdescr.insert(sf,nfi->descr().isEmpty()?f->descr():nfi->descr());
+            }
+            fidx=fnames.indexOf(sf)+1;
+            map.insert(QString("%1:%2").arg(sf).arg(nidx),nfi);
+          }
+          continue;
+        }
+        if(!fnames.contains(s)){
+          fnames.insert(fidx,s);
+          fdescr.insert(s,f->descr());
+        }
+        fidx=fnames.indexOf(s)+1;
+        map.insert(QString("%1:%2").arg(s).arg(nidx),f);
+      }
+    }
+  }
 }
 //=============================================================================
 QVariant FactDelegateArrayModel::data(const QModelIndex &index, int role) const
@@ -57,49 +95,38 @@ QVariant FactDelegateArrayModel::data(const QModelIndex &index, int role) const
   if(bind_item && bind_item->name().endsWith("_bind")){
     bind_item=qobject_cast<Fact*>(bind_item->child(index.row()));
     if(bind_item && bind_item->value().toInt()==0) binded=false;
-  }else bind_item=NULL;
+  }
 
   if(role==Qt::ForegroundRole){
     if(index.column()>0){
-      if(bind_item && (!binded))return QColor(Qt::darkGray);
-
       Fact *f=field(index);
       if(!f)return QVariant();
-      //zero values are gray
-      /*if(f->ftype==ft_varmsk || f->field->conf_name.startsWith("ctr_ch[")){
-        //check if same vars binded to other numbers
-        if(match(index,Qt::DisplayRole,data(index,Qt::DisplayRole),2,Qt::MatchFlags(Qt::MatchExactly|Qt::MatchWrap)).size()>1)
-          return QColor(Qt::blue).lighter(180);
-        else return QColor(Qt::cyan);
-      }*/
+      if((!binded) && (!f->modified())){
+        return QColor(Qt::darkGray);
+      }
       return f->data(Fact::FACT_MODEL_COLUMN_VALUE,role);
     }
   }
 
   if(index.column()==0){
     while(1){
-      Fact *f=qobject_cast<Fact*>(group->child(0));
-      if(!f)break;
-      f=qobject_cast<Fact*>(f->child(index.row()));
-      if(!f)break;
-      return f->data(Fact::FACT_MODEL_COLUMN_NAME,role);
+      Fact *f=NULL;
+      if(!bNodesGroup){
+        f=qobject_cast<Fact*>(group->child(0));
+        if(f) f=qobject_cast<Fact*>(f->child(index.row()));
+        if(!f)break;
+        return f->data(Fact::FACT_MODEL_COLUMN_NAME,role);
+      }else{
+        if(role==Qt::DisplayRole)return fnames.value(index.row());
+        if(role==Qt::ToolTipRole)return fdescr.value(fnames.value(index.row()));
+        return QVariant();
+      }
     }
     return QVariant();
   }
 
-  if(!index.internalPointer())return QVariant();
   Fact *f=field(index);
   if(!f)return QVariant();
-
-
-  //if(col>0 && bind_item && (!binded) && f->isZero())return QVariant();
-
-  /*QString su=f->field->units();
-  if(f->field->conf_name.startsWith("ctr_ch_") && su=="%"){
-    int vi=v.toInt();
-    if(role!=Qt::DisplayRole)return vi;
-    return v>0?QString("+%1").arg(vi):QString("%1").arg(vi);
-  }*/
   return f->data(Fact::FACT_MODEL_COLUMN_VALUE,role);
 }
 //=============================================================================
@@ -117,6 +144,8 @@ bool FactDelegateArrayModel::setData(const QModelIndex & index, const QVariant &
 Fact *FactDelegateArrayModel::field(const QModelIndex &index) const
 {
   Fact *f=qobject_cast<Fact*>(static_cast<QObject*>(index.internalPointer()));
+  if(bNodesGroup)return f;
+  //array type
   if(!f)return NULL;
   int item_n=index.row();
   //check for controls array
@@ -145,7 +174,10 @@ QModelIndex FactDelegateArrayModel::index(int row, int column, const QModelIndex
   if (parent.isValid()) //root
     return QModelIndex();
   if(column<1)return createIndex(row,column);
-  return createIndex(row,column,group->child(column-1));
+  if(map.isEmpty()){
+    return createIndex(row,column,group->child(column-1));
+  }
+  return createIndex(row,column,map.value(QString("%1:%2").arg(fnames.at(row)).arg(column-1)));
 }
 //=============================================================================
 QModelIndex FactDelegateArrayModel::parent(const QModelIndex &child) const
@@ -157,8 +189,12 @@ QModelIndex FactDelegateArrayModel::parent(const QModelIndex &child) const
 int FactDelegateArrayModel::rowCount(const QModelIndex &parent) const
 {
   if(parent.isValid())return 0;
-  Fact *f=qobject_cast<Fact*>(group->child(0));
-  return f?f->size():0;
+  if(fnames.isEmpty()){
+    Fact *f=qobject_cast<Fact*>(group->child(0));
+    if(!f)return 0;
+    return f->size();
+  }
+  return fnames.size();
 }
 //=============================================================================
 int FactDelegateArrayModel::columnCount(const QModelIndex &parent) const
@@ -175,6 +211,7 @@ QVariant FactDelegateArrayModel::headerData(int section, Qt::Orientation orienta
   if(!f) return QVariant();
   if (role==Qt::DisplayRole){
     QString s=f->title();
+    if(bNodesGroup)return f->status().isEmpty()?s:f->status();//QString("%1 (%2)").arg(s).arg(f->status());
     return s.contains('_')?s.mid(s.lastIndexOf('_')+1):s;
   }
   if (role==Qt::ToolTipRole) return static_cast<Fact*>(group->child(section-1))->descr();
@@ -186,7 +223,7 @@ Qt::ItemFlags FactDelegateArrayModel::flags(const QModelIndex & index) const
   const Qt::ItemFlags f=Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsEditable;
   const Qt::ItemFlags f0=Qt::ItemIsEnabled|Qt::ItemIsSelectable;
   int column=index.column();
-  if(column==0)return f0;
+  if(column==0 || (!field(index)))return f0;
   return f;
 }
 //=============================================================================

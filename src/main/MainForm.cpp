@@ -58,24 +58,24 @@ MainForm::MainForm(QWidget *parent)
   //mWindow->addAction(tr("Lock widgets"),this,SLOT(lock()));
   mWindow->addSeparator();
 
-  mHelp->addAction(QIcon(":/icons/old/application-pdf.png"),tr("Mandala Report"),[=](){ QDesktopServices::openUrl(QUrl("http://127.0.0.1:9080/mandala?descr")); });
-  mHelp->addAction(QIcon(":/icons/old/text-html.png"),tr("Documentation"),[=](){ QDesktopServices::openUrl(QUrl("http://wiki.uavos.com")); });
+  mHelp->addAction(QIcon(":/icons/old/application-pdf.png"),tr("Mandala Report"),this,[=](){ QDesktopServices::openUrl(QUrl("http://127.0.0.1:9080/mandala?descr")); });
+  mHelp->addAction(QIcon(":/icons/old/text-html.png"),tr("Documentation"),this,[=](){ QDesktopServices::openUrl(QUrl("http://wiki.uavos.com")); });
   mHelp->addSeparator();
   mHelp->addAction(QIcon(":/icons/old/connect_creating.png"),tr("VPN support"),this,SLOT(mVPN_triggered()));
   connect(&vpnProcess,SIGNAL(finished(int,QProcess::ExitStatus)),SLOT(vpn_disconnected()));
   vpnProcess.setEnvironment(QProcess::systemEnvironment());
 
   mHelp->addSeparator();
-  mHelp->addAction(FactSystem::version()+" ("+FactSystem::branch()+")",[=](){ QDesktopServices::openUrl(QUrl("https://groups.google.com/forum/#!forum/uavos-updates")); });
+  mHelp->addAction(FactSystem::version()+" ("+FactSystem::branch()+")",this,[=](){ QDesktopServices::openUrl(QUrl("https://groups.google.com/forum/#!forum/uavos-updates")); });
 
   //app menu actions
   QAction *a;
   a=new QAction(tr("Record data"),this);
   a->setCheckable(true);
   a->setChecked(Vehicles::instance()->current()->f_recorder->recording());
-  connect(a,&QAction::triggered,[=](bool v){Vehicles::instance()->current()->f_recorder->setRecording(v);});
-  connect(Vehicles::instance()->current()->f_recorder,&VehicleRecorder::recordingChanged,[=](){a->setChecked(Vehicles::instance()->current()->f_recorder->recording());});
-  connect(Vehicles::instance(),&Vehicles::vehicleSelected,[=](Vehicle*v){a->setChecked(v->f_recorder->recording());});
+  connect(a,&QAction::triggered,this,[=](bool v){Vehicles::instance()->current()->f_recorder->setRecording(v);});
+  connect(Vehicles::instance()->current()->f_recorder,&VehicleRecorder::recordingChanged,this,[=](){a->setChecked(Vehicles::instance()->current()->f_recorder->recording());});
+  connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,[=](Vehicle*v){a->setChecked(v->f_recorder->recording());});
   mFile->addAction(a);
 
   mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),Vehicles::instance()->current()->f_recorder,&VehicleRecorder::discard);

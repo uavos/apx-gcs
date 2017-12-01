@@ -58,7 +58,7 @@ public:
   MandalaValue(QObject *parent =0)
    : QObject(parent), VehicleMandalaValue<id,T>(Vehicles::instance()->current())
   {
-    connect(Vehicles::instance(),&Vehicles::vehicleSelected,[=](Vehicle *v){ VehicleMandalaValue<id,T>::updateFact(v); });
+    connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,[=](Vehicle *v){ VehicleMandalaValue<id,T>::updateFact(v); });
   }
 };
 //=============================================================================

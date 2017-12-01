@@ -295,6 +295,7 @@ bool NodesXml::read(QDomNode dom, NodeField *field) const
     lcnt++;
     f->setDataValid(true);
   }
+  field->setDataValid(true);
   return lcnt>0;
 }
 //=============================================================================

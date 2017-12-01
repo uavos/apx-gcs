@@ -95,14 +95,14 @@ Datalink::Datalink(FactSystem *parent)
   //online timeout
   onlineTimer.setSingleShot(true);
   onlineTimer.setInterval(7000);
-  connect(&onlineTimer,&QTimer::timeout,[=](){ setOnline(false); });
-  connect(this,&Datalink::read,[=](){ setOnline(true); });
-  connect(this,&Datalink::onlineChanged,[=](){
+  connect(&onlineTimer,&QTimer::timeout,this,[=](){ setOnline(false); });
+  connect(this,&Datalink::read,this,[=](){ setOnline(true); });
+  connect(this,&Datalink::onlineChanged,this,[=](){
     if(!m_online)setErrcnt(0);
     FactSystem::instance()->sound(m_online?"connected":"error");
   });
 
-  connect(this,&Datalink::read,[=](){ setValid(true); });
+  connect(this,&Datalink::read,this,[=](){ setValid(true); });
 
   parent->jsSync(this);
 }

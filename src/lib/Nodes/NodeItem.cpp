@@ -424,7 +424,7 @@ void NodeItem::groupFields(void)
           NodeField *f=static_cast<NodeField*>(i);
           f->setVisible(false);
         }
-        connect(static_cast<Fact*>(groupItem->child(0)),&Fact::statusChanged,[=](){groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());});
+        connect(static_cast<Fact*>(groupItem->child(0)),&Fact::statusChanged,this,[=](){groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());});
         groupItem->setStatus(static_cast<Fact*>(groupItem->child(0))->status());
       }
     }
@@ -471,6 +471,7 @@ void NodeItem::groupNodes(void)
     if(i->parentItem()==group)continue;
     nodes->f_list->removeItem(i,false);
     group->addItem(i);
+    i->setName(i->name());
     //qDebug()<<gname<<"<<"<<i->name;
     //if(node->name.contains("shiva")) qDebug()<<node->name<<nlist.size()<<(group?group->name:"");
   }

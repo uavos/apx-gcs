@@ -31,17 +31,17 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
 
   f_clear=new Fact(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactItem,ActionData);
   f_clear->setEnabled(false);
-  connect(f_clear,&Fact::triggered,[=](){
+  connect(f_clear,&Fact::triggered,this,[=](){
     f_list->removeAll();
   });
 
   f_list=new Fact(this,"messages",tr("Messages"),"",SectionItem,ConstData);
   bind(f_list);
-  connect(f_list,&Fact::sizeChanged,[=](){
+  connect(f_list,&Fact::sizeChanged,this,[=](){
     f_clear->setEnabled(f_list->size()>0);
   });
 
-  connect(f_list,&Fact::sizeChanged,[=](){f_clear->setEnabled(f_list->size());});
+  connect(f_list,&Fact::sizeChanged,this,[=](){f_clear->setEnabled(f_list->size());});
 
   showTimer.setSingleShot(true);
   showTimer.setInterval(5000);
@@ -80,7 +80,7 @@ Fact * VehicleWarnings::createItem(const QString &msg, MsgType kind)
       case ERROR: fact->setStatus(tr("Error")); break;
     }
     fact->setDescr(QDateTime::currentDateTime().toString());
-    connect(fact,&Fact::destroyed,[=](){
+    connect(fact,&Fact::destroyed,this,[=](){
       showMap.remove(fact);
       showList.removeAll(fact);
     });

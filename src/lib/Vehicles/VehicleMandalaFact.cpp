@@ -45,8 +45,8 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint
   //limit send value bandwidth
   sendValueTimer.setSingleShot(true);
   sendValueTimer.setInterval(80);
-  connect(&sendValueTimer,&QTimer::timeout,[=](){ emit sendUplink(packed); });
-  connect(this,&VehicleMandalaFact::sendUplink,[=](){ sendValueTime.restart(); });
+  connect(&sendValueTimer,&QTimer::timeout,this,[=](){ emit sendUplink(packed); });
+  connect(this,&VehicleMandalaFact::sendUplink,this,[=](){ sendValueTime.restart(); });
 
   setValue(0.0);
 }

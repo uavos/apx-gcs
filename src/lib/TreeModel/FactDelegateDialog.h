@@ -38,7 +38,7 @@ public:
   virtual bool aboutToClose(void){return true;}
 
 private:
-  static QHash<QString,FactDelegateDialog*> dlgMap;
+  static QHash<Fact*,FactDelegateDialog*> dlgMap;
 
 protected:
   Fact *fact;

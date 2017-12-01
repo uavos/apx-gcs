@@ -78,7 +78,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
 
           //return new FactDelegateArray(f,parent);
           QPushButton *btn=createButton(parent);
-          connect(btn,&QPushButton::clicked,[=](){
+          connect(btn,&QPushButton::clicked,this,[=](){
             new FactDelegateArray(f);//,parent->parentWidget());
           });
           return btn;
@@ -88,7 +88,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
         su=f->units();
         if(f->units()=="script"){
           QPushButton *btn=createButton(parent);
-          connect(btn,&QPushButton::clicked,[=](){
+          connect(btn,&QPushButton::clicked,this,[=](){
             new FactDelegateScript(f);//,parent->parentWidget());
           });
           return btn;
@@ -159,7 +159,7 @@ void FactDelegate::paint(QPainter *painter,const QStyleOptionViewItem &option,co
 {
   if(index.column()==Fact::FACT_MODEL_COLUMN_DESCR){
     Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
-    if(f->progress()>0){
+    if(f && f->progress()>0){
       //qDebug()<<f<<f->progress();
       if(drawProgress(painter,option,index,f->progress()))
         return;

@@ -51,17 +51,17 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_callsign=new Fact(this,"callsign",tr("Callsign"),tr("Vehicle name"),FactItem,ConstData);
   f_callsign->setValue(callsign);
   f_callsign->setVisible(vclass!=LOCAL);
-  connect(f_callsign,&Fact::valueChanged,[=](){ setTitle(f_callsign->text()); });
+  connect(f_callsign,&Fact::valueChanged,this,[=](){ setTitle(f_callsign->text()); });
 
   f_vclass=new Fact(this,"vclass",tr("Class"),tr("Vehicle class"),FactItem,ConstData);
   f_vclass->setEnumStrings(QMetaEnum::fromType<VehicleClass>());
   f_vclass->setValue(vclass);
 
-  connect(f_squawk,&Fact::valueChanged,[=](){ m_squawk=f_squawk->value().toUInt(); });
+  connect(f_squawk,&Fact::valueChanged,this,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
   f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,ActionData);
-  connect(f_selectAction,&Fact::triggered,[=](){ parent->selectVehicle(this); });
-  connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
+  connect(f_selectAction,&Fact::triggered,this,[=](){ parent->selectVehicle(this); });
+  connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
 
   f_mandala=new VehicleMandala(this);
   f_nodes=new Nodes(this);
@@ -69,7 +69,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_warnings=new VehicleWarnings(this);
 
   //datalink
-  connect(this,&Vehicle::sendUplink,[=](const QByteArray &ba){
+  connect(this,&Vehicle::sendUplink,this,[=](const QByteArray &ba){
     parent->vehicleSendUplink(this,ba);
     f_recorder->record_uplink(ba);
   });
@@ -77,23 +77,23 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
   //selection action fact in separate group menu
   f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,ActionData);
-  connect(this,&Vehicle::destroyed,[=](){ parent->f_select->removeItem(f_select); });
-  connect(f_select,&Fact::triggered,[=](){ parent->selectVehicle(this); });
+  connect(this,&Vehicle::destroyed,this,[=](){ parent->f_select->removeItem(f_select); });
+  connect(f_select,&Fact::triggered,this,[=](){ parent->selectVehicle(this); });
 
-  connect(this,&Vehicle::activeChanged,[=](){ f_select->setActive(active()); });
-  connect(parent,&Vehicles::vehicleSelected,[=](Vehicle *v){ setActive(v==this); });
+  connect(this,&Vehicle::activeChanged,this,[=](){ f_select->setActive(active()); });
+  connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ setActive(v==this); });
 
-  connect(this,&Fact::statusChanged,[=](){ f_select->setStatus(status()); });
+  connect(this,&Fact::statusChanged,this,[=](){ f_select->setStatus(status()); });
 
-  connect(f_streamType,&Fact::valueChanged,[=](){ f_mandala->setStatus(f_streamType->text()); });
+  connect(f_streamType,&Fact::valueChanged,this,[=](){ f_mandala->setStatus(f_streamType->text()); });
 
   f_streamType->setValue(0);
 
   onlineTimer.setSingleShot(true);
   onlineTimer.setInterval(7000);
-  connect(&onlineTimer,&QTimer::timeout,[=](){ f_streamType->setValue(OFFLINE); });
+  connect(&onlineTimer,&QTimer::timeout,this,[=](){ f_streamType->setValue(OFFLINE); });
 
-  connect(f_streamType,&Fact::valueChanged,[=](){ setStatus(f_streamType->text()); });
+  connect(f_streamType,&Fact::valueChanged,this,[=](){ setStatus(f_streamType->text()); });
   f_streamType->setValue(0);
 
   //register JS new vehicles instantly

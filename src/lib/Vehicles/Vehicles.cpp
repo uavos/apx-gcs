@@ -61,7 +61,7 @@ Vehicles::Vehicles(FactSystem *parent)
 
   //ident request timer
   reqTimer.setInterval(1000);
-  connect(&reqTimer,&QTimer::timeout,[=](){
+  connect(&reqTimer,&QTimer::timeout,this,[=](){
     if(reqList.isEmpty())reqTimer.stop();
     else emit sendUplink(reqList.takeFirst());
   });
@@ -69,7 +69,7 @@ Vehicles::Vehicles(FactSystem *parent)
   //downlink request timer
   dlinkReqTimer.setInterval(1000);
   dlinkReqTimer.start();
-  connect(&dlinkReqTimer,&QTimer::timeout,[=](){
+  connect(&dlinkReqTimer,&QTimer::timeout,this,[=](){
     if(m_current!=f_local){
       vehicleSendUplink(m_current,QByteArray()); //request telemetry
     }
