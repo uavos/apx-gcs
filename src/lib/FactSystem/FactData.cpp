@@ -79,7 +79,9 @@ bool FactData::setValue(const QVariant &v)
         if(ev>=0)vx=ev;
         else if(!m_enumStrings.isEmpty())return false;
         else if(v.type()!=QVariant::Int){
-          int i=v.toString().toInt(&ok);
+          QString s=v.toString();
+          int i=s.toInt(&ok);
+          if(!ok)i=s.toInt(&ok,16);
           if(!ok) return false;
           if((!m_min.isNull()) && i<m_min.toInt())i=m_min.toInt();
           if((!m_max.isNull()) && i>m_max.toInt())i=m_max.toInt();
@@ -328,6 +330,16 @@ void FactData::setUnits(const QString &v)
   if(m_units==v)return;
   m_units=v;
   emit unitsChanged();
+}
+QVariant FactData::defaultValue(void) const
+{
+  return m_defaultValue;
+}
+void FactData::setDefaultValue(const QVariant &v)
+{
+  if(m_defaultValue==v)return;
+  m_defaultValue=v;
+  emit defaultValueChanged();
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)

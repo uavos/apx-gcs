@@ -26,7 +26,7 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
  : QObject(parent),
    m_parentItem(NULL),
    m_treeItemType(treeItemType),
-   m_name(name)
+   m_name(makeNameUnique(name))
 {
   setObjectName(m_name);
 }
@@ -91,7 +91,11 @@ void FactTree::remove()
 //=============================================================================
 QString FactTree::makeNameUnique(const QString &s)
 {
-  QString sr=QString(s).replace(' ','_').replace('.','_').replace('-','_').replace('+','_');
+  QString sr=QString(s)
+      .replace(' ','_')
+      .replace('.','_')
+      .replace('-','_')
+      .replace('+','_');
   if(!m_parentItem) return sr;
   int i=0;
   nameSuffix=QString();
@@ -100,7 +104,7 @@ QString FactTree::makeNameUnique(const QString &s)
     FactTree *dup=NULL;
     foreach(FactTree *item,m_parentItem->childItems()){
       if(item==this)continue;
-      if(item->name()==(s+suffix)){
+      if(item->name()==(sr+suffix)){
         dup=item;
         break;
       }
@@ -183,7 +187,7 @@ void FactTree::setName(const QString &v)
   if(m_name==s && nameSuffix.isEmpty())return;
   //emit itemRemoved(this);
   m_name=s;
-  setObjectName(m_name);
+  setObjectName(name());
   //emit itemAdded(this);
   emit nameChanged();
 }

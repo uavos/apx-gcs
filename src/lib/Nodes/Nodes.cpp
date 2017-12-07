@@ -63,7 +63,7 @@ Nodes::Nodes(Vehicle *parent)
   });
   updateActions();
 
-  if(vehicle->f_vclass->value().toInt()!=Vehicle::LOCAL)
+  if(!vehicle->isLocal())
     request();
 
   FactSystem::instance()->jsSync(this);
@@ -113,7 +113,7 @@ void Nodes::updateProgress()
   int ncnt=0,v=0;
   foreach(NodeItem *node,snMap.values()){
     int np=node->progress();
-    if(np || (!node->dataValid()))ncnt++;
+    if(np || (!node->dictValid()) || (!node->dataValid()))ncnt++;
     v+=np;
   }
   if(ncnt){
@@ -138,16 +138,20 @@ void Nodes::request()
   vehicle->nmtManager->request(apc_search,QByteArray(),QByteArray(),0,true);
 }
 //=============================================================================
+void Nodes::clear()
+{
+  if(snMap.isEmpty())return;
+  snMap.clear();
+  nGroups.clear();
+  f_list->removeAll();
+  setModified(false);
+  f_list->setModified(false);
+  FactSystem::instance()->jsSync(this);
+}
+//=============================================================================
 void Nodes::reload()
 {
-  if(!snMap.isEmpty()){
-    snMap.clear();
-    nGroups.clear();
-    f_list->removeAll();
-    setModified(false);
-    f_list->setModified(false);
-    FactSystem::instance()->jsSync(this);
-  }
+  clear();
   request();
 }
 //=============================================================================
@@ -184,7 +188,8 @@ void Nodes::dbRegister()
       "version TEXT, "
       "hardware TEXT, "
       "hash TEXT, "
-      "fcnt INTEGER"
+      "params INTEGER, "
+      "commands INTEGER"
       ")");
     if(!query.exec())break;
     query.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_Nodes_sn ON Nodes (sn);");
@@ -200,6 +205,8 @@ void Nodes::dbRegister()
       "name TEXT, "
       "title TEXT, "
       "descr TEXT, "
+      "units TEXT, "
+      "defValue TEXT, "
       "ftype TEXT, "
       "array INTEGER, "
       "opts TEXT, "

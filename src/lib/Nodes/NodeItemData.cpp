@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "NodeData.h"
+#include "NodeItemData.h"
 #include "Nodes.h"
 //=============================================================================
-NodeData::NodeData(Fact *parent, const QByteArray &sn)
-  : Fact(parent,"node#","","",GroupItem,NoData),
+NodeItemData::NodeItemData(Fact *parent, const QByteArray &sn)
+  : NodeItemBase(parent,"node#",""),
     sn(sn),
     m_reconf(false),
     m_fwSupport(false),
@@ -44,142 +44,142 @@ NodeData::NodeData(Fact *parent, const QByteArray &sn)
 {
 }
 //=============================================================================
-bool NodeData::reconf() const
+bool NodeItemData::reconf() const
 {
   return m_reconf;
 }
-void NodeData::setReconf(const bool &v)
+void NodeItemData::setReconf(const bool &v)
 {
   if(m_reconf==v)return;
   m_reconf=v;
   emit reconfChanged();
 }
-bool NodeData::fwSupport() const
+bool NodeItemData::fwSupport() const
 {
   return m_fwSupport;
 }
-void NodeData::setFwSupport(const bool &v)
+void NodeItemData::setFwSupport(const bool &v)
 {
   if(m_fwSupport==v)return;
   m_fwSupport=v;
   emit fwSupportChanged();
 }
-bool NodeData::fwUpdating() const
+bool NodeItemData::fwUpdating() const
 {
   return m_fwUpdating;
 }
-void NodeData::setFwUpdating(const bool &v)
+void NodeItemData::setFwUpdating(const bool &v)
 {
   if(m_fwUpdating==v)return;
   m_fwUpdating=v;
   emit fwUpdatingChanged();
 }
-bool NodeData::addressing() const
+bool NodeItemData::addressing() const
 {
   return m_addressing;
 }
-void NodeData::setAddressing(const bool &v)
+void NodeItemData::setAddressing(const bool &v)
 {
   if(m_addressing==v)return;
   m_addressing=v;
   emit addressingChanged();
 }
-bool NodeData::rebooting() const
+bool NodeItemData::rebooting() const
 {
   return m_rebooting;
 }
-void NodeData::setRebooting(const bool &v)
+void NodeItemData::setRebooting(const bool &v)
 {
   if(m_rebooting==v)return;
   m_rebooting=v;
   emit rebootingChanged();
 }
-bool NodeData::busy() const
+bool NodeItemData::busy() const
 {
   return m_busy;
 }
-void NodeData::setBusy(const bool &v)
+void NodeItemData::setBusy(const bool &v)
 {
   if(m_busy==v)return;
   m_busy=v;
   emit busyChanged();
 }
-bool NodeData::failure() const
+bool NodeItemData::failure() const
 {
   return m_failure;
 }
-void NodeData::setFailure(const bool &v)
+void NodeItemData::setFailure(const bool &v)
 {
   if(m_failure==v)return;
   m_failure=v;
   emit failureChanged();
 }
 
-qreal NodeData::vbat() const
+qreal NodeItemData::vbat() const
 {
   return m_vbat;
 }
-void NodeData::setVbat(const qreal &v)
+void NodeItemData::setVbat(const qreal &v)
 {
   if(m_vbat==v)return;
   m_vbat=v;
   emit vbatChanged();
 }
-qreal NodeData::ibat() const
+qreal NodeItemData::ibat() const
 {
   return m_ibat;
 }
-void NodeData::setIbat(const qreal &v)
+void NodeItemData::setIbat(const qreal &v)
 {
   if(m_ibat==v)return;
   m_ibat=v;
   emit ibatChanged();
 }
-quint8 NodeData::errCnt() const
+quint8 NodeItemData::errCnt() const
 {
   return m_errCnt;
 }
-void NodeData::setErrCnt(const quint8 &v)
+void NodeItemData::setErrCnt(const quint8 &v)
 {
   if(m_errCnt==v)return;
   m_errCnt=v;
   emit errCntChanged();
 }
-quint8 NodeData::canRxc() const
+quint8 NodeItemData::canRxc() const
 {
   return m_canRxc;
 }
-void NodeData::setCanRxc(const quint8 &v)
+void NodeItemData::setCanRxc(const quint8 &v)
 {
   if(m_canRxc==v)return;
   m_canRxc=v;
   emit canRxcChanged();
 }
-quint8 NodeData::canAdr() const
+quint8 NodeItemData::canAdr() const
 {
   return m_canAdr;
 }
-void NodeData::setCanAdr(const quint8 &v)
+void NodeItemData::setCanAdr(const quint8 &v)
 {
   if(m_canAdr==v)return;
   m_canAdr=v;
   emit canAdrChanged();
 }
-quint8 NodeData::canErr() const
+quint8 NodeItemData::canErr() const
 {
   return m_canErr;
 }
-void NodeData::setCanErr(const quint8 &v)
+void NodeItemData::setCanErr(const quint8 &v)
 {
   if(m_canErr==v)return;
   m_canErr=v;
   emit canErrChanged();
 }
-quint8 NodeData::cpuLoad() const
+quint8 NodeItemData::cpuLoad() const
 {
   return m_cpuLoad;
 }
-void NodeData::setCpuLoad(const quint8 &v)
+void NodeItemData::setCpuLoad(const quint8 &v)
 {
   if(m_cpuLoad==v)return;
   m_cpuLoad=v;

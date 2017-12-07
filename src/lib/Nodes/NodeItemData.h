@@ -20,14 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeData_H
-#define NodeData_H
+#ifndef NodeItemData_H
+#define NodeItemData_H
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
+#include "NodeItemBase.h"
 class Nodes;
 //=============================================================================
-class NodeData: public Fact
+class NodeItemData: public NodeItemBase
 {
   Q_OBJECT
 
@@ -50,7 +49,7 @@ class NodeData: public Fact
   Q_PROPERTY(quint8 cpuLoad READ cpuLoad WRITE setCpuLoad NOTIFY cpuLoadChanged)
 
 public:
-  explicit NodeData(Fact *parent, const QByteArray &sn);
+  explicit NodeItemData(Fact *parent, const QByteArray &sn);
 
   QByteArray sn;
 

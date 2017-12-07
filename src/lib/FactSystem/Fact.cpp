@@ -111,6 +111,7 @@ QVariant Fact::data(int col, int role) const
         if(sDataType.isEmpty())st<<QString("%1").arg(name());
         else st<<QString("%1 [%2]").arg(name()).arg(sDataType);
         if(!descr().isEmpty()) st<<descr();
+        st<<path();
         if(!m_enumStrings.isEmpty()){
           if(m_enumStrings.size()>25)st<<QString("{%1}").arg(m_enumStrings.size());
           else st<<QString("{%1}").arg(m_enumStrings.join(','));

@@ -48,7 +48,15 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint
   connect(&sendValueTimer,&QTimer::timeout,this,[=](){ emit sendUplink(packed); });
   connect(this,&VehicleMandalaFact::sendUplink,this,[=](){ sendValueTime.restart(); });
 
-  setValue(0.0);
+  QVariant v;
+  switch(dataType){
+    default: break;
+    case FloatData: v=(double)0.0;break;
+    case IntData: v=(int)0;break;
+    case EnumData: v=(int)0;break;
+    case BoolData: v=(bool)false;break;
+  }
+  setValueLocal(v);
 }
 //=============================================================================
 uint VehicleMandalaFact::getPrecision()
@@ -108,6 +116,7 @@ bool VehicleMandalaFact::setValue(const QVariant &v)
   if(!setValueLocal(v))return false;
   if(!pack())return false;
   if(setValueCnt++<5)loadValueTimer.start();
+  qDebug()<<"set"<<path();
   //send uplink
   if(sendValueTimer.isActive())return true;
   if(sendValueTime.elapsed()>sendValueTimer.interval()){

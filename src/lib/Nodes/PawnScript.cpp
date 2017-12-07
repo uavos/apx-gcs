@@ -135,7 +135,7 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
   if(cmd!=apc_script_file && data.size()==0)return;
   switch(cmd){
     case apc_script_file: {
-      //qDebug("apc_script_file (cnt:%u)",data.size());
+      //qDebug("apc_script_file (cnt:%u) %s",data.size(),data.toHex().data());
       if(op==op_read_hdr){
         if(data.size()!=sizeof(_flash_file)){
           //qWarning("Wrong flash_rfile reply size from '%s' (exp: %u re: %u)",fact->node->model->mvar->node_name(fact->node->sn),(uint)sizeof(_flash_file),data.size());
@@ -143,6 +143,7 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
         }
         memcpy(&flash_rfile,data.data(),data.size());
         if(flash_rfile.size==0){
+          fact->setValue(QString());
           fact->setDataValid(true);
           break;
         }
@@ -153,6 +154,7 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
         //qDebug("op_read_data (%u)",flash_rfile.size);
         if(request_download())return;
         //qWarning("Script from '%s' is empty",fact->node->model->mvar->node_name(fact->node->sn));
+        fact->setValue(QString());
         fact->setDataValid(true);
         break;
       }else if(op==op_write_hdr){
@@ -169,8 +171,8 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
       }
     }return;
     case apc_script_read: {
-      if(op!=op_read_data)return;
       //qDebug("apc_script_read (cnt:%u)",data.size());
+      if(op!=op_read_data)return;
       int sz=flash_block_hdr.data_size+sizeof(flash_block_hdr);
       if(data.size()!=sz){
         //qWarning("Wrong script_block reply size from '%s' (exp: %u re: %u)",fact->node->model->mvar->node_name(fact->node->sn),sz,data.size());
@@ -231,6 +233,7 @@ bool PawnScript::request_download(void)
   uint rcnt=flash_rfile.size-flash_block_hdr.start_address;
   flash_block_hdr.data_size=cnt<rcnt?cnt:rcnt;
   fact->node->request(apc_script_read,QByteArray((const char*)&flash_block_hdr,sizeof(flash_block_hdr)),500);
+  //qDebug()<<"req read"<<flash_block_hdr.start_address<<flash_block_hdr.data_size;
   return true;
 }
 //=============================================================================

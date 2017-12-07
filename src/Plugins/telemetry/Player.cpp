@@ -77,7 +77,7 @@ void Player::on_aStop_triggered()
 void Player::on_aPlay_toggled(bool checked)
 {
   if(checked){
-    if(Vehicles::instance()->current()->f_vclass->value().toInt()!=Vehicle::LOCAL)
+    if(!Vehicles::instance()->current()->isLocal())
       Vehicles::instance()->selectVehicle(Vehicles::instance()->f_local);
     rec->recDisable=true;
     time.start();

@@ -25,19 +25,17 @@
 //=============================================================================
 #include <QtCore>
 #include <QDomDocument>
-#include "NodeData.h"
+#include "NodeItemData.h"
 #include "NodeField.h"
 class Nodes;
 //=============================================================================
-class NodeItem: public NodeData
+class NodeItem: public NodeItemData
 {
   Q_OBJECT
 
   Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
   Q_PROPERTY(QString hardware READ hardware WRITE setHardware NOTIFY hardwareChanged)
 
-  Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
-  Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
   Q_PROPERTY(bool infoValid READ infoValid WRITE setInfoValid NOTIFY infoValidChanged)
 
 public:
@@ -57,10 +55,10 @@ public:
 
   //override
   QVariant data(int col, int role) const;
-  bool lessThan(Fact *rightFact) const;
   void hashData(QCryptographicHash *h) const;
 
   Nodes *nodes;
+  NodeItemBase *group;
 
   struct{
     bool valid;
@@ -68,13 +66,14 @@ public:
     QStringList name;
     QStringList descr;
   }commands;
+  void cmdexec(int cmd_idx);
 
 private:
   QStringList sortNames;
 
   void groupFields(void);
   void groupNodes(void);
-  void requestConfDsc();
+  void requestConf();
 
 private slots:
   void updateStats();
@@ -87,7 +86,7 @@ public slots:
   void nstat();
   void upload();
 
-  void validate();
+  void validateDict();
 
   //data comm
 public slots:
@@ -104,25 +103,17 @@ public:
   void setVersion(const QString &v);
   QString hardware() const;
   void setHardware(const QString &v);
-  bool valid() const;
-  void setValid(const bool &v);
-  bool dataValid() const;
-  void setDataValid(const bool &v);
   bool infoValid() const;
   void setInfoValid(const bool &v);
 
 protected:
   QString m_version;
   QString m_hardware;
-  bool m_valid;
-  bool m_dataValid;
   bool m_infoValid;
 
 signals:
   void versionChanged();
   void hardwareChanged();
-  void validChanged();
-  void dataValidChanged();
   void infoValidChanged();
 };
 //=============================================================================

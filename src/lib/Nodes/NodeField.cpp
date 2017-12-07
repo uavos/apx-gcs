@@ -30,30 +30,26 @@
 #include "PawnScript.h"
 //=============================================================================
 NodeField::NodeField(NodeItem *node, quint16 id)
-  : Fact(NULL,"field#","","",FactItem,NoData),
+  : NodeFieldBase(NULL,"field#","","",FactItem,NoData),
     id(id),
     ftype(-1),
     node(node),
     script(NULL),
     parentField(NULL),
-    m_valid(false),
-    m_dataValid(false),
     m_array(0)
 {
-  connect(this,&NodeField::validChanged,this,&NodeField::validate);
+  connect(this,&NodeField::dictValidChanged,this,&NodeField::validateDict);
   connect(this,&NodeField::dataValidChanged,this,&NodeField::validateData);
 
 }
 //child of expanded field
 NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype)
-  : Fact(parent,name,title,descr,FactItem,NoData),
+  : NodeFieldBase(parent,name,title,descr,FactItem,NoData),
     id(parent->id),
     ftype(ftype),
     node(node),
     script(NULL),
     parentField(parent),
-    m_valid(true),
-    m_dataValid(false),
     m_array(0)
 {
   //connect(this,&NodeField::dataValidChanged,this,&NodeField::validateData);
@@ -62,26 +58,6 @@ NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, cons
   parent->updateStatus();
 }
 //=============================================================================
-bool NodeField::valid() const
-{
-  return m_valid;
-}
-void NodeField::setValid(const bool &v)
-{
-  if(m_valid==v)return;
-  m_valid=v;
-  emit validChanged();
-}
-bool NodeField::dataValid() const
-{
-  return m_dataValid;
-}
-void NodeField::setDataValid(const bool &v)
-{
-  if(m_dataValid==v)return;
-  m_dataValid=v;
-  emit dataValidChanged();
-}
 int NodeField::array() const
 {
   return m_array;
@@ -125,7 +101,7 @@ void NodeField::setModified(const bool &v)
   if(m_modified==v)return;
   FactData::setModified(v);
   if(v){
-    qDebug()<<"mod"<<path();
+    //qDebug()<<"mod"<<path();
     //set all parents to modified=true
     for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
       Fact *f=qobject_cast<Fact*>(i);
@@ -183,72 +159,90 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
 {
   switch(ncmd){
     case apc_conf_dsc: {
-      if(node->valid())return true;
+      if(dictValid())return true;
       if(!data.size())return true;
-      if(!valid()){
-        int cnt=data.size();
-        const char *str=(const char*)(data.data());
-        int sz;
-        _node_ft r_ftype=(_node_ft)*str++;
-        cnt--;
-        sz=strlen(str)+1;
-        if(sz>cnt)break;
-        const QString r_name(QByteArray(str,sz-1));
-        str+=sz;
-        cnt-=sz;
-        sz=strlen(str)+1;
-        if(sz>cnt)break;
-        QString r_descr(QByteArray(str,sz-1));
-        str+=sz;
-        cnt-=sz;
-        sz=strlen(str)+1;
-        if(sz>cnt)break;
-        QStringList r_opts(QString(QByteArray(str,sz-1)).split(',',QString::SkipEmptyParts));
-        str+=sz;
-        cnt-=sz;
-        //extract opts from descr if any
-        if(r_opts.size()==0 && r_descr.contains('(')){
-          QString s(r_descr.mid(r_descr.indexOf('(')+1).trimmed());
-          r_opts=QStringList(s.left(s.lastIndexOf(')')).split(','));
-          if(r_opts.size()<2)r_opts.clear();
-          else r_descr=r_descr.left(r_descr.indexOf('(')).trimmed();
-        }
-        if(r_opts.size()==1)r_opts.clear();
-        //truncate opts by '_'
-        if(r_opts.size()&&r_opts.first().contains("_")){
-          QStringList nopts;
-          foreach(QString opt,r_opts)
-            nopts.append(opt.mid(opt.lastIndexOf('_')+1));
-          r_opts=nopts;
-        }
-        //default opts
-        if((r_ftype==ft_option)&&(!r_opts.size()))
-          r_opts=QStringList()<<"no"<<"yes";
-        if(cnt!=0){
-          qWarning("Error node_conf descriptor received (cnt:%u)",cnt);
-          break;
-        }
-        ftype=r_ftype;
-        conf_name=r_name;
-        conf_descr=r_descr;
-        setName(r_name);
-        setTitle(r_name);
-        setDescr(r_descr);
-        setEnumStrings(r_opts);
-        setValid(true);
-        if(node->valid())node->dbRegister(NodeItem::NODE_DB_DICT);
+      //qDebug()<<"apc_conf_dsc"<<data.size();
+      int cnt=data.size();
+      const char *str=(const char*)(data.data());
+      int sz;
+      _node_ft r_ftype=(_node_ft)*str++;
+      cnt--;
+      sz=strlen(str)+1;
+      if(sz>cnt)break;
+      QString r_name(QByteArray(str,sz-1));
+      str+=sz;
+      cnt-=sz;
+      sz=strlen(str)+1;
+      if(sz>cnt)break;
+      QString r_descr(QByteArray(str,sz-1));
+      str+=sz;
+      cnt-=sz;
+      sz=strlen(str)+1;
+      if(sz>cnt)break;
+      QStringList r_opts(QString(QByteArray(str,sz-1)).split(',',QString::SkipEmptyParts));
+      str+=sz;
+      cnt-=sz;
+      //extract opts from descr if any
+      if(r_opts.size()==0 && r_descr.contains('(')){
+        QString s(r_descr.mid(r_descr.indexOf('(')+1).trimmed());
+        r_opts=QStringList(s.left(s.lastIndexOf(')')).split(','));
+        if(r_opts.size()<2)r_opts.clear();
+        else r_descr=r_descr.left(r_descr.indexOf('(')).trimmed();
       }
-      foreach (NodeField *f, node->allFields) {
-        if(f->dataValid())continue;
-        node->request(apc_conf_read,QByteArray().append((unsigned char)f->id),node->timeout_ms,false);
+      if(r_opts.size()==1)r_opts.clear();
+      //truncate opts by '_'
+      if(r_opts.size()&&r_opts.first().contains("_")){
+        QStringList nopts;
+        foreach(QString opt,r_opts)
+          nopts.append(opt.mid(opt.lastIndexOf('_')+1));
+        r_opts=nopts;
+      }
+      //default opts
+      if((r_ftype==ft_option)&&(!r_opts.size()))
+        r_opts=QStringList()<<"no"<<"yes";
+      if(cnt!=0){
+        qWarning("Error node_conf descriptor received (cnt:%u)",cnt);
         break;
       }
-      //qDebug()<<"fields downloaded"<<node->f_fields->size();
+      ftype=r_ftype;
+      //preprocess expand
+      if(r_name.contains("[")){
+        setArray(r_name.section("[",1,1).section("]",0,0).toInt());
+        r_name=r_name.left(r_name.indexOf('['));
+      }
+      setName(r_name);
+      //trim title
+      if(r_name.contains("_")){
+        r_name.remove(0,r_name.indexOf('_')+1);
+      }
+      //units from descr
+      setUnits("");
+      if(r_descr.contains('[')){
+        QString s=r_descr.mid(r_descr.lastIndexOf('[')+1);
+        r_descr=r_descr.left(r_descr.indexOf('['));
+        s=s.left(s.indexOf(']'));
+        if(!s.contains("..")) setUnits(s);
+      }
+      //groups from descr
+      groups.clear();
+      while(r_descr.contains(':')){
+        QString s=r_descr.left(r_descr.indexOf(':')).trimmed();
+        groups.append(s);
+        r_descr=r_descr.remove(0,r_descr.indexOf(':')+1).trimmed();
+        if(r_name.contains('_') && r_name.left(r_name.indexOf('_'))==s.toLower())
+          r_name.remove(0,r_name.indexOf('_')+1);
+      }
+      setTitle(r_name);
+      setDescr(r_descr);
+      setEnumStrings(r_opts);
+      setDictValid(true);
+      if(node->dictValid())node->dbRegister(NodeItem::NODE_DB_DICT);
+      //qDebug()<<"fields downloaded"<<node->allFields.size();
     }return true;
     case apc_conf_read: {
       //qDebug()<<path();
       if(!data.size())return true; //requests
-      if(!valid())break;
+      if(!dictValid())break;
       int sz=ftypeSize();
       if(!dataValid()){
         //qDebug()<<name()<<data.size();
@@ -274,7 +268,7 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       }
     }return true;
     case apc_conf_write: {
-      if(!valid())break;
+      if(!dictValid())break;
       if(!dataValid())break;
       if(data.size()){
         //uplink write (player)
@@ -323,9 +317,6 @@ bool NodeField::unpackValue(const QByteArray &data)
       _ft_script *scr=(_ft_script*)ptr;
       //qDebug()<<"scr:"<<scr->code_size<<scr->size<<path();
       if(!scr->size){
-        /*setValue(QString());
-        setDataValid(true);
-        updateStatus();*/
         script->unpackFlashData();
       }else{
         script->download();
@@ -364,11 +355,11 @@ QByteArray NodeField::packValue() const
 }
 //=============================================================================
 //=============================================================================
-void NodeField::validate()
+void NodeField::validateDict()
 {
-  if(!valid())return;
+  if(!dictValid())return;
   updateDataType();
-  node->validate();
+  node->validateDict();
 }
 //=============================================================================
 void NodeField::validateData()
@@ -391,33 +382,14 @@ void NodeField::validateData()
 void NodeField::createSubFields(void)
 {
   if(size()>0)return; //already created
-  //name truncate and array check
-  bool force_array=false;
-  if(name().contains("[")){
-    setArray(name().section("[",1,1).section("]",0,0).toInt());
-    setName(name().left(name().indexOf('[')));
-    force_array=true;
-  }
-  //title truncate
-  if(title().contains("[")){
-    setTitle(title().left(title().indexOf('[')));
-  }
-  if(title().contains("_")){
-    setTitle(title().remove(0,title().indexOf('_')+1));
-  }
-  //units from descr
-  if(descr().contains('[')){
-    QString s=descr().mid(descr().lastIndexOf('[')+1);
-    s=s.left(s.indexOf(']'));
-    if(!s.contains("..")) setUnits(s);
-  }
+
   //check if comment field and bind to node value
   if(id==0 && name()=="comment"){
     node->setStatus(text());
     connect(this,&NodeField::textChanged,this,[=](){node->setStatus(text());});
   }
 
-  if((array()>1||force_array)){
+  if(array()>1){
     //fact is array
     QStringList stNames;
     if(name()=="ctr_ch" && array()>0){
@@ -597,5 +569,16 @@ void NodeField::hashData(QCryptographicHash *h) const
   h->addData(ftypeString().toUtf8());
   h->addData(QString::number(id).toUtf8());
   h->addData(QString::number(ftype).toUtf8());
+}
+//=============================================================================
+QString NodeField::fpath(const QChar pathDelimiter) const
+{
+  QStringList st;
+  for(FactTree *i=parentItem();i;i=i->parentItem()){
+    if(i==node)break;
+    Fact *f=static_cast<Fact*>(i);
+    st.prepend(f->title());
+  }
+  return st.join(pathDelimiter);
 }
 //=============================================================================

@@ -2,10 +2,11 @@
 #include <node.h>
 #include <Mandala.h>
 //=============================================================================
-VehicleNmt::VehicleNmt(uint cmd, const QByteArray sn, const QByteArray data, uint timeout_ms)
+VehicleNmt::VehicleNmt(uint cmd, const QByteArray sn, const QByteArray data, uint timeout_ms,bool highprio)
  : QObject(),
    cmd(cmd),sn(sn),data(data),timeout_ms(timeout_ms),
-   retry(timeout_ms>0?4:0),active(false)
+   retry(timeout_ms>0?4:0),active(false),
+   highprio(highprio)
 {
   connect(&timer,SIGNAL(timeout()),this,SLOT(timeout()));
   //qDebug()<<"nmt req"<<cmd;
@@ -18,28 +19,30 @@ bool VehicleNmt::equals(uint cmd,const QByteArray &sn,const QByteArray &data)
 //=============================================================================
 void VehicleNmt::trigger()
 {
+  //if(cmd==apc_script_read)qDebug()<<"nmt";
   active=true;
   emit sendUplink(QByteArray().append((unsigned char)idx_service).append(sn.isEmpty()?QByteArray(sizeof(_node_sn),(char)0):sn).append(cmd).append(data));
   if(timeout_ms){
     timer.start(timeout_ms);
   }else{
     active=false;
-    emit finished(this);
+    emit finished();
   }
 }
 //=============================================================================
 void VehicleNmt::nmtResponse(const QByteArray &packet)
 {
+  //if(!active)return;
   if(packet.size()<(int)bus_packet_size_hdr_srv)return;
   _bus_packet &bus_packet=*(_bus_packet*)packet.data();
   if(bus_packet.id!=idx_service)return;
   QByteArray rx_sn((const char*)bus_packet.srv.sn,sizeof(_node_sn));
   if((!sn.isEmpty()) && sn!=rx_sn)return;
-  if(cmd!=bus_packet.srv.cmd)return;
+  if(bus_packet.srv.cmd!=apc_ack && bus_packet.srv.cmd!=cmd)return;
   QByteArray rx_data((const char*)bus_packet.srv.data,packet.size()-bus_packet_size_hdr_srv);
   //qDebug()<<"nmtResponse"<<packet.toHex();
 
-  switch(cmd){
+  switch(bus_packet.srv.cmd){
     case apc_ack:
       if(rx_data.size()==1 && bus_packet.srv.data[0]==cmd)break;
       return;
@@ -62,11 +65,11 @@ void VehicleNmt::nmtResponse(const QByteArray &packet)
       return;
     case apc_script_read:
       //response with script data
-      if(data.size()==(int)sizeof(_flash_data_hdr) && rx_data.size()>(int)sizeof(_flash_data_hdr))break;
+      if(data.size()==(int)sizeof(_flash_data_hdr) && rx_data.size()>(int)sizeof(_flash_data_hdr) && data==rx_data.left(data.size()))break;
       return;
     case apc_script_write:
       //write script confirm
-      if(data.size()>(int)sizeof(_flash_data_hdr) && rx_data.size()==(int)sizeof(_flash_data_hdr))break;
+      if(data.size()>(int)sizeof(_flash_data_hdr) && rx_data.size()==(int)sizeof(_flash_data_hdr) && data.left(rx_data.size())==rx_data)break;
       return;
     case apc_conf_cmds:
       break;
@@ -78,7 +81,7 @@ void VehicleNmt::nmtResponse(const QByteArray &packet)
   //request done
   timer.stop();
   active=false;
-  emit finished(this);
+  emit finished();
 }
 //=============================================================================
 void VehicleNmt::timeout()
@@ -94,7 +97,7 @@ void VehicleNmt::timeout()
   //forceNext=true;
   qWarning("%s (%u/%u)",tr("Timeout").toUtf8().data(),cmd,data.size());
   //if(data.size())qWarning()<<data.toHex().toUpper();
-  emit finished(this);
+  emit finished();
 }
 //=============================================================================
 //=============================================================================
@@ -122,20 +125,26 @@ QTimer VehicleNmtManager::timer;
 //=============================================================================
 void VehicleNmtManager::request(uint cmd, const QByteArray &sn, const QByteArray &data, uint timeout_ms, bool highprio)
 {
-  //qDebug()<<"VehicleNmt"<<cmd;
   VehicleNmt *request=NULL;
   foreach(VehicleNmt *i,pool){
     if(!i->equals(cmd,sn,data))continue;
     request=i;
     i->timeout_ms=timeout_ms;
+    //qDebug()<<"dup req"<<cmd<<data.toHex();
     break;
   }
   if(!request){
-    request=new VehicleNmt(cmd,sn,data,timeout_ms);
-    pool.append(request);
+    request=new VehicleNmt(cmd,sn,data,timeout_ms,highprio);
+    int ins=pool.size();
+    for(int i=0;i<pool.size();i++){
+      if(pool.at(i)->highprio)continue;
+      if(pool.at(i)->sn==sn)ins=i+1;
+    }
+    //pool.append(request);
+    pool.insert(ins,request);
     connect(request,&VehicleNmt::sendUplink,this,&VehicleNmtManager::sendUplink);
     connect(this,&VehicleNmtManager::nmtReceived,request,&VehicleNmt::nmtResponse);
-    connect(request,&VehicleNmt::finished,this,&VehicleNmtManager::requestFinished);
+    connect(request,&VehicleNmt::finished,this,&VehicleNmtManager::requestFinished,Qt::QueuedConnection);
   }
   if(highprio){
     pool.removeAll(request);
@@ -159,6 +168,7 @@ void VehicleNmtManager::stop()
     m_busy=false;
     emit busyChanged(m_busy);
   }
+  //qDebug()<<"VehicleNmtManager stop";
 }
 //=============================================================================
 void VehicleNmtManager::next()
@@ -168,7 +178,7 @@ void VehicleNmtManager::next()
     stop();
     return;
   }
-  if(activeCount>=3){
+  if(activeCount>=4){
     //qDebug()<<activeCount;
     timer.start();
     return;
@@ -183,11 +193,14 @@ void VehicleNmtManager::next()
   }
 }
 //=============================================================================
-void VehicleNmtManager::requestFinished(VehicleNmt *request)
+void VehicleNmtManager::requestFinished()
 {
-  //qDebug()<<"requestFinished"<<request->cmd;
-  pool.removeAll(request);
-  request->deleteLater();
+  VehicleNmt *request=qobject_cast<VehicleNmt*>(sender());
+  if(request){
+    //qDebug()<<"requestFinished"<<request->cmd;
+    pool.removeAll(request);
+    request->deleteLater();
+  }
   if(activeCount)activeCount--;
   next();
 }

@@ -105,7 +105,9 @@ HEADERS += \
 SOURCES += \
     Nodes/Nodes.cpp \
     Nodes/NodeItem.cpp \
-    Nodes/NodeData.cpp \
+    Nodes/NodeItemBase.cpp \
+    Nodes/NodeItemData.cpp \
+    Nodes/NodeFieldBase.cpp \
     Nodes/NodeField.cpp \
     Nodes/PawnScript.cpp \
     Nodes/NodesXml.cpp \
@@ -113,7 +115,9 @@ SOURCES += \
 HEADERS += \
     Nodes/Nodes.h \
     Nodes/NodeItem.h \
-    Nodes/NodeData.h \
+    Nodes/NodeItemBase.h \
+    Nodes/NodeItemData.h \
+    Nodes/NodeFieldBase.h \
     Nodes/NodeField.h \
     Nodes/PawnScript.h \
     Nodes/NodesXml.h \

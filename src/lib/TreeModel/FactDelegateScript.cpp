@@ -34,7 +34,7 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
   aCompile=new QAction(SvgIcon(":/icons/sets/ionicons/code-working.svg"),tr("Compile"),this);
   addAction(aCompile);
 
-  aLoad=new QAction(SvgIcon(":/icons/sets/ionicons/android-open.svg"),tr("Load"),this);
+  aLoad=new QAction(SvgIcon(":/icons/sets/ionicons/android-folder-open.svg"),tr("Load"),this);
   connect(aLoad,&QAction::triggered,this,&FactDelegateScript::aLoad_triggered);
   addAction(aLoad);
 

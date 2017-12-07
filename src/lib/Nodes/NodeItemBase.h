@@ -20,35 +20,25 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesXml_H
-#define NodesXml_H
+#ifndef NodeItemBase_H
+#define NodeItemBase_H
 //=============================================================================
 #include <QtCore>
-#include <QDomDocument>
-class Nodes;
-class NodeItem;
-class NodeField;
+#include "NodeFieldBase.h"
 //=============================================================================
-class NodesXml: public QObject
+class NodeItemBase: public NodeFieldBase
 {
   Q_OBJECT
 
 public:
-  explicit NodesXml(Nodes *parent=0);
+  explicit NodeItemBase(Fact *parent, const QString &name, const QString &title);
 
-  void write(QDomNode dom, NodeItem *node) const;
-  void write(QDomNode dom) const;
-  QDomDocument write() const;
-
-  int read(QDomNode dom) const;
-  int read(QDomNode dom, NodeItem *node, int fmt) const;
-  bool read(QDomNode dom, NodeField *field) const;
-
-  int import(QDomNode dom) const;
+  //override
+  virtual QVariant data(int col, int role) const;
+  bool lessThan(Fact *rightFact) const;
 
 private:
-  Nodes *nodes;
-  int format;
+  static QStringList sortNames;
 };
 //=============================================================================
 #endif

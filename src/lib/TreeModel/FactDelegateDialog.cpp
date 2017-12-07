@@ -30,7 +30,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
  : QDialog(parent),fact(fact),widget(NULL)
 {
   setObjectName(fact->title());
-  setWindowFlags(windowFlags()|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
+  //setWindowFlags(windowFlags()|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
   setWindowTitle((fact->descr().size()?fact->descr():fact->title())+QString(" (%1)").arg(fact->titlePath()));
 
   vlayout=new QVBoxLayout(this);
@@ -61,7 +61,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
   }
 
 
-  aUndo=new QAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Undo"),this);
+  aUndo=new QAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Revert"),this);
   connect(aUndo,&QAction::triggered,fact,&Fact::restore);
   connect(fact,&Fact::modifiedChanged,this,[=](){
     aUndo->setEnabled(fact->modified());

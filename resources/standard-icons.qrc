@@ -158,7 +158,13 @@
         <file>icons/sets/ionicons/android-upload.svg</file>
         <file>icons/sets/ionicons/ios-undo.svg</file>
         <file>icons/sets/ionicons/android-open.svg</file>
+        <file>icons/sets/ionicons/android-folder-open.svg</file>
         <file>icons/sets/ionicons/compose.svg</file>
         <file>icons/sets/ionicons/code-working.svg</file>
+        <file>icons/sets/ionicons/android-download.svg</file>
+        <file>icons/sets/ionicons/android-cancel.svg</file>
+        <file>icons/sets/ionicons/android-refresh.svg</file>
+        <file>icons/sets/ionicons/code-download.svg</file>
+        <file>icons/sets/ionicons/stats-bars.svg</file>
     </qresource>
 </RCC>

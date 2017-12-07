@@ -50,6 +50,7 @@ class FactData: public FactTree
 
   Q_PROPERTY(QString units READ units WRITE setUnits NOTIFY unitsChanged)
 
+  Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
 public:
 
   enum DataType {
@@ -140,6 +141,8 @@ public:
   QString units() const;
   void setUnits(const QString &v);
 
+  QVariant defaultValue(void) const;
+  void setDefaultValue(const QVariant &v);
 
 protected:
   DataType m_dataType;
@@ -160,6 +163,8 @@ protected:
 
   QString  m_units;
 
+  QVariant m_defaultValue;
+
 signals:
   void dataTypeChanged();
 
@@ -178,6 +183,8 @@ signals:
   void enumStringsChanged();
 
   void unitsChanged();
+
+  void defaultValueChanged();
 };
 //=============================================================================
 #endif

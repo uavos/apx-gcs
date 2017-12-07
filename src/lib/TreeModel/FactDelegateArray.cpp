@@ -58,15 +58,15 @@ FactDelegateArrayModel::FactDelegateArrayModel(Fact *group, QObject *parent)
       NodeItem *node=static_cast<NodeItem*>(i);
       nidx++;
       foreach(NodeField *f,node->allFields){
-        QString s=f->conf_name;
+        QString s=f->name();
         if(f->size()){
           //complex node field
           int cidx=0;
           foreach(FactTree *fi,f->childItems()){
             NodeField *nfi=static_cast<NodeField*>(fi);
             QString sf;
-            if(f->array()>1)sf=QString("%1/%2").arg(s.left(s.indexOf('['))).arg(QString::number(cidx++));
-            else sf=QString("%1/%2").arg(s.indexOf('[')>0?s.left(s.indexOf('[')):s).arg(nfi->title());
+            if(f->array()>1)sf=QString("%1/%2").arg(s).arg(QString::number(cidx++));
+            else sf=QString("%1/%2").arg(s).arg(nfi->title());
             if(!fnames.contains(sf)){
               fnames.insert(fidx,sf);
               fdescr.insert(sf,nfi->descr().isEmpty()?f->descr():nfi->descr());

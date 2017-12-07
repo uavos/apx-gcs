@@ -24,11 +24,11 @@
 #define NodesFrame_H
 //=============================================================================
 #include <QtWidgets>
-#include "ui_NodesFrame.h"
-#include "Facts.h"
-#include "FactTreeView.h"
+#include <Facts.h>
+#include <FactTreeView.h>
+#include <ClickableLabel.h>
 //=============================================================================
-class NodesFrame : public QWidget, public Ui::NodesFrame
+class NodesFrame : public QWidget//, public Ui::NodesFrame
 {
   Q_OBJECT
 public:
@@ -38,7 +38,19 @@ private:
   FactTreeWidget *treeWidget;
 
   QToolBar *toolBar;
-  QToolButton *btnUpload;
+  QVBoxLayout *vlayout;
+
+  QAction *aUpload;
+  QAction *aRequest;
+  QAction *aStats;
+  QAction *aStop;
+  QAction *aReload;
+  QAction *aLoad;
+  QAction *aSave;
+  QAction *aUndo;
+  QAction *aLoadTelemetry;
+
+  ClickableLabel *lbUavName;
 
   template <class T=Fact>
   inline QList<T*> selectedItems() const
@@ -60,16 +72,16 @@ private slots:
 
   void treeContextMenu(const QPoint &pos);
 
-  void on_aRequest_triggered(void);
-  void on_aReload_triggered(void);
-  void on_aUpload_triggered(void);
-  void on_aStop_triggered(void);
+  void aRequest_triggered(void);
+  void aReload_triggered(void);
+  void aUpload_triggered(void);
+  void aStop_triggered(void);
 
-  void on_aSave_triggered(void);
-  void on_aLoad_triggered(void);
-  void on_aUndo_triggered(void);
-  void on_aStats_triggered(void);
-  void on_aLoadTelemetry_triggered(void);
+  void aSave_triggered(void);
+  void aLoad_triggered(void);
+  void aUndo_triggered(void);
+  void aStats_triggered(void);
+  void aLoadTelemetry_triggered(void);
 
   void nodeCmdAction(void);
   void nodeRestoreBackup(void);

@@ -100,6 +100,11 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
+bool Vehicle::isLocal() const
+{
+  return f_vclass->value().toInt()==LOCAL;
+}
+//=============================================================================
 quint16 Vehicle::squawk(void) const
 {
   return m_squawk;
@@ -108,7 +113,6 @@ quint16 Vehicle::squawk(void) const
 //=============================================================================
 void Vehicle::downlinkReceived(const QByteArray &packet)
 {
-  f_recorder->record_downlink(packet);
   if(f_nodes->unpackService(packet)){
     emit nmtReceived(packet);
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
@@ -120,6 +124,7 @@ void Vehicle::downlinkReceived(const QByteArray &packet)
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
       f_streamType->setValue(DATA);
   }else return;
+  f_recorder->record_downlink(packet);
   onlineTimer.start();
 }
 //=============================================================================

@@ -1,14 +1,43 @@
 ﻿#include "NodesFrame.h"
 #include <AppDirs.h>
 #include <Facts.h>
+#include <node.h>
+#include <SvgIcon.h>
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent) :
   QWidget(parent)
 {
-  setupUi(this);
+  //setupUi(this);
+  setWindowTitle(tr("Vehicle parameters"));
   setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
-  progressBar->setVisible(false);
+  vlayout=new QVBoxLayout(this);
+  setLayout(vlayout);
+  vlayout->setMargin(0);
+  vlayout->setSpacing(0);
+
+  toolBar=new QToolBar(this);
+  toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+
+  aUpload=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-upload.svg"),tr("Upload"),this,&NodesFrame::aUpload_triggered);
+  toolBar->widgetForAction(aUpload)->setObjectName("greenAction");
+  //static_cast<QToolButton*>(toolBar->widgetForAction(aUpload))->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+  aRequest=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-download.svg"),tr("Request parameters"),this,&NodesFrame::aRequest_triggered);
+  aStats=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/stats-bars.svg"),tr("Request statistics"),this,&NodesFrame::aStats_triggered);
+  aStop=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-cancel.svg"),tr("Stop downloading"),this,&NodesFrame::aStop_triggered);
+  aReload=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-refresh.svg"),tr("Reload everything"),this,&NodesFrame::aReload_triggered);
+  aLoad=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-folder-open.svg"),tr("Load from file"),this,&NodesFrame::aLoad_triggered);
+  aSave=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/compose.svg"),tr("Save to file"),this,&NodesFrame::aSave_triggered);
+  aUndo=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Revert"),this,&NodesFrame::aUndo_triggered);
+  aLoadTelemetry=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/code-download.svg"),tr("Load from telemetry"),this,&NodesFrame::aLoadTelemetry_triggered);
+
+
+  vlayout->addWidget(toolBar);
+  lbUavName=new ClickableLabel(this);
+  vlayout->addWidget(lbUavName);
+
+  /*progressBar->setVisible(false);
   progressBar->setFormat("%v/%m");
   progressBar->setTextVisible(true);
   progressBar->setObjectName("nodeProgressBar");
@@ -37,10 +66,12 @@ NodesFrame::NodesFrame(QWidget *parent) :
   //toolBar->addSeparator();
   toolBar->addAction(aLoadTelemetry);
   //toolBar->addSeparator();
-  toolBar->addAction(aClearCache);
+  //toolBar->addAction(aClearCache);
+*/
+
 
   treeWidget=new FactTreeWidget(FactSystem::instance(),true,false,this);
-  layout()->addWidget(treeWidget);
+  vlayout->addWidget(treeWidget);
   connect(treeWidget->tree,&FactTreeView::customContextMenuRequested,this,&NodesFrame::treeContextMenu);
 
   connect(treeWidget->tree->selectionModel(),&QItemSelectionModel::selectionChanged,this,&NodesFrame::updateActions);
@@ -48,6 +79,8 @@ NodesFrame::NodesFrame(QWidget *parent) :
   connect(lbUavName,&ClickableLabel::clicked,Vehicles::instance(),&Vehicles::selectNext);
   connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&NodesFrame::vehicleSelected);
   vehicleSelected(Vehicles::instance()->current());
+
+  connect(Vehicles::instance()->f_local->f_recorder,&VehicleRecorder::fileLoaded,this,&NodesFrame::updateActions);
 
   restoreGeometry(QSettings().value(objectName()).toByteArray());
 }
@@ -78,13 +111,13 @@ void NodesFrame::updateActions(void)
   bool busy=false;//model->requestManager.busy();
   bool upgrading=false;//model->isUpgrading();
   bool bEmpty=treeWidget->rootFact()->size()<=0;
-  bool bTelemetry=false;//mandala->local->rec->file.xmlParts.contains("nodes")
+  bool bTelemetry=Vehicles::instance()->f_local->f_recorder->file.xmlParts.contains("nodes");
   aUndo->setEnabled(bMod);
   aLoad->setEnabled(!(busy || upgrading));
   aSave->setEnabled(!(bEmpty||busy));
   aLoadTelemetry->setEnabled((!(busy || upgrading)) && bTelemetry);
   aStats->setEnabled(!(bEmpty));
-  aClearCache->setEnabled(!(busy));
+  //aClearCache->setEnabled(!(busy));
 
   aReload->setEnabled(vehicle->f_nodes->f_reload->enabled());
   aUpload->setEnabled(vehicle->f_nodes->f_upload->enabled());
@@ -134,19 +167,18 @@ void NodesFrame::mandalaSizeChanged(uint sz)
 //=============================================================================
 void NodesFrame::treeContextMenu(const QPoint &pos)
 {
-/*  //scan selected items
+  //scan selected items
   QList<QByteArray> sn_list;
-  foreach(NodesItem *i,selectedItems(NodesItem::it_node)){
-    NodesItemNode *node=static_cast<NodesItemNode*>(i);
-    if(!model->nodes.values().contains(node)) continue;
-    sn_list.append(model->nodes.key(node));
+  NodesList nlist=selectedItems<NodeItem>();
+  foreach(NodeItem *node,nlist){
+    sn_list.append(node->sn);
   }
-  QMenu m(tree);
+  QMenu m(treeWidget);
 
   //backups folder
   if(sn_list.size()==1){
-    NodesItemNode *item = model->nodes.value(sn_list.first());
-    if(item->isValid()&&item->backup_dir.count()){
+    NodeItem *item = nlist.first();
+    /*if(item->valid() && item->backup_dir.count()){
       if(!m.isEmpty())m.addSeparator();
       QMenu *mu=m.addMenu(tr("Backups"));
       QStringList lst=item->backup_dir.entryList();
@@ -157,22 +189,21 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         a->setData(QVariant::fromValue(bname));
         mu->addAction(a);
       }
-    }
+    }*/
   }
   //recent backup
-  if(sn_list.size()){
-    foreach(QByteArray sn,sn_list){
-      NodesItemNode *item = model->nodes.value(sn);
-      if(item->isValid()&&item->backup_dir.count()){
+  if(!nlist.isEmpty()){
+    foreach(NodeItem *item, nlist){
+      /*if(item->isValid()&&item->backup_dir.count()){
         QAction *a=new QAction(tr("Restore recent backup"),&m);
         connect(a,SIGNAL(triggered()),this,SLOT(nodeRestoreRecentBackup()));
         m.addAction(a);
         break;
-      }
+      }*/
     }
   }
   //vehicle backups
-  if(model->mvar!=mandala->local && model->isValid() && model->backup_dir.count()){
+  /*if((!vehicle->isLocal()) && model->isValid() && model->backup_dir.count()){
     QMenu *mu=m.addMenu(QString("%1 (%2)").arg(tr("Vehicle backups")).arg(model->mvar->ident.callsign));
     QStringList lst=model->backup_dir.entryList();
     for(int i=0;i<lst.size();i++){
@@ -182,20 +213,20 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
       a->setData(QVariant::fromValue(bname));
       mu->addAction(a);
     }
-  }
+  }*/
   //node specific commands
   QHash<QString,QStringList> cmdHashMHX;
   if(sn_list.size()){
     QHash<QString,QStringList> cmdHash;
     QStringList cmdKeys;
     foreach(QByteArray sn,sn_list){
-      NodesItemNode *item = model->nodes.value(sn);
+      NodeItem *item = vehicle->f_nodes->node(sn);
       for(int i=0;i<item->commands.cmd.size();i++){
         if(item->commands.cmd.at(i)<apc_user)continue;
         QString aname=item->commands.descr.at(i);
         QString adata=QByteArray(sn).append((unsigned char)i).toHex();
         if(item->commands.name.at(i)=="mhxfw"){
-          cmdHashMHX[aname].append(QByteArray(sn).append((unsigned char)NodesModel::UpgradeMHX).toHex());
+          cmdHashMHX[aname].append(QByteArray(sn).append((unsigned char)Nodes::UpgradeMHX).toHex());
         }else if(FactSystem::devMode()||(!item->commands.name.at(i).contains("_dev_"))){
           cmdHash[aname].append(adata);
           if(!cmdKeys.contains(aname))cmdKeys.append(aname);
@@ -210,7 +241,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         if(sn_list.size()>1 && nl.size()==1){
           QByteArray sn=QByteArray::fromHex(nl.first().toUtf8().data());
           sn.chop(1);
-          cname+=" ("+model->nodes.value(sn)->name+")";
+          cname+=" ("+vehicle->f_nodes->node(sn)->title()+")";
         }
         if(nl.size()>1)cname+=" ["+QString::number(nl.size())+"]";
         QAction *a=new QAction(cname,&m);
@@ -235,7 +266,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     QHash<QString,QStringList> cmdHash;
     QStringList cmdKeys;
     foreach(QByteArray sn,sn_list){
-      NodesItemNode *item = model->nodes.value(sn);
+      NodeItem *item = vehicle->f_nodes->node(sn);
       for(int i=0;i<item->commands.cmd.size();i++){
         if(item->commands.cmd.at(i)>=apc_user)continue;
         QString aname=item->commands.descr.at(i);
@@ -260,13 +291,13 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     QHash<QString,QStringList> cmdHash;
     QStringList cmdKeys;
     foreach(QByteArray sn,sn_list){
-      NodesItemNode *item = model->nodes.value(sn);
-      if(item->name.contains('.'))continue;
+      NodeItem *item = vehicle->f_nodes->node(sn);
+      if(item->title().contains('.'))continue;
       QString aname=tr("Firmware");
-      cmdHash[aname].append(QByteArray(sn).append((char)NodesModel::UpgradeFirmware).toHex());
+      cmdHash[aname].append(QByteArray(sn).append((char)Nodes::UpgradeFirmware).toHex());
       if(!cmdKeys.contains(aname))cmdKeys.append(aname);
       aname=tr("Loader");
-      cmdHash[aname].append(QByteArray(sn).append((char)NodesModel::UpgradeLoader).toHex());
+      cmdHash[aname].append(QByteArray(sn).append((char)Nodes::UpgradeLoader).toHex());
       if(!cmdKeys.contains(aname))cmdKeys.append(aname);
     }
     if(!cmdHash.isEmpty()){
@@ -278,7 +309,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         if(nl.size()>1)cname+=" ["+QString::number(nl.size())+"]";
         QAction *a=new QAction(cname,&m);
         a->setData(QVariant::fromValue(nl));
-        a->setEnabled(mandala->isLocal());
+        a->setEnabled(vehicle->isLocal());
         connect(a,SIGNAL(triggered()),this,SLOT(nodeUpdateFirmware()));
         mu->addAction(a);
       }
@@ -287,12 +318,12 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         if(sn_list.size()>1 && nl.size()==1){
           QByteArray sn=QByteArray::fromHex(nl.first().toUtf8().data());
           sn.chop(1);
-          cname+=" ("+model->nodes.value(sn)->name+")";
+          cname+=" ("+vehicle->f_nodes->node(sn)->title()+")";
         }
         if(nl.size()>1)cname+=" ["+QString::number(nl.size())+"]";
         QAction *a=new QAction(cname,&m);
         a->setData(QVariant::fromValue(nl));
-        a->setEnabled(mandala->isLocal());
+        a->setEnabled(vehicle->isLocal());
         connect(a,SIGNAL(triggered()),this,SLOT(nodeUpdateFirmware()));
         mu->addAction(a);
       }
@@ -300,8 +331,13 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
   }
   //editor actions
   if(aUndo->isEnabled()){
-    if(!m.isEmpty())m.addSeparator();
-    m.addAction(aUndo);
+    foreach(Fact *i, selectedItems()){
+      if(i->modified()){
+        if(!m.isEmpty())m.addSeparator();
+        m.addAction(aUndo);
+        break;
+      }
+    }
   }
   //reset all nodes action
   if(!m.isEmpty())m.addSeparator();
@@ -309,24 +345,24 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
   connect(a,SIGNAL(triggered()),this,SLOT(nodeRebootAll()));
   m.addAction(a);
 
-  if(!m.isEmpty())m.exec(tree->mapToGlobal(pos));*/
+  if(!m.isEmpty())m.exec(treeWidget->tree->mapToGlobal(pos));
 }
 //=============================================================================
 void NodesFrame::nodeCmdAction(void)
 {
-  /*QAction *a=(QAction*)sender();
+  QAction *a=(QAction*)sender();
   foreach(QString scmd,a->data().toStringList()) {
     QByteArray ba=QByteArray::fromHex(scmd.toUtf8());
     const QByteArray &sn=ba.left(sizeof(_node_sn));
     uint cmd_idx=(unsigned char)ba.at(ba.size()-1);
-    if(!model->nodes.contains(sn))continue;
-    NodesItemNode *item = model->nodes.value(sn);
+    NodeItem *item = vehicle->f_nodes->node(sn);
+    if(!item)continue;
     if((int)cmd_idx>=item->commands.cmd.size())continue;
-    qDebug("%s: %s",item->name.toUtf8().data(),a->text().remove('&').toUtf8().data());
+    qDebug("%s: %s",item->title().toUtf8().data(),a->text().remove('&').toUtf8().data());
     //model->setActive(true);
-    model->requestManager.enableTemporary();
-    item->command(cmd_idx);
-  }*/
+    //model->requestManager.enableTemporary();
+    item->cmdexec(cmd_idx);
+  }
 }
 //=============================================================================
 void NodesFrame::nodeRestoreBackup(void)
@@ -335,7 +371,7 @@ void NodesFrame::nodeRestoreBackup(void)
   const QString bname=a->data().toString();
   QList<NodesItem*> sel=selectedItems(NodesItem::it_node);
   if(sel.size()!=1)return;
-  static_cast<NodesItemNode*>(sel.first())->restoreBackupFile(bname);*/
+  static_cast<NodeItem*>(sel.first())->restoreBackupFile(bname);*/
 }
 void NodesFrame::vehicleRestoreBackup(void)
 {
@@ -347,16 +383,16 @@ void NodesFrame::vehicleRestoreBackup(void)
 void NodesFrame::nodeRestoreRecentBackup(void)
 {
   /*foreach(NodesItem *i,selectedItems(NodesItem::it_node)){
-    QString bname=static_cast<NodesItemNode*>(i)->restoreRecentBackup();
+    QString bname=static_cast<NodeItem*>(i)->restoreRecentBackup();
     if(!bname.size())qWarning("%s",tr("Backup not found").toUtf8().data());
   }*/
 }
 //=============================================================================
 void NodesFrame::nodeRebootAll(void)
 {
-  /*QAction *a=(QAction*)sender();
+  QAction *a=(QAction*)sender();
   qDebug("%s...",a->text().toUtf8().data());
-  model->mvar->send_srv(apc_reboot,QByteArray());*/
+  vehicle->nmtManager->request(apc_reboot,QByteArray(),QByteArray(),0,true);
 }
 //=============================================================================
 void NodesFrame::nodeUpdateFirmware()
@@ -365,13 +401,13 @@ void NodesFrame::nodeUpdateFirmware()
   resetTree();
   QAction *a=(QAction*)sender();
   QStringList scr;
-  QList<NodesItemNode*>nodesListFirmware,nodesListLoader,nodesListMHX;
+  QList<NodeItem*>nodesListFirmware,nodesListLoader,nodesListMHX;
   foreach(QString scmd,a->data().toStringList()) {
     QByteArray ba=QByteArray::fromHex(scmd.toUtf8());
     const QByteArray &sn=ba.left(sizeof(_node_sn));
     if(!model->nodes.contains(sn))continue;
     uint cmd_idx=(unsigned char)ba.at(ba.size()-1);
-    NodesItemNode *node = model->nodes.value(sn);
+    NodeItem *node = vehicle->f_nodes->node(sn);
     if(cmd_idx==NodesModel::UpgradeFirmware)nodesListFirmware.append(node);
     else if(cmd_idx==NodesModel::UpgradeLoader)nodesListLoader.append(node);
     else if(cmd_idx==NodesModel::UpgradeMHX)nodesListMHX.append(node);
@@ -384,31 +420,31 @@ void NodesFrame::nodeUpdateFirmware()
 }
 //=============================================================================
 //=============================================================================
-void NodesFrame::on_aRequest_triggered(void)
+void NodesFrame::aRequest_triggered(void)
 {
   treeWidget->resetFilter();
   vehicle->f_nodes->f_request->trigger();
 }
 //=============================================================================
-void NodesFrame::on_aReload_triggered(void)
+void NodesFrame::aReload_triggered(void)
 {
   treeWidget->resetFilter();
   vehicle->f_nodes->f_reload->trigger();
 }
 //=============================================================================
-void NodesFrame::on_aUpload_triggered(void)
+void NodesFrame::aUpload_triggered(void)
 {
   treeWidget->tree->setFocus();
   vehicle->f_nodes->f_upload->trigger();
 }
 //=============================================================================
-void NodesFrame::on_aStop_triggered(void)
+void NodesFrame::aStop_triggered(void)
 {
   treeWidget->tree->setFocus();
   vehicle->f_nodes->f_stop->trigger();
 }
 //=============================================================================
-void NodesFrame::on_aUndo_triggered(void)
+void NodesFrame::aUndo_triggered(void)
 {
   updateActions();
   if(!aUndo->isEnabled())return;
@@ -418,7 +454,7 @@ void NodesFrame::on_aUndo_triggered(void)
   }
 }
 //=============================================================================
-void NodesFrame::on_aStats_triggered(void)
+void NodesFrame::aStats_triggered(void)
 {
   /*proxy.setFilterRegExp(QRegExp());
   tree->setFocus();
@@ -426,15 +462,19 @@ void NodesFrame::on_aStats_triggered(void)
   model->stats();*/
 }
 //=============================================================================
-void NodesFrame::on_aLoadTelemetry_triggered(void)
+void NodesFrame::aLoadTelemetry_triggered(void)
 {
-  /*proxy.setFilterRegExp(QRegExp());
-  tree->setFocus();
-  mandala->setCurrent(mandala->local);
-  model->loadFromTelemetry();*/
+  treeWidget->resetFilter();
+  QDomDocument doc;
+  if(!Vehicles::instance()->f_local->f_recorder->file.xmlParts.value("nodes").isEmpty())
+    doc.setContent(Vehicles::instance()->f_local->f_recorder->file.xmlParts.value("nodes").values().first());
+  if(doc.documentElement().nodeName()!="nodes")return;
+  Vehicles::instance()->selectVehicle(Vehicles::instance()->f_local);
+  vehicle->f_nodes->clear();
+  vehicle->f_nodes->xml->read(doc.documentElement());
 }
 //=============================================================================
-void NodesFrame::on_aSave_triggered(void)
+void NodesFrame::aSave_triggered(void)
 {
   treeWidget->resetFilter();
   if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");
@@ -460,7 +500,7 @@ void NodesFrame::on_aSave_triggered(void)
   file.close();
 }
 //=============================================================================
-void NodesFrame::on_aLoad_triggered(void)
+void NodesFrame::aLoad_triggered(void)
 {
   treeWidget->resetFilter();
   if(!AppDirs::configs().exists()) AppDirs::configs().mkpath(".");

@@ -236,8 +236,9 @@ void FactTreeModel::descrChanged()
 }
 void FactTreeModel::enabledChanged()
 {
-  QModelIndex index=factIndex(static_cast<Fact*>(sender()),Fact::FACT_MODEL_COLUMN_VALUE);
-  dataChanged(index,index,QVector<int>()<<Qt::ForegroundRole);
+  QModelIndex index1=factIndex(static_cast<Fact*>(sender()),Fact::FACT_MODEL_COLUMN_NAME);
+  QModelIndex index2=factIndex(static_cast<Fact*>(sender()),Fact::FACT_MODEL_COLUMN_DESCR);
+  dataChanged(index1,index2,QVector<int>()<<Qt::ForegroundRole<<Qt::BackgroundRole);
 }
 void FactTreeModel::activeChanged()
 {

@@ -29,11 +29,10 @@
 #include <node.h>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
-  : NodeData(parent->f_list,sn),
+  : NodeItemData(parent->f_list,sn),
     timeout_ms(500),
     nodes(parent),
-    m_valid(false),
-    m_dataValid(false),
+    group(NULL),
     m_infoValid(false)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
@@ -54,11 +53,13 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   //datalink
   connect(this,&NodeItem::nmtRequest,parent->vehicle->nmtManager,&VehicleNmtManager::request);
 
-  connect(this,&NodeItem::validChanged,this,&NodeItem::validate);
+  connect(this,&NodeItem::dictValidChanged,this,&NodeItem::validateDict);
   connect(this,&NodeItem::dataValidChanged,this,&NodeItem::validateData);
   connect(this,&NodeItem::infoValidChanged,this,&NodeItem::validateInfo);
 
   request(apc_info,QByteArray(),timeout_ms,true);
+
+  dbRegister(NODE_DB_INFO);
 }
 //=============================================================================
 void NodeItem::dbRegister(DBState state)
@@ -68,6 +69,16 @@ void NodeItem::dbRegister(DBState state)
     switch(state){
       default: return;
       case NODE_DB_INFO:
+        if(!infoValid()){
+          //read node name
+          query.prepare("SELECT name, hardware FROM Nodes WHERE sn = ?");
+          query.addBindValue(sn.toHex().toUpper());
+          if(!(query.exec() && query.next()))return;
+          if(!query.value(0).isNull())setTitle(query.value(0).toString());
+          if(!query.value(1).isNull())setHardware(query.value(1).toString());
+          //qDebug()<<title()<<hardware();
+          return;
+        }
         //register node sn
         query.prepare("INSERT INTO Nodes(sn, date) VALUES(?, ?)");
         query.addBindValue(sn.toHex().toUpper());
@@ -84,14 +95,79 @@ void NodeItem::dbRegister(DBState state)
         FactSystem::db()->commit();
       break;
       case NODE_DB_DICT:
+        if(!dictValid()){
+          //qDebug()<<"cache lookup"<<title();
+          //read params cnt
+          query.prepare("SELECT params, commands, hash FROM Nodes WHERE sn = ?");
+          query.addBindValue(sn.toHex().toUpper());
+          if(!(query.exec() && query.next()))return;
+          if(query.value(0).isNull() || query.value(1).isNull() || query.value(2).isNull())return;
+          int pCnt=query.value(0).toInt();
+          int cCnt=query.value(1).toInt();
+          if(query.value(2).toString()!=conf_hash)return;;
+          //read conf structure
+          query.prepare("SELECT * FROM NodesDict WHERE sn = ? AND hash = ?");
+          query.addBindValue(sn.toHex().toUpper());
+          query.addBindValue(conf_hash);
+          if(!query.exec())return;
+          if(!query.isActive())return;
+          int paramsCnt=0,commandsCnt=0;
+          while(query.next()) {
+            //qDebug()<<query.value("name");
+            QVariant v=query.value("id");
+            if(v.isNull())return;
+            QString s=query.value("ftype").toString();
+            if(s=="command"){
+              commands.cmd.append(v.toUInt());
+              commands.name.append(query.value("name").toString());
+              commands.descr.append(query.value("descr").toString());
+              commandsCnt++;
+              continue;
+            }
+            NodeField *f=allFields.value(v.toInt(),NULL);
+            if(!f)return;
+            if(f->ftype>=0)return;
+            for(int i=0;i<ft_cnt;i++){
+              if(f->ftypeString(i)!=s)continue;
+              f->ftype=i;
+              break;
+            }
+            if(f->ftype<0)return;
+            f->setName(query.value("name").toString());
+            f->setTitle(query.value("title").toString());
+            f->setDescr(query.value("descr").toString());
+            f->setUnits(query.value("units").toString());
+            f->setDefaultValue(query.value("defValue").toString());
+            f->setArray(query.value("array").toUInt());
+            f->setEnumStrings(query.value("opts").toString().split(',',QString::SkipEmptyParts));
+            f->groups=query.value("sect").toString().split('/',QString::SkipEmptyParts);
+            //qDebug()<<f->path();
+            paramsCnt++;
+          }
+          if(paramsCnt!=pCnt || commandsCnt!=cCnt){
+            commands.cmd.clear();
+            commands.name.clear();
+            commands.descr.clear();
+            qDebug()<<"cache error";
+            return;
+          }
+          commands.valid=true;
+          foreach (NodeField *f, allFields) {
+            f->setDictValid(true);
+          }
+          //qDebug()<<"cache read"<<title();
+          return;
+        }
+        //return;
         //modify node conf hash
-        query.prepare("UPDATE Nodes SET date=?, hash=?, fcnt=? WHERE sn=?");
+        query.prepare("UPDATE Nodes SET date=?, hash=?, params=?, commands=? WHERE sn=?");
         query.addBindValue(QDateTime::currentDateTime().toTime_t());
         query.addBindValue(conf_hash);
         query.addBindValue(allFields.size());
+        query.addBindValue(commands.cmd.size());
         query.addBindValue(sn.toHex().toUpper());
         query.exec();
-        //save all fields structure in NodeFields table
+        //save all fields structure
         query.prepare("DELETE FROM NodesDict WHERE sn=? AND hash=?");
         query.addBindValue(sn.toHex().toUpper());
         query.addBindValue(conf_hash);
@@ -100,8 +176,8 @@ void NodeItem::dbRegister(DBState state)
         foreach (NodeField *f, allFields) {
           query.prepare(
             "INSERT INTO NodesDict("
-            "sn, hash, date, id, name, title, descr, ftype, array, opts, sect"
-            ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            "sn, hash, date, id, name, title, descr, units, defValue, ftype, array, opts, sect"
+            ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
           query.addBindValue(sn.toHex().toUpper());
           query.addBindValue(conf_hash);
           query.addBindValue(t);
@@ -109,12 +185,30 @@ void NodeItem::dbRegister(DBState state)
           query.addBindValue(f->name());
           query.addBindValue(f->title());
           query.addBindValue(f->descr());
+          query.addBindValue(f->units());
+          query.addBindValue(f->defaultValue());
           query.addBindValue(f->ftypeString());
           query.addBindValue(f->array());
-          query.addBindValue(f->enumStrings().join(','));
-          query.addBindValue(f->path());
+          query.addBindValue(f->ftype==ft_varmsk?QString():f->enumStrings().join(','));
+          query.addBindValue(f->fpath());
           if(!query.exec())break;
         }
+        for (int i=0;i<commands.cmd.size();i++){
+          query.prepare(
+            "INSERT INTO NodesDict("
+            "sn, hash, date, id, name, title, descr, ftype"
+            ") VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+          query.addBindValue(sn.toHex().toUpper());
+          query.addBindValue(conf_hash);
+          query.addBindValue(t);
+          query.addBindValue(commands.cmd.at(i));
+          query.addBindValue(commands.name.at(i));
+          query.addBindValue(commands.name.at(i));
+          query.addBindValue(commands.descr.at(i));
+          query.addBindValue("command");
+          if(!query.exec())break;
+        }
+        //qDebug()<<"cache updated"<<path();
       break;
     }
     if(query.lastError().type()!=QSqlError::NoError)break;
@@ -125,19 +219,28 @@ void NodeItem::dbRegister(DBState state)
   qWarning() << query.executedQuery();
 }
 //=============================================================================
-void NodeItem::validate()
+void NodeItem::validateDict()
 {
-  if(!valid()){
+  if(group){
+    bool ok=true;
+    foreach (FactTree *i, group->childItems()) {
+      if(static_cast<NodeItem*>(i)->dictValid())continue;
+      ok=false;
+      break;
+    }
+    group->setDictValid(ok,false);
+  }
+  if(!dictValid()){
     bool ok=true;
     foreach (NodeField *f, allFields) {
-      if(f->valid())continue;
+      if(f->dictValid())continue;
       ok=false;
       break;
     }
     if(!ok)return;
     //all fields downloaded and valid
     if(commands.valid){
-      setValid(true);
+      setDictValid(true);
       //qDebug()<<node->path();
     }
     return;
@@ -146,11 +249,21 @@ void NodeItem::validate()
     f->createSubFields();
   }
   groupFields();
+  setDictValid(true); //recursive update valid for children
   //qDebug()<<"Node valid"<<path();
   FactSystem::instance()->jsSync(this);
 }
 void NodeItem::validateData()
 {
+  if(group){
+    bool ok=true;
+    foreach (FactTree *i, group->childItems()) {
+      if(static_cast<NodeItem*>(i)->dataValid())continue;
+      ok=false;
+      break;
+    }
+    group->setDataValid(ok,false);
+  }
   if(!dataValid())return;
   setProgress(0);
   //qDebug()<<"Node dataValid"<<path();
@@ -175,7 +288,7 @@ void NodeItem::nstat()
 //=============================================================================
 void NodeItem::upload()
 {
-  if(!(valid()&&dataValid()))return;
+  if(!(dictValid()&&dataValid()))return;
   if(!modified())return;
   foreach(NodeField *f,allFields){
     if(!f->modified())continue;
@@ -255,14 +368,16 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         allFields.clear();
         removeAll();
         conf_hash=hash;
+        setDictValid(false);
         for(quint16 id=0;id<conf_inf.cnt;id++){
           allFields.append(new NodeField(this,id));
         }
         //qDebug()<<"fields created"<<conf_inf.cnt;
       }
+      if(!dictValid())dbRegister(NodeItem::NODE_DB_DICT); //try load cache
       if(!commands.valid){
         request(apc_conf_cmds,QByteArray(),timeout_ms,false);
-      }else requestConfDsc();
+      }else requestConf();
     }return true;
     case apc_conf_cmds: {
       if((!commands.valid)||ba.size()>0){
@@ -296,30 +411,33 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
           commands.descr.clear();
         }else{
           commands.valid=true;
-          requestConfDsc();
-          if(!valid()){
-            validate();
-            if(valid())dbRegister(NodeItem::NODE_DB_DICT);
+          requestConf();
+          if(!dictValid()){
+            validateDict();
+            if(dictValid())dbRegister(NodeItem::NODE_DB_DICT);
           }
           //qDebug()<<commands.name;
         }
       }
     }return true;
-    case apc_conf_dsc:
     case apc_conf_read:
     case apc_conf_write:
+      if(!dictValid())return true;
+    case apc_conf_dsc:
     {
       if(ba.size()<1)break;
       NodeField *field=allFields.value((unsigned char)ba.at(0),NULL);
       if(!field)return true;
       if(field->unpackService(ncmd,ba.mid(1))){
         updateProgress();
+        if(ncmd==apc_conf_dsc)requestConf();
         return true;
       }
     }break;
     case apc_script_file:
     case apc_script_read:
     case apc_script_write: {
+      if(!dictValid())return true;
       bool rv=false;
       foreach (NodeField *f, allFields) {
         if(f->unpackService(ncmd,ba)) rv=true;
@@ -334,23 +452,30 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 //=============================================================================
 void NodeItem::updateProgress()
 {
-  if(!(valid()&&dataValid())){
+  if(!(dictValid()&&dataValid())){
     int ncnt=0;
     foreach (NodeField *f, allFields) {
-      if(f->valid())ncnt+=7;
+      if(f->dictValid())ncnt+=7;
       if(f->dataValid())ncnt+=3;
     }
     setProgress(ncnt?(ncnt*100)/allFields.size()/10:0);
   }
 }
 //=============================================================================
-void NodeItem::requestConfDsc()
+void NodeItem::requestConf()
 {
   //sync all conf if needed
-  if(!(valid() && dataValid())){
+  if(!dictValid()){
     foreach (NodeField *f, allFields) {
-      if(!f->valid()) request(apc_conf_dsc,QByteArray().append((unsigned char)f->id),timeout_ms,false);
-      //else if(!f->dataValid()) request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+      if(f->dictValid())continue;
+      request(apc_conf_dsc,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+      break; //only once
+    }
+  }else if(!dataValid()){
+    foreach (NodeField *f, allFields) {
+      if(f->dataValid())continue;
+      request(apc_conf_read,QByteArray().append((unsigned char)f->id),timeout_ms,false);
+      break; //only once
     }
   }
 }
@@ -380,21 +505,18 @@ void NodeItem::groupFields(void)
     //grouping
     Fact *groupItem=NULL;
     Fact *groupParent=this;
-    while(f->descr().contains(':')){
-      QString group=f->descr().left(f->descr().indexOf(':'));
-      f->setDescr(f->descr().remove(0,f->descr().indexOf(':')+1).trimmed());
+    foreach(QString group,f->groups){
       groupItem=NULL;
       QString gname=group.toLower();
       foreach(FactTree *i,groupParent->childItems()){
-        if(!(i->treeItemType()==GroupItem && i->name()==gname))continue;
-        groupItem=static_cast<Fact*>(i);
+        Fact *f=static_cast<Fact*>(i);
+        if(!(f->treeItemType()==GroupItem && f->title().toLower()==gname))continue;
+        groupItem=f;
         break;
       }
       if(!groupItem)
-        groupItem=new Fact(groupParent,gname,group,"",GroupItem,NoData);
+        groupItem=new NodeFieldBase(groupParent,gname,group,"",GroupItem,NoData);
       groupParent=groupItem;
-      if(f->title().contains('_') && f->title().left(f->title().indexOf('_'))==group)
-        f->setTitle(f->title().remove(0,f->title().indexOf('_')+1));
       if(f->parentItem()) f->parentItem()->removeItem(f,false);
       groupItem->addItem(f);
       f->setSection("");
@@ -434,9 +556,10 @@ void NodeItem::groupFields(void)
 void NodeItem::groupNodes(void)
 {
   //check node grouping
+  if(group)return;
+  NodeItemBase *ngroup=NULL;
   //find same names with same parent
   QList<NodeItem*>nlist;
-  Fact *group=NULL;
   QString gname=title();
   QStringList names;
   names.append(title());
@@ -448,20 +571,22 @@ void NodeItem::groupNodes(void)
     if(names.contains(i->title()))
       nlist.append(i);
   }
-  foreach (Fact *f, nodes->nGroups) {
-    if(f->size()>0 && f->title()==gname.toUpper()){
-      group=f;
+  foreach (NodeItemBase *g, nodes->nGroups) {
+    if(g->size()>0 && g->title()==gname.toUpper()){
+      ngroup=g;
       break;
     }
   }
 
-  if(group==NULL && nlist.size()<2){
+  if(ngroup==NULL && nlist.size()<2){
     //nodes->f_list->addItem(this);
     return;
   }
   //qDebug()<<"-append-";
-  if(!group){
-    group=new Fact(nodes->f_list,gname,gname.toUpper(),"",GroupItem,NoData);
+
+  if(ngroup)group=ngroup;
+  else {
+    group=new NodeItemBase(nodes->f_list,gname,gname.toUpper());
     group->setSection(section());
     nodes->nGroups.append(group);
     //qDebug()<<"grp: "<<gname;
@@ -471,7 +596,8 @@ void NodeItem::groupNodes(void)
     if(i->parentItem()==group)continue;
     nodes->f_list->removeItem(i,false);
     group->addItem(i);
-    i->setName(i->name());
+    i->group=group;
+    i->setName(i->name()); //update unique name
     //qDebug()<<gname<<"<<"<<i->name;
     //if(node->name.contains("shiva")) qDebug()<<node->name<<nlist.size()<<(group?group->name:"");
   }
@@ -515,26 +641,6 @@ void NodeItem::setHardware(const QString &v)
   m_hardware=v;
   emit hardwareChanged();
 }
-bool NodeItem::valid() const
-{
-  return m_valid;
-}
-void NodeItem::setValid(const bool &v)
-{
-  if(m_valid==v)return;
-  m_valid=v;
-  emit validChanged();
-}
-bool NodeItem::dataValid() const
-{
-  return m_dataValid;
-}
-void NodeItem::setDataValid(const bool &v)
-{
-  if(m_dataValid==v)return;
-  m_dataValid=v;
-  emit dataValidChanged();
-}
 bool NodeItem::infoValid() const
 {
   return m_infoValid;
@@ -549,61 +655,23 @@ void NodeItem::setInfoValid(const bool &v)
 //=============================================================================
 QVariant NodeItem::data(int col, int role) const
 {
-  switch(role){
-    case Qt::ForegroundRole:
-      //if(isUpgrading())return QColor(Qt::white);
-      if(!valid())return col==FACT_MODEL_COLUMN_NAME?QVariant():QColor(Qt::darkGray);
-      if(col==FACT_MODEL_COLUMN_NAME){
-        if(modified())return QColor(Qt::red).lighter();
-        return QVariant();
-      }
-      if(col==FACT_MODEL_COLUMN_VALUE)return QColor(Qt::yellow).lighter(170);//QVariant();
-      //descr col
-      return QColor(Qt::darkGray);
-      //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
-      //nstats
-      //return statsWarn?QColor(Qt::yellow):QColor(Qt::green);
-    break;
-    case Qt::BackgroundRole:
-      //if(isUpgrading())return QColor(0x20,0x00,0x00);
-      //if(isUpgradePending())return QColor(0x40,0x00,0x00);
-      //if(!inf_valid)return QVariant();//QColor(Qt::red).lighter();
-      if(!valid())return QColor(50,50,0);
-      //if(!dataValid())return QColor(150,50,0);
-      if(reconf())return QColor(Qt::darkGray).darker(200);
-      //return QColor(Qt::darkCyan).darker(200);//QColor(0x20,0x40,0x40);//isModified()?QColor(0x40,0x20,0x20):
-      return QColor(0x20,0x40,0x60);
+  if(dictValid() && dataValid()){
+    switch(role){
+      case Qt::ForegroundRole:
+        //if(isUpgrading())return QColor(Qt::white);
+        //return col==FACT_MODEL_COLUMN_NAME?QColor(Qt::darkYellow):QColor(Qt::darkGray);
+        //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
+        //nstats
+        //return statsWarn?QColor(Qt::yellow):QColor(Qt::green);
+      break;
+      case Qt::BackgroundRole:
+        //if(isUpgrading())return QColor(0x20,0x00,0x00);
+        //if(isUpgradePending())return QColor(0x40,0x00,0x00);
+        if(reconf())return QColor(Qt::darkGray).darker(200);
+        return QColor(0x20,0x40,0x60);
+    }
   }
-  return Fact::data(col,role);
-}
-//=============================================================================
-bool NodeItem::lessThan(Fact *rightFact) const
-{
-  //try to sort by sortNames
-  QString sleft=title();
-  if(sleft.contains('.'))sleft=sleft.remove(0,sleft.indexOf('.')+1).trimmed();
-  QString sright=rightFact->title();
-  if(sright.contains('.'))sright=sright.remove(0,sright.indexOf('.')+1).trimmed();
-  if(sortNames.contains(sleft)){
-    if(sortNames.contains(sright)){
-      int ileft=sortNames.indexOf(sleft);
-      int iright=sortNames.indexOf(sright);
-      if(ileft!=iright) return ileft<iright;
-    }else return true;
-  }else if(sortNames.contains(sright)) return false;
-
-  //compare names
-  int ncmp=QString::localeAwareCompare(title(),rightFact->title());
-  if(ncmp!=0)return ncmp<0;
-  //try to sort by comment same names
-  ncmp=QString::localeAwareCompare(text(), rightFact->text());
-  if(ncmp==0){
-    //try to sort by sn same names
-    NodeItem *rnode=qobject_cast<NodeItem*>(rightFact);
-    if(rnode) ncmp=QString::localeAwareCompare(QString(sn.toHex()), QString(rnode->sn.toHex()));
-  }
-  if(ncmp==0) return Fact::lessThan(rightFact);
-  return ncmp<0;
+  return NodeItemData::data(col,role);
 }
 //=============================================================================
 void NodeItem::hashData(QCryptographicHash *h) const
@@ -613,5 +681,36 @@ void NodeItem::hashData(QCryptographicHash *h) const
   h->addData(hardware().toUtf8());
   h->addData(conf_hash.toUtf8());
   h->addData(QString::number(fwSupport()).toUtf8());
+}
+//=============================================================================
+//=============================================================================
+void NodeItem::cmdexec(int cmd_idx)
+{
+  if(cmd_idx>=commands.cmd.size()){
+    qWarning("%s",tr("Can't send command (unknown command)").toUtf8().data());
+    nodes->request();
+    return;
+  }
+  QString cmd_name=commands.name.at(cmd_idx);
+  /*if(cmd_name=="bb_read"){
+    //qDebug("cmd: %s",cmd_name.toUtf8().data());
+    if(blackboxDownload){
+      blackboxDownload->show();
+    }else{
+      blackboxDownload=new BlackboxDownload(this);
+      connect(blackboxDownload,SIGNAL(finished()),this,SLOT(blackboxDownloadFinished()));
+      connect(blackboxDownload,SIGNAL(request(uint,QByteArray,QByteArray,uint)),this,SIGNAL(request(uint,QByteArray,QByteArray,uint)));
+      connect(blackboxDownload,SIGNAL(started()),&model->requestManager,SLOT(enableTemporary()));
+      //connect(blackboxDownload,SIGNAL(finished()),&model->requestManager,SLOT(stop()));
+      blackboxDownload->show();
+    }
+    return;
+  }*/
+
+  //qDebug("cmd (%u)",cmd);
+  request(commands.cmd.at(cmd_idx),QByteArray(),500);
+  if(commands.cmd.at(cmd_idx)==apc_reconf || commands.name.at(cmd_idx).startsWith("conf")){
+    setDataValid(false);
+  }
 }
 //=============================================================================

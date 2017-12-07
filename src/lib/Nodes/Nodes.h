@@ -29,6 +29,7 @@
 #include "NodeItem.h"
 #include "NodesXml.h"
 class Vehicle;
+typedef QList<NodeItem*> NodesList;
 //=============================================================================
 class Nodes: public Fact
 {
@@ -52,11 +53,15 @@ public:
 
   //sn lookup
   QHash<QByteArray,NodeItem*> snMap;
-  QList<Fact*> nGroups;
+  QList<NodeItemBase*> nGroups;
 
   NodeItem * nodeCheck(const QByteArray &sn);
 
   NodesXml *xml;
+
+  //firmware upgrades
+  typedef enum {UpgradeLoader,UpgradeFirmware,UpgradeMHX}UpgradeType;
+  QMap<UpgradeType,NodesList> upgradeNodes;
 
 private:
 
@@ -65,14 +70,16 @@ private:
   void dbRegister();
 
 private slots:
-  void request();
-  void reload();
-  void upload();
-  void stop();
   void updateActions();
 
 public slots:
   bool unpackService(const QByteArray &packet); //data comm
+
+  void clear();
+  void request();
+  void reload();
+  void upload();
+  void stop();
 
   void updateProgress();
 

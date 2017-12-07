@@ -82,6 +82,7 @@ public:
 
   QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
 
+  bool isLocal() const;
 private:
   QTimer onlineTimer;
   QTime telemetryTime;

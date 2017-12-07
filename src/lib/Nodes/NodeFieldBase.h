@@ -20,71 +20,40 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeField_H
-#define NodeField_H
+#ifndef NodeFieldBase_H
+#define NodeFieldBase_H
 //=============================================================================
 #include <QtCore>
-#include "NodeFieldBase.h"
-class NodeItem;
-class PawnScript;
+#include <FactSystem.h>
 //=============================================================================
-class NodeField: public NodeFieldBase
+class NodeFieldBase: public Fact
 {
   Q_OBJECT
-  Q_PROPERTY(int array READ array WRITE setArray NOTIFY arrayChanged)
+  Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
+  Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
 
 public:
-  explicit NodeField(NodeItem *node,quint16 id);
-  explicit NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype);
+  explicit NodeFieldBase(Fact *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
-  bool unpackService(uint ncmd, const QByteArray &data);
-
-  QByteArray packValue() const;
-
-  quint16 id;
-  int ftype;
-
-  QString ftypeString(int i=-1) const;
-
-  //field path in node with groups
-  QStringList groups;
-  QString fpath(const QChar pathDelimiter=QChar('/')) const;
-
-  //Fact override
-  void setModified(const bool &v);
-  QString text() const;
-  bool setValue(const QVariant &v);
-  const QStringList & enumStrings() const;
-  void hashData(QCryptographicHash *h) const;
-
-  NodeItem *node;
-  PawnScript *script;
-
-  void createSubFields(void);
-private:
-  NodeField *parentField;
-
-  bool unpackValue(const QByteArray &data);
-  int ftypeSize() const;
-  void updateDataType();
-
-
-private slots:
-  void updateStatus();
-  void validateDict();
-  void validateData();
+protected:
+  //override
+  QVariant data(int col, int role) const;
 
   //---------------------------------------
   // PROPERTIES
 public:
-  int array() const;
-  void setArray(const int &v);
+  bool dictValid() const;
+  void setDictValid(const bool &v,bool recursive=true);
+  bool dataValid() const;
+  void setDataValid(const bool &v,bool recursive=true);
 
 protected:
-  int m_array;
+  bool m_dictValid;
+  bool m_dataValid;
 
 signals:
-  void arrayChanged();
+  void dictValidChanged();
+  void dataValidChanged();
 };
 //=============================================================================
 #endif

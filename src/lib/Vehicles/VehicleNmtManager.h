@@ -30,7 +30,7 @@ class VehicleNmt : public QObject
 {
   Q_OBJECT
 public:
-  VehicleNmt(uint cmd,const QByteArray sn,const QByteArray data,uint timeout_ms);
+  VehicleNmt(uint cmd,const QByteArray sn,const QByteArray data,uint timeout_ms,bool highprio);
 
   bool equals(uint cmd,const QByteArray &sn,const QByteArray &data);
 
@@ -41,11 +41,12 @@ public:
   uint retry;
   QTimer timer;
   bool active;
+  bool highprio;
 
 private slots:
   void timeout();
 signals:
-  void finished(VehicleNmt *request);
+  void finished();
   void sendUplink(const QByteArray &packet);
 public slots:
   void trigger();
@@ -64,7 +65,7 @@ private:
   uint activeCount;
 private slots:
   void next();
-  void requestFinished(VehicleNmt *request);
+  void requestFinished();
 
 public slots:
   void request(uint cmd, const QByteArray &sn, const QByteArray &data, uint timeout_ms,bool highprio);

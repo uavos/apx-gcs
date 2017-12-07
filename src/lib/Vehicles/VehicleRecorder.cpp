@@ -139,7 +139,8 @@ void VehicleRecorder::record_data(QString tag,const QByteArray &data)
       sv=srv_data.toHex();
       attrs.insert("f","idx_service");
       attrs.insert("sn",sn.toHex().toUpper());
-      attrs.insert("node_name",vehicle->f_nodes->node(sn)->title());
+      NodeItem *node=vehicle->f_nodes->node(sn);
+      if(node)attrs.insert("node_name",node->title());
       attrs.insert("cmd",QString::number(packet.srv.cmd));
     } break;
     case idx_set: {

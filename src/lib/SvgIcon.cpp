@@ -42,6 +42,7 @@ QPixmap SvgIcon::renderSvgPixmap(const QString &fileName,const QColor &color) co
   setAttrRecur(doc.documentElement(), "path", "fill", color.name());
   setAttrRecur(doc.documentElement(), "polygon", "fill", color.name());
   setAttrRecur(doc.documentElement(), "circle", "fill", color.name());
+  setAttrRecur(doc.documentElement(), "rect", "fill", color.name());
   // create svg renderer with edited contents
   QSvgRenderer svgRenderer(doc.toByteArray());
   // create pixmap target (could be a QImage)
