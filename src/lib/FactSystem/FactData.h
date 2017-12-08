@@ -61,7 +61,8 @@ public:
     IntData,
     BoolData,
     EnumData,       // value=value of enumStrings (set by text or index or enumValues)
-    //MidxData,       // Mandala index
+    MandalaData,    // Mandala ID
+    ScriptData,     // script editor
     ActionData,     // button, value=action type
     KeySequenceData,
   };
@@ -92,6 +93,11 @@ public:
   //FactTree override
   virtual void insertItem(int i, FactTree *item);
   virtual void removeItem(FactTree *item, bool deleteLater=true);
+
+  //Mandala support - must override in derived classes
+  virtual QString mandalaToString(quint16 mid) const;
+  virtual quint16 stringToMandala(const QString &s) const;
+  virtual const QStringList * mandalaNames() const;
 
 signals:
   void childValueChanged(void);
@@ -131,8 +137,7 @@ public:
   QString descr(void) const;
   void setDescr(const QString &v);
 
-  virtual QString text() const;
-  QString valueToText() const;
+  QString text() const;
 
   virtual const QStringList & enumStrings() const;
   void setEnumStrings(const QStringList &v, const QList<int> &enumValues=QList<int>());

@@ -65,6 +65,16 @@ public:
 
   QList<FactTree*> pathList() const;
 
+  template<class T>
+  T parent_cast() const
+  {
+    for(FactTree *i=parentItem();i;i=i->parentItem()){
+      T p=qobject_cast<T>(i);
+      if(p)return p;
+    }
+    return NULL;
+  }
+
 signals:
   //tree structure change signals for models
   void itemToBeInserted(int row, FactTree *item);

@@ -59,164 +59,7 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
 
   request(apc_info,QByteArray(),timeout_ms,true);
 
-  dbRegister(NODE_DB_INFO);
-}
-//=============================================================================
-void NodeItem::dbRegister(DBState state)
-{
-  QSqlQuery query(*FactSystem::db());
-  while(FactSystem::db()->isOpen()){
-    switch(state){
-      default: return;
-      case NODE_DB_INFO:
-        if(!infoValid()){
-          //read node name
-          query.prepare("SELECT name, hardware FROM Nodes WHERE sn = ?");
-          query.addBindValue(sn.toHex().toUpper());
-          if(!(query.exec() && query.next()))return;
-          if(!query.value(0).isNull())setTitle(query.value(0).toString());
-          if(!query.value(1).isNull())setHardware(query.value(1).toString());
-          //qDebug()<<title()<<hardware();
-          return;
-        }
-        //register node sn
-        query.prepare("INSERT INTO Nodes(sn, date) VALUES(?, ?)");
-        query.addBindValue(sn.toHex().toUpper());
-        query.addBindValue(QDateTime::currentDateTime().toTime_t());
-        query.exec();
-        //modify node info
-        query.prepare("UPDATE Nodes SET date=?, name=?, version=?, hardware=? WHERE sn=?");
-        query.addBindValue(QDateTime::currentDateTime().toTime_t());
-        query.addBindValue(title());
-        query.addBindValue(version());
-        query.addBindValue(hardware());
-        query.addBindValue(sn.toHex().toUpper());
-        query.exec();
-        FactSystem::db()->commit();
-      break;
-      case NODE_DB_DICT:
-        if(!dictValid()){
-          //qDebug()<<"cache lookup"<<title();
-          //read params cnt
-          query.prepare("SELECT params, commands, hash FROM Nodes WHERE sn = ?");
-          query.addBindValue(sn.toHex().toUpper());
-          if(!(query.exec() && query.next()))return;
-          if(query.value(0).isNull() || query.value(1).isNull() || query.value(2).isNull())return;
-          int pCnt=query.value(0).toInt();
-          int cCnt=query.value(1).toInt();
-          if(query.value(2).toString()!=conf_hash)return;;
-          //read conf structure
-          query.prepare("SELECT * FROM NodesDict WHERE sn = ? AND hash = ?");
-          query.addBindValue(sn.toHex().toUpper());
-          query.addBindValue(conf_hash);
-          if(!query.exec())return;
-          if(!query.isActive())return;
-          int paramsCnt=0,commandsCnt=0;
-          while(query.next()) {
-            //qDebug()<<query.value("name");
-            QVariant v=query.value("id");
-            if(v.isNull())return;
-            QString s=query.value("ftype").toString();
-            if(s=="command"){
-              commands.cmd.append(v.toUInt());
-              commands.name.append(query.value("name").toString());
-              commands.descr.append(query.value("descr").toString());
-              commandsCnt++;
-              continue;
-            }
-            NodeField *f=allFields.value(v.toInt(),NULL);
-            if(!f)return;
-            if(f->ftype>=0)return;
-            for(int i=0;i<ft_cnt;i++){
-              if(f->ftypeString(i)!=s)continue;
-              f->ftype=i;
-              break;
-            }
-            if(f->ftype<0)return;
-            f->setName(query.value("name").toString());
-            f->setTitle(query.value("title").toString());
-            f->setDescr(query.value("descr").toString());
-            f->setUnits(query.value("units").toString());
-            f->setDefaultValue(query.value("defValue").toString());
-            f->setArray(query.value("array").toUInt());
-            f->setEnumStrings(query.value("opts").toString().split(',',QString::SkipEmptyParts));
-            f->groups=query.value("sect").toString().split('/',QString::SkipEmptyParts);
-            //qDebug()<<f->path();
-            paramsCnt++;
-          }
-          if(paramsCnt!=pCnt || commandsCnt!=cCnt){
-            commands.cmd.clear();
-            commands.name.clear();
-            commands.descr.clear();
-            qDebug()<<"cache error";
-            return;
-          }
-          commands.valid=true;
-          foreach (NodeField *f, allFields) {
-            f->setDictValid(true);
-          }
-          //qDebug()<<"cache read"<<title();
-          return;
-        }
-        //return;
-        //modify node conf hash
-        query.prepare("UPDATE Nodes SET date=?, hash=?, params=?, commands=? WHERE sn=?");
-        query.addBindValue(QDateTime::currentDateTime().toTime_t());
-        query.addBindValue(conf_hash);
-        query.addBindValue(allFields.size());
-        query.addBindValue(commands.cmd.size());
-        query.addBindValue(sn.toHex().toUpper());
-        query.exec();
-        //save all fields structure
-        query.prepare("DELETE FROM NodesDict WHERE sn=? AND hash=?");
-        query.addBindValue(sn.toHex().toUpper());
-        query.addBindValue(conf_hash);
-        query.exec();
-        uint t=QDateTime::currentDateTime().toTime_t();
-        foreach (NodeField *f, allFields) {
-          query.prepare(
-            "INSERT INTO NodesDict("
-            "sn, hash, date, id, name, title, descr, units, defValue, ftype, array, opts, sect"
-            ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-          query.addBindValue(sn.toHex().toUpper());
-          query.addBindValue(conf_hash);
-          query.addBindValue(t);
-          query.addBindValue(f->id);
-          query.addBindValue(f->name());
-          query.addBindValue(f->title());
-          query.addBindValue(f->descr());
-          query.addBindValue(f->units());
-          query.addBindValue(f->defaultValue());
-          query.addBindValue(f->ftypeString());
-          query.addBindValue(f->array());
-          query.addBindValue(f->ftype==ft_varmsk?QString():f->enumStrings().join(','));
-          query.addBindValue(f->fpath());
-          if(!query.exec())break;
-        }
-        for (int i=0;i<commands.cmd.size();i++){
-          query.prepare(
-            "INSERT INTO NodesDict("
-            "sn, hash, date, id, name, title, descr, ftype"
-            ") VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
-          query.addBindValue(sn.toHex().toUpper());
-          query.addBindValue(conf_hash);
-          query.addBindValue(t);
-          query.addBindValue(commands.cmd.at(i));
-          query.addBindValue(commands.name.at(i));
-          query.addBindValue(commands.name.at(i));
-          query.addBindValue(commands.descr.at(i));
-          query.addBindValue("command");
-          if(!query.exec())break;
-        }
-        //qDebug()<<"cache updated"<<path();
-      break;
-    }
-    if(query.lastError().type()!=QSqlError::NoError)break;
-    FactSystem::db()->commit();
-    return;
-  }
-  qWarning() << "NodeItem SQL error:" << query.lastError().text();
-  qWarning() << query.executedQuery();
+  nodes->db->nodeInfoRead(this);
 }
 //=============================================================================
 void NodeItem::validateDict()
@@ -266,6 +109,7 @@ void NodeItem::validateData()
   }
   if(!dataValid())return;
   setProgress(0);
+  nodes->db->nodeDataWrite(this);
   //qDebug()<<"Node dataValid"<<path();
 }
 void NodeItem::validateInfo()
@@ -327,7 +171,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       setBusy(ninfo.flags.busy);
       setFailure(false);
       setInfoValid(true);
-      dbRegister(NodeItem::NODE_DB_INFO);
+      nodes->db->nodeInfoWrite(this);
       request(apc_conf_inf,QByteArray(),timeout_ms,true);
     }return true;
     case apc_nstat: {
@@ -374,7 +218,9 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         }
         //qDebug()<<"fields created"<<conf_inf.cnt;
       }
-      if(!dictValid())dbRegister(NodeItem::NODE_DB_DICT); //try load cache
+      if(!dictValid()){
+        nodes->db->nodeDictRead(this);
+      }
       if(!commands.valid){
         request(apc_conf_cmds,QByteArray(),timeout_ms,false);
       }else requestConf();
@@ -414,7 +260,9 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
           requestConf();
           if(!dictValid()){
             validateDict();
-            if(dictValid())dbRegister(NodeItem::NODE_DB_DICT);
+            if(dictValid()){
+              nodes->db->nodeDictWrite(this);
+            }
           }
           //qDebug()<<commands.name;
         }
@@ -560,15 +408,19 @@ void NodeItem::groupNodes(void)
   NodeItemBase *ngroup=NULL;
   //find same names with same parent
   QList<NodeItem*>nlist;
-  QString gname=title();
+  QString stitle=title();
+  if(stitle.endsWith(".shiva"))stitle.remove(0,stitle.lastIndexOf('.')+1);
+  QString gname=stitle;
   QStringList names;
-  names.append(title());
-  if(title()=="bldc"){
+  names.append(stitle);
+  if(stitle=="bldc"){
     gname="servo";
     names.append(gname);
   }
   foreach(NodeItem *i,nodes->snMap.values()){
-    if(names.contains(i->title()))
+    QString s=i->title();
+    if(s.endsWith(".shiva"))s.remove(0,s.lastIndexOf('.')+1);
+    if(names.contains(s))
       nlist.append(i);
   }
   foreach (NodeItemBase *g, nodes->nGroups) {

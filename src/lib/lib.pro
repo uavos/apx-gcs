@@ -111,6 +111,7 @@ SOURCES += \
     Nodes/NodeField.cpp \
     Nodes/PawnScript.cpp \
     Nodes/NodesXml.cpp \
+    Nodes/NodesDB.cpp \
 
 HEADERS += \
     Nodes/Nodes.h \
@@ -121,6 +122,7 @@ HEADERS += \
     Nodes/NodeField.h \
     Nodes/PawnScript.h \
     Nodes/NodesXml.h \
+    Nodes/NodesDB.h \
 
 
 # Communication

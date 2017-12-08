@@ -82,6 +82,7 @@ void NodeField::updateStatus()
     int acnt=0;
     foreach (FactTree *i, childItems()) {
       NodeField *f=static_cast<NodeField*>(i);
+      if(f->isZero())continue;
       QString s=f->text();
       if(s.isEmpty())continue;
       if(s=="0")continue;
@@ -122,36 +123,30 @@ void NodeField::setModified(const bool &v)
   }
 }
 //=============================================================================
-QString NodeField::text() const
+//=============================================================================
+QString NodeField::mandalaToString(quint16 mid) const
 {
-  if(ftype==ft_script) return QString();
-  if(ftype!=ft_varmsk)return Fact::text();
-  VehicleMandalaFact *mf=node->nodes->vehicle->f_mandala->factById(value().toUInt());
+  VehicleMandalaFact *mf=node->nodes->vehicle->f_mandala->factById(mid);
   return mf?mf->title():QString();
 }
-bool NodeField::setValue(const QVariant &v)
+quint16 NodeField::stringToMandala(const QString &s) const
 {
-  if(ftype!=ft_varmsk)return Fact::setValue(v);
-  //set mandala index value
-  QString s=v.toString().trimmed();
   if((!s.isEmpty()) && s!="0"){
     VehicleMandalaFact *mf=node->nodes->vehicle->f_mandala->factByName(s);
-    if(mf)return Fact::setValue(mf->id());
+    if(mf)return mf->id();
     //try int
     bool ok=false;
     int i=s.toInt(&ok);
     if(ok){
       mf=node->nodes->vehicle->f_mandala->factById(i);
-      if(mf)return Fact::setValue(mf->id());
+      if(mf)return mf->id();
     }
   }
-  return Fact::setValue(0);
+  return 0;
 }
-//=============================================================================
-const QStringList & NodeField::enumStrings() const
+const QStringList * NodeField::mandalaNames() const
 {
-  if(ftype!=ft_varmsk)return Fact::enumStrings();
-  return node->nodes->vehicle->f_mandala->names;
+  return & node->nodes->vehicle->f_mandala->names;
 }
 //=============================================================================
 //=============================================================================
@@ -229,14 +224,15 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
         QString s=r_descr.left(r_descr.indexOf(':')).trimmed();
         groups.append(s);
         r_descr=r_descr.remove(0,r_descr.indexOf(':')+1).trimmed();
-        if(r_name.contains('_') && r_name.left(r_name.indexOf('_'))==s.toLower())
+        if(r_name.contains('_') && r_name.left(r_name.indexOf('_')).toLower()==s.toLower())
           r_name.remove(0,r_name.indexOf('_')+1);
       }
       setTitle(r_name);
       setDescr(r_descr);
       setEnumStrings(r_opts);
       setDictValid(true);
-      if(node->dictValid())node->dbRegister(NodeItem::NODE_DB_DICT);
+      if(node->dictValid())
+        node->nodes->db->nodeDictWrite(node);
       //qDebug()<<"fields downloaded"<<node->allFields.size();
     }return true;
     case apc_conf_read: {
@@ -366,6 +362,7 @@ void NodeField::validateData()
 {
   if(!dataValid())return;
   backup();
+  //node->nodes->db->nodeDataWrite(this);
   //check all node fields data validity
   if(!node->dataValid()){
     bool ok=true;
@@ -409,8 +406,8 @@ void NodeField::createSubFields(void)
     }
     //create array items
     for(int i=0;i<array();i++){
-      //NodeField *fi=new NodeField(node,this,"item#",QString("%1[%2]").arg(name()).arg(i),"",ftype);
-      NodeField *fi=new NodeField(node,this,QString("%1_%2").arg(name()).arg(i),stNames.value(i,QString::number(i+1)),QString("%1[%2]").arg(name()).arg(i),ftype);
+      const QString stitle=stNames.value(i,QString::number(i+1));
+      NodeField *fi=new NodeField(node,this,QString("%1_%2").arg(name()).arg(i),stitle,QString("%1/%2").arg(title()).arg(stitle),ftype);
       fi->setUnits(units());
       if(stNames.isEmpty() && (!m_enumStrings.isEmpty())){
         fi->setEnumStrings(m_enumStrings);
@@ -420,58 +417,6 @@ void NodeField::createSubFields(void)
     }
     setDataType(NoData);
     setTreeItemType(GroupItem);
-  }
-  //special expandable field types, non-arrays
-  if(array()<=0){
-    switch(ftype){
-      case ft_vec:
-        if(enumStrings().size()==3){
-          foreach(QString s,enumStrings()){
-            //new NodesItemField(this,node,s,descr+" ("+s+")",ft_float,QStringList());
-            new NodeField(node,this,s,s,descr()+" ("+s+")",ft_float);
-          }
-          setDataType(NoData);
-          setTreeItemType(GroupItem);
-        }
-      break;
-      case ft_regPID:
-        new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
-        new NodeField(node,this,"Lp","",tr("Proportional limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Kd","",tr("Derivative")+" [K]",ft_float);
-        new NodeField(node,this,"Ld","",tr("Derivative limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
-        new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
-        setDataType(NoData);
-        setTreeItemType(GroupItem);
-      break;
-      case ft_regPI:
-        new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
-        new NodeField(node,this,"Lp","",tr("Proportional limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
-        new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
-        setDataType(NoData);
-        setTreeItemType(GroupItem);
-      break;
-      case ft_regP:
-        new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
-        new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
-        setDataType(NoData);
-        setTreeItemType(GroupItem);
-      break;
-      case ft_regPPI:
-        new NodeField(node,this,"Kpp","",tr("Error to speed")+" [K]",ft_float);
-        new NodeField(node,this,"Lpp","",tr("Speed limit")+" [1/s]",ft_byte);
-        new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
-        new NodeField(node,this,"Lp","",tr("Proportional limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
-        new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
-        new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
-        setDataType(NoData);
-        setTreeItemType(GroupItem);
-      break;
-    }
   }
 }
 //=============================================================================
@@ -547,18 +492,65 @@ void NodeField::updateDataType()
       setDataType(IntData);
     break;
     case ft_varmsk:{
-      setDataType(IntData);
-      setQmlEditor("FactEditMID");
+      setDataType(MandalaData);
     }break;
     case ft_script:
       if(script)break;
       script=new PawnScript(this);
-      setDataType(TextData);
-      setUnits("script");
-      setQmlEditor("FactEditScript");
+      setDataType(ScriptData);
       connect(script,&PawnScript::changed,this,&NodeField::updateStatus);
     break;
-
+    case ft_vec:
+      if(enumStrings().size()==3 && size()==0){
+        foreach(QString s,enumStrings()){
+          //new NodesItemField(this,node,s,descr+" ("+s+")",ft_float,QStringList());
+          new NodeField(node,this,s,s,descr()+" ("+s+")",ft_float);
+        }
+        setDataType(NoData);
+        setTreeItemType(GroupItem);
+      }
+    break;
+    case ft_regPID:
+      if(size()>0)break;
+      new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
+      new NodeField(node,this,"Lp","",tr("Proportional limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Kd","",tr("Derivative")+" [K]",ft_float);
+      new NodeField(node,this,"Ld","",tr("Derivative limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
+      new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+      setDataType(NoData);
+      setTreeItemType(GroupItem);
+    break;
+    case ft_regPI:
+      if(size()>0)break;
+      new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
+      new NodeField(node,this,"Lp","",tr("Proportional limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
+      new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+      setDataType(NoData);
+      setTreeItemType(GroupItem);
+    break;
+    case ft_regP:
+      if(size()>0)break;
+      new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
+      new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+      setDataType(NoData);
+      setTreeItemType(GroupItem);
+    break;
+    case ft_regPPI:
+      if(size()>0)break;
+      new NodeField(node,this,"Kpp","",tr("Error to speed")+" [K]",ft_float);
+      new NodeField(node,this,"Lpp","",tr("Speed limit")+" [1/s]",ft_byte);
+      new NodeField(node,this,"Kp","",tr("Proportional")+" [K]",ft_float);
+      new NodeField(node,this,"Lp","",tr("Proportional limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Ki","",tr("Integral")+" [K]",ft_float);
+      new NodeField(node,this,"Li","",tr("Integral limit")+" [%]",ft_byte);
+      new NodeField(node,this,"Lo","",tr("Output limit")+" [%]",ft_byte);
+      setDataType(NoData);
+      setTreeItemType(GroupItem);
+    break;
   }
 }
 //=============================================================================

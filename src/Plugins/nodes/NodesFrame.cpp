@@ -37,39 +37,6 @@ NodesFrame::NodesFrame(QWidget *parent) :
   lbUavName=new ClickableLabel(this);
   vlayout->addWidget(lbUavName);
 
-  /*progressBar->setVisible(false);
-  progressBar->setFormat("%v/%m");
-  progressBar->setTextVisible(true);
-  progressBar->setObjectName("nodeProgressBar");
-
-  aUpload->setShortcut(QKeySequence(Qt::Key_F5));
-
-  toolBar=new QToolBar(this);
-  //toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  toolBar->setIconSize(QSize(16,16));
-  toolBar->layout()->setMargin(0);
-  toolBarLayout->insertWidget(0,toolBar);
-  btnUpload=new QToolButton(toolBar);
-  btnUpload->setDefaultAction(aUpload);
-  btnUpload->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  btnUpload->setObjectName("uploadButton");
-  toolBar->addWidget(btnUpload);
-  //toolBar->addSeparator();
-  toolBar->addAction(aRequest);
-  toolBar->addAction(aStats);
-  toolBar->addAction(aStop);
-  //toolBar->addSeparator();
-  toolBar->addAction(aReload);
-  toolBar->addAction(aLoad);
-  toolBar->addAction(aSave);
-  toolBar->addAction(aUndo);
-  //toolBar->addSeparator();
-  toolBar->addAction(aLoadTelemetry);
-  //toolBar->addSeparator();
-  //toolBar->addAction(aClearCache);
-*/
-
-
   treeWidget=new FactTreeWidget(FactSystem::instance(),true,false,this);
   vlayout->addWidget(treeWidget);
   connect(treeWidget->tree,&FactTreeView::customContextMenuRequested,this,&NodesFrame::treeContextMenu);

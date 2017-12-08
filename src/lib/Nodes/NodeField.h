@@ -52,9 +52,12 @@ public:
 
   //Fact override
   void setModified(const bool &v);
-  QString text() const;
-  bool setValue(const QVariant &v);
-  const QStringList & enumStrings() const;
+
+  //Mandala support
+  QString mandalaToString(quint16 mid) const;
+  quint16 stringToMandala(const QString &s) const;
+  const QStringList * mandalaNames() const;
+
   void hashData(QCryptographicHash *h) const;
 
   NodeItem *node;

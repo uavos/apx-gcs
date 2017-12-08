@@ -82,16 +82,6 @@ public:
   };
   virtual QVariant data(int col, int role) const;
 
-  template<class T>
-  T parent_cast() const
-  {
-    for(FactTree *i=parentItem();i;i=i->parentItem()){
-      T p=qobject_cast<T>(i);
-      if(p)return p;
-    }
-    return NULL;
-  }
-
 protected:
   virtual void hashData(QCryptographicHash *h) const;
 

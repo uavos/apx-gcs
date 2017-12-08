@@ -50,9 +50,6 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
     cb->setFrame(false);
     cb->addItems(f->enumStrings());
     cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
-    if(f->dataType()!=Fact::EnumData){
-      cb->setEditable(true);
-    }
     //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
     e=cb;
   }else{
@@ -84,15 +81,23 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
           return btn;
         }
       }break;
+      case Fact::MandalaData:{
+        QComboBox *cb=new QComboBox(parent);
+        cb->setFrame(false);
+        cb->setEditable(true);
+        cb->addItems(*(f->mandalaNames()));
+        cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
+        e=cb;
+      }break;
+      case Fact::ScriptData:{
+        QPushButton *btn=createButton(parent);
+        connect(btn,&QPushButton::clicked,this,[=](){
+          new FactDelegateScript(f);//,parent->parentWidget());
+        });
+        return btn;
+      }break;
       default:
         su=f->units();
-        if(f->units()=="script"){
-          QPushButton *btn=createButton(parent);
-          connect(btn,&QPushButton::clicked,this,[=](){
-            new FactDelegateScript(f);//,parent->parentWidget());
-          });
-          return btn;
-        }
     }
   }
   if(!e) e=QItemDelegate::createEditor(parent,option,index);

@@ -37,6 +37,7 @@ Nodes::Nodes(Vehicle *parent)
   model()->setFlat(true);
 
   xml=new NodesXml(this);
+  db=new NodesDB(this);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,this,&Nodes::request);
@@ -67,8 +68,6 @@ Nodes::Nodes(Vehicle *parent)
     request();
 
   FactSystem::instance()->jsSync(this);
-
-  dbRegister();
 }
 //=============================================================================
 int Nodes::nodesCount() const
@@ -173,57 +172,10 @@ void Nodes::nstat()
   }
 }
 //=============================================================================
-//=============================================================================
-void Nodes::dbRegister()
+void Nodes::clearCache()
 {
-  QSqlQuery query(*FactSystem::db());
-  while(FactSystem::db()->isOpen()){
-    //table of actual state of all nodes ever seen
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS Nodes ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "sn TEXT NOT NULL UNIQUE, "
-      "date INTEGER DEFAULT 0, "
-      "name TEXT, "
-      "version TEXT, "
-      "hardware TEXT, "
-      "hash TEXT, "
-      "params INTEGER, "
-      "commands INTEGER"
-      ")");
-    if(!query.exec())break;
-    query.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_Nodes_sn ON Nodes (sn);");
-    if(!query.exec())break;
-    //table of node fields (structure)
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS NodesDict ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "sn TEXT NOT NULL, "
-      "hash TEXT NOT NULL, "
-      "date INTEGER DEFAULT 0, "
-      "id INTEGER, "
-      "name TEXT, "
-      "title TEXT, "
-      "descr TEXT, "
-      "units TEXT, "
-      "defValue TEXT, "
-      "ftype TEXT, "
-      "array INTEGER, "
-      "opts TEXT, "
-      "sect TEXT"
-      ")");
-    if(!query.exec())break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesDict_sn ON NodesDict (sn);");
-    if(!query.exec())break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesDict_hash ON NodesDict (hash);");
-    if(!query.exec())break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesDict ON NodesDict (sn,hash);");
-    if(!query.exec())break;
-
-    FactSystem::db()->commit();
-    return;
+  foreach(NodeItem *node,snMap.values()){
+    db->nodeDictClear(node);
   }
-  qWarning() << "Nodes SQL error:" << query.lastError().text();
-  qWarning() << query.lastQuery();
 }
 //=============================================================================

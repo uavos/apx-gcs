@@ -71,7 +71,7 @@ void NodesXml::write(QDomNode dom, NodeItem *node) const
       dom.appendChild(doc.createElement("defValue")).appendChild(doc.createTextNode(f->defaultValue().toString()));
     if(f->array()>1)
       dom.appendChild(doc.createElement("array")).appendChild(doc.createTextNode(QString::number(f->array())));
-    if((!f->enumStrings().isEmpty()) && f->ftype!=ft_varmsk)
+    if(!f->enumStrings().isEmpty())
       dom.appendChild(doc.createElement("opts")).appendChild(doc.createTextNode(f->enumStrings().join(',')));
     if(!f->groups.isEmpty())
       dom.appendChild(doc.createElement("sect")).appendChild(doc.createTextNode(f->groups.join('/')));
@@ -83,10 +83,10 @@ void NodesXml::write(QDomNode dom, NodeItem *node) const
         QDomNode e=dom.appendChild(doc.createElement("value"));
         e.toElement().setAttribute("idx",QString::number(subf->num()));
         e.toElement().setAttribute("name",subf->title());
-        e.appendChild(doc.createTextNode(subf->valueToText()));
+        e.appendChild(doc.createTextNode(subf->text()));
       }
     }else{
-      dom.appendChild(doc.createElement("value")).appendChild(doc.createTextNode(f->valueToText()));
+      dom.appendChild(doc.createElement("value")).appendChild(doc.createTextNode(f->text()));
     }
   }
 }
@@ -225,7 +225,7 @@ int NodesXml::read(QDomNode dom, NodeItem *node, int fmt) const
           QString s=r_descr.left(r_descr.indexOf(':')).trimmed();
           f->groups.append(s);
           r_descr=r_descr.remove(0,r_descr.indexOf(':')+1).trimmed();
-          if(r_name.contains('_') && r_name.left(r_name.indexOf('_'))==s.toLower())
+          if(r_name.contains('_') && r_name.left(r_name.indexOf('_')).toLower()==s.toLower())
             r_name.remove(0,r_name.indexOf('_')+1);
         }
         f->setTitle(r_name);

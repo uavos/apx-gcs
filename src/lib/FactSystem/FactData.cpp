@@ -34,12 +34,6 @@ FactData::FactData(FactTree *parent, const QString &name, const QString &title, 
   backup_set=false;
   defaults();
   connect(this,&FactData::enumStringsChanged,this,&FactData::textChanged);
-  /*if(parent && m_name.contains('#')){
-    connect(parent,&FactData::structChanged,this,&FactData::nameChanged);
-  }
-  if(parent){
-    connect(this,&FactData::modifiedChanged,static_cast<FactData*>(parent),&FactData::modifiedChanged);
-  }*/
 }
 //=============================================================================
 QVariant FactData::value(void) const
@@ -109,6 +103,12 @@ bool FactData::setValue(const QVariant &v)
         }
         vx=v.toDouble();
       break;
+      case MandalaData:
+        vx=stringToMandala(v.toString());
+      break;
+      case ScriptData:
+        vx=v.toString();
+      break;
       default:
         if(ev>=0)vx=ev;
       break;
@@ -171,10 +171,13 @@ bool FactData::isZero() const
     }
     return true;
   }
-  if(dataType()==TextData) return text().isEmpty() && value().toString().isEmpty();
+  if(dataType()==TextData) return text().isEmpty();
+  if(dataType()==ScriptData) return value().toString().isEmpty();
   const QString &s=text();
   if(s.isEmpty())return true;
-  //if(dataType()==EnumData)return m_value.toInt()==0 && (s=="off"||s=="on"||s=="true"||s=="false");
+  /*if(dataType()==EnumData){
+    return m_value.toInt()==0 && (s=="off"||s=="default"||s=="auto"||s==QVariant::fromValue(false).toString());
+  }*/
   if(s=="0")return true;
   if(dataType()==FloatData)return m_value.toDouble()==0.0;
   if(m_value.toInt()==0)return true;
@@ -246,8 +249,9 @@ QString FactData::title(void) const
 }
 void FactData::setTitle(const QString &v)
 {
-  if(m_title==v)return;
-  m_title=v;
+  QString s=v.trimmed();
+  if(m_title==s)return;
+  m_title=s;
   emit titleChanged();
   //emit dataChanged(QModelIndex(nu
 }
@@ -257,15 +261,12 @@ QString FactData::descr(void) const
 }
 void FactData::setDescr(const QString &v)
 {
-  if(m_descr==v)return;
-  m_descr=v;
+  QString s=v.trimmed();
+  if(m_descr==s)return;
+  m_descr=s;
   emit descrChanged();
 }
 QString FactData::text() const
-{
-  return valueToText();
-}
-QString FactData::valueToText() const
 {
   if(_bindedFact) return _bindedFact->text();
   const QVariant &v=value();
@@ -277,6 +278,9 @@ QString FactData::valueToText() const
   if(m_dataType==IntData){
     if(units()=="hex")return QString::number(v.toUInt(),16).toUpper();
     return QString::number(v.toInt());
+  }
+  if(m_dataType==MandalaData){
+    return mandalaToString(v.toUInt());
   }
   if(v.type()==QVariant::ByteArray) return v.toByteArray().toHex().toUpper();
   if(v.type()==QVariant::Double){
@@ -340,6 +344,19 @@ void FactData::setDefaultValue(const QVariant &v)
   if(m_defaultValue==v)return;
   m_defaultValue=v;
   emit defaultValueChanged();
+}
+//=============================================================================
+QString FactData::mandalaToString(quint16 mid) const
+{
+  return QString::number(mid);
+}
+quint16 FactData::stringToMandala(const QString &s) const
+{
+  return s.toUInt();
+}
+const QStringList * FactData::mandalaNames() const
+{
+  return NULL;
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
@@ -418,6 +435,7 @@ void FactData::defaults()
     case IntData: m_value=0; break;
     case BoolData: m_value=false; break;
     case EnumData: m_value=0; break;
+    case MandalaData: m_value=0; break;
     default: m_value=QVariant();
   }
 }

@@ -30,7 +30,7 @@
 #include "Mandala.h"
 //=============================================================================
 Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal)
-  : Fact(bLocal?parent:parent->f_list,bLocal?callsign:"vehicle#",callsign,"",GroupItem,NoData),
+  : Fact(bLocal?parent:parent->f_list,callsign,callsign,"",GroupItem,NoData),
     uid(uid),
     m_squawk(squawk)
 {
@@ -51,7 +51,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_callsign=new Fact(this,"callsign",tr("Callsign"),tr("Vehicle name"),FactItem,ConstData);
   f_callsign->setValue(callsign);
   f_callsign->setVisible(vclass!=LOCAL);
-  connect(f_callsign,&Fact::valueChanged,this,[=](){ setTitle(f_callsign->text()); });
+  connect(f_callsign,&Fact::valueChanged,this,[=](){ setName(f_callsign->text());setTitle(f_callsign->text()); });
 
   f_vclass=new Fact(this,"vclass",tr("Class"),tr("Vehicle class"),FactItem,ConstData);
   f_vclass->setEnumStrings(QMetaEnum::fromType<VehicleClass>());
@@ -97,6 +97,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_streamType->setValue(0);
 
   //register JS new vehicles instantly
+  connect(this,&Vehicle::nameChanged,this,[=](){FactSystem::instance()->jsSync(this);});
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================

@@ -138,6 +138,7 @@ QVariant Fact::data(int col, int role) const
     case Fact::FACT_MODEL_COLUMN_NAME: return title();
     case Fact::FACT_MODEL_COLUMN_VALUE:{
       if(dataType()==Fact::ActionData) return QString("<exec>");
+      if(dataType()==Fact::ScriptData) return status();
       const QString s=text();
       if(s.isEmpty()){
         if(!status().isEmpty()) return status();
@@ -182,6 +183,8 @@ void Fact::hashData(QCryptographicHash *h) const
   h->addData(QString::number(treeItemType()).toUtf8());
   h->addData(QString::number(size()).toUtf8());
   h->addData(enumStrings().join("").toUtf8());
+
+  h->addData(text().toUtf8());
 }
 //=============================================================================
 void Fact::bind(FactData *item)
@@ -309,8 +312,9 @@ QString Fact::section() const
 }
 void Fact::setSection(const QString &v)
 {
-  if(m_section==v)return;
-  m_section=v;
+  QString s=v.trimmed();
+  if(m_section==s)return;
+  m_section=s;
   emit sectionChanged();
 }
 QString Fact::status() const
@@ -327,8 +331,9 @@ void Fact::setStatus(const QString &v)
     static_cast<Fact*>(_bindedFact)->setStatus(v);
     return;
   }
-  if(m_status==v)return;
-  m_status=v;
+  QString s=v.trimmed();
+  if(m_status==s)return;
+  m_status=s;
   emit statusChanged();
 }
 bool Fact::active() const

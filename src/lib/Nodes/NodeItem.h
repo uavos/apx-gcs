@@ -48,9 +48,6 @@ public:
   int timeout_ms;
   void request(uint cmd, const QByteArray &data, uint timeout_ms, bool highprio=false);
 
-  enum DBState {NODE_DB_INFO, NODE_DB_DICT};
-  void dbRegister(DBState state);
-
   void message(QString msg);
 
   //override
