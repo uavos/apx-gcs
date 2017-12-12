@@ -33,6 +33,7 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
     timeout_ms(500),
     nodes(parent),
     group(NULL),
+    lastSeenTime(0),
     m_infoValid(false)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
@@ -93,6 +94,7 @@ void NodeItem::validateDict()
   }
   groupFields();
   setDictValid(true); //recursive update valid for children
+  nodes->db->nodeDictWrite(this);
   //qDebug()<<"Node valid"<<path();
   FactSystem::instance()->jsSync(this);
 }
@@ -116,6 +118,7 @@ void NodeItem::validateInfo()
 {
   if(!infoValid())return;
   groupNodes();
+  nodes->db->nodeInfoWrite(this);
   //FactSystem::instance()->jsSync(this);
   //qDebug()<<"Node infoValid"<<path();
 }
@@ -159,6 +162,8 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         memcpy(&ninfo,ba.data(),ba.size());
       }
       ninfo.name[sizeof(_node_name)-1]=0;
+      //populate info
+      lastSeenTime=QDateTime::currentDateTime().toTime_t();
       setName((const char*)ninfo.name);
       setTitle((const char*)ninfo.name);
       setVersion(QString((const char*)ninfo.version));
@@ -171,7 +176,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       setBusy(ninfo.flags.busy);
       setFailure(false);
       setInfoValid(true);
-      nodes->db->nodeInfoWrite(this);
+      //nodes->db->nodeInfoWrite(this);
       request(apc_conf_inf,QByteArray(),timeout_ms,true);
     }return true;
     case apc_nstat: {
@@ -260,9 +265,9 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
           requestConf();
           if(!dictValid()){
             validateDict();
-            if(dictValid()){
+            /*if(dictValid()){
               nodes->db->nodeDictWrite(this);
-            }
+            }*/
           }
           //qDebug()<<commands.name;
         }
@@ -271,6 +276,10 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
     case apc_conf_read:
     case apc_conf_write:
       if(!dictValid())return true;
+      if(ba.isEmpty()){
+        //qDebug()<<"node conf written";
+        nodes->db->nodeDataWrite(this);
+      }
     case apc_conf_dsc:
     {
       if(ba.size()<1)break;
@@ -533,8 +542,21 @@ void NodeItem::hashData(QCryptographicHash *h) const
   h->addData(hardware().toUtf8());
   h->addData(conf_hash.toUtf8());
   h->addData(QString::number(fwSupport()).toUtf8());
+  for(int i=0;i<commands.cmd.size();++i){
+    h->addData(QString::number(commands.cmd.at(i)).toUtf8());
+    h->addData(commands.name.at(i).toUtf8());
+    h->addData(commands.descr.at(i).toUtf8());
+  }
 }
 //=============================================================================
+//=============================================================================
+void NodeItem::clearCommands()
+{
+  commands.cmd.clear();
+  commands.name.clear();
+  commands.descr.clear();
+  commands.valid=false;
+}
 //=============================================================================
 void NodeItem::cmdexec(int cmd_idx)
 {
@@ -565,4 +587,22 @@ void NodeItem::cmdexec(int cmd_idx)
     setDataValid(false);
   }
 }
+//=============================================================================
+QHash<QString,NodeField*> NodeItem::allFieldsDataMap()
+{
+  QHash<QString,NodeField*> map;
+  for(int i=0;i<allFields.size();++i){
+    NodeField *f=allFields.at(i);
+    //expand complex numbers
+    bool bComplex=f->size()>0;
+    if(bComplex){
+      for(int i2=0;i2<f->size();++i2){
+        NodeField *f2=static_cast<NodeField*>(f->childItems().at(i2));
+        map.insert(f->name()+"/"+f2->name(),f2);
+      }
+    }else map.insert(f->name(),f);
+  }
+  return map;
+}
+//=============================================================================
 //=============================================================================

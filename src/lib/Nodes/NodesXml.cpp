@@ -275,7 +275,7 @@ int NodesXml::read(QDomNode dom, NodeItem *node, int fmt) const
       if(!f)return 0;
     }
 
-    //find field by xml_conf_name
+    //find field by name
     foreach(NodeField *i,node->allFields){
       if(!i->dictValid())continue;
       if(i->array()!=array)continue;

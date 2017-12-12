@@ -142,9 +142,21 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
   }
   QMenu m(treeWidget);
 
-  //backups folder
-  if(sn_list.size()==1){
-    NodeItem *item = nlist.first();
+  //node backups
+  if(nlist.size()==1){
+    NodesDB::NodeDataKeys bkeys=nlist.at(0)->nodes->db->nodeDataReadKeys(nlist.at(0));
+    if(!bkeys.isEmpty()){
+      if(!m.isEmpty())m.addSeparator();
+      QMenu *mu=m.addMenu(tr("Backups"));
+      for(int i=0;i<bkeys.size();++i){
+        QString bname=bkeys.at(i).first;
+        QAction *a=new QAction(bname,&m);
+        connect(a,&QAction::triggered,this,&NodesFrame::nodeRestoreBackup);
+        a->setData(QVariant::fromValue(bkeys.at(i).second));
+        mu->addAction(a);
+      }
+    }
+
     /*if(item->valid() && item->backup_dir.count()){
       if(!m.isEmpty())m.addSeparator();
       QMenu *mu=m.addMenu(tr("Backups"));
@@ -334,11 +346,10 @@ void NodesFrame::nodeCmdAction(void)
 //=============================================================================
 void NodesFrame::nodeRestoreBackup(void)
 {
-  /*QAction *a=(QAction*)sender();
-  const QString bname=a->data().toString();
-  QList<NodesItem*> sel=selectedItems(NodesItem::it_node);
-  if(sel.size()!=1)return;
-  static_cast<NodeItem*>(sel.first())->restoreBackupFile(bname);*/
+  QAction *a=(QAction*)sender();
+  NodesList nlist=selectedItems<NodeItem>();
+  if(nlist.size()!=1)return;
+  nlist.first()->nodes->db->nodeDataRead(nlist.first(),a->data().toULongLong());
 }
 void NodesFrame::vehicleRestoreBackup(void)
 {

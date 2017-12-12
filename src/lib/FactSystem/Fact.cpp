@@ -174,8 +174,8 @@ void Fact::hashData(QCryptographicHash *h) const
   h->addData(name().toUtf8());
   h->addData(title().toUtf8());
   h->addData(descr().toUtf8());
-  h->addData(section().toUtf8());
-  h->addData(QString::number(num()).toUtf8());
+  //h->addData(section().toUtf8());
+  //h->addData(QString::number(num()).toUtf8());
   h->addData(QString::number(precision()).toUtf8());
   h->addData(min().toString().toUtf8());
   h->addData(max().toString().toUtf8());

@@ -231,8 +231,8 @@ bool NodeField::unpackService(uint ncmd, const QByteArray &data)
       setDescr(r_descr);
       setEnumStrings(r_opts);
       setDictValid(true);
-      if(node->dictValid())
-        node->nodes->db->nodeDictWrite(node);
+      /*if(node->dictValid())
+        node->nodes->db->nodeDictWrite(node);*/
       //qDebug()<<"fields downloaded"<<node->allFields.size();
     }return true;
     case apc_conf_read: {

@@ -38,23 +38,27 @@ public:
 
   void createTables();
 
-  void nodeInfoRead(NodeItem *node);
   void nodeInfoWrite(NodeItem *node);
+  void nodeInfoRead(NodeItem *node);
 
-  void nodeDictRead(NodeItem *node);
   void nodeDictWrite(NodeItem *node);
   void nodeDictClear(NodeItem *node);
+  void nodeDictRead(NodeItem *node);
 
-  void nodeDataRead(NodeField *f);
   void nodeDataWrite(NodeItem *node);
+  typedef QList<QPair<QString,quint64>> NodeDataKeys;
+  NodeDataKeys nodeDataReadKeys(NodeItem *node,int limit=25);
+  void nodeDataRead(NodeItem *node, quint64 dataID);
+
 
 private:
   Nodes *nodes;
+  bool m_enabled;
 
   bool checkResult(QSqlQuery &query);
 
+  quint64 nodeGetID(NodeItem *node, QSqlQuery *query, bool *ok);
 
-  bool m_enabled;
 };
 //=============================================================================
 #endif

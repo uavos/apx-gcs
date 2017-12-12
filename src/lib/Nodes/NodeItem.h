@@ -45,6 +45,8 @@ public:
 
   QList<NodeField*> allFields;
 
+  QHash<QString,NodeField*> allFieldsDataMap();
+
   int timeout_ms;
   void request(uint cmd, const QByteArray &data, uint timeout_ms, bool highprio=false);
 
@@ -63,7 +65,10 @@ public:
     QStringList name;
     QStringList descr;
   }commands;
+  void clearCommands();
   void cmdexec(int cmd_idx);
+
+  uint lastSeenTime;
 
 private:
   QStringList sortNames;
