@@ -28,13 +28,13 @@
 #include <AppDirs.h>
 #include <Vehicle.h>
 //=============================================================================
-PawnScript::PawnScript(NodeField *fact)
- : QObject(fact),fact(fact)
+PawnScript::PawnScript(NodeField *field)
+ : QObject(field),field(field)
 {
   op=op_idle;
 
-  pawncc=new PawnCompiler(fact);
-  connect(fact,&NodeField::valueChanged,this,&PawnScript::compile);
+  pawncc=new PawnCompiler(field);
+  connect(field,&NodeField::valueChanged,this,&PawnScript::compile);
 }
 //=============================================================================
 int PawnScript::size() const
@@ -59,7 +59,7 @@ void PawnScript::compile()
   //pack flash_data file
   _ft_script hdr;
   memset(&hdr,0,sizeof(hdr));
-  QByteArray basrc=qCompress(fact->value().toString().toUtf8(),9);
+  QByteArray basrc=qCompress(field->value().toString().toUtf8(),9);
   QByteArray code=pawncc->outData();
   hdr.size=code.size()+basrc.size();
   hdr.code_size=code.size();
@@ -71,7 +71,7 @@ void PawnScript::compile()
   flash_data_wr.clear();
   flash_data_wr.append((const char*)&hdr,sizeof(hdr));
   flash_data_wr.append(code);
-  //qDebug()<<"Script recompiled: "<<flash_data_wr.size()<<fact->ba_conf_bkp.size();
+  //qDebug()<<"Script recompiled: "<<flash_data_wr.size()<<field->ba_conf_bkp.size();
   //qDebug()<<hdr.size<<hdr.code_size<<hdr.crc;
   emit changed();
 }
@@ -80,7 +80,7 @@ void PawnScript::unpackFlashData()
 {
   //check consistency
   const QByteArray &ba=flash_data_rd;
-  fact->setValue(QString());
+  field->setValue(QString());
   QString err;
   bool bErr=true;
   while(1){
@@ -102,13 +102,13 @@ void PawnScript::unpackFlashData()
     if(hdr.crc!=CRC_16_IBM((const uint8_t*)ba.data()+sizeof(_ft_script),hdr.size,0xFFFF))
       break;
     QByteArray basrc=ba.mid(sizeof(_ft_script)+hdr.code_size);
-    if(basrc.isEmpty())fact->setValue(QString());
+    if(basrc.isEmpty())field->setValue(QString());
     else{
       QString s=QString(qUncompress(basrc));
       if(s.isEmpty()) s=basrc;
-      fact->setValue(s);
+      field->setValue(s);
     }
-    //qDebug("Script from '%s' downloaded",fact->node->title().toUtf8().data());
+    //qDebug("Script from '%s' downloaded",field->node->title().toUtf8().data());
     /*QByteArray bacode=ba.mid(sizeof(_ft_script),hdr.code_size);
     QString s=bacode.toHex().toUpper();
     while(s.size()){
@@ -121,12 +121,12 @@ void PawnScript::unpackFlashData()
   }
   if(bErr){
     if(!err.isEmpty())
-      qWarning("%s '%s' %s (%s)",tr("Script").toUtf8().data(),fact->node->title().toUtf8().data(),tr("error").toUtf8().data(),err.toUtf8().data());
-    fact->setValue(QString());
+      qWarning("%s '%s' %s (%s)",tr("Script").toUtf8().data(),field->node->title().toUtf8().data(),tr("error").toUtf8().data(),err.toUtf8().data());
+    field->setValue(QString());
   }
   //compile();
 
-  fact->setDataValid(true);
+  field->setDataValid(true);
 }
 //=============================================================================
 //=============================================================================
@@ -138,13 +138,13 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
       //qDebug("apc_script_file (cnt:%u) %s",data.size(),data.toHex().data());
       if(op==op_read_hdr){
         if(data.size()!=sizeof(_flash_file)){
-          //qWarning("Wrong flash_rfile reply size from '%s' (exp: %u re: %u)",fact->node->model->mvar->node_name(fact->node->sn),(uint)sizeof(_flash_file),data.size());
+          //qWarning("Wrong flash_rfile reply size from '%s' (exp: %u re: %u)",field->node->model->mvar->node_name(field->node->sn),(uint)sizeof(_flash_file),data.size());
           return;
         }
         memcpy(&flash_rfile,data.data(),data.size());
         if(flash_rfile.size==0){
-          fact->setValue(QString());
-          fact->setDataValid(true);
+          field->setValue(QString());
+          field->setDataValid(true);
           break;
         }
         flash_data_rd.resize(flash_rfile.size);
@@ -153,9 +153,9 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
         op=op_read_data;
         //qDebug("op_read_data (%u)",flash_rfile.size);
         if(request_download())return;
-        //qWarning("Script from '%s' is empty",fact->node->model->mvar->node_name(fact->node->sn));
-        fact->setValue(QString());
-        fact->setDataValid(true);
+        //qWarning("Script from '%s' is empty",field->node->model->mvar->node_name(field->node->sn));
+        field->setValue(QString());
+        field->setDataValid(true);
         break;
       }else if(op==op_write_hdr){
         if(data.size()==0){
@@ -175,13 +175,13 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
       if(op!=op_read_data)return;
       int sz=flash_block_hdr.data_size+sizeof(flash_block_hdr);
       if(data.size()!=sz){
-        //qWarning("Wrong script_block reply size from '%s' (exp: %u re: %u)",fact->node->model->mvar->node_name(fact->node->sn),sz,data.size());
+        //qWarning("Wrong script_block reply size from '%s' (exp: %u re: %u)",field->node->model->mvar->node_name(field->node->sn),sz,data.size());
         //return;
       }else if(memcmp(&flash_block_hdr,data.data(),sizeof(flash_block_hdr))!=0){
-        //qWarning("Wrong script_block reply sequence from '%s'",fact->node->model->mvar->node_name(fact->node->sn));
+        //qWarning("Wrong script_block reply sequence from '%s'",field->node->model->mvar->node_name(field->node->sn));
         //return;
       }else if((flash_block_hdr.start_address+flash_block_hdr.data_size)>(uint)flash_data_rd.size()){
-        //qWarning("Wrong script_block reply from '%s'",fact->node->model->mvar->node_name(fact->node->sn));
+        //qWarning("Wrong script_block reply from '%s'",field->node->model->mvar->node_name(field->node->sn));
         //return;
       }else{
         //qDebug("apc_script_read (%.4X, %u)",flash_block_hdr.start_address,data.size());
@@ -195,7 +195,7 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
       for(int i=0;i<flash_data_rd.size();i++)
         xor_crc^=((uint8_t*)flash_data_rd.data())[i];
       if(xor_crc!=flash_rfile.xor_crc){
-        qWarning("Wrong script_block CRC from '%s' (exp: %.2X re: %.2X)",fact->node->title().toUtf8().data(),xor_crc,flash_rfile.xor_crc);
+        qWarning("Wrong script_block CRC from '%s' (exp: %.2X re: %.2X)",field->node->title().toUtf8().data(),xor_crc,flash_rfile.xor_crc);
         flash_data_rd.clear();
       }
       unpackFlashData();
@@ -206,21 +206,22 @@ void PawnScript::unpackService(unsigned char cmd, const QByteArray &data)
       //if(isValid())break;
       //qDebug("apc_script_write (cnt:%u)",data.size());
       if(data.size()!=sizeof(flash_block_hdr)){
-        //qWarning("Wrong script_write reply size from '%s' (exp: %u re: %u)",fact->node->model->mvar->node_name(fact->node->sn),(uint)sizeof(flash_block_hdr),data.size());
+        //qWarning("Wrong script_write reply size from '%s' (exp: %u re: %u)",field->node->model->mvar->node_name(field->node->sn),(uint)sizeof(flash_block_hdr),data.size());
         //return;
       }else if(memcmp(&flash_block_hdr,data.data(),sizeof(flash_block_hdr))!=0){
-        //qWarning("Wrong script_write reply sequence from '%s'",fact->node->model->mvar->node_name(fact->node->sn));
+        //qWarning("Wrong script_write reply sequence from '%s'",field->node->model->mvar->node_name(field->node->sn));
         //return;
       }else flash_block_hdr.start_address+=flash_block_hdr.data_size;
       if(request_upload())return;
       //uploaded
       qDebug("%s",tr("Script uploaded").toUtf8().data());
-      fact->backup();
+      field->backup();
+      if(!field->node->modified())field->node->confWritten();
     }break;
     default:
       return;
   }
-  //if(op)qDebug("Script op done (%s) %u",fact->node->title().toUtf8().data(),op);
+  //if(op)qDebug("Script op done (%s) %u",field->node->title().toUtf8().data(),op);
   op=op_idle;
 }
 //=============================================================================
@@ -232,7 +233,7 @@ bool PawnScript::request_download(void)
   uint cnt=sizeof(_flash_data::data);
   uint rcnt=flash_rfile.size-flash_block_hdr.start_address;
   flash_block_hdr.data_size=cnt<rcnt?cnt:rcnt;
-  fact->node->request(apc_script_read,QByteArray((const char*)&flash_block_hdr,sizeof(flash_block_hdr)),500);
+  field->node->request(apc_script_read,QByteArray((const char*)&flash_block_hdr,sizeof(flash_block_hdr)),500);
   //qDebug()<<"req read"<<flash_block_hdr.start_address<<flash_block_hdr.data_size;
   return true;
 }
@@ -247,7 +248,7 @@ bool PawnScript::request_upload(void)
   flash_block_hdr.data_size=cnt<rcnt?cnt:rcnt;
   QByteArray ba((const char*)&flash_block_hdr,sizeof(flash_block_hdr));
   ba.append(QByteArray(flash_data_wr.data()+flash_block_hdr.start_address,flash_block_hdr.data_size));
-  fact->node->request(apc_script_write,ba,1000);
+  field->node->request(apc_script_write,ba,1000);
   //qDebug()<<"upl: "<<flash_block_hdr.start_address<<flash_block_hdr.data_size<<ba.size();
   return true;
 }
@@ -255,7 +256,7 @@ bool PawnScript::request_upload(void)
 void PawnScript::download(void)
 {
   op=op_read_hdr;
-  fact->node->request(apc_script_file,QByteArray(),500);
+  field->node->request(apc_script_file,QByteArray(),500);
 }
 //=============================================================================
 void PawnScript::upload(void)
@@ -277,7 +278,7 @@ void PawnScript::upload(void)
     flash_wfile.xor_crc^=((uint8_t*)flash_data_wr.data())[i];
   QByteArray ba((const char*)&flash_wfile,sizeof(_flash_file));
   op=op_write_hdr;
-  fact->node->request(apc_script_file,ba,500);
+  field->node->request(apc_script_file,ba,500);
 }
 //=============================================================================
 void PawnScript::modelDone(void)

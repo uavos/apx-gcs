@@ -28,7 +28,6 @@
 #include "FactSystem.h"
 #include "NodeItem.h"
 #include "NodesXml.h"
-#include "NodesDB.h"
 class Vehicle;
 typedef QList<NodeItem*> NodesList;
 //=============================================================================
@@ -59,7 +58,6 @@ public:
   NodeItem * nodeCheck(const QByteArray &sn);
 
   NodesXml *xml;
-  NodesDB *db;
 
   //firmware upgrades
   typedef enum {UpgradeLoader,UpgradeFirmware,UpgradeMHX}UpgradeType;

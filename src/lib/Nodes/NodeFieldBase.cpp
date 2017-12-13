@@ -70,6 +70,7 @@ bool NodeFieldBase::dataValid() const
 }
 void NodeFieldBase::setDataValid(const bool &v,bool recursive)
 {
+  if(v && (!dictValid()))return;
   if(recursive){
     foreach (FactTree *i, childItems()) {
       static_cast<NodeFieldBase*>(i)->setDataValid(v);

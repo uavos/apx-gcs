@@ -70,8 +70,11 @@ public:
 
   uint lastSeenTime;
 
+  bool skipCache;
+
 private:
   QStringList sortNames;
+  QTimer syncTimer;
 
   void groupFields(void);
   void groupNodes(void);
@@ -84,11 +87,17 @@ private slots:
   void validateData();
   void validateInfo();
 
+  void updateReconf();
+
+  void sync();
+  void syncLater(int timeout=2000);
+
 public slots:
   void nstat();
   void upload();
 
   void validateDict();
+  void confWritten();
 
   //data comm
 public slots:

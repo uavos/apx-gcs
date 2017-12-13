@@ -37,7 +37,6 @@ Nodes::Nodes(Vehicle *parent)
   model()->setFlat(true);
 
   xml=new NodesXml(this);
-  db=new NodesDB(this);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,this,&Nodes::request);
@@ -175,7 +174,7 @@ void Nodes::nstat()
 void Nodes::clearCache()
 {
   foreach(NodeItem *node,snMap.values()){
-    db->nodeDictClear(node);
+    node->skipCache=true;
   }
 }
 //=============================================================================

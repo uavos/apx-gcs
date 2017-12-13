@@ -24,6 +24,7 @@
 #define Vehicles_H
 //=============================================================================
 #include <FactSystem.h>
+#include "VehiclesDB.h"
 class Vehicle;
 //=============================================================================
 class Vehicles: public Fact
@@ -42,6 +43,8 @@ public:
   Fact *f_select;
 
   Vehicle *f_local;
+
+  VehiclesDB *vdb;
 
 private:
   static Vehicles * _instance;

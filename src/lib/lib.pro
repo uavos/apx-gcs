@@ -87,6 +87,7 @@ SOURCES += \
     Vehicles/VehicleNmtManager.cpp \
     Vehicles/VehicleRecorder.cpp \
     Vehicles/VehicleWarnings.cpp \
+    Vehicles/VehiclesDB.cpp \
 
 HEADERS += \
     Vehicles/QMandalaField.h \
@@ -100,6 +101,7 @@ HEADERS += \
     Vehicles/VehicleNmtManager.h \
     Vehicles/VehicleRecorder.h \
     Vehicles/VehicleWarnings.h \
+    Vehicles/VehiclesDB.h \
 
 # Nodes
 SOURCES += \
@@ -111,7 +113,6 @@ SOURCES += \
     Nodes/NodeField.cpp \
     Nodes/PawnScript.cpp \
     Nodes/NodesXml.cpp \
-    Nodes/NodesDB.cpp \
 
 HEADERS += \
     Nodes/Nodes.h \
@@ -122,7 +123,6 @@ HEADERS += \
     Nodes/NodeField.h \
     Nodes/PawnScript.h \
     Nodes/NodesXml.h \
-    Nodes/NodesDB.h \
 
 
 # Communication

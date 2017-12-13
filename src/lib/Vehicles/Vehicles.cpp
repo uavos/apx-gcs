@@ -55,6 +55,8 @@ Vehicles::Vehicles(FactSystem *parent)
     parent->jsexec(QString("this.__defineSetter__('%1', function(v){ app.vehicles.current.mandala.%1.value=v; });").arg(f->name()));
   }
 
+  vdb=new VehiclesDB(this);
+
 
   selectVehicle(f_local);
   //parent->jsexec("var m=app.vehicles.current.mandala");
@@ -139,6 +141,7 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
         qDebug("%s: %s '%s' (%.4X)",tr("Vehicle identified").toUtf8().data(),v->f_vclass->text().toUtf8().data(),callsign.toUtf8().data(),squawk);
         emit vehicleRegistered(v);
       }
+      vdb->vehicleInfoUpdate(v);
       //check squawk with uid
       if(squawkMap.contains(squawk)){
         if(squawkMap.value(squawk)!=v){

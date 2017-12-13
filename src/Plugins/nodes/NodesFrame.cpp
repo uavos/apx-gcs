@@ -144,7 +144,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
 
   //node backups
   if(nlist.size()==1){
-    NodesDB::NodeDataKeys bkeys=nlist.at(0)->nodes->db->nodeDataReadKeys(nlist.at(0));
+    VehiclesDB::NodeDataKeys bkeys=Vehicles::instance()->vdb->nodeDataReadKeys(nlist.at(0));
     if(!bkeys.isEmpty()){
       if(!m.isEmpty())m.addSeparator();
       QMenu *mu=m.addMenu(tr("Backups"));
@@ -173,12 +173,12 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
   //recent backup
   if(!nlist.isEmpty()){
     foreach(NodeItem *item, nlist){
-      /*if(item->isValid()&&item->backup_dir.count()){
+      if(item->dataValid() && (!Vehicles::instance()->vdb->nodeDataReadKeys(item,1).isEmpty())){
         QAction *a=new QAction(tr("Restore recent backup"),&m);
-        connect(a,SIGNAL(triggered()),this,SLOT(nodeRestoreRecentBackup()));
+        connect(a,&QAction::triggered,this,&NodesFrame::nodeRestoreRecentBackup);
         m.addAction(a);
         break;
-      }*/
+      }
     }
   }
   //vehicle backups
@@ -349,8 +349,15 @@ void NodesFrame::nodeRestoreBackup(void)
   QAction *a=(QAction*)sender();
   NodesList nlist=selectedItems<NodeItem>();
   if(nlist.size()!=1)return;
-  nlist.first()->nodes->db->nodeDataRead(nlist.first(),a->data().toULongLong());
+  Vehicles::instance()->vdb->nodeDataRead(nlist.first(),a->data().toULongLong());
 }
+void NodesFrame::nodeRestoreRecentBackup(void)
+{
+  foreach(NodeItem *node,selectedItems<NodeItem>()){
+    Vehicles::instance()->vdb->nodeDataRestore(node);
+  }
+}
+//=============================================================================
 void NodesFrame::vehicleRestoreBackup(void)
 {
   /*QAction *a=(QAction*)sender();
@@ -358,18 +365,10 @@ void NodesFrame::vehicleRestoreBackup(void)
   model->restoreVehicleBackup(bname);*/
 }
 //=============================================================================
-void NodesFrame::nodeRestoreRecentBackup(void)
-{
-  /*foreach(NodesItem *i,selectedItems(NodesItem::it_node)){
-    QString bname=static_cast<NodeItem*>(i)->restoreRecentBackup();
-    if(!bname.size())qWarning("%s",tr("Backup not found").toUtf8().data());
-  }*/
-}
-//=============================================================================
 void NodesFrame::nodeRebootAll(void)
 {
   QAction *a=(QAction*)sender();
-  qDebug("%s...",a->text().toUtf8().data());
+  qDebug("%s...",a->text().remove('&').toUtf8().data());
   vehicle->nmtManager->request(apc_reboot,QByteArray(),QByteArray(),0,true);
 }
 //=============================================================================

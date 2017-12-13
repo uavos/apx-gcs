@@ -34,6 +34,7 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
     nodes(parent),
     group(NULL),
     lastSeenTime(0),
+    skipCache(false),
     m_infoValid(false)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
@@ -58,9 +59,14 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   connect(this,&NodeItem::dataValidChanged,this,&NodeItem::validateData);
   connect(this,&NodeItem::infoValidChanged,this,&NodeItem::validateInfo);
 
-  request(apc_info,QByteArray(),timeout_ms,true);
+  connect(this,&NodeItem::reconfChanged,this,&NodeItem::updateReconf);
 
-  nodes->db->nodeInfoRead(this);
+  syncTimer.setSingleShot(true);
+  connect(&syncTimer,&QTimer::timeout,this,&NodeItem::sync);
+
+  Vehicles::instance()->vdb->nodeInfoRead(this);
+
+  sync();
 }
 //=============================================================================
 void NodeItem::validateDict()
@@ -94,7 +100,7 @@ void NodeItem::validateDict()
   }
   groupFields();
   setDictValid(true); //recursive update valid for children
-  nodes->db->nodeDictWrite(this);
+  Vehicles::instance()->vdb->nodeDictWrite(this);
   //qDebug()<<"Node valid"<<path();
   FactSystem::instance()->jsSync(this);
 }
@@ -111,16 +117,45 @@ void NodeItem::validateData()
   }
   if(!dataValid())return;
   setProgress(0);
-  nodes->db->nodeDataWrite(this);
+  if(reconf()){
+    Vehicles::instance()->vdb->nodeDataRestore(this);
+  }else{
+    Vehicles::instance()->vdb->nodeDataWrite(this);
+  }
   //qDebug()<<"Node dataValid"<<path();
 }
 void NodeItem::validateInfo()
 {
   if(!infoValid())return;
   groupNodes();
-  nodes->db->nodeInfoWrite(this);
+  Vehicles::instance()->vdb->nodeInfoWrite(this);
+  Vehicles::instance()->vdb->vehicleNodesUpdate(nodes->vehicle);
   //FactSystem::instance()->jsSync(this);
   //qDebug()<<"Node infoValid"<<path();
+}
+void NodeItem::updateReconf()
+{
+  if(!reconf()) setDataValid(false);
+}
+void NodeItem::sync()
+{
+  request(apc_info,QByteArray(),timeout_ms,true);
+}
+void NodeItem::syncLater(int timeout)
+{
+  if(syncTimer.isActive() && timeout>syncTimer.interval())
+    timeout=syncTimer.interval();
+  syncTimer.start(timeout);
+  //qDebug()<<timeout;
+}
+//=============================================================================
+void NodeItem::confWritten()
+{
+  if(reconf()){
+    syncLater(3000);
+  }else{
+    Vehicles::instance()->vdb->nodeDataWrite(this);
+  }
 }
 //=============================================================================
 void NodeItem::updateStats()
@@ -149,7 +184,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 {
   switch(ncmd){
     case apc_search:
-      request(apc_info,QByteArray(),timeout_ms,true);
+      sync();
     return true;
     case apc_info: {
       //fill available nodes
@@ -176,7 +211,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       setBusy(ninfo.flags.busy);
       setFailure(false);
       setInfoValid(true);
-      //nodes->db->nodeInfoWrite(this);
+      //Vehicles::instance()->vdb->nodeInfoWrite(this);
       request(apc_conf_inf,QByteArray(),timeout_ms,true);
     }return true;
     case apc_nstat: {
@@ -206,7 +241,11 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
 
     }return true;
     case apc_msg: { //message from autopilot
-      message(QString(ba));
+      const QString &s=QString(ba);
+      message(s);
+      if(reconf() && (!modified()) && s==QString("%1 initialized").arg(title())){
+        syncLater(5000);
+      }
     }return true;
     case apc_conf_inf: {
       if(ba.size()!=sizeof(_conf_inf))break;
@@ -224,7 +263,11 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         //qDebug()<<"fields created"<<conf_inf.cnt;
       }
       if(!dictValid()){
-        nodes->db->nodeDictRead(this);
+        if(skipCache){
+          skipCache=false;
+        }else{
+          Vehicles::instance()->vdb->nodeDictRead(this);
+        }
       }
       if(!commands.valid){
         request(apc_conf_cmds,QByteArray(),timeout_ms,false);
@@ -266,7 +309,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
           if(!dictValid()){
             validateDict();
             /*if(dictValid()){
-              nodes->db->nodeDictWrite(this);
+              Vehicles::instance()->vdb->nodeDictWrite(this);
             }*/
           }
           //qDebug()<<commands.name;
@@ -278,7 +321,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
       if(!dictValid())return true;
       if(ba.isEmpty()){
         //qDebug()<<"node conf written";
-        nodes->db->nodeDataWrite(this);
+        if(!modified())confWritten();
       }
     case apc_conf_dsc:
     {
@@ -585,6 +628,7 @@ void NodeItem::cmdexec(int cmd_idx)
   request(commands.cmd.at(cmd_idx),QByteArray(),500);
   if(commands.cmd.at(cmd_idx)==apc_reconf || commands.name.at(cmd_idx).startsWith("conf")){
     setDataValid(false);
+    syncLater();
   }
 }
 //=============================================================================

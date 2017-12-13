@@ -20,44 +20,53 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesDB_H
-#define NodesDB_H
+#ifndef VehiclesDB_H
+#define VehiclesDB_H
 //=============================================================================
 #include <QtCore>
 #include <QtSql>
-class Nodes;
 class NodeItem;
-class NodeField;
+class Vehicle;
 //=============================================================================
-class NodesDB: public QObject
+class VehiclesDB: public QObject
 {
   Q_OBJECT
 
 public:
-  explicit NodesDB(Nodes *parent=0);
+  explicit VehiclesDB(QObject *parent=0);
 
   void createTables();
 
+  // Nodes
   void nodeInfoWrite(NodeItem *node);
   void nodeInfoRead(NodeItem *node);
 
   void nodeDictWrite(NodeItem *node);
-  void nodeDictClear(NodeItem *node);
   void nodeDictRead(NodeItem *node);
 
   void nodeDataWrite(NodeItem *node);
+  bool nodeDataRestore(NodeItem *node);
+  void nodeDataRead(NodeItem *node, quint64 dataID);
+
   typedef QList<QPair<QString,quint64>> NodeDataKeys;
   NodeDataKeys nodeDataReadKeys(NodeItem *node,int limit=25);
-  void nodeDataRead(NodeItem *node, quint64 dataID);
+  QString nodeDataTitle(NodeItem *node, uint date, QString comment, QString version) const;
+
+  //vehicles
+  void vehicleInfoUpdate(Vehicle *vehicle);
+  void vehicleNodesUpdate(Vehicle *vehicle);
+
+
+
 
 
 private:
-  Nodes *nodes;
   bool m_enabled;
 
   bool checkResult(QSqlQuery &query);
 
   quint64 nodeGetID(NodeItem *node, QSqlQuery *query, bool *ok);
+  quint64 vehicleGetID(Vehicle *vehicle, QSqlQuery *query, bool *ok);
 
 };
 //=============================================================================

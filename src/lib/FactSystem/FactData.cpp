@@ -51,12 +51,18 @@ bool FactData::setValue(const QVariant &v)
   if(m_treeItemType==FactItem){
     switch(dataType()){
       case EnumData:
-        if(ev<0 && m_enumStrings.size()==2){
-          //try boolean strings
-          QString s=v.toString();
-          if(s=="true"||s=="on"||s=="yes")ev=enumValue(1);
-          else if(s=="false"||s=="off"||s=="no")ev=enumValue(0);
-          if(ev<0) return false;
+        if(ev<0){
+          if(m_enumStrings.size()==2){
+            //try boolean strings
+            QString s=v.toString();
+            if(s=="true"||s=="on"||s=="yes")ev=enumValue(1);
+            else if(s=="false"||s=="off"||s=="no")ev=enumValue(0);
+            if(ev<0){
+              if(m_value.isNull())ev=0;
+              else return false;
+            }
+          }else if(m_value.isNull())ev=0;
+          else return false;
         }
         vx=ev;
       break;

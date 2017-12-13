@@ -30,7 +30,7 @@ class PawnScript: public QObject
 {
   Q_OBJECT
 public:
-  PawnScript(NodeField *fact);
+  PawnScript(NodeField *field);
 
   void unpackFlashData();
 
@@ -47,7 +47,7 @@ public:
   void unpackService(unsigned char cmd, const QByteArray &data);
 
 private:
-  NodeField *fact;
+  NodeField *field;
   //ft_script field storage data
   enum{op_idle,op_read_hdr,op_write_hdr,op_read_data,op_write_data}op;
 
