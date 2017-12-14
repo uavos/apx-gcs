@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -81,6 +81,9 @@ private:
   QList<QPointF> traceData;
   QList<QPointF> traceDataFromFile;
   QPointF trace_s;
+
+  //mission sequence
+  bool missionNextUpd;
 
 signals:
   void statsUpdated();
