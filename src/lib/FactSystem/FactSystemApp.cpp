@@ -80,6 +80,10 @@ FactSystemApp::FactSystemApp(QObject *parent)
     QSqlDatabase::removeDatabase(kSession);
   }
 }
+FactSystemApp::~FactSystemApp()
+{
+  QSqlDatabase::removeDatabase(kSession);
+}
 //=============================================================================
 const QString FactSystemApp::ApplicationSection=tr("Application");
 const QString FactSystemApp::ToolsSection=tr("Tools");

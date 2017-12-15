@@ -23,6 +23,7 @@
 #include "VehiclesDB.h"
 #include "Nodes.h"
 #include "Vehicle.h"
+#include "Vehicles.h"
 //=============================================================================
 VehiclesDB::VehiclesDB(QObject *parent)
   : QObject(parent), m_enabled(true)
@@ -48,6 +49,7 @@ void VehiclesDB::createTables()
   QSqlQuery query(*FactSystem::db());
   bool ok=true;
   while(ok){
+    //-------------------------------------------------------------
     //table of actual state of all nodes ever seen
     query.prepare(
       "CREATE TABLE IF NOT EXISTS Nodes ("
@@ -136,6 +138,7 @@ void VehiclesDB::createTables()
     ok=query.exec();
     if(!ok)break;
 
+    //-------------------------------------------------------------
     //VEHICLES
     query.prepare(
       "CREATE TABLE IF NOT EXISTS Vehicles ("
@@ -169,8 +172,6 @@ void VehiclesDB::createTables()
     query.prepare("CREATE INDEX IF NOT EXISTS idx_VehiclesNodes_nodeID ON VehiclesNodes (nodeID);");
     ok=query.exec();
     if(!ok)break;
-
-
 
 
     break;
@@ -495,7 +496,7 @@ void VehiclesDB::nodeDataWrite(NodeItem *node)
     query.addBindValue(nodeID);
     ok=query.exec();
     if(!ok)break;
-    qDebug()<<"new data";
+    qDebug()<<"new data"<<node->title();
     break;
   }
   //qDebug()<<"data saved"<<path();
@@ -610,7 +611,7 @@ quint64 VehiclesDB::vehicleGetID(Vehicle *vehicle, QSqlQuery *query, bool *ok)
 void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
 {
   if(!m_enabled)return;
-  if(vehicle->isLocal())return;
+  //if(vehicle->isLocal())return;
   if(!FactSystem::db()->isOpen())return;
   FactSystem::db()->transaction();
   QSqlQuery query(*FactSystem::db());
@@ -645,7 +646,7 @@ void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
 void VehiclesDB::vehicleNodesUpdate(Vehicle *vehicle)
 {
   if(!m_enabled)return;
-  if(vehicle->isLocal())return;
+  //if(vehicle->isLocal())return;
   if(!FactSystem::db()->isOpen())return;
   FactSystem::db()->transaction();
   QSqlQuery query(*FactSystem::db());
@@ -687,5 +688,4 @@ void VehiclesDB::vehicleNodesUpdate(Vehicle *vehicle)
   checkResult(query);
 }
 //=============================================================================
-
-
+//=============================================================================

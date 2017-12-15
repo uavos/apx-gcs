@@ -23,6 +23,7 @@
 #ifndef VehicleRecorder_H
 #define VehicleRecorder_H
 #include <QtCore>
+#include <QtSql>
 #include "FactSystem.h"
 #include "MandalaValue.h"
 class Vehicle;
@@ -33,7 +34,8 @@ class VehicleRecorder : public Fact
 {
   Q_OBJECT
 public:
-  VehicleRecorder(Vehicle *parent);
+  explicit VehicleRecorder(Vehicle *parent);
+  ~VehicleRecorder();
 
   QString uavNameSuffix;
 
@@ -66,6 +68,21 @@ public:
 
 private:
   Vehicle *vehicle;
+  static QSqlDatabase * _db;
+
+  //database
+  void createTables();
+  void dbDownlinkWrite();
+
+  quint64 recTelemetryID;
+  QList<double> recValues;
+  QList<Fact*> recFacts;
+  QStringList recNames;
+  QHash<quint64,Fact*> recFields;
+
+
+
+
 
   VehicleMandalaValue<idx_mode,int> v_mode;
   VehicleMandalaValue<idx_stage,int> v_stage;

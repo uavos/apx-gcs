@@ -265,10 +265,16 @@ bool VehicleMandala::unpackData(const QByteArray &ba)
       return true;
   }
   if(!m->unpack(packet.data,data_cnt,packet.id)) return false;
+  //update fact
   VehicleMandalaFact *fact=NULL;
   if(packet.id==idx_set){
     fact=idMap.value((uint16_t)packet.data[0]|(uint16_t)packet.data[1]<<8);
-    if(fact)fact->loadValue();
+  }/*else{
+    fact=idMap.value(packet.id);
+  }*/
+  //if(fact)fact->loadValue();
+  for(int i=0;i<allFacts.size();++i){
+    allFacts.at(i)->loadValue();
   }
   emit dataReceived(fact?fact->id():packet.id);
   return true;
@@ -283,6 +289,7 @@ bool VehicleMandala::unpackTelemetry(const QByteArray &ba)
   if(data_cnt<4)return false;
   if(packet.id!=idx_downstream) return false;
   if(!m->extract_downstream(packet.data,data_cnt)) return false;
+  //load facts
   foreach (VehicleMandalaFact *f, idMap.values()) {
     f->loadValue();
   }

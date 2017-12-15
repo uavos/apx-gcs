@@ -41,7 +41,7 @@ Vehicles::Vehicles(FactSystem *parent)
   f_select=new Fact(this,"select",tr("Select vehicle"),tr("Change the active vehicle"),GroupItem,NoData);
   f_select->setSection(title());
 
-  f_local=new Vehicle(this,"LOCAL",0,QByteArray(),Vehicle::LOCAL,true);
+  f_local=new Vehicle(this,"LOCAL",0,QByteArray().append((char)0).append((char)0),Vehicle::LOCAL,true);
 
   f_list=new Fact(this,"list",tr("Vehicles list"),"",SectionItem,ConstData);
   bind(f_list);
@@ -60,6 +60,8 @@ Vehicles::Vehicles(FactSystem *parent)
 
   selectVehicle(f_local);
   //parent->jsexec("var m=app.vehicles.current.mandala");
+
+  vdb->vehicleInfoUpdate(f_local);
 
   //ident request timer
   reqTimer.setInterval(1000);

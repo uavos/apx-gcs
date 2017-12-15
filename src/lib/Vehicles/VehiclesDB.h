@@ -27,6 +27,7 @@
 #include <QtSql>
 class NodeItem;
 class Vehicle;
+class Fact;
 //=============================================================================
 class VehiclesDB: public QObject
 {
@@ -57,9 +58,6 @@ public:
   void vehicleNodesUpdate(Vehicle *vehicle);
 
 
-
-
-
 private:
   bool m_enabled;
 
@@ -67,7 +65,6 @@ private:
 
   quint64 nodeGetID(NodeItem *node, QSqlQuery *query, bool *ok);
   quint64 vehicleGetID(Vehicle *vehicle, QSqlQuery *query, bool *ok);
-
 };
 //=============================================================================
 #endif

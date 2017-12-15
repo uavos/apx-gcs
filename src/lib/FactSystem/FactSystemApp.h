@@ -33,6 +33,7 @@ class FactSystemApp: public Fact
 
 public:
   explicit FactSystemApp(QObject *parent=0);
+  ~FactSystemApp();
 
   static FactSystemApp * instance() { return _instance; }
 

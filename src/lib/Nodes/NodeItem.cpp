@@ -129,7 +129,6 @@ void NodeItem::validateInfo()
   if(!infoValid())return;
   groupNodes();
   Vehicles::instance()->vdb->nodeInfoWrite(this);
-  Vehicles::instance()->vdb->vehicleNodesUpdate(nodes->vehicle);
   //FactSystem::instance()->jsSync(this);
   //qDebug()<<"Node infoValid"<<path();
 }
@@ -262,6 +261,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
         }
         //qDebug()<<"fields created"<<conf_inf.cnt;
       }
+      Vehicles::instance()->vdb->vehicleNodesUpdate(nodes->vehicle);
       if(!dictValid()){
         if(skipCache){
           skipCache=false;

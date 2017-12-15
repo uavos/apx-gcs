@@ -171,7 +171,7 @@ void Fact::hashData(QCryptographicHash *h) const
     Fact *f=static_cast<Fact*>(item);
     f->hashData(h);
   }
-  h->addData(name().toUtf8());
+  //h->addData(name().toUtf8());
   h->addData(title().toUtf8());
   h->addData(descr().toUtf8());
   //h->addData(section().toUtf8());

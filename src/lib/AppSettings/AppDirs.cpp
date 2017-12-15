@@ -93,3 +93,8 @@ QString AppDirs::dbFileName()
   return user().absoluteFilePath("gcs.db");
 }
 //=============================================================================
+QString AppDirs::dbTelemetryFileName()
+{
+  return user().absoluteFilePath("telemetry.db");
+}
+//=============================================================================

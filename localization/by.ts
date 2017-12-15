@@ -218,94 +218,6 @@
     </message>
 </context>
 <context>
-    <name>BlackboxDownload</name>
-    <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.ui" line="+14"/>
-        <source>Blackbox download</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Node:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Recorded size:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>UAV name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>%v/%m</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Read</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Read memory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Abort</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Abort operation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Erase</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Erase memory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Refresh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Refresh statistics</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/Plugins/nodes/BlackboxDownload.cpp" line="+179"/>
-        <source>Download finished</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Download aborted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Download started</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>CompassFrame</name>
     <message>
         <location filename="../src/Plugins/compass/CompassFrame.cpp" line="+32"/>
@@ -924,6 +836,74 @@
     </message>
 </context>
 <context>
+    <name>FactDelegateDialog</name>
+    <message>
+        <location filename="../src/lib/TreeModel/FactDelegateDialog.cpp" line="+47"/>
+        <source>Upload</source>
+        <translation type="unfinished">Даслаць</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Revert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FactDelegateScript</name>
+    <message>
+        <location filename="../src/lib/TreeModel/FactDelegateScript.cpp" line="+34"/>
+        <source>Compile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Load</source>
+        <translation type="unfinished">Загрузіць</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Save</source>
+        <translation type="unfinished">Захаваць</translation>
+    </message>
+    <message>
+        <location line="+74"/>
+        <location line="+14"/>
+        <source>Script files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-13"/>
+        <location line="+14"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Empty script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Cannot write file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Cannot read file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FactSystemApp</name>
     <message>
         <location filename="../src/lib/FactSystem/FactSystemApp.cpp" line="+31"/>
@@ -1034,150 +1014,6 @@
     <message>
         <location line="-35"/>
         <source>Derivative Filter [filter_dt]</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>FirmwareLoader</name>
-    <message>
-        <location filename="../src/Plugins/nodes/FirmwareLoader.cpp" line="+47"/>
-        <source>Firmware upgrade</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Loader upgrade</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>MHX radio upgrade</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Initializing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Can&apos;t initialize loader</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Can&apos;t initialize upgrade</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Invalid start address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>File too long</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Can&apos;t setup loader file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+44"/>
-        <location line="+13"/>
-        <source>No response from device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-43"/>
-        <location line="+38"/>
-        <source>Retrying</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-25"/>
-        <source>Can&apos;t initialize MHX update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Can&apos;t initialize MHX file write</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>WAIT</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <location line="+50"/>
-        <source>Writing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-10"/>
-        <source>Update not needed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>Success</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>Firmware upgrade aborted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+45"/>
-        <location line="+124"/>
-        <source>Loading file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-121"/>
-        <location line="+124"/>
-        <source>Cannot read file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-95"/>
-        <source>Data address too low</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Data address too high</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Unknown hex record type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Error parsing MHX version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Older firmware file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>New firmware</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>MHX firmware files not found</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1298,7 +1134,7 @@
     </message>
     <message>
         <location line="+12"/>
-        <location line="+91"/>
+        <location line="+92"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2137,27 +1973,37 @@
 <context>
     <name>NodeField</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeField.cpp" line="+302"/>
+        <location filename="../src/lib/Nodes/NodeField.cpp" line="+94"/>
+        <source>error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+178"/>
         <source>Field modified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+108"/>
-        <location line="+11"/>
+        <location line="+242"/>
+        <location line="+12"/>
+        <location line="+10"/>
         <location line="+9"/>
-        <location line="+8"/>
         <source>Proportional</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-27"/>
-        <location line="+11"/>
-        <location line="+17"/>
+        <location line="-30"/>
+        <location line="+12"/>
+        <location line="+19"/>
         <source>Proportional limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-27"/>
+        <location line="-30"/>
         <source>Derivative</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2168,23 +2014,23 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+9"/>
-        <location line="+17"/>
+        <location line="+10"/>
+        <location line="+19"/>
         <source>Integral</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-25"/>
-        <location line="+9"/>
-        <location line="+17"/>
+        <location line="-28"/>
+        <location line="+10"/>
+        <location line="+19"/>
         <source>Integral limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-25"/>
-        <location line="+9"/>
-        <location line="+6"/>
-        <location line="+11"/>
+        <location line="-28"/>
+        <location line="+10"/>
+        <location line="+7"/>
+        <location line="+12"/>
         <source>Output limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2202,8 +2048,13 @@
 <context>
     <name>NodeItem</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+43"/>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+46"/>
         <source>Nodes list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+561"/>
+        <source>Can&apos;t send command (unknown command)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2215,7 +2066,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+8"/>
         <source>Request</source>
         <translation type="unfinished">Запыт</translation>
     </message>
@@ -2284,6 +2135,7 @@
     </message>
     <message>
         <location line="+9"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+22"/>
         <source>Upload</source>
         <translation type="unfinished">Даслаць</translation>
     </message>
@@ -2329,6 +2181,7 @@
     </message>
     <message>
         <location line="+3"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+7"/>
         <source>Reload everything</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2340,6 +2193,7 @@
     </message>
     <message>
         <location line="+9"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+4"/>
         <source>Load from telemetry</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2369,306 +2223,89 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+445"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="-22"/>
+        <source>Vehicle parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Request parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Request statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stop downloading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Load from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save to file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Revert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+118"/>
+        <source>Backups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Restore recent backup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+98"/>
+        <source>Firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Loader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>Reboot all nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+139"/>
+        <location line="+26"/>
         <source>Node conf files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-25"/>
+        <location line="+26"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Cannot write file</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NodesItemField</name>
-    <message>
-        <location filename="../src/Plugins/nodes/NodesItemField.cpp" line="+32"/>
-        <source>downloading</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+65"/>
-        <source>PID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>PI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>PPI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+442"/>
-        <source>Field modified</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+69"/>
-        <location line="+11"/>
-        <location line="+9"/>
-        <location line="+8"/>
-        <source>Proportional</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-27"/>
-        <location line="+11"/>
-        <location line="+17"/>
-        <source>Proportional limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-27"/>
-        <source>Derivative</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Derivative limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+9"/>
-        <location line="+17"/>
-        <source>Integral</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-25"/>
-        <location line="+9"/>
-        <location line="+17"/>
-        <source>Integral limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-25"/>
-        <location line="+9"/>
-        <location line="+6"/>
-        <location line="+11"/>
-        <source>Output limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-6"/>
-        <source>Error to speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Speed limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NodesItemNode</name>
-    <message>
-        <location filename="../src/Plugins/nodes/NodesItemNode.cpp" line="+50"/>
-        <source>Can&apos;t create backup path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+59"/>
-        <source>bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>fields</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>conf reset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <source>yes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-5"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <source>no</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-4"/>
-        <source>loader support</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>in loader</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>addressing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>reboot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>busy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>CAN address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>CAN rx packets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>System errors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>CAN errors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>MCU load</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Power</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>LOADER</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+229"/>
-        <source>Field missing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <location line="+135"/>
-        <source>Field map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+37"/>
+        <location line="-17"/>
         <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+113"/>
-        <source>Version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+37"/>
-        <source>The file format is not correct</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <location line="+31"/>
-        <source>Backup restored for</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>Can&apos;t send command (unknown command)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NodesModel</name>
-    <message>
-        <location filename="../src/Plugins/nodes/NodesModel.cpp" line="+51"/>
-        <source>Can&apos;t create vehicle backup path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>Can&apos;t clear while upgrading firmware</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Everything is up-to-date</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Firmware upgrade finished</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+151"/>
-        <location line="+34"/>
-        <source>Cannot write file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+75"/>
-        <source>Field modified</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+26"/>
         <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2678,26 +2315,31 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Loaded %1 nodes of %2. Importing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Nodes didn&apos;t match, nothing to import</source>
+        <source>Imported %1 nodes of %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Imported %1 nodes</source>
+        <location line="+2"/>
+        <source>Nodes didn&apos;t match, nothing to import</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>NodesRequest</name>
+    <name>NodesXml</name>
     <message>
-        <location filename="../src/Plugins/nodes/NodesRequestManager.cpp" line="+88"/>
-        <source>Timeout</source>
+        <location filename="../src/lib/Nodes/NodesXml.cpp" line="+313"/>
+        <source>Field missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Field map</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2803,7 +2445,7 @@
 <context>
     <name>PawnScript</name>
     <message>
-        <location filename="../src/Plugins/nodes/PawnScript.cpp" line="+207"/>
+        <location filename="../src/lib/Nodes/PawnScript.cpp" line="+124"/>
         <source>Script</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2813,7 +2455,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+40"/>
         <source>Script upload started</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2823,7 +2465,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+48"/>
         <source>Script error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3011,7 +2653,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+162"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+161"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3624,86 +3266,20 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>ValueEditorScript</name>
     <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+73"/>
         <source>Load</source>
-        <translation type="unfinished">Загрузіць</translation>
+        <translation type="obsolete">Загрузіць</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Load from file..</source>
-        <translation type="unfinished">Загрузіць з файла.</translation>
+        <translation type="obsolete">Загрузіць з файла.</translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Restore data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Undo changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>Save</source>
-        <translation type="unfinished">Захаваць</translation>
+        <translation type="obsolete">Захаваць</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Save to file..</source>
-        <translation type="unfinished">Захаваць у файл...</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Compile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Compile script</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Clear script</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/Plugins/nodes/ValueEditorScript.cpp" line="+102"/>
-        <location line="+14"/>
-        <source>Script files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-13"/>
-        <location line="+14"/>
-        <source>Any files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Success</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Cannot write file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Cannot read file</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Захаваць у файл...</translation>
     </message>
 </context>
 <context>
@@ -3770,7 +3346,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehicleNmt</name>
     <message>
-        <location filename="../src/lib/Vehicles/VehicleNmtManager.cpp" line="+95"/>
+        <location filename="../src/lib/Vehicles/VehicleNmtManager.cpp" line="+98"/>
         <source>Timeout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3788,7 +3364,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+268"/>
+        <location line="+269"/>
         <source>Telemetry file is too big (%1 MB). Load it?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3879,7 +3455,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+103"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3889,13 +3465,26 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-93"/>
+        <location line="-94"/>
         <source>Vehicle identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+72"/>
         <source>Can&apos;t find new squawk for assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VehiclesDB</name>
+    <message>
+        <location filename="../src/lib/Vehicles/VehiclesDB.cpp" line="+544"/>
+        <source>Data restored</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Backup not found for node</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

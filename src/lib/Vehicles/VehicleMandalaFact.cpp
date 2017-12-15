@@ -116,7 +116,7 @@ bool VehicleMandalaFact::setValue(const QVariant &v)
   if(!setValueLocal(v))return false;
   if(!pack())return false;
   if(setValueCnt++<5)loadValueTimer.start();
-  qDebug()<<"set"<<path();
+  //qDebug()<<"set"<<path();
   //send uplink
   if(sendValueTimer.isActive())return true;
   if(sendValueTime.elapsed()>sendValueTimer.interval()){

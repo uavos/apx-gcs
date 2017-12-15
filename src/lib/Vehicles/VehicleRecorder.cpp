@@ -36,6 +36,8 @@
 
 #include "node.h"
 #include "Mandala.h"
+const QString kSession = QLatin1String("GCSVehicleRecorderSession");
+QSqlDatabase * VehicleRecorder::_db=NULL;
 //=============================================================================
 VehicleRecorder::VehicleRecorder(Vehicle *parent)
   :Fact(parent,"recorder",tr("Recorder"),tr("Telemetry file recorder"),FactItem,NoData),
@@ -47,6 +49,23 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   m_fileSize(0)
 {
   if(!AppDirs::telemetry().exists()) AppDirs::telemetry().mkpath(".");
+
+  //database
+  if(_db==NULL){
+    _db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE", kSession));
+    _db->setDatabaseName(AppDirs::dbTelemetryFileName());
+    _db->setConnectOptions("QSQLITE_ENABLE_SHARED_CACHE");
+    if(!_db->open()){
+      qWarning()<<_db->lastError();
+      delete _db;
+      _db=NULL;
+      QSqlDatabase::removeDatabase(kSession);
+    }
+  }
+  createTables();
+  recTelemetryID=0;
+
+
 
   recFileSuffix=".datalink";
   recDisable=false;
@@ -68,6 +87,9 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   updateStatus();
   recordingChanged();
 }
+VehicleRecorder::~VehicleRecorder()
+{
+}
 //=============================================================================
 void VehicleRecorder::updateStatus()
 {
@@ -86,6 +108,160 @@ void VehicleRecorder::updateStatus()
   else st=QString("%1d%2").arg(t.daysTo(t0)).arg(t.toString("hh:mm"));
 
   setStatus(QString("%1/%2").arg(sz).arg(st));
+}
+//=============================================================================
+//=============================================================================
+void VehicleRecorder::createTables()
+{
+  if(!_db->isOpen())return;
+  _db->transaction();
+  QSqlQuery query(*_db);
+  bool ok=true;
+  while(ok){
+    query.prepare(
+      "CREATE TABLE IF NOT EXISTS Telemetry ("
+      "key INTEGER PRIMARY KEY NOT NULL, "
+      "vehicleUID TEXT NOT NULL, "
+      "title TEXT, "
+      "comment TEXT, "
+      "rec INTEGER, "
+      "timestamp INTEGER DEFAULT 0"  //[ms]
+      ")");
+    ok=query.exec();
+    if(!ok)break;
+    query.prepare("CREATE INDEX IF NOT EXISTS idx_Telemetry_vehicleUID ON Telemetry (vehicleUID);");
+    ok=query.exec();
+    if(!ok)break;
+    query.prepare(
+      "CREATE TABLE IF NOT EXISTS TelemetryFields ("
+      "key INTEGER PRIMARY KEY NOT NULL, "
+      "name TEXT, "
+      "title TEXT, "
+      "descr TEXT, "
+      "units TEXT, "
+      "opts TEXT, "
+      "sect TEXT"
+      ")");
+    ok=query.exec();
+    if(!ok)break;
+    //sync fields
+    query.prepare("SELECT * FROM TelemetryFields");
+    ok=query.exec();
+    if(!ok)break;
+    VehicleMandala *m=vehicle->f_mandala;
+    QStringList fnames=m->names;
+    while(query.next()){
+      QString s=query.value(1).toString();
+      if(!fnames.contains(s)){
+        qWarning()<<"deprecated field telemetry DB"<<s;
+        continue;
+      }
+      fnames.removeOne(s);
+      recFields.insert(query.value(0).toULongLong(),static_cast<Fact*>(m->child(s)));
+    }
+    foreach (QString s, fnames) {
+      Fact *f=static_cast<Fact*>(m->child(s));
+      query.prepare("INSERT INTO TelemetryFields(name) VALUES(?)");
+      query.addBindValue(f->name());
+      ok=query.exec();
+      if(!ok)break;
+      recFields.insert(query.lastInsertId().toULongLong(),f);
+      qDebug()<<"add field telemetry DB"<<s;
+    }
+    foreach (quint64 fieldID, recFields.keys()) {
+      Fact *f=recFields.value(fieldID);
+      query.prepare(
+        "UPDATE TelemetryFields SET "
+        "name=?, title=?, descr=?, units=?, opts=?, sect=? "
+        "WHERE key=?");
+      query.addBindValue(f->name());
+      query.addBindValue(f->title());
+      query.addBindValue(f->descr());
+      query.addBindValue(f->units());
+      query.addBindValue(f->enumStrings().join(','));
+      query.addBindValue(QVariant());
+      query.addBindValue(fieldID);
+      ok=query.exec();
+      if(!ok)break;
+    }
+    query.prepare(
+      "CREATE TABLE IF NOT EXISTS TelemetryDownlink ("
+      "telemetryID INTEGER NOT NULL, "
+      "fieldID INTEGER NOT NULL, "
+      "timestamp INTEGER DEFAULT 0, "  //[ms]
+      "value REAL, "
+      "FOREIGN KEY(fieldID) REFERENCES TelemetryFields(key) ON DELETE CASCADE, "
+      "FOREIGN KEY(telemetryID) REFERENCES Telemetry(key) ON DELETE CASCADE"
+      ")");
+    ok=query.exec();
+    if(!ok)break;
+
+
+    break;
+  }
+  if(query.lastError().type()==QSqlError::NoError){
+    _db->commit();
+    return;
+  }
+  qWarning() << "VehicleRecorder SQL error:" << query.lastError().text();
+  qWarning() << query.executedQuery();
+}
+//=============================================================================
+void VehicleRecorder::dbDownlinkWrite()
+{
+  //18:10=0kb 18:25=5Mb 20Mb/hr 18:30=6Mb 18Mb/hr
+  //bus: 19:05=17Mb 19:10=19.2Mb 26.4Mb/hr
+  if(!_db->isOpen())return;
+  _db->transaction();
+  QSqlQuery query(*_db);
+  quint64 timestamp=QDateTime::currentDateTime().toMSecsSinceEpoch();
+  bool ok=true;
+  while(ok){
+    if(recTelemetryID==0){
+      recValues.clear();
+      //register telemetry file record
+      query.prepare("INSERT INTO Telemetry(vehicleUID, title, timestamp) VALUES(?, ?, ?)");
+      query.addBindValue(vehicle->uid.toHex().toUpper());
+      query.addBindValue(vehicle->fileTitle());
+      query.addBindValue(timestamp);
+      ok=query.exec();
+      if(!ok)break;
+      recTelemetryID=query.lastInsertId().toULongLong();
+    }
+    //insert data records of changed facts
+    int i=-1;
+    foreach (quint64 fieldID, recFields.keys()) {
+      i++;
+      Fact *f=recFields.value(fieldID);
+      QVariant vv=f->value();
+      double v=vv.toDouble();
+      if(i<recValues.size()){
+        if(recValues.at(i)==v){
+          continue;
+        }else{
+          recValues[i]=v;
+        }
+      }else recValues.append(v);
+      query.prepare(
+        "INSERT INTO TelemetryDownlink"
+        "(telemetryID, fieldID, timestamp, value) "
+        "VALUES(?, ?, ?, ?)");
+      query.addBindValue(recTelemetryID);
+      query.addBindValue(fieldID);
+      query.addBindValue(timestamp);
+      query.addBindValue(vv);
+      ok=query.exec();
+      if(!ok)break;
+    }
+
+    break;
+  }
+  if(query.lastError().type()==QSqlError::NoError){
+    _db->commit();
+    //return;
+  }
+  //qWarning() << "VehicleRecorder SQL error:" << query.lastError().text();
+  //qWarning() << query.executedQuery();
 }
 //=============================================================================
 //=============================================================================
@@ -175,8 +351,17 @@ void VehicleRecorder::record_data(QString tag,const QByteArray &data)
 }
 void VehicleRecorder::record_downlink(const QByteArray &data)
 {
-  if(data.size()<=1)return;
-  record_data("D",data);
+  if(data.size()<=bus_packet_size_hdr)return;
+  dbDownlinkWrite();
+  //record_data("D",data);
+  /*const _bus_packet &packet=*(_bus_packet*)data.data();
+  uint data_cnt=data.size();
+  if(data_cnt<bus_packet_size_hdr)return;
+  data_cnt-=bus_packet_size_hdr;
+  switch(packet.id){
+    //case idx_downstream: dbTelemetryWrite(); break;
+    case idx_downstream: dbDownlinkWrite(); break;
+  }*/
 }
 void VehicleRecorder::record_uplink(const QByteArray &data)
 {
