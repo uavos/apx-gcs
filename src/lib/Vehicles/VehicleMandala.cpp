@@ -251,9 +251,8 @@ bool VehicleMandala::unpackData(const QByteArray &ba)
 {
   _bus_packet &packet=*(_bus_packet*)ba.data();
   uint data_cnt=ba.size();
-  if(data_cnt<bus_packet_size_hdr)return false;
+  if(data_cnt<=bus_packet_size_hdr)return false;
   data_cnt-=bus_packet_size_hdr;
-  if(data_cnt==0)return false;
   switch (packet.id) {
     default: break;
     case idx_data:  //serial data

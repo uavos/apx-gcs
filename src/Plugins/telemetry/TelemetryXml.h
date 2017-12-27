@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,12 +20,31 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ConsolePlugin.h"
-#include "QMandala.h"
-#include "Console.h"
+#ifndef TelemetryXml_H
+#define TelemetryXml_H
 //=============================================================================
-void ConsolePlugin::init(void)
+#include <QtCore>
+#include <TelemetryDB.h>
+//=============================================================================
+class TelemetryXml: public QObject
 {
-  obj=new Console();
-}
+  Q_OBJECT
+
+public:
+  explicit TelemetryXml(QObject *parent=0);
+
+  quint64 read(QString fileName);
+
+private:
+  TelemetryDB *_db;
+
+  QByteArray readXmlPart(QXmlStreamReader &xml);
+
+  int m_progress;
+  void setProgress(int v);
+signals:
+  void progressChanged(int v);
+};
 //=============================================================================
+#endif
+

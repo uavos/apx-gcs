@@ -26,289 +26,563 @@
 #include <QDomDocument>
 #include <Facts.h>
 #include <AppDirs.h>
+#include <SvgIcon.h>
+#include "TelemetryXml.h"
 //=============================================================================
 TelemetryFrame::TelemetryFrame(QWidget *parent)
-  :QWidget(parent)
+  : QWidget(parent),
+    player(NULL),
+    curID(0), recCnt(0),recNum(0),
+    recTimeMax(0),recSize(0),
+    bLoading(false), m_progress(0)
 {
-  setupUi(this);
+  setWindowTitle(tr("Telemetry"));
+  //setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
+
+  //database
+  _db = new TelemetryDB(this,QLatin1String("GCSTelemetryPluginSession"));
 
   if(!QSettings().contains("Qwt_AntiAliased"))QSettings().setValue("Qwt_AntiAliased",false);
-  QToolBar *toolBar=new QToolBar(this);
-  toolBar->setIconSize(QSize(16,16));
-  toolBar->layout()->setMargin(0);
-  toolBarLayout->insertWidget(1,toolBar);
 
-  toolBar->addAction(aLast);
-  toolBar->addAction(aReload);
-  toolBar->addSeparator();
-  toolBar->addAction(aPrev);
-  toolBar->addAction(aNext);
-  toolBar->addSeparator();
-  toolBar->addAction(aPlay);
-  toolBar->addSeparator();
-  toolBar->addAction(aDelete);
-  toolBar->addSeparator();
-  toolBar->addAction(aFullScreen);
-  toolBar->addAction(aSplitV);
-  toolBar->addSeparator();
-  toolBar->addAction(aEdit);
-  toolBar->addAction(aExport);
-  toolBar->addAction(aReport);
-  toolBar->addAction(aFiles);
-  //toolBar->addSeparator();
-  //toolBar->addAction(aCut);
-  toolBar->addSeparator();
-  toolBar->addAction(aFilterUAV);
-  toolBar->addSeparator();
+  vlayout=new QVBoxLayout(this);
+  setLayout(vlayout);
+  vlayout->setMargin(0);
+  vlayout->setSpacing(0);
 
   toolBar=new QToolBar(this);
-  toolBar->setObjectName("toolBarSW");
-  toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  toolBar->setIconSize(QSize(16,16));
-  toolBar->layout()->setMargin(0);
-  toolBarLayout->insertWidget(3,toolBar);
-  toolBar->addAction(avCLR);
-  toolBar->addAction(avSTD);
-  toolBar->addAction(avIMU);
-  toolBar->addAction(avCTR);
+  toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+  vlayout->addWidget(toolBar);
+
+  toolBar=new QToolBar(this);
+  toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+  vlayout->addWidget(toolBar);
+
+  toolBarPlayer=new QToolBar(this);
+  toolBarPlayer->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  toolBarPlayer->setVisible(false);
+  vlayout->addWidget(toolBarPlayer);
+
+  plot=new TelemetryPlot(this);
+  plot->resetZoom();
+  vlayout->addWidget(plot);
+  connect(plot,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
+
+  lbTitle=new QLabel(this);
+  lbTitle->setParent(plot);
+  lbTitle->setStyleSheet("background-color: rgba(0,0,0,30%)");
+  lbTitle->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+  progressBar=new QProgressBar(this);
+  progressBar->setStyleSheet("QProgressBar {height: 10px; text-align: center; border: 1px solid gray;padding: 0px;background: black;} QProgressBar::chunk {background: gray;border: 0px;}");
+  progressBar->setMaximum(100);
+  progressBar->setVisible(false);
+  progressBar->setParent(plot);
+  progressBar->adjustSize();
+  progressBar->resize(400,progressBar->height());
+  progressBar->move(2,2);
+  //progressBar->move(2,lbTitle->height()+2);
+
+
+  //actions
+  aLast=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-fastforward.svg"),tr("Load recent"),this,&TelemetryFrame::aLast_triggered);
+  aReload=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-refresh.svg"),tr("Reload"),this,&TelemetryFrame::aReload_triggered);
+  toolBar->addSeparator();
+  aPrev=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-arrow-back.svg"),tr("Load previous"),this,&TelemetryFrame::aPrev_triggered);
+  aNext=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-arrow-forward.svg"),tr("Load next"),this,&TelemetryFrame::aNext_triggered);
+  toolBar->addSeparator();
+  aFilter=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/eye.svg"),tr("Filter vehicle"),this,&TelemetryFrame::aFilter_triggered);
+  aFilter->setCheckable(true);
+  toolBar->addSeparator();
+  aFullScreen=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-expand.svg"),tr("Full screen"),this,&TelemetryFrame::aFullScreen_triggered);
+  aFullScreen->setCheckable(true);
+  aSplit=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-book-outline.svg"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
+  aSplit->setCheckable(true);
+  toolBar->addSeparator();
+
+  aExport=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/share.svg"),tr("Export"),this,&TelemetryFrame::aExport_triggered);
+  aImport=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-folder-open.svg"),tr("Import"),this,&TelemetryFrame::aImport_triggered);
+  aRestore=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Restore"),this,&TelemetryFrame::aRestore_triggered);
+  toolBar->addSeparator();
+  aDelete=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-trash-outline.svg"),tr("Delete"),this,&TelemetryFrame::aDelete_triggered);
+  toolBar->addSeparator();
+
+  aReplay=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/play.svg"),tr("Replay"),this,&TelemetryFrame::aReplay_triggered);
+  aReplay->setCheckable(true);
+  toolBar->addSeparator();
+
+  eNotes=new QLineEdit(this);
+  eNotes->setPlaceholderText(tr("Notes"));
+  connect(eNotes,&QLineEdit::returnPressed,this,&TelemetryFrame::eNotes_returnPressed);
+  toolBar->addWidget(eNotes);
+
+  toolBarSW=new QToolBar(this);
+  toolBarSW->setObjectName("toolBarSW");
+  toolBarSW->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  toolBarSW->layout()->setMargin(0);
+  toolBar->addWidget(toolBarSW);
+  avCLR=toolBarSW->addAction(tr("CLR"),this,&TelemetryFrame::avCLR_triggered);
+  avSTD=toolBarSW->addAction(tr("STD"),this,&TelemetryFrame::avSTD_triggered);
+  avIMU=toolBarSW->addAction(tr("IMU"),this,&TelemetryFrame::avIMU_triggered);
+  avCTR=toolBarSW->addAction(tr("CTR"),this,&TelemetryFrame::avCTR_triggered);
 
   //player
-  connect(&player,SIGNAL(timeTrack(uint)),&plot,SLOT(timeTrack(uint)));
-  /*QToolBar *tbPlayer=new QToolBar(this);
-  tbPlayer->setIconSize(QSize(16,16));
-  tbPlayer->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  tbPlayer->layout()->setMargin(0);
-  verticalLayout->insertWidget(1,tbPlayer);
-  tbPlayer->addAction(aLast);
-  tbPlayer->addAction(aReload);*/
+  aPlay=toolBarPlayer->addAction(SvgIcon(":/icons/sets/ionicons/play.svg"),tr("Play"));
+  aPause=toolBarPlayer->addAction(SvgIcon(":/icons/sets/ionicons/pause.svg"),tr("Pause"));
+  aRewind=toolBarPlayer->addAction(SvgIcon(":/icons/sets/ionicons/ios-rewind.svg"),tr("Rewind"));
+  playerSpeed=new QDoubleSpinBox(this);
+  toolBarPlayer->addWidget(playerSpeed);
+  playerSpeed->setMinimum(0.100);
+  playerSpeed->setMaximum(100);
+  playerSpeed->setSingleStep(0.1);
+  playerSpeed->setAccelerated(true);
+  playerSpeed->setDecimals(3);
+  playerSlider=new QSlider(Qt::Horizontal,this);
+  toolBarPlayer->addWidget(playerSlider);
+  connect(playerSlider,&QSlider::sliderMoved,this,&TelemetryFrame::playerSliderMoved);
+  connect(plot,&TelemetryPlot::timeCursorChanged,this,&TelemetryFrame::plotTimeCursorMoved);
+  lbPlayerTime=new QLabel(this);
+  toolBarPlayer->addWidget(lbPlayerTime);
+  //lbPlayerTime->setMinimumWidth(lbPlayerTime->font().pointSize()*8);
+  //lbPlayerTime->setStyleSheet("background-color: rgba(0,0,0,30%)");
+  lbPlayerTime->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
 
-  //plot
-  QVBoxLayout *layout=new QVBoxLayout(widget);
-  layout->setMargin(0);
-  widget->setLayout(layout);
-  layout->addWidget(&plot);
-
-  QTimer::singleShot(500,this,SLOT(loadRecent()));
-}
-//=============================================================================
-void TelemetryFrame::loadRecent()
-{
   rescan();
-  QString telemetryFile=QSettings().value("telemetryFile").toString();
-  if (telemetryFile.isEmpty()||(!filesList.contains(telemetryFile))) aLast->trigger();
-  else load(filesList.indexOf(telemetryFile));
+  lbTitle->setText(QString("%1").arg(recCnt));
+  lbTitle->adjustSize();
 }
 //=============================================================================
-TelemetryFrame::~TelemetryFrame()
+void TelemetryFrame::setProgress(int v)
 {
+  if(m_progress==v)return;
+  if(v<=0){
+    m_progress=v;
+    progressBar->setValue(0);
+    progressBar->setVisible(false);
+    lbTitle->setVisible(true);
+    setEnabled(true);
+    return;
+  }
+  if(m_progress==0){
+    setEnabled(false);
+    progressBar->setVisible(true);
+    lbTitle->setVisible(false);
+  }
+  m_progress=v;
+  progressBar->setValue(v);
+  for(int i=0;i<100;i++) QCoreApplication::processEvents();
 }
 //=============================================================================
-void TelemetryFrame::on_aPrev_triggered(void)
+void TelemetryFrame::aPrev_triggered(void)
 {
-  if(flightNo>0)load(flightNo-1);
+  if(!curID){
+    aLast->trigger();
+    return;
+  }
+  if(!_db)return;
+  QSqlQuery query(*_db);
+  if(getPrev(query))load(query);
 }
-void TelemetryFrame::on_aNext_triggered(void)
+bool TelemetryFrame::getPrev(QSqlQuery &query)
 {
-  if(flightNo<(flightCnt-1))load(flightNo+1);
-}
-void TelemetryFrame::on_aLast_triggered(void)
-{
-  rescan();
-  load(flightCnt-1);
-}
-void TelemetryFrame::on_aReload_triggered(void)
-{
-  rescan();
-  load(flightNo);
-}
-//=============================================================================
-void TelemetryFrame::on_aDelete_triggered(void)
-{
-  Vehicles::instance()->f_local->f_recorder->close();
-  QProcess p;
-  QStringList arg=QStringList()<<"move"<<QUrl().fromLocalFile(Vehicles::instance()->f_local->f_recorder->loadFile.fileName()).toString()<<"trash:/";
-  p.start("kioclient",arg);
-  if(p.waitForFinished(5000)) qDebug(tr("File '%s' moved to trash.").toUtf8().data(),QFileInfo(Vehicles::instance()->f_local->f_recorder->loadFile).baseName().toUtf8().data());
-  else{
-    qDebug(tr("File '%s' deleted permanently.").toUtf8().data(),QFileInfo(Vehicles::instance()->f_local->f_recorder->loadFile).baseName().toUtf8().data());
-    Vehicles::instance()->f_local->f_recorder->loadFile.remove();
+  bool ok=true;
+  while(ok){
+    if(filter.isEmpty()) query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND timestamp <= ? ORDER BY timestamp DESC, key DESC LIMIT 100");
+    else{
+      query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND callsign=? AND timestamp <= ? ORDER BY timestamp DESC, key DESC LIMIT 100");
+      query.addBindValue(filter);
     }
+    query.addBindValue(curTimestamp);
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      if(query.value(0).toULongLong()!=curID)continue;
+      if(!query.next())break;
+      return true;
+    }
+    break;
+  }
+  return false;
+}
+void TelemetryFrame::aNext_triggered(void)
+{
+  if(!curID){
+    aLast->trigger();
+    return;
+  }
+  if(!_db)return;
+  QSqlQuery query(*_db);
+  bool ok=true;
+  while(ok){
+    if(filter.isEmpty()) query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND timestamp >= ? ORDER BY timestamp ASC, key ASC LIMIT 100");
+    else{
+      query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND callsign=? AND timestamp >= ? ORDER BY timestamp ASC, key ASC LIMIT 100");
+      query.addBindValue(filter);
+    }
+    query.addBindValue(curTimestamp);
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      if(query.value(0).toULongLong()!=curID)continue;
+      if(!query.next())break;
+      load(query);
+    }
+    break;
+  }
+}
+void TelemetryFrame::aLast_triggered(void)
+{
   rescan();
-  if(flightCnt) load(flightNo>=flightCnt?flightCnt-1:flightNo);
-  else load(0);
+  if(!_db)return;
+  QSqlQuery query(*_db);
+  bool ok=true;
+  while(ok){
+    //find the latest telemetryID
+    if(filter.isEmpty()) query.prepare("SELECT * FROM Telemetry WHERE rec=1 ORDER BY timestamp DESC, key DESC LIMIT 1");
+    else{
+      query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND callsign=? ORDER BY timestamp DESC, key DESC LIMIT 1");
+      query.addBindValue(filter);
+    }
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    load(query);
+    break;
+  }
+  if(ok)return;
+  //clear plot
+  lbTitle->setText("0");
+  lbTitle->adjustSize();
+  resetPlot();
+}
+void TelemetryFrame::aReload_triggered(void)
+{
+  if(!curID){
+    aLast->trigger();
+    return;
+  }
+  if(!_db)return;
+  QSqlQuery query(*_db);
+  bool ok=true;
+  while(ok){
+    query.prepare("SELECT * FROM Telemetry WHERE key = ?");
+    query.addBindValue(curID);
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    load(query,true);
+    break;
+  }
 }
 //=============================================================================
 void TelemetryFrame::rescan(void)
 {
-  Vehicles::instance()->f_local->f_recorder->flush();
-  filesList=Vehicles::instance()->f_local->f_recorder->recFileNames();
-  //find UAV names..
+  recCnt=0;
   uavNames.clear();
-  foreach(const QString &fname,filesList){
-    QString s=QFileInfo(fname).baseName();
-    if(!s.contains("_"))continue;
-    s=s.right(s.size()-s.indexOf('_',s.indexOf('_',s.indexOf('_',s.indexOf('_',s.indexOf('_',s.indexOf('_')+1)+1)+1)+1)+1)-1);
-    if(!uavNames.contains(s))uavNames.append(s);
-  }
-  uavNames.sort();
-  //filter list
-  filteredList=filesList.filter(filter);
 
-  flightCnt=filteredList.size();
-  aExport->setEnabled(false);
-  aDelete->setEnabled(flightCnt);
+  if(!_db)return;
+  QSqlQuery query(*_db);
+  bool ok=true;
+  while(ok){
+    //find number of records
+    if(filter.isEmpty()) query.prepare("SELECT COUNT(*) FROM Telemetry WHERE rec=1");
+    else{
+      query.prepare("SELECT COUNT(*) FROM Telemetry WHERE rec=1 AND callsign=?");
+      query.addBindValue(filter);
+    }
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    recCnt=query.value(0).toULongLong();
+    //find vehicle names
+    query.prepare("SELECT DISTINCT callsign FROM Telemetry WHERE rec=1 ORDER BY callsign");
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      uavNames.append(query.value(0).toString());
+    }
+    break;
+  }
 }
 //=============================================================================
-void TelemetryFrame::on_aFilterUAV_triggered(void)
+void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
 {
-  if(aFilterUAV->isChecked()){
-    aFilterUAV->setChecked(!filter.isEmpty());
+  if(bLoading)return;
+  bLoading=true;
+  curID=query.value(0).toULongLong();
+  curTimestamp=query.value("timestamp").toULongLong();
+  QString callsign=query.value("callsign").toString();
+  QString comment=query.value("comment").toString();
+
+  recNotes=query.value("notes").toString();
+  query.finish();
+
+  QString recStats,recStatus;
+  recTimeMax=0;
+  recSize=0;
+
+  //clear plot
+  resetPlot();
+
+  bool ok=true;
+  while(ok){
+    //find current number
+    if(filter.isEmpty()) query.prepare("SELECT COUNT(*) FROM Telemetry WHERE rec=1 AND timestamp <= ?");
+    else{
+      query.prepare("SELECT COUNT(*) FROM Telemetry WHERE rec=1 AND callsign=? AND timestamp <= ?");
+      query.addBindValue(filter);
+    }
+    query.addBindValue(curTimestamp);
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    recNum=query.value(0).toULongLong();
+    if(filter.isEmpty()) query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND timestamp <= ? ORDER BY timestamp DESC, key DESC LIMIT 100");
+    else{
+      query.prepare("SELECT * FROM Telemetry WHERE rec=1 AND callsign=? AND timestamp <= ? ORDER BY timestamp DESC, key DESC LIMIT 100");
+      query.addBindValue(filter);
+    }
+    query.addBindValue(curTimestamp);
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      if(query.value(0).toULongLong()==curID)break;
+      recNum--;
+    }
+    query.finish();
+
+    //collect fields map
+    QHash<quint64,_telemetry_field*> fmap;
+    query.prepare("SELECT key, name FROM TelemetryFields");
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      QString s=query.value(1).toString();
+      if(!plot->fields.contains(s))continue;
+      _telemetry_field *f=plot->fields.value(s);
+      fmap.insert(query.value(0).toULongLong(),f);
+    }
+    //find number of records
+    query.prepare("SELECT COUNT(*) FROM TelemetryDownlink WHERE TelemetryID=?");
+    query.addBindValue(curID);
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    recSize=query.value(0).toULongLong();
+    query.finish();
+    if(recSize>800000){
+      if(forceLarge==false){
+        recStatus=QString("** %1 **").arg(tr("large set - hit 'Reload' to show data"));
+        //qWarning("%s",recStatus.toUtf8().data());
+        break;
+      }
+    }
+    //find statistics
+    QStringList stStats;
+    query.prepare("SELECT COUNT(*) FROM TelemetryUplink WHERE TelemetryID=?");
+    query.addBindValue(curID);
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    quint64 recSizeUplink=query.value(0).toULongLong();
+    if(recSizeUplink)stStats.append(QString("%1: %2").arg("uplink").arg(recSizeUplink));
+    query.prepare("SELECT COUNT(*), name FROM TelemetryEvents WHERE telemetryID=? GROUP BY name ORDER BY name");
+    query.addBindValue(curID);
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      quint64 ecnt=query.value(0).toULongLong();
+      if(ecnt)stStats.append(QString("%1: %2").arg(query.value(1).toString()).arg(ecnt));
+    }
+    query.finish();
+    if(!stStats.isEmpty())recStats=stStats.join(" | ");
+    //collect data
+    quint64 t0=0;
+    plot->times.append(0);
+    const quint64 rowLimit=100000;
+    for(quint64 row=0;row<recSize;row+=rowLimit){
+      setProgress(row*100/recSize);
+      query.prepare("SELECT fieldID, time, value FROM TelemetryDownlink WHERE TelemetryID=? LIMIT ? OFFSET ?");
+      query.addBindValue(curID);
+      query.addBindValue(rowLimit);
+      query.addBindValue(row);
+      ok=query.exec();
+      if(!ok)break;
+      while(query.next()){
+        _telemetry_field *f=fmap.value(query.value(0).toULongLong());
+        if(!f)continue;
+        quint64 t=query.value(1).toULongLong();
+        if(!t0)t0=t;
+        t-=t0;
+        if(recTimeMax<t)recTimeMax=t;
+        double tf=t/1000.0;
+        if(plot->times.last()!=tf)plot->times.append(tf);
+        if(f->points.size() && (tf-f->points.last().x())>0.5){
+          //extrapolate
+          f->points.append(QPointF(tf-0.1,f->points.last().y()));
+        }
+        f->points.append(QPointF(tf,query.value(2).toDouble()));
+      }
+      query.finish();
+    }//for rows
+    if(!ok)break;
+    //final data tail at max time
+    double tMax=recTimeMax/1000.0;
+    foreach(_telemetry_field *f, plot->fields){
+      if(f->points.isEmpty())continue;
+      if(f->points.last().x()>=tMax)continue;
+      f->points.append(QPointF(tMax,f->points.last().y()));
+    }
+    //load data to plot
+    foreach (_telemetry_field *f, fmap.values()) {
+      f->curve->setData(new QwtPointSeriesData(f->points));
+    }
+
+    break;
+  }//while ok
+  query.finish();
+
+  //update title
+  QString s=QDateTime::fromMSecsSinceEpoch(curTimestamp).toString("yyyy MMM dd hh:mm:ss");
+  s.append(QString(" (%1)").arg(FactSystem::timeToString(recTimeMax/1000)));
+  if(!callsign.isEmpty())s.append("\t").append(callsign);
+  if(!comment.isEmpty())s.append(" | ").append(comment);
+  if(recSize>0){
+    QString srcnt=recSize>1000000?QString("%1M").arg(recSize/1000000):recSize>1000?QString("%1K").arg(recSize/1000):QString("%1").arg(recSize);
+    s.append(QString("\t(%1 %2)").arg(srcnt).arg(tr("records")));
+  }
+
+  lbTitle->setText(QString("%1/%2\t%3%4%5").arg(recNum).arg(recCnt).arg(s).arg(recStats.isEmpty()?recStats:recStats.prepend("\n\t")).arg(recStatus.isEmpty()?recStatus:recStatus.prepend("\n\t").toUpper()));
+  lbTitle->adjustSize();
+  //aExport->setEnabled(ok);
+  //aDelete->setEnabled(ok);
+  //aNext->setEnabled((flightNo+1)<flightCnt);
+  //aPrev->setEnabled(flightNo>0);
+  setEnabled(true);
+  eNotes->setText(recNotes);
+
+  plot->resetZoom();
+
+  bLoading=false;
+  setProgress(0);
+}
+//=============================================================================
+//=============================================================================
+void TelemetryFrame::resetPlot()
+{
+  plot->times.clear();
+  foreach (_telemetry_field *f, plot->fields) {
+    f->points.clear();
+    f->curve->setData(new QwtPointSeriesData());
+  }
+  plot->showCurve(plot->itemToInfo(plot->fcalculated->curve),false);
+  plot->resetZoom();
+  if(aReplay->isChecked())aReplay->trigger();
+  plot->setTimeCursor(0);
+}
+//=============================================================================
+void TelemetryFrame::aFilter_triggered(void)
+{
+  if(aFilter->isChecked()){
+    aFilter->setChecked(!filter.isEmpty());
+    rescan();
     bool ok;
-    QString item=QInputDialog::getItem(this,aFilterUAV->toolTip(),aFilterUAV->text(),uavNames,0,false,&ok);
+    QString item=QInputDialog::getItem(NULL,aFilter->toolTip(),aFilter->text(),uavNames,0,false,&ok);
     if(!ok) return;
     filter=item;
   }else filter="";
-  aFilterUAV->setChecked(!filter.isEmpty());
+  aFilter->setChecked(!filter.isEmpty());
   aLast->trigger();
 }
 //=============================================================================
-void TelemetryFrame::on_lbCurrent_clicked(void)
+void TelemetryFrame::eNotes_returnPressed(void)
 {
-  bool ok;
-  int v=QInputDialog::getInt(
-      this,QApplication::applicationName(),
-      tr("Flight number to load"),flightNo+1,1,flightCnt,1,&ok);
-  if(ok)load(v-1);
+  QString s=eNotes->text().trimmed();
+  if(curID==0 || recNotes==s)return;
+  if(!_db->writeNotes(curID,s))return;
+  recNotes=s;
+  plot->setFocus();
 }
 //=============================================================================
-void TelemetryFrame::on_aPlay_triggered(void)
-{
-  player.showNormal();
-  player.raise();
-}
-//=============================================================================
-//=============================================================================
-void TelemetryFrame::load(int idx)
-{
-  if(idx<0 || idx>=filteredList.size()) return;
-  int i=filesList.indexOf(filteredList.at(idx));
-  setEnabled(false);
-  plot.load(i);
-  flightNo=idx;
-  lbCurrent->setText(QString("%1").arg(flightNo+1));
-  lbTotal->setText(QString("%1").arg(flightCnt));
-
-  aExport->setEnabled(true);
-  aNext->setEnabled((flightNo+1)<flightCnt);
-  aPrev->setEnabled(flightNo>0);
-  setEnabled(true);
-  eNotes->setText(Vehicles::instance()->f_local->f_recorder->file.notes);
-}
-//=============================================================================
-//=============================================================================
-void TelemetryFrame::on_eNotes_returnPressed(void)
-{
-  QDomDocument doc("telemetry");
-  QFile file(AppDirs::telemetry().filePath(filesList.at(flightNo)));
-  if(!file.open(QIODevice::ReadWrite|QIODevice::Text))return;
-  QString err;
-  if(!doc.setContent(&file,&err)){
-    qDebug()<<err;
-    file.close();
-    return;
-  }
-  QDomElement root = doc.firstChildElement();
-  QDomElement notes = root.firstChildElement("notes");
-  if(notes.isNull()){
-    notes=doc.createElement("notes");
-    root.appendChild(notes);
-    notes.appendChild(doc.createTextNode(""));
-  }
-  notes.firstChild().setNodeValue(eNotes->text());
-  //qDebug()<<notes;
-  file.resize(0);
-  QTextStream stream(&file);
-  stream.setDevice(&file);
-  doc.save(stream,0);
-  file.close();
-  qDebug("%s",tr("Telemetry file updated.").toUtf8().data());
-  eNotes->clearFocus();
-}
-//=============================================================================
-//=============================================================================
-void TelemetryFrame::on_aSplitV_triggered(void)
+void TelemetryFrame::aSplit_triggered(void)
 {
   if(!((QAction*)sender())->isChecked()){
-    widget->layout()->removeWidget(pcopy);
-    delete pcopy;
+    vlayout->removeWidget(pcopy);
+    if(pcopy)pcopy->deleteLater();
+    pcopy=NULL;
     return;
   }
   pcopy=new TelemetryPlot();
-  pcopy->copyFromPlot(&plot);
-  widget->layout()->addWidget(pcopy);
+  pcopy->copyFromPlot(plot);
+  vlayout->addWidget(pcopy);
 }
 //=============================================================================
-void TelemetryFrame::on_avCLR_triggered(void)
+void TelemetryFrame::aFullScreen_triggered(void)
 {
-  plot.showCurves(false);
+  if(windowState()==Qt::WindowFullScreen){
+    setWindowFlags(Qt::Widget);
+    showNormal();
+    if(parentW) parentW->setWidget(this);
+  }else {
+    parentW=qobject_cast<QDockWidget*>(parentWidget());
+    setParent(NULL);
+    setWindowFlags(Qt::Window);
+    showFullScreen();
+  }
 }
-void TelemetryFrame::on_avSTD_triggered(void)
+//=============================================================================
+void TelemetryFrame::closeEvent(QCloseEvent *event)
+{
+  if(windowState()==Qt::WindowFullScreen){
+    event->ignore();
+    aFullScreen->trigger();
+  }
+}
+//=============================================================================
+void TelemetryFrame::avCLR_triggered(void)
+{
+  plot->showCurves(false);
+}
+void TelemetryFrame::avSTD_triggered(void)
 {
   QStringList st;
   st<<"roll"<<"cmd_roll"<<"pitch"<<"cmd_pitch";
   st<<"altitude"<<"cmd_altitude";
   st<<"airspeed"<<"cmd_airspeed";
   st<<"vspeed";
-  plot.showCurves(true,st,true);
+  plot->showCurves(true,st,true);
 }
-void TelemetryFrame::on_avIMU_triggered(void)
+void TelemetryFrame::avIMU_triggered(void)
 {
   QStringList st;
   st<<"Ax"<<"Ay"<<"Az";
   st<<"p"<<"q"<<"r";
   st<<"Hx"<<"Hy"<<"Hz";
-  plot.showCurves(true,st,true);
+  plot->showCurves(true,st,true);
 }
-void TelemetryFrame::on_avCTR_triggered(void)
+void TelemetryFrame::avCTR_triggered(void)
 {
   QStringList st;
   foreach (QString vn,Vehicles::instance()->f_local->f_mandala->names)
     if(vn.startsWith("ctr"))st.append(vn);
-  plot.showCurves(true,st,true);
-}
-//=============================================================================
-void TelemetryFrame::on_aCut_triggered(void)
-{/*
-  QwtScaleDiv *sx=plot.axisScaleDiv(QwtPlot::xBottom);
-  double stime=plot.time_start+sx->lowerBound();
-  double etime=plot.time_start+sx->upperBound();
-  QFile f(Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
-  f.open(QIODevice::ReadOnly);
-  QTextStream stream(&f);
-  QStringList dest;
-  dest.append(stream.readLine());
-  while (1) {
-    QString line=stream.readLine();
-    if (line.isNull())break;
-    QStringList vlist=line.split(",");
-    double time=vlist.at(0).toUInt()/1000.0;
-    if(time>etime)break;
-    if(time<stime)continue;
-    dest.append(line);
-  }
-  f.close();
-  f.open(QIODevice::WriteOnly);
-  f.write(dest.join("\n").toUtf8().data());
-  f.close();
-  load(flightNo);
-  qDebug("Cut: %s",QFileInfo(f).baseName().toUtf8().data());*/
+  plot->showCurves(true,st,true);
 }
 //=============================================================================
 //=============================================================================
-void TelemetryFrame::on_aExport_triggered(void)
+void TelemetryFrame::aDelete_triggered(void)
 {
-  if (!Vehicles::instance()->f_local->f_recorder->file.time.size())return;
+  if(!curID)return;
+  if(!_db->isOpen())return;
+  QSqlQuery query(*_db);
+  bool bPrev=getPrev(query);
+  _db->deleteRecord(curID);
+  if(bPrev){
+    rescan();
+    load(query);
+  }else aLast->trigger();
+}
+//=============================================================================
+void TelemetryFrame::aRestore_triggered(void)
+{
+}
+//=============================================================================
+void TelemetryFrame::aExport_triggered(void)
+{
+  /*if (!Vehicles::instance()->f_local->f_recorder->file.time.size())return;
   QString fileName(Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
 
   QFileDialog dlg(this,aExport->toolTip(),QSettings().value("saveXplaneFileDir").toString());
@@ -331,12 +605,95 @@ void TelemetryFrame::on_aExport_triggered(void)
     case 2:export_kml(fileName+".kml"); break;
     default: qDebug("%s: %s",tr("Unknown filter selected").toUtf8().data(),dlg.selectedNameFilter().toUtf8().data());
   }
-  qDebug("#%s.",tr("File exported").toUtf8().data());
+  qDebug("#%s.",tr("File exported").toUtf8().data());*/
 }
-//------------------------------------------------------------------------
+//=============================================================================
+void TelemetryFrame::aImport_triggered(void)
+{
+  QFileDialog dlg(this,aImport->text(),AppDirs::telemetry().canonicalPath());
+  dlg.setAcceptMode(QFileDialog::AcceptOpen);
+  dlg.setFileMode(QFileDialog::ExistingFile);
+  QStringList filters;
+  filters << tr("Telemetry files")+" (*.datalink)"
+          << tr("Any files")+" (*)";
+  dlg.setNameFilters(filters);
+  if(!dlg.exec() || dlg.selectedFiles().isEmpty())return;
+
+  TelemetryXml xml;
+  connect(&xml,&TelemetryXml::progressChanged,this,&TelemetryFrame::setProgress);
+
+  quint64 telemetryID=xml.read(dlg.selectedFiles().first());
+  if(!telemetryID)return;
+
+  rescan();
+  if(!_db)return;
+  QSqlQuery query(*_db);
+  bool ok=true;
+  while(ok){
+    query.prepare("SELECT * FROM Telemetry WHERE key = ?");
+    query.addBindValue(telemetryID);
+    ok=query.exec() && query.next();
+    if(!ok)break;
+    load(query);
+    break;
+  }
+}
+//=============================================================================
+//=============================================================================
+//=============================================================================
+void TelemetryFrame::aReplay_triggered(void)
+{
+  bool bShow=aReplay->isChecked();
+  if(bShow && (!recTimeMax)){
+    aReplay->trigger();
+    return;
+  }
+  toolBarPlayer->setVisible(bShow);
+  if(!bShow){
+    delete player;
+    player=NULL;
+    return;
+  }
+  player=new TelemetryPlayer(this);
+  player->setTime(plot->timeCursorValue());
+  connect(player,&TelemetryPlayer::timeChanged,this,&TelemetryFrame::playerTimeChanged);
+  connect(aPlay,&QAction::triggered,player,&TelemetryPlayer::play);
+  connect(aPause,&QAction::triggered,player,&TelemetryPlayer::pause);
+  connect(aRewind,&QAction::triggered,player,&TelemetryPlayer::rewind);
+  playerSlider->setMaximum(recTimeMax);
+  playerSpeed->setValue(1);
+  playerTimeChanged();
+}
+//=============================================================================
+void TelemetryFrame::playerSliderMoved()
+{
+  if(!player)return;
+  player->setTime(playerSlider->value());
+}
+//=============================================================================
+void TelemetryFrame::plotTimeCursorMoved()
+{
+  if(!player)return;
+  player->setTime(plot->timeCursorValue());
+}
+//=============================================================================
+void TelemetryFrame::playerTimeChanged()
+{
+  quint64 t=player->time();
+  playerSlider->setValue(t);
+  plot->setTimeCursor(t);
+  lbPlayerTime->setText(FactSystem::timemsToString(t));
+}
+//=============================================================================
+
+
+
+//=============================================================================
+//=============================================================================
+//=============================================================================
 void TelemetryFrame::export_csv(QString fileName)
 {
-  QFile file(fileName);
+  /*QFile file(fileName);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
     QMessageBox::warning(this, QApplication::applicationName(),QString(tr("Cannot write file")+" %1:\n%2.").arg(fileName).arg(file.errorString()));
     return;
@@ -344,9 +701,6 @@ void TelemetryFrame::export_csv(QString fileName)
   QTextStream out(&file);
   //write file header..
   out << "time,"+QStringList(Vehicles::instance()->f_local->f_mandala->names).join(",")+QString("\n");
-
-  QProgressDialog progress(tr("Exporting telemetry file..."),tr("Abort"), 0, Vehicles::instance()->f_local->f_recorder->file.time.last());
-  progress.setWindowModality(Qt::WindowModal);
 
   uint cnt=0,i=0;
   foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
@@ -376,12 +730,12 @@ void TelemetryFrame::export_csv(QString fileName)
     out << slist.join(",")+QString("\n");
   }
   out.flush();
-  file.close();
+  file.close();*/
 }
 //------------------------------------------------------------------------
 void TelemetryFrame::export_fdr(QString fileName)
 {
-  QFile file(fileName);
+  /*QFile file(fileName);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
     QMessageBox::warning(this, QApplication::applicationName(),QString(tr("Cannot write file")+" %1:\n%2.").arg(fileName).arg(file.errorString()));
     return;
@@ -440,12 +794,12 @@ void TelemetryFrame::export_fdr(QString fileName)
     out << "\n";
   }
   out.flush();
-  file.close();
+  file.close();*/
 }
 //------------------------------------------------------------------------
 void TelemetryFrame::export_kml(QString fileName)
 {
-  QFile f(fileName);
+  /*QFile f(fileName);
   if (!f.open(QFile::WriteOnly | QFile::Text)) {
     QMessageBox::warning(this, QApplication::applicationName(),QString(tr("Cannot write file")+" %1:\n%2.").arg(fileName).arg(f.errorString()));
     return;
@@ -458,218 +812,10 @@ void TelemetryFrame::export_kml(QString fileName)
   f.write(reply->readAll());
   f.flush();
   f.close();
-  delete reply;
-}
-//=============================================================================
-void TelemetryFrame::on_aFiles_triggered(void)
-{
-  QDesktopServices::openUrl(QUrl("file://"+AppDirs::telemetry().absoluteFilePath(".")));
-}
-void TelemetryFrame::on_aEdit_triggered(void)
-{
-  QProcess::startDetached("kate",QStringList()<<Vehicles::instance()->f_local->f_recorder->loadFile.fileName());
-}
-//=============================================================================
-void TelemetryFrame::on_aFullScreen_triggered(void)
-{
-  if(windowState()==Qt::WindowFullScreen){
-    setWindowFlags(Qt::Widget);
-    showNormal();
-  }else {
-    setWindowFlags(Qt::Window);
-    showFullScreen();
-  }
-}
-//=============================================================================
-void TelemetryFrame::closeEvent(QCloseEvent *event)
-{
-  if(windowState()==Qt::WindowFullScreen){
-    event->ignore();
-    aFullScreen->trigger();
-  }
+  delete reply;*/
 }
 //=============================================================================
 //=============================================================================
-void TelemetryFrame::on_aReport_triggered(void)
-{/*
-  QFileInfo finfo(Vehicles::instance()->f_local->f_recorder->loadFile);
-
-  QMap<QString,QString> data;
-
-  data["num"]=QString::number(flightNo+1);
-  data["now"]=QDateTime::currentDateTime().toString("ddd MMMM d yyyy hh:mm");
-
-  //parse file name...
-  QString bname=finfo.baseName();
-  data["file"]=bname;
-  //get date
-  QDateTime date(QDateTime::fromString(bname.left(16),"yyyy_MM_dd_hh_mm"));
-  data["date"]=date.toString("ddd MMMM d yyyy hh:mm");
-
-  //get uav name
-  QStringList stF(bname.split('_'));
-  if(stF.size()<7){
-    qDebug("Unable to parse filename.");
-    return;
-  }
-  data["uav"]=stF.at(6);
-
-  //get wpt cnt
-  //data["wpt"]=QString::number(QMandala::instance()->local->wpcnt);
-
-
-  //calc data
-  uint timeStart=0,vTime=0;
-  bool bFly=false,bFirst=true;
-  double vAlt,alt=0,gcuAlt=0,vAltAGL=0,altAGL=0;
-  double vTemp,tempMax=0,tempSum=0;
-  double vBat,bat=0,batLow=0;
-  double vSpd,spdMax=0,spdMin=0,spdTakeoff=0,spdTouch=0;
-  double vRoll,maxRoll=0;
-  double vPitch,maxPitch=0,minPitch=0;
-  double vTurnRate,maxTurnRate=0;
-  double vVspeed,vspeedUp=0,vspeedDown=0;
-  double vDist,dist=0;
-  double vAccX,vAccY,vAccZ,accX=0,accY=0,accZ=0;
-  double homeLat=0,homeLon=0,vLat,vLon;
-  uint cnt=0;
-  foreach(uint time_ms,Vehicles::instance()->f_local->f_recorder->file.time) {
-    double time=time_ms/1000.0;
-    //-------------------
-    // fetch data...
-    vTime=time;
-    vAlt=Vehicles::instance()->f_local->f_recorder->value("gps_hmsl",cnt);
-    vBat=Vehicles::instance()->f_local->f_recorder->value("Vs",cnt);
-    vTemp=Vehicles::instance()->f_local->f_recorder->value("AT",cnt);
-    vSpd=Vehicles::instance()->f_local->f_recorder->value("airspeed",cnt);
-    vVspeed=Vehicles::instance()->f_local->f_recorder->value("vspeed",cnt);
-    vDist=Vehicles::instance()->f_local->f_recorder->value("dHome",cnt);
-    vTurnRate=fabs(Vehicles::instance()->f_local->f_recorder->value("crsRate",cnt));
-    Vect theta=Vect(
-        Vehicles::instance()->f_local->f_recorder->value("theta[0]",cnt),
-        Vehicles::instance()->f_local->f_recorder->value("theta[1]",cnt),
-        Vehicles::instance()->f_local->f_recorder->value("theta[2]",cnt)
-        );
-    vRoll=fabs(theta[0]);
-    vPitch=theta[1];
-    Vect acc=Vect(
-        Vehicles::instance()->f_local->f_recorder->value("aXYZ[0]",cnt),
-        Vehicles::instance()->f_local->f_recorder->value("aXYZ[1]",cnt),
-        Vehicles::instance()->f_local->f_recorder->value("aXYZ[2]",cnt)
-        );
-    vAccX=fabs(acc[0]);
-    vAccY=fabs(acc[1]);
-    vAccZ=fabs(acc[2]);
-    vLat=Vehicles::instance()->f_local->f_recorder->value("gps_lat",cnt);
-    vLon=Vehicles::instance()->f_local->f_recorder->value("gps_lon",cnt);
-
-    cnt++;
-    //-------------------
-
-
-
-    tempSum+=vTemp;
-
-
-    if(bFirst){
-      bFirst=false;
-      gcuAlt=vAlt;
-      batLow=vBat;
-      bat=vBat;
-      tempMax=vTemp;
-      //temp=vTemp;
-      spdMax=vSpd;
-      spdMin=vSpd;
-      spdTakeoff=vSpd;
-      spdTouch=vSpd;
-      timeStart=vTime;
-      homeLat=vLat;
-      homeLon=vLon;
-      continue;
-    }
-
-    vAltAGL=vAlt-gcuAlt;
-
-    if(tempMax<vTemp)tempMax=vTemp;
-    if(alt<vAlt)alt=vAlt;
-    if(altAGL<vAltAGL)altAGL=vAltAGL;
-    if(batLow>vBat)batLow=vBat;
-    if(spdMax<vSpd)spdMax=vSpd;
-    if(dist<vDist)dist=vDist;
-
-
-    if(bFly){
-      if(vAltAGL<5 && vAccZ>8){
-        //touchdown
-        bFly=false;
-        spdTouch=vSpd;
-        break;
-      }
-      if(vAltAGL>50){
-        //during the flight
-        if(spdMin>vSpd)spdMin=vSpd;
-        if(maxTurnRate<vTurnRate)maxTurnRate=vTurnRate;
-        if(maxRoll<vRoll)maxRoll=vRoll;
-        if(maxPitch<vPitch)maxPitch=vPitch;
-        if(minPitch>vPitch)minPitch=vPitch;
-        if(vspeedUp<vVspeed)vspeedUp=vVspeed;
-        if(vspeedDown>vVspeed)vspeedDown=vVspeed;
-        if(accX<vAccX)accX=vAccX;
-        if(accY<vAccY)accY=vAccY;
-        if(accZ<vAccZ)accZ=vAccZ;
-      }
-    }else{
-      if(vAltAGL>5){
-        //takeoff
-        bFly=true;
-        spdTakeoff=vSpd;
-       }
-    }
-  }
-
-  //-------------------------------------------------
-  // assign data to report
-  uint itime=vTime-timeStart;
-  QTime duration(itime/60/60,(itime/60)%60,itime%60);
-  double fcnt=cnt;
-  data["duration"]=duration.toString("hh:mm:ss");
-
-  data["pos"]=QMandala::latToString(homeLat)+" "+QMandala::lonToString(homeLon);
-
-  data["temp"]=QString("%1 deg C").arg(tempSum/fcnt,0,'f',1);
-  data["tempMax"]=QString("%1 deg C").arg(tempMax,0,'f',1);
-
-  data["gcuAlt"]=QString("%1 m").arg(gcuAlt,0,'f',0);
-  data["alt"]=QString("%1 m").arg(alt,0,'f',0);
-  data["altAGL"]=QString("%1 m").arg(altAGL,0,'f',0);
-
-  data["bat"]=QString("%1 v").arg(bat,0,'f',1);
-  data["batLow"]=QString("%1 v").arg(batLow,0,'f',1);
-
-  data["spdMax"]=QString("%1 m/s").arg(spdMax,0,'f',0);
-  data["spdMin"]=QString("%1 m/s").arg(spdMin,0,'f',0);
-  data["spdTakeoff"]=QString("%1 m/s").arg(spdTakeoff,0,'f',0);
-  data["spdTouch"]=QString("%1 m/s").arg(spdTouch,0,'f',0);
-
-  data["maxRoll"]=QString("%1 deg").arg(maxRoll,0,'f',0);
-  data["maxPitch"]=QString("%1 deg").arg(maxPitch,0,'f',0);
-  data["minPitch"]=QString("%1 deg").arg(minPitch,0,'f',0);
-  data["maxTurnRate"]=QString("%1 deg/s").arg(maxTurnRate,0,'f',0);
-
-  data["vspeedUp"]=QString("%1 m/s").arg(vspeedUp,0,'f',0);
-  data["vspeedDown"]=QString("%1 m/s").arg(fabs(vspeedDown),0,'f',0);
-
-  data["dist"]=QString("%1 km").arg(dist/1000.0,0,'f',1);
-
-  data["accX"]=QString("%1 g").arg(accX/9.81,0,'f',1);
-  data["accY"]=QString("%1 g").arg(accY/9.81,0,'f',1);
-  data["accZ"]=QString("%1 g").arg(accZ/9.81,0,'f',1);
-
-  Report rep(&data);
-  rep.exec();*/
-}
-//=============================================================================
-
 
 
 

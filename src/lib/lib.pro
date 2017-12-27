@@ -75,6 +75,17 @@ HEADERS += \
     TreeModel/SourceEdit.h \
 
 
+# Database
+SOURCES += \
+    Database/DatabaseConnection.cpp \
+    Database/VehiclesDB.cpp \
+    Database/TelemetryDB.cpp \
+
+HEADERS += \
+    Database/DatabaseConnection.h \
+    Database/VehiclesDB.h \
+    Database/TelemetryDB.h \
+
 # Vehicles & Mandala
 SOURCES += \
     Vehicles/QMandalaField.cpp \
@@ -87,7 +98,6 @@ SOURCES += \
     Vehicles/VehicleNmtManager.cpp \
     Vehicles/VehicleRecorder.cpp \
     Vehicles/VehicleWarnings.cpp \
-    Vehicles/VehiclesDB.cpp \
 
 HEADERS += \
     Vehicles/QMandalaField.h \
@@ -101,7 +111,6 @@ HEADERS += \
     Vehicles/VehicleNmtManager.h \
     Vehicles/VehicleRecorder.h \
     Vehicles/VehicleWarnings.h \
-    Vehicles/VehiclesDB.h \
 
 # Nodes
 SOURCES += \

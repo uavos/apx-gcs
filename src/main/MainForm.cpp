@@ -78,7 +78,7 @@ MainForm::MainForm(QWidget *parent)
   connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,[=](Vehicle*v){a->setChecked(v->f_recorder->recording());});
   mFile->addAction(a);
 
-  mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),Vehicles::instance()->current()->f_recorder,&VehicleRecorder::discard);
+  mFile->addAction(QIcon(":/icons/old/transport_loop.png"),tr("Discard current file"),Vehicles::instance()->current()->f_recorder,&VehicleRecorder::reset);
   mFile->addSeparator();
 
   mFile->addSeparator();

@@ -49,7 +49,7 @@ Rectangle {
             text: app.vehicles.current.recorder.status
             font.pixelSize: parent.height   //*0.99
             font.family: font_narrow
-            color: app.vehicles.current.recorder.size>=(30*1024*1024)?"yellow":"gray"
+            color: app.vehicles.current.recorder.recTime>=(4*60*60)?"yellow":app.vehicles.current.recorder.recTime===0?"gray":app.vehicles.current.recorder.recording?"#5f5":"gray"
         }
     }
 

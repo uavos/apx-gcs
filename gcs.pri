@@ -28,12 +28,13 @@ plugin:!mac {
 # Directories and paths
 
 INCLUDEPATH += \
-    $${LIB_DIR}/Datalink \
     $${LIB_DIR}/FactSystem \
-    $${LIB_DIR}/TreeModel \
     $${LIB_DIR}/AppSettings \
+    $${LIB_DIR}/Database \
+    $${LIB_DIR}/Datalink \
     $${LIB_DIR}/Vehicles \
     $${LIB_DIR}/Nodes \
+    $${LIB_DIR}/TreeModel \
     $${LIB_DIR} \
     $${APX_TOP}/ \
     $${APX_TOP}/lib \

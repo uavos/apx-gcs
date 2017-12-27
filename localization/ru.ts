@@ -991,7 +991,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+30"/>
         <source>Application</source>
         <translation type="unfinished">Приложение</translation>
     </message>
@@ -2119,7 +2119,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+561"/>
+        <location line="+564"/>
         <source>Can&apos;t send command (unknown command)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3234,27 +3234,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="+132"/>
-        <source>File &apos;%s&apos; moved to trash.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>File &apos;%s&apos; deleted permanently.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+47"/>
-        <source>Flight number to load</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>Telemetry file updated.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+84"/>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="+358"/>
         <source>Comma separated values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3316,7 +3296,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+81"/>
         <source> (view copy)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3420,7 +3400,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehicleRecorder</name>
     <message>
-        <location filename="../src/lib/Vehicles/VehicleRecorder.cpp" line="+41"/>
+        <location filename="../src/lib/Vehicles/VehicleRecorder.cpp" line="+43"/>
         <source>Recorder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3430,23 +3410,18 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+269"/>
+        <location line="+408"/>
         <source>Telemetry file is too big (%1 MB). Load it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+36"/>
         <source>The file format is not correct.</source>
         <translation type="unfinished">Неверный формат файла.</translation>
     </message>
     <message>
         <location line="+99"/>
         <source>Telemetry file end tag fixed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Old telemetry file format detected</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3496,7 +3471,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>Vehicles</name>
     <message>
-        <location filename="../src/lib/Vehicles/Vehicles.cpp" line="+35"/>
+        <location filename="../src/lib/Vehicles/Vehicles.cpp" line="+36"/>
         <source>Vehicles</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3521,17 +3496,17 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+103"/>
+        <location line="+105"/>
         <source>Assigning squawk to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+87"/>
         <source>Vehicle selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-94"/>
+        <location line="-95"/>
         <source>Vehicle identified</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3544,7 +3519,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehiclesDB</name>
     <message>
-        <location filename="../src/lib/Vehicles/VehiclesDB.cpp" line="+544"/>
+        <location filename="../src/lib/Vehicles/VehiclesDB.cpp" line="+545"/>
         <source>Data restored</source>
         <translation type="unfinished"></translation>
     </message>

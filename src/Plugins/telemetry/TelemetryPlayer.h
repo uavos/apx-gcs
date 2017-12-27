@@ -20,38 +20,37 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef TelemetryPlayer_H
+#define TelemetryPlayer_H
 //==============================================================================
 #include <QtCore>
-#include "ui_Player.h"
-class VehicleRecorder;
 //==============================================================================
-class Player : public QDialog, public Ui::Player
+class TelemetryPlayer : public QObject
 {
   Q_OBJECT
 public:
-  explicit Player(QWidget *parent = 0);
-protected:
-  void closeEvent(QCloseEvent *event);
-private:
-  VehicleRecorder *rec;
-  uint pos_ms,total_ms,play_ms;  //time in ms
-  QTime  time;
-  QTimer timer;
-private slots:
-  void mandalaFileLoaded();
-  void updateStats();
-  void timerStep();
-  void sendData();
+  explicit TelemetryPlayer(QObject *parent = 0);
 
-  void on_slider_sliderMoved(int v);
-  void on_aPlay_toggled(bool checked);
-  void on_aStop_triggered();
+
+  void setTelemetryID(quint64 v);
+
+  void setTime(quint64 v);
+  quint64 time();
+  bool playing();
+
+private:
+  quint64 m_telemetryID;
+  quint64 m_time;
+  bool m_playing;
+
 signals:
-  void timeTrack(uint time_ms); //current position
-  void replay_progress(uint time_ms);
-  void frameUpdated(uint id);
+  void timeChanged();
+
+public slots:
+  void play();
+  void pause();
+  void rewind();
+
 };
 //==============================================================================
-#endif // PLAYER_H
+#endif

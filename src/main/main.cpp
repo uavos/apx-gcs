@@ -41,6 +41,7 @@
 #include "Datalink.h"
 #include "AppDirs.h"
 #include "Vehicles.h"
+#include "DatabaseConnection.h"
 //============================================================================
 //global variables
 QMandala *mandala;
@@ -231,6 +232,16 @@ int main(int argc, char *argv[])
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   qInstallMessageHandler(0);
+
+  /*foreach (QString s, QSqlDatabase::connectionNames()) {
+    qDebug()<<s;
+    QSqlDatabase::database(s,false).close();
+    QSqlDatabase::removeDatabase(s);
+  }*/
+
+  foreach (DatabaseConnection *db, DatabaseConnection::connections) {
+    delete db;
+  }
 
   //delete factSystem;
 

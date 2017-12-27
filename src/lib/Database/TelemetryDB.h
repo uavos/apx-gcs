@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,19 +20,31 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef CONSOLEPLUGIN_H
-#define CONSOLEPLUGIN_H
-
-#include <QtCore>
-#include "plugin_interface.h"
+#ifndef TelemetryDB_H
+#define TelemetryDB_H
+#include <FactSystem.h>
+#include "DatabaseConnection.h"
+class Vehicle;
 //=============================================================================
-class ConsolePlugin: public PluginInterface
+class TelemetryDB : public DatabaseConnection
 {
   Q_OBJECT
-  Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
-  Q_INTERFACES(PluginInterface)
 public:
-  void init(void);
+  explicit TelemetryDB(QObject *parent,QString sessionName, Vehicle *vehicle=NULL);
+
+  QHash<Fact*,quint64> recFacts;
+
+
+  quint64 writeRecord(const QString &vehicleUID, const QString &callsign, const QString &comment, bool rec, quint64 timestamp);
+  bool writeDownlink(quint64 telemetryID, quint64 timestamp, const QList<Fact*> &facts);
+  bool writeField(quint64 telemetryID, quint64 timestamp, quint64 fieldID, const QVariant &v, bool uplink);
+  bool writeField(QSqlQuery &query, quint64 telemetryID, quint64 timestamp, quint64 fieldID, const QVariant &v, bool uplink);
+  bool writeEvent(quint64 telemetryID, quint64 timestamp, const QString &name, const QString &value, bool uplink=false, const QByteArray &data=QByteArray());
+
+  bool writeNotes(quint64 telemetryID, const QString &s);
+
+  bool deleteRecord(quint64 telemetryID);
+
 };
 //=============================================================================
-#endif // ConsolePlugin_H
+#endif // FLIGHTDATAFILE_H

@@ -23,8 +23,8 @@
 #ifndef VehicleRecorder_H
 #define VehicleRecorder_H
 #include <QtCore>
-#include <QtSql>
-#include "FactSystem.h"
+#include <TelemetryDB.h>
+#include <FactSystem.h>
 #include "MandalaValue.h"
 class Vehicle;
 class VehicleMandalaFact;
@@ -35,122 +35,63 @@ class VehicleRecorder : public Fact
   Q_OBJECT
 public:
   explicit VehicleRecorder(Vehicle *parent);
-  ~VehicleRecorder();
 
-  QString uavNameSuffix;
-
-  uint recFlightNo;
   bool recDisable;  //externally disable recording (f.ex. by player)
 
-  const QStringList recFileNames(void);
-
-  void saveXmlPart(QString key,QByteArray data); //save and record when started, or immediate
-  void record_xml(const QByteArray &data); //record immediate if recording
-
-  //reader
-  typedef QList<double> ListDouble;
-  typedef QMultiHash<uint,QString> XmlPart;//xmlParts (nodes,mission..) on time_ms
-  struct{
-    QDateTime timestamp;
-    QList<uint> time;               // time_ms per index
-    QList<ListDouble> data;         // src_vars as float
-    QHash<uint,QStringList> msg;    // text messages on time_ms
-    QHash<QString,QString> params;  // Name: Value pairs from file
-    QHash<QString,XmlPart> xmlParts; //xmlParts by name
-    QString notes;
-  }file;
-
-  QFile loadFile;
-
-  bool loadFlight(int idx,QProgressBar *progressBar=NULL);
-  bool loadFlight(const QString &fName,QProgressBar *progressBar=NULL);
-  double fileValue(const QString &name, int pos=0);
-
+  TelemetryDB * _db;
 private:
   Vehicle *vehicle;
-  static QSqlDatabase * _db;
 
   //database
-  void createTables();
+  bool dbCheckRecord();
   void dbDownlinkWrite();
+  void dbUplinkWrite(quint64 fieldID, const QVariant &v);
 
   quint64 recTelemetryID;
   QList<double> recValues;
-  QList<Fact*> recFacts;
-  QStringList recNames;
-  QHash<quint64,Fact*> recFields;
 
 
-
-
-
+  //auto recorder
+  bool checkAutoRecord(void);
   VehicleMandalaValue<idx_mode,int> v_mode;
   VehicleMandalaValue<idx_stage,int> v_stage;
-  VehicleMandalaValue<idx_dl_timestamp,uint> v_dl_timestamp;
-
-
-  QString recFileSuffix;
-
-  QMap<QString,QByteArray> saveXmlParts;
-
-  //writer
-  QFile recFile;
-  QXmlStreamWriter xmlWriter;
-  bool header_written;
-  ListDouble streamList;
-  QString valueToString(double v,uint prec);
-
   bool recTrigger;
-  QTimer monitorTimer,recStopTimer;
-  QDateTime recStartTime;
+  QTimer recTimeUpdateTimer,recStopTimer;
 
-  void loadFromText(QProgressBar *progressBar);
-  void loadFromXml(QProgressBar *progressBar);
+  //timestamp
+  VehicleMandalaValue<idx_dl_timestamp,uint> v_dl_timestamp;
+  uint dl_timestamp_s,dl_timestamp_t0;
+  QTime uplinkTime;
 
-  QString readXmlPart(QXmlStreamReader &xml);
+  quint64 recTimestamp;
+  quint64 getDataTimestamp();
 
-  //nodes save
-  bool is_apc_conf(const QByteArray &ba);
 
-  //recorder
-  bool record_check(void);
-  void record_header(void);
-  void record_data(QString tag, const QByteArray &data);
 private slots:
-  void monitorTimerTimeout(void);
+  void recTimeUpdate(void);
   void updateStatus();
+
 public slots:
-  void flush();
-  void stop_recording();
-
-  //void convertFormat(QString fileName=QString()); //find and convert old format files
-
-  void record_downlink(const QByteArray &data);
-  void record_uplink(const QByteArray &data);
-
-signals:
-  void fileLoaded();
-  void replay_progress(uint time_ms); //forward signal from telemetry player
+  void recordDownlink(const QByteArray &data);
+  void recordUplink(const QByteArray &data);
+  void recordEvent(const QString &name, const QString &value, bool uplink=false, const QByteArray &data=QByteArray());
 
   //PROPERTIES
 public:
   Q_PROPERTY(bool recording READ recording WRITE setRecording NOTIFY recordingChanged)
   bool recording() const;
-  Q_PROPERTY(uint fileSize READ fileSize NOTIFY fileSizeChanged)
-  uint fileSize() const;
-  Q_PROPERTY(QDateTime fileTime READ fileTime NOTIFY fileSizeChanged)
-  QDateTime fileTime() const;
+  Q_PROPERTY(quint64 recTime READ recTime NOTIFY recTimeChanged)
+  quint64 recTime() const;
 private:
   bool m_recording;
-  uint m_fileSize;
-  void setFileSize(uint v);
+  quint64 m_recTime;
+  void setRecTime(quint64 v,bool forceUpdate=false);
 signals:
   void recordingChanged();
-  void fileSizeChanged();
+  void recTimeChanged();
 public slots:
   Q_INVOKABLE void setRecording(bool v);
-  Q_INVOKABLE void close(void);
-  Q_INVOKABLE void discard(void);
+  Q_INVOKABLE void reset(void);
 };
 //=============================================================================
 #endif // FLIGHTDATAFILE_H

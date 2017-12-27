@@ -69,21 +69,8 @@ FactSystemApp::FactSystemApp(QObject *parent)
     qDebug("%s",item->title().toUtf8().data());
   }
 
-  //database
-  m_db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE", kSession));
-  m_db->setDatabaseName(AppDirs::dbFileName());
-  m_db->setConnectOptions("QSQLITE_ENABLE_SHARED_CACHE");
-  if(!m_db->open()){
-    qWarning()<<m_db->lastError();
-    delete m_db;
-    m_db=NULL;
-    QSqlDatabase::removeDatabase(kSession);
-  }
 }
-FactSystemApp::~FactSystemApp()
-{
-  QSqlDatabase::removeDatabase(kSession);
-}
+//=============================================================================
 //=============================================================================
 const QString FactSystemApp::ApplicationSection=tr("Application");
 const QString FactSystemApp::ToolsSection=tr("Tools");
@@ -139,16 +126,26 @@ QString FactSystemApp::distanceToString(uint v)
   if(v>=1000)return QString("%1km").arg(v/1000.0,0,'f',1);
   return QString("%1m").arg((uint)v);
 }
-QString FactSystemApp::timeToString(uint v)
+QString FactSystemApp::timeToString(quint64 v, bool seconds)
 {
   if(v==0)return "--:--";
   qint64 d=(qint64)v/(24*60*60);
-  if(d<=0)return QString("%1").arg(QTime(0,0,0).addSecs(v).toString("hh:mm"));
-  return QString("%1d%2").arg(d).arg(QTime(0,0,0).addSecs(v).toString("hh:mm"));
+  const char *sf=seconds?"hh:mm:ss":"hh:mm";
+  if(d<=0)return QString("%1").arg(QTime(0,0,0).addSecs(v).toString(sf));
+  return QString("%1d%2").arg(d).arg(QTime(0,0,0).addSecs(v).toString(sf));
 }
-uint FactSystemApp::timeFromString(QString s)
+QString FactSystemApp::timemsToString(quint64 v)
 {
-  uint t=0;
+  qint64 ts=v/1000;
+  QString s;
+  if(ts==0)s=timeToString(1,false)+":00";
+  else s=timeToString(ts,true);
+  s+=QString(".%1").arg(v%1000,3,10,QLatin1Char('0'));
+  return s;
+}
+quint64 FactSystemApp::timeFromString(QString s)
+{
+  quint64 t=0;
   s=s.trimmed().toLower();
   if(s.contains('d')){
     QString ds=s.left(s.indexOf('d')).trimmed();

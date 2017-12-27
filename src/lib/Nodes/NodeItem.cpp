@@ -171,12 +171,29 @@ void NodeItem::upload()
 {
   if(!(dictValid()&&dataValid()))return;
   if(!modified())return;
+  saveTelemetryUploadEvent();
   foreach(NodeField *f,allFields){
     if(!f->modified())continue;
     if(f->script) f->script->upload();
     else request(apc_conf_write,QByteArray().append((unsigned char)f->id).append(f->packValue()),1000);
   }
   request(apc_conf_write,QByteArray().append((unsigned char)0xFF),1000);
+}
+//=============================================================================
+void NodeItem::saveTelemetryUploadEvent()
+{
+  foreach(NodeField *f,allFields){
+    if(!f->modified())continue;
+    if(f->size()){
+      foreach (FactTree *i, f->childItems()) {
+        NodeField *fx=static_cast<NodeField*>(i);
+        if(!fx->modified())continue;
+        nodes->vehicle->f_recorder->recordEvent("conf",QString("%1/%2=%3").arg(title()).arg(fx->name()).arg(fx->text()),true,sn);
+      }
+    }else{
+      nodes->vehicle->f_recorder->recordEvent("conf",QString("%1/%2=%3").arg(title()).arg(f->name()).arg(f->text()),true,sn);
+    }
+  }
 }
 //=============================================================================
 bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
@@ -390,6 +407,7 @@ void NodeItem::message(QString msg)
     s=s.trimmed();
     if(s.isEmpty())continue;
     qDebug("<[%s]%s\n",ns.toUtf8().data(),qApp->translate("msg",s.toUtf8().data()).toUtf8().data());
+    nodes->vehicle->f_recorder->recordEvent("msg",QString("[%1]%2").arg(ns).arg(s),false,sn);
     FactSystem::instance()->sound(s);
     if(s.contains("error",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);
     else if(s.contains("fail",Qt::CaseInsensitive)) nodes->vehicle->f_warnings->error(s);

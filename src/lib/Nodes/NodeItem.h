@@ -80,6 +80,8 @@ private:
   void groupNodes(void);
   void requestConf();
 
+  void saveTelemetryUploadEvent();
+
 private slots:
   void updateStats();
   void updateProgress();

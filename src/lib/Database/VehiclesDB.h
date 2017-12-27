@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,60 +20,47 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef CONSOLE_H
-#define CONSOLE_H
+#ifndef VehiclesDB_H
+#define VehiclesDB_H
 //=============================================================================
 #include <QtCore>
-#include <QTextEdit>
-//class QMandala;
+#include "DatabaseConnection.h"
+class NodeItem;
+class Vehicle;
+class Fact;
 //=============================================================================
-class Console : public  QTextEdit
+class VehiclesDB: public DatabaseConnection
 {
   Q_OBJECT
-public:
-  Console(QWidget *parent = NULL);
 
-  static QTextCharFormat fPrompt,fUser,fAutocomplete,fResult,fStdOut,fStdErr,fStdWarn,fNode;
+public:
+  explicit VehiclesDB(QObject *parent,QString sessionName);
+
+  // Nodes
+  void nodeInfoWrite(NodeItem *node);
+  void nodeInfoRead(NodeItem *node);
+
+  void nodeDictWrite(NodeItem *node);
+  void nodeDictRead(NodeItem *node);
+
+  void nodeDataWrite(NodeItem *node);
+  bool nodeDataRestore(NodeItem *node);
+  void nodeDataRead(NodeItem *node, quint64 dataID);
+
+  typedef QList<QPair<QString,quint64>> NodeDataKeys;
+  NodeDataKeys nodeDataReadKeys(NodeItem *node,int limit=25);
+  QString nodeDataTitle(NodeItem *node, uint date, QString comment, QString version) const;
+
+  //vehicles
+  void vehicleInfoUpdate(Vehicle *vehicle);
+  void vehicleNodesUpdate(Vehicle *vehicle);
 
 private:
+  bool m_enabled;
 
-  //QMandala *mandala;
-  void replaceCurrentCommand(QString newCommand);
-  QString getCurrentCommand(void);
-
-  void displayPrompt();
-
-  QString prompt;
-
-  QStringList history;
-  int historyIndex;
-  QString replacedHistory;
-
-  void wheelEvent ( QWheelEvent * e );
-
-  QString last_msg;
-  uint last_msg_cnt;
-  QTime last_msg_time;
-
-  //right aligned text
-  QTextTableFormat fTable;
-  QTextBlockFormat fRight;
-
-  void exec_command(const QString &command); //linux style syntax
-
-  void get_hints(QString *command,QStringList *hints);
-protected:
-  void keyPressEvent(QKeyEvent* e);
-private slots:
-  void on_cursorPositionChanged();
-  void escPressed();
-  void linesLimit();
-
-public slots:
-  void message(QString msg,QTextCharFormat fmt=fStdOut);  //on top of prompt
-  void setFocus();
-  void message_impl(QString msg,QTextCharFormat fmt);
+  quint64 nodeGetID(NodeItem *node, QSqlQuery *query, bool *ok);
+  quint64 vehicleGetID(Vehicle *vehicle, QSqlQuery *query, bool *ok);
 };
-Q_DECLARE_METATYPE(QTextCharFormat)
 //=============================================================================
 #endif
+

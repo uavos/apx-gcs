@@ -4,20 +4,19 @@ CONFIG += plugin
 
 include( ../../../gcs.pri )
 
-SOURCES += TelemetryFrame.cpp \
+SOURCES += \
+    TelemetryFrame.cpp \
     TelemetryPlugin.cpp \
     TelemetryPlot.cpp \
-    Player.cpp
+    TelemetryXml.cpp \
+    TelemetryPlayer.cpp
 
-HEADERS += TelemetryFrame.h \
+HEADERS += \
+    TelemetryFrame.h \
     TelemetryPlugin.h \
     TelemetryPlot.h \
-    Player.h \
-    ../../lib/ClickableLabel.h
-
-FORMS += TelemetryFrame.ui \
-    Filter.ui \
-    Player.ui
+    TelemetryXml.h \
+    TelemetryPlayer.h
 
 QT += quick
 

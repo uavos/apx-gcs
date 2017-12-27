@@ -81,6 +81,7 @@ public:
   QByteArray uid;
 
   QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
+  QString confTitle() const;
 
   bool isLocal() const;
 private:

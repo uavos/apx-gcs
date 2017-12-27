@@ -24,7 +24,6 @@
 #define FactSystemApp_H
 //=============================================================================
 #include <QtCore>
-#include <QtSql>
 #include "Fact.h"
 //=============================================================================
 class FactSystemApp: public Fact
@@ -33,7 +32,6 @@ class FactSystemApp: public Fact
 
 public:
   explicit FactSystemApp(QObject *parent=0);
-  ~FactSystemApp();
 
   static FactSystemApp * instance() { return _instance; }
 
@@ -44,7 +42,6 @@ public:
   static bool devMode()     { return _instance->m_dev; }
   static QString version()  { return _instance->m_version; }
   static QString branch()   { return _instance->m_branch; }
-  static QSqlDatabase *db() { return _instance->m_db; }
 
 protected:
   static FactSystemApp * _instance;
@@ -52,7 +49,6 @@ protected:
   bool m_dev;
   QString m_version;
   QString m_branch;
-  QSqlDatabase * m_db;
 
 public:
   // static app utils
@@ -62,8 +58,9 @@ public:
   Q_INVOKABLE double static latFromString(QString s);
   Q_INVOKABLE double static lonFromString(QString s);
   Q_INVOKABLE static QString distanceToString(uint v);
-  Q_INVOKABLE static QString timeToString(uint v);
-  Q_INVOKABLE uint static timeFromString(QString s);
+  Q_INVOKABLE static QString timeToString(quint64 v, bool seconds=false);
+  Q_INVOKABLE static QString timemsToString(quint64 v);
+  Q_INVOKABLE quint64 timeFromString(QString s);
 
   Q_INVOKABLE static void toolTip(QString tooltip);
   Q_INVOKABLE static double limit(double v,double min,double max);

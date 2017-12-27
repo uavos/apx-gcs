@@ -7,7 +7,6 @@
 NodesFrame::NodesFrame(QWidget *parent) :
   QWidget(parent)
 {
-  //setupUi(this);
   setWindowTitle(tr("Vehicle parameters"));
   setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
@@ -47,8 +46,6 @@ NodesFrame::NodesFrame(QWidget *parent) :
   connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&NodesFrame::vehicleSelected);
   vehicleSelected(Vehicles::instance()->current());
 
-  connect(Vehicles::instance()->f_local->f_recorder,&VehicleRecorder::fileLoaded,this,&NodesFrame::updateActions);
-
   restoreGeometry(QSettings().value(objectName()).toByteArray());
 }
 //=============================================================================
@@ -78,7 +75,7 @@ void NodesFrame::updateActions(void)
   bool busy=false;//model->requestManager.busy();
   bool upgrading=false;//model->isUpgrading();
   bool bEmpty=treeWidget->rootFact()->size()<=0;
-  bool bTelemetry=Vehicles::instance()->f_local->f_recorder->file.xmlParts.contains("nodes");
+  bool bTelemetry=false;//Vehicles::instance()->f_local->f_recorder->file.xmlParts.contains("nodes");
   aUndo->setEnabled(bMod);
   aLoad->setEnabled(!(busy || upgrading));
   aSave->setEnabled(!(bEmpty||busy));
@@ -441,14 +438,14 @@ void NodesFrame::aStats_triggered(void)
 //=============================================================================
 void NodesFrame::aLoadTelemetry_triggered(void)
 {
-  treeWidget->resetFilter();
+  /*treeWidget->resetFilter();
   QDomDocument doc;
   if(!Vehicles::instance()->f_local->f_recorder->file.xmlParts.value("nodes").isEmpty())
     doc.setContent(Vehicles::instance()->f_local->f_recorder->file.xmlParts.value("nodes").values().first());
   if(doc.documentElement().nodeName()!="nodes")return;
   Vehicles::instance()->selectVehicle(Vehicles::instance()->f_local);
   vehicle->f_nodes->clear();
-  vehicle->f_nodes->xml->read(doc.documentElement());
+  vehicle->f_nodes->xml->read(doc.documentElement());*/
 }
 //=============================================================================
 void NodesFrame::aSave_triggered(void)

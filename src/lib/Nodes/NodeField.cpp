@@ -407,7 +407,7 @@ void NodeField::createSubFields(void)
     //create array items
     for(int i=0;i<array();i++){
       const QString stitle=stNames.value(i,QString::number(i+1));
-      NodeField *fi=new NodeField(node,this,QString("%1_%2").arg(name()).arg(i),stitle,QString("%1/%2").arg(title()).arg(stitle),ftype);
+      NodeField *fi=new NodeField(node,this,QString("%1_%2").arg(name()).arg(i+1),stitle,QString("%1/%2").arg(title()).arg(stitle),ftype);
       fi->setUnits(units());
       if(stNames.isEmpty() && (!m_enumStrings.isEmpty())){
         fi->setEnumStrings(m_enumStrings);

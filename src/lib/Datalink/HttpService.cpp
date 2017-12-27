@@ -217,7 +217,7 @@ QString HttpService::reply_kml()
 QString HttpService::reply_telemetry()
 {
   QString reply;
-  QXmlStreamWriter xml(&reply);
+  /*QXmlStreamWriter xml(&reply);
   xml.setAutoFormatting(true);
   xml.writeStartDocument();
   xml.writeStartElement("kml");
@@ -408,7 +408,7 @@ QString HttpService::reply_telemetry()
 
   xml.writeEndElement();//Document
   xml.writeEndElement();//kml
-  xml.writeEndDocument();
+  xml.writeEndDocument();*/
   return reply;
 }
 //=============================================================================

@@ -45,7 +45,7 @@
 //=============================================================================
 typedef struct {
     QwtPlotCurve *curve;
-    QList<double> fdata;
+    QVector<QPointF> points;
 } _telemetry_field;
 //=============================================================================
 class TelemetryPlot: public QwtPlot
@@ -55,35 +55,50 @@ public:
     TelemetryPlot(QWidget *parent = 0);
     ~TelemetryPlot();
 
-    QHash<QString,_telemetry_field> fields; //by name
+    QHash<QString,_telemetry_field*> fields; //by name
+    QVector<double> times;
+
+    _telemetry_field *fcalculated;
+
+    quint64 timeCursorValue();
 
 protected:
     QwtPlotPicker *picker;
+    QwtPlotPicker *pickerPoint;
     QwtPlotZoomer *zoomer;
     QwtLegend *legend;
     QwtPlotGrid *grid;
     QwtPlotPanner *panner,*panner2;
     QwtPlotMagnifier *magX,*magY,*mag;
-    QwtPlotMarker *timeTracker;
-private:
-    QList<double> data_x;
+    QwtPlotMarker *timeCursor;
 
-    QLabel lbFileName;
+
+private slots:
+    void pointSelected( const QPointF &pos );
+
+private:
     bool isCopy;
 
-    void registerField(const QString &varName,const QString &dsc,const QPen &pen);
+    _telemetry_field * registerField(const QString &varName,const QString &dsc,const QPen &pen);
 
-    void initProgressBar(QProgressBar *progressBar);
     void refreshCalculated(void);
     QString expCalc;
 
+    int m_progress;
+    void setProgress(int v);
+
+signals:
+  void progressChanged(int v);
+  void timeCursorChanged(double v);
+
+
 public slots:
-    void load(int idx);
     void resetZoom();
+
+    void setTimeCursor(quint64 time_ms);
+
     void copyFromPlot(TelemetryPlot *plot);
-    void timeTrack(uint time_ms);
     void showCurves(bool on=true,const QStringList &names=QStringList(),bool toggle=false);
-private slots:
     void showCurve(const QVariant &itemInfo, bool on, int index = -1);
 };
 //=============================================================================

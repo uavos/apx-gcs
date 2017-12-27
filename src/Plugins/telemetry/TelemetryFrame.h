@@ -23,66 +23,120 @@
 #ifndef TelemetryFrame_H
 #define TelemetryFrame_H
 //-----------------------------------------------------------------------------
-#include "ui_TelemetryFrame.h"
 #include "TelemetryPlot.h"
-#include "Player.h"
+#include "TelemetryPlayer.h"
 #include <QtCore>
+#include <TelemetryDB.h>
 //=============================================================================
-class TelemetryFrame: public QWidget, public Ui::TelemetryFrame
+class TelemetryFrame: public QWidget
 {
   Q_OBJECT
 public:
-  TelemetryFrame(QWidget *parent = 0);
-  ~TelemetryFrame();
+  explicit TelemetryFrame(QWidget *parent = 0);
+
 protected:
   void closeEvent(QCloseEvent *event);
 private:
-  TelemetryPlot plot;
-  TelemetryPlot *pcopy;
-  Player player;
+  TelemetryDB *_db;
 
-  uint flightNo; //loaded flight idx
-  uint flightCnt;
+
+  QToolBar *toolBar;
+  QVBoxLayout *vlayout;
+
+  QAction *aLast;
+  QAction *aReload;
+  QAction *aPrev;
+  QAction *aNext;
+
+  QAction *aFilter;
+  QAction *aFullScreen;
+  QAction *aSplit;
+
+  QAction *aExport;
+  QAction *aImport;
+  QAction *aRestore;
+  QAction *aDelete;
+
+  QAction *aReplay;
+
+  TelemetryPlot *plot;
+  TelemetryPlot *pcopy;
+  QLabel *lbTitle;
+
+  QLineEdit *eNotes;
+  QProgressBar *progressBar;
+
+  QToolBar *toolBarSW;
+  QAction *avCLR;
+  QAction *avSTD;
+  QAction *avIMU;
+  QAction *avCTR;
+
+  QToolBar *toolBarPlayer;
+  TelemetryPlayer *player;
+  QSlider *playerSlider;
+  QDoubleSpinBox *playerSpeed;
+  QLabel *lbPlayerTime;
+  QAction *aPlay;
+  QAction *aPause;
+  QAction *aRewind;
+
+
+
+  quint64 curID; //loaded flight
+  quint64 curTimestamp; //loaded flight
+  quint64 recCnt;
+  quint64 recNum;
+  QString recNotes;
+  quint64 recTimeMax;
+  quint64 recSize;
+
+  bool bLoading;
+  int m_progress;
+
+  void resetPlot();
   void rescan(void);
+  void load(QSqlQuery &query,bool forceLarge=false);
+
+  bool getPrev(QSqlQuery &query);
 
   QStringList uavNames,filteredList,filesList;
   QString filter;
 
+  QDockWidget *parentW;
 
   void export_csv(QString fileName);
   void export_fdr(QString fileName);
   void export_kml(QString fileName);
 private slots:
-  void on_aLast_triggered(void);
-  void on_aPrev_triggered(void);
-  void on_aNext_triggered(void);
-  void on_aReload_triggered(void);
-  void on_aDelete_triggered(void);
-  void on_lbCurrent_clicked(void);
+  void aLast_triggered(void);
+  void aPrev_triggered(void);
+  void aNext_triggered(void);
+  void aReload_triggered(void);
+  void aFilter_triggered(void);
+  void eNotes_returnPressed(void);
 
-  void on_aPlay_triggered(void);
+  void aExport_triggered(void);
+  void aImport_triggered(void);
+  void aRestore_triggered(void);
+  void aDelete_triggered(void);
 
-  void on_eNotes_returnPressed(void);
+  void aReplay_triggered(void);
 
-  void load(int idx);
-  void loadRecent();
+  void aFullScreen_triggered(void);
+  void aSplit_triggered(void);
 
-  void on_aExport_triggered(void);
-  void on_aReport_triggered(void);
 
-  void on_aCut_triggered(void);
-  void on_aFiles_triggered(void);
-  void on_aEdit_triggered(void);
-  void on_aFullScreen_triggered(void);
+  void avCLR_triggered(void);
+  void avSTD_triggered(void);
+  void avIMU_triggered(void);
+  void avCTR_triggered(void);
 
-  void on_aSplitV_triggered(void);
+  void playerSliderMoved();
+  void plotTimeCursorMoved();
+  void playerTimeChanged();
 
-  void on_aFilterUAV_triggered(void);
-
-  void on_avCLR_triggered(void);
-  void on_avSTD_triggered(void);
-  void on_avIMU_triggered(void);
-  void on_avCTR_triggered(void);
+  void setProgress(int v);
 };
 //=============================================================================
 #endif

@@ -24,6 +24,7 @@
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
 #include "VehicleWarnings.h"
+#include "VehicleRecorder.h"
 #include "Vehicles.h"
 //---------------------------
 // deprecate
@@ -55,7 +56,7 @@ Vehicles::Vehicles(FactSystem *parent)
     parent->jsexec(QString("this.__defineSetter__('%1', function(v){ app.vehicles.current.mandala.%1.value=v; });").arg(f->name()));
   }
 
-  vdb=new VehiclesDB(this);
+  vdb=new VehiclesDB(this,QLatin1String("GCSVehiclesSession"));
 
 
   selectVehicle(f_local);
@@ -181,6 +182,7 @@ void Vehicles::vehicleSendUplink(Vehicle *v, const QByteArray &packet)
     emit sendUplink(packet);
     return;
   }
+  if(!v->squawk())return;
   //prepend idx_dlink+squawk
   emit sendUplink(QByteArray().append((unsigned char)idx_dlink).append((unsigned char)v->squawk()).append((unsigned char)(v->squawk()>>8)).append(packet));
 }
@@ -234,6 +236,7 @@ void Vehicles::assignIDENT(QString callsign, QByteArray uid)
 void Vehicles::selectVehicle(Vehicle *v)
 {
   if(m_current==v)return;
+  //v->f_recorder->recordEvent("info",QString("%1: %2 '%3' (%4)").arg("Vehicle selected").arg(v->f_vclass->text()).arg(v->f_callsign->text()).arg(v->f_squawk->text()));
   qDebug("%s: %s '%s' (%s)",tr("Vehicle selected").toUtf8().data(),v->f_vclass->text().toUtf8().data(),v->f_callsign->text().toUtf8().data(),v->f_squawk->text().toUtf8().data());
   m_current=v;
   //update JSengine

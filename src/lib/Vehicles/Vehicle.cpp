@@ -71,7 +71,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   //datalink
   connect(this,&Vehicle::sendUplink,this,[=](const QByteArray &ba){
     parent->vehicleSendUplink(this,ba);
-    f_recorder->record_uplink(ba);
+    f_recorder->recordUplink(ba);
   });
 
 
@@ -119,19 +119,20 @@ void Vehicle::downlinkReceived(const QByteArray &packet)
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
       f_streamType->setValue(SERVICE);
   }else if(f_mandala->unpackTelemetry(packet)){
+    f_recorder->recordDownlink(packet);
     f_streamType->setValue(TELEMETRY);
     telemetryTime.start();
   }else if(f_mandala->unpackData(packet)){
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
       f_streamType->setValue(DATA);
   }else return;
-  f_recorder->record_downlink(packet);
   onlineTimer.start();
 }
 //=============================================================================
 void Vehicle::xpdrReceived(const QByteArray &data)
 {
   if(f_mandala->unpackXPDR(data)){
+    f_recorder->recordDownlink(data);
     f_streamType->setValue(XPDR);
     xpdrTime.start();
   }else return;
@@ -156,13 +157,18 @@ void FactSystemJS::sleep(quint16 ms)
 //=============================================================================
 QString Vehicle::fileTitle() const
 {
+  QString s=confTitle();
+  if(s.isEmpty())return title();
+  return s;
+}
+QString Vehicle::confTitle() const
+{
   QString confName;
   foreach(NodeItem *node,f_nodes->snMap.values()){
     if(!node->title().endsWith(".shiva"))continue;
     confName=node->status().trimmed();
     if(!confName.isEmpty())break;
   }
-  if(confName.isEmpty())return title();
   return confName;
 }
 //=============================================================================

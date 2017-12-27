@@ -21,158 +21,130 @@
  *
  */
 #include "VehiclesDB.h"
-#include "Nodes.h"
-#include "Vehicle.h"
-#include "Vehicles.h"
+#include <AppDirs.h>
+#include <Nodes.h>
+#include <Vehicle.h>
+#include <Vehicles.h>
 //=============================================================================
-VehiclesDB::VehiclesDB(QObject *parent)
-  : QObject(parent), m_enabled(true)
+VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
+  : DatabaseConnection(parent,AppDirs::dbFileName(),sessionName),
+    m_enabled(true)
 {
-  createTables();
-}
-//=============================================================================
-bool VehiclesDB::checkResult(QSqlQuery &query)
-{
-  if(query.lastError().type()==QSqlError::NoError){
-    FactSystem::db()->commit();
-    return true;
-  }
-  qWarning() << "VehiclesDB SQL error:" << query.lastError().text();
-  qWarning() << query.executedQuery();
-  return false;
-}
-//=============================================================================
-void VehiclesDB::createTables()
-{
-  if(!FactSystem::db()->isOpen())return;
-  FactSystem::db()->transaction();
-  QSqlQuery query(*FactSystem::db());
-  bool ok=true;
+  if(!isOpen())return;
+  QSqlQuery query(*this);
+  bool ok=transaction(query);
   while(ok){
     //-------------------------------------------------------------
+    //NODES
     //table of actual state of all nodes ever seen
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS Nodes ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "sn TEXT NOT NULL UNIQUE, "
-      "name TEXT, "
-      "version TEXT, "
-      "hardware TEXT, "
-      "date INTEGER DEFAULT 0"  //date seen
-      ")");
-    ok=query.exec();
+    ok=createTable(query,
+          "Nodes", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"sn TEXT NOT NULL UNIQUE"
+          <<"name TEXT"
+          <<"version TEXT"
+          <<"hardware TEXT"
+          <<"date INTEGER DEFAULT 0"  //date seen
+    );
     if(!ok)break;
-    query.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_Nodes_sn ON Nodes (sn);");
-    ok=query.exec();
+    ok=createIndex(query,"Nodes","sn",true);
     if(!ok)break;
 
     //nodes cache (current structure)
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS NodesDictionary ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "nodeID INTEGER NOT NULL, "
-      "hash TEXT, "
-      "params INTEGER, "
-      "commands INTEGER, "
-      "FOREIGN KEY(nodeID) REFERENCES Nodes(key) ON DELETE CASCADE"
-      ")");
-    ok=query.exec();
+    ok=createTable(query,
+          "NodesDictionary", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"nodeID INTEGER NOT NULL"
+          <<"hash TEXT"
+          <<"params INTEGER"
+          <<"commands INTEGER"
+          <<"FOREIGN KEY(nodeID) REFERENCES Nodes(key) ON DELETE CASCADE"
+    );
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesDictionary_nodeID ON NodesDictionary (nodeID);");
-    ok=query.exec();
+    ok=createIndex(query,"NodesDictionary","nodeID");
     if(!ok)break;
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS NodesDictionaryData ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "dictID INTEGER NOT NULL, "
-      "id INTEGER, "
-      "name TEXT, "
-      "title TEXT, "
-      "descr TEXT, "
-      "units TEXT, "
-      "defValue TEXT, "
-      "ftype TEXT, "
-      "array INTEGER, "
-      "opts TEXT, "
-      "sect TEXT, "
-      "FOREIGN KEY(dictID) REFERENCES NodesDictionary(key) ON DELETE CASCADE"
-      ")");
-    ok=query.exec();
+
+    ok=createTable(query,
+          "NodesDictionaryData", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"dictID INTEGER NOT NULL"
+          <<"id INTEGER"
+          <<"name TEXT"
+          <<"title TEXT"
+          <<"descr TEXT"
+          <<"units TEXT"
+          <<"defValue TEXT"
+          <<"ftype TEXT"
+          <<"array INTEGER"
+          <<"opts TEXT"
+          <<"sect TEXT"
+          <<"FOREIGN KEY(dictID) REFERENCES NodesDictionary(key) ON DELETE CASCADE"
+    );
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesDictionaryData_dictID ON NodesDictionaryData (dictID);");
-    ok=query.exec();
+    ok=createIndex(query,"NodesDictionaryData","dictID");
     if(!ok)break;
 
     //table of parameters files (journal)
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS NodesData ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "nodeID INTEGER NOT NULL, "
-      "date INTEGER DEFAULT 0, "
-      "hash TEXT, "     //values hash
-      "name TEXT, "     //node name
-      "version TEXT, "  //node version
-      "comment TEXT, "  //comment or file name
-      "FOREIGN KEY(nodeID) REFERENCES Nodes(key) ON DELETE CASCADE"
-      ")");
-    ok=query.exec();
+    ok=createTable(query,
+          "NodesData", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"nodeID INTEGER NOT NULL"
+          <<"date INTEGER DEFAULT 0"
+          <<"hash TEXT"     //values hash
+          <<"name TEXT"     //node name
+          <<"version TEXT"  //node version
+          <<"comment TEXT"  //comment or file name
+          <<"FOREIGN KEY(nodeID) REFERENCES Nodes(key) ON DELETE CASCADE"
+    );
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesData_nodeID ON NodesData (nodeID);");
-    ok=query.exec();
+    ok=createIndex(query,"NodesData","nodeID");
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesData_date ON NodesData (date);");
-    ok=query.exec();
+    ok=createIndex(query,"NodesData","date");
     if(!ok)break;
+
     //table of parameters values (journal)
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS NodesDataValues ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "dataID INTEGER NOT NULL, "
-      "name TEXT NOT NULL, "
-      "value TEXT, "
-      "FOREIGN KEY(dataID) REFERENCES NodesData(key) ON DELETE CASCADE"
-      ")");
-    ok=query.exec();
+    ok=createTable(query,
+          "NodesDataValues", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"dataID INTEGER NOT NULL"
+          <<"name TEXT NOT NULL"
+          <<"value TEXT"
+          <<"FOREIGN KEY(dataID) REFERENCES NodesData(key) ON DELETE CASCADE"
+    );
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_NodesDataValues_dataID ON NodesDataValues (dataID);");
-    ok=query.exec();
+    ok=createIndex(query,"NodesDataValues","dataID");
     if(!ok)break;
 
     //-------------------------------------------------------------
     //VEHICLES
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS Vehicles ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "uid TEXT NOT NULL UNIQUE, "
-      "callsign TEXT, "
-      "class TEXT, "
-      "squawk TEXT, "
-      "date INTEGER DEFAULT 0"  //date seen
-      ")");
-    ok=query.exec();
+    ok=createTable(query,
+          "Vehicles", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"uid TEXT NOT NULL UNIQUE"
+          <<"callsign TEXT"
+          <<"class TEXT"
+          <<"squawk TEXT"
+          <<"comment TEXT"
+          <<"date INTEGER DEFAULT 0"  //date seen
+    );
     if(!ok)break;
-    query.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_Vehicles_uid ON Vehicles (uid);");
-    ok=query.exec();
+    ok=createIndex(query,"Vehicles","uid",true);
     if(!ok)break;
     //vehicle nodes
-    query.prepare(
-      "CREATE TABLE IF NOT EXISTS VehiclesNodes ("
-      "key INTEGER PRIMARY KEY NOT NULL, "
-      "vehicleID INTEGER NOT NULL, "
-      "nodeID INTEGER NOT NULL, "
-      "date INTEGER DEFAULT 0, "  //date seen
-      "FOREIGN KEY(vehicleID) REFERENCES Vehicles(key) ON DELETE CASCADE, "
-      "FOREIGN KEY(nodeID) REFERENCES Nodes(key) ON DELETE CASCADE"
-      ")");
-    ok=query.exec();
+    ok=createTable(query,
+          "VehiclesNodes", QStringList()
+          <<"key INTEGER PRIMARY KEY NOT NULL"
+          <<"vehicleID INTEGER NOT NULL"
+          <<"nodeID INTEGER NOT NULL"
+          <<"date INTEGER DEFAULT 0"  //date seen
+          <<"FOREIGN KEY(vehicleID) REFERENCES Vehicles(key) ON DELETE CASCADE"
+          <<"FOREIGN KEY(nodeID) REFERENCES Nodes(key) ON DELETE CASCADE"
+    );
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_VehiclesNodes_vehicleID ON VehiclesNodes (vehicleID);");
-    ok=query.exec();
+    ok=createIndex(query,"VehiclesNodes","vehicleID");
     if(!ok)break;
-    query.prepare("CREATE INDEX IF NOT EXISTS idx_VehiclesNodes_nodeID ON VehiclesNodes (nodeID);");
-    ok=query.exec();
+    ok=createIndex(query,"VehiclesNodes","nodeID");
     if(!ok)break;
-
 
     break;
   }
@@ -196,10 +168,9 @@ void VehiclesDB::nodeInfoWrite(NodeItem *node)
 {
   if(!m_enabled)return;
   if(!node->infoValid())return;
-  if(!FactSystem::db()->isOpen())return;
-  FactSystem::db()->transaction();
-  QSqlQuery query(*FactSystem::db());
-  bool ok=true;
+  if(!isOpen())return;
+  QSqlQuery query(*this);
+  bool ok=transaction(query);
   while(ok){
     bool bNew=false;
     quint64 nodeID=nodeGetID(node,&query,&ok);
@@ -231,8 +202,8 @@ void VehiclesDB::nodeInfoRead(NodeItem *node)
 {
   if(!m_enabled)return;
   if(node->infoValid())return;
-  if(!FactSystem::db()->isOpen())return;
-  QSqlQuery query(*FactSystem::db());
+  if(!isOpen())return;
+  QSqlQuery query(*this);
   query.setForwardOnly(true);
   //read node name
   query.prepare("SELECT name, hardware FROM Nodes WHERE sn = ?");
@@ -249,9 +220,8 @@ void VehiclesDB::nodeDictWrite(NodeItem *node)
   if(!m_enabled)return;
   if(!node->dictValid())return;
   if(node->conf_hash.isEmpty())return;
-  if(!FactSystem::db()->isOpen())return;
-  FactSystem::db()->transaction();
-  QSqlQuery query(*FactSystem::db());
+  if(!isOpen())return;
+  QSqlQuery query(*this);
   bool ok=true;
   quint64 nodeID=nodeGetID(node,&query,&ok);
   if(!ok)return;
@@ -279,6 +249,8 @@ void VehiclesDB::nodeDictWrite(NodeItem *node)
       }
       dictID=query.value(0).toULongLong();
     }
+    ok=transaction(query);
+    if(!ok)break;
     //update dictionary record
     query.prepare("UPDATE NodesDictionary SET hash=?, params=?, commands=? WHERE key = ?");
     query.addBindValue(node->conf_hash);
@@ -335,8 +307,8 @@ void VehiclesDB::nodeDictRead(NodeItem *node)
 {
   if(!m_enabled)return;
   if(node->dictValid())return;
-  if(!FactSystem::db()->isOpen())return;
-  QSqlQuery query(*FactSystem::db());
+  if(!isOpen())return;
+  QSqlQuery query(*this);
   query.setForwardOnly(true);
   bool ok=true;
   quint64 nodeID=nodeGetID(node,&query,&ok);
@@ -410,15 +382,14 @@ void VehiclesDB::nodeDictRead(NodeItem *node)
 //=============================================================================
 //=============================================================================
 void VehiclesDB::nodeDataWrite(NodeItem *node)
-{
+{return;
   if(!m_enabled)return;
   if(!node->dataValid())return;
   if(node->reconf())return;
-  if(!FactSystem::db()->isOpen())return;
-  FactSystem::db()->transaction();
-  QSqlQuery query(*FactSystem::db());
-  uint t=QDateTime::currentDateTime().toTime_t();
+  if(!isOpen())return;
+  QSqlQuery query(*this);
   bool ok=true;
+  uint t=QDateTime::currentDateTime().toTime_t();
   while(ok){
     //find nodeID
     quint64 nodeID=nodeGetID(node,&query,&ok);
@@ -446,6 +417,8 @@ void VehiclesDB::nodeDataWrite(NodeItem *node)
       }
     }
     //create new data record
+    ok=transaction(query);
+    if(!ok)break;
     query.prepare(
       "INSERT INTO NodesData("
       "nodeID, date, hash, name, version, comment"
@@ -506,8 +479,8 @@ void VehiclesDB::nodeDataRead(NodeItem *node, quint64 dataID)
 {
   if(!m_enabled)return;
   if(!node->dataValid())return;
-  if(!FactSystem::db()->isOpen())return;
-  QSqlQuery query(*FactSystem::db());
+  if(!isOpen())return;
+  QSqlQuery query(*this);
   QString dataTitle;
   bool ok=true;
   while(ok){
@@ -550,8 +523,8 @@ VehiclesDB::NodeDataKeys VehiclesDB::nodeDataReadKeys(NodeItem *node, int limit)
   NodeDataKeys keys;
   if(!m_enabled)return keys;
   if(!node->dataValid())return keys;
-  if(!FactSystem::db()->isOpen())return keys;
-  QSqlQuery query(*FactSystem::db());
+  if(!isOpen())return keys;
+  QSqlQuery query(*this);
   bool ok=true;
   while(ok){
     //find nodeID
@@ -609,14 +582,13 @@ quint64 VehiclesDB::vehicleGetID(Vehicle *vehicle, QSqlQuery *query, bool *ok)
 }
 //=============================================================================
 void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
-{
+{return;
   if(!m_enabled)return;
   //if(vehicle->isLocal())return;
-  if(!FactSystem::db()->isOpen())return;
-  FactSystem::db()->transaction();
-  QSqlQuery query(*FactSystem::db());
+  if(!isOpen())return;
+  QSqlQuery query(*this);
+  bool ok=transaction(query);
   uint t=QDateTime::currentDateTime().toTime_t();
-  bool ok=true;
   while(ok){
     quint64 vehicleID=vehicleGetID(vehicle,&query,&ok);
     if(!ok){
@@ -644,16 +616,17 @@ void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
 }
 //=============================================================================
 void VehiclesDB::vehicleNodesUpdate(Vehicle *vehicle)
-{
+{return;
   if(!m_enabled)return;
   //if(vehicle->isLocal())return;
-  if(!FactSystem::db()->isOpen())return;
-  FactSystem::db()->transaction();
-  QSqlQuery query(*FactSystem::db());
-  uint t=QDateTime::currentDateTime().toTime_t();
+  if(!isOpen())return;
+  QSqlQuery query(*this);
   bool ok=true;
+  uint t=QDateTime::currentDateTime().toTime_t();
   while(ok){
     quint64 vehicleID=vehicleGetID(vehicle,&query,&ok);
+    if(!ok)break;
+    ok=transaction(query);
     if(!ok)break;
     foreach (NodeItem *node, vehicle->f_nodes->snMap.values()) {
       if(node->conf_hash.isEmpty())continue; //loaded from file
