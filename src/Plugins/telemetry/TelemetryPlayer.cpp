@@ -1,7 +1,10 @@
 #include "TelemetryPlayer.h"
+#include "TelemetryPlot.h"
 //==============================================================================
-TelemetryPlayer::TelemetryPlayer(QObject *parent)
+TelemetryPlayer::TelemetryPlayer(QSqlDatabase *db, TelemetryPlot *parent)
   : QObject(parent),
+    _db(db),
+    qDownlink(*db),
     m_telemetryID(0),
     m_time(0),
     m_playing(false)

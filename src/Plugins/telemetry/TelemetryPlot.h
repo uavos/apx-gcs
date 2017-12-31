@@ -43,63 +43,58 @@
 #include <qwt_series_data.h>
 #include <qwt_picker_machine.h>
 //=============================================================================
-typedef struct {
-    QwtPlotCurve *curve;
-    QVector<QPointF> points;
-} _telemetry_field;
-//=============================================================================
 class TelemetryPlot: public QwtPlot
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    TelemetryPlot(QWidget *parent = 0);
-    ~TelemetryPlot();
+  TelemetryPlot(QWidget *parent = 0);
+  ~TelemetryPlot();
 
-    QHash<QString,_telemetry_field*> fields; //by name
-    QVector<double> times;
 
-    _telemetry_field *fcalculated;
+  QwtPlotCurve * addCurve(const QString &name, const QString &descr, const QString &units, const QPen &pen);
 
-    quint64 timeCursorValue();
+  void showCurves(bool on=true,const QStringList &names=QStringList(),bool toggle=false);
+
+  void saveSettings();
+  void restoreSettings();
+
+  quint64 timeCursorValue();
 
 protected:
-    QwtPlotPicker *picker;
-    QwtPlotPicker *pickerPoint;
-    QwtPlotZoomer *zoomer;
-    QwtLegend *legend;
-    QwtPlotGrid *grid;
-    QwtPlotPanner *panner,*panner2;
-    QwtPlotMagnifier *magX,*magY,*mag;
-    QwtPlotMarker *timeCursor;
+  QwtPlotPicker *picker;
+  QwtPlotPicker *pickerPoint;
+  QwtPlotZoomer *zoomer;
+  QwtLegend *legend;
+  QwtPlotGrid *grid;
+  QwtPlotPanner *panner,*panner2;
+  QwtPlotMagnifier *magX,*magY,*mag;
+  QwtPlotMarker *timeCursor;
 
 
 private slots:
-    void pointSelected( const QPointF &pos );
+  void pointSelected( const QPointF &pos );
+  void showCurve(const QVariant &itemInfo, bool on, int index = -1);
 
 private:
-    bool isCopy;
-
-    _telemetry_field * registerField(const QString &varName,const QString &dsc,const QPen &pen);
-
-    void refreshCalculated(void);
-    QString expCalc;
-
-    int m_progress;
-    void setProgress(int v);
+  typedef struct {
+    QwtPlotCurve *curve;
+    QString name;
+    QString descr;
+    QString units;
+  }PlotCurve;
+  QVector<PlotCurve> curves;
 
 signals:
-  void progressChanged(int v);
+  void itemVisibleChanged(QwtPlotItem *item);
   void timeCursorChanged(double v);
 
 
 public slots:
-    void resetZoom();
+  void resetZoom();
 
-    void setTimeCursor(quint64 time_ms);
+  void setTimeCursor(quint64 time_ms);
 
-    void copyFromPlot(TelemetryPlot *plot);
-    void showCurves(bool on=true,const QStringList &names=QStringList(),bool toggle=false);
-    void showCurve(const QVariant &itemInfo, bool on, int index = -1);
+  //void copyFromPlot(TelemetryPlot *plot);
 };
 //=============================================================================
 class PlotPicker: public QwtPlotPicker

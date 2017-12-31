@@ -21,13 +21,10 @@
  *
  */
 #include "TelemetryPlot.h"
-#include <Facts.h>
 #include <QtGui>
-#include <QJSEngine>
 //=============================================================================
 TelemetryPlot::TelemetryPlot(QWidget *parent)
-  : QwtPlot(parent),isCopy(false),
-    m_progress(0)
+  : QwtPlot(parent)
 {
   setAutoFillBackground(true);
   setAutoReplot(false);
@@ -86,7 +83,7 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
 
   canvas()->setCursor(Qt::ArrowCursor);
 
-  foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts){
+  /*foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts){
     //fill params
     uint type=f->_vtype;
     uint varmsk=f->id();
@@ -106,17 +103,18 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
     if(sn.contains("cmd_"))style=Qt::DotLine;
     else if(sn.contains("gps_"))style=Qt::DashLine;
     else if(sn.contains("rc_"))style=Qt::DotLine;
-    registerField(sn,f->descr(),QPen(c, 0, style));
+    registerField(f,sn,f->descr(),QPen(c, 0, style));
   }
 
   //QtScript calculated
-  fcalculated=registerField("calculated",tr("Calculated user variable"),QColor(Qt::yellow).lighter());
+  fcalculated=registerField(NULL,"calculated",tr("Calculated user variable"),QColor(Qt::yellow).lighter());
 
   //restore visible
   if(!QSettings().contains("plots"))QSettings().setValue("plots",QStringList()<<"pitch"<<"cmd_airspeed"<<"cmd_roll"<<"cmd_pitch"<<"altitude"<<"cmd_altitude"<<"roll"<<"airspeed");
   QStringList sps=QSettings().value("plots").toStringList();
   foreach (const QString &name,fields.uniqueKeys())
     showCurve(itemToInfo(fields.value(name)->curve), (name=="calculated") ? false : sps.contains(name));
+    */
 }
 //=============================================================================
 TelemetryPlot::~TelemetryPlot()
@@ -134,20 +132,65 @@ TelemetryPlot::~TelemetryPlot()
   delete timeCursor;
 }
 //=============================================================================
+QwtPlotCurve * TelemetryPlot::addCurve(const QString &name, const QString &descr, const QString &units, const QPen &pen)
+{
+  PlotCurve c;
+  c.name=name;
+  c.descr=descr;
+  c.units=units;
+  c.curve=new QwtPlotCurve();
+  c.curve->setVisible(false);
+  c.curve->setTitle(name);
+  c.curve->setPen(pen);
+  c.curve->setYAxis(QwtPlot::yLeft);
+  c.curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
+  c.curve->setRenderHint(QwtPlotItem::RenderAntialiased);
+  c.curve->attach(this);
+  curves.append(c);
+  //legend tooltip
+  QString s="<html><NOBR>";
+  s+="<div style='background-color: black;font-family: monospace; font-weight: bold;'><font size=+1>"+name+"</font></div>";
+  if(!descr.isEmpty())s+="<div style='background-color: black;'>"+descr+"</div>";
+  if(!units.isEmpty())s+="<div style='background-color: black;'>["+units+"]</div>";
+  QWidget *w = legend->legendWidget(itemToInfo(c.curve));
+  if(w) w->setToolTip(s);
+  return c.curve;
+}
+//=============================================================================
+void TelemetryPlot::restoreSettings()
+{
+  if(!QSettings().contains("plots"))QSettings().setValue("plots",QStringList()<<"pitch"<<"cmd_airspeed"<<"cmd_roll"<<"cmd_pitch"<<"altitude"<<"cmd_altitude"<<"roll"<<"airspeed");
+  QStringList sps=QSettings().value("plots").toStringList();
+  foreach (const PlotCurve &c, curves)
+    showCurve(itemToInfo(c.curve), (c.name=="calculated") ? false : sps.contains(c.name));
+}
+//=============================================================================
+void TelemetryPlot::saveSettings()
+{
+  QStringList sps;
+  foreach(const PlotCurve &c, curves){
+    if(c.curve->isVisible())
+      sps.append(c.name);
+  }
+  QSettings().setValue("plots",sps);
+}
+//=============================================================================
 void TelemetryPlot::showCurves(bool on, const QStringList &names, bool toggle)
 {
   if(toggle&&on){
     bool bAllOn=true;
-    foreach (const QString &name,fields.uniqueKeys())
-      if((!names.size())||names.contains(name)){
-        bAllOn&=fields.value(name)->curve->isVisible();
+    foreach (const PlotCurve &c, curves){
+      if((!names.size())||names.contains(c.name)){
+        bAllOn&=c.curve->isVisible();
       }
+    }
     if(bAllOn)on=false;
   }
-  foreach (const QString &name,fields.uniqueKeys())
-    if((!names.size())||names.contains(name)){
-      showCurve(itemToInfo(fields.value(name)->curve),on);
+  foreach (const PlotCurve &c, curves){
+    if((!names.size())||names.contains(c.name)){
+      showCurve(itemToInfo(c.curve),on);
     }
+  }
   resetZoom();
 }
 //=============================================================================
@@ -173,34 +216,27 @@ void TelemetryPlot::showCurve(const QVariant &itemInfo, bool on, int index)
 {
   Q_UNUSED(index);
   QwtPlotItem *item = infoToItem(itemInfo);
+  if(item->isVisible()==on)return;
+  //check if was empty plot
   bool allWereHidden=true;
-  foreach(const _telemetry_field *f,fields){
-    if(f->curve->isVisible()){
+  foreach(const PlotCurve &c, curves){
+    if(c.curve->isVisible()){
       allWereHidden=false;
       break;
     }
   }
-  if(on && item==fcalculated->curve)
-    refreshCalculated();
+  //show or hide item
   item->setVisible(on);
-  QWidget *w = legend->legendWidget(itemInfo);
-  if (w && w->inherits("QwtLegendLabel"))
-    ((QwtLegendLabel *)w)->setChecked(on);
-  if(allWereHidden && !isCopy) resetZoom();
+  emit itemVisibleChanged(item);
+  //update legend
+  QwtLegendLabel *w = qobject_cast<QwtLegendLabel*>(legend->legendWidget(itemInfo));
+  if(w)w->setChecked(on);
+  //update zoom or replot
+  if(allWereHidden) resetZoom();
   else replot();
-
-  //save state
-  if(isCopy)
-    return;
-  QStringList sps;
-  foreach(_telemetry_field *f,fields){
-    if(f!=fcalculated && f->curve->isVisible())
-      sps.append(fields.key(f));
-  }
-  QSettings().setValue("plots",sps);
 }
 //=============================================================================
-void TelemetryPlot::refreshCalculated(void)
+/*void TelemetryPlot::refreshCalculated(void)
 {
   bool ok;
   if(expCalc.isEmpty())expCalc="altitude+down";
@@ -258,23 +294,17 @@ void TelemetryPlot::refreshCalculated(void)
   fcalculated->curve->setData(new QwtPointSeriesData(fcalculated->points));
   fcalculated->curve->setVisible(true);
   resetZoom();
-}
-//=============================================================================
-void TelemetryPlot::setProgress(int v)
-{
-  if(m_progress==v)return;
-  m_progress=v;
-  emit progressChanged(v);
-}
+}*/
 //=============================================================================
 void TelemetryPlot::resetZoom()
 {
   double vmax=0.0,vmin=0.0,tMax=0.0;
-  foreach (const _telemetry_field *f,fields)
-    foreach(const QPointF &p,f->points){
+  foreach (const PlotCurve &c, curves)
+    for(size_t i=0;i<c.curve->data()->size();++i){
+      const QPointF &p=c.curve->data()->sample(i);
       if(tMax<p.x())tMax=p.x();
       double v=p.y();
-      if(f->curve->isVisible()&&(!isnan(v))&&(!isinf(v))){
+      if(c.curve->isVisible()&&(!isnan(v))&&(!isinf(v))){
         if (vmax<v)vmax=v;
         if (vmin>v)vmin=v;
       }
@@ -289,7 +319,7 @@ void TelemetryPlot::resetZoom()
   //replot();
 }
 //=============================================================================
-void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
+/*void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
 {
   isCopy=true;
   //install data
@@ -302,36 +332,9 @@ void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
   setAxisScaleDiv(QwtPlot::xBottom, plot->axisScaleDiv(QwtPlot::xBottom));
   zoomer->setZoomBase(plot->zoomer->zoomBase());
 
-  //lbFileName.setText(plot->lbFileName.text()+tr(" (view copy)"));
-  //lbFileName.setToolTip(plot->lbFileName.toolTip());
-  //lbFileName.adjustSize();
-
   replot();
-}
+}*/
 //=============================================================================
-//=============================================================================
-_telemetry_field * TelemetryPlot::registerField(const QString &varName,const QString &dsc,const QPen &pen)
-{
-  _telemetry_field *f=new _telemetry_field;
-  f->curve=new QwtPlotCurve();
-  f->curve->setYAxis(QwtPlot::yLeft);
-  f->curve->setTitle(varName);
-  f->curve->setPen(pen);
-  f->curve->attach(this);
-  f->curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
-  f->curve->setRenderHint(QwtPlotItem::RenderAntialiased);
-  fields.insert(varName,f);
-  QString s="<html><NOBR>";
-  s+="<div style='background-color: black;font-family: monospace; font-weight: bold;'><font size=+1>"+varName+"</font></div>";
-  if(dsc.size())s+="<div style='background-color: black;'>"+dsc+"</div>";
-  QString units;
-  Fact *fact=Vehicles::instance()->f_local->f_mandala->factByName(varName);
-  if(fact)units=fact->units();
-  if(!units.isEmpty())s+="<div style='background-color: black;'>["+units+"]</div>";
-  QWidget *w = legend->legendWidget(itemToInfo(f->curve));
-  if(w) w->setToolTip(s);
-  return f;
-}
 //=============================================================================
 QwtText PlotPicker::trackerText(const QPoint &pos)const
 {
@@ -340,22 +343,24 @@ QwtText PlotPicker::trackerText(const QPoint &pos)const
   s+="<tr><td colspan=2 align=left style='font-family: monospace; font-weight: bold;'><PRE><font size=+4>";
   s+=QTime(0,0).addSecs(t).toString("hh:mm:ss");//+QString::number(t)+" sec)";
   s+="</font></PRE></td></tr>";
-  foreach(const QString &name,((TelemetryPlot*)plot())->fields.uniqueKeys()){
-    const _telemetry_field *f=((TelemetryPlot*)plot())->fields.value(name);
-    if(!f->curve->isVisible())continue;
+  const QwtPlotItemList &items=plot()->itemList(QwtPlotItem::Rtti_PlotCurve);
+  for(int i=0;i<items.size();++i){
+    QwtPlotCurve *curve=static_cast<QwtPlotCurve*>(items.at(i));
+    if(!curve->isVisible())continue;
     double v=0;
-    for(size_t i=0;i<f->curve->data()->size();i++)
-      if(f->curve->data()->sample(i).x()>=t){
-        v=f->curve->data()->sample(i).y();
+    for(size_t i2=0;i2<curve->data()->size();++i2){
+      if(curve->data()->sample(i2).x()>=t){
+        v=curve->data()->sample(i2).y();
         break;
       }
-    QColor c=f->curve->pen().color();
-    if(f->curve->pen().style()!=Qt::SolidLine)
+    }
+    QColor c=curve->pen().color();
+    if(curve->pen().style()!=Qt::SolidLine)
       c=c.darker();
-    QString units;
-    Fact *fact=Vehicles::instance()->f_local->f_mandala->factByName(name);
-    if(fact)units=fact->units();
-    s+="<tr><td align=right><font size=+2 color="+c.name()+">"+f->curve->title().text()+"</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"+QString().sprintf("%.2f",v)+" "+units+"</font></td></tr>";
+    //QString units;
+    //Fact *fact=Vehicles::instance()->f_local->f_mandala->factByName(name);
+    //if(fact)units=fact->units();
+    s+="<tr><td align=right><font size=+2 color="+c.name()+">"+curve->title().text()+"</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"+QString().sprintf("%.2f",v)+"</font></td></tr>";
   }
   s+="</table>";
   return QwtText(s);

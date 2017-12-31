@@ -14,6 +14,7 @@ SOURCES += \
 HEADERS += \
     TelemetryFrame.h \
     TelemetryPlugin.h \
+    TelemetryData.h \
     TelemetryPlot.h \
     TelemetryXml.h \
     TelemetryPlayer.h

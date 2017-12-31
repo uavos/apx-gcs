@@ -65,7 +65,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   plot=new TelemetryPlot(this);
   plot->resetZoom();
   vlayout->addWidget(plot);
-  connect(plot,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
+  //connect(plot,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
 
   lbTitle=new QLabel(this);
   lbTitle->setParent(plot);
@@ -95,8 +95,8 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   toolBar->addSeparator();
   aFullScreen=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-expand.svg"),tr("Full screen"),this,&TelemetryFrame::aFullScreen_triggered);
   aFullScreen->setCheckable(true);
-  aSplit=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-book-outline.svg"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
-  aSplit->setCheckable(true);
+  //aSplit=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-book-outline.svg"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
+  //aSplit->setCheckable(true);
   toolBar->addSeparator();
 
   aExport=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/share.svg"),tr("Export"),this,&TelemetryFrame::aExport_triggered);
@@ -146,7 +146,35 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   //lbPlayerTime->setStyleSheet("background-color: rgba(0,0,0,30%)");
   lbPlayerTime->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
+  //create plot fields
+  foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts){
+    //fill params
+    uint type=f->_vtype;
+    uint varmsk=f->id();
+    QString sn=f->name();
+    uint ci=0;
+    if(type==vt_vect || type==vt_point) ci=(varmsk>>8)+1;
+    QColor c(Qt::cyan);
+    if(sn.contains("ctr_"))c=Qt::magenta;
+    else if(sn.contains("ctrb_"))c=Qt::magenta;
+    else if(type==vt_flag)c=QColor(Qt::blue).lighter();
+    else if(ci==1)c=Qt::red;
+    else if(ci==2)c=Qt::green;
+    else if(ci==3)c=Qt::yellow;
+    //if(sv.size()>=2)c=QColor(sv.at(1));
+    //if(sv.size()>=3)divider_dsp=sv.at(2).toDouble();
+    Qt::PenStyle style = Qt::SolidLine;
+    if(sn.contains("cmd_"))style=Qt::DotLine;
+    else if(sn.contains("gps_"))style=Qt::DashLine;
+    else if(sn.contains("rc_"))style=Qt::DotLine;
+    TelemetryFieldData *d=new TelemetryFieldData;
+    d->fact=f;
+    telemetryData.fields.append(d);
+    QwtPlotCurve *cv=plot->addCurve(sn,f->descr(),f->units(),QPen(c, 0, style));
+    plotMap.insert(d,cv);
+  }
 
+  //empty plot after start
   rescan();
   lbTitle->setText(QString("%1").arg(recCnt));
   lbTitle->adjustSize();
@@ -348,15 +376,17 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
     query.finish();
 
     //collect fields map
-    QHash<quint64,_telemetry_field*> fmap;
+    QHash<quint64,TelemetryFieldData*> fmap;
     query.prepare("SELECT key, name FROM TelemetryFields");
     ok=query.exec();
     if(!ok)break;
     while(query.next()){
       QString s=query.value(1).toString();
-      if(!plot->fields.contains(s))continue;
-      _telemetry_field *f=plot->fields.value(s);
-      fmap.insert(query.value(0).toULongLong(),f);
+      for(int i=0;i<telemetryData.fields.size();i++){
+        if(telemetryData.fields.at(i)->fact->name()!=s)continue;
+        fmap.insert(query.value(0).toULongLong(),telemetryData.fields.at(i));
+        break;
+      }
     }
     //find number of records
     query.prepare("SELECT COUNT(*) FROM TelemetryDownlink WHERE TelemetryID=?");
@@ -392,7 +422,7 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
     if(!stStats.isEmpty())recStats=stStats.join(" | ");
     //collect data
     quint64 t0=0;
-    plot->times.append(0);
+    telemetryData.times.append(0);
     const quint64 rowLimit=100000;
     for(quint64 row=0;row<recSize;row+=rowLimit){
       setProgress(row*100/recSize);
@@ -403,17 +433,17 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
       ok=query.exec();
       if(!ok)break;
       while(query.next()){
-        _telemetry_field *f=fmap.value(query.value(0).toULongLong());
+        TelemetryFieldData *f=fmap.value(query.value(0).toULongLong());
         if(!f)continue;
         quint64 t=query.value(1).toULongLong();
         if(!t0)t0=t;
         t-=t0;
         if(recTimeMax<t)recTimeMax=t;
         double tf=t/1000.0;
-        if(plot->times.last()!=tf)plot->times.append(tf);
+        if(telemetryData.times.last()!=tf)telemetryData.times.append(tf);
         if(f->points.size() && (tf-f->points.last().x())>0.5){
-          //extrapolate
-          f->points.append(QPointF(tf-0.1,f->points.last().y()));
+          //extrapolate unchanged value tail-1ms
+          f->points.append(QPointF(tf-0.001,f->points.last().y()));
         }
         f->points.append(QPointF(tf,query.value(2).toDouble()));
       }
@@ -422,23 +452,20 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
     if(!ok)break;
     //final data tail at max time
     double tMax=recTimeMax/1000.0;
-    foreach(_telemetry_field *f, plot->fields){
-      if(f->points.isEmpty())continue;
-      if(f->points.last().x()>=tMax)continue;
-      f->points.append(QPointF(tMax,f->points.last().y()));
+    for(int i=0;i<telemetryData.fields.size();i++){
+      TelemetryFieldData *d=telemetryData.fields.at(i);
+      if(d->points.isEmpty())continue;
+      if(d->points.last().x()>=tMax)continue;
+      d->points.append(QPointF(tMax,d->points.last().y()));
     }
-    //load data to plot
-    foreach (_telemetry_field *f, fmap.values()) {
-      f->curve->setData(new QwtPointSeriesData(f->points));
-    }
-
+    //loaded
     break;
   }//while ok
   query.finish();
 
   //update title
   QString s=QDateTime::fromMSecsSinceEpoch(curTimestamp).toString("yyyy MMM dd hh:mm:ss");
-  s.append(QString(" (%1)").arg(FactSystem::timeToString(recTimeMax/1000)));
+  s.append(QString(" (%1)").arg(FactSystem::timeToString(recTimeMax/1000,true)));
   if(!callsign.isEmpty())s.append("\t").append(callsign);
   if(!comment.isEmpty())s.append(" | ").append(comment);
   if(recSize>0){
@@ -455,6 +482,13 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
   setEnabled(true);
   eNotes->setText(recNotes);
 
+  //load data to plot
+  for(int i=0;i<telemetryData.fields.size();i++){
+    TelemetryFieldData *d=telemetryData.fields.at(i);
+    QwtPlotCurve *c=plotMap.value(d);
+    if(!c)continue;
+    c->setSamples(d->points);
+  }
   plot->resetZoom();
 
   bLoading=false;
@@ -464,12 +498,15 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
 //=============================================================================
 void TelemetryFrame::resetPlot()
 {
-  plot->times.clear();
-  foreach (_telemetry_field *f, plot->fields) {
-    f->points.clear();
-    f->curve->setData(new QwtPointSeriesData());
+  telemetryData.times.clear();
+  for(int i=0;i<telemetryData.fields.size();i++){
+    TelemetryFieldData *d=telemetryData.fields.at(i);
+    d->points.clear();
   }
-  plot->showCurve(plot->itemToInfo(plot->fcalculated->curve),false);
+  foreach (QwtPlotCurve *c, plotMap.values()) {
+    c->setSamples(QVector<QPointF>());
+  }
+  //plot->showCurve(plot->itemToInfo(plot->fcalculated->curve),false);
   plot->resetZoom();
   if(aReplay->isChecked())aReplay->trigger();
   plot->setTimeCursor(0);
@@ -500,7 +537,7 @@ void TelemetryFrame::eNotes_returnPressed(void)
 //=============================================================================
 void TelemetryFrame::aSplit_triggered(void)
 {
-  if(!((QAction*)sender())->isChecked()){
+  /*if(!((QAction*)sender())->isChecked()){
     vlayout->removeWidget(pcopy);
     if(pcopy)pcopy->deleteLater();
     pcopy=NULL;
@@ -508,7 +545,7 @@ void TelemetryFrame::aSplit_triggered(void)
   }
   pcopy=new TelemetryPlot();
   pcopy->copyFromPlot(plot);
-  vlayout->addWidget(pcopy);
+  vlayout->addWidget(pcopy);*/
 }
 //=============================================================================
 void TelemetryFrame::aFullScreen_triggered(void)
@@ -517,7 +554,7 @@ void TelemetryFrame::aFullScreen_triggered(void)
     setWindowFlags(Qt::Widget);
     showNormal();
     if(parentW) parentW->setWidget(this);
-  }else {
+  }else{
     parentW=qobject_cast<QDockWidget*>(parentWidget());
     setParent(NULL);
     setWindowFlags(Qt::Window);
@@ -654,7 +691,7 @@ void TelemetryFrame::aReplay_triggered(void)
     player=NULL;
     return;
   }
-  player=new TelemetryPlayer(this);
+  player=new TelemetryPlayer(_db,plot);
   player->setTime(plot->timeCursorValue());
   connect(player,&TelemetryPlayer::timeChanged,this,&TelemetryFrame::playerTimeChanged);
   connect(aPlay,&QAction::triggered,player,&TelemetryPlayer::play);

@@ -20,43 +20,18 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef TelemetryPlayer_H
-#define TelemetryPlayer_H
+#ifndef TelemetryData_H
+#define TelemetryData_H
 //==============================================================================
-#include <QtCore>
-#include <QtSql>
-class TelemetryPlot;
+#include <FactSystem.h>
 //==============================================================================
-class TelemetryPlayer : public QObject
-{
-  Q_OBJECT
-public:
-  explicit TelemetryPlayer(QSqlDatabase *db, TelemetryPlot *plot);
-
-
-  void setTelemetryID(quint64 v);
-
-  void setTime(quint64 v);
-  quint64 time();
-  bool playing();
-
-private:
-  QSqlDatabase *_db;
-  QSqlQuery qDownlink;
-
-
-  quint64 m_telemetryID;
-  quint64 m_time;
-  bool m_playing;
-
-signals:
-  void timeChanged();
-
-public slots:
-  void play();
-  void pause();
-  void rewind();
-
-};
+typedef struct {
+  QVector<QPointF> points;
+  Fact *fact;
+}TelemetryFieldData;
+typedef struct {
+  QVector<TelemetryFieldData *> fields;
+  QVector<double> times;
+}TelemetryData;
 //==============================================================================
 #endif
