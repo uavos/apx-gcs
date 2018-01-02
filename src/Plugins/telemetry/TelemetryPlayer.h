@@ -25,13 +25,14 @@
 //==============================================================================
 #include <QtCore>
 #include <QtSql>
-class TelemetryPlot;
+#include <FactSystem.h>
+#include <TelemetryDB.h>
 //==============================================================================
 class TelemetryPlayer : public QObject
 {
   Q_OBJECT
 public:
-  explicit TelemetryPlayer(QSqlDatabase *db, TelemetryPlot *plot);
+  explicit TelemetryPlayer(QObject *parent = 0);
 
 
   void setTelemetryID(quint64 v);
@@ -40,14 +41,25 @@ public:
   quint64 time();
   bool playing();
 
+  void setSpeed(double v);
+
 private:
-  QSqlDatabase *_db;
+  TelemetryDB *_db;
   QSqlQuery qDownlink;
 
+  QTimer timer;
+  quint64 playTime0;
+  QTime playTime;
+
+  quint64 setTime0;
 
   quint64 m_telemetryID;
   quint64 m_time;
   bool m_playing;
+  double m_speed;
+
+private slots:
+  void next();
 
 signals:
   void timeChanged();

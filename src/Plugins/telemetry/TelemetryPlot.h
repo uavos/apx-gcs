@@ -53,12 +53,16 @@ public:
 
   QwtPlotCurve * addCurve(const QString &name, const QString &descr, const QString &units, const QPen &pen);
 
+  void resetData();
+
   void showCurves(bool on=true,const QStringList &names=QStringList(),bool toggle=false);
 
   void saveSettings();
   void restoreSettings();
 
   quint64 timeCursorValue();
+
+  QwtPlotCurve *calc;
 
 protected:
   QwtPlotPicker *picker;
@@ -70,23 +74,23 @@ protected:
   QwtPlotMagnifier *magX,*magY,*mag;
   QwtPlotMarker *timeCursor;
 
+private:
+  void refreshCalculated();
+  QString expCalc;
+  int m_progress;
+  void setProgress(int v);
+
+
 
 private slots:
   void pointSelected( const QPointF &pos );
   void showCurve(const QVariant &itemInfo, bool on, int index = -1);
 
-private:
-  typedef struct {
-    QwtPlotCurve *curve;
-    QString name;
-    QString descr;
-    QString units;
-  }PlotCurve;
-  QVector<PlotCurve> curves;
-
 signals:
   void itemVisibleChanged(QwtPlotItem *item);
   void timeCursorChanged(double v);
+
+  void progressChanged(int v);
 
 
 public slots:
@@ -94,42 +98,44 @@ public slots:
 
   void setTimeCursor(quint64 time_ms);
 
-  //void copyFromPlot(TelemetryPlot *plot);
+  void copyFromPlot(TelemetryPlot *plot);
 };
 //=============================================================================
 class PlotPicker: public QwtPlotPicker
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    PlotPicker(QWidget *canvas):QwtPlotPicker(QwtPlot::xBottom,QwtPlot::yLeft,QwtPicker::VLineRubberBand,QwtPicker::ActiveOnly,canvas){}
+  PlotPicker(QWidget *canvas):QwtPlotPicker(QwtPlot::xBottom,QwtPlot::yLeft,QwtPicker::VLineRubberBand,QwtPicker::ActiveOnly,canvas){}
 protected:
-    QwtText trackerText(const QPoint &pos)const;
+  QwtText trackerText(const QPoint &pos)const;
+private:
+  double sampleValue(const QwtPlotCurve *curve, double t) const;
 };
 //=============================================================================
 class PlotMagnifier: public QwtPlotMagnifier
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    PlotMagnifier(QWidget *canvas):QwtPlotMagnifier(canvas){parentWidget()->setMouseTracking(true);}
+  PlotMagnifier(QWidget *canvas):QwtPlotMagnifier(canvas){parentWidget()->setMouseTracking(true);}
 protected:
-    QPoint mwPos;
-    void rescale(double factor);
-    void widgetMouseMoveEvent(QMouseEvent *mouseEvent);
+  QPoint mwPos;
+  void rescale(double factor);
+  void widgetMouseMoveEvent(QMouseEvent *mouseEvent);
 };
 //=============================================================================
 class LegendItem: public QwtLegendLabel
 {
 public:
-    LegendItem():QwtLegendLabel(){}
+  LegendItem():QwtLegendLabel(){}
 protected:
-    void paintEvent(QPaintEvent *e);
+  void paintEvent(QPaintEvent *e);
 };
 //=============================================================================
 class PlotLegend : public QwtLegend
 {
 public:
-    PlotLegend(QWidget *parent = 0);
-    QWidget* createWidget(const QwtLegendData &data) const;
+  PlotLegend(QWidget *parent = 0);
+  QWidget* createWidget(const QwtLegendData &data) const;
 };
 //=============================================================================
 #endif

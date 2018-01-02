@@ -27,7 +27,6 @@
 #include "TelemetryPlayer.h"
 #include <QtCore>
 #include <TelemetryDB.h>
-#include "TelemetryData.h"
 //=============================================================================
 class TelemetryFrame: public QWidget
 {
@@ -39,6 +38,15 @@ protected:
   void closeEvent(QCloseEvent *event);
 private:
   TelemetryDB *_db;
+
+  typedef struct {
+    QVector<QPointF> points;
+    Fact *fact;
+  }TelemetryFieldData;
+  typedef struct {
+    QVector<TelemetryFieldData *> fields;
+    QVector<double> times;
+  }TelemetryData;
 
   TelemetryData telemetryData;
   QHash<TelemetryFieldData*,QwtPlotCurve*> plotMap;

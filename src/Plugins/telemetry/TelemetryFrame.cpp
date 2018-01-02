@@ -65,7 +65,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   plot=new TelemetryPlot(this);
   plot->resetZoom();
   vlayout->addWidget(plot);
-  //connect(plot,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
+  connect(plot,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
 
   lbTitle=new QLabel(this);
   lbTitle->setParent(plot);
@@ -95,8 +95,8 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   toolBar->addSeparator();
   aFullScreen=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-expand.svg"),tr("Full screen"),this,&TelemetryFrame::aFullScreen_triggered);
   aFullScreen->setCheckable(true);
-  //aSplit=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-book-outline.svg"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
-  //aSplit->setCheckable(true);
+  aSplit=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-book-outline.svg"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
+  aSplit->setCheckable(true);
   toolBar->addSeparator();
 
   aExport=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/share.svg"),tr("Export"),this,&TelemetryFrame::aExport_triggered);
@@ -173,6 +173,9 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     QwtPlotCurve *cv=plot->addCurve(sn,f->descr(),f->units(),QPen(c, 0, style));
     plotMap.insert(d,cv);
   }
+  plot->calc=plot->addCurve("calculated",tr("Calculated user variable"),"",QColor(Qt::yellow).lighter());
+  plot->restoreSettings();
+  connect(plot,&TelemetryPlot::itemVisibleChanged,this,[=](){plot->saveSettings();});
 
   //empty plot after start
   rescan();
@@ -498,18 +501,13 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
 //=============================================================================
 void TelemetryFrame::resetPlot()
 {
+  if(aReplay->isChecked())aReplay->trigger();
   telemetryData.times.clear();
   for(int i=0;i<telemetryData.fields.size();i++){
     TelemetryFieldData *d=telemetryData.fields.at(i);
     d->points.clear();
   }
-  foreach (QwtPlotCurve *c, plotMap.values()) {
-    c->setSamples(QVector<QPointF>());
-  }
-  //plot->showCurve(plot->itemToInfo(plot->fcalculated->curve),false);
-  plot->resetZoom();
-  if(aReplay->isChecked())aReplay->trigger();
-  plot->setTimeCursor(0);
+  plot->resetData();
 }
 //=============================================================================
 void TelemetryFrame::aFilter_triggered(void)
@@ -537,7 +535,7 @@ void TelemetryFrame::eNotes_returnPressed(void)
 //=============================================================================
 void TelemetryFrame::aSplit_triggered(void)
 {
-  /*if(!((QAction*)sender())->isChecked()){
+  if(!((QAction*)sender())->isChecked()){
     vlayout->removeWidget(pcopy);
     if(pcopy)pcopy->deleteLater();
     pcopy=NULL;
@@ -545,7 +543,8 @@ void TelemetryFrame::aSplit_triggered(void)
   }
   pcopy=new TelemetryPlot();
   pcopy->copyFromPlot(plot);
-  vlayout->addWidget(pcopy);*/
+  vlayout->addWidget(pcopy);
+  connect(pcopy,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
 }
 //=============================================================================
 void TelemetryFrame::aFullScreen_triggered(void)
@@ -691,12 +690,14 @@ void TelemetryFrame::aReplay_triggered(void)
     player=NULL;
     return;
   }
-  player=new TelemetryPlayer(_db,plot);
+  player=new TelemetryPlayer(this);
+  player->setTelemetryID(curID);
   player->setTime(plot->timeCursorValue());
   connect(player,&TelemetryPlayer::timeChanged,this,&TelemetryFrame::playerTimeChanged);
   connect(aPlay,&QAction::triggered,player,&TelemetryPlayer::play);
   connect(aPause,&QAction::triggered,player,&TelemetryPlayer::pause);
   connect(aRewind,&QAction::triggered,player,&TelemetryPlayer::rewind);
+  connect(playerSpeed,QOverload<double>::of(&QDoubleSpinBox::valueChanged),player,&TelemetryPlayer::setSpeed);
   playerSlider->setMaximum(recTimeMax);
   playerSpeed->setValue(1);
   playerTimeChanged();

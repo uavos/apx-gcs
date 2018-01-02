@@ -45,6 +45,8 @@ public:
 
   bool deleteRecord(quint64 telemetryID);
 
+
+  bool readDownlink(quint64 telemetryID, quint64 time);
 };
 //=============================================================================
 #endif // FLIGHTDATAFILE_H

@@ -248,3 +248,31 @@ bool TelemetryDB::deleteRecord(quint64 telemetryID)
 //=============================================================================
 //=============================================================================
 //=============================================================================
+bool TelemetryDB::readDownlink(quint64 telemetryID, quint64 time)
+{
+  if(!isOpen())return false;
+  QSqlQuery query(*this);
+  bool ok=true;
+  while(ok){
+    //collect all facts values up to time
+    query.prepare(
+      "SELECT fieldID, value, max(time) FROM TelemetryDownlink "
+      "WHERE telemetryID=? AND time<=? GROUP BY fieldID"
+      );
+    query.addBindValue(telemetryID);
+    query.addBindValue(time);
+    ok=query.exec();
+    if(!ok)break;
+    while(query.next()){
+      quint64 fieldID=query.value(0).toULongLong();
+      VehicleMandalaFact *f=qobject_cast<VehicleMandalaFact*>(recFacts.key(fieldID));
+      if(!f)continue;
+      f->setValueLocal(query.value(1));
+    }
+
+    break;
+  }
+  return checkResult(query);
+}
+//=============================================================================
+//=============================================================================
