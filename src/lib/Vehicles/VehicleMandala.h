@@ -40,6 +40,8 @@ public:
   explicit VehicleMandala(Vehicle *parent);
   ~VehicleMandala();
 
+  Vehicle *vehicle;
+
   QHash<QString,QVariant> constants; // <name,value> enums in form varname_ENUM
   QHash<QString,quint16> special; // <name,id>
   QStringList names;

@@ -23,10 +23,11 @@
 #include "VehicleMandalaFact.h"
 #include "Mandala.h"
 #include "VehicleMandala.h"
+#include "Vehicle.h"
 //=============================================================================
 VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint16 id, DataType dataType, const QString &name, const QString &title, const QString &descr, const QString &units)
   : Fact(parent,name,title,descr,FactItem,dataType),
-    vehicle(parent),m(m),m_id(id)
+    vehicleMandala(parent),m(m),m_id(id)
 {
   setUnits(units);
 
@@ -114,6 +115,7 @@ bool VehicleMandalaFact::setValue(const QVariant &v)
 {
   if(_bindedFact) return _bindedFact->setValue(v);
   if(!setValueLocal(v))return false;
+  if(vehicleMandala->vehicle->isReplay()) return true;
   if(!pack())return false;
   if(setValueCnt++<5)loadValueTimer.start();
   //qDebug()<<"set"<<path();

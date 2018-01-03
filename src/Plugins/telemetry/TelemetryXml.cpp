@@ -189,9 +189,10 @@ quint64 TelemetryXml::read(QString fileName)
           else{
             double v=xml.readElementText().toDouble();
             int i=recFieldsMap.indexOf(fieldID);
-            if(i>=0 && i<recValues.size()) recValues[i]=v;
+            bool bUplink=tag=="U";
+            if(bUplink==false && i>=0 && i<recValues.size()) recValues[i]=v;
             //write value update
-            ok=_db->writeField(telemetryID,time_ms,fieldID,v,tag=="U");
+            ok=_db->writeField(telemetryID,time_ms,fieldID,v,bUplink);
             if(!ok)break;
           }
         }

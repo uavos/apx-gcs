@@ -50,6 +50,7 @@ private:
   QTimer timer;
   quint64 playTime0;
   QTime playTime;
+  quint64 tNext;
 
   quint64 setTime0;
 

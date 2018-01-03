@@ -52,7 +52,7 @@ public:
 
   uint _vtype;
 private:
-  VehicleMandala *vehicle;
+  VehicleMandala *vehicleMandala;
   Mandala *m;
   quint16 m_id;
 

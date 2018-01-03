@@ -84,10 +84,14 @@ public:
   QString confTitle() const;
 
   bool isLocal() const;
+  bool isReplay() const;
+
+  void setReplay(bool v);
 private:
   QTimer onlineTimer;
   QTime telemetryTime;
   QTime xpdrTime;
+  QTime replayTime;
 
 
   //data connection

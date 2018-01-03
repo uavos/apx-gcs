@@ -178,6 +178,7 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
 void Vehicles::vehicleSendUplink(Vehicle *v, const QByteArray &packet)
 {
   //qDebug()<<"VS"<<v->title()<<v->squawk()<<packet.toHex().toUpper();
+  if(v->isReplay()) return;
   if(v==f_local){
     emit sendUplink(packet);
     return;

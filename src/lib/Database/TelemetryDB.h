@@ -30,7 +30,7 @@ class TelemetryDB : public DatabaseConnection
 {
   Q_OBJECT
 public:
-  explicit TelemetryDB(QObject *parent,QString sessionName, Vehicle *vehicle=NULL);
+  explicit TelemetryDB(QObject *parent, QString sessionName, Vehicle *vehicle=NULL, bool readOnly=false);
 
   QHash<Fact*,quint64> recFacts;
 
@@ -46,7 +46,8 @@ public:
   bool deleteRecord(quint64 telemetryID);
 
 
-  bool readDownlink(quint64 telemetryID, quint64 time);
+  bool createTelemetryTable(quint64 telemetryID); //for player to temp table
+  bool readDownlink(quint64 telemetryID, quint64 time); //and update facts
 };
 //=============================================================================
 #endif // FLIGHTDATAFILE_H

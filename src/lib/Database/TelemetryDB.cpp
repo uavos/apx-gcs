@@ -27,8 +27,8 @@
 #include <VehicleMandala.h>
 #include <VehicleMandalaFact.h>
 //=============================================================================
-TelemetryDB::TelemetryDB(QObject *parent, QString sessionName, Vehicle *vehicle)
-  : DatabaseConnection(parent,AppDirs::dbTelemetryFileName(),sessionName)
+TelemetryDB::TelemetryDB(QObject *parent, QString sessionName, Vehicle *vehicle, bool readOnly)
+  : DatabaseConnection(parent,AppDirs::dbTelemetryFileName(),sessionName,readOnly)
 {
   if(!isOpen())return;
   QSqlQuery query(*this);
@@ -247,6 +247,36 @@ bool TelemetryDB::deleteRecord(quint64 telemetryID)
 }
 //=============================================================================
 //=============================================================================
+//=============================================================================
+bool TelemetryDB::createTelemetryTable(quint64 telemetryID)
+{
+  if(!isOpen())return false;
+  QSqlQuery query(*this);
+  bool ok=transaction(query);
+  while(ok){
+    //create temp table
+    query.prepare("DROP TABLE t_TelemetryData");
+    query.exec();
+    query.prepare(
+      "CREATE TEMPORARY TABLE t_TelemetryData AS "
+      "SELECT * FROM ( "
+      "SELECT time, fieldID, value, NULL AS uplink, NULL AS name, NULL AS data FROM TelemetryDownlink WHERE telemetryID=? "
+      "UNION ALL "
+      "SELECT time, fieldID, value, 1 AS uplink, NULL AS name, NULL AS data FROM TelemetryUplink WHERE telemetryID=? "
+      "UNION ALL "
+      "SELECT time, NULL AS fieldID, value, uplink, name, data FROM TelemetryEvents WHERE telemetryID=? "
+      ") ORDER BY time"
+      );
+    query.addBindValue(telemetryID);
+    query.addBindValue(telemetryID);
+    query.addBindValue(telemetryID);
+    ok=query.exec();
+    if(!ok)break;
+
+    break;
+  }
+  return checkResult(query);
+}
 //=============================================================================
 bool TelemetryDB::readDownlink(quint64 telemetryID, quint64 time)
 {

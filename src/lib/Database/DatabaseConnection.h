@@ -31,7 +31,7 @@ class DatabaseConnection: public QObject, public QSqlDatabase
   Q_OBJECT
 
 public:
-  explicit DatabaseConnection(QObject *parent, QString fileName,QString sessionName);
+  explicit DatabaseConnection(QObject *parent, QString fileName,QString sessionName, bool readOnly=false);
   ~DatabaseConnection();
 
   static QList<DatabaseConnection*> connections;

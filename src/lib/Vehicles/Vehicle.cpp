@@ -105,6 +105,20 @@ bool Vehicle::isLocal() const
 {
   return f_vclass->value().toInt()==LOCAL;
 }
+bool Vehicle::isReplay() const
+{
+  return f_streamType->value().toInt()==REPLAY;
+}
+void Vehicle::setReplay(bool v)
+{
+  if(v){
+    f_streamType->setValue(REPLAY);
+    onlineTimer.start();
+  }else if(isReplay()){
+    onlineTimer.stop();
+    f_streamType->setValue(OFFLINE);
+  }
+}
 //=============================================================================
 quint16 Vehicle::squawk(void) const
 {
@@ -114,6 +128,7 @@ quint16 Vehicle::squawk(void) const
 //=============================================================================
 void Vehicle::downlinkReceived(const QByteArray &packet)
 {
+  if(isReplay()) return;
   if(f_nodes->unpackService(packet)){
     emit nmtReceived(packet);
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
@@ -131,6 +146,7 @@ void Vehicle::downlinkReceived(const QByteArray &packet)
 //=============================================================================
 void Vehicle::xpdrReceived(const QByteArray &data)
 {
+  if(isReplay()) return;
   if(f_mandala->unpackXPDR(data)){
     f_recorder->recordDownlink(data);
     f_streamType->setValue(XPDR);

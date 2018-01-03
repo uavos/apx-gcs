@@ -29,6 +29,7 @@
 //=============================================================================
 VehicleMandala::VehicleMandala(Vehicle *parent)
   : Fact(parent,"mandala","Mandala",tr("Vehicle data tree"),GroupItem,NoData),
+    vehicle(parent),
     m_errcnt(0)
 {
   m=new Mandala();

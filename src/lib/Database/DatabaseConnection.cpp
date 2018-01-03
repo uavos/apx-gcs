@@ -23,14 +23,18 @@
 #include "DatabaseConnection.h"
 QList<DatabaseConnection*> DatabaseConnection::connections;
 //=============================================================================
-DatabaseConnection::DatabaseConnection(QObject *parent, QString fileName, QString sessionName)
+DatabaseConnection::DatabaseConnection(QObject *parent, QString fileName, QString sessionName, bool readOnly)
   : QObject(parent),
     QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE", sessionName)),
     _sessionName(sessionName),
     _transaction(false)
 {
   setDatabaseName(fileName);
-  setConnectOptions("QSQLITE_ENABLE_SHARED_CACHE; QSQLITE_BUSY_TIMEOUT=10000000");
+  QStringList opts;
+  opts.append("QSQLITE_ENABLE_SHARED_CACHE");
+  opts.append("QSQLITE_BUSY_TIMEOUT=10000000");
+  if(readOnly) opts.append("QSQLITE_OPEN_READONLY");
+  setConnectOptions(opts.join("; "));
   if(!open()){
     qWarning()<<lastError();
     QSqlDatabase::removeDatabase(sessionName);
@@ -38,7 +42,7 @@ DatabaseConnection::DatabaseConnection(QObject *parent, QString fileName, QStrin
     QSqlQuery query(*this);
     query.exec("PRAGMA page_size = 4096;");
     query.exec("PRAGMA cache_size = 16384;");
-    query.exec("PRAGMA synchronous = NORMAL;");
+    query.exec("PRAGMA synchronous = OFF;");
     query.exec("PRAGMA temp_store = DEFAULT;");
     query.exec("PRAGMA locking_mode = NORMAL;");
     query.exec("PRAGMA journal_mode = WAL;");
