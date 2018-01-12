@@ -179,7 +179,7 @@ int FactTree::size(void) const
 }
 QString FactTree::name(void) const
 {
-  return (m_name.contains('#')?QString(m_name).replace('#',QString::number(num())):m_name)+nameSuffix;
+  return (m_name.contains('#')?QString(m_name).replace('#',QString::number(num()+1)):m_name)+nameSuffix;
 }
 void FactTree::setName(const QString &v)
 {

@@ -251,7 +251,7 @@ void FactData::setMax(const QVariant &v)
 }
 QString FactData::title(void) const
 {
-  return m_title.isEmpty()?m_name:m_title;
+  return m_title.isEmpty()?name():m_title;
 }
 void FactData::setTitle(const QString &v)
 {

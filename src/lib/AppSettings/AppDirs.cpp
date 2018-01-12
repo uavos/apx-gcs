@@ -88,13 +88,8 @@ QDir AppDirs::userPlugins()
   return QDir(user().absoluteFilePath("Plugins"));
 }
 //=============================================================================
-QString AppDirs::dbFileName()
+QDir AppDirs::db()
 {
-  return user().absoluteFilePath("gcs.db");
-}
-//=============================================================================
-QString AppDirs::dbTelemetryFileName()
-{
-  return user().absoluteFilePath("telemetry.db");
+  return QDir(user().absoluteFilePath("Data"));
 }
 //=============================================================================

@@ -27,7 +27,7 @@
 #include <Vehicles.h>
 //=============================================================================
 VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
-  : DatabaseConnection(parent,AppDirs::dbFileName(),sessionName),
+  : DatabaseConnection(parent,AppDirs::db().absoluteFilePath("vehicles.db"),sessionName),
     m_enabled(true)
 {
   if(!isOpen())return;
@@ -382,7 +382,7 @@ void VehiclesDB::nodeDictRead(NodeItem *node)
 //=============================================================================
 //=============================================================================
 void VehiclesDB::nodeDataWrite(NodeItem *node)
-{return;
+{
   if(!m_enabled)return;
   if(!node->dataValid())return;
   if(node->reconf())return;
@@ -582,7 +582,7 @@ quint64 VehiclesDB::vehicleGetID(Vehicle *vehicle, QSqlQuery *query, bool *ok)
 }
 //=============================================================================
 void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
-{return;
+{
   if(!m_enabled)return;
   //if(vehicle->isLocal())return;
   if(!isOpen())return;
@@ -616,7 +616,7 @@ void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
 }
 //=============================================================================
 void VehiclesDB::vehicleNodesUpdate(Vehicle *vehicle)
-{return;
+{
   if(!m_enabled)return;
   //if(vehicle->isLocal())return;
   if(!isOpen())return;

@@ -80,11 +80,13 @@ SOURCES += \
     Database/DatabaseConnection.cpp \
     Database/VehiclesDB.cpp \
     Database/TelemetryDB.cpp \
+    Database/MapsDB.cpp \
 
 HEADERS += \
     Database/DatabaseConnection.h \
     Database/VehiclesDB.h \
     Database/TelemetryDB.h \
+    Database/MapsDB.h \
 
 # Vehicles & Mandala
 SOURCES += \
@@ -133,6 +135,19 @@ HEADERS += \
     Nodes/PawnScript.h \
     Nodes/NodesXml.h \
 
+# Mission
+SOURCES += \
+    Mission/VehicleMission.cpp \
+    Mission/MissionItems.cpp \
+    Mission/MissionOrderedItem.cpp \
+    Mission/Waypoint.cpp \
+
+HEADERS += \
+    Mission/VehicleMission.h \
+    Mission/MissionItems.h \
+    Mission/MissionOrderedItem.h \
+    Mission/Waypoint.h \
+
 
 # Communication
 SOURCES += \
@@ -175,6 +190,10 @@ HEADERS += \
     AppSettings/AppSettings.h \
     AppSettings/AppShortcuts.h \
     AppSettings/AppShortcut.h \
+
+include( QtlocationPlugin/QtlocationPlugin.pri )
+
+
 
 # other
 SOURCES += \

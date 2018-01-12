@@ -8,14 +8,14 @@
 TelemetryPlayer::TelemetryPlayer(QObject *parent)
   : QObject(parent),
     _db(new TelemetryDB(this,QLatin1String("GCSTelemetryPlayerSession"),NULL,true)),
-    qDownlink(*_db),
+    query(*_db),
     setTime0(0),
     m_telemetryID(0),
     m_time(0),
     m_playing(false),
     m_speed(1.0)
 {
-  qDownlink.setForwardOnly(true);
+  query.setForwardOnly(true);
   timer.setSingleShot(true);
   connect(&timer,&QTimer::timeout,this,&TelemetryPlayer::next);
 }
@@ -71,12 +71,12 @@ void TelemetryPlayer::play()
   playTime.start();
   bool ok=true;
   while(ok){
-    qDownlink.prepare("SELECT * FROM t_TelemetryData WHERE time>=?");
-    qDownlink.addBindValue(m_time);
-    ok=qDownlink.exec();
+    query.prepare("SELECT * FROM t_TelemetryData WHERE time>=?");
+    query.addBindValue(m_time);
+    ok=query.exec();
     if(!ok)break;
-    if(qDownlink.next()){
-      tNext=qDownlink.value(0).toULongLong();
+    if(query.next()){
+      tNext=query.value(0).toULongLong();
       next();
     }else{
       qDebug()<<"No data";
@@ -84,14 +84,16 @@ void TelemetryPlayer::play()
 
     break;
   }
-  _db->checkResult(qDownlink);
+  _db->checkResult(query);
+  emit stateChanged();
   if(!ok)pause();
 }
 void TelemetryPlayer::pause()
 {
   if(!m_playing)return;
   m_playing=false;
-  qDownlink.finish();
+  query.finish();
+  emit stateChanged();
   //qDebug()<<"pause";
 }
 void TelemetryPlayer::rewind()
@@ -113,33 +115,34 @@ void TelemetryPlayer::next()
   if(m_speed!=1.0)t=t*m_speed;
   t+=playTime0;
   if(tNext<=t){
-    if(!qDownlink.value(1).isNull()){
-      quint64 fieldID=qDownlink.value(1).toULongLong();
+    if(!query.value(1).isNull()){
+      quint64 fieldID=query.value(1).toULongLong();
       Fact *f=_db->recFacts.key(fieldID);
       if(f){
         Vehicles::instance()->f_local->setReplay(true);
-        f->setValue(qDownlink.value(2));
-        if(!qDownlink.value(3).isNull()){
+        f->setValue(query.value(2));
+        if(!query.value(3).isNull()){
           QString s=f->title();
           if(!s.startsWith("rc_")){
             qDebug("%s",QString("[replay]%1: %2 = %3").arg(tr("uplink")).arg(s).arg(f->text()).toUtf8().data());
           }
         }
       }
-    }else if(!qDownlink.value(4).isNull()){
+    }else if(!query.value(4).isNull()){
       //event
-      QString evt=qDownlink.value(4).toString();
-      QString sv=qDownlink.value(2).toString();
+      QString evt=query.value(4).toString();
+      QString sv=query.value(2).toString();
       if(evt=="msg"){
         qDebug("%s",QString("<[replay]%1").arg(sv).toUtf8().data());
         FactSystem::instance()->sound(sv);
       }else{
-        qDebug("%s",QString("[replay]%1: %2 (%3)").arg(qDownlink.value(3).isNull()?tr("downlink"):tr("uplink")).arg(evt).arg(sv).toUtf8().data());
+        qDebug("%s",QString("[replay]%1: %2 (%3)").arg(query.value(3).isNull()?tr("downlink"):tr("uplink")).arg(evt).arg(sv).toUtf8().data());
       }
     }
-    if(!qDownlink.next())pause();
+    //continue next record
+    if(!query.next())pause();
     else{
-      tNext=qDownlink.value(0).toULongLong();
+      tNext=query.value(0).toULongLong();
     }
   }
   if(!m_playing)return;

@@ -82,7 +82,12 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
   timeCursor=new QwtPlotMarker();
   timeCursor->setLinePen(QPen(Qt::gray));
   timeCursor->setLineStyle(QwtPlotMarker::VLine);
+  timeCursor->setRenderThreadCount(0);
   timeCursor->attach(this);
+
+  cursorReplotTimer.setSingleShot(true);
+  cursorReplotTimer.setInterval(500);
+  connect(&cursorReplotTimer,&QTimer::timeout,this,&TelemetryPlot::replot);
 
   canvas()->setCursor(Qt::ArrowCursor);
 }
@@ -111,6 +116,7 @@ QwtPlotCurve * TelemetryPlot::addCurve(const QString &name, const QString &descr
   curve->setYAxis(QwtPlot::yLeft);
   curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
   curve->setRenderHint(QwtPlotItem::RenderAntialiased);
+  curve->setRenderThreadCount(0);
   curve->attach(this);
   //legend tooltip
   QString s="<html><NOBR>";
@@ -187,10 +193,11 @@ void TelemetryPlot::pointSelected( const QPointF &pos )
   replot();
   emit timeCursorChanged(x);
 }
-void TelemetryPlot::setTimeCursor(quint64 time_ms)
+void TelemetryPlot::setTimeCursor(quint64 time_ms,bool doReplot)
 {
   timeCursor->setXValue(time_ms/1000.0);
-  replot();
+  if(doReplot) replot();
+  else cursorReplotTimer.start();
 }
 quint64 TelemetryPlot::timeCursorValue()
 {
@@ -401,6 +408,7 @@ double PlotPicker::sampleValue(const QwtPlotCurve *curve, double t) const
         return curve->data()->sample(i).y();
       }
     }
+    return 0;
   }
   size_t ts=curve->data()->size()/2;
   size_t tx=ts;

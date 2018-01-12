@@ -55,5 +55,32 @@
         <file>Facts.qml</file>
         <file>menu/FactMenuPopup.qml</file>
         <file>menu/FactMenuElement.qml</file>
+        <file>FlightMap/qmldir</file>
+        <file>FlightMap/FlightMap.qml</file>
+        <file>Map.qml</file>
+        <file>FlightMap/MapScale.qml</file>
+        <file>FlightMap/MapBusy.qml</file>
+        <file>FlightMap/icons/uav.svg</file>
+        <file>FlightMap/Vehicle.qml</file>
+        <file>FlightMap/icons/crs-arrow.svg</file>
+        <file>FlightMap/icons/gcu.svg</file>
+        <file>FlightMap/icons/cmd-crs-arrow.svg</file>
+        <file>FlightMap/icons/hdg-arrow.svg</file>
+        <file>FlightMap/CmdPosCircle.qml</file>
+        <file>FlightMap/Home.qml</file>
+        <file>FlightMap/icons/home.svg</file>
+        <file>FlightMap/LoiterCircle.qml</file>
+        <file>FlightMap/helper.js</file>
+        <file>FlightMap/EnergyCircle.qml</file>
+        <file>FlightMap/EnergyGSCircle.qml</file>
+        <file>FlightMap/CamTargetCircle.qml</file>
+        <file>FlightMap/MapStatusBar.qml</file>
+        <file>FlightMap/Wind.qml</file>
+        <file>FlightMap/MapText.qml</file>
+        <file>FlightMap/icons/wind-arrow.svg</file>
+        <file>FlightMap/MapSvgImage.qml</file>
+        <file>FlightMap/VehiclesList.qml</file>
+        <file>FlightMap/VehicleInfo.qml</file>
+        <file>FlightMap/Waypoint.qml</file>
     </qresource>
 </RCC>

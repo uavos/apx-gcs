@@ -565,7 +565,7 @@ bool QwtPlotZoomer::accept( QPolygon &pa ) const
     QRect rect = QRect( pa[0], pa[int( pa.count() ) - 1] );
     rect = rect.normalized();
 
-    const int minSize = 50;
+    const int minSize = 20;
     if ( rect.width() < minSize && rect.height() < minSize )
         return false;
 

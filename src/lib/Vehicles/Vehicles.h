@@ -69,9 +69,9 @@ public slots:
   void selectNext();
   void selectPrev();
 signals:
-  void vehicleRegistered(Vehicle*);
-  void vehicleRemoved(Vehicle*);
-  void vehicleSelected(Vehicle*);
+  void vehicleRegistered(Vehicle *vehicle);
+  void vehicleRemoved(Vehicle *vehicle);
+  void vehicleSelected(Vehicle *vehicle);
 
   //data connection
 public slots:

@@ -145,6 +145,9 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   //lbPlayerTime->setMinimumWidth(lbPlayerTime->font().pointSize()*8);
   //lbPlayerTime->setStyleSheet("background-color: rgba(0,0,0,30%)");
   lbPlayerTime->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+  plotCursorUpdateTimer.setSingleShot(true);
+  connect(&plotCursorUpdateTimer,&QTimer::timeout,this,&TelemetryFrame::updatePlotPlayerTime);
+  connect(Vehicles::instance(),&Vehicles::currentChanged,this,&TelemetryFrame::vehicleChanged);
 
   //create plot fields
   foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts){
@@ -337,6 +340,9 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
 {
   if(bLoading)return;
   bLoading=true;
+  //clear plot
+  resetPlot();
+
   curID=query.value(0).toULongLong();
   curTimestamp=query.value("timestamp").toULongLong();
   QString callsign=query.value("callsign").toString();
@@ -349,8 +355,6 @@ void TelemetryFrame::load(QSqlQuery &query, bool forceLarge)
   recTimeMax=0;
   recSize=0;
 
-  //clear plot
-  resetPlot();
 
   bool ok=true;
   while(ok){
@@ -655,6 +659,8 @@ void TelemetryFrame::aImport_triggered(void)
   dlg.setNameFilters(filters);
   if(!dlg.exec() || dlg.selectedFiles().isEmpty())return;
 
+  resetPlot();
+
   TelemetryXml xml;
   connect(&xml,&TelemetryXml::progressChanged,this,&TelemetryFrame::setProgress);
 
@@ -694,6 +700,7 @@ void TelemetryFrame::aReplay_triggered(void)
   player->setTelemetryID(curID);
   player->setTime(plot->timeCursorValue());
   connect(player,&TelemetryPlayer::timeChanged,this,&TelemetryFrame::playerTimeChanged);
+  connect(player,&TelemetryPlayer::stateChanged,this,&TelemetryFrame::playerStateChanged);
   connect(aPlay,&QAction::triggered,player,&TelemetryPlayer::play);
   connect(aPause,&QAction::triggered,player,&TelemetryPlayer::pause);
   connect(aRewind,&QAction::triggered,player,&TelemetryPlayer::rewind);
@@ -701,6 +708,7 @@ void TelemetryFrame::aReplay_triggered(void)
   playerSlider->setMaximum(recTimeMax);
   playerSpeed->setValue(1);
   playerTimeChanged();
+  playerStateChanged();
 }
 //=============================================================================
 void TelemetryFrame::playerSliderMoved()
@@ -717,10 +725,30 @@ void TelemetryFrame::plotTimeCursorMoved()
 //=============================================================================
 void TelemetryFrame::playerTimeChanged()
 {
+  if(plotCursorUpdateTimer.isActive())return;
+  plotCursorUpdateTimer.start(100);
+}
+void TelemetryFrame::updatePlotPlayerTime()
+{
+  if(!player)return;
   quint64 t=player->time();
   playerSlider->setValue(t);
-  plot->setTimeCursor(t);
+  plot->setTimeCursor(t,recSize<3000000);
   lbPlayerTime->setText(FactSystem::timemsToString(t));
+}
+//=============================================================================
+void TelemetryFrame::playerStateChanged()
+{
+  bool bPlaying=player->playing();
+  aPlay->setEnabled(!bPlaying);
+  aPause->setEnabled(bPlaying);
+}
+//=============================================================================
+void TelemetryFrame::vehicleChanged()
+{
+  if(!player)return;
+  if(Vehicles::instance()->current()->isLocal())return;
+  aPause->trigger();
 }
 //=============================================================================
 

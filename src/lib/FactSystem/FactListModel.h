@@ -38,7 +38,6 @@ public:
 
   QList<FactTree*> items() const;
 
-
 private:
   Fact *fact;
 

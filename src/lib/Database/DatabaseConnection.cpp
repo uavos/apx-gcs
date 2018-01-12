@@ -49,14 +49,15 @@ DatabaseConnection::DatabaseConnection(QObject *parent, QString fileName, QStrin
     connections.append(this);
     connect(this,&DatabaseConnection::destroyed,[=](){
       QSqlDatabase::removeDatabase(sessionName);
-      qDebug()<<sessionName<<"removed";
+      //qDebug()<<sessionName<<"removed";
     });
   }
 }
 DatabaseConnection::~DatabaseConnection()
 {
+  connections.removeAll(this);
   close();
-  qDebug()<<_sessionName<<"closed";
+  //qDebug()<<_sessionName<<"closed";
 }
 //=============================================================================
 bool DatabaseConnection::createTable(QSqlQuery &query, const QString &tableName, const QStringList &fields)
@@ -68,7 +69,7 @@ bool DatabaseConnection::createTable(QSqlQuery &query, const QString &tableName,
 //=============================================================================
 bool DatabaseConnection::createIndex(QSqlQuery &query, const QString &tableName, const QString &indexName, bool unique)
 {
-  const QString &s=QString("CREATE%3 INDEX IF NOT EXISTS idx_%1_%2 ON %1 (%2);").arg(tableName).arg(indexName).arg(unique?" UNIQUE":"");
+  const QString &s=QString("CREATE%3 INDEX IF NOT EXISTS idx_%1_%2 ON %1 (%4);").arg(tableName).arg(QString(indexName).replace(',','_')).arg(unique?" UNIQUE":"").arg(indexName);
   query.prepare(s);
   return query.exec();
 }

@@ -20,6 +20,7 @@ HEADERS += MainForm.h \
 RESOURCES += $${SRC_DIR}/QML/qml.qrc
 
 
+
 # COPY on BUILD
 first.depends += $(first)
 QMAKE_EXTRA_TARGETS += first
@@ -78,4 +79,5 @@ INSTALLS += localization
 DISTFILES += \
     ../qml/images/* \
     $$GCS_TOP/deploy/copy-libs.sh \
-    $$GCS_TOP/deploy/launcher-linux.sh
+    $$GCS_TOP/deploy/launcher-linux.sh \
+    GeoServiceProviderPlugin.json

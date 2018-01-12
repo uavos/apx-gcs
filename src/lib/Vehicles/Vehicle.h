@@ -29,6 +29,7 @@
 #include "VehicleNmtManager.h"
 class Vehicles;
 class Nodes;
+class VehicleMission;
 class VehicleRecorder;
 class VehicleWarnings;
 //=============================================================================
@@ -69,8 +70,9 @@ public:
   Fact * f_vclass;
   Fact * f_streamType;
 
-  VehicleMandala *f_mandala;
-  Nodes *f_nodes;
+  VehicleMandala  *f_mandala;
+  Nodes           *f_nodes;
+  VehicleMission  *f_mission;
   VehicleRecorder *f_recorder;
   VehicleWarnings *f_warnings;
 
@@ -106,6 +108,7 @@ signals:
 public slots:
   void vmexec(QString func);
   void sendSerial(quint8 portID, QByteArray data);
+  void requestMission();
 
 
   //---------------------------------------

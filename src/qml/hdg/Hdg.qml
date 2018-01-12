@@ -7,7 +7,7 @@ Rectangle {
     color: "black"
     anchors.fill: parent
     clip: true
-    property double anumation_duration: app.settings.smooth.value?100:0
+    property double animation_duration: app.settings.smooth.value?100:0
     property double txtHeight: app.limit(hdg_deg_rect.height,8,50)
     property bool isLanding:
         m.mode.value===mode_LANDING ||
@@ -71,7 +71,7 @@ Rectangle {
             smooth: true
             anchors.fill: parent
             rotation: app.angle(-m.yaw.value)
-            Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on rotation { RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
         }
         HdgImage {
             id: course_arrow
@@ -86,7 +86,7 @@ Rectangle {
                 origin.x: course_arrow.width/2
                 origin.y: course_arrow.height
                 angle: app.angle(-(m.yaw.value-m.course.value))
-                Behavior on angle { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+                Behavior on angle { RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             }
         }
 
@@ -102,7 +102,7 @@ Rectangle {
                 origin.x: cmd_arrow.width/2
                 origin.y: cmd_arrow.height
                 angle: app.angle(-(m.yaw.value-m.cmd_course.value))
-                Behavior on angle { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+                Behavior on angle { RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             }
         }
 
@@ -130,7 +130,7 @@ Rectangle {
                 width: elementBounds.width*wheel.sf+border*2
                 height: elementBounds.height*wheel.sf+border*2
                 rotation: app.angle(-(m.yaw.value-m.tgHDG.value))
-                Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+                Behavior on rotation { RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
                 ToolTipArea {
                     text: m.tgHDG.descr
                 }
@@ -144,7 +144,7 @@ Rectangle {
                     width: elementBounds.width*wheel.sf+border*2
                     height: elementBounds.height*wheel.sf+border*2
                     anchors.horizontalCenterOffset: app.limit(-m.rwDelta.value*width*0.5,-height,height)
-                    Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: anumation_duration} }
+                    Behavior on anchors.horizontalCenterOffset { PropertyAnimation {duration: animation_duration} }
                     ToolTipArea {
                         text: m.rwDelta.descr
                     }
@@ -163,7 +163,7 @@ Rectangle {
             width: elementBounds.width*wheel.sf
             height: elementBounds.height*wheel.sf
             rotation: app.angle(-(m.yaw.value-m.homeHDG.value))
-            Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on rotation { RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
         }
 
         HdgImage {
@@ -175,7 +175,7 @@ Rectangle {
             width: elementBounds.width*wheel.sf
             height: elementBounds.height*wheel.sf
             rotation: app.angle(-(m.yaw.value-m.wpHDG.value))
-            Behavior on rotation { RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on rotation { RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
         }
 
 

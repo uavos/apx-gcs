@@ -34,7 +34,9 @@ INCLUDEPATH += \
     $${LIB_DIR}/Datalink \
     $${LIB_DIR}/Vehicles \
     $${LIB_DIR}/Nodes \
+    $${LIB_DIR}/Mission \
     $${LIB_DIR}/TreeModel \
+    $${LIB_DIR}/QtLocationPlugin \
     $${LIB_DIR} \
     $${APX_TOP}/ \
     $${APX_TOP}/lib \
@@ -72,6 +74,13 @@ QMAKE_CFLAGS_RELEASE -= -g
 QMAKE_CXXFLAGS_RELEASE -= -g
 
 QT += network xml widgets quick sql
+
+QML_IMPORT_PATH += \
+  $$PWD \
+  $$SRC_DIR/QML \
+  $$SRC_DIR/QML/FlightMap \
+  :/FlightMap \
+
 
 # VERSION DEFINITION
 #unix:!mac{

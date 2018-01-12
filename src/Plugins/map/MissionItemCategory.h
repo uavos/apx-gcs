@@ -24,7 +24,7 @@
 #define MissionItemCategory_H
 //=============================================================================
 #include "MissionItem.h"
-#include "Mission.h"
+#include <Mission.h>
 class MissionModel;
 class MissionItemObject;
 //=============================================================================

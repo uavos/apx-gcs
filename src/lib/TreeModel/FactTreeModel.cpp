@@ -217,6 +217,7 @@ void FactTreeModel::itemRemoved(FactTree *)
 //=============================================================================
 void FactTreeModel::textChanged()
 {
+  if(!sender())return;
   Fact *fact=static_cast<Fact*>(static_cast<Fact*>(sender())->parentItem());
   //qDebug()<<fact->path();
   //QModelIndex index=factIndex(static_cast<Fact*>(sender()),FACT_MODEL_COLUMN_VALUE);

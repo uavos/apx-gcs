@@ -41,8 +41,7 @@ public:
   static QDir configs();      // user saved nodes config files
   static QDir nodes();        // nodes backups
   static QDir scripts();      // user saved scripts
-  static QString dbFileName();// app database
-  static QString dbTelemetryFileName();// telemetry database
+  static QDir db();           // databases
 };
 //=============================================================================
 #endif

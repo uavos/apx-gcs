@@ -27,6 +27,7 @@
 #include "VehicleRecorder.h"
 #include "VehicleWarnings.h"
 #include "Nodes.h"
+#include "VehicleMission.h"
 #include "Mandala.h"
 //=============================================================================
 Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal)
@@ -65,6 +66,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
   f_mandala=new VehicleMandala(this);
   f_nodes=new Nodes(this);
+  f_mission=new VehicleMission(this);
   f_recorder=new VehicleRecorder(this);
   f_warnings=new VehicleWarnings(this);
 
@@ -140,6 +142,9 @@ void Vehicle::downlinkReceived(const QByteArray &packet)
   }else if(f_mandala->unpackData(packet)){
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
       f_streamType->setValue(DATA);
+  }else if(f_mission->unpackMission(packet)){
+    if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
+      f_streamType->setValue(DATA);
   }else return;
   onlineTimer.start();
 }
@@ -169,6 +174,11 @@ void FactSystemJS::sleep(quint16 ms)
   QEventLoop loop;
   QTimer::singleShot(ms,&loop,SLOT(quit()));
   loop.exec();
+}
+//=============================================================================
+void Vehicle::requestMission()
+{
+  emit sendUplink(QByteArray().append((unsigned char)idx_mission));
 }
 //=============================================================================
 QString Vehicle::fileTitle() const

@@ -1,0 +1,4 @@
+Module GCS.FlightMap
+
+# Main view controls
+FlightMap           1.0 FlightMap.qml

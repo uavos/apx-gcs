@@ -84,6 +84,7 @@ private:
   QAction *avIMU;
   QAction *avCTR;
 
+  //player
   QToolBar *toolBarPlayer;
   TelemetryPlayer *player;
   QSlider *playerSlider;
@@ -92,7 +93,7 @@ private:
   QAction *aPlay;
   QAction *aPause;
   QAction *aRewind;
-
+  QTimer plotCursorUpdateTimer;
 
 
   quint64 curID; //loaded flight
@@ -147,6 +148,10 @@ private slots:
   void playerSliderMoved();
   void plotTimeCursorMoved();
   void playerTimeChanged();
+  void playerStateChanged();
+  void updatePlotPlayerTime();
+
+  void vehicleChanged();
 
   void setProgress(int v);
 };

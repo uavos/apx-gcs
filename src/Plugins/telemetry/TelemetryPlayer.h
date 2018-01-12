@@ -45,7 +45,7 @@ public:
 
 private:
   TelemetryDB *_db;
-  QSqlQuery qDownlink;
+  QSqlQuery query;
 
   QTimer timer;
   quint64 playTime0;
@@ -64,6 +64,7 @@ private slots:
 
 signals:
   void timeChanged();
+  void stateChanged();
 
 public slots:
   void play();

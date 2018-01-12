@@ -80,7 +80,7 @@ private:
   int m_progress;
   void setProgress(int v);
 
-
+  QTimer cursorReplotTimer;
 
 private slots:
   void pointSelected( const QPointF &pos );
@@ -96,7 +96,7 @@ signals:
 public slots:
   void resetZoom();
 
-  void setTimeCursor(quint64 time_ms);
+  void setTimeCursor(quint64 time_ms,bool doReplot=true);
 
   void copyFromPlot(TelemetryPlot *plot);
 };

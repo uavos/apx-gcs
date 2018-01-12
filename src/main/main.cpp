@@ -85,9 +85,9 @@ int main(int argc, char *argv[])
   //qputenv("QT_QUICK_CONTROLS_STYLE", "Android");
 
   //qputenv("LD_LIBRARY_PATH", "/usr/lib/uavos/Qt/lib/");
-  QString qmlcache = QStandardPaths::standardLocations(QStandardPaths::CacheLocation).first();
-  QDir qmlCacheDir(qmlcache);
-  qmlCacheDir.removeRecursively();
+  //QString qmlcache = QStandardPaths::standardLocations(QStandardPaths::CacheLocation).first();
+  //QDir qmlCacheDir(qmlcache);
+  //qmlCacheDir.removeRecursively();
 
   //QApplication::setGraphicsSystem(QLatin1String("opengl"));
   QApplication app(argc, argv);
@@ -108,6 +108,9 @@ int main(int argc, char *argv[])
   QObject::connect(vehicles,&Vehicles::sendUplink,datalink,&Datalink::write);
 
 
+
+  //load static plugin
+  Q_IMPORT_PLUGIN(GeoPlugin)
 
 
 
@@ -334,6 +337,8 @@ void loadPlugins()
 
   allFiles.append("qrc:///Rotax914.qml");
 
+  allFiles.append("qrc:///Map.qml");
+
   //allFiles.append("qrc:///videoCV.qml");
 
 
@@ -463,6 +468,8 @@ void fixDeprecatedPath(QString srcPath,QDir dest)
 void checkPaths()
 {
   //qDebug()<<"checkPaths";
+
+  if(!AppDirs::db().exists())AppDirs::db().mkpath(".");
 
   //fix old paths
   fixDeprecatedPath("config/uav.conf.d",AppDirs::configs());

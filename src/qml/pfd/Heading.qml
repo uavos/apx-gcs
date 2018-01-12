@@ -5,7 +5,7 @@ import "."
 Item {
     id: hdg_window
     //instrument item
-    property double anumation_duration: 500
+    property double animation_duration: 500
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
@@ -15,7 +15,7 @@ Item {
     property double bottomHeight: height*0.4
     clip: true
     property double value: app.angle(m.yaw.value)
-    Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+    Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
 
     /*Rectangle {
         color: "#40000000"
@@ -92,7 +92,7 @@ Item {
             id: hdg_crs_bug
             elementName: "hdg-crs-bug"
             property double value: app.angle(m.course.value-m.yaw.value)
-            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             smooth: true
             border: 1
             fillMode: Image.PreserveAspectFit
@@ -108,7 +108,7 @@ Item {
             id: hdg_cmd_bug
             elementName: "hdg-cmd-bug"
             property double value: app.angle(m.cmd_course.value-m.yaw.value)
-            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             smooth: true
             border: 1
             fillMode: Image.PreserveAspectFit
@@ -129,7 +129,7 @@ Item {
                 (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
             elementName: "hdg-rw-bug"
             property double value: app.angle(m.tgHDG.value-m.yaw.value)
-            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
+            Behavior on value { enabled: app.settings.smooth.value; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             smooth: true
             border: 1
             fillMode: Image.PreserveAspectFit

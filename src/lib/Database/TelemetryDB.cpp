@@ -28,7 +28,7 @@
 #include <VehicleMandalaFact.h>
 //=============================================================================
 TelemetryDB::TelemetryDB(QObject *parent, QString sessionName, Vehicle *vehicle, bool readOnly)
-  : DatabaseConnection(parent,AppDirs::dbTelemetryFileName(),sessionName,readOnly)
+  : DatabaseConnection(parent,AppDirs::db().absoluteFilePath("telemetry.db"),sessionName,readOnly)
 {
   if(!isOpen())return;
   QSqlQuery query(*this);

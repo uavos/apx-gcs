@@ -991,7 +991,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+17"/>
         <source>Application</source>
         <translation type="unfinished">Приложение</translation>
     </message>
@@ -1024,46 +1024,6 @@
     <message>
         <location filename="../src/lib/TreeModel/FactTreeView.cpp" line="+136"/>
         <source>Back</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Filter</name>
-    <message>
-        <location filename="../src/Plugins/telemetry/Filter.ui" line="+14"/>
-        <source>Filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>SL Filter [filter]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Freq </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Hz</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <location line="+54"/>
-        <source>S </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-29"/>
-        <location line="+54"/>
-        <source>L </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-35"/>
-        <source>Derivative Filter [filter_dt]</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2119,7 +2079,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+564"/>
+        <location line="+579"/>
         <source>Can&apos;t send command (unknown command)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2201,7 +2161,7 @@
     </message>
     <message>
         <location line="+9"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+22"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+21"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -2324,7 +2284,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+118"/>
+        <location line="+116"/>
         <source>Backups</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2544,36 +2504,14 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../src/Plugins/telemetry/Player.ui" line="+14"/>
-        <source>Flight Player</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
         <source>00:00:00/00:00:00</source>
-        <translation type="unfinished">00:00:00/00:00:00</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Play/Pause</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Play/Pause telemetry data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+3"/>
-        <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">00:00:00/00:00:00</translation>
     </message>
 </context>
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+313"/>
+        <location filename="../src/main/main.cpp" line="+326"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
@@ -2689,7 +2627,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-162"/>
+        <location filename="../src/main/main.cpp" line="-172"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2699,7 +2637,7 @@
         <translation type="unfinished">Наземный Пункт Управления</translation>
     </message>
     <message>
-        <location line="+94"/>
+        <location line="+104"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2709,7 +2647,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+56"/>
         <source>Plugin excluded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3027,277 +2965,211 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>TelemetryFrame</name>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.ui" line="+20"/>
-        <source>Telemetry Chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+52"/>
-        <location line="+14"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation type="obsolete">0</translation>
     </message>
     <message>
-        <location line="-7"/>
-        <source>/</source>
+        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="+39"/>
+        <source>Telemetry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Top</source>
+        <location line="+48"/>
+        <source>Load recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Load the most recent flight</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Delete current flight</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Open in external editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+3"/>
-        <source>Export data..</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Report</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Create Report</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Cut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Cut file to fit current view</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show filter configuration...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Full Screen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Toggle Full Screen</source>
-        <translation type="unfinished">Полноэкранный режим</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Previous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Load previous flight</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Next</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Load next flight</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Show Files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show file manager...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Reload</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Reload current file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Split Vertically</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Split view vertically</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Play</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Play telemetry data...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Filter UAV</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Filter data files by UAV name...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>STD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show common plots</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>IMU</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show IMU sensors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>CTR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show controls</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>CLR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Clear visible plots</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/Plugins/telemetry/TelemetryFrame.cpp" line="+358"/>
-        <source>Comma separated values</source>
+        <source>Load previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>X-plane flight data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Google Earth KML</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Unknown filter selected</source>
+        <source>Load next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>File exported</source>
+        <source>Filter vehicle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+45"/>
-        <location line="+64"/>
-        <source>Cannot write file</source>
+        <location line="+3"/>
+        <source>Full screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-102"/>
-        <location line="+66"/>
-        <source>Exporting telemetry file...</source>
+        <location line="+2"/>
+        <source>Split view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-66"/>
-        <location line="+66"/>
-        <source>Abort</source>
+        <location line="+4"/>
+        <source>Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Replay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Pause</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rewind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Calculated user variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+228"/>
+        <source>large set - hit &apos;Reload&apos; to show data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <source>records</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+177"/>
+        <source>Telemetry files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-552"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle Full Screen</source>
+        <translation type="obsolete">Полноэкранный режим</translation>
+    </message>
+    <message>
+        <location line="-18"/>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>STD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>IMU</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>CTR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-3"/>
+        <source>CLR</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TelemetryPlayer</name>
+    <message>
+        <location filename="../src/Plugins/telemetry/TelemetryPlayer.cpp" line="+127"/>
+        <location line="+12"/>
+        <source>uplink</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>downlink</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TelemetryPlot</name>
     <message>
-        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="+109"/>
-        <source>Calculated user variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+141"/>
+        <location filename="../src/Plugins/telemetry/TelemetryPlot.cpp" line="+238"/>
         <source>Calculated field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>QtScript expression:</source>
+        <source>JavaScript expression:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TelemetryXml</name>
+    <message>
+        <location filename="../src/Plugins/telemetry/TelemetryXml.cpp" line="+47"/>
+        <source>Cannot read file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+81"/>
-        <source> (view copy)</source>
+        <location line="+6"/>
+        <source>The file format is not correct.</source>
+        <translation type="unfinished">Неверный формат файла.</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Can&apos;t get timestamp for file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Callsign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Already imported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Importing XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+171"/>
+        <source>File imported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File import error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3400,7 +3272,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehicleRecorder</name>
     <message>
-        <location filename="../src/lib/Vehicles/VehicleRecorder.cpp" line="+43"/>
+        <location filename="../src/lib/Vehicles/VehicleRecorder.cpp" line="+41"/>
         <source>Recorder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3410,19 +3282,8 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+408"/>
-        <source>Telemetry file is too big (%1 MB). Load it?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
         <source>The file format is not correct.</source>
-        <translation type="unfinished">Неверный формат файла.</translation>
-    </message>
-    <message>
-        <location line="+99"/>
-        <source>Telemetry file end tag fixed</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Неверный формат файла.</translation>
     </message>
 </context>
 <context>
@@ -3501,17 +3362,17 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+89"/>
         <source>Vehicle selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-95"/>
+        <location line="-97"/>
         <source>Vehicle identified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+74"/>
         <source>Can&apos;t find new squawk for assignment</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3519,7 +3380,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehiclesDB</name>
     <message>
-        <location filename="../src/lib/Vehicles/VehiclesDB.cpp" line="+545"/>
+        <location filename="../src/lib/Database/VehiclesDB.cpp" line="+518"/>
         <source>Data restored</source>
         <translation type="unfinished"></translation>
     </message>
