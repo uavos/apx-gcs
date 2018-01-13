@@ -35,11 +35,22 @@ public:
   explicit MissionOrderedItem(MissionItems *parent, const QString &name, const QString &title, const QString &descr);
 
   MissionItems *missionItems;
+protected:
+  template<class T> T prevItem() const
+  {
+    return static_cast<T>(parentItem()->child(num()-1));
+  }
+
+  template<class T> T nextItem() const
+  {
+    return static_cast<T>(parentItem()->child(num()+1));
+  }
 
 private:
   QString namePrefix;
+
 private slots:
-  void updateName();
+  void updateTitle();
 };
 //=============================================================================
 #endif

@@ -23,6 +23,7 @@
 #include "VehicleMission.h"
 #include "Vehicle.h"
 #include "MissionItems.h"
+#include "Waypoints.h"
 #include "Waypoint.h"
 
 //pack
@@ -45,7 +46,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
   connect(f_stop,&Fact::triggered,this,&VehicleMission::stop);
   connect(f_stop,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
 
-  f_waypoints=new MissionItems(this,"waypoints",tr("Waypoints"),"");
+  f_waypoints=new Waypoints(this);
   f_runways=new MissionItems(this,"runways",tr("Runways"),"");
 
   connect(this,&Fact::modifiedChanged,this,&VehicleMission::updateActions);
@@ -54,10 +55,10 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
   if(!vehicle->isLocal()){
     //f_request->trigger();
-    //QTimer::singleShot(1000,f_request,&Fact::trigger);
+    QTimer::singleShot(2000,f_request,&Fact::trigger);
   }
 
-  //qmlRegisterUncreatableType<Vehicles>("GCS.Vehicles", 1, 0, "Vehicles", "Reference only");
+  qmlRegisterUncreatableType<Waypoint>("GCS.Mission", 1, 0, "Waypoint", "Reference only");
 
   FactSystem::instance()->jsSync(this);
 }
@@ -121,7 +122,7 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
         const Mission::_item_wp *e=(Mission::_item_wp*)ptr;
         Waypoint *f=new Waypoint(f_waypoints);
         f->f_altitude->setValue(e->alt);
-        f->f_type->setValue(e->hdr.type);
+        f->f_type->setValue(e->hdr.option);
         f->f_latitude->setValue(e->lat);
         f->f_longitude->setValue(e->lon);
       }

@@ -1,7 +1,7 @@
 import QtQuick 2.5;
 import GCS.Vehicles 1.0
 import QtGraphicalEffects 1.0
-import "."
+import ".."
 
 Item {
     id: windItem
@@ -32,7 +32,7 @@ Item {
     MapSvgImage {
         id: image
         color: "#fff" //"#fd6"
-        source: "./icons/wind-arrow.svg"
+        source: "../icons/wind-arrow.svg"
         sourceSize.height: arrowSize
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom

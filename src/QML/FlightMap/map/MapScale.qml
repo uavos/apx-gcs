@@ -1,7 +1,7 @@
 import QtQuick          2.3
 import QtQuick.Controls 1.2
 import QtLocation       5.3
-import "./helper.js" as Helper
+import "../helper.js" as Helper
 
 Item {
     id: scale

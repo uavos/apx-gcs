@@ -1,7 +1,7 @@
 import QtQuick 2.5;
 import QtLocation 5.9
 import QtPositioning 5.6
-import "."
+import ".."
 
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
@@ -20,7 +20,7 @@ MapQuickItem {  //to be used inside MapComponent only
     sourceItem:
     MapSvgImage {
         id: image
-        source: "./icons/home.svg"
+        source: "../icons/home.svg"
         sourceSize.width: 16*map.itemsScaleFactor
         sourceSize.height: width
         color: "#000"

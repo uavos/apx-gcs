@@ -20,22 +20,37 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "MissionOrderedItem.h"
+#include "Waypoints.h"
+#include "VehicleMission.h"
 #include "MissionItems.h"
 //=============================================================================
-MissionOrderedItem::MissionOrderedItem(MissionItems *parent, const QString &name, const QString &title, const QString &descr)
-  : Fact(parent,name,title,descr,GroupItem,NoData),
-    missionItems(parent),
-    namePrefix(name)
+Waypoints::Waypoints(VehicleMission *parent)
+  : MissionItems(parent,"waypoints",tr("Waypoints"),""),
+    m_distance(0),
+    m_time(0)
 {
-  connect(parent,&Fact::sizeChanged,this,&Fact::nameChanged);
-  connect(this,&Fact::nameChanged,this,&MissionOrderedItem::updateTitle);
-  updateTitle();
 }
 //=============================================================================
-void MissionOrderedItem::updateTitle()
+//=============================================================================
+uint Waypoints::distance() const
 {
-  setTitle(QString::number(num()+1));
+  return m_distance;
+}
+void Waypoints::setDistance(uint v)
+{
+  if(m_distance==v)return;
+  m_distance=v;
+  emit distanceChanged();
+}
+uint Waypoints::time() const
+{
+  return m_time;
+}
+void Waypoints::setTime(uint v)
+{
+  if(m_time==v)return;
+  m_time=v;
+  emit timeChanged();
 }
 //=============================================================================
 //=============================================================================

@@ -27,6 +27,7 @@
 #include "FactSystem.h"
 class Vehicle;
 class MissionItems;
+class Waypoints;
 //=============================================================================
 class VehicleMission: public Fact
 {
@@ -40,7 +41,7 @@ public:
   Fact *f_upload;
   Fact *f_stop;
 
-  MissionItems *f_waypoints;
+  Waypoints *f_waypoints;
   MissionItems *f_runways;
   MissionItems *f_taxiways;
   MissionItems *f_points;

@@ -3,12 +3,11 @@ import QtLocation 5.9
 import QtPositioning 5.6
 import GCS.Vehicles 1.0
 import "."
-import "../components"
 
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
 
-    property var vehicle: modelData
+    property Vehicle vehicle: modelData
 
     //Fact bindings
     property var vm: vehicle.mandala
@@ -87,7 +86,7 @@ MapQuickItem {  //to be used inside MapComponent only
     Item {
         Image {
             id: image
-            source: bGCU?"./icons/gcu.svg":"./icons/uav.svg"
+            source: bGCU?"../icons/gcu.svg":"../icons/uav.svg"
             sourceSize.width: (bGCU?32:48)*map.itemsScaleFactor
             sourceSize.height: width
 
@@ -134,7 +133,7 @@ MapQuickItem {  //to be used inside MapComponent only
         }
         Image {
             id: cmdCrsArrow
-            source: "./icons/cmd-crs-arrow.svg"
+            source: "../icons/cmd-crs-arrow.svg"
             z: image.z-10
             sourceSize.height: image.width*2
             smooth: true
@@ -151,7 +150,7 @@ MapQuickItem {  //to be used inside MapComponent only
         }
         Image {
             id: crsArrow
-            source: "./icons/crs-arrow.svg"
+            source: "../icons/crs-arrow.svg"
             z: image.z-10
             sourceSize.height: image.width*2
             smooth: true
@@ -168,7 +167,7 @@ MapQuickItem {  //to be used inside MapComponent only
         }
         Image {
             id: hdgArrow
-            source: "./icons/hdg-arrow.svg"
+            source: "../icons/hdg-arrow.svg"
             z: image.z-10
             sourceSize.height: image.width*2
             smooth: true

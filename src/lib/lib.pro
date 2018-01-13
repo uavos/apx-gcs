@@ -140,12 +140,14 @@ SOURCES += \
     Mission/VehicleMission.cpp \
     Mission/MissionItems.cpp \
     Mission/MissionOrderedItem.cpp \
+    Mission/Waypoints.cpp \
     Mission/Waypoint.cpp \
 
 HEADERS += \
     Mission/VehicleMission.h \
     Mission/MissionItems.h \
     Mission/MissionOrderedItem.h \
+    Mission/Waypoints.h \
     Mission/Waypoint.h \
 
 

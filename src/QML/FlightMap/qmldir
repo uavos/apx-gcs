@@ -1,4 +1,3 @@
-Module GCS.FlightMap
+# module GCS.FlightMap
 
-# Main view controls
-FlightMap           1.0 FlightMap.qml
+singleton Style Style.qml

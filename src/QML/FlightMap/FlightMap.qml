@@ -3,11 +3,16 @@ import QtQuick.Controls 2.1
 import QtLocation       5.3
 import QtPositioning    5.3
 import QtQuick.Window   2.2
-import GCS.FactSystem 1.0
+
 import QtQml 2.2
 
+import GCS.FactSystem   1.0
+import GCS.Vehicles     1.0
+
 import "."
-//import GCS.FlightMap    1.0
+import "./map"
+import "./vehicle"
+import "./mission"
 
 Map {
     id: map
@@ -17,7 +22,7 @@ Map {
     property variant mouseCoordinate: mouseCoordinateRaw.isValid?mouseCoordinateRaw:center
     property variant mouseClickCoordinate: center
 
-    property var currentVehicle: app.vehicles.current
+    //property Vehicle currentVehicle: app.vehicles.current
 
     property int lastX: -1
     property int lastY: -1
@@ -27,13 +32,14 @@ Map {
 
     property variant mouseCoordinateRaw: toCoordinate(Qt.point(mouseArea.mouseX, mouseArea.mouseY))
 
-    /*Connections {
-        target: app.vehicles
-        onVehicleSelected: {
-            console.log(vehicle)
-            currentVehicle=vehicle
-        }
-    }*/
+
+    function metersToPixels(m)
+    {
+        var coord = map.toCoordinate(Qt.point(map.width,map.height/2))
+        var dist = center.distanceTo(coord)
+        return m*(map.width/2)/dist;
+    }
+
 
     //Map componnet parameters
     color: '#333'
@@ -67,12 +73,15 @@ Map {
         Behavior on coordinate {
             id: centerSetSmooth
             property bool blocked: false
+            property alias easing: coordAnimation.easing
+            //property alias duration: coordAnimation.duration
+            property alias running: coordAnimation.running
             enabled: app.settings.smooth.value && (!blocked)
             CoordinateAnimation {
+                id: coordAnimation
                 duration: 500;
                 direction: CoordinateAnimation.Shortest;
                 easing.type: Easing.InOutCubic
-                //onStopped: map.center=center
             }
         }
         onCoordinateChanged: {
@@ -88,9 +97,22 @@ Map {
                 return
             }
             centerSetSmooth.blocked=true
+            centerSetSmooth.easing.type=Easing.InOutCubic
+            //centerSetSmooth.duration=500
             coordinate=map.center
             centerSetSmooth.blocked=false
             coordinate=coord
+        }
+        function flick(coord)
+        {
+            if(!centerSetSmooth.running){
+                centerSetSmooth.blocked=true
+                coordinate=map.center
+                centerSetSmooth.blocked=false
+            }
+            centerSetSmooth.easing.type=Easing.Linear
+            //centerSetSmooth.duration=1000
+            coordinate=map.center.atDistanceAndAzimuth(map.center.distanceTo(coord)*0.2,map.center.azimuthTo(coord))
         }
     }
     function followItem(item)
@@ -111,6 +133,10 @@ Map {
     function centerOnCoordinate(coord)
     {
         centerSet.set(coord)
+    }
+    function flickToCoordinate(coord)
+    {
+        centerSet.flick(coord)
     }
     Connections {
         target: gesture
@@ -205,13 +231,13 @@ Map {
 
 
     //VEHICLES
-    Vehicle {
+    VehicleItem {
         z: map.z+50
         vehicle: app.vehicles.LOCAL
     }
     MapItemView {
         model: app.vehicles.list.model
-        delegate: Vehicle { z: map.z+50 }
+        delegate: VehicleItem { z: map.z+50 }
     }
     VehiclesList {
         z: map.z+100
@@ -229,21 +255,30 @@ Map {
             var c=waypointsC.createObject(map,{"vehicle": vehicle})
             addMapItemView(c)
             //vehicle.destroyed.connect(function(){removeMapItemView(c)})
+            //c=waypointsPathC.createObject(map,{"vehicle": vehicle})
+            //addMapItemView(c)
+
         }
     }
     Component {
         id: waypointsC
         MapItemView {
-            property var vehicle
+            property Vehicle vehicle
             model: vehicle.mission.waypoints.model
-            delegate: Waypoint { z: map.z+40 }
+            delegate: WaypointItem { }
+        }
+    }
+    Component {
+        id: waypointsPathC
+        MapItemView {
+            property Vehicle vehicle
+            model: vehicle.mission.waypoints.model
+            delegate: WaypointPath { }
         }
     }
 
     //Current vehicle items
     EnergyCircle { }
-    //CamTargetCircle { }
-    //EnergyGSCircle { }
     CmdPosCircle { }
     Home { }
     LoiterCircle { }

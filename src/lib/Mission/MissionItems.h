@@ -35,7 +35,6 @@ public:
   explicit MissionItems(VehicleMission *parent, const QString &name, const QString &title, const QString &descr);
 
   VehicleMission *mission;
-  Fact *f_list;
 
 };
 //=============================================================================

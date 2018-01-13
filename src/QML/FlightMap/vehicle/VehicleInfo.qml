@@ -2,7 +2,7 @@ import QtQuick 2.5
 //import QtLocation 5.9
 import QtPositioning 5.6
 import GCS.Vehicles 1.0
-import "."
+import ".."
 
 MapText {
     id: vehicleInfo

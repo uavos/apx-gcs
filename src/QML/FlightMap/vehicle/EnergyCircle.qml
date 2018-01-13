@@ -1,7 +1,6 @@
 import QtQuick 2.5
 import QtLocation 5.6
 import QtPositioning 5.6
-import "./helper.js" as Helper
 
 MapCircle {
     color: "transparent"

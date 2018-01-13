@@ -112,7 +112,7 @@ Item {
     width: textItem.width*mapProvider.itemScaleFactor*hoverScaleFactor
     height: textItem.height*mapProvider.itemScaleFactor*hoverScaleFactor
 
-    z: (dragging||selected||hover)?100:0
+    z: (dragging||selected||hover)?100:40
 
     //internal use
     onMItemChanged: {
