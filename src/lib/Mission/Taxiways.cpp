@@ -20,12 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Waypoints.h"
-#include "Waypoint.h"
-#include "VehicleMission.h"
+#include "Taxiways.h"
 //=============================================================================
-Waypoints::Waypoints(VehicleMission *parent)
-  : MissionPathItems(parent,"waypoints",tr("Waypoints"),"")
+Taxiways::Taxiways(VehicleMission *parent)
+  : MissionPathItems(parent,"taxiways",tr("Taxiways"),"")
 {
 }
 //=============================================================================

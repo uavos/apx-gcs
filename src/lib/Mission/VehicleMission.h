@@ -24,14 +24,21 @@
 #define Mission_H
 //=============================================================================
 #include <QtCore>
+#include <QGeoCoordinate>
 #include "FactSystem.h"
 class Vehicle;
 class MissionItems;
 class Waypoints;
+class Runways;
+class Taxiways;
+class Points;
 //=============================================================================
 class VehicleMission: public Fact
 {
   Q_OBJECT
+  Q_PROPERTY(QGeoCoordinate startPoint READ startPoint WRITE setStartPoint NOTIFY startPointChanged)
+  Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
+  Q_PROPERTY(double startLength READ startLength WRITE setStartLength NOTIFY startLengthChanged)
 
 public:
   explicit VehicleMission(Vehicle *parent);
@@ -41,10 +48,10 @@ public:
   Fact *f_upload;
   Fact *f_stop;
 
-  Waypoints *f_waypoints;
-  MissionItems *f_runways;
-  MissionItems *f_taxiways;
-  MissionItems *f_points;
+  Waypoints   *f_waypoints;
+  Runways     *f_runways;
+  Taxiways    *f_taxiways;
+  Points      *f_points;
   MissionItems *f_restricted;
   MissionItems *f_emergency;
 
@@ -57,6 +64,7 @@ private:
 
 private slots:
   void updateActions();
+  void updateStartPath();
 
 public slots:
   void clear();
@@ -70,10 +78,24 @@ signals:
   //---------------------------------------
   // PROPERTIES
 public:
+  QGeoCoordinate startPoint() const;
+  void setStartPoint(const QGeoCoordinate &v);
+
+  double startHeading() const;
+  void setStartHeading(const double &v);
+
+  double startLength() const;
+  void setStartLength(const double &v);
 
 protected:
+  QGeoCoordinate m_startPoint;
+  double m_startHeading;
+  double m_startLength;
 
 signals:
+  void startPointChanged();
+  void startHeadingChanged();
+  void startLengthChanged();
 };
 //=============================================================================
 #endif

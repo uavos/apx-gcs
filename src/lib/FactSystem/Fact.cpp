@@ -147,10 +147,10 @@ QVariant Fact::data(int col, int role) const
           return QVariant();
         }
       }
-      if(role==Qt::EditRole && enumStrings().isEmpty()){
-        //if(dataType()==FloatData)return value().toDouble();
+      if(role==Qt::EditRole && enumStrings().size()<=1){
         if(dataType()==BoolData)return value().toBool();
         if(dataType()==IntData)return value().toInt();
+        if(dataType()==FloatData)return value().toDouble();
       }
       return s;
     }

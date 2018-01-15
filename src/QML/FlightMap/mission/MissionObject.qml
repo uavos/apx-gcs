@@ -8,7 +8,7 @@ import ".."
 MapQuickItem {  //to be used inside MapComponent only
     id: missionObject
 
-    property var fact: modelData
+    property var fact
 
     property bool interactive: true
 
@@ -25,6 +25,9 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
+
+    signal moved()
+
     //internal logic
     property alias hover: mouseArea.containsMouse
     property bool dragging: mouseArea.drag.active
@@ -38,10 +41,11 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
     //Fact bindings
-    property real lat: fact.latitude.value
-    property real lon: fact.longitude.value
-    property real altitude: fact.altitude?fact.altitude.value:0
-    property real active: fact.active
+    property real lat: fact?fact.latitude.value:0
+    property real lon: fact?fact.longitude.value:0
+    property real altitude: (fact && fact.altitude)?fact.altitude.value:0
+    property real active: fact?fact.active:0
+    property string title: fact?fact.title:0
 
 
 
@@ -49,8 +53,11 @@ MapQuickItem {  //to be used inside MapComponent only
     property variant factPos: QtPositioning.coordinate(lat,lon,altitude)
     function objectMoving()
     {
-        fact.latitude.value=coordinate.latitude
-        fact.longitude.value=coordinate.longitude
+        if(fact){
+            fact.latitude.value=coordinate.latitude
+            fact.longitude.value=coordinate.longitude
+        }
+        moved()
         //flick when dragging to edges
         var p=map.fromCoordinate(coordinate);
         var ws=64;
@@ -83,7 +90,7 @@ MapQuickItem {  //to be used inside MapComponent only
             horizontalAlignment: Text.AlignHCenter
             scale: hoverScale*map.itemsScaleFactor*missionItemsScaleFactor
             opacity: dragging?0.6:1
-            text: fact.title
+            text: title
             font.pixelSize: Qt.application.font.pixelSize * 0.8
             margins: 1
             radius: 2

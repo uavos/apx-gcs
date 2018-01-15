@@ -140,15 +140,31 @@ SOURCES += \
     Mission/VehicleMission.cpp \
     Mission/MissionItems.cpp \
     Mission/MissionOrderedItem.cpp \
+    Mission/MissionPathItems.cpp \
+    Mission/MissionPathItem.cpp \
     Mission/Waypoints.cpp \
     Mission/Waypoint.cpp \
+    Mission/Runways.cpp \
+    Mission/Runway.cpp \
+    Mission/Taxiways.cpp \
+    Mission/Taxiway.cpp \
+    Mission/Points.cpp \
+    Mission/Point.cpp \
 
 HEADERS += \
     Mission/VehicleMission.h \
     Mission/MissionItems.h \
     Mission/MissionOrderedItem.h \
+    Mission/MissionPathItems.h \
+    Mission/MissionPathItem.h \
     Mission/Waypoints.h \
     Mission/Waypoint.h \
+    Mission/Runways.h \
+    Mission/Runway.h \
+    Mission/Taxiways.h \
+    Mission/Taxiway.h \
+    Mission/Points.h \
+    Mission/Point.h \
 
 
 # Communication

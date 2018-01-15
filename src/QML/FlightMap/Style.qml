@@ -16,4 +16,5 @@ QtObject {
 
 
     property color cWaypoint: "#A0ffff00"
+    property color cRunway:   "#3779C5"
 }

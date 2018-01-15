@@ -25,15 +25,25 @@
 #include "MissionItems.h"
 #include "Waypoints.h"
 #include "Waypoint.h"
+#include "Runways.h"
+#include "Runway.h"
+#include "Taxiways.h"
+#include "Taxiway.h"
+#include "Points.h"
+#include "Point.h"
 
 //pack
+namespace APX{
 #include <Mandala.h>
+}
 #include <Mission.h>
 #include <node.h>
 //=============================================================================
 VehicleMission::VehicleMission(Vehicle *parent)
   : Fact(parent,"mission","Mission",tr("Vehicle mission"),GroupItem,NoData),
-    vehicle(parent)
+    vehicle(parent),
+    m_startHeading(0),
+    m_startLength(0)
 {
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,vehicle,&Vehicle::requestMission);
@@ -46,10 +56,17 @@ VehicleMission::VehicleMission(Vehicle *parent)
   connect(f_stop,&Fact::triggered,this,&VehicleMission::stop);
   connect(f_stop,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
 
+  f_runways=new Runways(this);
   f_waypoints=new Waypoints(this);
-  f_runways=new MissionItems(this,"runways",tr("Runways"),"");
+  f_taxiways=new Taxiways(this);
+  f_points=new Points(this);
 
   connect(this,&Fact::modifiedChanged,this,&VehicleMission::updateActions);
+
+
+  connect(this,&VehicleMission::startPointChanged,this,&VehicleMission::updateStartPath);
+  connect(this,&VehicleMission::startHeadingChanged,this,&VehicleMission::updateStartPath);
+  connect(this,&VehicleMission::startLengthChanged,this,&VehicleMission::updateStartPath);
 
   updateActions();
 
@@ -59,6 +76,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
   }
 
   qmlRegisterUncreatableType<Waypoint>("GCS.Mission", 1, 0, "Waypoint", "Reference only");
+  qmlRegisterUncreatableType<Runway>("GCS.Mission", 1, 0, "Runway", "Reference only");
 
   FactSystem::instance()->jsSync(this);
 }
@@ -72,6 +90,12 @@ void VehicleMission::updateActions()
   f_upload->setEnabled(bModAll && (!(busy)));
   f_stop->setEnabled(busy||upgrading);
   f_reload->setEnabled(!(upgrading||bEmpty));*/
+}
+//=============================================================================
+void VehicleMission::updateStartPath()
+{
+  if(f_waypoints->size()<=0)return;
+  static_cast<Waypoint*>(f_waypoints->child(0))->updatePath();
 }
 //=============================================================================
 //=============================================================================
@@ -104,7 +128,7 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
   if(data_cnt<bus_packet_size_hdr)return false;
   data_cnt-=bus_packet_size_hdr;
   if(data_cnt<4)return false;
-  if(packet.id!=idx_mission) return false;
+  if(packet.id!=APX::idx_mission) return false;
   int wpcnt=0,rwcnt=0;
   const uint8_t *ptr=packet.data;
   for(uint cnt=0;data_cnt>=sizeof(Mission::_item_hdr);data_cnt-=cnt){
@@ -125,6 +149,47 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
         f->f_type->setValue(e->hdr.option);
         f->f_latitude->setValue(e->lat);
         f->f_longitude->setValue(e->lon);
+        bool err=false;
+        while((data_cnt-cnt)>=(int)sizeof(Mission::_item_hdr) && ((Mission::_item_hdr*)(ptr+cnt))->type==Mission::mi_action){
+          Mission::_item_action *v=(Mission::_item_action*)(ptr+cnt);
+          uint sz=Mission::action_size(v->hdr.option);
+          if((data_cnt-cnt)<sz){
+            err=true;
+            break; //error
+          }
+          cnt+=sz;
+          switch(v->hdr.option){
+            case Mission::mo_speed:   f->f_speed->setValue(v->speed);break;
+            case Mission::mo_poi:     f->f_poi->setValue(v->poi+1);break;
+            case Mission::mo_scr:     f->f_script->setValue(QString(v->scr));break;
+            case Mission::mo_loiter:
+              f->f_loiter->setValue(1);
+              f->f_turnR->setValue(v->loiter.turnR);
+              f->f_loops->setValue(v->loiter.loops);
+              f->f_time->setValue(v->loiter.timeS);
+            break;
+            case Mission::mo_shot:{
+              switch(v->shot.opt){
+                case 0: //single
+                  f->f_shot->setValue(1);
+                  f->f_dshot->setValue(0);
+                break;
+                case 1: //start
+                  f->f_shot->setValue(2);
+                  f->f_dshot->setValue(v->shot.dist);
+                break;
+                case 2: //stop
+                  f->f_shot->setValue(2);
+                  f->f_dshot->setValue(0);
+                break;
+              }
+            }break;
+            default:
+              err=true;
+            break;
+          }
+        }
+        if(err)break;
       }
       continue;
       case Mission::mi_rw:
@@ -133,6 +198,14 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
         cnt=sizeof(Mission::_item_rw);
         if(data_cnt<cnt)break;
         rwcnt++;
+        Runway *f=new Runway(f_runways);
+        f->f_hmsl->setValue(e->hmsl);
+        f->f_approach->setValue(e->approach);
+        f->f_type->setValue(e->hdr.option);
+        f->f_latitude->setValue(e->lat);
+        f->f_longitude->setValue(e->lon);
+        f->f_dN->setValue(e->dN);
+        f->f_dE->setValue(e->dE);
       }
       continue;
       case Mission::mi_tw:
@@ -140,6 +213,9 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
         const Mission::_item_tw *e=(Mission::_item_tw*)ptr;
         cnt=sizeof(Mission::_item_tw);
         if(data_cnt<cnt)break;
+        Taxiway *f=new Taxiway(f_taxiways);
+        f->f_latitude->setValue(e->lat);
+        f->f_longitude->setValue(e->lon);
       }
       continue;
       case Mission::mi_pi:
@@ -147,6 +223,13 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
         const Mission::_item_pi *e=(Mission::_item_pi*)ptr;
         cnt=sizeof(Mission::_item_pi);
         if(data_cnt<cnt)break;
+        Point *f=new Point(f_points);
+        f->f_latitude->setValue(e->lat);
+        f->f_longitude->setValue(e->lon);
+        f->f_hmsl->setValue(e->hmsl);
+        f->f_radius->setValue(e->turnR);
+        f->f_loops->setValue(e->loops);
+        f->f_time->setValue(e->timeS);
       }
       continue;
       case Mission::mi_action:
@@ -181,4 +264,37 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
 
   return true;
 }
+//=============================================================================
+//=============================================================================
+QGeoCoordinate VehicleMission::startPoint() const
+{
+  return m_startPoint;
+}
+void VehicleMission::setStartPoint(const QGeoCoordinate &v)
+{
+  if(m_startPoint==v)return;
+  m_startPoint=v;
+  emit startPointChanged();
+}
+double VehicleMission::startHeading() const
+{
+  return m_startHeading;
+}
+void VehicleMission::setStartHeading(const double &v)
+{
+  if(m_startHeading==v)return;
+  m_startHeading=v;
+  emit startHeadingChanged();
+}
+double VehicleMission::startLength() const
+{
+  return m_startLength;
+}
+void VehicleMission::setStartLength(const double &v)
+{
+  if(m_startLength==v)return;
+  m_startLength=v;
+  emit startLengthChanged();
+}
+//=============================================================================
 //=============================================================================

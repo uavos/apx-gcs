@@ -24,7 +24,7 @@
 #include "VehicleMission.h"
 //=============================================================================
 MissionItems::MissionItems(VehicleMission *parent, const QString &name, const QString &title, const QString &descr)
-  : Fact(parent,name,title,descr,GroupItem,NoData),
+  : Fact(parent,name,title,descr,GroupItem,ConstData),
     mission(parent)
 {
   setSection(tr("Mission elements"));

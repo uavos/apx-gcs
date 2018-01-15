@@ -20,12 +20,54 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Waypoints.h"
-#include "Waypoint.h"
-#include "VehicleMission.h"
+#ifndef Point_H
+#define Point_H
 //=============================================================================
-Waypoints::Waypoints(VehicleMission *parent)
-  : MissionPathItems(parent,"waypoints",tr("Waypoints"),"")
+#include <QtCore>
+#include <QGeoCoordinate>
+#include "MissionOrderedItem.h"
+#include "Points.h"
+//=============================================================================
+class Point: public MissionOrderedItem
 {
-}
+  Q_OBJECT
+  Q_PROPERTY(QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
+
+
+public:
+  explicit Point(Points *parent);
+
+  Fact *f_latitude;
+  Fact *f_longitude;
+  Fact *f_hmsl;
+  Fact *f_radius;
+  Fact *f_loops;
+  Fact *f_time;
+
+
+  Points *points;
+
+private:
+
+
+private slots:
+  void updateDescr();
+
+public slots:
+
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QGeoCoordinate radiusPoint() const;
+  void setRadiusPoint(const QGeoCoordinate &v);
+
+protected:
+
+signals:
+  void radiusPointChanged();
+};
 //=============================================================================
+#endif
+

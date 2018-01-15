@@ -44,8 +44,8 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
   Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
   if(!f) return QItemDelegate::createEditor(parent,option,index);
   QWidget *e=NULL;
-  QString su;
-  if(!f->enumStrings().isEmpty()){
+  QString su=f->units();
+  if(f->enumStrings().size()>1){
     QComboBox *cb=new QComboBox(parent);
     cb->setFrame(false);
     cb->addItems(f->enumStrings());
@@ -54,6 +54,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
     e=cb;
   }else{
     switch(f->dataType()){
+      default: break;
       case Fact::BoolData:{
         QComboBox *cb=new QComboBox(parent);
         cb->setFrame(false);
@@ -61,6 +62,26 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
         cb->view()->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Ignored);
         //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
         e=cb;
+      }break;
+      case Fact::IntData:{
+        if(su=="time"){
+          QTimeEdit *te=new QTimeEdit(parent);
+          te->setDisplayFormat("HH:mm:ss");
+          e=te;
+          break;
+        }
+        QSpinBox *sb=new QSpinBox(parent);
+        sb->setMinimum(std::numeric_limits<int>::min());
+        sb->setMaximum(std::numeric_limits<int>::max());
+        sb->setFrame(false);
+        sb->setSingleStep(1);
+        if(su=="m")sb->setSingleStep(10);
+        e=sb;
+      }break;
+      case Fact::FloatData:{
+        QLineEdit *le=new QLineEdit(parent);
+        le->setFrame(false);
+        e=le;
       }break;
       case Fact::ActionData:{
         QPushButton *btn=createButton(parent);
@@ -96,8 +117,6 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
         });
         return btn;
       }break;
-      default:
-        su=f->units();
     }
   }
   if(!e) e=QItemDelegate::createEditor(parent,option,index);
@@ -110,29 +129,29 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
   //font.setPointSize(font.pointSize()+2);
   //e->setFont(font);
 
-  //min-max
+  //number edits
   if(qobject_cast<QSpinBox*>(e)){
-    if(!f->min().isNull())static_cast<QSpinBox*>(e)->setMinimum(f->min().toInt());
-    if(!f->max().isNull())static_cast<QSpinBox*>(e)->setMaximum(f->max().toInt());
-  }
-  if(qobject_cast<QDoubleSpinBox*>(e)){
-    if(!f->min().isNull())static_cast<QDoubleSpinBox*>(e)->setMinimum(f->min().toDouble());
-    if(!f->max().isNull())static_cast<QDoubleSpinBox*>(e)->setMaximum(f->max().toDouble());
-  }
-
-  //units
-  if(su.size()){
-    if(su=="hex"){
-      if(e->inherits("QSpinBox")){
-        QSpinBox *sb=static_cast<QSpinBox*>(e);
+    QSpinBox *sb=static_cast<QSpinBox*>(e);
+    if(!f->min().isNull())sb->setMinimum(f->min().toInt());
+    if(!f->max().isNull())sb->setMaximum(f->max().toInt());
+    if(!su.isEmpty()){
+      if(su=="hex"){
         sb->setDisplayIntegerBase(16);
+      }else{
+        sb->setSuffix(su.prepend(" "));
       }
-    }else{
-      su.prepend(" ");
-      if(e->inherits("QDoubleSpinBox"))static_cast<QDoubleSpinBox*>(e)->setSuffix(su);
-      else if(e->inherits("QSpinBox"))static_cast<QSpinBox*>(e)->setSuffix(su);
+    }
+  }else if(qobject_cast<QDoubleSpinBox*>(e)){
+    QDoubleSpinBox *sb=static_cast<QDoubleSpinBox*>(e);
+    if(!f->min().isNull())sb->setMinimum(f->min().toDouble());
+    if(!f->max().isNull())sb->setMaximum(f->max().toDouble());
+    if(!su.isEmpty()){
+      if(su!="lat" && su!="lon"){
+        sb->setSuffix(su.prepend(" "));
+      }
     }
   }
+
   return e;
 }
 QPushButton * FactDelegate::createButton(QWidget *parent) const
@@ -149,6 +168,13 @@ QPushButton * FactDelegate::createButton(QWidget *parent) const
 void FactDelegate::setEditorData(QWidget *editor,const QModelIndex &index) const
 {
   if(qobject_cast<QPushButton*>(editor))return;
+  if(qobject_cast<QTimeEdit*>(editor)){
+    QTimeEdit *te=static_cast<QTimeEdit*>(editor);
+    QTime t=QTime(0,0).addSecs(index.data(Qt::EditRole).toUInt());
+    //qDebug()<<t<<index.data(Qt::EditRole).toUInt()<<index.data(Qt::EditRole);
+    te->setTime(t);
+    return;
+  }
   QItemDelegate::setEditorData(editor,index);
 }
 void FactDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const
@@ -157,6 +183,11 @@ void FactDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const
   Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
   if(f->dataType()==Fact::ActionData)return;
   if(f->dataType()==Fact::NoData)return;
+  if(qobject_cast<QTimeEdit*>(editor)){
+    QTimeEdit *te=static_cast<QTimeEdit*>(editor);
+    model->setData(index, -te->time().secsTo(QTime(0,0)), Qt::EditRole);
+    return;
+  }
   QItemDelegate::setModelData(editor,model,index);
 }
 //=============================================================================

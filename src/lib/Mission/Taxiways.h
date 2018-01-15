@@ -20,12 +20,18 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Waypoints.h"
-#include "Waypoint.h"
-#include "VehicleMission.h"
+#ifndef Taxiways_H
+#define Taxiways_H
 //=============================================================================
-Waypoints::Waypoints(VehicleMission *parent)
-  : MissionPathItems(parent,"waypoints",tr("Waypoints"),"")
+#include <QtCore>
+#include "MissionPathItems.h"
+//=============================================================================
+class Taxiways: public MissionPathItems
 {
-}
+  Q_OBJECT
+public:
+  explicit Taxiways(VehicleMission *parent);
+};
 //=============================================================================
+#endif
+

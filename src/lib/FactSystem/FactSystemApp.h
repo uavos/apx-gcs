@@ -67,6 +67,8 @@ public:
   Q_INVOKABLE static double angle360(double v);
   Q_INVOKABLE static double angle90(double v);
   Q_INVOKABLE static double angle(double v);
+
+  Q_INVOKABLE static QPointF rotate(const QPointF &p, double a);
 };
 //=============================================================================
 #endif

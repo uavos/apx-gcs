@@ -85,5 +85,10 @@
         <file>FlightMap/mission/WaypointItem.qml</file>
         <file>FlightMap/mission/MissionObject.qml</file>
         <file>FlightMap/icons/waypoint-course.svg</file>
+        <file>FlightMap/mission/MissionItem.qml</file>
+        <file>FlightMap/mission/RunwayItem.qml</file>
+        <file>FlightMap/mission/MissionList.qml</file>
+        <file>FlightMap/mission/TaxiwayItem.qml</file>
+        <file>FlightMap/mission/PointItem.qml</file>
     </qresource>
 </RCC>

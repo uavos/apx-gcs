@@ -21,6 +21,7 @@
  *
  */
 #include "FactData.h"
+#include "FactSystemApp.h"
 //=============================================================================
 FactData::FactData(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
  : FactTree(parent,name,treeItemType),
@@ -77,12 +78,13 @@ bool FactData::setValue(const QVariant &v)
       break;
       case IntData:
         if(ev>=0)vx=ev;
-        else if(!m_enumStrings.isEmpty())return false;
+        else if(m_enumStrings.size()>1)return false;
         else if(v.type()!=QVariant::Int){
           QString s=v.toString();
           int i=s.toInt(&ok);
+          if(!ok)i=round(s.toDouble(&ok));
           if(!ok)i=s.toInt(&ok,16);
-          if(!ok) return false;
+          if(!ok)return false;
           if((!m_min.isNull()) && i<m_min.toInt())i=m_min.toInt();
           if((!m_max.isNull()) && i>m_max.toInt())i=m_max.toInt();
           vx=i;
@@ -96,18 +98,23 @@ bool FactData::setValue(const QVariant &v)
       case FloatData:
         if(v.type()!=QVariant::Double){
           QString s=v.toString();
-          double d=s.toDouble(&ok);
-          if(!ok){
-            //try boolean
-            if(s=="true"||s=="on"||s=="yes")d=1;
-            else if(s=="false"||s=="off"||s=="no")d=0;
-            else return false;
+          if(units()=="lat"){
+            vx=FactSystemApp::latFromString(s);
+          }else if(units()=="lon"){
+            vx=FactSystemApp::lonFromString(s);
+          }else{
+            double d=s.toDouble(&ok);
+            if(!ok){
+              //try boolean
+              if(s=="true"||s=="on"||s=="yes")d=1;
+              else if(s=="false"||s=="off"||s=="no")d=0;
+              else return false;
+            }
+            if((!m_min.isNull()) && d<m_min.toInt())d=m_min.toInt();
+            if((!m_max.isNull()) && d>m_max.toInt())d=m_max.toInt();
+            vx=d;
           }
-          if((!m_min.isNull()) && d<m_min.toInt())d=m_min.toInt();
-          if((!m_max.isNull()) && d>m_max.toInt())d=m_max.toInt();
-          vx=d;
-        }
-        vx=v.toDouble();
+        }else vx=v.toDouble();
       break;
       case MandalaData:
         vx=stringToMandala(v.toString());
@@ -279,14 +286,25 @@ QString FactData::text() const
   if(treeItemType()==FactItem && (!m_enumStrings.isEmpty())){
     int ev=enumValue(v);
     if(ev>=0)return enumText(ev);
-    if(m_dataType==IntData)return QString();
+    if(m_dataType==EnumData)return v.toString();
   }
   if(m_dataType==IntData){
     if(units()=="hex")return QString::number(v.toUInt(),16).toUpper();
+    if(units()=="time"){
+      return FactSystemApp::timeToString(v.toUInt(),true);
+    }
     return QString::number(v.toInt());
   }
   if(m_dataType==MandalaData){
     return mandalaToString(v.toUInt());
+  }
+  if(m_dataType==FloatData){
+    if(units()=="lat"){
+      return FactSystemApp::latToString(v.toDouble());
+    }
+    if(units()=="lon"){
+      return FactSystemApp::lonToString(v.toDouble());
+    }
   }
   if(v.type()==QVariant::ByteArray) return v.toByteArray().toHex().toUpper();
   if(v.type()==QVariant::Double){

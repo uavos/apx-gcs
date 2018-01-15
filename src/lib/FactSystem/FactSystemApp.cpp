@@ -232,5 +232,12 @@ double FactSystemApp::angle90(double v)
   return v-floor(v/dspan+0.5)*dspan;
 }
 //=============================================================================
+QPointF FactSystemApp::rotate(const QPointF &p, double a)
+{
+  const double psi_r=qDegreesToRadians(a);
+  double cos_theta=cos(psi_r);
+  double sin_theta=sin(psi_r);
+  return QPointF(p.x()*cos_theta+p.y()*sin_theta,p.y()*cos_theta-p.x()*sin_theta);
+}
 //=============================================================================
 //=============================================================================

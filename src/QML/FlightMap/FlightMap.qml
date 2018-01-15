@@ -232,49 +232,12 @@ Map {
 
     //VEHICLES
     VehicleItem {
-        z: map.z+50
+        z: map.z+80
         vehicle: app.vehicles.LOCAL
     }
     MapItemView {
         model: app.vehicles.list.model
-        delegate: VehicleItem { z: map.z+50 }
-    }
-    VehiclesList {
-        z: map.z+100
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: wind.left
-        anchors.margins: 10
-    }
-
-    //MISSION
-    Connections {
-        target: app.vehicles
-        onVehicleRegistered: {
-            //console.log(vehicle)
-            var c=waypointsC.createObject(map,{"vehicle": vehicle})
-            addMapItemView(c)
-            //vehicle.destroyed.connect(function(){removeMapItemView(c)})
-            //c=waypointsPathC.createObject(map,{"vehicle": vehicle})
-            //addMapItemView(c)
-
-        }
-    }
-    Component {
-        id: waypointsC
-        MapItemView {
-            property Vehicle vehicle
-            model: vehicle.mission.waypoints.model
-            delegate: WaypointItem { }
-        }
-    }
-    Component {
-        id: waypointsPathC
-        MapItemView {
-            property Vehicle vehicle
-            model: vehicle.mission.waypoints.model
-            delegate: WaypointPath { }
-        }
+        delegate: VehicleItem { z: map.z+81 }
     }
 
     //Current vehicle items
@@ -282,6 +245,23 @@ Map {
     CmdPosCircle { }
     Home { }
     LoiterCircle { }
+
+    //Controls
+    VehiclesList {
+        id: vehiclesList
+        z: map.z+100
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: wind.left
+        anchors.margins: 10
+    }
+    MissionList {
+        z: map.z+100
+        anchors.top: vehiclesList.bottom
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
+    }
 
 
 

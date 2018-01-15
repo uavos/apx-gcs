@@ -3,6 +3,7 @@ import QtLocation 5.9
 import QtPositioning 5.6
 import GCS.Vehicles 1.0
 import "."
+import "../mission"
 
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
@@ -221,4 +222,18 @@ MapQuickItem {  //to be used inside MapComponent only
             }
         ]
     }
+
+    //Mission
+    Component.onCompleted: {
+        var c=missionC.createObject(map)
+        map.addMapItemGroup(c)
+        vehicle.removed.connect(function(){c.destroy()})
+    }
+    Component {
+        id: missionC
+        MissionItem {
+            vehicle: vehicleItem.vehicle
+        }
+    }
+
 }

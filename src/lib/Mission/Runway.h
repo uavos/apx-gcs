@@ -20,17 +20,72 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Waypoints_H
-#define Waypoints_H
+#ifndef Runway_H
+#define Runway_H
 //=============================================================================
 #include <QtCore>
-#include "MissionPathItems.h"
+#include <QGeoCoordinate>
+#include "MissionOrderedItem.h"
+#include "Runways.h"
 //=============================================================================
-class Waypoints: public MissionPathItems
+class Runway: public MissionOrderedItem
 {
   Q_OBJECT
+  Q_ENUMS(RunwayType)
+  Q_PROPERTY(QGeoCoordinate endPoint READ endPoint WRITE setEndPoint NOTIFY endPointChanged)
+  Q_PROPERTY(QGeoCoordinate appPoint READ appPoint WRITE setAppPoint NOTIFY appPointChanged)
+  Q_PROPERTY(double heading READ heading NOTIFY headingChanged)
+
+
 public:
-  explicit Waypoints(VehicleMission *parent);
+  explicit Runway(Runways *parent);
+
+  Fact *f_type;
+  Fact *f_approach;
+  Fact *f_hmsl;
+  Fact *f_latitude;
+  Fact *f_longitude;
+  Fact *f_dN;
+  Fact *f_dE;
+
+
+  enum RunwayType {
+    Left =0,
+    Right,
+  };
+  Q_ENUM(RunwayType)
+
+  Runways *runways;
+
+private:
+
+
+private slots:
+  void updateDescr();
+  void updateMissionStartPoint();
+
+public slots:
+
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QGeoCoordinate endPoint() const;
+  void setEndPoint(const QGeoCoordinate &v);
+
+  QGeoCoordinate appPoint() const;
+  void setAppPoint(const QGeoCoordinate &v);
+
+  double heading() const;
+
+
+protected:
+
+signals:
+  void endPointChanged();
+  void appPointChanged();
+  void headingChanged();
 };
 //=============================================================================
 #endif

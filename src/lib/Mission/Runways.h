@@ -20,12 +20,30 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Waypoints.h"
-#include "Waypoint.h"
-#include "VehicleMission.h"
+#ifndef Runways_H
+#define Runways_H
 //=============================================================================
-Waypoints::Waypoints(VehicleMission *parent)
-  : MissionPathItems(parent,"waypoints",tr("Waypoints"),"")
+#include <QtCore>
+#include "MissionItems.h"
+#include <QGeoPath>
+#include <QGeoCoordinate>
+class VehicleMission;
+//=============================================================================
+class Runways: public MissionItems
 {
-}
+  Q_OBJECT
+
+public:
+  explicit Runways(VehicleMission *parent);
+
+
+private:
+
+private slots:
+
+public slots:
+
+};
 //=============================================================================
+#endif
+

@@ -16,11 +16,14 @@ MapCircle {
     property real home_lat: m.home_lat.value
     property real home_lon: m.home_lon.value
 
+    property real turnR: m.turnR.value
+    property bool landing: m.mode.value === mode_LANDING
+
     //calc coordinate
     property variant homeCoord: QtPositioning.coordinate(home_lat,home_lon)
     property real azimuth: Math.degrees(Math.atan2(cmd_east,cmd_north))
     property real distance: Math.sqrt(Math.pow(cmd_east,2)+Math.pow(cmd_north,2))
 
     center: homeCoord.atDistanceAndAzimuth(distance,azimuth)
-    radius: 50
+    radius: Math.max(landing?turnR:0,50)
 }
