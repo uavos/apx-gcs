@@ -32,6 +32,10 @@ class Taxiway: public MissionPathItem
   Q_OBJECT
 public:
   explicit Taxiway(Taxiways *parent);
+
+private slots:
+  void updateTitle();
+
 };
 //=============================================================================
 #endif

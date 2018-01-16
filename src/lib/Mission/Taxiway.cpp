@@ -26,6 +26,19 @@
 Taxiway::Taxiway(Taxiways *parent)
   : MissionPathItem(parent,"T#","",tr("Taxiway"))
 {
+  //title
+  connect(this,&Taxiway::distanceChanged,this,&Taxiway::updateTitle);
+  updateTitle();
+
+
   FactSystem::instance()->jsSync(this);
+}
+//=============================================================================
+void Taxiway::updateTitle()
+{
+  QStringList st;
+  st.append(QString::number(num()+1));
+  st.append(FactSystem::distanceToString(distance()));
+  setTitle(st.join(' '));
 }
 //=============================================================================

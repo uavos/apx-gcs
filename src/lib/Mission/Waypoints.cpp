@@ -25,7 +25,7 @@
 #include "VehicleMission.h"
 //=============================================================================
 Waypoints::Waypoints(VehicleMission *parent)
-  : MissionPathItems(parent,"waypoints",tr("Waypoints"),"")
+  : MissionPathItems(parent,VehicleMission::WaypointType,"waypoints",tr("Waypoints"),"")
 {
 }
 //=============================================================================

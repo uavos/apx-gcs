@@ -15,6 +15,13 @@ QtObject {
     property color cLineBlue:   "#9696FF"
 
 
-    property color cWaypoint: "#A0ffff00"
-    property color cRunway:   "#3779C5"
+    property color cWaypoint: "#C0ffff00"
+    property color cRunway:   "#A03779C5"
+    property color cTaxiway:  "#A0376479"
+    property color cPoint:    "#C03779C5"
+
+    property color cListRunway:     "#336699"
+    property color cListWaypoint:   "#166969"
+    property color cListPoint:      "#32674d"
+    property color cListTaxiway:    "#707070"
 }

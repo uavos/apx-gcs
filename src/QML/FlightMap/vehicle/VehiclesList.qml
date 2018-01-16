@@ -17,7 +17,7 @@ ListView {
     Component {
         id: vehicleInfoDelegate
         VehicleInfo {
-            interactive: true
+            enabled: true
             font.pixelSize: Qt.application.font.pixelSize * 0.8
         }
     }

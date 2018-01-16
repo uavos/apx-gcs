@@ -138,6 +138,7 @@ HEADERS += \
 # Mission
 SOURCES += \
     Mission/VehicleMission.cpp \
+    Mission/MissionListModel.cpp \
     Mission/MissionItems.cpp \
     Mission/MissionOrderedItem.cpp \
     Mission/MissionPathItems.cpp \
@@ -153,6 +154,7 @@ SOURCES += \
 
 HEADERS += \
     Mission/VehicleMission.h \
+    Mission/MissionListModel.h \
     Mission/MissionItems.h \
     Mission/MissionOrderedItem.h \
     Mission/MissionPathItems.h \

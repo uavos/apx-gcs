@@ -12,20 +12,21 @@ MissionObject {
     id: runwayItem
     color: Style.cRunway
     textColor: "white"
-    title: (approach>0?"":"H")+fact.title
+    title: (approach>0?"":"H")+(fact.num+1)
     fact: modelData
     z: map.z+60
 
     //Fact bindings
     property int type: fact.type.value
     property string typeText: fact.type.text
+    property string titleText: fact.title
     property int approach: fact.approach.value
     property int hmsl: fact.hmsl.value
     property real heading: fact.heading
     property variant endPointCoordinate: fact.endPoint
     property variant appPointCoordinate: fact.appPoint
 
-    property bool current: (m.rwidx.value+1).toFixed() === fact.title
+    property bool current: m.rwidx.value === fact.num
     property bool landing: m.mode.value === mode_LANDING && current
     property real turnR: m.turnR.value
     property real delta: m.delta.value
@@ -47,7 +48,7 @@ MissionObject {
         MapText {
             textColor: "white"
             color: current?Style.cBlue:Style.cNormal
-            text: typeText.slice(0,1)+Math.floor(app.angle360(heading)).toFixed()
+            text: titleText.split(' ')[1]
             opacity: (!dragging)?((hover||selected)?1:0.6):0
             visible: opacity && showDetails
         },
@@ -97,13 +98,13 @@ MissionObject {
     //Runway Map Items
     property Item appPoint
     property color cRwBG: landing?"blue":Style.cBlue
-    property bool showDetailsRw: map.zoomLevel>15
-    property bool showDetailsApp: map.zoomLevel>10
+    property bool showDetailsRw: runwayItem.visible && map.zoomLevel>15
+    property bool showDetailsApp: runwayItem.visible && map.zoomLevel>10
     property real appOpacity: landing?1:0.6
 
     property bool appHover: hover||appPoint.hover||dragging||appPoint.dragging
     property bool appCircleActive: landing||appHover
-    property bool appCircleVisible: showDetailsApp && (approach>0||appHover)
+    property bool appCircleVisible: runwayItem.visible && showDetailsApp && (approach>0||appHover)
     property int appCircleLineWidth: appCircleActive?2:1
     property real appCircleOpacity: appCircleActive?0.8:0.6
 
@@ -124,7 +125,7 @@ MissionObject {
         c.z=map.z+10
         c.line.width=10
         c.line.color=Qt.binding(function(){return cRwBG})
-        c.visible=Qt.binding(function(){return current})
+        c.visible=Qt.binding(function(){return current && runwayItem.visible})
         map.addMapItem(c)
         fact.removed.connect(function(){c.destroy()})
         c=pathC.createObject(map)
@@ -171,6 +172,7 @@ MissionObject {
         MissionObject {
             id: endPoint
             z: map.z+40
+            visible: runwayItem.visible
             color: "white"
             textColor: "black"
             opacity: 0.8
@@ -193,12 +195,12 @@ MissionObject {
         MissionObject {
             id: appPoint
             z: map.z+40-1
+            visible: runwayItem.visible && showDetailsApp
             color: "white"
             textColor: "black"
             title: approach>0?(app.distanceToString(approach)):"H----"
             property double r: runwayItem.heading-90;
             rotation: approach>0?app.angle90(r):app.angle(r);
-            visible: showDetailsApp
             factPos: appPointCoordinate
             onMoved: {
                 updateAppPoint(coordinate)
@@ -211,6 +213,7 @@ MissionObject {
         id: pathC
         MapPolyline {
             id: polyline
+            visible: runwayItem.visible
             property variant coordinate1: runwayItem.coordinate
             property variant coordinate2: endPointCoordinate
             function updatePath()
@@ -232,6 +235,7 @@ MissionObject {
         MapCircle {
             id: circle
             color: "transparent"
+            visible: runwayItem.visible
         }
     }
     /*Component {

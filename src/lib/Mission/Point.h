@@ -51,7 +51,7 @@ private:
 
 
 private slots:
-  void updateDescr();
+  void updateTitle();
 
 public slots:
 

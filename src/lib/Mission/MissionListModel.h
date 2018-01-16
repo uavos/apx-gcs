@@ -20,31 +20,28 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactListModel_H
-#define FactListModel_H
+#ifndef MissionListModel_H
+#define MissionListModel_H
 //=============================================================================
 #include <QtCore>
-class Fact;
-class FactTree;
+#include <FactSystem.h>
+class VehicleMission;
 //=============================================================================
-class FactListModel: public QAbstractListModel
+class MissionListModel: public QAbstractListModel
 {
   Q_OBJECT
-  Q_PROPERTY(bool flat READ flat WRITE setFlat NOTIFY flatChanged)
 
 public:
 
-  explicit FactListModel(Fact *parent);
+  explicit MissionListModel(VehicleMission *parent);
 
   QList<FactTree*> items() const;
 
-  QHash<int, QByteArray> roleNames() const;
-
 private:
-  Fact *fact;
+  VehicleMission *mission;
+  QList<Fact*> groups;
 
-  Fact * sectionParent(Fact *item) const;
-  int sectionRow(Fact *parent, Fact *sect) const;
+  int sectionRow(Fact *fact) const;
 
 private slots:
   void itemToBeInserted(int row, FactTree *item);
@@ -53,21 +50,9 @@ private slots:
   void itemRemoved(FactTree *item);
 
 protected:
-  //ListModel override
   int rowCount(const QModelIndex & parent = QModelIndex()) const;
+  QHash<int, QByteArray> roleNames() const;
   QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-  bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-
-  //-----------------------------------------
-  //PROPERTIES
-public:
-  bool flat() const;
-  void setFlat(const bool &v);
-protected:
-  bool m_flat;
-signals:
-  void flatChanged();
 };
 //=============================================================================
 #endif

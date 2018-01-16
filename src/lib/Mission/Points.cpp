@@ -23,7 +23,7 @@
 #include "Points.h"
 //=============================================================================
 Points::Points(VehicleMission *parent)
-  : MissionItems(parent,"points",tr("Points of interest"),"")
+  : MissionItems(parent,VehicleMission::PointType,"points",tr("Points of interest"),"")
 {
 }
 //=============================================================================

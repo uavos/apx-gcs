@@ -10,18 +10,18 @@ import ".."
 
 MissionObject {
     id: taxiwayItem
-    color: Style.cNormal
+    color: Style.cTaxiway
     textColor: "white"
     fact: modelData
     z: map.z+30
 
     //Fact bindings
     property real distance: fact.distance
-    property bool current: (m.twidx.value+2).toFixed() === fact.title
+    property bool current: m.twidx.value === fact.num
     property bool taxi: m.mode.value === mode_TAXI
     property var path: fact.travelPath
     property real course: fact.course
-    property bool bFirst: fact.title==='1'
+    property bool bFirst: fact.num === 0
 
     //internal
     property bool showDetails: map.zoomLevel>15 ||  map.metersToPixels(distance)>50
@@ -75,7 +75,7 @@ MissionObject {
             opacity: 0.8
             line.width: taxiwayItem.pathWidth
             line.color: taxiwayItem.pathColor
-            visible: showDetails
+            visible: showDetails && taxiwayItem.visible
             function updatePath()
             {
                 polyline.setPath(taxiwayItem.path)

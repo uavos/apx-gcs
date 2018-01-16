@@ -10,7 +10,7 @@ import ".."
 
 MissionObject {
     id: pointItem
-    color: Style.cBlue
+    color: Style.cPoint
     textColor: "white"
     fact: modelData
     z: map.z+40
@@ -24,7 +24,7 @@ MissionObject {
     property variant radiusPointCoordinate: fact.radiusPoint
     property bool ccw: fact.radius.value<0
 
-    property bool current: (m.piidx.value+1).toFixed() === fact.title
+    property bool current: m.piidx.value === fact.num
 
     function updateRadiusPoint(coord)
     {
@@ -57,7 +57,7 @@ MissionObject {
     ]
 
 
-    //Runway Map Items
+    //Map Items
     property bool circleActive: selected||dragging||hover
 
     Component.onCompleted: {
@@ -77,13 +77,48 @@ MissionObject {
             color: "white"
             textColor: "black"
             title: radius>0?(app.distanceToString(radius)):"H----"
-            //opacity: (pointItem.hover || pointItem.selected)?(radius>0?0.8:0.5):0
+            opacity: (pointItem.hover || pointItem.selected)?(radius>0?0.8:0.5):0
             visible: opacity>0
             factPos: radiusPointCoordinate
             onMoved: {
                 updateRadiusPoint(coordinate)
                 coordinate=factPos //snap
             }
+            //direction arrow
+            contentsTop: [
+                ColorOverlay {
+                    id: crsArrow1
+                    z: map.z
+                    width: 24
+                    height: width
+                    opacity: 0.8
+                    visible: (showDetails || circleActive) && (ccw)
+                    color: "white"
+                    source: Image {
+                        width: crsArrow1.height
+                        height: width
+                        source: "../icons/waypoint-course.svg"
+                    }
+                }
+            ]
+            contentsBottom: [
+                ColorOverlay {
+                    id: crsArrow2
+                    z: map.z
+                    width: 24
+                    height: width
+                    rotation: 180
+                    opacity: 0.8
+                    visible: (showDetails || circleActive) && (!ccw)
+                    color: "white"
+                    source: Image {
+                        width: crsArrow2.height
+                        height: width
+                        source: "../icons/waypoint-course.svg"
+                    }
+                }
+            ]
+
         }
     }
     Component {

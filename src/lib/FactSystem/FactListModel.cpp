@@ -28,30 +28,40 @@ FactListModel::FactListModel(Fact *parent)
    fact(parent),
    m_flat(false)
 {
+  if(fact){
+    connect(fact,&Fact::itemToBeInserted,this,&FactListModel::itemToBeInserted);
+    connect(fact,&Fact::itemInserted,this,&FactListModel::itemInserted);
 
-  connect(fact,&Fact::itemToBeInserted,this,[=](int row, FactTree *){
-    Fact *f=sectionParent(fact);
-    if(f!=fact)beginInsertRows(QModelIndex(), row ,row);
-    row+=sectionRow(f,fact);
-    f->model()->beginInsertRows(QModelIndex(), row ,row);
-  });
-  connect(fact,&Fact::itemInserted,this,[=](FactTree *){
-    Fact *f=sectionParent(fact);
-    f->model()->endInsertRows();
-    if(f!=fact)endInsertRows();
-  });
-
-  connect(fact,&Fact::itemToBeRemoved,this,[=](int row, FactTree *){
-    Fact *f=sectionParent(fact);
-    if(f!=fact)beginRemoveRows(QModelIndex(), row ,row);
-    row+=sectionRow(f,fact);
-    f->model()->beginRemoveRows(QModelIndex(), row ,row);
-  });
-  connect(fact,&Fact::itemRemoved,this,[=](FactTree *){
-    Fact *f=sectionParent(fact);
-    f->model()->endRemoveRows();
-    if(f!=fact)endRemoveRows();
-  });
+    connect(fact,&Fact::itemToBeRemoved,this,&FactListModel::itemToBeRemoved);
+    connect(fact,&Fact::itemRemoved,this,&FactListModel::itemRemoved);
+  }
+}
+//=============================================================================
+void FactListModel::itemToBeInserted(int row, FactTree *)
+{
+  Fact *f=sectionParent(fact);
+  if(f!=fact)beginInsertRows(QModelIndex(), row ,row);
+  row+=sectionRow(f,fact);
+  f->model()->beginInsertRows(QModelIndex(), row ,row);
+}
+void FactListModel::itemInserted(FactTree *)
+{
+  Fact *f=sectionParent(fact);
+  f->model()->endInsertRows();
+  if(f!=fact)endInsertRows();
+}
+void FactListModel::itemToBeRemoved(int row,FactTree *)
+{
+  Fact *f=sectionParent(fact);
+  if(f!=fact)beginRemoveRows(QModelIndex(), row ,row);
+  row+=sectionRow(f,fact);
+  f->model()->beginRemoveRows(QModelIndex(), row ,row);
+}
+void FactListModel::itemRemoved(FactTree *)
+{
+  Fact *f=sectionParent(fact);
+  f->model()->endRemoveRows();
+  if(f!=fact)endRemoveRows();
 }
 //=============================================================================
 Fact * FactListModel::sectionParent(Fact *item) const

@@ -25,8 +25,8 @@
 #include "VehicleMission.h"
 #include "MissionItems.h"
 //=============================================================================
-MissionPathItems::MissionPathItems(VehicleMission *parent, const QString &name, const QString &title, const QString &descr)
-  : MissionItems(parent,name,title,descr),
+MissionPathItems::MissionPathItems(VehicleMission *parent, VehicleMission::MissionItemType itemType, const QString &name, const QString &title, const QString &descr)
+  : MissionItems(parent,itemType,name,title,descr),
     m_distance(0),
     m_time(0)
 {

@@ -61,7 +61,7 @@ private:
 
 
 private slots:
-  void updateDescr();
+  void updateTitle();
   void updateMissionStartPoint();
 
 public slots:

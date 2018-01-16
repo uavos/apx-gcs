@@ -1,20 +1,84 @@
 import QtQuick 2.5;
-import QtLocation 5.9
+import QtQuick.Layouts 1.3
 import QtPositioning 5.6
+
 import GCS.Vehicles 1.0
+import GCS.Mission 1.0
 import "."
 import ".."
 
-ListView {
-    id: missionList
-    model: app.vehicles.current.mission.waypoints.model
-    implicitWidth: contentItem.childrenRect.width
-    orientation: ListView.Vertical
-    spacing: 2
-    clip: true
-    snapMode: ListView.SnapToItem
+ColumnLayout {
+    spacing: 4
+    width: missionList.width
+    visible: !app.vehicles.current.mission.empty
 
-    delegate: MapText {
-        text: modelData?(modelData.title+" "+modelData.type.text.slice(0,1)+" "+modelData.altitude.text):""
+    function focusOnMap(fact)
+    {
+        map.centerOnCoordinate(QtPositioning.coordinate(fact.latitude.value,fact.longitude.value))
+    }
+
+    MapButton {
+        id: missionButton
+        text: app.vehicles.current.mission.title+"\n"+app.vehicles.current.mission.waypoints.descr
+        horizontalAlignment: Text.AlignHCenter
+        font.pixelSize: Qt.application.font.pixelSize * 0.8
+        color: "white"
+        textColor: "black"
+        defaultOpacity: 1
+        onMenuRequested: showMenu(app.vehicles.current.mission)
+    }
+    ListView {
+        id: missionList
+        Layout.fillHeight: true
+        model: app.vehicles.current.mission.listModel
+        implicitWidth: contentItem.childrenRect.width
+        orientation: ListView.Vertical
+        spacing: 4
+        clip: true
+        snapMode: ListView.SnapToItem
+
+        delegate: MapButton {
+            text: (hovered && descr)?label+"\n"+descr:label
+            font.family: font_mono
+            font.bold: true
+            defaultOpacity: 0.8
+            font.pixelSize: Qt.application.font.pixelSize * map.itemsScaleFactor
+
+            border.width: 1
+            border.color: "#80FFFFFF"
+
+            property string title: modelData.title
+            property string label //: title
+            property string descr //: modelData.status
+
+
+            onMenuRequested: map.showMenu(modelData)
+            onClicked: focusOnMap(modelData)
+
+            Component.onCompleted: {
+                switch(modelData.missionItemType){
+                case Mission.RunwayType:
+                    color=Style.cListRunway
+                    label=Qt.binding(function(){return title})
+                    break;
+                case Mission.WaypointType:
+                    color=Style.cListWaypoint
+                    label=Qt.binding(function(){return title.split(' ').slice(0,3).join(' ')+(descr?" A":"")})
+                    descr=Qt.binding(function(){return title.split(' ').slice(3).join(' ')})
+                    break;
+                case Mission.PointType:
+                    color=Style.cListPoint
+                    label=Qt.binding(function(){return title.split(' ').slice(0,2).join(' ')})
+                    descr=Qt.binding(function(){return title.split(' ').slice(2).join(' ')})
+                    break;
+                case Mission.TaxiwayType:
+                    color=Style.cListTaxiway
+                    label=Qt.binding(function(){return title})
+                    descr=Qt.binding(function(){return modelData.status})
+                    break;
+                }
+
+            }
+        }
     }
 }

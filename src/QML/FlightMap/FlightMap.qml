@@ -5,6 +5,7 @@ import QtPositioning    5.3
 import QtQuick.Window   2.2
 
 import QtQml 2.2
+import QtGraphicalEffects 1.0
 
 import GCS.FactSystem   1.0
 import GCS.Vehicles     1.0
@@ -13,16 +14,18 @@ import "."
 import "./map"
 import "./vehicle"
 import "./mission"
+import "../menu"
+import "../pfd"
 
 Map {
     id: map
 
-    property double itemsScaleFactor: 1.5
+    property double itemsScaleFactor: 1
 
-    property variant mouseCoordinate: mouseCoordinateRaw.isValid?mouseCoordinateRaw:center
-    property variant mouseClickCoordinate: center
+    property var mouseCoordinate: mouseCoordinateRaw.isValid?mouseCoordinateRaw:center
+    property var mouseClickCoordinate: center
 
-    //property Vehicle currentVehicle: app.vehicles.current
+    property var selectedObject
 
     property int lastX: -1
     property int lastY: -1
@@ -30,8 +33,10 @@ Map {
     property int pressY: -1
     property int jitterThreshold: 30
 
-    property variant mouseCoordinateRaw: toCoordinate(Qt.point(mouseArea.mouseX, mouseArea.mouseY))
+    property var mouseCoordinateRaw: toCoordinate(Qt.point(mouseArea.mouseX, mouseArea.mouseY))
 
+
+    signal clicked()
 
     function metersToPixels(m)
     {
@@ -39,6 +44,26 @@ Map {
         var dist = center.distanceTo(coord)
         return m*(map.width/2)/dist;
     }
+
+    function showMenu(fact)
+    {
+        popupMenu.menu.fact=fact
+        popupMenu.open()
+    }
+
+    FactMenuPopup {
+        id: popupMenu
+        parent: map
+        menu: FactMenu { fact: app }
+    }
+
+
+    /*function selectObject(obj)
+    {
+        if(selectedObject!==obj) selectedObject=obj
+    }
+    onClicked: if(selectedObject) selectedObject=null
+    onSelectedObjectChanged: console.log(selectedObject)*/
 
 
     //Map componnet parameters
@@ -199,6 +224,8 @@ Map {
             }
         }
 
+        onClicked: map.clicked()
+
         onDoubleClicked: {
             var mouseGeoPos = map.toCoordinate(Qt.point(mouse.x, mouse.y));
             var preZoomPoint = map.fromCoordinate(mouseGeoPos, false);
@@ -255,17 +282,57 @@ Map {
         anchors.right: wind.left
         anchors.margins: 10
     }
+
     MissionList {
+        id: missionList
         z: map.z+100
         anchors.top: vehiclesList.bottom
         anchors.left: parent.left
-        anchors.bottom: parent.bottom
+        anchors.bottom: parent.bottom //btm.top
         anchors.margins: 10
+
     }
 
+    /*FastBlur {
+        id: fastBlur
+        anchors.top: vehiclesList.bottom
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom //btm.top
+        anchors.margins: 10
+        width: missionList.width
+        radius: 40
+        opacity: 0.55
+
+        source: ShaderEffectSource {
+            sourceItem: map
+            sourceRect: Qt.rect(0, 0, fastBlur.width, fastBlur.height)
+        }
+    }*/
+
+    /*Rectangle {
+        id: btm
+        z: 1000
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
+        height: map.height*0.3
+        width: height*1.6
+        border.width: 1
+        border.color: "#fff"
+        radius: 8
+        color: "transparent"
+        clip: true
+        Pfd {
+            z: parent.z-1
+            anchors.fill: parent
+            anchors.margins: 1
+            //asynchronous: app.settings.smooth.value
+            //source: "qrc:///pfd/Pfd.qml"
+        }
+    }*/
 
 
-    //Information
+    //Information Right area
     Column {
         z: map.z+100
         anchors.bottom: parent.bottom;

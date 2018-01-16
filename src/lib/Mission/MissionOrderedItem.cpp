@@ -28,14 +28,19 @@ MissionOrderedItem::MissionOrderedItem(MissionItems *parent, const QString &name
     missionItems(parent),
     namePrefix(name)
 {
-  connect(parent,&Fact::sizeChanged,this,&Fact::nameChanged);
-  connect(this,&Fact::nameChanged,this,&MissionOrderedItem::updateTitle);
+  connect(parent,&Fact::numChanged,this,&Fact::nameChanged);
+  connect(this,&Fact::numChanged,this,&MissionOrderedItem::updateTitle);
   updateTitle();
 }
 //=============================================================================
 void MissionOrderedItem::updateTitle()
 {
   setTitle(QString::number(num()+1));
+}
+//=============================================================================
+int MissionOrderedItem::missionItemType() const
+{
+  return missionItems->missionItemType();
 }
 //=============================================================================
 //=============================================================================

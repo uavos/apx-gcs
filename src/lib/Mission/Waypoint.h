@@ -68,7 +68,8 @@ private:
   int icourse;
 
 private slots:
-  void updateDescr();
+  void updateTitle();
+  //void updateDescr();
   void updateActionsText();
 
 

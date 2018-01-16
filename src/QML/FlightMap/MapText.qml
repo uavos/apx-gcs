@@ -14,8 +14,8 @@ Rectangle {
 
     property int margins: 2
 
-    Behavior on width { enabled: app.settings.smooth.value; NumberAnimation {duration: 200; } }
-    Behavior on height { enabled: app.settings.smooth.value; NumberAnimation {duration: 200; } }
+    Behavior on implicitWidth { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
+    Behavior on implicitHeight { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
 
     border.width: 0
     color: "gray"

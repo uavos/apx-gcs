@@ -6,8 +6,24 @@ import GCS.Vehicles 1.0
 import "."
 
 MapItemGroup {
-    id: missionItem
+    id: mission
     property Vehicle vehicle: modelData
+
+    visible: vehicle.active
+
+    function select(obj)
+    {
+        if(map.selectedObject!==obj) map.selectedObject=obj
+    }
+    function deselect()
+    {
+        if(map.selectedObject) map.selectedObject=null
+    }
+    Connections {
+        target: map
+        onClicked: deselect()
+    }
+
 
     MapItemView {
         id: waypoints

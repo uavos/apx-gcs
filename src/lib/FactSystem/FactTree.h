@@ -32,6 +32,7 @@ class FactTree: public QObject
 
   Q_PROPERTY(ItemType treeItemType READ treeItemType WRITE setTreeItemType NOTIFY treeItemTypeChanged)
   Q_PROPERTY(int size READ size NOTIFY sizeChanged)
+  Q_PROPERTY(int num READ num NOTIFY numChanged)
 
   Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
@@ -55,7 +56,6 @@ public:
   Q_INVOKABLE void addItem(FactTree *item);
   Q_INVOKABLE void remove();
   Q_INVOKABLE void removeAll(void);
-  Q_INVOKABLE int num() const;
   Q_INVOKABLE FactTree * child(int n) const;
   Q_INVOKABLE FactTree * parentItem() const;
   Q_INVOKABLE QList<FactTree*> childItems() const;
@@ -89,12 +89,15 @@ private:
   QString makeNameUnique(const QString &s);
   QString nameSuffix;
 
+  void updateNum();
+
   //-----------------------------------------
   //PROPERTIES
 public:
   virtual ItemType treeItemType() const;
   virtual void setTreeItemType(const ItemType &v);
   virtual int size() const;
+  virtual int num() const;
 
   QString name(void) const;
   void setName(const QString &v);
@@ -102,11 +105,13 @@ public:
 protected:
   ItemType m_treeItemType;
   QString  m_name;
+  int m_num;
 
 signals:
   void treeItemTypeChanged();
   void nameChanged();
   void sizeChanged();
+  void numChanged();
 };
 //=============================================================================
 #endif

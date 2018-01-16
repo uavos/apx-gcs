@@ -26,7 +26,7 @@
 #include "MissionItems.h"
 //=============================================================================
 Runways::Runways(VehicleMission *parent)
-  : MissionItems(parent,"runways",tr("Runways"),"")
+  : MissionItems(parent,VehicleMission::RunwayType,"runways",tr("Runways"),"")
 {
 }
 //=============================================================================

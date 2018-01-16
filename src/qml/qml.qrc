@@ -90,5 +90,6 @@
         <file>FlightMap/mission/MissionList.qml</file>
         <file>FlightMap/mission/TaxiwayItem.qml</file>
         <file>FlightMap/mission/PointItem.qml</file>
+        <file>FlightMap/MapButton.qml</file>
     </qresource>
 </RCC>

@@ -25,16 +25,20 @@
 //=============================================================================
 #include <QtCore>
 #include "FactSystem.h"
-class MissionItems;
+#include "MissionItems.h"
 //=============================================================================
 class MissionOrderedItem: public Fact
 {
   Q_OBJECT
+  Q_PROPERTY(int missionItemType READ missionItemType CONSTANT)
 
 public:
   explicit MissionOrderedItem(MissionItems *parent, const QString &name, const QString &title, const QString &descr);
 
   MissionItems *missionItems;
+
+  int missionItemType() const;
+
 protected:
   template<class T> T prevItem() const
   {
@@ -50,7 +54,7 @@ private:
   QString namePrefix;
 
 private slots:
-  void updateTitle();
+  virtual void updateTitle();
 };
 //=============================================================================
 #endif

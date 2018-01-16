@@ -25,13 +25,28 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
+    visible: mission.visible
+
 
     signal moved()
+
+    function select()
+    {
+        if(fact) mission.select(missionObject)
+    }
+    function deselect()
+    {
+        if(fact) mission.deselect()
+    }
+    function showMenu()
+    {
+        if(fact) map.showMenu(fact)
+    }
 
     //internal logic
     property alias hover: mouseArea.containsMouse
     property bool dragging: mouseArea.drag.active
-    property bool selected: false
+    property bool selected: map.selectedObject===this
 
     property real hoverScale: ((dragging||hover)?hoverScaleFactor:1)
 
@@ -39,13 +54,12 @@ MapQuickItem {  //to be used inside MapComponent only
     Behavior on opacity { enabled: app.settings.smooth.value; NumberAnimation {duration: 200; } }
 
 
-
     //Fact bindings
     property real lat: fact?fact.latitude.value:0
     property real lon: fact?fact.longitude.value:0
     property real altitude: (fact && fact.altitude)?fact.altitude.value:0
     property real active: fact?fact.active:0
-    property string title: fact?fact.title:0
+    property string title: fact?fact.num+1:0
 
 
 
@@ -68,6 +82,7 @@ MapQuickItem {  //to be used inside MapComponent only
     onDraggingChanged: {
         if(dragging){
             coordinate=coordinate
+            if(!selected) deselect()
         }else{
             coordinate=Qt.binding(function(){return factPos})
         }
@@ -85,6 +100,20 @@ MapQuickItem {  //to be used inside MapComponent only
     Item {
         width: textItem.width
         height: textItem.height
+        Rectangle {
+            id: frame
+            visible: selected
+            anchors.centerIn: textItem
+            width: textItem.width*textItem.scale+10
+            height: textItem.height*textItem.scale+10
+            antialiasing: true
+            smooth: true
+            border.width: 2
+            border.color: "#FFFFFF"
+            radius: 5
+            color: "#50FFFFFF"
+            opacity: 0.6
+        }
         MapText {
             id: textItem
             horizontalAlignment: Text.AlignHCenter
@@ -134,12 +163,10 @@ MapQuickItem {  //to be used inside MapComponent only
             anchors.fill: textItem
             scale: textItem.scale
             drag.target: missionObject
-            /*onClicked: {
-                if(!active) app.vehicles.selectVehicle(vehicle);
-                else if(isFollow) map.followStop()
-                else map.followItem(vehicleItem)
-            }*/
+            onClicked: select()
             onPositionChanged: if(drag.active) objectMoving()
+            onDoubleClicked: showMenu()
+            onPressAndHold: showMenu()
         }
     }
 

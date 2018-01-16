@@ -22,7 +22,7 @@ MissionObject {
     property int totalTime: fact.totalTime
     property string actionsText: fact.actions.status
     property real course: fact.course
-    property bool bFirst: fact.title==='1'
+    property bool bFirst: fact.num === 0
     property bool warning: fact.warning
     property bool reachable: fact.reachable
     property int type: fact.type.value
@@ -120,6 +120,7 @@ MissionObject {
         MapPolyline {
             id: polyline
             z: map.z
+            visible: waypointItem.visible
             opacity: 0.6
             line.width: waypointItem.pathWidth
             line.color: waypointItem.pathColor

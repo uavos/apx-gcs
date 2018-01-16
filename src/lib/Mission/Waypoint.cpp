@@ -30,7 +30,7 @@
 #include "Mandala.h"
 //=============================================================================
 Waypoint::Waypoint(Waypoints *parent)
-  : MissionPathItem(parent,"W#","",""),
+  : MissionPathItem(parent,"W#","",tr("Waypoint")),
     icourse(0),
     m_reachable(false),
     m_warning(false)
@@ -76,15 +76,24 @@ Waypoint::Waypoint(Waypoints *parent)
   connect(f_type,&Fact::valueChanged,this,&Waypoint::updatePath);
 
 
-  connect(f_type,&Fact::valueChanged,this,&Waypoint::updateDescr);
-  connect(f_altitude,&Fact::valueChanged,this,&Waypoint::updateDescr);
-  connect(f_actions,&Fact::statusChanged,this,&Waypoint::updateDescr);
-  updateDescr();
+  connect(f_type,&Fact::valueChanged,this,&Waypoint::updateTitle);
+  connect(f_altitude,&Fact::valueChanged,this,&Waypoint::updateTitle);
+  connect(f_actions,&Fact::statusChanged,this,&Waypoint::updateTitle);
+  updateTitle();
 
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
-void Waypoint::updateDescr()
+void Waypoint::updateTitle()
+{
+  QStringList st;
+  st.append(QString::number(num()+1));
+  st.append(f_type->text().left(1).toUpper());
+  st.append(f_altitude->text()+f_altitude->units());
+  if(!f_actions->isZero()) st.append(f_actions->status());
+  setTitle(st.join(' '));
+}
+/*void Waypoint::updateDescr()
 {
   QStringList st;
   st.append(tr("Waypoint")+":");
@@ -92,7 +101,7 @@ void Waypoint::updateDescr()
   st.append(f_altitude->text()+f_altitude->units());
   if(!f_actions->status().isEmpty()) st.append("["+f_actions->status()+"]");
   setDescr(st.join(' '));
-}
+}*/
 void Waypoint::updateActionsText()
 {
   QStringList st;

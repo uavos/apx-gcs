@@ -22,6 +22,7 @@
  */
 #include "VehicleMission.h"
 #include "Vehicle.h"
+#include "MissionListModel.h"
 #include "MissionItems.h"
 #include "Waypoints.h"
 #include "Waypoint.h"
@@ -43,7 +44,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
   : Fact(parent,"mission","Mission",tr("Vehicle mission"),GroupItem,NoData),
     vehicle(parent),
     m_startHeading(0),
-    m_startLength(0)
+    m_startLength(0),
+    m_empty(true)
 {
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,vehicle,&Vehicle::requestMission);
@@ -61,6 +63,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f_taxiways=new Taxiways(this);
   f_points=new Points(this);
 
+  m_listModel=new MissionListModel(this);
+
   connect(this,&Fact::modifiedChanged,this,&VehicleMission::updateActions);
 
 
@@ -75,8 +79,10 @@ VehicleMission::VehicleMission(Vehicle *parent)
     QTimer::singleShot(2000,f_request,&Fact::trigger);
   }
 
+  qmlRegisterUncreatableType<VehicleMission>("GCS.Mission", 1, 0, "Mission", "Reference only");
   qmlRegisterUncreatableType<Waypoint>("GCS.Mission", 1, 0, "Waypoint", "Reference only");
   qmlRegisterUncreatableType<Runway>("GCS.Mission", 1, 0, "Runway", "Reference only");
+  qmlRegisterUncreatableType<MissionListModel>("GCS.Mission", 1, 0, "MissionListModel", "Reference only");
 
   FactSystem::instance()->jsSync(this);
 }
@@ -129,14 +135,16 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
   data_cnt-=bus_packet_size_hdr;
   if(data_cnt<4)return false;
   if(packet.id!=APX::idx_mission) return false;
-  int wpcnt=0,rwcnt=0;
+  int ecnt=0,wpcnt=0,rwcnt=0;
   const uint8_t *ptr=packet.data;
   for(uint cnt=0;data_cnt>=sizeof(Mission::_item_hdr);data_cnt-=cnt){
     ptr+=cnt;
+    ecnt++;
     const Mission::_item_hdr *hdr=(Mission::_item_hdr*)ptr;
     switch(hdr->type){
       case Mission::mi_stop:
         data_cnt-=sizeof(Mission::_item_hdr);
+        ecnt--;
       break;
       case Mission::mi_wp:
       {
@@ -258,7 +266,9 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
   }
   if(data_cnt){
     qWarning()<<"error in mission";
+    setEmpty(true);
   }else{
+    setEmpty(ecnt<=0);
     qDebug()<<"Mission received"<<wpcnt<<rwcnt;
   }
 
@@ -295,6 +305,20 @@ void VehicleMission::setStartLength(const double &v)
   if(m_startLength==v)return;
   m_startLength=v;
   emit startLengthChanged();
+}
+MissionListModel * VehicleMission::listModel() const
+{
+  return m_listModel;
+}
+bool VehicleMission::empty() const
+{
+  return m_empty;
+}
+void VehicleMission::setEmpty(const bool v)
+{
+  if(m_empty==v)return;
+  m_empty=v;
+  emit emptyChanged();
 }
 //=============================================================================
 //=============================================================================

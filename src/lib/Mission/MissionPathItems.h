@@ -36,7 +36,7 @@ class MissionPathItems: public MissionItems
   Q_PROPERTY(uint time READ time NOTIFY timeChanged)
 
 public:
-  explicit MissionPathItems(VehicleMission *parent, const QString &name, const QString &title, const QString &descr);
+  explicit MissionPathItems(VehicleMission *parent, VehicleMission::MissionItemType itemType, const QString &name, const QString &title, const QString &descr);
 
 
 private:

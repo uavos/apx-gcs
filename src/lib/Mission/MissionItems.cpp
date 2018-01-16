@@ -23,10 +23,16 @@
 #include "MissionItems.h"
 #include "VehicleMission.h"
 //=============================================================================
-MissionItems::MissionItems(VehicleMission *parent, const QString &name, const QString &title, const QString &descr)
+MissionItems::MissionItems(VehicleMission *parent, VehicleMission::MissionItemType itemType, const QString &name, const QString &title, const QString &descr)
   : Fact(parent,name,title,descr,GroupItem,ConstData),
-    mission(parent)
+    mission(parent),
+    m_missionItemType(itemType)
 {
   setSection(tr("Mission elements"));
+}
+//=============================================================================
+int MissionItems::missionItemType() const
+{
+  return m_missionItemType;
 }
 //=============================================================================

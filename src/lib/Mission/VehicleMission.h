@@ -28,6 +28,7 @@
 #include "FactSystem.h"
 class Vehicle;
 class MissionItems;
+class MissionListModel;
 class Waypoints;
 class Runways;
 class Taxiways;
@@ -36,9 +37,15 @@ class Points;
 class VehicleMission: public Fact
 {
   Q_OBJECT
+  Q_ENUMS(MissionItemType)
+
   Q_PROPERTY(QGeoCoordinate startPoint READ startPoint WRITE setStartPoint NOTIFY startPointChanged)
   Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
   Q_PROPERTY(double startLength READ startLength WRITE setStartLength NOTIFY startLengthChanged)
+
+  Q_PROPERTY(MissionListModel * listModel READ listModel CONSTANT)
+
+  Q_PROPERTY(bool empty READ empty NOTIFY emptyChanged)
 
 public:
   explicit VehicleMission(Vehicle *parent);
@@ -59,6 +66,16 @@ public:
 
 
   bool unpackMission(const QByteArray &ba);
+
+
+  enum MissionItemType {
+    WaypointType =0,
+    RunwayType,
+    TaxiwayType,
+    PointType,
+  };
+  Q_ENUM(MissionItemType)
+
 
 private:
 
@@ -87,15 +104,25 @@ public:
   double startLength() const;
   void setStartLength(const double &v);
 
+  MissionListModel * listModel() const;
+
+  bool empty() const;
+  void setEmpty(const bool v);
+
 protected:
   QGeoCoordinate m_startPoint;
   double m_startHeading;
   double m_startLength;
 
+  MissionListModel *m_listModel;
+
+  bool m_empty;
+
 signals:
   void startPointChanged();
   void startHeadingChanged();
   void startLengthChanged();
+  void emptyChanged();
 };
 //=============================================================================
 #endif

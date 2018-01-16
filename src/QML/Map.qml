@@ -1,8 +1,10 @@
 ﻿import QtQuick 2.3
 import "./FlightMap"
-//import GCS.FlightMap    1.0
 
 FlightMap {
+    //id: window
     anchors.fill: parent
+
+
 
 }

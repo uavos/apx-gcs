@@ -29,7 +29,7 @@
 #include "VehicleMandalaFact.h"
 //=============================================================================
 Point::Point(Points *parent)
-  : MissionOrderedItem(parent,"P#","",""),
+  : MissionOrderedItem(parent,"P#","",tr("Point of interest")),
     points(parent)
 {
   f_latitude=new Fact(this,"latitude",tr("Latitude"),tr("Global postition latitude"),FactItem,FloatData);
@@ -64,22 +64,29 @@ Point::Point(Points *parent)
   connect(f_longitude,&Fact::valueChanged,this,&Point::radiusPointChanged);
   connect(f_radius,&Fact::valueChanged,this,&Point::radiusPointChanged);
 
-  connect(f_radius,&Fact::valueChanged,this,&Point::updateDescr);
-  connect(f_hmsl,&Fact::valueChanged,this,&Point::updateDescr);
-  connect(f_loops,&Fact::valueChanged,this,&Point::updateDescr);
-  connect(f_time,&Fact::valueChanged,this,&Point::updateDescr);
+  //title
+  connect(f_radius,&Fact::valueChanged,this,&Point::updateTitle);
+  connect(f_hmsl,&Fact::valueChanged,this,&Point::updateTitle);
+  connect(f_loops,&Fact::valueChanged,this,&Point::updateTitle);
+  connect(f_time,&Fact::valueChanged,this,&Point::updateTitle);
+  updateTitle();
 
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
-void Point::updateDescr()
+void Point::updateTitle()
 {
   QStringList st;
-  st.append(tr("Point")+":");
-  //st.append(f_type->text().left(1).toUpper()+QString::number((int)floor(FactSystem::angle360(heading()))));
-  //st.append(f_approach->text()+f_approach->units());
-  if(!f_hmsl->isZero()) st.append("HMSL: "+f_hmsl->text());
-  setDescr(st.join(' '));
+  st.append(QString::number(num()+1));
+  int r=f_radius->value().toInt();
+  if(abs(r)>0){
+    st.append(FactSystem::distanceToString(abs(r)));
+    if(r<0) st.append(tr("CCW"));
+  }else st.append("H");
+  if(!f_loops->isZero()) st.append("L"+f_loops->text());
+  if(!f_time->isZero()) st.append("T"+f_time->text());
+  if(!f_hmsl->isZero()) st.append("MSL"+f_hmsl->text());
+  setTitle(st.join(' '));
 }
 //=============================================================================
 QGeoCoordinate Point::radiusPoint() const
@@ -97,13 +104,13 @@ void Point::setRadiusPoint(const QGeoCoordinate &v)
   int rabs=abs(f_radius->value().toInt());
   if(fabs(ne.y())>(rabs/2.0)){
     //switch turn direction
-    f_radius->setValue(ne.y()>0?-rabs:rabs);
+    f_radius->setValue(ne.y()>0?rabs:-rabs);
   }
   int dist=ne.x();
-  if(dist<5)dist=0;
+  if(dist<20)dist=0;
   else if(dist>50000)dist=50000;
   else if(dist>500)dist=(dist/100)*100;
-  else if(dist>100)dist=(dist/10)*10;
-  f_radius->setValue(dist);
+  else dist=(dist/10)*10;
+  f_radius->setValue(f_radius->value().toInt()<0?-dist:dist);
 }
 //=============================================================================

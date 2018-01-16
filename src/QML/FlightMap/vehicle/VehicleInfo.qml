@@ -4,10 +4,9 @@ import QtPositioning 5.6
 import GCS.Vehicles 1.0
 import ".."
 
-MapText {
+MapButton {
     id: vehicleInfo
     property var vehicle: modelData
-    property bool interactive: false
 
     //Fact bindings
     property var vm: vehicle.mandala
@@ -15,13 +14,15 @@ MapText {
     property real vspeed: vm.vspeed.value
     property string modeText: vm.mode.text
     property int stage: vm.stage.value
-    property bool active: vehicle.active
+    active: vehicle.active
 
     property bool bGCU: vehicle.vclass.value===Vehicle.GCU
     property bool bLOCAL: vehicle.vclass.value===Vehicle.LOCAL
 
-    opacity: (interactive && (!active) && (!mouseArea.containsMouse))?0.4:1
-    Behavior on opacity { enabled: app.settings.smooth.value; NumberAnimation {duration: 200; } }
+
+    //internal
+    enabled: false
+    defaultOpacity: 0.6
 
     text: bGCU?vehicle.callsign.value:(
             (bLOCAL?"":(vehicle.callsign.value+"\n"))+
@@ -35,19 +36,13 @@ MapText {
         vehicle.stream.value===Vehicle.XPDR?"#376479":"gray"
 
 
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        enabled: interactive
-        hoverEnabled: enabled
-        cursorShape: enabled?Qt.PointingHandCursor:Qt.ArrowCursor
-        onClicked: {
-            if(active){
-                map.centerOnCoordinate(QtPositioning.coordinate(vm.gps_lat.value,vm.gps_lon.value))
-            }else{
-                app.vehicles.selectVehicle(vehicle);
-            }
+    onClicked: {
+        if(active){
+            map.centerOnCoordinate(QtPositioning.coordinate(vm.gps_lat.value,vm.gps_lon.value))
+        }else{
+            app.vehicles.selectVehicle(vehicle);
         }
-
     }
+
+    onMenuRequested: map.showMenu(vehicle)
 }

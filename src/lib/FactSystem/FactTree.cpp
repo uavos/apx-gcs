@@ -26,7 +26,8 @@ FactTree::FactTree(FactTree *parent, const QString &name, ItemType treeItemType)
  : QObject(parent),
    m_parentItem(NULL),
    m_treeItemType(treeItemType),
-   m_name(makeNameUnique(name))
+   m_name(makeNameUnique(name)),
+   m_num(0)
 {
   setObjectName(m_name);
 }
@@ -43,6 +44,7 @@ void FactTree::insertItem(int i, FactTree *item)
   item->setParent(this);
   emit itemToBeInserted(i,item);
   m_items.insert(i,item);
+  item->updateNum();
   emit itemInserted(item);
   emit sizeChanged();
 }
@@ -53,6 +55,7 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
   item->removed();
   emit itemToBeRemoved(i,item);
   m_items.removeAt(i);
+  for(int i=0;i<m_items.size();++i) m_items.at(i)->updateNum();
   if(deleteLater){
     //item->disconnect();
     item->deleteLater();
@@ -118,8 +121,15 @@ QString FactTree::makeNameUnique(const QString &s)
 //=============================================================================
 int FactTree::num() const
 {
-  if(!m_parentItem) return 0;
-  return m_parentItem->m_items.indexOf(const_cast<FactTree*>(this));
+  return m_num;
+}
+void FactTree::updateNum()
+{
+  int v=0;
+  if(m_parentItem) v=m_parentItem->m_items.indexOf(this);
+  if(m_num==v)return;
+  m_num=v;
+  emit numChanged();
 }
 FactTree *FactTree::child(int n) const
 {

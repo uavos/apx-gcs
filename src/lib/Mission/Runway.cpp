@@ -29,7 +29,7 @@
 #include "VehicleMandalaFact.h"
 //=============================================================================
 Runway::Runway(Runways *parent)
-  : MissionOrderedItem(parent,"R#","",""),
+  : MissionOrderedItem(parent,"R#","",tr("Runway")),
     runways(parent)
 {
   f_type=new Fact(this,"type",tr("Type"),tr("Landing pattern type"),FactItem,EnumData);
@@ -60,6 +60,13 @@ Runway::Runway(Runways *parent)
   f_dE->setMin(-10000);
   f_dE->setMax(10000);
 
+  //title
+  connect(f_type,&Fact::valueChanged,this,&Runway::updateTitle);
+  connect(f_approach,&Fact::valueChanged,this,&Runway::updateTitle);
+  connect(f_hmsl,&Fact::valueChanged,this,&Runway::updateTitle);
+  connect(this,&Runway::headingChanged,this,&Runway::updateTitle);
+
+
 
   //conversions
   connect(f_dN,&Fact::valueChanged,this,&Runway::endPointChanged);
@@ -75,11 +82,6 @@ Runway::Runway(Runways *parent)
   connect(f_approach,&Fact::valueChanged,this,&Runway::appPointChanged);
   connect(this,&Runway::headingChanged,this,&Runway::appPointChanged);
 
-  connect(f_type,&Fact::valueChanged,this,&Runway::updateDescr);
-  connect(f_approach,&Fact::valueChanged,this,&Runway::updateDescr);
-  connect(f_hmsl,&Fact::valueChanged,this,&Runway::updateDescr);
-  connect(this,&Runway::headingChanged,this,&Runway::updateDescr);
-
   connect(this,&Runway::endPointChanged,this,&Runway::updateMissionStartPoint);
   connect(this,&Runway::appPointChanged,this,&Runway::updateMissionStartPoint);
 
@@ -87,14 +89,14 @@ Runway::Runway(Runways *parent)
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
-void Runway::updateDescr()
+void Runway::updateTitle()
 {
   QStringList st;
-  st.append(tr("Runway")+":");
-  st.append(f_type->text().left(1).toUpper()+QString::number((int)floor(FactSystem::angle360(heading()))));
-  st.append(f_approach->text()+f_approach->units());
-  if(!f_hmsl->isZero()) st.append("HMSL: "+f_hmsl->text());
-  setDescr(st.join(' '));
+  st.append(QString::number(num()+1));
+  st.append(f_type->text().left(1).toUpper()+QString("%1").arg((int)FactSystem::angle360(round(FactSystem::angle360(heading())/10.0)*10)/10,2,10,QLatin1Char('0')));
+  st.append(FactSystem::distanceToString(f_approach->value().toInt()));
+  if(!f_hmsl->isZero()) st.append("MSL"+f_hmsl->text());
+  setTitle(st.join(' '));
 }
 //=============================================================================
 void Runway::updateMissionStartPoint()

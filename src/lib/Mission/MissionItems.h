@@ -25,17 +25,20 @@
 //=============================================================================
 #include <QtCore>
 #include <FactSystem.h>
-class VehicleMission;
+#include "VehicleMission.h"
 //=============================================================================
 class MissionItems: public Fact
 {
   Q_OBJECT
 
 public:
-  explicit MissionItems(VehicleMission *parent, const QString &name, const QString &title, const QString &descr);
+  explicit MissionItems(VehicleMission *parent, VehicleMission::MissionItemType itemType, const QString &name, const QString &title, const QString &descr);
 
   VehicleMission *mission;
 
+  int missionItemType() const;
+private:
+  int m_missionItemType;
 };
 //=============================================================================
 #endif

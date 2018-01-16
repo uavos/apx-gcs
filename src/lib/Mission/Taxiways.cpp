@@ -23,7 +23,7 @@
 #include "Taxiways.h"
 //=============================================================================
 Taxiways::Taxiways(VehicleMission *parent)
-  : MissionPathItems(parent,"taxiways",tr("Taxiways"),"")
+  : MissionPathItems(parent,VehicleMission::TaxiwayType,"taxiways",tr("Taxiways"),"")
 {
 }
 //=============================================================================
