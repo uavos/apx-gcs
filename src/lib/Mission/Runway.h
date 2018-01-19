@@ -25,10 +25,9 @@
 //=============================================================================
 #include <QtCore>
 #include <QGeoCoordinate>
-#include "MissionOrderedItem.h"
-#include "Runways.h"
+#include "MissionItem.h"
 //=============================================================================
-class Runway: public MissionOrderedItem
+class Runway: public MissionItem
 {
   Q_OBJECT
   Q_ENUMS(RunwayType)
@@ -38,13 +37,11 @@ class Runway: public MissionOrderedItem
 
 
 public:
-  explicit Runway(Runways *parent);
+  explicit Runway(MissionGroup *parent);
 
   Fact *f_type;
   Fact *f_approach;
   Fact *f_hmsl;
-  Fact *f_latitude;
-  Fact *f_longitude;
   Fact *f_dN;
   Fact *f_dE;
 
@@ -54,10 +51,6 @@ public:
     Right,
   };
   Q_ENUM(RunwayType)
-
-  Runways *runways;
-
-private:
 
 
 private slots:

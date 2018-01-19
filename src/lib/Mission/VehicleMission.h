@@ -25,14 +25,15 @@
 //=============================================================================
 #include <QtCore>
 #include <QGeoCoordinate>
-#include "FactSystem.h"
+#include <QGeoRectangle>
+#include <FactSystem.h>
+#include "MissionGroup.h"
 class Vehicle;
-class MissionItems;
 class MissionListModel;
-class Waypoints;
-class Runways;
-class Taxiways;
-class Points;
+class Waypoint;
+class Runway;
+class Taxiway;
+class Poi;
 //=============================================================================
 class VehicleMission: public Fact
 {
@@ -46,24 +47,25 @@ class VehicleMission: public Fact
   Q_PROPERTY(MissionListModel * listModel READ listModel CONSTANT)
 
   Q_PROPERTY(bool empty READ empty NOTIFY emptyChanged)
+  Q_PROPERTY(int missionSize READ missionSize NOTIFY missionSizeChanged)
 
 public:
   explicit VehicleMission(Vehicle *parent);
 
   Fact *f_request;
-  Fact *f_reload;
+  Fact *f_clear;
   Fact *f_upload;
-  Fact *f_stop;
 
-  Waypoints   *f_waypoints;
-  Runways     *f_runways;
-  Taxiways    *f_taxiways;
-  Points      *f_points;
-  MissionItems *f_restricted;
-  MissionItems *f_emergency;
+  MissionGroup *f_waypoints;
+  MissionGroup *f_runways;
+  MissionGroup *f_taxiways;
+  MissionGroup *f_pois;
+  //MissionItems *f_restricted;
+  //MissionItems *f_emergency;
 
   Vehicle *vehicle;
 
+  QList<MissionGroup*> groups;
 
   bool unpackMission(const QByteArray &ba);
 
@@ -72,21 +74,23 @@ public:
     WaypointType =0,
     RunwayType,
     TaxiwayType,
-    PointType,
+    PoiType,
   };
   Q_ENUM(MissionItemType)
 
+  Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
 private:
 
 private slots:
+  void updateSize();
   void updateActions();
   void updateStartPath();
 
 public slots:
-  void clear();
-  void upload();
-  void stop();
+  void clearMission();
+  void uploadMission();
+  void test(int n=50);
 
 signals:
   void actionsUpdated();
@@ -109,6 +113,9 @@ public:
   bool empty() const;
   void setEmpty(const bool v);
 
+  int missionSize() const;
+  void setMissionSize(const int v);
+
 protected:
   QGeoCoordinate m_startPoint;
   double m_startHeading;
@@ -117,12 +124,14 @@ protected:
   MissionListModel *m_listModel;
 
   bool m_empty;
+  int m_missionSize;
 
 signals:
   void startPointChanged();
   void startHeadingChanged();
   void startLengthChanged();
   void emptyChanged();
+  void missionSizeChanged();
 };
 //=============================================================================
 #endif

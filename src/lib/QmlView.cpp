@@ -28,7 +28,9 @@
 #include <QPushButton>
 #include <QGLFormat>
 #include <QQuickStyle>
-#include "FactSystem.h"
+#include <FactSystem.h>
+#include <AppSettings.h>
+#include <QSurfaceFormat>
 //=============================================================================
 QmlView::QmlView(QString src,QWindow *parent)
   : QQuickView(FactSystem::instance()->engine(),parent),menu(NULL),blockShowEvt(true)
@@ -36,14 +38,16 @@ QmlView::QmlView(QString src,QWindow *parent)
 
   settings=new QMLSettings();
 
-  //if(QSettings().value("opengl",true).toBool()&&QGLFormat::openGLVersionFlags()){
+  if(AppSettings::value("opengl").toBool() && QGLFormat::openGLVersionFlags()){
     //setSurfaceType(QSurface::OpenGLSurface);
-    /*QSurfaceFormat format;//(QSurfaceFormat::defaultFormat());
-    format.setRenderableType(QSurfaceFormat::OpenGL);
-    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    QSurfaceFormat f = format();
+    //f.setRenderableType(QSurfaceFormat::OpenGL);
+    //f.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     //format.setSwapInterval(1);
-    setFormat(format);*/
-  //}
+    f.setSamples(16);
+    setFormat(f);
+  }
+
   setColor(QColor(Qt::black));
   //setClearBeforeRendering(true);
   //setFlags(Qt::FramelessWindowHint);

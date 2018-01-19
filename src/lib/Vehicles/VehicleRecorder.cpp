@@ -38,7 +38,7 @@
 #include "Mandala.h"
 //=============================================================================
 VehicleRecorder::VehicleRecorder(Vehicle *parent)
-  :Fact(parent,"recorder",tr("Recorder"),tr("Telemetry file recorder"),FactItem,NoData),
+  :Fact(parent,"recorder",tr("Recorder"),tr("Telemetry data recorder"),FactItem,NoData),
   vehicle(parent),
   v_mode(vehicle),
   v_stage(vehicle),
@@ -63,12 +63,14 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   recStopTimer.setSingleShot(true);
   connect(&recStopTimer,&QTimer::timeout,this,[=](){setRecording(false);});
 
-  setRecording(QSettings().value("recording",false).toBool());
+  //setRecording(QSettings().value("recording",false).toBool());
 
   //status change (size/time)
   connect(this,&VehicleRecorder::recordingChanged,this,[=](){ setActive(recording()); });
   connect(this,&VehicleRecorder::recTimeChanged,this,&VehicleRecorder::updateStatus);
   updateStatus();
+
+  connect(this,&Fact::triggered,this,[=](){setRecording(!recording());});
   recordingChanged();
 }
 //=============================================================================

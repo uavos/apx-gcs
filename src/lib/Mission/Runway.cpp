@@ -22,63 +22,59 @@
  */
 #include "Runway.h"
 #include "Mission.h"
-#include "MissionItems.h"
+#include "MissionField.h"
 #include "VehicleMission.h"
 #include "Vehicle.h"
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
 //=============================================================================
-Runway::Runway(Runways *parent)
-  : MissionOrderedItem(parent,"R#","",tr("Runway")),
-    runways(parent)
+Runway::Runway(MissionGroup *parent)
+  : MissionItem(parent,"R#","",tr("Runway"))
 {
-  f_type=new Fact(this,"type",tr("Type"),tr("Landing pattern type"),FactItem,EnumData);
+  f_type=new MissionField(this,"type",tr("Type"),tr("Landing pattern type"),EnumData);
   f_type->setEnumStrings(QMetaEnum::fromType<RunwayType>());
 
-  f_approach=new Fact(this,"approach",tr("Approach length"),tr("Final approach length"),FactItem,IntData);
+  f_approach=new MissionField(this,"approach",tr("Approach length"),tr("Final approach length"),IntData);
   f_approach->setUnits("m");
   f_approach->setMin(0);
   f_approach->setMax(10000);
 
-  f_hmsl=new Fact(this,"hmsl",tr("HMSL"),tr("Runway altitude above mean sea level"),FactItem,IntData);
+  f_hmsl=new MissionField(this,"hmsl",tr("HMSL"),tr("Runway altitude above mean sea level"),IntData);
   f_hmsl->setUnits("m");
   f_hmsl->setEnumStrings(QStringList()<<"default");
 
-  f_latitude=new Fact(this,"latitude",tr("Latitude"),tr("Global postition latitude"),FactItem,FloatData);
-  f_latitude->setUnits("lat");
-  f_longitude=new Fact(this,"longitude",tr("Longitude"),tr("Global postition longitude"),FactItem,FloatData);
-  f_longitude->setUnits("lon");
-
-  f_dN=new Fact(this,"dN",tr("Delta North"),tr("Runway direction point (north)"),FactItem,IntData);
+  f_dN=new MissionField(this,"dN",tr("Delta North"),tr("Runway direction point (north)"),IntData);
   f_dN->setUnits("m");
-  f_dN->setValue(100);
   f_dN->setMin(-10000);
   f_dN->setMax(10000);
-  f_dE=new Fact(this,"dE",tr("Delta East"),tr("Runway direction point (east)"),FactItem,IntData);
+  f_dE=new MissionField(this,"dE",tr("Delta East"),tr("Runway direction point (east)"),IntData);
   f_dE->setUnits("m");
-  f_dE->setValue(300);
   f_dE->setMin(-10000);
   f_dE->setMax(10000);
+
+  //default values
+  f_approach->setValue(800);
+  f_dN->setValue(100);
+  f_dE->setValue(300);
 
   //title
   connect(f_type,&Fact::valueChanged,this,&Runway::updateTitle);
   connect(f_approach,&Fact::valueChanged,this,&Runway::updateTitle);
   connect(f_hmsl,&Fact::valueChanged,this,&Runway::updateTitle);
   connect(this,&Runway::headingChanged,this,&Runway::updateTitle);
+  updateTitle();
 
 
 
   //conversions
   connect(f_dN,&Fact::valueChanged,this,&Runway::endPointChanged);
   connect(f_dE,&Fact::valueChanged,this,&Runway::endPointChanged);
-  connect(f_latitude,&Fact::valueChanged,this,&Runway::endPointChanged);
-  connect(f_longitude,&Fact::valueChanged,this,&Runway::endPointChanged);
+  connect(this,&MissionItem::coordinateChanged,this,&Runway::endPointChanged);
 
   connect(f_dN,&Fact::valueChanged,this,&Runway::headingChanged);
   connect(f_dE,&Fact::valueChanged,this,&Runway::headingChanged);
 
-  connect(f_latitude,&Fact::valueChanged,this,&Runway::appPointChanged);
-  connect(f_longitude,&Fact::valueChanged,this,&Runway::appPointChanged);
+  connect(this,&MissionItem::coordinateChanged,this,&Runway::appPointChanged);
   connect(f_approach,&Fact::valueChanged,this,&Runway::appPointChanged);
   connect(this,&Runway::headingChanged,this,&Runway::appPointChanged);
 
@@ -102,17 +98,17 @@ void Runway::updateTitle()
 void Runway::updateMissionStartPoint()
 {
   if(num()!=0)return;
-  QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
+  QGeoCoordinate p(coordinate());
   QGeoCoordinate p2=endPoint();
-  runways->mission->setStartPoint(p2);
-  runways->mission->setStartHeading(heading());
+  group->mission->setStartPoint(p2);
+  group->mission->setStartHeading(heading());
   double slen=f_approach->value().toDouble()*2.0-p.distanceTo(endPoint());
-  runways->mission->setStartLength(slen<0?0:slen);
+  group->mission->setStartLength(slen<0?0:slen);
 }
 //=============================================================================
 QGeoCoordinate Runway::endPoint() const
 {
-  QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
+  QGeoCoordinate p(coordinate());
   double dN=f_dN->value().toDouble();
   double dE=f_dE->value().toDouble();
   double azimuth=qRadiansToDegrees(atan2(dE,dN));
@@ -121,7 +117,7 @@ QGeoCoordinate Runway::endPoint() const
 }
 void Runway::setEndPoint(const QGeoCoordinate &v)
 {
-  QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
+  QGeoCoordinate p(coordinate());
   double a=qDegreesToRadians(p.azimuthTo(v));
   double d=p.distanceTo(v);
   f_dN->setValue(d*cos(a));
@@ -129,7 +125,7 @@ void Runway::setEndPoint(const QGeoCoordinate &v)
 }
 QGeoCoordinate Runway::appPoint() const
 {
-  QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
+  QGeoCoordinate p(coordinate());
   double dN=f_dN->value().toDouble();
   double dE=f_dE->value().toDouble();
   double azimuth=qRadiansToDegrees(atan2(dE,dN))+180.0;
@@ -138,7 +134,7 @@ QGeoCoordinate Runway::appPoint() const
 }
 void Runway::setAppPoint(const QGeoCoordinate &v)
 {
-  QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
+  QGeoCoordinate p(coordinate());
   double a=qDegreesToRadians(p.azimuthTo(v));
   double d=p.distanceTo(v);
   QPointF ne(d*cos(a),d*sin(a));

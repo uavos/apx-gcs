@@ -23,20 +23,14 @@
 #include "VehicleMission.h"
 #include "Vehicle.h"
 #include "MissionListModel.h"
-#include "MissionItems.h"
-#include "Waypoints.h"
+#include "MissionGroup.h"
 #include "Waypoint.h"
-#include "Runways.h"
 #include "Runway.h"
-#include "Taxiways.h"
 #include "Taxiway.h"
-#include "Points.h"
-#include "Point.h"
+#include "Poi.h"
 
 //pack
-namespace APX{
 #include <Mandala.h>
-}
 #include <Mission.h>
 #include <node.h>
 //=============================================================================
@@ -45,23 +39,35 @@ VehicleMission::VehicleMission(Vehicle *parent)
     vehicle(parent),
     m_startHeading(0),
     m_startLength(0),
-    m_empty(true)
+    m_empty(true),
+    m_missionSize(0)
 {
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   connect(f_request,&Fact::triggered,vehicle,&Vehicle::requestMission);
 
   f_upload=new Fact(this,"upload",tr("Upload"),tr("Upload to vehicle"),FactItem,ActionData);
-  connect(f_upload,&Fact::triggered,this,&VehicleMission::upload);
+  f_upload->setEnabled(false);
+  connect(f_upload,&Fact::triggered,this,&VehicleMission::uploadMission);
   connect(f_upload,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
 
-  f_stop=new Fact(this,"stop",tr("Stop"),tr("Stop data requests"),FactItem,ActionData);
-  connect(f_stop,&Fact::triggered,this,&VehicleMission::stop);
-  connect(f_stop,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
+  f_clear=new Fact(this,"clear",tr("Clear"),tr("Clear mission"),FactItem,ActionData);
+  f_clear->setEnabled(false);
+  connect(f_clear,&Fact::triggered,this,&VehicleMission::clearMission);
+  connect(f_clear,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
 
-  f_runways=new Runways(this);
-  f_waypoints=new Waypoints(this);
-  f_taxiways=new Taxiways(this);
-  f_points=new Points(this);
+  connect(this,&VehicleMission::emptyChanged,this,&VehicleMission::updateActions);
+
+
+  //groups of items
+  f_runways=new MissionGroupT<Runway,RunwayType>(this,"runways",tr("Runways"),tr("Takeoff and Landing"));
+  f_waypoints=new MissionGroupT<Waypoint,WaypointType>(this,"waypoints",tr("Waypoints"),"");
+  f_taxiways=new MissionGroupT<Taxiway,TaxiwayType>(this,"taxiways",tr("Taxiways"),"");
+  f_pois=new MissionGroupT<Poi,PoiType>(this,"points",tr("Points"),tr("Points of Interest"));
+
+  foreach (MissionGroup *group, groups) {
+    connect(group,&Fact::sizeChanged,this,&VehicleMission::updateSize);
+  }
+
 
   m_listModel=new MissionListModel(this);
 
@@ -79,9 +85,10 @@ VehicleMission::VehicleMission(Vehicle *parent)
     QTimer::singleShot(2000,f_request,&Fact::trigger);
   }
 
-  qmlRegisterUncreatableType<VehicleMission>("GCS.Mission", 1, 0, "Mission", "Reference only");
-  qmlRegisterUncreatableType<Waypoint>("GCS.Mission", 1, 0, "Waypoint", "Reference only");
-  qmlRegisterUncreatableType<Runway>("GCS.Mission", 1, 0, "Runway", "Reference only");
+  qmlRegisterUncreatableType<VehicleMission>  ("GCS.Mission", 1, 0, "Mission", "Reference only");
+  qmlRegisterUncreatableType<MissionItem>     ("GCS.Mission", 1, 0, "MissionItem", "Reference only");
+  qmlRegisterUncreatableType<Waypoint>        ("GCS.Mission", 1, 0, "Waypoint", "Reference only");
+  qmlRegisterUncreatableType<Runway>          ("GCS.Mission", 1, 0, "Runway", "Reference only");
   qmlRegisterUncreatableType<MissionListModel>("GCS.Mission", 1, 0, "MissionListModel", "Reference only");
 
   FactSystem::instance()->jsSync(this);
@@ -89,6 +96,9 @@ VehicleMission::VehicleMission(Vehicle *parent)
 //=============================================================================
 void VehicleMission::updateActions()
 {
+  bool bEmpty=empty();
+  f_upload->setEnabled(!bEmpty);
+  f_clear->setEnabled(!bEmpty);
   /*bool busy=false;//model->requestManager.busy();
   bool upgrading=false;//model->isUpgrading();
   bool bModAll=modified();
@@ -97,6 +107,16 @@ void VehicleMission::updateActions()
   f_stop->setEnabled(busy||upgrading);
   f_reload->setEnabled(!(upgrading||bEmpty));*/
 }
+void VehicleMission::updateSize()
+{
+  int cnt=0;
+  foreach (MissionGroup *group, groups) {
+    cnt+=group->size();
+  }
+  setMissionSize(cnt);
+  setEmpty(cnt<=0);
+  setStatus(cnt>0?QString::number(cnt):"");
+}
 //=============================================================================
 void VehicleMission::updateStartPath()
 {
@@ -104,9 +124,31 @@ void VehicleMission::updateStartPath()
   static_cast<Waypoint*>(f_waypoints->child(0))->updatePath();
 }
 //=============================================================================
-//=============================================================================
-void VehicleMission::clear()
+QGeoRectangle VehicleMission::boundingGeoRectangle() const
 {
+  QList<QGeoCoordinate> clist;
+  foreach (MissionGroup *group, groups) {
+    for(int i=0;i<group->size();++i){
+      clist.append(static_cast<MissionItem*>(group->child(i))->coordinate());
+    }
+  }
+  for(int i=0;i<f_runways->size();++i){
+    Runway *e=static_cast<Runway*>(f_runways->child(i));
+    QGeoCoordinate p(e->coordinate());
+    clist.append(p.atDistanceAndAzimuth(e->f_approach->value().toDouble()*1.2,e->heading()+180.0));
+  }
+  QGeoRectangle r(clist);
+  r.setWidth(r.width()*1.2);
+  r.setHeight(r.height()*1.2);
+  return r;
+}
+//=============================================================================
+//=============================================================================
+void VehicleMission::clearMission()
+{
+  foreach (MissionGroup *group, groups) {
+    group->removeAll();
+  }
   /*if(snMap.isEmpty())return;
   snMap.clear();
   nGroups.clear();
@@ -116,15 +158,25 @@ void VehicleMission::clear()
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
-void VehicleMission::upload()
+void VehicleMission::uploadMission()
 {
-  /*foreach(NodeItem *node,snMap.values()){
-    node->upload();
-  }*/
+  test();
 }
 //=============================================================================
-void VehicleMission::stop()
+void VehicleMission::test(int n)
 {
+  if(f_waypoints->size()<=0)return;
+  Waypoint *w=static_cast<Waypoint*>(f_waypoints->childItems().last());
+  QGeoCoordinate p(w->f_latitude->value().toDouble(),w->f_longitude->value().toDouble());
+  double hdg=360.0*qrand()/RAND_MAX;
+  for(int i=0;i<n;++i){
+    hdg+=200.0*qrand()/RAND_MAX-100.0;
+    p=p.atDistanceAndAzimuth(100+10000.0*qrand()/RAND_MAX,hdg);
+    Waypoint *f=new Waypoint(f_waypoints);
+    f->f_altitude->setValue(300);
+    f->f_latitude->setValue(p.latitude());
+    f->f_longitude->setValue(p.longitude());
+  }
 }
 //=============================================================================
 bool VehicleMission::unpackMission(const QByteArray &ba)
@@ -134,7 +186,7 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
   if(data_cnt<bus_packet_size_hdr)return false;
   data_cnt-=bus_packet_size_hdr;
   if(data_cnt<4)return false;
-  if(packet.id!=APX::idx_mission) return false;
+  if(packet.id!=idx_mission) return false;
   int ecnt=0,wpcnt=0,rwcnt=0;
   const uint8_t *ptr=packet.data;
   for(uint cnt=0;data_cnt>=sizeof(Mission::_item_hdr);data_cnt-=cnt){
@@ -231,7 +283,7 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
         const Mission::_item_pi *e=(Mission::_item_pi*)ptr;
         cnt=sizeof(Mission::_item_pi);
         if(data_cnt<cnt)break;
-        Point *f=new Point(f_points);
+        Poi *f=new Poi(f_pois);
         f->f_latitude->setValue(e->lat);
         f->f_longitude->setValue(e->lon);
         f->f_hmsl->setValue(e->hmsl);
@@ -267,9 +319,13 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
   if(data_cnt){
     qWarning()<<"error in mission";
     setEmpty(true);
+  }else if(ecnt<=0){
+    setEmpty(true);
+    qDebug()<<"Mission empty";
   }else{
-    setEmpty(ecnt<=0);
-    qDebug()<<"Mission received"<<wpcnt<<rwcnt;
+    setEmpty(false);
+    backup();
+    qDebug()<<"Mission received"<<ecnt;
   }
 
   return true;
@@ -319,6 +375,16 @@ void VehicleMission::setEmpty(const bool v)
   if(m_empty==v)return;
   m_empty=v;
   emit emptyChanged();
+}
+int VehicleMission::missionSize() const
+{
+  return m_missionSize;
+}
+void VehicleMission::setMissionSize(const int v)
+{
+  if(m_missionSize==v)return;
+  m_missionSize=v;
+  emit missionSizeChanged();
 }
 //=============================================================================
 //=============================================================================

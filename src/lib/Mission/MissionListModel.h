@@ -26,6 +26,7 @@
 #include <QtCore>
 #include <FactSystem.h>
 class VehicleMission;
+class MissionGroup;
 //=============================================================================
 class MissionListModel: public QAbstractListModel
 {
@@ -39,9 +40,8 @@ public:
 
 private:
   VehicleMission *mission;
-  QList<Fact*> groups;
 
-  int sectionRow(Fact *fact) const;
+  int sectionRow(MissionGroup *fact) const;
 
 private slots:
   void itemToBeInserted(int row, FactTree *item);

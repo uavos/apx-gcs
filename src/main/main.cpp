@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
   //qmlCacheDir.removeRecursively();
 
   //QApplication::setGraphicsSystem(QLatin1String("opengl"));
+  //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
   QApplication app(argc, argv);
 
   QCoreApplication::setOrganizationName("uavos");

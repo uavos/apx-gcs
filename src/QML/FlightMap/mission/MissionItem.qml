@@ -19,10 +19,21 @@ MapItemGroup {
     {
         if(map.selectedObject) map.selectedObject=null
     }
+
+    function showMapMenu()
+    {
+        deselect()
+
+    }
+
+
     Connections {
         target: map
         onClicked: deselect()
+        onMapMenuRequested: showMapMenu()
     }
+
+
 
 
     MapItemView {

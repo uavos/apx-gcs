@@ -22,25 +22,13 @@
  */
 #include "VehicleMission.h"
 #include "MissionListModel.h"
-#include "Waypoints.h"
-#include "Waypoint.h"
-#include "Runways.h"
-#include "Runway.h"
-#include "Taxiways.h"
-#include "Taxiway.h"
-#include "Points.h"
-#include "Point.h"
+#include "MissionGroup.h"
 //=============================================================================
 MissionListModel::MissionListModel(VehicleMission *parent)
  : QAbstractListModel(parent),
    mission(parent)
 {
-  groups << mission->f_runways;
-  groups << mission->f_waypoints;
-  groups << mission->f_points;
-  groups << mission->f_taxiways;
-
-  foreach (Fact *fact, groups) {
+  foreach (Fact *fact, mission->groups) {
     connect(fact,&Fact::itemToBeInserted,this,&MissionListModel::itemToBeInserted);
     connect(fact,&Fact::itemInserted,this,&MissionListModel::itemInserted);
 
@@ -51,7 +39,7 @@ MissionListModel::MissionListModel(VehicleMission *parent)
 //=============================================================================
 void MissionListModel::itemToBeInserted(int row, FactTree *)
 {
-  Fact *fact=qobject_cast<Fact*>(sender());
+  MissionGroup *fact=qobject_cast<MissionGroup*>(sender());
   if(!fact)return;
   row+=sectionRow(fact);
   beginInsertRows(QModelIndex(), row ,row);
@@ -62,7 +50,7 @@ void MissionListModel::itemInserted(FactTree *)
 }
 void MissionListModel::itemToBeRemoved(int row,FactTree *)
 {
-  Fact *fact=qobject_cast<Fact*>(sender());
+  MissionGroup *fact=qobject_cast<MissionGroup*>(sender());
   if(!fact)return;
   row+=sectionRow(fact);
   beginRemoveRows(QModelIndex(), row ,row);
@@ -72,11 +60,11 @@ void MissionListModel::itemRemoved(FactTree *)
   endRemoveRows();
 }
 //=============================================================================
-int MissionListModel::sectionRow(Fact *fact) const
+int MissionListModel::sectionRow(MissionGroup *fact) const
 {
   int srow=0;
-  for(int i=0;i<groups.indexOf(fact);++i){
-    srow+=groups.at(i)->size();
+  for(int i=0;i<mission->groups.indexOf(fact);++i){
+    srow+=mission->groups.at(i)->size();
   }
   return srow;
 }
@@ -84,8 +72,8 @@ int MissionListModel::sectionRow(Fact *fact) const
 QList<FactTree*> MissionListModel::items() const
 {
   QList<FactTree*> list;
-  for(int i=0;i<groups.size();++i){
-    list.append(groups.at(i)->childItems());
+  for(int i=0;i<mission->groups.size();++i){
+    list.append(mission->groups.at(i)->childItems());
   }
   return list;
 }
@@ -95,8 +83,8 @@ int MissionListModel::rowCount(const QModelIndex & parent) const
 {
   Q_UNUSED(parent)
   int sz=0;
-  for(int i=0;i<groups.size();++i){
-    sz+=groups.at(i)->size();
+  for(int i=0;i<mission->groups.size();++i){
+    sz+=mission->groups.at(i)->size();
   }
   return sz;
 }

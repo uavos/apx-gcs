@@ -177,5 +177,6 @@
         <file>icons/sets/ionicons/pause.svg</file>
         <file>icons/sets/ionicons/ios-fastforward.svg</file>
         <file>icons/sets/ionicons/ios-rewind.svg</file>
+        <file>icons/sets/ionicons/arrow-down-b.svg</file>
     </qresource>
 </RCC>

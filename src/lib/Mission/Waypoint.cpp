@@ -22,54 +22,59 @@
  */
 #include "Waypoint.h"
 #include "Mission.h"
-#include "MissionItems.h"
 #include "VehicleMission.h"
+#include "MissionField.h"
 #include "Vehicle.h"
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
 #include "Mandala.h"
 //=============================================================================
-Waypoint::Waypoint(Waypoints *parent)
-  : MissionPathItem(parent,"W#","",tr("Waypoint")),
+Waypoint::Waypoint(MissionGroup *parent)
+  : MissionItem(parent,"W#","",tr("Waypoint")),
     icourse(0),
     m_reachable(false),
     m_warning(false)
 {
-  f_altitude=new Fact(this,"altitude",tr("Altitude"),tr("Altitude above ground"),FactItem,IntData);
+  f_altitude=new MissionField(this,"altitude",tr("Altitude"),tr("Altitude above ground"),IntData);
   f_altitude->setUnits("m");
 
-  f_type=new Fact(this,"type",tr("Type"),tr("Maneuver type"),FactItem,EnumData);
+  f_type=new MissionField(this,"type",tr("Type"),tr("Maneuver type"),EnumData);
   f_type->setEnumStrings(QMetaEnum::fromType<ManeuverType>());
 
   //actions
   f_actions=new Fact(this,"actions",tr("Actions"),tr("Actions to perform on waypoint"),GroupItem,NoData);
-  f_speed=new Fact(f_actions,"speed",tr("Speed"),tr("Fly with this speed to waypoint"),FactItem,IntData);
+  f_speed=new MissionField(f_actions,"speed",tr("Speed"),tr("Fly with this speed to waypoint"),IntData);
   f_speed->setEnumStrings(QStringList()<<"cruise");
   f_speed->setUnits("m/s");
   f_speed->setMin(0);
   f_speed->setMax(1000);
-  f_shot=new Fact(f_actions,"shot",tr("Shot"),tr("Make a cam shot on waypoint"),FactItem,EnumData);
+  f_shot=new MissionField(f_actions,"shot",tr("Shot"),tr("Make a cam shot on waypoint"),EnumData);
   f_shot->setEnumStrings(QStringList()<<"no"<<"yes");
-  f_dshot=new Fact(f_actions,"dshot",tr("Auto Shot"),tr("Start continuous cam shots on waypoint"),FactItem,IntData);
+  f_dshot=new MissionField(f_actions,"dshot",tr("Auto Shot"),tr("Start continuous cam shots on waypoint"),IntData);
   f_dshot->setEnumStrings(QStringList()<<"stop");
   f_dshot->setUnits("m");
-  f_script=new Fact(f_actions,"script",tr("Script"),tr("Execute VM script (@function) on waypoint"),FactItem,TextData);
-  f_poi=new Fact(f_actions,"poi",tr("POI"),tr("Linked Point Of Interest"),FactItem,IntData);
+  f_script=new MissionField(f_actions,"script",tr("Script"),tr("Execute VM script (@function) on waypoint"),TextData);
+  f_poi=new MissionField(f_actions,"poi",tr("POI"),tr("Linked Point Of Interest"),IntData);
   f_poi->setEnumStrings(QStringList()<<"off");
   f_poi->setMin(0);
-  f_loiter=new Fact(f_actions,"loiter",tr("Loiter"),tr("Loiter around POI or waypoint"),FactItem,EnumData);
+  f_loiter=new MissionField(f_actions,"loiter",tr("Loiter"),tr("Loiter around POI or waypoint"),EnumData);
   f_loiter->setEnumStrings(QStringList()<<"no"<<"yes");
-  f_turnR=new Fact(f_actions,"turnR",tr("Radius"),tr("Loiter radius"),FactItem,IntData);
+  f_turnR=new MissionField(f_actions,"turnR",tr("Radius"),tr("Loiter radius"),IntData);
   f_turnR->setEnumStrings(QStringList()<<"default");
   f_turnR->setUnits("m");
-  f_loops=new Fact(f_actions,"loops",tr("Loops"),tr("Loiter loops limit"),FactItem,IntData);
+  f_loops=new MissionField(f_actions,"loops",tr("Loops"),tr("Loiter loops limit"),IntData);
   f_loops->setEnumStrings(QStringList()<<"default");
   f_loops->setMin(0);
-  f_time=new Fact(f_actions,"time",tr("Time"),tr("Loiter time limit"),FactItem,IntData);
+  f_time=new MissionField(f_actions,"time",tr("Time"),tr("Loiter time limit"),IntData);
   f_time->setEnumStrings(QStringList()<<"default");
   f_time->setUnits("time");
   f_time->setMin(0);
   f_time->setMax(60*60*24);
+
+  //default values
+  Waypoint *f0=static_cast<Waypoint*>(prevItem());
+  if(f0)f_altitude->setValue(f0->f_altitude->value());
+
 
   connect(f_actions,&Fact::childValueChanged,this,&Waypoint::updateActionsText);
 
@@ -117,7 +122,7 @@ QGeoPath Waypoint::getPath()
 {
   QGeoPath p;
 
-  VehicleMandala *vm=missionItems->mission->vehicle->f_mandala;
+  VehicleMandala *vm=group->mission->vehicle->f_mandala;
   double spd=0;//QMandala::instance()->current->apcfg.value("spd_cruise").toDouble();
   /*if(f_speed->value().toUInt()>0)
     spd=f_speed->value().toUInt();*/
@@ -128,44 +133,41 @@ QGeoPath Waypoint::getPath()
   double turnRate=(360.0/(2.0*M_PI))*spd/turnR;
   double crs=m_course;
   double distance=0;
-  Waypoint *prev=prevItem<Waypoint*>();
-  QGeoCoordinate dest(f_latitude->value().toDouble(),f_longitude->value().toDouble(),f_altitude->value().toDouble());
+  MissionItem *prev=prevItem();
+  QGeoCoordinate dest(coordinate());
   QGeoCoordinate pt;
   bool wptReached=true;
   bool wptWarning=false;
   bool wptLine=false;
   while(1){
     if(!prev){
-      pt=pathItems->mission->startPoint();
+      pt=group->mission->startPoint();
       if(!pt.isValid()){
         pt=QGeoCoordinate(vm->factById(idx_home_pos|(0<<8))->value().toDouble(),vm->factById(idx_home_pos|(1<<8))->value().toDouble());
         break;
       }
       p.addCoordinate(pt);
-      crs=pathItems->mission->startHeading();
-      double slen=pathItems->mission->startLength();
+      crs=group->mission->startHeading();
+      double slen=group->mission->startLength();
       if(slen>0){
         pt=pt.atDistanceAndAzimuth(slen,crs);
         p.addCoordinate(pt);
         distance+=slen;
       }
     }else{
-      pt=QGeoCoordinate(prev->f_latitude->value().toDouble(),prev->f_longitude->value().toDouble(),prev->f_altitude->value().toDouble());
-      if(!prev->travelPath().path().isEmpty()){
+      pt=prev->coordinate();
+      if(!prev->geoPath().path().isEmpty()){
         crs=prev->course();
         wptLine=f_type->value().toInt()==Line;
       }else wptLine=true;
     }
     //fly to wpt
-    QGeoCoordinate ll_dest(dest);
-
-    //loop
     p.addCoordinate(pt);
     //int cnt=0;
     double turnCnt=0;
     while(1){
-      double deltaHdg=FactSystem::angle(pt.azimuthTo(ll_dest)-crs);
-      double deltaDist=pt.distanceTo(ll_dest);
+      double deltaHdg=FactSystem::angle(pt.azimuthTo(dest)-crs);
+      double deltaDist=pt.distanceTo(dest);
       double step=dt*spd;
       if(wptLine || fabs(deltaHdg)<(dt*10.0)){
         //crs ok (turn finished)
@@ -177,7 +179,7 @@ QGeoPath Waypoint::getPath()
           crs+=deltaHdg;
           deltaHdg=0;
           distance+=deltaDist;
-          pt=ll_dest;
+          pt=dest;
           p.addCoordinate(dest);
           wptReached=true;
           break;
@@ -200,6 +202,7 @@ QGeoPath Waypoint::getPath()
     //qDebug()<<plist;
     break;
   }
+  //p.addCoordinate(dest);
 
   //update properties
   wptWarning|=distance<turnR*(2.0*M_PI*0.8);
@@ -219,7 +222,7 @@ QGeoPath Waypoint::getPath()
   if(icourse!=icrs){
     icourse=icrs;
     //force next item to be updated
-    Waypoint *next=nextItem<Waypoint*>();
+    MissionItem *next=nextItem();
     if(next)next->resetPath();
   }
   setCourse(crs);

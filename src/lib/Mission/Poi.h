@@ -20,17 +20,46 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Taxiways_H
-#define Taxiways_H
+#ifndef Poi_H
+#define Poi_H
 //=============================================================================
 #include <QtCore>
-#include "MissionPathItems.h"
+#include "MissionItem.h"
 //=============================================================================
-class Taxiways: public MissionPathItems
+class Poi: public MissionItem
 {
   Q_OBJECT
+  Q_PROPERTY(QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
+
+
 public:
-  explicit Taxiways(VehicleMission *parent);
+  explicit Poi(MissionGroup *parent);
+
+  Fact *f_hmsl;
+  Fact *f_radius;
+  Fact *f_loops;
+  Fact *f_time;
+
+private:
+
+
+private slots:
+  void updateTitle();
+
+public slots:
+
+
+
+  //---------------------------------------
+  // PROPERTIES
+public:
+  QGeoCoordinate radiusPoint() const;
+  void setRadiusPoint(const QGeoCoordinate &v);
+
+protected:
+
+signals:
+  void radiusPointChanged();
 };
 //=============================================================================
 #endif

@@ -20,19 +20,23 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionPathItem_H
-#define MissionPathItem_H
+#ifndef MissionItem_H
+#define MissionItem_H
 //=============================================================================
 #include <QtCore>
-#include "MissionOrderedItem.h"
-#include "MissionPathItems.h"
+#include "FactSystem.h"
+#include "MissionGroup.h"
 #include <QGeoPath>
 #include <QGeoCoordinate>
 //=============================================================================
-class MissionPathItem: public MissionOrderedItem
+class MissionItem: public Fact
 {
   Q_OBJECT
-  Q_PROPERTY(QGeoPath travelPath READ travelPath NOTIFY travelPathChanged)
+  Q_PROPERTY(int missionItemType READ missionItemType CONSTANT)
+
+  Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
+
+  Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
   Q_PROPERTY(double course READ course NOTIFY courseChanged)
   Q_PROPERTY(uint time READ time NOTIFY timeChanged)
   Q_PROPERTY(uint distance READ distance NOTIFY distanceChanged)
@@ -41,29 +45,43 @@ class MissionPathItem: public MissionOrderedItem
   Q_PROPERTY(uint totalTime READ totalTime NOTIFY totalTimeChanged)
 
 public:
-  explicit MissionPathItem(MissionPathItems *parent, const QString &name, const QString &title, const QString &descr);
+  explicit MissionItem(MissionGroup *parent, const QString &name, const QString &title, const QString &descr);
+
+  MissionGroup *group;
+  int missionItemType() const;
+
 
   Fact *f_latitude;
   Fact *f_longitude;
 
-  MissionPathItems *pathItems;
-
-private:
-
-protected:
-  virtual QGeoPath getPath();
-
-private slots:
-  virtual void updateStatus();
 
 public slots:
   void updatePath();
   void resetPath();
 
+protected:
+  virtual QGeoPath getPath();
+
+  MissionItem * prevItem() const;
+  MissionItem * nextItem() const;
+
+
+private slots:
+  virtual void updateTitle();
+  virtual void updateStatus();
+  virtual void updateCoordinate();
+
+private:
+  bool blockUpdateCoordinate;
+
   //---------------------------------------
   // PROPERTIES
 public:
-  QGeoPath travelPath() const;
+  QGeoCoordinate coordinate() const;
+  void setCoordinate(const QGeoCoordinate &v);
+
+  QGeoPath geoPath() const;
+  void setGeoPath(const QGeoPath &v);
 
   double course() const;
   void setCourse(const double &v);
@@ -81,7 +99,8 @@ public:
   void setTotalTime(uint v);
 
 protected:
-  QGeoPath m_travelPath;
+  QGeoCoordinate m_coordinate;
+  QGeoPath m_geoPath;
   double m_course;
   uint m_time;
   uint m_distance;
@@ -90,7 +109,8 @@ protected:
   uint m_totalTime;
 
 signals:
-  void travelPathChanged();
+  void coordinateChanged();
+  void geoPathChanged();
   void courseChanged();
   void timeChanged();
   void distanceChanged();

@@ -51,7 +51,7 @@ public:
   QString fpath(const QChar pathDelimiter=QChar('/')) const;
 
   //Fact override
-  void setModified(const bool &v);
+  void setModified(const bool &v, const bool &recursive=false);
 
   //Mandala support
   QString mandalaToString(quint16 mid) const;

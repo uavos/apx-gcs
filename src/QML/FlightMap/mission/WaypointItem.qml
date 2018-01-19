@@ -13,7 +13,7 @@ MissionObject {
     color: Style.cWaypoint
     textColor: "black"
     fact: modelData
-    z: map.z+50
+    implicitZ: 50
 
     //Fact bindings
     property real distance: fact.distance
@@ -26,7 +26,7 @@ MissionObject {
     property bool warning: fact.warning
     property bool reachable: fact.reachable
     property int type: fact.type.value
-    property var path: fact.travelPath
+    property var path: fact.geoPath
 
 
     //internal
@@ -39,6 +39,7 @@ MissionObject {
 
     contentsTop: [
         MapText {
+            z: 10
             textColor: "white"
             color: Style.cNormal
             text: app.distanceToString(distance)+"/"+app.distanceToString(totalDistance) //+"/"+path.size()
@@ -48,6 +49,7 @@ MissionObject {
             font.bold: false
         },
         MapText {
+            z: 10
             textColor: "white"
             color: Style.cNormal
             text: app.timeToString(time)+"/"+app.timeToString(totalTime)
@@ -59,6 +61,7 @@ MissionObject {
     ]
     contentsRight: [
         MapText {
+            z: 10
             textColor: "white"
             color: Style.cGreen
             text: altitude.toFixed()+"m"
@@ -68,6 +71,7 @@ MissionObject {
     ]
     contentsBottom: [
         MapText {
+            z: 10
             visible: actionsText.length>0 && opacity>0
             textColor: "white"
             color: Style.cRed
@@ -84,7 +88,7 @@ MissionObject {
             id: crsArrow
             x: -width/2
             y: height
-            z: map.z
+            z: -1
             width: 24
             height: width
             transform: Rotation {
@@ -113,7 +117,6 @@ MissionObject {
     Component.onCompleted: {
         var c=pathC.createObject(map)
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
     }
     Component {
         id: pathC
@@ -133,6 +136,10 @@ MissionObject {
                 onPathChanged: updatePath()
             }
             Component.onCompleted: updatePath()
+            Connections {
+                target: waypointItem.fact
+                onRemoved: polyline.destroy()
+            }
         }
     }
 

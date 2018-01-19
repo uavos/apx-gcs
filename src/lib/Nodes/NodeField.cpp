@@ -97,14 +97,15 @@ void NodeField::updateStatus()
   }
 }
 //=============================================================================
-void NodeField::setModified(const bool &v)
+void NodeField::setModified(const bool &v, const bool &recursive)
 {
   if(m_modified==v)return;
-  FactData::setModified(v);
+  FactData::setModified(v,recursive);
+  const Vehicle *vehicle=parent_cast<Vehicle*>();
   if(v){
     //qDebug()<<"mod"<<path();
     //set all parents to modified=true
-    for(FactTree *i=parentItem();i!=node->nodes->parentItem();i=i->parentItem()){
+    for(FactTree *i=parentItem();i!=vehicle;i=i->parentItem()){
       Fact *f=qobject_cast<Fact*>(i);
       if(f)f->setModified(v);
       else break;
@@ -112,7 +113,7 @@ void NodeField::setModified(const bool &v)
     return;
   }
   //refresh modified status of all parent items
-  for(FactTree *i=parentItem();i && i!=node->nodes->parentItem();i=i->parentItem()){
+  for(FactTree *i=parentItem();i && i!=vehicle;i=i->parentItem()){
     foreach (FactTree *c, i->childItems()) {
       Fact *f=qobject_cast<Fact*>(c);
       if(f){

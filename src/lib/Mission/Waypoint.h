@@ -24,12 +24,11 @@
 #define Waypoint_H
 //=============================================================================
 #include <QtCore>
-#include "MissionPathItem.h"
-#include "Waypoints.h"
 #include <QGeoPath>
 #include <QGeoCoordinate>
+#include "MissionItem.h"
 //=============================================================================
-class Waypoint: public MissionPathItem
+class Waypoint: public MissionItem
 {
   Q_OBJECT
   Q_ENUMS(ManeuverType)
@@ -38,7 +37,7 @@ class Waypoint: public MissionPathItem
   Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
 
 public:
-  explicit Waypoint(Waypoints *parent);
+  explicit Waypoint(MissionGroup *parent);
 
   Fact *f_altitude;
   Fact *f_type;
@@ -69,7 +68,6 @@ private:
 
 private slots:
   void updateTitle();
-  //void updateDescr();
   void updateActionsText();
 
 

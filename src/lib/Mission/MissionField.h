@@ -20,17 +20,21 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Waypoints_H
-#define Waypoints_H
+#ifndef MissionField_H
+#define MissionField_H
 //=============================================================================
 #include <QtCore>
-#include "MissionPathItems.h"
+#include "FactSystem.h"
 //=============================================================================
-class Waypoints: public MissionPathItems
+class MissionField: public Fact
 {
   Q_OBJECT
+
 public:
-  explicit Waypoints(VehicleMission *parent);
+  explicit MissionField(Fact *parent, const QString &name, const QString &title, const QString &descr, DataType dataType);
+
+  //Fact override
+  void setModified(const bool &v, const bool &recursive=false);
 };
 //=============================================================================
 #endif

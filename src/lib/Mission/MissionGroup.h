@@ -20,36 +20,44 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionPathItems_H
-#define MissionPathItems_H
+#ifndef MissionGroup_H
+#define MissionGroup_H
 //=============================================================================
 #include <QtCore>
-#include "MissionItems.h"
-#include <QGeoPath>
+#include <FactSystem.h>
 #include <QGeoCoordinate>
 class VehicleMission;
 //=============================================================================
-class MissionPathItems: public MissionItems
+class MissionGroup: public Fact
 {
   Q_OBJECT
   Q_PROPERTY(uint distance READ distance NOTIFY distanceChanged)
   Q_PROPERTY(uint time READ time NOTIFY timeChanged)
 
 public:
-  explicit MissionPathItems(VehicleMission *parent, VehicleMission::MissionItemType itemType, const QString &name, const QString &title, const QString &descr);
+  explicit MissionGroup(VehicleMission *parent, const QString &name, const QString &title, const QString &descr);
 
+  VehicleMission *mission;
+
+  virtual int missionItemType() const {return -1;}
 
 private:
+  QTimer updateTimeTimer;
+  QTimer updateDistanceTimer;
+  QString _descr;
 
 private slots:
-  virtual void updateDescr();
+  void updateTimeDo();
+  void updateDistanceDo();
+  void updateDescr();
+  void updateStatus();
 
 public slots:
   void updateTime();
   void updateDistance();
 
 
-
+  Q_INVOKABLE virtual Fact * add(const QGeoCoordinate &) {return NULL;}
 
   //---------------------------------------
   // PROPERTIES
@@ -67,6 +75,30 @@ protected:
 signals:
   void distanceChanged();
   void timeChanged();
+};
+//=============================================================================
+template <class T, int miType>
+class MissionGroupT: public MissionGroup
+{
+public:
+  explicit MissionGroupT(VehicleMission *parent, const QString &name, const QString &title, const QString &descr)
+    : MissionGroup(parent,name,title,descr)
+  {
+  }
+  int missionItemType() const
+  {
+    return miType;
+  }
+
+  Fact * add(const QGeoCoordinate &p)
+  {
+    T *f=new T(this);
+    f->backup();
+    f->f_latitude->setValue(p.latitude());
+    f->f_longitude->setValue(p.longitude());
+    f->setModified(true,true);
+    return f;
+  }
 };
 //=============================================================================
 #endif

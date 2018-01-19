@@ -8,9 +8,11 @@ import ".."
 MapQuickItem {  //to be used inside MapComponent only
     id: missionObject
 
-    property var fact
+    property var fact: null
 
-    property bool interactive: true
+    property bool interactive: visibleOnMap
+
+    property int implicitZ: 0
 
     property alias color: textItem.color
     property alias text: textItem.text
@@ -25,8 +27,31 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
-    visible: mission.visible
+    visible: mission.visible //&& visibleOnMap
+    enabled: visibleOnMap //visible
 
+
+    //optimizations
+    property bool visibleOnMap: true
+    Connections {
+        target: map
+        onCenterChanged: updateViewportTimer.restart()
+        onZoomLevelChanged: updateViewportTimer.restart()
+    }
+    Timer {
+        id: updateViewportTimer
+        interval: 1000
+        repeat: false
+        running: true
+        onTriggered: visibleOnMap=map.visibleRegion.contains(coordinate)
+    }
+
+
+    Connections {
+        target: fact
+        enabled: fact!==null
+        onTriggered: selectAndCenter()
+    }
 
     signal moved()
 
@@ -40,8 +65,15 @@ MapQuickItem {  //to be used inside MapComponent only
     }
     function showMenu()
     {
-        if(fact) map.showMenu(fact)
+        select()
+        if(fact) map.showFactMenu(fact)
     }
+    function selectAndCenter()
+    {
+        select()
+        map.centerOnItem(missionObject)
+    }
+
 
     //internal logic
     property alias hover: mouseArea.containsMouse
@@ -55,8 +87,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
     //Fact bindings
-    property real lat: fact?fact.latitude.value:0
-    property real lon: fact?fact.longitude.value:0
+    property var factPos: fact?fact.coordinate:QtPositioning.coordinate()
     property real altitude: (fact && fact.altitude)?fact.altitude.value:0
     property real active: fact?fact.active:0
     property string title: fact?fact.num+1:0
@@ -64,12 +95,10 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
     //dragging support
-    property variant factPos: QtPositioning.coordinate(lat,lon,altitude)
     function objectMoving()
     {
         if(fact){
-            fact.latitude.value=coordinate.latitude
-            fact.longitude.value=coordinate.longitude
+            fact.coordinate=coordinate
         }
         moved()
         //flick when dragging to edges
@@ -92,7 +121,7 @@ MapQuickItem {  //to be used inside MapComponent only
     coordinate: factPos
     anchorPoint.x: textItem.width/2
     anchorPoint.y: textItem.height/2
-    z: (dragging||selected||hover)?200:0
+    z: (dragging||selected||hover)?200:implicitZ
     width: sourceItem.width
     height: sourceItem.height
 
@@ -126,9 +155,16 @@ MapQuickItem {  //to be used inside MapComponent only
             font.bold: false
             square: true
         }
+        Item{
+            id: containerCenter
+            z: -10
+            visible: visibleOnMap
+            anchors.centerIn: textItem
+        }
         Column{
             id: containerTop
             z: -10
+            visible: visibleOnMap
             spacing: 1
             anchors.bottom: textItem.top
             anchors.bottomMargin: textItem.height
@@ -137,6 +173,7 @@ MapQuickItem {  //to be used inside MapComponent only
         Column{
             id: containerRight
             z: -10
+            visible: visibleOnMap
             spacing: 1
             anchors.left: textItem.right
             anchors.leftMargin: textItem.width
@@ -145,28 +182,35 @@ MapQuickItem {  //to be used inside MapComponent only
         Column{
             id: containerBottom
             z: -10
+            visible: visibleOnMap
             spacing: 1
             anchors.top: textItem.bottom
             anchors.topMargin: textItem.height
             anchors.horizontalCenter: textItem.horizontalCenter
-        }
-        Item{
-            id: containerCenter
-            z: -10
-            anchors.centerIn: textItem
         }
         MouseArea {
             id: mouseArea
             enabled: interactive
             hoverEnabled: enabled
             cursorShape: (enabled && (!drag.active))?Qt.PointingHandCursor:Qt.ArrowCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
             anchors.fill: textItem
             scale: textItem.scale
             drag.target: missionObject
-            onClicked: select()
             onPositionChanged: if(drag.active) objectMoving()
-            onDoubleClicked: showMenu()
-            onPressAndHold: showMenu()
+            onClicked: {
+                if (mouse.button === Qt.LeftButton) {
+                    select()
+                }else if (mouse.button === Qt.RightButton) {
+                    selectAndCenter()
+                    showMenu()
+                }
+            }
+            onDoubleClicked: {
+                selectAndCenter()
+                showMenu()
+            }
+            onPressAndHold: doubleClicked(mouse)
         }
     }
 

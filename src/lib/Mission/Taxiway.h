@@ -24,18 +24,19 @@
 #define Taxiway_H
 //=============================================================================
 #include <QtCore>
-#include "MissionPathItem.h"
-class Taxiways;
+#include "MissionItem.h"
 //=============================================================================
-class Taxiway: public MissionPathItem
+class Taxiway: public MissionItem
 {
   Q_OBJECT
 public:
-  explicit Taxiway(Taxiways *parent);
+  explicit Taxiway(MissionGroup *parent);
 
 private slots:
   void updateTitle();
 
+protected:
+  QGeoPath getPath();
 };
 //=============================================================================
 #endif

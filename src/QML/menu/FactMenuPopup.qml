@@ -20,13 +20,16 @@ Popup {
     contentWidth: menu.itemSize*10 //cWidth
 
     padding: 0
+    margins: 0
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0.0; to: 0.9 }
     }
 
 
-    onClosed: menu.close()
+    onClosed: {
+        menu.close()
+    }
 
     //contentItem: menu
 
@@ -36,6 +39,7 @@ Popup {
             menu.closed.connect(root.close)
             menu.opened.connect(root.open)
             contentItem=menu
+
         }
     }
 

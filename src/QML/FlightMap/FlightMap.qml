@@ -1,5 +1,4 @@
 import QtQuick          2.3
-import QtQuick.Controls 2.1
 import QtLocation       5.3
 import QtPositioning    5.3
 import QtQuick.Window   2.2
@@ -7,15 +6,23 @@ import QtQuick.Window   2.2
 import QtQml 2.2
 import QtGraphicalEffects 1.0
 
+//PieMenu
+import QtQuick.Extras 1.4
+import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
+
+
 import GCS.FactSystem   1.0
 import GCS.Vehicles     1.0
+
+import "../menu"
+import "../pfd"
 
 import "."
 import "./map"
 import "./vehicle"
 import "./mission"
-import "../menu"
-import "../pfd"
+import "./menu"
 
 Map {
     id: map
@@ -37,6 +44,7 @@ Map {
 
 
     signal clicked()
+    signal mapMenuRequested()
 
     function metersToPixels(m)
     {
@@ -45,25 +53,64 @@ Map {
         return m*(map.width/2)/dist;
     }
 
-    function showMenu(fact)
+    function showFactMenu(fact)
     {
-        popupMenu.menu.fact=fact
-        popupMenu.open()
+        var c=factMenuC.createObject(map,{"fact": fact})
+        c.open()
     }
-
-    FactMenuPopup {
-        id: popupMenu
-        parent: map
-        menu: FactMenu { fact: app }
-    }
-
-
-    /*function selectObject(obj)
+    function showMapMenu()
     {
-        if(selectedObject!==obj) selectedObject=obj
+        mapMenuRequested();
+        var c=mapMenuC.createObject(map)
+        c.open()
     }
-    onClicked: if(selectedObject) selectedObject=null
-    onSelectedObjectChanged: console.log(selectedObject)*/
+
+    Component {
+        id: factMenuC
+        FactMenuPopup {
+            id: factMenu
+            parent: map
+            x: (parent.width/2 - width) / 2
+            y: missionList.y
+            property var fact: app
+            menu: FactMenu { fact: factMenu.fact }
+            onClosed: destroy()
+        }
+    }
+
+    /*Component {
+        id: mapMenuC
+        FactMenuPopup {
+            id: mapMenu
+            parent: map
+            x: pressX //(parent.width/2 - width) / 2
+            y: pressY //missionList.y
+            menu: MenuMap { }
+            onClosed: destroy()
+        }
+    }*/
+    Component {
+        id: mapMenuC
+        PieMenu {
+            id: mapMenu
+            parent: map
+            z: 1000
+
+            //implicitWidth: 400
+            //implicitHeight: 420
+
+            function open()
+            {
+                popup(pressX,pressY)
+            }
+            MenuItem { text: qsTr("Add Waypoint"); iconSource: "./icons/add-waypoint.svg"; onTriggered: app.vehicles.current.mission.waypoints.add(mouseCoordinate) }
+            MenuItem { text: qsTr("Add Point of Interest"); iconSource: "./icons/add-point.svg"; onTriggered: app.vehicles.current.mission.points.add(mouseCoordinate) }
+            MenuItem { text: qsTr("Add Runway"); iconSource: "./icons/add-runway.svg"; onTriggered: app.vehicles.current.mission.runways.add(mouseCoordinate) }
+            MenuItem { text: qsTr("Add Taxiway"); iconSource: "./icons/add-taxiway.svg"; onTriggered: app.vehicles.current.mission.taxiways.add(mouseCoordinate) }
+            MenuItem { text: qsTr("Menu"); iconSource: "./icons/add-menu.svg"; onTriggered: console.log("menu") }
+            onVisibleChanged: if(!visible)destroy()
+        }
+    }
 
 
     //Map componnet parameters
@@ -81,14 +128,6 @@ Map {
     focus: true
     onCopyrightLinkActivated: Qt.openUrlExternally(link)
 
-    onCenterChanged:{
-        //if (map.followme && map.center != positionSource.position.coordinate) map.followme = false
-    }
-
-    onZoomLevelChanged:{
-        //if(follow) center=itemToFollow.coordinate
-    }
-
     //Item follow
     property bool follow: false
     property MapQuickItem itemToFollow
@@ -101,10 +140,10 @@ Map {
             property alias easing: coordAnimation.easing
             //property alias duration: coordAnimation.duration
             property alias running: coordAnimation.running
-            enabled: app.settings.smooth.value && (!blocked)
+            enabled: !blocked
             CoordinateAnimation {
                 id: coordAnimation
-                duration: 500;
+                duration: app.settings.smooth.value?500:0;
                 direction: CoordinateAnimation.Shortest;
                 easing.type: Easing.InOutCubic
             }
@@ -117,7 +156,7 @@ Map {
         {
             var p1=map.fromCoordinate(map.center,false);
             var p2=map.fromCoordinate(coord,false);
-            if(Math.abs(p1.x-p2.x)>map.width*4 || Math.abs(p1.y-p2.y)>map.height*4){
+            if(Math.abs(p1.x-p2.x)>map.width*10 || Math.abs(p1.y-p2.y)>map.height*10){
                 map.center=coord
                 return
             }
@@ -157,18 +196,18 @@ Map {
     }
     function centerOnCoordinate(coord)
     {
+        if(follow)return;
         centerSet.set(coord)
     }
     function flickToCoordinate(coord)
     {
+        if(follow)return;
         centerSet.flick(coord)
     }
     Connections {
         target: gesture
         onPanStarted:       followStop()
         onFlickStarted:     followStop()
-        //onPanFinished:      followStop()
-        //onFlickFinished:    followStop()
     }
     Connections {
         enabled: follow
@@ -224,7 +263,13 @@ Map {
             }
         }
 
-        onClicked: map.clicked()
+        onClicked: {
+            if (mouse.button === Qt.LeftButton) {
+                map.clicked()
+            }else if (mouse.button === Qt.RightButton) {
+                showMapMenu()
+            }
+        }
 
         onDoubleClicked: {
             var mouseGeoPos = map.toCoordinate(Qt.point(mouse.x, mouse.y));
@@ -246,13 +291,10 @@ Map {
         }
 
         onPressAndHold:{
-            /*if (Math.abs(map.pressX - mouse.x ) < map.jitterThreshold
+            if (Math.abs(map.pressX - mouse.x ) < map.jitterThreshold
                     && Math.abs(map.pressY - mouse.y ) < map.jitterThreshold) {
-                showMainMenu(mouseCoordinate);
-            }*/
-
-            //map.clearScene(0);
-            console.log(mapLoader.requestCount);
+                showMapMenu();
+            }
         }
     }
 
@@ -360,6 +402,26 @@ Map {
         anchors.left: map.left
         anchors.right: map.right
         height: 12*itemsScaleFactor
+    }*/
+
+    // The code below enables SSAA
+    /*layer.enabled: true
+    layer.smooth: true
+    layer.samples: 4
+    property int w : map.width
+    property int h : map.height
+    property int pr: Screen.devicePixelRatio
+    layer.textureSize: Qt.size(w  * 2 * pr, h * 2 * pr)
+    layer.effect: ShaderEffect {
+        fragmentShader: "
+            uniform lowp sampler2D source; // this item
+            uniform lowp float qt_Opacity; // inherited opacity of this item
+            varying highp vec2 qt_TexCoord0;
+            void main() {
+                lowp vec4 p = texture2D(source, qt_TexCoord0);
+                lowp float g = dot(p.xyz, vec3(0.344, 0.5, 0.156));
+                gl_FragColor = vec4(g, g, g, p.a) * qt_Opacity;
+            }"
     }*/
 
 }

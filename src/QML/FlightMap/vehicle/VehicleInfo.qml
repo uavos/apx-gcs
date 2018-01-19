@@ -23,9 +23,12 @@ MapButton {
     //internal
     enabled: false
     defaultOpacity: 0.6
+    rightMargin: 10
 
-    text: bGCU?vehicle.callsign.value:(
-            (bLOCAL?"":(vehicle.callsign.value+"\n"))+
+    property string callsign: vehicle.callsign.value
+
+    text: bGCU?callsign:(
+            (bLOCAL?"":(callsign+"\n"))+
             "H"+(altitude>50?(altitude/10).toFixed()+"0":Math.abs(altitude)<1?"0":altitude.toFixed())+
             (vspeed>1?" +"+vspeed.toFixed():vspeed<-1?" "+vspeed.toFixed():"")+"\n"+
             modeText + (stage>1?"/"+stage:"")
@@ -44,5 +47,19 @@ MapButton {
         }
     }
 
-    onMenuRequested: map.showMenu(vehicle)
+    onMenuRequested: map.showFactMenu(vehicle)
+
+
+    //recording red point
+    Rectangle {
+        visible: vehicle.recorder.recording
+        border.width: 0
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 1
+        width: 8
+        height: width
+        radius: width/2
+        color: "#C0FF8080"
+    }
 }

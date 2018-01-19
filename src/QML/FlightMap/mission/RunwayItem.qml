@@ -14,7 +14,7 @@ MissionObject {
     textColor: "white"
     title: (approach>0?"":"H")+(fact.num+1)
     fact: modelData
-    z: map.z+60
+    implicitZ: 60
 
     //Fact bindings
     property int type: fact.type.value
@@ -115,26 +115,23 @@ MissionObject {
     Component.onCompleted: {
         var c=endPointC.createObject(map)
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
         c=appPointC.createObject(map)
         appPoint=c
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
         //runway path
         c=pathC.createObject(map)
         c.z=map.z+10
         c.line.width=10
         c.line.color=Qt.binding(function(){return cRwBG})
+        c.opacity=0.9
         c.visible=Qt.binding(function(){return current && runwayItem.visible})
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
         c=pathC.createObject(map)
         c.z=map.z+11
         c.line.width=4
         c.line.color="white"
         c.opacity=0.8
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
         c=pathC.createObject(map)
         c.z=map.z+12
         c.line.width=2
@@ -142,17 +139,15 @@ MissionObject {
         c.opacity=0.5
         c.visible=Qt.binding(function(){return showDetailsRw})
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
         //approach path
         c=pathC.createObject(map)
         c.z=map.z+1
-        c.line.width=1
+        c.line.width=Qt.binding(function(){return appCircleLineWidth})
         c.line.color="white"
         c.opacity=Qt.binding(function(){return appOpacity})
         c.visible=Qt.binding(function(){return showDetailsApp})
-        c.coordinate2=Qt.binding(function(){return appPointCoordinate})
+        c.p2=Qt.binding(function(){return appPointCoordinate})
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
         //approach circle
         c=circleC.createObject(map)
         c.z=map.z+1
@@ -163,9 +158,6 @@ MissionObject {
         c.center=Qt.binding(function(){return appCircleCoordinate})
         c.radius=Qt.binding(function(){return appCircleRadius})
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
-
-
     }
     Component {
         id: endPointC
@@ -188,6 +180,10 @@ MissionObject {
                     visible: opacity && showDetails
                 }
             ]
+            Connections {
+                target: runwayItem.fact
+                onRemoved: endPoint.destroy()
+            }
         }
     }
     Component {
@@ -206,27 +202,23 @@ MissionObject {
                 updateAppPoint(coordinate)
                 coordinate=factPos //snap
             }
+            Connections {
+                target: runwayItem.fact
+                onRemoved: appPoint.destroy()
+            }
         }
     }
     //paths
     Component {
         id: pathC
-        MapPolyline {
-            id: polyline
+        MapLine {
+            id: line
             visible: runwayItem.visible
-            property variant coordinate1: runwayItem.coordinate
-            property variant coordinate2: endPointCoordinate
-            function updatePath()
-            {
-                polyline.replaceCoordinate(0,coordinate1)
-                polyline.replaceCoordinate(1,coordinate2)
-            }
-            onCoordinate1Changed: updatePath()
-            onCoordinate2Changed: updatePath()
-            Component.onCompleted: {
-                polyline.addCoordinate(coordinate1)
-                polyline.addCoordinate(coordinate2)
-                updatePath()
+            p1: runwayItem.coordinate
+            p2: runwayItem.endPointCoordinate
+            Connections {
+                target: runwayItem.fact
+                onRemoved: line.destroy()
             }
         }
     }
@@ -236,6 +228,10 @@ MissionObject {
             id: circle
             color: "transparent"
             visible: runwayItem.visible
+            Connections {
+                target: runwayItem.fact
+                onRemoved: circle.destroy()
+            }
         }
     }
     /*Component {

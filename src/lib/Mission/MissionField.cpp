@@ -20,42 +20,40 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionOrderedItem_H
-#define MissionOrderedItem_H
+#include "MissionField.h"
+#include "Vehicle.h"
 //=============================================================================
-#include <QtCore>
-#include "FactSystem.h"
-#include "MissionItems.h"
-//=============================================================================
-class MissionOrderedItem: public Fact
+MissionField::MissionField(Fact *parent, const QString &name, const QString &title, const QString &descr, DataType dataType)
+  : Fact(parent,name,title,descr,FactItem,dataType)
 {
-  Q_OBJECT
-  Q_PROPERTY(int missionItemType READ missionItemType CONSTANT)
-
-public:
-  explicit MissionOrderedItem(MissionItems *parent, const QString &name, const QString &title, const QString &descr);
-
-  MissionItems *missionItems;
-
-  int missionItemType() const;
-
-protected:
-  template<class T> T prevItem() const
-  {
-    return static_cast<T>(parentItem()->child(num()-1));
-  }
-
-  template<class T> T nextItem() const
-  {
-    return static_cast<T>(parentItem()->child(num()+1));
-  }
-
-private:
-  QString namePrefix;
-
-private slots:
-  virtual void updateTitle();
-};
+  connect(this,&Fact::removed,this,[=](){setModified(false);});
+}
 //=============================================================================
-#endif
-
+//=============================================================================
+void MissionField::setModified(const bool &v, const bool &recursive)
+{
+  if(m_modified==v)return;
+  FactData::setModified(v,recursive);
+  const Vehicle *vehicle=parent_cast<Vehicle*>();
+  if(v){
+    //qDebug()<<"mod"<<path();
+    //set all parents to modified=true
+    for(FactTree *i=parentItem();i!=vehicle;i=i->parentItem()){
+      Fact *f=qobject_cast<Fact*>(i);
+      if(f)f->setModified(v);
+      else break;
+    }
+    return;
+  }
+  //refresh modified status of all parent items
+  /*for(FactTree *i=parentItem();i && i!=vehicle;i=i->parentItem()){
+    foreach (FactTree *c, i->childItems()) {
+      Fact *f=qobject_cast<Fact*>(c);
+      if(f){
+        if(f->modified())return;
+      }else break;
+    }
+    static_cast<Fact*>(i)->setModified(v);
+  }*/
+}
+//=============================================================================

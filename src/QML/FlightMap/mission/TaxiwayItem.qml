@@ -13,13 +13,13 @@ MissionObject {
     color: Style.cTaxiway
     textColor: "white"
     fact: modelData
-    z: map.z+30
+    implicitZ: 30
 
     //Fact bindings
     property real distance: fact.distance
     property bool current: m.twidx.value === fact.num
     property bool taxi: m.mode.value === mode_TAXI
-    property var path: fact.travelPath
+    property var path: fact.geoPath
     property real course: fact.course
     property bool bFirst: fact.num === 0
 
@@ -65,7 +65,6 @@ MissionObject {
     Component.onCompleted: {
         var c=pathC.createObject(map)
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
     }
     Component {
         id: pathC
@@ -85,6 +84,10 @@ MissionObject {
                 onPathChanged: updatePath()
             }
             Component.onCompleted: updatePath()
+            Connections {
+                target: taxiwayItem.fact
+                onRemoved: polyline.destroy()
+            }
         }
     }
 }

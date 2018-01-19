@@ -91,5 +91,12 @@
         <file>FlightMap/mission/TaxiwayItem.qml</file>
         <file>FlightMap/mission/PointItem.qml</file>
         <file>FlightMap/MapButton.qml</file>
+        <file>FlightMap/menu/MenuMap.qml</file>
+        <file>FlightMap/icons/add-point.svg</file>
+        <file>FlightMap/icons/add-runway.svg</file>
+        <file>FlightMap/icons/add-taxiway.svg</file>
+        <file>FlightMap/icons/add-waypoint.svg</file>
+        <file>FlightMap/icons/add-menu.svg</file>
+        <file>FlightMap/MapLine.qml</file>
     </qresource>
 </RCC>

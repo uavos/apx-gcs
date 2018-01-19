@@ -139,34 +139,24 @@ HEADERS += \
 SOURCES += \
     Mission/VehicleMission.cpp \
     Mission/MissionListModel.cpp \
-    Mission/MissionItems.cpp \
-    Mission/MissionOrderedItem.cpp \
-    Mission/MissionPathItems.cpp \
-    Mission/MissionPathItem.cpp \
-    Mission/Waypoints.cpp \
+    Mission/MissionGroup.cpp \
+    Mission/MissionItem.cpp \
+    Mission/MissionField.cpp \
     Mission/Waypoint.cpp \
-    Mission/Runways.cpp \
     Mission/Runway.cpp \
-    Mission/Taxiways.cpp \
     Mission/Taxiway.cpp \
-    Mission/Points.cpp \
-    Mission/Point.cpp \
+    Mission/Poi.cpp \
 
 HEADERS += \
     Mission/VehicleMission.h \
     Mission/MissionListModel.h \
-    Mission/MissionItems.h \
-    Mission/MissionOrderedItem.h \
-    Mission/MissionPathItems.h \
-    Mission/MissionPathItem.h \
-    Mission/Waypoints.h \
+    Mission/MissionGroup.h \
+    Mission/MissionItem.h \
+    Mission/MissionField.h \
     Mission/Waypoint.h \
-    Mission/Runways.h \
     Mission/Runway.h \
-    Mission/Taxiways.h \
     Mission/Taxiway.h \
-    Mission/Points.h \
-    Mission/Point.h \
+    Mission/Poi.h \
 
 
 # Communication

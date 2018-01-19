@@ -13,15 +13,15 @@ MissionObject {
     color: Style.cPoint
     textColor: "white"
     fact: modelData
-    z: map.z+40
+    implicitZ: 40
 
     //Fact bindings
     property int radius: Math.abs(fact.radius.value)
     property int hmsl: fact.hmsl.value
     property int loops: fact.loops.value
-    property int time: fact.time.value
-    property string timeText: fact.time.text
-    property variant radiusPointCoordinate: fact.radiusPoint
+    property int time: fact.timeout.value
+    property string timeText: fact.timeout.text
+    property var radiusPointCoordinate: fact.radiusPoint
     property bool ccw: fact.radius.value<0
 
     property bool current: m.piidx.value === fact.num
@@ -59,15 +59,18 @@ MissionObject {
 
     //Map Items
     property bool circleActive: selected||dragging||hover
+    property Item radiusPoint
 
     Component.onCompleted: {
         var c=radiusPointC.createObject(map)
+        radiusPoint=c;
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
+        //line
+        c=lineC.createObject(map)
+        map.addMapItem(c)
         //circle
         c=circleC.createObject(map)
         map.addMapItem(c)
-        fact.removed.connect(function(){c.destroy()})
     }
     Component {
         id: radiusPointC
@@ -119,6 +122,10 @@ MissionObject {
                 }
             ]
 
+            Connections {
+                target: pointItem.fact
+                onRemoved: radiusPoint.destroy()
+            }
         }
     }
     Component {
@@ -130,6 +137,26 @@ MissionObject {
             border.width: 1
             radius: pointItem.radius
             center: pointItem.coordinate
+            Connections {
+                target: pointItem.fact
+                onRemoved: circle.destroy()
+            }
+        }
+    }
+    Component {
+        id: lineC
+        MapLine {
+            id: line
+            z: map.z
+            visible: radiusPoint.visible
+            opacity: radiusPoint.opacity/2
+            line.width: 2
+            p1: pointItem.coordinate
+            p2: pointItem.radiusPointCoordinate
+            Connections {
+                target: pointItem.fact
+                onRemoved: line.destroy()
+            }
         }
     }
 

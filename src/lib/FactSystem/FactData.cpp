@@ -215,8 +215,13 @@ bool FactData::modified() const
 {
   return m_modified;
 }
-void FactData::setModified(const bool &v)
+void FactData::setModified(const bool &v, const bool &recursive)
 {
+  if(recursive){
+    for(int i=0;i<size();++i){
+      static_cast<FactData*>(childItems().at(i))->setModified(v,recursive);
+    }
+  }
   if(m_modified==v)return;
   m_modified=v;
   emit modifiedChanged();

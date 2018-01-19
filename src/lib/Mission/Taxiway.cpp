@@ -21,10 +21,9 @@
  *
  */
 #include "Taxiway.h"
-#include "Taxiways.h"
 //=============================================================================
-Taxiway::Taxiway(Taxiways *parent)
-  : MissionPathItem(parent,"T#","",tr("Taxiway"))
+Taxiway::Taxiway(MissionGroup *parent)
+  : MissionItem(parent,"T#","",tr("Taxiway"))
 {
   //title
   connect(this,&Taxiway::distanceChanged,this,&Taxiway::updateTitle);
@@ -40,5 +39,27 @@ void Taxiway::updateTitle()
   st.append(QString::number(num()+1));
   st.append(FactSystem::distanceToString(distance()));
   setTitle(st.join(' '));
+}
+//=============================================================================
+QGeoPath Taxiway::getPath()
+{
+  QGeoPath p;
+  const double spd=5;
+  MissionItem *prev=prevItem();
+  double distance=0;
+  double azimuth=0;
+  if(prev){
+    QGeoCoordinate p1(prev->coordinate());
+    QGeoCoordinate p2(coordinate());
+    p.addCoordinate(p1);
+    p.addCoordinate(p2);
+    distance=p1.distanceTo(p2);
+    azimuth=p1.azimuthTo(p2);
+  }
+  //update properties
+  setDistance(distance);
+  setTime(distance/spd);
+  setCourse(azimuth);
+  return p;
 }
 //=============================================================================

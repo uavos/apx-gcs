@@ -20,61 +20,48 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Point.h"
-#include "Mission.h"
-#include "MissionItems.h"
-#include "VehicleMission.h"
-#include "Vehicle.h"
-#include "VehicleMandala.h"
-#include "VehicleMandalaFact.h"
+#include "Poi.h"
+#include "MissionField.h"
 //=============================================================================
-Point::Point(Points *parent)
-  : MissionOrderedItem(parent,"P#","",tr("Point of interest")),
-    points(parent)
+Poi::Poi(MissionGroup *parent)
+  : MissionItem(parent,"P#","",tr("Point of interest"))
 {
-  f_latitude=new Fact(this,"latitude",tr("Latitude"),tr("Global postition latitude"),FactItem,FloatData);
-  f_latitude->setUnits("lat");
-  f_longitude=new Fact(this,"longitude",tr("Longitude"),tr("Global postition longitude"),FactItem,FloatData);
-  f_longitude->setUnits("lon");
-
-  f_hmsl=new Fact(this,"hmsl",tr("HMSL"),tr("Object of interest altitude MSL"),FactItem,IntData);
+  f_hmsl=new MissionField(this,"hmsl",tr("HMSL"),tr("Object of interest altitude MSL"),IntData);
   f_hmsl->setUnits("m");
   f_hmsl->setEnumStrings(QStringList()<<"ground");
 
-
-  f_radius=new Fact(this,"radius",tr("Radius"),tr("Loiter radius"),FactItem,IntData);
+  f_radius=new MissionField(this,"radius",tr("Radius"),tr("Loiter radius"),IntData);
   f_radius->setUnits("m");
   f_radius->setMin(-10000);
   f_radius->setMax(10000);
   f_radius->setValue(200);
 
-  f_loops=new Fact(this,"loops",tr("Loops"),tr("Loiter loops limit"),FactItem,IntData);
+  f_loops=new MissionField(this,"loops",tr("Loops"),tr("Loiter loops limit"),IntData);
   f_loops->setEnumStrings(QStringList()<<"default");
   f_loops->setMin(0);
   f_loops->setMax(255);
 
-  f_time=new Fact(this,"time",tr("Time"),tr("Loiter time limit"),FactItem,IntData);
+  f_time=new MissionField(this,"timeout",tr("Time"),tr("Loiter time limit"),IntData);
   f_time->setEnumStrings(QStringList()<<"default");
   f_time->setUnits("time");
   f_time->setMin(0);
   f_time->setMax(60*60*24);
 
   //conversions
-  connect(f_latitude,&Fact::valueChanged,this,&Point::radiusPointChanged);
-  connect(f_longitude,&Fact::valueChanged,this,&Point::radiusPointChanged);
-  connect(f_radius,&Fact::valueChanged,this,&Point::radiusPointChanged);
+  connect(this,&MissionItem::coordinateChanged,this,&Poi::radiusPointChanged);
+  connect(f_radius,&Fact::valueChanged,this,&Poi::radiusPointChanged);
 
   //title
-  connect(f_radius,&Fact::valueChanged,this,&Point::updateTitle);
-  connect(f_hmsl,&Fact::valueChanged,this,&Point::updateTitle);
-  connect(f_loops,&Fact::valueChanged,this,&Point::updateTitle);
-  connect(f_time,&Fact::valueChanged,this,&Point::updateTitle);
+  connect(f_radius,&Fact::valueChanged,this,&Poi::updateTitle);
+  connect(f_hmsl,&Fact::valueChanged,this,&Poi::updateTitle);
+  connect(f_loops,&Fact::valueChanged,this,&Poi::updateTitle);
+  connect(f_time,&Fact::valueChanged,this,&Poi::updateTitle);
   updateTitle();
 
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
-void Point::updateTitle()
+void Poi::updateTitle()
 {
   QStringList st;
   st.append(QString::number(num()+1));
@@ -89,12 +76,12 @@ void Point::updateTitle()
   setTitle(st.join(' '));
 }
 //=============================================================================
-QGeoCoordinate Point::radiusPoint() const
+QGeoCoordinate Poi::radiusPoint() const
 {
   QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
   return p.atDistanceAndAzimuth(abs(f_radius->value().toInt()),90.0);
 }
-void Point::setRadiusPoint(const QGeoCoordinate &v)
+void Poi::setRadiusPoint(const QGeoCoordinate &v)
 {
   QGeoCoordinate p(f_latitude->value().toDouble(),f_longitude->value().toDouble());
   double a=qDegreesToRadians(p.azimuthTo(v));
