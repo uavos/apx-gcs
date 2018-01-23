@@ -43,15 +43,20 @@ VehicleMission::VehicleMission(Vehicle *parent)
     m_missionSize(0)
 {
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
+  f_request->setValue(ButtonAction);
+  f_request->setIconSource("download");
   connect(f_request,&Fact::triggered,vehicle,&Vehicle::requestMission);
 
   f_upload=new Fact(this,"upload",tr("Upload"),tr("Upload to vehicle"),FactItem,ActionData);
   f_upload->setEnabled(false);
+  f_upload->setValue(ApplyAction);
+  f_upload->setIconSource("upload");
   connect(f_upload,&Fact::triggered,this,&VehicleMission::uploadMission);
   connect(f_upload,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
 
   f_clear=new Fact(this,"clear",tr("Clear"),tr("Clear mission"),FactItem,ActionData);
   f_clear->setEnabled(false);
+  f_clear->setValue(RemoveAction);
   connect(f_clear,&Fact::triggered,this,&VehicleMission::clearMission);
   connect(f_clear,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
 
@@ -65,10 +70,51 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f_pois=new MissionGroupT<Poi,PoiType>(this,"points",tr("Points"),tr("Points of Interest"));
 
   foreach (MissionGroup *group, groups) {
-    connect(group,&Fact::sizeChanged,this,&VehicleMission::updateSize);
+    connect(group,&Fact::sizeChanged,this,&VehicleMission::updateSize,Qt::QueuedConnection);
   }
 
+  //tools
+  f_tools=new Fact(this,"tools",tr("Tools"),tr("Mission edit tools"),GroupItem,NoData);
+  f_tools->setIconSource("wrench");
 
+  f_map=new Fact(f_tools,"map",tr("Map"),tr("Mission map"),GroupItem,NoData);
+  f_map->setIconSource("map");
+  Fact *f;
+
+  QString sect(tr("Add object"));
+  f=new Fact(f_map,"waypoint",tr("Waypoint"),"",FactItem,ActionData);
+  f->setIconSource("map-marker");
+  f->setSection(sect);
+  f=new Fact(f_map,"point",tr("Point of interest"),"",FactItem,ActionData);
+  f->setIconSource("map-marker-radius");
+  f->setSection(sect);
+  f=new Fact(f_map,"runway",tr("Runway"),"",FactItem,ActionData);
+  f->setIconSource("road");
+  f->setSection(sect);
+  f=new Fact(f_map,"taxiway",tr("Taxiway"),"",FactItem,ActionData);
+  f->setIconSource("vector-polyline");
+  f->setSection(sect);
+
+  sect=tr("Location");
+  f=new Fact(f_map,"home",tr("Set home"),"",FactItem,ActionData);
+  f->setIconSource("home-map-marker");
+  f->setSection(sect);
+  f=new Fact(f_map,"fly",tr("Fly here"),"",FactItem,ActionData);
+  f->setIconSource("airplane");
+  f->setSection(sect);
+  f=new Fact(f_map,"look",tr("Look here"),"",FactItem,ActionData);
+  f->setIconSource("eye");
+  f->setSection(sect);
+  f=new Fact(f_map,"fix",tr("Send position fix"),"",FactItem,ActionData);
+  f->setIconSource("crosshairs-gps");
+  f->setSection(sect);
+
+
+  f_altitude=new Fact(f_tools,"altitude",tr("Altitude"),tr("Adjust waypoints altitude"),FactItem,IntData);
+  f_altitude->setUnits("m");
+  f_altitude->setIconSource("altimeter");
+
+  //internal
   m_listModel=new MissionListModel(this);
 
   connect(this,&Fact::modifiedChanged,this,&VehicleMission::updateActions);
@@ -149,6 +195,7 @@ void VehicleMission::clearMission()
   foreach (MissionGroup *group, groups) {
     group->removeAll();
   }
+  setModified(false,true);
   /*if(snMap.isEmpty())return;
   snMap.clear();
   nGroups.clear();
@@ -327,6 +374,7 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
     backup();
     qDebug()<<"Mission received"<<ecnt;
   }
+  setModified(false,true);
 
   return true;
 }

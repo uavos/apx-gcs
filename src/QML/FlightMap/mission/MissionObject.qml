@@ -33,6 +33,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
     //optimizations
     property bool visibleOnMap: true
+    signal updateMapViewport()
     Connections {
         target: map
         onCenterChanged: updateViewportTimer.restart()
@@ -43,7 +44,10 @@ MapQuickItem {  //to be used inside MapComponent only
         interval: 1000
         repeat: false
         running: true
-        onTriggered: visibleOnMap=map.visibleRegion.contains(coordinate)
+        onTriggered: {
+            visibleOnMap=map.visibleRegion.contains(coordinate)
+            updateMapViewport()
+        }
     }
 
 

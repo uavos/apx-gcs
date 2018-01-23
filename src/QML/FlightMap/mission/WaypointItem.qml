@@ -10,7 +10,7 @@ import ".."
 
 MissionObject {
     id: waypointItem
-    color: Style.cWaypoint
+    color: visibleOnMap?Style.cWaypoint:"yellow"
     textColor: "black"
     fact: modelData
     implicitZ: 50
@@ -36,6 +36,13 @@ MissionObject {
 
 
     property bool showDetails: distance===0 || map.metersToPixels(distance)>50
+
+    property bool pathVisibleOnMap: true
+    property Item pathItem
+    visible: mission.visible && (visibleOnMap || pathVisibleOnMap)
+    onUpdateMapViewport: {
+        pathVisibleOnMap=map.visibleRegion.contains(pathItem.path[0])||map.visibleRegion.contains(pathItem.path[pathItem.path.count-1])
+    }
 
     contentsTop: [
         MapText {
@@ -116,6 +123,7 @@ MissionObject {
     //Flight Path
     Component.onCompleted: {
         var c=pathC.createObject(map)
+        pathItem=c
         map.addMapItem(c)
     }
     Component {

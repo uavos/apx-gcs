@@ -209,15 +209,20 @@ QVariant Fact::findValue(const QString &namePath)
   return f->value();
 }
 //=============================================================================
+Fact * Fact::childFact(int i) const
+{
+  return static_cast<Fact*>(child(i));
+}
+//=============================================================================
 Fact * Fact::fact(const QString &factNamePath) const
 {
-  foreach(FactTree *item,childItems()){
-    Fact *f=static_cast<Fact*>(item);
+  for(int i=0;i<size();++i){
+    Fact *f=childFact(i);
     if(f->treeItemType()==FactItem && (f->name()==factNamePath || f->path().endsWith(factNamePath)))
       return f;
   }
-  foreach(FactTree *item,childItems()){
-    Fact *f=static_cast<Fact*>(item);
+  for(int i=0;i<size();++i){
+    Fact *f=childFact(i);
     f=f->fact(factNamePath);
     if(f)return f;
   }
@@ -226,8 +231,8 @@ Fact * Fact::fact(const QString &factNamePath) const
 //=============================================================================
 Fact * Fact::childByTitle(const QString &factTitle) const
 {
-  foreach(FactTree *item,childItems()){
-    Fact *f=static_cast<Fact*>(item);
+  for(int i=0;i<size();++i){
+    Fact *f=childFact(i);
     if(f->title()==factTitle)
       return f;
   }
@@ -365,6 +370,16 @@ void Fact::setProgress(const int &v)
   if(m_progress==v)return;
   m_progress=v;
   emit progressChanged();
+}
+QString Fact::iconSource() const
+{
+  return m_iconSource;
+}
+void Fact::setIconSource(const QString &v)
+{
+  if(m_iconSource==v)return;
+  m_iconSource=v;
+  emit iconSourceChanged();
 }
 QString Fact::qmlMenu() const
 {

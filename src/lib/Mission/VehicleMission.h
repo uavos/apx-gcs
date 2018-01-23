@@ -63,6 +63,12 @@ public:
   //MissionItems *f_restricted;
   //MissionItems *f_emergency;
 
+  Fact *f_tools;
+  Fact *f_map;
+  Fact *f_altitude;
+
+
+
   Vehicle *vehicle;
 
   QList<MissionGroup*> groups;

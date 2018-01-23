@@ -103,14 +103,30 @@ Map {
             {
                 popup(pressX,pressY)
             }
-            MenuItem { text: qsTr("Add Waypoint"); iconSource: "./icons/add-waypoint.svg"; onTriggered: app.vehicles.current.mission.waypoints.add(mouseCoordinate) }
-            MenuItem { text: qsTr("Add Point of Interest"); iconSource: "./icons/add-point.svg"; onTriggered: app.vehicles.current.mission.points.add(mouseCoordinate) }
-            MenuItem { text: qsTr("Add Runway"); iconSource: "./icons/add-runway.svg"; onTriggered: app.vehicles.current.mission.runways.add(mouseCoordinate) }
-            MenuItem { text: qsTr("Add Taxiway"); iconSource: "./icons/add-taxiway.svg"; onTriggered: app.vehicles.current.mission.taxiways.add(mouseCoordinate) }
+            MenuItem { text: qsTr("Add Waypoint"); iconSource: "./icons/add-waypoint.svg"; onTriggered: addObject(app.vehicles.current.mission.waypoints) }
+            MenuItem { text: qsTr("Add Point of Interest"); iconSource: "./icons/add-point.svg"; onTriggered: addObject(app.vehicles.current.mission.points) }
+            MenuItem { text: qsTr("Add Runway"); iconSource: "./icons/add-runway.svg"; onTriggered: addObject(app.vehicles.current.mission.runways) }
+            MenuItem { text: qsTr("Add Taxiway"); iconSource: "./icons/add-taxiway.svg"; onTriggered: addObject(app.vehicles.current.mission.taxiways) }
             MenuItem { text: qsTr("Menu"); iconSource: "./icons/add-menu.svg"; onTriggered: console.log("menu") }
             onVisibleChanged: if(!visible)destroy()
         }
     }
+    function addObject(obj)
+    {
+        var f=obj.add(mouseCoordinate)
+        addSelectTimer.fact=f
+        addSelectTimer.restart()
+    }
+    Timer {
+        id: addSelectTimer
+        interval: 200
+        repeat: false
+        running: false
+        property var fact
+        onTriggered: fact.trigger()
+    }
+
+
 
 
     //Map componnet parameters

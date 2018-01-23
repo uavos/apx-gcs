@@ -54,6 +54,11 @@ FactSystemJS::FactSystemJS(QObject *parent)
   }
 
 
+  /*static QVariantMap tmap;
+  tmap["one"]="two";
+  js->globalObject().setProperty("tmap",js->toScriptValue(tmap));*/
+
+
   //add is queued to wait inherited constructors
   //connect(this,&Fact::itemAdded,this,&FactSystemJS::jsAddItem);//,Qt::QueuedConnection);
   //connect(this,&Fact::itemRemoved,this,&FactSystemJS::jsRemoveItem);//,Qt::QueuedConnection);

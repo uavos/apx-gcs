@@ -137,6 +137,7 @@ MissionObject {
             border.width: 1
             radius: pointItem.radius
             center: pointItem.coordinate
+            Behavior on radius { enabled: app.settings.smooth.value; NumberAnimation {duration: 100;} }
             Connections {
                 target: pointItem.fact
                 onRemoved: circle.destroy()

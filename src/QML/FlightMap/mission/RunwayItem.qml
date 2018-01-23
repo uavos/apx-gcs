@@ -110,7 +110,9 @@ MissionObject {
 
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,heading+(type===Runway.Left?-90:90))
-    property real appCircleRadius: Math.max(100,landing?turnR:approach/2)
+    property real appCircleRadiusDefault: approach/2
+    property real appCircleRadius: Math.max(100,landing?turnR:appCircleRadiusDefault)
+    //Behavior on appCircleRadiusDefault { enabled: app.settings.smooth.value; NumberAnimation {duration: 100;} }
 
     Component.onCompleted: {
         var c=endPointC.createObject(map)

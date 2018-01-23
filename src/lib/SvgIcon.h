@@ -31,9 +31,11 @@ class SvgIcon : public QIcon
 {
 public:
   SvgIcon(const QString &fileName,const QColor &color=QColor(Qt::white));
+  static QByteArray svgData(const QString &fileName,const QColor &color);
+
 private:
   QPixmap renderSvgPixmap(const QString &fileName,const QColor &color) const;
-  void setAttrRecur(QDomElement elem, QString strtagname, QString strattr, QString strattrval) const;
+  static void setAttrRecur(QDomElement elem, QString strtagname, QString strattr, QString strattrval);
 };
 //=============================================================================
 #endif

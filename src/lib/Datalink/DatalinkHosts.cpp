@@ -41,7 +41,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   f_host=new AppSettingFact(settings,f_add,"host",tr("Host address"),tr("IP address of remote server"),"",TextData,QString());
   //f_host=new Fact(f_add,"host",tr("Host address"),tr("IP address of remote server"),FactItem,TextData);
   f_connect=new Fact(f_add,"connect",tr("Connect"),"",FactItem,ActionData);
-  f_connect->setValue(ButtonAction);
+  f_connect->setValue(ApplyAction);
   connect(f_connect,&Fact::triggered,this,&DatalinkHosts::connectTriggered);
 
   AppSettingFact::loadSettings(this);

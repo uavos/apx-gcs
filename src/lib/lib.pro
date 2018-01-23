@@ -18,6 +18,7 @@ target.path = $$INSTALLBASE_LIB/lib
 
 RESOURCES += $$RES_DIR/fonts.qrc
 RESOURCES += $$RES_DIR/styles.qrc
+RESOURCES += $$RES_DIR/material-icons.qrc
 RESOURCES += $$RES_DIR/standard-icons.qrc
 
 
@@ -211,16 +212,18 @@ SOURCES += \
     FlightDataFile.cpp \
     QmlView.cpp \
     SoundEffects.cpp \
-    SvgIcon.cpp \
     SvgImageProvider.cpp \
+    SvgIcon.cpp \
+    SvgMaterialIcon.cpp \
 
 HEADERS += \
     PawnCompiler.h \
     FlightDataFile.h \
     QmlView.h \
     SoundEffects.h \
-    SvgIcon.h \
     SvgImageProvider.h \
+    SvgIcon.h \
+    SvgMaterialIcon.h \
 
 
 

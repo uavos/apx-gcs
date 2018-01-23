@@ -11,10 +11,10 @@ Item {
     width: parent?parent.width:0
     height: visible?factItemSize:0
 
-    visible: fact.visible
+    visible: fact.visible && (!isActionFact(fact))
     //focus: visible && enabled
 
-    property int factItemSize: (bDescr||bAction)?itemSize*1.3:itemSize
+    property int factItemSize: (bDescr)?itemSize*1.3:itemSize
 
     //configurable properties
     property var parentFact
@@ -42,8 +42,9 @@ Item {
     property bool bDescr: fact.descr && app.settings.showdescr.value
     property bool bEnumChilds: fact.dataType===Fact.EnumData && fact.enumStrings.length>maxEnumListSize
 
+    property string iconName: fact.iconSource
+
     //editor types
-    property bool bAction:       fact.dataType===Fact.ActionData && (fact.value?fact.value:false)
     property bool bEditText:     fact.dataType===Fact.TextData && fact.enumStrings.length === 0
     property bool bEditList:     fact.dataType===Fact.EnumData && (!bEnumChilds)
     property bool bEditListText: fact.dataType===Fact.TextData && fact.enumStrings.length > 0
@@ -58,19 +59,19 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        anchors.right: bAction?undefined:parent.right
+        anchors.right: parent.right
         anchors.topMargin: 1 //space between items in list view
 
         enabled: fact.enabled
-        Material.background: bAction?(fact.value===Fact.RemoveAction?colorActionRemove:undefined):colorBgField
-        flat: !bAction
+        Material.background: colorBgField
+        flat: true
         hoverEnabled: enabled
         highlighted: enabled
 
-        background.height: bAction?(factItem.height-background.y*2):(factItem.height-1)
-        background.y: bAction?background.y:0
+        background.height: (factItem.height-1)
+        background.y: 0
 
-        text: bAction?fact.title:""
+        //text: ""
 
         //focus: false
 
@@ -80,7 +81,7 @@ Item {
             fact.trigger();
             if(bNext) openFact(fact)
             else if(bEnumChilds) openFact(fact)
-            else if(bAction && fact.value!==Fact.RemoveAction) back();
+            //else if(bAction && fact.value!==Fact.RemoveAction) back();
         }
 
         Item { // title & descr text
@@ -88,11 +89,11 @@ Item {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.leftMargin: 4
+            anchors.leftMargin: 4+(iconLabel.visible?itemSize:0)
             anchors.rightMargin: 4
             anchors.topMargin: 0
             anchors.bottomMargin: 1
-            visible: fact.title && !bAction
+            visible: fact.title
             ColumnLayout {
                 id: factItemTitleD
                 anchors.fill: parent
@@ -131,23 +132,38 @@ Item {
                 visible: effects && factItemButton.hovered
             }
         } //title block
+        //fact icon
+        Label {
+            id: iconLabel
+            visible: iconName
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 2
+            verticalAlignment: Text.AlignVCenter
+            font.family: "Material Design Icons"
+            font.pointSize: Math.max(4,factItemSize*0.6)
+            text: visible?materialIconChar[iconName]:""
+        }
+
 
         //NEXT icon
-        Image {
+        Text {
             id: factItemNext
             visible: bNext
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            width: height
-            height: itemSize*0.8
-            sourceSize.height: height
-            source: iconNext
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            verticalAlignment: Text.AlignVCenter
+            font.family: "Material Design Icons"
+            font.pointSize: Math.max(4,height*0.8)
+            text: visible?materialIconChar["chevron-right"]:""
+            color: "#fff"
         }
 
         RowLayout {
             id: factItemBody
-            spacing: 2
-            visible: !bAction
+            spacing: 1
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.right: factItemNext.visible?factItemNext.left:parent.right
@@ -207,9 +223,9 @@ Item {
             onEditorComponentChanged: {
                 if(factEditor) {
                     factEditor.destroy();
-                    factEditor=undefined
+                    factEditor=null
                 }
-                if(factItem.fact.dataType!=Fact.NoData){
+                if(factItem.fact.dataType!==Fact.NoData){
                     factEditor=editorComponent.createObject(factItemBody);
                 }
             }

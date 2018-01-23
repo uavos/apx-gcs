@@ -21,7 +21,7 @@
  *
  */
 #include "FactDelegateDialog.h"
-#include "SvgIcon.h"
+#include <SvgMaterialIcon.h>
 #include <Nodes.h>
 //=============================================================================
 QHash<Fact*,FactDelegateDialog*> FactDelegateDialog::dlgMap;
@@ -44,7 +44,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
 
   Nodes *nodes=fact->parent_cast<Nodes*>();
   if(nodes){
-    aUpload=new QAction(SvgIcon(":/icons/sets/ionicons/android-upload.svg"),tr("Upload"),this);
+    aUpload=new QAction(SvgMaterialIcon("upload"),tr("Upload"),this);
     connect(aUpload,&QAction::triggered,nodes->f_upload,&Fact::trigger);
     connect(nodes->f_upload,&Fact::enabledChanged,this,[=](){
       Nodes *nodes=fact->parent_cast<Nodes*>();
@@ -61,7 +61,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
   }
 
 
-  aUndo=new QAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Revert"),this);
+  aUndo=new QAction(SvgMaterialIcon("undo"),tr("Revert"),this);
   connect(aUndo,&QAction::triggered,fact,&Fact::restore);
   connect(fact,&Fact::modifiedChanged,this,[=](){
     aUndo->setEnabled(fact->modified());
@@ -74,25 +74,13 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
   aSep=toolBar->addSeparator();
 
 
-
-  //toolbar spacer
-  /*QWidget* spacer = new QWidget();
-  spacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-  toolBar->addWidget(spacer);*/
-
   //close button
-  QAction *aClose=new QAction(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
+  QAction *aClose=new QAction(SvgMaterialIcon("close"),tr("Close"),this);
   connect(aClose,&QAction::triggered,this,[=](){
     if(aboutToClose()) accept();
   });
   toolBar->addAction(aClose);
   toolBar->widgetForAction(aClose)->setObjectName("redAction");
-
-  /*QAction *a=new QAction(SvgIcon(":/icons/sets/ionicons/android-close.svg"),tr("Close"),this);
-  connect(a,&QAction::triggered,this,[=](){
-    if(aboutToClose()) accept();
-  });
-  toolBar->addAction(a);*/
 
   setLayout(vlayout);
   vlayout->addWidget(toolBar);

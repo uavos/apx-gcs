@@ -29,6 +29,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QUrl>
+#include "SvgIcon.h"
 
 SvgImageProvider::SvgImageProvider(const QString &basePath) :
   QObject(),
@@ -49,11 +50,12 @@ QSvgRenderer *SvgImageProvider::loadRenderer(const QString &svgFile)
 
   if (!renderer) {
     //qDebug()<<svgFile;
-    renderer = new QSvgRenderer();
-
-    QString fn = m_basePath+"/"+svgFile;//QUrl::fromLocalFile(m_basePath).resolved(svgFile).toLocalFile();
+    renderer = new QSvgRenderer(this);
+    connect(renderer,&QSvgRenderer::destroyed,this,[=](){m_renderers.remove(m_renderers.key(renderer));});
 
     // convert path to be relative to base
+    QString fn = m_basePath+"/"+svgFile;//QUrl::fromLocalFile(m_basePath).resolved(svgFile).toLocalFile();
+
     if (!renderer->isValid()) {
       renderer->load(fn);
     }
@@ -90,41 +92,49 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
   //if(requestedSize.isNull())return QImage(1,1,QImage::Format_Mono);
 
   QString svgFile = id;
+  QStringList params;
+
+  int sepPos = id.indexOf('?');
+  if (sepPos != -1) {
+    svgFile = id.left(sepPos);
+    params = id.mid(sepPos + 1).split('&');
+  }
+
+
   QString element;
-  QString parameters;
-
-  int separatorPos = id.indexOf('!');
-
-  if (separatorPos != -1) {
-    svgFile = id.left(separatorPos);
-    element = id.mid(separatorPos + 1);
-  }
-
-  int parametersPos = element.indexOf('?');
-  if (parametersPos != -1) {
-    parameters = element.mid(parametersPos + 1);
-    element    = element.left(parametersPos);
-  }
-
   int hSlicesCount = 0;
   int hSlice = 0;
   int vSlicesCount = 0;
   int vSlice = 0;
   int border = 0;
-  if (!parameters.isEmpty()) {
-    QRegExp hSliceRx("hslice=(\\d+):(\\d+)");
-    if (hSliceRx.indexIn(parameters) != -1) {
-      hSlice = hSliceRx.cap(1).toInt();
-      hSlicesCount = hSliceRx.cap(2).toInt();
-    }
-    QRegExp vSliceRx("vslice=(\\d+):(\\d+)");
-    if (vSliceRx.indexIn(parameters) != -1) {
-      vSlice = vSliceRx.cap(1).toInt();
-      vSlicesCount = vSliceRx.cap(2).toInt();
-    }
-    QRegExp borderRx("border=(\\d+)");
-    if (borderRx.indexIn(parameters) != -1) {
-      border = borderRx.cap(1).toInt();
+  QString color;
+  for (int i=0;i<params.size();++i){
+    const QString s=params.at(i);
+    int idel=s.indexOf('=');
+    if(idel<=0)continue;
+    const QString &sn=s.left(idel);
+    const QString &sv=s.mid(idel+1);
+    if(sn=="e"){
+      element = sv;
+    }else if(sn=="hslice"){
+      QRegExp rx("(\\d+):(\\d+)");
+      if (rx.indexIn(sv) != -1) {
+        hSlice = rx.cap(1).toInt();
+        hSlicesCount = rx.cap(2).toInt();
+      }
+    }else if(sn=="vslice"){
+      QRegExp rx("(\\d+):(\\d+)");
+      if (rx.indexIn(sv) != -1) {
+        vSlice = rx.cap(1).toInt();
+        vSlicesCount = rx.cap(2).toInt();
+      }
+    }else if(sn=="border"){
+      QRegExp rx("(\\d+)");
+      if (rx.indexIn(sv) != -1) {
+        border = rx.cap(1).toInt();
+      }
+    }else if(sn=="color"){
+      color=sv;
     }
   }
 
@@ -136,6 +146,15 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
   if (!renderer) {
     return QImage(1,1,QImage::Format_Mono);
   }
+  if(element.isEmpty()){
+    renderer->deleteLater(); //don't cache
+    /*if(!color.isEmpty()){
+      renderer=new QSvgRenderer(this);
+      renderer->deleteLater();
+      renderer->load(SvgIcon::svgData(m_basePath+"/"+svgFile,color));
+    }*/
+  }
+
 
   qreal xScale  = 1.0;
   qreal yScale  = 1.0;
@@ -212,29 +231,29 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     //img.save("/tmp/img/"+element+parameters+".png");
     //qDebug()<<img.size();
     return img;
-  } else {
-    // render the whole svg file
-    int w = qRound(docSize.width() * xScale);
-    int h = qRound(docSize.height() * yScale);
-
-    QImage img(w, h, QImage::Format_ARGB32_Premultiplied);
-    if(!img.isNull()){
-      img.fill(0);
-      QPainter p(&img);
-      if(p.isActive()){
-        p.setRenderHints(QPainter::TextAntialiasing |
-                         QPainter::Antialiasing |
-                         QPainter::SmoothPixmapTransform);
-
-        p.scale(xScale, yScale);
-        renderer->render(&p, QRectF(QPointF(), QSizeF(docSize)));
-      }
-    }
-    if (size) {
-      *size = QSize(w, h);
-    }
-    return img;
   }
+
+  // render the whole svg file
+  int w = qRound(docSize.width() * xScale);
+  int h = qRound(docSize.height() * yScale);
+
+  QImage img(w, h, QImage::Format_ARGB32_Premultiplied);
+  if(!img.isNull()){
+    img.fill(0);
+    QPainter p(&img);
+    if(p.isActive()){
+      p.setRenderHints(QPainter::TextAntialiasing |
+                       QPainter::Antialiasing |
+                       QPainter::SmoothPixmapTransform);
+
+      p.scale(xScale, yScale);
+      renderer->render(&p, QRectF(QPointF(), QSizeF(docSize)));
+    }
+  }
+  if (size) {
+    *size = QSize(w, h);
+  }
+  return img;
 }
 
 QPixmap SvgImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)

@@ -26,6 +26,7 @@
 #include <QGLWidget>
 #include <QQuickStyle>
 #include <QtQuick>
+#include <SvgMaterialIcon.h>
 #include "plugin_interface.h"
 #include "QMandala.h"
 #include "MainForm.h"
@@ -172,6 +173,9 @@ int main(int argc, char *argv[])
 
   loadFonts();
 
+  SvgMaterialIcon::initialize();
+  //qmlRegisterSingletonType<SvgMaterialIcon>("GCS.SvgMaterialIcon", 1, 0, "SvgMaterialIcon", fooThatReturnsValidatorPtr);
+
 //#ifdef Q_OS_MAC
   //qApp->setFont(QFont("Avenir",10));
 //#endif
@@ -268,7 +272,8 @@ catch (...)
 //============================================================================
 void loadFonts()
 {
-  QFile res(":/fonts/BebasNeue.otf");
+  QFile res;
+  res.setFileName(":/fonts/BebasNeue.otf");
   if(res.open(QIODevice::ReadOnly)){
     QFontDatabase::addApplicationFontFromData(res.readAll());
     res.close();

@@ -38,6 +38,9 @@ MissionItem::MissionItem(MissionGroup *parent, const QString &name, const QStrin
   f_longitude=new MissionField(this,"longitude",tr("Longitude"),tr("Global postition longitude"),FloatData);
   f_longitude->setUnits("lon");
 
+  f_remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
+  f_remove->setValue(RemoveAction);
+  connect(f_remove,&Fact::triggered,this,&Fact::remove);
 
   connect(f_latitude,&Fact::valueChanged,this,&MissionItem::updateCoordinate);
   connect(f_longitude,&Fact::valueChanged,this,&MissionItem::updateCoordinate);

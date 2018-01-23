@@ -240,4 +240,3 @@ QPointF FactSystemApp::rotate(const QPointF &p, double a)
   return QPointF(p.x()*cos_theta+p.y()*sin_theta,p.y()*cos_theta-p.x()*sin_theta);
 }
 //=============================================================================
-//=============================================================================

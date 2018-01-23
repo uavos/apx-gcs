@@ -71,8 +71,8 @@ public:
   enum ActionType {
     NormalAction =0,
     ButtonAction,
+    ApplyAction,
     RemoveAction,
-    UplinkAction,
   };
   Q_ENUM(ActionType)
 

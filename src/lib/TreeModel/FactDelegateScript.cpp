@@ -24,21 +24,21 @@
 #include <PawnCompiler.h>
 #include <Vehicle.h>
 #include <AppDirs.h>
-#include <SvgIcon.h>
+#include <SvgMaterialIcon.h>
 #include <QtWidgets>
 #include "SourceEdit.h"
 //=============================================================================
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
   :FactDelegateDialog(fact,parent)
 {
-  aCompile=new QAction(SvgIcon(":/icons/sets/ionicons/code-working.svg"),tr("Compile"),this);
+  aCompile=new QAction(SvgMaterialIcon("code-tags-check"),tr("Compile"),this);
   addAction(aCompile);
 
-  aLoad=new QAction(SvgIcon(":/icons/sets/ionicons/android-folder-open.svg"),tr("Load"),this);
+  aLoad=new QAction(SvgMaterialIcon("folder-open"),tr("Load"),this);
   connect(aLoad,&QAction::triggered,this,&FactDelegateScript::aLoad_triggered);
   addAction(aLoad);
 
-  aSave=new QAction(SvgIcon(":/icons/sets/ionicons/compose.svg"),tr("Save"),this);
+  aSave=new QAction(SvgMaterialIcon("content-save"),tr("Save"),this);
   connect(aSave,&QAction::triggered,this,&FactDelegateScript::aSave_triggered);
   addAction(aSave);
 

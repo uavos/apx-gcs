@@ -61,15 +61,15 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
 
   if(_new){
     f_save=new Fact(this,"save",tr("Save"),"",FactItem,ActionData);
-    f_save->setValue(ButtonAction);
+    f_save->setValue(ApplyAction);
     connect(f_save,&Fact::triggered,parent,&DatalinkPorts::addTriggered);
     defaults();
   }else{
     setSection(parent->f_list->title());
     copyValuesFrom(port);
     f_remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
-    connect(f_remove,&Fact::triggered,parent,&DatalinkPorts::removeTriggered);
     f_remove->setValue(RemoveAction);
+    connect(f_remove,&Fact::triggered,parent,&DatalinkPorts::removeTriggered);
     connect(this,&Fact::childValueChanged,parent,&DatalinkPorts::save);
     connect(parent,&Fact::sizeChanged,this,&DatalinkPort::updateStats);
     connect(parent->f_allon,&Fact::triggered,this,&DatalinkPort::enable);

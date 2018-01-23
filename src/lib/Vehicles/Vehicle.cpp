@@ -61,6 +61,8 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   connect(f_squawk,&Fact::valueChanged,this,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
   f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,ActionData);
+  f_selectAction->setValue(ButtonAction);
+  f_selectAction->setIconSource("select");
   connect(f_selectAction,&Fact::triggered,this,[=](){ parent->selectVehicle(this); });
   connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
 

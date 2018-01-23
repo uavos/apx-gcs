@@ -9,7 +9,7 @@ Rectangle {
     property color colorFG: (doOpt&&option)?"#8f8":"white"
     property variant option: "undefined"
     property string toolTip
-    property string icon
+    property string iconName
     property bool effects: true
     property alias font: textItem.font
 
@@ -41,17 +41,11 @@ Rectangle {
     Text {
         id: textItem
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: 1
-        text: root.text
-        font.pixelSize: parent.height-2
-        font.family: font_narrow
+        anchors.verticalCenterOffset: iconName?0:1
+        text: iconName?materialIconChar[iconName]:root.text
+        font.pixelSize: parent.height-(iconName?1:2)
+        font.family: iconName?"Material Design Icons":font_narrow
         color: colorFG
-    }
-    Image {
-        id: img
-        anchors.centerIn: parent
-        source: icon
-        sourceSize.height: parent.height*0.9
     }
 
     MouseArea {
@@ -73,9 +67,9 @@ Rectangle {
     FastBlur {
         anchors.fill: root
         transparentBorder: true
-        source: img
-        radius: img.height/2
-        visible: effects && icon && (mouseArea.containsMouse || mouseArea.pressed)
+        source: textItem
+        radius: textItem.height/2
+        visible: effects && iconName && (mouseArea.containsMouse || mouseArea.pressed)
     }
 
     FastBlur {

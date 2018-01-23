@@ -31,7 +31,7 @@ MissionGroup::MissionGroup(VehicleMission *parent, const QString &name, const QS
     m_distance(0),
     m_time(0)
 {
-  setSection(tr("Mission elements"));
+  //setSection(tr("Mission elements"));
   mission->groups.append(this);
 
   //status

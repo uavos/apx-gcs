@@ -153,30 +153,5 @@
         <file>icons/old/wind_arrow.png</file>
         <file>icons/old/wind.png</file>
         <file>icons/old/uavos-logo.png</file>
-        <file>icons/sets/ionicons/android-arrow-back.svg</file>
-        <file>icons/sets/ionicons/android-close.svg</file>
-        <file>icons/sets/ionicons/android-upload.svg</file>
-        <file>icons/sets/ionicons/ios-undo.svg</file>
-        <file>icons/sets/ionicons/android-open.svg</file>
-        <file>icons/sets/ionicons/android-folder-open.svg</file>
-        <file>icons/sets/ionicons/compose.svg</file>
-        <file>icons/sets/ionicons/code-working.svg</file>
-        <file>icons/sets/ionicons/android-download.svg</file>
-        <file>icons/sets/ionicons/android-cancel.svg</file>
-        <file>icons/sets/ionicons/android-refresh.svg</file>
-        <file>icons/sets/ionicons/code-download.svg</file>
-        <file>icons/sets/ionicons/stats-bars.svg</file>
-        <file>icons/sets/ionicons/ios-arrow-back.svg</file>
-        <file>icons/sets/ionicons/ios-arrow-forward.svg</file>
-        <file>icons/sets/ionicons/eye.svg</file>
-        <file>icons/sets/ionicons/android-expand.svg</file>
-        <file>icons/sets/ionicons/ios-book-outline.svg</file>
-        <file>icons/sets/ionicons/share.svg</file>
-        <file>icons/sets/ionicons/ios-trash-outline.svg</file>
-        <file>icons/sets/ionicons/play.svg</file>
-        <file>icons/sets/ionicons/pause.svg</file>
-        <file>icons/sets/ionicons/ios-fastforward.svg</file>
-        <file>icons/sets/ionicons/ios-rewind.svg</file>
-        <file>icons/sets/ionicons/arrow-down-b.svg</file>
     </qresource>
 </RCC>

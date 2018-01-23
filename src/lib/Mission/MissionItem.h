@@ -54,6 +54,7 @@ public:
   Fact *f_latitude;
   Fact *f_longitude;
 
+  Fact *f_remove;
 
 public slots:
   void updatePath();

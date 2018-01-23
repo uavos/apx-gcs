@@ -41,8 +41,10 @@ class Fact: public FactData
   Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
   Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
-  Q_PROPERTY(QString qmlMenu READ qmlMenu WRITE setQmlMenu NOTIFY qmlMenuChanged)
-  Q_PROPERTY(QString qmlEditor READ qmlEditor WRITE setQmlEditor NOTIFY qmlEditorChanged)
+  Q_PROPERTY(QString iconSource READ iconSource NOTIFY iconSourceChanged)
+
+  Q_PROPERTY(QString qmlMenu READ qmlMenu NOTIFY qmlMenuChanged)
+  Q_PROPERTY(QString qmlEditor READ qmlEditor NOTIFY qmlEditorChanged)
 
   Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
 
@@ -54,6 +56,7 @@ public:
   Q_INVOKABLE QVariant findValue(const QString &namePath);
 
   Q_INVOKABLE Fact * fact(const QString &factName) const;
+  Q_INVOKABLE Fact * childFact(int i) const;
   Q_INVOKABLE Fact * childByTitle(const QString &factTitle) const;
   //Q_INVOKABLE Fact * byPath(const QString &itemNamePath) const;
 
@@ -113,6 +116,9 @@ public:
   int progress() const;
   void setProgress(const int &v);
 
+  QString iconSource() const;
+  void setIconSource(const QString &v);
+
   QString qmlMenu() const;
   void setQmlMenu(const QString &v);
   QString qmlEditor() const;
@@ -129,6 +135,7 @@ protected:
   QString  m_status;
   bool m_active;
   int m_progress;
+  QString  m_iconSource;
   QString  m_qmlMenu;
   QString  m_qmlEditor;
   bool m_busy;
@@ -142,6 +149,7 @@ signals:
   void activeChanged();
   void progressChanged();
 
+  void iconSourceChanged();
   void qmlMenuChanged();
   void qmlEditorChanged();
   void busyChanged();

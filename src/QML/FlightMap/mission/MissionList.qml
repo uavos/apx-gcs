@@ -13,63 +13,74 @@ import ".."
 
 ColumnLayout {
     spacing: 4
-    width: missionList.width
-    visible: !app.vehicles.current.mission.empty
+    width: missionListView.width
+    property var mission: app.vehicles.current.mission
+    property bool empty: mission?mission.empty:true
+
+    onEmptyChanged: if(!empty)showMissionOnMap()
 
     function focusOnMap(fact)
     {
         //map.centerOnCoordinate(QtPositioning.coordinate(fact.latitude.value,fact.longitude.value))
         fact.trigger()
     }
+    function showMissionOnMap()
+    {
+        map.tilt=0
+        map.bearing=0
+        map.visibleRegion=mission.boundingGeoRectangle()
+    }
 
     RowLayout {
+        Layout.alignment: Qt.AlignTop
         height: missionButton.height
         spacing: 10
         MapButton {
             id: missionButton
-            property var fact: app.vehicles.current.mission
             minWidth: height*3
-            text: fact.title+"\n"+fact.waypoints.descr
+            text: mission.title+"\n"+(empty?qsTr("push to request"):mission.waypoints.descr)
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Qt.application.font.pixelSize * 0.8
-            color: fact.modified?"#FFFF00":"#FFFFFF"
+            color: mission.modified?"#FFFF00":"#FFFFFF"
             textColor: "black"
             defaultOpacity: 1
-            onMenuRequested: map.showFactMenu(fact)
+            onMenuRequested: map.showFactMenu(mission)
             onClicked: {
-                map.tilt=0
-                map.bearing=0
-                map.visibleRegion=fact.boundingGeoRectangle()
+                if(empty){
+                    mission.request.trigger()
+                }else{
+                    showMissionOnMap()
+                }
             }
         }
         MapButton {
             id: uploadButton
-            //z: missionButton.z-1
-            property var fact: app.vehicles.current.mission
             text: qsTr("Upload")
             horizontalAlignment: Text.AlignHCenter
             minWidth: height*3
             minHeight: parent.height
             border.width: 1
             border.color: Style.cGreen
-            color: "#3f3"
+            color: "#2a4"
             textColor: "white"
             defaultOpacity: 0.8
-            onClicked: fact.upload.trigger()
+            onClicked: mission.upload.trigger()
             //x: visible?missionButton.width+10:0
-            visible: fact.modified
+            visible: mission.modified
             //Behavior on x { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
         }
     }
     ListView {
-        id: missionList
+        id: missionListView
         Layout.fillHeight: true
-        model: app.vehicles.current.mission.listModel
+        model: mission.listModel
         implicitWidth: contentItem.childrenRect.width
         orientation: ListView.Vertical
         spacing: 4
         clip: true
         snapMode: ListView.SnapToItem
+        visible: !empty
+
 
         delegate: MapButton {
             id: btn

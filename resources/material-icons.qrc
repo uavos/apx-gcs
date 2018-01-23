@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/material-icons.js</file>
+        <file>icons/material-icons.ttf</file>
+        <file>icons/material-icons.css</file>
+    </qresource>
+</RCC>

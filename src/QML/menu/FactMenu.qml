@@ -1,5 +1,5 @@
 ﻿import QtQuick 2.6
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.3
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
 import GCS.FactSystem 1.0
@@ -49,7 +49,7 @@ Item {
 
     property bool effects: true
 
-    property string title: fact.title
+    property string title: fact?fact.title:""
 
     property int itemSize: 32
     property int maxEnumListSize: 5
@@ -65,10 +65,8 @@ Item {
     property color colorValueText:      "#30FF60"
     property color colorValueTextEdit:  "#FFFF60"
     property color colorActionRemove:   "#a55"
+    property color colorActionApply:    "#2a4"
     property color colorStatusText: "#aaa"
-
-    property url iconPrev: Qt.resolvedUrl("navigation_previous_item.png")
-    property url iconNext: Qt.resolvedUrl("../menu/navigation_next_item.png")
 
     property bool showTitle: title || showBtnBack || showBtnClose
 
@@ -83,6 +81,11 @@ Item {
     signal pageDeleted()
 
     signal updateListView()
+
+    function isActionFact(f)
+    {
+        return (f.dataType===Fact.ActionData && (!f.isNotFact) && (f.value>=Fact.ButtonAction) )?true:false
+    }
 
     StackView {
         id: stackView
@@ -99,10 +102,10 @@ Item {
         y: titleSize/2-btnSize/2+2
         height: btnSize
         width: height
-        text: "X"
         colorBG: "#80cf478f"
         onClicked: root.close()
         effects: root.effects
+        iconName: "close"
     }
 
 
@@ -113,12 +116,17 @@ Item {
 
             property var fact: root.fact
             property string title: fact?fact.title:""
+            property string descr: fact?fact.descr:""
             property string page
             //Component.onDestruction: console.log("page delete: "+title)
             StackView.onRemoved: { destroy(); root.pageDeleted(); }
 
             onFactChanged: {
-                if(!fact){fact=app;back();} //removedItem
+                if(!fact){ //removedItem
+                    fact=app;
+                    if(closeable)close();
+                    else back();
+                }
                 //console.log(fact);
             }
 
@@ -156,7 +164,7 @@ Item {
                     anchors.leftMargin: 2
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: -2
-                    icon: iconPrev
+                    iconName: "chevron-left"
                     height: btnSize
                     width: height
                     onClicked: back()
@@ -182,6 +190,32 @@ Item {
                     height: 2
                     color: colorTitleSep
                 }
+                /*RowLayout {
+                    id: actionsItem
+                    layoutDirection: Qt.RightToLeft
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: titleText.right
+                    anchors.right: parent.right
+                    anchors.rightMargin: showBtnClose?btnSize+10:0
+                }
+                Component.onCompleted: {
+                    for (var i=0; i < fact.size; i++){
+                        var f=fact.childFact(i)
+                        if(isActionFact(f)){
+                            console.log(f)
+                            var c=actionC.createObject(actionsItem,{"fact": f});
+                        }
+                    }
+                }
+                Component {
+                    id: actionC
+                    FactMenuAction {
+                        //size: height
+                        Layout.fillHeight: true
+                        //width: height
+                    }
+                }*/
             }
 
             Item {
@@ -225,6 +259,66 @@ Item {
                             font.family: font_narrow
                             text: section
                         }
+                        header: ColumnLayout {
+                            spacing: 0
+                            width: parent?parent.width:0
+                            property Item flow: toolsItem
+                            Text {
+                                Layout.fillWidth: true
+                                clip: true
+                                height: visible?root.titleSize*0.5:0
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                                font.pixelSize: root.titleSize*0.4
+                                font.family: font_condenced
+                                color: "#aaa"
+                                visible: text!=""
+                                text: menuPage.descr
+                            }
+                            Flow {
+                                id: toolsItem
+                                Layout.fillWidth: true
+                                layoutDirection: Qt.RightToLeft
+                                spacing: 5
+                                padding: 0
+                                visible: children.length>0
+                            }
+                        }
+                        /*header: Text {
+                            id: titleDescr
+                            clip: true
+                            height: visible?root.titleSize*0.5:0
+                            width: parent?parent.width:0
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: root.titleSize*0.4
+                            font.family: font_condenced
+                            color: "#aaa"
+                            visible: text!=""
+                            text: menuPage.descr
+                        }
+                        footer: Flow {
+                            id: toolsItem
+                            width: parent.width
+                            spacing: 5
+                            visible: children.length>0
+                        }*/
+                        Component.onCompleted: {
+                            for (var i=0; i < fact.size; i++){
+                                var f=menuPage.fact.childFact(i)
+                                if(!isActionFact(f))continue;
+                                //console.log(f)
+                                //var c=actionC.createObject(listView.footerItem,{"fact": f});
+                                var c=actionC.createObject(listView.headerItem.flow,{"fact": f});
+                            }
+                        }
+                        Component {
+                            id: actionC
+                            FactMenuAction { }
+                        }
+
+
+
 
                     }
                 }

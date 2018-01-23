@@ -98,5 +98,6 @@
         <file>FlightMap/icons/add-waypoint.svg</file>
         <file>FlightMap/icons/add-menu.svg</file>
         <file>FlightMap/MapLine.qml</file>
+        <file>menu/FactMenuAction.qml</file>
     </qresource>
 </RCC>

@@ -25,18 +25,23 @@ Image {
     onSourceSizeChanged: reloadImage()
 
     function reloadImage() {
-        var params = ""
+        var src = "image://svg/"+svgFileName
+
+
+        var params = []
+        if(elementName != "")
+            params.push("e="+elementName)
         if (hSliceCount > 1)
-            params += "hslice="+hSlice+":"+hSliceCount+";"
+            params.push("hslice="+hSlice+":"+hSliceCount)
         if (vSliceCount > 1)
-            params += "vslice="+vSlice+":"+vSliceCount+";"
+            params.push("vslice="+vSlice+":"+vSliceCount)
         if (border > 0)
-            params += "border="+border+";"
+            params.push("border="+border)
 
-        if (params != "")
-            params = "?" + params
+        if (params.length>0)
+            src += "?" + params.join('&')
 
-        source = "image://svg/"+svgFileName+"!"+elementName+params
+        source=src
         elementBounds = svgRenderer.elementBounds(svgFileName, elementName)
     }
 }

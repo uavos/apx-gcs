@@ -29,7 +29,7 @@ SvgIcon::SvgIcon(const QString &fileName, const QColor &color)
 {
 }
 //=============================================================================
-QPixmap SvgIcon::renderSvgPixmap(const QString &fileName,const QColor &color) const
+QByteArray SvgIcon::svgData(const QString &fileName,const QColor &color)
 {
   // open svg resource load contents to qbytearray
   QFile file(fileName);
@@ -43,8 +43,13 @@ QPixmap SvgIcon::renderSvgPixmap(const QString &fileName,const QColor &color) co
   setAttrRecur(doc.documentElement(), "polygon", "fill", color.name());
   setAttrRecur(doc.documentElement(), "circle", "fill", color.name());
   setAttrRecur(doc.documentElement(), "rect", "fill", color.name());
+  return doc.toByteArray();
+}
+//=============================================================================
+QPixmap SvgIcon::renderSvgPixmap(const QString &fileName,const QColor &color) const
+{
   // create svg renderer with edited contents
-  QSvgRenderer svgRenderer(doc.toByteArray());
+  QSvgRenderer svgRenderer(svgData(fileName,color));
   // create pixmap target (could be a QImage)
   QPixmap pix(svgRenderer.defaultSize());
   pix.fill(Qt::transparent);
@@ -55,7 +60,7 @@ QPixmap SvgIcon::renderSvgPixmap(const QString &fileName,const QColor &color) co
   return pix;
 }
 //=============================================================================
-void SvgIcon::setAttrRecur(QDomElement elem, QString strtagname, QString strattr, QString strattrval) const
+void SvgIcon::setAttrRecur(QDomElement elem, QString strtagname, QString strattr, QString strattrval)
 {
   // if it has the tagname then overwritte desired attribute
   if (elem.tagName().compare(strtagname) == 0){

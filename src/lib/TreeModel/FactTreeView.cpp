@@ -3,7 +3,7 @@
 #include "FactDelegate.h"
 #include "FactTreeView.h"
 #include "FactTreeModel.h"
-#include "SvgIcon.h"
+#include <SvgMaterialIcon.h>
 //=============================================================================
 FactTreeView::FactTreeView(QWidget *parent)
  : QTreeView(parent)
@@ -133,7 +133,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact,bool filterEdit,bool backNavigation, Q
   //toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
   toolBar->setIconSize(QSize(14,14));
   toolBar->layout()->setMargin(0);
-  aBack=new QAction(SvgIcon(":/icons/sets/ionicons/android-arrow-back.svg"),tr("Back"),this);
+  aBack=new QAction(SvgMaterialIcon("arrow-left"),tr("Back"),this);
   aBack->setVisible(backNavigation);
   connect(aBack,&QAction::triggered,this,&FactTreeWidget::back);
   toolBar->addAction(aBack);

@@ -26,7 +26,7 @@
 #include <QDomDocument>
 #include <Facts.h>
 #include <AppDirs.h>
-#include <SvgIcon.h>
+#include <SvgMaterialIcon.h>
 #include "TelemetryXml.h"
 //=============================================================================
 TelemetryFrame::TelemetryFrame(QWidget *parent)
@@ -84,29 +84,29 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
 
   //actions
-  aLast=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-fastforward.svg"),tr("Load recent"),this,&TelemetryFrame::aLast_triggered);
-  aReload=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-refresh.svg"),tr("Reload"),this,&TelemetryFrame::aReload_triggered);
+  aLast=toolBar->addAction(SvgMaterialIcon("fast-forward"),tr("Load recent"),this,&TelemetryFrame::aLast_triggered);
+  aReload=toolBar->addAction(SvgMaterialIcon("reload"),tr("Reload"),this,&TelemetryFrame::aReload_triggered);
   toolBar->addSeparator();
-  aPrev=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-arrow-back.svg"),tr("Load previous"),this,&TelemetryFrame::aPrev_triggered);
-  aNext=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-arrow-forward.svg"),tr("Load next"),this,&TelemetryFrame::aNext_triggered);
+  aPrev=toolBar->addAction(SvgMaterialIcon("chevron-left"),tr("Load previous"),this,&TelemetryFrame::aPrev_triggered);
+  aNext=toolBar->addAction(SvgMaterialIcon("chevron-right"),tr("Load next"),this,&TelemetryFrame::aNext_triggered);
   toolBar->addSeparator();
-  aFilter=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/eye.svg"),tr("Filter vehicle"),this,&TelemetryFrame::aFilter_triggered);
+  aFilter=toolBar->addAction(SvgMaterialIcon("filter"),tr("Filter vehicle"),this,&TelemetryFrame::aFilter_triggered);
   aFilter->setCheckable(true);
   toolBar->addSeparator();
-  aFullScreen=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-expand.svg"),tr("Full screen"),this,&TelemetryFrame::aFullScreen_triggered);
+  aFullScreen=toolBar->addAction(SvgMaterialIcon("fullscreen"),tr("Full screen"),this,&TelemetryFrame::aFullScreen_triggered);
   aFullScreen->setCheckable(true);
-  aSplit=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-book-outline.svg"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
+  aSplit=toolBar->addAction(SvgMaterialIcon("book-open-variant"),tr("Split view"),this,&TelemetryFrame::aSplit_triggered);
   aSplit->setCheckable(true);
   toolBar->addSeparator();
 
-  aExport=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/share.svg"),tr("Export"),this,&TelemetryFrame::aExport_triggered);
-  aImport=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-folder-open.svg"),tr("Import"),this,&TelemetryFrame::aImport_triggered);
-  aRestore=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Restore"),this,&TelemetryFrame::aRestore_triggered);
+  aExport=toolBar->addAction(SvgMaterialIcon("content-save"),tr("Export"),this,&TelemetryFrame::aExport_triggered);
+  aImport=toolBar->addAction(SvgMaterialIcon("folder-open"),tr("Import"),this,&TelemetryFrame::aImport_triggered);
+  aRestore=toolBar->addAction(SvgMaterialIcon("restore"),tr("Restore"),this,&TelemetryFrame::aRestore_triggered);
   toolBar->addSeparator();
-  aDelete=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-trash-outline.svg"),tr("Delete"),this,&TelemetryFrame::aDelete_triggered);
+  aDelete=toolBar->addAction(SvgMaterialIcon("delete"),tr("Delete"),this,&TelemetryFrame::aDelete_triggered);
   toolBar->addSeparator();
 
-  aReplay=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/play.svg"),tr("Replay"),this,&TelemetryFrame::aReplay_triggered);
+  aReplay=toolBar->addAction(SvgMaterialIcon("youtube-play"),tr("Replay"),this,&TelemetryFrame::aReplay_triggered);
   aReplay->setCheckable(true);
   toolBar->addSeparator();
 
@@ -126,9 +126,9 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   avCTR=toolBarSW->addAction(tr("CTR"),this,&TelemetryFrame::avCTR_triggered);
 
   //player
-  aPlay=toolBarPlayer->addAction(SvgIcon(":/icons/sets/ionicons/play.svg"),tr("Play"));
-  aPause=toolBarPlayer->addAction(SvgIcon(":/icons/sets/ionicons/pause.svg"),tr("Pause"));
-  aRewind=toolBarPlayer->addAction(SvgIcon(":/icons/sets/ionicons/ios-rewind.svg"),tr("Rewind"));
+  aPlay=toolBarPlayer->addAction(SvgMaterialIcon("play"),tr("Play"));
+  aPause=toolBarPlayer->addAction(SvgMaterialIcon("pause"),tr("Pause"));
+  aRewind=toolBarPlayer->addAction(SvgMaterialIcon("rewind"),tr("Rewind"));
   playerSpeed=new QDoubleSpinBox(this);
   toolBarPlayer->addWidget(playerSpeed);
   playerSpeed->setMinimum(0.100);

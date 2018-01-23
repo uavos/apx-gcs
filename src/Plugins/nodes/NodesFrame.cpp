@@ -3,6 +3,7 @@
 #include <Facts.h>
 #include <node.h>
 #include <SvgIcon.h>
+#include <SvgMaterialIcon.h>
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent) :
   QWidget(parent)
@@ -18,18 +19,18 @@ NodesFrame::NodesFrame(QWidget *parent) :
   toolBar=new QToolBar(this);
   toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
-  aUpload=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-upload.svg"),tr("Upload"),this,&NodesFrame::aUpload_triggered);
+  aUpload=toolBar->addAction(SvgMaterialIcon("upload"),tr("Upload"),this,&NodesFrame::aUpload_triggered);
   toolBar->widgetForAction(aUpload)->setObjectName("greenAction");
   //static_cast<QToolButton*>(toolBar->widgetForAction(aUpload))->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
-  aRequest=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-download.svg"),tr("Request parameters"),this,&NodesFrame::aRequest_triggered);
-  aStats=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/stats-bars.svg"),tr("Request statistics"),this,&NodesFrame::aStats_triggered);
-  aStop=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-cancel.svg"),tr("Stop downloading"),this,&NodesFrame::aStop_triggered);
-  aReload=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-refresh.svg"),tr("Reload everything"),this,&NodesFrame::aReload_triggered);
-  aLoad=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/android-folder-open.svg"),tr("Load from file"),this,&NodesFrame::aLoad_triggered);
-  aSave=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/compose.svg"),tr("Save to file"),this,&NodesFrame::aSave_triggered);
-  aUndo=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/ios-undo.svg"),tr("Revert"),this,&NodesFrame::aUndo_triggered);
-  aLoadTelemetry=toolBar->addAction(SvgIcon(":/icons/sets/ionicons/code-download.svg"),tr("Load from telemetry"),this,&NodesFrame::aLoadTelemetry_triggered);
+  aRequest=toolBar->addAction(SvgMaterialIcon("download"),tr("Request parameters"),this,&NodesFrame::aRequest_triggered);
+  aStats=toolBar->addAction(SvgMaterialIcon("chart-bar-stacked"),tr("Request statistics"),this,&NodesFrame::aStats_triggered);
+  aStop=toolBar->addAction(SvgMaterialIcon("close-circle"),tr("Stop downloading"),this,&NodesFrame::aStop_triggered);
+  aReload=toolBar->addAction(SvgMaterialIcon("reload"),tr("Reload everything"),this,&NodesFrame::aReload_triggered);
+  aLoad=toolBar->addAction(SvgMaterialIcon("folder-open"),tr("Load from file"),this,&NodesFrame::aLoad_triggered);
+  aSave=toolBar->addAction(SvgMaterialIcon("content-save"),tr("Save to file"),this,&NodesFrame::aSave_triggered);
+  aUndo=toolBar->addAction(SvgMaterialIcon("undo"),tr("Revert"),this,&NodesFrame::aUndo_triggered);
+  aLoadTelemetry=toolBar->addAction(SvgMaterialIcon("briefcase-download"),tr("Load from telemetry"),this,&NodesFrame::aLoadTelemetry_triggered);
 
 
   vlayout->addWidget(toolBar);

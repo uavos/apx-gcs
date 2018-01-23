@@ -19,10 +19,14 @@ Item {
     property string text: fact?fact.text:""
     property string status: fact?fact.status:""
 
+    property string iconSource: fact?fact.iconSource:""
+
     property bool busy: fact?fact.busy:false
     property bool enabled: fact?fact.enabled:(title?true:false)
 
     property bool showDescr: false
+
+    property bool isNotFact: true
 
     property var m_value
     readonly property var value: fact?fact.value:m_value
@@ -78,6 +82,10 @@ Item {
     }*/
 
 
+    function childFact(i)
+    {
+        return children[i]
+    }
 
 
 
