@@ -1,59 +1,58 @@
 ﻿import QtQuick 2.6
 import QtQuick.Controls 2.1
 import QtGraphicalEffects 1.0
+import "../components"
 import "."
 
 Popup {
-    id: root
+    id: popupItem
     //modal: true
     //focus: true
     parent: window
 
-    property FactMenu menu
-    property string source
+    property alias fact: factMenu.fact
+    property alias showTitle: factMenu.showTitle
+    property bool closeOnTrigger: true
 
     //contentWidth: Math.min(window.width, window.height) / 3 * 2
     //contentHeight: Math.min(window.height, contents.length*menu.height)
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
-    contentHeight: 12*menu.itemSize+menu.itemSize*1.2
-    contentWidth: menu.itemSize*10 //cWidth
+    //contentHeight: factMenu.implicitHeight //12*32
+    //contentWidth: factMenu.implicitWidth //32*10 //cWidth
 
     padding: 0
     margins: 0
 
-    enter: Transition {
-        NumberAnimation { property: "opacity"; from: 0.0; to: 0.9 }
-    }
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 0.9 } }
 
-
-    onClosed: {
-        menu.close()
-    }
-
-    //contentItem: menu
-
-    Component.onCompleted:{
-        if(menu){
-            menu.closeable=true
-            menu.closed.connect(root.close)
-            menu.opened.connect(root.open)
-            contentItem=menu
-
+    contentItem: FactMenu {
+        id: factMenu
+        onFactPageRemoved: popupItem.close()
+        onItemTriggered: if(closeOnTrigger)popupItem.close()
+        Label {
+            id: btnClose
+            z: 100
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 4
+            font.family: "Material Design Icons"
+            font.pointSize: factMenu.titleSize*0.8
+            text: materialIconChar["close"]
+            background: Rectangle {
+                anchors.fill: parent
+                border.width: 0
+                color: "#888"
+                opacity: mouseArea.containsMouse?1:0
+                Behavior on opacity { enabled: app.settings.smooth.value; NumberAnimation {duration: 200; } }
+            }
+            MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: popupItem.close()
+            }
         }
     }
-
-    onOpened: {
-        if(source){
-            var c=Qt.createComponent(source,Component.Asynchronous,root);
-            c.statusChanged.connect( function(status) {
-                if (status === Component.Ready) {
-                    root.contentItem=c.createObject(root);
-                }
-            })
-            c.statusChanged(c.status);
-        }
-    }
-
 }
 

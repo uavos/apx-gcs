@@ -40,6 +40,8 @@ class VehicleMission: public Fact
   Q_OBJECT
   Q_ENUMS(MissionItemType)
 
+  Q_PROPERTY(QGeoCoordinate mapCoordinate READ mapCoordinate WRITE setMapCoordinate NOTIFY mapCoordinateChanged)
+
   Q_PROPERTY(QGeoCoordinate startPoint READ startPoint WRITE setStartPoint NOTIFY startPointChanged)
   Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
   Q_PROPERTY(double startLength READ startLength WRITE setStartLength NOTIFY startLengthChanged)
@@ -52,20 +54,35 @@ class VehicleMission: public Fact
 public:
   explicit VehicleMission(Vehicle *parent);
 
+  enum MissionItemType {
+    WaypointType =0,
+    RunwayType,
+    TaxiwayType,
+    PoiType,
+  };
+
+  Q_ENUM(MissionItemType)
+
+  typedef MissionGroupT<Runway,RunwayType>      Runways;
+  typedef MissionGroupT<Waypoint,WaypointType>  Waypoints;
+  typedef MissionGroupT<Taxiway,TaxiwayType>    Taxiways;
+  typedef MissionGroupT<Poi,PoiType>            Pois;
+
+  Runways   *f_runways;
+  Waypoints *f_waypoints;
+  Taxiways  *f_taxiways;
+  Pois      *f_pois;
+  //MissionItems *f_restricted;
+  //MissionItems *f_emergency;
+
   Fact *f_request;
   Fact *f_clear;
   Fact *f_upload;
 
-  MissionGroup *f_waypoints;
-  MissionGroup *f_runways;
-  MissionGroup *f_taxiways;
-  MissionGroup *f_pois;
-  //MissionItems *f_restricted;
-  //MissionItems *f_emergency;
-
   Fact *f_tools;
   Fact *f_map;
-  Fact *f_altitude;
+  Fact *f_altadjust;
+  Fact *f_altset;
 
 
 
@@ -76,13 +93,6 @@ public:
   bool unpackMission(const QByteArray &ba);
 
 
-  enum MissionItemType {
-    WaypointType =0,
-    RunwayType,
-    TaxiwayType,
-    PoiType,
-  };
-  Q_ENUM(MissionItemType)
 
   Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
@@ -105,6 +115,9 @@ signals:
   //---------------------------------------
   // PROPERTIES
 public:
+  QGeoCoordinate mapCoordinate() const;
+  void setMapCoordinate(const QGeoCoordinate &v);
+
   QGeoCoordinate startPoint() const;
   void setStartPoint(const QGeoCoordinate &v);
 
@@ -123,6 +136,7 @@ public:
   void setMissionSize(const int v);
 
 protected:
+  QGeoCoordinate m_mapCoordinate;
   QGeoCoordinate m_startPoint;
   double m_startHeading;
   double m_startLength;
@@ -133,6 +147,7 @@ protected:
   int m_missionSize;
 
 signals:
+  void mapCoordinateChanged();
   void startPointChanged();
   void startHeadingChanged();
   void startLengthChanged();

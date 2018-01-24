@@ -381,15 +381,15 @@ void Fact::setIconSource(const QString &v)
   m_iconSource=v;
   emit iconSourceChanged();
 }
-QString Fact::qmlMenu() const
+QString Fact::qmlPage() const
 {
-  return m_qmlMenu;
+  return m_qmlPage;
 }
-void Fact::setQmlMenu(const QString &v)
+void Fact::setQmlPage(const QString &v)
 {
-  if(m_qmlMenu==v)return;
-  m_qmlMenu=v;
-  emit qmlMenuChanged();
+  if(m_qmlPage==v)return;
+  m_qmlPage=v;
+  emit qmlPageChanged();
 }
 QString Fact::qmlEditor() const
 {

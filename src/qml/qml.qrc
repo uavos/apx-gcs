@@ -44,8 +44,6 @@
         <file>menu/GCSMenuField.qml</file>
         <file>menu/GCSMenuList.qml</file>
         <file>menu/GCSMenuModel.qml</file>
-        <file>menu/navigation_next_item.png</file>
-        <file>menu/navigation_previous_item.png</file>
         <file>menu/MenuCommands.qml</file>
         <file>menu/MenuShortcuts.qml</file>
         <file>nodes/NodeMenuItem.qml</file>
@@ -99,5 +97,12 @@
         <file>FlightMap/icons/add-menu.svg</file>
         <file>FlightMap/MapLine.qml</file>
         <file>menu/FactMenuAction.qml</file>
+        <file>menu/FactMenuEditorKey.qml</file>
+        <file>menu/FactMenuEditorOption.qml</file>
+        <file>menu/FactMenuEditorSwitch.qml</file>
+        <file>menu/FactMenuEditorText.qml</file>
+        <file>menu/qmldir</file>
+        <file>menu/Style.qml</file>
+        <file>menu/FactMenuPage.qml</file>
     </qresource>
 </RCC>

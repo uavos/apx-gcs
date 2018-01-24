@@ -21,9 +21,6 @@ Item {
     property var fact: bEnumItemFact?factEnumElementC.createObject(factItem):modelData
     property bool bEnumItemFact: false
 
-    property string title: fact.title
-
-
     onFactChanged: {
         if(!fact)fact=app
         //console.log(fact);
@@ -66,7 +63,7 @@ Item {
         anchors.topMargin: 1 //space between items in list view
 
         enabled: fact.enabled
-        Material.background: Style.cBgField
+        Material.background: colorBgField
         flat: true
         hoverEnabled: enabled
         highlighted: enabled
@@ -112,7 +109,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     //horizontalAlignment: Text.AlignLeft
                     font.pixelSize: itemSize*0.6
-                    color: enabled?(fact.active?Style.cValueText:(fact.modified?Style.cValueTextEdit:"#fff")):"#aaa"
+                    color: enabled?(fact.active?colorValueText:(fact.modified?colorValueTextEdit:"#fff")):"#aaa"
                     font.family: font_condenced
                     text: fact.title
                 }
@@ -211,7 +208,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: itemSize*0.5
-                color: Style.cStatusText
+                color: colorStatusText
                 font.family: font_condenced
                 text: fact.status
             }
@@ -245,7 +242,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
                     font.pixelSize: itemSize*0.5
-                    color: Style.cValueText
+                    color: colorValueText
                     font.family: font_condenced
                     text: fact.text
                 }
@@ -274,7 +271,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
                     font.pixelSize: itemSize*0.6
-                    color: activeFocus?Style.cValueTextEdit:Style.cValueText
+                    color: activeFocus?colorValueTextEdit:colorValueText
                     font.family: font_condenced
                     text: fact.text
                     //clip: true
@@ -363,7 +360,7 @@ Item {
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignRight
                             font.pixelSize: itemSize*0.6
-                            color: activeFocus?Style.cValueTextEdit:Style.cValueText
+                            color: activeFocus?colorValueTextEdit:colorValueText
                             font.family: font_condenced
                             text: fact.text
                             selectByMouse: true
@@ -400,7 +397,7 @@ Item {
                         verticalAlignment: Qt.AlignVCenter
                         font.family: font_condenced
                         font.pixelSize: itemSize*0.6
-                        color: Style.cBgPress
+                        color: colorBgPress
                         text: scText.nativeText
                     }
                     TextField {
@@ -424,7 +421,7 @@ Item {
                         persistentSelection: true
                         background: Rectangle {
                             anchors.fill: parent
-                            color: control.activeFocus ? Style.cBgHover : "transparent"
+                            color: control.activeFocus ? colorBgHover : "transparent"
                             border.width: 0
                         }
                         onActiveFocusChanged: {

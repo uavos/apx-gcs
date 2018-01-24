@@ -64,10 +64,10 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
 
   //groups of items
-  f_runways=new MissionGroupT<Runway,RunwayType>(this,"runways",tr("Runways"),tr("Takeoff and Landing"));
-  f_waypoints=new MissionGroupT<Waypoint,WaypointType>(this,"waypoints",tr("Waypoints"),"");
-  f_taxiways=new MissionGroupT<Taxiway,TaxiwayType>(this,"taxiways",tr("Taxiways"),"");
-  f_pois=new MissionGroupT<Poi,PoiType>(this,"points",tr("Points"),tr("Points of Interest"));
+  f_runways=new Runways(this,"runways",tr("Runways"),tr("Takeoff and Landing"));
+  f_waypoints=new Waypoints(this,"waypoints",tr("Waypoints"),"");
+  f_taxiways=new Taxiways(this,"taxiways",tr("Taxiways"),"");
+  f_pois=new Pois(this,"points",tr("Points"),tr("Points of Interest"));
 
   foreach (MissionGroup *group, groups) {
     connect(group,&Fact::sizeChanged,this,&VehicleMission::updateSize,Qt::QueuedConnection);
@@ -77,7 +77,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f_tools=new Fact(this,"tools",tr("Tools"),tr("Mission edit tools"),GroupItem,NoData);
   f_tools->setIconSource("wrench");
 
-  f_map=new Fact(f_tools,"map",tr("Map"),tr("Mission map"),GroupItem,NoData);
+  f_map=new Fact(f_tools,"map",tr("Map"),tr("Mission map tools"),GroupItem,NoData);
   f_map->setIconSource("map");
   Fact *f;
 
@@ -85,15 +85,19 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f=new Fact(f_map,"waypoint",tr("Waypoint"),"",FactItem,ActionData);
   f->setIconSource("map-marker");
   f->setSection(sect);
+  connect(f,&Fact::triggered,f_waypoints,[=](){f_waypoints->add(mapCoordinate());});
   f=new Fact(f_map,"point",tr("Point of interest"),"",FactItem,ActionData);
   f->setIconSource("map-marker-radius");
   f->setSection(sect);
+  connect(f,&Fact::triggered,f_pois,[=](){f_pois->add(mapCoordinate());});
   f=new Fact(f_map,"runway",tr("Runway"),"",FactItem,ActionData);
   f->setIconSource("road");
   f->setSection(sect);
+  connect(f,&Fact::triggered,f_runways,[=](){f_runways->add(mapCoordinate());});
   f=new Fact(f_map,"taxiway",tr("Taxiway"),"",FactItem,ActionData);
   f->setIconSource("vector-polyline");
   f->setSection(sect);
+  connect(f,&Fact::triggered,f_taxiways,[=](){f_taxiways->add(mapCoordinate());});
 
   sect=tr("Location");
   f=new Fact(f_map,"home",tr("Set home"),"",FactItem,ActionData);
@@ -110,9 +114,13 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f->setSection(sect);
 
 
-  f_altitude=new Fact(f_tools,"altitude",tr("Altitude"),tr("Adjust waypoints altitude"),FactItem,IntData);
-  f_altitude->setUnits("m");
-  f_altitude->setIconSource("altimeter");
+  f_altadjust=new Fact(f_tools,"altadjust",tr("Altitude adjust"),tr("Adjust all waypoints altitude"),FactItem,IntData);
+  f_altadjust->setUnits("m");
+  f_altadjust->setIconSource("altimeter");
+  f_altset=new Fact(f_tools,"altset",tr("Altitude set"),tr("Set all waypoints altitude"),FactItem,IntData);
+  f_altset->setUnits("m");
+  f_altset->setIconSource("format-align-middle");
+  f_altset->setMin(0);
 
   //internal
   m_listModel=new MissionListModel(this);
@@ -380,6 +388,16 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
 }
 //=============================================================================
 //=============================================================================
+QGeoCoordinate VehicleMission::mapCoordinate() const
+{
+  return m_mapCoordinate;
+}
+void VehicleMission::setMapCoordinate(const QGeoCoordinate &v)
+{
+  if(m_mapCoordinate==v)return;
+  m_mapCoordinate=v;
+  emit mapCoordinateChanged();
+}
 QGeoCoordinate VehicleMission::startPoint() const
 {
   return m_startPoint;

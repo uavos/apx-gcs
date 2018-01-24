@@ -31,6 +31,7 @@ MapItemGroup {
         target: map
         onClicked: deselect()
         onMapMenuRequested: showMapMenu()
+        onMouseClickCoordinateChanged: vehicle.mission.mapCoordinate=map.mouseClickCoordinate
     }
 
 

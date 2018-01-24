@@ -50,6 +50,7 @@ public:
   MissionGroup *group;
   int missionItemType() const;
 
+  Fact *f_order;
 
   Fact *f_latitude;
   Fact *f_longitude;

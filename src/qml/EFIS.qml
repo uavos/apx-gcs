@@ -14,11 +14,11 @@ Item{
                           nav.status === Loader.Ready
     Behavior on opacity { enabled: app.settings.smooth.value; PropertyAnimation {duration: 500} }
 
-    FactMenuPopup {
+    /*FactMenuPopup {
         id: popupMenu
-        menu: MenuCommands {  }
+        //menu: MenuCommands {  }
         //source: "menu/MenuCommands.qml"
-    }
+    }*/
 
     Loader {
         id: comm

@@ -46,6 +46,9 @@ private:
   QTimer updateDistanceTimer;
   QString _descr;
 
+protected:
+  void objectAdded(Fact *fact);
+
 private slots:
   void updateTimeDo();
   void updateDistanceDo();
@@ -57,7 +60,7 @@ public slots:
   void updateDistance();
 
 
-  Q_INVOKABLE virtual Fact * add(const QGeoCoordinate &) {return NULL;}
+  virtual Fact * add(const QGeoCoordinate &) {return NULL;}
 
   //---------------------------------------
   // PROPERTIES
@@ -92,11 +95,16 @@ public:
 
   Fact * add(const QGeoCoordinate &p)
   {
+    if(!p.isValid()){
+      qWarning("%s",tr("Click on map first").toUtf8().data());
+      return NULL;
+    }
     T *f=new T(this);
     f->backup();
     f->f_latitude->setValue(p.latitude());
     f->f_longitude->setValue(p.longitude());
     f->setModified(true,true);
+    objectAdded(f);
     return f;
   }
 };

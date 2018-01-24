@@ -43,7 +43,7 @@ class Fact: public FactData
 
   Q_PROPERTY(QString iconSource READ iconSource NOTIFY iconSourceChanged)
 
-  Q_PROPERTY(QString qmlMenu READ qmlMenu NOTIFY qmlMenuChanged)
+  Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
   Q_PROPERTY(QString qmlEditor READ qmlEditor NOTIFY qmlEditorChanged)
 
   Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
@@ -119,8 +119,8 @@ public:
   QString iconSource() const;
   void setIconSource(const QString &v);
 
-  QString qmlMenu() const;
-  void setQmlMenu(const QString &v);
+  QString qmlPage() const;
+  void setQmlPage(const QString &v);
   QString qmlEditor() const;
   void setQmlEditor(const QString &v);
 
@@ -136,7 +136,7 @@ protected:
   bool m_active;
   int m_progress;
   QString  m_iconSource;
-  QString  m_qmlMenu;
+  QString  m_qmlPage;
   QString  m_qmlEditor;
   bool m_busy;
 
@@ -150,7 +150,7 @@ signals:
   void progressChanged();
 
   void iconSourceChanged();
-  void qmlMenuChanged();
+  void qmlPageChanged();
   void qmlEditorChanged();
   void busyChanged();
 

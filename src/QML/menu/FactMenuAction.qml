@@ -18,7 +18,7 @@ Button {
 
     property string iconName: (fact && fact.iconSource)?fact.iconSource:bApply?"check":bRemove?"delete":""
 
-    Material.background: bApply?colorActionApply:bRemove?colorActionRemove:undefined
+    Material.background: bApply?Style.cActionApply:bRemove?Style.cActionRemove:undefined
     //anchors.topMargin: 0
     //anchors.bottomMargin: 0
 

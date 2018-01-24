@@ -61,7 +61,7 @@ Map {
     function showMapMenu()
     {
         mapMenuRequested();
-        var c=mapMenuC.createObject(map)
+        var c=mapMenuC.createObject(map,{"pos": Qt.point(pressX,pressY)})
         c.open()
     }
 
@@ -72,61 +72,25 @@ Map {
             parent: map
             x: (parent.width/2 - width) / 2
             y: missionList.y
-            property var fact: app
-            menu: FactMenu { fact: factMenu.fact }
+            //property var fact: app
+            //menu: FactMenu { fact: factMenu.fact }
             onClosed: destroy()
         }
     }
 
-    /*Component {
+    Component {
         id: mapMenuC
         FactMenuPopup {
             id: mapMenu
             parent: map
-            x: pressX //(parent.width/2 - width) / 2
-            y: pressY //missionList.y
-            menu: MenuMap { }
+            property point pos
+            x: pos.x-width/2 //(parent.width/2 - width) / 2
+            y: pos.y-48 //missionList.y
+            fact: app.vehicles.current.mission.tools.map
+            showTitle: false
             onClosed: destroy()
         }
-    }*/
-    Component {
-        id: mapMenuC
-        PieMenu {
-            id: mapMenu
-            parent: map
-            z: 1000
-
-            //implicitWidth: 400
-            //implicitHeight: 420
-
-            function open()
-            {
-                popup(pressX,pressY)
-            }
-            MenuItem { text: qsTr("Add Waypoint"); iconSource: "./icons/add-waypoint.svg"; onTriggered: addObject(app.vehicles.current.mission.waypoints) }
-            MenuItem { text: qsTr("Add Point of Interest"); iconSource: "./icons/add-point.svg"; onTriggered: addObject(app.vehicles.current.mission.points) }
-            MenuItem { text: qsTr("Add Runway"); iconSource: "./icons/add-runway.svg"; onTriggered: addObject(app.vehicles.current.mission.runways) }
-            MenuItem { text: qsTr("Add Taxiway"); iconSource: "./icons/add-taxiway.svg"; onTriggered: addObject(app.vehicles.current.mission.taxiways) }
-            MenuItem { text: qsTr("Menu"); iconSource: "./icons/add-menu.svg"; onTriggered: console.log("menu") }
-            onVisibleChanged: if(!visible)destroy()
-        }
     }
-    function addObject(obj)
-    {
-        var f=obj.add(mouseCoordinate)
-        addSelectTimer.fact=f
-        addSelectTimer.restart()
-    }
-    Timer {
-        id: addSelectTimer
-        interval: 200
-        repeat: false
-        running: false
-        property var fact
-        onTriggered: fact.trigger()
-    }
-
-
 
 
     //Map componnet parameters

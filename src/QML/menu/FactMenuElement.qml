@@ -20,9 +20,11 @@ Item {
     property string status: fact?fact.status:""
 
     property string iconSource: fact?fact.iconSource:""
+    property string qmlPage: fact?fact.qmlPage:""
 
     property bool busy: fact?fact.busy:false
     property bool enabled: fact?fact.enabled:(title?true:false)
+
 
     property bool showDescr: false
 
@@ -56,6 +58,7 @@ Item {
     }*/
 
 
+    signal removed()
     signal triggered()
     signal toggled()
 
@@ -64,7 +67,7 @@ Item {
         triggered();
     }
 
-    property var enumStrings: fact?fact.enumStrings:undefined
+    property var enumStrings: fact?fact.enumStrings:{}
     property var enumStringsSize: enumStrings?enumStrings.length:0
 
     /*property var enumList: Repeater {

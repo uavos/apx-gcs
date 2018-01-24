@@ -33,6 +33,11 @@ MissionItem::MissionItem(MissionGroup *parent, const QString &name, const QStrin
     m_totalDistance(0),
     m_totalTime(0)
 {
+  f_order=new MissionField(this,"order",tr("Order"),tr("Object sequence number"),IntData);
+  f_order->setValue(num()+1);
+  f_order->setMin(1);
+
+
   f_latitude=new MissionField(this,"latitude",tr("Latitude"),tr("Global postition latitude"),FloatData);
   f_latitude->setUnits("lat");
   f_longitude=new MissionField(this,"longitude",tr("Longitude"),tr("Global postition longitude"),FloatData);
