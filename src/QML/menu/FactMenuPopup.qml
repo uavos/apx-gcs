@@ -24,15 +24,16 @@ Popup {
     padding: 0
     margins: 0
 
-    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 0.9 } }
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: app.settings.smooth.value?0.9:1 } }
 
     contentItem: FactMenu {
         id: factMenu
+        autoResize: true
         onFactPageRemoved: popupItem.close()
-        onItemTriggered: if(closeOnTrigger)popupItem.close()
+        onActionTriggered: if(closeOnTrigger)popupItem.close()
         Label {
             id: btnClose
-            z: 100
+            z: 10
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: 4

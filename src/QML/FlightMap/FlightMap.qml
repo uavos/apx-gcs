@@ -85,9 +85,9 @@ Map {
             parent: map
             property point pos
             x: pos.x-width/2 //(parent.width/2 - width) / 2
-            y: pos.y-48 //missionList.y
+            y: pos.y-100 //missionList.y
             fact: app.vehicles.current.mission.tools.map
-            showTitle: false
+            //showTitle: false
             onClosed: destroy()
         }
     }

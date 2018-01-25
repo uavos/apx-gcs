@@ -4,5 +4,5 @@ import "./menu"
 
 FactMenu {
     id: window
-    fact: app
+    fact: app //.vehicles.current.mission
 }

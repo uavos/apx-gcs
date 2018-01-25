@@ -41,6 +41,7 @@ Item {
     }
 
     //internal
+    property bool bAction: fact.dataType===Fact.ActionData
     property bool bNext: fact.size || fact.treeItemType===Fact.GroupItem || bEnumChilds
     property bool bDescr: fact.descr && app.settings.showdescr.value
     property bool bEnumChilds: fact.dataType===Fact.EnumData && fact.enumStrings.length>maxEnumListSize
@@ -81,10 +82,11 @@ Item {
         onClicked: if(activeFocus){
             //console.log("click menu");
             //factItem.focus=true;
-            fact.trigger();
             if(bNext) openFact(fact)
             else if(bEnumChilds) openFact(fact)
-            itemTriggered(fact)
+            else if(bAction)itemTriggered(fact)
+            fact.trigger()
+            //itemTriggered(fact)
             //else if(bAction && fact.value!==Fact.RemoveAction) back();
         }
 

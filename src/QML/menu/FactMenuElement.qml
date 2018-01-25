@@ -23,6 +23,7 @@ Item {
     property string qmlPage: fact?fact.qmlPage:""
 
     property bool busy: fact?fact.busy:false
+    property bool active: fact?fact.active:false
     property bool enabled: fact?fact.enabled:(title?true:false)
 
 

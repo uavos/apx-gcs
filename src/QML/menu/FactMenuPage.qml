@@ -20,12 +20,12 @@ ColumnLayout {
     Connections {
         target: fact
         onRemoved: {
-            fact=removedFactC.createObject(menuPage);
+            fact=dummyFactC.createObject(menuPage);
             destroy()
         }
     }
     Component {
-        id: removedFactC
+        id: dummyFactC
         FactMenuElement { }
     }
 
@@ -54,7 +54,7 @@ ColumnLayout {
             var c=Qt.createComponent(fact.qmlPage,Component.Asynchronous,menuBody);
             c.statusChanged.connect( function(status) {
                 if (status === Component.Ready) {
-                    c.createObject(this,opts);
+                    c.createObject(menuBody,opts);
                 }
             })
             c.statusChanged(c.status);
@@ -135,8 +135,10 @@ ColumnLayout {
             clip: true
             Layout.preferredWidth: itemWidth
             Layout.preferredHeight: itemsHeight//+headerItem.height//footerItem.height
-            property int itemsHeightMin: 4*itemSize
+            cacheBuffer: 0
+            property int itemsHeightMin: 8*itemSize
             property int itemsHeight: itemsHeightMin
+            Behavior on itemsHeight { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
             //implicitWidth: contentItem.childrenRect.width
             //implicitHeight: 800 //contentItem.childrenRect.height
             property bool bEnumItemFact: fact.size===0 && fact.enumStrings.length>0
@@ -147,48 +149,48 @@ ColumnLayout {
             section.criteria: ViewSection.FullString
             section.delegate: Label {
                 width: listView.width
-                height: itemSize
+                height: itemSize*0.6
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: itemSize*0.6
+                font.pixelSize: height*0.9
                 color: Style.cTitleSep
                 font.family: font_narrow
                 text: section
             }
             header: Text {
                 width: listView.width
-                height: visible?titleSize*0.5:0
+                height: visible?implicitHeight:0
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: titleSize*0.4
+                font.pixelSize: itemSize*0.4
                 font.family: font_condenced
                 color: "#aaa"
-                visible: text!="" && showTitle
-                text: fact.descr
+                visible: fact.descr && showTitle
+                text: visible?fact.descr:""
             }
             footerPositioning: ListView.OverlayFooter
             footer: Flow {
                 id: toolsItem
                 z: 10
                 width: listView.width
-                height: childrenRect.height
-                //implicitHeight: contentItem.childrenRect.height
+                //height: childrenRect.height
                 layoutDirection: Qt.RightToLeft
                 spacing: 5
                 padding: 0
                 visible: children.length>0
             }
             Component.onCompleted: {
+                //create actions
                 for (var i=0; i < fact.size; i++){
                     var f=fact.childFact(i)
                     if(!isActionFact(f))continue;
                     var c=actionC.createObject(footerItem,{"fact": f});
                 }
-
             }
+            ScrollBar.vertical: ScrollBar {}
             Component {
                 id: delegateC
-                FactMenuItem { parentFact: listView.fact; bEnumItemFact: listView.bEnumItemFact; }
+                FactMenuListItem { fact: modelData; } //parentFact: listView.fact; bEnumItemFact: listView.bEnumItemFact; }
             }
             Component {
                 id: actionC
@@ -196,6 +198,7 @@ ColumnLayout {
             }
             Connections {
                 target: listView.contentItem
+                enabled: autoResize
                 onChildrenChanged: heightTimer.restart()
             }
             Timer {
@@ -208,22 +211,14 @@ ColumnLayout {
                     for(var child in listView.contentItem.children) {
                         var c=listView.contentItem.children[child]
                         if(c.visible)sz+=c.height
-                        console.log(c+" "+c.title+" "+c.height+" "+sz)
+                        //console.log(c+" "+c.title+" "+c.height+" "+sz)
                     }
                     sz=Math.max(listView.itemsHeight,sz)
-                    console.log(sz)
+                    //console.log(sz)
                     if(sz!==listView.itemsHeight)listView.itemsHeight=sz
                 }
 
             }
-            /*function updateItemsSize()
-            {
-                var sz=0
-                for(var child in listView.contentItem.children) {
-                    sz+=listView.contentItem.children[child].height
-                }
-                console.log(sz)
-            }*/
         }
     }
 }

@@ -104,5 +104,11 @@
         <file>menu/qmldir</file>
         <file>menu/Style.qml</file>
         <file>menu/FactMenuPage.qml</file>
+        <file>menu/FactMenuListItem.qml</file>
+        <file>menu/FactMenuEditorConst.qml</file>
+        <file>menu/FactMenuEditorTextOption.qml</file>
+        <file>menu/FactMenuEditorInt.qml</file>
+        <file>menu/FactMenuEditorFloat.qml</file>
+        <file>menu/FactMenuEditorDialog.qml</file>
     </qresource>
 </RCC>

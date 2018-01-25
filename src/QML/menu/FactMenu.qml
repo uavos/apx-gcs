@@ -13,9 +13,11 @@ StackView {
 
     property bool effects: true
 
+    property bool autoResize: false
+
     property bool showTitle: true
 
-    property int itemSize: 32
+    property int itemSize: 42
     property int maxEnumListSize: 5
     property int btnSize: itemSize*0.9
     property int titleSize: itemSize
@@ -33,12 +35,12 @@ StackView {
         console.log(implicitHeight)
     }*/
 
-    signal closed()
     signal opened()
-    signal itemTriggered(var fact)
+
+    signal factTriggered(var fact)
+    signal actionTriggered(var fact)
 
     signal factPageRemoved()
-    signal updateListView()
 
     property StackView parentStack
     property bool showBtnBack: depth>1 || parentStack
@@ -79,7 +81,6 @@ StackView {
         if(depth>1)pop();
         else if(parentStack)parentStack.pop();
     }
-
 
 
 
