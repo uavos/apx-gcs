@@ -81,10 +81,15 @@ bool FactData::setValue(const QVariant &v)
         else if(m_enumStrings.size()>1)return false;
         else if(v.type()!=QVariant::Int){
           QString s=v.toString();
-          int i=s.toInt(&ok);
-          if(!ok)i=round(s.toDouble(&ok));
-          if(!ok)i=s.toInt(&ok,16);
-          if(!ok)return false;
+          int i=0;
+          if(units()=="time" && s.contains(':')){
+            i=FactSystemApp::timeFromString(s);
+          }else{
+            i=s.toInt(&ok);
+            if(!ok)i=round(s.toDouble(&ok));
+            if(!ok)i=s.toInt(&ok,16);
+            if(!ok)return false;
+          }
           if((!m_min.isNull()) && i<m_min.toInt())i=m_min.toInt();
           if((!m_max.isNull()) && i>m_max.toInt())i=m_max.toInt();
           vx=i;
@@ -451,10 +456,10 @@ void FactData::restore()
     foreach (FactTree *i, childItems()) {
       static_cast<FactData*>(i)->restore();
     }
-    return;
   }
-  if(treeItemType()!=FactItem)return;
-  setValue(backup_value);
+  if(treeItemType()==FactItem){
+    setValue(backup_value);
+  }
   setModified(false);
 }
 void FactData::defaults()

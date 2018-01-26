@@ -6,20 +6,20 @@ import GCS.FactSystem 1.0
 import "."
 
 FactMenuEditorInt {
-    id: spinbox
+    id: control
 
     property int decimals: Math.min(2,fact.precision>0?fact.precision:2)
-    onDecimalsChanged: console.log(decimals)
+    //onDecimalsChanged: console.log(decimals)
 
     div: Math.pow(10,decimals)
 
     validator: DoubleValidator {
-        bottom: Math.min(spinbox.from, spinbox.to)
-        top:  Math.max(spinbox.from, spinbox.to)
+        bottom: Math.min(control.from, control.to)
+        top:  Math.max(control.from, control.to)
     }
 
     textFromValue: function(value, locale) {
-        return fact.text //Number(value / div).toLocaleString(locale, 'f', spinbox.decimals)
+        return textWithUnits(fact.text)
     }
 
     valueFromText: function(text, locale) {

@@ -104,19 +104,7 @@ QVariant Fact::data(int col, int role) const
     }
     case Qt::ToolTipRole:
       if(col==Fact::FACT_MODEL_COLUMN_NAME){
-        QStringList st;
-        QString sDataType;
-        if(m_dataType!=NoData)sDataType=QMetaEnum::fromType<DataType>().valueToKey(m_dataType);
-        if(!units().isEmpty())sDataType+=(sDataType.isEmpty()?"":", ")+units();
-        if(sDataType.isEmpty())st<<QString("%1").arg(name());
-        else st<<QString("%1 [%2]").arg(name()).arg(sDataType);
-        if(!descr().isEmpty()) st<<descr();
-        st<<path();
-        if(!m_enumStrings.isEmpty()){
-          if(m_enumStrings.size()>25)st<<QString("{%1}").arg(m_enumStrings.size());
-          else st<<QString("{%1}").arg(m_enumStrings.join(','));
-        }
-        return st.join('\n');
+        return info();
       }else if(col==Fact::FACT_MODEL_COLUMN_VALUE){
         if(size()){
           QString s=name();
@@ -157,6 +145,23 @@ QVariant Fact::data(int col, int role) const
     case Fact::FACT_MODEL_COLUMN_DESCR: return descr();
   }
   return QVariant();
+}
+//=============================================================================
+QString Fact::info() const
+{
+  QStringList st;
+  QString sDataType;
+  if(m_dataType!=NoData)sDataType=QMetaEnum::fromType<DataType>().valueToKey(m_dataType);
+  if(!units().isEmpty())sDataType+=(sDataType.isEmpty()?"":", ")+units();
+  if(sDataType.isEmpty())st<<QString("%1").arg(name());
+  else st<<QString("%1 [%2]").arg(name()).arg(sDataType);
+  if(!descr().isEmpty()) st<<descr();
+  st<<path();
+  if(!m_enumStrings.isEmpty()){
+    if(m_enumStrings.size()>25)st<<QString("{%1}").arg(m_enumStrings.size());
+    else st<<QString("{%1}").arg(m_enumStrings.join(','));
+  }
+  return st.join('\n');
 }
 //=============================================================================
 QByteArray Fact::hash() const

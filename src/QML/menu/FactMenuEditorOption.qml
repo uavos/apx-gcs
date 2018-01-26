@@ -9,16 +9,31 @@ ComboBox {
     id: editor
     Layout.fillHeight: true
 
+    spacing: 0
+    topPadding: 0
+    bottomPadding: 0
+    background.y: 2
+    background.height: height - 4
+
+
     model: fact.enumStrings
-    Component.onCompleted: currentIndex=find(value)
+    Component.onCompleted: {
+        //console.log("cmp")
+        currentIndex=find(value)
+    }
     onActivated: {
         fact.setValue(textAt(index))
         parent.forceActiveFocus();
     }
     property string value: fact.text
-    onValueChanged: currentIndex=find(value)
+    onValueChanged: {
+        //console.log("chg")
+        currentIndex=find(value)
+    }
     Connections {
         target: listView
-        onMovementStarted: editor.popup.close()
+        onMovementStarted: {
+            editor.popup.close()
+        }
     }
 }

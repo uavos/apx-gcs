@@ -110,5 +110,9 @@
         <file>menu/FactMenuEditorInt.qml</file>
         <file>menu/FactMenuEditorFloat.qml</file>
         <file>menu/FactMenuEditorDialog.qml</file>
+        <file>menu/FactMenuPageInfo.qml</file>
+        <file>menu/FactMenuPageList.qml</file>
+        <file>menu/FactMenuPageTitle.qml</file>
+        <file>menu/FactMenuEditorTime.qml</file>
     </qresource>
 </RCC>

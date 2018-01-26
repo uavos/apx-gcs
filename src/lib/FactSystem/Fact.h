@@ -85,6 +85,8 @@ public:
   };
   virtual QVariant data(int col, int role) const;
 
+  Q_INVOKABLE virtual QString info() const;
+
 protected:
   virtual void hashData(QCryptographicHash *h) const;
 

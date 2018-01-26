@@ -11,29 +11,27 @@ StackView {
 
     property var fact
 
-    property bool effects: true
-
+    property bool showTitle: true
     property bool autoResize: false
 
-    property bool showTitle: true
-
-    property int itemSize: 42
-    property int maxEnumListSize: 5
-    property int btnSize: itemSize*0.9
+    property int itemSize: 38
     property int titleSize: itemSize
-    property int itemWidth: itemSize*10
+    property int itemWidth: itemSize*8
+
+    property int titleFontSize: itemSize*0.45
+    property int descrFontSize: itemSize*0.3
+    property int iconFontSize: itemSize*0.75
+    property int editorFontSize: itemSize*0.5
+
+    property bool effects: app.settings.smooth.value
+
+    property int maxEnumListSize: 5
 
     clip: true
     initialItem: createFactPage(fact)
 
-    implicitWidth: currentItem.implicitWidth //currentItem?currentItem.implicitWidth:100
-    implicitHeight: currentItem.implicitHeight //currentItem?currentItem.implicitHeight:100
-
-    /*onImplicitHeightChanged: console.log(implicitHeight)
-    onCurrentItemChanged: {
-        console.log(currentItem)
-        console.log(implicitHeight)
-    }*/
+    implicitWidth: currentItem?currentItem.implicitWidth:0
+    implicitHeight: currentItem?currentItem.implicitHeight:0
 
     signal opened()
 
@@ -46,20 +44,22 @@ StackView {
     property bool showBtnBack: depth>1 || parentStack
 
 
-    function createFactPage(f)
+    function createFactPage(f,opts)
     {
-        var c=pageDelegate.createObject(this,{"fact": f})
+        if(typeof opts==='undefined')opts={}
+        opts.fact=f
+        var c=pageDelegate.createObject(this,opts)
         f.removed.connect(function(){factPageRemoved(); back()})
         return c
     }
 
-    function openFact(f)
+    function openFact(f,opts)
     {
-        push(createFactPage(f))
+        push(createFactPage(f,opts))
         opened()
     }
 
-    function openPage(opts)
+    /*function openPage(opts)
     {
         push(pageDelegate.createObject(this,opts))
         opened()
@@ -74,7 +74,7 @@ StackView {
     {
         pop(null);
         closed();
-    }
+    }*/
 
     function back()
     {
@@ -82,7 +82,11 @@ StackView {
         else if(parentStack)parentStack.pop();
     }
 
-
+    function openSystemTree()
+    {
+        clear()
+        openFact(app)
+    }
 
 
     function isActionFact(f)

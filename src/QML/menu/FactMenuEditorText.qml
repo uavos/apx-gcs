@@ -6,10 +6,12 @@ import GCS.FactSystem 1.0
 import "."
 
 TextInput {
+    id: control
     Layout.minimumWidth: itemSize*2
-    Layout.maximumHeight: editorFontSize*2
+    //Layout.maximumHeight: editorFontSize*2
 
     horizontalAlignment: Text.AlignRight
+    verticalAlignment: Text.AlignVCenter
 
     font.family: font_condenced
     font.pixelSize: editorFontSize
@@ -29,8 +31,9 @@ TextInput {
     Rectangle {
         z: parent.z-1
         visible: fact.enabled
-        anchors.fill: parent
-        anchors.margins: -itemSize*0.05
+        anchors.centerIn: parent
+        width: control.width+10
+        height: editorFontSize+10
         radius: 3
         color: "#000"
         border.width: 1

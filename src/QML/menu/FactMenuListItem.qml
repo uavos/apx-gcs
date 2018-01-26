@@ -20,11 +20,6 @@ Button {
     property bool expandable: fact.size || fact.treeItemType===Fact.GroupItem // || bEnumChilds
     property bool isAction: fact.dataType===Fact.ActionData
 
-    property int titleFontSize: itemSize*0.5
-    property int descrFontSize: itemSize*0.25
-    property int iconFontSize: itemSize*0.75
-    property int editorFontSize: itemSize*0.4
-
     onClicked: if(activeFocus){
         if(expandable) openFact(fact)
         else if(isAction)actionTriggered(fact)
@@ -32,6 +27,11 @@ Button {
         fact.trigger()
         factTriggered(fact)
         //else if(isAction && fact.value!==Fact.RemoveAction) back();
+    }
+
+    onPressAndHold: {
+        //listProperty(fact)
+        openFact(fact,{"pageInfo": true})
     }
 
     Connections {
@@ -86,14 +86,17 @@ Button {
         }
         //fact title & descr
         Item {
+            id: titleItem
             Layout.fillHeight: true
-            implicitWidth: titleText.contentWidth
+            Layout.fillWidth: true
+            //Layout.minimumWidth: titleText.contentWidth/2
+            //Layout.preferredWidth: titleText.contentWidth
             Text {
                 id: titleText
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.topMargin: -3
+                //anchors.topMargin: -3
                 verticalAlignment: descrText.visible?Text.AlignTop:Text.AlignVCenter
                 text: factButton.text
                 font.pointSize: titleFontSize
@@ -112,14 +115,11 @@ Button {
             }
         }
         //editor
-        Item {
+        RowLayout {
+            id: editorContainer
             Layout.fillHeight: true
             Layout.fillWidth: true
-            RowLayout {
-                anchors.fill: parent
-                Component.onCompleted: createEditor(this)
-            }
-
+            Component.onCompleted: createEditor(editorContainer)
         }
 
         //status text
@@ -162,8 +162,8 @@ Button {
             qml="Key"
             break
         case Fact.IntData:
-            //if(fact.units==="time")qml="Time"
-            qml="Int"
+            if(fact.units==="time")qml="Time"
+            else qml="Int"
             break
         case Fact.FloatData:
             if(fact.units==="lat" || fact.units==="lon")qml="Text"
@@ -177,18 +177,15 @@ Button {
 
         //load and create component
         var opts={
-            "Layout.alignment": Qt.AlignRight,
+            "Layout.fillHeight": true,
+            "Layout.alignment": Qt.AlignVCenter|Qt.AlignRight,
             "anchors.verticalCenter": parentItem.verticalCenter
         }
-        var c=Qt.createComponent("FactMenuEditor"+qml+".qml",Component.Asynchronous,parentItem);
-        c.statusChanged.connect( function(status) {
-            if (status === Component.Ready) {
-                c.createObject(parentItem,opts);
-            }
-        })
-        c.statusChanged(c.status);
 
-        //testC.createObject(parentItem,opts);
+        var cmp=Qt.createComponent("FactMenuEditor"+qml+".qml",parentItem)
+        if (cmp.status === Component.Ready) {
+            return cmp.createObject(parentItem,opts);
+        }
     }
 
 

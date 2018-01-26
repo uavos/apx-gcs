@@ -55,12 +55,12 @@ public:
   //----------------------------------
   Q_INVOKABLE static QString latToString(double v);
   Q_INVOKABLE static QString lonToString(double v);
-  Q_INVOKABLE double static latFromString(QString s);
-  Q_INVOKABLE double static lonFromString(QString s);
+  Q_INVOKABLE static double latFromString(QString s);
+  Q_INVOKABLE static double lonFromString(QString s);
   Q_INVOKABLE static QString distanceToString(uint v);
   Q_INVOKABLE static QString timeToString(quint64 v, bool seconds=false);
   Q_INVOKABLE static QString timemsToString(quint64 v);
-  Q_INVOKABLE quint64 timeFromString(QString s);
+  Q_INVOKABLE static quint64 timeFromString(QString s);
 
   Q_INVOKABLE static void toolTip(QString tooltip);
   Q_INVOKABLE static double limit(double v,double min,double max);
