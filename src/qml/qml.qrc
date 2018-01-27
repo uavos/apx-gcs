@@ -49,7 +49,6 @@
         <file>nodes/NodeMenuItem.qml</file>
         <file>Rotax914.qml</file>
         <file>menu/FactMenu.qml</file>
-        <file>menu/FactMenuItem.qml</file>
         <file>Facts.qml</file>
         <file>menu/FactMenuPopup.qml</file>
         <file>menu/FactMenuElement.qml</file>

@@ -115,43 +115,40 @@ MissionObject {
     //Behavior on appCircleRadiusDefault { enabled: app.settings.smooth.value; NumberAnimation {duration: 100;} }
 
     Component.onCompleted: {
-        var c=endPointC.createObject(map)
-        map.addMapItem(c)
-        c=appPointC.createObject(map)
-        appPoint=c
-        map.addMapItem(c)
+        createMapComponent(endPointC)
+        appPoint=createMapComponent(appPointC)
         //runway path
-        c=pathC.createObject(map)
+        var c=createMapComponent(pathC)
         c.z=map.z+10
         c.line.width=10
         c.line.color=Qt.binding(function(){return cRwBG})
         c.opacity=0.9
         c.visible=Qt.binding(function(){return current && runwayItem.visible})
-        map.addMapItem(c)
-        c=pathC.createObject(map)
+
+        c=createMapComponent(pathC)
         c.z=map.z+11
         c.line.width=4
         c.line.color="white"
         c.opacity=0.8
-        map.addMapItem(c)
-        c=pathC.createObject(map)
+
+        c=createMapComponent(pathC)
         c.z=map.z+12
         c.line.width=2
         c.line.color="black"
         c.opacity=0.5
         c.visible=Qt.binding(function(){return showDetailsRw})
-        map.addMapItem(c)
+
         //approach path
-        c=pathC.createObject(map)
+        c=createMapComponent(pathC)
         c.z=map.z+1
         c.line.width=Qt.binding(function(){return appCircleLineWidth})
         c.line.color="white"
         c.opacity=Qt.binding(function(){return appOpacity})
         c.visible=Qt.binding(function(){return showDetailsApp})
         c.p2=Qt.binding(function(){return appPointCoordinate})
-        map.addMapItem(c)
+
         //approach circle
-        c=circleC.createObject(map)
+        c=createMapComponent(circleC)
         c.z=map.z+1
         c.border.color="white"
         c.border.width=Qt.binding(function(){return appCircleLineWidth})
@@ -159,7 +156,6 @@ MissionObject {
         c.visible=Qt.binding(function(){return appCircleVisible})
         c.center=Qt.binding(function(){return appCircleCoordinate})
         c.radius=Qt.binding(function(){return appCircleRadius})
-        map.addMapItem(c)
     }
     Component {
         id: endPointC
@@ -182,10 +178,6 @@ MissionObject {
                     visible: opacity && showDetails
                 }
             ]
-            Connections {
-                target: runwayItem.fact
-                onRemoved: endPoint.destroy()
-            }
         }
     }
     Component {
@@ -204,10 +196,6 @@ MissionObject {
                 updateAppPoint(coordinate)
                 coordinate=factPos //snap
             }
-            Connections {
-                target: runwayItem.fact
-                onRemoved: appPoint.destroy()
-            }
         }
     }
     //paths
@@ -218,10 +206,6 @@ MissionObject {
             visible: runwayItem.visible
             p1: runwayItem.coordinate
             p2: runwayItem.endPointCoordinate
-            Connections {
-                target: runwayItem.fact
-                onRemoved: line.destroy()
-            }
         }
     }
     Component {
@@ -230,10 +214,6 @@ MissionObject {
             id: circle
             color: "transparent"
             visible: runwayItem.visible
-            Connections {
-                target: runwayItem.fact
-                onRemoved: circle.destroy()
-            }
         }
     }
     /*Component {

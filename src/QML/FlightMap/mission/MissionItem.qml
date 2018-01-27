@@ -40,7 +40,7 @@ MapItemGroup {
     MapItemView {
         id: waypoints
         model: vehicle.mission.waypoints.model
-        delegate: WaypointItem { }
+        delegate: WaypointItem { fact: modelData }
     }
 
     MapItemView {

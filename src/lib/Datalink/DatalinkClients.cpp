@@ -29,11 +29,13 @@
 DatalinkClients::DatalinkClients(Datalink *parent)
   : Fact(parent,"clients",tr("Connected clients"),tr("Remote clients connections"),GroupItem,ConstData)
 {
+  setIconSource("lan-connect");
   model()->setFlat(true);
 
   f_datalink=parent;
 
   f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),FactItem,NoData);
+  f_alloff->setIconSource("lan-disconnect");
 
   f_list=new Fact(this,"list",tr("Clients list"),tr("Active connections"),SectionItem,ConstData);
   bind(f_list);

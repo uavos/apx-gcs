@@ -27,10 +27,13 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
   : Fact(parent,"warnings",tr("Warnings"),tr("Malfunctions and warnings list"),GroupItem,ConstData),
     showNum(0)
 {
+  setIconSource("alert");
+
   model()->setFlat(true);
 
   f_clear=new Fact(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactItem,ActionData);
   f_clear->setEnabled(false);
+  f_clear->setIconSource("notification-clear-all");
   connect(f_clear,&Fact::triggered,this,[=](){
     f_list->removeAll();
   });

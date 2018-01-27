@@ -36,6 +36,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
     m_squawk(squawk)
 {
   setSection(parent->title());
+  setIconSource("drone");
 
   //requests manager
   nmtManager=new VehicleNmtManager(this);

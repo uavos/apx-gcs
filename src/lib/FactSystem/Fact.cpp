@@ -396,16 +396,6 @@ void Fact::setQmlPage(const QString &v)
   m_qmlPage=v;
   emit qmlPageChanged();
 }
-QString Fact::qmlEditor() const
-{
-  return m_qmlEditor;
-}
-void Fact::setQmlEditor(const QString &v)
-{
-  if(m_qmlEditor==v)return;
-  m_qmlEditor=v;
-  emit qmlEditorChanged();
-}
 bool Fact::busy() const
 {
   return m_busy;

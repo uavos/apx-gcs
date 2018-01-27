@@ -65,6 +65,8 @@ private slots:
   void itemInserted(FactTree *);
   void itemToBeRemoved(int row, FactTree *item);
   void itemRemoved(FactTree *);
+  void itemToBeMoved(int row,int dest,FactTree *item);
+  void itemMoved(FactTree *item);
 
   void textChanged();
   void titleChanged();

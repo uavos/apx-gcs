@@ -26,6 +26,7 @@
 DatalinkStats::DatalinkStats(Datalink *parent)
   : Fact(parent,"stats",tr("Statistics"),tr("Data traffic usage"),GroupItem,NoData)
 {
+  setIconSource("chart-line");
   model()->setFlat(true);
 
   f_datalink=parent;

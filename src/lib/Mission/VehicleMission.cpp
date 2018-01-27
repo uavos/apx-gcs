@@ -42,6 +42,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
     m_empty(true),
     m_missionSize(0)
 {
+  setIconSource("ship-wheel");
+
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   f_request->setValue(ButtonAction);
   f_request->setIconSource("download");

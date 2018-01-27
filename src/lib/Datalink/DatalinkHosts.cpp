@@ -30,6 +30,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   : Fact(parent,"hosts",tr("Remote servers"),tr("Discovered remote hosts"),GroupItem,NoData),
     m_connectedCount(0)
 {
+  setIconSource("download-network");
   model()->setFlat(true);
 
   f_datalink=parent;
@@ -38,6 +39,7 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   QSettings *settings=AppSettings::settings();
 
   f_add=new Fact(this,"add",tr("Connect to host"),tr("Create new connection"),GroupItem,NoData);
+  f_add->setIconSource("plus-network");
   f_host=new AppSettingFact(settings,f_add,"host",tr("Host address"),tr("IP address of remote server"),"",TextData,QString());
   //f_host=new Fact(f_add,"host",tr("Host address"),tr("IP address of remote server"),FactItem,TextData);
   f_connect=new Fact(f_add,"connect",tr("Connect"),"",FactItem,ActionData);
@@ -46,7 +48,8 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
 
   AppSettingFact::loadSettings(this);
 
-  f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all remote server connections"),FactItem,NoData);
+  f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Close all remote server connections"),FactItem,NoData);
+  f_alloff->setIconSource("lan-disconnect");
 
   f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
   //bind(f_list);

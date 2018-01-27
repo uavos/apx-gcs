@@ -54,6 +54,7 @@ public:
 
   //internal tree
   Q_INVOKABLE void addItem(FactTree *item);
+  Q_INVOKABLE void moveItem(FactTree *item,int n,bool safeMode=false);
   Q_INVOKABLE void remove();
   Q_INVOKABLE void removeAll(void);
   Q_INVOKABLE FactTree * child(int n) const;
@@ -81,6 +82,9 @@ signals:
   void itemInserted(FactTree *item);
   void itemToBeRemoved(int row,FactTree *item);
   void itemRemoved(FactTree *item);
+  void itemToBeMoved(int row,int dest,FactTree *item);
+  void itemMoved(FactTree *item);
+
   void removed();
 
 private:

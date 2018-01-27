@@ -143,6 +143,7 @@ Fact * FactTreeModel::fact(const QModelIndex &index) const
 QModelIndex FactTreeModel::factIndex(FactTree * item, int column) const
 {
   if(item==root)return QModelIndex();
+  //return createIndex(item->parentItem()->childItems().indexOf(item),column,item);
   return createIndex(item->num(),column,item);
 }
 //=============================================================================
@@ -151,10 +152,14 @@ void FactTreeModel::checkConnections(Fact *fact) const
   if(!conFactLayout.contains(fact)){
     const_cast<QList<Fact*>*>(&conFactLayout)->append(fact);
     connect(fact,&Fact::destroyed,this,&FactTreeModel::itemDestroyed);
+
     connect(fact,&Fact::itemToBeInserted,this,&FactTreeModel::itemToBeInserted);
     connect(fact,&Fact::itemInserted,this,&FactTreeModel::itemInserted);
     connect(fact,&Fact::itemToBeRemoved,this,&FactTreeModel::itemToBeRemoved);
     connect(fact,&Fact::itemRemoved,this,&FactTreeModel::itemRemoved);
+    connect(fact,&Fact::itemToBeMoved,this,&FactTreeModel::itemToBeMoved);
+    connect(fact,&Fact::itemMoved,this,&FactTreeModel::itemMoved);
+
     connect(fact,&Fact::textChanged, this, &FactTreeModel::textChanged);
     connect(fact,&Fact::statusChanged, this, &FactTreeModel::textChanged);
     connect(fact,&Fact::titleChanged, this, &FactTreeModel::titleChanged);
@@ -213,6 +218,16 @@ void FactTreeModel::itemToBeRemoved(int row,FactTree *item)
 void FactTreeModel::itemRemoved(FactTree *)
 {
   endRemoveRows();
+}
+void FactTreeModel::itemToBeMoved(int row,int dest,FactTree *item)
+{
+  Fact *fact=static_cast<Fact*>(item->parentItem());
+  const QModelIndex &index=factIndex(fact);
+  beginMoveRows(index,row,row,index,dest);
+}
+void FactTreeModel::itemMoved(FactTree *)
+{
+  endMoveRows();
 }
 //=============================================================================
 void FactTreeModel::textChanged()

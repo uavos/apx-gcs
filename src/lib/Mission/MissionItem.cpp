@@ -36,6 +36,8 @@ MissionItem::MissionItem(MissionGroup *parent, const QString &name, const QStrin
   f_order=new MissionField(this,"order",tr("Order"),tr("Object sequence number"),IntData);
   f_order->setValue(num()+1);
   f_order->setMin(1);
+  connect(f_order,&Fact::valueChanged,this,&MissionItem::updateOrder);
+  connect(this,&Fact::numChanged,this,[=](){f_order->setValue(num()+1);});
 
 
   f_latitude=new MissionField(this,"latitude",tr("Latitude"),tr("Global postition latitude"),FloatData);
@@ -116,6 +118,18 @@ void MissionItem::updatePath()
       next->updatePath();
     }
   }
+}
+//=============================================================================
+void MissionItem::updateOrder()
+{
+  int n=f_order->value().toInt()-1;
+  if(n<0)n=0;
+  else if(n>=group->size())n=group->size()-1;
+  if(n==num() || group->size()<2){
+    f_order->setValue(num()+1);
+    return;
+  }
+  group->moveItem(this,n,true);
 }
 //=============================================================================
 void MissionItem::resetPath()

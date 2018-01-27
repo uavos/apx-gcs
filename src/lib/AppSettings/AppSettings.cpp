@@ -30,6 +30,7 @@ AppSettings::AppSettings(FactSystem *parent)
   _instance=this;
 
   setSection(FactSystem::ApplicationSection);
+  setIconSource("settings");
 
   QDir spath(AppDirs::user().absoluteFilePath("Preferences"));
   if(!spath.exists())spath.mkpath(".");

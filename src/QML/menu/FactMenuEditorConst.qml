@@ -5,7 +5,7 @@ import GCS.FactSystem 1.0
 
 import "."
 
-Row{
+RowLayout {
     spacing: editorFontSize/2
     Text {
         text: fact.text

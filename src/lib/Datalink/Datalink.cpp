@@ -38,6 +38,7 @@ Datalink::Datalink(FactSystem *parent)
   _instance=this;
 
   setSection(FactSystem::ApplicationSection);
+  setIconSource("swap-vertical");
 
   Fact *item;
   QString sect;
@@ -45,9 +46,11 @@ Datalink::Datalink(FactSystem *parent)
 
 
   f_readonly=new AppSettingFact(settings,this,"readonly",tr("Read only"),tr("Block all uplink data"),sect,BoolData,false);
+  f_readonly->setIconSource("airplane-off");
   connect(f_readonly,&Fact::valueChanged,this,&Datalink::readonlyChanged);
 
   f_listen=new AppSettingFact(settings,this,"listen",tr("Server active"),tr("Enable network features"),sect,BoolData,true);
+  f_listen->setIconSource("access-point-network");
 
   f_binded=new Fact(this,"binded",tr("Server listening"),"",FactItem,NoData);
   f_binded->setEnabled(false);

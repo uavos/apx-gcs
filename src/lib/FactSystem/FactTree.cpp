@@ -44,7 +44,10 @@ void FactTree::insertItem(int i, FactTree *item)
   item->setParent(this);
   emit itemToBeInserted(i,item);
   m_items.insert(i,item);
-  item->updateNum();
+  if(i>=m_items.size())item->updateNum();
+  else {
+    for(;i<m_items.size();++i) m_items.at(i)->updateNum();
+  }
   emit itemInserted(item);
   emit sizeChanged();
 }
@@ -52,7 +55,7 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
 {
   int i=m_items.indexOf(item);
   if(i<0)return;
-  item->removed();
+  if(deleteLater)item->removed();
   emit itemToBeRemoved(i,item);
   m_items.removeAt(i);
   for(int i=0;i<m_items.size();++i) m_items.at(i)->updateNum();
@@ -80,6 +83,22 @@ void FactTree::removeAll(void)
   }
   m_items.clear();
   emit sizeChanged();
+}
+void FactTree::moveItem(FactTree *item,int n,bool safeMode)
+{
+  int i=m_items.indexOf(item);
+  if(i<0)return;
+  if(safeMode){
+    removeItem(item, false);
+    insertItem(n,item);
+  }else{
+    if(n>i)n++;
+    emit itemToBeMoved(i,n,item);
+    m_items.removeAt(i);
+    m_items.insert(n,item);
+    emit itemMoved(item);
+  }
+  for(int i=0;i<m_items.size();++i) m_items.at(i)->updateNum();
 }
 //=============================================================================
 //=============================================================================

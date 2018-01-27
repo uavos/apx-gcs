@@ -34,6 +34,9 @@ FactListModel::FactListModel(Fact *parent)
 
     connect(fact,&Fact::itemToBeRemoved,this,&FactListModel::itemToBeRemoved);
     connect(fact,&Fact::itemRemoved,this,&FactListModel::itemRemoved);
+
+    connect(fact,&Fact::itemToBeMoved,this,&FactListModel::itemToBeMoved);
+    connect(fact,&Fact::itemMoved,this,&FactListModel::itemMoved);
   }
 }
 //=============================================================================
@@ -62,6 +65,21 @@ void FactListModel::itemRemoved(FactTree *)
   Fact *f=sectionParent(fact);
   f->model()->endRemoveRows();
   if(f!=fact)endRemoveRows();
+}
+void FactListModel::itemToBeMoved(int row,int dest,FactTree *)
+{
+  Fact *f=sectionParent(fact);
+  if(f!=fact)beginMoveRows(QModelIndex(), row ,row, QModelIndex(), dest);
+  int r=sectionRow(f,fact);
+  row+=r;
+  dest+=r;
+  f->model()->beginMoveRows(QModelIndex(), row ,row, QModelIndex(), dest);
+}
+void FactListModel::itemMoved(FactTree *)
+{
+  Fact *f=sectionParent(fact);
+  f->model()->endMoveRows();
+  if(f!=fact)endMoveRows();
 }
 //=============================================================================
 Fact * FactListModel::sectionParent(Fact *item) const

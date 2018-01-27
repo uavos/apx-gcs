@@ -48,6 +48,8 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   m_recording(false),
   m_recTime(0)
 {
+  setIconSource("record-rec");
+
   //database
   _db = new TelemetryDB(this,QString("GCSVehicleRecorderSession_%1").arg(QString(vehicle->uid.toHex().toUpper())),vehicle);
   recTelemetryID=0;

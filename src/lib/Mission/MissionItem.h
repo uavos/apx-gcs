@@ -72,6 +72,7 @@ private slots:
   virtual void updateTitle();
   virtual void updateStatus();
   virtual void updateCoordinate();
+  virtual void updateOrder();
 
 private:
   bool blockUpdateCoordinate;

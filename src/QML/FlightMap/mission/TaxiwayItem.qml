@@ -63,8 +63,7 @@ MissionObject {
 
     //Txi Path
     Component.onCompleted: {
-        var c=pathC.createObject(map)
-        map.addMapItem(c)
+        createMapComponent(pathC)
     }
     Component {
         id: pathC
@@ -84,10 +83,6 @@ MissionObject {
                 onPathChanged: updatePath()
             }
             Component.onCompleted: updatePath()
-            Connections {
-                target: taxiwayItem.fact
-                onRemoved: polyline.destroy()
-            }
         }
     }
 }

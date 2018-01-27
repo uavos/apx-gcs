@@ -12,7 +12,7 @@ Popup {
 
     property alias fact: factMenu.fact
     property alias showTitle: factMenu.showTitle
-    property bool closeOnTrigger: true
+    property bool closeOnTrigger: false
 
     //contentWidth: Math.min(window.width, window.height) / 3 * 2
     //contentHeight: Math.min(window.height, contents.length*menu.height)

@@ -51,6 +51,8 @@ private slots:
   void itemInserted(FactTree *item);
   void itemToBeRemoved(int row,FactTree *item);
   void itemRemoved(FactTree *item);
+  void itemToBeMoved(int row,int dest,FactTree *item);
+  void itemMoved(FactTree *item);
 
 protected:
   //ListModel override

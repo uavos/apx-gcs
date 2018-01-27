@@ -30,6 +30,19 @@ MapQuickItem {  //to be used inside MapComponent only
     visible: mission.visible //&& visibleOnMap
     enabled: visibleOnMap //visible
 
+    property var mapItems: []
+    Component.onDestruction: {
+        for(var i=0;i<mapItems.length;++i)mapItems[i].destroy()
+    }
+
+    function createMapComponent(cmp)
+    {
+        var c=cmp.createObject(map)
+        map.addMapItem(c)
+        mapItems.push(c)
+        return c
+    }
+
 
     //optimizations
     property bool visibleOnMap: true

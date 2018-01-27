@@ -122,9 +122,7 @@ MissionObject {
 
     //Flight Path
     Component.onCompleted: {
-        var c=pathC.createObject(map)
-        pathItem=c
-        map.addMapItem(c)
+        pathItem=createMapComponent(pathC)
     }
     Component {
         id: pathC
@@ -144,10 +142,6 @@ MissionObject {
                 onPathChanged: updatePath()
             }
             Component.onCompleted: updatePath()
-            Connections {
-                target: waypointItem.fact
-                onRemoved: polyline.destroy()
-            }
         }
     }
 

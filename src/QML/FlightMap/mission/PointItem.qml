@@ -62,15 +62,9 @@ MissionObject {
     property Item radiusPoint
 
     Component.onCompleted: {
-        var c=radiusPointC.createObject(map)
-        radiusPoint=c;
-        map.addMapItem(c)
-        //line
-        c=lineC.createObject(map)
-        map.addMapItem(c)
-        //circle
-        c=circleC.createObject(map)
-        map.addMapItem(c)
+        radiusPoint=createMapComponent(radiusPointC)
+        createMapComponent(lineC)
+        createMapComponent(circleC)
     }
     Component {
         id: radiusPointC
@@ -122,10 +116,6 @@ MissionObject {
                 }
             ]
 
-            Connections {
-                target: pointItem.fact
-                onRemoved: radiusPoint.destroy()
-            }
         }
     }
     Component {
@@ -138,10 +128,6 @@ MissionObject {
             radius: pointItem.radius
             center: pointItem.coordinate
             Behavior on radius { enabled: app.settings.smooth.value; NumberAnimation {duration: 100;} }
-            Connections {
-                target: pointItem.fact
-                onRemoved: circle.destroy()
-            }
         }
     }
     Component {
@@ -154,10 +140,6 @@ MissionObject {
             line.width: 2
             p1: pointItem.coordinate
             p2: pointItem.radiusPointCoordinate
-            Connections {
-                target: pointItem.fact
-                onRemoved: line.destroy()
-            }
         }
     }
 

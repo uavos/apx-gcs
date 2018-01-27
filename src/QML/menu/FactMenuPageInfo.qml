@@ -35,7 +35,7 @@ Flickable {
             selectByKeyboard: true
             text: getInfoText()
             textFormat: TextEdit.RichText
-            wrapMode: Text.WordWrap
+            wrapMode: Text.Wrap
             function getInfoText()
             {
                 var s=[]

@@ -44,7 +44,6 @@ class Fact: public FactData
   Q_PROPERTY(QString iconSource READ iconSource NOTIFY iconSourceChanged)
 
   Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
-  Q_PROPERTY(QString qmlEditor READ qmlEditor NOTIFY qmlEditorChanged)
 
   Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
 
@@ -123,8 +122,6 @@ public:
 
   QString qmlPage() const;
   void setQmlPage(const QString &v);
-  QString qmlEditor() const;
-  void setQmlEditor(const QString &v);
 
   bool busy() const;
   void setBusy(const bool &v);
@@ -139,7 +136,6 @@ protected:
   int m_progress;
   QString  m_iconSource;
   QString  m_qmlPage;
-  QString  m_qmlEditor;
   bool m_busy;
 
 signals:
@@ -153,7 +149,6 @@ signals:
 
   void iconSourceChanged();
   void qmlPageChanged();
-  void qmlEditorChanged();
   void busyChanged();
 
 };

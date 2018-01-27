@@ -34,22 +34,28 @@ Nodes::Nodes(Vehicle *parent)
     vehicle(parent),
     m_nodesCount(0)
 {
+  setIconSource("puzzle");
+
   model()->setFlat(true);
 
   xml=new NodesXml(this);
 
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
+  f_request->setIconSource("download");
   connect(f_request,&Fact::triggered,this,&Nodes::request);
 
   f_reload=new Fact(this,"reload",tr("Reload"),tr("Clear and download all"),FactItem,ActionData);
+  f_reload->setIconSource("reload");
   connect(f_reload,&Fact::triggered,this,&Nodes::reload);
   connect(f_reload,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
 
   f_upload=new Fact(this,"upload",tr("Upload"),tr("Upload modified values"),FactItem,ActionData);
+  f_upload->setIconSource("upload");
   connect(f_upload,&Fact::triggered,this,&Nodes::upload);
   connect(f_upload,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
 
   f_stop=new Fact(this,"stop",tr("Stop"),tr("Stop data requests"),FactItem,ActionData);
+  f_stop->setIconSource("close-circle");
   connect(f_stop,&Fact::triggered,this,&Nodes::stop);
   connect(f_stop,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
 

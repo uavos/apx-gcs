@@ -20,6 +20,8 @@ Button {
     property bool expandable: fact.size || fact.treeItemType===Fact.GroupItem // || bEnumChilds
     property bool isAction: fact.dataType===Fact.ActionData
 
+    property Item editor
+
     onClicked: if(activeFocus){
         if(expandable) openFact(fact)
         else if(isAction)actionTriggered(fact)
@@ -114,13 +116,6 @@ Button {
                 visible: text!==''
             }
         }
-        //editor
-        RowLayout {
-            id: editorContainer
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            Component.onCompleted: createEditor(editorContainer)
-        }
 
         //status text
         Text {
@@ -128,6 +123,20 @@ Button {
             font.pointSize: editorFontSize
             color: Style.cTextDisabled
         }
+
+        //editor
+        RowLayout {
+            id: editorContainer
+            property var editor
+            Layout.fillHeight: true
+            Layout.fillWidth: editor?true:false
+            Component.onCompleted: {
+                if(fact.treeItemType === Fact.FactItem){
+                    editor=createEditor(editorContainer)
+                }
+            }
+        }
+
 
         //next icon
         Text {
@@ -144,8 +153,6 @@ Button {
 
     function createEditor(parentItem)
     {
-        if(fact.treeItemType!==Fact.FactItem) return
-        //find editor source
         var qml=""
         switch(fact.dataType){
         case Fact.BoolData:
