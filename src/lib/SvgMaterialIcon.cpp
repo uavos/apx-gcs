@@ -33,6 +33,7 @@ QVariantMap SvgMaterialIcon::qmlMap;
 SvgMaterialIcon::SvgMaterialIcon(const QString &name, const QColor &color)
   : QIcon(icon(name,color))
 {
+  //https://materialdesignicons.com/
 }
 //=============================================================================
 QIcon SvgMaterialIcon::icon(const QString &name,const QColor &color) const

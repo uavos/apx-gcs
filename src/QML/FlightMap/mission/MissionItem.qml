@@ -52,7 +52,7 @@ MapItemGroup {
     MapItemView {
         id: taxiways
         model: vehicle.mission.taxiways.model
-        delegate: TaxiwayItem { }
+        delegate: TaxiwayItem { fact: modelData }
     }
 
     MapItemView {

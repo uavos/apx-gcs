@@ -20,73 +20,34 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Waypoint_H
-#define Waypoint_H
+#ifndef MissionTools_H
+#define MissionTools_H
 //=============================================================================
 #include <QtCore>
-#include <QGeoPath>
-#include <QGeoCoordinate>
-#include "MissionItem.h"
+#include <FactSystem.h>
+class VehicleMission;
 //=============================================================================
-class Waypoint: public MissionItem
+class MissionTools: public Fact
 {
   Q_OBJECT
-  Q_ENUMS(ManeuverType)
-
-  Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
-  Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
+  Q_ENUMS(MissionItemType)
 
 public:
-  explicit Waypoint(MissionGroup *parent);
+  explicit MissionTools(VehicleMission *parent);
 
-  Fact *f_altitude;
-  Fact *f_type;
+  Fact *f_map;
 
-  Fact *f_actions;
-  Fact *f_speed;
-  Fact *f_shot;
-  Fact *f_dshot;
-  Fact *f_script;
-  Fact *f_poi;
-  Fact *f_loiter;
-  Fact *f_turnR;
-  Fact *f_loops;
-  Fact *f_time;
+  Fact *f_altadjust;
+  Fact *f_altadjustApply;
+  Fact *f_altset;
+  Fact *f_altsetApply;
 
 
-  enum ManeuverType {
-    Hdg =0,
-    Line,
-  };
-  Q_ENUM(ManeuverType)
-
-protected:
-  QGeoPath getPath();
-
-private:
-  int icourse;
+  VehicleMission *mission;
 
 private slots:
-  void updateTitle();
-  void updateActionsText();
-  void selectTriggered();
-
-  //---------------------------------------
-  // PROPERTIES
-public:
-  bool reachable() const;
-  void setReachable(bool v);
-
-  bool warning() const;
-  void setWarning(bool v);
-
-protected:
-  bool m_reachable;
-  bool m_warning;
-
-signals:
-  void reachableChanged();
-  void warningChanged();
+  void altadjustTriggered();
+  void altsetTriggered();
 };
 //=============================================================================
 #endif

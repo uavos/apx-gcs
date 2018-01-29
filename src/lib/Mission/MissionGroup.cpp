@@ -127,6 +127,15 @@ void MissionGroup::setTime(uint v)
   emit timeChanged();
 }
 //=============================================================================
+void MissionGroup::add()
+{
+  const QGeoCoordinate &p=mission->mapCoordinate();
+  if(!p.isValid()){
+    qWarning("%s",tr("Click on map first").toUtf8().data());
+    return;
+  }
+  addObject(p);
+}
 //=============================================================================
 void MissionGroup::objectAdded(Fact *fact)
 {

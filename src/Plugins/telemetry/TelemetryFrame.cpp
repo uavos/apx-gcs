@@ -90,7 +90,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   aPrev=toolBar->addAction(SvgMaterialIcon("chevron-left"),tr("Load previous"),this,&TelemetryFrame::aPrev_triggered);
   aNext=toolBar->addAction(SvgMaterialIcon("chevron-right"),tr("Load next"),this,&TelemetryFrame::aNext_triggered);
   toolBar->addSeparator();
-  aFilter=toolBar->addAction(SvgMaterialIcon("filter"),tr("Filter vehicle"),this,&TelemetryFrame::aFilter_triggered);
+  aFilter=toolBar->addAction(SvgMaterialIcon("database"),tr("Search database"),this,&TelemetryFrame::aFilter_triggered);
   aFilter->setCheckable(true);
   toolBar->addSeparator();
   aFullScreen=toolBar->addAction(SvgMaterialIcon("fullscreen"),tr("Full screen"),this,&TelemetryFrame::aFullScreen_triggered);
@@ -101,7 +101,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
   aExport=toolBar->addAction(SvgMaterialIcon("content-save"),tr("Export"),this,&TelemetryFrame::aExport_triggered);
   aImport=toolBar->addAction(SvgMaterialIcon("folder-open"),tr("Import"),this,&TelemetryFrame::aImport_triggered);
-  aRestore=toolBar->addAction(SvgMaterialIcon("restore"),tr("Restore"),this,&TelemetryFrame::aRestore_triggered);
+  //aRestore=toolBar->addAction(SvgMaterialIcon("restore"),tr("Restore"),this,&TelemetryFrame::aRestore_triggered);
   toolBar->addSeparator();
   aDelete=toolBar->addAction(SvgMaterialIcon("delete"),tr("Delete"),this,&TelemetryFrame::aDelete_triggered);
   toolBar->addSeparator();

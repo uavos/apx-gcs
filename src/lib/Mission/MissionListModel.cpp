@@ -34,6 +34,9 @@ MissionListModel::MissionListModel(VehicleMission *parent)
 
     connect(fact,&Fact::itemToBeRemoved,this,&MissionListModel::itemToBeRemoved);
     connect(fact,&Fact::itemRemoved,this,&MissionListModel::itemRemoved);
+
+    connect(fact,&Fact::itemToBeMoved,this,&MissionListModel::itemToBeMoved);
+    connect(fact,&Fact::itemMoved,this,&MissionListModel::itemMoved);
   }
 }
 //=============================================================================
@@ -58,6 +61,19 @@ void MissionListModel::itemToBeRemoved(int row,FactTree *)
 void MissionListModel::itemRemoved(FactTree *)
 {
   endRemoveRows();
+}
+void MissionListModel::itemToBeMoved(int row,int dest,FactTree *)
+{
+  MissionGroup *fact=qobject_cast<MissionGroup*>(sender());
+  if(!fact)return;
+  int r=sectionRow(fact);
+  row+=r;
+  dest+=r;
+  beginMoveRows(QModelIndex(), row ,row, QModelIndex(), dest);
+}
+void MissionListModel::itemMoved(FactTree *)
+{
+  endMoveRows();
 }
 //=============================================================================
 int MissionListModel::sectionRow(MissionGroup *fact) const

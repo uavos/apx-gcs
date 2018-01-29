@@ -47,7 +47,7 @@ SpinBox {
             //inputMask: control.inputMask
 
             color: activeFocus?Style.cValueTextEdit:Style.cValueText
-            text: control.textFromValue(control.value, control.locale)
+            text: textWithUnits(fact.text)
 
             /*Connections {
                 target: fact
@@ -64,7 +64,7 @@ SpinBox {
                     text=fact.text
                     selectAll();
                 }else{
-                    text=Qt.binding(function(){return control.textFromValue(control.value, control.locale)})
+                    text=Qt.binding(function(){return textWithUnits(fact.text)})
                 }
             }
             horizontalAlignment: Qt.AlignHCenter
@@ -89,7 +89,11 @@ SpinBox {
     topPadding: 0
     bottomPadding: 0
     baselineOffset: 0
-    background.implicitWidth: itemSize*3.5
+
+    background: Item {
+        implicitWidth: itemSize*3.5
+    }
+    //background.implicitWidth: itemSize*3.5
 
     leftPadding: 0
     rightPadding: 0
@@ -98,18 +102,20 @@ SpinBox {
 
     property real div: 1
 
-    textFromValue: function(value) {
+    /*textFromValue: function(value) {
         var i=(value/div).toFixed();
         if(i>=0 && i<fact.enumStrings.length){
             return fact.enumStrings[i]
         }
         return textWithUnits(i);
-    }
+    }*/
     function textWithUnits(s)
     {
         var u=fact.units
         if(!u) return s
         if(u.indexOf("..")>=0)return s
+        if(isNaN(s))return s
+        //if(s !== parseFloat(s))return s
         return s+" "+u
     }
 

@@ -45,6 +45,7 @@ private:
 
 private slots:
   void updateTitle();
+  void selectTriggered();
 
 public slots:
 

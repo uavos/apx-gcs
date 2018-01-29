@@ -21,6 +21,10 @@
  *
  */
 #include "Taxiway.h"
+#include "VehicleMission.h"
+#include "Vehicle.h"
+#include "VehicleMandala.h"
+#include "VehicleMandalaFact.h"
 //=============================================================================
 Taxiway::Taxiway(MissionGroup *parent)
   : MissionItem(parent,"T#","",tr("Taxiway"))
@@ -61,5 +65,10 @@ QGeoPath Taxiway::getPath()
   setTime(distance/spd);
   setCourse(azimuth);
   return p;
+}
+//=============================================================================
+void Taxiway::selectTriggered()
+{
+  group->mission->vehicle->f_mandala->factByName("twidx")->setValue(num());
 }
 //=============================================================================

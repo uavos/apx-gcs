@@ -49,6 +49,11 @@ MissionItem::MissionItem(MissionGroup *parent, const QString &name, const QStrin
   f_remove->setValue(RemoveAction);
   connect(f_remove,&Fact::triggered,this,&Fact::remove);
 
+  f_select=new Fact(this,"select",tr("Set as current"),"",FactItem,ActionData);
+  f_select->setValue(ApplyAction);
+  f_select->setIconSource("target");
+  connect(f_select,&Fact::triggered,this,&MissionItem::selectTriggered);
+
   connect(f_latitude,&Fact::valueChanged,this,&MissionItem::updateCoordinate);
   connect(f_longitude,&Fact::valueChanged,this,&MissionItem::updateCoordinate);
 
@@ -132,6 +137,10 @@ void MissionItem::updateOrder()
   group->moveItem(this,n,true);
 }
 //=============================================================================
+void MissionItem::selectTriggered()
+{
+}
+//=============================================================================
 void MissionItem::resetPath()
 {
   m_geoPath=QGeoPath();
@@ -144,13 +153,12 @@ QGeoPath MissionItem::getPath()
 //=============================================================================
 MissionItem * MissionItem::prevItem() const
 {
-  return static_cast<MissionItem*>(parentItem()->child(num()-1));
+  return static_cast<MissionItem*>(parentItem()->child(indexInParent()-1));
 }
 MissionItem * MissionItem::nextItem() const
 {
-  return static_cast<MissionItem*>(parentItem()->child(num()+1));
+  return static_cast<MissionItem*>(parentItem()->child(indexInParent()+1));
 }
-
 //=============================================================================
 //=============================================================================
 //=============================================================================

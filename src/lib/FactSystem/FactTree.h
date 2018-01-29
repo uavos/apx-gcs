@@ -59,6 +59,7 @@ public:
   Q_INVOKABLE void removeAll(void);
   Q_INVOKABLE FactTree * child(int n) const;
   Q_INVOKABLE FactTree * parentItem() const;
+  Q_INVOKABLE int indexInParent() const;
   Q_INVOKABLE QList<FactTree*> childItems() const;
 
   Q_INVOKABLE FactTree * child(const QString &name) const;

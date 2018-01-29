@@ -40,14 +40,12 @@ FactTree::~FactTree()
 void FactTree::insertItem(int i, FactTree *item)
 {
   if(i<0)i=0;
+  else if(i>m_items.size())i=m_items.size();
   item->m_parentItem=this;
   item->setParent(this);
   emit itemToBeInserted(i,item);
   m_items.insert(i,item);
-  if(i>=m_items.size())item->updateNum();
-  else {
-    for(;i<m_items.size();++i) m_items.at(i)->updateNum();
-  }
+  for(;i<m_items.size();++i) m_items.at(i)->updateNum();
   emit itemInserted(item);
   emit sizeChanged();
 }
@@ -58,7 +56,7 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
   if(deleteLater)item->removed();
   emit itemToBeRemoved(i,item);
   m_items.removeAt(i);
-  for(int i=0;i<m_items.size();++i) m_items.at(i)->updateNum();
+  for(;i<m_items.size();++i) m_items.at(i)->updateNum();
   if(deleteLater){
     //item->disconnect();
     item->deleteLater();
@@ -144,8 +142,8 @@ int FactTree::num() const
 }
 void FactTree::updateNum()
 {
-  int v=0;
-  if(m_parentItem) v=m_parentItem->m_items.indexOf(this);
+  int v=indexInParent();
+  if(v<0)return;
   if(m_num==v)return;
   m_num=v;
   emit numChanged();
@@ -161,6 +159,10 @@ FactTree *FactTree::parentItem() const
 QList<FactTree*> FactTree::childItems() const
 {
   return m_items;
+}
+int FactTree::indexInParent() const
+{
+  return m_parentItem?m_parentItem->m_items.indexOf(const_cast<FactTree*>(this)):-1;
 }
 //=============================================================================
 FactTree * FactTree::child(const QString &name) const

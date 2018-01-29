@@ -22,6 +22,10 @@
  */
 #include "Poi.h"
 #include "MissionField.h"
+#include "VehicleMission.h"
+#include "Vehicle.h"
+#include "VehicleMandala.h"
+#include "VehicleMandalaFact.h"
 //=============================================================================
 Poi::Poi(MissionGroup *parent)
   : MissionItem(parent,"P#","",tr("Point of interest"))
@@ -74,6 +78,11 @@ void Poi::updateTitle()
   if(!f_time->isZero()) st.append("T"+f_time->text());
   if(!f_hmsl->isZero()) st.append("MSL"+f_hmsl->text());
   setTitle(st.join(' '));
+}
+//=============================================================================
+void Poi::selectTriggered()
+{
+  group->mission->vehicle->f_mandala->factByName("piidx")->setValue(num());
 }
 //=============================================================================
 QGeoCoordinate Poi::radiusPoint() const

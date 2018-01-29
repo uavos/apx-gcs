@@ -106,6 +106,11 @@ void Runway::updateMissionStartPoint()
   group->mission->setStartLength(slen<0?0:slen);
 }
 //=============================================================================
+void Runway::selectTriggered()
+{
+  group->mission->vehicle->f_mandala->factByName("rwidx")->setValue(num());
+}
+//=============================================================================
 QGeoCoordinate Runway::endPoint() const
 {
   QGeoCoordinate p(coordinate());

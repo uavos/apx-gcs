@@ -41,6 +41,8 @@ public:
 
   virtual int missionItemType() const {return -1;}
 
+  virtual Fact * addObject(const QGeoCoordinate &) {return NULL;}
+
 private:
   QTimer updateTimeTimer;
   QTimer updateDistanceTimer;
@@ -59,8 +61,7 @@ public slots:
   void updateTime();
   void updateDistance();
 
-
-  virtual Fact * add(const QGeoCoordinate &) {return NULL;}
+  void add();
 
   //---------------------------------------
   // PROPERTIES
@@ -93,12 +94,8 @@ public:
     return miType;
   }
 
-  Fact * add(const QGeoCoordinate &p)
+  Fact * addObject(const QGeoCoordinate &p)
   {
-    if(!p.isValid()){
-      qWarning("%s",tr("Click on map first").toUtf8().data());
-      return NULL;
-    }
     T *f=new T(this);
     f->backup();
     f->f_latitude->setValue(p.latitude());

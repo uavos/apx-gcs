@@ -56,6 +56,7 @@ public:
 private slots:
   void updateTitle();
   void updateMissionStartPoint();
+  void selectTriggered();
 
 public slots:
 

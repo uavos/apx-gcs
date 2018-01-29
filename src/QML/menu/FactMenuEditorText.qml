@@ -36,8 +36,8 @@ TextInput {
         height: editorFontSize+10
         radius: 3
         color: "#000"
-        border.width: 1
-        border.color: Style.cValueFrame
+        border.width: 0
+        //border.color: Style.cValueFrame
         opacity: 0.3
     }
 

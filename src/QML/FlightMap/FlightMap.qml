@@ -185,14 +185,12 @@ Map {
         if(follow)return;
         centerSet.flick(coord)
     }
-    Connections {
-        target: gesture
-        onPanStarted:       followStop()
-        onFlickStarted:     followStop()
-    }
+    gesture.onPanStarted:       followStop()
+    gesture.onFlickStarted:     followStop()
+
     Connections {
         enabled: follow
-        target: itemToFollow
+        target: map.itemToFollow
         onCoordinateChanged: if(follow) center=itemToFollow.coordinate
     }
 

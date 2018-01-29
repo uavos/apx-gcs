@@ -18,7 +18,7 @@ Flickable {
             spacing: 10
             Layout.fillWidth: true
             Button {
-                text: qsTr("Restore")
+                text: qsTr("Revert")
                 onClicked: fact.restore()
                 enabled: fact.modified
             }

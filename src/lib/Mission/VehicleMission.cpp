@@ -23,6 +23,7 @@
 #include "VehicleMission.h"
 #include "Vehicle.h"
 #include "MissionListModel.h"
+#include "MissionTools.h"
 #include "MissionGroup.h"
 #include "Waypoint.h"
 #include "Runway.h"
@@ -76,53 +77,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
   }
 
   //tools
-  f_tools=new Fact(this,"tools",tr("Tools"),tr("Mission edit tools"),GroupItem,NoData);
-  f_tools->setIconSource("wrench");
-
-  f_map=new Fact(f_tools,"map",tr("Map"),tr("Mission map tools"),GroupItem,NoData);
-  f_map->setIconSource("map");
-  Fact *f;
-
-  QString sect(tr("Add object"));
-  f=new Fact(f_map,"waypoint",tr("Waypoint"),"",FactItem,ActionData);
-  f->setIconSource("map-marker");
-  f->setSection(sect);
-  connect(f,&Fact::triggered,f_waypoints,[=](){f_waypoints->add(mapCoordinate());});
-  f=new Fact(f_map,"point",tr("Point of interest"),"",FactItem,ActionData);
-  f->setIconSource("map-marker-radius");
-  f->setSection(sect);
-  connect(f,&Fact::triggered,f_pois,[=](){f_pois->add(mapCoordinate());});
-  f=new Fact(f_map,"runway",tr("Runway"),"",FactItem,ActionData);
-  f->setIconSource("road");
-  f->setSection(sect);
-  connect(f,&Fact::triggered,f_runways,[=](){f_runways->add(mapCoordinate());});
-  f=new Fact(f_map,"taxiway",tr("Taxiway"),"",FactItem,ActionData);
-  f->setIconSource("vector-polyline");
-  f->setSection(sect);
-  connect(f,&Fact::triggered,f_taxiways,[=](){f_taxiways->add(mapCoordinate());});
-
-  sect=tr("Location");
-  f=new Fact(f_map,"home",tr("Set home"),"",FactItem,ActionData);
-  f->setIconSource("home-map-marker");
-  f->setSection(sect);
-  f=new Fact(f_map,"fly",tr("Fly here"),"",FactItem,ActionData);
-  f->setIconSource("airplane");
-  f->setSection(sect);
-  f=new Fact(f_map,"look",tr("Look here"),"",FactItem,ActionData);
-  f->setIconSource("eye");
-  f->setSection(sect);
-  f=new Fact(f_map,"fix",tr("Send position fix"),"",FactItem,ActionData);
-  f->setIconSource("crosshairs-gps");
-  f->setSection(sect);
-
-
-  f_altadjust=new Fact(f_tools,"altadjust",tr("Altitude adjust"),tr("Adjust all waypoints altitude"),FactItem,IntData);
-  f_altadjust->setUnits("m");
-  f_altadjust->setIconSource("altimeter");
-  f_altset=new Fact(f_tools,"altset",tr("Altitude set"),tr("Set all waypoints altitude"),FactItem,IntData);
-  f_altset->setUnits("m");
-  f_altset->setIconSource("format-align-middle");
-  f_altset->setMin(0);
+  f_tools=new MissionTools(this);
 
   //internal
   m_listModel=new MissionListModel(this);
@@ -229,10 +184,7 @@ void VehicleMission::test(int n)
   for(int i=0;i<n;++i){
     hdg+=200.0*qrand()/RAND_MAX-100.0;
     p=p.atDistanceAndAzimuth(100+10000.0*qrand()/RAND_MAX,hdg);
-    Waypoint *f=new Waypoint(f_waypoints);
-    f->f_altitude->setValue(300);
-    f->f_latitude->setValue(p.latitude());
-    f->f_longitude->setValue(p.longitude());
+    f_waypoints->addObject(p);
   }
 }
 //=============================================================================

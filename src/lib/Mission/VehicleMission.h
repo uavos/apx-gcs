@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Mission_H
-#define Mission_H
+#ifndef VehicleMission_H
+#define VehicleMission_H
 //=============================================================================
 #include <QtCore>
 #include <QGeoCoordinate>
@@ -80,11 +80,6 @@ public:
   Fact *f_upload;
 
   Fact *f_tools;
-  Fact *f_map;
-  Fact *f_altadjust;
-  Fact *f_altset;
-
-
 
   Vehicle *vehicle;
 

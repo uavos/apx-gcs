@@ -53,6 +53,7 @@ Waypoint::Waypoint(MissionGroup *parent)
   f_dshot=new MissionField(f_actions,"dshot",tr("Auto Shot"),tr("Start continuous cam shots on waypoint"),IntData);
   f_dshot->setEnumStrings(QStringList()<<"stop");
   f_dshot->setUnits("m");
+  f_dshot->setMin(0);
   f_script=new MissionField(f_actions,"script",tr("Script"),tr("Execute VM script (@function) on waypoint"),TextData);
   f_poi=new MissionField(f_actions,"poi",tr("POI"),tr("Linked Point Of Interest"),IntData);
   f_poi->setEnumStrings(QStringList()<<"off");
@@ -98,15 +99,6 @@ void Waypoint::updateTitle()
   if(!f_actions->isZero()) st.append(f_actions->status());
   setTitle(st.join(' '));
 }
-/*void Waypoint::updateDescr()
-{
-  QStringList st;
-  st.append(tr("Waypoint")+":");
-  st.append(f_type->text());
-  st.append(f_altitude->text()+f_altitude->units());
-  if(!f_actions->status().isEmpty()) st.append("["+f_actions->status()+"]");
-  setDescr(st.join(' '));
-}*/
 void Waypoint::updateActionsText()
 {
   QStringList st;
@@ -116,6 +108,11 @@ void Waypoint::updateActionsText()
     st.append(f->title());
   }
   f_actions->setStatus(st.join(','));
+}
+//=============================================================================
+void Waypoint::selectTriggered()
+{
+  group->mission->vehicle->f_mandala->factByName("wpidx")->setValue(num());
 }
 //=============================================================================
 QGeoPath Waypoint::getPath()

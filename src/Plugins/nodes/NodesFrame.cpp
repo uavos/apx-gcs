@@ -46,8 +46,6 @@ NodesFrame::NodesFrame(QWidget *parent) :
   connect(lbUavName,&ClickableLabel::clicked,Vehicles::instance(),&Vehicles::selectNext);
   connect(Vehicles::instance(),&Vehicles::vehicleSelected,this,&NodesFrame::vehicleSelected);
   vehicleSelected(Vehicles::instance()->current());
-
-  restoreGeometry(QSettings().value(objectName()).toByteArray());
 }
 //=============================================================================
 void NodesFrame::vehicleSelected(Vehicle *v)

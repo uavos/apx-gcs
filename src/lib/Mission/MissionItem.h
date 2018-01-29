@@ -56,6 +56,7 @@ public:
   Fact *f_longitude;
 
   Fact *f_remove;
+  Fact *f_select;
 
 public slots:
   void updatePath();
@@ -73,6 +74,9 @@ private slots:
   virtual void updateStatus();
   virtual void updateCoordinate();
   virtual void updateOrder();
+
+
+  virtual void selectTriggered();
 
 private:
   bool blockUpdateCoordinate;

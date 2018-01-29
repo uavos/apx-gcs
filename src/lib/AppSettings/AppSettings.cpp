@@ -66,7 +66,7 @@ AppSettings::AppSettings(FactSystem *parent)
   sect=tr("Graphics");
   item=new AppSettingFact(m_settings,this,"opengl",tr("Accelerate graphics"),tr("Enable OpenGL graphics when supported"),sect,BoolData,false);
   item=new AppSettingFact(m_settings,this,"smooth",tr("Smooth animations"),tr("Enable animations and antialiasing"),sect,BoolData,true);
-  item=new AppSettingFact(m_settings,this,"showdescr",tr("Show descriptions"),tr("Enable menu items description text"),sect,BoolData,true);
+  //item=new AppSettingFact(m_settings,this,"showdescr",tr("Show descriptions"),tr("Enable menu items description text"),sect,BoolData,true);
 
 
   //load all settings

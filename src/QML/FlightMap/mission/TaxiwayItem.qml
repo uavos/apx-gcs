@@ -73,7 +73,7 @@ MissionObject {
             opacity: 0.8
             line.width: taxiwayItem.pathWidth
             line.color: taxiwayItem.pathColor
-            visible: showDetails && taxiwayItem.visible
+            visible: showDetails && taxiwayItem.visible && (!bFirst)
             function updatePath()
             {
                 polyline.setPath(taxiwayItem.path)
@@ -83,6 +83,7 @@ MissionObject {
                 onPathChanged: updatePath()
             }
             Component.onCompleted: updatePath()
+            //Component.onDestruction: console.log(this)
         }
     }
 }

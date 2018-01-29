@@ -32,7 +32,11 @@ MapQuickItem {  //to be used inside MapComponent only
 
     property var mapItems: []
     Component.onDestruction: {
-        for(var i=0;i<mapItems.length;++i)mapItems[i].destroy()
+        for(var i=0;i<mapItems.length;++i){
+            map.removeMapItem(mapItems[i])
+            mapItems[i].destroy()
+        }
+        mapItems=[]
     }
 
     function createMapComponent(cmp)

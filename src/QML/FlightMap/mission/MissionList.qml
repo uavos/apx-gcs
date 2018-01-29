@@ -13,7 +13,7 @@ import ".."
 
 ColumnLayout {
     spacing: 4
-    width: missionListView.width
+    implicitWidth: missionListView.width
     property var mission: app.vehicles.current.mission
     property bool empty: mission?mission.empty:true
 
@@ -93,21 +93,22 @@ ColumnLayout {
             border.width: 1
             border.color: "#80FFFFFF"
 
-            textColor: modelData.modified?"#FFFF00":"#FFFFFF"
+            textColor: (fact && fact.modified)?"#FFFF00":"#FFFFFF"
 
-            property Fact fact: modelData
+            property var fact: modelData
             property string title: fact?fact.title:""
             property string label //: title
             property string descr //: modelData.status
+            property string status: fact?fact.status:""
 
             onMenuRequested: {
-                modelData.trigger()
-                map.showFactMenu(modelData)
+                fact.trigger()
+                map.showFactMenu(fact)
             }
-            onClicked: modelData.trigger()
+            onClicked: fact.trigger()
 
             Component.onCompleted: {
-                switch(modelData.missionItemType){
+                switch(fact.missionItemType){
                 case Mission.RunwayType:
                     color=Style.cListRunway
                     label=Qt.binding(function(){return title})
@@ -125,7 +126,7 @@ ColumnLayout {
                 case Mission.TaxiwayType:
                     color=Style.cListTaxiway
                     label=Qt.binding(function(){return title})
-                    descr=Qt.binding(function(){return modelData.status})
+                    descr=Qt.binding(function(){return status})
                     break;
                 }
 
