@@ -32,6 +32,8 @@ Map {
     property var mouseCoordinate: mouseCoordinateRaw.isValid?mouseCoordinateRaw:center
     property var mouseClickCoordinate: center
 
+    property var defaultCoordinate: QtPositioning.coordinate(37.406015,-122.045175)
+
     property var selectedObject
 
     property int lastX: -1
@@ -96,9 +98,12 @@ Map {
 
     //Map componnet parameters
     color: '#333'
-    plugin: Plugin { name: "uavos" }
-    center: QtPositioning.coordinate(47.2589912414551,11.3327512741089)
-    zoomLevel: 14
+    plugin: Plugin {
+        name: "uavos"
+        //preferred: ["uavos", "osm"]
+    }
+    center: defaultCoordinate
+    zoomLevel: 16
     activeMapType: supportedMapTypes[0]
     //fieldOfView: 15
 

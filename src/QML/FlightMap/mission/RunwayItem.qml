@@ -42,13 +42,14 @@ MissionObject {
 
     //internal
     property bool showDetails: map.zoomLevel>13
+    property string rwName: titleText.split(' ')[1]
 
 
     contentsRight: [
         MapText {
             textColor: "white"
             color: current?Style.cBlue:Style.cNormal
-            text: titleText.split(' ')[1]
+            text: rwName
             opacity: (!dragging)?((hover||selected)?1:0.6):0
             visible: opacity && showDetails
         },
@@ -173,7 +174,7 @@ MissionObject {
                 MapText {
                     textColor: "white"
                     color: current?Style.cBlue:Style.cNormal
-                    text: Math.floor(app.angle360(heading)).toFixed()
+                    text: runwayItem.rwName + " ("+Math.floor(app.angle360(heading)).toFixed()+")"
                     opacity: (dragging||hover||selected)?1:0
                     visible: opacity && showDetails
                 }

@@ -38,7 +38,7 @@ ColumnLayout {
         MapButton {
             id: missionButton
             minWidth: height*3
-            text: mission.title+"\n"+(empty?qsTr("push to request"):mission.waypoints.descr)
+            text: (mission.mtitle.text?mission.mtitle.text:mission.title)+"\n"+(empty?qsTr("push to request"):mission.waypoints.descr)
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Qt.application.font.pixelSize * 0.8
             color: mission.modified?"#FFFF00":"#FFFFFF"

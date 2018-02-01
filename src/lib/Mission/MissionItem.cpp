@@ -34,11 +34,11 @@ MissionItem::MissionItem(MissionGroup *parent, const QString &name, const QStrin
     m_totalTime(0)
 {
   f_order=new MissionField(this,"order",tr("Order"),tr("Object sequence number"),IntData);
-  f_order->setValue(num()+1);
   f_order->setMin(1);
+  updateOrderState();
   connect(f_order,&Fact::valueChanged,this,&MissionItem::updateOrder);
-  connect(this,&Fact::numChanged,this,[=](){f_order->setValue(num()+1);});
-
+  connect(this,&Fact::numChanged,this,&MissionItem::updateOrderState);
+  connect(group,&Fact::sizeChanged,this,&MissionItem::updateOrderState);
 
   f_latitude=new MissionField(this,"latitude",tr("Latitude"),tr("Global postition latitude"),FloatData);
   f_latitude->setUnits("lat");
@@ -114,9 +114,7 @@ void MissionItem::updatePath()
     QGeoCoordinate p1,p2;
     if(m_geoPath.size()>=2) p1=QGeoCoordinate(m_geoPath.path().last());
     if(next->geoPath().size()>=2) p2=QGeoCoordinate(next->geoPath().path().first());
-    //p2.setAltitude(p1.altitude());
     if(next->geoPath().size()<2 || m_geoPath.size()<2 ||
-       //p1!=p2
        p1.latitude()!=p2.latitude() ||
        p1.longitude()!=p2.longitude()
        ){
@@ -135,6 +133,11 @@ void MissionItem::updateOrder()
     return;
   }
   group->moveItem(this,n,true);
+}
+void MissionItem::updateOrderState()
+{
+  f_order->setValue(num()+1);
+  f_order->setEnabled(group->size()>1);
 }
 //=============================================================================
 void MissionItem::selectTriggered()

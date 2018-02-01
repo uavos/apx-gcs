@@ -20,22 +20,31 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QtQml>
-#include <QQmlEngine>
-#include <QJSEngine>
-
-#include "FactSystem.h"
-#define VSTR_IMPL(a) #a
-#define VSTR(a) VSTR_IMPL(a)
+#ifndef MissionXml_H
+#define MissionXml_H
 //=============================================================================
-FactSystem::FactSystem(QObject *parent)
- : FactSystemJS(parent)
+#include <QtCore>
+#include <TelemetryDB.h>
+//=============================================================================
+class MissionXml: public QObject
 {
+  Q_OBJECT
 
-  jsSync(this);
+public:
+  explicit MissionXml(QObject *parent=0);
 
-  // QML types register
-  qmlRegisterUncreatableType<Fact>("GCS.FactSystem", 1, 0, "Fact", "Reference only");
-  qmlRegisterUncreatableType<FactAction>("GCS.FactSystem", 1, 0, "FactAction", "Reference only");
-}
+  quint64 read(QString fileName);
+
+private:
+  TelemetryDB *_db;
+
+  QByteArray readXmlPart(QXmlStreamReader &xml);
+
+  int m_progress;
+  void setProgress(int v);
+signals:
+  void progressChanged(int v);
+};
 //=============================================================================
+#endif
+

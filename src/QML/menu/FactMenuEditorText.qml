@@ -41,5 +41,5 @@ TextInput {
         opacity: 0.3
     }
 
-    FactMenuEditorDialog { }
+    //FactMenuEditorDialog { }
 }

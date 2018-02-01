@@ -75,9 +75,14 @@ public:
   //MissionItems *f_restricted;
   //MissionItems *f_emergency;
 
+  Fact *f_missionTitle;
+
   Fact *f_request;
   Fact *f_clear;
   Fact *f_upload;
+
+  Fact *f_export;
+  Fact *f_import;
 
   Fact *f_tools;
 
@@ -91,12 +96,20 @@ public:
 
   Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
+
+  //Fact override
+  void backup();
+  void restore();
+
 private:
 
 private slots:
   void updateSize();
   void updateActions();
   void updateStartPath();
+
+  void save() const;
+  void load();
 
 public slots:
   void clearMission();

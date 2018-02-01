@@ -15,6 +15,7 @@ Button {
     id: factButton
     property var fact
 
+    focus: false
 
     //internal
     property bool expandable: fact.size || fact.treeItemType===Fact.GroupItem // || bEnumChilds
@@ -47,6 +48,8 @@ Button {
         id: dummyFactC
         FactMenuElement { }
     }
+
+
 
     visible: fact.visible && (!isActionFact(fact))
 

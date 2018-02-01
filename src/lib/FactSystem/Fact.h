@@ -25,6 +25,8 @@
 //=============================================================================
 #include "FactData.h"
 #include "FactListModel.h"
+#include "FactListModelActions.h"
+#include "FactAction.h"
 class FactSystem;
 //=============================================================================
 class Fact: public FactData
@@ -32,6 +34,7 @@ class Fact: public FactData
   Q_OBJECT
 
   Q_PROPERTY(FactListModel * model READ model CONSTANT)
+  Q_PROPERTY(FactListModelActions * actionsModel READ actionsModel CONSTANT)
 
   Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
   Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
@@ -68,6 +71,21 @@ public:
 
   virtual bool lessThan(Fact *rightFact) const; //sorting helper
 
+  /*template<class T>
+  QList<T*> itemsOfType() const
+  {
+    QList<T*> list;
+    for(int i=0;i<childItems().size();++i){
+      T *f=qobject_cast<T*>(child(i));
+      if(f) list.append(f);
+    }
+    return list;
+  }*/
+
+  //actions
+  QList<FactAction*> actions;
+
+
   //data model
   enum {
     FACT_MODEL_COLUMN_NAME=0,
@@ -98,6 +116,7 @@ signals:
 public:
   //---------------------------------------
   FactListModel * model() const;
+  FactListModelActions * actionsModel() const;
 
   bool enabled() const;
   void setEnabled(const bool &v);
@@ -128,6 +147,8 @@ public:
 
 protected:
   FactListModel *m_model;
+  FactListModelActions *m_actionsModel;
+
   bool m_enabled;
   bool m_visible;
   QString  m_section;

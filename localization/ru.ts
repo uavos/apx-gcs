@@ -21,7 +21,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
@@ -61,27 +61,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Show descriptions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Enable menu items description text</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-2"/>
+        <location line="+1"/>
         <source>Accelerate graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-39"/>
         <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+25"/>
         <source>Speech voice</source>
         <translation type="unfinished"></translation>
     </message>
@@ -402,7 +392,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Read only</source>
         <translation type="unfinished">Только чтение</translation>
     </message>
@@ -412,7 +402,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Server active</source>
         <translation type="unfinished"></translation>
     </message>
@@ -422,7 +412,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Server listening</source>
         <translation type="unfinished"></translation>
     </message>
@@ -510,7 +500,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Disconnect all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -520,7 +510,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Clients list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -616,7 +606,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Connect to host</source>
         <translation type="unfinished"></translation>
     </message>
@@ -626,7 +616,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Host address</source>
         <translation type="unfinished">Адрес хоста </translation>
     </message>
@@ -647,11 +637,11 @@
     </message>
     <message>
         <location line="+0"/>
-        <source>Drop all remote server connections</source>
+        <source>Close all remote server connections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Servers list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -787,12 +777,12 @@
 <context>
     <name>DatalinkPorts</name>
     <message>
-        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="+40"/>
+        <location filename="../src/lib/Datalink/DatalinkPorts.cpp" line="+44"/>
         <source>Ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-11"/>
+        <location line="-15"/>
         <source>Local ports</source>
         <translation type="unfinished"></translation>
     </message>
@@ -802,7 +792,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
         <source>Enable all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -812,7 +802,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Disable all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -822,7 +812,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Configured ports</source>
         <translation type="unfinished"></translation>
     </message>
@@ -840,7 +830,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Uplink</source>
         <translation type="unfinished"></translation>
     </message>
@@ -891,7 +881,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+14"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1702,15 +1692,35 @@
 <context>
     <name>MissionGroup</name>
     <message>
-        <location filename="../src/lib/Mission/MissionGroup.cpp" line="+33"/>
-        <source>Mission elements</source>
+        <location filename="../src/lib/Mission/MissionGroup.cpp" line="+37"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Remove all objects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+104"/>
+        <source>Click on map first</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MissionItem</name>
     <message>
-        <location filename="../src/lib/Mission/MissionItem.cpp" line="+35"/>
+        <location filename="../src/lib/Mission/MissionItem.cpp" line="+36"/>
+        <source>Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Object sequence number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Latitude</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1727,6 +1737,16 @@
     <message>
         <location line="+0"/>
         <source>Global postition longitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Set as current</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2028,6 +2048,158 @@
     </message>
 </context>
 <context>
+    <name>MissionTools</name>
+    <message>
+        <location filename="../src/lib/Mission/MissionTools.cpp" line="+31"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Mission edit tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Mission map tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Add object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Waypoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Point of interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Runway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Taxiway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Fly here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Look here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Send position fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Altitude adjust</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Adjust all waypoints altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Value to add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+15"/>
+        <source>Apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-10"/>
+        <source>Altitude set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Set all waypoints altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Altitude value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MissionXml</name>
+    <message>
+        <location filename="../src/lib/Mission/MissionXml.cpp" line="+47"/>
+        <source>Cannot read file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The file format is not correct.</source>
+        <translation type="unfinished">Неверный формат файла.</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Can&apos;t get timestamp for file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Callsign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Already imported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Importing XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+171"/>
+        <source>File imported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File import error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NodeField</name>
     <message>
         <location filename="../src/lib/Nodes/NodeField.cpp" line="+94"/>
@@ -2123,7 +2295,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
         <source>Request</source>
         <translation type="unfinished">Запрос</translation>
     </message>
@@ -2133,7 +2305,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2143,7 +2315,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -2153,7 +2325,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2163,7 +2335,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2192,7 +2364,7 @@
     </message>
     <message>
         <location line="+9"/>
-        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+21"/>
+        <location filename="../src/Plugins/nodes/NodesFrame.cpp" line="+22"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -2315,7 +2487,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+116"/>
+        <location line="+114"/>
         <source>Backups</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2542,7 +2714,7 @@
 <context>
     <name>Plugins</name>
     <message>
-        <location filename="../src/main/main.cpp" line="+329"/>
+        <location filename="../src/main/main.cpp" line="+334"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
@@ -2565,7 +2737,7 @@
 <context>
     <name>Poi</name>
     <message>
-        <location filename="../src/lib/Mission/Poi.cpp" line="+27"/>
+        <location filename="../src/lib/Mission/Poi.cpp" line="+31"/>
         <source>Point of interest</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2711,17 +2883,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main/main.cpp" line="-172"/>
+        <location filename="../src/main/main.cpp" line="-176"/>
         <source>Another application instance is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Ground Control Unit</source>
         <translation type="unfinished">Наземный Пункт Управления</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+105"/>
         <source>User plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2741,7 +2913,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+161"/>
+        <location filename="../src/lib/FactSystem/FactSystemJS.cpp" line="+166"/>
         <source>print commands help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3107,7 +3279,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>Taxiway</name>
     <message>
-        <location filename="../src/lib/Mission/Taxiway.cpp" line="+26"/>
+        <location filename="../src/lib/Mission/Taxiway.cpp" line="+30"/>
         <source>Taxiway</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3139,12 +3311,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Filter vehicle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Full screen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3164,12 +3331,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Restore</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Replay</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3238,7 +3400,12 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-31"/>
+        <source>Search database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>IMU</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3353,7 +3520,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>Vehicle</name>
     <message>
-        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+45"/>
+        <location filename="../src/lib/Vehicles/Vehicle.cpp" line="+46"/>
         <source>Stream</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3406,7 +3573,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+230"/>
+        <location line="+232"/>
         <source>Received serial data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3414,12 +3581,12 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehicleMission</name>
     <message>
-        <location filename="../src/lib/Mission/VehicleMission.cpp" line="+38"/>
+        <location filename="../src/lib/Mission/VehicleMission.cpp" line="+43"/>
         <source>Vehicle mission</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Request</source>
         <translation type="unfinished">Запрос</translation>
     </message>
@@ -3429,7 +3596,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -3439,7 +3606,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3449,8 +3616,43 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+6"/>
+        <source>Save</source>
+        <translation type="unfinished">Сохранить</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Export mission</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Load</source>
+        <translation type="unfinished">Загрузить</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Import mission</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Mission title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Runways</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Takeoff and Landing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3471,6 +3673,21 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
     <message>
         <location line="+0"/>
         <source>Points of Interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+295"/>
+        <source>Mission files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Cannot write file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3512,7 +3729,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3522,7 +3739,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Messages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3671,7 +3888,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Script</source>
         <translation type="unfinished"></translation>
     </message>

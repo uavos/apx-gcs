@@ -27,6 +27,7 @@
 #include <FactSystem.h>
 #include <QGeoCoordinate>
 class VehicleMission;
+class MissionItem;
 //=============================================================================
 class MissionGroup: public Fact
 {
@@ -43,6 +44,9 @@ public:
 
   virtual Fact * addObject(const QGeoCoordinate &) {return NULL;}
 
+
+  FactAction *f_clear;
+
 private:
   QTimer updateTimeTimer;
   QTimer updateDistanceTimer;
@@ -56,6 +60,8 @@ private slots:
   void updateDistanceDo();
   void updateDescr();
   void updateStatus();
+
+  void clearGroup();
 
 public slots:
   void updateTime();

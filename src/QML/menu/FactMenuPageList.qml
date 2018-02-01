@@ -1,4 +1,4 @@
-﻿import QtQuick 2.6
+﻿import QtQuick 2.7
 import QtQuick.Controls 2.3
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
@@ -52,6 +52,10 @@ ListView {
         spacing: 5
         padding: 0
         visible: children.length>0
+        Repeater {
+            model: fact.actionsModel
+            delegate: factActionC
+        }
     }
     Component.onCompleted: {
         //create actions
@@ -69,6 +73,42 @@ ListView {
     Component {
         id: actionC
         FactMenuAction { }
+    }
+    Component {
+        id: factActionC
+        Button {
+            property var a: modelData
+
+            property int atype: a?a.actionType:-1
+
+            property bool bApply: atype===FactAction.ApplyAction
+            property bool bRemove: atype===FactAction.RemoveAction
+
+            property string iconName: (a && a.icon)?a.icon:bApply?"check":bRemove?"delete":""
+
+            //Material.background: bApply?Style.cActionApply:bRemove?Style.cActionRemove:undefined
+
+            enabled: a && a.enabled
+
+            text: a?a.title:""
+            leftPadding: rightPadding+(btnLabel.visible?height*0.6:0)
+            Label {
+                id: btnLabel
+                visible: iconName
+                anchors.fill: parent
+                anchors.leftMargin: parent.rightPadding
+                verticalAlignment: Text.AlignVCenter
+                font.family: "Material Design Icons"
+                font.pointSize: parent.implicitHeight*0.6
+                text: visible?materialIconChar[iconName]:""
+            }
+            onClicked: {
+                //console.log(materialIconChar[iconName])
+                //if(closeable)close();
+                //else back()
+                a.trigger()
+            }
+        }
     }
     Connections {
         target: listView.contentItem

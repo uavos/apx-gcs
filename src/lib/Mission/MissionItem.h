@@ -75,6 +75,8 @@ private slots:
   virtual void updateCoordinate();
   virtual void updateOrder();
 
+  void updateOrderState();
+
 
   virtual void selectTriggered();
 

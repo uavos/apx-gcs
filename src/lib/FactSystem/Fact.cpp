@@ -28,6 +28,8 @@ Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QS
    m_enabled(true), m_visible(true), m_active(false), m_progress(0), m_busy(false)
 {
   m_model=new FactListModel(this);
+  m_actionsModel=new FactListModelActions(this);
+
   if((treeItemType==GroupItem || treeItemType==SectionItem) && m_dataType==ConstData){
     connect(this,&Fact::sizeChanged,this,&Fact::statusChanged);
   }
@@ -292,9 +294,14 @@ void Fact::trigger(void)
   emit triggered();
 }
 //=============================================================================
+//=============================================================================
 FactListModel * Fact::model() const
 {
   return m_model;
+}
+FactListModelActions *Fact::actionsModel() const
+{
+  return m_actionsModel;
 }
 bool Fact::enabled() const
 {

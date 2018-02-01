@@ -34,6 +34,13 @@ MissionGroup::MissionGroup(VehicleMission *parent, const QString &name, const QS
   //setSection(tr("Mission elements"));
   mission->groups.append(this);
 
+  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Remove all objects"),FactAction::RemoveAction);
+  f_clear->setEnabled(false);
+  connect(f_clear,&FactAction::triggered,this,&MissionGroup::clearGroup);
+
+
+
+
   //status
   connect(this,&Fact::sizeChanged,this,&MissionGroup::updateStatus);
 
@@ -62,6 +69,7 @@ void MissionGroup::updateStatus()
   int sz=size();
   if(sz>0)setStatus(QString("[%1]").arg(sz));
   else setStatus(QString());
+  f_clear->setEnabled(sz>0);
 }
 //=============================================================================
 void MissionGroup::updateDescr()
@@ -142,4 +150,10 @@ void MissionGroup::objectAdded(Fact *fact)
   QTimer::singleShot(200,fact,&Fact::trigger);
 }
 //=============================================================================
+//=============================================================================
+void MissionGroup::clearGroup()
+{
+  removeAll();
+  setModified(true,true);
+}
 //=============================================================================

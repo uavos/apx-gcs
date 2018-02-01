@@ -48,7 +48,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property bool isFollow: map.itemToFollow===vehicleItem && map.follow
     onActiveChanged: {
         if(active){
-            if(coordinate!==QtPositioning.coordinate(0,0)){
+            if(lat!=0 && lon!=0){
                 map.centerOnItem(vehicleItem)
             }else{
 

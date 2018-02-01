@@ -103,8 +103,8 @@ signals:
   void childValueChanged(void);
 
 public slots:
-  void backup();
-  void restore();
+  virtual void backup();
+  virtual void restore();
 
 
 

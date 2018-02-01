@@ -25,10 +25,14 @@
 #include "MissionListModel.h"
 #include "MissionTools.h"
 #include "MissionGroup.h"
+#include "MissionField.h"
 #include "Waypoint.h"
 #include "Runway.h"
 #include "Taxiway.h"
 #include "Poi.h"
+
+#include <AppDirs.h>
+#include <QFileDialog>
 
 //pack
 #include <Mandala.h>
@@ -45,6 +49,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
 {
   setIconSource("ship-wheel");
 
+  //actions
   f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
   f_request->setValue(ButtonAction);
   f_request->setIconSource("download");
@@ -62,6 +67,20 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f_clear->setValue(RemoveAction);
   connect(f_clear,&Fact::triggered,this,&VehicleMission::clearMission);
   connect(f_clear,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
+
+  f_export=new Fact(this,"export",tr("Save"),tr("Export mission"),FactItem,ActionData);
+  f_export->setValue(ButtonAction);
+  f_export->setIconSource("content-save");
+  connect(f_export,&Fact::triggered,this,&VehicleMission::save);
+
+  f_import=new Fact(this,"import",tr("Load"),tr("Import mission"),FactItem,ActionData);
+  f_import->setValue(ButtonAction);
+  f_import->setIconSource("folder-open");
+  connect(f_import,&Fact::triggered,this,&VehicleMission::load);
+
+
+  f_missionTitle=new MissionField(this,"mtitle",tr("Title"),tr("Mission title"),TextData);
+
 
   connect(this,&VehicleMission::emptyChanged,this,&VehicleMission::updateActions);
 
@@ -155,10 +174,11 @@ QGeoRectangle VehicleMission::boundingGeoRectangle() const
 }
 //=============================================================================
 //=============================================================================
+//=============================================================================
 void VehicleMission::clearMission()
 {
   foreach (MissionGroup *group, groups) {
-    group->removeAll();
+    group->f_clear->trigger();
   }
   setModified(false,true);
   /*if(snMap.isEmpty())return;
@@ -340,6 +360,55 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
 
   return true;
 }
+//=============================================================================
+void VehicleMission::backup()
+{
+  foreach (MissionGroup *group, groups) {
+    group->backup();
+  }
+  f_missionTitle->backup();
+  setModified(false,true);
+}
+void VehicleMission::restore()
+{
+  foreach (MissionGroup *group, groups) {
+    group->restore();
+  }
+  setModified(false,true);
+}
+//=============================================================================
+void VehicleMission::save() const
+{
+  if(!AppDirs::missions().exists()) AppDirs::missions().mkpath(".");
+  QFileDialog dlg(NULL,f_export->descr(),AppDirs::missions().canonicalPath());
+  dlg.setAcceptMode(QFileDialog::AcceptSave);
+  dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
+  QStringList filters;
+  filters << tr("Mission files")+" (*.xml *.mission)"
+          << tr("Any files")+" (*)";
+  dlg.setNameFilters(filters);
+  dlg.setDefaultSuffix("mission");
+  QString fname=f_missionTitle->text().replace(' ','-');
+  if(!fname.isEmpty())fname.append("-");
+  fname.append(vehicle->f_callsign->text());
+  dlg.selectFile(AppDirs::configs().filePath(fname));
+  if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
+
+  fname=dlg.selectedFiles().first();
+  QFile file(fname);
+  if (!file.open(QFile::WriteOnly | QFile::Text)) {
+    qWarning("%s",QString(tr("Cannot write file")+" %1:\n%2.").arg(fname).arg(file.errorString()).toUtf8().data());
+    return;
+  }
+  QTextStream stream(&file);
+  //vehicle->f_nodes->xml->write().save(stream,2);
+  file.close();
+}
+//=============================================================================
+void VehicleMission::load()
+{
+}
+//=============================================================================
 //=============================================================================
 //=============================================================================
 QGeoCoordinate VehicleMission::mapCoordinate() const

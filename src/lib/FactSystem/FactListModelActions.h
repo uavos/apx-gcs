@@ -20,22 +20,29 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QtQml>
-#include <QQmlEngine>
-#include <QJSEngine>
-
-#include "FactSystem.h"
-#define VSTR_IMPL(a) #a
-#define VSTR(a) VSTR_IMPL(a)
+#ifndef FactListModelActions_H
+#define FactListModelActions_H
 //=============================================================================
-FactSystem::FactSystem(QObject *parent)
- : FactSystemJS(parent)
+#include <QtCore>
+class Fact;
+//=============================================================================
+class FactListModelActions: public QAbstractListModel
 {
+  Q_OBJECT
 
-  jsSync(this);
+public:
 
-  // QML types register
-  qmlRegisterUncreatableType<Fact>("GCS.FactSystem", 1, 0, "Fact", "Reference only");
-  qmlRegisterUncreatableType<FactAction>("GCS.FactSystem", 1, 0, "FactAction", "Reference only");
-}
+  explicit FactListModelActions(Fact *parent);
+
+  QHash<int, QByteArray> roleNames() const;
+
+private:
+  Fact *fact;
+
+protected:
+  //ListModel override
+  int rowCount(const QModelIndex & parent = QModelIndex()) const;
+  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+};
 //=============================================================================
+#endif

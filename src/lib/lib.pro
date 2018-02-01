@@ -42,7 +42,9 @@ SOURCES += \
     FactSystem/FactSystemJS.cpp \
     FactSystem/FactTree.cpp \
     FactSystem/FactData.cpp \
+    FactSystem/FactAction.cpp \
     FactSystem/FactListModel.cpp \
+    FactSystem/FactListModelActions.cpp \
     FactSystem/Fact.cpp \
 
 HEADERS += \
@@ -51,7 +53,9 @@ HEADERS += \
     FactSystem/FactSystemJS.h \
     FactSystem/FactTree.h \
     FactSystem/FactData.h \
+    FactSystem/FactAction.h \
     FactSystem/FactListModel.h \
+    FactSystem/FactListModelActions.h \
     FactSystem/FactValue.h \
     FactSystem/Fact.h \
     Facts.h \
@@ -82,12 +86,14 @@ SOURCES += \
     Database/VehiclesDB.cpp \
     Database/TelemetryDB.cpp \
     Database/MapsDB.cpp \
+    Database/MissionsDB.cpp \
 
 HEADERS += \
     Database/DatabaseConnection.h \
     Database/VehiclesDB.h \
     Database/TelemetryDB.h \
     Database/MapsDB.h \
+    Database/MissionsDB.h \
 
 # Vehicles & Mandala
 SOURCES += \
@@ -139,6 +145,7 @@ HEADERS += \
 # Mission
 SOURCES += \
     Mission/VehicleMission.cpp \
+    Mission/MissionXml.cpp \
     Mission/MissionTools.cpp \
     Mission/MissionListModel.cpp \
     Mission/MissionGroup.cpp \
@@ -151,6 +158,7 @@ SOURCES += \
 
 HEADERS += \
     Mission/VehicleMission.h \
+    Mission/MissionXml.h \
     Mission/MissionTools.h \
     Mission/MissionListModel.h \
     Mission/MissionGroup.h \
