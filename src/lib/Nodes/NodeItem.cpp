@@ -29,7 +29,7 @@
 #include <node.h>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
-  : NodeItemData(parent->f_list,sn),
+  : NodeItemData(parent,sn),
     timeout_ms(500),
     nodes(parent),
     group(NULL),
@@ -43,7 +43,6 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
 
   commands.valid=false;
 
-  setSection(tr("Nodes list"));
 
   //setQmlMenu("nodes/NodeMenuItem.qml");
 
@@ -508,7 +507,7 @@ void NodeItem::groupNodes(void)
 
   if(ngroup)group=ngroup;
   else {
-    group=new NodeItemBase(nodes->f_list,gname,gname.toUpper());
+    group=new NodeItemBase(nodes,gname,gname.toUpper());
     group->setSection(section());
     nodes->nGroups.append(group);
     //qDebug()<<"grp: "<<gname;
@@ -516,7 +515,7 @@ void NodeItem::groupNodes(void)
 
   foreach(NodeItem *i,nlist){
     if(i->parentItem()==group)continue;
-    nodes->f_list->removeItem(i,false);
+    nodes->removeItem(i,false);
     group->addItem(i);
     i->group=group;
     i->setName(i->name()); //update unique name

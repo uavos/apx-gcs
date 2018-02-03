@@ -42,9 +42,7 @@ public:
   };
   Q_ENUM(MsgType)
 
-  Fact * f_clear;
-
-  Fact * f_list;
+  FactAction * f_clear;
 
 private:
   QTimer showTimer;

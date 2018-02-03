@@ -24,26 +24,25 @@
 #define MissionXml_H
 //=============================================================================
 #include <QtCore>
-#include <TelemetryDB.h>
+#include <QtXml>
+class VehicleMission;
+class MissionGroup;
+class Fact;
 //=============================================================================
 class MissionXml: public QObject
 {
   Q_OBJECT
 
 public:
-  explicit MissionXml(QObject *parent=0);
+  explicit MissionXml(VehicleMission *parent);
 
-  quint64 read(QString fileName);
+  bool read(QDomNode dom);
+  int read(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName);
+  int read(QDomNode dom, Fact *fact);
 
 private:
-  TelemetryDB *_db;
-
-  QByteArray readXmlPart(QXmlStreamReader &xml);
-
-  int m_progress;
-  void setProgress(int v);
-signals:
-  void progressChanged(int v);
+  VehicleMission *mission;
+  static QMap<QString,QString> xmlMap;
 };
 //=============================================================================
 #endif

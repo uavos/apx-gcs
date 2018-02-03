@@ -38,34 +38,34 @@ MissionTools::MissionTools(VehicleMission *parent)
   Fact *f;
 
   QString sect(tr("Add object"));
-  f=new Fact(f_map,"waypoint",tr("Waypoint"),"",FactItem,ActionData);
+  f=new Fact(f_map,"waypoint",tr("Waypoint"),"",FactItem,NoData);
   f->setIconSource("map-marker");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_waypoints,&MissionGroup::add);
-  f=new Fact(f_map,"point",tr("Point of interest"),"",FactItem,ActionData);
+  f=new Fact(f_map,"point",tr("Point of interest"),"",FactItem,NoData);
   f->setIconSource("map-marker-radius");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_pois,&MissionGroup::add);
-  f=new Fact(f_map,"runway",tr("Runway"),"",FactItem,ActionData);
+  f=new Fact(f_map,"runway",tr("Runway"),"",FactItem,NoData);
   f->setIconSource("road");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_runways,&MissionGroup::add);
-  f=new Fact(f_map,"taxiway",tr("Taxiway"),"",FactItem,ActionData);
+  f=new Fact(f_map,"taxiway",tr("Taxiway"),"",FactItem,NoData);
   f->setIconSource("vector-polyline");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_taxiways,&MissionGroup::add);
 
   sect=tr("Location");
-  f=new Fact(f_map,"home",tr("Set home"),"",FactItem,ActionData);
+  f=new Fact(f_map,"home",tr("Set home"),"",FactItem,NoData);
   f->setIconSource("home-map-marker");
   f->setSection(sect);
-  f=new Fact(f_map,"fly",tr("Fly here"),"",FactItem,ActionData);
+  f=new Fact(f_map,"fly",tr("Fly here"),"",FactItem,NoData);
   f->setIconSource("airplane");
   f->setSection(sect);
-  f=new Fact(f_map,"look",tr("Look here"),"",FactItem,ActionData);
+  f=new Fact(f_map,"look",tr("Look here"),"",FactItem,NoData);
   f->setIconSource("eye");
   f->setSection(sect);
-  f=new Fact(f_map,"fix",tr("Send position fix"),"",FactItem,ActionData);
+  f=new Fact(f_map,"fix",tr("Send position fix"),"",FactItem,NoData);
   f->setIconSource("crosshairs-gps");
   f->setSection(sect);
 
@@ -79,13 +79,13 @@ MissionTools::MissionTools(VehicleMission *parent)
     f_altadjust->setModified(false);
     f_altadjustApply->setEnabled(f_altadjust->value().toInt()!=0);
   });
-  f_altadjustApply=new Fact(f,"apply",tr("Apply"),"",FactItem,ActionData);
-  f_altadjustApply->setValue(ApplyAction);
+  f_altadjustApply=new FactAction(f,"apply",tr("Apply"),"",FactAction::ApplyAction);
   f_altadjustApply->setEnabled(false);
-  connect(f_altadjustApply,&Fact::triggered,this,&MissionTools::altadjustTriggered);
+  connect(f_altadjustApply,&FactAction::triggered,this,&MissionTools::altadjustTriggered);
 
   f=new Fact(this,"altset",tr("Altitude set"),tr("Set all waypoints altitude"),GroupItem,NoData);
   f->setIconSource("format-align-middle");
+  connect(f,&Fact::triggered,this,&MissionTools::updateMaxAltitude);
   f_altset=new Fact(f,"value",tr("Altitude value"),"",FactItem,IntData);
   f_altset->setUnits("m");
   f_altset->setIconSource(f->iconSource());
@@ -94,10 +94,9 @@ MissionTools::MissionTools(VehicleMission *parent)
     f_altset->setModified(false);
     f_altsetApply->setEnabled(f_altset->value().toInt()!=0);
   });
-  f_altsetApply=new Fact(f,"apply",tr("Apply"),"",FactItem,ActionData);
-  f_altsetApply->setValue(ApplyAction);
+  f_altsetApply=new FactAction(f,"apply",tr("Apply"),"",FactAction::ApplyAction);
   f_altsetApply->setEnabled(false);
-  connect(f_altsetApply,&Fact::triggered,this,&MissionTools::altsetTriggered);
+  connect(f_altsetApply,&FactAction::triggered,this,&MissionTools::altsetTriggered);
 }
 //=============================================================================
 void MissionTools::altadjustTriggered()
@@ -117,5 +116,17 @@ void MissionTools::altsetTriggered()
     Fact *f=static_cast<Waypoint*>(mission->f_waypoints->child(i))->f_altitude;
     f->setValue(v);
   }
+}
+//=============================================================================
+void MissionTools::updateMaxAltitude()
+{
+  int alt=0;
+  for(int i=0;i<mission->f_waypoints->size();++i){
+    Waypoint *wp=qobject_cast<Waypoint*>(mission->f_waypoints->childFact(i));
+    if(!wp)continue;
+    int v=wp->f_altitude->value().toInt();
+    if(alt<v)alt=v;
+  }
+  if(alt>0)f_altset->setValue(alt);
 }
 //=============================================================================

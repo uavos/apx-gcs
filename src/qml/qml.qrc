@@ -82,7 +82,6 @@
         <file>FlightMap/mission/WaypointItem.qml</file>
         <file>FlightMap/mission/MissionObject.qml</file>
         <file>FlightMap/icons/waypoint-course.svg</file>
-        <file>FlightMap/mission/MissionItem.qml</file>
         <file>FlightMap/mission/RunwayItem.qml</file>
         <file>FlightMap/mission/MissionList.qml</file>
         <file>FlightMap/mission/TaxiwayItem.qml</file>
@@ -113,5 +112,7 @@
         <file>menu/FactMenuPageList.qml</file>
         <file>menu/FactMenuPageTitle.qml</file>
         <file>menu/FactMenuEditorTime.qml</file>
+        <file>menu/FactMenuPageInfoAction.qml</file>
+        <file>FlightMap/mission/MissionMapItems.qml</file>
     </qresource>
 </RCC>

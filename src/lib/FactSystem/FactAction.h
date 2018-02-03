@@ -50,11 +50,13 @@ public:
   Q_ENUM(FactActionType)
 
   explicit FactAction(Fact *parent, const QString &name, const QString &title, const QString &descr, FactActionType actionType, const QString &icon=QString());
+  explicit FactAction(Fact *parent, FactAction *linkAction);
 
   virtual QVariant data(int col, int role) const;
 
 private:
   Fact *fact;
+  FactAction *linkAction;
 
 public slots:
   virtual void trigger(void);

@@ -34,8 +34,7 @@ class DatalinkClients: public Fact
 public:
   explicit DatalinkClients(Datalink *parent);
 
-  Fact *f_alloff;
-  Fact *f_list;
+  FactAction *f_alloff;
 
   Datalink *f_datalink;
 

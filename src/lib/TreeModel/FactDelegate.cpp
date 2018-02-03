@@ -83,11 +83,11 @@ QWidget *FactDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem &
         le->setFrame(false);
         e=le;
       }break;
-      case Fact::ActionData:{
+      /*case Fact::ActionData:{
         QPushButton *btn=createButton(parent);
         connect(btn,&QPushButton::clicked,f,&Fact::trigger);
         return btn;
-      }break;
+      }break;*/
       case Fact::NoData:{
         if(f->treeItemType()==Fact::GroupItem &&
            f->size()>1 &&
@@ -181,7 +181,6 @@ void FactDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const
 {
   if(qobject_cast<QPushButton*>(editor))return;
   Fact *f=index.data(Fact::ModelDataRole).value<Fact*>();
-  if(f->dataType()==Fact::ActionData)return;
   if(f->dataType()==Fact::NoData)return;
   if(qobject_cast<QTimeEdit*>(editor)){
     QTimeEdit *te=static_cast<QTimeEdit*>(editor);

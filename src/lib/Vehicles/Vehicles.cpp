@@ -21,6 +21,7 @@
  *
  */
 #include "Vehicle.h"
+#include "VehicleSelect.h"
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
 #include "VehicleWarnings.h"
@@ -39,8 +40,9 @@ Vehicles::Vehicles(FactSystem *parent)
 
   model()->setFlat(true);
 
-  f_select=new Fact(this,"select",tr("Select vehicle"),tr("Change the active vehicle"),GroupItem,NoData);
+  VehicleSelect *f_select=new VehicleSelect(this,"select",tr("Select vehicle"),tr("Change the active vehicle"));
   f_select->setSection(title());
+  connect(f_select,&VehicleSelect::vehicleSelected,this,&Vehicles::selectVehicle);
 
   f_local=new Vehicle(this,"LOCAL",0,QByteArray().append((char)0).append((char)0),Vehicle::LOCAL,true);
 
@@ -255,7 +257,6 @@ void Vehicles::selectVehicle(Vehicle *v)
 
   emit currentChanged();
   emit vehicleSelected(v);
-  f_select->setStatus(v->title());
 }
 //=============================================================================
 void Vehicles::selectNext()

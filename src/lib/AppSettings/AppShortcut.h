@@ -40,8 +40,8 @@ public:
   Fact *_key;
   Fact *_cmd;
 
-  Fact *_save;
-  Fact *_remove;
+  FactAction *_save;
+  FactAction *_remove;
 
 private:
   AppShortcuts *container;

@@ -31,20 +31,13 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
 
   model()->setFlat(true);
 
-  f_clear=new Fact(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactItem,ActionData);
+  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactAction::NormalAction,"notification-clear-all");
   f_clear->setEnabled(false);
-  f_clear->setIconSource("notification-clear-all");
-  connect(f_clear,&Fact::triggered,this,[=](){
-    f_list->removeAll();
-  });
+  connect(f_clear,&FactAction::triggered,this,&Fact::removeAll);
 
-  f_list=new Fact(this,"messages",tr("Messages"),"",SectionItem,ConstData);
-  bind(f_list);
-  connect(f_list,&Fact::sizeChanged,this,[=](){
-    f_clear->setEnabled(f_list->size()>0);
+  connect(this,&Fact::sizeChanged,this,[=](){
+    f_clear->setEnabled(size()>0);
   });
-
-  connect(f_list,&Fact::sizeChanged,this,[=](){f_clear->setEnabled(f_list->size());});
 
   showTimer.setSingleShot(true);
   showTimer.setInterval(5000);
@@ -65,16 +58,15 @@ void VehicleWarnings::error(const QString &msg)
 Fact * VehicleWarnings::createItem(const QString &msg, MsgType kind)
 {
   Fact *fact=NULL;
-  if(f_list->size()>0){
-    fact=static_cast<Fact*>(f_list->childItems().first());
+  if(size()>0){
+    fact=static_cast<Fact*>(childItems().first());
     if(fact->title()!=msg || fact->userData.toInt()!=kind) fact=NULL;
   }
   if(!fact){
-    fact=new Fact(f_list,"item#",msg,"",FactItem,ConstData);
-    f_list->removeItem(fact,false);
-    f_list->insertItem(0,fact);
-    if(f_list->size()>100)f_list->removeItem(f_list->childItems().last());
-    fact->setSection(f_list->section());
+    fact=new Fact(this,"item#",msg,"",FactItem,ConstData);
+    removeItem(fact,false);
+    insertItem(0,fact);
+    if(size()>100)removeItem(childItems().last());
     fact->setValue(1);
     fact->userData=kind;
     switch(kind){

@@ -30,7 +30,6 @@ class VehicleMission;
 class MissionTools: public Fact
 {
   Q_OBJECT
-  Q_ENUMS(MissionItemType)
 
 public:
   explicit MissionTools(VehicleMission *parent);
@@ -38,9 +37,9 @@ public:
   Fact *f_map;
 
   Fact *f_altadjust;
-  Fact *f_altadjustApply;
+  FactAction *f_altadjustApply;
   Fact *f_altset;
-  Fact *f_altsetApply;
+  FactAction *f_altsetApply;
 
 
   VehicleMission *mission;
@@ -48,6 +47,8 @@ public:
 private slots:
   void altadjustTriggered();
   void altsetTriggered();
+
+  void updateMaxAltitude();
 };
 //=============================================================================
 #endif

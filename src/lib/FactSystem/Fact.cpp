@@ -83,7 +83,6 @@ QVariant Fact::data(int col, int role) const
       }
       if(col==Fact::FACT_MODEL_COLUMN_VALUE){
         if(!enabled())return QColor(Qt::darkGray);
-        if(dataType()==Fact::ActionData) return QColor(Qt::blue).lighter(170);
         if(size()) return QColor(Qt::darkGray); //expandable
         if(modified())return QColor(Qt::yellow);
         if(isZero())return QColor(Qt::gray);
@@ -127,7 +126,6 @@ QVariant Fact::data(int col, int role) const
   switch(col){
     case Fact::FACT_MODEL_COLUMN_NAME: return title();
     case Fact::FACT_MODEL_COLUMN_VALUE:{
-      if(dataType()==Fact::ActionData) return QString("<exec>");
       if(dataType()==Fact::ScriptData) return status();
       const QString s=text();
       if(s.isEmpty()){
@@ -140,7 +138,12 @@ QVariant Fact::data(int col, int role) const
       if(role==Qt::EditRole && enumStrings().size()<=1){
         if(dataType()==BoolData)return value().toBool();
         if(dataType()==IntData)return value().toInt();
-        if(dataType()==FloatData)return value().toDouble();
+        if(dataType()==FloatData){
+          bool ok=false;
+          s.toDouble(&ok);
+          if(ok)return s;
+          return value().toDouble();
+        }
       }
       return s;
     }

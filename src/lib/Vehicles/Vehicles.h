@@ -40,8 +40,6 @@ public:
 
   Fact *f_list;
 
-  Fact *f_select;
-
   Vehicle *f_local;
 
   VehiclesDB *vdb;

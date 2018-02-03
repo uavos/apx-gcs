@@ -41,6 +41,7 @@ NodeField::NodeField(NodeItem *node, quint16 id)
   connect(this,&NodeField::dictValidChanged,this,&NodeField::validateDict);
   connect(this,&NodeField::dataValidChanged,this,&NodeField::validateData);
 
+  addActions();
 }
 //child of expanded field
 NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, const QString &title, const QString &descr,int ftype)
@@ -56,6 +57,7 @@ NodeField::NodeField(NodeItem *node,NodeField *parent, const QString &name, cons
   updateDataType();
   connect(this,&NodeField::valueChanged,parent,&NodeField::updateStatus);
   parent->updateStatus();
+
 }
 //=============================================================================
 int NodeField::array() const

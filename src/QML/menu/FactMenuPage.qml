@@ -13,18 +13,26 @@ ColumnLayout {
     property var fact
 
     property bool pageInfo: false //load fact info instead of list
+    property var pageInfoAction //load fact action info instead fact info
 
+    property string pageTitle: fact.title
     //implicitHeight: 500 //childrenRect.height
     //implicitWidth: 300
     //Component.onDestruction: console.log("page delete: "+fact.title)
-    StackView.onRemoved: destroy()
+    StackView.onRemoved: {
+        //console.log("page removed from stack: "+fact.title)
+        destroy()
+    }
 
     Connections {
         target: fact
         onRemoved: {
+            //console.log("page fact removed: "+fact.title)
             fact=dummyFactC.createObject(menuPage);
-            destroy()
+            factRemoved()
+            back()
         }
+        onActionTriggered: factActionTriggered()
     }
     Component {
         id: dummyFactC
@@ -55,6 +63,10 @@ ColumnLayout {
         if(fact.qmlPage){
             loadPage(fact.qmlPage,opts)
         }else if(pageInfo){
+            if(pageInfoAction){
+                pageTitle+=": "+pageInfoAction.title
+                opts.factAction=pageInfoAction
+            }
             loadPage("FactMenuPageInfo.qml",opts)
         }else{
             loadPage("FactMenuPageList.qml",opts)

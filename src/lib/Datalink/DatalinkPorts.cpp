@@ -81,7 +81,6 @@ void DatalinkPorts::load()
     f_add->defaults();
     foreach(FactTree *i,f_add->childItems()){
       Fact *fact=static_cast<Fact*>(i);
-      if(fact->dataType()==ActionData)continue;
       fact->setValue(settings->value(fact->name()));
     }
     new DatalinkPort(this,f_add);
@@ -102,7 +101,7 @@ void DatalinkPorts::save()
     settings->setArrayIndex(ai++);
     foreach(const FactTree *i,port->childItems()){
       const Fact *fact=static_cast<const Fact*>(i);
-      if((!fact->visible())||fact->dataType()==ActionData)continue;
+      if(!fact->visible())continue;
       settings->setValue(fact->name(),fact->text());
     }
   }

@@ -61,6 +61,7 @@ Item {
 
     signal removed()
     signal triggered()
+    signal actionTriggered()
     signal toggled()
 
     function trigger()

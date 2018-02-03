@@ -144,7 +144,7 @@ void AppShortcuts::load()
     f_add->defaults();
     foreach(FactTree *i,f_add->childItems()){
       Fact *fact=static_cast<Fact*>(i);
-      if(fact->dataType()==ActionData)continue;
+      if(fact->dataType()==NoData)continue;
       fact->setValue(settings->value(fact->name()));
     }
     addUserShortcut();
@@ -180,7 +180,7 @@ void AppShortcuts::save()
     settings->setArrayIndex(ai++);
     foreach(const FactTree *i,item->childItems()){
       const Fact *fact=static_cast<const Fact*>(i);
-      if((!fact->visible())||fact->dataType()==ActionData)continue;
+      if((!fact->visible())||fact->dataType()==NoData)continue;
       settings->setValue(fact->name(),fact->text());
     }
   }
@@ -194,7 +194,7 @@ void AppShortcuts::save()
     settings->setArrayIndex(ai++);
     foreach(const FactTree *i,item->childItems()){
       const Fact *fact=static_cast<const Fact*>(i);
-      if((!fact->visible())||fact->dataType()==ActionData)continue;
+      if((!fact->visible())||fact->dataType()==NoData)continue;
       settings->setValue(fact->name(),fact->text());
     }
   }

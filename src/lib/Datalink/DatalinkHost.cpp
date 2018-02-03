@@ -32,7 +32,7 @@ DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress ho
    container(parent),
    bReconnect(false)
 {
-  setValue(host.toString());
+  //setValue(host.toString());
   //connect(this,&Fact::childValueChanged,this,&DatalinkHost::updateStats);
 
   setSection(parent->f_list->title());
@@ -40,7 +40,7 @@ DatalinkHost::DatalinkHost(DatalinkHosts *parent, QString title, QHostAddress ho
   updateStatsTimer.setSingleShot(true);
   connect(&updateStatsTimer,&QTimer::timeout,this,&DatalinkHost::updateStats);
 
-  connect(parent->f_alloff,&Fact::triggered,this,&DatalinkHost::disconnectAll);
+  connect(parent->f_alloff,&FactAction::triggered,this,&DatalinkHost::disconnectAll);
 
   connect(this,&DatalinkSocket::connectedChanged,container,&DatalinkHosts::updateConnectedStatus);
 

@@ -60,16 +60,14 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, const DatalinkPort *port)
   f_local=new Fact(this,"local",tr("Local data only"),tr("Never share received data with other connections"),FactItem,BoolData);
 
   if(_new){
-    f_save=new Fact(this,"save",tr("Save"),"",FactItem,ActionData);
-    f_save->setValue(ApplyAction);
-    connect(f_save,&Fact::triggered,parent,&DatalinkPorts::addTriggered);
+    f_save=new FactAction(this,"save",tr("Save"),"",FactAction::ApplyAction);
+    connect(f_save,&FactAction::triggered,parent,&DatalinkPorts::addTriggered);
     defaults();
   }else{
     setSection(parent->f_list->title());
     copyValuesFrom(port);
-    f_remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
-    f_remove->setValue(RemoveAction);
-    connect(f_remove,&Fact::triggered,parent,&DatalinkPorts::removeTriggered);
+    f_remove=new FactAction(this,"remove",tr("Remove"),"",FactAction::RemoveAction);
+    connect(f_remove,&FactAction::triggered,parent,&DatalinkPorts::removeTriggered);
     connect(this,&Fact::childValueChanged,parent,&DatalinkPorts::save);
     connect(parent,&Fact::sizeChanged,this,&DatalinkPort::updateStats);
     connect(parent->f_allon,&Fact::triggered,this,&DatalinkPort::enable);

@@ -20,69 +20,36 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkPort_H
-#define DatalinkPort_H
+#ifndef MissionStorage_H
+#define MissionStorage_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-class DatalinkPorts;
-class DatalinkHost;
-class Serial;
+#include <FactSystem.h>
+class VehicleMission;
 //=============================================================================
-class DatalinkPort: public Fact
+class MissionStorage: public Fact
 {
   Q_OBJECT
+  Q_ENUMS(MissionItemType)
+
 public:
-  explicit DatalinkPort(DatalinkPorts *parent,const DatalinkPort *port=NULL);
+  explicit MissionStorage(VehicleMission *mission,Fact *parent);
 
-  DatalinkPorts *f_ports;
+  Fact *f_export;
+  Fact *f_import;
+  Fact *f_copy;
 
-  Fact *f_enabled;
-  Fact *f_type;
-  Fact *f_dev;
-  Fact *f_baud;
-  Fact *f_host;
 
-  Fact *f_local;
-
-  FactAction *f_save;
-  FactAction *f_remove;
-
-  DatalinkHost *if_host;
-  Serial *if_serial;
-
-  bool active() const;
-
-private:
-  bool _new;
+  VehicleMission *mission;
 
 private slots:
-  void updateStats();
-  void enable();
-  void disable();
-  void enabledChanged();
-  void syncDevEnum();
-  void syncHostEnum();
-public slots:
-  void defaults();
+  void updateActions();
+  void saveToFile() const;
+  void loadFromFile();
 
-  //iface connect
-private slots:
-  void ifacePacketReceived(const QByteArray &ba);
-  void disconnectAll();
-  void serialConnected(QString pname);
-  void serialDisconnected();
-  void hostStatusChanged();
 
-public slots:
-  void connectPort();
-
-  //data
 signals:
-  void packetReceived(const QByteArray &ba);
-public slots:
-  void sendPacket(const QByteArray &ba);
-
+  void misssionRead();
 };
 //=============================================================================
 #endif

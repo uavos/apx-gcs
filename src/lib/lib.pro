@@ -101,6 +101,7 @@ SOURCES += \
     Vehicles/QMandalaItem.cpp \
     Vehicles/QMandala.cpp \
     Vehicles/Vehicles.cpp \
+    Vehicles/VehicleSelect.cpp \
     Vehicles/Vehicle.cpp \
     Vehicles/VehicleMandala.cpp \
     Vehicles/VehicleMandalaFact.cpp \
@@ -113,6 +114,7 @@ HEADERS += \
     Vehicles/QMandalaItem.h \
     Vehicles/QMandala.h \
     Vehicles/Vehicles.h \
+    Vehicles/VehicleSelect.h \
     Vehicles/Vehicle.h \
     Vehicles/VehicleMandala.h \
     Vehicles/VehicleMandalaFact.h \
@@ -147,6 +149,7 @@ SOURCES += \
     Mission/VehicleMission.cpp \
     Mission/MissionXml.cpp \
     Mission/MissionTools.cpp \
+    Mission/MissionStorage.cpp \
     Mission/MissionListModel.cpp \
     Mission/MissionGroup.cpp \
     Mission/MissionItem.cpp \
@@ -160,6 +163,7 @@ HEADERS += \
     Mission/VehicleMission.h \
     Mission/MissionXml.h \
     Mission/MissionTools.h \
+    Mission/MissionStorage.h \
     Mission/MissionListModel.h \
     Mission/MissionGroup.h \
     Mission/MissionItem.h \

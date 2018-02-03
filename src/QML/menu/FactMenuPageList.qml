@@ -1,5 +1,6 @@
-﻿import QtQuick 2.7
+﻿import QtQuick 2.9
 import QtQuick.Controls 2.3
+import QtQuick.Controls.Material 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
 import GCS.FactSystem 1.0
@@ -9,16 +10,17 @@ import "."
 ListView {
     id: listView
     clip: true
-    Layout.preferredWidth: itemWidth
-    Layout.preferredHeight: itemsHeight
+    Layout.preferredWidth: autoResize?itemWidth:0
+    Layout.preferredHeight: contentHeight //autoResize?itemsHeight:contentHeight
+    //Layout.fillHeight: !autoResize
     cacheBuffer: 0
-    property int itemsHeight: Math.max(8,fact.size+2)*itemSize
-    Behavior on itemsHeight { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
+    //property int itemsHeight: Math.max(8,fact.size+2)*itemSize
+    //Behavior on itemsHeight { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
     //implicitWidth: contentItem.childrenRect.width
-    //implicitHeight: 800 //contentItem.childrenRect.height
+    implicitHeight: contentHeight //contentItem.childrenRect.height
     model: fact.model
     spacing: 0
-    delegate: delegateC
+    delegate: FactMenuListItem { fact: modelData; }
     section.property: "modelData.section"
     section.criteria: ViewSection.FullString
     section.delegate: Label {
@@ -42,77 +44,53 @@ ListView {
         visible: fact.descr && showTitle
         text: visible?fact.descr:""
     }
-    footerPositioning: ListView.OverlayFooter
-    footer: Flow {
-        id: toolsItem
-        z: 10
+    footerPositioning: ListView.PullBackFooter
+    footer: RowLayout {
+        id: toolsLayout
         width: listView.width
-        //height: childrenRect.height
-        layoutDirection: Qt.RightToLeft
-        spacing: 5
-        padding: 0
-        visible: children.length>0
-        Repeater {
-            model: fact.actionsModel
-            delegate: factActionC
-        }
-    }
-    Component.onCompleted: {
-        //create actions
-        for (var i=0; i < fact.size; i++){
-            var f=fact.childFact(i)
-            if(!isActionFact(f))continue;
-            var c=actionC.createObject(footerItem,{"fact": f});
+        height: toolsItem.childrenRect.height
+        spacing: 0
+        z: 10
+        visible: false //toolsItem.children.length>0
+        Flow {
+            id: toolsItem
+            //Layout.topMargin: itemSize*0.2
+            Layout.alignment: Qt.AlignRight|Qt.AlignBottom
+            Layout.maximumWidth: listView.width
+            spacing: 5
+            padding: 0
+            topPadding: 10
+            property bool actionsText: true
+            Repeater {
+                model: fact.actionsModel
+                delegate: FactMenuAction { showText: toolsItem.actionsText }
+                onItemAdded: timer.restart() //toolsLayout.visible=true
+            }
+            onPositioningComplete: if(width>0){
+                if(height>itemSize*1.5)actionsText=false
+                //timer.restart()
+            }
+            Timer {
+                id: timer
+                running: false
+                repeat: false
+                interval: 10
+                onTriggered: {
+                    toolsLayout.visible=true
+                    listView.footerPositioning=ListView.OverlayFooter
+                }
+            }
         }
     }
     ScrollBar.vertical: ScrollBar {}
-    Component {
-        id: delegateC
-        FactMenuListItem { fact: modelData; }
+
+    /*Component.onCompleted: {
+        heightTimer.restart()
     }
-    Component {
-        id: actionC
-        FactMenuAction { }
-    }
-    Component {
-        id: factActionC
-        Button {
-            property var a: modelData
-
-            property int atype: a?a.actionType:-1
-
-            property bool bApply: atype===FactAction.ApplyAction
-            property bool bRemove: atype===FactAction.RemoveAction
-
-            property string iconName: (a && a.icon)?a.icon:bApply?"check":bRemove?"delete":""
-
-            //Material.background: bApply?Style.cActionApply:bRemove?Style.cActionRemove:undefined
-
-            enabled: a && a.enabled
-
-            text: a?a.title:""
-            leftPadding: rightPadding+(btnLabel.visible?height*0.6:0)
-            Label {
-                id: btnLabel
-                visible: iconName
-                anchors.fill: parent
-                anchors.leftMargin: parent.rightPadding
-                verticalAlignment: Text.AlignVCenter
-                font.family: "Material Design Icons"
-                font.pointSize: parent.implicitHeight*0.6
-                text: visible?materialIconChar[iconName]:""
-            }
-            onClicked: {
-                //console.log(materialIconChar[iconName])
-                //if(closeable)close();
-                //else back()
-                a.trigger()
-            }
-        }
-    }
+    //auto resize
     Connections {
         target: listView.contentItem
-        enabled: autoResize
+        //enabled: autoResize
         onChildrenChanged: heightTimer.restart()
     }
     Timer {
@@ -131,6 +109,5 @@ ListView {
             //console.log(sz)
             if(sz!==listView.itemsHeight)listView.itemsHeight=sz
         }
-
-    }
+    }*/
 }

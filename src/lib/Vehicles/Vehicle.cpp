@@ -36,7 +36,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
     m_squawk(squawk)
 {
   setSection(parent->title());
-  setIconSource("drone");
+  setIconSource(bLocal?"chip":"drone");
 
   //requests manager
   nmtManager=new VehicleNmtManager(this);
@@ -61,11 +61,9 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
   connect(f_squawk,&Fact::valueChanged,this,[=](){ m_squawk=f_squawk->value().toUInt(); });
 
-  f_selectAction=new Fact(this,"select",tr("Select"),"Make this vehicle active",FactItem,ActionData);
-  f_selectAction->setValue(ButtonAction);
-  f_selectAction->setIconSource("select");
-  connect(f_selectAction,&Fact::triggered,this,[=](){ parent->selectVehicle(this); });
-  connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_selectAction->setEnabled(v!=this); });
+  f_select=new FactAction(this,"select",tr("Select"),tr("Make this vehicle active"),FactAction::NormalAction,"select");
+  connect(f_select,&FactAction::triggered,this,[=](){ parent->selectVehicle(this); });
+  connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_select->setEnabled(v!=this); });
 
   f_mandala=new VehicleMandala(this);
   f_nodes=new Nodes(this);
@@ -81,14 +79,14 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
 
 
   //selection action fact in separate group menu
-  f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,ActionData);
+  /*f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,NoData);
   connect(this,&Vehicle::destroyed,this,[=](){ parent->f_select->removeItem(f_select); });
   connect(f_select,&Fact::triggered,this,[=](){ parent->selectVehicle(this); });
 
-  connect(this,&Vehicle::activeChanged,this,[=](){ f_select->setActive(active()); });
+  connect(this,&Fact::statusChanged,this,[=](){ f_select->setStatus(status()); });
+  connect(this,&Vehicle::activeChanged,this,[=](){ f_select->setActive(active()); });*/
   connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ setActive(v==this); });
 
-  connect(this,&Fact::statusChanged,this,[=](){ f_select->setStatus(status()); });
 
   connect(f_streamType,&Fact::valueChanged,this,[=](){ f_mandala->setStatus(f_streamType->text()); });
 

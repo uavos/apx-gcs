@@ -12,7 +12,8 @@ Popup {
 
     property alias fact: factMenu.fact
     property alias showTitle: factMenu.showTitle
-    property bool closeOnTrigger: false
+    //property bool closeOnTrigger: false
+    property bool closeOnActionTrigger: false
 
     //contentWidth: Math.min(window.width, window.height) / 3 * 2
     //contentHeight: Math.min(window.height, contents.length*menu.height)
@@ -29,8 +30,9 @@ Popup {
     contentItem: FactMenu {
         id: factMenu
         autoResize: true
-        onFactPageRemoved: popupItem.close()
-        onActionTriggered: if(closeOnTrigger)popupItem.close()
+        onFactRemoved: popupItem.close()
+        //onFactTriggered: if(closeOnTrigger)popupItem.close()
+        onFactActionTriggered: if(closeOnActionTrigger)popupItem.close()
         Label {
             id: btnClose
             z: 10

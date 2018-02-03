@@ -231,7 +231,7 @@ MapQuickItem {  //to be used inside MapComponent only
     }
     Component {
         id: missionC
-        MissionItem {
+        MissionMapItems {
             vehicle: vehicleItem.vehicle
         }
     }

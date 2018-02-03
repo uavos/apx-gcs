@@ -40,10 +40,10 @@ public:
 
   Fact *f_add;
   Fact *f_host;
-  Fact *f_connect;
+  FactAction *f_connect;
 
 
-  Fact *f_alloff;
+  FactAction *f_alloff;
   Fact *f_list;
 
   Datalink *f_datalink;

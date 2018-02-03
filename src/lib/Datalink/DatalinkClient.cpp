@@ -27,10 +27,10 @@
 //-----------------------------------------------------------------------------
 //=============================================================================
 DatalinkClient::DatalinkClient(DatalinkClients *parent, QTcpSocket *tcp)
-  : DatalinkSocket(parent->f_list,tcp->peerAddress().toString(),tcp,true,parent->f_datalink->f_name->text()),
+  : DatalinkSocket(parent,tcp->peerAddress().toString(),tcp,true,parent->f_datalink->f_name->text()),
     f_datalink(parent->f_datalink)
 {
-  connect(parent->f_alloff,&Fact::triggered,this,&DatalinkSocket::disconnectSocket);
+  connect(parent->f_alloff,&FactAction::triggered,this,&DatalinkSocket::disconnectSocket);
 
   connect(this,&Fact::triggered,this,&DatalinkClient::disconnectSocket);
 

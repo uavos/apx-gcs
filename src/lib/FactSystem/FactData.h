@@ -29,7 +29,6 @@ class FactData: public FactTree
 {
   Q_OBJECT
   Q_ENUMS(DataType)
-  Q_ENUMS(ActionType)
 
   Q_PROPERTY(DataType dataType READ dataType WRITE setDataType NOTIFY dataTypeChanged)
 
@@ -63,18 +62,9 @@ public:
     EnumData,       // value=value of enumStrings (set by text or index or enumValues)
     MandalaData,    // Mandala ID
     ScriptData,     // script editor
-    ActionData,     // button, value=action type
     KeySequenceData,
   };
   Q_ENUM(DataType)
-
-  enum ActionType {
-    NormalAction =0,
-    ButtonAction,
-    ApplyAction,
-    RemoveAction,
-  };
-  Q_ENUM(ActionType)
 
   explicit FactData(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 

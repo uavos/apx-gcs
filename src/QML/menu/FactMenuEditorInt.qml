@@ -56,7 +56,7 @@ SpinBox {
 
             selectByMouse: true
             onEditingFinished: {
-                fact.setValue(text);
+                setFactValue(text);
                 //control.parent.forceActiveFocus();
             }
             onActiveFocusChanged: {
@@ -102,18 +102,19 @@ SpinBox {
 
     property real div: 1
 
-    /*textFromValue: function(value) {
-        var i=(value/div).toFixed();
-        if(i>=0 && i<fact.enumStrings.length){
-            return fact.enumStrings[i]
-        }
-        return textWithUnits(i);
-    }*/
+    function setFactValue(s)
+    {
+        var u=fact.units
+        if(u === "hex") s="0x"+s
+        fact.setValue(s);
+    }
+
     function textWithUnits(s)
     {
         var u=fact.units
         if(!u) return s
-        if(u.indexOf("..")>=0)return s
+        if(u.indexOf("..") >= 0)return s
+        if(u === "hex") return s
         if(isNaN(s))return s
         //if(s !== parseFloat(s))return s
         return s+" "+u

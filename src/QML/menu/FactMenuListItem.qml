@@ -23,25 +23,29 @@ Button {
 
     property Item editor
 
-    onClicked: if(activeFocus){
+    property bool blockPressAndHold: false
+
+    onClicked: {
+        if(!activeFocus)return
+        blockPressAndHold=true
         if(expandable) openFact(fact)
         else if(isAction)actionTriggered(fact)
         //else if(bEnumChilds) openFact(fact)
         fact.trigger()
-        factTriggered(fact)
+        //factTriggered(fact)
         //else if(isAction && fact.value!==Fact.RemoveAction) back();
+        blockPressAndHold=false
     }
 
     onPressAndHold: {
-        //listProperty(fact)
+        if(blockPressAndHold)return
         openFact(fact,{"pageInfo": true})
     }
 
     Connections {
         target: fact
         onRemoved: {
-            fact=dummyFactC.createObject(menuPage);
-            destroy()
+            fact=dummyFactC.createObject(factButton);
         }
     }
     Component {
@@ -51,7 +55,7 @@ Button {
 
 
 
-    visible: fact.visible && (!isActionFact(fact))
+    visible: fact.visible
 
     enabled: fact.enabled
     hoverEnabled: enabled
@@ -68,8 +72,6 @@ Button {
     topPadding: padding
     bottomPadding: padding
     spacing: 0
-
-    //background.implicitHeight: itemSize //contentItem.implicitHeight
 
     background.y: 0
     background.width: width

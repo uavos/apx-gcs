@@ -42,7 +42,9 @@ public:
 
   virtual int missionItemType() const {return -1;}
 
-  virtual Fact * addObject(const QGeoCoordinate &) {return NULL;}
+  virtual MissionItem * createObject() {return NULL;}
+
+  MissionItem * addObject(const QGeoCoordinate &);
 
 
   FactAction *f_clear;
@@ -100,15 +102,9 @@ public:
     return miType;
   }
 
-  Fact * addObject(const QGeoCoordinate &p)
+  MissionItem * createObject()
   {
-    T *f=new T(this);
-    f->backup();
-    f->f_latitude->setValue(p.latitude());
-    f->f_longitude->setValue(p.longitude());
-    f->setModified(true,true);
-    objectAdded(f);
-    return f;
+    return new T(this);
   }
 };
 //=============================================================================

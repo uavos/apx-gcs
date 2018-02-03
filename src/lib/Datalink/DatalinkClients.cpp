@@ -34,12 +34,9 @@ DatalinkClients::DatalinkClients(Datalink *parent)
 
   f_datalink=parent;
 
-  f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),FactItem,NoData);
-  f_alloff->setIconSource("lan-disconnect");
+  f_alloff=new FactAction(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),FactAction::NormalAction,"lan-disconnect");
 
-  f_list=new Fact(this,"list",tr("Clients list"),tr("Active connections"),SectionItem,ConstData);
-  bind(f_list);
-  connect(f_list,&Fact::sizeChanged,this,&DatalinkClients::updateStats);
+  connect(this,&Fact::sizeChanged,this,&DatalinkClients::updateStats);
 
   server=new QTcpServer(this);
   connect(server,&QTcpServer::newConnection,this,&DatalinkClients::newConnection);
@@ -52,7 +49,7 @@ DatalinkClients::DatalinkClients(Datalink *parent)
 //=============================================================================
 void DatalinkClients::updateStats()
 {
-  f_alloff->setEnabled(f_list->size()>0);
+  f_alloff->setEnabled(size()>0);
 }
 //=============================================================================
 void DatalinkClients::serverActiveChanged()
@@ -117,8 +114,8 @@ void DatalinkClients::newConnection()
 //=============================================================================
 void DatalinkClients::forward(DatalinkClient *src, const QByteArray &ba)
 {
-  foreach (FactTree *i, f_list->childItems()) {
-    DatalinkClient *port=static_cast<DatalinkClient*>(i);
+  for (int i=0;i<size();++i){
+    DatalinkClient *port=static_cast<DatalinkClient*>(child(i));
     if(port==src) continue;
     port->sendPacket(ba);
   }

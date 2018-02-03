@@ -55,8 +55,6 @@ public:
   //internal tree
   Q_INVOKABLE void addItem(FactTree *item);
   Q_INVOKABLE void moveItem(FactTree *item,int n,bool safeMode=false);
-  Q_INVOKABLE void remove();
-  Q_INVOKABLE void removeAll(void);
   Q_INVOKABLE FactTree * child(int n) const;
   Q_INVOKABLE FactTree * parentItem() const;
   Q_INVOKABLE int indexInParent() const;
@@ -77,6 +75,10 @@ public:
     return NULL;
   }
 
+public slots:
+  void remove();
+  void removeAll();
+
 signals:
   //tree structure change signals for models
   void itemToBeInserted(int row, FactTree *item);
@@ -95,6 +97,7 @@ private:
   QString nameSuffix;
 
   void updateNum();
+  void setParentItem(FactTree *v);
 
   //-----------------------------------------
   //PROPERTIES
@@ -117,6 +120,7 @@ signals:
   void nameChanged();
   void sizeChanged();
   void numChanged();
+  void parentItemChanged();
 };
 //=============================================================================
 #endif

@@ -35,6 +35,8 @@ class NodeFieldBase: public Fact
 public:
   explicit NodeFieldBase(Fact *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
 
+  void addActions();
+
 protected:
   //override
   QVariant data(int col, int role) const;

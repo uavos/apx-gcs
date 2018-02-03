@@ -3,11 +3,13 @@ import QtLocation 5.9
 import QtPositioning 5.6
 import GCS.FactSystem 1.0
 import GCS.Vehicles 1.0
+import GCS.Mission 1.0
 import "."
 
 MapItemGroup {
-    id: mission
+    id: missionMapItems
     property Vehicle vehicle: modelData
+    property Mission mission: vehicle.mission
 
     visible: vehicle.active
 
@@ -26,12 +28,19 @@ MapItemGroup {
 
     }
 
-
     Connections {
         target: map
         onClicked: deselect()
         onMapMenuRequested: showMapMenu()
-        onMouseClickCoordinateChanged: vehicle.mission.mapCoordinate=map.mouseClickCoordinate
+        onMouseClickCoordinateChanged: mission.mapCoordinate=map.mouseClickCoordinate
+    }
+
+    Connections {
+        target: mission
+        onMissionReceived: {
+            //console.log("onMissionReceived")
+            map.showRegion(mission.boundingGeoRectangle())
+        }
     }
 
 
@@ -39,25 +48,25 @@ MapItemGroup {
 
     MapItemView {
         id: waypoints
-        model: vehicle.mission.waypoints.model
+        model: mission.waypoints.model
         delegate: WaypointItem { fact: modelData }
     }
 
     MapItemView {
         id: runways
-        model: vehicle.mission.runways.model
+        model: mission.runways.model
         delegate: RunwayItem { }
     }
 
     MapItemView {
         id: taxiways
-        model: vehicle.mission.taxiways.model
+        model: mission.taxiways.model
         delegate: TaxiwayItem { fact: modelData }
     }
 
     MapItemView {
         id: points
-        model: vehicle.mission.points.model
+        model: mission.points.model
         delegate: PointItem { }
     }
 

@@ -29,6 +29,7 @@
 FactAction::FactAction(Fact *parent, const QString &name, const QString &title, const QString &descr, FactActionType actionType, const QString &icon)
  : QObject(parent),
    fact(parent),
+   linkAction(NULL),
    m_name(name),
    m_title(title),
    m_descr(descr),
@@ -39,11 +40,36 @@ FactAction::FactAction(Fact *parent, const QString &name, const QString &title, 
 {
   setObjectName(m_name);
   parent->actions.append(this);
+  connect(this,&FactAction::triggered,parent,&Fact::actionTriggered);
+  //default icons
+  if(m_icon.isEmpty()){
+    if(actionType==ApplyAction)m_icon="check";
+    else if(actionType==RemoveAction)m_icon="delete";
+  }
+}
+FactAction::FactAction(Fact *parent, FactAction *linkAction)
+ : QObject(linkAction),
+   fact(parent),
+   linkAction(linkAction),
+   m_name(linkAction->name()),
+   m_title(linkAction->title()),
+   m_descr(linkAction->descr()),
+   m_icon(linkAction->icon()),
+   m_actionType(linkAction->actionType()),
+   m_enabled(true),
+   m_visible(linkAction->visible())
+{
+  setObjectName(m_name);
+  parent->actions.append(this);
+  connect(this,&FactAction::triggered,parent,&Fact::actionTriggered);
+
+  connect(linkAction,&FactAction::enabledChanged,this,&FactAction::enabledChanged);
 }
 //=============================================================================
 void FactAction::trigger(void)
 {
   if(!enabled())return;
+  if(linkAction)linkAction->trigger();
   //qDebug()<<"trigger"<<name();
   emit triggered();
 }
@@ -101,6 +127,7 @@ FactAction::FactActionType FactAction::actionType(void) const
 }
 bool FactAction::enabled() const
 {
+  if(linkAction)return m_enabled && linkAction->enabled();
   return m_enabled;
 }
 void FactAction::setEnabled(const bool &v)

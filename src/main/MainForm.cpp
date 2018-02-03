@@ -581,7 +581,7 @@ void MainForm::vehicleRegistered(Vehicle *v)
   QAction *a=new QAction(QIcon(":/icons/old/connect_creating.png"),QString(v->f_callsign->text()),this);
   a->setData(QVariant::fromValue(v));
   a->setCheckable(true);
-  connect(a,&QAction::triggered,v->f_select,&Fact::trigger);
+  connect(a,&QAction::triggered,v->f_select,&FactAction::trigger);
   mUAV->addAction(a);
 }
 void MainForm::vehicleRemoved(Vehicle *v)

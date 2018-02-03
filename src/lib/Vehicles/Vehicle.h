@@ -64,7 +64,6 @@ public:
 
   explicit Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal);
 
-  Fact * f_select; //fact action to select this vehicle
   Fact * f_squawk;
   Fact * f_callsign;
   Fact * f_vclass;
@@ -76,7 +75,7 @@ public:
   VehicleRecorder *f_recorder;
   VehicleWarnings *f_warnings;
 
-  Fact * f_selectAction;
+  FactAction * f_select;
 
   VehicleNmtManager *nmtManager;
 

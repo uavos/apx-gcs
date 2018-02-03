@@ -48,7 +48,6 @@ class VehicleMission: public Fact
 
   Q_PROPERTY(MissionListModel * listModel READ listModel CONSTANT)
 
-  Q_PROPERTY(bool empty READ empty NOTIFY emptyChanged)
   Q_PROPERTY(int missionSize READ missionSize NOTIFY missionSizeChanged)
 
 public:
@@ -77,14 +76,12 @@ public:
 
   Fact *f_missionTitle;
 
-  Fact *f_request;
-  Fact *f_clear;
-  Fact *f_upload;
-
-  Fact *f_export;
-  Fact *f_import;
+  FactAction *f_request;
+  FactAction *f_clear;
+  FactAction *f_upload;
 
   Fact *f_tools;
+  Fact *f_storage;
 
   Vehicle *vehicle;
 
@@ -108,15 +105,13 @@ private slots:
   void updateActions();
   void updateStartPath();
 
-  void save() const;
-  void load();
-
 public slots:
   void clearMission();
   void uploadMission();
   void test(int n=50);
 
 signals:
+  void missionReceived();
   void actionsUpdated();
 
 
@@ -137,9 +132,6 @@ public:
 
   MissionListModel * listModel() const;
 
-  bool empty() const;
-  void setEmpty(const bool v);
-
   int missionSize() const;
   void setMissionSize(const int v);
 
@@ -151,7 +143,6 @@ protected:
 
   MissionListModel *m_listModel;
 
-  bool m_empty;
   int m_missionSize;
 
 signals:
@@ -159,7 +150,6 @@ signals:
   void startPointChanged();
   void startHeadingChanged();
   void startLengthChanged();
-  void emptyChanged();
   void missionSizeChanged();
 };
 //=============================================================================

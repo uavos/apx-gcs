@@ -42,7 +42,7 @@ Waypoint::Waypoint(MissionGroup *parent)
   f_type->setEnumStrings(QMetaEnum::fromType<ManeuverType>());
 
   //actions
-  f_actions=new Fact(this,"actions",tr("Actions"),tr("Actions to perform on waypoint"),GroupItem,NoData);
+  f_actions=new Fact(this,"wpactions",tr("Actions"),tr("Actions to perform on waypoint"),GroupItem,NoData);
   f_speed=new MissionField(f_actions,"speed",tr("Speed"),tr("Fly with this speed to waypoint"),IntData);
   f_speed->setEnumStrings(QStringList()<<"cruise");
   f_speed->setUnits("m/s");
@@ -60,7 +60,7 @@ Waypoint::Waypoint(MissionGroup *parent)
   f_poi->setMin(0);
   f_loiter=new MissionField(f_actions,"loiter",tr("Loiter"),tr("Loiter around POI or waypoint"),EnumData);
   f_loiter->setEnumStrings(QStringList()<<"no"<<"yes");
-  f_turnR=new MissionField(f_actions,"turnR",tr("Radius"),tr("Loiter radius"),IntData);
+  f_turnR=new MissionField(f_actions,"radius",tr("Radius"),tr("Loiter radius"),IntData);
   f_turnR->setEnumStrings(QStringList()<<"default");
   f_turnR->setUnits("m");
   f_loops=new MissionField(f_actions,"loops",tr("Loops"),tr("Loiter loops limit"),IntData);

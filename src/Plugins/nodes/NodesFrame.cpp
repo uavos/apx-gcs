@@ -52,7 +52,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
 {
   vehicle=v;
   Nodes *fNodes=v->f_nodes;
-  treeWidget->setRoot(fNodes->f_list);
+  treeWidget->setRoot(fNodes);
   lbUavName->setText(v->title());
   lbUavName->setToolTip(QString("squawk: %1").arg(v->squawk(),4,16,QChar('0')).toUpper());
   connect(fNodes,&Nodes::actionsUpdated,this,&NodesFrame::updateActions,Qt::UniqueConnection);
@@ -484,7 +484,7 @@ void NodesFrame::aLoad_triggered(void)
   filters << tr("Node conf files")+" (*.nodes)"
           << tr("Any files")+" (*)";
   dlg.setNameFilters(filters);
-  if(vehicle->f_nodes->f_list->size()>0)
+  if(vehicle->f_nodes->size()>0)
     dlg.selectFile(vehicle->fileTitle()+".nodes");
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
 

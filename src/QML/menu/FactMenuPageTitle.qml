@@ -20,7 +20,7 @@ Item {
         font.family: font_narrow
         color: "white"
         visible: text!=""
-        text: fact.title
+        text: pageTitle
     }
     FastBlur {
         anchors.fill: titleText
@@ -40,7 +40,7 @@ Item {
         height: parent.height*0.8
         width: height
         onClicked: back()
-        effects: root.effects
+        effects: factMenu.effects
     }
     ProgressBar {
         anchors.right: parent.right

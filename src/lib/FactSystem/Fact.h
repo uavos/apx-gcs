@@ -110,8 +110,10 @@ protected:
 
 public slots:
   virtual void trigger(void); //execute fact event (onClick)
+
 signals:
   void triggered();
+  void actionTriggered();
 
 public:
   //---------------------------------------

@@ -38,16 +38,14 @@ AppShortcut::AppShortcut(AppShortcuts *parent, const AppShortcut *sc,bool bUsr)
   _cmd=new Fact(this,"Command",tr("Java script"),"",FactItem,TextData);
 
   if(_new){
-    _save=new Fact(this,"save",tr("Save"),"",FactItem,ActionData);
-    _save->setValue(ButtonAction);
-    connect(_save,&Fact::triggered,parent,&AppShortcuts::addTriggered);
+    _save=new FactAction(this,"save",tr("Save"),"",FactAction::ApplyAction);
+    connect(_save,&FactAction::triggered,parent,&AppShortcuts::addTriggered);
     defaults();
   }else{
     setSection(bUsr?parent->f_usr->section():parent->f_sys->section());
     copyValuesFrom(sc);
-    _remove=new Fact(this,"remove",tr("Remove"),"",FactItem,ActionData);
-    connect(_remove,&Fact::triggered,parent,&AppShortcuts::removeTriggered);
-    _remove->setValue(RemoveAction);
+    _remove=new FactAction(this,"remove",tr("Remove"),"",FactAction::RemoveAction);
+    connect(_remove,&FactAction::triggered,parent,&AppShortcuts::removeTriggered);
     connect(parent,&Fact::sizeChanged,this,&AppShortcut::updateStats);
     connect(parent->f_blocked,&Fact::valueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);
     connect(this,&Fact::childValueChanged,this,&AppShortcut::updateShortcut,Qt::QueuedConnection);

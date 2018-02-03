@@ -78,11 +78,11 @@ MapQuickItem {  //to be used inside MapComponent only
 
     function select()
     {
-        if(fact) mission.select(missionObject)
+        if(fact) missionMapItems.select(missionObject)
     }
     function deselect()
     {
-        if(fact) mission.deselect()
+        if(fact) missionMapItems.deselect()
     }
     function showMenu()
     {
@@ -97,7 +97,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
     //internal logic
-    property alias hover: mouseArea.containsMouse
+    property bool hover: mouseArea.containsMouse
     property bool dragging: mouseArea.drag.active
     property bool selected: map.selectedObject===this
 

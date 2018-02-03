@@ -20,69 +20,34 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkPort_H
-#define DatalinkPort_H
+#ifndef VehicleSelect_H
+#define VehicleSelect_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-class DatalinkPorts;
-class DatalinkHost;
-class Serial;
+#include <FactSystem.h>
+class Vehicles;
+class Vehicle;
 //=============================================================================
-class DatalinkPort: public Fact
+class VehicleSelect: public Fact
 {
   Q_OBJECT
+
 public:
-  explicit DatalinkPort(DatalinkPorts *parent,const DatalinkPort *port=NULL);
-
-  DatalinkPorts *f_ports;
-
-  Fact *f_enabled;
-  Fact *f_type;
-  Fact *f_dev;
-  Fact *f_baud;
-  Fact *f_host;
-
-  Fact *f_local;
-
-  FactAction *f_save;
-  FactAction *f_remove;
-
-  DatalinkHost *if_host;
-  Serial *if_serial;
-
-  bool active() const;
+  explicit VehicleSelect(Fact *parent, const QString &name, const QString &title, const QString &descr);
 
 private:
-  bool _new;
+  Vehicles *vehicles;
+  QHash<Vehicle*,Fact*> map;
 
 private slots:
-  void updateStats();
-  void enable();
-  void disable();
-  void enabledChanged();
-  void syncDevEnum();
-  void syncHostEnum();
-public slots:
-  void defaults();
+  void _vehicleRegistered(Vehicle *vehicle);
+  void _vehicleRemoved(Vehicle *vehicle);
+  void _vehicleSelected(Vehicle *vehicle);
 
-  //iface connect
-private slots:
-  void ifacePacketReceived(const QByteArray &ba);
-  void disconnectAll();
-  void serialConnected(QString pname);
-  void serialDisconnected();
-  void hostStatusChanged();
+  void _factTriggered();
 
-public slots:
-  void connectPort();
-
-  //data
 signals:
-  void packetReceived(const QByteArray &ba);
-public slots:
-  void sendPacket(const QByteArray &ba);
-
+  void vehicleSelected(Vehicle *vehicle);
 };
 //=============================================================================
 #endif

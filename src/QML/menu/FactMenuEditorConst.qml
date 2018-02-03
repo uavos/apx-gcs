@@ -14,7 +14,7 @@ RowLayout {
         font.pixelSize: editorFontSize
     }
     Text {
-        visible: fact.units
+        visible: fact.units?true:false
         text: visible?"["+fact.units+"]":""
         color: Style.cTextDisabled
         font.family: font_condenced

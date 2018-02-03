@@ -24,15 +24,13 @@
 #include "Vehicle.h"
 #include "MissionListModel.h"
 #include "MissionTools.h"
+#include "MissionStorage.h"
 #include "MissionGroup.h"
 #include "MissionField.h"
 #include "Waypoint.h"
 #include "Runway.h"
 #include "Taxiway.h"
 #include "Poi.h"
-
-#include <AppDirs.h>
-#include <QFileDialog>
 
 //pack
 #include <Mandala.h>
@@ -44,45 +42,28 @@ VehicleMission::VehicleMission(Vehicle *parent)
     vehicle(parent),
     m_startHeading(0),
     m_startLength(0),
-    m_empty(true),
     m_missionSize(0)
 {
   setIconSource("ship-wheel");
 
   //actions
-  f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
-  f_request->setValue(ButtonAction);
-  f_request->setIconSource("download");
-  connect(f_request,&Fact::triggered,vehicle,&Vehicle::requestMission);
+  f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),FactAction::NormalAction,"download");
+  connect(f_request,&FactAction::triggered,vehicle,&Vehicle::requestMission);
 
-  f_upload=new Fact(this,"upload",tr("Upload"),tr("Upload to vehicle"),FactItem,ActionData);
+  f_upload=new FactAction(this,"upload",tr("Upload"),tr("Upload to vehicle"),FactAction::ApplyAction,"upload");
   f_upload->setEnabled(false);
-  f_upload->setValue(ApplyAction);
-  f_upload->setIconSource("upload");
-  connect(f_upload,&Fact::triggered,this,&VehicleMission::uploadMission);
-  connect(f_upload,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
+  connect(f_upload,&FactAction::triggered,this,&VehicleMission::uploadMission);
+  connect(f_upload,&FactAction::enabledChanged,this,&VehicleMission::actionsUpdated);
 
-  f_clear=new Fact(this,"clear",tr("Clear"),tr("Clear mission"),FactItem,ActionData);
+  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Clear mission"),FactAction::RemoveAction);
   f_clear->setEnabled(false);
-  f_clear->setValue(RemoveAction);
-  connect(f_clear,&Fact::triggered,this,&VehicleMission::clearMission);
-  connect(f_clear,&Fact::enabledChanged,this,&VehicleMission::actionsUpdated);
-
-  f_export=new Fact(this,"export",tr("Save"),tr("Export mission"),FactItem,ActionData);
-  f_export->setValue(ButtonAction);
-  f_export->setIconSource("content-save");
-  connect(f_export,&Fact::triggered,this,&VehicleMission::save);
-
-  f_import=new Fact(this,"import",tr("Load"),tr("Import mission"),FactItem,ActionData);
-  f_import->setValue(ButtonAction);
-  f_import->setIconSource("folder-open");
-  connect(f_import,&Fact::triggered,this,&VehicleMission::load);
-
+  connect(f_clear,&FactAction::triggered,this,&VehicleMission::clearMission);
+  connect(f_clear,&FactAction::enabledChanged,this,&VehicleMission::actionsUpdated);
 
   f_missionTitle=new MissionField(this,"mtitle",tr("Title"),tr("Mission title"),TextData);
 
 
-  connect(this,&VehicleMission::emptyChanged,this,&VehicleMission::updateActions);
+  connect(this,&VehicleMission::missionSizeChanged,this,&VehicleMission::updateActions);
 
 
   //groups of items
@@ -92,11 +73,13 @@ VehicleMission::VehicleMission(Vehicle *parent)
   f_pois=new Pois(this,"points",tr("Points"),tr("Points of Interest"));
 
   foreach (MissionGroup *group, groups) {
-    connect(group,&Fact::sizeChanged,this,&VehicleMission::updateSize,Qt::QueuedConnection);
+    connect(group,&Fact::sizeChanged,this,&VehicleMission::updateSize);
   }
 
   //tools
   f_tools=new MissionTools(this);
+  f_storage=new MissionStorage(this,f_tools);
+  f_tools->model()->setFlat(true);
 
   //internal
   m_listModel=new MissionListModel(this);
@@ -112,7 +95,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
   if(!vehicle->isLocal()){
     //f_request->trigger();
-    QTimer::singleShot(2000,f_request,&Fact::trigger);
+    QTimer::singleShot(2000,f_request,&FactAction::trigger);
   }
 
   qmlRegisterUncreatableType<VehicleMission>  ("GCS.Mission", 1, 0, "Mission", "Reference only");
@@ -126,7 +109,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
 //=============================================================================
 void VehicleMission::updateActions()
 {
-  bool bEmpty=empty();
+  bool bEmpty=missionSize()<=0;
   f_upload->setEnabled(!bEmpty);
   f_clear->setEnabled(!bEmpty);
   /*bool busy=false;//model->requestManager.busy();
@@ -144,7 +127,6 @@ void VehicleMission::updateSize()
     cnt+=group->size();
   }
   setMissionSize(cnt);
-  setEmpty(cnt<=0);
   setStatus(cnt>0?QString::number(cnt):"");
 }
 //=============================================================================
@@ -347,13 +329,13 @@ bool VehicleMission::unpackMission(const QByteArray &ba)
   }
   if(data_cnt){
     qWarning()<<"error in mission";
-    setEmpty(true);
+    clearMission();
   }else if(ecnt<=0){
-    setEmpty(true);
+    clearMission();
     qDebug()<<"Mission empty";
   }else{
-    setEmpty(false);
     backup();
+    emit missionReceived();
     qDebug()<<"Mission received"<<ecnt;
   }
   setModified(false,true);
@@ -375,38 +357,6 @@ void VehicleMission::restore()
     group->restore();
   }
   setModified(false,true);
-}
-//=============================================================================
-void VehicleMission::save() const
-{
-  if(!AppDirs::missions().exists()) AppDirs::missions().mkpath(".");
-  QFileDialog dlg(NULL,f_export->descr(),AppDirs::missions().canonicalPath());
-  dlg.setAcceptMode(QFileDialog::AcceptSave);
-  dlg.setOption(QFileDialog::DontConfirmOverwrite,false);
-  QStringList filters;
-  filters << tr("Mission files")+" (*.xml *.mission)"
-          << tr("Any files")+" (*)";
-  dlg.setNameFilters(filters);
-  dlg.setDefaultSuffix("mission");
-  QString fname=f_missionTitle->text().replace(' ','-');
-  if(!fname.isEmpty())fname.append("-");
-  fname.append(vehicle->f_callsign->text());
-  dlg.selectFile(AppDirs::configs().filePath(fname));
-  if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
-
-  fname=dlg.selectedFiles().first();
-  QFile file(fname);
-  if (!file.open(QFile::WriteOnly | QFile::Text)) {
-    qWarning("%s",QString(tr("Cannot write file")+" %1:\n%2.").arg(fname).arg(file.errorString()).toUtf8().data());
-    return;
-  }
-  QTextStream stream(&file);
-  //vehicle->f_nodes->xml->write().save(stream,2);
-  file.close();
-}
-//=============================================================================
-void VehicleMission::load()
-{
 }
 //=============================================================================
 //=============================================================================
@@ -454,16 +404,6 @@ void VehicleMission::setStartLength(const double &v)
 MissionListModel * VehicleMission::listModel() const
 {
   return m_listModel;
-}
-bool VehicleMission::empty() const
-{
-  return m_empty;
-}
-void VehicleMission::setEmpty(const bool v)
-{
-  if(m_empty==v)return;
-  m_empty=v;
-  emit emptyChanged();
 }
 int VehicleMission::missionSize() const
 {

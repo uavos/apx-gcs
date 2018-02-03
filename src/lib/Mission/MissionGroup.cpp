@@ -145,9 +145,15 @@ void MissionGroup::add()
   addObject(p);
 }
 //=============================================================================
-void MissionGroup::objectAdded(Fact *fact)
+MissionItem * MissionGroup::addObject(const QGeoCoordinate &p)
 {
-  QTimer::singleShot(200,fact,&Fact::trigger);
+  MissionItem *f=createObject();
+  f->backup();
+  f->f_latitude->setValue(p.latitude());
+  f->f_longitude->setValue(p.longitude());
+  f->setModified(true,true);
+  QTimer::singleShot(200,f,&Fact::trigger);
+  return f;
 }
 //=============================================================================
 //=============================================================================

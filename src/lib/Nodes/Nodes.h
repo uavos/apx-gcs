@@ -40,12 +40,10 @@ class Nodes: public Fact
 public:
   explicit Nodes(Vehicle *parent);
 
-  Fact *f_request;
-  Fact *f_reload;
-  Fact *f_upload;
-  Fact *f_stop;
-
-  Fact *f_list;
+  FactAction *f_upload;
+  FactAction *f_request;
+  FactAction *f_stop;
+  FactAction *f_reload;
 
   Vehicle *vehicle;
 

@@ -40,26 +40,20 @@ Nodes::Nodes(Vehicle *parent)
 
   xml=new NodesXml(this);
 
-  f_request=new Fact(this,"request",tr("Request"),tr("Download from vehicle"),FactItem,ActionData);
-  f_request->setIconSource("download");
-  connect(f_request,&Fact::triggered,this,&Nodes::request);
+  f_upload=new FactAction(this,"upload",tr("Upload"),tr("Upload modified values"),FactAction::ApplyAction,"upload");
+  connect(f_upload,&FactAction::triggered,this,&Nodes::upload);
+  connect(f_upload,&FactAction::enabledChanged,this,&Nodes::actionsUpdated);
 
-  f_reload=new Fact(this,"reload",tr("Reload"),tr("Clear and download all"),FactItem,ActionData);
-  f_reload->setIconSource("reload");
-  connect(f_reload,&Fact::triggered,this,&Nodes::reload);
-  connect(f_reload,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
+  f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),FactAction::NormalAction,"download");
+  connect(f_request,&FactAction::triggered,this,&Nodes::request);
 
-  f_upload=new Fact(this,"upload",tr("Upload"),tr("Upload modified values"),FactItem,ActionData);
-  f_upload->setIconSource("upload");
-  connect(f_upload,&Fact::triggered,this,&Nodes::upload);
-  connect(f_upload,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
+  f_stop=new FactAction(this,"stop",tr("Stop"),tr("Stop data requests"),FactAction::NormalAction,"close-circle");
+  connect(f_stop,&FactAction::triggered,this,&Nodes::stop);
+  connect(f_stop,&FactAction::enabledChanged,this,&Nodes::actionsUpdated);
 
-  f_stop=new Fact(this,"stop",tr("Stop"),tr("Stop data requests"),FactItem,ActionData);
-  f_stop->setIconSource("close-circle");
-  connect(f_stop,&Fact::triggered,this,&Nodes::stop);
-  connect(f_stop,&Fact::enabledChanged,this,&Nodes::actionsUpdated);
-
-  f_list=new Fact(this,"list",tr("Nodes list"),"",SectionItem,NoData);
+  f_reload=new FactAction(this,"reload",tr("Reload"),tr("Clear and download all"),FactAction::NormalAction,"reload");
+  connect(f_reload,&FactAction::triggered,this,&Nodes::reload);
+  connect(f_reload,&FactAction::enabledChanged,this,&Nodes::actionsUpdated);
 
   connect(this,&Fact::modifiedChanged,this,&Nodes::updateActions);
 
@@ -147,9 +141,8 @@ void Nodes::clear()
   if(snMap.isEmpty())return;
   snMap.clear();
   nGroups.clear();
-  f_list->removeAll();
+  removeAll();
   setModified(false);
-  f_list->setModified(false);
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================

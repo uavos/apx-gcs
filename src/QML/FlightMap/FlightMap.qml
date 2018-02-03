@@ -66,6 +66,15 @@ Map {
         var c=mapMenuC.createObject(map,{"pos": Qt.point(pressX,pressY)})
         c.open()
     }
+    function showRegion(region)
+    {
+        map.tilt=0
+        map.bearing=0
+        map.visibleRegion=region
+        //console.log(region)
+    }
+
+
 
     Component {
         id: factMenuC
@@ -76,6 +85,7 @@ Map {
             y: missionList.y
             //property var fact: app
             //menu: FactMenu { fact: factMenu.fact }
+            closeOnActionTrigger: true
             onClosed: destroy()
         }
     }
@@ -89,7 +99,7 @@ Map {
             x: pos.x-width/2 //(parent.width/2 - width) / 2
             y: pos.y-100 //missionList.y
             fact: app.vehicles.current.mission.tools.map
-            closeOnTrigger: true
+            closeOnActionTrigger: true
             showTitle: false
             onClosed: destroy()
         }
@@ -190,6 +200,8 @@ Map {
         if(follow)return;
         centerSet.flick(coord)
     }
+
+
     gesture.onPanStarted:       followStop()
     gesture.onFlickStarted:     followStop()
 

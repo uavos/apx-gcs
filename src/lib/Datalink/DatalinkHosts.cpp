@@ -42,14 +42,12 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   f_add->setIconSource("plus-network");
   f_host=new AppSettingFact(settings,f_add,"host",tr("Host address"),tr("IP address of remote server"),"",TextData,QString());
   //f_host=new Fact(f_add,"host",tr("Host address"),tr("IP address of remote server"),FactItem,TextData);
-  f_connect=new Fact(f_add,"connect",tr("Connect"),"",FactItem,ActionData);
-  f_connect->setValue(ApplyAction);
-  connect(f_connect,&Fact::triggered,this,&DatalinkHosts::connectTriggered);
+  f_connect=new FactAction(f_add,"connect",tr("Connect"),"",FactAction::ApplyAction);
+  connect(f_connect,&FactAction::triggered,this,&DatalinkHosts::connectTriggered);
 
   AppSettingFact::loadSettings(this);
 
-  f_alloff=new Fact(this,"alloff",tr("Disconnect all"),tr("Close all remote server connections"),FactItem,NoData);
-  f_alloff->setIconSource("lan-disconnect");
+  f_alloff=new FactAction(this,"alloff",tr("Disconnect all"),tr("Close all remote server connections"),FactAction::NormalAction,"lan-disconnect");
 
   f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
   //bind(f_list);
@@ -82,7 +80,7 @@ DatalinkHost * DatalinkHosts::registerHost(QHostAddress addr, QString sname, boo
     if(bPort){ //found host which is forced to be port
       disconnect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);
       disconnect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
-      disconnect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
+      disconnect(f_alloff,&FactAction::triggered,host,&DatalinkHost::disconnectAll);
     }
   }else{
     host=new DatalinkHost(this,sname,addr);
@@ -91,7 +89,7 @@ DatalinkHost * DatalinkHosts::registerHost(QHostAddress addr, QString sname, boo
       announceTimer.setInterval(3000);
       connect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);
       connect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
-      connect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
+      connect(f_alloff,&FactAction::triggered,host,&DatalinkHost::disconnectAll);
     }
   }
   if(bPort){
@@ -123,7 +121,7 @@ void DatalinkHosts::connectLocalhost()
     f_localhost=host;
     connect(host,&DatalinkSocket::packetReceived,f_datalink,&Datalink::packetReceivedFromHost);
     connect(f_datalink,&Datalink::sendPacketToHosts,host,&DatalinkSocket::sendPacket);
-    connect(f_alloff,&Fact::triggered,host,&DatalinkHost::disconnectAll);
+    connect(f_alloff,&FactAction::triggered,host,&DatalinkHost::disconnectAll);
   }
   if(!host->connectionActive())host->connectToServer();
 }

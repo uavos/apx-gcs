@@ -96,6 +96,12 @@ QJSValue FactSystemJS::jsSync(Fact *factItem, QJSValue parent) //recursive
   parent.setProperty(factItem->name(),js_factItem);
   foreach(FactTree *i,factItem->childItems())
     jsSync(static_cast<Fact*>(i),js_factItem);
+  if(!factItem->actions.isEmpty()){
+    QJSValue js_actions=js->newObject();
+    foreach(FactAction *i,factItem->actions)
+      js_actions.setProperty(i->name(),js->newQObject(i));
+    js_factItem.setProperty("actions",js_actions);
+  }
   return js_factItem;
 }
 //=============================================================================

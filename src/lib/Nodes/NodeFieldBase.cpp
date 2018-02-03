@@ -21,6 +21,7 @@
  *
  */
 #include "NodeFieldBase.h"
+#include "Nodes.h"
 //=============================================================================
 NodeFieldBase::NodeFieldBase(Fact *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType)
   : Fact(parent,name,title,descr,treeItemType,dataType),
@@ -29,6 +30,22 @@ NodeFieldBase::NodeFieldBase(Fact *parent, const QString &name, const QString &t
 {
   connect(this,&NodeFieldBase::dataValidChanged,this,[=](){setEnabled(dataValid());});
   setEnabled(dataValid());
+
+  connect(this,&Fact::parentItemChanged,this,&NodeFieldBase::addActions);
+  addActions();
+}
+//=============================================================================
+void NodeFieldBase::addActions()
+{
+  if(!actions.isEmpty())return;
+  Nodes *nodes=parent_cast<Nodes*>();
+  if(!nodes)return;
+  new FactAction(this,nodes->f_upload);
+  new FactAction(this,nodes->f_stop);
+  foreach (FactAction *a, actions) {
+    connect(a,&FactAction::enabledChanged,a,[=](){a->setVisible(a->enabled());});
+    a->setVisible(a->enabled());
+  }
 }
 //=============================================================================
 QVariant NodeFieldBase::data(int col, int role) const

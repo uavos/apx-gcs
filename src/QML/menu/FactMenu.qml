@@ -7,7 +7,7 @@ import "../components"
 import "."
 
 StackView {
-    id: root
+    id: factMenu
 
     property var fact
 
@@ -35,10 +35,10 @@ StackView {
 
     signal opened()
 
-    signal factTriggered(var fact)
-    signal actionTriggered(var fact)
+    //signal factTriggered(var fact)
+    signal factActionTriggered()
 
-    signal factPageRemoved()
+    signal factRemoved()
 
     property StackView parentStack
     property bool showBtnBack: depth>1 || parentStack
@@ -47,9 +47,8 @@ StackView {
     function createFactPage(f,opts)
     {
         if(typeof opts==='undefined')opts={}
-        opts.fact=f
+        if(!opts.fact)opts.fact=f
         var c=pageDelegate.createObject(this,opts)
-        f.removed.connect(function(){factPageRemoved(); back()})
         return c
     }
 
@@ -59,25 +58,9 @@ StackView {
         opened()
     }
 
-    /*function openPage(opts)
-    {
-        push(pageDelegate.createObject(this,opts))
-        opened()
-    }
-
-    function pushUrl(url,opts)
-    {
-        push(Qt.resolvedUrl("../"+url),opts?opts:{"parentStack": this})
-    }
-
-    function close()
-    {
-        pop(null);
-        closed();
-    }*/
-
     function back()
     {
+        //console.log("back")
         if(depth>1)pop();
         else if(parentStack)parentStack.pop();
     }
@@ -87,13 +70,6 @@ StackView {
         clear()
         openFact(app)
     }
-
-
-    function isActionFact(f)
-    {
-        return (f.dataType===Fact.ActionData && (!f.isNotFact) && (f.value>=Fact.ButtonAction) )?true:false
-    }
-
 
     Component {
         id: pageDelegate

@@ -13,22 +13,16 @@ import ".."
 
 ColumnLayout {
     spacing: 4
-    implicitWidth: missionListView.width
-    property var mission: app.vehicles.current.mission
-    property bool empty: mission?mission.empty:true
+    //implicitWidth: missionListView.width
+    property Mission mission: app.vehicles.current.mission
+    property bool empty: mission?mission.missionSize<=0:true
 
-    onEmptyChanged: if(!empty)showMissionOnMap()
+    //onEmptyChanged: if(!empty)showMissionOnMap()
 
     function focusOnMap(fact)
     {
         //map.centerOnCoordinate(QtPositioning.coordinate(fact.latitude.value,fact.longitude.value))
         fact.trigger()
-    }
-    function showMissionOnMap()
-    {
-        map.tilt=0
-        map.bearing=0
-        map.visibleRegion=mission.boundingGeoRectangle()
     }
 
     RowLayout {
@@ -47,9 +41,9 @@ ColumnLayout {
             onMenuRequested: map.showFactMenu(mission)
             onClicked: {
                 if(empty){
-                    mission.request.trigger()
+                    mission.actions.request.trigger()
                 }else{
-                    showMissionOnMap()
+                    map.showRegion(mission.boundingGeoRectangle())
                 }
             }
         }

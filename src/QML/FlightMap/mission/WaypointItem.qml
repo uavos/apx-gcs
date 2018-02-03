@@ -20,7 +20,7 @@ MissionObject {
     property real totalDistance: fact.totalDistance
     property int time: fact.time
     property int totalTime: fact.totalTime
-    property string actionsText: fact.actions.status
+    property string actionsText: fact.wpactions.status
     property real course: fact.course
     property bool bFirst: fact.num === 0
     property bool warning: fact.warning
@@ -41,7 +41,7 @@ MissionObject {
     property Item pathItem
     visible: mission.visible && (visibleOnMap || pathVisibleOnMap)
     onUpdateMapViewport: {
-        pathVisibleOnMap=map.visibleRegion.contains(pathItem.path[0])||map.visibleRegion.contains(pathItem.path[pathItem.path.count-1])
+        pathVisibleOnMap=map.visibleRegion.boundingGeoRectangle().intersects(path.boundingGeoRectangle())
     }
 
     contentsTop: [

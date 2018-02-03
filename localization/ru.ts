@@ -141,7 +141,7 @@
         <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -631,7 +631,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Disconnect all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -729,7 +729,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+129"/>
+        <location line="+127"/>
         <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -754,7 +754,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-47"/>
+        <location line="-45"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
@@ -769,7 +769,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+9"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1702,7 +1702,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+105"/>
         <source>Click on map first</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1745,7 +1745,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Set as current</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2136,7 +2136,7 @@
     </message>
     <message>
         <location line="+7"/>
-        <location line="+15"/>
+        <location line="+14"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2305,7 +2305,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2315,7 +2315,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -2325,7 +2325,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2335,7 +2335,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Nodes list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3564,6 +3564,11 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+0"/>
+        <source>Make this vehicle active</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>VehicleMandala</name>
@@ -3596,7 +3601,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Upload</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -3606,7 +3611,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3616,7 +3621,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Save</source>
         <translation type="unfinished">Сохранить</translation>
     </message>
@@ -3626,7 +3631,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Load</source>
         <translation type="unfinished">Загрузить</translation>
     </message>
@@ -3636,7 +3641,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3739,7 +3744,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Messages</source>
         <translation type="unfinished"></translation>
     </message>
