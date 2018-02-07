@@ -48,25 +48,25 @@ MapItemGroup {
 
     MapItemView {
         id: waypoints
-        model: mission.waypoints.model
-        delegate: WaypointItem { fact: modelData }
+        model: visible?mission.waypoints.model:0
+        delegate: WaypointItem { }
     }
 
     MapItemView {
         id: runways
-        model: mission.runways.model
+        model: visible?mission.runways.model:0
         delegate: RunwayItem { }
     }
 
     MapItemView {
         id: taxiways
-        model: mission.taxiways.model
-        delegate: TaxiwayItem { fact: modelData }
+        model: visible?mission.taxiways.model:0
+        delegate: TaxiwayItem { }
     }
 
     MapItemView {
         id: points
-        model: mission.points.model
+        model: visible?mission.points.model:0
         delegate: PointItem { }
     }
 

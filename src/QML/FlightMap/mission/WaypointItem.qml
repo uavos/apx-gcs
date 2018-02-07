@@ -20,7 +20,7 @@ MissionObject {
     property real totalDistance: fact.totalDistance
     property int time: fact.time
     property int totalTime: fact.totalTime
-    property string actionsText: fact.wpactions.status
+    property string actionsText: fact.actions.status
     property real course: fact.course
     property bool bFirst: fact.num === 0
     property bool warning: fact.warning

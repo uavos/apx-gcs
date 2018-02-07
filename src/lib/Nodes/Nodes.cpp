@@ -34,7 +34,7 @@ Nodes::Nodes(Vehicle *parent)
     vehicle(parent),
     m_nodesCount(0)
 {
-  setIconSource("puzzle");
+  setIcon("puzzle");
 
   model()->setFlat(true);
 
@@ -133,6 +133,9 @@ void Nodes::updateActions()
 //=============================================================================
 void Nodes::request()
 {
+  if(vehicle->isReplay()){
+    return;
+  }
   vehicle->nmtManager->request(apc_search,QByteArray(),QByteArray(),0,true);
 }
 //=============================================================================

@@ -61,10 +61,10 @@ Rectangle {
         anchors.topMargin: 1
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        text: app.vehicles.current.callsign.text
+        text: app.vehicles.current.callsign
         font.pixelSize: parent.height   //*0.99
         font.family: font_narrow
-        color: app.vehicles.current.vclass.value===Vehicle.LOCAL?"yellow":"#5f5"
+        color: app.vehicles.current.vehicleClass===Vehicle.LOCAL?"yellow":"#5f5"
         visible: testUI.value || app.datalink.valid
         MouseArea {
             anchors.fill: parent
@@ -126,7 +126,7 @@ Rectangle {
 
         //comm stats
         CommNum {
-            property string cRX: app.datalink.online?(app.vehicles.current.stream.value===Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
+            property string cRX: app.datalink.online?(app.vehicles.current.streamType===Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
             property string cTX: app.datalink.readonly.value?"red":"cyan"
             property string cER: m.errcnt>1?"yellow":"gray"
             height: parent.height
@@ -140,7 +140,7 @@ Rectangle {
             font.pixelSize: parent.height
             font.family: font_narrow
             verticalAlignment: Text.AlignVCenter
-            color: app.datalink.online?(app.vehicles.current.stream.value===Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
+            color: app.datalink.online?(app.vehicles.current.streamType===Vehicle.TELEMETRY?"#8f8":"#aaf"):"red"
             ToolTipArea { text: qsTr("Received packets") }
         }
         Text {

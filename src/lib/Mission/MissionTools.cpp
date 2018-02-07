@@ -31,50 +31,54 @@ MissionTools::MissionTools(VehicleMission *parent)
   : Fact(parent,"tools",tr("Tools"),tr("Mission edit tools"),GroupItem,NoData),
     mission(parent)
 {
-  setIconSource("wrench");
+  setIcon("wrench");
 
   f_map=new Fact(this,"map",tr("Map"),tr("Mission map tools"),GroupItem,NoData);
-  f_map->setIconSource("map");
+  f_map->setIcon("map");
   Fact *f;
 
   QString sect(tr("Add object"));
   f=new Fact(f_map,"waypoint",tr("Waypoint"),"",FactItem,NoData);
-  f->setIconSource("map-marker");
+  f->setIcon("map-marker");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_waypoints,&MissionGroup::add);
   f=new Fact(f_map,"point",tr("Point of interest"),"",FactItem,NoData);
-  f->setIconSource("map-marker-radius");
+  f->setIcon("map-marker-radius");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_pois,&MissionGroup::add);
   f=new Fact(f_map,"runway",tr("Runway"),"",FactItem,NoData);
-  f->setIconSource("road");
+  f->setIcon("road");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_runways,&MissionGroup::add);
   f=new Fact(f_map,"taxiway",tr("Taxiway"),"",FactItem,NoData);
-  f->setIconSource("vector-polyline");
+  f->setIcon("vector-polyline");
   f->setSection(sect);
   connect(f,&Fact::triggered,mission->f_taxiways,&MissionGroup::add);
 
   sect=tr("Location");
   f=new Fact(f_map,"home",tr("Set home"),"",FactItem,NoData);
-  f->setIconSource("home-map-marker");
+  f->setIcon("home-map-marker");
   f->setSection(sect);
   f=new Fact(f_map,"fly",tr("Fly here"),"",FactItem,NoData);
-  f->setIconSource("airplane");
+  f->setIcon("airplane");
   f->setSection(sect);
   f=new Fact(f_map,"look",tr("Look here"),"",FactItem,NoData);
-  f->setIconSource("eye");
+  f->setIcon("eye");
   f->setSection(sect);
   f=new Fact(f_map,"fix",tr("Send position fix"),"",FactItem,NoData);
-  f->setIconSource("crosshairs-gps");
+  f->setIcon("crosshairs-gps");
   f->setSection(sect);
+
+  for (int i=0;i<f_map->size();++i) {
+    connect(f_map->childFact(i),&Fact::triggered,f_map,&Fact::actionTriggered);
+  }
 
 
   f=new Fact(this,"altadjust",tr("Altitude adjust"),tr("Adjust all waypoints altitude"),GroupItem,NoData);
-  f->setIconSource("altimeter");
+  f->setIcon("altimeter");
   f_altadjust=new Fact(f,"value",tr("Value to add"),"",FactItem,IntData);
   f_altadjust->setUnits("m");
-  f_altadjust->setIconSource(f->iconSource());
+  f_altadjust->setIcon(f->icon());
   connect(f_altadjust,&Fact::valueChanged,this,[=](){
     f_altadjust->setModified(false);
     f_altadjustApply->setEnabled(f_altadjust->value().toInt()!=0);
@@ -84,11 +88,11 @@ MissionTools::MissionTools(VehicleMission *parent)
   connect(f_altadjustApply,&FactAction::triggered,this,&MissionTools::altadjustTriggered);
 
   f=new Fact(this,"altset",tr("Altitude set"),tr("Set all waypoints altitude"),GroupItem,NoData);
-  f->setIconSource("format-align-middle");
+  f->setIcon("format-align-middle");
   connect(f,&Fact::triggered,this,&MissionTools::updateMaxAltitude);
   f_altset=new Fact(f,"value",tr("Altitude value"),"",FactItem,IntData);
   f_altset->setUnits("m");
-  f_altset->setIconSource(f->iconSource());
+  f_altset->setIcon(f->icon());
   f_altset->setMin(0);
   connect(f_altset,&Fact::valueChanged,this,[=](){
     f_altset->setModified(false);

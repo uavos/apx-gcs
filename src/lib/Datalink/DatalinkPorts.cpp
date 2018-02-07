@@ -29,17 +29,17 @@ DatalinkPorts::DatalinkPorts(Datalink *parent)
   : Fact(parent,"ports",tr("Local ports"),tr("Modems and persistent remotes"),GroupItem,ConstData),
     f_datalink(parent)
 {
-  setIconSource("usb");
+  setIcon("usb");
   model()->setFlat(true);
 
   f_add=new DatalinkPort(this);
-  f_add->setIconSource("plus-circle");
+  f_add->setIcon("plus-circle");
   connect(f_add,&Fact::triggered,f_add,&DatalinkPort::defaults);
 
   f_allon=new Fact(this,"allon",tr("Enable all"),tr("Turn on all communication ports"),FactItem,NoData);
-  f_allon->setIconSource("power-plug");
+  f_allon->setIcon("power-plug");
   f_alloff=new Fact(this,"alloff",tr("Disable all"),tr("Turn off all communication ports"),FactItem,NoData);
-  f_alloff->setIconSource("power-plug-off");
+  f_alloff->setIcon("power-plug-off");
 
   f_list=new Fact(this,"list",tr("Ports"),tr("Configured ports"),SectionItem,ConstData);
   bind(f_list);

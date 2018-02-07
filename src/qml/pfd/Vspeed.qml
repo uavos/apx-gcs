@@ -112,7 +112,7 @@ ControlArea {
         anchors.horizontalCenterOffset: -vsi_scale.width*0.1
         anchors.top: vsi_scale.bottom
         anchors.topMargin: -12
-        font.pixelSize: parent.height*0.1
+        font.pixelSize: vsi_scale.height*0.1 //Math.min(parent.width*0.5,parent.height*0.1)
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         font.family: font_narrow

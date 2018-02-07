@@ -100,7 +100,7 @@ QJSValue FactSystemJS::jsSync(Fact *factItem, QJSValue parent) //recursive
     QJSValue js_actions=js->newObject();
     foreach(FactAction *i,factItem->actions)
       js_actions.setProperty(i->name(),js->newQObject(i));
-    js_factItem.setProperty("actions",js_actions);
+    js_factItem.setProperty("action",js_actions);
   }
   return js_factItem;
 }

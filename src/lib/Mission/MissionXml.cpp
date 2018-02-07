@@ -32,20 +32,88 @@ QMap<QString,QString> MissionXml::xmlMap;
 //=============================================================================
 MissionXml::MissionXml(VehicleMission *parent)
   : QObject(parent),
-  mission(parent)
+  mission(parent),
+  format(1)
 {
   if(xmlMap.isEmpty()){
     xmlMap["order"]     ="";
     xmlMap["type"]      ="turn";
     xmlMap["hmsl"]      ="HMSL";
-    xmlMap["wpactions"] ="actions";
     xmlMap["poi"]       ="POI";
     xmlMap["radius"]    ="turnR";
     xmlMap["timeout"]   ="timeout";
   }
 }
 //=============================================================================
-bool MissionXml::read(QDomNode dom)
+//=============================================================================
+QDomDocument MissionXml::write() const
+{
+  QDomDocument doc;
+  doc.appendChild(doc.createProcessingInstruction("xml","version=\"1.0\" encoding=\"UTF-8\""));
+  write(doc);
+  return doc;
+}
+//=============================================================================
+void MissionXml::write(QDomNode dom) const
+{
+  QDomDocument doc=dom.ownerDocument();
+  dom=dom.appendChild(doc.createElement("mission"));
+  dom.toElement().setAttribute("fmt",QString::number(format));
+  dom.toElement().setAttribute("href","http://www.uavos.com/");
+  dom.toElement().setAttribute("title",mission->f_missionTitle->text());
+  dom.toElement().setAttribute("version",FactSystem::version());
+  dom.appendChild(doc.createElement("hash")).appendChild(doc.createTextNode(QString(mission->hash().toHex().toUpper())));
+  dom.appendChild(doc.createElement("date")).appendChild(doc.createTextNode(QDateTime::currentDateTimeUtc().toString()));
+  //bounds
+  QDomNode e=dom.appendChild(doc.createElement("bounds"));
+  QGeoRectangle rect=mission->boundingGeoRectangle();
+  QDomNode e2=e.appendChild(doc.createElement("topLeft"));
+  e2.appendChild(doc.createElement("latitude")).appendChild(doc.createTextNode(QString("%1").arg(rect.topLeft().latitude(),0,'f')));
+  e2.appendChild(doc.createElement("longitude")).appendChild(doc.createTextNode(QString("%1").arg(rect.topLeft().longitude(),0,'f')));
+  e2=e.appendChild(doc.createElement("bottomRight"));
+  e2.appendChild(doc.createElement("latitude")).appendChild(doc.createTextNode(QString("%1").arg(rect.bottomRight().latitude(),0,'f')));
+  e2.appendChild(doc.createElement("longitude")).appendChild(doc.createTextNode(QString("%1").arg(rect.bottomRight().longitude(),0,'f')));
+  //objects
+  write(dom,mission->f_runways,"runways","runway");
+  write(dom,mission->f_waypoints,"waypoints","waypoint");
+  write(dom,mission->f_taxiways,"taxiways","taxiway");
+  write(dom,mission->f_pois,"points","point");
+}
+//=============================================================================
+void MissionXml::write(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName) const
+{
+  if(group->size()<=0)return;
+  QDomDocument doc=dom.ownerDocument();
+  dom=dom.appendChild(doc.createElement(sectionName));
+  dom.toElement().setAttribute("cnt",QString::number(group->size()));
+  for(int i=0;i<group->size();++i){
+    QDomNode e=dom.appendChild(doc.createElement(elementName));
+    e.toElement().setAttribute("id",QString::number(i));
+    write(e,group->childFact(i));
+  }
+}
+//=============================================================================
+void MissionXml::write(QDomNode dom, Fact *fact) const
+{
+  QDomDocument doc=dom.ownerDocument();
+  if(fact->size()<=0){
+    QString s,su=fact->units();
+    if(su=="lat"||su=="lon"||su=="time")s=fact->value().toString();
+    else s=fact->text();
+    dom.appendChild(doc.createTextNode(s));
+    return;
+  }
+  //recursively save tree
+  for(int i=0;i<fact->size();++i){
+    Fact *f=fact->childFact(i);
+    QString tag=xmlMap.value(f->name(),"null");
+    if(tag.isEmpty())continue; //filtered field (order)
+    write(dom.appendChild(doc.createElement(f->name())),f);
+  }
+}
+//=============================================================================
+//=============================================================================
+bool MissionXml::read(QDomNode dom) const
 {
   int rcnt=0;
   while(dom.nodeName()=="mission"){
@@ -64,14 +132,17 @@ bool MissionXml::read(QDomNode dom)
     rcnt+=ecnt;
     if(rcnt<=0)break;
 
+    //read title
+    mission->f_missionTitle->setValue(dom.toElement().attribute("title"));
+
     //read home pos
-    QGeoCoordinate homeCoordinate;
+    /*QGeoCoordinate homeCoordinate;
     QDomElement e=dom.firstChildElement("home");
     if(!e.isNull()){
       homeCoordinate.setLatitude(e.firstChildElement("lat").text().toDouble());
       homeCoordinate.setLongitude(e.firstChildElement("lon").text().toDouble());
       homeCoordinate.setAltitude(e.firstChildElement("hmsl").text().toDouble());
-    }
+    }*/
 
     return true;
   }
@@ -79,7 +150,7 @@ bool MissionXml::read(QDomNode dom)
   return false;
 }
 //=============================================================================
-int MissionXml::read(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName)
+int MissionXml::read(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName) const
 {
   //qDebug()<<group<<sectionName<<elementName;
   int rcnt=0;
@@ -87,7 +158,7 @@ int MissionXml::read(QDomNode dom, MissionGroup *group, const QString &sectionNa
   if(!e.isNull()){
     int cnt=e.attribute("cnt").toInt();
     for(e=e.firstChildElement(elementName);!e.isNull();e=e.nextSiblingElement(e.tagName())){
-      int idx=e.attribute("idx").toInt();
+      int idx=e.hasAttribute("id")?e.attribute("id").toInt():e.attribute("idx").toInt();
       if(idx!=group->size()) return -1;
       MissionItem *item=group->createObject();
       if(read(e,item)<=0) return -1;
@@ -98,7 +169,7 @@ int MissionXml::read(QDomNode dom, MissionGroup *group, const QString &sectionNa
   return rcnt;
 }
 //=============================================================================
-int MissionXml::read(QDomNode dom, Fact *fact)
+int MissionXml::read(QDomNode dom, Fact *fact) const
 {
   if(fact->size()<=0){
     fact->setValue(dom.toElement().text());

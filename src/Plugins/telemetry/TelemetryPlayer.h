@@ -44,6 +44,7 @@ public:
   void setSpeed(double v);
 
 private:
+  Vehicle *vehicle;
   TelemetryDB *_db;
   QSqlQuery query;
 

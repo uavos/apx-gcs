@@ -29,7 +29,7 @@
 DatalinkClients::DatalinkClients(Datalink *parent)
   : Fact(parent,"clients",tr("Connected clients"),tr("Remote clients connections"),GroupItem,ConstData)
 {
-  setIconSource("lan-connect");
+  setIcon("lan-connect");
   model()->setFlat(true);
 
   f_datalink=parent;

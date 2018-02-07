@@ -33,23 +33,25 @@ MissionStorage::MissionStorage(VehicleMission *mission,Fact *parent)
   : Fact(parent,"storage",tr("Storage"),tr("Missions database and sharing"),mission==parent?GroupItem:SectionItem,NoData),
     mission(mission)
 {
-  setIconSource("database");
+  setIcon("database");
 
   f_export=new Fact(this,"export",tr("Save"),tr("Export mission"),FactItem,NoData);
-  f_export->setIconSource("content-save");
+  f_export->setIcon("content-save");
   connect(f_export,&Fact::triggered,this,&Fact::actionTriggered); //to close popups
   connect(f_export,&Fact::triggered,this,&MissionStorage::saveToFile);
 
   f_import=new Fact(this,"import",tr("Load"),tr("Import mission"),FactItem,NoData);
-  f_import->setIconSource("folder-open");
+  f_import->setIcon("folder-open");
   connect(f_import,&Fact::triggered,this,&Fact::actionTriggered);
   connect(f_import,&Fact::triggered,this,&MissionStorage::loadFromFile);
 
   f_copy=new VehicleSelect(this,"copy",tr("Copy"),tr("Copy to vehicle"));
-  f_copy->setIconSource("content-copy");
+  f_copy->setIcon("content-copy");
 
 
   if(treeItemType()==SectionItem){
+    connect(f_export,&Fact::triggered,parent,&Fact::actionTriggered); //to close popups
+    connect(f_import,&Fact::triggered,parent,&Fact::actionTriggered); //to close popups
     for (int i=0;i<size();++i) {
       childFact(i)->setSection(title());
     }
@@ -77,7 +79,7 @@ void MissionStorage::saveToFile() const
   dlg.setDefaultSuffix("mission");
   QString fname=mission->f_missionTitle->text().replace(' ','-');
   if(!fname.isEmpty())fname.append("-");
-  fname.append(mission->vehicle->f_callsign->text());
+  fname.append(mission->vehicle->callsign());
   dlg.selectFile(AppDirs::missions().filePath(fname));
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
 
@@ -88,7 +90,8 @@ void MissionStorage::saveToFile() const
     return;
   }
   QTextStream stream(&file);
-  //vehicle->f_nodes->xml->write().save(stream,2);
+  MissionXml xml(mission);
+  xml.write().save(stream,2);
   file.close();
 }
 //=============================================================================
@@ -104,7 +107,7 @@ void MissionStorage::loadFromFile()
   dlg.setNameFilters(filters);
   QString fname=mission->f_missionTitle->text().replace(' ','-');
   if(!fname.isEmpty())fname.append("-");
-  fname.append(mission->vehicle->f_callsign->text());
+  fname.append(mission->vehicle->callsign());
   dlg.selectFile(AppDirs::missions().filePath(fname));
   if(!dlg.exec() || dlg.selectedFiles().size()!=1)return;
 

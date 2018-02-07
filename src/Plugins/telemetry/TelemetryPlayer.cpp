@@ -7,7 +7,8 @@
 //==============================================================================
 TelemetryPlayer::TelemetryPlayer(QObject *parent)
   : QObject(parent),
-    _db(new TelemetryDB(this,QLatin1String("GCSTelemetryPlayerSession"),NULL,true)),
+    vehicle(Vehicles::instance()->f_replay),
+    _db(new TelemetryDB(this,QLatin1String("GCSTelemetryPlayerSession"),vehicle,true)),
     query(*_db),
     setTime0(0),
     m_telemetryID(0),
@@ -63,8 +64,8 @@ void TelemetryPlayer::play()
 {
   if(m_playing)return;
   if(!m_telemetryID)return;
-  Vehicles::instance()->f_local->f_select->trigger();
-  Vehicles::instance()->f_local->setReplay(true);
+  vehicle->f_select->trigger();
+  vehicle->setReplay(true);
   if(!_db->readDownlink(m_telemetryID,m_time))return;
   m_playing=true;
   playTime0=m_time;
@@ -119,7 +120,7 @@ void TelemetryPlayer::next()
       quint64 fieldID=query.value(1).toULongLong();
       Fact *f=_db->recFacts.key(fieldID);
       if(f){
-        Vehicles::instance()->f_local->setReplay(true);
+        vehicle->setReplay(true);
         f->setValue(query.value(2));
         if(!query.value(3).isNull()){
           QString s=f->title();

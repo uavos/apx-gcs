@@ -386,15 +386,15 @@ void Fact::setProgress(const int &v)
   m_progress=v;
   emit progressChanged();
 }
-QString Fact::iconSource() const
+QString Fact::icon() const
 {
-  return m_iconSource;
+  return m_icon;
 }
-void Fact::setIconSource(const QString &v)
+void Fact::setIcon(const QString &v)
 {
-  if(m_iconSource==v)return;
-  m_iconSource=v;
-  emit iconSourceChanged();
+  if(m_icon==v)return;
+  m_icon=v;
+  emit iconChanged();
 }
 QString Fact::qmlPage() const
 {
@@ -415,6 +415,16 @@ void Fact::setBusy(const bool &v)
   if(m_busy==v)return;
   m_busy=v;
   emit busyChanged();
+}
+QColor Fact::color() const
+{
+  return m_color;
+}
+void Fact::setColor(const QColor &v)
+{
+  if(m_color==v)return;
+  m_color=v;
+  emit colorChanged();
 }
 //=============================================================================
 //=============================================================================

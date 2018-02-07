@@ -80,7 +80,18 @@ Runway::Runway(MissionGroup *parent)
 
   connect(this,&Runway::endPointChanged,this,&Runway::updateMissionStartPoint);
   connect(this,&Runway::appPointChanged,this,&Runway::updateMissionStartPoint);
+  connect(this,&Fact::numChanged,this,&Runway::updateMissionStartPoint);
 
+  updateMissionStartPoint();
+  connect(this,&Fact::removed,group,[=](){
+    //qDebug()<<"rm";
+    if(group->size()<=0){
+      //qDebug()<<"rst";
+      group->mission->setStartPoint(QGeoCoordinate());
+      group->mission->setStartLength(0);
+      group->mission->setStartHeading(0);
+    }
+  });
 
   FactSystem::instance()->jsSync(this);
 }

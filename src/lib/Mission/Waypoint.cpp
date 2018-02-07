@@ -42,7 +42,7 @@ Waypoint::Waypoint(MissionGroup *parent)
   f_type->setEnumStrings(QMetaEnum::fromType<ManeuverType>());
 
   //actions
-  f_actions=new Fact(this,"wpactions",tr("Actions"),tr("Actions to perform on waypoint"),GroupItem,NoData);
+  f_actions=new Fact(this,"actions",tr("Actions"),tr("Actions to perform on waypoint"),GroupItem,NoData);
   f_speed=new MissionField(f_actions,"speed",tr("Speed"),tr("Fly with this speed to waypoint"),IntData);
   f_speed->setEnumStrings(QStringList()<<"cruise");
   f_speed->setUnits("m/s");
@@ -75,6 +75,7 @@ Waypoint::Waypoint(MissionGroup *parent)
   //default values
   Waypoint *f0=static_cast<Waypoint*>(prevItem());
   if(f0)f_altitude->setValue(f0->f_altitude->value());
+  else f_altitude->setValue(200);
 
 
   connect(f_actions,&Fact::childValueChanged,this,&Waypoint::updateActionsText);
@@ -140,7 +141,11 @@ QGeoPath Waypoint::getPath()
     if(!prev){
       pt=group->mission->startPoint();
       if(!pt.isValid()){
-        pt=QGeoCoordinate(vm->factById(idx_home_pos|(0<<8))->value().toDouble(),vm->factById(idx_home_pos|(1<<8))->value().toDouble());
+        crs=0;
+        //pt=QGeoCoordinate(vm->factById(idx_home_pos|(0<<8))->value().toDouble(),vm->factById(idx_home_pos|(1<<8))->value().toDouble());
+        //p.addCoordinate(dest);
+        p.addCoordinate(dest);
+        //crs=dest.azimuthTo(next->coordinate());
         break;
       }
       p.addCoordinate(pt);
@@ -153,7 +158,7 @@ QGeoPath Waypoint::getPath()
       }
     }else{
       pt=prev->coordinate();
-      if(!prev->geoPath().path().isEmpty()){
+      if(prev->geoPath().path().size()>1){
         crs=prev->course();
         wptLine=f_type->value().toInt()==Line;
       }else wptLine=true;
@@ -199,7 +204,6 @@ QGeoPath Waypoint::getPath()
     //qDebug()<<plist;
     break;
   }
-  //p.addCoordinate(dest);
 
   //update properties
   wptWarning|=distance<turnR*(2.0*M_PI*0.8);

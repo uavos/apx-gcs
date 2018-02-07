@@ -27,7 +27,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
   : Fact(parent,"warnings",tr("Warnings"),tr("Malfunctions and warnings list"),GroupItem,ConstData),
     showNum(0)
 {
-  setIconSource("alert");
+  setIcon("alert");
 
   model()->setFlat(true);
 

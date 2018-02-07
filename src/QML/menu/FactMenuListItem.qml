@@ -85,10 +85,10 @@ Button {
         //fact icon
         Text {
             Layout.rightMargin: 4
-            visible: fact.iconSource
+            visible: fact.icon?true:false
             font.family: "Material Design Icons"
             font.pointSize: iconFontSize
-            text: visible?materialIconChar[fact.iconSource]:""
+            text: visible?materialIconChar[fact.icon]:""
             color: !factButton.enabled ? Style.cTextDisabled : Style.cText
         }
         //fact title & descr

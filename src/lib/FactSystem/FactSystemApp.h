@@ -69,6 +69,8 @@ public:
   Q_INVOKABLE static double angle(double v);
 
   Q_INVOKABLE static QPointF rotate(const QPointF &p, double a);
+
+  Q_INVOKABLE static QPointF seriesBounds(const QVariantList &series);
 };
 //=============================================================================
 #endif

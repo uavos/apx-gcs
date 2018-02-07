@@ -36,12 +36,18 @@ class MissionXml: public QObject
 public:
   explicit MissionXml(VehicleMission *parent);
 
-  bool read(QDomNode dom);
-  int read(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName);
-  int read(QDomNode dom, Fact *fact);
+  QDomDocument write() const;
+  void write(QDomNode dom) const;
+  void write(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName) const;
+  void write(QDomNode dom, Fact *fact) const;
+
+  bool read(QDomNode dom) const;
+  int read(QDomNode dom, MissionGroup *group, const QString &sectionName, const QString &elementName) const;
+  int read(QDomNode dom, Fact *fact) const;
 
 private:
   VehicleMission *mission;
+  int format;
   static QMap<QString,QString> xmlMap;
 };
 //=============================================================================

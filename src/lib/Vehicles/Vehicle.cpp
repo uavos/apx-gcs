@@ -30,36 +30,26 @@
 #include "VehicleMission.h"
 #include "Mandala.h"
 //=============================================================================
-Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal)
-  : Fact(bLocal?parent:parent->f_list,callsign,callsign,"",GroupItem,NoData),
+Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass)
+  : Fact(vclass>=LOCAL?parent:parent->f_list,callsign,callsign,"",GroupItem,NoData),
     uid(uid),
-    m_squawk(squawk)
+    m_streamType(OFFLINE),
+    m_squawk(squawk),
+    m_callsign(callsign),
+    m_vehicleClass(vclass)
 {
   setSection(parent->title());
-  setIconSource(bLocal?"chip":"drone");
+  setIcon(vclass==LOCAL?"chip":vclass==REPLAY?"play-circle":"drone");
 
   //requests manager
-  nmtManager=new VehicleNmtManager(this);
-  connect(nmtManager,&VehicleNmtManager::sendUplink,this,&Vehicle::sendUplink);
-  connect(this,&Vehicle::nmtReceived,nmtManager,&VehicleNmtManager::nmtReceived);
+  if(vclass!=REPLAY){
+    nmtManager=new VehicleNmtManager(this);
+    connect(nmtManager,&VehicleNmtManager::sendUplink,this,&Vehicle::sendUplink);
+    connect(this,&Vehicle::nmtReceived,nmtManager,&VehicleNmtManager::nmtReceived);
+  }
 
-  f_streamType=new Fact(this,"stream",tr("Stream"),tr("Current data stream type"),FactItem,ConstData);
-  f_streamType->setEnumStrings(QMetaEnum::fromType<StreamType>());
-
-  f_squawk=new Fact(this,"squawk",tr("SQUAWK"),tr("Dynamic vehicle ID"),FactItem,ConstData);
-  f_squawk->setValue(QString("%1").arg((ulong)squawk,4,16,QLatin1Char('0')).toUpper());
-  f_squawk->setVisible(vclass!=LOCAL);
-
-  f_callsign=new Fact(this,"callsign",tr("Callsign"),tr("Vehicle name"),FactItem,ConstData);
-  f_callsign->setValue(callsign);
-  f_callsign->setVisible(vclass!=LOCAL);
-  connect(f_callsign,&Fact::valueChanged,this,[=](){ setName(f_callsign->text());setTitle(f_callsign->text()); });
-
-  f_vclass=new Fact(this,"vclass",tr("Class"),tr("Vehicle class"),FactItem,ConstData);
-  f_vclass->setEnumStrings(QMetaEnum::fromType<VehicleClass>());
-  f_vclass->setValue(vclass);
-
-  connect(f_squawk,&Fact::valueChanged,this,[=](){ m_squawk=f_squawk->value().toUInt(); });
+  connect(this,&Vehicle::callsignChanged,this,&Vehicle::updateTitle);
+  connect(this,&Vehicle::streamTypeChanged,this,&Vehicle::updateStatus);
 
   f_select=new FactAction(this,"select",tr("Select"),tr("Make this vehicle active"),FactAction::NormalAction,"select");
   connect(f_select,&FactAction::triggered,this,[=](){ parent->selectVehicle(this); });
@@ -71,63 +61,74 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   f_recorder=new VehicleRecorder(this);
   f_warnings=new VehicleWarnings(this);
 
+  //if(isReplay())f_recorder->setVisible(false);
+
   //datalink
-  connect(this,&Vehicle::sendUplink,this,[=](const QByteArray &ba){
-    parent->vehicleSendUplink(this,ba);
-    f_recorder->recordUplink(ba);
-  });
+  if(!isReplay()){
+    connect(this,&Vehicle::sendUplink,this,[=](const QByteArray &ba){
+      parent->vehicleSendUplink(this,ba);
+      f_recorder->recordUplink(ba);
+    });
+  }
 
 
-  //selection action fact in separate group menu
-  /*f_select=new Fact(parent->f_select,name(),title(),descr(),FactItem,NoData);
-  connect(this,&Vehicle::destroyed,this,[=](){ parent->f_select->removeItem(f_select); });
-  connect(f_select,&Fact::triggered,this,[=](){ parent->selectVehicle(this); });
-
-  connect(this,&Fact::statusChanged,this,[=](){ f_select->setStatus(status()); });
-  connect(this,&Vehicle::activeChanged,this,[=](){ f_select->setActive(active()); });*/
   connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ setActive(v==this); });
 
 
-  connect(f_streamType,&Fact::valueChanged,this,[=](){ f_mandala->setStatus(f_streamType->text()); });
-
-  f_streamType->setValue(0);
-
   onlineTimer.setSingleShot(true);
   onlineTimer.setInterval(7000);
-  connect(&onlineTimer,&QTimer::timeout,this,[=](){ f_streamType->setValue(OFFLINE); });
+  connect(&onlineTimer,&QTimer::timeout,this,[=](){ setStreamType(OFFLINE); });
 
-  connect(f_streamType,&Fact::valueChanged,this,[=](){ setStatus(f_streamType->text()); });
-  f_streamType->setValue(0);
+  updateStatus();
 
   //register JS new vehicles instantly
   connect(this,&Vehicle::nameChanged,this,[=](){FactSystem::instance()->jsSync(this);});
   FactSystem::instance()->jsSync(this);
 }
 //=============================================================================
+void Vehicle::updateTitle()
+{
+  setName(callsign());
+  setTitle(callsign());
+}
+void Vehicle::updateStatus()
+{
+  setStatus(streamTypeText());
+  f_mandala->setStatus(status());
+}
+//=============================================================================
 bool Vehicle::isLocal() const
 {
-  return f_vclass->value().toInt()==LOCAL;
+  return vehicleClass()==LOCAL;
 }
 bool Vehicle::isReplay() const
 {
-  return f_streamType->value().toInt()==REPLAY;
+  return vehicleClass()==REPLAY;
 }
 void Vehicle::setReplay(bool v)
 {
   if(v){
-    f_streamType->setValue(REPLAY);
+    setVisible(true);
+    setStreamType(TELEMETRY);
     onlineTimer.start();
   }else if(isReplay()){
     onlineTimer.stop();
-    f_streamType->setValue(OFFLINE);
+    setStreamType(OFFLINE);
   }
 }
 //=============================================================================
-quint16 Vehicle::squawk(void) const
+QString Vehicle::streamTypeText() const
 {
-  return m_squawk;
+  return QMetaEnum::fromType<StreamType>().valueToKey(streamType());
 }
-//=============================================================================
+QString Vehicle::vehicleClassText() const
+{
+  return QMetaEnum::fromType<VehicleClass>().valueToKey(vehicleClass());
+}
+QString Vehicle::squawkText() const
+{
+  return QString::number(squawk(),16).toUpper();
+}
 //=============================================================================
 void Vehicle::downlinkReceived(const QByteArray &packet)
 {
@@ -135,17 +136,17 @@ void Vehicle::downlinkReceived(const QByteArray &packet)
   if(f_nodes->unpackService(packet)){
     emit nmtReceived(packet);
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
-      f_streamType->setValue(SERVICE);
+      setStreamType(SERVICE);
   }else if(f_mandala->unpackTelemetry(packet)){
     f_recorder->recordDownlink(packet);
-    f_streamType->setValue(TELEMETRY);
+    setStreamType(TELEMETRY);
     telemetryTime.start();
   }else if(f_mandala->unpackData(packet)){
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
-      f_streamType->setValue(DATA);
+      setStreamType(DATA);
   }else if(f_mission->unpackMission(packet)){
     if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
-      f_streamType->setValue(DATA);
+      setStreamType(DATA);
   }else return;
   onlineTimer.start();
 }
@@ -155,7 +156,7 @@ void Vehicle::xpdrReceived(const QByteArray &data)
   if(isReplay()) return;
   if(f_mandala->unpackXPDR(data)){
     f_recorder->recordDownlink(data);
-    f_streamType->setValue(XPDR);
+    setStreamType(XPDR);
     xpdrTime.start();
   }else return;
   onlineTimer.start();
@@ -199,4 +200,45 @@ QString Vehicle::confTitle() const
   return confName;
 }
 //=============================================================================
+//=============================================================================
+Vehicle::StreamType Vehicle::streamType(void) const
+{
+  return m_streamType;
+}
+void Vehicle::setStreamType(const StreamType v)
+{
+  if(m_streamType==v)return;
+  m_streamType=v;
+  emit streamTypeChanged();
+}
+quint16 Vehicle::squawk(void) const
+{
+  return m_squawk;
+}
+void Vehicle::setSquawk(const quint16 v)
+{
+  if(m_squawk==v)return;
+  m_squawk=v;
+  emit squawkChanged();
+}
+QString Vehicle::callsign(void) const
+{
+  return m_callsign;
+}
+void Vehicle::setCallsign(const QString &v)
+{
+  if(m_callsign==v)return;
+  m_callsign=v;
+  emit callsignChanged();
+}
+Vehicle::VehicleClass Vehicle::vehicleClass(void) const
+{
+  return m_vehicleClass;
+}
+void Vehicle::setVehicleClass(const VehicleClass v)
+{
+  if(m_vehicleClass==v)return;
+  m_vehicleClass=v;
+  emit vehicleClassChanged();
+}
 //=============================================================================

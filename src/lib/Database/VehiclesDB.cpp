@@ -602,9 +602,9 @@ void VehiclesDB::vehicleInfoUpdate(Vehicle *vehicle)
     if(!ok)break;
     //modify vehicle info
     query.prepare("UPDATE Vehicles SET callsign=?, class=?, squawk=?, date=? WHERE key=?");
-    query.addBindValue(vehicle->f_callsign->text());
-    query.addBindValue(vehicle->f_vclass->text());
-    query.addBindValue(vehicle->f_squawk->text());
+    query.addBindValue(vehicle->callsign());
+    query.addBindValue(vehicle->vehicleClassText());
+    query.addBindValue(vehicle->squawkText());
     query.addBindValue(t);
     query.addBindValue(vehicleID);
     ok=query.exec();

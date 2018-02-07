@@ -38,6 +38,7 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent, Mandala *m, quint
   _unpackedValue=0;
 
   setPrecision(getPrecision());
+  setColor(getColor());
 
   loadValueTimer.setSingleShot(true);
   loadValueTimer.setInterval(2000);
@@ -86,6 +87,47 @@ uint VehicleMandalaFact::getPrecision()
   if(m_units=="A")      return 3;
   if(m_units=="C")      return 1;
   return 6;
+}
+//=============================================================================
+QColor VehicleMandalaFact::getColor()
+{
+  //fill params
+  uint type=_vtype;
+  uint varmsk=id();
+  QString sn=name();
+  uint ci=0;
+  if(type==vt_vect || type==vt_point) ci=(varmsk>>8)+1;
+  QColor c(Qt::cyan);
+  if(sn.startsWith("ctr_")){
+    if(sn.contains("ailerons"))c=QColor(Qt::red).lighter();
+    else if(sn.contains("elevator"))c=QColor(Qt::green).lighter();
+    else if(sn.contains("throttle"))c=QColor(Qt::blue).lighter();
+    else if(sn.contains("rudder"))c=QColor(Qt::yellow).lighter();
+    else if(sn.contains("collective"))c=QColor(Qt::darkCyan);
+    else c=QColor(Qt::magenta).darker();
+  }else if(sn.startsWith("rc_")){
+    if(sn.contains("roll"))c=QColor(Qt::red);
+    else if(sn.contains("pitch"))c=QColor(Qt::darkGreen);
+    else if(sn.contains("throttle"))c=QColor(Qt::darkBlue);
+    else if(sn.contains("yaw"))c=QColor(Qt::darkYellow);
+    else c=QColor(Qt::magenta).lighter();
+  }else if(sn.startsWith("ctrb_"))c=Qt::magenta;
+  else if(sn.startsWith("user")){
+    if(sn.endsWith("r1"))c=QColor(Qt::red).lighter();
+    else if(sn.endsWith("r2"))c=QColor(Qt::green).lighter();
+    else if(sn.endsWith("r3"))c=QColor(Qt::blue).lighter();
+    else if(sn.endsWith("r4"))c=QColor(Qt::yellow).lighter();
+    else if(sn.endsWith("r5"))c=QColor(Qt::cyan).lighter();
+    else if(sn.endsWith("r6"))c=QColor(Qt::magenta).lighter();
+    else c=QColor(Qt::cyan).lighter();
+  }else if(sn.startsWith("altitude"))c=Qt::red;
+  else if(sn.startsWith("vspeed"))c=Qt::green;
+  else if(sn.startsWith("airspeed"))c=Qt::blue;
+  else if(type==vt_flag)c=QColor(Qt::blue).lighter();
+  else if(ci==1)c=Qt::red;
+  else if(ci==2)c=Qt::green;
+  else if(ci==3)c=Qt::yellow;
+  return c;
 }
 //=============================================================================
 void VehicleMandalaFact::saveValue()

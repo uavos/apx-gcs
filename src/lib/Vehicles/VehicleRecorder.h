@@ -36,8 +36,6 @@ class VehicleRecorder : public Fact
 public:
   explicit VehicleRecorder(Vehicle *parent);
 
-  bool recDisable;  //externally disable recording (f.ex. by player)
-
   TelemetryDB * _db;
 private:
   Vehicle *vehicle;

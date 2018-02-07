@@ -58,7 +58,9 @@ Button {
             id: btnLabel
             visible: iconName
             Layout.fillHeight: true
+            Layout.fillWidth: !bText
             verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: bText?Text.AlignLeft:Text.AlignHCenter
             font.family: "Material Design Icons"
             font.pointSize: iconFontSize
             text: visible?materialIconChar[iconName]:""
@@ -81,7 +83,7 @@ Button {
     }
     onPressAndHold: {
         if(blockPressAndHold)return
-        openFact(fact,{"pageInfo": true, "pageInfoAction": factAction})
+        if(fact)openFact(fact,{"pageInfo": true, "pageInfoAction": factAction})
     }
 
 }

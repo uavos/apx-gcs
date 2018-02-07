@@ -346,6 +346,8 @@ void loadPlugins()
 
   allFiles.append("qrc:///Map.qml");
 
+  allFiles.append("qrc:///Signals.qml");
+
   //allFiles.append("qrc:///videoCV.qml");
 
 

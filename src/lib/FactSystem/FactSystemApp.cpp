@@ -240,3 +240,19 @@ QPointF FactSystemApp::rotate(const QPointF &p, double a)
   return QPointF(p.x()*cos_theta+p.y()*sin_theta,p.y()*cos_theta-p.x()*sin_theta);
 }
 //=============================================================================
+QPointF FactSystemApp::seriesBounds(const QVariantList &series)
+{
+  //qDebug()<<v;
+  double min,max;
+  for(int i=0;i<series.size();++i){
+    double v=series.at(i).toDouble();
+    if(i==0){
+      min=max=v;
+    }else{
+      if(min>v)min=v;
+      if(max<v)max=v;
+    }
+  }
+  return QPointF(min,max);
+}
+//=============================================================================

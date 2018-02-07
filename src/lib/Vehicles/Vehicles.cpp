@@ -44,7 +44,13 @@ Vehicles::Vehicles(FactSystem *parent)
   f_select->setSection(title());
   connect(f_select,&VehicleSelect::vehicleSelected,this,&Vehicles::selectVehicle);
 
-  f_local=new Vehicle(this,"LOCAL",0,QByteArray().append((char)0).append((char)0),Vehicle::LOCAL,true);
+  f_local=new Vehicle(this,"LOCAL",0,QByteArray().append((char)0).append((char)0),Vehicle::LOCAL);
+  f_replay=new Vehicle(this,"REPLAY",0,QByteArray().append((char)0).append((char)1),Vehicle::REPLAY);
+
+  f_replay->setVisible(false);
+
+  f_select->addVehicle(f_local);
+  f_select->addVehicle(f_replay);
 
   f_list=new Fact(this,"list",tr("Vehicles list"),"",SectionItem,ConstData);
   bind(f_list);
@@ -77,7 +83,7 @@ Vehicles::Vehicles(FactSystem *parent)
   dlinkReqTimer.setInterval(1000);
   dlinkReqTimer.start();
   connect(&dlinkReqTimer,&QTimer::timeout,this,[=](){
-    if(m_current!=f_local){
+    if(!(m_current->isLocal()||m_current->isReplay())){
       vehicleSendUplink(m_current,QByteArray()); //request telemetry
     }
   });
@@ -137,13 +143,13 @@ void Vehicles::downlinkReceived(const QByteArray &ba)
       }
       if(v){
         //update from ident
-        v->f_squawk->setValue(squawk);
-        v->f_callsign->setValue(callsign);
-        v->f_vclass->setValue(vclass);
+        v->setSquawk(squawk);
+        v->setCallsign(callsign);
+        v->setVehicleClass(vclass);
       }else{
         //new Vehicle found
-        v=new Vehicle(this,callsign,squawk,uid,vclass,false);
-        qDebug("%s: %s '%s' (%.4X)",tr("Vehicle identified").toUtf8().data(),v->f_vclass->text().toUtf8().data(),callsign.toUtf8().data(),squawk);
+        v=new Vehicle(this,callsign,squawk,uid,vclass);
+        qDebug("%s: %s '%s' (%.4X)",tr("Vehicle identified").toUtf8().data(),v->vehicleClassText().toUtf8().data(),callsign.toUtf8().data(),squawk);
         emit vehicleRegistered(v);
       }
       vdb->vehicleInfoUpdate(v);
@@ -240,7 +246,7 @@ void Vehicles::selectVehicle(Vehicle *v)
 {
   if(m_current==v)return;
   //v->f_recorder->recordEvent("info",QString("%1: %2 '%3' (%4)").arg("Vehicle selected").arg(v->f_vclass->text()).arg(v->f_callsign->text()).arg(v->f_squawk->text()));
-  qDebug("%s: %s '%s' (%s)",tr("Vehicle selected").toUtf8().data(),v->f_vclass->text().toUtf8().data(),v->f_callsign->text().toUtf8().data(),v->f_squawk->text().toUtf8().data());
+  qDebug("%s: %s '%s' (%s)",tr("Vehicle selected").toUtf8().data(),v->vehicleClassText().toUtf8().data(),v->callsign().toUtf8().data(),v->squawkText().toUtf8().data());
   m_current=v;
   //update JSengine
   QQmlEngine *e=FactSystem::instance()->engine();
@@ -252,9 +258,11 @@ void Vehicles::selectVehicle(Vehicle *v)
   //current vehicle signals wrappers
   foreach(QMetaObject::Connection c,currentVehicleConnections) disconnect(c);
   currentVehicleConnections.clear();
-  currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::dataReceived,this,&Vehicles::currentDataReceived));
-  currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::serialReceived,this,&Vehicles::currentSerialReceived));
-
+  if(!v->isReplay()){
+    currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::dataReceived,this,&Vehicles::currentDataReceived));
+    currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::serialReceived,this,&Vehicles::currentSerialReceived));
+  }
+  v->setVisible(true);
   emit currentChanged();
   emit vehicleSelected(v);
 }

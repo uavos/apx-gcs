@@ -8,8 +8,10 @@ import QtQuick.Controls.Material 2.2
 import GCS.FactSystem 1.0
 import GCS.Vehicles 1.0
 import GCS.Mission 1.0
-import "."
+
+import "../../menu"
 import ".."
+import "."
 
 ColumnLayout {
     spacing: 4
@@ -41,27 +43,18 @@ ColumnLayout {
             onMenuRequested: map.showFactMenu(mission)
             onClicked: {
                 if(empty){
-                    mission.actions.request.trigger()
+                    mission.action.request.trigger()
                 }else{
                     map.showRegion(mission.boundingGeoRectangle())
                 }
             }
         }
-        MapButton {
-            id: uploadButton
-            text: qsTr("Upload")
-            horizontalAlignment: Text.AlignHCenter
-            minWidth: height*3
-            minHeight: parent.height
-            border.width: 1
-            border.color: Style.cGreen
-            color: "#2a4"
-            textColor: "white"
-            defaultOpacity: 0.8
-            onClicked: mission.upload.trigger()
-            //x: visible?missionButton.width+10:0
+        FactMenuAction {
+            property int itemSize: Math.max(10,missionButton.height)
+            property int iconFontSize: itemSize*0.8
+            property int titleFontSize: itemSize*0.8
+            factAction: mission.action.upload
             visible: mission.modified
-            //Behavior on x { enabled: app.settings.smooth.value; NumberAnimation {duration: 100; } }
         }
     }
     ListView {

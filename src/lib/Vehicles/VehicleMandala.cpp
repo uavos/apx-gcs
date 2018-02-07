@@ -32,7 +32,7 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
     vehicle(parent),
     m_errcnt(0)
 {
-  setIconSource("hexagon-multiple");
+  setIcon("hexagon-multiple");
 
   m=new Mandala();
 

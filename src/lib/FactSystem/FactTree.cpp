@@ -53,9 +53,9 @@ void FactTree::removeItem(FactTree *item, bool deleteLater)
 {
   int i=m_items.indexOf(item);
   if(i<0)return;
-  if(deleteLater)item->removed();
   emit itemToBeRemoved(i,item);
   m_items.removeAt(i);
+  if(deleteLater)item->removed();
   for(;i<m_items.size();++i) m_items.at(i)->updateNum();
   if(deleteLater){
     //item->disconnect();
@@ -72,9 +72,9 @@ void FactTree::removeAll()
   }
   while(m_items.size()) {
     FactTree *item=m_items.last();
-    item->removed();
     emit itemToBeRemoved(m_items.size()-1,item);
     m_items.takeLast();
+    item->removed();
     item->m_parentItem=NULL;
     emit itemRemoved(item);
     item->deleteLater();

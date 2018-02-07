@@ -139,7 +139,7 @@ Map {
             enabled: !blocked
             CoordinateAnimation {
                 id: coordAnimation
-                duration: app.settings.smooth.value?500:0;
+                duration: 500;
                 direction: CoordinateAnimation.Shortest;
                 easing.type: Easing.InOutCubic
             }
@@ -299,6 +299,10 @@ Map {
     VehicleItem {
         z: map.z+80
         vehicle: app.vehicles.LOCAL
+    }
+    VehicleItem {
+        z: map.z+81
+        vehicle: app.vehicles.REPLAY
     }
     MapItemView {
         model: app.vehicles.list.model

@@ -578,7 +578,7 @@ void MainForm::vpn_disconnected()
 void MainForm::vehicleRegistered(Vehicle *v)
 {
   mUAV->setEnabled(Vehicles::instance()->f_list->size()>0);
-  QAction *a=new QAction(QIcon(":/icons/old/connect_creating.png"),QString(v->f_callsign->text()),this);
+  QAction *a=new QAction(QIcon(":/icons/old/connect_creating.png"),QString(v->callsign()),this);
   a->setData(QVariant::fromValue(v));
   a->setCheckable(true);
   connect(a,&QAction::triggered,v->f_select,&FactAction::trigger);

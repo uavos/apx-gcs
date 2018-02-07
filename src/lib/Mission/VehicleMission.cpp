@@ -44,7 +44,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     m_startLength(0),
     m_missionSize(0)
 {
-  setIconSource("ship-wheel");
+  setIcon("ship-wheel");
 
   //actions
   f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),FactAction::NormalAction,"download");
@@ -358,6 +358,13 @@ void VehicleMission::restore()
   }
   setModified(false,true);
 }
+void VehicleMission::hashData(QCryptographicHash *h) const
+{
+  foreach (MissionGroup *group, groups) {
+    group->hashData(h);
+  }
+}
+//=============================================================================
 //=============================================================================
 //=============================================================================
 //=============================================================================

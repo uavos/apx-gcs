@@ -19,7 +19,7 @@ Item {
     property string text: fact?fact.text:""
     property string status: fact?fact.status:""
 
-    property string iconSource: fact?fact.iconSource:""
+    property string iconSource: fact?fact.icon:""
     property string qmlPage: fact?fact.qmlPage:""
 
     property bool busy: fact?fact.busy:false

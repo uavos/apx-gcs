@@ -28,8 +28,9 @@ BusyIndicator {
     running: visible
     Label {
         anchors.centerIn: parent
-        color: "#555"
+        color: "#60FFFFFF"
         text: value.toFixed()
+        font.bold: true
     }
 
     MouseArea {

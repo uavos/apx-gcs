@@ -39,7 +39,14 @@ class Vehicle: public Fact
   Q_ENUMS(VehicleClass)
   Q_ENUMS(StreamType)
 
+  Q_PROPERTY(QString callsign READ callsign NOTIFY callsignChanged)
   Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
+
+  Q_PROPERTY(VehicleClass vehicleClass READ vehicleClass NOTIFY vehicleClassChanged)
+  Q_PROPERTY(QString vehicleClassText READ vehicleClassText NOTIFY vehicleClassChanged)
+
+  Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
+  Q_PROPERTY(QString streamTypeText READ streamTypeText NOTIFY streamTypeChanged)
 
 public:
   enum VehicleClass {
@@ -48,13 +55,13 @@ public:
     GCU,
 
     //internal use
-    LOCAL=100
+    LOCAL=100,
+    REPLAY
   };
   Q_ENUM(VehicleClass)
 
   enum StreamType {
     OFFLINE =0,
-    REPLAY,
     SERVICE,
     DATA,
     XPDR,
@@ -62,12 +69,7 @@ public:
   };
   Q_ENUM(StreamType)
 
-  explicit Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass, bool bLocal);
-
-  Fact * f_squawk;
-  Fact * f_callsign;
-  Fact * f_vclass;
-  Fact * f_streamType;
+  explicit Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray uid, VehicleClass vclass);
 
   VehicleMandala  *f_mandala;
   Nodes           *f_nodes;
@@ -80,6 +82,11 @@ public:
   VehicleNmtManager *nmtManager;
 
   QByteArray uid;
+
+  QString vehicleClassText() const;
+  QString streamTypeText() const;
+  QString squawkText() const;
+
 
   QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
   QString confTitle() const;
@@ -94,6 +101,9 @@ private:
   QTime xpdrTime;
   QTime replayTime;
 
+private slots:
+  void updateTitle();
+  void updateStatus();
 
   //data connection
 public slots:
@@ -113,13 +123,29 @@ public slots:
   //---------------------------------------
   // PROPERTIES
 public:
+  StreamType streamType(void) const;
+  void setStreamType(const StreamType v);
+
   quint16 squawk(void) const;
+  void setSquawk(const quint16 v);
+
+  QString callsign(void) const;
+  void setCallsign(const QString &v);
+
+  VehicleClass vehicleClass(void) const;
+  void setVehicleClass(const VehicleClass v);
 
 protected:
+  StreamType m_streamType;
   quint16 m_squawk;
+  QString m_callsign;
+  VehicleClass m_vehicleClass;
 
 signals:
+  void streamTypeChanged();
   void squawkChanged();
+  void callsignChanged();
+  void vehicleClassChanged();
 
 
 };

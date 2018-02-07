@@ -35,9 +35,13 @@ class VehicleSelect: public Fact
 public:
   explicit VehicleSelect(Fact *parent, const QString &name, const QString &title, const QString &descr);
 
+  void addVehicle(Vehicle *vehicle);
+
 private:
   Vehicles *vehicles;
   QHash<Vehicle*,Fact*> map;
+
+
 
 private slots:
   void _vehicleRegistered(Vehicle *vehicle);

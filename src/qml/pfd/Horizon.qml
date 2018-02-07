@@ -26,7 +26,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: app.settings.smooth.value?((app.datalink.valid && !(app.vehicles.current.stream.value===Vehicle.XPDR||app.vehicles.current.stream.value===Vehicle.TELEMETRY))?0.7:1):1
+    opacity: app.settings.smooth.value?((app.datalink.valid && !(app.vehicles.current.streamType===Vehicle.XPDR||app.vehicles.current.streamType===Vehicle.TELEMETRY))?0.7:1):1
 
     Item{
         id: horizon_bg

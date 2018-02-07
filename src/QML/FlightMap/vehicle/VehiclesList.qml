@@ -1,4 +1,5 @@
 import QtQuick 2.5;
+import QtQuick.Layouts 1.3
 import QtLocation 5.9
 import QtPositioning 5.6
 import GCS.Vehicles 1.0
@@ -18,6 +19,25 @@ Item {
         clip: true
         snapMode: ListView.SnapToItem
 
+        header: RowLayout {
+            //width: hdr.width+10
+            //height: hdr.height
+            spacing: vehiclesList.spacing
+            VehicleInfo {
+                //id: hdr
+                enabled: true
+                font.pixelSize: Qt.application.font.pixelSize * 0.8
+                vehicle: app.vehicles.LOCAL
+                menuFact: app
+            }
+            VehicleInfo {
+                enabled: true
+                font.pixelSize: Qt.application.font.pixelSize * 0.8
+                vehicle: app.vehicles.REPLAY
+                //menuFact: app
+            }
+            Item { Layout.fillHeight: true  }
+        }
 
         Component {
             id: vehicleInfoDelegate

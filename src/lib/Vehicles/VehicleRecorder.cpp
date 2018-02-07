@@ -48,7 +48,7 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   m_recording(false),
   m_recTime(0)
 {
-  setIconSource("record-rec");
+  setIcon("record-rec");
 
   //database
   _db = new TelemetryDB(this,QString("GCSVehicleRecorderSession_%1").arg(QString(vehicle->uid.toHex().toUpper())),vehicle);
@@ -56,7 +56,6 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
 
 
 
-  recDisable=false;
   recTrigger=false;
   recTimeUpdateTimer.setSingleShot(true);
   recTimeUpdateTimer.setInterval(500);
@@ -72,7 +71,10 @@ VehicleRecorder::VehicleRecorder(Vehicle *parent)
   connect(this,&VehicleRecorder::recTimeChanged,this,&VehicleRecorder::updateStatus);
   updateStatus();
 
-  connect(this,&Fact::triggered,this,[=](){setRecording(!recording());});
+  if(!vehicle->isReplay()){
+    connect(this,&Fact::triggered,this,[=](){setRecording(!recording());});
+  }
+
   recordingChanged();
 }
 //=============================================================================
@@ -83,12 +85,13 @@ void VehicleRecorder::updateStatus()
 //=============================================================================
 bool VehicleRecorder::dbCheckRecord()
 {
+  if(vehicle->isReplay())return false;
   checkAutoRecord();
   if(recTelemetryID)return true;
   recTimestamp=QDateTime::currentDateTime().toMSecsSinceEpoch();
   uplinkTime.start();
   //register telemetry file record
-  recTelemetryID=_db->writeRecord(vehicle->uid.toHex().toUpper(),vehicle->f_callsign->text(),vehicle->confTitle(),recording(),recTimestamp);
+  recTelemetryID=_db->writeRecord(vehicle->uid.toHex().toUpper(),vehicle->callsign(),vehicle->confTitle(),recording(),recTimestamp);
   return recTelemetryID;
 }
 //=============================================================================
@@ -120,6 +123,7 @@ quint64 VehicleRecorder::getDataTimestamp()
 //=============================================================================
 void VehicleRecorder::dbDownlinkWrite()
 {
+  if(vehicle->isReplay())return;
   //collect changed facts
   QList<Fact*> facts;
   int i=-1;
@@ -156,6 +160,7 @@ void VehicleRecorder::recordDownlink(const QByteArray &data)
 //=============================================================================
 void VehicleRecorder::recordUplink(const QByteArray &data)
 {
+  if(vehicle->isReplay())return;
   const _bus_packet &packet=*(_bus_packet*)data.data();
   VehicleMandalaFact *f=NULL;
   switch(packet.id){
@@ -195,11 +200,7 @@ void VehicleRecorder::recordEvent(const QString &name, const QString &value, boo
 //=============================================================================
 bool VehicleRecorder::checkAutoRecord(void)
 {
-  if(recDisable){
-    setRecording(false);
-    return false;
-  }
-  if(vehicle->f_streamType->value().toInt()==Vehicle::TELEMETRY) {
+  if(vehicle->streamType()==Vehicle::TELEMETRY) {
     if((v_mode==mode_TAKEOFF)&&(v_stage>=2)&&(v_stage<100)){
       if(!recTrigger){
         reset(); //restart

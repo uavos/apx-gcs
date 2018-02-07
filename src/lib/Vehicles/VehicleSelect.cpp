@@ -28,21 +28,34 @@ VehicleSelect::VehicleSelect(Fact *parent, const QString &name, const QString &t
   : Fact(parent,name,title,descr,GroupItem,NoData),
     vehicles(Vehicles::instance())
 {
+  setEnabled(false);
   connect(vehicles,&Vehicles::vehicleRegistered,this,&VehicleSelect::_vehicleRegistered);
   connect(vehicles,&Vehicles::vehicleRemoved,this,&VehicleSelect::_vehicleRemoved);
   connect(vehicles,&Vehicles::vehicleSelected,this,&VehicleSelect::_vehicleSelected);
-
 }
 //=============================================================================
 void VehicleSelect::_vehicleRegistered(Vehicle *vehicle)
 {
+  if(size()<=0){
+    addVehicle(vehicles->f_local);
+  }
+  addVehicle(vehicle);
+}
+void VehicleSelect::addVehicle(Vehicle *vehicle)
+{
   Fact *f=new Fact(this,vehicle->name(),vehicle->title(),vehicle->descr(),FactItem,NoData);
   map.insert(vehicle,f);
+  f->setIcon(vehicle->icon());
+  f->setVisible(vehicle->visible());
 
   connect(f,&Fact::triggered,this,&VehicleSelect::_factTriggered);
 
+  connect(vehicle,&Vehicle::visibleChanged,this,[=](){ f->setVisible(vehicle->visible()); });
   connect(vehicle,&Vehicle::activeChanged,this,[=](){ f->setActive(vehicle->active()); });
   connect(vehicle,&Fact::statusChanged,this,[=](){ f->setStatus(vehicle->status()); });
+  connect(vehicle,&Fact::iconChanged,this,[=](){ f->setIcon(vehicle->icon()); });
+
+  setEnabled(true);
 }
 //=============================================================================
 void VehicleSelect::_vehicleRemoved(Vehicle *vehicle)
@@ -51,6 +64,7 @@ void VehicleSelect::_vehicleRemoved(Vehicle *vehicle)
   if(!f)return;
   map.remove(vehicle);
   f->remove();
+  setEnabled(size()>0);
 }
 //=============================================================================
 void VehicleSelect::_vehicleSelected(Vehicle *vehicle)

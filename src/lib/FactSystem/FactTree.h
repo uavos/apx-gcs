@@ -99,6 +99,7 @@ private:
   void updateNum();
   void setParentItem(FactTree *v);
 
+  void _removed(){emit removed();}
   //-----------------------------------------
   //PROPERTIES
 public:

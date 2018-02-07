@@ -70,6 +70,7 @@ private:
   int setValueCnt;
 
   uint getPrecision();
+  QColor getColor();
 
 private slots:
   void loadValueDo();

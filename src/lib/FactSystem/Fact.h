@@ -27,6 +27,7 @@
 #include "FactListModel.h"
 #include "FactListModelActions.h"
 #include "FactAction.h"
+#include <QColor>
 class FactSystem;
 //=============================================================================
 class Fact: public FactData
@@ -44,11 +45,13 @@ class Fact: public FactData
   Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
   Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
-  Q_PROPERTY(QString iconSource READ iconSource NOTIFY iconSourceChanged)
+  Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
 
   Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
 
   Q_PROPERTY(bool busy READ busy WRITE setBusy NOTIFY busyChanged)
+
+  Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
 public:
   explicit Fact(FactTree *parent, const QString &name, const QString &title, const QString &descr, ItemType treeItemType, DataType dataType);
@@ -104,9 +107,7 @@ public:
 
   Q_INVOKABLE virtual QString info() const;
 
-protected:
   virtual void hashData(QCryptographicHash *h) const;
-
 
 public slots:
   virtual void trigger(void); //execute fact event (onClick)
@@ -138,14 +139,17 @@ public:
   int progress() const;
   void setProgress(const int &v);
 
-  QString iconSource() const;
-  void setIconSource(const QString &v);
+  QString icon() const;
+  void setIcon(const QString &v);
 
   QString qmlPage() const;
   void setQmlPage(const QString &v);
 
   bool busy() const;
   void setBusy(const bool &v);
+
+  QColor color() const;
+  void setColor(const QColor &v);
 
 protected:
   FactListModel *m_model;
@@ -157,9 +161,10 @@ protected:
   QString  m_status;
   bool m_active;
   int m_progress;
-  QString  m_iconSource;
+  QString  m_icon;
   QString  m_qmlPage;
   bool m_busy;
+  QColor m_color;
 
 signals:
   void enabledChanged();
@@ -170,10 +175,10 @@ signals:
   void activeChanged();
   void progressChanged();
 
-  void iconSourceChanged();
+  void iconChanged();
   void qmlPageChanged();
   void busyChanged();
-
+  void colorChanged();
 };
 //=============================================================================
 #endif

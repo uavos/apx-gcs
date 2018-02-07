@@ -78,7 +78,7 @@ void TileLoader::loadCancel(quint64 uid)
   queue.removeOne(uid);
   queueCancelled.append(uid);
   queueMutex.unlock();
-  qDebug()<<"Cancel: "<<uid;
+  //qDebug()<<"Cancel: "<<uid;
 }
 void TileLoader::_fwd_tileLoaded(quint64 uid, QByteArray data)
 {
@@ -346,7 +346,7 @@ void TileLoader::versionReplyFinished()
   }
   if(!ok)return;
   if(versionGoogleMaps.isEmpty())versionGoogleMaps="748";
-  qDebug()<<versionGoogleMaps;
+  //qDebug()<<versionGoogleMaps;
   foreach (quint64 uid, pendingDownloads) {
     download(uid);
   }

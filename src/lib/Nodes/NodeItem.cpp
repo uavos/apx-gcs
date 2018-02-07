@@ -399,7 +399,7 @@ void NodeItem::requestConf()
 void NodeItem::message(QString msg)
 {
   QString ns;
-  if(Vehicles::instance()->f_list->size()>0) ns=QString("%1/%2").arg(nodes->vehicle->f_callsign->text()).arg(title());
+  if(Vehicles::instance()->f_list->size()>0) ns=QString("%1/%2").arg(nodes->vehicle->callsign()).arg(title());
   else ns=title();
   QStringList st=msg.trimmed().split('\n',QString::SkipEmptyParts);
   foreach(QString s,st){

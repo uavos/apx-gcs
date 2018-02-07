@@ -114,5 +114,8 @@
         <file>menu/FactMenuEditorTime.qml</file>
         <file>menu/FactMenuPageInfoAction.qml</file>
         <file>FlightMap/mission/MissionMapItems.qml</file>
+        <file>Signals.qml</file>
+        <file>signals/SignalsView.qml</file>
+        <file>components/CleanButton.qml</file>
     </qresource>
 </RCC>

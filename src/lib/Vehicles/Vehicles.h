@@ -41,6 +41,7 @@ public:
   Fact *f_list;
 
   Vehicle *f_local;
+  Vehicle *f_replay;
 
   VehiclesDB *vdb;
 

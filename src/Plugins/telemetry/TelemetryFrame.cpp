@@ -152,20 +152,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
   //create plot fields
   foreach(VehicleMandalaFact *f,Vehicles::instance()->f_local->f_mandala->allFacts){
     //fill params
-    uint type=f->_vtype;
-    uint varmsk=f->id();
     QString sn=f->name();
-    uint ci=0;
-    if(type==vt_vect || type==vt_point) ci=(varmsk>>8)+1;
-    QColor c(Qt::cyan);
-    if(sn.contains("ctr_"))c=Qt::magenta;
-    else if(sn.contains("ctrb_"))c=Qt::magenta;
-    else if(type==vt_flag)c=QColor(Qt::blue).lighter();
-    else if(ci==1)c=Qt::red;
-    else if(ci==2)c=Qt::green;
-    else if(ci==3)c=Qt::yellow;
-    //if(sv.size()>=2)c=QColor(sv.at(1));
-    //if(sv.size()>=3)divider_dsp=sv.at(2).toDouble();
     Qt::PenStyle style = Qt::SolidLine;
     if(sn.contains("cmd_"))style=Qt::DotLine;
     else if(sn.contains("gps_"))style=Qt::DashLine;
@@ -173,7 +160,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     TelemetryFieldData *d=new TelemetryFieldData;
     d->fact=f;
     telemetryData.fields.append(d);
-    QwtPlotCurve *cv=plot->addCurve(sn,f->descr(),f->units(),QPen(c, 0, style));
+    QwtPlotCurve *cv=plot->addCurve(sn,f->descr(),f->units(),QPen(f->color(), 0, style));
     plotMap.insert(d,cv);
   }
   plot->calc=plot->addCurve("calculated",tr("Calculated user variable"),"",QColor(Qt::yellow).lighter());

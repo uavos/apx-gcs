@@ -98,6 +98,8 @@ public:
   void backup();
   void restore();
 
+  void hashData(QCryptographicHash *h) const;
+
 private:
 
 private slots:

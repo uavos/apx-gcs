@@ -25,8 +25,10 @@ MapQuickItem {  //to be used inside MapComponent only
     property string modeText: vm.mode.text
     property int stage: vm.stage.value
 
-    property bool bGCU: vehicle.vclass.value===Vehicle.GCU
-    property bool bLOCAL: vehicle.vclass.value===Vehicle.LOCAL
+    visible: vehicle.visible
+
+    property bool bGCU: vehicle.vehicleClass===Vehicle.GCU
+    property bool bLOCAL: vehicle.vehicleClass===Vehicle.LOCAL
 
     //position
     coordinate: QtPositioning.coordinate(lat,lon,altitude)
@@ -47,13 +49,20 @@ MapQuickItem {  //to be used inside MapComponent only
     //follow
     property bool isFollow: map.itemToFollow===vehicleItem && map.follow
     onActiveChanged: {
-        if(active){
+        if(active)focusTimer.start()
+        else if(isFollow) map.followStop()
+    }
+    Timer {
+        id: focusTimer
+        interval: 100
+        repeat: true
+        running: false
+        onTriggered: {
             if(lat!=0 && lon!=0){
+                focusTimer.stop()
                 map.centerOnItem(vehicleItem)
-            }else{
-
             }
-        }else if(isFollow) map.followStop()
+        }
     }
 
     //animated vars
@@ -138,6 +147,7 @@ MapQuickItem {  //to be used inside MapComponent only
             z: image.z-10
             sourceSize.height: image.width*2
             smooth: true
+            visible: active
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
@@ -155,6 +165,7 @@ MapQuickItem {  //to be used inside MapComponent only
             z: image.z-10
             sourceSize.height: image.width*2
             smooth: true
+            visible: active
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
@@ -172,6 +183,7 @@ MapQuickItem {  //to be used inside MapComponent only
             z: image.z-10
             sourceSize.height: image.width*2
             smooth: true
+            visible: active
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
