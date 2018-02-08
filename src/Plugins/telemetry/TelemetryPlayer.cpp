@@ -150,7 +150,7 @@ void TelemetryPlayer::next()
   if(tNext>t){
     if(m_playing){
       timer.start(tNext-t);
-
+      vehicle->f_mandala->replayDataUpdated();
     }
     if(m_time!=t){
       m_time=t;

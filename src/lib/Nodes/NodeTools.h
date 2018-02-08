@@ -20,50 +20,33 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppShortcuts_H
-#define AppShortcuts_H
+#ifndef NodeTools_H
+#define NodeTools_H
 //=============================================================================
 #include <QtCore>
-#include "FactSystem.h"
-class AppShortcut;
-class AppSettings;
+#include <FactSystem.h>
+class NodeItem;
 //=============================================================================
-class AppShortcuts: public Fact
+class NodeTools: public Fact
 {
   Q_OBJECT
+
 public:
-  explicit AppShortcuts(AppSettings *parent, QWidget *widget);
+  explicit NodeTools(NodeItem *parent);
 
-  Q_INVOKABLE QString keyToPortableString(int key,int modifier) const;
-
-  QWidget *widget;
-  Fact *f_blocked;
-
-  Fact *f_allonSys;
-  Fact *f_alloffSys;
-  Fact *f_allonUsr;
-  Fact *f_alloffUsr;
-
-
-  Fact *f_usr;
-  Fact *f_sys;
+  void addCommand(uint cmd,const QString &name,const QString &descr,bool sys);
+  void clearCommands();
 
 private:
-  AppShortcut *f_add;
+  NodeItem *node;
 
-  QTimer saveTimer;
+  Fact *f_backups;
 
-  void addUserShortcut();
+  Fact *f_cmd;
+  Fact *f_syscmd;
+  Fact *f_update;
 
 private slots:
-  void updateStats();
-
-public slots:
-  void addTriggered();
-
-  void load();
-  void save();
-
 };
 //=============================================================================
 #endif

@@ -4,85 +4,44 @@ import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
 import GCS.FactSystem 1.0
+
+import "../components"
 import "."
 
-Button {
+CleanButton {
     id: control
     property var factAction: modelData
-    //size: height
-    //Layout.fillWidth: true
-    //width: height
-    property bool showText: false
 
-    property int atype: factAction?factAction.actionType:-1
+    property int flags: factAction?factAction.flags:-1
 
-    property bool bApply: atype===FactAction.ApplyAction
-    property bool bRemove: atype===FactAction.RemoveAction
-
-    property string iconName: (factAction && factAction.icon)?factAction.icon:""
-
-    property bool bText: showText && factAction && factAction.title
-
-
-    ToolTip.delay: 1000
-    ToolTip.timeout: 5000
-    ToolTip.visible: factAction.descr && (down || hovered)
-    ToolTip.text: factAction.descr
-
-    Material.background: bApply?Style.cActionApply:bRemove?Style.cActionRemove:undefined
-
-    implicitHeight: visible?itemSize:0
-    implicitWidth: bText?contentItem.implicitWidth+leftPadding+rightPadding:implicitHeight
-
-    padding: 3
-    leftPadding: padding+1
-    rightPadding: padding+1
-    topPadding: padding
-    bottomPadding: padding
-    spacing: 3
-
-    background.y: 0
-    background.width: width
-    background.height: height-1
-
+    toolTip: factAction.descr
+    iconName: factAction?factAction.icon:""
+    text: factAction?factAction.title:""
     enabled: factAction && factAction.enabled
     visible: factAction && factAction.visible
 
-    text: bText?factAction.title:""
     font.pointSize: titleFontSize
 
-    contentItem: RowLayout {
-        spacing: control.spacing
-        implicitHeight: itemSize
-        Label {
-            id: btnLabel
-            visible: iconName
-            Layout.fillHeight: true
-            Layout.fillWidth: !bText
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: bText?Text.AlignLeft:Text.AlignHCenter
-            font.family: "Material Design Icons"
-            font.pointSize: iconFontSize
-            text: visible?materialIconChar[iconName]:""
-        }
-        Label {
-            visible: bText
-            Layout.fillHeight: true
-            verticalAlignment: Text.AlignVCenter
-            font: control.font
-            text: control.text
-        }
-    }
+    //internal
+    property bool bApply: flags&FactAction.ActionApply
+    property bool bRemove: flags&FactAction.ActionRemove
+    property bool bClose: flags&FactAction.ActionCloseOnTrigger
+    property bool bPage: flags&FactAction.ActionPage
 
-    property bool blockPressAndHold: false
+    color: bApply?Style.cActionApply:bRemove?Style.cActionRemove:undefined
 
-    onClicked: {
-        blockPressAndHold=true
+
+
+    onTriggered: {
+        if(bPage){
+            //console.log(factAction.fact)
+            openFact(factAction.fact)
+            return
+        }
         factAction.trigger()
-        blockPressAndHold=false
+        if(bClose)factMenu.back()
     }
-    onPressAndHold: {
-        if(blockPressAndHold)return
+    onMenuRequested: {
         if(fact)openFact(fact,{"pageInfo": true, "pageInfoAction": factAction})
     }
 

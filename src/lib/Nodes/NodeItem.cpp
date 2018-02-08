@@ -25,6 +25,7 @@
 #include "NodeItem.h"
 #include "Nodes.h"
 #include "NodeField.h"
+#include "NodeTools.h"
 #include "PawnScript.h"
 #include <node.h>
 //=============================================================================
@@ -44,7 +45,9 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
   commands.valid=false;
 
 
-  //setQmlMenu("nodes/NodeMenuItem.qml");
+  tools=new NodeTools(this);
+  new FactAction(this,tools);
+
 
   connect(this,&NodeItem::versionChanged,this,&NodeItem::updateStats);
   connect(this,&NodeItem::hardwareChanged,this,&NodeItem::updateStats);
@@ -291,9 +294,7 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
     }return true;
     case apc_conf_cmds: {
       if((!commands.valid)||ba.size()>0){
-        commands.cmd.clear();
-        commands.name.clear();
-        commands.descr.clear();
+        clearCommands();
         const char *str=(const char*)ba.data();
         int cnt=ba.size();
         int sz;
@@ -310,15 +311,11 @@ bool NodeItem::unpackService(uint ncmd, const QByteArray &ba)
           QString descr(QByteArray(str,sz-1));
           str+=sz;
           cnt-=sz;
-          commands.cmd.append(cmd);
-          commands.name.append(name);
-          commands.descr.append(descr);
+          addCommand(cmd,name,descr);
         }
         if(cnt!=0){
           qWarning("Error node_conf commands received (cnt:%u)",cnt);
-          commands.cmd.clear();
-          commands.name.clear();
-          commands.descr.clear();
+          clearCommands();
         }else{
           commands.valid=true;
           requestConf();
@@ -616,6 +613,14 @@ void NodeItem::clearCommands()
   commands.name.clear();
   commands.descr.clear();
   commands.valid=false;
+  tools->clearCommands();
+}
+void NodeItem::addCommand(uint cmd,const QString &name,const QString &descr)
+{
+  commands.cmd.append(cmd);
+  commands.name.append(name);
+  commands.descr.append(descr);
+  tools->addCommand(cmd,name,descr,cmd<=apc_user);
 }
 //=============================================================================
 void NodeItem::cmdexec(int cmd_idx)

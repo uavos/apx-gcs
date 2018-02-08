@@ -47,15 +47,15 @@ VehicleMission::VehicleMission(Vehicle *parent)
   setIcon("ship-wheel");
 
   //actions
-  f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),FactAction::NormalAction,"download");
+  f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),"download");
   connect(f_request,&FactAction::triggered,vehicle,&Vehicle::requestMission);
 
-  f_upload=new FactAction(this,"upload",tr("Upload"),tr("Upload to vehicle"),FactAction::ApplyAction,"upload");
+  f_upload=new FactAction(this,"upload",tr("Upload"),tr("Upload to vehicle"),"upload",FactAction::ActionApply);
   f_upload->setEnabled(false);
   connect(f_upload,&FactAction::triggered,this,&VehicleMission::uploadMission);
   connect(f_upload,&FactAction::enabledChanged,this,&VehicleMission::actionsUpdated);
 
-  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Clear mission"),FactAction::RemoveAction);
+  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Clear mission"),"",FactAction::ActionRemove);
   f_clear->setEnabled(false);
   connect(f_clear,&FactAction::triggered,this,&VehicleMission::clearMission);
   connect(f_clear,&FactAction::enabledChanged,this,&VehicleMission::actionsUpdated);

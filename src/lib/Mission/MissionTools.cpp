@@ -83,7 +83,7 @@ MissionTools::MissionTools(VehicleMission *parent)
     f_altadjust->setModified(false);
     f_altadjustApply->setEnabled(f_altadjust->value().toInt()!=0);
   });
-  f_altadjustApply=new FactAction(f,"apply",tr("Apply"),"",FactAction::ApplyAction);
+  f_altadjustApply=new FactAction(f,"apply",tr("Apply"),"","",FactAction::ActionApply|FactAction::ActionCloseOnTrigger);
   f_altadjustApply->setEnabled(false);
   connect(f_altadjustApply,&FactAction::triggered,this,&MissionTools::altadjustTriggered);
 
@@ -98,7 +98,7 @@ MissionTools::MissionTools(VehicleMission *parent)
     f_altset->setModified(false);
     f_altsetApply->setEnabled(f_altset->value().toInt()!=0);
   });
-  f_altsetApply=new FactAction(f,"apply",tr("Apply"),"",FactAction::ApplyAction);
+  f_altsetApply=new FactAction(f,"apply",tr("Apply"),"","",FactAction::ActionApply|FactAction::ActionCloseOnTrigger);
   f_altsetApply->setEnabled(false);
   connect(f_altsetApply,&FactAction::triggered,this,&MissionTools::altsetTriggered);
 }

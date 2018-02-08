@@ -126,6 +126,7 @@ HEADERS += \
 # Nodes
 SOURCES += \
     Nodes/Nodes.cpp \
+    Nodes/NodeTools.cpp \
     Nodes/NodeItem.cpp \
     Nodes/NodeItemBase.cpp \
     Nodes/NodeItemData.cpp \
@@ -136,6 +137,7 @@ SOURCES += \
 
 HEADERS += \
     Nodes/Nodes.h \
+    Nodes/NodeTools.h \
     Nodes/NodeItem.h \
     Nodes/NodeItemBase.h \
     Nodes/NodeItemData.h \

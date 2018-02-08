@@ -64,11 +64,6 @@ void DatalinkPorts::addTriggered()
   save();
   f_add->defaults();
 }
-void DatalinkPorts::removeTriggered()
-{
-  f_list->removeItem(static_cast<FactTree*>(sender())->parentItem());
-  save();
-}
 //=============================================================================
 //=============================================================================
 void DatalinkPorts::load()

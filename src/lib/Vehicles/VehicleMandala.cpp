@@ -300,3 +300,8 @@ bool VehicleMandala::unpackTelemetry(const QByteArray &ba)
   return true;
 }
 //=============================================================================
+void VehicleMandala::replayDataUpdated()
+{
+  emit dataReceived(idx_downstream);
+}
+//=============================================================================

@@ -258,10 +258,9 @@ void Vehicles::selectVehicle(Vehicle *v)
   //current vehicle signals wrappers
   foreach(QMetaObject::Connection c,currentVehicleConnections) disconnect(c);
   currentVehicleConnections.clear();
-  if(!v->isReplay()){
-    currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::dataReceived,this,&Vehicles::currentDataReceived));
-    currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::serialReceived,this,&Vehicles::currentSerialReceived));
-  }
+  currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::dataReceived,this,&Vehicles::currentDataReceived));
+  currentVehicleConnections.append(connect(v->f_mandala,&VehicleMandala::serialReceived,this,&Vehicles::currentSerialReceived));
+
   v->setVisible(true);
   emit currentChanged();
   emit vehicleSelected(v);

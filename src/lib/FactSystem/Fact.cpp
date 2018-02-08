@@ -39,6 +39,8 @@ Fact::Fact(FactTree *parent, const QString &name, const QString &title, const QS
     if(m_name.contains('#')){
       connect(parent,&FactData::sizeChanged,this,&FactData::nameChanged);
     }
+
+    if(parent->treeItemType()==SectionItem)setSection(static_cast<Fact*>(parent)->title());
     //connect(this,&FactData::modifiedChanged,static_cast<FactData*>(parent),&FactData::modifiedChanged);
 
 

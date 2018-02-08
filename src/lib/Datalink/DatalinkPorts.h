@@ -49,7 +49,6 @@ private slots:
 
 public slots:
   void addTriggered();
-  void removeTriggered();
 
   void load();
   void save();

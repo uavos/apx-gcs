@@ -34,7 +34,7 @@ MissionGroup::MissionGroup(VehicleMission *parent, const QString &name, const QS
   //setSection(tr("Mission elements"));
   mission->groups.append(this);
 
-  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Remove all objects"),FactAction::RemoveAction);
+  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Remove all objects"),"",FactAction::ActionRemove|FactAction::ActionCloseOnTrigger);
   f_clear->setEnabled(false);
   connect(f_clear,&FactAction::triggered,this,&MissionGroup::clearGroup);
 

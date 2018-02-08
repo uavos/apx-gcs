@@ -27,6 +27,7 @@
 #include <QDomDocument>
 #include "NodeItemData.h"
 #include "NodeField.h"
+#include "NodeTools.h"
 class Nodes;
 //=============================================================================
 class NodeItem: public NodeItemData
@@ -59,6 +60,8 @@ public:
   Nodes *nodes;
   NodeItemBase *group;
 
+  NodeTools *tools;
+
   struct{
     bool valid;
     QList<uint> cmd;
@@ -66,6 +69,7 @@ public:
     QStringList descr;
   }commands;
   void clearCommands();
+  void addCommand(uint cmd,const QString &name,const QString &descr);
   void cmdexec(int cmd_idx);
 
   uint lastSeenTime;

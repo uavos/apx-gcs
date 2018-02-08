@@ -7,10 +7,13 @@ Button {
     id: control
 
     property string iconName
-    property color color: Material.background
+    property var color
+
+    property string toolTip
 
     property bool showText: false
     property int iconSize: 24
+
 
     signal menuRequested()
     signal triggered()
@@ -21,7 +24,7 @@ Button {
     //internal
     property bool bText: iconName?showText && text:true
 
-    padding: iconName?3:5
+    padding: iconName?3:3
     leftPadding: padding+1
     rightPadding: padding+1
     topPadding: padding
@@ -32,14 +35,16 @@ Button {
     background.width: width
     background.height: height-1
 
-    Material.background: color
+    Material.background: color?color:undefined
 
     implicitHeight: visible?contentItem.implicitHeight+topPadding+bottomPadding:0
     implicitWidth: bText?Math.max(implicitHeight,contentItem.implicitWidth+leftPadding+rightPadding):implicitHeight
 
-    Component.onCompleted: {
-        //if(color)Material.background=Qt.binding(function(){return color})
-    }
+    ToolTip.delay: 1000
+    ToolTip.timeout: 5000
+    ToolTip.visible: ToolTip.text && (down || hovered)
+    ToolTip.text: toolTip
+
 
     contentItem: RowLayout {
         spacing: control.spacing

@@ -29,33 +29,38 @@ class Fact;
 class FactAction: public QObject
 {
   Q_OBJECT
-  Q_ENUMS(FactActionType)
+  Q_ENUMS(FactActionFlags)
 
   Q_PROPERTY(QString name READ name NOTIFY nameChanged)
   Q_PROPERTY(QString title READ title NOTIFY titleChanged)
   Q_PROPERTY(QString descr READ descr NOTIFY descrChanged)
   Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
   Q_PROPERTY(int flags READ flags CONSTANT)
-  Q_PROPERTY(FactActionType actionType READ actionType CONSTANT)
 
   Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
   Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
 
-public:
-  enum FactActionType {
-    NormalAction =0,
-    ApplyAction,
-    RemoveAction,
-  };
-  Q_ENUM(FactActionType)
 
-  explicit FactAction(Fact *parent, const QString &name, const QString &title, const QString &descr, FactActionType actionType, const QString &icon=QString());
+  Q_PROPERTY(Fact * fact READ fact NOTIFY factChanged)
+
+public:
+  enum FactActionFlags {
+    ActionApply   =1,
+    ActionRemove  =2,
+    ActionPage    =4,
+
+    ActionCloseOnTrigger  =16,
+  };
+  Q_ENUM(FactActionFlags)
+
+  explicit FactAction(Fact *parent, const QString &name, const QString &title, const QString &descr, const QString &icon=QString(), uint flags=0);
   explicit FactAction(Fact *parent, FactAction *linkAction);
+  explicit FactAction(Fact *parent, Fact *pageFact);
 
   virtual QVariant data(int col, int role) const;
 
 private:
-  Fact *fact;
+  //Fact *fact;
   FactAction *linkAction;
 
 public slots:
@@ -78,12 +83,14 @@ public:
   void setIcon(const QString &v);
 
   int flags() const;
-  FactActionType actionType() const;
 
   bool enabled() const;
   void setEnabled(const bool &v);
   bool visible() const;
   void setVisible(const bool &v);
+
+  Fact * fact() const;
+  void setFact(Fact *v);
 
 protected:
   QString  m_name;
@@ -91,9 +98,9 @@ protected:
   QString  m_descr;
   QString  m_icon;
   int m_flags;
-  FactActionType m_actionType;
   bool m_enabled;
   bool m_visible;
+  Fact * m_fact;
 
 signals:
   void nameChanged();
@@ -102,6 +109,7 @@ signals:
   void iconChanged();
   void enabledChanged();
   void visibleChanged();
+  void factChanged();
 
 };
 //=============================================================================

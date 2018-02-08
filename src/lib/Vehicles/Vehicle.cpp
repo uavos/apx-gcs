@@ -51,7 +51,7 @@ Vehicle::Vehicle(Vehicles *parent, QString callsign, quint16 squawk, QByteArray 
   connect(this,&Vehicle::callsignChanged,this,&Vehicle::updateTitle);
   connect(this,&Vehicle::streamTypeChanged,this,&Vehicle::updateStatus);
 
-  f_select=new FactAction(this,"select",tr("Select"),tr("Make this vehicle active"),FactAction::NormalAction,"select");
+  f_select=new FactAction(this,"select",tr("Select"),tr("Make this vehicle active"),"select");
   connect(f_select,&FactAction::triggered,this,[=](){ parent->selectVehicle(this); });
   connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_select->setEnabled(v!=this); });
 

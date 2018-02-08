@@ -45,10 +45,10 @@ MissionItem::MissionItem(MissionGroup *parent, const QString &name, const QStrin
   f_longitude=new MissionField(this,"longitude",tr("Longitude"),tr("Global postition longitude"),FloatData);
   f_longitude->setUnits("lon");
 
-  f_remove=new FactAction(this,"remove",tr("Remove"),"",FactAction::RemoveAction);
+  f_remove=new FactAction(this,"remove",tr("Remove"),"","",FactAction::ActionRemove);
   connect(f_remove,&FactAction::triggered,this,&Fact::remove);
 
-  f_select=new FactAction(this,"select",tr("Set as current"),"",FactAction::ApplyAction,"target");
+  f_select=new FactAction(this,"select",tr("Set as current"),"","target",FactAction::ActionApply);
   connect(f_select,&FactAction::triggered,this,&MissionItem::selectTriggered);
 
   connect(f_latitude,&Fact::valueChanged,this,&MissionItem::updateCoordinate);

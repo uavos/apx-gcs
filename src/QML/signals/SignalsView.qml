@@ -1,7 +1,9 @@
 import QtQuick 2.3
 import QtCharts 2.2
+import QtQuick.Controls 2.3
 
 Item {
+    id: chartItem
     clip: true
     property var facts: []
 
@@ -13,7 +15,7 @@ Item {
     property real lineWidth: smooth?2.5:1
     property real lineWidthCmd: smooth?5.1:3
 
-    property var speedFactor: [ 1, 2, 4, 0.5, 0.25 ]
+    property var speedFactor: [ 1, 2, 4, 0.5, 0.2 ]
     property real speedFactorValue: speed<0?speedFactor[0]:speed>=speedFactor.length?speedFactor[speedFactor.length-1]:speedFactor[speed]
 
     onFactsChanged: {
@@ -165,9 +167,41 @@ Item {
         //console.log(speed)
     }
 
+    /*ToolTip {
+        parent: chartItem
+        delay: 1000
+        timeout: 5000
+        visible: ToolTip.text && (mouseArea.containsMouse)
+        text: facts.length
+    }*/
+
+    Drawer {
+        id: drawer
+        height: parent.height
+        contentItem: ScrollView {
+            //anchors.fill: parent
+            Label {
+                text: getToolTip(facts)
+            }
+        }
+    }
+
+
+    function getToolTip(facts)
+    {
+        var s=[]
+        for(var i=0;i<facts.length;++i){
+            var fact=facts[i]
+            s.push("<font color='"+fact.color+"'>"+fact.descr+"</font>")
+        }
+        return s.join("<br>")
+    }
+
     MouseArea {
+        id: mouseArea
         anchors.fill: parent
         onDoubleClicked: changeSpeed()
+        onPressAndHold: drawer.open()
     }
 
 }

@@ -77,7 +77,8 @@ signals:
 signals:
   void sendUplink(const QByteArray &ba);
 
-
+public slots:
+  void replayDataUpdated();
 
   //---------------------------------------
   // PROPERTIES

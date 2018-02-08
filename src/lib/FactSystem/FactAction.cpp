@@ -26,44 +26,59 @@
 #include <QFont>
 #include <QApplication>
 //=============================================================================
-FactAction::FactAction(Fact *parent, const QString &name, const QString &title, const QString &descr, FactActionType actionType, const QString &icon)
+FactAction::FactAction(Fact *parent, const QString &name, const QString &title, const QString &descr, const QString &icon, uint flags)
  : QObject(parent),
-   fact(parent),
    linkAction(NULL),
    m_name(name),
    m_title(title),
    m_descr(descr),
    m_icon(icon),
-   m_actionType(actionType),
+   m_flags(flags),
    m_enabled(true),
-   m_visible(true)
+   m_visible(true),
+   m_fact(NULL)
 {
   setObjectName(m_name);
   parent->actions.append(this);
   connect(this,&FactAction::triggered,parent,&Fact::actionTriggered);
   //default icons
   if(m_icon.isEmpty()){
-    if(actionType==ApplyAction)m_icon="check";
-    else if(actionType==RemoveAction)m_icon="delete";
+    if(flags&ActionApply)m_icon="check";
+    else if(flags&ActionRemove)m_icon="delete";
   }
 }
 FactAction::FactAction(Fact *parent, FactAction *linkAction)
- : QObject(linkAction),
-   fact(parent),
+ : QObject(parent),
    linkAction(linkAction),
    m_name(linkAction->name()),
    m_title(linkAction->title()),
    m_descr(linkAction->descr()),
    m_icon(linkAction->icon()),
-   m_actionType(linkAction->actionType()),
+   m_flags(linkAction->flags()),
    m_enabled(true),
-   m_visible(linkAction->visible())
+   m_visible(linkAction->visible()),
+   m_fact(NULL)
 {
   setObjectName(m_name);
   parent->actions.append(this);
   connect(this,&FactAction::triggered,parent,&Fact::actionTriggered);
 
   connect(linkAction,&FactAction::enabledChanged,this,&FactAction::enabledChanged);
+}
+FactAction::FactAction(Fact *parent, Fact *pageFact)
+ : QObject(parent),
+   linkAction(NULL),
+   m_name(pageFact->name()),
+   m_title(pageFact->title()),
+   m_descr(pageFact->descr()),
+   m_icon(pageFact->icon()),
+   m_flags(ActionPage),
+   m_enabled(true),
+   m_visible(true),
+   m_fact(pageFact)
+{
+  setObjectName(m_name);
+  parent->actions.append(this);
 }
 //=============================================================================
 void FactAction::trigger(void)
@@ -121,10 +136,6 @@ int FactAction::flags(void) const
 {
   return m_flags;
 }
-FactAction::FactActionType FactAction::actionType(void) const
-{
-  return m_actionType;
-}
 bool FactAction::enabled() const
 {
   if(linkAction)return m_enabled && linkAction->enabled();
@@ -145,6 +156,16 @@ void FactAction::setVisible(const bool &v)
   if(m_visible==v)return;
   m_visible=v;
   emit visibleChanged();
+}
+Fact * FactAction::fact() const
+{
+  return m_fact;
+}
+void FactAction::setFact(Fact *v)
+{
+  if(m_fact==v)return;
+  m_fact=v;
+  emit factChanged();
 }
 //=============================================================================
 QVariant FactAction::data(int col, int role) const

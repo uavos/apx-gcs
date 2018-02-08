@@ -31,7 +31,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
 
   model()->setFlat(true);
 
-  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Remove all messages from list"),FactAction::NormalAction,"notification-clear-all");
+  f_clear=new FactAction(this,"clear",tr("Clear"),tr("Remove all messages from list"),"notification-clear-all");
   f_clear->setEnabled(false);
   connect(f_clear,&FactAction::triggered,this,&Fact::removeAll);
 

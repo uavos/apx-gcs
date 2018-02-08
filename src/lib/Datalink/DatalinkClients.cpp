@@ -34,7 +34,7 @@ DatalinkClients::DatalinkClients(Datalink *parent)
 
   f_datalink=parent;
 
-  f_alloff=new FactAction(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),FactAction::NormalAction,"lan-disconnect");
+  f_alloff=new FactAction(this,"alloff",tr("Disconnect all"),tr("Drop all client connections"),"lan-disconnect");
 
   connect(this,&Fact::sizeChanged,this,&DatalinkClients::updateStats);
 

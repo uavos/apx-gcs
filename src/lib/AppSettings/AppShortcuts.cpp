@@ -103,11 +103,6 @@ void AppShortcuts::addTriggered()
   save();
   f_add->defaults();
 }
-void AppShortcuts::removeTriggered()
-{
-  f_usr->removeItem(static_cast<FactTree*>(sender())->parentItem());
-  save();
-}
 //=============================================================================
 void AppShortcuts::addUserShortcut()
 {

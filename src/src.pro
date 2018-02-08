@@ -12,13 +12,13 @@ PLUGINS += console
 PLUGINS += nodes
 PLUGINS += map
 PLUGINS += telemetry
-PLUGINS += signal
 PLUGINS += compass
 PLUGINS += servos
 PLUGINS += numbers
 PLUGINS += serial
 PLUGINS += systree
 
+#PLUGINS += signal
 #PLUGINS += sim
 #SUBDIRS += joystick
 

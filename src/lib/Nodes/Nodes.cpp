@@ -40,18 +40,18 @@ Nodes::Nodes(Vehicle *parent)
 
   xml=new NodesXml(this);
 
-  f_upload=new FactAction(this,"upload",tr("Upload"),tr("Upload modified values"),FactAction::ApplyAction,"upload");
+  f_upload=new FactAction(this,"upload",tr("Upload"),tr("Upload modified values"),"upload",FactAction::ActionApply);
   connect(f_upload,&FactAction::triggered,this,&Nodes::upload);
   connect(f_upload,&FactAction::enabledChanged,this,&Nodes::actionsUpdated);
 
-  f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),FactAction::NormalAction,"download");
+  f_request=new FactAction(this,"request",tr("Request"),tr("Download from vehicle"),"download");
   connect(f_request,&FactAction::triggered,this,&Nodes::request);
 
-  f_stop=new FactAction(this,"stop",tr("Stop"),tr("Stop data requests"),FactAction::NormalAction,"close-circle");
+  f_stop=new FactAction(this,"stop",tr("Stop"),tr("Stop data requests"),"close-circle");
   connect(f_stop,&FactAction::triggered,this,&Nodes::stop);
   connect(f_stop,&FactAction::enabledChanged,this,&Nodes::actionsUpdated);
 
-  f_reload=new FactAction(this,"reload",tr("Reload"),tr("Clear and download all"),FactAction::NormalAction,"reload");
+  f_reload=new FactAction(this,"reload",tr("Reload"),tr("Clear and download all"),"reload");
   connect(f_reload,&FactAction::triggered,this,&Nodes::reload);
   connect(f_reload,&FactAction::enabledChanged,this,&Nodes::actionsUpdated);
 

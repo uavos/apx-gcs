@@ -7,7 +7,7 @@ import "."
 
 RowLayout {
     id: editor
-    Layout.fillWidth: true
+    //Layout.fillWidth: true
     Shortcut {
         id: scText
         enabled: false
@@ -16,8 +16,8 @@ RowLayout {
     }
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        Layout.fillWidth: true
-        anchors.leftMargin: font.pixelSize
+        //Layout.fillWidth: true
+        //anchors.leftMargin: font.pixelSize
         verticalAlignment: Qt.AlignVCenter
         font.family: font_condenced
         font.pointSize: editorFontSize
@@ -28,8 +28,8 @@ RowLayout {
         id: control
         focus: true
         Layout.alignment: Qt.AlignRight
-        Layout.fillWidth: true
-        Layout.fillHeight: true
+        //Layout.fillWidth: true
+        //Layout.fillHeight: true
         //anchors.verticalCenter: parent.verticalCenter
         topPadding: 0
         bottomPadding: 0

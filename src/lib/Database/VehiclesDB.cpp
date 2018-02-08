@@ -335,9 +335,7 @@ void VehiclesDB::nodeDictRead(NodeItem *node)
     if(v.isNull())return;
     QString s=query.value("ftype").toString();
     if(s=="command"){
-      node->commands.cmd.append(v.toUInt());
-      node->commands.name.append(query.value("name").toString());
-      node->commands.descr.append(query.value("descr").toString());
+      node->addCommand(v.toUInt(),query.value("name").toString(),query.value("descr").toString());
       commandsCnt++;
       continue;
     }

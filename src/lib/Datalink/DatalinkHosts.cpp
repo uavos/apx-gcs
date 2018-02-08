@@ -42,12 +42,12 @@ DatalinkHosts::DatalinkHosts(Datalink *parent)
   f_add->setIcon("plus-network");
   f_host=new AppSettingFact(settings,f_add,"host",tr("Host address"),tr("IP address of remote server"),"",TextData,QString());
   //f_host=new Fact(f_add,"host",tr("Host address"),tr("IP address of remote server"),FactItem,TextData);
-  f_connect=new FactAction(f_add,"connect",tr("Connect"),"",FactAction::ApplyAction);
+  f_connect=new FactAction(f_add,"connect",tr("Connect"),"","",FactAction::ActionApply|FactAction::ActionCloseOnTrigger);
   connect(f_connect,&FactAction::triggered,this,&DatalinkHosts::connectTriggered);
 
   AppSettingFact::loadSettings(this);
 
-  f_alloff=new FactAction(this,"alloff",tr("Disconnect all"),tr("Close all remote server connections"),FactAction::NormalAction,"lan-disconnect");
+  f_alloff=new FactAction(this,"alloff",tr("Disconnect all"),tr("Close all remote server connections"),"lan-disconnect");
 
   f_list=new Fact(this,"list",tr("Servers list"),tr("Found servers"),SectionItem,ConstData);
   //bind(f_list);

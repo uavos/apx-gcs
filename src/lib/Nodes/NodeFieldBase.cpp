@@ -40,8 +40,13 @@ void NodeFieldBase::addActions()
   if(!actions.isEmpty())return;
   Nodes *nodes=parent_cast<Nodes*>();
   if(!nodes)return;
+
+  FactAction *a=new FactAction(this,"revert",tr("Revert"),tr("Undo changes"),"undo");
+  connect(a,&FactAction::triggered,this,&Fact::restore);
+  connect(this,&Fact::modifiedChanged,a,[=](){a->setEnabled(modified());});
+  a->setEnabled(modified());
+
   new FactAction(this,nodes->f_upload);
-  new FactAction(this,nodes->f_stop);
   foreach (FactAction *a, actions) {
     connect(a,&FactAction::enabledChanged,a,[=](){a->setVisible(a->enabled());});
     a->setVisible(a->enabled());

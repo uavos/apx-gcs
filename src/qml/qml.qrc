@@ -46,7 +46,6 @@
         <file>menu/GCSMenuModel.qml</file>
         <file>menu/MenuCommands.qml</file>
         <file>menu/MenuShortcuts.qml</file>
-        <file>nodes/NodeMenuItem.qml</file>
         <file>Rotax914.qml</file>
         <file>menu/FactMenu.qml</file>
         <file>Facts.qml</file>

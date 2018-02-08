@@ -106,7 +106,7 @@ QColor VehicleMandalaFact::getColor()
     else if(sn.contains("collective"))c=QColor(Qt::darkCyan);
     else c=QColor(Qt::magenta).darker();
   }else if(sn.startsWith("rc_")){
-    if(sn.contains("roll"))c=QColor(Qt::red);
+    if(sn.contains("roll"))c=QColor(Qt::darkRed);
     else if(sn.contains("pitch"))c=QColor(Qt::darkGreen);
     else if(sn.contains("throttle"))c=QColor(Qt::darkBlue);
     else if(sn.contains("yaw"))c=QColor(Qt::darkYellow);
@@ -120,13 +120,17 @@ QColor VehicleMandalaFact::getColor()
     else if(sn.endsWith("r5"))c=QColor(Qt::cyan).lighter();
     else if(sn.endsWith("r6"))c=QColor(Qt::magenta).lighter();
     else c=QColor(Qt::cyan).lighter();
-  }else if(sn.startsWith("altitude"))c=Qt::red;
-  else if(sn.startsWith("vspeed"))c=Qt::green;
-  else if(sn.startsWith("airspeed"))c=Qt::blue;
+  }else if(sn.startsWith("altitude"))c=QColor(Qt::red).lighter(170);
+  else if(sn.startsWith("vspeed"))c=QColor(Qt::green).lighter(170);
+  else if(sn.startsWith("airspeed"))c=QColor(Qt::blue).lighter(170);
   else if(type==vt_flag)c=QColor(Qt::blue).lighter();
-  else if(ci==1)c=Qt::red;
-  else if(ci==2)c=Qt::green;
-  else if(ci==3)c=Qt::yellow;
+  else{
+    if(ci==1)c=Qt::red;
+    else if(ci==2)c=Qt::green;
+    else if(ci==3)c=Qt::yellow;
+    if(sn.startsWith("cmd_"))c=c.lighter();
+  }
+
   return c;
 }
 //=============================================================================
