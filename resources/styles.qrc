@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>styles/style-dark.css</file>
-        <file>styles/style-light.css</file>
-        <file>styles/style-old.css</file>
-        <file>styles/style2.css</file>
-    </qresource>
-</RCC>
