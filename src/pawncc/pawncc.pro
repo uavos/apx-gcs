@@ -1,5 +1,5 @@
 TEMPLATE = app
-include( ../../gcs.pri )
+include( ../../common.pri )
 
 LIBS =
 QT =

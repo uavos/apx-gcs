@@ -2,7 +2,7 @@ TARGET = systree
 TEMPLATE = lib
 CONFIG += plugin
 
-include( ../../../gcs.pri )
+include( ../../../common.pri )
 
 QT += quick
 

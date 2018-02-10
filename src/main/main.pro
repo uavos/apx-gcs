@@ -5,8 +5,9 @@ TARGET = gcs
 # make symbols available for plugins
 QMAKE_LFLAGS += -rdynamic
 
-include( ../../gcs.pri )
+include( ../../common.pri )
 include( ../../localization.pri )
+include( ../../app.pri )
 
 LIBS += -lgcs
 

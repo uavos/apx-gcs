@@ -5,7 +5,7 @@ TARGET = gcs
 TARGET = $$qtLibraryTarget($$TARGET)
 }
 
-include( ../../gcs.pri )
+include( ../../common.pri )
 
 DESTDIR = $$DESTDIR_LIB
 

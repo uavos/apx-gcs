@@ -2,7 +2,7 @@ TARGET = map
 TEMPLATE = lib
 CONFIG += plugin
 
-include( ../../../gcs.pri )
+include( ../../../common.pri )
 
 
 SOURCES += MapView.cpp \

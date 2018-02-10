@@ -676,7 +676,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+128"/>
         <source>Connecting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -701,7 +701,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-45"/>
+        <location line="-46"/>
         <source>Save</source>
         <translation type="unfinished">Захаваць</translation>
     </message>
@@ -2233,10 +2233,102 @@
     </message>
 </context>
 <context>
+    <name>NodeFieldBase</name>
+    <message>
+        <location filename="../src/lib/Nodes/NodeFieldBase.cpp" line="+44"/>
+        <source>Revert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Undo changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NodeItem</name>
     <message>
-        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+624"/>
+        <location filename="../src/lib/Nodes/NodeItem.cpp" line="+633"/>
         <source>Can&apos;t send command (unknown command)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NodeTools</name>
+    <message>
+        <location filename="../src/lib/Nodes/NodeTools.cpp" line="+27"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Node tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Backups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Restore parameters from backup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Restore recent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Restore the most recent backup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+2"/>
+        <source>Commands</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>Node hardware commands</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>System hardware commands</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>System</source>
+        <translation type="unfinished">Сістэма</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Update node firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Reboot all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Vehicle system reset</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2510,7 +2602,7 @@
 <context>
     <name>NodesXml</name>
     <message>
-        <location filename="../src/lib/Nodes/NodesXml.cpp" line="+313"/>
+        <location filename="../src/lib/Nodes/NodesXml.cpp" line="+311"/>
         <source>Field missing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3690,7 +3782,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
 <context>
     <name>VehiclesDB</name>
     <message>
-        <location filename="../src/lib/Database/VehiclesDB.cpp" line="+518"/>
+        <location filename="../src/lib/Database/VehiclesDB.cpp" line="+516"/>
         <source>Data restored</source>
         <translation type="unfinished"></translation>
     </message>

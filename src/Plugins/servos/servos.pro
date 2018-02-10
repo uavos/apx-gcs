@@ -2,7 +2,7 @@ TARGET = servos
 TEMPLATE = lib
 CONFIG += plugin
 
-include( ../../../gcs.pri )
+include( ../../../common.pri )
 
 SOURCES += \
     ServosPlugin.cpp \

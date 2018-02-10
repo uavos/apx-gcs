@@ -2,7 +2,7 @@ TARGET = numbers
 TEMPLATE = lib
 CONFIG += plugin
 
-include( ../../../gcs.pri )
+include( ../../../common.pri )
 
 
 QT += quick svg opengl quickcontrols2

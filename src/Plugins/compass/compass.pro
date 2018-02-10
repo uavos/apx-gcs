@@ -2,7 +2,7 @@ TARGET = compass
 TEMPLATE = lib
 CONFIG += plugin
 
-include( ../../../gcs.pri )
+include( ../../../common.pri )
 
 SOURCES += DrawingArea.cpp \
     CompassFrame.cpp \

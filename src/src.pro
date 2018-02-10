@@ -6,6 +6,8 @@ SUBDIRS += lib
 SUBDIRS += main
 main.depends += lib
 
+#CONFIG += GCSPlugins
+#CONFIG += GCSUtils
 
 # Plugins
 PLUGINS += console
@@ -20,19 +22,17 @@ PLUGINS += systree
 
 #PLUGINS += signal
 #PLUGINS += sim
-#SUBDIRS += joystick
 
 # Utilities
-SUBDIRS += pawncc
-#SUBDIRS += qgc
-#SUBDIRS += qgc-map
-#SUBDIRS += gcs-server
+GCSUtils {
+    SUBDIRS += pawncc
+}
 
-#SUBDIRS += xplane
-
-for(subdir, PLUGINS) {
-    SUBDIRS += Plugins/$$subdir
-    Plugins/$$subdir.depends += lib
+GCSPlugins {
+    for(subdir, PLUGINS) {
+        SUBDIRS += Plugins/$$subdir
+        Plugins/$$subdir.depends += lib
+    }
 }
 
 export(SUBDIRS)

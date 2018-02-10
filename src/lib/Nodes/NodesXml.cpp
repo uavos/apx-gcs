@@ -174,9 +174,7 @@ int NodesXml::read(QDomNode dom, NodeItem *node, int fmt) const
       QString sname=e.firstChildElement("name").text();
       QString sdescr=e.firstChildElement("descr").text();
       if(sname.size() && sdescr.size()){
-        node->commands.cmd.append(cmd);
-        node->commands.name.append(sname);
-        node->commands.descr.append(sdescr);
+        node->addCommand(cmd,sname,sdescr);
       }
     }
     node->commands.valid=true;

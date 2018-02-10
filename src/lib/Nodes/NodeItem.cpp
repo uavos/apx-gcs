@@ -40,6 +40,10 @@ NodeItem::NodeItem(Nodes *parent, const QByteArray &sn)
 {
   qmlRegisterUncreatableType<NodeItem>("GCS.Node", 1, 0, "Node", "Reference only");
 
+  setIcon("sitemap");
+  connect(this,&Fact::titleChanged,this,[=](){if(title().endsWith("shiva"))setIcon("airplane");});
+
+
   sortNames<<"shiva"<<"nav"<<"ifc"<<"swc"<<"cas"<<"gps"<<"mhx"<<"servo"<<"bldc";
 
   commands.valid=false;

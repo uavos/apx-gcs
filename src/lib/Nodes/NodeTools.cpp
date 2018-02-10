@@ -59,11 +59,33 @@ NodeTools::NodeTools(NodeItem *parent)
   f->setIcon("reload");
 }
 //=============================================================================
-void NodeTools::addCommand(uint cmd,const QString &name,const QString &descr,bool sys)
+void NodeTools::addCommand(uint cmd,QString name,QString descr,bool sys)
 {
+  name=name.toLower();
   Fact *fp=sys?f_syscmd:f_cmd;
+  if(descr.contains(':')){
+    //grouping
+    QString sgroup=descr.left(descr.indexOf(':')).trimmed();
+    descr=descr.remove(0,descr.indexOf(':')+1).trimmed();
+    Fact *fgroup=NULL;
+    for(int i=0;i<fp->size();++i){
+      if(fp->childFact(i)->title()!=sgroup)continue;
+      fgroup=fp->childFact(i);
+      break;
+    }
+    if(!fgroup){
+      fgroup=new Fact(fp,sgroup,sgroup,"",GroupItem,NoData);
+    }
+    fp=fgroup;
+  }
   Fact *f=new Fact(fp,name,descr,"",FactItem,NoData);
-  f->setIcon("eject");
+  if(name.contains("reboot")||name.contains("restart")) f->setIcon("reload");
+  else if(name.contains("mute")) f->setIcon("volume-mute");
+  else if(name.contains("erase")||name.contains("clear")) f->setIcon("close-circle");
+  else if(name.contains("conf")) f->setIcon("alert-octagram");
+  else if(name.startsWith("vm")) f->setIcon("code-braces");
+  else if(name.startsWith("bb")) f->setIcon("database");
+  else f->setIcon("asterisk");
   f->userData=cmd;
 }
 void NodeTools::clearCommands()

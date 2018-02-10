@@ -8,14 +8,7 @@
 # Proprietary and confidential
 # -------------------------------------------------
 
-#
-# This file contains configuration settings.
-# It should mainly contains initial CONFIG tag setup and compiler settings.
-#
-
-# Setup our supported build types. We do this once here and then use the defined config scopes
-# to allow us to easily modify suported build types in one place instead of duplicated throughout
-# the project file.
+QMAKE_PROJECT_DEPTH = 0 # undocumented qmake flag to force absolute paths in make files
 
 linux {
     linux-g++ | linux-g++-64 | linux-g++-32 | linux-clang {
@@ -34,7 +27,6 @@ linux {
         CONFIG += AndroidBuild MobileBuild
         DEFINES += __android__
         DEFINES += __STDC_LIMIT_MACROS
-        DEFINES += QGC_ENABLE_BLUETOOTH
         target.path = $$DESTDIR
         equals(ANDROID_TARGET_ARCH, x86)  {
             CONFIG += Androidx86Build
@@ -61,14 +53,10 @@ linux {
         DEFINES += __macos__
         CONFIG += x86_64
         CONFIG -= x86
-        equals(QT_MAJOR_VERSION, 5) | greaterThan(QT_MINOR_VERSION, 5) {
-                QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-        } else {
-                QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
-        }
+        QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
         #-- Not forcing anything. Let qmake find the latest, installed SDK.
         #QMAKE_MAC_SDK = macosx10.12
-        QMAKE_CXXFLAGS += -fvisibility=hidden
+        #QMAKE_CXXFLAGS += -fvisibility=hidden
     } else {
         error("Unsupported Mac toolchain, only 64-bit LLVM+clang is supported")
     }
@@ -80,11 +68,9 @@ linux {
     CONFIG  += iOSBuild MobileBuild app_bundle NoSerialBuild
     CONFIG  -= bitcode
     DEFINES += __ios__
-    DEFINES += QGC_NO_GOOGLE_MAPS
     DEFINES += NO_SERIAL_LINK
-    DEFINES += QGC_DISABLE_UVC
     QMAKE_IOS_DEPLOYMENT_TARGET = 8.0
-    QMAKE_IOS_TARGETED_DEVICE_FAMILY = 1,2 # Universal
+    QMAKE_APPLE_TARGETED_DEVICE_FAMILY = 1,2 # Universal
     QMAKE_LFLAGS += -Wl,-no_pie
 } else {
     error("Unsupported build platform, only Linux, Windows, Android and Mac (Mac OS and iOS) are supported")
@@ -117,35 +103,37 @@ exists ($$GIT_TOP/.git) {
     GIT_HASH     = $$system(git --git-dir $$GIT_TOP/.git --work-tree $$GIT_TOP rev-parse --short HEAD)
     GIT_TIME     = $$system(git --git-dir $$GIT_TOP/.git --work-tree $$GIT_TOP show --oneline --format=\"%ci\" -s HEAD)
 
-    # determine if we're on a tag matching vX.Y.Z (stable release)
-    contains(GIT_DESCRIBE, v[0-9].[0-9].[0-9]) {
-        # release version "vX.Y.Z"
-        GIT_VERSION = $${GIT_DESCRIBE}
-    } else {
-        # development version "Development branch:sha date"
-        GIT_VERSION = "Development $${GIT_BRANCH}:$${GIT_HASH} $${GIT_TIME}"
+    isEmpty(VERSION){
+        VERSION      = $$replace(GIT_DESCRIBE, "v", "")
+        VERSION      = $$replace(VERSION, "-", ".")
+        VERSION      = $$section(VERSION, ".", 0, 3)
+    }
+    isEmpty(BRANCH){
+        BRANCH = $$GIT_BRANCH
     }
 
-    VERSION      = $$replace(GIT_DESCRIBE, "v", "")
-    VERSION      = $$replace(VERSION, "-", ".")
-    VERSION      = $$section(VERSION, ".", 0, 3)
     MacBuild {
         MAC_VERSION  = $$section(VERSION, ".", 0, 2)
         MAC_BUILD    = $$section(VERSION, ".", 3, 3)
-        message(QGroundControl version $${MAC_VERSION} build $${MAC_BUILD} describe $${GIT_VERSION})
+        message(GCS version $${MAC_VERSION} build $${MAC_BUILD} describe $${GIT_VERSION})
     } else {
-        message(QGroundControl $${GIT_VERSION})
+        message(GCS $${GIT_VERSION})
     }
-} else {
+}
+
+isEmpty(VERSION) {
     error("Out-of-tree build")
     GIT_VERSION     = None
     VERSION         = 0.0.0   # Marker to indicate out-of-tree build
     MAC_VERSION     = 0.0.0
     MAC_BUILD       = 0
+    BRANCH          = None
 }
-message($$GIT_VERSION)
+message($$VERSION ($$BRANCH))
 
-DEFINES += GIT_VERSION=\"\\\"$$GIT_VERSION\\\"\"
+DEFINES += VERSION=$$VERSION
+DEFINES += BRANCH=$$BRANCH
+
 
 # Installer configuration
 
@@ -168,32 +156,11 @@ CONFIG(debug, debug|release) {
     error(Unsupported build flavor)
 }
 
-# Setup our build directories
+#
+# Warnings
+#
 
-BASEDIR      = $$IN_PWD
-
-!iOSBuild {
-    OBJECTS_DIR  = $${OUT_PWD}/obj
-    MOC_DIR      = $${OUT_PWD}/moc
-    UI_DIR       = $${OUT_PWD}/ui
-    RCC_DIR      = $${OUT_PWD}/rcc
-}
-
-LANGUAGE = C++
-
-LOCATION_PLUGIN_DESTDIR = $${OUT_PWD}/src/QtLocationPlugin
-LOCATION_PLUGIN_NAME    = QGeoServiceProviderFactoryQGC
-
-# Turn off serial port warnings
 DEFINES += _TTY_NOWARN_
-
-#
-# By default warnings as errors are turned off. Even so, in order for a pull request
-# to be accepted you must compile cleanly with warnings as errors turned on the default
-# set of OS builds. See http://www.qgroundcontrol.org/dev/contribute for more details.
-# You can use the WarningsAsErrorsOn CONFIG switch to turn warnings as errors on for your
-# own builds.
-#
 
 MacBuild | LinuxBuild {
     QMAKE_CXXFLAGS_WARN_ON += -Wall
@@ -201,12 +168,8 @@ MacBuild | LinuxBuild {
         QMAKE_CXXFLAGS_WARN_ON += -Werror
     }
     MacBuild {
-        # Latest clang version has a buggy check for this which cause Qt headers to throw warnings on qmap.h
         QMAKE_CXXFLAGS_WARN_ON += -Wno-return-stack-address
-        # Xcode 8.3 has issues on how MAVLink accesses (packed) message structure members.
-        # Note that this will fail when Xcode version reaches 10.x.x
-        XCODE_VERSION = $$system($$PWD/tools/get_xcode_version.sh)
-        greaterThan(XCODE_VERSION, 8.2.0): QMAKE_CXXFLAGS_WARN_ON += -Wno-address-of-packed-member
+        QMAKE_CXXFLAGS_WARN_ON += -Wno-address-of-packed-member
     }
 }
 
@@ -238,7 +201,9 @@ ReleaseBuild {
     DEFINES += QT_NO_DEBUG QT_MESSAGELOGCONTEXT
     CONFIG += force_debug_info  # Enable debugging symbols on release builds
     !iOSBuild {
-        CONFIG += ltcg              # Turn on link time code generation
+        !AndroidBuild {
+            CONFIG += ltcg              # Turn on link time code generation
+        }
     }
 
     WindowsBuild {
@@ -253,3 +218,90 @@ ReleaseBuild {
         QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO += /OPT:ICF
     }
 }
+
+
+
+
+
+###############################################################################
+#
+# Build and directories
+#
+###############################################################################
+
+
+plugin {
+    GCS_TOP = ../../..
+} else {
+    GCS_TOP = ../..
+}
+
+
+APX_TOP = $${GCS_TOP}/..
+
+SRC_DIR = $$GCS_TOP/src
+LIB_DIR = $$SRC_DIR/lib
+
+#message($$GCS_TOP)
+
+#CONFIG += silent
+
+exists($${OUT_PWD}/*.pro) {
+    error("You must use shadow build (e.g. mkdir build; cd build; qmake ../gcs.pro).")
+}
+
+
+plugin:!mac {
+    TARGET = $$qtLibraryTarget($$TARGET)
+}
+
+# Directories and paths
+
+INCLUDEPATH += \
+    $${LIB_DIR}/FactSystem \
+    $${LIB_DIR}/AppSettings \
+    $${LIB_DIR}/Database \
+    $${LIB_DIR}/Datalink \
+    $${LIB_DIR}/Vehicles \
+    $${LIB_DIR}/Nodes \
+    $${LIB_DIR}/Mission \
+    $${LIB_DIR}/TreeModel \
+    $${LIB_DIR}/QtLocationPlugin \
+    $${LIB_DIR} \
+    $${APX_TOP}/ \
+    $${APX_TOP}/lib \
+
+BUILD_DIR = $${GCS_TOP} #/build
+
+RES_DIR = $${GCS_TOP}/resources
+
+OBJECTS_DIR = $$BUILD_DIR/obj/$$TEMPLATE/$$TARGET
+
+plugin {
+    DESTDIR = $$BUILD_DIR/Plugins/gcs
+    #GCS_TOP = $$GCS_TOP
+    HEADERS += ../../lib/plugin_interface.h
+    LIBS += -lgcs
+
+} else {
+    DESTDIR = $$BUILD_DIR/bin
+
+    # make symbols available for plugins
+    #mac: QMAKE_LFLAGS += -flat_namespace -undefined suppress
+
+}
+
+DESTDIR_LIB = $$BUILD_DIR/lib
+
+LIBS += -Wl,-L$$DESTDIR_LIB
+
+UI_DIR = $$OBJECTS_DIR
+MOC_DIR = $$OBJECTS_DIR
+RCC_DIR = $$OBJECTS_DIR
+
+# Make much smaller libraries (and packages) by removing debugging informations
+QMAKE_CFLAGS_RELEASE -= -g
+QMAKE_CXXFLAGS_RELEASE -= -g
+
+QT += network xml widgets quick sql
+

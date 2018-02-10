@@ -2,7 +2,7 @@ TARGET = console
 TEMPLATE = lib
 CONFIG += plugin
 
-include( ../../../gcs.pri )
+include( ../../../common.pri )
 
 SOURCES += ConsolePlugin.cpp \
     Console.cpp

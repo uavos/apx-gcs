@@ -34,7 +34,7 @@ class NodeTools: public Fact
 public:
   explicit NodeTools(NodeItem *parent);
 
-  void addCommand(uint cmd,const QString &name,const QString &descr,bool sys);
+  void addCommand(uint cmd, QString name, QString descr, bool sys);
   void clearCommands();
 
 private:
