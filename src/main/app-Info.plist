@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Video Streaming plugin</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIconFile</key>
+			<string>/icons/uavos-logo.icns</string>
+			<key>UTTypeDescription</key>
+			<string>APX Telemetry data</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.xml</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.uavos.telemetry</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>telemetry</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIconFile</key>
+			<string>/icons/uavos-logo.icns</string>
+			<key>UTTypeDescription</key>
+			<string>APX Configuration data</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.xml</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.uavos.nodes</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nodes</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIconFile</key>
+			<string>/icons/uavos-logo.icns</string>
+			<key>UTTypeDescription</key>
+			<string>APX Firmware</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.uavos.apxfw</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>apxfw</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.uavos.telemetry</string>
+				<string>com.uavos.nodes</string>
+				<string>com.uavos.apxfw</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

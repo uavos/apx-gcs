@@ -1,0 +1,142 @@
+- name: rc
+  title: Realtime controls override
+  - name: ovr
+    alias: rc_override
+    title: RC override
+    units: u
+    type: byte
+  - name: roll
+    alias: rc_roll
+    title: RC roll
+    units: u
+    sprec: s001
+  - name: pitch
+    alias: rc_pitch
+    title: RC pitch
+    units: u
+    sprec: s001
+  - name: throttle
+    alias: rc_throttle
+    title: RC throttle
+    units: u
+    sprec: u001
+  - name: yaw
+    alias: rc_yaw
+    title: RC yaw
+    units: u
+    sprec: s001
+
+
+
+
+
+
+- name: gcu
+title: Ground Station info
+- name: pos
+  sprec: lat
+  sprec: lon
+  sprec: hmsl
+- name: lat
+  title: GCU latitude
+  units: deg
+  alias: gcu_lat
+  sprec: f4
+- name: lon
+  title: GCU latitude
+  units: deg
+  alias: gcu_lon
+  sprec: f4
+- name: hmsl
+  title: GCU altitude MSL
+  units: m
+  alias: gcu_hmsl
+  sprec: f4
+- name: vel
+  sprec: vn
+  sprec: ve
+  sprec: vd
+- name: vn
+  title: GCU velocity North
+  units: m/s
+  alias:
+  sprec: f2
+- name: ve
+  title: GCU velocity East
+  units: m/s
+  alias:
+  sprec: f2
+- name: vd
+  title: GCU velocity Down
+  units: m/s
+  alias:
+  sprec: f2
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: GCU attitude roll
+  units: deg
+  alias:
+  sprec: f2
+- name: pitch
+  title: GCU attitude pitch
+  units: deg
+  alias:
+  sprec: f2
+- name: yaw
+  title: GCU attitude yaw
+  units: deg
+  alias:
+  sprec: f2
+//MFVECT(float
+  sprec: pos,lat,lon,hmsl,GCU global position
+  units: deg,deg,ms
+  alias: gcu_lat,gcu_lon,gcu_hmsl
+  sprec: f4
+- name: RSS
+  title: GCU modem signal strength
+  units: 0..1
+  alias: gcu_RSS
+  sprec: f2
+- name: Ve
+  title: GCU system battery voltage
+  units: v
+  alias: gcu_Ve
+  sprec: f2
+- name: MT
+  title: GCU modem temperature
+  units: C
+  alias:
+  sprec: s1
+MGRP2_END
+#undef MGRP2
+
+- name: meteo
+title: Meteo base station info
+- name: windSpd
+  title: wind speed
+  units: m/s
+  alias:
+  sprec: u01
+- name: windHdg
+  title: wind direction to
+  units: deg
+  alias:
+  sprec: f2
+- name: temp
+  title: Ground outside air temperature
+  units: C
+  alias:
+  sprec: s1
+- name: altps
+  title: barometric altitude on ground level
+  units: m
+  alias:
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+MGRP1_END
+#undef MGRP1

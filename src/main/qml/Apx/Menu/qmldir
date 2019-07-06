@@ -1,0 +1,11 @@
+module Apx.Menu
+depends Apx.Common 1.0
+
+singleton MenuStyle 1.0 MenuStyle.qml
+
+FactMenu        1.0 FactMenu.qml
+FactMenuPopup   1.0 FactMenuPopup.qml
+FactMenuAction  1.0 FactMenuAction.qml
+
+
+Menu  1.0 menu.js

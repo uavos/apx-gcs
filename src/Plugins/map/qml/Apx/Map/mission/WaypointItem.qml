@@ -1,0 +1,162 @@
+import QtQuick 2.5
+import QtLocation 5.9
+import QtPositioning 5.6
+import QtGraphicalEffects 1.0
+import QtQml 2.12
+
+import APX.Vehicles 1.0
+import APX.Mission 1.0
+
+import "../lib"
+import ".."
+
+MissionObject {
+    id: waypointItem
+    color: visibleOnMap?Style.cWaypoint:"yellow"
+    textColor: "black"
+    fact: modelData
+    implicitZ: 50
+
+    //Fact bindings
+    property real f_distance: fact?fact.distance:0
+    property real f_totalDistance: fact?fact.totalDistance:0
+    property int f_time: fact?fact.time:0
+    property int f_totalTime: fact?fact.totalTime:0
+    property string actionsText: fact?fact.actions.status:""
+    property real f_course: fact?fact.course:0
+    property bool f_first: num === 0
+    property bool f_warning: fact?fact.warning:false
+    property bool f_reachable: fact?fact.reachable:false
+    property int f_type: fact?fact.type.value:0
+    property var path: fact?fact.geoPath:0
+    property int num: fact?fact.num:0
+
+
+    //internal
+    property color cReachable: f_warning?Style.cLineYellow:f_type===Waypoint.Hdg?Style.cLineCyan:Style.cLineBlue
+    property color pathColor: f_first?Style.cLineGreen: f_reachable?cReachable:Style.cLineRed
+    property real pathWidth: Math.max(1,(f_first?2:4)*ui.scale)
+
+
+    property bool showDetails: f_distance===0 || (map.metersToPixelsFactor*f_distance)>50
+
+    property bool pathVisibleOnMap: true
+    property Item pathItem
+    visible: mission.visible && (visibleOnMap || pathVisibleOnMap)
+    onUpdateMapViewport: {
+        //console.log(typeof(path))
+        if(fact && path)pathVisibleOnMap=map.visibleRegion.boundingGeoRectangle().intersects(path.boundingGeoRectangle())
+    }
+
+    contentsTop: [
+        MapText {
+            z: 10
+            textColor: "white"
+            color: Style.cNormal
+            text: apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
+            opacity: (dragging||hover)?1:0
+            visible: opacity
+            font.pixelSize: map.fontSize
+            font.family: font_mono
+            font.bold: false
+        },
+        MapText {
+            z: 10
+            textColor: "white"
+            color: Style.cNormal
+            text: (f_time>=120?apx.timeToString(f_time)+"/":"")+apx.timeToString(f_totalTime)
+            opacity: (dragging||hover)?1:0
+            visible: opacity
+            font.pixelSize: map.fontSize
+            font.family: font_mono
+            font.bold: false
+        }
+    ]
+    contentsRight: [
+        MapText {
+            z: 10
+            textColor: "white"
+            color: Style.cGreen
+            text: f_altitude.toFixed()+"m"
+            opacity: (!dragging) && (hover||selected)?1:0
+            visible: opacity
+            font.pixelSize: map.fontSize
+        }
+    ]
+    contentsBottom: [
+        MapText {
+            z: 10
+            visible: actionsText.length>0 && opacity>0
+            textColor: "white"
+            color: Style.cRed
+            text: actionsText
+            opacity: (!dragging)?((hover||selected)?1:((detailsLevel>13 && showDetails)?(ui.effects?0.6:1):0)):0
+            font.pixelSize: map.fontSize * 0.8
+            font.bold: false
+        }
+    ]
+
+    contentsCenter: [
+        //courese arrow
+        FastBlur {
+            id: crsArrow
+            x: -width/2
+            y: height
+            z: -1
+            width: 24
+            height: width
+            cached: true
+            transform: Rotation {
+                origin.x: crsArrow.width/2
+                origin.y: -crsArrow.width
+                axis.z: 1
+                angle: waypointItem.f_course-map.bearing
+            }
+            radius: ui.antialiasing?1:0
+            opacity: ui.effects?0.6:1
+            //smooth: ui.antialiasing
+            visible: showDetails
+            source: ColorOverlay {
+                width: crsArrow.height
+                height: width
+                //smooth: ui.antialiasing
+                source: Image {
+                    width: crsArrow.height
+                    height: width
+                    //smooth: ui.antialiasing
+                    source: "../icons/waypoint-course.svg"
+                }
+                color: pathColor
+            }
+        }
+    ]
+
+    //Flight Path
+    Component.onCompleted: {
+        pathItem=createMapComponent(pathC)
+    }
+    Component {
+        id: pathC
+        MapPolyline {
+            id: polyline
+            z: 2 //-90 //waypointItem.implicitZ-1
+            visible: waypointItem.visible
+            opacity: ui.effects?0.6:1
+            //smooth: ui.antialiasing
+            line.width: waypointItem.pathWidth
+            line.color: waypointItem.pathColor
+            function updatePath()
+            {
+                if(waypointItem.path){
+                    polyline.setPath(waypointItem.path)
+                }
+            }
+            Connections {
+                target: waypointItem
+                onPathChanged: updatePath()
+            }
+            Component.onCompleted: updatePath()
+        }
+    }
+
+}

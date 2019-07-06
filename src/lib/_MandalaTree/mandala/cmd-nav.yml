@@ -1,0 +1,510 @@
+//-------------------------
+#define MGRP1 cmd
+MGRP1_BEGIN("Command"
+
+- name: reg
+title: Commanded regulator values"
+- name: roll
+  title: Commanded roll
+  units: deg
+  alias: cmd_roll
+  sprec: f2
+- name: pitch
+  title: Commanded pitch
+  units: deg
+  alias: cmd_pitch
+  sprec: f2
+- name: yaw
+  title: Commanded yaw
+  units: deg
+  alias: cmd_yaw
+  sprec: f2
+- name: pos
+  sprec: lat
+  sprec: lon
+  sprec: hmsl
+- name: lat
+  title: Commanded latitude
+  units: deg
+  alias:
+  sprec: f4
+- name: lon
+  title: Commanded latitude
+  units: deg
+  alias:
+  sprec: f4
+- name: hmsl
+  title: Commanded altitude MSL
+  units: m
+  alias:
+  sprec: f4
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  title: Commanded attitude
+  units: deg
+  alias: cmd_roll,cmd_pitch,cmd_yaw
+  sprec: f2
+//MFVECT(float
+  sprec: pos,lat,lon,hmsl
+  sprec: "Commanded global position
+  units: deg,deg,m
+  alias: ,,
+  sprec: f4
+- name: course
+  title: Commanded course
+  units: deg
+  alias: cmd_course
+  sprec: f2
+- name: altitude
+  title: Commanded altitude
+  units: m
+  alias: cmd_altitude
+  sprec: f4
+- name: airspeed
+  title: Commanded airspeed
+  units: m/s
+  alias: cmd_airspeed
+  sprec: f2
+- name: vspeed
+  title: Commanded vspeed
+  units: m/s
+  alias: cmd_vspeed
+  sprec: f2
+- name: slip
+  title: Commanded slip
+  units: deg
+  alias: cmd_slip
+  sprec: f2
+MFIELD(uint
+  sprec: rpm
+  title: Commanded RPM
+  units: 1/m
+  alias: cmd_rpm
+  sprec: u2
+//MFVEC2(ne
+  sprec: north,east
+- name: north
+  title: Commanded position north
+  units: m
+  alias:
+  sprec: f4
+- name: east
+  title: Commanded position east
+  units: m
+  alias:
+  sprec: f4
+//MFVEC2(float
+  sprec: NE,N,E
+  sprec: "Commanded position
+  units: m
+  alias: cmd_north,cmd_east
+  sprec: f4
+MGRP2_END
+#undef MGRP2
+
+- name: op
+title: Operation mode"
+MFENUM(enum
+  sprec: mode
+  title: flight mode"
+  sprec: mode
+  sprec:
+MFENUMV(mode
+  sprec: EMG
+  title: Realtime control"
+  sprec: 0
+MFENUMV(mode
+  sprec: RPV
+  title: Angles control"
+  sprec: 1
+MFENUMV(mode
+  sprec: UAV
+  title: Heading control"
+  sprec: 2
+MFENUMV(mode
+  sprec: WPT
+  title: Waypoints navigation"
+  sprec: 3
+MFENUMV(mode
+  sprec: HOME
+  title: Go back home"
+  sprec: 4
+MFENUMV(mode
+  sprec: STBY
+  title: Loiter around DNED"
+  sprec: 5
+MFENUMV(mode
+  sprec: TAXI
+  title: Taxi"
+  sprec: 6
+MFENUMV(mode
+  sprec: TAKEOFF
+  title: Takeoff"
+  sprec: 7
+MFENUMV(mode
+  sprec: LANDING
+  title: Landing"
+  sprec: 8
+MFENUM_END(mode
+MFIELD(byte
+  sprec: stage
+  title: Maneuver stage"
+  sprec: stage
+  sprec:
+MFIELD(bit
+  sprec: cancel
+  title: Cancel current procedure"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: inc
+  title: Increment mission index"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: dec
+  title: Decrement mission index"
+  sprec:
+  sprec:
+- name: rwAdj
+  title: Runway displacement adjust
+  units: m
+  alias: rwAdj
+  sprec: s1
+MFENUM(enum
+  sprec: mtype
+  title: Mission maneuver type"
+  sprec: mtype
+  sprec:
+MFENUMV(mtype
+  sprec: hdg
+  title: Heading navigation"
+  sprec: 0
+MFENUMV(mtype
+  sprec: line
+  title: Line navigation"
+  sprec: 1
+MFENUM_END(mtype
+MFIELD(byte
+  sprec: loops
+  title: Number of remaining turns or loops
+  units: 0..255
+  alias: loops
+  sprec:
+- name: turnR
+  title: Current circle radius
+  units: m
+  alias: turnR
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+- name: opt
+title: AP options"
+MFIELD(bit
+  sprec: thrcut
+  title: Throttle cut on/off"
+  sprec: cmode_thrcut
+  sprec:
+MFIELD(bit
+  sprec: throvr
+  title: Throttle override on/off"
+  sprec: cmode_throvr
+  sprec:
+MFIELD(bit
+  sprec: ahrs
+  title: AHRS mode inertial/gps"
+  sprec: cmode_ahrs
+  sprec:
+MFIELD(bit
+  sprec: nomag
+  title: Magnetometer blocked/on"
+  sprec: cmode_nomag
+  sprec:
+MFIELD(bit
+  sprec: hover
+  title: Stabilization mode hover/run"
+  sprec: cmode_hover
+  sprec:
+MFIELD(bit
+  sprec: hyaw
+  title: Hover yaw compensated/fixed"
+  sprec: cmode_hyaw
+  sprec:
+MFIELD(bit
+  sprec: dlhd
+  title: High precision downstream on/off"
+  sprec: cmode_dlhd
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: cam
+title: Camera commanded values"
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: Commanded cam roll
+  units: deg
+  alias: camcmd_roll
+  sprec: f2
+- name: pitch
+  title: Commanded cam pitch
+  units: deg
+  alias: camcmd_pitch
+  sprec: f2
+- name: yaw
+  title: Commanded cam yaw
+  units: deg
+  alias: camcmd_yaw
+  sprec: f2
+- name: bias_roll
+  title: Cam stability bias roll
+  units: deg/s
+  alias: cambias_roll
+  sprec: f4
+- name: bias_pitch
+  title: Cam stability bias pitch
+  units: deg/s
+  alias: cambias_pitch
+  sprec: f4
+- name: bias_yaw
+  title: Cam stability bias yaw
+  units: deg/s
+  alias: cambias_yaw
+  sprec: f4
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  sprec: "Commanded cam attitude
+  units: deg
+  alias: camcmd_roll,camcmd_pitch,camcmd_yaw
+  sprec: f4
+//MFVECT(float
+  sprec: bias,roll,pitch,yaw
+  sprec: "Cam stability bias
+  units: deg/s
+  alias: cambias_roll,cambias_pitch,cambias_yaw
+  sprec: f4
+MFENUM(enum
+  sprec: camop
+  title: Cam control mode"
+  sprec: cam_mode
+  sprec:
+MFENUMV(camop
+  sprec: off
+  title: camera off"
+  sprec: 0
+MFENUMV(camop
+  sprec: fixed
+  title: fixed position"
+  sprec: 1
+MFENUMV(camop
+  sprec: stab
+  title: gyro stabilization"
+  sprec: 2
+MFENUMV(camop
+  sprec: position
+  title: attitude position"
+  sprec: 3
+MFENUMV(camop
+  sprec: speed
+  title: attitude speed control"
+  sprec: 4
+MFENUMV(camop
+  sprec: target
+  title: target position tracking"
+  sprec: 5
+MFENUM_END(camop
+- name: zoom
+  title: Cam zoom level
+  units: 0..1
+  alias: cam_zoom
+  sprec: f2
+- name: focus
+  title: Cam focus
+  units: 0..1
+  alias: cam_focus
+  sprec: f2
+MFIELD(uint
+  sprec: tperiod
+  title: Cam period for timestamps
+  units: ms
+  alias: cam_tperiod
+  sprec: u2
+MFIELD(byte
+  sprec: ch
+  title: Video channel
+  units: 0..255
+  alias: cam_ch
+  sprec:
+MFIELD(byte
+  sprec: src
+  title: Camera source subindex
+  units: 0..255
+  alias: cam_src
+  sprec:
+MFIELD(bit
+  sprec: PF
+  title: picture flip on/off"
+  sprec: cam_opt_PF
+  sprec:
+MFIELD(bit
+  sprec: NIR
+  title: NIR filter on/off"
+  sprec: cam_opt_NIR
+  sprec:
+MFIELD(bit
+  sprec: DSP
+  title: display information on/off"
+  sprec: cam_opt_DSP
+  sprec:
+MFIELD(bit
+  sprec: FMI
+  title: focus mode infinity/auto"
+  sprec: cam_opt_FMI
+  sprec:
+MFIELD(bit
+  sprec: FM
+  title: focus manual/auto"
+  sprec: cam_opt_FM
+  sprec:
+MFIELD(bit
+  sprec: laser
+  title: rangefinder on/off"
+  sprec: cam_opt_laser
+  sprec:
+- name: pos
+  sprec: lat
+  sprec: lon
+  sprec: hmsl
+- name: lat
+  title: Tracking latitude
+  units: deg
+  alias: cam_lat
+  sprec: f4
+- name: lon
+  title: Tracking latitude
+  units: deg
+  alias: cam_lon
+  sprec: f4
+- name: hmsl
+  title: Tracking altitude MSL
+  units: m
+  alias: cam_hmsl
+  sprec: f4
+//MFVECT(float
+  sprec: pos,lat,lon,hmsl,"Tracking position
+  units: deg,deg,m
+  alias: cam_lat,cam_lon,cam_hmsl
+  sprec: f4
+MGRP2_END
+#undef MGRP2
+
+- name: ats
+title: ATS commanded values"
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: Commanded ATS roll
+  units: deg
+  alias: atscmd_roll
+  sprec: f2
+- name: pitch
+  title: Commanded ATS pitch
+  units: deg
+  alias: atscmd_pitch
+  sprec: f2
+- name: yaw
+  title: Commanded ATS yaw
+  units: deg
+  alias: atscmd_yaw
+  sprec: f2
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  sprec: "Commanded ATS attitude
+  units: deg
+  alias: atscmd_roll,atscmd_pitch,atscmd_yaw
+  sprec: f4
+MGRP2_END
+#undef MGRP2
+
+- name: turret
+title: Turret commanded values"
+MFENUM(enum
+  sprec: turret
+  title: Turret control mode"
+  sprec:
+  sprec:
+MFENUMV(turret
+  sprec: off
+  title: turret off"
+  sprec: 0
+MFENUMV(turret
+  sprec: fixed
+  title: fixed position"
+  sprec: 1
+MFENUMV(turret
+  sprec: stab
+  title: gyro stabilization"
+  sprec: 2
+MFENUMV(turret
+  sprec: position
+  title: attitude position"
+  sprec: 3
+MFENUMV(turret
+  sprec: speed
+  title: attitude speed control"
+  sprec: 4
+MFENUM_END(turret
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: Commanded turret roll
+  units: deg
+  alias:
+  sprec: f2
+- name: pitch
+  title: Commanded turret pitch
+  units: deg
+  alias:
+  sprec: f2
+- name: yaw
+  title: Commanded turret yaw
+  units: deg
+  alias:
+  sprec: f2
+- name: bias_roll
+  title: Turret bias roll
+  units: deg/s
+  alias:
+  sprec: f4
+- name: bias_pitch
+  title: Turret bias pitch
+  units: deg/s
+  alias:
+  sprec: f4
+- name: bias_yaw
+  title: Turret bias yaw
+  units: deg/s
+  alias:
+  sprec: f4
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  sprec: "Commanded turret attitude
+  units: deg
+  alias: ,,
+  sprec: f4
+//MFVECT(float
+  sprec: bias,roll,pitch,yaw
+  sprec: "Turret stability bias
+  units: deg/s
+  alias: ,,
+  sprec: f4
+MGRP2_END
+#undef MGRP2

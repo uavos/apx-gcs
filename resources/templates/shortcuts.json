@@ -1,0 +1,185 @@
+{
+  "system":
+  [
+    {
+      "key": "F1",
+      "scr": "help()"
+    },
+    {
+      "key": "F3",
+      "scr": "btn_STBY()"
+    },
+    {
+      "key": "F7",
+      "scr": "btn_IGN()"
+    },
+    {
+      "key": "F8",
+      "scr": "btn_TAKEOFF()"
+    },
+    {
+      "key": "F9",
+      "scr": "btn_CUT()"
+    },
+    {
+      "key": "Shift+F9",
+      "scr": "btn_OVR()"
+    },
+    {
+      "key": "F10",
+      "scr": "btn_TAXI()"
+    },
+    {
+      "key": "P",
+      "scr": "btn_PLD()"
+    },
+    {
+      "key": "F",
+      "scr": "btn_FLAPS()"
+    },
+    {
+      "key": "B",
+      "scr": "btn_BRAKE()"
+    },
+    {
+      "key": "Z",
+      "scr": "inc_CRS(-90)"
+    },
+    {
+      "key": "X",
+      "scr": "inc_CRS(+90)"
+    },
+    {
+      "key": "S",
+      "scr": "inc_CRS(-10)"
+    },
+    {
+      "key": "D",
+      "scr": "inc_CRS(+10)"
+    },
+    {
+      "key": "Q",
+      "scr": "inc_ALT(+20)"
+    },
+    {
+      "key": "A",
+      "scr": "inc_ALT(-20)"
+    },
+    {
+      "key": "Shift+Q",
+      "scr": "inc_ALT(+1)"
+    },
+    {
+      "key": "Shift+A",
+      "scr": "inc_ALT(-1)"
+    },
+    {
+      "key": "H",
+      "scr": "btn_HOME()"
+    },
+    {
+      "key": "W",
+      "scr": "btn_WPT()"
+    },
+    {
+      "key": "L",
+      "scr": "btn_LANDING()"
+    },
+    {
+      "key": "0",
+      "scr": "btn_INC()"
+    },
+    {
+      "key": "1",
+      "scr": "wpidx=0"
+    },
+    {
+      "key": "2",
+      "scr": "wpidx=1"
+    },
+    {
+      "key": "3",
+      "scr": "wpidx=2"
+    },
+    {
+      "key": "4",
+      "scr": "wpidx=3"
+    },
+    {
+      "key": "5",
+      "scr": "wpidx=4"
+    },
+    {
+      "key": "6",
+      "scr": "wpidx=5"
+    },
+    {
+      "key": "7",
+      "scr": "wpidx=6"
+    },
+    {
+      "key": "8",
+      "scr": "wpidx=7"
+    },
+    {
+      "key": "9",
+      "scr": "wpidx=8"
+    },
+    {
+      "key": "[",
+      "scr": "inc_FLAPS(-0.1)"
+    },
+    {
+      "key": "]",
+      "scr": "inc_FLAPS(+0.1)"
+    },
+    {
+      "key": "Shift+[",
+      "scr": "inc_AIRBRK(-0.1)"
+    },
+    {
+      "key": "Shift+]",
+      "scr": "inc_AIRBRK(+0.1)"
+    },
+    {
+      "key": "=",
+      "scr": "btn_STAGE()"
+    },
+    {
+      "key": "Backspace",
+      "scr": "btn_ESC()"
+    },
+    {
+      "key": ",",
+      "scr": "inc_SPD(-1)"
+    },
+    {
+      "key": ".",
+      "scr": "inc_SPD(+1)"
+    },
+    {
+      "key": "C",
+      "scr": "inc_ADJ(-1)"
+    },
+    {
+      "key": "V",
+      "scr": "inc_ADJ(+1)"
+    },
+    {
+      "key": "Shift+/",
+      "scr": "btn_ERS()"
+    },
+    {
+      "key": "Shift+Alt+/",
+      "scr": "btn_REL()"
+    },
+    {
+      "key": "`",
+      "scr": "nstat()"
+    },
+    {
+      "key": "Shift+`",
+      "scr": "nodes()"
+    }
+  ]
+}

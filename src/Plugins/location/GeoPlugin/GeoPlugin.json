@@ -1,0 +1,11 @@
+{
+    "Keys": ["uavos-maps"],
+    "Provider": "uavos",
+    "Version": 101,
+    "Experimental": false,
+    "Features": [
+        "OnlineMappingFeature",
+        "OnlineGeocodingFeature",
+        "ReverseGeocodingFeature"
+    ]
+}

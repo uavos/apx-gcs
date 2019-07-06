@@ -1,0 +1,246 @@
+{
+  "configs": [
+    {
+      "title": "AP",
+      "name": "Logitech Attack",
+      "config": {
+        "axes": [
+          {
+            "id": 1,
+            "hyst": 0.2,
+            "scr": "jsw_R($)"
+          },
+          {
+            "id": 2,
+            "hyst": 0.2,
+            "scr": "jsw_P($)"
+          },
+          {
+            "id": 3,
+            "scr": "jsw_T((-$+1)/2)"
+          }
+        ],
+        "buttons": [
+          {
+            "id": 1,
+            "scr": "btn_STAGE()"
+          },
+          {
+            "id": 2,
+            "scr": "btn_WPT()"
+          },
+          {
+            "id": 3,
+            "scr": "btn_UAV()"
+          },
+          {
+            "id": 4,
+            "scr": "btn_EMG()"
+          },
+          {
+            "id": 5,
+            "scr": "btn_RPV()"
+          },
+          {
+            "id": 6,
+            "scr": "btn_TAKEOFF()"
+          },
+          {
+            "id": 7,
+            "scr": "btn_LANDING()"
+          },
+          {
+            "id": 8,
+            "scr": "btn_BRAKE()"
+          },
+          {
+            "id": 9,
+            "scr": "btn_FLAPS()"
+          },
+          {
+            "id": 10,
+            "scr": "btn_HOME()"
+          },
+          {
+            "id": 11,
+            "scr": "btn_ERS()"
+          }
+        ]
+      }
+    },
+    {
+      "title": "AP",
+      "name": "Logitech Extreme 3D",
+      "config": {
+        "axes": [
+          {
+            "id": 1,
+            "hyst": 0.2,
+            "scr": "jsw_R($)"
+          },
+          {
+            "id": 2,
+            "hyst": 0.2,
+            "scr": "jsw_P($)"
+          },
+          {
+            "id": 3,
+            "hyst": 0.2,
+            "scr": "jsw_Y($)"
+          },
+          {
+            "id": 4,
+            "scr": "jsw_T((-$+1)/2)"
+          }
+        ],
+        "buttons": [
+          {
+            "id": 1,
+            "scr": "btn_STAGE()"
+          },
+          {
+            "id": 2,
+            "scr": "btn_BRAKE()"
+          },
+          {
+            "id": 3,
+            "scr": "btn_UAV()"
+          },
+          {
+            "id": 4,
+            "scr": "btn_TAKEOFF()"
+          },
+          {
+            "id": 5,
+            "scr": "btn_RPV()"
+          },
+          {
+            "id": 6,
+            "scr": "btn_EMG()"
+          },
+          {
+            "id": 7,
+            "scr": "btn_ERS()"
+          },
+          {
+            "id": 8,
+            "scr": "btn_SW1()"
+          },
+          {
+            "id": 9,
+            "scr": "btn_WPT()"
+          },
+          {
+            "id": 10,
+            "scr": "btn_GEAR()"
+          },
+          {
+            "id": 11,
+            "scr": "btn_HOME()"
+          },
+          {
+            "id": 12,
+            "scr": "btn_LANDING()"
+          }
+        ]
+      }
+    },
+    {
+      "title": "PLD",
+      "name": "Logitech Attack",
+      "config": {
+        "axes": [
+          {
+            "id": 1,
+            "hyst": 0.2,
+            "scr": "jsw_CR($*0.2)"
+          },
+          {
+            "id": 2,
+            "hyst": 0.2,
+            "scr": "jsw_CP($*0.2)"
+          },
+          {
+            "id": 3,
+            "scr": "jsw_CT((-$+1)/2)"
+          }
+        ],
+        "buttons": [
+          {
+            "id": 1,
+            "scr": "btn_FM()"
+          },
+          {
+            "id": 2,
+            "scr": "cambias_pitch=cambias_pitch-1"
+          },
+          {
+            "id": 3,
+            "scr": "cambias_pitch=cambias_pitch+1"
+          },
+          {
+            "id": 4,
+            "scr": "cambias_yaw=cambias_yaw-1"
+          },
+          {
+            "id": 5,
+            "scr": "cambias_yaw=cambias_yaw+1"
+          },
+          {
+            "id": 8,
+            "scr": "btn_PLD()"
+          }
+        ]
+      }
+    },
+    {
+      "title": "AP",
+      "name": "RC MUltiplex",
+      "config": {
+        "axes": [
+          {
+            "id": 1,
+            "hyst": 0.2,
+            "scr": "jsw_R($)"
+          },
+          {
+            "id": 2,
+            "hyst": 0.2,
+            "scr": "jsw_P(-$)"
+          },
+          {
+            "id": 3,
+            "scr": "jsw_T((-$+1)/2)"
+          }
+        ]
+      }
+    },
+    {
+      "title": "AP",
+      "name": "RC FrSky",
+      "config": {
+        "axes": [
+          {
+            "id": 1,
+            "scr": "jsw_T(($+1)/2)"
+          },
+          {
+            "id": 2,
+            "hyst": 0.2,
+            "scr": "jsw_R($)"
+          },
+          {
+            "id": 3,
+            "hyst": 0.2,
+            "scr": "jsw_P(-$)"
+          }
+        ]
+      }
+    },
+    {
+      "title": "OFF",
+      "name": "",
+      "config": { }
+    }
+  ]
+}

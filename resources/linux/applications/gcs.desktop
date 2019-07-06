@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=APX Ground Control
+Comment=UAVOS APX Ground Control Software
+Exec=gcs
+GenericName=GCS
+Icon=uavos-gcs
+MimeType=
+StartupNotify=true
+Terminal=false
+X-Ubuntu-Gettext-Domain=desktop_kdebase
+Categories=Education;

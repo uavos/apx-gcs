@@ -1,0 +1,712 @@
+//-------------------------
+#define MGRP1 state
+MGRP1_BEGIN("System state"
+
+- name: ahrs
+title: Attitude and position estimation"
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: Attitude roll
+  units: deg
+  alias: roll
+  sprec: f2
+- name: pitch
+  title: Attitude pitch
+  units: deg
+  alias: pitch
+  sprec: f2
+- name: yaw
+  title: Attitude yaw
+  units: deg
+  alias: yaw
+  sprec: f2
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  sprec: "Attitude
+  units: deg
+  alias: roll,pitch,yaw
+  sprec: f2
+- name: lat
+  title: Latitude
+  units: deg
+  alias:
+  sprec: f4
+- name: lon
+  title: Longitude
+  units: deg
+  alias:
+  sprec: f4
+//MFVEC2(ne
+  sprec: north,east
+- name: north
+  title: Local position north
+  units: m
+  alias:
+  sprec: f4
+- name: east
+  title: Local position east
+  units: m
+  alias:
+  sprec: f4
+//MFVEC2(vel
+  sprec: north,east
+- name: vn
+  title: Local velocity north
+  units: m/s
+  alias:
+  sprec: f2
+- name: ve
+  title: Local velocity east
+  units: m/s
+  alias:
+  sprec: f2
+//MFVEC2(float
+  sprec: NE,N,E
+  sprec: "Local position
+  units: m
+  alias: pos_north,pos_east
+  sprec: f4
+//MFVEC2(float
+  sprec: vel,N,E
+  sprec: "Local velocity
+  units: m/s
+  alias: vel_north,vel_east
+  sprec: f2
+- name: altitude
+  title: Altitude
+  units: m
+  alias: altitude
+  sprec: f4
+- name: course
+  title: Moving direction
+  units: deg
+  alias: course
+  sprec: f2
+- name: gSpeed
+  title: Ground speed
+  units: m/s
+  alias: gSpeed
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+- name: flight
+title: Flight parameters"
+- name: airspeed
+  title: Airspeed
+  units: m/s
+  alias: airspeed
+  sprec: f2
+- name: vspeed
+  title: Vertical speed
+  units: m/s
+  alias: vspeed
+  sprec: f2
+- name: ldratio
+  title: Glide ratio
+  units: Lift/Drag
+  alias: ldratio
+  sprec: f2
+- name: venergy
+  title: Compensated variometer
+  units: m/s
+  alias: venergy
+  sprec: f2
+- name: agl
+  title: Above Ground Level altitude
+  units: m
+  alias: agl
+  sprec: f2
+- name: vcas
+  title: Airspeed derivative
+  units: m/s^2
+  alias: vcas
+  sprec: f2
+- name: denergy
+  title: Venergy derivative
+  units: m/s^2
+  alias: denergy
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+- name: status
+title: Status of subsystems"
+MFIELD(bit
+  sprec: rc
+  title: RC on/off"
+  sprec: status_rc
+  sprec:
+MFIELD(bit
+  sprec: gps
+  title: GPS available/lost"
+  sprec: status_gps
+  sprec:
+MFIELD(bit
+  sprec: agl
+  title: AGL available/off"
+  sprec: status_agl
+  sprec:
+MFIELD(bit
+  sprec: uplink
+  title: Uplink available/lost"
+  sprec: status_modem
+  sprec:
+MFIELD(bit
+  sprec: landed
+  title: Vehicle landed/flying"
+  sprec: status_landed
+  sprec:
+MFIELD(bit
+  sprec: touch
+  title: Landing gear touchdown/floating"
+  sprec: status_touch
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: error
+title: System errors and warnings"
+MFIELD(bit
+  sprec: fatal
+  title: Fatal error/ok"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: power
+  title: Power supply error/ok"
+  sprec: error_power
+  sprec:
+MFIELD(bit
+  sprec: engine
+  title: Engine error/ok"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: rpm
+  title: RPM sensor error/ok"
+  sprec: error_rpm
+  sprec:
+MFIELD(bit
+  sprec: cas
+  title: CAS error"
+  sprec: error_cas
+  sprec:
+MFIELD(bit
+  sprec: pstatic
+  title: Static pressure error/ok"
+  sprec: error_pstatic
+  sprec:
+MFIELD(bit
+  sprec: gyro
+  title: IMU gyros bias"
+  sprec: error_gyro
+  sprec:
+MFIELD(bit
+  sprec: ers
+  title: ERS error/ok"
+  sprec:
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: nav
+title: Navigation parameters"
+//MFVEC2(dxy
+  sprec: dx,dy
+- name: dx
+  title: Bodyframe delta X
+  units: m
+  alias:
+  sprec: f2
+- name: dy
+  title: Bodyframe delta Y
+  units: m
+  alias:
+  sprec: f2
+//MFVEC2(vxy
+  sprec: vx,vy
+- name: vx
+  title: Bodyframe velocity X
+  units: m/s
+  alias:
+  sprec: f2
+- name: vy
+  title: Bodyframe velocity Y
+  units: m/s
+  alias:
+  sprec: f2
+//MFVEC2(float
+  sprec: dXY,x,y
+  sprec: "Bodyframe delta
+  units: m
+  alias: dx,dy
+  sprec: f2
+//MFVEC2(float
+  sprec: vXY,x,y
+  sprec: "Bodyframe velocity
+  units: m/s
+  alias: Vx,Vy
+  sprec: f2
+- name: delta
+  title: General delta (depends on mode
+  units: m
+  alias: delta
+  sprec: f2
+- name: tgHDG
+  title: Current tangent heading
+  units: deg
+  alias: tgHDG
+  sprec: f2
+- name: stab
+  title: Stability
+  units: 0..1
+  alias: stab
+  sprec: u001
+- name: corr
+  title: Correlator output
+  units: K
+  alias:
+  sprec: f2
+- name: rwDelta
+  title: Runway alignment
+  units: m
+  alias: rwDelta
+  sprec: f2
+- name: rwDV
+  title: Runway alignment velocity
+  units: m/s
+  alias: rwDV
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+- name: mission
+title: Waypoint information"
+- name: DME
+  title: Distance to waypoint
+  units: m
+  alias: dWPT
+  sprec: f2
+- name: HDG
+  title: Current waypoint heading
+  units: deg
+  alias: wpHDG
+  sprec: f2
+MFIELD(uint
+  sprec: ETA
+  title: Estimated time of arrival
+  units: s
+  alias: ETA
+  sprec: u4
+MFIELD(byte
+  sprec: wpidx
+  title: Current waypoint
+  units: 0..255
+  alias: wpidx
+  sprec:
+MFIELD(byte
+  sprec: rwidx
+  title: Current runway
+  units: 0..255
+  alias: rwidx
+  sprec:
+MFIELD(byte
+  sprec: twidx
+  title: Current taxiway
+  units: 0..255
+  alias: twidx
+  sprec:
+MFIELD(byte
+  sprec: piidx
+  title: Current point of interest
+  units: 0..255
+  alias: piidx
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: ils
+title: Instrument Landing System status"
+MFIELD(bit
+  sprec: armed
+  title: ILS armed/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: approach
+  title: ILS approach available/lost"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: offset
+  title: ILS offset available/lost"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: platform
+  title: ILS platform available/lost"
+  sprec:
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: home
+title: Home point"
+- name: pos
+  sprec: lat
+  sprec: lon
+  sprec: hmsl
+- name: lat
+  title: Home latitude
+  units: deg
+  alias: home_lat
+  sprec: f4
+- name: lon
+  title: Home latitude
+  units: deg
+  alias: home_lon
+  sprec: f4
+- name: hmsl
+  title: Home altitude MSL
+  units: m
+  alias: home_hmsl
+  sprec: f4
+//MFVECT(float
+  sprec: pos,lat,lon,hmsl,"Home global position
+  units: deg,deg,m
+  alias: home_lat,home_lon,home_hmsl
+  sprec: f4
+- name: altps
+  title: Barometric altitude on ground level
+  units: m
+  alias: altps_gnd
+  sprec: f2
+- name: HDG
+  title: Heading to home
+  units: deg
+  alias: homeHDG
+  sprec: f2
+- name: dist
+  title: Distance to home
+  units: m
+  alias: dHome
+  sprec: f2
+MFIELD(bit
+  sprec: set
+  title: GPS initialized"
+  sprec: status_home
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: wind
+title: Wind estimator"
+- name: speed
+  title: wind speed
+  units: m/s
+  alias: windSpd
+  sprec: u01
+- name: HDG
+  title: wind direction to
+  units: deg
+  alias: windHdg
+  sprec: f2
+- name: cas2tas
+  title: CAS to TAS multiplier
+  units: K
+  alias: cas2tas
+  sprec: u001
+MGRP2_END
+#undef MGRP2
+
+- name: downlink
+title: Downlink parameters"
+MFIELD(uint
+  sprec: period
+  title: downlink period
+  units: ms
+  alias: dl_period
+  sprec: u2
+MFIELD(uint
+  sprec: timestamp
+  title: downlink timestamp
+  units: ms
+  alias: dl_timestamp
+  sprec: u4
+MGRP2_END
+#undef MGRP2
+
+- name: cam
+title: Camera control system state"
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: Cam attitude roll
+  units: deg
+  alias: cam_roll
+  sprec: f2
+- name: pitch
+  title: Cam attitude pitch
+  units: deg
+  alias: cam_pitch
+  sprec: f2
+- name: yaw
+  title: Cam attitude yaw
+  units: deg
+  alias: cam_yaw
+  sprec: f2
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  title: Cam attitude
+  units: deg
+  alias: cam_roll,cam_pitch,cam_yaw
+  sprec: f2
+MFIELD(uint
+  sprec: timestamp
+  title: Cam timestamp
+  units: ms
+  alias: cam_timestamp
+  sprec: u4
+- name: DME
+  title: Distance to tracking object
+  units: m
+  alias:
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+- name: ats
+title: ATS system state"
+- name: att
+  sprec: roll
+  sprec: pitch
+  sprec: yaw
+- name: roll
+  title: ATS attitude roll
+  units: deg
+  alias:
+  sprec: f2
+- name: pitch
+  title: ATS attitude pitch
+  units: deg
+  alias:
+  sprec: f2
+- name: yaw
+  title: ATS attitude yaw
+  units: deg
+  alias:
+  sprec: f2
+- name: enc_roll
+  title: ATS encoder roll
+  units: deg
+  alias: atsenc_roll
+  sprec: f2
+- name: enc_pitch
+  title: ATS encoder pitch
+  units: deg
+  alias: atsenc_pitch
+  sprec: f2
+- name: enc_yaw
+  title: ATS encoder yaw
+  units: deg
+  alias: atsenc_yaw
+  sprec: f2
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  title: ATS attitude
+  units: deg
+  alias: ,,
+  sprec: f2
+//MFVECT(float
+  sprec: enc,roll,pitch,yaw
+  title: ATS encoders
+  units: deg
+  alias: atsenc_roll,atsenc_pitch,atsenc_yaw
+  sprec: f4
+MFENUM(enum
+  sprec: mode
+  title: ATS mode"
+  sprec: ats_mode
+  sprec:
+MFENUMV(mode
+  sprec: track
+  title: turret off"
+  sprec: 0
+MFENUMV(mode
+  sprec: manual
+  title: fixed position"
+  sprec: 1
+MFENUM_END(mode
+MGRP2_END
+#undef MGRP2
+
+- name: turret
+title: Turret system state"
+- name: roll
+  title: Turret attitude roll
+  units: deg
+  alias:
+  sprec: f2
+- name: pitch
+  title: Turret attitude pitch
+  units: deg
+  alias:
+  sprec: f2
+- name: yaw
+  title: Turret attitude yaw
+  units: deg
+  alias:
+  sprec: f2
+- name: enc_roll
+  title: Turret encoder roll
+  units: deg
+  alias:
+  sprec: f2
+- name: enc_pitch
+  title: Turret encoder pitch
+  units: deg
+  alias:
+  sprec: f2
+- name: enc_yaw
+  title: Turret encoder yaw
+  units: deg
+  alias:
+  sprec: f2
+//MFVECT(float
+  sprec: att,roll,pitch,yaw
+  title: Turret attitude
+  units: deg
+  alias: ,,
+  sprec: f2
+//MFVECT(float
+  sprec: enc,roll,pitch,yaw
+  title: Turret encoders
+  units: deg
+  alias: ,,
+  sprec: f4
+MFIELD(byte
+  sprec: ammo
+  title: Turret ammo
+  units: 0..255
+  alias:
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: usr
+title: User values"
+- name: u1
+  title: User value 1"
+  sprec: user1
+  sprec: f2
+- name: u2
+  title: User value 2"
+  sprec: user2
+  sprec: f2
+- name: u3
+  title: User value 3"
+  sprec: user3
+  sprec: f2
+- name: u4
+  title: User value 4"
+  sprec: user4
+  sprec: f2
+- name: u5
+  title: User value 5"
+  sprec: user5
+  sprec: f2
+- name: u6
+  title: User value 6"
+  sprec: user6
+  sprec: f2
+- name: u7
+  title: User value 7"
+  sprec: user7
+  sprec: f2
+- name: u8
+  title: User value 8"
+  sprec: user8
+  sprec: f2
+- name: u9
+  title: User value 9"
+  sprec:
+  sprec: f2
+- name: u10
+  title: User value 10"
+  sprec:
+  sprec: f2
+- name: u11
+  title: User value 11"
+  sprec:
+  sprec: f2
+- name: u12
+  title: User value 12"
+  sprec:
+  sprec: f2
+- name: u13
+  title: User value 13"
+  sprec:
+  sprec: f2
+- name: u14
+  title: User value 14"
+  sprec:
+  sprec: f2
+- name: u15
+  title: User value 15"
+  sprec:
+  sprec: f2
+- name: u16
+  title: User value 16"
+  sprec:
+  sprec: f2
+MFIELD(bit
+  sprec: b1
+  title: User bit 1"
+  sprec: userb_1
+  sprec:
+MFIELD(bit
+  sprec: b2
+  title: User bit 2"
+  sprec: userb_2
+  sprec:
+MFIELD(bit
+  sprec: b3
+  title: User bit 3"
+  sprec: userb_3
+  sprec:
+MFIELD(bit
+  sprec: b4
+  title: User bit 4"
+  sprec: userb_4
+  sprec:
+MFIELD(bit
+  sprec: b5
+  title: User bit 5"
+  sprec: userb_5
+  sprec:
+MFIELD(bit
+  sprec: b6
+  title: User bit 6"
+  sprec: userb_6
+  sprec:
+MFIELD(bit
+  sprec: b7
+  title: User bit 7"
+  sprec: userb_7
+  sprec:
+MFIELD(bit
+  sprec: b8
+  title: User bit 8"
+  sprec: userb_8
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+MGRP1_END
+#undef MGRP1

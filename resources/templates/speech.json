@@ -1,0 +1,295 @@
+{
+    "voices": {
+        "en_US": "Vicki",
+        "ru_RU": "Milena"
+    },
+    "phrases":
+        [
+        {
+            "msg": "configuration updated",
+            "say": "configuration accepted"
+        },
+        {
+            "msg": "mission updated"
+        },
+        {
+            "msg": "mission accomplished"
+        },
+        {
+            "msg": "waiting for position fix",
+            "say": "waiting for position"
+        },
+        {
+            "msg": "waypoint passed"
+        },
+        {
+            "msg": "engine start"
+        },
+        {
+            "msg": "select waypoint",
+            "say": "waypoint changed"
+        },
+        {
+            "msg": "select runway",
+            "say": "runway changed"
+        },
+        {
+            "msg": "select taxiway",
+            "say": "taxiway changed"
+        },
+        {
+            "_comment": "# ------ status flags -----------------"
+        },
+        {
+            "msg": "brake on",
+            "say": "brakes"
+        },
+        {
+            "msg": "brake off",
+            "say": "brakes off"
+        },
+        {
+            "msg": "engine off",
+            "say": "ignition off"
+        },
+        {
+            "msg": "engine on",
+            "say": "ignition on"
+        },
+        {
+            "msg": "ers on",
+            "say": "parachute launched"
+        },
+        {
+            "msg": "ers off",
+            "say": "parachute locked"
+        },
+        {
+            "msg": "flaps on",
+            "say": "flaps"
+        },
+        {
+            "msg": "flaps off",
+            "say": "flaps retracted"
+        },
+        {
+            "msg": "gps available",
+            "say": "position initialized"
+        },
+        {
+            "msg": "gps lost"
+        },
+        {
+            "msg": "payload activated"
+        },
+        {
+            "msg": "payload off"
+        },
+        {
+            "msg": "rc on",
+            "say": "pilot control"
+        },
+        {
+            "msg": "rc off"
+        },
+        {
+            "msg": "throttle cut on",
+            "say": "throttle blocked"
+        },
+        {
+            "msg": "throttle cut off",
+            "say": "throttle unblocked"
+        },
+        {
+            "msg": "throttle override on",
+            "say": "manual throttle"
+        },
+        {
+            "msg": "throttle override off",
+            "say": "throttle control"
+        },
+
+        {
+            "_comment": "# ------ MODE -----------------"
+        },
+        {
+            "msg": "flight mode angles control",
+            "say": "RPV mode"
+        },
+        {
+            "msg": "flight mode go back home",
+            "say": "home"
+        },
+        {
+            "msg": "flight mode heading control",
+            "say": "course control"
+        },
+        {
+            "msg": "flight mode loiter around",
+            "say": "loiter"
+        },
+        {
+            "msg": "flight mode realtime control",
+            "say": "manual mode"
+        },
+        {
+            "msg": "flight mode waypoints navigation",
+            "say": "mission started"
+        },
+        {
+            "msg": "flight mode takeoff",
+            "say": "takeoff procedure initiated"
+        },
+        {
+            "msg": "flight mode taxi",
+            "say": "taxi mode"
+        },
+        {
+            "msg": "flight mode landing",
+            "say": "landing procedure initiated"
+        },
+
+        {
+            "_comment": "# ------ TAXI -----------------"
+        },
+        {
+            "msg": "taxi reset",
+            "say": "taxi cancelled"
+        },
+        {
+            "msg": "auto taxi",
+            "say": "auto taxi"
+        },
+        {
+            "msg": "taxi pattern finished",
+            "say": "taxi finished"
+        },
+
+        {
+            "_comment": "# ------ TAKEOFF -----------------"
+        },
+        {
+            "msg": "takeoff start",
+            "say": "full throttle"
+        },
+        {
+            "msg": "takeoff launcher engaged",
+            "say": "launcher ready"
+        },
+        {
+            "msg": "takeoff run",
+            "say": "running"
+        },
+        {
+            "msg": "takeoff liftoff",
+            "say": "liftoff"
+        },
+        {
+            "msg": "takeoff climbing",
+            "say": "climbing"
+        },
+        {
+            "msg": "takeoff finished"
+        },
+        {
+            "msg": "takeoff cancelled"
+        },
+        {
+            "msg": "takeoff taxi test",
+            "say": "taxi test"
+        },
+        {
+            "_comment": "# ------ LANDING -----------------"
+        },
+        {
+            "msg": "landing ta",
+            "say": "path estimation"
+        },
+        {
+            "msg": "landing ta_app",
+            "say": "turn to approach"
+        },
+        {
+            "msg": "landing final approach",
+            "say": "final approach"
+        },
+        {
+            "msg": "landing flare",
+            "say": "flare"
+        },
+        {
+            "msg": "landing touchdown",
+            "say": "touchdown"
+        },
+        {
+            "msg": "landing run",
+            "say": "running"
+        },
+        {
+            "msg": "landing finished"
+        },
+        {
+            "msg": "landing cancelled"
+        },
+        {
+            "msg": "landing parachute",
+            "say": "parachute landing"
+        },
+        {
+            "msg": "landing descending",
+            "say": "descending"
+        },
+        {
+            "msg": "landing gear touchdown",
+            "say": "ground"
+        },
+        {
+            "msg": "landing gear floating",
+            "say": "in flight"
+        },
+
+        {
+            "_comment": "# ------ touchdown -----------------"
+        },
+        {
+            "msg": "10 m to go",
+            "say": "10"
+        },
+        {
+            "msg": "9 m to go",
+            "say": "9"
+        },
+        {
+            "msg": "8 m to go",
+            "say": "8"
+        },
+        {
+            "msg": "7 m to go",
+            "say": "7"
+        },
+        {
+            "msg": "6 m to go",
+            "say": "6"
+        },
+        {
+            "msg": "5 m to go",
+            "say": "5"
+        },
+        {
+            "msg": "4 m to go",
+            "say": "4"
+        },
+        {
+            "msg": "3 m to go",
+            "say": "3"
+        },
+        {
+            "msg": "2 m to go",
+            "say": "2"
+        },
+        {
+            "msg": "1 m to go",
+            "say": "1"
+        }
+    ]
+}

@@ -1,0 +1,101 @@
+{
+    "sns": {
+        "title": "Sensors",
+
+        "imu": {
+            "title": "Inertial Measurement Unit",
+
+            "acc": {
+                "title": "Acceleration",
+                "units": "m/s2",
+                "type": "float",
+                "prec": 2,
+                "sprec": "f2",
+                "vector": [
+                    {
+                        "name": "ax",
+                        "title": "X",
+                    },
+                    {
+                        "name": "ay",
+                        "title": "Y",
+                    },
+                    {
+                        "name": "az",
+                        "title": "Z",
+                    }
+                ]
+            }
+        },
+        "gps": {
+            "title": "Global Positioning System",
+
+            "lat": {
+                "title": "GPS latitude",
+                "units": "deg",
+                "type": "float",
+                "prec": 6,
+                "sprec": "f4"
+            },
+            "lon": {
+                "title": "GPS longitude",
+                "units": "deg",
+                "type": "float",
+                "prec": 6,
+                "sprec": "f4"
+            },
+            "hmsl": {
+                "title": "GPS altitude MSL",
+                "units": "m",
+                "type": "float",
+                "prec": 1,
+                "sprec": "f4"
+            }
+        }
+    },
+    "ctr": {
+        "title": "Control outputs",
+
+        "stab": {
+            "title": "Stability fast controls",
+
+            "ail": {
+                "title": "Ailerons",
+                "units": "-1..+1",
+                "type": "float",
+                "prec": 0,
+                "sprec": "s001"
+            },
+        }
+    },
+    "state": {
+        "title": "System state",
+
+        "ahrs": {
+            "title": "Attitude and position estimation",
+
+            "roll": {
+                "title": "Attitude roll",
+                "units": "deg",
+                "type": "float",
+                "prec": 1,
+                "sprec": "f2"
+            },
+        }
+    },
+    "cmd": {
+        "title": "Command",
+
+        "reg": {
+            "title": "Commanded regulator values",
+
+            "roll": {
+                "title": "Commanded roll",
+                "units": "deg",
+                "type": "float",
+                "prec": 1,
+                "sprec": "f2"
+            },
+        }
+    }
+}

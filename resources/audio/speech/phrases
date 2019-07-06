@@ -1,0 +1,81 @@
+#<console text>,<text to speak>
+
+configuration updated,configuration accepted
+mission updated
+mission accomplished
+waiting for gps,waiting for position
+waypoint passed
+engine start
+select waypoint,waypoint changed
+select runway,runway changed
+select taxiway,taxiway changed
+
+# ------ status flags -----------------
+brake on,brakes
+brake off,brakes off
+engine off,ignition off
+engine on,ignition on
+ers on,parachute launched
+ers off,parachute locked
+flaps on,flaps
+flaps off,flaps retracted
+gps available,position initialized
+gps lost
+payload activated
+payload off
+rc on,pilot control
+rc off
+throttle cut on,throttle blocked
+throttle cut off,throttle unblocked
+throttle override on,manual throttle
+throttle override off,throttle control
+
+# ------ MODE -----------------
+flight mode angles control,RPV mode
+flight mode go back home,home
+flight mode heading control,course control
+flight mode loiter around,loiter
+flight mode realtime control,manual mode
+flight mode waypoints navigation,mission started
+flight mode takeoff,takeoff procedure initiated
+flight mode taxi,taxi mode
+flight mode landing,landing procedure initiated
+
+# ------ TAXI -----------------
+taxi reset,taxi cancelled
+auto taxi,auto taxi
+taxi pattern finished,taxi finished
+
+# ------ TAKEOFF -----------------
+takeoff start,full throttle
+takeoff launcher engaged,launcher ready
+takeoff run,running
+takeoff liftoff,liftoff
+takeoff climbing,climbing
+takeoff finished
+takeoff cancelled
+takeoff taxi test,taxi test
+
+# ------ LANDING -----------------
+landing ta,path estimation
+landing ta_app,turn to approach
+landing final approach,final approach
+landing flare,flare
+landing touchdown,touchdown
+landing run,running
+landing finished
+landing cancelled
+landing parachute,parachute landing
+landing descending,descending
+
+# ------ status flags -----------------
+10 m to go,10
+9 m to go,9
+8 m to go,8
+7 m to go,7
+6 m to go,6
+5 m to go,5
+4 m to go,4
+3 m to go,3
+2 m to go,2
+1 m to go,1

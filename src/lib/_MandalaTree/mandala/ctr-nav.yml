@@ -1,0 +1,426 @@
+//-------------------------
+#define MGRP1 ctr
+MGRP1_BEGIN("Control outputs"
+
+- name: stab
+title: Stability fast controls"
+- name: ail
+  title: Ailerons
+  units: -1..+1
+  alias: ctr_ailerons
+  sprec: s001
+- name: elv
+  title: Elevator
+  units: -1..+1
+  alias: ctr_elevator
+  sprec: s001
+- name: rud
+  title: Rudder
+  units: -1..+1
+  alias: ctr_rudder
+  sprec: s001
+- name: col
+  title: Collective pitch
+  units: -1..+1
+  alias: ctr_collective
+  sprec: s001
+- name: str
+  title: Steering
+  units: -1..+1
+  alias: ctr_steering
+  sprec: s001
+MGRP2_END
+#undef MGRP2
+
+- name: eng
+title: Engine controls"
+- name: thr
+  title: Throttle
+  units: 0..1
+  alias: ctr_throttle
+  sprec: u001
+- name: prop
+  title: Prop pitch
+  units: -1..+1
+  alias:
+  sprec: s001
+- name: mix
+  title: Mixture
+  units: 0..1
+  alias: ctr_mixture
+  sprec: u001
+- name: tune
+  title: Engine tuning
+  units: -1..1
+  alias: ctr_engine
+  sprec: s001
+- name: vector
+  title: Thrust vector
+  units: -1..+1
+  alias:
+  sprec: s001
+MFIELD(bit
+  sprec: starter
+  title: Engine starter on/off"
+  sprec: sw_starter
+  sprec:
+MFIELD(bit
+  sprec: horn
+  title: Engine horn signal"
+  sprec: ctrb_horn
+  sprec:
+MFIELD(bit
+  sprec: rev
+  title: Thrust reverse on/off"
+  sprec: ctrb_rev
+  sprec:
+MFIELD(bit
+  sprec: ign1
+  title: Ignition 1 on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: ign2
+  title: Ignition 2 on/off"
+  sprec:
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: wing
+title: Wing mechanization"
+- name: flaps
+  title: Flaps
+  units: 0..1
+  alias: ctr_flaps
+  sprec: u001
+- name: airbrk
+  title: Airbrakes
+  units: 0..1
+  alias: ctr_airbrk
+  sprec: u001
+- name: slats
+  title: Wing slats
+  units: 0..1
+  alias:
+  sprec: u001
+- name: sweep
+  title: Wing sweep
+  units: -1..+1
+  alias: ctr_sweep
+  sprec: s001
+- name: buoyancy
+  title: Buoyancy
+  units: -1..+1
+  alias: ctr_buoyancy
+  sprec: s001
+MGRP2_END
+#undef MGRP2
+
+- name: brakes
+title: Brakes system control"
+- name: brake
+  title: Brake
+  units: 0..1
+  alias: ctr_brake
+  sprec: u001
+- name: brakeL
+  title: Left brake
+  units: 0..1
+  alias: ctr_brakeL
+  sprec: u001
+- name: brakeR
+  title: Right brake
+  units: 0..1
+  alias: ctr_brakeR
+  sprec: u001
+MGRP2_END
+#undef MGRP2
+
+- name: ers
+title: Emergency Recovery System controls"
+MFIELD(bit
+  sprec: launch
+  title: ERS on/off"
+  sprec: ctrb_ers
+  sprec:
+MFIELD(bit
+  sprec: rel
+  title: Parachute released/locked"
+  sprec: ctrb_rel
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: gear
+title: Landing Gear controls"
+MFIELD(bit
+  sprec: retract
+  title: Landing gear retracted/extracted"
+  sprec: ctrb_gear
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: fuel
+title: Fuel pumps"
+MFIELD(bit
+  sprec: pump
+  title: Fuel pump on/off"
+  sprec: ctrb_pump
+  sprec:
+MFIELD(bit
+  sprec: xfeed
+  title: Crossfeed on/off"
+  sprec:
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: power
+title: Power management controls"
+MFIELD(bit
+  sprec: ap
+  title: Avionics"
+  sprec: power_ap
+  sprec:
+MFIELD(bit
+  sprec: servo
+  title: Servo on/off"
+  sprec: power_servo
+  sprec:
+MFIELD(bit
+  sprec: ignition
+  title: Engine on/off"
+  sprec: power_ignition
+  sprec:
+MFIELD(bit
+  sprec: payload
+  title: Payload on/off"
+  sprec: power_payload
+  sprec:
+MFIELD(bit
+  sprec: agl
+  title: AGL sensor"
+  sprec: power_agl
+  sprec:
+MFIELD(bit
+  sprec: xpdr
+  title: XPDR on/off"
+  sprec: power_xpdr
+  sprec:
+MFIELD(bit
+  sprec: satcom
+  title: Satcom on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: rfamp
+  title: RF amplifier on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: ils
+  title: Instrument Landing System on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: ice
+  title: Anti-ice on/off"
+  sprec: sw_ice
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: light
+title: Lighting"
+MFIELD(bit
+  sprec: beacon
+  title: Beacon light on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: landing
+  title: Landing lights on/off"
+  sprec: sw_lights
+  sprec:
+MFIELD(bit
+  sprec: nav
+  title: Navigation lights on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: strobe
+  title: Strobe light on/off"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: taxi
+  title: Taxi lights on/off"
+  sprec: sw_taxi
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: door
+title: Doors and latches"
+MFIELD(bit
+  sprec: main
+  title: Main door open/locked"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: drop
+  title: Drop-off open/locked"
+  sprec: ctrb_drp
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: cam
+title: Camera controls output"
+- name: ctr_roll
+  title: Cam servo roll
+  units: -1..+1
+  alias: camctr_roll
+  sprec: s001
+- name: ctr_pitch
+  title: Cam servo pitch
+  units: -1..+1
+  alias: camctr_pitch
+  sprec: s001
+- name: ctr_yaw
+  title: Cam servo yaw
+  units: -1..+1
+  alias: camctr_yaw
+  sprec: s001
+//MFVECT(float
+  sprec: ctr,roll,pitch,yaw
+  title: Cam servo
+  units: -1..+1
+  alias: camctr_roll,camctr_pitch,camctr_yaw
+  sprec: s001
+MFIELD(bit
+  sprec: rec
+  title: Recording"
+  sprec: camctrb_rec
+  sprec:
+MFIELD(bit
+  sprec: shot
+  title: Snapshot"
+  sprec: camctrb_shot
+  sprec:
+MFIELD(bit
+  sprec: ashot
+  title: Series snapshots"
+  sprec: camctrb_ashot
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: ats
+title: ATS controls output"
+- name: ctr_roll
+  title: ATS servo roll
+  units: -1..+1
+  alias: atsctr_roll
+  sprec: s001
+- name: ctr_pitch
+  title: ATS servo pitch
+  units: -1..+1
+  alias: atsctr_pitch
+  sprec: s001
+- name: ctr_yaw
+  title: ATS servo yaw
+  units: -1..+1
+  alias: atsctr_yaw
+  sprec: s001
+//MFVECT(float
+  sprec: ctr,roll,pitch,yaw
+  title: ATS servo
+  units: -1..+1
+  alias: atsctr_roll,atsctr_pitch,atsctr_yaw
+  sprec: s001
+MGRP2_END
+#undef MGRP2
+
+- name: turret
+title: Turret controls output"
+- name: ctr_roll
+  title: Turret servo roll
+  units: -1..+1
+  alias:
+  sprec: s001
+- name: ctr_pitch
+  title: Turret servo pitch
+  units: -1..+1
+  alias:
+  sprec: s001
+- name: ctr_yaw
+  title: Turret servo yaw
+  units: -1..+1
+  alias:
+  sprec: s001
+//MFVECT(float
+  sprec: ctr,roll,pitch,yaw
+  title: Turret servo
+  units: -1..+1
+  alias: ,,
+  sprec: s001
+MFIELD(bit
+  sprec: armed
+  title: Turret armed/disarmed"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: shoot
+  title: Turret shooting/standby"
+  sprec:
+  sprec:
+MFIELD(bit
+  sprec: reload
+  title: Turret reloading/reloaded"
+  sprec:
+  sprec:
+MGRP2_END
+#undef MGRP2
+
+- name: usr
+title: User controls"
+- name: u1
+  title: User control 1"
+  sprec: ctr1
+  sprec: f2
+- name: u2
+  title: User control 2"
+  sprec: ctr2
+  sprec: f2
+- name: u3
+  title: User control 3"
+  sprec: ctr3
+  sprec: f2
+- name: u4
+  title: User control 4"
+  sprec: ctr4
+  sprec: f2
+- name: u5
+  title: User control 5"
+  sprec: ctr5
+  sprec: f2
+- name: u6
+  title: User control 6"
+  sprec: ctr6
+  sprec: f2
+- name: u7
+  title: User control 7"
+  sprec: ctr7
+  sprec: f2
+- name: u8
+  title: User control 8"
+  sprec: ctr8
+  sprec: f2
+MGRP2_END
+#undef MGRP2
+
+MGRP1_END
+#undef MGRP1
