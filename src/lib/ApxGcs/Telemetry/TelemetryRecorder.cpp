@@ -30,14 +30,13 @@
 #include <ApxApp.h>
 
 #include <Nodes/Nodes.h>
-#include <node.h>
-#include <Mandala.h>
+//#include <Mandala/MandalaCore.h>
+//#include <node.h>
+//#include <Mandala.h>
 //=============================================================================
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Record"), tr("Enable telemetry recording"), Bool)
     , vehicle(vehicle)
-    , v_mode("mode", vehicle)
-    , v_stage("stage", vehicle)
     , v_dl_timestamp("dl_timestamp", vehicle)
     , dl_timestamp_s(0)
     , dl_timestamp_t0(0)
@@ -352,7 +351,7 @@ void TelemetryRecorder::recordConfig()
 bool TelemetryRecorder::checkAutoRecord(void)
 {
     if (vehicle->streamType() == Vehicle::TELEMETRY) {
-        if ((v_mode == mode_TAKEOFF) && (v_stage >= 2) && (v_stage < 100)) {
+        if (vehicle->flying()) {
             if (!recTrigger) {
                 reset(); //restart
                 setValue(true);
@@ -361,7 +360,7 @@ bool TelemetryRecorder::checkAutoRecord(void)
         } else
             recTrigger = false;
         if (recording()) {
-            if ((!recStopTimer.isActive()) && (v_mode == mode_LANDING) && (v_stage >= 250))
+            if ((!recStopTimer.isActive()) && (!vehicle->flying()))
                 recStopTimer.start(2000);
         }
     }

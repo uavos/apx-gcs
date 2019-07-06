@@ -23,9 +23,11 @@
 #include "ProtocolMission.h"
 #include "ProtocolVehicle.h"
 
-#include <node.h>
-#include <Mandala.h>
-#include <Mission.h>
+#include <Mandala/MandalaCore.h>
+
+#include <ApxLink/node.h>
+#include <ApxLink/Mission.h>
+
 #include <ApxLog.h>
 //=============================================================================
 ProtocolMission::ProtocolMission(ProtocolVehicle *vehicle)

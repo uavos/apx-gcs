@@ -49,8 +49,6 @@ private:
 
     //auto recorder
     bool checkAutoRecord(void);
-    VehicleMandalaValue<int> v_mode;
-    VehicleMandalaValue<int> v_stage;
     bool recTrigger;
     QTimer timeUpdateTimer, recStopTimer;
 

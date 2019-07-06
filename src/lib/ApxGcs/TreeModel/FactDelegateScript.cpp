@@ -144,8 +144,7 @@ void FactDelegateScript::updateLog()
         if (s.contains("error") || s.contains("warning")) {
             //QStringList w=s.split(':');
             QListWidgetItem *i = new QListWidgetItem(s, logList);
-            i->setBackgroundColor(s.contains("warning") ? QColor(220, 220, 200)
-                                                        : QColor(220, 150, 150));
+            i->setBackground(s.contains("warning") ? QColor(220, 220, 200) : QColor(220, 150, 150));
             i->setForeground(Qt::black);
             icnt++;
         } else {

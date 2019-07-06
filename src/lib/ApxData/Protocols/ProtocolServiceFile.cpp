@@ -24,7 +24,7 @@
 #include "ProtocolServiceNode.h"
 #include "ProtocolServiceRequest.h"
 
-#include <node.h>
+#include <ApxLink/node.h>
 //=============================================================================
 ProtocolServiceFile::ProtocolServiceFile(ProtocolServiceNode *node, quint16 cmdBase)
     : ProtocolBase(node)

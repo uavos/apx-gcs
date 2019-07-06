@@ -20,18 +20,22 @@ APX.ApxProduct {
     Export {
         Depends { name: "cpp" }
         cpp.includePaths: [product.sourceDirectory]
+        cpp.cxxFlags: product.cpp.cxxFlags
     }
 
 
     qbs.enableDebugCode: false
 
-    cpp.defines: base.concat([
+    cpp.defines: base
+    .concat([
         "QWT_NO_SVG",
     ]).concat(qwtOpenGL?[]:["QWT_NO_OPENGL"])
 
-    cpp.cxxFlags: base.concat([
+    cpp.cxxFlags: base
+    .concat([
         "-Wno-unused-function",
         "-Wno-tautological-constant-out-of-range-compare",
+        "-Wno-deprecated-declarations",
     ])
 
 

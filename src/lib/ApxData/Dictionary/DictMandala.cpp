@@ -22,8 +22,8 @@
  */
 #include "DictMandala.h"
 
-#include <node.h>
-#include <Mandala.h>
+#include <ApxLink/node.h>
+#include <Mandala/Mandala.h>
 //=============================================================================
 DictMandala::DictMandala(QObject *parent)
     : QObject(parent)
@@ -212,7 +212,7 @@ QString DictMandala::hash()
 #define MIDX(...) h.addData(#__VA_ARGS__);
 #define MVAR(...) h.addData(#__VA_ARGS__);
 #define MBIT(...) h.addData(#__VA_ARGS__);
-#include "MandalaVars.h"
+#include <Mandala/MandalaVars.h>
 
     return h.result().toHex().toUpper();
 }

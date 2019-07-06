@@ -22,10 +22,10 @@
  */
 #include "DatalinkServer.h"
 #include "Datalink.h"
-#include "tcp_ports.h"
 #include "DatalinkTcpSocket.h"
 #include "HttpService.h"
 
+#include <ApxLink/tcp_ports.h>
 #include <App/AppSettings.h>
 #include <ApxLog.h>
 #include <ApxApp.h>

@@ -24,8 +24,8 @@
 #include "ProtocolVehicle.h"
 #include "ProtocolServiceFirmware.h"
 
-#include <node.h>
-#include <Mandala.h>
+#include <ApxLink/node.h>
+#include <Mandala/MandalaCore.h>
 //=============================================================================
 ProtocolVehicles::ProtocolVehicles(QObject *parent)
     : ProtocolBase(parent)

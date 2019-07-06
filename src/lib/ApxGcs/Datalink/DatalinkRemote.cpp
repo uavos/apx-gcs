@@ -23,7 +23,8 @@
 #include "Datalink.h"
 #include "DatalinkRemote.h"
 #include "DatalinkRemotes.h"
-#include "tcp_ports.h"
+
+#include <ApxLink/tcp_ports.h>
 
 #include <ApxLog.h>
 #include <ApxApp.h>
@@ -70,7 +71,7 @@ void DatalinkRemote::setUrl(QUrl url)
         setTitle(QString("%1@%2").arg(url.userInfo()).arg(url.host()));
     else
         setTitle(url.toString());
-    hostAddress = url.host();
+    hostAddress = QHostAddress(url.host());
     hostPort = static_cast<quint16>(url.port());
 }
 QUrl DatalinkRemote::fixUrl(QUrl url)

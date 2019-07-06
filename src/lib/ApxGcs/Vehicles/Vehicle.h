@@ -57,6 +57,8 @@ class Vehicle : public Fact
 
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
 
+    Q_PROPERTY(bool flying READ flying NOTIFY flyingChanged)
+
 public:
     enum VehicleClass {
         //must match the IDENT::_vclass type
@@ -132,6 +134,7 @@ private slots:
     void updateInfo();
     void updateInfoReq();
     void updateCoordinate();
+    void updateFlying();
 
     void dbSetVehicleKey(quint64 key);
 
@@ -195,6 +198,9 @@ public:
     QGeoCoordinate coordinate(void) const;
     void setCoordinate(const QGeoCoordinate &v);
 
+    bool flying(void) const;
+    void setFlying(const bool &v);
+
 protected:
     StreamType m_streamType;
     quint16 m_squawk;
@@ -203,6 +209,7 @@ protected:
     VehicleClass m_vehicleClass;
     bool m_follow;
     QGeoCoordinate m_coordinate;
+    bool m_flying;
 
 signals:
     void streamTypeChanged();
@@ -212,6 +219,7 @@ signals:
     void infoChanged();
     void followChanged();
     void coordinateChanged();
+    void flyingChanged();
 };
 //=============================================================================
 #endif

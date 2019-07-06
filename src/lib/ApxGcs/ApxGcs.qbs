@@ -47,7 +47,7 @@ APX.ApxLibrary {
     //bundle.publicHeaders: hdrs
 
     //force headers bundle creation
-    bundle.publicHeaders: project.libDir+"/preprocessor.h"
+    //bundle.publicHeaders: project.libDir+"/preprocessor.h"
         /*{
         var path=project.libDir+"/"
         var files = File.directoryEntries(path, File.Files).filter(function(f){

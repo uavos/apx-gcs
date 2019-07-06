@@ -339,7 +339,7 @@ void JSTreeItem::sync()
         JSTreeItem *i = new JSTreeItem(this, it.name(), it.value());
         items.append(i);
     }
-    qSort(items.begin(), items.end(), lessThan);
+    std::sort(items.begin(), items.end(), lessThan);
 }
 void JSTreeItem::updateSize()
 {

@@ -24,6 +24,12 @@ APX.ApxProduct {
         "QUAZIP_BUILD",
     ]
 
+    cpp.cxxFlags: base
+    .concat([
+        "-Wno-deprecated-declarations",
+    ])
+
+
     files: [
         "quazip.cpp", "quazip.h",
         "zip.c", "zip.h",

@@ -30,6 +30,8 @@
 #include <Telemetry/Telemetry.h>
 #include <ApxLog.h>
 #include <ApxApp.h>
+
+#include <Mandala/MandalaCore.h>
 //=============================================================================
 Vehicle::Vehicle(Vehicles *vehicles,
                  QString callsign,
@@ -46,6 +48,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
     , m_callsign(callsign)
     , m_vehicleClass(vclass)
     , m_follow(false)
+    , m_flying(false)
 {
     setSection(vehicles->title());
     setIcon(vclass == LOCAL ? "chip" : vclass == REPLAY ? "play-circle" : "drone");
@@ -88,6 +91,9 @@ Vehicle::Vehicle(Vehicles *vehicles,
     connect(f_gps_Vdown, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
+
+    connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlying);
+    connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlying);
 
     connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
         setActive(v == this);
@@ -258,6 +264,18 @@ void Vehicle::updateInfoReq()
 void Vehicle::updateCoordinate()
 {
     setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(), f_gps_lon->value().toDouble()));
+}
+void Vehicle::updateFlying()
+{
+    if (flying()) {
+        if ((f_mode->value().toUInt() == mode_LANDING) && (f_stage->value().toUInt() >= 250))
+            setFlying(false);
+    } else {
+        if ((f_mode->value().toUInt() == mode_TAKEOFF) && (f_stage->value().toUInt() >= 2)
+            && (f_stage->value().toUInt() < 100)) {
+            setFlying(true);
+        }
+    }
 }
 //=============================================================================
 bool Vehicle::isLocal() const
@@ -534,5 +552,16 @@ void Vehicle::setCoordinate(const QGeoCoordinate &v)
         return;
     m_coordinate = v;
     emit coordinateChanged();
+}
+bool Vehicle::flying(void) const
+{
+    return m_flying;
+}
+void Vehicle::setFlying(const bool &v)
+{
+    if (m_flying == v)
+        return;
+    m_flying = v;
+    emit flyingChanged();
 }
 //=============================================================================

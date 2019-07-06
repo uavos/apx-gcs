@@ -4,7 +4,8 @@ import qbs.FileInfo
 import qbs.TextFile
 
 Product {
-    condition: qbs.buildVariant.contains("release")
+
+    name: "SDK"
 
     //libraries, should be placed in sdk:
     Depends { name: "ApxCore" }
@@ -15,8 +16,9 @@ Product {
     Group {
         name: "Extra SDK files"
         fileTags: ["sdk.extras"]
+        prefix: FileInfo.joinPaths(project.sourceDirectory, "/")
         files: [
-            "main/qml/app/GroundControl.qml",
+            "src/main/qml/app/GroundControl.qml",
         ]
     }
 

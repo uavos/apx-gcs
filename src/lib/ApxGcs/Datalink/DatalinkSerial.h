@@ -24,7 +24,7 @@
 #define DatalinkSerial_H
 #include <QtCore>
 #include "DatalinkConnection.h"
-#include <escaped.h>
+#include <ApxLink/escaped.h>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 //=============================================================================

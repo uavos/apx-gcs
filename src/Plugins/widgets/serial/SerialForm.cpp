@@ -10,6 +10,10 @@ SerialForm::SerialForm(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //TODO
+    ui->btnForward->setVisible(false);
+    ui->eForward->setVisible(false);
+
     connect(ui->btnReset, SIGNAL(pressed()), this, SLOT(btnReset()));
     connect(ui->btnSend, SIGNAL(pressed()), this, SLOT(btnSend()));
     connect(ui->btnForward, SIGNAL(pressed()), this, SLOT(btnForward()));
@@ -34,11 +38,11 @@ void SerialForm::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)
     disconnect(this);
-    if (uart.isOpen()) {
+    /*if (uart.isOpen()) {
         socketNotifier->setEnabled(false);
         uart.close();
         apxMsg() << tr("Serial port forwarding stopped");
-    }
+    }*/
     QSettings().setValue(objectName(), saveGeometry());
     QSettings().setValue(objectName() + "_port", ui->ePortID->value());
     emit finished();
@@ -88,9 +92,9 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
 {
     if ((int) portNo != ui->ePortID->value())
         return;
-    if (uart.isOpen()) {
+    /*if (uart.isOpen()) {
         uart.write((uint8_t *) ba.data(), ba.size());
-    }
+    }*/
     if (!ui->cbRead->isChecked())
         return;
     if (ba.size() <= 0)
@@ -117,7 +121,7 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
 //==============================================================================
 void SerialForm::btnForward()
 {
-    if (uart.isOpen()) {
+    /*if (uart.isOpen()) {
         disconnect(socketNotifier, SIGNAL(activated(int)), this, SLOT(uartRead()));
         socketNotifier->setEnabled(false);
         socketNotifier->deleteLater();
@@ -128,12 +132,12 @@ void SerialForm::btnForward()
     QSettings().setValue(objectName() + "_fwdDev", ui->eForward->text());
     socketNotifier = new QSocketNotifier(uart.handle(), QSocketNotifier::Read);
     connect(socketNotifier, SIGNAL(activated(int)), this, SLOT(uartRead()));
-    apxMsg() << tr("Serial port forwarding started") + "...";
+    apxMsg() << tr("Serial port forwarding started") + "...";*/
 }
 //==============================================================================
 void SerialForm::uartRead()
 {
-    if (!uart.isOpen())
+    /*if (!uart.isOpen())
         return;
     QByteArray ba;
     ba.resize(64);
@@ -141,7 +145,7 @@ void SerialForm::uartRead()
     if (ba.size() <= 0)
         return;
     Vehicles::instance()->current()->sendSerial(ui->ePortID->value(), ba);
-    QTimer::singleShot(100, this, SLOT(uartRead()));
+    QTimer::singleShot(100, this, SLOT(uartRead()));*/
 }
 //=============================================================================
 //==============================================================================

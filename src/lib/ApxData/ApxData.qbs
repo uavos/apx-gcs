@@ -31,16 +31,19 @@ APX.ApxLibrary {
     ])
 
     Group {
-        name: "Mandala"
-        prefix: FileInfo.joinPaths(project.libDir, "Mandala", "/")
+        name: "Lib"
+        prefix: FileInfo.joinPaths(project.libDir, "/")
         files: [
-            "Mandala.cpp", "Mandala.h",
-            "MandalaCore.cpp", "MandalaCore.h",
-            "MandalaVars.h",
+            "Mandala/Mandala.cpp", "Mandala/Mandala.h",
+            "Mandala/MandalaCore.cpp", "Mandala/MandalaCore.h",
+            "Mandala/MandalaVars.h",
+
+            "ApxLink/node.h",
+            "ApxLink/crc.c", "ApxLink/crc.h",
+
             //"comm.cpp", "comm.h",
             //"crc.h",
             //"dmsg.h",
-            //"node.h",
             //"time_ms.h",
         ]
     }

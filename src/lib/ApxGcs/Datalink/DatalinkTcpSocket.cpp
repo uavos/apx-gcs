@@ -22,7 +22,8 @@
  */
 #include "DatalinkTcpSocket.h"
 #include "Datalink.h"
-#include "crc.h"
+
+#include <ApxLink/crc.h>
 #include <ApxLog.h>
 #include <ApxApp.h>
 //-----------------------------------------------------------------------------

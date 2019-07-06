@@ -1,7 +1,7 @@
 ﻿#include "NodesFrame.h"
 #include <ApxDirs.h>
 #include <ApxApp.h>
-#include <node.h>
+//#include <node.h>
 #include <ApxMisc/SvgMaterialIcon.h>
 #include <Nodes/Nodes.h>
 #include <ApxMisc/QActionFact.h>

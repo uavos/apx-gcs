@@ -23,7 +23,7 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicle.h"
 
-#include <Mandala.h>
+#include <Mandala/MandalaCore.h>
 //=============================================================================
 ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle)

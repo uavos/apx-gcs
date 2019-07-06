@@ -18,8 +18,7 @@ Project {
         "src/pawncc/pawncc.qbs",
         //"src/sim/sim.qbs",
 
-        //"sdk_package.qbs",
-        //"deploy.qbs",
+        "deploy/deploy.qbs",
     ]
 
     Product {

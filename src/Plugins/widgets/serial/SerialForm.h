@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QtCore>
-#include "comm.h"
+//#include "comm.h"
 
 namespace Ui {
 class SerialForm;
@@ -22,7 +22,7 @@ protected:
 
 private:
     Ui::SerialForm *ui;
-    Comm uart;
+    //Comm uart;
     QSocketNotifier *socketNotifier;
 
 private slots:

@@ -26,7 +26,8 @@
 #include "ProtocolServiceRequest.h"
 
 #include <ApxLog.h>
-#include <node.h>
+
+#include <ApxLink/node.h>
 //=============================================================================
 ProtocolServiceFirmware::ProtocolServiceFirmware(ProtocolService *service)
     : ProtocolBase(service)

@@ -23,8 +23,8 @@
 #include "ProtocolServiceNode.h"
 #include "ProtocolService.h"
 
-#include <node.h>
-#include <crc.h>
+#include <ApxLink/node.h>
+#include <ApxLink/crc.h>
 //=============================================================================
 ProtocolServiceNode::ProtocolServiceNode(ProtocolService *service, const QString &sn)
     : ProtocolBase(service)

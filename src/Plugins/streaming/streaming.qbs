@@ -60,9 +60,11 @@ Project {
             prepare: {
                 var cmds=[];
                 var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("apx","app_bundle_path"));
-                var cmd = new Command(project.sourceDirectory+"/tools/prepare_gstreamer_framework.sh",
+                var cmd = new Command(FileInfo.joinPaths(product.sourceDirectory, "tools", "prepare_gstreamer_framework.sh"),
                                       [
-                                          project.buildDirectory+"/fw_GStreamer", targetPath, "gcs"
+                                          project.buildDirectory+"/GStreamer-prepare",
+                                          targetPath,
+                                          "gcs",
                                       ]);
                 cmd.silent = true;
                 cmds.push(cmd);

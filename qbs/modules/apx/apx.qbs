@@ -80,7 +80,7 @@ Module {
         property string hash
         property string time
         property string year
-        property string git_top: project.sourceDirectory
+        property string git_top: FileInfo.joinPaths(project.sourceDirectory, "../")
         property var mod: File.lastModified(git_top + "/.git/logs/HEAD")
         property string projectName: project.name
         configure: {

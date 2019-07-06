@@ -22,8 +22,8 @@
  */
 #include "ProtocolVehicle.h"
 
-#include <node.h>
-#include <Mandala.h>
+#include <ApxLink/node.h>
+#include <Mandala/Mandala.h>
 //=============================================================================
 ProtocolVehicle::ProtocolVehicle(quint16 squawk,
                                  ProtocolVehicles::IdentData ident,
