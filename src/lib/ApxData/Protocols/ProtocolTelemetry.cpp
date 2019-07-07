@@ -23,7 +23,7 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicle.h"
 
-#include <Mandala/MandalaCore.h>
+#include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle)
@@ -71,14 +71,14 @@ void ProtocolTelemetry::sendVectorValue(quint16 id, double v1, double v2, double
     const DictMandala::Entry &i = mandala->items.value(mandala->idPos.value(id));
     if (!i.id)
         return;
-    emit sendUplink(mandala->packVectorValue(i, v1, v2, v3).prepend((char) idx_uplink));
+    emit sendUplink(mandala->packVectorValue(i, v1, v2, v3).prepend((char) mandala::idx_uplink));
 }
 void ProtocolTelemetry::sendPointValue(quint16 id, double v1, double v2)
 {
     const DictMandala::Entry &i = mandala->items.value(mandala->idPos.value(id));
     if (!i.id)
         return;
-    emit sendUplink(mandala->packPointValue(i, v1, v2).prepend((char) idx_uplink));
+    emit sendUplink(mandala->packPointValue(i, v1, v2).prepend((char) mandala::idx_uplink));
 }
 void ProtocolTelemetry::sendValueRequest(quint16 id)
 {

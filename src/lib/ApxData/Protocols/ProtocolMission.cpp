@@ -23,9 +23,6 @@
 #include "ProtocolMission.h"
 #include "ProtocolVehicle.h"
 
-#include <Mandala/MandalaCore.h>
-
-#include <ApxLink/node.h>
 #include <ApxLink/Mission.h>
 
 #include <ApxLog.h>

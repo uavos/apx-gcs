@@ -23,7 +23,7 @@
 #include "ProtocolVehicle.h"
 
 #include <ApxLink/node.h>
-#include <Mandala/Mandala.h>
+#include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolVehicle::ProtocolVehicle(quint16 squawk,
                                  ProtocolVehicles::IdentData ident,
@@ -58,16 +58,16 @@ bool ProtocolVehicle::unpack(QByteArray packet)
     default:
         emit dlinkData(p->id, data);
         break;
-    case idx_downstream:
+    case mandala::idx_downstream:
         emit downstreamData(data);
         break;
-    case idx_data:
+    case mandala::idx_data:
         emit serialData(data);
         break;
-    case idx_mission:
+    case mandala::idx_mission:
         emit missionData(data);
         break;
-    case idx_service: {
+    case mandala::idx_service: {
         quint16 cmd = apc_search;
         if (data.size() >= static_cast<int>(bus_packet_size_hdr_srv))
             cmd = p->srv.cmd;
@@ -95,15 +95,15 @@ void ProtocolVehicle::sendRequest(quint8 id, QByteArray data)
 //=============================================================================
 void ProtocolVehicle::vmexec(QString func)
 {
-    emit sendRequest(idx_vmexec, func.toUtf8());
+    emit sendRequest(mandala::idx_vmexec, func.toUtf8());
 }
 void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
 {
-    emit sendRequest(idx_data, QByteArray().append(static_cast<char>(portID)).append(data));
+    emit sendRequest(mandala::idx_data, QByteArray().append(static_cast<char>(portID)).append(data));
 }
 void ProtocolVehicle::sendMissionRequest(QByteArray data)
 {
-    emit sendRequest(idx_mission, data);
+    emit sendRequest(mandala::idx_mission, data);
 }
 void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray data)
 {
@@ -112,6 +112,6 @@ void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray dat
         pdata = QByteArray(sizeof(_node_sn), static_cast<char>(0));
     pdata.append(static_cast<char>(cmd)).append(data);
     //qDebug()<<pdata.toHex().toUpper();
-    emit sendRequest(idx_service, pdata);
+    emit sendRequest(mandala::idx_service, pdata);
 }
 //=============================================================================

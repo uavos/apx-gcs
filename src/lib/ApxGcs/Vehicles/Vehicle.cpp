@@ -31,7 +31,7 @@
 #include <ApxLog.h>
 #include <ApxApp.h>
 
-#include <Mandala/MandalaCore.h>
+#include <Mandala/MandalaConstants.h>
 //=============================================================================
 Vehicle::Vehicle(Vehicles *vehicles,
                  QString callsign,

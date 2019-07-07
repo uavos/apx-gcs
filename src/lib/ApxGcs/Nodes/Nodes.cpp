@@ -23,7 +23,6 @@
 #include "Nodes.h"
 #include "NodeItem.h"
 #include "NodeField.h"
-//#include "Mandala.h"
 
 #include <ApxLog.h>
 #include <ApxApp.h>

@@ -24,8 +24,9 @@
 #include "ProtocolVehicle.h"
 #include "ProtocolServiceFirmware.h"
 
+#include <ApxLink/vehicle.h>
 #include <ApxLink/node.h>
-#include <Mandala/MandalaCore.h>
+#include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolVehicles::ProtocolVehicles(QObject *parent)
     : ProtocolBase(parent)
@@ -44,7 +45,7 @@ bool ProtocolVehicles::unpack(QByteArray packet)
     data_cnt -= bus_packet_size_hdr;
     _bus_packet *p = reinterpret_cast<_bus_packet *>(packet.data());
     switch (p->id) {
-    case idx_xpdr: { //transponder from UAV received
+    case mandala::idx_xpdr: { //transponder from UAV received
         if (data_cnt != sizeof(IDENT::_xpdr))
             break;
         IDENT::_xpdr *xpdr = reinterpret_cast<IDENT::_xpdr *>(p->data);
@@ -64,7 +65,7 @@ bool ProtocolVehicles::unpack(QByteArray packet)
         d.mode = xpdr->mode;
         v->xpdrData(d);
     } break;
-    case idx_ident: {
+    case mandala::idx_ident: {
         qDebug() << "ident received";
         if (data_cnt != sizeof(IDENT::_ident))
             break;
@@ -119,7 +120,7 @@ bool ProtocolVehicles::unpack(QByteArray packet)
             squawkMap.insert(ident->squawk, v);
         }
     } break;
-    case idx_dlink: {
+    case mandala::idx_dlink: {
         if (data_cnt <= sizeof(IDENT::_squawk))
             break;
         IDENT::_squawk squawk = p->data[0] | p->data[1] << 8;
@@ -149,7 +150,7 @@ void ProtocolVehicles::identRequest(quint16 squawk)
 {
     //qDebug() << "scheduled ident req";
     scheduleRequest(QByteArray()
-                        .append((unsigned char) idx_ident)
+                        .append((unsigned char) mandala::idx_ident)
                         .append((unsigned char) squawk)
                         .append((unsigned char) (squawk >> 8)));
 }
@@ -192,7 +193,7 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
     i.vclass = ident.vclass;
 
     //send new ident
-    QByteArray ba = QByteArray().append((unsigned char) idx_ident);
+    QByteArray ba = QByteArray().append((unsigned char) mandala::idx_ident);
     int sz = ba.size();
     ba.resize(sz + sizeof(IDENT::_ident));
     memcpy(ba.data() + sz, &i, sizeof(IDENT::_ident));
@@ -202,7 +203,7 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 void ProtocolVehicles::vehicleSendUplink(quint16 squawk, QByteArray packet)
 {
     emit sendUplink(QByteArray()
-                        .append((unsigned char) idx_dlink)
+                        .append((unsigned char) mandala::idx_dlink)
                         .append((unsigned char) squawk)
                         .append((unsigned char) (squawk >> 8))
                         .append(packet));
@@ -210,6 +211,6 @@ void ProtocolVehicles::vehicleSendUplink(quint16 squawk, QByteArray packet)
 //=============================================================================
 void ProtocolVehicles::sendHeartbeat()
 {
-    emit sendUplink(QByteArray().append((char) idx_ping).append((char) 0));
+    emit sendUplink(QByteArray().append((char) mandala::idx_ping).append((char) 0));
 }
 //=============================================================================

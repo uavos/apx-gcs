@@ -30,9 +30,6 @@
 #include <ApxApp.h>
 
 #include <Nodes/Nodes.h>
-//#include <Mandala/MandalaCore.h>
-//#include <node.h>
-//#include <Mandala.h>
 //=============================================================================
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Record"), tr("Enable telemetry recording"), Bool)

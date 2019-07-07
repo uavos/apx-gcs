@@ -36,10 +36,20 @@ APX.ApxLibrary {
         files: [
             "Mandala/Mandala.cpp", "Mandala/Mandala.h",
             "Mandala/MandalaCore.cpp", "Mandala/MandalaCore.h",
-            "Mandala/MandalaVars.h",
+            "Mandala/MatrixMath.cpp", "Mandala/MatrixMath.h",
+            "Mandala/MandalaTemplate.h",
+            "Mandala/MandalaIndexes.h",
+            "Mandala/MandalaConstants.h",
+            "Mandala/preprocessor.h",
 
-            "ApxLink/node.h",
             "ApxLink/crc.c", "ApxLink/crc.h",
+            "ApxLink/escaped.h",
+            "ApxLink/Mission.h",
+            "ApxLink/node.h",
+            "ApxLink/vehicle.h",
+            //"ApxLink/packet.h",
+            "ApxLink/types.h",
+            "ApxLink/tcp_ports.h",
 
             //"comm.cpp", "comm.h",
             //"crc.h",
@@ -55,6 +65,7 @@ APX.ApxLibrary {
             "DictMandala.cpp", "DictMandala.h",
             "DictNode.cpp", "DictNode.h",
             "DictMission.cpp", "DictMission.h",
+            "MandalaIndex.h",
         ]
     }
 

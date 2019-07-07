@@ -29,7 +29,6 @@
 #include <Protocols/ApxProtocol.h>
 #include <Protocols/ProtocolServiceFirmware.h>
 
-#include <Mandala/Mandala.h>
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicles.h>
 
