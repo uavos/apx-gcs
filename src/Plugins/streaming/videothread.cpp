@@ -15,46 +15,8 @@ VideoThread::VideoThread():
     m_loop(nullptr)
 {
     QString currentDir = QCoreApplication::applicationDirPath();
-#ifdef Q_OS_MAC
-    qputenv("GST_PLUGIN_SCANNER",
-            QString(currentDir +
-            "/../Frameworks/GStreamer.framework/Versions/1.0/libexec/gstreamer-1.0/gst-plugin-scanner").toUtf8());
-    qputenv("GTK_PATH",
-            QString(currentDir + QString("/../Frameworks/GStreamer.framework/Versions/Current")).toUtf8());
-    qputenv("GIO_EXTRA_MODULES",
-           QString(currentDir +
-           QString("/../Frameworks/GStreamer.framework/Versions/Current/lib/gio/modules")).toUtf8());
-    qputenv("GST_PLUGIN_SYSTEM_PATH_1_0",
-           QString(currentDir +
-           "/../Frameworks/GStreamer.framework/Versions/Current/lib/gstreamer-1.0").toUtf8());
-    qputenv("GST_PLUGIN_SYSTEM_PATH",
-           QString(currentDir +
-           "/../Frameworks/GStreamer.framework/Versions/Current/lib/gstreamer-1.0").toUtf8());
-    qputenv("GST_PLUGIN_PATH_1_0",
-           QString(currentDir +
-           "/../Frameworks/GStreamer.framework/Versions/Current/lib/gstreamer-1.0").toUtf8());
-    qputenv("GST_PLUGIN_PATH",
-           QString(currentDir +
-           "/../Frameworks/GStreamer.framework/Versions/Current/lib/gstreamer-1.0").toUtf8());
-#endif
 
-#ifdef Q_OS_LINUX
-    qputenv("GST_PLUGIN_SCANNER",
-            QString(currentDir +
-            "/../lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0/gst-plugin-scanner").toUtf8());
-    qputenv("GST_PLUGIN_SYSTEM_PATH_1_0",
-           QString(currentDir +
-           "/../lib/x86_64-linux-gnu/gstreamer-1.0").toUtf8());
-    qputenv("GST_PLUGIN_SYSTEM_PATH",
-           QString(currentDir +
-           "/../lib/x86_64-linux-gnu/gstreamer-1.0").toUtf8());
-    qputenv("GST_PLUGIN_PATH_1_0",
-           QString(currentDir +
-           "/../lib/x86_64-linux-gnu/gstreamer-1.0").toUtf8());
-    qputenv("GST_PLUGIN_PATH",
-           QString(currentDir +
-           "/../lib/x86_64-linux-gnu/gstreamer-1.0").toUtf8());
-#endif
+    setupEnvironment();
 
     if(!gst_is_initialized())
         gst_init(nullptr, nullptr);
@@ -379,6 +341,38 @@ QImage VideoThread::sample2qimage(std::shared_ptr<GstSample> sample)
         }
     }
     return QImage(width, height, QImage::Format_RGB32);
+}
+
+void VideoThread::setupEnvironment()
+{
+    QString scannerPath, pluginsPath, gioPath;
+
+#ifdef Q_OS_LINUX
+    scannerPath = "../lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0";
+    pluginsPath = "../lib/x86_64-linux-gnu/gstreamer-1.0";
+    gioPath = "../lib/x86_64-linux-gnu/gio/modules";
+#endif
+#ifdef Q_OS_MAC
+    scannerPath = "../Frameworks/GStreamer.framework/Versions/Current/libexec/gstreamer-1.0";
+    pluginsPath = "../Frameworks/GStreamer.framework/Versions/Current/lib/gstreamer-1.0";
+    gioPath = "../Frameworks/GStreamer.framework/Versions/Current/lib/gio/modules";
+#endif
+
+    QDir appDir(QCoreApplication::applicationDirPath());
+    QDir scannerDir(appDir), pluginsDir(appDir), gioDir(appDir);
+
+    if(scannerDir.cd(scannerPath) && scannerDir.exists("gst-plugin-scanner")
+            && pluginsDir.cd(pluginsPath) && gioDir.cd(gioPath))
+    {
+        qputenv("GST_PLUGIN_SCANNER", scannerDir.absoluteFilePath("gst-plugin-scanner").toUtf8());
+        qputenv("GIO_EXTRA_MODULES", gioDir.absolutePath().toUtf8());
+        qputenv("GST_PLUGIN_SYSTEM_PATH_1_0", pluginsDir.absolutePath().toUtf8());
+        qputenv("GST_PLUGIN_SYSTEM_PATH", pluginsDir.absolutePath().toUtf8());
+        qputenv("GST_PLUGIN_PATH_1_0", pluginsDir.absolutePath().toUtf8());
+        qputenv("GST_PLUGIN_PATH", pluginsDir.absolutePath().toUtf8());
+    }
+    else
+        qInfo() << "Can't find gstreamer in bundle, try to use system libs";
 }
 
 GstCaps *VideoThread::getCapsForAppSink()

@@ -112,6 +112,16 @@ Project {
                 cmd.silent = false;
                 cmds.push(cmd);
 
+                var cmd = new Command("cp",
+                                      [
+                                          "-r",
+                                          "/usr/lib/x86_64-linux-gnu/gio",
+                                          targetPath + "/lib/x86_64-linux-gnu/"
+                                      ]);
+                cmd.description = "Deploying gio extra modules..."
+                cmd.silent = false;
+                cmds.push(cmd);
+
                 return cmds;
             }
         }

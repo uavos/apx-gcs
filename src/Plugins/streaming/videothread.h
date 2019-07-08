@@ -94,6 +94,8 @@ private:
 
     QImage sample2qimage(std::shared_ptr<GstSample> sample);
 
+    void setupEnvironment();
+
 signals:
     void frameReceived(QImage image);
     void errorOccured(QString error);
