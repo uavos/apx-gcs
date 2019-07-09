@@ -17,6 +17,7 @@ ListView {
 
     delegate: CleanButton {
         defaultHeight: listView.implicitHeight
+        ui_scale: 1
         text: modelData.title
         toolTip: modelData.descr?modelData.descr:modelData.title
         iconName: modelData.icon

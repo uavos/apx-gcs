@@ -22,6 +22,7 @@ ColumnLayout {
 
         FactValue {
             defaultHeight: parent.height
+            ui_scale: 1
             fact: vehicle
             iconName: fact.icon
             toolTip: apx.vehicles.title
@@ -35,6 +36,7 @@ ColumnLayout {
 
         FactValue {
             defaultHeight: parent.height
+            ui_scale: 1
             fact: vehicle.nodes
             title: fact.nodesCount
             iconName: fact.icon
@@ -51,6 +53,7 @@ ColumnLayout {
 
         FactValue {
             defaultHeight: parent.height
+            ui_scale: 1
             fact: vehicle.mission
             title: fact.missionSize
             iconName: fact.icon

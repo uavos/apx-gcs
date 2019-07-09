@@ -28,6 +28,8 @@ Button {
 
     property int minimumWidth: 0
 
+    property real ui_scale: ui.scale
+
     signal menuRequested()
     signal triggered()
     signal activated()
@@ -37,12 +39,12 @@ Button {
     //internal
     property bool showContents: (iconName&&showIcon)?showText && title:true
 
-    padding: 2*ui.scale //iconName?3:3
+    padding: 2*ui_scale //iconName?3:3
     leftPadding: padding+1
     rightPadding: padding+1
     topPadding: padding
     bottomPadding: padding
-    spacing: 3*ui.scale
+    spacing: 3*ui_scale
 
     topInset: 0
     bottomInset: 1
@@ -60,10 +62,10 @@ Button {
     Material.primary: Material.color(Material.LightGreen)
 
 
-    font.pixelSize: 14*ui.scale //Qt.application.font.pixelSize*ui.scale
+    font.pixelSize: 14*ui_scale //Qt.application.font.pixelSize*ui_scale
 
     //implicitHeight: visible?contentItem.implicitHeight+topPadding+bottomPadding:0
-    implicitHeight: defaultHeight*ui.scale
+    implicitHeight: defaultHeight*ui_scale
     implicitWidth: showContents?Math.max(implicitHeight,Math.max(minimumWidth,contentItem.implicitWidth+leftPadding+rightPadding)):implicitHeight
 
     ToolTip.delay: 1000

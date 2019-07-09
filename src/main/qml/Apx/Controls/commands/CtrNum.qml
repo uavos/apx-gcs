@@ -28,6 +28,7 @@ RowLayout {
         id: titleItem
         Layout.minimumWidth: titleWidth
         defaultHeight: control.size
+        ui_scale: 1
         color: highlighted?undefined:"#000"
         highlighted: value!==0
         onTriggered: fact.value=0
@@ -55,6 +56,7 @@ RowLayout {
 
     CleanButton {
         defaultHeight: control.size
+        ui_scale: 1
         text: "-"
         enabled: value>min
         onTriggered: adjust(-stepSize)
@@ -67,6 +69,7 @@ RowLayout {
     }
     CleanButton {
         defaultHeight: control.size
+        ui_scale: 1
         text: "+"
         enabled: value<max
         onTriggered: adjust(stepSize)

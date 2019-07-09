@@ -46,6 +46,7 @@ RowLayout {
         delegate: CleanButton {
             width: plistView.width
             height: width
+            ui_scale: 1
             text: name
             highlighted: pagesView.currentIndex==index
             onTriggered: pagesView.currentIndex=index

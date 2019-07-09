@@ -13,6 +13,8 @@ CleanButton {
     property real value: 1
     property real resetValue: 0
 
+    ui_scale: 1
+
     title: fact.title
     toolTip: fact.descr
 

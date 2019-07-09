@@ -25,6 +25,7 @@ ColumnLayout{
             toolTip: m.mode.descr+": "+modelData
             showText: true
             defaultHeight: listView.implicitHeight
+            ui_scale: 1
             titleSize: 0.5
             onTriggered: {
                 m.mode.value=modelData
@@ -34,6 +35,7 @@ ColumnLayout{
         headerPositioning: ListView.OverlayHeader
         header: CleanButton {
             defaultHeight: listView.implicitHeight
+            ui_scale: 1
             text: m.mode.text
             property int v: m.mode.value
             property bool warning: v==mode_EMG || v==mode_RPV || v==mode_HOME || v==mode_TAXI

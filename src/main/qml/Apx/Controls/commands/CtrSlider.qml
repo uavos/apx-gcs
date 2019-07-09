@@ -25,6 +25,7 @@ RowLayout {
         id: titleItem
         Layout.minimumWidth: titleWidth
         defaultHeight: control.size
+        ui_scale: 1
         color: highlighted?undefined:"#000"
         highlighted: fact.value!==0
         onTriggered: fact.value=0
