@@ -22,7 +22,7 @@
  */
 #include "ProtocolVehicle.h"
 
-#include <ApxLink/node.h>
+#include <Xbus/xbus_node.h>
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolVehicle::ProtocolVehicle(quint16 squawk,
@@ -48,15 +48,14 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
 //=============================================================================
 bool ProtocolVehicle::unpack(QByteArray packet)
 {
-    int data_cnt = packet.size();
-    if (data_cnt <= bus_packet_size_hdr)
+    size_t psize = packet.size();
+    if (psize <= sizeof(xbus::hdr_t))
         return false;
-    data_cnt -= bus_packet_size_hdr;
-    const _bus_packet *p = reinterpret_cast<const _bus_packet *>(packet.data());
-    QByteArray data(reinterpret_cast<const char *>(p->data), data_cnt);
-    switch (p->id) {
+    const xbus::hdr_t *p = reinterpret_cast<const xbus::hdr_t *>(packet.data());
+    QByteArray data(packet.right(psize - sizeof(xbus::hdr_t)));
+    switch (p->pid) {
     default:
-        emit dlinkData(p->id, data);
+        emit dlinkData(p->pid, data);
         break;
     case mandala::idx_downstream:
         emit downstreamData(data);
@@ -68,20 +67,18 @@ bool ProtocolVehicle::unpack(QByteArray packet)
         emit missionData(data);
         break;
     case mandala::idx_service: {
-        quint16 cmd = apc_search;
-        if (data.size() >= static_cast<int>(bus_packet_size_hdr_srv))
-            cmd = p->srv.cmd;
-        else if (data.size() < (static_cast<int>(bus_packet_size_hdr_srv) - 1))
+        quint16 cmd = xbus::apc_search;
+        const xbus::hdr_node_t *hdr = reinterpret_cast<const xbus::hdr_node_t *>(p);
+        if (data.size() >= static_cast<int>(sizeof(xbus::hdr_node_t)))
+            cmd = hdr->cmd;
+        else if (data.size() < (static_cast<int>(sizeof(xbus::hdr_node_t)) - 1))
             break;
-        QString sn(QByteArray(reinterpret_cast<const char *>(p->srv.sn), sizeof(_node_sn))
+        QString sn(QByteArray(reinterpret_cast<const char *>(hdr->guid), sizeof(xbus::node_guid_t))
                        .toHex()
                        .toUpper());
         //qDebug()<<"idx_service"<<sn;
         if (!(sn.isEmpty() || sn.count('0') == sn.size())) {
-            emit serviceData(sn,
-                             p->srv.cmd,
-                             QByteArray(reinterpret_cast<const char *>(p->srv.data),
-                                        packet.size() - static_cast<int>(bus_packet_size_hdr_srv)));
+            emit serviceData(sn, hdr->cmd, packet.right(psize - sizeof(xbus::hdr_node_t)));
         }
     } break;
     }
@@ -109,7 +106,7 @@ void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray dat
 {
     QByteArray pdata = QByteArray::fromHex(sn.toUtf8());
     if (pdata.isEmpty())
-        pdata = QByteArray(sizeof(_node_sn), static_cast<char>(0));
+        pdata = QByteArray(sizeof(xbus::node_guid_t), static_cast<char>(0));
     pdata.append(static_cast<char>(cmd)).append(data);
     //qDebug()<<pdata.toHex().toUpper();
     emit sendRequest(mandala::idx_service, pdata);

@@ -24,10 +24,10 @@
 #include "DatalinkRemote.h"
 #include "DatalinkRemotes.h"
 
-#include <ApxLink/tcp_ports.h>
-
 #include <ApxLog.h>
 #include <ApxApp.h>
+
+#include <apx_tcp_ports.h>
 //=============================================================================
 DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     : DatalinkTcpSocket(parent,

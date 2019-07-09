@@ -23,10 +23,10 @@
 #include "DatalinkTcpSocket.h"
 #include "Datalink.h"
 
-#include <ApxLink/crc.h>
 #include <ApxLog.h>
 #include <ApxApp.h>
-//-----------------------------------------------------------------------------
+
+#include <Math/crc.h>
 //=============================================================================
 DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
                                      QTcpSocket *socket,

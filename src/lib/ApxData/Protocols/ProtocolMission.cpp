@@ -23,7 +23,7 @@
 #include "ProtocolMission.h"
 #include "ProtocolVehicle.h"
 
-#include <ApxLink/Mission.h>
+#include <other/Mission.h>
 
 #include <ApxLog.h>
 //=============================================================================

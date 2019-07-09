@@ -18,43 +18,68 @@ APX.ApxLibrary {
 
     Export {
         Depends { name: "cpp" }
-        cpp.includePaths: product.sourceDirectory
+        cpp.includePaths: [
+            product.sourceDirectory,
+            FileInfo.joinPaths(project.libDir, "include"),
+        ]
     }
 
     Depends { name: "apx" }
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 
-    cpp.includePaths: base.concat([
+    cpp.includePaths: base
+    .concat([
         sourceDirectory,
         project.libDir,
+        FileInfo.joinPaths(project.libDir, "include"),
     ])
 
     Group {
-        name: "Lib"
-        prefix: FileInfo.joinPaths(project.libDir, "/")
+        name: "Lib.Mandala"
+        prefix: FileInfo.joinPaths(project.libDir, "Mandala/")
         files: [
-            "Mandala/Mandala.cpp", "Mandala/Mandala.h",
-            "Mandala/MandalaCore.cpp", "Mandala/MandalaCore.h",
-            "Mandala/MatrixMath.cpp", "Mandala/MatrixMath.h",
-            "Mandala/MandalaTemplate.h",
-            "Mandala/MandalaIndexes.h",
-            "Mandala/MandalaConstants.h",
-            "Mandala/preprocessor.h",
-
-            "ApxLink/crc.c", "ApxLink/crc.h",
-            "ApxLink/escaped.h",
-            "ApxLink/Mission.h",
-            "ApxLink/node.h",
-            "ApxLink/vehicle.h",
-            //"ApxLink/packet.h",
-            "ApxLink/types.h",
-            "ApxLink/tcp_ports.h",
-
-            //"comm.cpp", "comm.h",
-            //"crc.h",
-            //"dmsg.h",
-            //"time_ms.h",
+            "Mandala.cpp", "Mandala.h",
+            "MandalaCore.cpp", "MandalaCore.h",
+            "MatrixMath.cpp", "MatrixMath.h",
+            "MandalaTemplate.h",
+            "MandalaIndexes.h",
+            "MandalaConstants.h",
+            "preprocessor.h",
+        ]
+    }
+    Group {
+        name: "Lib.include"
+        prefix: FileInfo.joinPaths(project.libDir, "include/")
+        files: [
+            "*.h",
+        ]
+    }
+    Group {
+        name: "Lib.Xbus"
+        prefix: FileInfo.joinPaths(project.libDir, "Xbus/")
+        files: [
+            "xbus.h",
+            "xbus_vehicle.h",
+            "xbus_node.h",
+            "xbus_node_conf.h",
+            "xbus_node_file.h",
+            "xbus_node_blackbox.h",
+            "escaped.h",
+        ]
+    }
+    Group {
+        name: "Lib.other"
+        prefix: FileInfo.joinPaths(project.libDir, "other/")
+        files: [
+            "Mission.h",
+        ]
+    }
+    Group {
+        name: "Lib.Math"
+        prefix: FileInfo.joinPaths(project.libDir, "Math/")
+        files: [
+            "crc.c", "crc.h",
         ]
     }
 

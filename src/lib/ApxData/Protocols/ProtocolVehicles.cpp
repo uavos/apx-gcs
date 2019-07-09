@@ -24,8 +24,7 @@
 #include "ProtocolVehicle.h"
 #include "ProtocolServiceFirmware.h"
 
-#include <ApxLink/vehicle.h>
-#include <ApxLink/node.h>
+#include <Xbus/xbus_vehicle.h>
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolVehicles::ProtocolVehicles(QObject *parent)
@@ -39,16 +38,15 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
 //=============================================================================
 bool ProtocolVehicles::unpack(QByteArray packet)
 {
-    uint data_cnt = packet.size();
-    if (data_cnt <= bus_packet_size_hdr)
+    uint psize = packet.size();
+    if (psize <= sizeof(xbus::hdr_t))
         return false;
-    data_cnt -= bus_packet_size_hdr;
-    _bus_packet *p = reinterpret_cast<_bus_packet *>(packet.data());
-    switch (p->id) {
+    xbus::hdr_t *p = reinterpret_cast<xbus::hdr_t *>(packet.data());
+    switch (p->pid) {
     case mandala::idx_xpdr: { //transponder from UAV received
-        if (data_cnt != sizeof(IDENT::_xpdr))
+        if (psize != sizeof(xbus::packet_xpdr_t))
             break;
-        IDENT::_xpdr *xpdr = reinterpret_cast<IDENT::_xpdr *>(p->data);
+        xbus::packet_xpdr_t *xpdr = reinterpret_cast<xbus::packet_xpdr_t *>(p);
         //qDebug()<<"xpdr"<<xpdr->squawk;
         ProtocolVehicle *v = squawkMap.value(xpdr->squawk);
         if (!v) {
@@ -67,9 +65,9 @@ bool ProtocolVehicles::unpack(QByteArray packet)
     } break;
     case mandala::idx_ident: {
         qDebug() << "ident received";
-        if (data_cnt != sizeof(IDENT::_ident))
+        if (psize != sizeof(xbus::packet_ident_t))
             break;
-        IDENT::_ident *ident = reinterpret_cast<IDENT::_ident *>(p->data);
+        xbus::packet_ident_t *ident = reinterpret_cast<xbus::packet_ident_t *>(p);
         ident->callsign[sizeof(ident->callsign) - 1] = 0;
         IdentData d;
         d.callsign = QString(static_cast<const char *>(ident->callsign));
@@ -121,15 +119,16 @@ bool ProtocolVehicles::unpack(QByteArray packet)
         }
     } break;
     case mandala::idx_dlink: {
-        if (data_cnt <= sizeof(IDENT::_squawk))
+        if (psize <= sizeof(xbus::hdr_vehicle_t))
             break;
-        IDENT::_squawk squawk = p->data[0] | p->data[1] << 8;
+        xbus::hdr_vehicle_t *hdr = reinterpret_cast<xbus::hdr_vehicle_t *>(p);
+        xbus::squawk_t squawk = hdr->squawk;
         if (!squawk)
             break; //broadcast?
         //check if new transponder detected, request IDENT
         ProtocolVehicle *v = squawkMap.value(squawk);
         if (v)
-            v->unpack(packet.right(data_cnt - sizeof(IDENT::_squawk)));
+            v->unpack(packet.right(psize - sizeof(xbus::hdr_vehicle_t)));
         else
             identRequest(squawk);
     } break;
@@ -158,7 +157,7 @@ void ProtocolVehicles::identRequest(quint16 squawk)
 void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 {
     qDebug() << "assign" << squawk << ident.callsign << ident.uid << ident.vclass;
-    IDENT::_ident i;
+    xbus::packet_ident_t i;
     memset(&i, 0, sizeof(i));
     //generate squawk
     uint tcnt = 1000000;
@@ -195,8 +194,8 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
     //send new ident
     QByteArray ba = QByteArray().append((unsigned char) mandala::idx_ident);
     int sz = ba.size();
-    ba.resize(sz + sizeof(IDENT::_ident));
-    memcpy(ba.data() + sz, &i, sizeof(IDENT::_ident));
+    ba.resize(sz + sizeof(xbus::packet_ident_t));
+    memcpy(ba.data() + sz, &i, sizeof(xbus::packet_ident_t));
     emit sendUplink(ba);
 }
 //=============================================================================
