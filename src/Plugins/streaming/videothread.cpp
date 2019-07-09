@@ -12,7 +12,8 @@ VideoThread::VideoThread():
     m_stop(false),
     m_recording(false),
     m_reencoding(false),
-    m_loop(nullptr)
+    m_loop(nullptr),
+    m_avfWorkaround(false)
 {
     QString currentDir = QCoreApplication::applicationDirPath();
 
@@ -32,6 +33,14 @@ void VideoThread::setUrl(const QString &url)
 {
     QMutexLocker locker(&m_ioMutex);
     m_url = url;
+    m_avfWorkaround = false;
+
+    QUrl u(url);
+    if(u.scheme() == "avf")
+    {
+        m_avfWorkaround = true;
+        m_url = u.path().remove("/index");
+    }
 }
 
 void VideoThread::stop()
@@ -138,7 +147,12 @@ void VideoThread::run()
 
     //common elements
     m_context->pipeline = gst_pipeline_new("client");
-    m_context->urisourcebin = gst_element_factory_make("urisourcebin", nullptr);
+
+    if(m_avfWorkaround)
+        m_context->source = gst_element_factory_make("avfvideosrc", nullptr);
+    else
+        m_context->source = gst_element_factory_make("urisourcebin", nullptr);
+    m_context->capsFilter = gst_element_factory_make("capsfilter", nullptr);
     m_context->parsebin = gst_element_factory_make("parsebin", nullptr);
 
     m_context->teeparse = gst_element_factory_make("tee", nullptr);
@@ -149,22 +163,36 @@ void VideoThread::run()
     m_context->playConverter = gst_element_factory_make("videoconvert", nullptr);
     m_context->playAppsink = gst_element_factory_make("appsink", nullptr);
 
-    gst_bin_add_many(GST_BIN(m_context->pipeline), m_context->urisourcebin, m_context->parsebin,
+    gst_bin_add_many(GST_BIN(m_context->pipeline), m_context->source, m_context->capsFilter, m_context->parsebin,
                      m_context->teeparse, m_context->playDecodebin, m_context->playConverter,
                      m_context->teeconvert, m_context->playAppsink, nullptr);
 
     m_context->onFrameReceived = std::bind(&VideoThread::onSampleReceived, this, _1, _2);
     m_context->isRecordRequested = std::bind(&VideoThread::getRecording, this);
 
-    if(!m_context->pipeline || !m_context->urisourcebin || !m_context->parsebin || !m_context->teeparse ||
+    if(!m_context->pipeline || !m_context->source || !m_context->capsFilter || !m_context->parsebin || !m_context->teeparse ||
             !m_context->playDecodebin || !m_context->playConverter || !m_context->playAppsink)
     {
         emit errorOccured("Can't create pipeline");
         return;
     }
 
-    //urisourcebin configuring
-    g_object_set(m_context->urisourcebin, "uri", url.toStdString().data(), nullptr);
+    //source configuring
+    if(m_avfWorkaround)
+    {
+        bool ok;
+        int index = m_url.toInt(&ok);
+        if(!ok)
+        {
+            emit errorOccured("Unknown device " + m_url);
+            return;
+        }
+        g_object_set(m_context->source, "device-index", index, nullptr);
+        g_object_set(m_context->capsFilter, "caps", gst_caps_from_string("video/x-raw"), nullptr);
+    }
+    else
+        g_object_set(m_context->source, "uri", url.toStdString().data(), nullptr);
+
     //appsink configuring
     g_object_set(G_OBJECT(m_context->playAppsink), "emit-signals", true, "sync", true, nullptr);
     g_signal_connect(m_context->playAppsink, "new-sample", G_CALLBACK(on_new_sample_from_sink), m_context.get());
@@ -173,13 +201,22 @@ void VideoThread::run()
     g_object_set(m_context->playAppsink, "caps", getCapsForAppSink(), nullptr);
 
     //pad-cb
-    g_signal_connect(m_context->urisourcebin, "pad-added", G_CALLBACK(on_pad_added_urisourcebin), m_context->parsebin);
+    if(m_avfWorkaround)
+        gst_element_link(m_context->source, m_context->capsFilter);
+    else
+        g_signal_connect(m_context->source, "pad-added", G_CALLBACK(on_pad_added_urisourcebin), m_context->capsFilter);
     g_signal_connect(m_context->parsebin, "pad-added", G_CALLBACK(on_pad_added), m_context->teeparse);
     g_signal_connect(m_context->playDecodebin, "pad-added", G_CALLBACK(on_pad_added), m_context->playConverter);
 
+    if(!gst_element_link_many(m_context->capsFilter, m_context->parsebin, nullptr))
+    {
+        emit errorOccured("Can't link source, caps filter and parsebin");
+        return;
+    }
+
     if(!gst_element_link(m_context->teeparse, m_context->playDecodebin))
     {
-        emit errorOccured("Can't link tee and decodbin");
+        emit errorOccured("Can't link tee and decodebin");
         return;
     }
 

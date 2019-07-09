@@ -26,7 +26,8 @@ struct StreamContext
 {
     GstElement *pipeline        = nullptr;
     //common elements
-    GstElement *urisourcebin    = nullptr;
+    GstElement *source          = nullptr;
+    GstElement *capsFilter      = nullptr;
     GstElement *parsebin        = nullptr;
     GstElement *teeparse        = nullptr;
     GstElement *teeconvert      = nullptr;
@@ -86,6 +87,8 @@ private:
     GMainLoop *m_loop = nullptr;
     StreamContext::OverlayCallback m_overlayCallback;
     std::unique_ptr<StreamContext> m_context;
+
+    bool m_avfWorkaround;
 
     void openWriter(StreamContext *m_context);
     void closeWriter(StreamContext *m_context);
