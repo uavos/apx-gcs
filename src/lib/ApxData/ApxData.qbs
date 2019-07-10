@@ -4,6 +4,7 @@ import apx.Application as APX
 APX.ApxLibrary {
 
     Depends { name: "ApxCore" }
+    Depends { name: "ApxShared" }
 
     Depends {
         name: "Qt";
@@ -18,70 +19,17 @@ APX.ApxLibrary {
 
     Export {
         Depends { name: "cpp" }
-        cpp.includePaths: [
-            product.sourceDirectory,
-            FileInfo.joinPaths(project.libDir, "include"),
-        ]
+        cpp.includePaths: product.cpp.includePaths
     }
 
     Depends { name: "apx" }
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 
-    cpp.includePaths: base
-    .concat([
+    cpp.includePaths: [
         sourceDirectory,
-        project.libDir,
-        FileInfo.joinPaths(project.libDir, "include"),
-    ])
+    ]
 
-    Group {
-        name: "Lib.Mandala"
-        prefix: FileInfo.joinPaths(project.libDir, "Mandala/")
-        files: [
-            "Mandala.cpp", "Mandala.h",
-            "MandalaCore.cpp", "MandalaCore.h",
-            "MatrixMath.cpp", "MatrixMath.h",
-            "MandalaTemplate.h",
-            "MandalaIndexes.h",
-            "MandalaConstants.h",
-            "preprocessor.h",
-        ]
-    }
-    Group {
-        name: "Lib.include"
-        prefix: FileInfo.joinPaths(project.libDir, "include/")
-        files: [
-            "*.h",
-        ]
-    }
-    Group {
-        name: "Lib.Xbus"
-        prefix: FileInfo.joinPaths(project.libDir, "Xbus/")
-        files: [
-            "xbus.h",
-            "xbus_vehicle.h",
-            "xbus_node.h",
-            "xbus_node_conf.h",
-            "xbus_node_file.h",
-            "xbus_node_blackbox.h",
-            "escaped.h",
-        ]
-    }
-    Group {
-        name: "Lib.other"
-        prefix: FileInfo.joinPaths(project.libDir, "other/")
-        files: [
-            "Mission.h",
-        ]
-    }
-    Group {
-        name: "Lib.Math"
-        prefix: FileInfo.joinPaths(project.libDir, "Math/")
-        files: [
-            "crc.c", "crc.h",
-        ]
-    }
 
     Group {
         name: "Dictionary"

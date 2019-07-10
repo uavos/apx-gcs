@@ -7,6 +7,7 @@ APX.ApxLibrary {
 
     Depends { name: "ApxCore" }
     Depends { name: "ApxData" }
+    Depends { name: "ApxShared" }
 
     Depends {
         name: "Qt";
@@ -27,14 +28,11 @@ APX.ApxLibrary {
         ]
     }
 
-    Depends { name: "apx_version" }
-
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 
     cpp.includePaths: base.concat([
         sourceDirectory,
-        project.libDir,
     ])
 
     Export {

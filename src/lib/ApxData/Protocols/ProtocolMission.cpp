@@ -23,7 +23,7 @@
 #include "ProtocolMission.h"
 #include "ProtocolVehicle.h"
 
-#include <other/Mission.h>
+#include <Xbus/xbus_mission.h>
 
 #include <ApxLog.h>
 //=============================================================================
@@ -46,21 +46,23 @@ void ProtocolMission::missionData(QByteArray data)
     uint data_cnt = static_cast<uint>(data.size());
     int ecnt = 0, wpcnt = 0, rwcnt = 0;
     const quint8 *ptr = reinterpret_cast<const quint8 *>(data.data());
-    for (uint cnt = 0; data_cnt >= sizeof(Mission::_item_hdr); data_cnt -= cnt) {
+    for (uint cnt = 0; data_cnt >= sizeof(xbus::mission::mission_hdr_t); data_cnt -= cnt) {
         ptr += cnt;
         ecnt++;
-        const Mission::_item_hdr *hdr = reinterpret_cast<const Mission::_item_hdr *>(ptr);
+        const xbus::mission::mission_hdr_t *hdr
+            = reinterpret_cast<const xbus::mission::mission_hdr_t *>(ptr);
         switch (hdr->type) {
-        case Mission::mi_stop:
-            data_cnt -= sizeof(Mission::_item_hdr);
+        case xbus::mission::mi_stop:
+            data_cnt -= sizeof(xbus::mission::mission_hdr_t);
             ecnt--;
             break;
-        case Mission::mi_wp: {
-            cnt = sizeof(Mission::_item_wp);
+        case xbus::mission::mi_wp: {
+            cnt = sizeof(xbus::mission::mission_wp_t);
             if (data_cnt < cnt)
                 break;
             wpcnt++;
-            const Mission::_item_wp *e = reinterpret_cast<const Mission::_item_wp *>(ptr);
+            const xbus::mission::mission_wp_t *e
+                = reinterpret_cast<const xbus::mission::mission_wp_t *>(ptr);
             DictMission::Item m;
             m.lat = static_cast<qreal>(e->lat);
             m.lon = static_cast<qreal>(e->lon);
@@ -69,34 +71,34 @@ void ProtocolMission::missionData(QByteArray data)
             //wp actions
             QVariantMap a;
             bool err = false;
-            while ((data_cnt - cnt) >= sizeof(Mission::_item_hdr)
-                   && (reinterpret_cast<const Mission::_item_hdr *>(ptr + cnt))->type
-                          == Mission::mi_action) {
-                const Mission::_item_action *v = reinterpret_cast<const Mission::_item_action *>(
-                    ptr + cnt);
-                uint sz = static_cast<uint>(Mission::action_size(v->hdr.option));
+            while ((data_cnt - cnt) >= sizeof(xbus::mission::mission_hdr_t)
+                   && (reinterpret_cast<const xbus::mission::mission_hdr_t *>(ptr + cnt))->type
+                          == xbus::mission::mi_action) {
+                const xbus::mission::mission_action_t *v
+                    = reinterpret_cast<const xbus::mission::mission_action_t *>(ptr + cnt);
+                uint sz = static_cast<uint>(v->size());
                 if ((data_cnt - cnt) < sz) {
                     err = true;
                     break; //error
                 }
                 cnt += sz;
                 switch (v->hdr.option) {
-                case Mission::mo_speed:
+                case xbus::mission::mo_speed:
                     a["speed"] = v->speed;
                     break;
-                case Mission::mo_poi:
+                case xbus::mission::mo_poi:
                     a["poi"] = v->poi + 1;
                     break;
-                case Mission::mo_scr:
+                case xbus::mission::mo_scr:
                     a["script"] = QString(v->scr);
                     break;
-                case Mission::mo_loiter:
+                case xbus::mission::mo_loiter:
                     a["loiter"] = 1;
                     a["turnR"] = v->loiter.turnR;
                     a["loops"] = v->loiter.loops;
                     a["time"] = v->loiter.timeS;
                     break;
-                case Mission::mo_shot: {
+                case xbus::mission::mo_shot: {
                     switch (v->shot.opt) {
                     case 0: //single
                         a["shot"] = "single";
@@ -127,9 +129,10 @@ void ProtocolMission::missionData(QByteArray data)
             d.waypoints.append(m);
         }
             continue;
-        case Mission::mi_rw: {
-            const Mission::_item_rw *e = reinterpret_cast<const Mission::_item_rw *>(ptr);
-            cnt = sizeof(Mission::_item_rw);
+        case xbus::mission::mi_rw: {
+            const xbus::mission::mission_rw_t *e
+                = reinterpret_cast<const xbus::mission::mission_rw_t *>(ptr);
+            cnt = sizeof(xbus::mission::mission_rw_t);
             if (data_cnt < cnt)
                 break;
             rwcnt++;
@@ -144,9 +147,10 @@ void ProtocolMission::missionData(QByteArray data)
             d.runways.append(m);
         }
             continue;
-        case Mission::mi_tw: {
-            const Mission::_item_tw *e = reinterpret_cast<const Mission::_item_tw *>(ptr);
-            cnt = sizeof(Mission::_item_tw);
+        case xbus::mission::mi_tw: {
+            const xbus::mission::mission_tw_t *e
+                = reinterpret_cast<const xbus::mission::mission_tw_t *>(ptr);
+            cnt = sizeof(xbus::mission::mission_tw_t);
             if (data_cnt < cnt)
                 break;
             DictMission::Item m;
@@ -155,9 +159,10 @@ void ProtocolMission::missionData(QByteArray data)
             d.taxiways.append(m);
         }
             continue;
-        case Mission::mi_pi: {
-            const Mission::_item_pi *e = reinterpret_cast<const Mission::_item_pi *>(ptr);
-            cnt = sizeof(Mission::_item_pi);
+        case xbus::mission::mi_pi: {
+            const xbus::mission::mission_pi_t *e
+                = reinterpret_cast<const xbus::mission::mission_pi_t *>(ptr);
+            cnt = sizeof(xbus::mission::mission_pi_t);
             if (data_cnt < cnt)
                 break;
             DictMission::Item m;
@@ -170,23 +175,26 @@ void ProtocolMission::missionData(QByteArray data)
             d.pois.append(m);
         }
             continue;
-        case Mission::mi_action: { //ignore, loaded in wp
-            const Mission::_item_action *e = reinterpret_cast<const Mission::_item_action *>(ptr);
-            cnt = Mission::action_size(e->hdr.option);
+        case xbus::mission::mi_action: { //ignore, loaded in wp
+            const xbus::mission::mission_action_t *e
+                = reinterpret_cast<const xbus::mission::mission_action_t *>(ptr);
+            cnt = e->size();
             if (data_cnt < cnt)
                 break;
         }
             continue;
-        case Mission::mi_restricted: {
-            const Mission::_item_area *e = reinterpret_cast<const Mission::_item_area *>(ptr);
-            cnt = Mission::area_size(e->pointsCnt);
+        case xbus::mission::mi_restricted: {
+            const xbus::mission::mission_area_t *e
+                = reinterpret_cast<const xbus::mission::mission_area_t *>(ptr);
+            cnt = e->size();
             if (data_cnt < cnt)
                 break;
         }
             continue;
-        case Mission::mi_emergency: {
-            const Mission::_item_area *e = reinterpret_cast<const Mission::_item_area *>(ptr);
-            cnt = Mission::area_size(e->pointsCnt);
+        case xbus::mission::mi_emergency: {
+            const xbus::mission::mission_area_t *e
+                = reinterpret_cast<const xbus::mission::mission_area_t *>(ptr);
+            cnt = e->size();
             if (data_cnt < cnt)
                 break;
         }
@@ -211,8 +219,8 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
     QByteArray ba;
     for (int i = 0; i < d.runways.size(); ++i) {
         const DictMission::Item &m = d.runways.at(i);
-        Mission::_item_rw v;
-        v.hdr.type = Mission::mi_rw;
+        xbus::mission::mission_rw_t v;
+        v.hdr.type = xbus::mission::mi_rw;
         v.hdr.option = DictMission::runwayTypeFromString(m.details.value("type").toString());
         v.lat = static_cast<float>(m.lat);
         v.lon = static_cast<float>(m.lon);
@@ -224,8 +232,8 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
     }
     for (int i = 0; i < d.waypoints.size(); ++i) {
         const DictMission::Item &m = d.waypoints.at(i);
-        Mission::_item_wp v;
-        v.hdr.type = Mission::mi_wp;
+        xbus::mission::mission_wp_t v;
+        v.hdr.type = xbus::mission::mi_wp;
         v.hdr.option = DictMission::waypointTypeFromString(m.details.value("type").toString());
         v.lat = static_cast<float>(m.lat);
         v.lon = static_cast<float>(m.lon);
@@ -242,43 +250,41 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
         }
 
         if (!amap.value("speed").isEmpty()) {
-            Mission::_item_action a;
-            a.hdr.type = Mission::mi_action;
-            a.hdr.option = Mission::mo_speed;
+            xbus::mission::mission_action_t a;
+            a.hdr.type = xbus::mission::mi_action;
+            a.hdr.option = xbus::mission::mo_speed;
             a.speed = amap.value("speed").toUInt();
-            ba.append(reinterpret_cast<const char *>(&a),
-                      static_cast<int>(Mission::action_size(a.hdr.option)));
+            ba.append(reinterpret_cast<const char *>(&a), static_cast<int>(a.size()));
         }
         if (!amap.value("poi").isEmpty()) {
-            Mission::_item_action a;
-            a.hdr.type = Mission::mi_action;
-            a.hdr.option = Mission::mo_poi;
+            xbus::mission::mission_action_t a;
+            a.hdr.type = xbus::mission::mi_action;
+            a.hdr.option = xbus::mission::mo_poi;
             a.poi = amap.value("poi").toUInt() - 1;
-            ba.append(reinterpret_cast<const char *>(&a),
-                      static_cast<int>(Mission::action_size(a.hdr.option)));
+            ba.append(reinterpret_cast<const char *>(&a), static_cast<int>(a.size()));
         }
         if (!amap.value("script").isEmpty()) {
-            Mission::_item_action a;
-            a.hdr.type = Mission::mi_action;
-            a.hdr.option = Mission::mo_scr;
-            strncpy(a.scr, amap.value("script").toUtf8().data(), sizeof(Mission::_item_action::scr));
-            ba.append(reinterpret_cast<const char *>(&a),
-                      static_cast<int>(Mission::action_size(a.hdr.option)));
+            xbus::mission::mission_action_t a;
+            a.hdr.type = xbus::mission::mi_action;
+            a.hdr.option = xbus::mission::mo_scr;
+            strncpy(a.scr,
+                    amap.value("script").toUtf8().data(),
+                    sizeof(xbus::mission::mission_action_t::scr));
+            ba.append(reinterpret_cast<const char *>(&a), static_cast<int>(a.size()));
         }
         if (!amap.value("loiter").isEmpty()) {
-            Mission::_item_action a;
-            a.hdr.type = Mission::mi_action;
-            a.hdr.option = Mission::mo_loiter;
+            xbus::mission::mission_action_t a;
+            a.hdr.type = xbus::mission::mi_action;
+            a.hdr.option = xbus::mission::mo_loiter;
             a.loiter.turnR = amap.value("turnR").toInt();
             a.loiter.loops = amap.value("loops").toUInt();
             a.loiter.timeS = amap.value("time").toUInt();
-            ba.append(reinterpret_cast<const char *>(&a),
-                      static_cast<int>(Mission::action_size(a.hdr.option)));
+            ba.append(reinterpret_cast<const char *>(&a), static_cast<int>(a.size()));
         }
         if (!amap.value("shot").isEmpty()) {
-            Mission::_item_action a;
-            a.hdr.type = Mission::mi_action;
-            a.hdr.option = Mission::mo_shot;
+            xbus::mission::mission_action_t a;
+            a.hdr.type = xbus::mission::mi_action;
+            a.hdr.option = xbus::mission::mo_shot;
             uint dshot = amap.value("dshot").toUInt();
             const QString &shot = amap.value("shot");
             a.shot.opt = 0;
@@ -298,22 +304,21 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
             } else if (shot != "single") {
                 apxMsgW() << tr("Unknown shot mode") << shot;
             }
-            ba.append(reinterpret_cast<const char *>(&a),
-                      static_cast<int>(Mission::action_size(a.hdr.option)));
+            ba.append(reinterpret_cast<const char *>(&a), static_cast<int>(a.size()));
         }
     }
     for (int i = 0; i < d.taxiways.size(); ++i) {
         const DictMission::Item &m = d.taxiways.at(i);
-        Mission::_item_tw v;
-        v.hdr.type = Mission::mi_tw;
+        xbus::mission::mission_tw_t v;
+        v.hdr.type = xbus::mission::mi_tw;
         v.lat = static_cast<float>(m.lat);
         v.lon = static_cast<float>(m.lon);
         ba.append(reinterpret_cast<const char *>(&v), sizeof(v));
     }
     for (int i = 0; i < d.pois.size(); ++i) {
         const DictMission::Item &m = d.pois.at(i);
-        Mission::_item_pi v;
-        v.hdr.type = Mission::mi_pi;
+        xbus::mission::mission_pi_t v;
+        v.hdr.type = xbus::mission::mi_pi;
         v.lat = static_cast<float>(m.lat);
         v.lon = static_cast<float>(m.lon);
         v.hmsl = m.details.value("hmsl").toInt();
@@ -327,9 +332,9 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
         qDebug() << "Can't upload empty mission";
     }
 
-    Mission::_item_hdr v;
+    xbus::mission::mission_hdr_t v;
     memset(&v, 0, sizeof(v));
-    v.type = Mission::mi_stop;
+    v.type = xbus::mission::mi_stop;
     //if(seqList.size()>1 && currentSeq>0) v.option=1;
     //else v.option=0;
     ba.append(reinterpret_cast<const char *>(&v), sizeof(v));
