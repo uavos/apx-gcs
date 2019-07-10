@@ -4,7 +4,7 @@ import apx.Application as APX
 APX.ApxProduct {
 
     bundle.isBundle: false
-    targetInstallDir: apx.app_bin_path
+    targetInstallDir: app.app_bin_path
     Properties {
         condition: qbs.targetOS.contains("linux")
         cpp.dynamicLibraries: "m"

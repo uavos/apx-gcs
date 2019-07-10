@@ -59,7 +59,7 @@ Project {
             condition: qbs.targetOS.contains("macos") && qbs.buildVariant.contains("release")
             prepare: {
                 var cmds=[];
-                var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("apx","app_bundle_path"));
+                var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("app","app_bundle_path"));
                 var cmd = new Command(FileInfo.joinPaths(product.sourceDirectory, "tools", "prepare_gstreamer_framework.sh"),
                                       [
                                           project.buildDirectory+"/GStreamer-prepare",
@@ -85,7 +85,7 @@ Project {
             condition: qbs.targetOS.contains("linux") && qbs.buildVariant.contains("release")
             prepare: {
                 var cmds=[];
-                var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("apx","app_bundle_path"));
+                var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("app","app_bundle_path"));
 
                 var cmd = new Command("mkdir", ["-p", targetPath + "/lib/x86_64-linux-gnu/"])
                 cmd.description = "Preparing for GStreamer deploy..."

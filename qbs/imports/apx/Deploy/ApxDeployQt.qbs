@@ -27,10 +27,10 @@ ApxDeployLibs {
 
 
             var installRoot = product.moduleProperty("qbs","installRoot")
-            var app_bundle_path = FileInfo.joinPaths(installRoot, product.moduleProperty("apx","app_bundle_path"))
-            var app_plugin_path = FileInfo.joinPaths(installRoot, product.moduleProperty("apx","app_plugin_path"))
-            var packages_dir = FileInfo.joinPaths(installRoot, product.moduleProperty("apx","packages_dir"))
-            var app_id = product.moduleProperty("apx","app_id")
+            var app_bundle_path = FileInfo.joinPaths(installRoot, product.moduleProperty("app","app_bundle_path"))
+            var app_plugin_path = FileInfo.joinPaths(installRoot, product.moduleProperty("app","app_plugin_path"))
+            var packages_dir = FileInfo.joinPaths(installRoot, product.moduleProperty("app","packages_dir"))
+            var app_id = product.moduleProperty("app","app_id")
             var qt_bin_path = product.moduleProperty("Qt.core", "binPath")
 
             var work_dir = FileInfo.path(app_bundle_path)
@@ -77,7 +77,7 @@ ApxDeployLibs {
                 //opts.push("-verbose=2")
                 opts.push("-appimage")
                 env.push("ARCH="+project.arch)
-                env.push("VERSION="+product.moduleProperty("apx","git").version)
+                env.push("VERSION="+product.moduleProperty("git","probe").version)
             }
 
 

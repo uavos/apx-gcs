@@ -19,20 +19,19 @@ APX.ApxLibrary {
         ]
     }
 
-    Depends { name: "apx_version" }
+    Depends { name: "version_hpp" }
 
     Export {
         Depends { name: "cpp" }
         cpp.includePaths: product.sourceDirectory
     }
 
-    Depends { name: "apx" }
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 
     cpp.defines: base.concat([
-        'RELATIVE_PLUGIN_PATH="' + FileInfo.relativePath('/' + apx.app_bin_path, '/' + apx.app_plugin_path) + '"',
-        'RELATIVE_DATA_PATH="' + FileInfo.relativePath('/' + apx.app_bin_path, '/' + apx.app_data_path) + '"',
+        'RELATIVE_PLUGIN_PATH="' + FileInfo.relativePath('/' + app.app_bin_path, '/' + app.app_plugin_path) + '"',
+        'RELATIVE_DATA_PATH="' + FileInfo.relativePath('/' + app.app_bin_path, '/' + app.app_data_path) + '"',
     ])
 
     cpp.includePaths: [

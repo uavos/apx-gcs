@@ -17,7 +17,7 @@ ApxDeployLibs {
     ApxDeployRule {
         prepare: {
             var cmds=[];
-            var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("apx","app_bundle_path"));
+            var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("app","app_bundle_path"));
             var cmd = new JavaScriptCommand();
             cmd.src = FileInfo.joinPaths(product.frameworkPath,product.fwFileName)
             cmd.dst = FileInfo.joinPaths(targetPath,"Contents/Frameworks",product.fwFileName)

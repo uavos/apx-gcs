@@ -16,13 +16,13 @@ ApxProduct {
         return v
     }
 
-    targetInstallDir: apx.app_plugin_path
+    targetInstallDir: app.app_plugin_path
 
     Depends { name: "ApxCore" }
     Depends { name: "ApxGcs" }
 
     Depends { name: "bundle" }
-    bundle.identifierPrefix: apx.bundle_identifier+".plugin"
+    bundle.identifierPrefix: app.bundle_identifier+".plugin"
 
     Properties {
         condition: isForLinux
@@ -38,13 +38,13 @@ ApxProduct {
 
     cpp.rpaths: qbs.targetOS.contains("macos")
             ? [
-                  FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+apx.app_bin_path, "/"+apx.app_library_path)),
-                  FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+apx.app_bin_path, "/"+apx.app_plugin_path))
+                  FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_library_path)),
+                  FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_plugin_path))
               ]
             : [
                   "$ORIGIN",
                   "$ORIGIN/..",
                   "$ORIGIN/../..",
-                  FileInfo.joinPaths("$ORIGIN", FileInfo.relativePath("/"+apx.app_plugin_path, "/"+apx.app_library_path))
+                  FileInfo.joinPaths("$ORIGIN", FileInfo.relativePath("/"+app.app_plugin_path, "/"+app.app_library_path))
               ]
 }

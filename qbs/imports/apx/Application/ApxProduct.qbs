@@ -1,4 +1,3 @@
-import qbs
 import qbs.FileInfo
 import qbs.File
 
@@ -8,9 +7,9 @@ Product {
     property string targetInstallDir
     property var infoPlist: {}
 
-    version: apx.git.version
+    version: git.probe.version
 
-    Depends { name: "apx" }
+    Depends { name: "app" }
     Depends { name: "cpp" }
     Depends { name: "bundle" }
 
@@ -18,10 +17,10 @@ Product {
     property pathList qmlImportPaths: File.exists(sourceDirectory+"/qml")?["qml"]:[]
 
     //BUNDLE
-    //bundle.bundleName: apx.app_display_name+"."+bundle.extension
-    bundle.identifierPrefix: apx.bundle_identifier
+    //bundle.bundleName: app.app_display_name+"."+bundle.extension
+    bundle.identifierPrefix: app.bundle_identifier
     bundle.infoPlist: {
-        var obj={"NSHumanReadableCopyright": apx.copyright_string}
+        var obj={"NSHumanReadableCopyright": app.copyright_string}
         for (var p in infoPlist) { obj[p] = infoPlist[p]; }
         return obj
     }
@@ -37,7 +36,7 @@ Product {
 
 
 
-    // NativeBinary
+    // NativeBinarys
     property bool isForAndroid: qbs.targetOS.contains("android")
     property bool isForDarwin: qbs.targetOS.contains("darwin")
     property bool isForLinux: qbs.targetOS.contains("linux")
@@ -64,8 +63,8 @@ Product {
     }
 
     // compiler flags
-    cpp.minimumMacosVersion: apx.minimumMacosVersion
-    cpp.minimumWindowsVersion: apx.minimumWindowsVersion
+    cpp.minimumMacosVersion: app.minimumMacosVersion
+    cpp.minimumWindowsVersion: app.minimumWindowsVersion
 
     cpp.cxxLanguageVersion: "c++14"
     cpp.useCxxPrecompiledHeader: true
@@ -90,7 +89,7 @@ Product {
         if (qbs.buildVariant == "debug" && qbs.toolchain.contains("msvc"))
             flags.push("/INCREMENTAL:NO"); // Speed up startup time when debugging with cdb
         if (qbs.targetOS.contains("macos"))
-            flags.push("-compatibility_version", apx.git.version);
+            flags.push("-compatibility_version", git.probe.version);
         return flags;
     }
 

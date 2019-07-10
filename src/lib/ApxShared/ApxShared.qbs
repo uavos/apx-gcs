@@ -12,7 +12,6 @@ APX.ApxLibrary {
         ]
     }
 
-    Depends { name: "apx" }
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 

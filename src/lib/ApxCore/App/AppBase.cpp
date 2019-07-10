@@ -116,11 +116,18 @@ QString AppBase::aboutString()
     const QString additionalInfo
         = QString("<br>"
                   "%1: <a href='http://docs.uavos.com/'><span "
-                  "style='color:#aaf;'>docs.uavos.com</span></a><br>"
-                  "%2: <a href='https://groups.google.com/forum/#!forum/uavos-updates'><span "
-                  "style='color:#aaf;'>groups.google.com</span></a><br>")
+                  "style='color:#aaf;'>docs.uavos.com</span></a>"
+                  "<br>"
+                  "%2: <a href='https://uavos.github.io/apx-releases/CHANGELOG.html'><span "
+                  "style='color:#aaf;'>view</span></a>"
+                  "<br>"
+                  "%3: <a href='https://github.com/uavos/apx-releases/releases'><span "
+                  "style='color:#aaf;'>download</span></a>"
+                  "<br>"
+                  "")
               .arg(tr("Documentation"))
-              .arg(tr("Updates"));
+              .arg(tr("Changelog"))
+              .arg(tr("Releases"));
     QStringList stver;
     stver << tr("Branch '%1' dated %2").arg(branch()).arg(git_time());
     stver << tr("Based on Qt %1 (%2, %3 bit)")

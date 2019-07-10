@@ -22,7 +22,6 @@ APX.ApxLibrary {
         cpp.includePaths: product.cpp.includePaths
     }
 
-    Depends { name: "apx" }
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 

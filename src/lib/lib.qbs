@@ -1,5 +1,4 @@
-﻿import qbs
-
+﻿
 Project {
     references: [
         "ApxCore/ApxCore.qbs",

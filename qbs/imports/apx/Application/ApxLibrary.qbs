@@ -6,9 +6,7 @@ ApxProduct {
 
     type: ["dynamiclibrary", "dynamiclibrary_symlink"].concat(isForAndroid ? ["android.nativelibrary"] : []);
 
-    targetInstallDir: apx.app_library_path
-
-    //name: project.name
+    targetInstallDir: app.app_library_path
 
     Depends { name: "cpp" }
 
@@ -19,11 +17,11 @@ ApxProduct {
     }
 
     cpp.rpaths: qbs.targetOS.contains("macos")
-            ? [FileInfo.joinPaths("@executable_path", FileInfo.relativePath("/"+apx.app_bin_path, "/"+apx.app_library_path))]
+            ? [FileInfo.joinPaths("@executable_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_library_path))]
             : [
                   "$ORIGIN",
                   "$ORIGIN/..",
-                  FileInfo.joinPaths("$ORIGIN", FileInfo.relativePath("/"+apx.app_bin_path, "/"+apx.app_library_path))
+                  FileInfo.joinPaths("$ORIGIN", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_library_path))
               ]
 
 

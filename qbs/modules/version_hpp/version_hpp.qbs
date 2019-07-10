@@ -13,12 +13,12 @@ import qbs.FileInfo
 
 Module {
     Depends { name: "texttemplate"}
-    Depends { name: "apx" }
+    Depends { name: "app" }
     Group {
         name: "version.h.in"
         files: [name]
         texttemplate.outputFileName: FileInfo.joinPaths(product.buildDirectory,"include",FileInfo.completeBaseName(name))
-        texttemplate.dict: apx.git
+        texttemplate.dict: git.probe
     }
     texttemplate.outputTag: "hpp"
 

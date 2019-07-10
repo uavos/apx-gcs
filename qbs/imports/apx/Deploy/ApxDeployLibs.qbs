@@ -10,7 +10,7 @@ Product {
 
     condition: qbs.buildVariant.contains("release")
 
-    Depends { name: "apx" }
+    Depends { name: "app" }
 
     Depends {
         productTypes: [
