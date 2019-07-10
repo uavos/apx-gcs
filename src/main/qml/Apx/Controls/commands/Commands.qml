@@ -10,18 +10,21 @@ ColumnLayout {
     id: root
     property var vehicle: apx.vehicles.current
 
-    property int size: height*0.12
+    property int size: Math.max(100,height)*0.12
 
     spacing: 4
     //clip: true
 
+
+    property int topRowHeight: Math.min(size*0.9,32)
+
     RowLayout {
         Layout.alignment: Qt.AlignTop|Qt.AlignLeft
         Layout.margins: 4
-        height: Math.min(size*0.9,32)
+        height: topRowHeight
 
         FactValue {
-            defaultHeight: parent.height
+            defaultHeight: topRowHeight
             ui_scale: 1
             fact: vehicle
             iconName: fact.icon
@@ -35,7 +38,7 @@ ColumnLayout {
         }
 
         FactValue {
-            defaultHeight: parent.height
+            defaultHeight: topRowHeight
             ui_scale: 1
             fact: vehicle.nodes
             title: fact.nodesCount
@@ -52,7 +55,7 @@ ColumnLayout {
         }
 
         FactValue {
-            defaultHeight: parent.height
+            defaultHeight: topRowHeight
             ui_scale: 1
             fact: vehicle.mission
             title: fact.missionSize
