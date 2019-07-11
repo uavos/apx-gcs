@@ -21,6 +21,8 @@ GstPlayer::GstPlayer(Fact *parent)
 
     qmlRegisterType<GstPlayer>("GstPlayer", 1, 0, "GstPlayer");
 
+    QSettings *settings = AppSettings::settings();
+
     setIcon("video");
 
     f_visible = new Fact(this, "show_window", tr("Visible"), tr("Show video window"), Bool);
@@ -38,18 +40,19 @@ GstPlayer::GstPlayer(Fact *parent)
     f_reencoding = new Fact(f_tune, "reencoding", tr("Reencoding"), tr("Video reencoding"), Bool);
     f_reencoding->setIcon("film");
 
-    f_sourceType = new Fact(f_tune, "source_type", tr("Source"), tr("Source type"), Enum);
+    f_sourceType = new AppSettingFact(settings, f_tune, "source_type", tr("Source"), tr("Source type"), Enum, 0);
     f_sourceType->setEnumStrings({"URI", "RTSP", "TCP", "UDP", "Webcam"});
 
-    f_uriInput = new Fact(f_tune, "uri_input", tr("URI"), tr("rtsp://<..>, file://<..>, etc."), Text);
-    f_rtspInput = new Fact(f_tune, "rtsp_input", tr("URL"), tr("rtsp://<..>"), Text);
-    f_rtspTcpForce = new Fact(f_tune, "rtspforcetcp_input", tr("Force tcp"), "", Bool);
-    f_tcpInput = new Fact(f_tune, "tcp_input", tr("IP"), tr("IP address"), Text);
-    f_tcpPortInput = new Fact(f_tune, "tcpport_input", tr("Port"), tr("Port number"), Int);
-    f_udpInput = new Fact(f_tune, "udp_input", tr("Port"), tr("Port number"), Int);
-    f_udpCodecInput = new Fact(f_tune, "udpcodec_input", tr("Codec"), "", Enum);
+    f_uriInput = new AppSettingFact(settings, f_tune, "uri_input", tr("URI"), tr("rtsp://<..>, file://<..>, etc."), Text);
+    f_rtspInput = new AppSettingFact(settings, f_tune, "rtsp_input", tr("URL"), tr("rtsp://<..>"), Text);
+    f_rtspTcpForce = new AppSettingFact(settings, f_tune, "rtspforcetcp_input", tr("Force tcp"), "", Bool, false);
+    f_tcpInput = new AppSettingFact(settings, f_tune, "tcp_input", tr("IP"), tr("IP address"), Text);
+    f_tcpPortInput = new AppSettingFact(settings, f_tune, "tcpport_input", tr("Port"), tr("Port number"), Int);
+    f_udpInput = new AppSettingFact(settings, f_tune, "udp_input", tr("Port"), tr("Port number"), Int);
+    f_udpCodecInput = new AppSettingFact(settings, f_tune, "udpcodec_input", tr("Codec"), "", Enum, 0);
     f_udpCodecInput->setEnumStrings({"H264", "H265"});
-    f_webcamInput = new Fact(f_tune, "webcam_input", tr("Webcam"), "", Enum);
+    f_webcamInput = new AppSettingFact(settings, f_tune, "webcam_input", tr("Webcam"), "", Enum);
+    f_webcamInput->setEnumStrings(getAvailableWebcams());
 
     f_overlay = new Overlay(f_tune);
     f_overlay->setIcon("image-plus");
@@ -69,6 +72,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
     ApxApp::instance()->engine()->loadQml("qrc:/streaming/VideoPlugin.qml");
 
+    AppSettingFact::loadSettings(this);
     onSourceTypeChanged();
 }
 
@@ -209,6 +213,16 @@ QString GstPlayer::inputToUri()
     return result;
 }
 
+QStringList GstPlayer::getAvailableWebcams()
+{
+    auto cameras = QCameraInfo::availableCameras();
+    QStringList ids;
+    std::transform(cameras.begin(), cameras.end(), std::back_inserter(ids), [](auto c){
+        return c.description();
+    });
+    return ids;
+}
+
 void GstPlayer::onFrameReceived(const QImage &image)
 {
     m_reconnectTimer.start();
@@ -282,12 +296,7 @@ void GstPlayer::onSourceTypeChanged()
     }
     else if(f_sourceType->value().toInt() == stWebcam)
     {
-        auto cameras = QCameraInfo::availableCameras();
-        QStringList ids;
-        std::transform(cameras.begin(), cameras.end(), std::back_inserter(ids), [](auto c){
-            return c.description();
-        });
-        f_webcamInput->setEnumStrings(ids);
+        f_webcamInput->setEnumStrings(getAvailableWebcams());
         f_webcamInput->setVisible(true);
     }
 }

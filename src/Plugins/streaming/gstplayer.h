@@ -79,6 +79,8 @@ private:
 
     QString inputToUri();
 
+    QStringList getAvailableWebcams();
+
 private slots:
     void onFrameReceived(const QImage &image);
     void onActiveValueChanged();
