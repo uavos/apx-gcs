@@ -12,35 +12,24 @@ VideoThread::VideoThread():
     m_stop(false),
     m_recording(false),
     m_reencoding(false),
-    m_loop(nullptr),
-    m_avfWorkaround(false)
+    m_loop(nullptr)
 {
-    QString currentDir = QCoreApplication::applicationDirPath();
-
     setupEnvironment();
 
     if(!gst_is_initialized())
         gst_init(nullptr, nullptr);
 }
 
-QString VideoThread::getUrl()
+QString VideoThread::getUri()
 {
     QMutexLocker locker(&m_ioMutex);
-    return m_url;
+    return m_uri;
 }
 
-void VideoThread::setUrl(const QString &url)
+void VideoThread::setUri(const QString &uri)
 {
     QMutexLocker locker(&m_ioMutex);
-    m_url = url;
-    m_avfWorkaround = false;
-
-    QUrl u(url);
-    if(u.scheme() == "avf")
-    {
-        m_avfWorkaround = true;
-        m_url = u.path().remove("/index");
-    }
+    m_uri = uri;
 }
 
 void VideoThread::stop()
@@ -139,7 +128,7 @@ static GstPadProbeReturn draw_overlay(GstPad *pad, GstPadProbeInfo *info, Stream
 
 void VideoThread::run()
 {
-    QString url = getUrl();
+    QString url = getUri();
 
     m_context = std::make_unique<StreamContext>();
 
@@ -148,11 +137,8 @@ void VideoThread::run()
     //common elements
     m_context->pipeline = gst_pipeline_new("client");
 
-    if(m_avfWorkaround)
-        m_context->source = gst_element_factory_make("avfvideosrc", nullptr);
-    else
-        m_context->source = gst_element_factory_make("urisourcebin", nullptr);
     m_context->capsFilter = gst_element_factory_make("capsfilter", nullptr);
+    m_context->source = createSourceElement();
     m_context->parsebin = gst_element_factory_make("parsebin", nullptr);
 
     m_context->teeparse = gst_element_factory_make("tee", nullptr);
@@ -177,22 +163,6 @@ void VideoThread::run()
         return;
     }
 
-    //source configuring
-    if(m_avfWorkaround)
-    {
-        bool ok;
-        int index = m_url.toInt(&ok);
-        if(!ok)
-        {
-            emit errorOccured("Unknown device " + m_url);
-            return;
-        }
-        g_object_set(m_context->source, "device-index", index, nullptr);
-        g_object_set(m_context->capsFilter, "caps", gst_caps_from_string("video/x-raw"), nullptr);
-    }
-    else
-        g_object_set(m_context->source, "uri", url.toStdString().data(), nullptr);
-
     //appsink configuring
     g_object_set(G_OBJECT(m_context->playAppsink), "emit-signals", true, "sync", true, nullptr);
     g_signal_connect(m_context->playAppsink, "new-sample", G_CALLBACK(on_new_sample_from_sink), m_context.get());
@@ -201,10 +171,18 @@ void VideoThread::run()
     g_object_set(m_context->playAppsink, "caps", getCapsForAppSink(), nullptr);
 
     //pad-cb
-    if(m_avfWorkaround)
-        gst_element_link(m_context->source, m_context->capsFilter);
-    else
+    if(GST_IS_BIN(m_context->source))
+    {
         g_signal_connect(m_context->source, "pad-added", G_CALLBACK(on_pad_added_urisourcebin), m_context->capsFilter);
+    }
+    else
+    {
+        if(!gst_element_link(m_context->source, m_context->capsFilter))
+        {
+            emit errorOccured("Can't link source and capsfilter");
+            return;
+        }
+    }
     g_signal_connect(m_context->parsebin, "pad-added", G_CALLBACK(on_pad_added), m_context->teeparse);
     g_signal_connect(m_context->playDecodebin, "pad-added", G_CALLBACK(on_pad_added), m_context->playConverter);
 
@@ -239,6 +217,56 @@ void VideoThread::run()
     gst_object_unref(m_context->pipeline);
     g_main_loop_unref(m_loop);
     m_loop = nullptr;
+}
+
+GstElement *VideoThread::createSourceElement()
+{
+    qDebug() << m_uri;
+    GstElement *result = nullptr;
+    if(m_uri.contains("avf://"))
+    {
+        QUrl u(m_uri);
+        result = gst_element_factory_make("avfvideosrc", nullptr);
+        bool ok;
+        int index = u.host().remove("index").toInt(&ok);
+        if(ok)
+            g_object_set(result, "device-index", index, nullptr);
+
+        g_object_set(m_context->capsFilter, "caps", gst_caps_from_string("video/x-raw"), nullptr);
+    }
+    else if(m_uri.contains("tcp://"))
+    {
+        QUrl u(m_uri);
+        result = gst_element_factory_make("tcpclientsrc", nullptr);
+        QString host = u.host();
+        int port = u.port();
+        g_object_set(result, "host", host.toStdString().c_str(), nullptr);
+        g_object_set(result, "port", port, nullptr);
+
+        g_object_set(m_context->capsFilter, "caps", gst_caps_from_string("video/mpegts,systemstream=true"), nullptr);
+    }
+    else if(m_uri.contains("udp://"))
+    {
+        QUrl u(m_uri);
+        result = gst_element_factory_make("udpsrc", nullptr);
+        int port = u.port();
+        QString query = u.query();
+        g_object_set(result, "port", port, nullptr);
+
+        GstCaps *caps = nullptr;
+        if(query.contains("codec=h265"))
+            caps = gst_caps_from_string("application/x-rtp,media=video,clock-rate=90000,encoding-name=H265");
+        else
+            caps = gst_caps_from_string("application/x-rtp,media=video,clock-rate=90000,encoding-name=H264");
+        g_object_set(result, "caps", caps, nullptr);
+    }
+    else
+    {
+        result = gst_element_factory_make("urisourcebin", nullptr);
+        g_object_set(result, "uri", m_uri.toStdString().c_str(), nullptr);
+    }
+
+    return result;
 }
 
 void VideoThread::openWriter(StreamContext *context)

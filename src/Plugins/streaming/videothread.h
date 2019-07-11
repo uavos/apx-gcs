@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QImage>
+#include <QUrl>
 #include <gst/gst.h>
 #include <atomic>
 #include <memory>
@@ -20,6 +21,13 @@
  *  │
  *  queue (probe, draw overlay) -> videoconvert -> x264enc -> matroskamux -> filesink
  *
+ */
+
+/* URI examples:
+ * avf://index0                     - macos webcam device 0
+ * tcp://192.168.1.10:8765          - mpegts h264 stream
+ * udp://0.0.0.0:8765?codec=h264    - rtp stream with h264(h265)
+ * any other uri that supported by gstreamer
  */
 
 struct StreamContext
@@ -58,8 +66,8 @@ class VideoThread : public QThread
 public:
     VideoThread();
 
-    QString getUrl();
-    void setUrl(const QString &getUrl);
+    QString getUri();
+    void setUri(const QString &uri);
 
     bool getRecording() const;
     void setRecording(bool b);
@@ -83,12 +91,12 @@ private:
     std::atomic_bool m_stop;
     std::atomic_bool m_recording;
     std::atomic_bool m_reencoding;
-    QString m_url;
+    QString m_uri;
     GMainLoop *m_loop = nullptr;
     StreamContext::OverlayCallback m_overlayCallback;
     std::unique_ptr<StreamContext> m_context;
 
-    bool m_avfWorkaround;
+    GstElement *createSourceElement();
 
     void openWriter(StreamContext *m_context);
     void closeWriter(StreamContext *m_context);
