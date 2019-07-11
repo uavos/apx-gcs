@@ -1,12 +1,12 @@
 import qbs
-import apx.Application as APX
+import ApxApp
 
 import qbs.FileInfo
-import apx.Deploy as Deploy
+import ApxDeploy
 
 Project {
 
-    APX.ApxPlugin {
+    ApxApp.ApxPlugin {
 
         Depends {
             name: "Qt";
@@ -49,13 +49,13 @@ Project {
     }
 
     //GStreamer
-    Deploy.ApxDeployLibs {
+    ApxDeploy.ApxDeployLibs {
 
         outputs: qbs.targetOS.contains("macos") ?
                      [ "Contents/Frameworks/GStreamer.framework" ] :
                      [ "lib/x86_64-linux-gnu" ]
 
-        Deploy.ApxDeployRule {
+        ApxDeploy.ApxDeployRule {
             condition: qbs.targetOS.contains("macos") && qbs.buildVariant.contains("release")
             prepare: {
                 var cmds=[];
@@ -81,7 +81,7 @@ Project {
                 return cmds;
             }
         }
-        Deploy.ApxDeployRule {
+        ApxDeploy.ApxDeployRule {
             condition: qbs.targetOS.contains("linux") && qbs.buildVariant.contains("release")
             prepare: {
                 var cmds=[];

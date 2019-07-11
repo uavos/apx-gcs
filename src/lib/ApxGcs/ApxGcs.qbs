@@ -1,9 +1,9 @@
 import qbs
 import qbs.File
 import qbs.FileInfo
-import apx.Application as APX
+import ApxApp
 
-APX.ApxLibrary {
+ApxApp.ApxLibrary {
 
     Depends { name: "ApxCore" }
     Depends { name: "ApxData" }
@@ -190,15 +190,15 @@ APX.ApxLibrary {
         ]
     }
 
-    APX.ApxResource {
-        name: "scripts"
+    ApxApp.ApxResource {
+        src: "scripts"
         files: [
             "pawn/**/*",
         ]
     }
 
-    APX.ApxResource {
-        name: "templates"
+    ApxApp.ApxResource {
+        src: "templates"
         files: [
             "shortcuts.json",
         ]

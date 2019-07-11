@@ -1,10 +1,10 @@
 import qbs
-import apx.Application as APX
-import apx.Deploy as Deploy
+import ApxApp
+import ApxDeploy
 
 Project {
 
-    APX.ApxPlugin {
+    ApxApp.ApxPlugin {
 
         Depends {
             name: "Qt";
@@ -22,8 +22,8 @@ Project {
             "JoystickAxis.cpp", "JoystickAxis.h",
         ]
 
-        APX.ApxResource {
-            name: "templates"
+        ApxApp.ApxResource {
+            src: "templates"
             files: [
                 "joystick.json",
             ]
@@ -49,7 +49,7 @@ Project {
 
     }
 
-    Deploy.ApxDeployFramework {
+    ApxDeploy.ApxDeployFramework {
         framework: "SDL2"
     }
 }

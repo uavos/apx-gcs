@@ -7,10 +7,11 @@
 #include "XPLMGraphics.h"
 //---------------
 #include <version.h>
-#include "Mandala.h"
-#include "node.h"
-#include "tcp_ports.h"
-#include "tcp_server.h"
+
+#include <Mandala/Mandala.h>
+#include <Xbus/xbus_node_conf.h>
+#include <apx_tcp_ports.h>
+#include <TcpLink/tcp_server.h>
 //==============================================================================
 //#define UDP_HOST_UAV            "127.0.0.1"      //machine where 'shiva' runs
 static _tcp_server server;
@@ -44,7 +45,7 @@ static struct
 } ref;
 //==============================================================================
 #define PWM_CNT 10
-static _ft_lstr xpl[PWM_CNT]; //var names per PWM channel
+static xbus::ft_lstr_t xpl[PWM_CNT]; //var names per PWM channel
 static bool xpl_is_array[PWM_CNT];
 static uint xpl_array_idx[PWM_CNT];
 static XPLMDataRef xpl_ref[PWM_CNT];
@@ -53,10 +54,13 @@ static float pwm_ch[PWM_CNT]; //received pwm_ch values
 //==============================================================================
 void sendvar(uint idx)
 {
-    static uint8_t buf[BUS_MAX_PACKET];
-    buf[0] = idx_sim;
-    buf[1] = idx;
-    server.write(buf, var.archive(&(buf[2]), sizeof(buf) - 2, buf[1]) + 2);
+    static uint8_t buf[xbus::size_xbus_packet];
+    xbus::hdr_t *p = reinterpret_cast<xbus::hdr_t *>(buf);
+    p->pid = idx_sim;
+    uint8_t *data = buf + sizeof(xbus::hdr_t);
+    data[0] = idx;
+    size_t cnt = var.archive(&(data[1]), sizeof(buf) - sizeof(xbus::hdr_t) - 1, data[0]);
+    server.write(buf, cnt + sizeof(xbus::hdr_t) + 1);
 }
 //==============================================================================
 void sendVars(void)
@@ -223,24 +227,25 @@ float flightLoopCallback(float inElapsedSinceLastCall,
     //send controls to sim
     uint rcnt = 0;
     while (1) {
-        static uint8_t buf[BUS_MAX_PACKET];
+        static uint8_t buf[xbus::size_xbus_packet];
         uint cnt = server.read(buf, sizeof(buf));
         if (!cnt)
             break;
-        _bus_packet *packet = (_bus_packet *) buf;
-        if (packet->id != idx_sim)
+        const xbus::hdr_t *p = (const xbus::hdr_t *) buf;
+        if (p->pid != idx_sim)
             continue;
         //printf("< %u\n",cnt);
-        cnt -= bus_packet_size_hdr + 1;
+        cnt -= sizeof(xbus::hdr_t) + 1;
+        const uint8_t *data = buf + sizeof(xbus::hdr_t);
 
-        switch (packet->data[0]) {
+        switch (data[0]) {
         case 0: //controls assignments
             printf("X-Plane controls assignments for PWM updated.\n");
             memset(&xpl, 0, sizeof(xpl));
             memset(&xpl_ref, 0, sizeof(xpl_ref));
             memset(&xpl_is_array, 0, sizeof(xpl_is_array));
             memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
-            memcpy(&xpl, &(packet->data[1]), sizeof(xpl));
+            memcpy(&xpl, &(data[1]), sizeof(xpl));
             //fill ref
             for (uint i = 0; i < PWM_CNT; i++) {
                 char *sref = (char *) xpl[i];
@@ -271,7 +276,7 @@ float flightLoopCallback(float inElapsedSinceLastCall,
         case 1: //PWM outputs
             if (rcnt)
                 break; //repeated packet, skip
-            memcpy(&pwm_ch, &(packet->data[1]), cnt);
+            memcpy(&pwm_ch, &(data[1]), cnt);
             for (uint i = 0; i < PWM_CNT; i++) {
                 if (!xpl_ref[i])
                     continue;

@@ -1,12 +1,12 @@
 import qbs
-import apx.Application as APX
-import apx.Deploy as Deploy
+import ApxApp
+import ApxDeploy
 
 Project {
 
     condition: qbs.targetOS.contains("macos")
 
-    APX.ApxPlugin {
+    ApxApp.ApxPlugin {
 
         Depends {
             name: "Qt";
@@ -42,7 +42,7 @@ Project {
 
     }
 
-    Deploy.ApxDeployFramework {
+    ApxDeploy.ApxDeployFramework {
         framework: "Sparkle"
     }
 }

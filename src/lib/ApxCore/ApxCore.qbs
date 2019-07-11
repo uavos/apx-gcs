@@ -1,9 +1,9 @@
 import qbs
 import qbs.File
 import qbs.FileInfo
-import apx.Application as APX
+import ApxApp
 
-APX.ApxLibrary {
+ApxApp.ApxLibrary {
 
     Depends {
         name: "Qt";
@@ -93,7 +93,7 @@ APX.ApxLibrary {
     ]
 
     Group {
-        name: "QRC"
+        name: "Resources.qrc"
         prefix: project.resorcesDir+"/"
         fileTags: "qt.core.resource_data"
         Qt.core.resourcePrefix: "/"
@@ -111,8 +111,8 @@ APX.ApxLibrary {
         ]
     }
 
-    APX.ApxResource {
-        name: "scripts"
+    ApxApp.ApxResource {
+        src: "scripts"
         files: [
             "*.*",
         ]

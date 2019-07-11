@@ -1,12 +1,12 @@
 import qbs
-import apx.Application as APX
+import ApxApp
 
 
 Project {
 
     references: "qwt/qwt.qbs"
 
-    APX.ApxPlugin {
+    ApxApp.ApxPlugin {
 
         Depends { name: "qwt" }
 

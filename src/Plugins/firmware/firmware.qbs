@@ -1,12 +1,12 @@
 import qbs
-import apx.Application as APX
-import apx.Deploy as Deploy
+import ApxApp
+import ApxDeploy
 
 Project {
 
     references: "quazip/quazip.qbs"
 
-    APX.ApxPlugin {
+    ApxApp.ApxPlugin {
 
         Depends { name: "quazip" }
 
@@ -32,8 +32,8 @@ Project {
             "LoaderStm.cpp", "LoaderStm.h",
         ]
 
-        APX.ApxResource {
-            name: "firmware"
+        ApxApp.ApxResource {
+            src: "firmware"
             files: [
                 "**/*",
             ]

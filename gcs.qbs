@@ -3,7 +3,7 @@ import qbs.FileInfo
 
 Project {
     qbsSearchPaths: [
-      FileInfo.joinPaths(sourceDirectory, "qbs"),
+        FileInfo.joinPaths(sourceDirectory, "qbs"),
     ]
 
     property path resorcesDir: FileInfo.joinPaths(sourceDirectory, "resources")
@@ -16,9 +16,9 @@ Project {
         "src/main/main.qbs",
         "src/Plugins/plugins.qbs",
         "src/pawncc/pawncc.qbs",
-        //"src/sim/sim.qbs",
 
         "deploy/deploy.qbs",
+        //"../sim/sim.qbs",
     ]
 
     Product {

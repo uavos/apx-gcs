@@ -1,7 +1,7 @@
 import qbs.FileInfo
-import apx.Application as APX
+import ApxApp
 
-APX.ApxLibrary {
+ApxApp.ApxLibrary {
 
 
     Export {

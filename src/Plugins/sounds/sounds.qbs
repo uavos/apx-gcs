@@ -1,7 +1,7 @@
 import qbs
-import apx.Application as APX
+import ApxApp
 
-APX.ApxPlugin {
+ApxApp.ApxPlugin {
 
     Depends {
         name: "Qt";
@@ -18,15 +18,15 @@ APX.ApxPlugin {
         "Sounds.cpp", "Sounds.h",
     ]
 
-    APX.ApxResource {
-        name: "audio"
+    ApxApp.ApxResource {
+        src: "audio"
         files: [
             "**/*",
         ]
     }
 
-    APX.ApxResource {
-        name: "templates"
+    ApxApp.ApxResource {
+        src: "templates"
         files: [
             "speech.json",
         ]

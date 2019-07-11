@@ -1,13 +1,13 @@
-﻿import qbs
-import qbs.File
-import apx.Application as APX
+﻿import qbs.File
+import qbs.FileInfo
+import ApxApp
 
-APX.ApxProduct {
+ApxApp.ApxProduct {
 
     type: "xplane_plugin"
 
     targetName: "ApxSIL"
-    targetInstallDir: apx.app_data_path+"/xplane"
+    targetInstallDir: app.app_data_path+"/xplane"
 
     bundle.isBundle: false
 
@@ -15,7 +15,7 @@ APX.ApxProduct {
     multiplexByQbsProperties: ["architectures"]
     aggregate: false
 
-    Depends { name: "apx_version" }
+    Depends { name: "version_hpp" }
 
     Rule {
         inputs: "dynamiclibrary"
@@ -66,8 +66,9 @@ APX.ApxProduct {
     ])
 
     cpp.includePaths: [
-        "SDK/CHeaders/XPLM",
         project.libDir,
+        FileInfo.joinPaths(project.libDir, "include"),
+        "SDK/CHeaders/XPLM",
     ]
 
     cpp.cxxFlags: base.concat([
@@ -85,19 +86,52 @@ APX.ApxProduct {
     ]
 
     Group {
-        name: "Shared"
-        prefix: project.libDir+"/"
+        name: "TcpLink"
+        prefix: FileInfo.joinPaths(project.libDir, name, "/")
+        files: [
+            "tcp_server.cpp", "tcp_server.h",
+            "tcp_client.cpp", "tcp_client.h",
+        ]
+    }
+    Group {
+        name: "Mandala"
+        prefix: FileInfo.joinPaths(project.libDir, name, "/")
         files: [
             "Mandala.cpp", "Mandala.h",
             "MandalaCore.cpp", "MandalaCore.h",
-            "MandalaVars.h",
-            "tcp_client.cpp", "tcp_client.h",
-            "tcp_server.cpp", "tcp_server.h",
-            "crc.h",
-            "fifo.h",
-            "dmsg.h",
-            "node.h",
-            "time_ms.h",
+            "MatrixMath.cpp", "MatrixMath.h",
+            "MandalaTemplate.h",
+            "MandalaIndexes.h",
+            "MandalaConstants.h",
+            "preprocessor.h",
+        ]
+    }
+    Group {
+        name: "include"
+        prefix: FileInfo.joinPaths(project.libDir, name, "/")
+        files: [
+            "*.h",
+        ]
+    }
+    Group {
+        name: "Xbus"
+        prefix: FileInfo.joinPaths(project.libDir, name, "/")
+        files: [
+            "xbus.h",
+            "xbus_vehicle.h",
+            "xbus_node.h",
+            "xbus_node_conf.h",
+            "xbus_node_file.h",
+            "xbus_node_blackbox.h",
+            "xbus_mission.h",
+            "escaped.h",
+        ]
+    }
+    Group {
+        name: "Math"
+        prefix: FileInfo.joinPaths(project.libDir, name, "/")
+        files: [
+            "crc.c", "crc.h",
         ]
     }
 

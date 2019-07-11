@@ -1,7 +1,7 @@
 import qbs
-import apx.Application as APX
+import ApxApp
 
-APX.ApxProduct {
+ApxApp.ApxProduct {
 
     type: ["staticlibrary"]
     install: false

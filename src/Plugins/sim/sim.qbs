@@ -1,27 +1,33 @@
 import qbs
-import apx.Application as APX
+import ApxApp
 
-APX.ApxPlugin {
+Project {
 
-    Depends {
-        name: "Qt";
-        submodules: [
-            "core",
-            "gui",
-            //"concurrent",
-        ]
-    }
-
-
-    files: [
-        "SimPlugin.h",
-        "Simulator.cpp", "Simulator.h",
+    references: [
+        "xplane/xplane.qbs",
     ]
 
-    APX.ApxResource {
-        name: "xplane"
+    ApxApp.ApxPlugin {
+
+        Depends {
+            name: "Qt";
+            submodules: [
+                "core",
+                "gui",
+            ]
+        }
+
+
         files: [
-            "**/*",
+            "SimPlugin.h",
+            "Simulator.cpp", "Simulator.h",
         ]
+
+        ApxApp.ApxResource {
+            src: "xplane"
+            files: [
+                "**/*",
+            ]
+        }
     }
 }

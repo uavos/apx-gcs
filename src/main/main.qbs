@@ -1,9 +1,9 @@
 ﻿import qbs
 import qbs.FileInfo
 
-import apx.Application as APX
+import ApxApp
 
-APX.ApxProduct {
+ApxApp.ApxProduct {
 
     targetName: "gcs"
 
@@ -26,8 +26,6 @@ APX.ApxProduct {
 
     Depends { name: "ApxCore" }
     Depends { name: "ApxGcs" }
-
-    //Depends { name: "pawncc" }
 
     Depends { name: "qmlqrc" }
     qmlqrc.usePrefix: false
@@ -66,22 +64,22 @@ APX.ApxProduct {
         "app-Info.plist"
     ]
 
-    APX.ApxResource {
-        name: "icons"
+    ApxApp.ApxResource {
+        src: "icons"
         files: [
             "*.icns",
         ]
     }
 
-    APX.ApxResource {
-        name: "vpn"
+    ApxApp.ApxResource {
+        src: "vpn"
         files: [
             "**/*",
         ]
     }
 
     Group {
-        name: "linux.res"
+        name: "Resources.linux"
         condition: qbs.targetOS.contains("linux")
         qbs.install: true
         qbs.installDir: FileInfo.joinPaths(app.app_data_path,"../")
