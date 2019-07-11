@@ -187,6 +187,7 @@ QString GstPlayer::inputToUri()
     }
     else if(f_sourceType->value().toInt() == stWebcam)
     {
+#ifdef Q_OS_LINUX
         QString camDescr = f_webcamInput->enumText(f_webcamInput->value().toInt());
         auto cameras = QCameraInfo::availableCameras();
         auto res = std::find_if(cameras.begin(), cameras.end(), [camDescr](auto c){
@@ -198,13 +199,12 @@ QString GstPlayer::inputToUri()
         }
         else
         {
-#ifdef Q_OS_LINUX
             result = QString("v4l2://%1").arg(res->deviceName());
+        }
 #endif
 #ifdef Q_OS_MAC
-            result = QString("avf://index%1").arg(res->deviceName());
+        result = QString("avf://index%1").arg(f_webcamInput->value().toInt());
 #endif
-        }
     }
     return result;
 }
