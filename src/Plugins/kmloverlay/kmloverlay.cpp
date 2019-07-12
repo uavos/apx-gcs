@@ -2,6 +2,7 @@
 #include <ApxApp.h>
 
 #include <kml/dom.h>
+#include "geometrycollector.h"
 
 KmlOverlay::KmlOverlay(Fact *parent)
     : Fact(parent, "kml", tr("KML Overlay"), tr("KML objects overlay"), Group)
@@ -11,16 +12,11 @@ KmlOverlay::KmlOverlay(Fact *parent)
     QFile file("/home/pavel/belzhd.kml");
     file.open(QIODevice::ReadOnly);
 
-//    kmldom::Visitor;
     std::string errors;
     kmldom::ElementPtr element = kmldom::Parse(QString::fromUtf8(file.readAll()).toStdString(), &errors);
+    if(!errors.empty())
+        qDebug() << QString::fromStdString(errors);
 
-    qDebug() << QString::fromStdString(errors);
-
-    // Convert the type of the root element of the parse.
-    const kmldom::PlacemarkPtr placemark = kmldom::AsPlacemark(element);
-    if(placemark)
-        qDebug() << "BINGO";
-    else
-        qDebug() << "FAIL";
+    GeometryCollector c;
+    kmldom::SimplePreorderDriver(&c).Visit(element);
 }

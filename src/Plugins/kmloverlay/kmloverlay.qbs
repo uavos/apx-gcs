@@ -15,6 +15,8 @@ APX.ApxPlugin {
     Depends { name: "qmlqrc" }
 
     files: [
+        "geometrycollector.cpp",
+        "geometrycollector.h",
         "kmloverlayplugin.h",
         "kmloverlay.cpp",
         "kmloverlay.h",
@@ -22,8 +24,6 @@ APX.ApxPlugin {
 
     Properties {
         condition: qbs.targetOS.contains("linux")
-        cpp.dynamicLibraries: ["kmldom"]
+        cpp.dynamicLibraries: ["kmldom", "kmlbase", "kmlengine", "kmlconvenience", "kmlregionator", "kmlxsd"]
     }
-
-
 }

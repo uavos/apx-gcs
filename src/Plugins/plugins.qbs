@@ -15,7 +15,7 @@ Project {
         "updater",
         "firmware",
         "notifications",
-        "kml"
+        "kmloverlay"
     ]
 
     property var widgets: [
