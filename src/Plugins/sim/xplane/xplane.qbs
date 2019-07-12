@@ -17,6 +17,15 @@ ApxApp.ApxProduct {
 
     Depends { name: "version_hpp" }
 
+    Depends {
+        name: "ApxShared"
+        submodules: [
+            "Mandala",
+            "Xbus",
+            "TcpLink",
+        ]
+    }
+
     Rule {
         inputs: "dynamiclibrary"
         Artifact {
@@ -66,8 +75,6 @@ ApxApp.ApxProduct {
     ])
 
     cpp.includePaths: [
-        project.libDir,
-        FileInfo.joinPaths(project.libDir, "include"),
         "SDK/CHeaders/XPLM",
     ]
 
@@ -85,55 +92,6 @@ ApxApp.ApxProduct {
         "plugin.cpp",
     ]
 
-    Group {
-        name: "TcpLink"
-        prefix: FileInfo.joinPaths(project.libDir, name, "/")
-        files: [
-            "tcp_server.cpp", "tcp_server.h",
-            "tcp_client.cpp", "tcp_client.h",
-        ]
-    }
-    Group {
-        name: "Mandala"
-        prefix: FileInfo.joinPaths(project.libDir, name, "/")
-        files: [
-            "Mandala.cpp", "Mandala.h",
-            "MandalaCore.cpp", "MandalaCore.h",
-            "MatrixMath.cpp", "MatrixMath.h",
-            "MandalaTemplate.h",
-            "MandalaIndexes.h",
-            "MandalaConstants.h",
-            "preprocessor.h",
-        ]
-    }
-    Group {
-        name: "include"
-        prefix: FileInfo.joinPaths(project.libDir, name, "/")
-        files: [
-            "*.h",
-        ]
-    }
-    Group {
-        name: "Xbus"
-        prefix: FileInfo.joinPaths(project.libDir, name, "/")
-        files: [
-            "xbus.h",
-            "xbus_vehicle.h",
-            "xbus_node.h",
-            "xbus_node_conf.h",
-            "xbus_node_file.h",
-            "xbus_node_blackbox.h",
-            "xbus_mission.h",
-            "escaped.h",
-        ]
-    }
-    Group {
-        name: "Math"
-        prefix: FileInfo.joinPaths(project.libDir, name, "/")
-        files: [
-            "crc.c", "crc.h",
-        ]
-    }
 
     Group {
         name: "SDK"

@@ -41,32 +41,6 @@ ApxApp.ApxLibrary {
     }
 
 
-    //property pathList hdrs
-    //bundle.publicHeaders: hdrs
-
-    //force headers bundle creation
-    //bundle.publicHeaders: project.libDir+"/preprocessor.h"
-        /*{
-        var path=project.libDir+"/"
-        var files = File.directoryEntries(path, File.Files).filter(function(f){
-            return String(f).endsWith(".h")
-        })
-
-        var list=[]
-        for(var i=0;i<files.length;++i){
-            list.push(path+files[i])
-        }
-        //console.warn(lst)
-        //var files = fs.readdirSync('.');
-        return list //["Facts.h"]
-    }*/
-
-    /*: {
-        //var lst = File.directoryEntries(sourceDirectory+"/*", File.Files)
-        return [ project.libDir+"/"+"comm.h" ]
-    }*/
-
-
     files: [
         "ApxGcs.cpp", "ApxGcs.h",
     ]
