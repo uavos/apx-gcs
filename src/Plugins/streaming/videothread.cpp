@@ -36,7 +36,7 @@ void VideoThread::stop()
 {
     m_stop = true;
     if(m_loop)
-        g_main_loop_quit(m_loop);
+        g_main_loop_quit(m_loop.get());
 }
 
 bool VideoThread::getRecording() const
@@ -130,98 +130,92 @@ void VideoThread::run()
 {
     QString url = getUri();
 
-    m_context = std::make_unique<StreamContext>();
+    auto context = std::make_unique<StreamContext>();
 
-    m_loop = g_main_loop_new(nullptr, false);
+    m_loop.reset(g_main_loop_new(nullptr, false), &g_main_loop_unref);
 
     //common elements
-    m_context->pipeline = gst_pipeline_new("client");
+    context->pipeline.reset(gst_pipeline_new("client"), &gst_object_unref);
 
-    m_context->capsFilter = gst_element_factory_make("capsfilter", nullptr);
-    m_context->source = createSourceElement();
-    m_context->parsebin = gst_element_factory_make("parsebin", nullptr);
+    context->capsFilter = gst_element_factory_make("capsfilter", nullptr);
+    context->source = createSourceElement(context.get());
+    context->parsebin = gst_element_factory_make("parsebin", nullptr);
 
-    m_context->teeparse = gst_element_factory_make("tee", nullptr);
-    m_context->teeconvert = gst_element_factory_make("tee", nullptr);
+    context->teeparse = gst_element_factory_make("tee", nullptr);
+    context->teeconvert = gst_element_factory_make("tee", nullptr);
 
     //play elements
-    m_context->playDecodebin = gst_element_factory_make("decodebin", nullptr);
-    m_context->playConverter = gst_element_factory_make("videoconvert", nullptr);
-    m_context->playAppsink = gst_element_factory_make("appsink", nullptr);
+    context->playDecodebin = gst_element_factory_make("decodebin", nullptr);
+    context->playConverter = gst_element_factory_make("videoconvert", nullptr);
+    context->playAppsink = gst_element_factory_make("appsink", nullptr);
 
-    gst_bin_add_many(GST_BIN(m_context->pipeline), m_context->source, m_context->capsFilter, m_context->parsebin,
-                     m_context->teeparse, m_context->playDecodebin, m_context->playConverter,
-                     m_context->teeconvert, m_context->playAppsink, nullptr);
+    gst_bin_add_many(GST_BIN(context->pipeline.get()), context->source, context->capsFilter, context->parsebin,
+                     context->teeparse, context->playDecodebin, context->playConverter,
+                     context->teeconvert, context->playAppsink, nullptr);
 
-    m_context->onFrameReceived = std::bind(&VideoThread::onSampleReceived, this, _1, _2);
-    m_context->isRecordRequested = std::bind(&VideoThread::getRecording, this);
+    context->onFrameReceived = std::bind(&VideoThread::onSampleReceived, this, _1, _2);
+    context->isRecordRequested = std::bind(&VideoThread::getRecording, this);
 
-    if(!m_context->pipeline || !m_context->source || !m_context->capsFilter || !m_context->parsebin || !m_context->teeparse ||
-            !m_context->playDecodebin || !m_context->playConverter || !m_context->playAppsink)
+    if(!context->pipeline || !context->source || !context->capsFilter || !context->parsebin || !context->teeparse ||
+            !context->playDecodebin || !context->playConverter || !context->playAppsink)
     {
         emit errorOccured("Can't create pipeline");
         return;
     }
 
     //appsink configuring
-    g_object_set(G_OBJECT(m_context->playAppsink), "emit-signals", true, "sync", true, nullptr);
-    g_signal_connect(m_context->playAppsink, "new-sample", G_CALLBACK(on_new_sample_from_sink), m_context.get());
-    gst_app_sink_set_max_buffers(GST_APP_SINK(m_context->playAppsink), 1);
-    gst_app_sink_set_drop(GST_APP_SINK(m_context->playAppsink), true);
-    g_object_set(m_context->playAppsink, "caps", getCapsForAppSink(), nullptr);
+    g_object_set(G_OBJECT(context->playAppsink), "emit-signals", true, "sync", true, nullptr);
+    g_signal_connect(context->playAppsink, "new-sample", G_CALLBACK(on_new_sample_from_sink), context.get());
+    gst_app_sink_set_max_buffers(GST_APP_SINK(context->playAppsink), 1);
+    gst_app_sink_set_drop(GST_APP_SINK(context->playAppsink), true);
+    g_object_set(context->playAppsink, "caps", getCapsForAppSink().get(), nullptr);
 
     //pad-cb
-    if(GST_IS_BIN(m_context->source))
+    if(GST_IS_BIN(context->source))
     {
-        g_signal_connect(m_context->source, "pad-added", G_CALLBACK(on_pad_added_urisourcebin), m_context->capsFilter);
+        g_signal_connect(context->source, "pad-added", G_CALLBACK(on_pad_added_urisourcebin), context->capsFilter);
     }
     else
     {
-        if(!gst_element_link(m_context->source, m_context->capsFilter))
+        if(!gst_element_link(context->source, context->capsFilter))
         {
             emit errorOccured("Can't link source and capsfilter");
             return;
         }
     }
-    g_signal_connect(m_context->parsebin, "pad-added", G_CALLBACK(on_pad_added), m_context->teeparse);
-    g_signal_connect(m_context->playDecodebin, "pad-added", G_CALLBACK(on_pad_added), m_context->playConverter);
+    g_signal_connect(context->parsebin, "pad-added", G_CALLBACK(on_pad_added), context->teeparse);
+    g_signal_connect(context->playDecodebin, "pad-added", G_CALLBACK(on_pad_added), context->playConverter);
 
-    if(!gst_element_link_many(m_context->capsFilter, m_context->parsebin, nullptr))
+    if(!gst_element_link_many(context->capsFilter, context->parsebin, nullptr))
     {
         emit errorOccured("Can't link source, caps filter and parsebin");
         return;
     }
 
-    if(!gst_element_link(m_context->teeparse, m_context->playDecodebin))
+    if(!gst_element_link(context->teeparse, context->playDecodebin))
     {
         emit errorOccured("Can't link tee and decodebin");
         return;
     }
 
-    if(!gst_element_link_many(m_context->playConverter, m_context->teeconvert, m_context->playAppsink, nullptr))
+    if(!gst_element_link_many(context->playConverter, context->teeconvert, context->playAppsink, nullptr))
     {
         emit errorOccured("Can't link converter, tee and appsink");
         return;
     }
 
-    if(gst_element_set_state(m_context->pipeline, GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE)
+    if(gst_element_set_state(context->pipeline.get(), GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE)
     {
         emit errorOccured("Can't play pipeline");
         return;
     }
-    g_main_loop_run(m_loop);
+    g_main_loop_run(m_loop.get());
 
-    gst_element_set_state(m_context->pipeline, GST_STATE_NULL);
-
-    //cleanup
-    gst_object_unref(m_context->pipeline);
-    g_main_loop_unref(m_loop);
-    m_loop = nullptr;
+    gst_element_set_state(context->pipeline.get(), GST_STATE_NULL);
 }
 
-GstElement *VideoThread::createSourceElement()
+GstElement *VideoThread::createSourceElement(StreamContext *context)
 {
-    qDebug() << m_uri;
     GstElement *result = nullptr;
     if(m_uri.contains("avf://"))
     {
@@ -232,7 +226,7 @@ GstElement *VideoThread::createSourceElement()
         if(ok)
             g_object_set(result, "device-index", index, nullptr);
 
-        g_object_set(m_context->capsFilter, "caps", gst_caps_from_string("video/x-raw"), nullptr);
+        g_object_set(context->capsFilter, "caps", gst_caps_from_string("video/x-raw"), nullptr);
     }
     else if(m_uri.contains("tcp://"))
     {
@@ -243,7 +237,7 @@ GstElement *VideoThread::createSourceElement()
         g_object_set(result, "host", host.toStdString().c_str(), nullptr);
         g_object_set(result, "port", port, nullptr);
 
-        g_object_set(m_context->capsFilter, "caps", gst_caps_from_string("video/mpegts,systemstream=true"), nullptr);
+        g_object_set(context->capsFilter, "caps", gst_caps_from_string("video/mpegts,systemstream=true"), nullptr);
     }
     else if(m_uri.contains("udp://"))
     {
@@ -253,12 +247,12 @@ GstElement *VideoThread::createSourceElement()
         QString query = u.query();
         g_object_set(result, "port", port, nullptr);
 
-        GstCaps *caps = nullptr;
+        std::shared_ptr<GstCaps> caps;
         if(query.contains("codec=h265"))
-            caps = gst_caps_from_string("application/x-rtp,media=video,clock-rate=90000,encoding-name=H265");
+            caps = getCapsForUdpSrc("H265");
         else
-            caps = gst_caps_from_string("application/x-rtp,media=video,clock-rate=90000,encoding-name=H264");
-        g_object_set(result, "caps", caps, nullptr);
+            caps = getCapsForUdpSrc("H264");
+        g_object_set(result, "caps", caps.get(), nullptr);
     }
     else
     {
@@ -300,9 +294,9 @@ void VideoThread::openWriter(StreamContext *context)
     }
 
     //add
-    gst_bin_add_many(GST_BIN(context->pipeline), context->recQueue, context->recMuxer, context->recSink, nullptr);
+    gst_bin_add_many(GST_BIN(context->pipeline.get()), context->recQueue, context->recMuxer, context->recSink, nullptr);
     if(m_reencoding)
-        gst_bin_add_many(GST_BIN(context->pipeline), context->recConverter, context->recEncoder, nullptr);
+        gst_bin_add_many(GST_BIN(context->pipeline.get()), context->recConverter, context->recEncoder, nullptr);
 
     //link
     bool linkResult = false;
@@ -350,15 +344,18 @@ void VideoThread::closeWriter(StreamContext *context)
 {
     //unlink
     if(!m_reencoding)
-        gst_element_unlink_many(context->teeparse, context->recQueue, context->recMuxer, context->recSink, nullptr);
+        gst_element_unlink_many(context->teeparse, context->recQueue,
+                                context->recMuxer, context->recSink, nullptr);
     else
         gst_element_unlink_many(context->teeconvert, context->recQueue, context->recConverter,
                                 context->recEncoder, context->recMuxer, context->recSink, nullptr);
 
     //remove
-    gst_bin_remove_many(GST_BIN(context->pipeline), context->recQueue, context->recMuxer, context->recSink, nullptr);
+    gst_bin_remove_many(GST_BIN(context->pipeline.get()), context->recQueue,
+                        context->recMuxer, context->recSink, nullptr);
     if(m_reencoding)
-        gst_bin_remove_many(GST_BIN(context->pipeline), context->recConverter, context->recEncoder, nullptr);
+        gst_bin_remove_many(GST_BIN(context->pipeline.get()), context->recConverter,
+                            context->recEncoder, nullptr);
 
     //unref
     gst_object_unref(context->recQueue);
@@ -440,9 +437,17 @@ void VideoThread::setupEnvironment()
         qInfo() << "Can't find gstreamer in bundle, try to use system libs";
 }
 
-GstCaps *VideoThread::getCapsForAppSink()
+std::shared_ptr<GstCaps> VideoThread::getCapsForAppSink()
 {
-    return gst_caps_from_string("video/x-raw,format=RGBx,pixel-aspect-ratio=1/1");
+    auto caps = gst_caps_from_string("video/x-raw,format=RGBx,pixel-aspect-ratio=1/1");
+    return std::shared_ptr<GstCaps>(caps, &gst_caps_unref);
+}
+
+std::shared_ptr<GstCaps> VideoThread::getCapsForUdpSrc(const std::string &codec)
+{
+    std::string s = "application/x-rtp,media=video,clock-rate=90000,encoding-name=" + codec;
+    auto caps = gst_caps_from_string(s.c_str());
+    return std::shared_ptr<GstCaps>(caps, &gst_caps_unref);
 }
 
 bool VideoThread::getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height)

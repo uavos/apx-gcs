@@ -32,7 +32,7 @@
 
 struct StreamContext
 {
-    GstElement *pipeline        = nullptr;
+    std::shared_ptr<GstElement> pipeline;
     //common elements
     GstElement *source          = nullptr;
     GstElement *capsFilter      = nullptr;
@@ -81,7 +81,8 @@ public:
     void stop();
 
     static bool getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height);
-    static GstCaps* getCapsForAppSink();
+    static std::shared_ptr<GstCaps> getCapsForAppSink();
+    static std::shared_ptr<GstCaps> getCapsForUdpSrc(const std::string &codec);
 
 protected:
     void run() final;
@@ -92,11 +93,10 @@ private:
     std::atomic_bool m_recording;
     std::atomic_bool m_reencoding;
     QString m_uri;
-    GMainLoop *m_loop = nullptr;
+    std::shared_ptr<GMainLoop> m_loop;
     StreamContext::OverlayCallback m_overlayCallback;
-    std::unique_ptr<StreamContext> m_context;
 
-    GstElement *createSourceElement();
+    GstElement *createSourceElement(StreamContext *context);
 
     void openWriter(StreamContext *m_context);
     void closeWriter(StreamContext *m_context);
