@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QImage>
+#include <QUrl>
 #include <gst/gst.h>
 #include <atomic>
 #include <memory>
@@ -22,9 +23,16 @@
  *
  */
 
+/* URI examples:
+ * avf://index0                     - macos webcam device 0
+ * tcp://192.168.1.10:8765          - mpegts h264 stream
+ * udp://0.0.0.0:8765?codec=h264    - rtp stream with h264(h265)
+ * any other uri that supported by gstreamer
+ */
+
 struct StreamContext
 {
-    GstElement *pipeline        = nullptr;
+    std::shared_ptr<GstElement> pipeline;
     //common elements
     GstElement *source          = nullptr;
     GstElement *capsFilter      = nullptr;
@@ -58,8 +66,8 @@ class VideoThread : public QThread
 public:
     VideoThread();
 
-    QString getUrl();
-    void setUrl(const QString &getUrl);
+    QString getUri();
+    void setUri(const QString &uri);
 
     bool getRecording() const;
     void setRecording(bool b);
@@ -73,7 +81,8 @@ public:
     void stop();
 
     static bool getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height);
-    static GstCaps* getCapsForAppSink();
+    static std::shared_ptr<GstCaps> getCapsForAppSink();
+    static std::shared_ptr<GstCaps> getCapsForUdpSrc(const std::string &codec);
 
 protected:
     void run() final;
@@ -83,12 +92,11 @@ private:
     std::atomic_bool m_stop;
     std::atomic_bool m_recording;
     std::atomic_bool m_reencoding;
-    QString m_url;
-    GMainLoop *m_loop = nullptr;
+    QString m_uri;
+    std::shared_ptr<GMainLoop> m_loop;
     StreamContext::OverlayCallback m_overlayCallback;
-    std::unique_ptr<StreamContext> m_context;
 
-    bool m_avfWorkaround;
+    GstElement *createSourceElement(StreamContext *context);
 
     void openWriter(StreamContext *m_context);
     void closeWriter(StreamContext *m_context);
