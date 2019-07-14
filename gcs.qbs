@@ -17,7 +17,7 @@ Project {
         "src/Plugins/plugins.qbs",
         "src/pawncc/pawncc.qbs",
 
-        "../nodes/src/sim/sim.qbs",
+        //"../nodes/src/sim/sim.qbs",
 
         "deploy/deploy.qbs",
     ]
