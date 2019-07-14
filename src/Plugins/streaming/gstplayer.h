@@ -15,7 +15,7 @@ class GstPlayer : public Fact
 
 public:
     static const int THREAD_STOP_TIMEOUT = 500;
-    static const int RECONNECT_TIMEOUT = 5000;
+    static const int RECONNECT_TIMEOUT = 30000;
     enum ConnectionState {
         STATE_UNCONNECTED,
         STATE_CONNECTING,
@@ -24,6 +24,17 @@ public:
     enum MediaType {
         mtImage,
         mtVideo
+    };
+    enum SourceType {
+        stUri,
+        stRtsp,
+        stTcp,
+        stUdp,
+        stWebcam
+    };
+    enum CodecType {
+        ctH264,
+        ctH265
     };
 
     Q_ENUM(ConnectionState)
@@ -35,8 +46,18 @@ public:
     Fact *f_active;
     Fact *f_record;
     Fact *f_reencoding;
-    Fact *f_uri;
     Overlay *f_overlay;
+
+    Fact *f_sourceType;
+
+    Fact *f_uriInput;
+    Fact *f_rtspInput;
+    Fact *f_rtspTcpForce;
+    Fact *f_tcpInput;
+    Fact *f_tcpPortInput;
+    Fact *f_udpInput;
+    Fact *f_udpCodecInput;
+    Fact *f_webcamInput;
 
     ConnectionState getConnectionState() const;
 
@@ -56,11 +77,16 @@ private:
     void play();
     void stop();
 
+    QString inputToUri();
+
+    QStringList getAvailableWebcams();
+
 private slots:
     void onFrameReceived(const QImage &image);
     void onActiveValueChanged();
     void onRecordValueChanged();
     void onReencodingValueChanged();
+    void onSourceTypeChanged();
     void onErrorOccured(const QString &error) const;
     void onReconnectTimerTimeout();
 
