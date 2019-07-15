@@ -8,6 +8,7 @@ APX.ApxPlugin {
         submodules: [
             "core",
             "location",
+            "xml"
         ]
     }
 
@@ -20,10 +21,7 @@ APX.ApxPlugin {
         "kmloverlayplugin.h",
         "kmloverlay.cpp",
         "kmloverlay.h",
+        "kmlpolygonsmodel.cpp",
+        "kmlpolygonsmodel.h",
     ]
-
-    Properties {
-        condition: qbs.targetOS.contains("linux")
-        cpp.dynamicLibraries: ["kmldom", "kmlbase", "kmlengine", "kmlconvenience", "kmlregionator", "kmlxsd"]
-    }
 }
