@@ -8,6 +8,10 @@ MapItemGroup {
 
     property var map: ui.map
     property var area: apx.tools.map.area
+    property var kmlCenter: apx.tools.kmloverlay.center
+    onKmlCenterChanged: {
+        ui.map.center = kmlCenter;
+    }
     onAreaChanged: apx.tools.kmloverlay.updateKmlModels(area)
 
     MapItemView {

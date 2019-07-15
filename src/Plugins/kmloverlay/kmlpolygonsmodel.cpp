@@ -2,16 +2,25 @@
 
 #include <QGeoCoordinate>
 #include <QDebug>
+#include <algorithm>
 
 KmlPolygonsModel::KmlPolygonsModel()
 {
 
 }
 
-void KmlPolygonsModel::setPolygons(const QList<QPolygonF> &polygons)
+QPointF KmlPolygonsModel::setPolygons(const QList<QPolygonF> &polygons)
 {
+    QPolygonF allPoints;
+    for(auto p: polygons)
+        allPoints.append(p);
+
+    auto center = std::accumulate(allPoints.begin(), allPoints.end(), QPointF(0, 0)) / allPoints.size();
+
     m_allPolygons = polygons;
     updateViewPolygons();
+
+    return center;
 }
 
 void KmlPolygonsModel::setBoundingBox(const QRectF &bb)

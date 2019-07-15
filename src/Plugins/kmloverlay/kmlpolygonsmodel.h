@@ -13,7 +13,7 @@ public:
     };
     KmlPolygonsModel();
 
-    void setPolygons(const QList<QPolygonF> &polygons);
+    QPointF setPolygons(const QList<QPolygonF> &polygons);
     void setBoundingBox(const QRectF &bb);
 
     int rowCount(const QModelIndex &index) const override;
