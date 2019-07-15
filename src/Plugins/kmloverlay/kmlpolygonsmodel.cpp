@@ -77,12 +77,8 @@ void KmlPolygonsModel::updateViewPolygons()
     m_viewPolygons.clear();
     for(auto p: m_allPolygons)
     {
-        KmlPolygon newp = p;
-        newp.data = p.data.intersected(m_bb);
-        if(!newp.data.isEmpty())
-        {
-            m_viewPolygons.append(newp);
-        }
+        if(p.data.intersects(m_bb))
+            m_viewPolygons.append(p);
     }
     endResetModel();
 }
