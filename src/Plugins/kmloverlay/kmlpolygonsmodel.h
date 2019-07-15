@@ -3,17 +3,19 @@
 
 #include <QAbstractListModel>
 #include <QPolygonF>
+#include "kmlparser.h"
 
 class KmlPolygonsModel: public QAbstractListModel
 {
     Q_OBJECT
 public:
     enum Roles {
-        Polygon = Qt::UserRole + 1
+        Polygon = Qt::UserRole + 1,
+        Color
     };
     KmlPolygonsModel();
 
-    QPointF setPolygons(const QList<QPolygonF> &polygons);
+    QPointF setPolygons(const QList<KmlPolygon> &polygons);
     void setBoundingBox(const QRectF &bb);
 
     int rowCount(const QModelIndex &index) const override;
@@ -23,8 +25,8 @@ public:
 
 private:
     QPolygonF m_bb;
-    QList<QPolygonF> m_allPolygons;
-    QList<QPolygonF> m_viewPolygons;
+    QList<KmlPolygon> m_allPolygons;
+    QList<KmlPolygon> m_viewPolygons;
 
     void updateViewPolygons();
 };

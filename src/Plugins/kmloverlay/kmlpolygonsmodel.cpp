@@ -9,11 +9,11 @@ KmlPolygonsModel::KmlPolygonsModel()
 
 }
 
-QPointF KmlPolygonsModel::setPolygons(const QList<QPolygonF> &polygons)
+QPointF KmlPolygonsModel::setPolygons(const QList<KmlPolygon> &polygons)
 {
     QPolygonF allPoints;
     for(auto p: polygons)
-        allPoints.append(p);
+        allPoints.append(p.data);
 
     auto center = std::accumulate(allPoints.begin(), allPoints.end(), QPointF(0, 0)) / allPoints.size();
 
@@ -43,23 +43,30 @@ int KmlPolygonsModel::columnCount(const QModelIndex &index) const
 QVariant KmlPolygonsModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
-    if(row >= 0 && row < m_viewPolygons.size() && role == Polygon)
+    if(row >= 0 && row < m_viewPolygons.size())
     {
-        QVariantList result;
-        const QPolygonF &polygon = m_viewPolygons[row];
-        for(int i = 0; i < polygon.size(); i++)
-            result.append(QVariant::fromValue(QGeoCoordinate(polygon[i].x(), polygon[i].y())));
+        if(role == Polygon)
+        {
+            QVariantList result;
+            const KmlPolygon &polygon = m_viewPolygons[row];
+            for(int i = 0; i < polygon.data.size(); i++)
+                result.append(QVariant::fromValue(QGeoCoordinate(polygon.data[i].x(), polygon.data[i].y())));
 
-        return QVariant::fromValue(result);
+            return QVariant::fromValue(result);
+        }
+        else if(role == Color)
+        {
+            return m_viewPolygons[row].color;
+        }
     }
-    else
-        return QVariant();
+    return QVariant();
 }
 
 QHash<int, QByteArray> KmlPolygonsModel::roleNames() const
 {
     QHash<int, QByteArray> rolenames = {
-        {Polygon, "polygon"}
+        {Polygon, "polygon"},
+        {Color, "polygonColor"}
     };
     return rolenames;
 }
@@ -70,8 +77,9 @@ void KmlPolygonsModel::updateViewPolygons()
     m_viewPolygons.clear();
     for(auto p: m_allPolygons)
     {
-        QPolygonF newp = p.intersected(m_bb);
-        if(!newp.isEmpty())
+        KmlPolygon newp = p;
+        newp.data = p.data.intersected(m_bb);
+        if(!newp.data.isEmpty())
         {
             m_viewPolygons.append(newp);
         }

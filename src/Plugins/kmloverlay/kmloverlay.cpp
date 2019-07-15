@@ -2,7 +2,7 @@
 
 #include <QFileDialog>
 #include "ApxApp.h"
-#include "geometrycollector.h"
+#include "kmlparser.h"
 
 KmlOverlay::KmlOverlay(Fact *parent)
     : Fact(parent, "kmloverlay", tr("KML Overlay"), tr("KML objects overlay"), Group),
@@ -49,7 +49,7 @@ void KmlOverlay::onOpenTriggered()
         QFile file(path);
         file.open(QIODevice::ReadOnly);
 
-        GeometryCollector c;
+        KmlParser c;
         c.parse(file.readAll());
         file.close();
 

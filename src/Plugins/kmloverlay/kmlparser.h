@@ -1,5 +1,5 @@
-#ifndef GEOMETRYCOLLECTOR_H
-#define GEOMETRYCOLLECTOR_H
+#ifndef KMLPARSER_H
+#define KMLPARSER_H
 
 #include <functional>
 #include <QPolygonF>
@@ -9,27 +9,27 @@
 struct KmlPolygon
 {
     QColor color;
-    QPolygonF polygon;
+    QPolygonF data;
 };
 
-class GeometryCollector
+class KmlParser
 {
 public:
-    GeometryCollector();
+    KmlParser();
     void parse(const QByteArray &data);
-    QList<QPolygonF> getPolygons();
+    QList<KmlPolygon> getPolygons();
 
 private:
     using IterateCallback = std::function<void(const QDomElement&)>;
 
-    QList<QPolygonF> m_polygons;
+    QList<KmlPolygon> m_polygons;
     QDomDocument m_dom;
 
     void iterateOverChildrenElements(const QDomElement &parent, const QString &tagname, IterateCallback cb);
 
     void placemarkCallback(const QDomElement &el);
-    void polygonCallback(const QDomElement &el);
-    void coordinatesCallback(const QDomElement &el);
+    void polygonCallback(const QDomElement &el, const QColor &color);
+    void coordinatesCallback(const QDomElement &el, KmlPolygon &polygon);
 };
 
-#endif // GEOMETRYCOLLECTOR_H
+#endif // KMLPARSER_H

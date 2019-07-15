@@ -16,11 +16,11 @@ APX.ApxPlugin {
     Depends { name: "qmlqrc" }
 
     files: [
-        "geometrycollector.cpp",
-        "geometrycollector.h",
         "kmloverlayplugin.h",
         "kmloverlay.cpp",
         "kmloverlay.h",
+        "kmlparser.cpp",
+        "kmlparser.h",
         "kmlpolygonsmodel.cpp",
         "kmlpolygonsmodel.h",
     ]

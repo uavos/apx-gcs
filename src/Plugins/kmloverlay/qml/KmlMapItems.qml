@@ -21,7 +21,7 @@ MapItemGroup {
         z: 1
         delegate: MapPolygon {
             path: polygon
-            color: "red"
+            color: polygonColor
 
         }
     }
