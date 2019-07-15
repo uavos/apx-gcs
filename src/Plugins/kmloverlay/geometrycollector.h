@@ -1,14 +1,15 @@
 #ifndef GEOMETRYCOLLECTOR_H
 #define GEOMETRYCOLLECTOR_H
 
-#include <QGeoPolygon>
+#include <functional>
+#include <QPolygonF>
 #include <QColor>
 #include <QDomDocument>
 
 struct KmlPolygon
 {
     QColor color;
-    QGeoPolygon polygon;
+    QPolygonF polygon;
 };
 
 class GeometryCollector
@@ -16,12 +17,12 @@ class GeometryCollector
 public:
     GeometryCollector();
     void parse(const QByteArray &data);
-    QList<QGeoPolygon> getPolygons();
+    QList<QPolygonF> getPolygons();
 
 private:
     using IterateCallback = std::function<void(const QDomElement&)>;
 
-    QList<QGeoPolygon> m_polygons;
+    QList<QPolygonF> m_polygons;
     QDomDocument m_dom;
 
     void iterateOverChildrenElements(const QDomElement &parent, const QString &tagname, IterateCallback cb);

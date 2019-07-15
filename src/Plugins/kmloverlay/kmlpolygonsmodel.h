@@ -2,7 +2,7 @@
 #define KMLPOLYGONSMODEL_H
 
 #include <QAbstractListModel>
-#include <QGeoPolygon>
+#include <QPolygonF>
 
 class KmlPolygonsModel: public QAbstractListModel
 {
@@ -13,7 +13,8 @@ public:
     };
     KmlPolygonsModel();
 
-    void setPolygons(const QList<QGeoPolygon> &polygons);
+    void setPolygons(const QList<QPolygonF> &polygons);
+    void setBoundingBox(const QRectF &bb);
 
     int rowCount(const QModelIndex &index) const override;
     int columnCount(const QModelIndex &index) const override;
@@ -21,7 +22,11 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    QList<QGeoPolygon> m_polygons;
+    QPolygonF m_bb;
+    QList<QPolygonF> m_allPolygons;
+    QList<QPolygonF> m_viewPolygons;
+
+    void updateViewPolygons();
 };
 
 #endif // KMLPOLYGONSMODEL_H

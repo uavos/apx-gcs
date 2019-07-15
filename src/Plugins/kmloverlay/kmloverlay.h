@@ -15,8 +15,11 @@ public:
 
     KmlPolygonsModel* getKmlPolygons() const;
 
+    Q_INVOKABLE void updateKmlModels(const QGeoShape &shape);
+
 private:
     KmlPolygonsModel *m_kmlPolygons;
+    QPointF gc2p(const QGeoCoordinate &c);
 };
 
 #endif //KMLOVERLAY_H

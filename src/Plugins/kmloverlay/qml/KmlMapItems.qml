@@ -7,6 +7,8 @@ MapItemGroup {
     id: places
 
     property var map: ui.map
+    property var area: apx.tools.map.area
+    onAreaChanged: apx.tools.kmloverlay.updateKmlModels(area)
 
     MapItemView {
         id: borderPointsView
@@ -17,13 +19,11 @@ MapItemGroup {
             path: polygon
             color: "red"
 
-//            onPathChanged: console.log(path.length)
-//            Component.onCompleted: console.log(path)
         }
     }
 
     Component.onCompleted: {
-//        apx.tools.sites.lookup.area=Qt.binding(function(){return apx.tools.map.area})
         map.addMapItemView(borderPointsView)
+
     }
 }

@@ -1,6 +1,5 @@
 #include "geometrycollector.h"
 
-#include <functional>
 #include <QDomNodeList>
 #include "ApxLog.h"
 
@@ -26,7 +25,7 @@ void GeometryCollector::parse(const QByteArray &data)
         apxMsgW() << QString("%1 at line %2").arg(errorMessage, errorLine);
 }
 
-QList<QGeoPolygon> GeometryCollector::getPolygons()
+QList<QPolygonF> GeometryCollector::getPolygons()
 {
     return m_polygons;
 }
@@ -62,7 +61,7 @@ void GeometryCollector::polygonCallback(const QDomElement &el)
 
 void GeometryCollector::coordinatesCallback(const QDomElement &el)
 {
-    QGeoPolygon polygon;
+    QPolygonF polygon;
     QString coordinates = el.text().simplified();
     QStringList tuples = coordinates.split(" ", QString::SkipEmptyParts);
     for(auto &t: tuples)
@@ -73,7 +72,7 @@ void GeometryCollector::coordinatesCallback(const QDomElement &el)
         double lat = t.section(",", 1, 1).toDouble(&ok2);
         if(ok1 && ok2)
         {
-            polygon.addCoordinate(QGeoCoordinate(lat, lon));
+            polygon.append(QPointF(lat, lon));
         }
         else
             apxMsgW() << "Can't parse lat-lon from string " << t;
