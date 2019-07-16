@@ -13,13 +13,13 @@ Project {
 
     references: [
         "src/lib/lib.qbs",
-        "src/main/main.qbs",
-        "src/Plugins/plugins.qbs",
-        "src/pawncc/pawncc.qbs",
+        //"src/main/main.qbs",
+        //"src/Plugins/plugins.qbs",
+        //"src/pawncc/pawncc.qbs",
 
         //"../nodes/src/sim/sim.qbs",
 
-        "deploy/deploy.qbs",
+        //"deploy/deploy.qbs",
     ]
 
     Product {
