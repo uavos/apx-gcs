@@ -30,8 +30,6 @@
 #include <Protocols/ProtocolVehicle.h>
 #include "VehicleMandala.h"
 
-#include <Xbus/xbus_vehicle.h>
-
 class Vehicles;
 class Nodes;
 class VehicleMission;

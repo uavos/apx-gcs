@@ -46,7 +46,7 @@ public:
     {
         QString callsign;
         QString uid;
-        int vclass;
+        uint8_t vclass;
     };
 
     ProtocolVehicle *local;
@@ -54,13 +54,13 @@ public:
 
 private:
     QMap<quint16, ProtocolVehicle *> squawkMap;
-    ProtocolVehicle *addVehicle(quint64 squawk, ProtocolVehicles::IdentData ident);
+    ProtocolVehicle *addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident);
     void identRequest(quint16 squawk);
     void identAssign(quint16 squawk, const ProtocolVehicles::IdentData &ident);
 
 public slots:
     bool unpack(QByteArray packet);
-    void vehicleSendUplink(quint16 squawk, QByteArray packet);
+    void vehicleSendUplink(quint16 squawk, QByteArray payload);
     void sendHeartbeat();
 
 signals:

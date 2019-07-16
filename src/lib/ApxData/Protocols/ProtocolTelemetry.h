@@ -47,6 +47,9 @@ private slots:
     void downstreamData(QByteArray data);
     void serialData(QByteArray data);
 
+    QByteArray getPacket(quint16 pid, QByteArray payload);
+    void sendUplinkValue(quint16 id, QByteArray data);
+
 public slots:
     void sendValue(quint16 id, double v);
     void sendVectorValue(quint16 id, double v1, double v2, double v3);

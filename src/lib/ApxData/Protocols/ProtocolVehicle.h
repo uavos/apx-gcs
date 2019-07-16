@@ -43,15 +43,15 @@ public:
     ProtocolService *service;
 
 private:
+    void sendRequest(quint8 pid, QByteArray payload);
+
 public slots:
     bool unpack(QByteArray packet);
-
-    void sendRequest(quint8 id, QByteArray data);
 
     void vmexec(QString func);
     void sendSerial(quint8 portID, QByteArray data);
     void sendMissionRequest(QByteArray data = QByteArray());
-    void sendServiceRequest(QString sn, quint16 cmd, QByteArray data);
+    void sendServiceRequest(QString sn, quint16 cmd, QByteArray payload);
 
 signals:
     void xpdrData(const ProtocolVehicles::XpdrData &xpdr);

@@ -23,7 +23,7 @@
 #include "ProtocolServiceNode.h"
 #include "ProtocolService.h"
 
-#include <Xbus/xbus_node_conf.h>
+#include <Xbus/XbusNodeConf.h>
 #include <Math/crc.h>
 //=============================================================================
 ProtocolServiceNode::ProtocolServiceNode(ProtocolService *service, const QString &sn)
@@ -94,30 +94,30 @@ ProtocolServiceRequest *ProtocolServiceNode::request(quint16 cmd,
 //=============================================================================
 void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
 {
-    if (data.isEmpty() && cmd != xbus::apc_search && cmd != xbus::apc_script_file)
+    if (data.isEmpty() && cmd != XbusNode::apc_search && cmd != XbusNode::apc_script_file)
         return; //filter request
     switch (cmd) {
     default: {
         emit unknownServiceData(cmd, data);
     }
         return;
-    case xbus::apc_search: { //response to search
+    case XbusNode::apc_search: { //response to search
         //qDebug()<<"apc_search"<<sn;
         requestInfo();
     } break;
-    case xbus::apc_msg: { //message from vehicle
+    case XbusNode::apc_msg: { //message from vehicle
         QString s = QString(data).trimmed();
         if (s.isEmpty())
             break;
         emit messageReceived(s);
     } break;
-    case xbus::apc_ack: { //user command acknowledge
+    case XbusNode::apc_ack: { //user command acknowledge
         if (data.size() != 1)
             break;
         service->acknowledgeRequest(sn, static_cast<quint8>(data.at(0)));
     } break;
 
-    case xbus::apc_info: {
+    case XbusNode::apc_info: {
         //qDebug()<<"apc_info"<<sn<<data.size();
         //fill available nodes
         uint data_cnt = static_cast<uint>(data.size());
@@ -148,7 +148,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case xbus::apc_conf_inf: {
+    case XbusNode::apc_conf_inf: {
         if (!d.info.valid)
             break;
         //qDebug()<<"apc_conf_inf"<<sn<<data.size();
@@ -171,7 +171,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case xbus::apc_nstat: {
+    case XbusNode::apc_nstat: {
         if (data.size() != (sizeof(xbus::node_name_t) + sizeof(xbus::node_status_t)))
             break;
         xbus::node_status_t nstatus;
@@ -189,7 +189,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case xbus::apc_conf_cmds: {
+    case XbusNode::apc_conf_cmds: {
         if (!d.dictInfo.valid)
             break;
         QList<DictNode::Command> list;
@@ -225,7 +225,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case xbus::apc_conf_dsc: {
+    case XbusNode::apc_conf_dsc: {
         if (!d.dictInfo.valid)
             break;
         if (data.size() < 2)
@@ -238,7 +238,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd, data.left(1));
     } break;
 
-    case xbus::apc_conf_read: {
+    case XbusNode::apc_conf_read: {
         if (!d.dict.fieldsValid)
             break;
         if (data.size() <= static_cast<int>(sizeof(xbus::node_fid_t)))
@@ -251,7 +251,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd, data.left(1));
     } break;
 
-    case xbus::apc_conf_write: {
+    case XbusNode::apc_conf_write: {
         //qDebug() << data.toHex().toUpper();
         if (!d.dict.fieldsValid)
             break;
@@ -280,11 +280,11 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
 //=============================================================================
 void ProtocolServiceNode::requestInfo()
 {
-    request(xbus::apc_info, QByteArray(), 500, true);
+    request(XbusNode::apc_info, QByteArray(), 500, true);
 }
 void ProtocolServiceNode::requestDictInfo()
 {
-    request(xbus::apc_conf_inf, QByteArray(), 500, true);
+    request(XbusNode::apc_conf_inf, QByteArray(), 500, true);
 }
 void ProtocolServiceNode::requestDict()
 {
@@ -299,7 +299,7 @@ void ProtocolServiceNode::requestDict()
     }
     if (!d.dict.commandsValid) {
         //qDebug()<<"apc_conf_cmds req";
-        request(xbus::apc_conf_cmds, QByteArray(), 500, false);
+        request(XbusNode::apc_conf_cmds, QByteArray(), 500, false);
     } else if (!d.dict.fieldsValid) {
         int cnt = 0;
         for (int i = 0; i < d.dict.fields.size(); ++i) {
@@ -307,7 +307,7 @@ void ProtocolServiceNode::requestDict()
             if (f.valid)
                 continue;
             cnt++;
-            request(xbus::apc_conf_dsc, QByteArray().append(static_cast<char>(i)), 500, false);
+            request(XbusNode::apc_conf_dsc, QByteArray().append(static_cast<char>(i)), 500, false);
             //qDebug()<<"apc_conf_dsc req"<<i;
             break; //only once
         }
@@ -504,7 +504,7 @@ void ProtocolServiceNode::requestValues(quint16 id)
         requestImageField(f);
         return;
     }
-    request(xbus::apc_conf_read, QByteArray().append(static_cast<char>(id)), 500, false);
+    request(XbusNode::apc_conf_read, QByteArray().append(static_cast<char>(id)), 500, false);
 }
 //=============================================================================
 //=============================================================================
@@ -716,7 +716,7 @@ QByteArray ProtocolServiceNode::packValue(DictNode::Field f, const QVariant &v) 
 //=============================================================================
 void ProtocolServiceNode::requestImageField(DictNode::Field f)
 {
-    ProtocolServiceFile *p = createFile(xbus::apc_script_file);
+    ProtocolServiceFile *p = createFile(XbusNode::apc_script_file);
     if (!p)
         return;
     connect(p, &ProtocolServiceFile::fileReceived, this, [this, f, p](const QByteArray &data) {
@@ -782,7 +782,7 @@ void ProtocolServiceNode::uploadImageField(DictNode::Field f, QVariant v)
     data.append(reinterpret_cast<const char *>(&hdr), sizeof(hdr));
     data.append(code);
 
-    ProtocolServiceFile *p = createFile(xbus::apc_script_file);
+    ProtocolServiceFile *p = createFile(XbusNode::apc_script_file);
     if (!p)
         return;
     connect(p, &ProtocolServiceFile::fileUploaded, this, [=]() {
@@ -810,7 +810,7 @@ void ProtocolServiceNode::uploadValue(quint16 id, QVariant v)
         return;
     }
     service->setActive(true);
-    request(xbus::apc_conf_write,
+    request(XbusNode::apc_conf_write,
             QByteArray().append(static_cast<char>(id)).append(data),
             1500,
             false);
@@ -818,7 +818,7 @@ void ProtocolServiceNode::uploadValue(quint16 id, QVariant v)
 void ProtocolServiceNode::saveValues()
 {
     service->setActive(true);
-    request(xbus::apc_conf_write, QByteArray().append(static_cast<char>(0xFF)), 1500, false);
+    request(XbusNode::apc_conf_write, QByteArray().append(static_cast<char>(0xFF)), 1500, false);
 }
 //=============================================================================
 //=============================================================================
@@ -827,7 +827,7 @@ void ProtocolServiceNode::requestNstat()
     if (isSubNode())
         return;
     service->setActive(true);
-    request(xbus::apc_nstat, QByteArray(), 1000, false);
+    request(XbusNode::apc_nstat, QByteArray(), 1000, false);
 }
 //=============================================================================
 void ProtocolServiceNode::requestUser(quint16 id, QByteArray data, int timeout_ms)

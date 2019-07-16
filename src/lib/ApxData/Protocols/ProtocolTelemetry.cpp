@@ -23,6 +23,8 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicle.h"
 
+#include <Xbus/XbusPacket.h>
+
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
@@ -47,7 +49,7 @@ void ProtocolTelemetry::syncValues()
     for (int i = 0; i < mandala->items.size(); ++i) {
         const DictMandala::Entry &d = mandala->items.at(i);
         double v = mandala->readValue(d);
-        if (values.value(d.id) == v)
+        if (std::abs(values.value(d.id) - v) < std::numeric_limits<double>().epsilon())
             continue;
         values[d.id] = v;
         emit mandalaValueReceived(d.id, v);
@@ -56,6 +58,19 @@ void ProtocolTelemetry::syncValues()
 //=============================================================================
 //=============================================================================
 //=============================================================================
+QByteArray ProtocolTelemetry::getPacket(quint16 pid, QByteArray payload)
+{
+    QByteArray packet(XbusPacket(nullptr).payloadOffset(), 0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusPacket p(pdata);
+    p.setPid(static_cast<XbusPacket::pid_t>(pid));
+    packet.append(payload);
+    return packet;
+}
+void ProtocolTelemetry::sendUplinkValue(quint16 id, QByteArray data)
+{
+    emit sendUplink(getPacket(mandala::idx_uplink, getPacket(id, data)));
+}
 void ProtocolTelemetry::sendValue(quint16 id, double v)
 {
     //qDebug()<<"sendValue"<<id<<v;
@@ -63,7 +78,11 @@ void ProtocolTelemetry::sendValue(quint16 id, double v)
     const DictMandala::Entry &i = mandala->items.value(mandala->idPos.value(id));
     if (!i.id)
         return;
-    emit sendUplink(mandala->packValue(i, v));
+    if (i.send_set) {
+        sendUplinkValue(mandala::idx_set, mandala->packSetValue(i, v));
+    } else {
+        sendUplinkValue(i.id, mandala->packValue(i, v));
+    }
     //qDebug()<<"sendValue"<<id<<v<<mandala->packValue(i,v).toHex();
 }
 void ProtocolTelemetry::sendVectorValue(quint16 id, double v1, double v2, double v3)
@@ -71,19 +90,19 @@ void ProtocolTelemetry::sendVectorValue(quint16 id, double v1, double v2, double
     const DictMandala::Entry &i = mandala->items.value(mandala->idPos.value(id));
     if (!i.id)
         return;
-    emit sendUplink(mandala->packVectorValue(i, v1, v2, v3).prepend((char) mandala::idx_uplink));
+    sendUplinkValue(i.id, mandala->packVectorValue(i, v1, v2, v3));
 }
 void ProtocolTelemetry::sendPointValue(quint16 id, double v1, double v2)
 {
     const DictMandala::Entry &i = mandala->items.value(mandala->idPos.value(id));
     if (!i.id)
         return;
-    emit sendUplink(mandala->packPointValue(i, v1, v2).prepend((char) mandala::idx_uplink));
+    sendUplinkValue(i.id, mandala->packPointValue(i, v1, v2));
 }
 void ProtocolTelemetry::sendValueRequest(quint16 id)
 {
     //qDebug()<<"sendValueRequest"<<id;
-    emit sendUplink(mandala->packValueID(id));
+    sendUplinkValue(id, QByteArray());
 }
 //=============================================================================
 //=============================================================================

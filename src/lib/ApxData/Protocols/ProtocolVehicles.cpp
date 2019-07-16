@@ -24,7 +24,10 @@
 #include "ProtocolVehicle.h"
 #include "ProtocolServiceFirmware.h"
 
-#include <Xbus/xbus_vehicle.h>
+#include <Xbus/XbusVehicle.h>
+#include <Xbus/XbusVehicleXpdr.h>
+#include <Xbus/XbusVehicleIdent.h>
+
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolVehicles::ProtocolVehicles(QObject *parent)
@@ -38,47 +41,56 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
 //=============================================================================
 bool ProtocolVehicles::unpack(QByteArray packet)
 {
-    uint psize = packet.size();
-    if (psize <= sizeof(xbus::hdr_t))
+    if (packet.size() > XbusPacket::size_packet)
         return false;
-    xbus::hdr_t *p = reinterpret_cast<xbus::hdr_t *>(packet.data());
-    switch (p->pid) {
+    uint16_t psize = static_cast<uint16_t>(packet.size());
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusPacket p(pdata);
+    if (!p.isValid(psize))
+        return false;
+
+    switch (p.pid()) {
     case mandala::idx_xpdr: { //transponder from UAV received
-        if (psize != sizeof(xbus::packet_xpdr_t))
+        XbusVehicleXpdr pXpdr(pdata);
+        if (!pXpdr.isValid(psize))
             break;
-        xbus::packet_xpdr_t *xpdr = reinterpret_cast<xbus::packet_xpdr_t *>(p);
-        //qDebug()<<"xpdr"<<xpdr->squawk;
-        ProtocolVehicle *v = squawkMap.value(xpdr->squawk);
+        ProtocolVehicle *v = squawkMap.value(pXpdr.squawk());
         if (!v) {
             //new transponder detected, request IDENT
-            identRequest(xpdr->squawk);
+            identRequest(pXpdr.squawk());
             break;
         }
+        XbusVehicleXpdr::Xpdr dXpdr;
+        pXpdr.read(dXpdr);
+
         XpdrData d;
-        d.lat = xpdr->lat;
-        d.lon = xpdr->lon;
-        d.alt = xpdr->alt;
-        d.gSpeed = xpdr->gSpeed / 100.0;
-        d.course = xpdr->crs * (180.0 / 32768.0);
-        d.mode = xpdr->mode;
+        d.lat = static_cast<double>(dXpdr.lat);
+        d.lon = static_cast<double>(dXpdr.lon);
+        d.alt = static_cast<double>(dXpdr.alt);
+        d.gSpeed = static_cast<double>(dXpdr.speed);
+        d.course = static_cast<double>(dXpdr.course);
+        d.mode = dXpdr.mode;
         v->xpdrData(d);
     } break;
     case mandala::idx_ident: {
         qDebug() << "ident received";
-        if (psize != sizeof(xbus::packet_ident_t))
+        XbusVehicleIdent pIdent(pdata);
+        if (!pIdent.isValid(psize))
             break;
-        xbus::packet_ident_t *ident = reinterpret_cast<xbus::packet_ident_t *>(p);
-        ident->callsign[sizeof(ident->callsign) - 1] = 0;
+
+        XbusVehicleIdent::Ident dIdent;
+        pIdent.read(dIdent);
+
         IdentData d;
-        d.callsign = QString(static_cast<const char *>(ident->callsign));
-        d.uid = QByteArray(reinterpret_cast<const char *>(ident->uid), sizeof(ident->uid))
+        d.callsign = QString(QByteArray(dIdent.callsign.data(), dIdent.callsign.size()));
+        d.uid = QByteArray(reinterpret_cast<const char *>(dIdent.vuid.data()), dIdent.vuid.size())
                     .toHex()
                     .toUpper();
-        d.vclass = ident->vclass;
+        d.vclass = dIdent.vclass;
         //emit identData(ident->squawk,d);
-        if ((!ident->squawk) || d.callsign.isEmpty()) {
+        if ((!pIdent.squawk()) || d.callsign.isEmpty()) {
             //received zero SQUAWK
-            identAssign(ident->squawk, d);
+            identAssign(pIdent.squawk(), d);
             break;
         }
         //find uav in list by uid
@@ -92,45 +104,47 @@ bool ProtocolVehicles::unpack(QByteArray packet)
         if (v) {
             qDebug() << "vehicle protocol exists";
             //update from ident
-            if (v->squawk != ident->squawk || memcmp(&(v->ident), &d, sizeof(d)) != 0) {
+            if (v->squawk != pIdent.squawk() || memcmp(&(v->ident), &d, sizeof(d)) != 0) {
                 squawkMap.remove(v->squawk);
                 squawkMap.remove(squawkMap.key(v));
-                squawkMap.insert(ident->squawk, v);
-                v->squawk = ident->squawk;
+                squawkMap.insert(pIdent.squawk(), v);
+                v->squawk = pIdent.squawk();
                 v->ident = d;
                 qDebug() << "vehicle ident updated";
                 v->identUpdated();
             }
         } else {
             //new Vehicle found
-            v = addVehicle(ident->squawk, d);
+            v = addVehicle(pIdent.squawk(), d);
             emit vehicleIdentified(v);
         }
         //check squawk with uid
-        if (squawkMap.contains(ident->squawk)) {
-            if (squawkMap.value(ident->squawk) != v && d.uid != v->ident.uid) {
+        if (squawkMap.contains(pIdent.squawk())) {
+            if (squawkMap.value(pIdent.squawk()) != v && d.uid != v->ident.uid) {
                 //duplicate squawk came with this ident
                 emit identAssigned(v, d);
-                identAssign(ident->squawk, d);
+                identAssign(pIdent.squawk(), d);
                 break;
             }
         } else {
-            squawkMap.insert(ident->squawk, v);
+            squawkMap.insert(pIdent.squawk(), v);
         }
     } break;
     case mandala::idx_dlink: {
-        if (psize <= sizeof(xbus::hdr_vehicle_t))
+        XbusVehicle pVehicle(pdata);
+        if (!pVehicle.isValid(psize))
             break;
-        xbus::hdr_vehicle_t *hdr = reinterpret_cast<xbus::hdr_vehicle_t *>(p);
-        xbus::squawk_t squawk = hdr->squawk;
-        if (!squawk)
+        if (pVehicle.isRequest(psize))
+            break;
+
+        if (!pVehicle.squawk())
             break; //broadcast?
         //check if new transponder detected, request IDENT
-        ProtocolVehicle *v = squawkMap.value(squawk);
+        ProtocolVehicle *v = squawkMap.value(pVehicle.squawk());
         if (v)
-            v->unpack(packet.right(psize - sizeof(xbus::hdr_vehicle_t)));
+            v->unpack(packet.right(pVehicle.payloadSize(psize)));
         else
-            identRequest(squawk);
+            identRequest(pVehicle.squawk());
     } break;
     default:
         local->unpack(packet);
@@ -138,7 +152,7 @@ bool ProtocolVehicles::unpack(QByteArray packet)
     return true;
 }
 //=============================================================================
-ProtocolVehicle *ProtocolVehicles::addVehicle(quint64 squawk, ProtocolVehicles::IdentData ident)
+ProtocolVehicle *ProtocolVehicles::addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident)
 {
     qDebug() << "new vehicle protocol";
     ProtocolVehicle *v = new ProtocolVehicle(squawk, ident, this);
@@ -148,21 +162,26 @@ ProtocolVehicle *ProtocolVehicles::addVehicle(quint64 squawk, ProtocolVehicles::
 void ProtocolVehicles::identRequest(quint16 squawk)
 {
     //qDebug() << "scheduled ident req";
-    scheduleRequest(QByteArray()
-                        .append((unsigned char) mandala::idx_ident)
-                        .append((unsigned char) squawk)
-                        .append((unsigned char) (squawk >> 8)));
+    QByteArray packet(XbusVehicle(nullptr).payloadOffset(), 0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusVehicle pVehicle(pdata);
+    pVehicle.setPid(mandala::idx_ident);
+    pVehicle.setSquawk(squawk);
+    scheduleRequest(packet);
 }
 //=============================================================================
 void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 {
     qDebug() << "assign" << squawk << ident.callsign << ident.uid << ident.vclass;
-    xbus::packet_ident_t i;
-    memset(&i, 0, sizeof(i));
+    QByteArray packet(XbusVehicleIdent(nullptr).payloadOffset() + sizeof(XbusVehicleIdent::Ident),
+                      0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusVehicleIdent pIdent(pdata);
+
     //generate squawk
-    uint tcnt = 1000000;
+    quint16 tcnt = 32767;
     do {
-        squawk = (qrand() + tcnt) ^ squawk;
+        squawk = (static_cast<quint16>(QRandomGenerator::global()->generate()) + tcnt) ^ squawk;
         if (squawk < 100 || squawk > 0xff00)
             continue;
         if (squawkMap.contains(squawk))
@@ -173,43 +192,51 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
         qDebug() << "Can't find new squawk for assignment";
         return;
     }
-    i.squawk = squawk;
+    pIdent.setPid(mandala::idx_ident);
+    pIdent.setSquawk(squawk);
+
+    XbusVehicleIdent::Ident dIdent;
 
     //unique squawk assigned, update callsign
     QString s = ident.callsign;
     if (s.isEmpty())
-        s = QString("UAVOS-%1").arg((ulong) squawk, 4, 16, QLatin1Char('0')).toUpper();
-    s.truncate(sizeof(i.callsign) - 1);
+        s = QString("UAVOS-%1").arg(static_cast<ulong>(squawk), 4, 16, QLatin1Char('0')).toUpper();
+    s.truncate(sizeof(dIdent.callsign) - 1);
     s = s.toUpper();
-    memcpy(i.callsign, s.toUtf8().data(), s.size());
+    QByteArray sa(s.toUtf8());
+    std::copy(sa.begin(), sa.end(), dIdent.callsign.begin());
     QByteArray buid = QByteArray::fromHex(ident.uid.toUtf8());
-    if (buid.size() != sizeof(i.uid)) {
+    if (buid.size() != sizeof(dIdent.vuid)) {
         qWarning() << "wrong vehicle UID" << ident.uid;
         return;
     }
-    memcpy(i.uid, buid.data(), sizeof(i.uid));
+    std::copy(buid.begin(), buid.end(), dIdent.vuid.begin());
 
-    i.vclass = ident.vclass;
+    dIdent.vclass = ident.vclass;
 
     //send new ident
-    QByteArray ba = QByteArray().append((unsigned char) mandala::idx_ident);
-    int sz = ba.size();
-    ba.resize(sz + sizeof(xbus::packet_ident_t));
-    memcpy(ba.data() + sz, &i, sizeof(xbus::packet_ident_t));
-    emit sendUplink(ba);
+    pIdent.write(dIdent);
+    emit sendUplink(packet);
 }
 //=============================================================================
-void ProtocolVehicles::vehicleSendUplink(quint16 squawk, QByteArray packet)
+void ProtocolVehicles::vehicleSendUplink(quint16 squawk, QByteArray payload)
 {
-    emit sendUplink(QByteArray()
-                        .append((unsigned char) mandala::idx_dlink)
-                        .append((unsigned char) squawk)
-                        .append((unsigned char) (squawk >> 8))
-                        .append(packet));
+    QByteArray packet(XbusVehicle(nullptr).payloadOffset(), 0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusVehicle pVehicle(pdata);
+    pVehicle.setPid(mandala::idx_dlink);
+    pVehicle.setSquawk(squawk);
+    packet.append(payload);
+    emit sendUplink(packet);
 }
 //=============================================================================
 void ProtocolVehicles::sendHeartbeat()
 {
-    emit sendUplink(QByteArray().append((char) mandala::idx_ping).append((char) 0));
+    QByteArray packet(XbusPacket(nullptr).payloadOffset(), 0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusPacket p(pdata);
+    p.setPid(mandala::idx_ping);
+    packet.append('\0');
+    emit sendUplink(packet);
 }
 //=============================================================================

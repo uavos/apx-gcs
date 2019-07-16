@@ -43,6 +43,7 @@ public:
         quint16 id;
         uint vtype;
         void *ptr;
+        bool send_set; //use idx_set to send uplink
         QMetaType::Type type;
         QString name;
         QString descr;
@@ -59,15 +60,18 @@ public:
 
     double readValue(const Entry &i);
     QByteArray packValue(const Entry &i, double v);
+    QByteArray packSetValue(const Entry &i, double v);
     QByteArray packVectorValue(const Entry &i, double v1, double v2, double v3);
     QByteArray packPointValue(const Entry &i, double v1, double v2);
-    QByteArray packValueID(quint16 id);
+
     bool unpackValue(quint16 id, const QByteArray &data);
     bool unpackStream(const QByteArray &data);
 
 private:
     Mandala *m;
     uint8_t tmp[32];
+
+    bool isComplex(const Entry &i);
 
     void append(quint16 id,
                 QMetaType::Type type,

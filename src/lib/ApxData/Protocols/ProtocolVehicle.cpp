@@ -22,7 +22,7 @@
  */
 #include "ProtocolVehicle.h"
 
-#include <Xbus/xbus_node.h>
+#include <Xbus/XbusNode.h>
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolVehicle::ProtocolVehicle(quint16 squawk,
@@ -48,46 +48,60 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
 //=============================================================================
 bool ProtocolVehicle::unpack(QByteArray packet)
 {
-    size_t psize = packet.size();
-    if (psize <= sizeof(xbus::hdr_t))
+    if (packet.size() > XbusPacket::size_packet)
         return false;
-    const xbus::hdr_t *p = reinterpret_cast<const xbus::hdr_t *>(packet.data());
-    QByteArray data(packet.right(psize - sizeof(xbus::hdr_t)));
-    switch (p->pid) {
+    uint16_t psize = static_cast<uint16_t>(packet.size());
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusPacket p(pdata);
+    if (!p.isValid(psize))
+        return false;
+    QByteArray payload(packet.right(p.payloadSize(psize)));
+
+    switch (p.pid()) {
     default:
-        emit dlinkData(p->pid, data);
+        emit dlinkData(p.pid(), payload);
         break;
     case mandala::idx_downstream:
-        emit downstreamData(data);
+        emit downstreamData(payload);
         break;
     case mandala::idx_data:
-        emit serialData(data);
+        emit serialData(payload);
         break;
     case mandala::idx_mission:
-        emit missionData(data);
+        emit missionData(payload);
         break;
     case mandala::idx_service: {
-        quint16 cmd = xbus::apc_search;
-        const xbus::hdr_node_t *hdr = reinterpret_cast<const xbus::hdr_node_t *>(p);
-        if (data.size() >= static_cast<int>(sizeof(xbus::hdr_node_t)))
-            cmd = hdr->cmd;
-        else if (data.size() < (static_cast<int>(sizeof(xbus::hdr_node_t)) - 1))
-            break;
-        QString sn(QByteArray(reinterpret_cast<const char *>(hdr->guid), sizeof(xbus::node_guid_t))
+        XbusNode pNode(pdata);
+        XbusNode::Request hdr;
+        pNode.read(hdr);
+
+        if (!pNode.isValid(psize))
+            return false;
+        if (!pNode.isValid(psize)) {
+            if (pNode.payloadSize(psize + 2) != 1)
+                break;
+            hdr.cmd = XbusNode::apc_search; //assume search cmd if just uid received
+        }
+        QString sn(QByteArray(reinterpret_cast<const char *>(hdr.guid.data()), hdr.guid.size())
                        .toHex()
                        .toUpper());
         //qDebug()<<"idx_service"<<sn;
         if (!(sn.isEmpty() || sn.count('0') == sn.size())) {
-            emit serviceData(sn, hdr->cmd, packet.right(psize - sizeof(xbus::hdr_node_t)));
+            emit serviceData(sn, hdr.cmd, packet.right(pNode.payloadSize(psize)));
         }
     } break;
     }
     return true;
 }
 //=============================================================================
-void ProtocolVehicle::sendRequest(quint8 id, QByteArray data)
+void ProtocolVehicle::sendRequest(quint8 pid, QByteArray payload)
 {
-    emit sendUplink(QByteArray().append(static_cast<char>(id)).append(data));
+    QByteArray packet(XbusPacket(nullptr).payloadOffset(), 0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusPacket p(pdata);
+    p.setPid(pid);
+    packet.append(payload);
+    emit sendUplink(packet);
 }
 //=============================================================================
 void ProtocolVehicle::vmexec(QString func)
@@ -102,13 +116,21 @@ void ProtocolVehicle::sendMissionRequest(QByteArray data)
 {
     emit sendRequest(mandala::idx_mission, data);
 }
-void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray data)
+void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray payload)
 {
-    QByteArray pdata = QByteArray::fromHex(sn.toUtf8());
-    if (pdata.isEmpty())
-        pdata = QByteArray(sizeof(xbus::node_guid_t), static_cast<char>(0));
-    pdata.append(static_cast<char>(cmd)).append(data);
-    //qDebug()<<pdata.toHex().toUpper();
-    emit sendRequest(mandala::idx_service, pdata);
+    QByteArray packet(XbusNode(nullptr).payloadOffset(), 0);
+    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    XbusNode pNode(pdata);
+    pNode.setPid(mandala::idx_service);
+    XbusNode::Request hdr;
+    if (sn.isEmpty()) {
+        std::fill(hdr.guid.begin(), hdr.guid.end(), 0);
+    } else {
+        std::copy(hdr.guid.begin(), hdr.guid.end(), sn.toUtf8().begin());
+    }
+    hdr.cmd = static_cast<XbusNode::cmd_t>(cmd);
+    pNode.write(hdr);
+    packet.append(payload);
+    emit sendUplink(packet);
 }
 //=============================================================================

@@ -199,6 +199,9 @@ void DictMandala::append(quint16 id,
     i.vtype = 0;
     m->get_ptr(id, &i.ptr, &i.vtype);
 
+    i.send_set = i.vtype == vt_flag || i.vtype == vt_float || i.vtype == vt_vect
+                 || i.vtype == vt_point;
+
     items.append(i);
     idPos.insert(id, items.size() - 1);
 
@@ -225,18 +228,15 @@ QByteArray DictMandala::packValue(const Entry &i, double v)
     //qDebug()<<"pack"<<i.id;
     m->set_data(i.id, i.vtype, i.ptr, v);
     int sz = 0;
-    switch (i.vtype) {
-    case vt_flag:
-    case vt_float:
-    case vt_vect:
-    case vt_point: {
-        tmp[0] = idx_set;
-        sz = m->pack_set(tmp + 1, i.id) + 1;
-    } break;
-    default:
-        tmp[0] = i.id;
-        sz = m->pack(tmp + 1, i.id) + 1;
-    }
+    sz = m->pack(tmp, i.id);
+    return QByteArray((const char *) tmp, sz);
+}
+QByteArray DictMandala::packSetValue(const Entry &i, double v)
+{
+    //qDebug()<<"pack"<<i.id;
+    m->set_data(i.id, i.vtype, i.ptr, v);
+    int sz = 0;
+    sz = m->pack_set(tmp, i.id);
     return QByteArray((const char *) tmp, sz);
 }
 QByteArray DictMandala::packVectorValue(const Entry &i, double v1, double v2, double v3)
@@ -247,8 +247,7 @@ QByteArray DictMandala::packVectorValue(const Entry &i, double v1, double v2, do
     m->set_data(i1.id, i1.vtype, i1.ptr, v1);
     m->set_data(i2.id, i2.vtype, i2.ptr, v2);
     m->set_data(i3.id, i3.vtype, i3.ptr, v3);
-    tmp[0] = i.id;
-    int sz = m->pack(tmp + 1, i.id) + 1;
+    int sz = m->pack(tmp, i.id);
     return QByteArray((const char *) tmp, sz);
 }
 QByteArray DictMandala::packPointValue(const Entry &i, double v1, double v2)
@@ -257,15 +256,8 @@ QByteArray DictMandala::packPointValue(const Entry &i, double v1, double v2)
     const DictMandala::Entry &i2 = items.value(idPos.value(i.id | 0x0100));
     m->set_data(i1.id, i1.vtype, i1.ptr, v1);
     m->set_data(i2.id, i2.vtype, i2.ptr, v2);
-    tmp[0] = i.id;
-    int sz = m->pack(tmp + 1, i.id) + 1;
+    int sz = m->pack(tmp, i.id);
     return QByteArray((const char *) tmp, sz);
-}
-QByteArray DictMandala::packValueID(quint16 id)
-{
-    //qDebug()<<"pack"<<i.id;
-    tmp[0] = id;
-    return QByteArray((const char *) tmp, 1);
 }
 //=============================================================================
 bool DictMandala::unpackValue(quint16 id, const QByteArray &data)

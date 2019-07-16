@@ -50,12 +50,12 @@ ApxApp.ApxLibrary {
             "ProtocolVehicles.cpp", "ProtocolVehicles.h",
             "ProtocolVehicle.cpp", "ProtocolVehicle.h",
             "ProtocolTelemetry.cpp", "ProtocolTelemetry.h",
-            "ProtocolMission.cpp", "ProtocolMission.h",
+            //"ProtocolMission.cpp", "ProtocolMission.h",
             "ProtocolService.cpp", "ProtocolService.h",
             "ProtocolServiceRequest.cpp", "ProtocolServiceRequest.h",
             "ProtocolServiceNode.cpp", "ProtocolServiceNode.h",
-            "ProtocolServiceFile.cpp", "ProtocolServiceFile.h",
-            "ProtocolServiceFirmware.cpp", "ProtocolServiceFirmware.h",
+            //"ProtocolServiceFile.cpp", "ProtocolServiceFile.h",
+            //"ProtocolServiceFirmware.cpp", "ProtocolServiceFirmware.h",
         ]
     }
 
