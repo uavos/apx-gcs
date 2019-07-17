@@ -13,7 +13,7 @@ KmlPolygonsModel::KmlPolygonsModel()
 QPointF KmlPolygonsModel::setPolygons(const QList<KmlPolygon> &polygons)
 {
     QPolygonF allPoints;
-    for(auto p: polygons)
+    for(auto &p: polygons)
         allPoints.append(toPolygon(p.data));
 
     auto center = std::accumulate(allPoints.begin(), allPoints.end(), QPointF(0, 0)) / allPoints.size();
@@ -33,29 +33,32 @@ void KmlPolygonsModel::setBoundingBox(const QRectF &bb)
 
 int KmlPolygonsModel::rowCount(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return m_viewPolygons.size();
 }
 
 int KmlPolygonsModel::columnCount(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return 1;
 }
 
 QVariant KmlPolygonsModel::data(const QModelIndex &index, int role) const
 {
+    QVariant result;
     int row = index.row();
     if(row >= 0 && row < m_viewPolygons.size())
     {
         if(role == Polygon)
         {
-            return QVariant::fromValue(m_viewPolygons[row].data);
+            result = QVariant::fromValue(m_viewPolygons[row].data);
         }
         else if(role == Color)
         {
-            return m_viewPolygons[row].color;
+            result = m_viewPolygons[row].color;
         }
     }
-    return QVariant();
+    return result;
 }
 
 QHash<int, QByteArray> KmlPolygonsModel::roleNames() const
@@ -71,7 +74,7 @@ void KmlPolygonsModel::updateViewPolygons()
 {
     beginResetModel();
     m_viewPolygons.clear();
-    for(auto p: m_allPolygons)
+    for(auto &p: m_allPolygons)
     {
         if(toPolygon(p.data).intersects(m_bb))
             m_viewPolygons.append(p);

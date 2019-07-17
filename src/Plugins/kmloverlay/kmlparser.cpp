@@ -31,7 +31,7 @@ QList<KmlPolygon> KmlParser::getPolygons()
 }
 
 void KmlParser::iterateOverChildrenElements(const QDomElement &parent, const QString &tagname,
-                                            IterateCallback cb)
+                                            const IterateCallback &cb)
 {
     auto children = parent.elementsByTagName(tagname);
     for(int i = 0; i < children.size(); i++)

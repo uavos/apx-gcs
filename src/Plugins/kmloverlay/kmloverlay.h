@@ -15,6 +15,7 @@ public:
     explicit KmlOverlay(Fact *parent = nullptr);
 
     Fact *f_open;
+    Fact *f_overlayVisible;
 
     KmlPolygonsModel* getKmlPolygons() const;
     QGeoCoordinate getCenter() const;
@@ -22,6 +23,7 @@ public:
     Q_INVOKABLE void updateKmlModels(const QGeoShape &shape);
 
 private:
+    KmlParser m_parser;
     QGeoCoordinate m_center;
     KmlPolygonsModel *m_kmlPolygons;
     QPointF gc2p(const QGeoCoordinate &c);
@@ -29,6 +31,7 @@ private:
 
 private slots:
     void onOpenTriggered();
+    void onOverlayVisibleValueChanged();
 
 signals:
     void centerChanged();

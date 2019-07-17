@@ -25,7 +25,7 @@ private:
     QList<KmlPolygon> m_polygons;
     QDomDocument m_dom;
 
-    void iterateOverChildrenElements(const QDomElement &parent, const QString &tagname, IterateCallback cb);
+    void iterateOverChildrenElements(const QDomElement &parent, const QString &tagname, const IterateCallback &cb);
 
     void placemarkCallback(const QDomElement &el);
     void polygonCallback(const QDomElement &el, const QColor &color);
