@@ -1,6 +1,7 @@
 #include "kmlpolygonsmodel.h"
 
 #include <QGeoCoordinate>
+#include <QGeoPolygon>
 #include <QDebug>
 #include <algorithm>
 
@@ -13,7 +14,7 @@ QPointF KmlPolygonsModel::setPolygons(const QList<KmlPolygon> &polygons)
 {
     QPolygonF allPoints;
     for(auto p: polygons)
-        allPoints.append(p.data);
+        allPoints.append(toPolygon(p.data));
 
     auto center = std::accumulate(allPoints.begin(), allPoints.end(), QPointF(0, 0)) / allPoints.size();
 
@@ -47,12 +48,7 @@ QVariant KmlPolygonsModel::data(const QModelIndex &index, int role) const
     {
         if(role == Polygon)
         {
-            QVariantList result;
-            const KmlPolygon &polygon = m_viewPolygons[row];
-            for(int i = 0; i < polygon.data.size(); i++)
-                result.append(QVariant::fromValue(QGeoCoordinate(polygon.data[i].x(), polygon.data[i].y())));
-
-            return QVariant::fromValue(result);
+            return QVariant::fromValue(m_viewPolygons[row].data);
         }
         else if(role == Color)
         {
@@ -77,8 +73,17 @@ void KmlPolygonsModel::updateViewPolygons()
     m_viewPolygons.clear();
     for(auto p: m_allPolygons)
     {
-        if(p.data.intersects(m_bb))
+        if(toPolygon(p.data).intersects(m_bb))
             m_viewPolygons.append(p);
     }
     endResetModel();
+}
+
+QPolygonF KmlPolygonsModel::toPolygon(const QGeoPolygon &geoPolygon)
+{
+    QPolygonF polygon;
+    for(int i = 0; i < geoPolygon.size(); i++)
+        polygon.append(QPointF(geoPolygon.coordinateAt(i).latitude(),
+                               geoPolygon.coordinateAt(i).longitude()));
+    return polygon;
 }

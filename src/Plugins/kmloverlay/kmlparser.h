@@ -2,14 +2,14 @@
 #define KMLPARSER_H
 
 #include <functional>
-#include <QPolygonF>
 #include <QColor>
 #include <QDomDocument>
+#include <QGeoPolygon>
 
 struct KmlPolygon
 {
     QColor color;
-    QPolygonF data;
+    QGeoPolygon data;
 };
 
 class KmlParser
@@ -29,7 +29,11 @@ private:
 
     void placemarkCallback(const QDomElement &el);
     void polygonCallback(const QDomElement &el, const QColor &color);
-    void coordinatesCallback(const QDomElement &el, KmlPolygon &polygon);
+    void polygonOuterCallback(const QDomElement &el, KmlPolygon &polygon);
+    void polygonInnerCallback(const QDomElement &el, KmlPolygon &polygon);
+    void polygonCoordinatesCallback(const QDomElement &el, KmlPolygon &polygon);
+    void polygonHolesCallback(const QDomElement &el, KmlPolygon &polygon);
+    QList<QGeoCoordinate> parseCoordinates(const QString &text);
 };
 
 #endif // KMLPARSER_H

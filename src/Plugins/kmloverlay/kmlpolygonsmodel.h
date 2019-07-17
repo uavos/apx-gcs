@@ -29,6 +29,8 @@ private:
     QList<KmlPolygon> m_viewPolygons;
 
     void updateViewPolygons();
+
+    QPolygonF toPolygon(const QGeoPolygon &geoPolygon);
 };
 
 #endif // KMLPOLYGONSMODEL_H

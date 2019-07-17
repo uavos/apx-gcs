@@ -31,7 +31,7 @@ QList<KmlPolygon> KmlParser::getPolygons()
 }
 
 void KmlParser::iterateOverChildrenElements(const QDomElement &parent, const QString &tagname,
-                                                    IterateCallback cb)
+                                            IterateCallback cb)
 {
     auto children = parent.elementsByTagName(tagname);
     for(int i = 0; i < children.size(); i++)
@@ -63,16 +63,43 @@ void KmlParser::polygonCallback(const QDomElement &el, const QColor &color)
 {
     KmlPolygon polygon;
     polygon.color = color;
-    auto cb = std::bind(&KmlParser::coordinatesCallback, this, _1, std::ref(polygon));
-    iterateOverChildrenElements(el, "coordinates", cb);
+    auto cbouter = std::bind(&KmlParser::polygonOuterCallback, this, _1, std::ref(polygon));
+    auto cbinner = std::bind(&KmlParser::polygonInnerCallback, this, _1, std::ref(polygon));
+    iterateOverChildrenElements(el, "outerBoundaryIs", cbouter);
+    iterateOverChildrenElements(el, "innerBoundaryIs", cbinner);
 
     m_polygons.append(polygon);
 }
 
-void KmlParser::coordinatesCallback(const QDomElement &el, KmlPolygon &polygon)
+void KmlParser::polygonOuterCallback(const QDomElement &el, KmlPolygon &polygon)
 {
-    QString coordinates = el.text().simplified();
-    QStringList tuples = coordinates.split(" ", QString::SkipEmptyParts);
+    auto cb = std::bind(&KmlParser::polygonCoordinatesCallback, this, _1, std::ref(polygon));
+    iterateOverChildrenElements(el, "coordinates", cb);
+}
+
+void KmlParser::polygonInnerCallback(const QDomElement &el, KmlPolygon &polygon)
+{
+    auto cb = std::bind(&KmlParser::polygonHolesCallback, this, _1, std::ref(polygon));
+    iterateOverChildrenElements(el, "coordinates", cb);
+}
+
+void KmlParser::polygonCoordinatesCallback(const QDomElement &el, KmlPolygon &polygon)
+{
+    auto coordinates = parseCoordinates(el.text());
+    for(auto &c: coordinates)
+        polygon.data.addCoordinate(c);
+}
+
+void KmlParser::polygonHolesCallback(const QDomElement &el, KmlPolygon &polygon)
+{
+    auto coordinates = parseCoordinates(el.text());
+    polygon.data.addHole(coordinates);
+}
+
+QList<QGeoCoordinate> KmlParser::parseCoordinates(const QString &text)
+{
+    QList<QGeoCoordinate> result;
+    QStringList tuples = text.simplified().split(" ", QString::SkipEmptyParts);
     for(auto &t: tuples)
     {
         QStringList coordinates = t.split(",", QString::SkipEmptyParts);
@@ -81,9 +108,10 @@ void KmlParser::coordinatesCallback(const QDomElement &el, KmlPolygon &polygon)
         double lat = t.section(",", 1, 1).toDouble(&ok2);
         if(ok1 && ok2)
         {
-            polygon.data.append(QPointF(lat, lon));
+            result.append(QGeoCoordinate(lat, lon));
         }
         else
             apxMsgW() << "Can't parse lat-lon from string " << t;
     }
+    return result;
 }
