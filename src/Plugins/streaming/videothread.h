@@ -102,10 +102,10 @@ private:
 
     GstElement *createSourceElement(StreamContext *context);
 
-    void openWriter(StreamContext *m_context);
-    void closeWriter(StreamContext *m_context);
+    void openWriter(StreamContext *context);
+    void closeWriter(StreamContext *context);
 
-    void onSampleReceived(StreamContext *m_context, GstElement *appsink);
+    void onSampleReceived(StreamContext *context, GstElement *appsink);
 
     QImage sample2qimage(std::shared_ptr<GstSample> sample);
 

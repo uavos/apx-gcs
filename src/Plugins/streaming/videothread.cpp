@@ -222,6 +222,9 @@ void VideoThread::run()
     }
     g_main_loop_run(m_loop.get());
 
+    if(context->recording)
+        closeWriter(context.get());
+
     gst_element_set_state(context->pipeline.get(), GST_STATE_NULL);
 }
 
@@ -297,7 +300,6 @@ void VideoThread::openWriter(StreamContext *context)
 
     //tune
     g_object_set(G_OBJECT(context->recSink), "location", filename.toStdString().c_str(), nullptr);
-    g_object_set(G_OBJECT(context->recMuxer), "streamable", true, nullptr);
     if(m_reencoding)
     {
         g_object_set(G_OBJECT(context->recEncoder), "speed-preset", 1, nullptr);
@@ -353,13 +355,7 @@ void VideoThread::openWriter(StreamContext *context)
 
 void VideoThread::closeWriter(StreamContext *context)
 {
-    //unlink
-    if(!m_reencoding)
-        gst_element_unlink_many(context->teeparse, context->recQueue,
-                                context->recMuxer, context->recSink, nullptr);
-    else
-        gst_element_unlink_many(context->teeconvert, context->recQueue, context->recConverter,
-                                context->recEncoder, context->recMuxer, context->recSink, nullptr);
+    gst_element_send_event(context->recMuxer, gst_event_new_eos());
 
     //remove
     gst_bin_remove_many(GST_BIN(context->pipeline.get()), context->recQueue,
@@ -368,12 +364,18 @@ void VideoThread::closeWriter(StreamContext *context)
         gst_bin_remove_many(GST_BIN(context->pipeline.get()), context->recConverter,
                             context->recEncoder, nullptr);
 
+    gst_element_set_state(context->recQueue, GST_STATE_NULL);
+    gst_element_set_state(context->recMuxer, GST_STATE_NULL);
+    gst_element_set_state(context->recSink, GST_STATE_NULL);
+
     //unref
     gst_object_unref(context->recQueue);
     gst_object_unref(context->recMuxer);
     gst_object_unref(context->recSink);
     if(m_reencoding)
     {
+        gst_element_set_state(context->recConverter, GST_STATE_NULL);
+        gst_element_set_state(context->recEncoder, GST_STATE_NULL);
         gst_object_unref(context->recConverter);
         gst_object_unref(context->recEncoder);
     }
