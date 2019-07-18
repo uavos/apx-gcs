@@ -39,7 +39,7 @@ Rectangle {
                 model: stream.tune.overlay.varnames
                 Label {
                     property var v: apx.vehicles.current.mandala.findChild(modelData)
-                    text: v.name + ": " + v.value
+                    text: v.name + ": " + v.value.toFixed(5)
                     font.pixelSize: videoOutput.contentRect.height / 40
                     styleColor: "black"
                     style: Text.Outline
@@ -104,6 +104,11 @@ Rectangle {
             iconName: "image"
             onTriggered: stream.snapshot()
         }
+        CleanButton {
+            visible: running
+            iconName: "cast-off"
+            onTriggered: stream.tune.running.value=false
+        }
 
         Item {
             height: 16
@@ -117,11 +122,6 @@ Rectangle {
             }
         }
 
-        CleanButton {
-            visible: running
-            iconName: "cast-off"
-            onTriggered: stream.tune.running.value=false
-        }
         CleanButton {
             id: resizeButton
             iconName: checked ? "fullscreen-exit" : "fullscreen"

@@ -78,6 +78,9 @@ public:
     void setOverlayCallback(const StreamContext::OverlayCallback &cb);
     void removeOverlayCallback();
 
+    void setLowLatency(bool lowLatency);
+    bool getLowLatency() const;
+
     void stop();
 
     static bool getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height);
@@ -92,6 +95,7 @@ private:
     std::atomic_bool m_stop;
     std::atomic_bool m_recording;
     std::atomic_bool m_reencoding;
+    std::atomic_bool m_lowLatency;
     QString m_uri;
     std::shared_ptr<GMainLoop> m_loop;
     StreamContext::OverlayCallback m_overlayCallback;

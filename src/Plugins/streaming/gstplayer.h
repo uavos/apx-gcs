@@ -15,7 +15,7 @@ class GstPlayer : public Fact
 
 public:
     static const int THREAD_STOP_TIMEOUT = 500;
-    static const int RECONNECT_TIMEOUT = 30000;
+    static const int RECONNECT_TIMEOUT = 15000;
     enum ConnectionState {
         STATE_UNCONNECTED,
         STATE_CONNECTING,
@@ -46,6 +46,7 @@ public:
     Fact *f_active;
     Fact *f_record;
     Fact *f_reencoding;
+    Fact *f_lowLatency;
     Overlay *f_overlay;
 
     Fact *f_sourceType;
@@ -86,6 +87,7 @@ private slots:
     void onActiveValueChanged();
     void onRecordValueChanged();
     void onReencodingValueChanged();
+    void onLowLatencyValueChanged();
     void onSourceTypeChanged();
     void onErrorOccured(const QString &error) const;
     void onReconnectTimerTimeout();

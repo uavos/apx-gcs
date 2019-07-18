@@ -25,7 +25,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
     setIcon("video");
 
-    f_visible = new Fact(this, "show_window", tr("Visible"), tr("Show video window"), Bool);
+    f_visible = new AppSettingFact(settings, this, "show_window", tr("Visible"), tr("Show video window"), Bool);
     f_visible->setIcon("check");
 
     f_tune = new Fact(this, "tune", tr("Tune"), tr("Video stream settings"), Group);
@@ -37,8 +37,12 @@ GstPlayer::GstPlayer(Fact *parent)
     f_record = new Fact(f_tune, "record", tr("Record"), tr("Save stream to file"), Bool);
     f_record->setIcon("record-rec");
 
-    f_reencoding = new Fact(f_tune, "reencoding", tr("Reencoding"), tr("Video reencoding"), Bool);
+    f_reencoding = new AppSettingFact(settings, f_tune, "reencoding", tr("Reencoding"), tr("Video reencoding"), Bool);
     f_reencoding->setIcon("film");
+
+    f_lowLatency = new AppSettingFact(settings, f_tune, "low_latency", tr("Low latency"),
+                                      tr("Disable timestamp synchronization"), Bool, true);
+    f_lowLatency->setIcon("speedometer");
 
     f_sourceType = new AppSettingFact(settings, f_tune, "source_type", tr("Source"), tr("Source type"), Enum, 0);
     f_sourceType->setEnumStrings({"URI", "RTSP", "TCP", "UDP", "Webcam"});
@@ -63,6 +67,7 @@ GstPlayer::GstPlayer(Fact *parent)
     connect(f_active, &Fact::valueChanged, this, &GstPlayer::onActiveValueChanged);
     connect(f_record, &Fact::valueChanged, this, &GstPlayer::onRecordValueChanged);
     connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::onReencodingValueChanged);
+    connect(f_lowLatency, &Fact::valueChanged, this, &GstPlayer::onLowLatencyValueChanged);
     connect(f_sourceType, &Fact::valueChanged, this, &GstPlayer::onSourceTypeChanged);
 
     m_reconnectTimer.setInterval(RECONNECT_TIMEOUT);
@@ -264,6 +269,12 @@ void GstPlayer::onReencodingValueChanged()
 {
     bool reencoding = f_reencoding->value().toBool();
     m_videoThread.setReencoding(reencoding);
+}
+
+void GstPlayer::onLowLatencyValueChanged()
+{
+    bool lowLatency = f_lowLatency->value().toBool();
+    m_videoThread.setLowLatency(lowLatency);
 }
 
 void GstPlayer::onSourceTypeChanged()

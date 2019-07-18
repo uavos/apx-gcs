@@ -12,6 +12,7 @@ VideoThread::VideoThread():
     m_stop(false),
     m_recording(false),
     m_reencoding(false),
+    m_lowLatency(true),
     m_loop(nullptr)
 {
     setupEnvironment();
@@ -69,6 +70,16 @@ void VideoThread::removeOverlayCallback()
 {
     QMutexLocker locker(&m_ioMutex);
     m_overlayCallback = [](auto){};
+}
+
+void VideoThread::setLowLatency(bool lowLatency)
+{
+    m_lowLatency = lowLatency;
+}
+
+bool VideoThread::getLowLatency() const
+{
+    return m_lowLatency;
 }
 
 static GstFlowReturn on_new_sample_from_sink(GstElement *appsink, StreamContext *context)
@@ -164,9 +175,9 @@ void VideoThread::run()
     }
 
     //appsink configuring
-    g_object_set(G_OBJECT(context->playAppsink), "emit-signals", true, "sync", true, nullptr);
+    g_object_set(G_OBJECT(context->playAppsink), "emit-signals", true, "sync", !m_lowLatency, nullptr);
     g_signal_connect(context->playAppsink, "new-sample", G_CALLBACK(on_new_sample_from_sink), context.get());
-    gst_app_sink_set_max_buffers(GST_APP_SINK(context->playAppsink), 1);
+    gst_app_sink_set_max_buffers(GST_APP_SINK(context->playAppsink), 0);
     gst_app_sink_set_drop(GST_APP_SINK(context->playAppsink), true);
     g_object_set(context->playAppsink, "caps", getCapsForAppSink().get(), nullptr);
 
