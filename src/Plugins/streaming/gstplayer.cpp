@@ -66,8 +66,6 @@ GstPlayer::GstPlayer(Fact *parent)
     connect(&m_reconnectTimer, &QTimer::timeout, this, &GstPlayer::onReconnectTimerTimeout);
     connect(f_active, &Fact::valueChanged, this, &GstPlayer::onActiveValueChanged);
     connect(f_record, &Fact::valueChanged, this, &GstPlayer::onRecordValueChanged);
-    connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::onReencodingValueChanged);
-    connect(f_lowLatency, &Fact::valueChanged, this, &GstPlayer::onLowLatencyValueChanged);
     connect(f_sourceType, &Fact::valueChanged, this, &GstPlayer::onSourceTypeChanged);
 
     m_reconnectTimer.setInterval(RECONNECT_TIMEOUT);
@@ -78,6 +76,8 @@ GstPlayer::GstPlayer(Fact *parent)
     ApxApp::instance()->engine()->loadQml("qrc:/streaming/VideoPlugin.qml");
 
     AppSettingFact::loadSettings(this);
+    connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
+    connect(f_lowLatency, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
     onSourceTypeChanged();
 }
 
@@ -134,6 +134,8 @@ void GstPlayer::play()
     setConnectionState(STATE_CONNECTING);
     QString uri = inputToUri();
     m_videoThread.setUri(uri);
+    m_videoThread.setLowLatency(f_lowLatency->value().toBool());
+    m_videoThread.setReencoding(f_reencoding->value().toBool());
     m_videoThread.start();
     m_reconnectTimer.start();
 }
@@ -228,6 +230,12 @@ QStringList GstPlayer::getAvailableWebcams()
     return ids;
 }
 
+void GstPlayer::stopAndPlay()
+{
+    stop();
+    play();
+}
+
 void GstPlayer::onFrameReceived(const QImage &image)
 {
     m_reconnectTimer.start();
@@ -263,18 +271,6 @@ void GstPlayer::onRecordValueChanged()
 {
     bool record = f_record->value().toBool();
     m_videoThread.setRecording(record);
-}
-
-void GstPlayer::onReencodingValueChanged()
-{
-    bool reencoding = f_reencoding->value().toBool();
-    m_videoThread.setReencoding(reencoding);
-}
-
-void GstPlayer::onLowLatencyValueChanged()
-{
-    bool lowLatency = f_lowLatency->value().toBool();
-    m_videoThread.setLowLatency(lowLatency);
 }
 
 void GstPlayer::onSourceTypeChanged()

@@ -83,11 +83,11 @@ private:
     QStringList getAvailableWebcams();
 
 private slots:
+    void stopAndPlay();
+
     void onFrameReceived(const QImage &image);
     void onActiveValueChanged();
     void onRecordValueChanged();
-    void onReencodingValueChanged();
-    void onLowLatencyValueChanged();
     void onSourceTypeChanged();
     void onErrorOccured(const QString &error) const;
     void onReconnectTimerTimeout();

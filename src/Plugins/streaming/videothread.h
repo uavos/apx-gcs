@@ -51,6 +51,7 @@ struct StreamContext
     GstElement *recSink         = nullptr;
 
     bool recording              = false;
+    bool reencoding             = false;
 
     using OnFrameReceivedLambda = std::function<void(StreamContext*, GstElement*)>;
     using RecordRequstedLambda = std::function<bool()>;
