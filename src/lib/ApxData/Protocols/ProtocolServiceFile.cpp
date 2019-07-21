@@ -80,7 +80,8 @@ void ProtocolServiceFile::fileReadReply(QByteArray data)
 {
     //qDebug()<<node->info.name<<data.toHex().toUpper();
     XbusNodeFilePayload::file_t f;
-    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()));
+    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
+                            static_cast<uint16_t>(data.size()));
     f.read(&stream);
 
     if (f.size == 0) {
@@ -157,7 +158,8 @@ void ProtocolServiceFile::readReply(QByteArray data)
         return;
     }
     XbusNodeFilePayload::file_data_hdr_t hdr;
-    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()));
+    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
+                            static_cast<uint16_t>(data.size()));
     hdr.read(&stream);
 
     if (hdr.start_address != dataAddr) {
@@ -190,7 +192,8 @@ void ProtocolServiceFile::writeReply(QByteArray data)
 {
     //qDebug()<<node->info.name<<data.size();
     XbusNodeFilePayload::file_data_hdr_t hdr;
-    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()));
+    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
+                            static_cast<uint16_t>(data.size()));
     hdr.read(&stream);
 
     if (hdr.start_address != dataAddr) {

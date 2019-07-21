@@ -60,7 +60,7 @@ void sendvar(uint16_t idx)
     static uint8_t buf[XbusPacket::size_packet];
     XbusPacket p0(buf);
     p0.setPid(idx_sim);
-    XbusPacket p(p.payload());
+    XbusPacket p(p0.payload());
     p.setPid(static_cast<XbusPacket::pid_t>(idx));
 
     size_t cnt = var.pack(p.payload(), p.pid());

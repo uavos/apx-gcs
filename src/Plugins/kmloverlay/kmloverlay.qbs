@@ -1,14 +1,15 @@
 import qbs
-import apx.Application as APX
+import ApxApp
 
-APX.ApxPlugin {
+ApxApp.ApxPlugin {
 
     Depends {
         name: "Qt";
         submodules: [
             "core",
             "location",
-            "xml"
+            "xml",
+            "widgets" //for QFileDialog
         ]
     }
 
