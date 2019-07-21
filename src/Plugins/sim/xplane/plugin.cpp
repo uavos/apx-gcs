@@ -9,7 +9,10 @@
 #include <version.h>
 
 #include <Mandala/Mandala.h>
-#include <Xbus/xbus_node_conf.h>
+
+#include <Xbus/XbusPacket.h>
+#include <Xbus/XbusNodeConfPayload.h>
+
 #include <apx_tcp_ports.h>
 #include <TcpLink/tcp_server.h>
 //==============================================================================
@@ -19,7 +22,7 @@ static _tcp_server server;
 _var_float noise(_var_float amp);
 Vect noise_vect(_var_float amp);
 //==============================================================================
-Mandala var;
+static Mandala var;
 static bool enabled;
 //==============================================================================
 static struct
@@ -45,22 +48,24 @@ static struct
 } ref;
 //==============================================================================
 #define PWM_CNT 10
-static xbus::ft_lstr_t xpl[PWM_CNT]; //var names per PWM channel
+static std::array<XbusNodeConfPayload::ft_lstr_t, PWM_CNT> xpl; //var names per PWM channel
 static bool xpl_is_array[PWM_CNT];
 static uint xpl_array_idx[PWM_CNT];
 static XPLMDataRef xpl_ref[PWM_CNT];
 static XPLMDataTypeID xpl_type[PWM_CNT];
-static float pwm_ch[PWM_CNT]; //received pwm_ch values
+static std::array<float, PWM_CNT> pwm_ch; //received pwm_ch values
 //==============================================================================
-void sendvar(uint idx)
+void sendvar(uint16_t idx)
 {
-    static uint8_t buf[xbus::size_xbus_packet];
-    xbus::hdr_t *p = reinterpret_cast<xbus::hdr_t *>(buf);
-    p->pid = idx_sim;
-    uint8_t *data = buf + sizeof(xbus::hdr_t);
-    data[0] = idx;
-    size_t cnt = var.archive(&(data[1]), sizeof(buf) - sizeof(xbus::hdr_t) - 1, data[0]);
-    server.write(buf, cnt + sizeof(xbus::hdr_t) + 1);
+    static uint8_t buf[XbusPacket::size_packet];
+    XbusPacket p0(buf);
+    p0.setPid(idx_sim);
+    XbusPacket p(p.payload());
+    p.setPid(static_cast<XbusPacket::pid_t>(idx));
+
+    size_t cnt = var.pack(p.payload(), p.pid());
+    cnt += p0.payloadOffset() + p.payloadOffset();
+    server.write(buf, cnt);
 }
 //==============================================================================
 void sendVars(void)
@@ -227,56 +232,57 @@ float flightLoopCallback(float inElapsedSinceLastCall,
     //send controls to sim
     uint rcnt = 0;
     while (1) {
-        static uint8_t buf[xbus::size_xbus_packet];
+        static uint8_t buf[XbusPacket::size_packet];
         uint cnt = server.read(buf, sizeof(buf));
         if (!cnt)
             break;
-        const xbus::hdr_t *p = (const xbus::hdr_t *) buf;
-        if (p->pid != idx_sim)
+        XbusPacket p(buf);
+        if (p.pid() != idx_sim)
             continue;
-        //printf("< %u\n",cnt);
-        cnt -= sizeof(xbus::hdr_t) + 1;
-        const uint8_t *data = buf + sizeof(xbus::hdr_t);
+        uint8_t op = p.payload()[0];
+        const uint8_t *pdata = p.payload() + 1;
+        uint16_t psize = cnt - p.payloadOffset() - 1;
+        XbusStreamReader stream(pdata, psize);
 
-        switch (data[0]) {
+        switch (op) {
         case 0: //controls assignments
             printf("X-Plane controls assignments for PWM updated.\n");
-            memset(&xpl, 0, sizeof(xpl));
             memset(&xpl_ref, 0, sizeof(xpl_ref));
             memset(&xpl_is_array, 0, sizeof(xpl_is_array));
             memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
-            memcpy(&xpl, &(data[1]), sizeof(xpl));
-            //fill ref
-            for (uint i = 0; i < PWM_CNT; i++) {
-                char *sref = (char *) xpl[i];
-                if (sref[0] == 0)
+            stream.read(xpl);
+            for (uint i = 0; i < PWM_CNT; ++i) {
+                XbusNodeConfPayload::ft_lstr_t &s = xpl[i];
+                if (s[0] == 0)
                     continue;
-                char *s1 = index(sref, '[');
-                if (s1) {
-                    *s1++ = 0;
-                    char *s2 = index(s1, ']');
-                    if ((s2 <= s1) || (s2[1] != 0))
+                auto it1 = std::find(s.begin(), s.end(), '[');
+                if (it1 != s.end()) {
+                    *it1 = 0;
+                    auto it2 = std::find(it1, s.end(), ']');
+                    if (it2 == s.end())
                         continue;
-                    *s2 = 0;
+                    if (*(it2 + 1) != 0)
+                        continue;
+                    *it2 = 0;
                     uint aidx;
-                    if (sscanf(s1, "%u", &aidx) != 1)
+                    if (sscanf(it1, "%u", &aidx) != 1)
                         continue;
                     //if(!(XPLMGetDataRefTypes(sref)&(xplmType_FloatArray|xplmType_IntArray)))continue;
                     xpl_array_idx[i] = aidx;
                     xpl_is_array[i] = true;
                 }
-                XPLMDataRef ref = XPLMFindDataRef(sref);
+                XPLMDataRef ref = XPLMFindDataRef(s.data());
                 if (!ref)
                     continue;
-                xpl_type[i] = XPLMGetDataRefTypes(sref);
+                xpl_type[i] = XPLMGetDataRefTypes(s.data());
                 xpl_ref[i] = ref;
-                printf("DataRef: %s\n", sref);
+                printf("DataRef: %s\n", s.data());
             }
             break;
         case 1: //PWM outputs
             if (rcnt)
                 break; //repeated packet, skip
-            memcpy(&pwm_ch, &(data[1]), cnt);
+            stream.read(pwm_ch);
             for (uint i = 0; i < PWM_CNT; i++) {
                 if (!xpl_ref[i])
                     continue;

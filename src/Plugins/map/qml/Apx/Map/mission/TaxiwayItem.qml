@@ -79,7 +79,9 @@ MissionObject {
             visible: showDetails && taxiwayItem.visible && (!f_first)
             function updatePath()
             {
-                polyline.setPath(taxiwayItem.path)
+                if(taxiwayItem.path){
+                    polyline.setPath(taxiwayItem.path)
+                }
             }
             Connections {
                 target: taxiwayItem

@@ -25,8 +25,7 @@
 #include "ProtocolServiceFirmware.h"
 
 #include <Xbus/XbusVehicle.h>
-#include <Xbus/XbusVehicleXpdr.h>
-#include <Xbus/XbusVehicleIdent.h>
+#include <Xbus/XbusVehiclePayload.h>
 
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
@@ -51,17 +50,19 @@ bool ProtocolVehicles::unpack(QByteArray packet)
 
     switch (p.pid()) {
     case mandala::idx_xpdr: { //transponder from UAV received
-        XbusVehicleXpdr pXpdr(pdata);
-        if (!pXpdr.isValid(psize))
+        XbusVehicle pVehicle(pdata);
+        if (XbusVehiclePayload::Xpdr::psize() != (pVehicle.payloadSize(psize)))
             break;
-        ProtocolVehicle *v = squawkMap.value(pXpdr.squawk());
+
+        ProtocolVehicle *v = squawkMap.value(pVehicle.squawk());
         if (!v) {
             //new transponder detected, request IDENT
-            identRequest(pXpdr.squawk());
+            identRequest(pVehicle.squawk());
             break;
         }
-        XbusVehicleXpdr::Xpdr dXpdr;
-        pXpdr.read(dXpdr);
+
+        XbusVehiclePayload::Xpdr dXpdr;
+        dXpdr.read(pVehicle.payload());
 
         XpdrData d;
         d.lat = static_cast<double>(dXpdr.lat);
@@ -74,12 +75,12 @@ bool ProtocolVehicles::unpack(QByteArray packet)
     } break;
     case mandala::idx_ident: {
         qDebug() << "ident received";
-        XbusVehicleIdent pIdent(pdata);
-        if (!pIdent.isValid(psize))
+        XbusVehicle pVehicle(pdata);
+        if (XbusVehiclePayload::Ident::psize() != (pVehicle.payloadSize(psize)))
             break;
 
-        XbusVehicleIdent::Ident dIdent;
-        pIdent.read(dIdent);
+        XbusVehiclePayload::Ident dIdent;
+        dIdent.read(pVehicle.payload());
 
         IdentData d;
         d.callsign = QString(QByteArray(dIdent.callsign.data(), dIdent.callsign.size()));
@@ -88,9 +89,9 @@ bool ProtocolVehicles::unpack(QByteArray packet)
                     .toUpper();
         d.vclass = dIdent.vclass;
         //emit identData(ident->squawk,d);
-        if ((!pIdent.squawk()) || d.callsign.isEmpty()) {
+        if ((!pVehicle.squawk()) || d.callsign.isEmpty()) {
             //received zero SQUAWK
-            identAssign(pIdent.squawk(), d);
+            identAssign(pVehicle.squawk(), d);
             break;
         }
         //find uav in list by uid
@@ -104,30 +105,30 @@ bool ProtocolVehicles::unpack(QByteArray packet)
         if (v) {
             qDebug() << "vehicle protocol exists";
             //update from ident
-            if (v->squawk != pIdent.squawk() || memcmp(&(v->ident), &d, sizeof(d)) != 0) {
+            if (v->squawk != pVehicle.squawk() || memcmp(&(v->ident), &d, sizeof(d)) != 0) {
                 squawkMap.remove(v->squawk);
                 squawkMap.remove(squawkMap.key(v));
-                squawkMap.insert(pIdent.squawk(), v);
-                v->squawk = pIdent.squawk();
+                squawkMap.insert(pVehicle.squawk(), v);
+                v->squawk = pVehicle.squawk();
                 v->ident = d;
                 qDebug() << "vehicle ident updated";
                 v->identUpdated();
             }
         } else {
             //new Vehicle found
-            v = addVehicle(pIdent.squawk(), d);
+            v = addVehicle(pVehicle.squawk(), d);
             emit vehicleIdentified(v);
         }
         //check squawk with uid
-        if (squawkMap.contains(pIdent.squawk())) {
-            if (squawkMap.value(pIdent.squawk()) != v && d.uid != v->ident.uid) {
+        if (squawkMap.contains(pVehicle.squawk())) {
+            if (squawkMap.value(pVehicle.squawk()) != v && d.uid != v->ident.uid) {
                 //duplicate squawk came with this ident
                 emit identAssigned(v, d);
-                identAssign(pIdent.squawk(), d);
+                identAssign(pVehicle.squawk(), d);
                 break;
             }
         } else {
-            squawkMap.insert(pIdent.squawk(), v);
+            squawkMap.insert(pVehicle.squawk(), v);
         }
     } break;
     case mandala::idx_dlink: {
@@ -173,10 +174,9 @@ void ProtocolVehicles::identRequest(quint16 squawk)
 void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 {
     qDebug() << "assign" << squawk << ident.callsign << ident.uid << ident.vclass;
-    QByteArray packet(XbusVehicleIdent(nullptr).payloadOffset() + sizeof(XbusVehicleIdent::Ident),
-                      0);
+    QByteArray packet(XbusVehicle(nullptr).payloadOffset() + sizeof(XbusVehiclePayload::Ident), 0);
     uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
-    XbusVehicleIdent pIdent(pdata);
+    XbusVehicle pVehicle(pdata);
 
     //generate squawk
     quint16 tcnt = 32767;
@@ -192,10 +192,10 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
         qDebug() << "Can't find new squawk for assignment";
         return;
     }
-    pIdent.setPid(mandala::idx_ident);
-    pIdent.setSquawk(squawk);
+    pVehicle.setPid(mandala::idx_ident);
+    pVehicle.setSquawk(squawk);
 
-    XbusVehicleIdent::Ident dIdent;
+    XbusVehiclePayload::Ident dIdent;
 
     //unique squawk assigned, update callsign
     QString s = ident.callsign;
@@ -203,8 +203,8 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
         s = QString("UAVOS-%1").arg(static_cast<ulong>(squawk), 4, 16, QLatin1Char('0')).toUpper();
     s.truncate(sizeof(dIdent.callsign) - 1);
     s = s.toUpper();
-    QByteArray sa(s.toUtf8());
-    std::copy(sa.begin(), sa.end(), dIdent.callsign.begin());
+    std::copy(s.toUtf8().begin(), s.toUtf8().end(), dIdent.callsign.begin());
+
     QByteArray buid = QByteArray::fromHex(ident.uid.toUtf8());
     if (buid.size() != sizeof(dIdent.vuid)) {
         qWarning() << "wrong vehicle UID" << ident.uid;
@@ -214,8 +214,10 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 
     dIdent.vclass = ident.vclass;
 
+    //update payload
+    dIdent.write(pVehicle.payload());
+
     //send new ident
-    pIdent.write(dIdent);
     emit sendUplink(packet);
 }
 //=============================================================================

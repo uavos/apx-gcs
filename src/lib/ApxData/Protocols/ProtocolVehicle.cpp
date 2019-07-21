@@ -72,7 +72,7 @@ bool ProtocolVehicle::unpack(QByteArray packet)
         break;
     case mandala::idx_service: {
         XbusNode pNode(pdata);
-        XbusNode::Request hdr;
+        XbusNode::Header hdr;
         pNode.read(hdr);
 
         if (!pNode.isValid(psize))
@@ -122,11 +122,12 @@ void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray pay
     uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
     XbusNode pNode(pdata);
     pNode.setPid(mandala::idx_service);
-    XbusNode::Request hdr;
+    XbusNode::Header hdr;
     if (sn.isEmpty()) {
         std::fill(hdr.guid.begin(), hdr.guid.end(), 0);
     } else {
-        std::copy(hdr.guid.begin(), hdr.guid.end(), sn.toUtf8().begin());
+        QByteArray src(QByteArray::fromHex(sn.toUtf8()));
+        std::copy(src.begin(), src.end(), hdr.guid.begin());
     }
     hdr.cmd = static_cast<XbusNode::cmd_t>(cmd);
     pNode.write(hdr);

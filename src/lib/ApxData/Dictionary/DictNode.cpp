@@ -41,7 +41,6 @@ DictNode::Field::Field()
     , id(0)
     , ftype(-1)
     , array(0)
-    , packedSize(0)
     , type(Void)
 {}
 void DictNode::Field::expandStrings()

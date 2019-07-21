@@ -28,6 +28,7 @@
 #include <Dictionary/DictNode.h>
 class ProtocolService;
 class ProtocolServiceRequest;
+class XbusStreamReader;
 //=============================================================================
 class ProtocolServiceNode : public ProtocolBase
 {
@@ -47,8 +48,6 @@ public:
     void fieldDictData(quint16 id, QByteArray data);
     void fieldValuesData(quint16 id, QByteArray data);
 
-    void postprocessField(DictNode::Field &f);
-
     QString name() const;
     bool isSubNode() const;
 
@@ -66,7 +65,9 @@ private:
         DictNode::Field &f, QString name, QString descr, QString units, int ftype);
 
     QByteArray packValue(DictNode::Field f, const QVariant &v) const;
-    int unpackValue(DictNode::Field &f, QByteArray data, QVariantList &values);
+    void unpackValue(DictNode::Field &f, XbusStreamReader *stream, QVariantList &values);
+
+    QByteArray fieldRequest(quint16 fid, QByteArray data = QByteArray()) const;
 
     void requestImageField(DictNode::Field f);
     void imageFieldData(quint16 id, QByteArray data);

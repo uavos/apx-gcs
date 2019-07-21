@@ -28,6 +28,9 @@
 
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
+
+#include <Xbus/XbusVehiclePayload.h>
+
 #include "VehicleMandala.h"
 
 class Vehicles;

@@ -69,7 +69,7 @@ private slots:
     void requestLoaderReboot();
     void requestLoaderRebootCheck();
     void requestLoaderInit();
-    void requesFileWrite();
+    void requestFileWrite();
     bool requestWrite(void); //true if not done
 
     void error();

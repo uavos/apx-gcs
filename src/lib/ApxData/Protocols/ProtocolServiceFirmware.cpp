@@ -27,7 +27,8 @@
 
 #include <ApxLog.h>
 
-#include <Xbus/xbus_node_file.h>
+#include <Xbus/XbusNode.h>
+#include <Xbus/XbusNodeFilePayload.h>
 //=============================================================================
 ProtocolServiceFirmware::ProtocolServiceFirmware(ProtocolService *service)
     : ProtocolBase(service)
@@ -67,7 +68,7 @@ void ProtocolServiceFirmware::upgradeFirmware(QString sn, QByteArray data, quint
     setStatus(tr("Initializing").append("..."));
     service->nodeUpgrading(sn);
     emit started(sn);
-    ncmd = xbus::apc_loader;
+    ncmd = XbusNode::apc_loader;
     reqLoaderRetry = 50;
     requestLoaderReboot();
 }
@@ -87,7 +88,7 @@ void ProtocolServiceFirmware::upgradeLoader(QString sn, QByteArray data, quint32
     setStatus(tr("Initializing").append("..."));
     service->nodeUpgrading(sn);
     emit started(sn);
-    ncmd = xbus::apc_loader;
+    ncmd = XbusNode::apc_loader;
     requestLoaderInit();
 }
 //=============================================================================
@@ -132,24 +133,24 @@ void ProtocolServiceFirmware::loaderServiceData(QString sn, quint16 cmd, QByteAr
     if (sn != this->sn)
         return;
     switch (cmd) {
-    case xbus::ldc_init: {
+    case XbusNode::ldc_init: {
         ProtocolServiceRequest *r = reqInit;
         reqInit = nullptr;
         if (!r)
             break;
-        if (data.size() != sizeof(xbus::node_file_t)) {
+        if (data.size() != XbusNodeFilePayload::file_t::psize()) {
             qWarning() << "Wrong ldc_init response" << data.size();
             break;
         }
         initReply(data);
         r->finish();
     } break;
-    case xbus::ldc_file: {
+    case XbusNode::ldc_file: {
         ProtocolServiceRequest *r = reqFileWrite;
         reqFileWrite = nullptr;
         if (!r)
             break;
-        if (data.size() != sizeof(xbus::node_file_t)) {
+        if (data.size() != XbusNodeFilePayload::file_t::psize()) {
             qWarning() << "Wrong ldc_file response" << data.size();
             break;
         }
@@ -160,12 +161,12 @@ void ProtocolServiceFirmware::loaderServiceData(QString sn, quint16 cmd, QByteAr
         fileWriteReply(data);
         r->finish();
     } break;
-    case xbus::ldc_write: {
+    case XbusNode::ldc_write: {
         ProtocolServiceRequest *r = reqWrite;
         reqWrite = nullptr;
         if (!r)
             break;
-        if (data.size() != sizeof(xbus::node_file_data_hdr_t)) {
+        if (data.size() != XbusNodeFilePayload::file_data_hdr_t::psize()) {
             qWarning() << "Wrong ldc_write response" << data.size();
             break;
         }
@@ -211,7 +212,7 @@ void ProtocolServiceFirmware::requestLoaderReboot()
     //qDebug()<<reqLoaderRetry;
     if (reqLoaderRetry > 0) {
         reqLoaderRetry--;
-        ProtocolServiceRequest *req = request(xbus::apc_loader, QByteArray(), 100, 0);
+        ProtocolServiceRequest *req = request(XbusNode::apc_loader, QByteArray(), 100, 0);
         connect(req,
                 &ProtocolServiceRequest::finished,
                 this,
@@ -226,7 +227,7 @@ void ProtocolServiceFirmware::requestLoaderReboot()
 }
 void ProtocolServiceFirmware::requestLoaderRebootCheck()
 {
-    reqInit = ldr_req(xbus::ldc_init, QByteArray(), 200, 1);
+    reqInit = ldr_req(XbusNode::ldc_init, QByteArray(), 200, 1);
     connect(reqInit,
             &ProtocolServiceRequest::timeout,
             this,
@@ -236,7 +237,7 @@ void ProtocolServiceFirmware::requestLoaderRebootCheck()
 void ProtocolServiceFirmware::requestLoaderInit()
 {
     qDebug() << reqLoaderRetry;
-    reqInit = ldr_req(xbus::ldc_init, QByteArray(), 200, 50);
+    reqInit = ldr_req(XbusNode::ldc_init, QByteArray(), 200, 50);
     connect(reqInit, &ProtocolServiceRequest::timeout, this, [this]() {
         setStatus(tr("Can't initialize upgrade"));
         apxMsgW() << status();
@@ -246,8 +247,10 @@ void ProtocolServiceFirmware::requestLoaderInit()
 //=============================================================================
 void ProtocolServiceFirmware::initReply(QByteArray data)
 {
-    xbus::node_file_t f;
-    memcpy(&f, data.data(), sizeof(xbus::node_file_t));
+    XbusNodeFilePayload::file_t f;
+    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()));
+    f.read(&stream);
+
     if (f.start_address != startAddr) {
         setStatus(tr("Invalid start address"));
         apxMsgW() << QString("%1 0x%2 (avail: 0x%3)")
@@ -264,23 +267,27 @@ void ProtocolServiceFirmware::initReply(QByteArray data)
         return;
     }
     //start file upload
-    requesFileWrite();
+    requestFileWrite();
 }
 //=============================================================================
 //=============================================================================
-void ProtocolServiceFirmware::requesFileWrite()
+void ProtocolServiceFirmware::requestFileWrite()
 {
     //qDebug()<<node->name();
-    xbus::node_file_t f;
-    memset(&f, 0, sizeof(xbus::node_file_t));
+    XbusNodeFilePayload::file_t f;
+    memset(&f, 0, sizeof(XbusNodeFilePayload::file_t));
     f.start_address = startAddr;
     f.size = dataSize;
     quint8 xor_crc = 0;
     for (int i = 0; i < wdata.size(); ++i)
         xor_crc ^= static_cast<quint8>(wdata.at(i));
     f.xor_crc = xor_crc;
-    QByteArray ba(reinterpret_cast<const char *>(&f), sizeof(xbus::node_file_t));
-    reqFileWrite = ldr_req(xbus::ldc_file, ba, 500, 3);
+
+    QByteArray ba(f.psize(), '\0');
+    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(ba.data()));
+    f.write(&stream);
+
+    reqFileWrite = ldr_req(XbusNode::ldc_file, ba, 500, 3);
     connect(reqFileWrite,
             &ProtocolServiceRequest::retrying,
             this,
@@ -306,22 +313,23 @@ bool ProtocolServiceFirmware::requestWrite(void)
 {
     if (dataAddr >= dataSize)
         return false;
-    quint16 cnt = sizeof(xbus::node_file_buf_t);
+    quint16 cnt = XbusNodeFilePayload::size_file_block;
     uint rcnt = dataSize - dataAddr;
-    xbus::node_file_data_hdr_t hdr;
+    XbusNodeFilePayload::file_data_hdr_t hdr;
     hdr.start_address = startAddr + dataAddr;
     hdr.data_size = cnt < rcnt ? cnt : static_cast<quint16>(rcnt);
     QByteArray blockData(wdata.mid(static_cast<int>(dataAddr), hdr.data_size));
     //fill FF in data block
-    while (blockData.size() < static_cast<int>(sizeof(xbus::node_file_buf_t)))
+    while (blockData.size() < XbusNodeFilePayload::size_file_block)
         blockData.append(static_cast<char>(0xFF));
+
+    QByteArray ba(hdr.psize(), '\0');
+    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(ba.data()));
+    hdr.write(&stream);
+
     //make request
     //qDebug()<<QString("%1").arg(static_cast<qulonglong>(hdr.start_address),8,16,QChar('0')).toUpper()<<hdr.data_size;
-    reqWrite
-        = ldr_req(xbus::ldc_write,
-                  QByteArray(reinterpret_cast<const char *>(&hdr), sizeof(hdr)).append(blockData),
-                  5000,
-                  3);
+    reqWrite = ldr_req(XbusNode::ldc_write, ba.append(blockData), 5000, 3);
     connect(reqWrite, &ProtocolServiceRequest::retrying, this, &ProtocolServiceFirmware::retrying);
     connect(reqWrite, &ProtocolServiceRequest::timeout, this, &ProtocolServiceFirmware::error);
     setProgress(dataAddr * 100 / dataSize);
@@ -331,8 +339,10 @@ bool ProtocolServiceFirmware::requestWrite(void)
 void ProtocolServiceFirmware::writeReply(QByteArray data)
 {
     //qDebug()<<node->info.name<<data.size();
-    xbus::node_file_data_hdr_t hdr;
-    memcpy(&hdr, data.data(), sizeof(xbus::node_file_data_hdr_t));
+    XbusNodeFilePayload::file_data_hdr_t hdr;
+    XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()));
+    hdr.read(&stream);
+
     if (hdr.start_address != (dataAddr + startAddr)) {
         qDebug() << "Wrong addr" << hdr.start_address << (dataAddr + startAddr);
         return;

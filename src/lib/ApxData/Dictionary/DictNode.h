@@ -94,7 +94,6 @@ public:
         quint16 id;
         int ftype;
         int array;
-        int packedSize;
         QVariant value;
         //processed data
         DataType type;
