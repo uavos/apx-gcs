@@ -51,6 +51,7 @@ struct StreamContext
     GstElement *recSink         = nullptr;
 
     bool recording              = false;
+    bool reencoding             = false;
 
     using OnFrameReceivedLambda = std::function<void(StreamContext*, GstElement*)>;
     using RecordRequstedLambda = std::function<bool()>;
@@ -78,6 +79,9 @@ public:
     void setOverlayCallback(const StreamContext::OverlayCallback &cb);
     void removeOverlayCallback();
 
+    void setLowLatency(bool lowLatency);
+    bool getLowLatency() const;
+
     void stop();
 
     static bool getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height);
@@ -92,16 +96,17 @@ private:
     std::atomic_bool m_stop;
     std::atomic_bool m_recording;
     std::atomic_bool m_reencoding;
+    std::atomic_bool m_lowLatency;
     QString m_uri;
     std::shared_ptr<GMainLoop> m_loop;
     StreamContext::OverlayCallback m_overlayCallback;
 
     GstElement *createSourceElement(StreamContext *context);
 
-    void openWriter(StreamContext *m_context);
-    void closeWriter(StreamContext *m_context);
+    void openWriter(StreamContext *context);
+    void closeWriter(StreamContext *context);
 
-    void onSampleReceived(StreamContext *m_context, GstElement *appsink);
+    void onSampleReceived(StreamContext *context, GstElement *appsink);
 
     QImage sample2qimage(std::shared_ptr<GstSample> sample);
 

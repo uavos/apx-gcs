@@ -12,6 +12,7 @@ VideoThread::VideoThread():
     m_stop(false),
     m_recording(false),
     m_reencoding(false),
+    m_lowLatency(true),
     m_loop(nullptr)
 {
     setupEnvironment();
@@ -69,6 +70,16 @@ void VideoThread::removeOverlayCallback()
 {
     QMutexLocker locker(&m_ioMutex);
     m_overlayCallback = [](auto){};
+}
+
+void VideoThread::setLowLatency(bool lowLatency)
+{
+    m_lowLatency = lowLatency;
+}
+
+bool VideoThread::getLowLatency() const
+{
+    return m_lowLatency;
 }
 
 static GstFlowReturn on_new_sample_from_sink(GstElement *appsink, StreamContext *context)
@@ -131,6 +142,7 @@ void VideoThread::run()
     QString url = getUri();
 
     auto context = std::make_unique<StreamContext>();
+    context->reencoding = m_reencoding;
 
     m_loop.reset(g_main_loop_new(nullptr, false), &g_main_loop_unref);
 
@@ -164,9 +176,9 @@ void VideoThread::run()
     }
 
     //appsink configuring
-    g_object_set(G_OBJECT(context->playAppsink), "emit-signals", true, "sync", true, nullptr);
+    g_object_set(G_OBJECT(context->playAppsink), "emit-signals", true, "sync", !m_lowLatency, nullptr);
     g_signal_connect(context->playAppsink, "new-sample", G_CALLBACK(on_new_sample_from_sink), context.get());
-    gst_app_sink_set_max_buffers(GST_APP_SINK(context->playAppsink), 1);
+    gst_app_sink_set_max_buffers(GST_APP_SINK(context->playAppsink), 0);
     gst_app_sink_set_drop(GST_APP_SINK(context->playAppsink), true);
     g_object_set(context->playAppsink, "caps", getCapsForAppSink().get(), nullptr);
 
@@ -210,6 +222,9 @@ void VideoThread::run()
         return;
     }
     g_main_loop_run(m_loop.get());
+
+    if(context->recording)
+        closeWriter(context.get());
 
     gst_element_set_state(context->pipeline.get(), GST_STATE_NULL);
 }
@@ -269,7 +284,7 @@ void VideoThread::openWriter(StreamContext *context)
 
     //create
     context->recQueue = gst_element_factory_make("queue", nullptr);
-    if(m_reencoding)
+    if(context->reencoding)
     {
         context->recConverter = gst_element_factory_make("videoconvert", nullptr);
         context->recEncoder = gst_element_factory_make("x264enc", nullptr);
@@ -278,7 +293,7 @@ void VideoThread::openWriter(StreamContext *context)
     context->recSink = gst_element_factory_make("filesink", nullptr);
 
     if(!context->recQueue || !context->recMuxer || !context->recSink ||
-            (m_reencoding && (!context->recEncoder || !context->recConverter)))
+            (context->reencoding && (!context->recEncoder || !context->recConverter)))
     {
         emit errorOccured("Can't create recording elements");
         return;
@@ -286,8 +301,7 @@ void VideoThread::openWriter(StreamContext *context)
 
     //tune
     g_object_set(G_OBJECT(context->recSink), "location", filename.toStdString().c_str(), nullptr);
-    g_object_set(G_OBJECT(context->recMuxer), "streamable", true, nullptr);
-    if(m_reencoding)
+    if(context->reencoding)
     {
         g_object_set(G_OBJECT(context->recEncoder), "speed-preset", 1, nullptr);
         g_object_set(G_OBJECT(context->recEncoder), "tune", 4, nullptr);
@@ -295,12 +309,12 @@ void VideoThread::openWriter(StreamContext *context)
 
     //add
     gst_bin_add_many(GST_BIN(context->pipeline.get()), context->recQueue, context->recMuxer, context->recSink, nullptr);
-    if(m_reencoding)
+    if(context->reencoding)
         gst_bin_add_many(GST_BIN(context->pipeline.get()), context->recConverter, context->recEncoder, nullptr);
 
     //link
     bool linkResult = false;
-    if(!m_reencoding)
+    if(!context->reencoding)
         linkResult = gst_element_link_many(context->teeparse, context->recQueue,
                                            context->recMuxer, context->recSink, nullptr);
     else
@@ -316,7 +330,7 @@ void VideoThread::openWriter(StreamContext *context)
     bool syncResult = gst_element_sync_state_with_parent(context->recQueue) &&
             gst_element_sync_state_with_parent(context->recMuxer) &&
             gst_element_sync_state_with_parent(context->recSink);
-    if(m_reencoding)
+    if(context->reencoding)
     {
         syncResult = syncResult && gst_element_sync_state_with_parent(context->recConverter) &&
                 gst_element_sync_state_with_parent(context->recEncoder);
@@ -328,7 +342,7 @@ void VideoThread::openWriter(StreamContext *context)
     }
 
     //overlay callback
-    if(m_reencoding)
+    if(context->reencoding)
     {
         std::shared_ptr<GstPad> pad(gst_element_get_static_pad(context->recQueue, "src"), &gst_object_unref);
         gst_pad_add_probe(pad.get(), GST_PAD_PROBE_TYPE_BUFFER, (GstPadProbeCallback)draw_overlay, context, nullptr);
@@ -342,29 +356,23 @@ void VideoThread::openWriter(StreamContext *context)
 
 void VideoThread::closeWriter(StreamContext *context)
 {
-    //unlink
-    if(!m_reencoding)
-        gst_element_unlink_many(context->teeparse, context->recQueue,
-                                context->recMuxer, context->recSink, nullptr);
-    else
-        gst_element_unlink_many(context->teeconvert, context->recQueue, context->recConverter,
-                                context->recEncoder, context->recMuxer, context->recSink, nullptr);
+    gst_element_send_event(context->recMuxer, gst_event_new_eos());
 
     //remove
     gst_bin_remove_many(GST_BIN(context->pipeline.get()), context->recQueue,
                         context->recMuxer, context->recSink, nullptr);
-    if(m_reencoding)
+    if(context->reencoding)
         gst_bin_remove_many(GST_BIN(context->pipeline.get()), context->recConverter,
                             context->recEncoder, nullptr);
 
-    //unref
-    gst_object_unref(context->recQueue);
-    gst_object_unref(context->recMuxer);
-    gst_object_unref(context->recSink);
-    if(m_reencoding)
+    gst_element_set_state(context->recQueue, GST_STATE_NULL);
+    gst_element_set_state(context->recMuxer, GST_STATE_NULL);
+    gst_element_set_state(context->recSink, GST_STATE_NULL);
+
+    if(context->reencoding)
     {
-        gst_object_unref(context->recConverter);
-        gst_object_unref(context->recEncoder);
+        gst_element_set_state(context->recConverter, GST_STATE_NULL);
+        gst_element_set_state(context->recEncoder, GST_STATE_NULL);
     }
 
     context->recording = false;

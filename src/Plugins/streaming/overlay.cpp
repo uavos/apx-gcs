@@ -12,6 +12,7 @@ Overlay::Overlay(Fact *parent):
 
     f_crosshair = new AppSettingFact(settings, this, "crosshair", tr("Crosshair"), "", Bool, false);
     f_crosshair->setIcon("crosshairs");
+
     f_variables = new AppSettingFact(settings, this, "vars", tr("Variables"),
                                      tr("Comma-separated f.ex. (yaw,pitch,etc...)"), Text, "yaw,pitch,roll");
     f_variables->setIcon("format-list-bulleted");
@@ -45,8 +46,8 @@ void Overlay::drawOverlay(QImage &image)
     for(auto &varname: m_varnames)
     {
         y += fontPixelSize;
-        QString value = Vehicles::instance()->current()->f_mandala->valueByName(varname).toString();
-        painter.drawText(x, y, pattern.arg(varname, value));
+        float value = Vehicles::instance()->current()->f_mandala->valueByName(varname).toFloat();
+        painter.drawText(x, y, pattern.arg(varname, QString::number(value, 'f', 5)));
     }
 
     painter.setPen(Qt::black);
