@@ -23,7 +23,7 @@
 #include "ProtocolMission.h"
 #include "ProtocolVehicle.h"
 
-#include <Xbus/XbusMissionPayload.h>
+#include <Xbus/XbusMission.h>
 
 #include <ApxLog.h>
 #include <App/AppRoot.h>
@@ -54,18 +54,18 @@ void ProtocolMission::missionData(QByteArray data)
 
     while (stream.position() < psize) {
         ecnt++;
-        XbusMissionPayload::Header hdr;
+        xbus::mission::Header hdr;
         hdr.read(&stream);
 
         switch (hdr.type) {
-        case XbusMissionPayload::Header::mi_stop:
+        case xbus::mission::Header::mi_stop:
             stream.reset(psize); //finish
             ecnt--;
             continue;
-        case XbusMissionPayload::Header::mi_wp: {
-            if (stream.tailSize() < XbusMissionPayload::Waypoint::psize())
+        case xbus::mission::Header::mi_wp: {
+            if (stream.tail() < xbus::mission::Waypoint::psize())
                 break;
-            XbusMissionPayload::Waypoint e;
+            xbus::mission::Waypoint e;
             e.read(&stream);
             wpcnt++;
             DictMission::Item m;
@@ -77,31 +77,31 @@ void ProtocolMission::missionData(QByteArray data)
             d.waypoints.append(m);
             continue;
         }
-        case XbusMissionPayload::Header::mi_action: { //wp actions
+        case xbus::mission::Header::mi_action: { //wp actions
             QVariantMap a;
             switch (hdr.option) {
             default:
                 break;
-            case XbusMissionPayload::Action::mo_speed: {
-                XbusMissionPayload::ActionSpeed e;
+            case xbus::mission::Action::mo_speed: {
+                xbus::mission::ActionSpeed e;
                 e.read(&stream);
                 a["speed"] = e.speed;
                 break;
             }
-            case XbusMissionPayload::Action::mo_poi: {
-                XbusMissionPayload::ActionPoi e;
+            case xbus::mission::Action::mo_poi: {
+                xbus::mission::ActionPoi e;
                 e.read(&stream);
                 a["poi"] = e.poi + 1;
                 break;
             }
-            case XbusMissionPayload::Action::mo_scr: {
-                XbusMissionPayload::ActionScr e;
+            case xbus::mission::Action::mo_scr: {
+                xbus::mission::ActionScr e;
                 e.read(&stream);
                 a["script"] = QString(QByteArray(e.scr.data(), e.scr.size()));
                 break;
             }
-            case XbusMissionPayload::Action::mo_loiter: {
-                XbusMissionPayload::ActionLoiter e;
+            case xbus::mission::Action::mo_loiter: {
+                xbus::mission::ActionLoiter e;
                 e.read(&stream);
                 a["loiter"] = 1;
                 a["radius"] = e.turnR;
@@ -109,8 +109,8 @@ void ProtocolMission::missionData(QByteArray data)
                 a["time"] = e.timeS;
                 break;
             }
-            case XbusMissionPayload::Action::mo_shot: {
-                XbusMissionPayload::ActionShot e;
+            case xbus::mission::Action::mo_shot: {
+                xbus::mission::ActionShot e;
                 e.read(&stream);
                 switch (e.opt) {
                 case 0: //single
@@ -140,10 +140,10 @@ void ProtocolMission::missionData(QByteArray data)
             d.waypoints[lastWp].details["actions"] = st.join(',');
             continue;
         }
-        case XbusMissionPayload::Header::mi_rw: {
-            if (stream.tailSize() < XbusMissionPayload::Runway::psize())
+        case xbus::mission::Header::mi_rw: {
+            if (stream.tail() < xbus::mission::Runway::psize())
                 break;
-            XbusMissionPayload::Runway e;
+            xbus::mission::Runway e;
             e.read(&stream);
             rwcnt++;
             DictMission::Item m;
@@ -157,10 +157,10 @@ void ProtocolMission::missionData(QByteArray data)
             d.runways.append(m);
             continue;
         }
-        case XbusMissionPayload::Header::mi_tw: {
-            if (stream.tailSize() < XbusMissionPayload::Taxiway::psize())
+        case xbus::mission::Header::mi_tw: {
+            if (stream.tail() < xbus::mission::Taxiway::psize())
                 break;
-            XbusMissionPayload::Taxiway e;
+            xbus::mission::Taxiway e;
             e.read(&stream);
             DictMission::Item m;
             m.lat = static_cast<qreal>(e.lat);
@@ -168,10 +168,10 @@ void ProtocolMission::missionData(QByteArray data)
             d.taxiways.append(m);
             continue;
         }
-        case XbusMissionPayload::Header::mi_pi: {
-            if (stream.tailSize() < XbusMissionPayload::Poi::psize())
+        case xbus::mission::Header::mi_pi: {
+            if (stream.tail() < xbus::mission::Poi::psize())
                 break;
-            XbusMissionPayload::Poi e;
+            xbus::mission::Poi e;
             e.read(&stream);
             DictMission::Item m;
             m.lat = static_cast<qreal>(e.lat);
@@ -183,18 +183,18 @@ void ProtocolMission::missionData(QByteArray data)
             d.pois.append(m);
             continue;
         }
-        case XbusMissionPayload::Header::mi_emergency:
-        case XbusMissionPayload::Header::mi_restricted: {
-            uint16_t sz = stream.tailSize();
-            if (sz < XbusMissionPayload::Area::psize(0))
+        case xbus::mission::Header::mi_emergency:
+        case xbus::mission::Header::mi_restricted: {
+            uint16_t sz = stream.tail();
+            if (sz < xbus::mission::Area::psize(0))
                 break;
-            XbusMissionPayload::Area e;
+            xbus::mission::Area e;
             e.read(&stream);
-            if (sz < XbusMissionPayload::Area::psize(e.pointsCnt))
+            if (sz < xbus::mission::Area::psize(e.pointsCnt))
                 break;
             //TODO - implement areas in GCS
             for (int i = 0; i < e.pointsCnt; ++i) {
-                XbusMissionPayload::Area::Point p;
+                xbus::mission::Area::Point p;
                 p.read(&stream);
             }
             continue;
@@ -221,11 +221,11 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
 
     for (int i = 0; i < d.runways.size(); ++i) {
         const DictMission::Item &m = d.runways.at(i);
-        XbusMissionPayload::Header hdr;
-        hdr.type = XbusMissionPayload::Header::mi_rw;
+        xbus::mission::Header hdr;
+        hdr.type = xbus::mission::Header::mi_rw;
         hdr.option = DictMission::runwayTypeFromString(m.details.value("type").toString());
         hdr.write(&stream);
-        XbusMissionPayload::Runway e;
+        xbus::mission::Runway e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.hmsl = m.details.value("hmsl").toInt();
@@ -236,11 +236,11 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
     }
     for (int i = 0; i < d.waypoints.size(); ++i) {
         const DictMission::Item &m = d.waypoints.at(i);
-        XbusMissionPayload::Header hdr;
-        hdr.type = XbusMissionPayload::Header::mi_wp;
+        xbus::mission::Header hdr;
+        hdr.type = xbus::mission::Header::mi_wp;
         hdr.option = DictMission::waypointTypeFromString(m.details.value("type").toString());
         hdr.write(&stream);
-        XbusMissionPayload::Waypoint e;
+        xbus::mission::Waypoint e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.alt = m.details.value("altitude").toInt();
@@ -256,51 +256,51 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
         }
 
         if (!amap.value("speed").isEmpty()) {
-            XbusMissionPayload::Header ahdr;
-            ahdr.type = XbusMissionPayload::Header::mi_action;
-            ahdr.option = XbusMissionPayload::Action::mo_speed;
+            xbus::mission::Header ahdr;
+            ahdr.type = xbus::mission::Header::mi_action;
+            ahdr.option = xbus::mission::Action::mo_speed;
             ahdr.write(&stream);
-            XbusMissionPayload::ActionSpeed a;
+            xbus::mission::ActionSpeed a;
             a.speed = amap.value("speed").toUInt();
             a.write(&stream);
         }
         if (!amap.value("poi").isEmpty()) {
-            XbusMissionPayload::Header ahdr;
-            ahdr.type = XbusMissionPayload::Header::mi_action;
-            ahdr.option = XbusMissionPayload::Action::mo_poi;
+            xbus::mission::Header ahdr;
+            ahdr.type = xbus::mission::Header::mi_action;
+            ahdr.option = xbus::mission::Action::mo_poi;
             ahdr.write(&stream);
-            XbusMissionPayload::ActionPoi a;
+            xbus::mission::ActionPoi a;
             a.poi = amap.value("poi").toUInt() - 1;
             a.write(&stream);
         }
         if (!amap.value("script").isEmpty()) {
-            XbusMissionPayload::Header ahdr;
-            ahdr.type = XbusMissionPayload::Header::mi_action;
-            ahdr.option = XbusMissionPayload::Action::mo_scr;
+            xbus::mission::Header ahdr;
+            ahdr.type = xbus::mission::Header::mi_action;
+            ahdr.option = xbus::mission::Action::mo_scr;
             ahdr.write(&stream);
-            XbusMissionPayload::ActionScr a;
+            xbus::mission::ActionScr a;
             QByteArray src(amap.value("script").toUtf8());
             std::copy(src.begin(), src.end(), a.scr.begin());
             a.scr[a.scr.size() - 1] = 0;
             a.write(&stream);
         }
         if (!amap.value("loiter").isEmpty()) {
-            XbusMissionPayload::Header ahdr;
-            ahdr.type = XbusMissionPayload::Header::mi_action;
-            ahdr.option = XbusMissionPayload::Action::mo_loiter;
+            xbus::mission::Header ahdr;
+            ahdr.type = xbus::mission::Header::mi_action;
+            ahdr.option = xbus::mission::Action::mo_loiter;
             ahdr.write(&stream);
-            XbusMissionPayload::ActionLoiter a;
+            xbus::mission::ActionLoiter a;
             a.turnR = amap.value("radius").toInt();
             a.loops = amap.value("loops").toUInt();
             a.timeS = AppRoot::timeFromString(amap.value("time"));
             a.write(&stream);
         }
         if (!amap.value("shot").isEmpty()) {
-            XbusMissionPayload::Header ahdr;
-            ahdr.type = XbusMissionPayload::Header::mi_action;
-            ahdr.option = XbusMissionPayload::Action::mo_shot;
+            xbus::mission::Header ahdr;
+            ahdr.type = xbus::mission::Header::mi_action;
+            ahdr.option = xbus::mission::Action::mo_shot;
             ahdr.write(&stream);
-            XbusMissionPayload::ActionShot a;
+            xbus::mission::ActionShot a;
             uint dshot = amap.value("dshot").toUInt();
             const QString shot = amap.value("shot");
             a.opt = 0;
@@ -325,22 +325,22 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
     }
     for (int i = 0; i < d.taxiways.size(); ++i) {
         const DictMission::Item &m = d.taxiways.at(i);
-        XbusMissionPayload::Header hdr;
-        hdr.type = XbusMissionPayload::Header::mi_tw;
+        xbus::mission::Header hdr;
+        hdr.type = xbus::mission::Header::mi_tw;
         hdr.option = 0;
         hdr.write(&stream);
-        XbusMissionPayload::Taxiway e;
+        xbus::mission::Taxiway e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.write(&stream);
     }
     for (int i = 0; i < d.pois.size(); ++i) {
         const DictMission::Item &m = d.pois.at(i);
-        XbusMissionPayload::Header hdr;
-        hdr.type = XbusMissionPayload::Header::mi_pi;
+        xbus::mission::Header hdr;
+        hdr.type = xbus::mission::Header::mi_pi;
         hdr.option = 0;
         hdr.write(&stream);
-        XbusMissionPayload::Poi e;
+        xbus::mission::Poi e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.hmsl = m.details.value("hmsl").toInt();
@@ -350,12 +350,12 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
         e.write(&stream);
     }
 
-    if (stream.position() <= XbusMissionPayload::Header::psize()) {
+    if (stream.position() <= xbus::mission::Header::psize()) {
         qDebug() << "Can't upload empty mission";
     }
 
-    XbusMissionPayload::Header hdr;
-    hdr.type = XbusMissionPayload::Header::mi_stop;
+    xbus::mission::Header hdr;
+    hdr.type = xbus::mission::Header::mi_stop;
     hdr.option = 0;
     hdr.write(&stream);
     data.resize(stream.position());

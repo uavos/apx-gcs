@@ -24,9 +24,7 @@
 #include "ProtocolService.h"
 
 #include <Xbus/XbusNode.h>
-#include <Xbus/XbusNodePayload.h>
 #include <Xbus/XbusNodeConf.h>
-#include <Xbus/XbusNodeConfPayload.h>
 
 #include <Math/crc.h>
 //=============================================================================
@@ -97,17 +95,16 @@ ProtocolServiceRequest *ProtocolServiceNode::request(quint16 cmd,
 }
 QByteArray ProtocolServiceNode::fieldRequest(quint16 fid, QByteArray data) const
 {
-    QByteArray packet(XbusNodeConf(nullptr).payloadOffset(), 0);
-    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
-    XbusNodeConf pConf(pdata);
-    pConf.setFid(static_cast<XbusNodeConf::fid_t>(fid));
+    QByteArray packet(sizeof(xbus::node::conf::fid_t), 0);
+    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(packet.data()));
+    stream.write<xbus::node::conf::fid_t>(fid);
     packet.append(data);
     return packet;
 }
 //=============================================================================
 void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
 {
-    if (data.isEmpty() && cmd != XbusNode::apc_search && cmd != XbusNode::apc_script_file)
+    if (data.isEmpty() && cmd != xbus::node::apc_search && cmd != xbus::node::apc_script_file)
         return; //filter request
 
     uint16_t psize = static_cast<uint16_t>(data.size());
@@ -118,29 +115,31 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         emit unknownServiceData(cmd, data);
     }
         return;
-    case XbusNode::apc_search: { //response to search
+    case xbus::node::apc_search: { //response to search
         //qDebug() << "apc_search" << sn;
         requestInfo();
     } break;
-    case XbusNode::apc_msg: { //message from vehicle
+    case xbus::node::apc_msg: { //message from vehicle
         QString s = QString(data).trimmed();
         if (s.isEmpty())
             break;
         emit messageReceived(s);
     } break;
-    case XbusNode::apc_ack: { //user command acknowledge
+    case xbus::node::apc_ack: { //user command acknowledge
         if (data.size() != 1)
             break;
         service->acknowledgeRequest(sn, static_cast<quint8>(data.at(0)));
     } break;
 
-    case XbusNode::apc_info: {
+    case xbus::node::apc_info: {
         //qDebug() << "apc_info" << sn << data.size();
         //fill available nodes
-        XbusNodePayload::Ident dIdent;
-        if (dIdent.psize() != psize)
+        if (xbus::node::Ident::psize() != psize)
             break;
-        dIdent.read(pdata);
+
+        xbus::node::Ident dIdent;
+        XbusStreamReader stream(pdata, psize);
+        dIdent.read(&stream);
 
         //populate info
         d.info.name = QString(QByteArray(dIdent.name.data(), dIdent.name.size()));
@@ -159,11 +158,13 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case XbusNode::apc_conf_inf: {
-        XbusNodePayload::IdentConf dIdentConf;
-        if (dIdentConf.psize() != psize)
+    case xbus::node::apc_conf_inf: {
+        if (xbus::node::IdentConf::psize() != psize)
             break;
-        dIdentConf.read(pdata);
+
+        xbus::node::IdentConf dIdentConf;
+        XbusStreamReader stream(pdata, psize);
+        dIdentConf.read(&stream);
         //qDebug()<<"apc_conf_inf"<<sn<<data.size();
 
         //populate info
@@ -178,11 +179,13 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case XbusNode::apc_nstat: {
-        XbusNodePayload::Status dStatus;
-        if (dStatus.psize() != psize)
+    case xbus::node::apc_nstat: {
+        if (xbus::node::Status::psize() != psize)
             break;
-        dStatus.read(pdata);
+
+        xbus::node::Status dStatus;
+        XbusStreamReader stream(pdata, psize);
+        dStatus.read(&stream);
 
         DictNode::Stats nstat;
         nstat.vbat = static_cast<double>(dStatus.vbat);
@@ -197,7 +200,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case XbusNode::apc_conf_cmds: {
+    case xbus::node::apc_conf_cmds: {
         if (!d.dictInfo.valid)
             break;
         QList<DictNode::Command> list;
@@ -233,43 +236,54 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         service->acknowledgeRequest(sn, cmd);
     } break;
 
-    case XbusNode::apc_conf_dsc: {
+    case xbus::node::apc_conf_dsc: {
         if (!d.dictInfo.valid)
             break;
-        XbusNodeConf pConf(pdata);
-        if (!pConf.isValid(psize))
+
+        if (psize <= sizeof(xbus::node::conf::fid_t))
             break;
-        if (pConf.isRequest(psize))
-            break;
+
+        XbusStreamReader stream(pdata, psize);
+        xbus::node::conf::fid_t fid;
+        stream >> fid;
+
         //qDebug()<<"apc_conf_dsc"<<data.size()<<data.toHex().toUpper();
-        fieldDictData(pConf.fid(), data.mid(pConf.payloadOffset()));
-        service->acknowledgeRequest(sn, cmd, data.left(pConf.payloadOffset()));
+        fieldDictData(fid, data.mid(stream.position()));
+        service->acknowledgeRequest(sn, cmd, data.left(stream.position()));
     } break;
 
-    case XbusNode::apc_conf_read: {
+    case xbus::node::apc_conf_read: {
         if (!d.dict.fieldsValid)
             break;
         if (!d.dict.fieldsValid)
             break; //drop request
-        XbusNodeConf pConf(pdata);
-        if (!pConf.isValid(psize))
+
+        if (psize <= sizeof(xbus::node::conf::fid_t))
             break;
-        if (pConf.isRequest(psize))
-            break;
-        fieldValuesData(pConf.fid(), data.mid(pConf.payloadOffset()));
-        service->acknowledgeRequest(sn, cmd, data.left(pConf.payloadOffset()));
+
+        XbusStreamReader stream(pdata, psize);
+        xbus::node::conf::fid_t fid;
+        stream >> fid;
+
+        fieldValuesData(fid, data.mid(stream.position()));
+        service->acknowledgeRequest(sn, cmd, data.left(stream.position()));
     } break;
 
-    case XbusNode::apc_conf_write: {
+    case xbus::node::apc_conf_write: {
         //qDebug() << data.toHex().toUpper();
         if (!d.dict.fieldsValid)
             break;
-        XbusNodeConf pConf(pdata);
-        if (!pConf.isValid(psize))
+
+        if (psize < sizeof(xbus::node::conf::fid_t))
             break;
-        XbusNodeConf::fid_t fid = pConf.fid();
-        if (pConf.isRequest(psize)) {
-            service->acknowledgeRequest(sn, cmd, data.left(pConf.payloadOffset()));
+
+        XbusStreamReader stream(pdata, psize);
+        xbus::node::conf::fid_t fid;
+        stream >> fid;
+
+        if (stream.tail() == 0) {
+            //request fid or response of write eeprom
+            service->acknowledgeRequest(sn, cmd, data.left(stream.position()));
             //write field confirm
             if (fid >= 0xFF)
                 valuesSaved();
@@ -279,7 +293,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
             const DictNode::Field &f = d.dict.fields.value(fid);
             if (!f.valid)
                 break;
-            fieldValuesData(fid, data.mid(pConf.payloadOffset()));
+            fieldValuesData(fid, data.mid(stream.position()));
             emit valueModifiedExternally(fid);
         }
     } break;
@@ -288,11 +302,11 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
 //=============================================================================
 void ProtocolServiceNode::requestInfo()
 {
-    request(XbusNode::apc_info, QByteArray(), 500, true);
+    request(xbus::node::apc_info, QByteArray(), 500, true);
 }
 void ProtocolServiceNode::requestDictInfo()
 {
-    request(XbusNode::apc_conf_inf, QByteArray(), 500, true);
+    request(xbus::node::apc_conf_inf, QByteArray(), 500, true);
 }
 void ProtocolServiceNode::requestDict()
 {
@@ -307,7 +321,7 @@ void ProtocolServiceNode::requestDict()
     }
     if (!d.dict.commandsValid) {
         //qDebug()<<"apc_conf_cmds req";
-        request(XbusNode::apc_conf_cmds, QByteArray(), 500, false);
+        request(xbus::node::apc_conf_cmds, QByteArray(), 500, false);
     } else if (!d.dict.fieldsValid) {
         int cnt = 0;
         for (int i = 0; i < d.dict.fields.size(); ++i) {
@@ -315,8 +329,8 @@ void ProtocolServiceNode::requestDict()
             if (f.valid)
                 continue;
             cnt++;
-            request(XbusNode::apc_conf_dsc,
-                    fieldRequest(static_cast<XbusNodeConf::fid_t>(i), QByteArray()),
+            request(xbus::node::apc_conf_dsc,
+                    fieldRequest(static_cast<xbus::node::conf::fid_t>(i), QByteArray()),
                     500,
                     false);
             //qDebug()<<"apc_conf_dsc req"<<i;
@@ -339,72 +353,72 @@ void ProtocolServiceNode::updateFieldDataType(DictNode::Field &f)
 {
     f.type = DictNode::Void;
     switch (f.ftype) {
-    case XbusNodeConfPayload::ft_option:
+    case xbus::node::conf::ft_option:
         f.type = DictNode::Option;
         break;
-    case XbusNodeConfPayload::ft_string:
+    case xbus::node::conf::ft_string:
         f.type = DictNode::String;
         break;
-    case XbusNodeConfPayload::ft_lstr:
+    case xbus::node::conf::ft_lstr:
         f.type = DictNode::StringL;
         break;
-    case XbusNodeConfPayload::ft_float:
+    case xbus::node::conf::ft_float:
         f.type = DictNode::Float;
         break;
-    case XbusNodeConfPayload::ft_byte:
+    case xbus::node::conf::ft_byte:
         f.type = DictNode::Byte;
         break;
-    case XbusNodeConfPayload::ft_uint:
+    case xbus::node::conf::ft_uint:
         f.type = DictNode::UInt;
         break;
-    case XbusNodeConfPayload::ft_varmsk:
+    case xbus::node::conf::ft_varmsk:
         f.type = DictNode::MandalaID;
         break;
-    case XbusNodeConfPayload::ft_vec:
+    case xbus::node::conf::ft_vec:
         for (int i = 0; i < 3; ++i) {
             QString s = f.opts.value(i, QString::number(i + 1));
-            createSubField(f, s, f.descr + " (" + s + ")", f.units, XbusNodeConfPayload::ft_float);
+            createSubField(f, s, f.descr + " (" + s + ")", f.units, xbus::node::conf::ft_float);
         }
         f.opts.clear();
         f.type = DictNode::Vector;
         break;
-    case XbusNodeConfPayload::ft_script:
+    case xbus::node::conf::ft_script:
         f.type = DictNode::Script;
         break;
-    case XbusNodeConfPayload::ft_regPID:
-        createSubField(f, "Kp", tr("Proportional"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Lp", tr("Proportional limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Kd", tr("Derivative"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Ld", tr("Derivative limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Ki", tr("Integral"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Li", tr("Integral limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Lo", tr("Output limit"), "%", XbusNodeConfPayload::ft_byte);
+    case xbus::node::conf::ft_regPID:
+        createSubField(f, "Kp", tr("Proportional"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Lp", tr("Proportional limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Kd", tr("Derivative"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Ld", tr("Derivative limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Ki", tr("Integral"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Li", tr("Integral limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Lo", tr("Output limit"), "%", xbus::node::conf::ft_byte);
         f.descr = "PID";
         f.type = DictNode::Hash;
         break;
-    case XbusNodeConfPayload::ft_regPI:
-        createSubField(f, "Kp", tr("Proportional"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Lp", tr("Proportional limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Ki", tr("Integral"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Li", tr("Integral limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Lo", tr("Output limit"), "%", XbusNodeConfPayload::ft_byte);
+    case xbus::node::conf::ft_regPI:
+        createSubField(f, "Kp", tr("Proportional"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Lp", tr("Proportional limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Ki", tr("Integral"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Li", tr("Integral limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Lo", tr("Output limit"), "%", xbus::node::conf::ft_byte);
         f.descr = "PI";
         f.type = DictNode::Hash;
         break;
-    case XbusNodeConfPayload::ft_regP:
-        createSubField(f, "Kp", tr("Proportional"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Lo", tr("Output limit"), "%", XbusNodeConfPayload::ft_byte);
+    case xbus::node::conf::ft_regP:
+        createSubField(f, "Kp", tr("Proportional"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Lo", tr("Output limit"), "%", xbus::node::conf::ft_byte);
         f.descr = "P";
         f.type = DictNode::Hash;
         break;
-    case XbusNodeConfPayload::ft_regPPI:
-        createSubField(f, "Kpp", tr("Error to speed"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Lpp", tr("Speed limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Kp", tr("Proportional"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Lp", tr("Proportional limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Ki", tr("Integral"), "K", XbusNodeConfPayload::ft_float);
-        createSubField(f, "Li", tr("Integral limit"), "%", XbusNodeConfPayload::ft_byte);
-        createSubField(f, "Lo", tr("Output limit"), "%", XbusNodeConfPayload::ft_byte);
+    case xbus::node::conf::ft_regPPI:
+        createSubField(f, "Kpp", tr("Error to speed"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Lpp", tr("Speed limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Kp", tr("Proportional"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Lp", tr("Proportional limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Ki", tr("Integral"), "K", xbus::node::conf::ft_float);
+        createSubField(f, "Li", tr("Integral limit"), "%", xbus::node::conf::ft_byte);
+        createSubField(f, "Lo", tr("Output limit"), "%", xbus::node::conf::ft_byte);
         f.descr = "PPI";
         f.type = DictNode::Hash;
         break;
@@ -429,7 +443,7 @@ void ProtocolServiceNode::updateFieldDataType(DictNode::Field &f)
                 st << QString("CH%1").arg(i + 1);
             f.opts = st;
             f.type = DictNode::Option;
-        } else if (f.opts.size() == f.array && f.ftype != XbusNodeConfPayload::ft_option) {
+        } else if (f.opts.size() == f.array && f.ftype != xbus::node::conf::ft_option) {
             stNames = f.opts;
         }
         //create array items
@@ -475,7 +489,7 @@ void ProtocolServiceNode::requestValues(quint16 id)
         requestImageField(f);
         return;
     }
-    request(XbusNode::apc_conf_read, fieldRequest(id), 500, false);
+    request(xbus::node::apc_conf_read, fieldRequest(id), 500, false);
 }
 //=============================================================================
 //=============================================================================
@@ -490,7 +504,7 @@ void ProtocolServiceNode::fieldDictData(quint16 id, QByteArray data)
     int cnt = data.size();
     const char *str = data.data();
     int sz;
-    r.ftype = static_cast<XbusNodeConfPayload::ftype_t>(*str++);
+    r.ftype = static_cast<xbus::node::conf::ftype_t>(*str++);
     cnt--;
     sz = static_cast<int>(strlen(str)) + 1;
     if (sz > cnt)
@@ -517,7 +531,7 @@ void ProtocolServiceNode::fieldDictData(quint16 id, QByteArray data)
         return;
     }
 
-    if (r.ftype == XbusNodeConfPayload::ft_option)
+    if (r.ftype == xbus::node::conf::ft_option)
         r.type = DictNode::Option;
 
     r.expandStrings();
@@ -562,7 +576,7 @@ void ProtocolServiceNode::fieldValuesData(quint16 id, QByteArray data)
             return;
         }
 
-        id = stream.read<XbusNodeConf::fid_t, quint16>();
+        id = stream.read<xbus::node::conf::fid_t, quint16>();
     }
     //error
     qDebug() << "unpack error" << sid << id << d.dict.fields[id].name << data.size();
@@ -588,33 +602,33 @@ void ProtocolServiceNode::unpackValue(DictNode::Field &f,
         qDebug() << "unknown type" << DictNode::dataTypeToString(f.type);
     } break;
     case DictNode::UInt:
-        v = QVariant::fromValue(stream->read<XbusNodeConfPayload::ft_uint_t, int>());
+        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_uint_t, int>());
         break;
     case DictNode::Float:
-        v = QVariant::fromValue(stream->read<XbusNodeConfPayload::ft_float_t, double>());
+        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_float_t, double>());
         break;
     case DictNode::Byte:
-        v = QVariant::fromValue(stream->read<XbusNodeConfPayload::ft_byte_t, int>());
+        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_byte_t, int>());
         break;
     case DictNode::String: {
-        XbusNodeConfPayload::ft_string_t a;
+        xbus::node::conf::ft_string_t a;
         stream->read(a);
         v = QVariant::fromValue(QString(QByteArray(a.data(), a.size())));
     } break;
     case DictNode::StringL: {
-        XbusNodeConfPayload::ft_lstr_t a;
+        xbus::node::conf::ft_lstr_t a;
         stream->read(a);
         v = QVariant::fromValue(QString(QByteArray(a.data(), a.size())));
     } break;
     case DictNode::MandalaID:
-        v = QVariant::fromValue(stream->read<XbusNodeConfPayload::ft_varmsk_t, int>());
+        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_varmsk_t, int>());
         break;
     case DictNode::Option:
-        v = QVariant::fromValue(stream->read<XbusNodeConfPayload::ft_option_t, int>());
+        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_option_t, int>());
         break;
     //complex types
     case DictNode::Script: {
-        XbusNodeConfPayload::ft_script_t a;
+        xbus::node::conf::ft_script_t a;
         a.read(stream);
         if (a.size == 0)
             v = QVariant::fromValue(QString());
@@ -652,33 +666,33 @@ QByteArray ProtocolServiceNode::packValue(DictNode::Field f, const QVariant &v) 
         qDebug() << "unknown type" << DictNode::dataTypeToString(f.type);
     } break;
     case DictNode::UInt:
-        stream.write<XbusNodeConfPayload::ft_uint_t, uint>(v.toUInt());
+        stream.write<xbus::node::conf::ft_uint_t, uint>(v.toUInt());
         break;
     case DictNode::Float:
-        stream.write<XbusNodeConfPayload::ft_float_t, float>(v.toFloat());
+        stream.write<xbus::node::conf::ft_float_t, float>(v.toFloat());
         break;
     case DictNode::Byte:
-        stream.write<XbusNodeConfPayload::ft_byte_t, uint>(v.toUInt());
+        stream.write<xbus::node::conf::ft_byte_t, uint>(v.toUInt());
         break;
     case DictNode::String: {
-        XbusNodeConfPayload::ft_string_t a;
+        xbus::node::conf::ft_string_t a;
         QByteArray src(v.toString().toUtf8());
         std::copy(src.begin(), src.end(), a.begin());
         a[a.size() - 1] = 0;
         stream << a;
     } break;
     case DictNode::StringL: {
-        XbusNodeConfPayload::ft_lstr_t a;
+        xbus::node::conf::ft_lstr_t a;
         QByteArray src(v.toString().toUtf8());
         std::copy(src.begin(), src.end(), a.begin());
         a[a.size() - 1] = 0;
         stream << a;
     } break;
     case DictNode::MandalaID:
-        stream.write<XbusNodeConfPayload::ft_varmsk_t, uint>(v.toUInt());
+        stream.write<xbus::node::conf::ft_varmsk_t, uint>(v.toUInt());
         break;
     case DictNode::Option:
-        stream.write<XbusNodeConfPayload::ft_option_t, uint>(v.toUInt());
+        stream.write<xbus::node::conf::ft_option_t, uint>(v.toUInt());
         break;
     }
     data.resize(stream.position());
@@ -687,7 +701,7 @@ QByteArray ProtocolServiceNode::packValue(DictNode::Field f, const QVariant &v) 
 //=============================================================================
 void ProtocolServiceNode::requestImageField(DictNode::Field f)
 {
-    ProtocolServiceFile *p = createFile(XbusNode::apc_script_file);
+    ProtocolServiceFile *p = createFile(xbus::node::apc_script_file);
     if (!p)
         return;
     connect(p, &ProtocolServiceFile::fileReceived, this, [this, f, p](const QByteArray &data) {
@@ -700,12 +714,12 @@ void ProtocolServiceNode::requestImageField(DictNode::Field f)
 void ProtocolServiceNode::imageFieldData(quint16 id, QByteArray data)
 {
     QVariantList pkg;
-    while (data.size() > static_cast<int>(sizeof(XbusNodeConfPayload::ft_script_t))) {
-        XbusNodeConfPayload::ft_script_t hdr;
-        memcpy(&hdr, data.data(), sizeof(XbusNodeConfPayload::ft_script_t));
-        if (data.size() != (sizeof(XbusNodeConfPayload::ft_script_t) + hdr.size)) {
+    while (data.size() > static_cast<int>(sizeof(xbus::node::conf::ft_script_t))) {
+        xbus::node::conf::ft_script_t hdr;
+        memcpy(&hdr, data.data(), sizeof(xbus::node::conf::ft_script_t));
+        if (data.size() != (sizeof(xbus::node::conf::ft_script_t) + hdr.size)) {
             qDebug() << "wrong size" << data.size()
-                     << (sizeof(XbusNodeConfPayload::ft_script_t) + hdr.size);
+                     << (sizeof(xbus::node::conf::ft_script_t) + hdr.size);
             break;
         }
         if (hdr.code_size >= hdr.size) {
@@ -714,19 +728,19 @@ void ProtocolServiceNode::imageFieldData(quint16 id, QByteArray data)
         }
         if (hdr.crc
             != CRC_16_IBM(reinterpret_cast<const uint8_t *>(data.data())
-                              + sizeof(XbusNodeConfPayload::ft_script_t),
+                              + sizeof(xbus::node::conf::ft_script_t),
                           hdr.size,
                           0xFFFF)) {
             qDebug() << "wrong CRC" << hdr.crc;
             break;
         }
         QByteArray bsource = data.mid(
-            static_cast<int>(sizeof(XbusNodeConfPayload::ft_script_t) + hdr.code_size));
+            static_cast<int>(sizeof(xbus::node::conf::ft_script_t) + hdr.code_size));
         QString src = QString(qUncompress(bsource));
         if (src.isEmpty())
             break;
         pkg.append(src);
-        QByteArray code = data.mid(static_cast<int>(sizeof(XbusNodeConfPayload::ft_script_t)),
+        QByteArray code = data.mid(static_cast<int>(sizeof(xbus::node::conf::ft_script_t)),
                                    static_cast<int>(hdr.code_size));
         pkg.append(code);
         //qDebug()<<src.size()<<code.size();
@@ -743,8 +757,8 @@ void ProtocolServiceNode::uploadImageField(DictNode::Field f, QVariant v)
     QString src = pkg.value(0).toString();
     QByteArray code = pkg.value(1).toByteArray();
     QByteArray basrc = src.isEmpty() ? QByteArray() : qCompress(src.toUtf8(), 9);
-    XbusNodeConfPayload::ft_script_t hdr;
-    memset(&hdr, 0, sizeof(XbusNodeConfPayload::ft_script_t));
+    xbus::node::conf::ft_script_t hdr;
+    memset(&hdr, 0, sizeof(xbus::node::conf::ft_script_t));
     hdr.size = static_cast<uint>(code.size() + basrc.size());
     hdr.code_size = static_cast<uint>(code.size());
     code.append(basrc);
@@ -756,7 +770,7 @@ void ProtocolServiceNode::uploadImageField(DictNode::Field f, QVariant v)
     data.append(reinterpret_cast<const char *>(&hdr), sizeof(hdr));
     data.append(code);
 
-    ProtocolServiceFile *p = createFile(XbusNode::apc_script_file);
+    ProtocolServiceFile *p = createFile(xbus::node::apc_script_file);
     if (!p)
         return;
     connect(p, &ProtocolServiceFile::fileUploaded, this, [=]() {
@@ -784,12 +798,12 @@ void ProtocolServiceNode::uploadValue(quint16 id, QVariant v)
         return;
     }
     service->setActive(true);
-    request(XbusNode::apc_conf_write, fieldRequest(id, data), 1500, false);
+    request(xbus::node::apc_conf_write, fieldRequest(id, data), 1500, false);
 }
 void ProtocolServiceNode::saveValues()
 {
     service->setActive(true);
-    request(XbusNode::apc_conf_write, fieldRequest(0xFF), 1500, false);
+    request(xbus::node::apc_conf_write, fieldRequest(0xFF), 1500, false);
 }
 //=============================================================================
 //=============================================================================
@@ -798,7 +812,7 @@ void ProtocolServiceNode::requestNstat()
     if (isSubNode())
         return;
     service->setActive(true);
-    request(XbusNode::apc_nstat, QByteArray(), 1000, false);
+    request(xbus::node::apc_nstat, QByteArray(), 1000, false);
 }
 //=============================================================================
 void ProtocolServiceNode::requestUser(quint16 id, QByteArray data, int timeout_ms)

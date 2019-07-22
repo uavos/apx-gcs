@@ -23,7 +23,7 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicle.h"
 
-#include <Xbus/XbusPacket.h>
+#include <Xbus/Xbus.h>
 
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================
@@ -60,10 +60,9 @@ void ProtocolTelemetry::syncValues()
 //=============================================================================
 QByteArray ProtocolTelemetry::getPacket(quint16 pid, QByteArray payload)
 {
-    QByteArray packet(XbusPacket(nullptr).payloadOffset(), 0);
-    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
-    XbusPacket p(pdata);
-    p.setPid(static_cast<XbusPacket::pid_t>(pid));
+    QByteArray packet(sizeof(xbus::pid_t), 0);
+    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(packet.data()));
+    stream.write<xbus::pid_t>(pid);
     packet.append(payload);
     return packet;
 }

@@ -54,6 +54,8 @@ public:
 
 private:
     QMap<quint16, ProtocolVehicle *> squawkMap;
+    QByteArray txbuf;
+
     ProtocolVehicle *addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident);
     void identRequest(quint16 squawk);
     void identAssign(quint16 squawk, const ProtocolVehicles::IdentData &ident);

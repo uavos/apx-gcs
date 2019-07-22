@@ -107,7 +107,7 @@ ProtocolServiceRequest *ProtocolService::request(
         pool.removeAll(request);
         pool.insert(0, request);
     }
-    if (cmd == XbusNode::apc_loader)
+    if (cmd == xbus::node::apc_loader)
         doNextRequestImmediately();
     else if (activeCount == 0 || (!timer.isActive()))
         emit next();
@@ -170,7 +170,7 @@ void ProtocolService::doNextRequestImmediately()
         ProtocolServiceRequest *r = pool.at(i);
         if (r->active)
             continue;
-        if (r->cmd == XbusNode::apc_loader) {
+        if (r->cmd == xbus::node::apc_loader) {
             r->trigger();
         } else if (upgradingNodes.isEmpty() && (active() || vehicle->squawk)) {
             activeCount++;
@@ -229,7 +229,7 @@ void ProtocolService::removeNode(QString sn)
 void ProtocolService::serviceData(QString sn, quint16 cmd, QByteArray data)
 {
     //qDebug()<<"service"<<sn<<cmd<<data.size();
-    if (cmd == XbusNode::apc_loader) {
+    if (cmd == xbus::node::apc_loader) {
         if (data.isEmpty())
             return;
         emit loaderServiceData(sn, static_cast<quint8>(data.at(0)), data.mid(1));
@@ -246,7 +246,7 @@ void ProtocolService::requestNodes()
 {
     if (checkUpgrading())
         return;
-    request(QByteArray(), XbusNode::apc_search, QByteArray(), 0, true);
+    request(QByteArray(), xbus::node::apc_search, QByteArray(), 0, true);
 }
 //=============================================================================
 void ProtocolService::rebootAll()
@@ -254,7 +254,7 @@ void ProtocolService::rebootAll()
     if (checkUpgrading())
         return;
     setActive(true);
-    request(QByteArray(), XbusNode::apc_reboot, QByteArray(), 0, true);
+    request(QByteArray(), xbus::node::apc_reboot, QByteArray(), 0, true);
 }
 //=============================================================================
 //=============================================================================

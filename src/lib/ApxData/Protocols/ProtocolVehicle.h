@@ -43,6 +43,8 @@ public:
     ProtocolService *service;
 
 private:
+    QByteArray txbuf;
+
     void sendRequest(quint8 pid, QByteArray payload);
 
 public slots:

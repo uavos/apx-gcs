@@ -24,7 +24,7 @@
 #include "ProtocolServiceNode.h"
 #include "ProtocolServiceRequest.h"
 
-#include <Xbus/XbusNodeFilePayload.h>
+#include <Xbus/XbusNodeFile.h>
 //=============================================================================
 ProtocolServiceFile::ProtocolServiceFile(ProtocolServiceNode *node, quint16 cmdBase)
     : ProtocolBase(node)
@@ -57,8 +57,8 @@ void ProtocolServiceFile::upload(QByteArray data)
     node->setProgress(0);
     wdata = data;
     dataSize = static_cast<uint>(data.size());
-    XbusNodeFilePayload::file_t f;
-    memset(&f, 0, sizeof(XbusNodeFilePayload::file_t));
+    xbus::node::file::file_t f;
+    memset(&f, 0, sizeof(xbus::node::file::file_t));
     f.start_address = 0;
     f.size = dataSize;
     quint8 xor_crc = 0;
@@ -79,7 +79,7 @@ void ProtocolServiceFile::upload(QByteArray data)
 void ProtocolServiceFile::fileReadReply(QByteArray data)
 {
     //qDebug()<<node->info.name<<data.toHex().toUpper();
-    XbusNodeFilePayload::file_t f;
+    xbus::node::file::file_t f;
     XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
                             static_cast<uint16_t>(data.size()));
     f.read(&stream);
@@ -112,9 +112,9 @@ bool ProtocolServiceFile::request_download(void)
 {
     if (dataAddr >= dataSize)
         return false;
-    quint16 cnt = XbusNodeFilePayload::size_file_block;
+    quint16 cnt = xbus::node::file::size_block;
     uint rcnt = dataSize - dataAddr;
-    XbusNodeFilePayload::file_data_hdr_t hdr;
+    xbus::node::file::file_data_hdr_t hdr;
     hdr.start_address = dataAddr;
     hdr.data_size = cnt < rcnt ? cnt : static_cast<quint16>(rcnt);
 
@@ -132,9 +132,9 @@ bool ProtocolServiceFile::request_upload(void)
 {
     if (dataAddr >= dataSize)
         return false;
-    quint16 cnt = XbusNodeFilePayload::size_file_block;
+    quint16 cnt = xbus::node::file::size_block;
     uint rcnt = dataSize - dataAddr;
-    XbusNodeFilePayload::file_data_hdr_t hdr;
+    xbus::node::file::file_data_hdr_t hdr;
     hdr.start_address = dataAddr;
     hdr.data_size = cnt < rcnt ? cnt : static_cast<quint16>(rcnt);
     QByteArray blockData(wdata.mid(static_cast<int>(dataAddr), hdr.data_size));
@@ -153,11 +153,11 @@ bool ProtocolServiceFile::request_upload(void)
 void ProtocolServiceFile::readReply(QByteArray data)
 {
     //qDebug()<<node->info.name<<data.size();
-    if (data.size() <= static_cast<int>(XbusNodeFilePayload::file_data_hdr_t::psize())) {
+    if (data.size() <= static_cast<int>(xbus::node::file::file_data_hdr_t::psize())) {
         qDebug() << "Wrong reply size" << data.size();
         return;
     }
-    XbusNodeFilePayload::file_data_hdr_t hdr;
+    xbus::node::file::file_data_hdr_t hdr;
     XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
                             static_cast<uint16_t>(data.size()));
     hdr.read(&stream);
@@ -166,12 +166,12 @@ void ProtocolServiceFile::readReply(QByteArray data)
         qDebug() << "Wrong addr" << hdr.start_address << dataAddr;
         return;
     }
-    uint sz = static_cast<uint>(data.size()) - XbusNodeFilePayload::file_data_hdr_t::psize();
+    uint sz = static_cast<uint>(data.size()) - xbus::node::file::file_data_hdr_t::psize();
     if (sz != hdr.data_size) {
         qDebug() << "Wrong data size" << hdr.data_size << sz;
         return;
     }
-    rdata.append(data.mid(XbusNodeFilePayload::file_data_hdr_t::psize()));
+    rdata.append(data.mid(xbus::node::file::file_data_hdr_t::psize()));
     dataAddr += hdr.data_size;
     if (request_download())
         return;
@@ -191,7 +191,7 @@ void ProtocolServiceFile::readReply(QByteArray data)
 void ProtocolServiceFile::writeReply(QByteArray data)
 {
     //qDebug()<<node->info.name<<data.size();
-    XbusNodeFilePayload::file_data_hdr_t hdr;
+    xbus::node::file::file_data_hdr_t hdr;
     XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
                             static_cast<uint16_t>(data.size()));
     hdr.read(&stream);
@@ -212,7 +212,7 @@ void ProtocolServiceFile::serviceData(quint16 cmd, QByteArray data)
 {
     if (cmd == cmd_file) {
         if (reqFileRead) {
-            if (data.size() != XbusNodeFilePayload::file_t::psize())
+            if (data.size() != xbus::node::file::file_t::psize())
                 return;
             ProtocolServiceRequest *r = reqFileRead;
             reqFileRead = nullptr;
@@ -228,7 +228,7 @@ void ProtocolServiceFile::serviceData(quint16 cmd, QByteArray data)
         }
     } else if (cmd == cmd_read) {
         if (reqRead) {
-            if (data.size() <= static_cast<int>(XbusNodeFilePayload::file_data_hdr_t::psize()))
+            if (data.size() <= static_cast<int>(xbus::node::file::file_data_hdr_t::psize()))
                 return;
             if (reqRead->data != data.left(reqRead->data.size()))
                 return;
@@ -239,7 +239,7 @@ void ProtocolServiceFile::serviceData(quint16 cmd, QByteArray data)
         }
     } else if (cmd == cmd_write) {
         if (reqWrite) {
-            if (data.size() != XbusNodeFilePayload::file_data_hdr_t::psize())
+            if (data.size() != xbus::node::file::file_data_hdr_t::psize())
                 return;
             if (data != reqWrite->data.left(data.size()))
                 return;

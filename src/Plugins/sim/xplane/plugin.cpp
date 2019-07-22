@@ -10,8 +10,8 @@
 
 #include <Mandala/Mandala.h>
 
-#include <Xbus/XbusPacket.h>
-#include <Xbus/XbusNodeConfPayload.h>
+#include <Xbus/Xbus.h>
+#include <Xbus/XbusNodeConf.h>
 
 #include <apx_tcp_ports.h>
 #include <TcpLink/tcp_server.h>
@@ -48,7 +48,7 @@ static struct
 } ref;
 //==============================================================================
 #define PWM_CNT 10
-static std::array<XbusNodeConfPayload::ft_lstr_t, PWM_CNT> xpl; //var names per PWM channel
+static std::array<xbus::node::conf::ft_lstr_t, PWM_CNT> xpl; //var names per PWM channel
 static bool xpl_is_array[PWM_CNT];
 static uint xpl_array_idx[PWM_CNT];
 static XPLMDataRef xpl_ref[PWM_CNT];
@@ -57,14 +57,13 @@ static std::array<float, PWM_CNT> pwm_ch; //received pwm_ch values
 //==============================================================================
 void sendvar(uint16_t idx)
 {
-    static uint8_t buf[XbusPacket::size_packet];
-    XbusPacket p0(buf);
-    p0.setPid(idx_sim);
-    XbusPacket p(p0.payload());
-    p.setPid(static_cast<XbusPacket::pid_t>(idx));
+    static uint8_t buf[xbus::size_packet_max];
+    XbusStreamWriter stream(buf);
+    stream.write<xbus::pid_t>(idx_sim);
+    stream.write<xbus::pid_t>(idx);
 
-    size_t cnt = var.pack(p.payload(), p.pid());
-    cnt += p0.payloadOffset() + p.payloadOffset();
+    size_t cnt = var.pack(buf + stream.position(), idx);
+    cnt += stream.position();
     server.write(buf, cnt);
 }
 //==============================================================================
@@ -232,17 +231,19 @@ float flightLoopCallback(float inElapsedSinceLastCall,
     //send controls to sim
     uint rcnt = 0;
     while (1) {
-        static uint8_t buf[XbusPacket::size_packet];
+        static uint8_t buf[xbus::size_packet_max];
         uint cnt = server.read(buf, sizeof(buf));
         if (!cnt)
             break;
-        XbusPacket p(buf);
-        if (p.pid() != idx_sim)
+        XbusStreamReader stream(buf);
+        if (cnt <= sizeof(xbus::pid_t))
             continue;
-        uint8_t op = p.payload()[0];
-        const uint8_t *pdata = p.payload() + 1;
-        uint16_t psize = cnt - p.payloadOffset() - 1;
-        XbusStreamReader stream(pdata, psize);
+        xbus::pid_t pid;
+        stream >> pid;
+        if (pid != idx_sim)
+            continue;
+        uint8_t op;
+        stream >> op;
 
         switch (op) {
         case 0: //controls assignments
@@ -252,7 +253,7 @@ float flightLoopCallback(float inElapsedSinceLastCall,
             memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
             stream.read(xpl);
             for (uint i = 0; i < PWM_CNT; ++i) {
-                XbusNodeConfPayload::ft_lstr_t &s = xpl[i];
+                xbus::node::conf::ft_lstr_t &s = xpl[i];
                 if (s[0] == 0)
                     continue;
                 auto it1 = std::find(s.begin(), s.end(), '[');

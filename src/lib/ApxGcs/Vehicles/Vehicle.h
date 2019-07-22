@@ -29,7 +29,7 @@
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
 
-#include <Xbus/XbusVehiclePayload.h>
+#include <Xbus/XbusVehicle.h>
 
 #include "VehicleMandala.h"
 
