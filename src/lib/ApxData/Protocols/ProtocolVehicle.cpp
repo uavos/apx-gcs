@@ -81,14 +81,12 @@ bool ProtocolVehicle::unpack(QByteArray packet)
         xbus::node::cmd_t cmd;
         if (stream.tail() < sizeof(xbus::node::cmd_t))
             cmd = xbus::node::apc_search;
-        else if (stream.tail() == sizeof(xbus::node::cmd_t))
-            break; // request from other gcs
         else
             cmd = stream.read<xbus::node::cmd_t>();
 
         QString sn(
             QByteArray(reinterpret_cast<const char *>(guid.data()), guid.size()).toHex().toUpper());
-        //qDebug()<<"idx_service"<<sn;
+        //qDebug() << "idx_service" << sn;
         if (!(sn.isEmpty() || sn.count('0') == sn.size())) {
             emit serviceData(sn, cmd, packet.mid(stream.position()));
         }

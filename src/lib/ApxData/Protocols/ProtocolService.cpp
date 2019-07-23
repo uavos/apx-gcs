@@ -246,7 +246,7 @@ void ProtocolService::requestNodes()
 {
     if (checkUpgrading())
         return;
-    request(QByteArray(), xbus::node::apc_search, QByteArray(), 0, true);
+    request(QString(), xbus::node::apc_search, QByteArray(), 0, true);
 }
 //=============================================================================
 void ProtocolService::rebootAll()
@@ -254,7 +254,7 @@ void ProtocolService::rebootAll()
     if (checkUpgrading())
         return;
     setActive(true);
-    request(QByteArray(), xbus::node::apc_reboot, QByteArray(), 0, true);
+    request(QString(), xbus::node::apc_reboot, QByteArray(), 0, true);
 }
 //=============================================================================
 //=============================================================================
