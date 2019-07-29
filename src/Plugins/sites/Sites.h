@@ -39,11 +39,11 @@ public:
     Q_INVOKABLE void createEditor(QVariantMap item);
     Q_INVOKABLE void destroyEditor(QVariantMap item);
 
-    std::unique_ptr<LookupSites> f_lookup;
+    LookupSites *f_lookup;
 
 private:
-    std::unique_ptr<SiteEdit> f_add;
-    std::unique_ptr<SiteEdit> f_edit;
+    SiteEdit *f_add;
+    SiteEdit *f_edit;
 
 private slots:
     void appLoaded();

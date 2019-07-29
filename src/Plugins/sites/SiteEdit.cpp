@@ -32,39 +32,43 @@ SiteEdit::SiteEdit(Fact *parent,
     , modelData(modelData)
     , blockUpdateItemData(false)
 {
-    f_title = std::make_unique<Fact>(this, "sname", tr("Site name"), tr("Label for geographic area"), Text);
-    f_latitude = std::make_unique<Fact>(this, "latitude", tr("Latitude"), tr("Global postition latitude"), Float);
+    f_title = new Fact(this, "sname", tr("Site name"), tr("Label for geographic area"), Text);
+    f_latitude = new Fact(this, "latitude", tr("Latitude"), tr("Global postition latitude"), Float);
     f_latitude->setUnits("lat");
-    f_longitude = std::make_unique<Fact>(this, "longitude", tr("Longitude"), tr("Global postition longitude"), Float);
+    f_longitude = new Fact(this,
+                           "longitude",
+                           tr("Longitude"),
+                           tr("Global postition longitude"),
+                           Float);
     f_longitude->setUnits("lon");
 
     if (!modelData.isEmpty()) {
-        f_missions = std::make_unique<LookupMissions>(nullptr, nullptr);
-        a_missions = std::make_unique<FactAction>(this, f_missions.get());
-        connect(a_missions.get(), &FactAction::triggered, this, &SiteEdit::lookupMissions);
-        a_remove = std::make_unique<FactAction>(this,
-                                                "remove",
-                                                tr("Remove"),
-                                                "",
-                                                "",
-                                                FactAction::ActionRemove | FactAction::ActionCloseOnTrigger);
+        f_missions = new LookupMissions(nullptr, nullptr);
+        a_missions = new FactAction(this, f_missions);
+        connect(a_missions, &FactAction::triggered, this, &SiteEdit::lookupMissions);
+        a_remove = new FactAction(this,
+                                  "remove",
+                                  tr("Remove"),
+                                  "",
+                                  "",
+                                  FactAction::ActionRemove | FactAction::ActionCloseOnTrigger);
         a_remove->setHideDisabled(false);
-        connect(a_remove.get(), &FactAction::triggered, this, [this]() {
+        connect(a_remove, &FactAction::triggered, this, [this]() {
             emit removeTriggered(this->modelData);
         });
     } else {
-        a_add = std::make_unique<FactAction>(this,
-                                             "add",
-                                             tr("Add"),
-                                             "",
-                                             "",
-                                             FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
+        a_add = new FactAction(this,
+                               "add",
+                               tr("Add"),
+                               "",
+                               "",
+                               FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
         a_add->setHideDisabled(false);
         a_add->setEnabled(false);
-        connect(a_add.get(), &FactAction::triggered, this, [this]() {
+        connect(a_add, &FactAction::triggered, this, [this]() {
             emit addTriggered(this->modelData);
         });
-        connect(f_title.get(), &Fact::textChanged, this, [=]() {
+        connect(f_title, &Fact::textChanged, this, [=]() {
             a_add->setEnabled(!f_title->text().isEmpty());
         });
         connect(this, &Fact::triggered, this, &SiteEdit::reset);
@@ -73,9 +77,9 @@ SiteEdit::SiteEdit(Fact *parent,
 
     loadFromModelData();
 
-    connect(f_title.get(), &Fact::valueChanged, this, &SiteEdit::saveToModelData);
-    connect(f_latitude.get(), &Fact::valueChanged, this, &SiteEdit::saveToModelData);
-    connect(f_longitude.get(), &Fact::valueChanged, this, &SiteEdit::saveToModelData);
+    connect(f_title, &Fact::valueChanged, this, &SiteEdit::saveToModelData);
+    connect(f_latitude, &Fact::valueChanged, this, &SiteEdit::saveToModelData);
+    connect(f_longitude, &Fact::valueChanged, this, &SiteEdit::saveToModelData);
 }
 //=============================================================================
 void SiteEdit::reset()

@@ -80,8 +80,10 @@ ListView {
         }
     }
     onHeightChanged: {
-        footerPositioning=ListView.PullBackFooter
-        footerPositioning=ListView.OverlayFooter
+        if(control){
+            control.footerPositioning=ListView.PullBackFooter
+            control.footerPositioning=ListView.OverlayFooter
+        }
     }
 
     //scroll

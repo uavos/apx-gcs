@@ -60,7 +60,10 @@ Item {
             id: mapLoader
             anchors.fill: parent
             asynchronous: true
-            property bool locationPluginAvailable: apx.settings.application.plugins.location && apx.settings.application.plugins.location.value
+            property bool locationPluginAvailable:
+                apx.settings.application.plugins.location
+                && apx.settings.application.plugins.location.value
+                && (apx.tools.location?true:false)
             property string provider: {
                 var s="" //default
                 if(!mapLoader.locationPluginAvailable)return s
@@ -93,10 +96,12 @@ Item {
                         var m=mapBase.supportedMapTypes[i]
                         vtypes.push(m.description)
                     }
-                    apx.tools.location.maptype.enumStrings=vtypes
-                    apx.tools.location.maptype.value=activeMapType.description
+                    if(apx.tools.location){
+                        apx.tools.location.maptype.enumStrings=vtypes
+                        apx.tools.location.maptype.value=activeMapType.description
+                    }
                 }
-                property string mapTypeName: apx.tools.location.maptype.text
+                property string mapTypeName: apx.tools.location?apx.tools.location.maptype.text:""
                 activeMapType: {
                     var v = mapTypeName
                     for(var i in mapBase.supportedMapTypes){
@@ -114,7 +119,9 @@ Item {
                         "osm"
                     ]
                     Component.onCompleted: {
-                        apx.tools.location.provider.enumStrings=availableServiceProviders
+                        if(apx.tools.location){
+                            apx.tools.location.provider.enumStrings=availableServiceProviders
+                        }
                     }
                 }
 

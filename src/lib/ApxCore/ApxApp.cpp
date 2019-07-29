@@ -150,6 +150,7 @@ void ApxApp::loadApp()
 void ApxApp::quitRequested()
 {
     apxMsg() << tr("Quit").append("...");
+    f_app->removeAll();
     //jsexec("ui.map.destroy()");
 }
 //=============================================================================

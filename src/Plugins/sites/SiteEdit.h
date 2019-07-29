@@ -40,18 +40,18 @@ public:
                       const QString &descr,
                       QVariantMap modelData);
 
-    std::unique_ptr<Fact> f_title;
-    std::unique_ptr<Fact> f_descr;
-    std::unique_ptr<Fact> f_radius;
+    Fact *f_title;
+    Fact *f_descr;
+    Fact *f_radius;
 
-    std::unique_ptr<Fact> f_latitude;
-    std::unique_ptr<Fact> f_longitude;
+    Fact *f_latitude;
+    Fact *f_longitude;
 
-    std::unique_ptr<FactAction> a_add;
-    std::unique_ptr<FactAction> a_remove;
-    std::unique_ptr<FactAction> a_missions;
+    FactAction *a_add;
+    FactAction *a_remove;
+    FactAction *a_missions;
 
-    std::unique_ptr<LookupMissions> f_missions;
+    LookupMissions *f_missions;
 
     QVariantMap modelData;
     void setModelData(QVariantMap v);

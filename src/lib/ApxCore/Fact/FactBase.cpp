@@ -123,6 +123,7 @@ void FactBase::remove()
     setParentFact(nullptr);
     emit removed();
     deleteLater();
+    //delete this;
 }
 void FactBase::move(int n, bool safeMode)
 {
@@ -321,7 +322,7 @@ void FactBase::setParentFact(FactBase *v)
         prevParent->removeChild(this);
     }
 
-    setParent(v);
+    QObject::setParent(v);
     m_parentFact = v;
     emit parentFactChanged();
     if (v)

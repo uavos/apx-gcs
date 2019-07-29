@@ -38,7 +38,7 @@ DatabaseWorker::~DatabaseWorker()
 {
     requestInterruption();
     waitCondition.notify_all();
-    qDebug() << "DatabaseWorker finishing..." << queueSize();
+    qDebug() << "Finishing" << objectName() << queueSize();
     wait();
 }
 void DatabaseWorker::run()

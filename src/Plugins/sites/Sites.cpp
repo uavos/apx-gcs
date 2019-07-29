@@ -31,12 +31,12 @@ Sites::Sites(Fact *parent)
     setIcon("city");
     connect(ApxApp::instance(), &ApxApp::loadingFinished, this, &Sites::appLoaded);
 
-    f_lookup = std::make_unique<LookupSites>(this);
+    f_lookup = new LookupSites(this);
 
     //facts
-    f_add = std::make_unique<SiteEdit>(this, "add", tr("Add new site"), tr("Create new named area"), QVariantMap());
+    f_add = new SiteEdit(this, "add", tr("Add new site"), tr("Create new named area"), QVariantMap());
     f_add->setIcon("plus-circle");
-    connect(f_add.get(), &SiteEdit::addTriggered, this, &Sites::dbAddSite);
+    connect(f_add, &SiteEdit::addTriggered, this, &Sites::dbAddSite);
 
     //ApxApp::jsync(this);
 
@@ -53,23 +53,23 @@ void Sites::appLoaded()
     //create tool for map
     SiteEdit *f = new SiteEdit(fMapAdd, "site", tr("Site"), "", QVariantMap());
     f->setIcon("city");
-    connect(f, &SiteEdit::addTriggered, f_add.get(), &SiteEdit::addTriggered);
+    connect(f, &SiteEdit::addTriggered, f_add, &SiteEdit::addTriggered);
 }
 //=============================================================================
 //=============================================================================
 void Sites::createEditor(QVariantMap item)
 {
     //qDebug()<<item.value("title").toString();
-//    if (f_edit)
-//        f_edit->remove();
-    f_edit = std::make_unique<SiteEdit>(this, "edit", tr("Edit site"), tr("Edit area parameters"), item);
+    //    if (f_edit)
+    //        f_edit->remove();
+    f_edit = new SiteEdit(this, "edit", tr("Edit site"), tr("Edit area parameters"), item);
     f_edit->setIcon("settings");
-    connect(f_edit.get(), &SiteEdit::removed, this, [=]() { f_edit = nullptr; });
-    connect(f_edit.get(), &SiteEdit::removeTriggered, this, &Sites::dbRemoveSite);
-    connect(f_edit.get(), &SiteEdit::siteEdited, this, &Sites::dbUpdateSite);
+    connect(f_edit, &SiteEdit::removed, this, [=]() { f_edit = nullptr; });
+    connect(f_edit, &SiteEdit::removeTriggered, this, &Sites::dbRemoveSite);
+    connect(f_edit, &SiteEdit::siteEdited, this, &Sites::dbUpdateSite);
     connect(f_lookup->dbModel(),
             &DatabaseLookupModel::itemEdited,
-            f_edit.get(),
+            f_edit,
             &SiteEdit::updateFromEditedModelData);
     connect(f_lookup->dbModel(), &DatabaseLookupModel::synced, this, &Sites::syncEditorFromModel);
 
@@ -106,7 +106,7 @@ void Sites::dbAddSite(QVariantMap item)
     DBReqMissionsSaveSite *req = new DBReqMissionsSaveSite(item.value("title").toString(),
                                                            item.value("lat").toDouble(),
                                                            item.value("lon").toDouble());
-    connect(req, &DatabaseRequest::finished, f_lookup.get(), &Fact::trigger, Qt::QueuedConnection);
+    connect(req, &DatabaseRequest::finished, f_lookup, &Fact::trigger, Qt::QueuedConnection);
     connect(
         req,
         &DBReqMissionsSaveSite::siteAdded,
@@ -124,7 +124,7 @@ void Sites::dbRemoveSite(QVariantMap item)
     if (!key)
         return;
     DBReqMissionsRemoveSite *req = new DBReqMissionsRemoveSite(key);
-    connect(req, &DatabaseRequest::finished, f_lookup.get(), &Fact::trigger, Qt::QueuedConnection);
+    connect(req, &DatabaseRequest::finished, f_lookup, &Fact::trigger, Qt::QueuedConnection);
     connect(
         req,
         &DBReqMissionsRemoveSite::siteRemoved,
@@ -144,7 +144,7 @@ void Sites::dbUpdateSite(QVariantMap item)
                                                            item.value("lat").toDouble(),
                                                            item.value("lon").toDouble(),
                                                            key);
-    connect(req, &DatabaseRequest::finished, f_lookup.get(), &Fact::trigger, Qt::QueuedConnection);
+    connect(req, &DatabaseRequest::finished, f_lookup, &Fact::trigger, Qt::QueuedConnection);
     connect(
         req,
         &DBReqMissionsSaveSite::siteModified,

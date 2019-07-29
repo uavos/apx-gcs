@@ -27,6 +27,7 @@
 #include <ApxLog.h>
 #include <QImage>
 #include <App/AppSettings.h>
+#include <Database/Database.h>
 //=============================================================================
 #define Random(low, high) ((int) (low + qrand() % (high - low)))
 //=============================================================================
