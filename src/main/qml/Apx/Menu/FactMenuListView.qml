@@ -95,7 +95,7 @@ ListView {
 
     //restore pos
     onVisibleChanged: {
-        if(visible){
+        if(control && visible){
             forceLayout()
             positionViewAtIndex(currentIndex,ListView.Center)
         }
@@ -106,8 +106,10 @@ ListView {
     onItemsCountChanged: updateHeight()
     onHeaderItemChanged: updateHeight()
     onFooterItemChanged: updateHeight()
+
     function updateHeight()
     {
+        if(!control)return
         var h=0
         var s=[]
         for(var i=0;i<itemsCount;++i){
@@ -131,19 +133,9 @@ ListView {
         if(footerItem)h+=footerItem.height
         if(s[0]==="")s.shift()
         h+=sectionSize*s.length
+        h+=MenuStyle.itemSize
 
-        implicitHeight=h+MenuStyle.itemSize
+        control.implicitHeight=h
         //console.log("h",h,count,footerItem?footerItem.implicitHeight:-1)
     }
-
-    /*onCurrentItemChanged: {
-        if(currentItem){
-            currentItem.focusRequested()
-        }
-    }
-    Component.onCompleted: {
-        if(currentItem){
-            currentItem.focusRequested()
-        }
-    }*/
 }

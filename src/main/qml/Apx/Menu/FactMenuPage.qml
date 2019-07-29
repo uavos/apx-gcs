@@ -24,7 +24,7 @@ ColumnLayout {
     //Component.onDestruction: console.log("page delete: "+fact.title)
     StackView.onRemoved: {
         //console.log("page removed from stack: "+fact.title)
-        destroy()
+        if(menuPage)menuPage.destroy()
     }
     StackView.onActivated: {
         //forceActiveFocus()

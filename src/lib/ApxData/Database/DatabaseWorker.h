@@ -36,7 +36,7 @@ class DatabaseWorker : public QThread
 
 public:
     explicit DatabaseWorker(DatabaseSession *db, QObject *parent = nullptr);
-    ~DatabaseWorker();
+    ~DatabaseWorker() override;
 
     void request(DatabaseRequest *req);
 

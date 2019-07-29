@@ -25,7 +25,7 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
             }
             MenuItem {
                 property var fact: apx.settings.application.updater
-                visible: fact
+                visible: fact?true:false
                 role: MenuItem.ApplicationSpecificRole
                 text: fact?fact.title:""
                 onTriggered: fact.check()

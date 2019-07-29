@@ -34,6 +34,7 @@
 DatalinkServer::DatalinkServer(Datalink *datalink)
     : Fact(datalink, "server", tr("Server"), tr("Remote clients connections"), Group | Bool)
     , datalink(datalink)
+    , announceString(QString("%1@server.gcs.uavos.com").arg(ApxApp::username()).toUtf8())
 {
     setIcon("lan-connect");
     model()->setFlat(true);
@@ -78,7 +79,6 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     udpAnnounce = new QUdpSocket(this);
     announceTimer.setInterval(2000);
     connect(&announceTimer, &QTimer::timeout, this, &DatalinkServer::announce);
-    connect(this, &Fact::activeChanged, this, &DatalinkServer::announce);
 
     //http service
     http = new HttpService(this);
@@ -103,6 +103,7 @@ void DatalinkServer::serverActiveChanged()
         f_alloff->trigger();
         tcpServer->close();
         setActive(false);
+        announceTimer.stop();
         apxMsg() << tr("Datalink server disabled");
         return;
     }
@@ -115,16 +116,8 @@ void DatalinkServer::serverActiveChanged()
 void DatalinkServer::announce(void)
 {
     if (active()) {
-        udpAnnounce->writeDatagram(QByteArray(QString("%1@server.gcs.uavos.com")
-                                                  .arg(ApxApp::username())
-                                                  .toUtf8()),
-                                   QHostAddress::Broadcast,
-                                   UDP_PORT_DISCOVER);
-        if (!announceTimer.isActive())
-            announceTimer.start();
+        udpAnnounce->writeDatagram(announceString, QHostAddress::Broadcast, UDP_PORT_DISCOVER);
         //qDebug()<<"announce";
-    } else {
-        announceTimer.stop();
     }
 }
 //=============================================================================
@@ -149,6 +142,7 @@ void DatalinkServer::tryBindServer()
         apxMsg() << tr("Server binded");
     retryBind = 0;
     emit binded();
+    announceTimer.start();
 }
 //=============================================================================
 void DatalinkServer::newConnection()

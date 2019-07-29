@@ -58,6 +58,5 @@ void Database::add(DatabaseSession *session)
     connect(session, &DatabaseSession::destroyed, this, [=]() {
         sessions.removeAll(static_cast<DatabaseSession *>(sender()));
     });
-    connect(qApp, &QCoreApplication::destroyed, session, [=]() { delete session; });
 }
 //=============================================================================

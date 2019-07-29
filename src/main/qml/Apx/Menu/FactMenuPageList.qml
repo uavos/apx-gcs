@@ -10,7 +10,7 @@ FactMenuListView {
     id: listView
     delegate: Loader{
         asynchronous: true
-        active: modelData.visible
+        active: modelData && modelData.visible
         visible: active
         width: listView.width
         height: active?MenuStyle.itemSize:0

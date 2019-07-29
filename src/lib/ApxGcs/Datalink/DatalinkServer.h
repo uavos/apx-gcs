@@ -52,6 +52,7 @@ private:
 
     QUdpSocket *udpAnnounce;
     QTimer announceTimer;
+    QByteArray announceString;
 
 private slots:
     void updateStatus();

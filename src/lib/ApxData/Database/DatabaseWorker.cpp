@@ -72,6 +72,7 @@ void DatabaseWorker::run()
             query.setForwardOnly(true);
             if (!db->inTransaction)
                 db->transaction(query); //begin if not already
+            //req->moveToThread(this);
             bool rv = req->run(query);
             if (!rv) {
                 apxConsoleW() << "query error:" << query.lastError().text() << query.lastQuery()
@@ -107,7 +108,7 @@ void DatabaseWorker::request(DatabaseRequest *req)
         //qDebug()<<sz;
         waitCondition.wakeAll();
         //wait for long queues
-        while (queueSize() >= 100000) {
+        while (!isInterruptionRequested() && queueSize() >= 100000) {
             usleep(1000);
         }
     }
@@ -125,6 +126,9 @@ int DatabaseWorker::rate()
 //=============================================================================
 bool DatabaseWorker::infoUpdate(bool force)
 {
+    if (isInterruptionRequested())
+        return false;
+
     int dt = infoUpdateTime.elapsed();
     if (force == false && dt < 1000)
         return false;

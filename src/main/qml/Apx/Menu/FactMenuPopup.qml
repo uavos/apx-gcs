@@ -57,8 +57,8 @@ Popup {
         CleanButton {
             id: btnClose
             z: 10
-            anchors.right: parent.right
-            anchors.top: parent.top
+            anchors.right: factMenu.right
+            anchors.top: factMenu.top
             anchors.margins: 5
             iconName: "close"
             color: popupItem.pinned?Material.BlueGrey:undefined
