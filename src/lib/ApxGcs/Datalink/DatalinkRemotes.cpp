@@ -27,7 +27,7 @@
 #include <App/AppSettings.h>
 #include <ApxLog.h>
 
-#include <apx_tcp_ports.h>
+#include <common/ApxTcpPorts.h>
 //=============================================================================
 DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     : Fact(datalink, "hosts", tr("Remote servers"), tr("Discovered remote hosts"), Group)

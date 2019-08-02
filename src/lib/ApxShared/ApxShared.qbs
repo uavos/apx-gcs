@@ -12,15 +12,29 @@ ApxApp.ApxLibrary {
     Depends { name: "cpp" }
     Depends { name: "sdk" }
 
-    Depends {
-        name: "ApxShared"
-        submodules: [
+    ModuleProbe {
+        id: _modules
+        names: [
+            "Xbus",
             "Mandala",
             "Math",
-            "Xbus",
+            "common",
         ]
+        searchPath: FileInfo.joinPaths(project.sourceDirectory, "../lib")
+    }
+    Group {
+        name: "Modules"
+        prefix: _modules.searchPath+"/"
+        files: _modules.files
     }
 
-    cpp.defines: ["MANDALA_VMVARS"]
+
+    cpp.includePaths: [
+        _modules.searchPath,
+    ]
+
+    cpp.defines: [
+        "MANDALA_VMVARS",
+    ]
 
 }

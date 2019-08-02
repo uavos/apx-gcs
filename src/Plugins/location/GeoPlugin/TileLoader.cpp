@@ -36,7 +36,7 @@ TileLoader::TileLoader(Fact *parent)
     : Fact(parent, "location", tr("Tile loader"), tr("Map tiles loader service"), Group)
 {
     _instance = this;
-    //setParent(parent);
+
     setIcon("earth");
     db = new MapsDB(this, QLatin1String("LocationPluginDbSession"));
 

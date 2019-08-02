@@ -27,7 +27,7 @@
 #include <ApxLog.h>
 #include <ApxApp.h>
 
-#include <apx_tcp_ports.h>
+#include <common/ApxTcpPorts.h>
 //=============================================================================
 DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     : DatalinkTcpSocket(parent,
@@ -38,8 +38,6 @@ DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     , retry(0)
 {
     setUrl(url);
-    //hostAddress=host;
-    //hostPort=TCP_PORT_SERVER;
 
     updateStatsTimer.setSingleShot(true);
     connect(&updateStatsTimer, &QTimer::timeout, this, &DatalinkRemote::updateStats);

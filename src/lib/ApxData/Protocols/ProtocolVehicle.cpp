@@ -22,7 +22,7 @@
  */
 #include "ProtocolVehicle.h"
 
-#include <Xbus/Xbus.h>
+#include <Xbus/XbusPacket.h>
 #include <Xbus/XbusNode.h>
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================

@@ -23,7 +23,7 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicle.h"
 
-#include <Xbus/Xbus.h>
+#include <Xbus/XbusPacket.h>
 
 #include <Dictionary/MandalaIndex.h>
 //=============================================================================

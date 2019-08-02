@@ -17,14 +17,21 @@ ApxApp.ApxProduct {
 
     Depends { name: "version_hpp" }
 
-    Depends {
-        name: "ApxShared"
-        submodules: [
-            "Mandala",
+    ModuleProbe {
+        id: _modules
+        names: [
             "Xbus",
+            "Mandala",
             "TcpLink",
         ]
+        searchPath: FileInfo.joinPaths(project.sourceDirectory, "../lib")
     }
+    Group {
+        name: "Modules"
+        prefix: _modules.searchPath+"/"
+        files: _modules.files
+    }
+
 
     Rule {
         inputs: "dynamiclibrary"
@@ -75,6 +82,7 @@ ApxApp.ApxProduct {
     ])
 
     cpp.includePaths: [
+        _modules.searchPath,
         "SDK/CHeaders/XPLM",
     ]
 

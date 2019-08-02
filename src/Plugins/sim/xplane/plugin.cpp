@@ -10,10 +10,10 @@
 
 #include <Mandala/Mandala.h>
 
-#include <Xbus/Xbus.h>
+#include <Xbus/XbusPacket.h>
 #include <Xbus/XbusNodeConf.h>
 
-#include <apx_tcp_ports.h>
+#include <common/ApxTcpPorts.h>
 #include <TcpLink/tcp_server.h>
 //==============================================================================
 //#define UDP_HOST_UAV            "127.0.0.1"      //machine where 'shiva' runs

@@ -24,7 +24,7 @@
 #include "ProtocolVehicle.h"
 #include "ProtocolServiceFirmware.h"
 
-#include <Xbus/Xbus.h>
+#include <Xbus/XbusPacket.h>
 #include <Xbus/XbusVehicle.h>
 
 #include <Dictionary/MandalaIndex.h>

@@ -1,8 +1,0 @@
-// Auto generated header file
-#pragma once
-
-#define VERSION     "${version}"
-#define BRANCH      "${branch}"
-#define GIT_HASH    "${hash}"
-#define GIT_TIME    "${time}"
-#define GIT_YEAR    "${year}"
