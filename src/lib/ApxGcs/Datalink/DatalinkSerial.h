@@ -24,11 +24,11 @@
 #define DatalinkSerial_H
 #include <QtCore>
 #include "DatalinkConnection.h"
-#include <Xbus/escaped.h>
+#include <common/Escaped.h>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 //=============================================================================
-class DatalinkSerial : public DatalinkConnection, public _escaped
+class DatalinkSerial : public DatalinkConnection, public Escaped
 {
     Q_OBJECT
 public:

@@ -35,6 +35,7 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
                          "",
                          Datalink::CLIENTS | Datalink::LOCAL,
                          Datalink::CLIENTS | Datalink::LOCAL)
+    , Escaped()
     , m_devName(devName)
     , m_baud(baud)
     , lock(nullptr)
@@ -55,26 +56,6 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
     openTimer.setSingleShot(true);
     openTimer.setInterval(800);
     connect(&openTimer, &QTimer::timeout, this, &DatalinkSerial::openNext);
-
-    /* dev=new Serial(devName,baud,this,false);
-  connect(dev,&Serial::connected,this,[this](QString pname){
-    setTitle(pname);
-    apxMsg()<<tr("Serial port connected").append(":")<<pname;
-    opened();
-  });
-  connect(dev,&Serial::disconnected,this,[this](){
-    if(!active())return;
-    apxMsgW()<<tr("Serial port disconnected").append(":")<<title();
-    closed();
-  });
-  connect(dev,&Serial::received,this,[this](QByteArray packet){
-    if(packet.isEmpty())return;
-    rx_queue.enqueue(packet);
-    if(!rxTimer.isActive())rxTimer.start();
-  });
-  rxTimer.setSingleShot(true);
-  rxTimer.setInterval(0);
-  connect(&rxTimer,&QTimer::timeout,this,&DatalinkSerial::readDataAvailable);*/
 }
 //=============================================================================
 void DatalinkSerial::setDevName(QString v)

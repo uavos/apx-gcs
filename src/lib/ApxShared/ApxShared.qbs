@@ -33,8 +33,9 @@ ApxApp.ApxLibrary {
         _modules.searchPath,
     ]
 
-    cpp.defines: [
-        "MANDALA_VMVARS",
-    ]
+    cpp.defines: _modules.defines
+    .concat([
+    "MANDALA_VMVARS",
+    ])
 
 }
