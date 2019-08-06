@@ -20,18 +20,15 @@ ApxApp.ApxLibrary {
             "Math",
             "common",
         ]
-        searchPath: FileInfo.joinPaths(project.sourceDirectory, "../lib")
+        searchPaths: FileInfo.joinPaths(project.sourceDirectory, "../lib")
     }
     Group {
         name: "Modules"
-        prefix: _modules.searchPath+"/"
         files: _modules.files
     }
 
 
-    cpp.includePaths: [
-        _modules.searchPath,
-    ]
+    cpp.includePaths: _modules.searchPaths
 
     cpp.defines: _modules.defines
     .concat([

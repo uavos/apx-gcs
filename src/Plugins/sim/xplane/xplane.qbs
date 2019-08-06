@@ -24,11 +24,10 @@ ApxApp.ApxProduct {
             "Mandala",
             "TcpLink",
         ]
-        searchPath: FileInfo.joinPaths(project.sourceDirectory, "../lib")
+        searchPaths: FileInfo.joinPaths(project.sourceDirectory, "../lib")
     }
     Group {
         name: "Modules"
-        prefix: _modules.searchPath+"/"
         files: _modules.files
     }
 
@@ -77,21 +76,24 @@ ApxApp.ApxProduct {
         //cpp.staticlibraries: [ "XPLM", "XPWidgets"]
     }
 
-    cpp.defines: base.concat([
-        "XPLM200",
+    cpp.defines: base
+    .concat([
+    "XPLM200",
     ])
 
-    cpp.includePaths: [
-        _modules.searchPath,
-        "SDK/CHeaders/XPLM",
-    ]
-
-    cpp.cxxFlags: base.concat([
-                          "-Wno-unused-parameter",
-                          "-Wno-unused-variable",
+    cpp.includePaths: _modules.searchPaths
+    .concat([
+    "SDK/CHeaders/XPLM",
     ])
-    cpp.cFlags: base.concat([
-        "-Wno-unused-parameter",
+
+    cpp.cxxFlags: base
+    .concat([
+    "-Wno-unused-parameter",
+    "-Wno-unused-variable",
+    ])
+    cpp.cFlags: base
+    .concat([
+    "-Wno-unused-parameter",
     ])
 
 

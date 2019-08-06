@@ -266,6 +266,6 @@ bool DictMandala::unpackValue(quint16 id, const QByteArray &data)
 }
 bool DictMandala::unpackStream(const QByteArray &data)
 {
-    return m->extract_downstream((quint8 *) data.data(), data.size());
+    return m->unpack_downstream((quint8 *) data.data(), data.size());
 }
 //=============================================================================
