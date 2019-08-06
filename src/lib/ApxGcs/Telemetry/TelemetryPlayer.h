@@ -22,9 +22,9 @@
  */
 #ifndef TelemetryPlayer_H
 #define TelemetryPlayer_H
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <Database/DatabaseRequest.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class Vehicle;
 class Telemetry;
 //=============================================================================

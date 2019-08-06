@@ -21,14 +21,14 @@
  *
  */
 #include "TelemetryXmlImport.h"
-#include <Fact/Fact.h>
+#include "MissionsXml.h"
+#include "NodesXml.h"
 #include <ApxDirs.h>
 #include <ApxLog.h>
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
-#include "MissionsXml.h"
-#include "NodesXml.h"
+#include <Fact/Fact.h>
 //=============================================================================
 TelemetryXmlImport::TelemetryXmlImport()
     : QueueWorker()

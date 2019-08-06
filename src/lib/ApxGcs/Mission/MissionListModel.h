@@ -23,8 +23,8 @@
 #ifndef MissionListModel_H
 #define MissionListModel_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/FactListModel.h>
+#include <QtCore>
 class VehicleMission;
 class MissionGroup;
 //=============================================================================

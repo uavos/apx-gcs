@@ -23,9 +23,9 @@
 #ifndef NodesXml_H
 #define NodesXml_H
 //=============================================================================
-#include <Dictionary/DictNode.h>
-#include <Database/NodesReqVehicle.h>
 #include "ShareXml.h"
+#include <Database/NodesReqVehicle.h>
+#include <Dictionary/DictNode.h>
 //=============================================================================
 class NodesXmlExport : public ShareXmlExport
 {

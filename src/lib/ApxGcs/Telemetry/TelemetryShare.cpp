@@ -21,15 +21,15 @@
  *
  */
 #include "TelemetryShare.h"
-#include "Telemetry.h"
 #include "LookupTelemetry.h"
+#include "Telemetry.h"
 #include "TelemetryReader.h"
 
-#include <Vehicles/Vehicle.h>
-#include <Sharing/TelemetryXmlImport.h>
-#include <Sharing/TelemetryXmlExport.h>
 #include <ApxDirs.h>
 #include <ApxLog.h>
+#include <Sharing/TelemetryXmlExport.h>
+#include <Sharing/TelemetryXmlImport.h>
+#include <Vehicles/Vehicle.h>
 //=============================================================================
 TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent)
     : Share(parent,

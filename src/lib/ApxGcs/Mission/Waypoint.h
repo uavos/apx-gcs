@@ -23,11 +23,11 @@
 #ifndef Waypoint_H
 #define Waypoint_H
 //=============================================================================
-#include <QtCore>
-#include <QGeoPath>
-#include <QGeoCoordinate>
 #include "MissionItem.h"
 #include "WaypointActions.h"
+#include <QGeoCoordinate>
+#include <QGeoPath>
+#include <QtCore>
 //=============================================================================
 class Waypoint : public MissionItem
 {

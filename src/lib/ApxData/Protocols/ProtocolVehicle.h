@@ -22,12 +22,12 @@
  */
 #ifndef ProtocolVehicle_H
 #define ProtocolVehicle_H
-#include <QtCore>
 #include "ProtocolBase.h"
-#include "ProtocolVehicles.h"
-#include "ProtocolTelemetry.h"
 #include "ProtocolMission.h"
 #include "ProtocolService.h"
+#include "ProtocolTelemetry.h"
+#include "ProtocolVehicles.h"
+#include <QtCore>
 //=============================================================================
 class ProtocolVehicle : public ProtocolBase
 {

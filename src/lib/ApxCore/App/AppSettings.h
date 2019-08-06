@@ -23,10 +23,10 @@
 #ifndef AppSettings_H
 #define AppSettings_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <ApxDirs.h>
 #include <ApxMisc/DelayedEvent.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class AppSettings : public Fact
 {

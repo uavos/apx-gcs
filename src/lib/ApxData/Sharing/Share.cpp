@@ -22,8 +22,8 @@
  */
 #include "Share.h"
 
-#include <QFileDialog>
 #include <ApxLog.h>
+#include <QFileDialog>
 //=============================================================================
 Share::Share(Fact *parent,
              QString dataTitle,

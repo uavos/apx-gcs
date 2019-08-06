@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <App/AppSettings.h>
 #include "AppShortcuts.h"
 #include "AppShortcut.h"
-#include <ApxDirs.h>
+#include <App/AppSettings.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
 #include <QKeySequence>
 #include <QQmlEngine>
 //=============================================================================

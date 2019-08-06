@@ -21,13 +21,13 @@
  *
  */
 #include "MissionShare.h"
-#include "VehicleMission.h"
 #include "MissionStorage.h"
+#include "VehicleMission.h"
 
-#include <Vehicles/Vehicle.h>
-#include <Sharing/MissionsXml.h>
-#include <ApxLog.h>
 #include <ApxDirs.h>
+#include <ApxLog.h>
+#include <Sharing/MissionsXml.h>
+#include <Vehicles/Vehicle.h>
 //=============================================================================
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent)
     : Share(parent, tr("Mission"), "mission", ApxDirs::missions())

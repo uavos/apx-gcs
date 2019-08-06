@@ -22,8 +22,8 @@
  */
 #ifndef ProtocolServiceFirmware_H
 #define ProtocolServiceFirmware_H
-#include <QtCore>
 #include "ProtocolBase.h"
+#include <QtCore>
 class ProtocolService;
 class ProtocolServiceNode;
 class ProtocolServiceRequest;

@@ -21,8 +21,8 @@
  *
  */
 #include "DatalinkPorts.h"
-#include "DatalinkPort.h"
 #include "Datalink.h"
+#include "DatalinkPort.h"
 #include <App/AppSettings.h>
 #include <ApxLog.h>
 //=============================================================================

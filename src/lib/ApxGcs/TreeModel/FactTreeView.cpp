@@ -1,9 +1,9 @@
-#include <QHeaderView>
-#include <QtWidgets>
-#include "FactDelegate.h"
 #include "FactTreeView.h"
+#include "FactDelegate.h"
 #include "FactTreeModel.h"
 #include <ApxMisc/SvgMaterialIcon.h>
+#include <QHeaderView>
+#include <QtWidgets>
 //=============================================================================
 FactTreeView::FactTreeView(QWidget *parent)
     : QTreeView(parent)

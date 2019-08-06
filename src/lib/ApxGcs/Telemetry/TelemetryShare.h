@@ -23,9 +23,9 @@
 #ifndef TelemetryShare_H
 #define TelemetryShare_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
 #include <Sharing/Share.h>
+#include <QtCore>
 
 #include <ApxMisc/QueueJob.h>
 class Telemetry;

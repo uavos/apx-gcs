@@ -23,9 +23,9 @@
 #ifndef SERVOSPLUGIN_H
 #define SERVOSPLUGIN_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "ServosForm.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class ServosPlugin : public ApxPluginInterface
 {

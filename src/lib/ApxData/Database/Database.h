@@ -23,8 +23,8 @@
 #ifndef Database_H
 #define Database_H
 //=============================================================================
-#include <Fact/Fact.h>
 #include "DatabaseSession.h"
+#include <Fact/Fact.h>
 class NodesDB;
 class TelemetryDB;
 class MissionsDB;

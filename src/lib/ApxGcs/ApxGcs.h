@@ -24,16 +24,16 @@
 #define ApxGcs_H
 #include <ApxApp.h>
 
+#include <App/AppSettings.h>
+#include <ApxApp.h>
 #include <ApxDirs.h>
 #include <ApxLog.h>
-#include <ApxApp.h>
-#include <App/AppSettings.h>
 
 #include <Database/Database.h>
 #include <Datalink/Datalink.h>
 
-#include <Vehicles/Vehicles.h>
 #include <Protocols/ApxProtocol.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 class ApxGcs : public ApxApp
 {

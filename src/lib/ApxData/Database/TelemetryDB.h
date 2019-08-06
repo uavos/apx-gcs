@@ -23,8 +23,8 @@
 #ifndef TelemetrysDB_H
 #define TelemetrysDB_H
 //=============================================================================
-#include <QtCore>
 #include <Database/DatabaseSession.h>
+#include <QtCore>
 //=============================================================================
 class TelemetryDB : public DatabaseSession
 {

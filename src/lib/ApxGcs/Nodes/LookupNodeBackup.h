@@ -23,9 +23,9 @@
 #ifndef LookupNodeBackup_H
 #define LookupNodeBackup_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <Database/DatabaseLookup.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class NodeItem;
 //=============================================================================
 class LookupNodeBackup : public DatabaseLookup

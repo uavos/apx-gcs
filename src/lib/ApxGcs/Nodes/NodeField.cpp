@@ -24,8 +24,8 @@
 #include "NodeItem.h"
 #include "Nodes.h"
 #include <ApxMisc/PawnCompiler.h>
-#include <Vehicles/Vehicles.h>
 #include <Protocols/ProtocolServiceNode.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 NodeField::NodeField(NodeItem *node,
                      quint16 id,

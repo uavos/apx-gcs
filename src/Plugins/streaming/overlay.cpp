@@ -1,20 +1,25 @@
 #include "overlay.h"
 
-#include <QPainter>
-#include "Vehicles/Vehicles.h"
-#include "Vehicles/Vehicle.h"
 #include "App/AppSettings.h"
+#include "Vehicles/Vehicle.h"
+#include "Vehicles/Vehicles.h"
+#include <QPainter>
 
-Overlay::Overlay(Fact *parent):
-    Fact(parent, "overlay", tr("Overlay"), tr("Show additional info on video"), Group)
+Overlay::Overlay(Fact *parent)
+    : Fact(parent, "overlay", tr("Overlay"), tr("Show additional info on video"), Group)
 {
     QSettings *settings = AppSettings::settings();
 
     f_crosshair = new AppSettingFact(settings, this, "crosshair", tr("Crosshair"), "", Bool, false);
     f_crosshair->setIcon("crosshairs");
 
-    f_variables = new AppSettingFact(settings, this, "vars", tr("Variables"),
-                                     tr("Comma-separated f.ex. (yaw,pitch,etc...)"), Text, "yaw,pitch,roll");
+    f_variables = new AppSettingFact(settings,
+                                     this,
+                                     "vars",
+                                     tr("Variables"),
+                                     tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
+                                     Text,
+                                     "yaw,pitch,roll");
     f_variables->setIcon("format-list-bulleted");
 
     connect(f_variables, &Fact::valueChanged, this, &Overlay::onVariablesValueChanged);
@@ -43,8 +48,7 @@ void Overlay::drawOverlay(QImage &image)
     painter.setFont(font);
 
     QString pattern = "%1: %2";
-    for(auto &varname: m_varnames)
-    {
+    for (auto &varname : m_varnames) {
         y += fontPixelSize;
         float value = Vehicles::instance()->current()->f_mandala->valueByName(varname).toFloat();
         painter.drawText(x, y, pattern.arg(varname, QString::number(value, 'f', 5)));
@@ -53,13 +57,10 @@ void Overlay::drawOverlay(QImage &image)
     painter.setPen(Qt::black);
 
     //crosshair
-    if(f_crosshair->value().toBool())
-    {
+    if (f_crosshair->value().toBool()) {
         int lineSize = std::min(image.width(), image.height()) / 10;
-        QRect rect1((image.width() - lineSize) / 2, (image.height() - 4) / 2,
-                    lineSize, 4);
-        QRect rect2((image.width() - 4) / 2, (image.height() - lineSize) / 2,
-                    4, lineSize);
+        QRect rect1((image.width() - lineSize) / 2, (image.height() - 4) / 2, lineSize, 4);
+        QRect rect2((image.width() - 4) / 2, (image.height() - lineSize) / 2, 4, lineSize);
 
         painter.drawRect(rect1);
         painter.drawRect(rect2);

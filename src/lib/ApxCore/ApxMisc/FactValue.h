@@ -23,9 +23,9 @@
 #ifndef FactValue_H
 #define FactValue_H
 //=============================================================================
-#include <QtCore>
-#include <QVariant>
 #include <Fact/Fact.h>
+#include <QVariant>
+#include <QtCore>
 //=============================================================================
 class FactValueBase : public QObject
 {

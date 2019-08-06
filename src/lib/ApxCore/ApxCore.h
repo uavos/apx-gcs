@@ -23,9 +23,9 @@
 #ifndef ApxCore_H
 #define ApxCore_H
 //=============================================================================
-#include "Fact.h"
-#include "FactValue.h"
 #include "AppDirs.h"
 #include "ApxLog.h"
+#include "Fact.h"
+#include "FactValue.h"
 //=============================================================================
 #endif

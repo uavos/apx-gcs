@@ -23,8 +23,8 @@
 #ifndef NotifyItem_H
 #define NotifyItem_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class NotifyItem : public Fact
 {

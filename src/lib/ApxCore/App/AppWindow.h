@@ -22,10 +22,10 @@
  */
 #ifndef AppWindow_H
 #define AppWindow_H
-#include <QWindow>
-#include <Fact/Fact.h>
 #include "AppPlugins.h"
 #include "AppSettings.h"
+#include <Fact/Fact.h>
+#include <QWindow>
 //=============================================================================
 class AppWindow : public AppSettingFact
 {

@@ -23,8 +23,8 @@
 #include "Poi.h"
 #include "MissionField.h"
 #include "VehicleMission.h"
-#include <QGeoCircle>
 #include <ApxApp.h>
+#include <QGeoCircle>
 //=============================================================================
 Poi::Poi(MissionGroup *parent)
     : MissionItem(parent, "P#", "", tr("Point of interest"))

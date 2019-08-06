@@ -23,9 +23,9 @@
 #ifndef MissionsDB_H
 #define MissionsDB_H
 //=============================================================================
-#include <QtCore>
 #include <Database/DatabaseSession.h>
 #include <Dictionary/DictMission.h>
+#include <QtCore>
 //=============================================================================
 class MissionsDB : public DatabaseSession
 {

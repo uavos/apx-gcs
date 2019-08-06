@@ -1,14 +1,14 @@
 #ifndef VIDEOTHREAD_H
 #define VIDEOTHREAD_H
 
-#include <QThread>
-#include <QMutex>
-#include <QImage>
-#include <QUrl>
-#include <gst/gst.h>
 #include <atomic>
-#include <memory>
 #include <functional>
+#include <gst/gst.h>
+#include <memory>
+#include <QImage>
+#include <QMutex>
+#include <QThread>
+#include <QUrl>
 
 /*
  * urisourcebin -> parsebin -> tee -> decodebin -> videoconvert -> tee -> appsink
@@ -34,31 +34,31 @@ struct StreamContext
 {
     std::shared_ptr<GstElement> pipeline;
     //common elements
-    GstElement *source          = nullptr;
-    GstElement *capsFilter      = nullptr;
-    GstElement *parsebin        = nullptr;
-    GstElement *teeparse        = nullptr;
-    GstElement *teeconvert      = nullptr;
+    GstElement *source = nullptr;
+    GstElement *capsFilter = nullptr;
+    GstElement *parsebin = nullptr;
+    GstElement *teeparse = nullptr;
+    GstElement *teeconvert = nullptr;
     //play elements
-    GstElement *playDecodebin   = nullptr;
-    GstElement *playConverter   = nullptr;
-    GstElement *playAppsink     = nullptr;
+    GstElement *playDecodebin = nullptr;
+    GstElement *playConverter = nullptr;
+    GstElement *playAppsink = nullptr;
     //record elements
-    GstElement *recQueue        = nullptr;
-    GstElement *recConverter    = nullptr;
-    GstElement *recEncoder      = nullptr;
-    GstElement *recMuxer        = nullptr;
-    GstElement *recSink         = nullptr;
+    GstElement *recQueue = nullptr;
+    GstElement *recConverter = nullptr;
+    GstElement *recEncoder = nullptr;
+    GstElement *recMuxer = nullptr;
+    GstElement *recSink = nullptr;
 
-    bool recording              = false;
-    bool reencoding             = false;
+    bool recording = false;
+    bool reencoding = false;
 
-    using OnFrameReceivedLambda = std::function<void(StreamContext*, GstElement*)>;
+    using OnFrameReceivedLambda = std::function<void(StreamContext *, GstElement *)>;
     using RecordRequstedLambda = std::function<bool()>;
-    using OverlayCallback = std::function<void(QImage&)>;
-    OnFrameReceivedLambda onFrameReceived = [](auto, auto){};
-    RecordRequstedLambda isRecordRequested = []{return false;};
-    OverlayCallback overlayCallback = [](auto){};
+    using OverlayCallback = std::function<void(QImage &)>;
+    OnFrameReceivedLambda onFrameReceived = [](auto, auto) {};
+    RecordRequstedLambda isRecordRequested = [] { return false; };
+    OverlayCallback overlayCallback = [](auto) {};
 };
 
 class VideoThread : public QThread

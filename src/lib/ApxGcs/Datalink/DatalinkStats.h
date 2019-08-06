@@ -23,8 +23,8 @@
 #ifndef DatalinkStats_H
 #define DatalinkStats_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class Datalink;
 class DatalinkStatsCounter;
 //=============================================================================

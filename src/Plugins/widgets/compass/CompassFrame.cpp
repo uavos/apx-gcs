@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QtCore>
 #include "CompassFrame.h"
 #include <Vehicles/Vehicles.h>
+#include <QtCore>
 //==============================================================================
 CompassFrame::CompassFrame(QWidget *parent)
     : QWidget(parent)

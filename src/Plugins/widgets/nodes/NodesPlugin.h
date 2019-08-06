@@ -23,9 +23,9 @@
 #ifndef NODESPLUGIN_H
 #define NODESPLUGIN_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "NodesFrame.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class NodesPlugin : public ApxPluginInterface
 {

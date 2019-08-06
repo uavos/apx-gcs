@@ -23,8 +23,8 @@
 #ifndef MissionTools_H
 #define MissionTools_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class VehicleMission;
 class Vehicle;
 //=============================================================================

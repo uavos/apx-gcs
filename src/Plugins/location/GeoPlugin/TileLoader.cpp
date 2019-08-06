@@ -23,11 +23,11 @@
 #include "TileLoader.h"
 #include "GeoPlugin.h"
 #include "MapsDB.h"
-#include <Fact/Fact.h>
-#include <ApxLog.h>
-#include <QImage>
 #include <App/AppSettings.h>
+#include <ApxLog.h>
 #include <Database/Database.h>
+#include <Fact/Fact.h>
+#include <QImage>
 //=============================================================================
 #define Random(low, high) ((int) (low + qrand() % (high - low)))
 //=============================================================================

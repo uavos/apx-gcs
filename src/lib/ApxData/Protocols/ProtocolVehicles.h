@@ -22,9 +22,9 @@
  */
 #ifndef ProtocolVehicles_H
 #define ProtocolVehicles_H
-#include <QtCore>
 #include "ProtocolBase.h"
 #include "ProtocolServiceFirmware.h"
+#include <QtCore>
 class ProtocolVehicle;
 //=============================================================================
 class ProtocolVehicles : public ProtocolBase

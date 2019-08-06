@@ -21,9 +21,9 @@
  *
  */
 #include "Joysticks.h"
-#include <ApxDirs.h>
 #include <App/AppSettings.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
 
 #include "Joystick.h"
 #include <SDL.h>

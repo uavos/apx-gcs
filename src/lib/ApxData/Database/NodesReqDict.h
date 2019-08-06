@@ -23,8 +23,8 @@
 #ifndef NodesReqDict_H
 #define NodesReqDict_H
 //=============================================================================
-#include <QtCore>
 #include "NodesDB.h"
+#include <QtCore>
 //=============================================================================
 class DBReqNodesLoadInfo : public DBReqNodes
 {

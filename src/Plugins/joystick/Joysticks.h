@@ -22,13 +22,13 @@
  */
 #ifndef Joysticks_H
 #define Joysticks_H
-#include <QtCore>
-#include <QtConcurrent>
 #include <SDL.h>
+#include <QtConcurrent>
+#include <QtCore>
 
-#include <Fact/Fact.h>
 #include <App/AppSettings.h>
 #include <ApxMisc/DelayedEvent.h>
+#include <Fact/Fact.h>
 class Joystick;
 //=============================================================================
 class Joysticks : public Fact

@@ -23,11 +23,11 @@
 #ifndef Releases_H
 #define Releases_H
 //=============================================================================
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <Fact/Fact.h>
 #include "Firmware.h"
+#include <Fact/Fact.h>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 //=============================================================================
 class Releases : public Fact
 {

@@ -23,8 +23,8 @@
 #ifndef NodesReqVehicle_H
 #define NodesReqVehicle_H
 //=============================================================================
-#include <QtCore>
 #include "NodesDB.h"
+#include <QtCore>
 //=============================================================================
 class DBReqSaveVehicleInfo : public DBReqNodes
 {

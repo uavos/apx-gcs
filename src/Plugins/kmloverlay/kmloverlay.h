@@ -1,10 +1,10 @@
 ﻿#ifndef KMLOVERLAY_H
 #define KMLOVERLAY_H
 
+#include "kmlpolygonsmodel.h"
+#include <Fact/Fact.h>
 #include <QtCore>
 #include <QtLocation>
-#include <Fact/Fact.h>
-#include "kmlpolygonsmodel.h"
 
 class KmlOverlay : public Fact
 {
@@ -17,7 +17,7 @@ public:
     Fact *f_open;
     Fact *f_overlayVisible;
 
-    KmlPolygonsModel* getKmlPolygons() const;
+    KmlPolygonsModel *getKmlPolygons() const;
     QGeoCoordinate getCenter() const;
 
     Q_INVOKABLE void updateKmlModels(const QGeoShape &shape);

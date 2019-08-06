@@ -22,9 +22,9 @@
  */
 #ifndef TerminalPlugin_H
 #define TerminalPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Terminal.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class TerminalPlugin : public ApxPluginInterface
 {

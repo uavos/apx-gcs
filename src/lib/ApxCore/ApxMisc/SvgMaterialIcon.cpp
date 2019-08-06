@@ -21,12 +21,12 @@
  *
  */
 #include "SvgMaterialIcon.h"
-#include <QSvgRenderer>
-#include <QPainter>
-#include <QApplication>
-#include <QPalette>
-#include <QFontDatabase>
 #include <ApxLog.h>
+#include <QApplication>
+#include <QFontDatabase>
+#include <QPainter>
+#include <QPalette>
+#include <QSvgRenderer>
 //=============================================================================
 QHash<QString, QChar> SvgMaterialIcon::map;
 QVariantMap SvgMaterialIcon::qmlMap;

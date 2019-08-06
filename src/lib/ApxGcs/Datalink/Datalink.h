@@ -23,13 +23,13 @@
 #ifndef Datalink_H
 #define Datalink_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
-#include "DatalinkStats.h"
 #include "DatalinkConnection.h"
-#include "DatalinkServer.h"
-#include "DatalinkRemotes.h"
 #include "DatalinkPorts.h"
+#include "DatalinkRemotes.h"
+#include "DatalinkServer.h"
+#include "DatalinkStats.h"
+#include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class Datalink : public Fact
 {

@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "VehicleMission.h"
 #include "MissionListModel.h"
 #include "MissionGroup.h"
+#include "VehicleMission.h"
 //=============================================================================
 MissionListModel::MissionListModel(VehicleMission *parent)
     : FactListModel(nullptr)

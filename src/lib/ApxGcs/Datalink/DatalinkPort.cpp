@@ -21,13 +21,13 @@
  *
  */
 #include "DatalinkPort.h"
+#include "Datalink.h"
 #include "DatalinkPorts.h"
 #include "DatalinkRemote.h"
 #include "DatalinkSerial.h"
-#include "Datalink.h"
 
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 //=============================================================================
 DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const DatalinkPort *port)
     : Fact(port ? parent->f_list : parent,

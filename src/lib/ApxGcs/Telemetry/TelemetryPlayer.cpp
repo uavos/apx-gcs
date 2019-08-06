@@ -21,17 +21,17 @@
  *
  */
 #include "TelemetryPlayer.h"
-#include "Telemetry.h"
 #include "LookupTelemetry.h"
+#include "Telemetry.h"
 #include "TelemetryReader.h"
 
+#include <ApxApp.h>
+#include <ApxLog.h>
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
-#include <ApxLog.h>
-#include <ApxApp.h>
 
-#include <Mission/VehicleMission.h>
 #include <Mission/MissionStorage.h>
+#include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 //=============================================================================
 TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)

@@ -1,12 +1,12 @@
 #include "GeoTiledMappingManagerEngine.h"
-#include "GeoTileFetcher.h"
 #include "GeoPlugin.h"
+#include "GeoTileFetcher.h"
 #include "TileLoader.h"
 
 #include <QtLocation/private/qgeocameracapabilities_p.h>
+#include <QtLocation/private/qgeofiletilecache_p.h>
 #include <QtLocation/private/qgeomaptype_p.h>
 #include <QtLocation/private/qgeotiledmap_p.h>
-#include <QtLocation/private/qgeofiletilecache_p.h>
 
 #include <QDir>
 #include <QStandardPaths>

@@ -23,10 +23,10 @@
 #ifndef SvgMaterialIcon_H
 #define SvgMaterialIcon_H
 //=============================================================================
-#include <QtCore>
 #include <QIcon>
 #include <QIconEngine>
 #include <QQmlEngine>
+#include <QtCore>
 //=============================================================================
 class SvgMaterialIcon : public QIcon
 {

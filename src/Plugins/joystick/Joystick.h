@@ -24,9 +24,9 @@
 #define Joystick_H
 #include <QtCore>
 
+#include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #include <SDL.h>
-#include <ApxMisc/DelayedEvent.h>
 //=============================================================================
 class Joystick : public Fact
 {

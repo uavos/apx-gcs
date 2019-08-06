@@ -22,9 +22,9 @@
  */
 #include "ProtocolVehicle.h"
 
-#include <Xbus/XbusPacket.h>
-#include <Xbus/XbusNode.h>
 #include <Dictionary/MandalaIndex.h>
+#include <Xbus/XbusNode.h>
+#include <Xbus/XbusPacket.h>
 //=============================================================================
 ProtocolVehicle::ProtocolVehicle(quint16 squawk,
                                  ProtocolVehicles::IdentData ident,

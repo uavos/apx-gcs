@@ -21,10 +21,10 @@
  *
  */
 #include "JSTreeModel.h"
-#include <QJSValueIterator>
+#include <Fact/Fact.h>
 #include <QColor>
 #include <QFontDatabase>
-#include <Fact/Fact.h>
+#include <QJSValueIterator>
 //=============================================================================
 JSTreeModel::JSTreeModel(QJSEngine *e)
     : QAbstractItemModel(e)

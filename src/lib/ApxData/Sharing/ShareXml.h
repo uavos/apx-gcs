@@ -23,8 +23,8 @@
 #ifndef ShareXml_H
 #define ShareXml_H
 //=============================================================================
-#include <QtCore>
 #include <QDomDocument>
+#include <QtCore>
 
 #include <Database/DatabaseRequest.h>
 //=============================================================================

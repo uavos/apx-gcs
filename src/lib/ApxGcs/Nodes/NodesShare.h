@@ -23,9 +23,9 @@
 #ifndef NodesShare_H
 #define NodesShare_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
 #include <Sharing/Share.h>
+#include <QtCore>
 
 class Nodes;
 //=============================================================================

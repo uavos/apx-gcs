@@ -22,16 +22,16 @@
  */
 #ifndef ApxApp_H
 #define ApxApp_H
-#include <QtCore>
-#include <QQuickWindow>
 #include <QApplication>
+#include <QQuickWindow>
+#include <QtCore>
 
 #include <App/AppBase.h>
-#include <App/AppRoot.h>
 #include <App/AppEngine.h>
-#include <App/AppSettings.h>
-#include <App/AppPlugins.h>
 #include <App/AppInstances.h>
+#include <App/AppPlugins.h>
+#include <App/AppRoot.h>
+#include <App/AppSettings.h>
 #include <ApxLog.h>
 //=============================================================================
 class ApxApp : public AppBase

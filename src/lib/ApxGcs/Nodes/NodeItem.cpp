@@ -20,19 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QtSql>
 #include "NodeItem.h"
-#include "Nodes.h"
+#include "NodeArrayListModel.h"
 #include "NodeField.h"
 #include "NodeTools.h"
-#include "NodeArrayListModel.h"
+#include "Nodes.h"
+#include <QtSql>
 
-#include <QFontDatabase>
-#include <QQmlEngine>
 #include <ApxApp.h>
 #include <Database/NodesDB.h>
-#include <Vehicles/Vehicles.h>
 #include <Vehicles/VehicleWarnings.h>
+#include <Vehicles/Vehicles.h>
+#include <QFontDatabase>
+#include <QQmlEngine>
 //=============================================================================
 NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     : NodeItemData(parent, sn)

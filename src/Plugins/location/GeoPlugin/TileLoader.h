@@ -22,10 +22,10 @@
  */
 #ifndef TileLoader_H
 #define TileLoader_H
-#include <QtCore>
 #include "MapsDB.h"
-#include <QtNetwork>
 #include <Fact/Fact.h>
+#include <QtCore>
+#include <QtNetwork>
 class AppSettingFact;
 //=============================================================================
 class TileLoader : public Fact

@@ -22,9 +22,9 @@
  */
 #ifndef SimPlugin_H
 #define SimPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Simulator.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class SimPlugin : public ApxPluginInterface
 {

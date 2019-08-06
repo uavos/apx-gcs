@@ -22,9 +22,9 @@
  */
 #ifndef NotificationsPlugin_H
 #define NotificationsPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Notifications.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class NotificationsPlugin : public ApxPluginInterface
 {

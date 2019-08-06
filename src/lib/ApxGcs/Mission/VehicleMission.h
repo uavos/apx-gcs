@@ -23,12 +23,12 @@
 #ifndef VehicleMission_H
 #define VehicleMission_H
 //=============================================================================
-#include <QtCore>
-#include <QGeoCoordinate>
-#include <QGeoRectangle>
+#include "MissionGroup.h"
 #include <Fact/Fact.h>
 #include <Vehicles/Vehicles.h>
-#include "MissionGroup.h"
+#include <QGeoCoordinate>
+#include <QGeoRectangle>
+#include <QtCore>
 class MissionListModel;
 class Waypoint;
 class Runway;

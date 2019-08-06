@@ -23,9 +23,9 @@
 #ifndef Notifications_H
 #define Notifications_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <ApxMisc/DelayedEvent.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class NotifyItem;
 //=============================================================================
 class Notifications : public Fact

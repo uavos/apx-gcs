@@ -23,9 +23,9 @@
 #ifndef QActionFact_H
 #define QActionFact_H
 //=============================================================================
-#include <QtCore>
-#include <QAction>
 #include <Fact/Fact.h>
+#include <QAction>
+#include <QtCore>
 //=============================================================================
 class QActionFact : public QAction
 {

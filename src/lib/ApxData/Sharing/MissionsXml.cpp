@@ -21,8 +21,8 @@
  *
  */
 #include "MissionsXml.h"
-#include <Database/Database.h>
 #include <ApxLog.h>
+#include <Database/Database.h>
 #define MISSIONS_XML_FORMAT 1
 //=============================================================================
 MissionsXmlExport::MissionsXmlExport(QString hash, QString title, QString fileName)

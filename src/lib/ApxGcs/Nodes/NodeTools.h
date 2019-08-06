@@ -23,10 +23,10 @@
 #ifndef NodeTools_H
 #define NodeTools_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
-#include <Dictionary/DictNode.h>
 #include "LookupNodeBackup.h"
+#include <Dictionary/DictNode.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class NodeItem;
 //=============================================================================
 class NodeTools : public Fact

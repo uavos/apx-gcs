@@ -1,18 +1,15 @@
 #ifndef KMLPOLYGONSMODEL_H
 #define KMLPOLYGONSMODEL_H
 
+#include "kmlparser.h"
 #include <QAbstractListModel>
 #include <QPolygonF>
-#include "kmlparser.h"
 
-class KmlPolygonsModel: public QAbstractListModel
+class KmlPolygonsModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum Roles {
-        Polygon = Qt::UserRole + 1,
-        Color
-    };
+    enum Roles { Polygon = Qt::UserRole + 1, Color };
     KmlPolygonsModel();
 
     QPointF setPolygons(const QList<KmlPolygon> &polygons);

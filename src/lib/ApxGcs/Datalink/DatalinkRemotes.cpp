@@ -21,8 +21,8 @@
  *
  */
 #include "DatalinkRemotes.h"
-#include "DatalinkRemote.h"
 #include "Datalink.h"
+#include "DatalinkRemote.h"
 
 #include <App/AppSettings.h>
 #include <ApxLog.h>

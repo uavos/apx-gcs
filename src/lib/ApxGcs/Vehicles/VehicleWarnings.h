@@ -23,8 +23,8 @@
 #ifndef VehicleWarnings_H
 #define VehicleWarnings_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class Vehicle;
 //=============================================================================
 class VehicleWarnings : public Fact

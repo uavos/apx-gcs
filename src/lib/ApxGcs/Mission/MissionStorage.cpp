@@ -21,18 +21,18 @@
  *
  */
 #include "MissionStorage.h"
+#include "LookupMissions.h"
+#include "Poi.h"
+#include "Runway.h"
+#include "Taxiway.h"
+#include "VehicleMission.h"
+#include "Waypoint.h"
 #include <ApxLog.h>
 #include <Database/Database.h>
 #include <Database/MissionsDB.h>
 #include <Dictionary/DictMission.h>
-#include <Vehicles/Vehicles.h>
 #include <Vehicles/VehicleSelect.h>
-#include "LookupMissions.h"
-#include "VehicleMission.h"
-#include "Runway.h"
-#include "Waypoint.h"
-#include "Taxiway.h"
-#include "Poi.h"
+#include <Vehicles/Vehicles.h>
 
 #include "MissionShare.h"
 //=============================================================================

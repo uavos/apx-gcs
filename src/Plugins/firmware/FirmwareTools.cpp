@@ -23,8 +23,8 @@
 #include "FirmwareTools.h"
 #include "Firmware.h"
 #include "Releases.h"
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 //=============================================================================
 FirmwareTools::FirmwareTools(Firmware *firmware, Fact *parent)
     : Fact(parent, "tools", tr("Tools"), tr("Maintenance tools"), Group | Const)

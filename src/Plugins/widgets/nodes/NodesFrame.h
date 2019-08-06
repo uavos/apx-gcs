@@ -23,9 +23,9 @@
 #ifndef NodesFrame_H
 #define NodesFrame_H
 //=============================================================================
-#include <QtWidgets>
-#include <Vehicles/Vehicles.h>
 #include <TreeModel/FactTreeView.h>
+#include <Vehicles/Vehicles.h>
+#include <QtWidgets>
 //=============================================================================
 class NodesFrame : public QWidget
 {

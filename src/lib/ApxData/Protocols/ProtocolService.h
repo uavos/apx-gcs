@@ -22,10 +22,10 @@
  */
 #ifndef ProtocolService_H
 #define ProtocolService_H
-#include <QtCore>
 #include "ProtocolBase.h"
-#include "ProtocolServiceRequest.h"
 #include "ProtocolServiceNode.h"
+#include "ProtocolServiceRequest.h"
+#include <QtCore>
 class ProtocolVehicle;
 //=============================================================================
 class ProtocolService : public ProtocolBase

@@ -23,9 +23,9 @@
 #ifndef COMPASSPLUGIN_H
 #define COMPASSPLUGIN_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "CompassFrame.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class CompassPlugin : public ApxPluginInterface
 {

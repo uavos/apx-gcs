@@ -22,8 +22,8 @@
  */
 #include "Simulator.h"
 #include <App/AppSettings.h>
-#include <QDesktopServices>
 #include <ApxLog.h>
+#include <QDesktopServices>
 //#include <QtConcurrent>
 
 APX_LOGGING_CATEGORY(SimLog, "sim")

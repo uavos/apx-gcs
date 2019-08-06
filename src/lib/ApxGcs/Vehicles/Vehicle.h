@@ -23,8 +23,8 @@
 #ifndef Vehicle_H
 #define Vehicle_H
 //=============================================================================
-#include <QtCore>
 #include <QGeoCoordinate>
+#include <QtCore>
 
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>

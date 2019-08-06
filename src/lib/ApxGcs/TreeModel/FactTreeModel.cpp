@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QDomDocument>
-#include <Fact/Fact.h>
 #include "FactTreeModel.h"
+#include <Fact/Fact.h>
+#include <QDomDocument>
 //=============================================================================
 FactTreeModel::FactTreeModel(Fact *root)
     : QAbstractItemModel(root)

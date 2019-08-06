@@ -21,10 +21,10 @@
  *
  */
 #include "Terminal.h"
+#include <ApxApp.h>
+#include <ApxLog.h>
 #include <QDesktopServices>
 #include <QQmlEngine>
-#include <ApxLog.h>
-#include <ApxApp.h>
 #define MAX_HISTORY 50
 //=============================================================================
 static Terminal *terminal;

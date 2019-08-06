@@ -23,8 +23,8 @@
 #ifndef Taxiway_H
 #define Taxiway_H
 //=============================================================================
-#include <QtCore>
 #include "MissionItem.h"
+#include <QtCore>
 //=============================================================================
 class Taxiway : public MissionItem
 {

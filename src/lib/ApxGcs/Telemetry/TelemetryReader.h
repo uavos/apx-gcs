@@ -22,10 +22,10 @@
  */
 #ifndef TelemetryReader_H
 #define TelemetryReader_H
-#include <QtCore>
-#include <Fact/Fact.h>
-#include <Database/DatabaseRequest.h>
 #include <ApxMisc/DelayedEvent.h>
+#include <Database/DatabaseRequest.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class LookupTelemetry;
 //=============================================================================
 class TelemetryReader : public Fact

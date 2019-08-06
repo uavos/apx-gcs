@@ -20,16 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QApplication>
-#include <QtCore>
-#include <QGLWidget>
-#include <QQuickStyle>
-#include <QtQuick>
-#include <QStyleFactory>
-#include <ApxGcs.h>
 #include "RunGuard.h"
 #include <ApxDirs.h>
+#include <ApxGcs.h>
 #include <ApxLog.h>
+#include <QApplication>
+#include <QGLWidget>
+#include <QQuickStyle>
+#include <QStyleFactory>
+#include <QtCore>
+#include <QtQuick>
 //============================================================================
 void checkPaths();
 //============================================================================

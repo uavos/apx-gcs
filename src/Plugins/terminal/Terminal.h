@@ -23,9 +23,9 @@
 #ifndef Terminal_H
 #define Terminal_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include "TerminalListModel.h"
+#include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class Terminal : public Fact
 {

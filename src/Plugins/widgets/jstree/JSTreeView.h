@@ -23,9 +23,9 @@
 #ifndef JSTreeView_H
 #define JSTreeView_H
 //=============================================================================
+#include <TreeModel/JSTreeModel.h>
 #include <QtCore>
 #include <QtWidgets>
-#include <TreeModel/JSTreeModel.h>
 //=============================================================================
 class JSTreeView : public QTreeView
 {

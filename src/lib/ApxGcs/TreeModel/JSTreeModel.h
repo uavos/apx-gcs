@@ -23,8 +23,8 @@
 #ifndef JSTreeModel_H
 #define JSTreeModel_H
 //=============================================================================
-#include <QtCore>
 #include <QJSEngine>
+#include <QtCore>
 //=============================================================================
 class JSTreeItem : public QObject
 {

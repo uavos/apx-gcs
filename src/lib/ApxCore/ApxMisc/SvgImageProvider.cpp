@@ -26,10 +26,10 @@
  */
 
 #include "SvgImageProvider.h"
+#include <ApxLog.h>
 #include <QDebug>
 #include <QPainter>
 #include <QUrl>
-#include <ApxLog.h>
 
 SvgImageProvider::SvgImageProvider(const QString &basePath)
     : QObject()

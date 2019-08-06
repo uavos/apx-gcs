@@ -21,9 +21,9 @@
  *
  */
 #include "MapTools.h"
-#include <Vehicles/Vehicles.h>
-#include <Mission/VehicleMission.h>
 #include <ApxApp.h>
+#include <Mission/VehicleMission.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 MapTools::MapTools(Fact *parent)
     : Fact(parent, "map", tr("Map tools"), tr("Mission planner map tools"), Group)

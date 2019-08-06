@@ -23,9 +23,9 @@
 #ifndef FactTreeView_H
 #define FactTreeView_H
 //=============================================================================
+#include <QStyledItemDelegate>
 #include <QtCore>
 #include <QtWidgets>
-#include <QStyledItemDelegate>
 class Fact;
 class FactTreeModel;
 //=============================================================================

@@ -22,12 +22,12 @@
  */
 #include "TelemetryRecorder.h"
 
-#include <Database/Database.h>
-#include <Vehicles/Vehicle.h>
-#include <Mission/VehicleMission.h>
-#include <Mission/MissionStorage.h>
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
+#include <Database/Database.h>
+#include <Mission/MissionStorage.h>
+#include <Mission/VehicleMission.h>
+#include <Vehicles/Vehicle.h>
 
 #include <Nodes/Nodes.h>
 //=============================================================================

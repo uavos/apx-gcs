@@ -23,12 +23,12 @@
 #ifndef FactDelegate_H
 #define FactDelegate_H
 //=============================================================================
+#include <Fact/Fact.h>
+#include <QItemDelegate>
+#include <QProgressBar>
+#include <QStyledItemDelegate>
 #include <QtCore>
 #include <QtWidgets>
-#include <QItemDelegate>
-#include <QStyledItemDelegate>
-#include <QProgressBar>
-#include <Fact/Fact.h>
 //=============================================================================
 class FactDelegate : public QItemDelegate //QStyledItemDelegate
 {

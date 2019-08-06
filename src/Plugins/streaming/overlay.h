@@ -1,10 +1,10 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
-#include <QImage>
 #include "Fact/Fact.h"
+#include <QImage>
 
-class Overlay: public Fact
+class Overlay : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(QStringList varnames READ getVarNames NOTIFY varnamesChanged)

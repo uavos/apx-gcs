@@ -21,10 +21,10 @@
  *
  */
 #include "Sounds.h"
-#include <Fact/Fact.h>
-#include <ApxDirs.h>
 #include <App/AppSettings.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
+#include <Fact/Fact.h>
 //=============================================================================
 Sounds::Sounds(Fact *parent)
     : Fact(parent, "sounds", tr("Sounds"), tr("Sound effects and speech"), Group | Bool)

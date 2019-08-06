@@ -22,9 +22,9 @@
  */
 #include "LoaderStm.h"
 #include "Loader.h"
-#include <ApxLog.h>
 #include <ApxApp.h>
 #include <ApxGcs.h>
+#include <ApxLog.h>
 #include <QSerialPortInfo>
 //=============================================================================
 #define SLDR_ACK 0x79

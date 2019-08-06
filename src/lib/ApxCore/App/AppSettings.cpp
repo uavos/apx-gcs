@@ -21,8 +21,8 @@
  *
  */
 #include "AppSettings.h"
-#include <ApxDirs.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
 //=============================================================================
 AppSettings::AppSettings(Fact *parent)
     : Fact(parent, "settings", tr("Preferences"), tr("Application settings"), Group) //root

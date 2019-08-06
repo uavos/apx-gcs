@@ -1,12 +1,12 @@
 ﻿#include "kmloverlay.h"
 
-#include <QFileDialog>
 #include "ApxApp.h"
 #include "kmlparser.h"
+#include <QFileDialog>
 
 KmlOverlay::KmlOverlay(Fact *parent)
-    : Fact(parent, "kmloverlay", tr("KML Overlay"), tr("KML objects overlay"), Group),
-      m_kmlPolygons(new KmlPolygonsModel())
+    : Fact(parent, "kmloverlay", tr("KML Overlay"), tr("KML objects overlay"), Group)
+    , m_kmlPolygons(new KmlPolygonsModel())
 {
     setIcon("google-earth");
 
@@ -52,9 +52,11 @@ QGeoCoordinate KmlOverlay::p2gc(const QPointF &p)
 
 void KmlOverlay::onOpenTriggered()
 {
-    QString path = QFileDialog::getOpenFileName(nullptr, tr("Open kml"), QDir::homePath(), "KML (*.kml)");
-    if(!path.isEmpty())
-    {
+    QString path = QFileDialog::getOpenFileName(nullptr,
+                                                tr("Open kml"),
+                                                QDir::homePath(),
+                                                "KML (*.kml)");
+    if (!path.isEmpty()) {
         QFile file(path);
         file.open(QIODevice::ReadOnly);
 
@@ -70,7 +72,7 @@ void KmlOverlay::onOpenTriggered()
 
 void KmlOverlay::onOverlayVisibleValueChanged()
 {
-    if(f_overlayVisible->value().toBool())
+    if (f_overlayVisible->value().toBool())
         m_kmlPolygons->setPolygons(m_parser.getPolygons());
     else
         m_kmlPolygons->setPolygons({});

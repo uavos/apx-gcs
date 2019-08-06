@@ -21,8 +21,8 @@
  *
  */
 #include "VehicleSelect.h"
-#include "Vehicles.h"
 #include "Vehicle.h"
+#include "Vehicles.h"
 //=============================================================================
 VehicleSelect::VehicleSelect(Fact *parent,
                              const QString &name,

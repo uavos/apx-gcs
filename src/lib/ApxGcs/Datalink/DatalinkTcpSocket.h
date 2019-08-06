@@ -22,9 +22,9 @@
  */
 #ifndef DatalinkTcpSocket_H
 #define DatalinkTcpSocket_H
+#include "DatalinkConnection.h"
 #include <QtCore>
 #include <QtNetwork>
-#include "DatalinkConnection.h"
 //=============================================================================
 class DatalinkTcpSocket : public DatalinkConnection
 {

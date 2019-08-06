@@ -22,9 +22,9 @@
  */
 #include "AppWindow.h"
 #include <ApxApp.h>
+#include <QCoreApplication>
 #include <QScreen>
 #include <QWidget>
-#include <QCoreApplication>
 //=============================================================================
 AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
     : AppSettingFact(AppSettings::settings(),

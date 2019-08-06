@@ -23,9 +23,9 @@
 #ifndef FirmwareTools_H
 #define FirmwareTools_H
 //=============================================================================
-#include <Fact/Fact.h>
 #include "Firmware.h"
 #include "Initialize.h"
+#include <Fact/Fact.h>
 //=============================================================================
 class FirmwareTools : public Fact
 {

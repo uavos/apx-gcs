@@ -23,10 +23,10 @@
 #ifndef Fact_H
 #define Fact_H
 //=============================================================================
+#include "FactAction.h"
 #include "FactData.h"
 #include "FactListModel.h"
 #include "FactListModelActions.h"
-#include "FactAction.h"
 #include <QColor>
 class FactSystem;
 //=============================================================================

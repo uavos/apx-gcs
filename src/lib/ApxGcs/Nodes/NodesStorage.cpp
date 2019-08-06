@@ -21,12 +21,12 @@
  *
  */
 #include "NodesStorage.h"
-#include "Nodes.h"
 #include "NodeItem.h"
+#include "Nodes.h"
 
-#include <Vehicles/Vehicles.h>
-#include <Vehicles/Vehicle.h>
 #include <ApxApp.h>
+#include <Vehicles/Vehicle.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 NodesStorage::NodesStorage(Nodes *nodes)
     : QObject(nodes)

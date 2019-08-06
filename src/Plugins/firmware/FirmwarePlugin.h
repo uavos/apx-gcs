@@ -22,11 +22,11 @@
  */
 #ifndef FirmwarePlugin_H
 #define FirmwarePlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Firmware.h"
 #include <App/AppRoot.h>
 #include <ApxGcs.h>
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class FirmwarePlugin : public ApxPluginInterface
 {

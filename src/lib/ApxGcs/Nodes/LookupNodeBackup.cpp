@@ -21,10 +21,10 @@
  *
  */
 #include "LookupNodeBackup.h"
+#include "NodeItem.h"
+#include "Nodes.h"
 #include <Database/Database.h>
 #include <Database/NodesDB.h>
-#include "Nodes.h"
-#include "NodeItem.h"
 //=============================================================================
 LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
     : DatabaseLookup(parent,

@@ -23,8 +23,8 @@
 #ifndef TelemetryReqWrite_H
 #define TelemetryReqWrite_H
 //=============================================================================
-#include <QtCore>
 #include "TelemetryDB.h"
+#include <QtCore>
 //=============================================================================
 class DBReqTelemetryNewRecord : public DBReqTelemetry
 {

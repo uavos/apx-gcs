@@ -22,9 +22,9 @@
  */
 #ifndef SitesPlugin_H
 #define SitesPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Sites.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class SitesPlugin : public ApxPluginInterface
 {

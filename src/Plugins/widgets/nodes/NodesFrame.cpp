@@ -1,9 +1,9 @@
 ﻿#include "NodesFrame.h"
-#include <ApxDirs.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
+#include <ApxMisc/QActionFact.h>
 #include <ApxMisc/SvgMaterialIcon.h>
 #include <Nodes/Nodes.h>
-#include <ApxMisc/QActionFact.h>
 #include <QAction>
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent)

@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <Fact/Fact.h>
 #include "NodeArrayListModel.h"
 #include "NodesBase.h"
+#include <Fact/Fact.h>
 //=============================================================================
 NodeArrayListModel::NodeArrayListModel(Fact *fact)
     : FactListModel(nullptr)

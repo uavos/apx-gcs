@@ -1,11 +1,11 @@
 #ifndef GeoPlugin_H
 #define GeoPlugin_H
-#include <QtCore/QObject>
-#include <QtLocation/QGeoServiceProviderFactory>
-#include <QtPlugin>
-#include <QtCore>
 #include <ApxPluginInterface.h>
 #include <TileLoader.h>
+#include <QtCore/QObject>
+#include <QtCore>
+#include <QtLocation/QGeoServiceProviderFactory>
+#include <QtPlugin>
 //=============================================================================
 class GeoPlugin : public ApxPluginInterface, public QGeoServiceProviderFactory
 {

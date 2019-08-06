@@ -24,10 +24,10 @@
 #include "Nodes.h"
 #include "NodesStorage.h"
 
-#include <Vehicles/Vehicle.h>
-#include <Sharing/NodesXml.h>
 #include <ApxDirs.h>
 #include <ApxLog.h>
+#include <Sharing/NodesXml.h>
+#include <Vehicles/Vehicle.h>
 //=============================================================================
 NodesShare::NodesShare(Nodes *nodes, Fact *parent)
     : Share(parent, tr("Configuration"), "nodes", ApxDirs::configs())

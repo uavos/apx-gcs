@@ -23,9 +23,9 @@
 #ifndef AppRoot_H
 #define AppRoot_H
 //=============================================================================
-#include <Fact/Fact.h>
-#include "AppSettings.h"
 #include "AppPlugins.h"
+#include "AppSettings.h"
+#include <Fact/Fact.h>
 //=============================================================================
 class AppRoot : public Fact
 {

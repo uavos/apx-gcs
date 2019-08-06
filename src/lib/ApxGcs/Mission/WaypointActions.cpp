@@ -21,8 +21,8 @@
  *
  */
 #include "WaypointActions.h"
-#include "Waypoint.h"
 #include "MissionField.h"
+#include "Waypoint.h"
 //=============================================================================
 WaypointActions::WaypointActions(Waypoint *parent)
     : Fact(parent, "actions", tr("Actions"), tr("Actions to perform on waypoint"), Group)

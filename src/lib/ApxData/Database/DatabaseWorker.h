@@ -23,11 +23,11 @@
 #ifndef DatabaseWorker_H
 #define DatabaseWorker_H
 //=============================================================================
-#include <QtCore>
-#include <QtSql>
+#include "DatabaseRequest.h"
 #include <atomic>
 #include <deque>
-#include "DatabaseRequest.h"
+#include <QtCore>
+#include <QtSql>
 class DatabaseSession;
 //=============================================================================
 class DatabaseWorker : public QThread

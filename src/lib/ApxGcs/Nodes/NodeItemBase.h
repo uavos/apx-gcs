@@ -23,8 +23,8 @@
 #ifndef NodeItemBase_H
 #define NodeItemBase_H
 //=============================================================================
-#include <QtCore>
 #include "NodesBase.h"
+#include <QtCore>
 //=============================================================================
 class NodeItemBase : public NodesBase
 {

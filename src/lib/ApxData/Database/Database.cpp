@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxLog.h>
 #include "Database.h"
+#include "MissionsDB.h"
 #include "NodesDB.h"
 #include "TelemetryDB.h"
-#include "MissionsDB.h"
+#include <ApxLog.h>
 //=============================================================================
 APX_LOGGING_CATEGORY(DatabaseLog, "core.Database")
 //=============================================================================

@@ -22,8 +22,8 @@
  */
 #ifndef ProtocolServiceFile_H
 #define ProtocolServiceFile_H
-#include <QtCore>
 #include "ProtocolBase.h"
+#include <QtCore>
 class ProtocolServiceNode;
 class ProtocolServiceRequest;
 //=============================================================================

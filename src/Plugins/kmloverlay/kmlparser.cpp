@@ -1,14 +1,11 @@
 #include "kmlparser.h"
 
-#include <QDomNodeList>
 #include "ApxLog.h"
+#include <QDomNodeList>
 
 using namespace std::placeholders;
 
-KmlParser::KmlParser()
-{
-
-}
+KmlParser::KmlParser() {}
 
 void KmlParser::parse(const QByteArray &data)
 {
@@ -16,12 +13,10 @@ void KmlParser::parse(const QByteArray &data)
 
     QString errorMessage;
     int errorLine;
-    if(m_dom.setContent(data, &errorMessage, &errorLine))
-    {
+    if (m_dom.setContent(data, &errorMessage, &errorLine)) {
         auto cb = std::bind(&KmlParser::placemarkCallback, this, _1);
         iterateOverChildrenElements(m_dom.documentElement(), "Placemark", cb);
-    }
-    else
+    } else
         apxMsgW() << QString("%1 at line %2").arg(errorMessage, errorLine);
 }
 
@@ -30,14 +25,14 @@ QList<KmlPolygon> KmlParser::getPolygons()
     return m_polygons;
 }
 
-void KmlParser::iterateOverChildrenElements(const QDomElement &parent, const QString &tagname,
+void KmlParser::iterateOverChildrenElements(const QDomElement &parent,
+                                            const QString &tagname,
                                             const IterateCallback &cb)
 {
     auto children = parent.elementsByTagName(tagname);
-    for(int i = 0; i < children.size(); i++)
-    {
+    for (int i = 0; i < children.size(); i++) {
         auto c = children.at(i).toElement();
-        if(!c.isNull())
+        if (!c.isNull())
             cb(c);
     }
 }
@@ -47,12 +42,11 @@ void KmlParser::placemarkCallback(const QDomElement &el)
     //polygon style parser
     QColor polygonColor("red");
     auto styles = el.elementsByTagName("PolyStyle");
-    if(!styles.isEmpty())
-    {
+    if (!styles.isEmpty()) {
         auto color = styles.at(0).toElement().elementsByTagName("color");
-        if(!color.isEmpty())
+        if (!color.isEmpty())
             polygonColor.setNamedColor("#" + color.at(0).toElement().text());
-        if(!polygonColor.isValid())
+        if (!polygonColor.isValid())
             qDebug() << "not valid";
     }
     auto cb = std::bind(&KmlParser::polygonCallback, this, _1, polygonColor);
@@ -86,7 +80,7 @@ void KmlParser::polygonInnerCallback(const QDomElement &el, KmlPolygon &polygon)
 void KmlParser::polygonCoordinatesCallback(const QDomElement &el, KmlPolygon &polygon)
 {
     auto coordinates = parseCoordinates(el.text());
-    for(auto &c: coordinates)
+    for (auto &c : coordinates)
         polygon.data.addCoordinate(c);
 }
 
@@ -100,17 +94,14 @@ QList<QGeoCoordinate> KmlParser::parseCoordinates(const QString &text)
 {
     QList<QGeoCoordinate> result;
     QStringList tuples = text.simplified().split(" ", QString::SkipEmptyParts);
-    for(auto &t: tuples)
-    {
+    for (auto &t : tuples) {
         QStringList coordinates = t.split(",", QString::SkipEmptyParts);
         bool ok1, ok2;
         double lon = t.section(",", 0, 0).toDouble(&ok1);
         double lat = t.section(",", 1, 1).toDouble(&ok2);
-        if(ok1 && ok2)
-        {
+        if (ok1 && ok2) {
             result.append(QGeoCoordinate(lat, lon));
-        }
-        else
+        } else
             apxMsgW() << "Can't parse lat-lon from string " << t;
     }
     return result;

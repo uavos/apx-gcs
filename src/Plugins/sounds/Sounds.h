@@ -22,12 +22,12 @@
  */
 #ifndef Sounds_H
 #define Sounds_H
-#include <QtCore>
 #include <QSound>
 #include <QTextToSpeech>
+#include <QtCore>
 
-#include <Fact/Fact.h>
 #include <App/AppSettings.h>
+#include <Fact/Fact.h>
 //=============================================================================
 class Sounds : public Fact
 {

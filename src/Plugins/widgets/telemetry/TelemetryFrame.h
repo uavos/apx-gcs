@@ -23,13 +23,13 @@
 #ifndef TelemetryFrame_H
 #define TelemetryFrame_H
 //-----------------------------------------------------------------------------
-#include <QtCore>
-#include <Telemetry/Telemetry.h>
-#include <Telemetry/LookupTelemetry.h>
-#include <Telemetry/TelemetryReader.h>
-#include <Telemetry/TelemetryPlayer.h>
-#include <Telemetry/TelemetryShare.h>
 #include "TelemetryPlot.h"
+#include <Telemetry/LookupTelemetry.h>
+#include <Telemetry/Telemetry.h>
+#include <Telemetry/TelemetryPlayer.h>
+#include <Telemetry/TelemetryReader.h>
+#include <Telemetry/TelemetryShare.h>
+#include <QtCore>
 //=============================================================================
 class TelemetryFrame : public QWidget
 {

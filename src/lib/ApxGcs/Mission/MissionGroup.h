@@ -23,9 +23,9 @@
 #ifndef MissionGroup_H
 #define MissionGroup_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
+#include <QtCore>
 class VehicleMission;
 class MissionItem;
 //=============================================================================

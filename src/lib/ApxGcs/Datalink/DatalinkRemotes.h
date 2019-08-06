@@ -23,10 +23,10 @@
 #ifndef DatalinkRemotes_H
 #define DatalinkRemotes_H
 //=============================================================================
+#include "DatalinkConnection.h"
+#include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
-#include <Fact/Fact.h>
-#include "DatalinkConnection.h"
 class Datalink;
 class DatalinkRemote;
 //=============================================================================

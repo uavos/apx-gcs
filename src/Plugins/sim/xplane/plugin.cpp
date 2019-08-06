@@ -1,20 +1,20 @@
+#include "XPLMDataAccess.h"
+#include "XPLMGraphics.h"
+#include "XPLMProcessing.h"
+#include "XPLMUtilities.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "XPLMDataAccess.h"
-#include "XPLMProcessing.h"
-#include "XPLMUtilities.h"
-#include "XPLMGraphics.h"
 //---------------
 #include <version.h>
 
 #include <Mandala/Mandala.h>
 
-#include <Xbus/XbusPacket.h>
 #include <Xbus/XbusNodeConf.h>
+#include <Xbus/XbusPacket.h>
 
-#include <common/ApxTcpPorts.h>
 #include <TcpLink/tcp_server.h>
+#include <common/ApxTcpPorts.h>
 //==============================================================================
 //#define UDP_HOST_UAV            "127.0.0.1"      //machine where 'shiva' runs
 static _tcp_server server;

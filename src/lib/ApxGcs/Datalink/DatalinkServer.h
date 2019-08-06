@@ -23,9 +23,9 @@
 #ifndef DatalinkServer_H
 #define DatalinkServer_H
 //=============================================================================
+#include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
-#include <Fact/Fact.h>
 class Datalink;
 class HttpService;
 //=============================================================================

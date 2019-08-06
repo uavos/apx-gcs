@@ -21,8 +21,8 @@
  *
  */
 #include "ProtocolVehicles.h"
-#include "ProtocolVehicle.h"
 #include "ProtocolServiceFirmware.h"
+#include "ProtocolVehicle.h"
 
 #include <Xbus/XbusPacket.h>
 #include <Xbus/XbusVehicle.h>

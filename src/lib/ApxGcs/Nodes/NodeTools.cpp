@@ -23,8 +23,8 @@
 #include "NodeTools.h"
 #include "NodeItem.h"
 #include "Nodes.h"
-#include <Database/Database.h>
 #include <ApxApp.h>
+#include <Database/Database.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 NodeTools::NodeTools(NodeItem *parent)

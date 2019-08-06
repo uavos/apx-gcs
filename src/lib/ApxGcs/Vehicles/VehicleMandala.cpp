@@ -244,7 +244,7 @@ bool VehicleMandala::setErrcnt(const uint &v)
 QVariant VehicleMandala::valueById(quint16 id) const
 {
     auto f = factById(id);
-    if(f)
+    if (f)
         return f->value();
     else
         return QVariant();
@@ -252,7 +252,7 @@ QVariant VehicleMandala::valueById(quint16 id) const
 bool VehicleMandala::setValueById(quint16 id, const QVariant &v)
 {
     auto f = factById(id);
-    if(f)
+    if (f)
         return f->setValue(v);
 
     return false;
@@ -264,7 +264,7 @@ VehicleMandalaFact *VehicleMandala::factById(quint16 id, uint16_t msb) const
 QVariant VehicleMandala::valueByName(const QString &vname) const
 {
     auto f = factByName(vname);
-    if(f)
+    if (f)
         return f->value();
     else
         return QVariant();

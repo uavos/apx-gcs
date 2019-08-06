@@ -23,9 +23,9 @@
 #ifndef AppPlugins_H
 #define AppPlugins_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <ApxPluginInterface.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class AppPlugin;
 //=============================================================================
 class AppPlugins : public QObject, public QList<AppPlugin *>

@@ -23,8 +23,8 @@
 #ifndef WaypointActions_H
 #define WaypointActions_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class Waypoint;
 //=============================================================================
 class WaypointActions : public Fact

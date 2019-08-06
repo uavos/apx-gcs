@@ -21,10 +21,10 @@
  *
  */
 #include "AppPlugins.h"
+#include "AppSettings.h"
+#include <ApxApp.h>
 #include <ApxDirs.h>
 #include <ApxLog.h>
-#include <ApxApp.h>
-#include "AppSettings.h"
 //=============================================================================
 AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     : QObject(parent)

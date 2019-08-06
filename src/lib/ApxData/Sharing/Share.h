@@ -23,10 +23,10 @@
 #ifndef Share_H
 #define Share_H
 //=============================================================================
-#include <QtCore>
-#include <QDomDocument>
-#include <Fact/Fact.h>
 #include "ShareXml.h"
+#include <Fact/Fact.h>
+#include <QDomDocument>
+#include <QtCore>
 //=============================================================================
 class Share : public Fact
 {

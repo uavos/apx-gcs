@@ -1,9 +1,9 @@
 #ifndef KMLOVERLAYPLUGIN_H
 #define KMLOVERLAYPLUGIN_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "kmloverlay.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 
 class KmlOverlayPlugin : public ApxPluginInterface
 {

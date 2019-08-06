@@ -22,10 +22,10 @@
  */
 #ifndef SoundsPlugin_H
 #define SoundsPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Sounds.h"
 #include <App/AppSettings.h>
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class SoundsPlugin : public ApxPluginInterface
 {

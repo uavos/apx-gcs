@@ -26,8 +26,8 @@
 #include "HttpService.h"
 
 #include <App/AppSettings.h>
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 
 #include <common/ApxTcpPorts.h>
 //=============================================================================

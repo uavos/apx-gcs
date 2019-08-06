@@ -23,8 +23,8 @@
 #ifndef VehicleSelect_H
 #define VehicleSelect_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class Vehicles;
 class Vehicle;
 //=============================================================================

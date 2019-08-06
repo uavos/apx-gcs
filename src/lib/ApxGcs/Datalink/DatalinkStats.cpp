@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Datalink.h"
 #include "DatalinkStats.h"
+#include "Datalink.h"
 //=============================================================================
 DatalinkStats::DatalinkStats(Datalink *parent)
     : Fact(parent, "stats", tr("Statistics"), tr("Data traffic usage"), Group)

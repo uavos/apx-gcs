@@ -22,10 +22,10 @@
  */
 #ifndef ProtocolServiceNode_H
 #define ProtocolServiceNode_H
-#include <QtCore>
 #include "ProtocolBase.h"
 #include "ProtocolServiceFile.h"
 #include <Dictionary/DictNode.h>
+#include <QtCore>
 class ProtocolService;
 class ProtocolServiceRequest;
 class XbusStreamReader;

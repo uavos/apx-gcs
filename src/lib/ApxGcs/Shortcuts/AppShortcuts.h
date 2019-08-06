@@ -23,8 +23,8 @@
 #ifndef AppShortcuts_H
 #define AppShortcuts_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class AppShortcut;
 class AppSettings;
 //=============================================================================

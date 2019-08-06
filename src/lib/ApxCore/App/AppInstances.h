@@ -22,8 +22,8 @@
  */
 #ifndef AppInstances_H
 #define AppInstances_H
-#include <QtCore>
 #include <QLocalServer>
+#include <QtCore>
 //=============================================================================
 class AppInstances : public QObject
 {

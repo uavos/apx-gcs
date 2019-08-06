@@ -23,11 +23,11 @@
 #ifndef SystreePlugin_H
 #define SystreePlugin_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
-#include <TreeModel/FactTreeView.h>
-#include <Fact/Fact.h>
 #include <App/AppRoot.h>
+#include <ApxPluginInterface.h>
+#include <Fact/Fact.h>
+#include <TreeModel/FactTreeView.h>
+#include <QtCore>
 //=============================================================================
 class SystreePlugin : public ApxPluginInterface
 {

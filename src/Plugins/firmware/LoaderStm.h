@@ -23,8 +23,8 @@
 #ifndef LoaderStm_H
 #define LoaderStm_H
 //=============================================================================
-#include <QtCore>
 #include <QSerialPort>
+#include <QtCore>
 class Loader;
 //=============================================================================
 class LoaderStm : public QObject

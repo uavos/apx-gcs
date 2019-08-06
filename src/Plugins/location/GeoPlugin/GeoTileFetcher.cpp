@@ -1,7 +1,7 @@
 #include "GeoTileFetcher.h"
 #include "GeoMapReply.h"
-#include <QtLocation/private/qgeotilespec_p.h>
 #include "TileLoader.h"
+#include <QtLocation/private/qgeotilespec_p.h>
 //=============================================================================
 //=============================================================================
 GeoTileFetcher::GeoTileFetcher(QGeoTiledMappingManagerEngine *parent)

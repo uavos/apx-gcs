@@ -23,11 +23,11 @@
 #ifndef Sites_H
 #define Sites_H
 //=============================================================================
-#include <QtCore>
-#include <QtLocation>
-#include <Fact/Fact.h>
 #include "LookupSites.h"
 #include "SiteEdit.h"
+#include <Fact/Fact.h>
+#include <QtCore>
+#include <QtLocation>
 //=============================================================================
 class Sites : public Fact
 {

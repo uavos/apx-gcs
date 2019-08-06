@@ -21,9 +21,9 @@
  *
  */
 #include "MapsDB.h"
+#include "TileLoader.h"
 #include <ApxDirs.h>
 #include <ApxLog.h>
-#include "TileLoader.h"
 //=============================================================================
 MapsDB::MapsDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("maps.db"), sessionName)

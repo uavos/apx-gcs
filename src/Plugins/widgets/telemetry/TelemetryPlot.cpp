@@ -21,8 +21,8 @@
  *
  */
 #include "TelemetryPlot.h"
-#include <QtGui>
 #include <QJSEngine>
+#include <QtGui>
 //=============================================================================
 TelemetryPlot::TelemetryPlot(QWidget *parent)
     : QwtPlot(parent)

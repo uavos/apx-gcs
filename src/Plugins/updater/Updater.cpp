@@ -21,9 +21,9 @@
  *
  */
 #include "Updater.h"
-#include <ApxDirs.h>
 #include <App/AppSettings.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
 
 #include "sparkle/SparkleAutoUpdater.h"
 //=============================================================================

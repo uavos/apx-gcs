@@ -23,9 +23,9 @@
 #ifndef Vehicles_H
 #define Vehicles_H
 //=============================================================================
+#include "Vehicle.h"
 #include <Fact/Fact.h>
 #include <Protocols/ApxProtocol.h>
-#include "Vehicle.h"
 class NodeItem;
 //=============================================================================
 class Vehicles : public Fact

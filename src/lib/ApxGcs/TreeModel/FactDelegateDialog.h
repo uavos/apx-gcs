@@ -22,8 +22,8 @@
  */
 #ifndef FactDelegateDialog_H
 #define FactDelegateDialog_H
-#include <QtWidgets>
 #include <Fact/Fact.h>
+#include <QtWidgets>
 //=============================================================================
 class FactDelegateDialog : public QDialog
 {

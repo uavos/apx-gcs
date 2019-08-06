@@ -23,8 +23,8 @@
 #ifndef Simulator_H
 #define Simulator_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 Q_DECLARE_LOGGING_CATEGORY(SimLog)
 class AppSettingFact;
 //=============================================================================

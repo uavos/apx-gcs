@@ -23,8 +23,8 @@
 #ifndef NodesBase_H
 #define NodesBase_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class NodesBase : public Fact
 {

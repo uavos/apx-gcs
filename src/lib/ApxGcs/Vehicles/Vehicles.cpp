@@ -20,13 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxLog.h>
-#include <ApxApp.h>
 #include "Vehicles.h"
-#include "VehicleSelect.h"
 #include "VehicleMandala.h"
 #include "VehicleMandalaFact.h"
+#include "VehicleSelect.h"
 #include "VehicleWarnings.h"
+#include <ApxApp.h>
+#include <ApxLog.h>
 #include <Database/TelemetryDB.h>
 #include <QQmlEngine>
 //=============================================================================

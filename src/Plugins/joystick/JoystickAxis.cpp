@@ -21,8 +21,8 @@
  *
  */
 #include "JoystickAxis.h"
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 
 //=============================================================================
 JoystickAxis::JoystickAxis(Fact *parent)

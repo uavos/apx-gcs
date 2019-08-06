@@ -21,9 +21,9 @@
  *
  */
 #include "LookupSites.h"
+#include "Sites.h"
 #include <Database/Database.h>
 #include <Database/MissionsDB.h>
-#include "Sites.h"
 
 #include <App/AppRoot.h>
 //=============================================================================

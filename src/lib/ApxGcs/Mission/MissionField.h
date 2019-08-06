@@ -23,8 +23,8 @@
 #ifndef MissionField_H
 #define MissionField_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class MissionField : public Fact
 {

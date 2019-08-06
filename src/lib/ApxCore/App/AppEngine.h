@@ -23,10 +23,10 @@
 #ifndef AppEngine_H
 #define AppEngine_H
 //=============================================================================
+#include <Fact/Fact.h>
+#include <QJSEngine>
 #include <QtCore>
 #include <QtQml>
-#include <QJSEngine>
-#include <Fact/Fact.h>
 //=============================================================================
 class AppEngine : public QQmlApplicationEngine
 {

@@ -23,11 +23,11 @@
 #ifndef MapTools_H
 #define MapTools_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QGeoShape>
 #include <QQmlComponent>
+#include <QtCore>
 class Vehicle;
 class VehicleMission;
 //=============================================================================

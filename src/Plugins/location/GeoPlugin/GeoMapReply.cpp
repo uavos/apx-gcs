@@ -1,9 +1,8 @@
 #include "GeoMapReply.h"
 #include "GeoTileFetcher.h"
-#include <QtLocation/private/qgeotilespec_p.h>
-#include <ApxLog.h>
 #include "TileLoader.h"
-#include "GeoTileFetcher.h"
+#include <ApxLog.h>
+#include <QtLocation/private/qgeotilespec_p.h>
 //=============================================================================
 static const unsigned char pngSignature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00};
 static const unsigned char jpegSignature[] = {0xFF, 0xD8, 0xFF, 0x00};

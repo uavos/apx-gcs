@@ -23,8 +23,8 @@
 #ifndef Poi_H
 #define Poi_H
 //=============================================================================
-#include <QtCore>
 #include "MissionItem.h"
+#include <QtCore>
 //=============================================================================
 class Poi : public MissionItem
 {

@@ -28,10 +28,10 @@
 #ifndef SVGIMAGEPROVIDER_H_
 #define SVGIMAGEPROVIDER_H_
 
+#include <QMap>
 #include <QObject>
 #include <QQuickImageProvider>
 #include <QSvgRenderer>
-#include <QMap>
 
 class SvgImageProvider : public QObject, public QQuickImageProvider
 {

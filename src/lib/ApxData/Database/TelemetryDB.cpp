@@ -20,10 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxDirs.h>
-#include <ApxLog.h>
 #include "TelemetryDB.h"
 #include "Database.h"
+#include <ApxDirs.h>
+#include <ApxLog.h>
 //=============================================================================
 TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("telemetry.db"), sessionName)

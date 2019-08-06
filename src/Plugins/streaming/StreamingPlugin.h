@@ -22,9 +22,9 @@
  */
 #ifndef StreamingPlugin_H
 #define StreamingPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "gstplayer.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class StreamingPlugin : public ApxPluginInterface
 {

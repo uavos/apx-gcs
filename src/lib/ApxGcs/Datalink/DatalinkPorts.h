@@ -23,8 +23,8 @@
 #ifndef DatalinkPorts_H
 #define DatalinkPorts_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class DatalinkPort;
 class Datalink;
 //=============================================================================

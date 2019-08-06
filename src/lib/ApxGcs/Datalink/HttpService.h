@@ -22,8 +22,8 @@
  */
 #ifndef HTTPSERVICE_H
 #define HTTPSERVICE_H
-#include <QtCore>
 #include <Vehicles/VehicleMandalaValue.h>
+#include <QtCore>
 //=============================================================================
 class HttpService : public QObject
 {

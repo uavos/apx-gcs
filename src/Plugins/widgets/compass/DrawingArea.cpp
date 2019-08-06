@@ -1,6 +1,6 @@
 ﻿#include <Fact/Fact.h>
-#include <App/AppRoot.h>
 #include "DrawingArea.h"
+#include <App/AppRoot.h>
 
 DrawingArea::DrawingArea()
     : QWidget()

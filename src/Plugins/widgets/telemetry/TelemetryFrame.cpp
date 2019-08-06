@@ -21,15 +21,15 @@
  *
  */
 #include "TelemetryFrame.h"
+#include <ApxApp.h>
+#include <ApxDirs.h>
+#include <ApxMisc/QActionFact.h>
+#include <ApxMisc/SvgMaterialIcon.h>
+#include <Telemetry/LookupTelemetry.h>
+#include <Vehicles/Vehicle.h>
+#include <Vehicles/Vehicles.h>
 #include <QtGui>
 #include <QtNetwork>
-#include <ApxDirs.h>
-#include <ApxMisc/SvgMaterialIcon.h>
-#include <Vehicles/Vehicles.h>
-#include <Vehicles/Vehicle.h>
-#include <Telemetry/LookupTelemetry.h>
-#include <ApxApp.h>
-#include <ApxMisc/QActionFact.h>
 //=============================================================================
 TelemetryFrame::TelemetryFrame(QWidget *parent)
     : QWidget(parent)

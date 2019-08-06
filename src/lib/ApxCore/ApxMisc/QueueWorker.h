@@ -23,8 +23,8 @@
 #ifndef QueueWorker_H
 #define QueueWorker_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class QueueWorker : public QThread
 {

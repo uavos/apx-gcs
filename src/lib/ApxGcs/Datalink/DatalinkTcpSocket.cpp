@@ -23,8 +23,8 @@
 #include "DatalinkTcpSocket.h"
 #include "Datalink.h"
 
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 
 #include <Math/crc.h>
 //=============================================================================

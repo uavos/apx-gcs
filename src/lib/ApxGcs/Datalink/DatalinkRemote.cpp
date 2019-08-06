@@ -20,12 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Datalink.h"
 #include "DatalinkRemote.h"
+#include "Datalink.h"
 #include "DatalinkRemotes.h"
 
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 
 #include <common/ApxTcpPorts.h>
 //=============================================================================

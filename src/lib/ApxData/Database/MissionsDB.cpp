@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxDirs.h>
 #include "MissionsDB.h"
 #include "Database.h"
+#include <ApxDirs.h>
 //=============================================================================
 MissionsDB::MissionsDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("missions.db"), sessionName)

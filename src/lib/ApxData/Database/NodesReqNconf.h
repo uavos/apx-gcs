@@ -23,8 +23,8 @@
 #ifndef NodesReqNconf_H
 #define NodesReqNconf_H
 //=============================================================================
-#include <QtCore>
 #include "NodesDB.h"
+#include <QtCore>
 //=============================================================================
 class DBReqNodesLoadNconf : public DBReqNodes
 {

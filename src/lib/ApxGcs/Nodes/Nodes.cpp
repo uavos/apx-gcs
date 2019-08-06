@@ -21,11 +21,11 @@
  *
  */
 #include "Nodes.h"
-#include "NodeItem.h"
 #include "NodeField.h"
+#include "NodeItem.h"
 
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 Nodes::Nodes(Vehicle *parent)

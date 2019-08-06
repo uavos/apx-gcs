@@ -21,13 +21,13 @@
  *
  */
 #include "LookupMissions.h"
+#include <App/AppRoot.h>
 #include <Database/Database.h>
 #include <Database/MissionsDB.h>
-#include <App/AppRoot.h>
 
-#include <Vehicles/Vehicles.h>
-#include <Mission/VehicleMission.h>
 #include <Mission/MissionStorage.h>
+#include <Mission/VehicleMission.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent)
     : DatabaseLookup(parent,

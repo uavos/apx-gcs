@@ -22,14 +22,14 @@
  */
 #include "MissionTools.h"
 #include "MissionStorage.h"
-#include "VehicleMission.h"
-#include "Waypoint.h"
+#include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
-#include "Poi.h"
+#include "VehicleMission.h"
+#include "Waypoint.h"
 
-#include <Vehicles/Vehicles.h>
 #include <Vehicles/VehicleSelect.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 MissionTools::MissionTools(VehicleMission *mission, Fact *parent)
     : Fact(parent, "tools", tr("Tools"), tr("Mission edit tools"), Group)

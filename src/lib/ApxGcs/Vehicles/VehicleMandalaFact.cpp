@@ -21,8 +21,8 @@
  *
  */
 #include "VehicleMandalaFact.h"
-#include "VehicleMandala.h"
 #include "Vehicle.h"
+#include "VehicleMandala.h"
 //=============================================================================
 VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent,
                                        quint16 id,

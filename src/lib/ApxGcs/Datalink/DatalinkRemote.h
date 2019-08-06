@@ -23,8 +23,8 @@
 #ifndef DatalinkRemote_H
 #define DatalinkRemote_H
 //=============================================================================
-#include <QtCore>
 #include "DatalinkTcpSocket.h"
+#include <QtCore>
 class Datalink;
 //=============================================================================
 class DatalinkRemote : public DatalinkTcpSocket

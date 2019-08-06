@@ -22,11 +22,11 @@
  */
 #ifndef TelemetryRecorder_H
 #define TelemetryRecorder_H
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <Database/TelemetryReqWrite.h>
-#include <Vehicles/Vehicles.h>
+#include <Fact/Fact.h>
 #include <Vehicles/VehicleMandalaValue.h>
+#include <Vehicles/Vehicles.h>
+#include <QtCore>
 class Recorder;
 //=============================================================================
 class TelemetryRecorder : public Fact

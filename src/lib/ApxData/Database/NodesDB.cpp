@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxDirs.h>
 #include "NodesDB.h"
 #include "Database.h"
+#include <ApxDirs.h>
 //=============================================================================
 NodesDB::NodesDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("vehicles.db"), sessionName)

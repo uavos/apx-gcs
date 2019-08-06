@@ -23,8 +23,8 @@
 #ifndef QueueItem_H
 #define QueueItem_H
 //=============================================================================
-#include <Fact/Fact.h>
 #include "Firmware.h"
+#include <Fact/Fact.h>
 //=============================================================================
 class QueueItem : public Fact
 {

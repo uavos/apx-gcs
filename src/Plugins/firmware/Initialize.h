@@ -23,8 +23,8 @@
 #ifndef Initialize_H
 #define Initialize_H
 //=============================================================================
-#include <QSerialPort>
 #include "Firmware.h"
+#include <QSerialPort>
 //=============================================================================
 class Initialize : public Fact
 {

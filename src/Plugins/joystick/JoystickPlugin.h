@@ -22,10 +22,10 @@
  */
 #ifndef JoystickPlugin_H
 #define JoystickPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Joysticks.h"
 #include <App/AppSettings.h>
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class JoystickPlugin : public ApxPluginInterface
 {

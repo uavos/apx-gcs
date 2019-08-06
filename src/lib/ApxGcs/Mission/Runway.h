@@ -23,9 +23,9 @@
 #ifndef Runway_H
 #define Runway_H
 //=============================================================================
-#include <QtCore>
-#include <QGeoCoordinate>
 #include "MissionItem.h"
+#include <QGeoCoordinate>
+#include <QtCore>
 //=============================================================================
 class Runway : public MissionItem
 {

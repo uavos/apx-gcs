@@ -23,9 +23,9 @@
 #ifndef MissionsXml_H
 #define MissionsXml_H
 //=============================================================================
+#include "ShareXml.h"
 #include <Database/MissionsDB.h>
 #include <Dictionary/DictMission.h>
-#include "ShareXml.h"
 //=============================================================================
 class MissionsXmlExport : public ShareXmlExport
 {

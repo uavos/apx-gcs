@@ -21,22 +21,22 @@
  *
  */
 #include "VehicleMission.h"
-#include "MissionListModel.h"
-#include "MissionTools.h"
-#include "MissionStorage.h"
-#include "MissionShare.h"
 #include "LookupMissions.h"
-#include "MissionGroup.h"
 #include "MissionField.h"
-#include "Waypoint.h"
+#include "MissionGroup.h"
+#include "MissionListModel.h"
+#include "MissionShare.h"
+#include "MissionStorage.h"
+#include "MissionTools.h"
+#include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
-#include "Poi.h"
+#include "Waypoint.h"
 
-#include <Vehicles/Vehicles.h>
-#include <Protocols/ProtocolMission.h>
-#include <QQmlEngine>
 #include <ApxApp.h>
+#include <Protocols/ProtocolMission.h>
+#include <Vehicles/Vehicles.h>
+#include <QQmlEngine>
 //=============================================================================
 VehicleMission::VehicleMission(Vehicle *parent)
     : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group)

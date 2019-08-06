@@ -21,10 +21,10 @@
  *
  */
 #include "Loader.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxDirs.h>
 #include <ApxGcs.h>
+#include <ApxLog.h>
 
 #include <Protocols/ApxProtocol.h>
 #include <Protocols/ProtocolServiceFirmware.h>
@@ -32,8 +32,8 @@
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicles.h>
 
-#include "Releases.h"
 #include "LoaderStm.h"
+#include "Releases.h"
 //=============================================================================
 Loader::Loader(Fact *parent, ProtocolServiceFirmware *protocol)
     : QueueItem(parent, "loader")

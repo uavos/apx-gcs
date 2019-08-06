@@ -20,10 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxDirs.h>
-#include <ApxApp.h>
-#include <Vehicles/Vehicles.h>
 #include "HttpService.h"
+#include <ApxApp.h>
+#include <ApxDirs.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 HttpService::HttpService(QObject *parent)
     : QObject(parent)

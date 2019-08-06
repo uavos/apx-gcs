@@ -24,9 +24,9 @@
 #define Updater_H
 #include <QtCore>
 
-#include <Fact/Fact.h>
 #include <App/AppSettings.h>
 #include <ApxMisc/DelayedEvent.h>
+#include <Fact/Fact.h>
 class SparkleAutoUpdater;
 //=============================================================================
 class Updater : public Fact

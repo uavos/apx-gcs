@@ -22,11 +22,11 @@
  */
 #ifndef DatalinkSerial_H
 #define DatalinkSerial_H
-#include <QtCore>
 #include "DatalinkConnection.h"
 #include <common/Escaped.h>
 #include <QSerialPort>
 #include <QSerialPortInfo>
+#include <QtCore>
 //=============================================================================
 class DatalinkSerial : public DatalinkConnection, public Escaped
 {

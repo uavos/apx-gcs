@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QtWidgets>
-#include "FactTreeModel.h"
 #include "FactDelegate.h"
 #include "FactDelegateArray.h"
 #include "FactDelegateScript.h"
+#include "FactTreeModel.h"
+#include <QtWidgets>
 //=============================================================================
 FactDelegate::FactDelegate(QObject *parent)
     : QItemDelegate(parent)

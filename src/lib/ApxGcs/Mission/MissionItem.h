@@ -23,12 +23,12 @@
 #ifndef MissionItem_H
 #define MissionItem_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include "MissionGroup.h"
-#include <QGeoPath>
+#include <Fact/Fact.h>
 #include <QGeoCoordinate>
+#include <QGeoPath>
 #include <QGeoRectangle>
+#include <QtCore>
 //=============================================================================
 class MissionItem : public Fact
 {

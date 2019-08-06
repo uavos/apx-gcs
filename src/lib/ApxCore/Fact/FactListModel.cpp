@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Fact.h"
 #include "FactListModel.h"
+#include "Fact.h"
 //=============================================================================
 FactListModel::FactListModel(Fact *fact)
     : QAbstractListModel(fact)

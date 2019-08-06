@@ -23,8 +23,8 @@
 #ifndef VehicleMandalaFact_H
 #define VehicleMandalaFact_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class VehicleMandala;
 //=============================================================================
 class VehicleMandalaFact : public Fact

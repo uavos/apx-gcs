@@ -20,16 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ApxLog.h>
 #include "Firmware.h"
+#include "FirmwareTools.h"
 #include "Loader.h"
 #include "QueueItem.h"
 #include "Releases.h"
-#include "FirmwareTools.h"
+#include <ApxLog.h>
 
 #include <ApxApp.h>
-#include <Vehicles/Vehicles.h>
 #include <Nodes/NodeItem.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 APX_LOGGING_CATEGORY(FirmwareLog, "core.Firmware")
 //=============================================================================

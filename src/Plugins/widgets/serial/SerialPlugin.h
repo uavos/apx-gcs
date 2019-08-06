@@ -23,9 +23,9 @@
 #ifndef SerialPLUGIN_H
 #define SerialPLUGIN_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "SerialForm.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class SerialPlugin : public ApxPluginInterface
 {

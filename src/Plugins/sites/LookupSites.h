@@ -23,10 +23,10 @@
 #ifndef LookupSites_H
 #define LookupSites_H
 //=============================================================================
-#include <QtCore>
+#include <Database/DatabaseLookup.h>
 #include <QGeoCoordinate>
 #include <QGeoRectangle>
-#include <Database/DatabaseLookup.h>
+#include <QtCore>
 class Sites;
 //=============================================================================
 class LookupSites : public DatabaseLookup

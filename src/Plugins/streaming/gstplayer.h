@@ -1,11 +1,11 @@
 ﻿#ifndef GSTPLAYER_H
 #define GSTPLAYER_H
 
-#include <QtCore>
-#include <QAbstractVideoSurface>
-#include <Fact/Fact.h>
-#include "videothread.h"
 #include "overlay.h"
+#include "videothread.h"
+#include <Fact/Fact.h>
+#include <QAbstractVideoSurface>
+#include <QtCore>
 
 class GstPlayer : public Fact
 {
@@ -16,26 +16,10 @@ class GstPlayer : public Fact
 public:
     static const int THREAD_STOP_TIMEOUT = 500;
     static const int RECONNECT_TIMEOUT = 15000;
-    enum ConnectionState {
-        STATE_UNCONNECTED,
-        STATE_CONNECTING,
-        STATE_CONNECTED
-    };
-    enum MediaType {
-        mtImage,
-        mtVideo
-    };
-    enum SourceType {
-        stUri,
-        stRtsp,
-        stTcp,
-        stUdp,
-        stWebcam
-    };
-    enum CodecType {
-        ctH264,
-        ctH265
-    };
+    enum ConnectionState { STATE_UNCONNECTED, STATE_CONNECTING, STATE_CONNECTED };
+    enum MediaType { mtImage, mtVideo };
+    enum SourceType { stUri, stRtsp, stTcp, stUdp, stWebcam };
+    enum CodecType { ctH264, ctH265 };
 
     Q_ENUM(ConnectionState)
     explicit GstPlayer(Fact *parent = nullptr);

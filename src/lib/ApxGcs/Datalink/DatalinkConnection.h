@@ -23,8 +23,8 @@
 #ifndef DatalinkConnection_H
 #define DatalinkConnection_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class DatalinkConnection : public Fact
 {

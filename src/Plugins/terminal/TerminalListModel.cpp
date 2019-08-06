@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <Fact/Fact.h>
 #include "TerminalListModel.h"
+#include <Fact/Fact.h>
 //=============================================================================
 TerminalListModel::TerminalListModel(QObject *parent)
     : QAbstractListModel(parent)

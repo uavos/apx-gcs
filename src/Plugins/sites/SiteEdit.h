@@ -23,10 +23,10 @@
 #ifndef SiteEdit_H
 #define SiteEdit_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
-#include <QtLocation>
 #include <Mission/LookupMissions.h>
+#include <QtCore>
+#include <QtLocation>
 class LookupMissions;
 //=============================================================================
 class SiteEdit : public Fact

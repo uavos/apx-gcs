@@ -23,9 +23,9 @@
 #ifndef LookupConfigs_H
 #define LookupConfigs_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include <Database/DatabaseLookup.h>
+#include <Fact/Fact.h>
+#include <QtCore>
 class Nodes;
 //=============================================================================
 class LookupConfigs : public DatabaseLookup

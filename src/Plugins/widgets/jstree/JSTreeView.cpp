@@ -1,8 +1,8 @@
+#include "JSTreeView.h"
+#include <ApxMisc/SvgMaterialIcon.h>
+#include <TreeModel/JSTreeModel.h>
 #include <QHeaderView>
 #include <QtWidgets>
-#include "JSTreeView.h"
-#include <TreeModel/JSTreeModel.h>
-#include <ApxMisc/SvgMaterialIcon.h>
 //=============================================================================
 JSTreeView::JSTreeView(QWidget *parent)
     : QTreeView(parent)

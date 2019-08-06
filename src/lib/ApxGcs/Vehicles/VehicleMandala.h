@@ -23,11 +23,11 @@
 #ifndef VehicleMandala_H
 #define VehicleMandala_H
 //=============================================================================
-#include <QtCore>
-#include <Protocols/ProtocolVehicles.h>
+#include "VehicleMandalaFact.h"
 #include <Dictionary/DictMandala.h>
 #include <Fact/Fact.h>
-#include "VehicleMandalaFact.h"
+#include <Protocols/ProtocolVehicles.h>
+#include <QtCore>
 class Vehicle;
 //=============================================================================
 class VehicleMandala : public Fact

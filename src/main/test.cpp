@@ -1,7 +1,7 @@
 ﻿#include <QApplication>
+#include <Mandala.h>
 #include <QtCore>
 #include <QtWidgets>
-#include <Mandala.h>
 //============================================================================
 int main(int argc, char *argv[])
 {

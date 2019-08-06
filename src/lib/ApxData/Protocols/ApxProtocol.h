@@ -22,9 +22,9 @@
  */
 #ifndef ApxProtocol_H
 #define ApxProtocol_H
-#include <QtCore>
 #include "ProtocolVehicle.h"
 #include "ProtocolVehicles.h"
+#include <QtCore>
 //=============================================================================
 class ApxProtocol : public QObject
 {

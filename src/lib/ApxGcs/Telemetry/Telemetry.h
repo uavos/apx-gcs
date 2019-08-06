@@ -22,8 +22,8 @@
  */
 #ifndef Telemetry_H
 #define Telemetry_H
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class Vehicle;
 class TelemetryRecorder;
 class LookupTelemetry;

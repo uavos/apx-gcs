@@ -23,12 +23,12 @@
 #ifndef NodesStorage_H
 #define NodesStorage_H
 //=============================================================================
-#include <QtCore>
 #include <Database/NodesReqDict.h>
 #include <Database/NodesReqNconf.h>
 #include <Database/NodesReqVehicle.h>
-#include <Protocols/ProtocolServiceNode.h>
 #include <Dictionary/DictNode.h>
+#include <Protocols/ProtocolServiceNode.h>
+#include <QtCore>
 class Nodes;
 class NodeItem;
 //=============================================================================

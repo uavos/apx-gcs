@@ -22,10 +22,10 @@
  */
 #ifndef ApxLog_H
 #define ApxLog_H
-#include <QtCore>
 #include <QLoggingCategory>
-#include <QMessageLogger>
 #include <QMessageLogContext>
+#include <QMessageLogger>
+#include <QtCore>
 //=============================================================================
 Q_DECLARE_LOGGING_CATEGORY(AppLog)
 Q_DECLARE_LOGGING_CATEGORY(ConsoleLog)

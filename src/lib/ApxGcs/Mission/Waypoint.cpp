@@ -22,8 +22,8 @@
  */
 #include "Waypoint.h"
 //#include "Mission.h"
-#include "VehicleMission.h"
 #include "MissionField.h"
+#include "VehicleMission.h"
 #include <ApxApp.h>
 //=============================================================================
 Waypoint::Waypoint(MissionGroup *parent)

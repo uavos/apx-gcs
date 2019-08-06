@@ -22,9 +22,9 @@
  */
 #ifndef QueueJob_H
 #define QueueJob_H
-#include <QtCore>
-#include <Fact/Fact.h>
 #include "QueueWorker.h"
+#include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class QueueJob : public Fact
 {

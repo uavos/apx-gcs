@@ -23,9 +23,9 @@
 #include "Initialize.h"
 #include "Firmware.h"
 #include "Releases.h"
-#include <ApxLog.h>
 #include <ApxApp.h>
 #include <ApxGcs.h>
+#include <ApxLog.h>
 #include <QSerialPortInfo>
 //=============================================================================
 Initialize::Initialize(Firmware *firmware, Fact *parent)

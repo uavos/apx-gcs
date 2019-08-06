@@ -23,8 +23,8 @@
 #ifndef NodeArrayListModel_H
 #define NodeArrayListModel_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/FactListModel.h>
+#include <QtCore>
 //=============================================================================
 class NodeArrayListModel : public FactListModel
 {

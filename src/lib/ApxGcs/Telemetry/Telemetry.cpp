@@ -21,16 +21,16 @@
  *
  */
 #include "Telemetry.h"
-#include "TelemetryRecorder.h"
 #include "LookupTelemetry.h"
-#include "TelemetryReader.h"
 #include "TelemetryPlayer.h"
+#include "TelemetryReader.h"
+#include "TelemetryRecorder.h"
 #include "TelemetryShare.h"
 
-#include <Vehicles/Vehicles.h>
-#include <Mission/VehicleMission.h>
 #include <Mission/MissionStorage.h>
+#include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 Telemetry::Telemetry(Vehicle *parent)
     : Fact(parent, "telemetry", tr("Telemetry"), tr("Telemetry data recorder"))

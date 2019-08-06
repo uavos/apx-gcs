@@ -23,13 +23,13 @@
 #ifndef NodeItem_H
 #define NodeItem_H
 //=============================================================================
-#include <QtCore>
-#include <QDomDocument>
-#include <QtSql>
-#include "NodeItemData.h"
 #include "NodeField.h"
+#include "NodeItemData.h"
 #include "NodeTools.h"
 #include <Protocols/ProtocolServiceNode.h>
+#include <QDomDocument>
+#include <QtCore>
+#include <QtSql>
 class Nodes;
 //=============================================================================
 class NodeItem : public NodeItemData

@@ -21,10 +21,10 @@
  *
  */
 #include "Fact.h"
+#include <App/AppRoot.h>
 #include <ApxLog.h>
 #include <QFont>
 #include <QFontDatabase>
-#include <App/AppRoot.h>
 //=============================================================================
 Fact::Fact(
     FactBase *parent, const QString &name, const QString &title, const QString &descr, Flags flags)

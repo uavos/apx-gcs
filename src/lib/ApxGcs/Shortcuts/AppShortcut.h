@@ -23,8 +23,8 @@
 #ifndef AppShortcut_H
 #define AppShortcut_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 class AppShortcuts;
 //=============================================================================
 class AppShortcut : public Fact

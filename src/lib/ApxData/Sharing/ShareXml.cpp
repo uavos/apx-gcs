@@ -21,9 +21,9 @@
  *
  */
 #include "ShareXml.h"
-#include <Database/Database.h>
 #include <App/AppBase.h>
 #include <ApxLog.h>
+#include <Database/Database.h>
 //=============================================================================
 void ShareXml::writeInfo(QDomNode &dom, QString name, QVariantMap info, QStringList filter)
 {

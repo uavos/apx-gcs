@@ -22,8 +22,8 @@
  */
 #include "MissionItem.h"
 #include "MissionField.h"
-#include <QGeoCircle>
 #include <App/AppRoot.h>
+#include <QGeoCircle>
 //=============================================================================
 MissionItem::MissionItem(MissionGroup *parent,
                          const QString &name,

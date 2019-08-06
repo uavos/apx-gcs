@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QtCore>
 #include "AppRoot.h"
 #include "AppWindow.h"
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
+#include <QtCore>
 //=============================================================================
 AppRoot *AppRoot::_instance = nullptr;
 AppRoot::AppRoot(QObject *parent)

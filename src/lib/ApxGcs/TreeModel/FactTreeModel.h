@@ -23,8 +23,8 @@
 #ifndef FactTreeModel_H
 #define FactTreeModel_H
 //=============================================================================
-#include <QtCore>
 #include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class FactTreeModel : public QAbstractItemModel
 {

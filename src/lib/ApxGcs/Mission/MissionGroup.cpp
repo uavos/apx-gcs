@@ -21,9 +21,9 @@
  *
  */
 #include "MissionGroup.h"
-#include "VehicleMission.h"
 #include "MissionItem.h"
 #include "MissionMapItemsModel.h"
+#include "VehicleMission.h"
 
 #include <App/AppRoot.h>
 //=============================================================================

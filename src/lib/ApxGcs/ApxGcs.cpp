@@ -21,9 +21,9 @@
  *
  */
 #include "ApxGcs.h"
-#include <Shortcuts/AppShortcuts.h>
 #include <ApxDirs.h>
 #include <ApxLog.h>
+#include <Shortcuts/AppShortcuts.h>
 #include <QFileDialog>
 //=============================================================================
 ApxGcs *ApxGcs::_instance = nullptr;

@@ -23,10 +23,10 @@
 #ifndef DatabaseLookup_H
 #define DatabaseLookup_H
 //=============================================================================
-#include <QtCore>
-#include <Fact/Fact.h>
 #include "DatabaseLookupModel.h"
 #include "DatabaseRequest.h"
+#include <Fact/Fact.h>
+#include <QtCore>
 //=============================================================================
 class DatabaseLookup : public Fact
 {

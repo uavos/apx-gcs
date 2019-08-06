@@ -23,10 +23,10 @@
 #ifndef LookupMissions_H
 #define LookupMissions_H
 //=============================================================================
-#include <QtCore>
+#include <Database/DatabaseLookup.h>
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
-#include <Database/DatabaseLookup.h>
+#include <QtCore>
 class VehicleMission;
 //=============================================================================
 class LookupMissions : public DatabaseLookup

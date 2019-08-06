@@ -23,9 +23,9 @@
 #ifndef TELEMETRYPLUGIN_H
 #define TELEMETRYPLUGIN_H
 
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "TelemetryFrame.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class TelemetryPlugin : public ApxPluginInterface
 {

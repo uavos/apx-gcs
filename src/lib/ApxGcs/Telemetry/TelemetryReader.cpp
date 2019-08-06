@@ -22,11 +22,11 @@
  */
 #include "TelemetryReader.h"
 #include "LookupTelemetry.h"
+#include <App/AppRoot.h>
+#include <ApxLog.h>
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
-#include <ApxLog.h>
-#include <App/AppRoot.h>
 //=============================================================================
 TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     : Fact(parent, "reader", "", "", Group)

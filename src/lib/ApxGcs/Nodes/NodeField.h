@@ -23,8 +23,8 @@
 #ifndef NodeField_H
 #define NodeField_H
 //=============================================================================
-#include <QtCore>
 #include "NodesBase.h"
+#include <QtCore>
 class NodeItem;
 class PawnCompiler;
 //=============================================================================

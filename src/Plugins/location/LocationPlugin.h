@@ -22,8 +22,8 @@
  */
 #ifndef LocationPlugin_H
 #define LocationPlugin_H
-#include <QtCore>
 #include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class LocationPlugin : public ApxPluginInterface
 {

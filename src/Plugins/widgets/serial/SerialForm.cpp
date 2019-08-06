@@ -1,7 +1,7 @@
 #include "SerialForm.h"
 #include "ui_SerialForm.h"
-#include <Vehicles/Vehicles.h>
 #include <ApxLog.h>
+#include <Vehicles/Vehicles.h>
 
 //==============================================================================
 SerialForm::SerialForm(QWidget *parent)

@@ -23,12 +23,12 @@
 #ifndef DatabaseSession_H
 #define DatabaseSession_H
 //=============================================================================
+#include "DatabaseWorker.h"
+#include <ApxMisc/DelayedEvent.h>
+#include <Fact/Fact.h>
+#include <QMutex>
 #include <QtCore>
 #include <QtSql>
-#include <QMutex>
-#include <Fact/Fact.h>
-#include <ApxMisc/DelayedEvent.h>
-#include "DatabaseWorker.h"
 class Database;
 //=============================================================================
 class DatabaseSession : public Fact //, public QSqlDatabase

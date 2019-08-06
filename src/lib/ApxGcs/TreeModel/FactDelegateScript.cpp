@@ -21,13 +21,13 @@
  *
  */
 #include "FactDelegateScript.h"
-#include <ApxMisc/PawnCompiler.h>
+#include "SourceEdit.h"
 #include <ApxDirs.h>
 #include <ApxLog.h>
+#include <ApxMisc/PawnCompiler.h>
 #include <ApxMisc/SvgMaterialIcon.h>
-#include <QtWidgets>
-#include "SourceEdit.h"
 #include <Vehicles/Vehicles.h>
+#include <QtWidgets>
 //=============================================================================
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     : FactDelegateDialog(fact, parent)

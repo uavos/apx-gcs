@@ -21,15 +21,15 @@
  *
  */
 #include "Vehicle.h"
-#include "Vehicles.h"
 #include "VehicleMandala.h"
 #include "VehicleWarnings.h"
+#include "Vehicles.h"
 
-#include <Nodes/Nodes.h>
-#include <Mission/VehicleMission.h>
-#include <Telemetry/Telemetry.h>
-#include <ApxLog.h>
 #include <ApxApp.h>
+#include <ApxLog.h>
+#include <Mission/VehicleMission.h>
+#include <Nodes/Nodes.h>
+#include <Telemetry/Telemetry.h>
 
 #include <Mandala/MandalaConstants.h>
 //=============================================================================

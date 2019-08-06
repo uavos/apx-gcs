@@ -21,19 +21,19 @@
  *
  */
 #include "ApxApp.h"
-#include <version.h>
 #include <App/AppWindow.h>
-#include <ApxMisc/SvgMaterialIcon.h>
-#include <ApxMisc/SvgImageProvider.h>
 #include <ApxDirs.h>
+#include <ApxMisc/SvgImageProvider.h>
+#include <ApxMisc/SvgMaterialIcon.h>
+#include <version.h>
 
+#include <QApplication>
 #include <QFontDatabase>
 #include <QFontInfo>
-#include <QApplication>
 #include <QGLFormat>
 #include <QQuickStyle>
-#include <QStyleFactory>
 #include <QScreen>
+#include <QStyleFactory>
 //=============================================================================
 ApxApp *ApxApp::_instance = nullptr;
 ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)

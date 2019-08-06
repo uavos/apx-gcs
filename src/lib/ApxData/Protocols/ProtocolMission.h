@@ -22,9 +22,9 @@
  */
 #ifndef ProtocolMission_H
 #define ProtocolMission_H
-#include <QtCore>
 #include "ProtocolBase.h"
 #include <Dictionary/DictMission.h>
+#include <QtCore>
 class ProtocolVehicle;
 //=============================================================================
 class ProtocolMission : public ProtocolBase

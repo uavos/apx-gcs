@@ -1,22 +1,22 @@
 ﻿#include "gstplayer.h"
 
-#include <QVideoSurfaceFormat>
-#include <QtQml>
-#include <QCameraInfo>
 #include "App/AppSettings.h"
-#include "Vehicles/Vehicle.h"
-#include "ApxLog.h"
 #include "ApxApp.h"
 #include "ApxDirs.h"
+#include "ApxLog.h"
+#include "Vehicles/Vehicle.h"
+#include <QCameraInfo>
+#include <QVideoSurfaceFormat>
+#include <QtQml>
 
 using namespace std::placeholders;
 
 GstPlayer::GstPlayer(Fact *parent)
     : Fact(parent, "video", tr("Video"), tr("Camera link and streaming"), Group)
 {
-    if(!ApxDirs::images().exists())
+    if (!ApxDirs::images().exists())
         ApxDirs::images().mkpath(ApxDirs::images().absolutePath());
-    if(!ApxDirs::video().exists())
+    if (!ApxDirs::video().exists())
         ApxDirs::video().mkpath(ApxDirs::video().absolutePath());
 
     qmlRegisterType<GstPlayer>("GstPlayer", 1, 0, "GstPlayer");
@@ -25,7 +25,12 @@ GstPlayer::GstPlayer(Fact *parent)
 
     setIcon("video");
 
-    f_visible = new AppSettingFact(settings, this, "show_window", tr("Visible"), tr("Show video window"), Bool);
+    f_visible = new AppSettingFact(settings,
+                                   this,
+                                   "show_window",
+                                   tr("Visible"),
+                                   tr("Show video window"),
+                                   Bool);
     f_visible->setIcon("check");
 
     f_tune = new Fact(this, "tune", tr("Tune"), tr("Video stream settings"), Group);
@@ -37,23 +42,54 @@ GstPlayer::GstPlayer(Fact *parent)
     f_record = new Fact(f_tune, "record", tr("Record"), tr("Save stream to file"), Bool);
     f_record->setIcon("record-rec");
 
-    f_reencoding = new AppSettingFact(settings, f_tune, "reencoding", tr("Reencoding"), tr("Video reencoding"), Bool);
+    f_reencoding = new AppSettingFact(settings,
+                                      f_tune,
+                                      "reencoding",
+                                      tr("Reencoding"),
+                                      tr("Video reencoding"),
+                                      Bool);
     f_reencoding->setIcon("film");
 
-    f_lowLatency = new AppSettingFact(settings, f_tune, "low_latency", tr("Low latency"),
-                                      tr("Disable timestamp synchronization"), Bool, true);
+    f_lowLatency = new AppSettingFact(settings,
+                                      f_tune,
+                                      "low_latency",
+                                      tr("Low latency"),
+                                      tr("Disable timestamp synchronization"),
+                                      Bool,
+                                      true);
     f_lowLatency->setIcon("speedometer");
 
-    f_sourceType = new AppSettingFact(settings, f_tune, "source_type", tr("Source"), tr("Source type"), Enum, 0);
+    f_sourceType = new AppSettingFact(settings,
+                                      f_tune,
+                                      "source_type",
+                                      tr("Source"),
+                                      tr("Source type"),
+                                      Enum,
+                                      0);
     f_sourceType->setEnumStrings({"URI", "RTSP", "TCP", "UDP", "Webcam"});
 
-    f_uriInput = new AppSettingFact(settings, f_tune, "uri_input", tr("URI"), tr("rtsp://<..>, file://<..>, etc."), Text);
-    f_rtspInput = new AppSettingFact(settings, f_tune, "rtsp_input", tr("URL"), tr("rtsp://<..>"), Text);
-    f_rtspTcpForce = new AppSettingFact(settings, f_tune, "rtspforcetcp_input", tr("Force tcp"), "", Bool, false);
+    f_uriInput = new AppSettingFact(settings,
+                                    f_tune,
+                                    "uri_input",
+                                    tr("URI"),
+                                    tr("rtsp://<..>, file://<..>, etc."),
+                                    Text);
+    f_rtspInput
+        = new AppSettingFact(settings, f_tune, "rtsp_input", tr("URL"), tr("rtsp://<..>"), Text);
+    f_rtspTcpForce = new AppSettingFact(settings,
+                                        f_tune,
+                                        "rtspforcetcp_input",
+                                        tr("Force tcp"),
+                                        "",
+                                        Bool,
+                                        false);
     f_tcpInput = new AppSettingFact(settings, f_tune, "tcp_input", tr("IP"), tr("IP address"), Text);
-    f_tcpPortInput = new AppSettingFact(settings, f_tune, "tcpport_input", tr("Port"), tr("Port number"), Int);
-    f_udpInput = new AppSettingFact(settings, f_tune, "udp_input", tr("Port"), tr("Port number"), Int);
-    f_udpCodecInput = new AppSettingFact(settings, f_tune, "udpcodec_input", tr("Codec"), "", Enum, 0);
+    f_tcpPortInput
+        = new AppSettingFact(settings, f_tune, "tcpport_input", tr("Port"), tr("Port number"), Int);
+    f_udpInput
+        = new AppSettingFact(settings, f_tune, "udp_input", tr("Port"), tr("Port number"), Int);
+    f_udpCodecInput
+        = new AppSettingFact(settings, f_tune, "udpcodec_input", tr("Codec"), "", Enum, 0);
     f_udpCodecInput->setEnumStrings({"H264", "H265"});
     f_webcamInput = new AppSettingFact(settings, f_tune, "webcam_input", tr("Webcam"), "", Enum);
     f_webcamInput->setEnumStrings(getAvailableWebcams());
@@ -83,7 +119,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
 GstPlayer::~GstPlayer()
 {
-    if(m_videoThread.isRunning())
+    if (m_videoThread.isRunning())
         stop();
 }
 
@@ -97,20 +133,17 @@ void GstPlayer::snapshot() const
     QImage image = m_lastFrame.copy();
     f_overlay->drawOverlay(image);
 
-    if(!image.save(getMediaFileName(mtImage)))
+    if (!image.save(getMediaFileName(mtImage)))
         onErrorOccured("Can't save snapshot");
 }
 
 QString GstPlayer::getMediaFileName(MediaType type)
 {
     QString base, ext;
-    if(type == mtImage)
-    {
+    if (type == mtImage) {
         base = ApxDirs::images().absolutePath();
         ext = "png";
-    }
-    else if(type == mtVideo)
-    {
+    } else if (type == mtVideo) {
         base = ApxDirs::video().absolutePath();
         ext = "mkv";
     }
@@ -122,8 +155,7 @@ QString GstPlayer::getMediaFileName(MediaType type)
 
 void GstPlayer::setConnectionState(GstPlayer::ConnectionState cs)
 {
-    if(m_connectionState != cs)
-    {
+    if (m_connectionState != cs) {
         m_connectionState = cs;
         emit connectionStateChanged();
     }
@@ -143,8 +175,7 @@ void GstPlayer::play()
 void GstPlayer::stop()
 {
     m_videoThread.stop();
-    if(!m_videoThread.wait(THREAD_STOP_TIMEOUT))
-    {
+    if (!m_videoThread.wait(THREAD_STOP_TIMEOUT)) {
         onErrorOccured("VideoThread stop timeout, try to force stop...");
         m_videoThread.terminate();
     }
@@ -160,56 +191,42 @@ void GstPlayer::stop()
 QString GstPlayer::inputToUri()
 {
     QString result;
-    if(f_sourceType->value().toInt() == stUri)
-    {
+    if (f_sourceType->value().toInt() == stUri) {
         result = f_uriInput->value().toString();
-    }
-    else if(f_sourceType->value().toInt() == stRtsp)
-    {
+    } else if (f_sourceType->value().toInt() == stRtsp) {
         QString value = f_rtspInput->value().toString();
-        if(!value.contains("rtspt://") && f_rtspTcpForce->value().toBool())
-        {
-            if(value.indexOf("://") == -1)
+        if (!value.contains("rtspt://") && f_rtspTcpForce->value().toBool()) {
+            if (value.indexOf("://") == -1)
                 result = "rtspt://" + value;
             else
                 result = "rtspt://" + value.remove(0, value.indexOf("://") + 3);
-        }
-        else if(!value.contains("://"))
+        } else if (!value.contains("://"))
             result = "rtsp://" + value;
         else
             result = value;
-    }
-    else if(f_sourceType->value().toInt() == stTcp)
-    {
+    } else if (f_sourceType->value().toInt() == stTcp) {
         QString host = f_tcpInput->value().toString();
         int port = f_tcpPortInput->value().toInt();
         result = QString("tcp://%1:%2").arg(host).arg(port);
-    }
-    else if(f_sourceType->value().toInt() == stUdp)
-    {
+    } else if (f_sourceType->value().toInt() == stUdp) {
         int port = f_udpInput->value().toInt();
         QString codec;
-        if(f_udpCodecInput->value().toInt() == ctH264)
+        if (f_udpCodecInput->value().toInt() == ctH264)
             codec = "h264";
-        else if(f_udpCodecInput->value().toInt() == ctH265)
+        else if (f_udpCodecInput->value().toInt() == ctH265)
             codec = "h265";
         QString uri = QString("udp://0.0.0.0:%1?codec=%2").arg(port).arg(codec);
         result = uri;
-    }
-    else if(f_sourceType->value().toInt() == stWebcam)
-    {
+    } else if (f_sourceType->value().toInt() == stWebcam) {
 #ifdef Q_OS_LINUX
         QString camDescr = f_webcamInput->enumText(f_webcamInput->value().toInt());
         auto cameras = QCameraInfo::availableCameras();
-        auto res = std::find_if(cameras.begin(), cameras.end(), [camDescr](auto c){
+        auto res = std::find_if(cameras.begin(), cameras.end(), [camDescr](auto c) {
             return camDescr == c.description();
         });
-        if(res == cameras.end())
-        {
+        if (res == cameras.end()) {
             onErrorOccured("Can't find webcam");
-        }
-        else
-        {
+        } else {
             result = QString("v4l2://%1").arg(res->deviceName());
         }
 #endif
@@ -224,7 +241,7 @@ QStringList GstPlayer::getAvailableWebcams()
 {
     auto cameras = QCameraInfo::availableCameras();
     QStringList ids;
-    std::transform(cameras.begin(), cameras.end(), std::back_inserter(ids), [](auto c){
+    std::transform(cameras.begin(), cameras.end(), std::back_inserter(ids), [](auto c) {
         return c.description();
     });
     return ids;
@@ -240,20 +257,19 @@ void GstPlayer::onFrameReceived(const QImage &image)
 {
     m_reconnectTimer.start();
 
-    if(getConnectionState() == STATE_CONNECTING)
+    if (getConnectionState() == STATE_CONNECTING)
         setConnectionState(STATE_CONNECTED);
 
     m_lastFrame = image;
-    if(m_videoSurface)
-    {
-        if(image.size() != m_videoSurface->surfaceFormat().frameSize())
+    if (m_videoSurface) {
+        if (image.size() != m_videoSurface->surfaceFormat().frameSize())
             m_videoSurface->stop();
 
-        if(!m_videoSurface->isActive())
+        if (!m_videoSurface->isActive())
             m_videoSurface->start(QVideoSurfaceFormat(image.size(), QVideoFrame::Format_RGB32));
 
         QVideoFrame frame(image);
-        if(!m_videoSurface->present(frame))
+        if (!m_videoSurface->present(frame))
             onErrorOccured("Can't present frame on surface");
     }
 }
@@ -261,7 +277,7 @@ void GstPlayer::onFrameReceived(const QImage &image)
 void GstPlayer::onActiveValueChanged()
 {
     bool active = f_active->value().toBool();
-    if(active)
+    if (active)
         play();
     else
         stop();
@@ -284,25 +300,18 @@ void GstPlayer::onSourceTypeChanged()
     f_udpCodecInput->setVisible(false);
     f_webcamInput->setVisible(false);
 
-    if(f_sourceType->value().toInt() == stUri)
+    if (f_sourceType->value().toInt() == stUri)
         f_uriInput->setVisible(true);
-    else if(f_sourceType->value().toInt() == stRtsp)
-    {
+    else if (f_sourceType->value().toInt() == stRtsp) {
         f_rtspInput->setVisible(true);
         f_rtspTcpForce->setVisible(true);
-    }
-    else if(f_sourceType->value().toInt() == stTcp)
-    {
+    } else if (f_sourceType->value().toInt() == stTcp) {
         f_tcpInput->setVisible(true);
         f_tcpPortInput->setVisible(true);
-    }
-    else if(f_sourceType->value().toInt() == stUdp)
-    {
+    } else if (f_sourceType->value().toInt() == stUdp) {
         f_udpInput->setVisible(true);
         f_udpCodecInput->setVisible(true);
-    }
-    else if(f_sourceType->value().toInt() == stWebcam)
-    {
+    } else if (f_sourceType->value().toInt() == stWebcam) {
         f_webcamInput->setEnumStrings(getAvailableWebcams());
         f_webcamInput->setVisible(true);
     }

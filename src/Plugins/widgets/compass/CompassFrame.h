@@ -23,9 +23,9 @@
 #ifndef COMPASSFRAME_H
 #define COMPASSFRAME_H
 //==============================================================================
-#include <QWidget>
-#include <Vehicles/VehicleMandalaValue.h>
 #include "DrawingArea.h"
+#include <Vehicles/VehicleMandalaValue.h>
+#include <QWidget>
 //==============================================================================
 class CompassFrame : public QWidget
 {

@@ -22,9 +22,9 @@
  */
 #ifndef ProtocolTelemetry_H
 #define ProtocolTelemetry_H
-#include <QtCore>
 #include "ProtocolBase.h"
 #include <Dictionary/DictMandala.h>
+#include <QtCore>
 class ProtocolVehicle;
 //=============================================================================
 class ProtocolTelemetry : public ProtocolBase

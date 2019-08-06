@@ -22,10 +22,10 @@
  */
 #ifndef UpdaterPlugin_H
 #define UpdaterPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "Updater.h"
 #include <App/AppSettings.h>
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class UpdaterPlugin : public ApxPluginInterface
 {

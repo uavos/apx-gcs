@@ -21,10 +21,10 @@
  *
  */
 #include "AppBase.h"
-#include <version.h>
 #include <ApxLog.h>
-#include <QSettings>
+#include <version.h>
 #include <QIcon>
+#include <QSettings>
 //=============================================================================
 #ifdef Q_OS_MAC
 #include <mach-o/arch.h>

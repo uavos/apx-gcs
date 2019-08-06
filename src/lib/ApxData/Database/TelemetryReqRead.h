@@ -23,8 +23,8 @@
 #ifndef TelemetryReqRead_H
 #define TelemetryReqRead_H
 //=============================================================================
-#include <QtCore>
 #include "TelemetryDB.h"
+#include <QtCore>
 //=============================================================================
 class DBReqTelemetryFindCache : public DBReqTelemetry
 {

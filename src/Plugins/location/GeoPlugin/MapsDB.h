@@ -23,8 +23,8 @@
 #ifndef MapsDB_H
 #define MapsDB_H
 //=============================================================================
-#include <QtCore>
 #include <Database/DatabaseSession.h>
+#include <QtCore>
 //=============================================================================
 class MapsDB : public DatabaseSession
 {

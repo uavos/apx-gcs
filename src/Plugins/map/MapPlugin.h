@@ -22,9 +22,9 @@
  */
 #ifndef MapPlugin_H
 #define MapPlugin_H
-#include <QtCore>
-#include <ApxPluginInterface.h>
 #include "MapTools.h"
+#include <ApxPluginInterface.h>
+#include <QtCore>
 //=============================================================================
 class MapPlugin : public ApxPluginInterface
 {

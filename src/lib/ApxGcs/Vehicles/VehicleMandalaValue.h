@@ -23,11 +23,11 @@
 #ifndef VehicleMandalaValue_H
 #define VehicleMandalaValue_H
 //=============================================================================
-#include <QtCore>
-#include <ApxMisc/FactValue.h>
-#include "Vehicles.h"
 #include "Vehicle.h"
 #include "VehicleMandala.h"
+#include "Vehicles.h"
+#include <ApxMisc/FactValue.h>
+#include <QtCore>
 //=============================================================================
 template<typename T>
 class VehicleMandalaValue : public FactValue<T>
