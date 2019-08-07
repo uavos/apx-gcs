@@ -68,6 +68,11 @@ void DictNode::Field::expandStrings()
         opts = QStringList() << "no"
                              << "yes";
 
+    //trim opts
+    for (auto i = 0; i < opts.size(); ++i) {
+        opts.replace(i, opts.at(i).trimmed());
+    }
+
     //array from name
     array = 0;
     if (name.contains("[")) {
