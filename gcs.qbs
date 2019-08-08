@@ -17,13 +17,13 @@ Project {
         "src/Plugins/plugins.qbs",
         "src/pawncc/pawncc.qbs",
 
-//        "../nodes/src/sim/sim.qbs",
+        "../fw/sim.qbs",
 
         "deploy/deploy.qbs",
     ]
 
     Product {
-        name: "Qbs files ("+project.name+")"
+        name: "QBS ("+project.name+")"
         Group {
             name: "qbs"
             files: {

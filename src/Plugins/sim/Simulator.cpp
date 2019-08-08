@@ -82,8 +82,11 @@ Simulator::Simulator(Fact *parent)
 }
 Simulator::~Simulator()
 {
+    //qDebug() << "kill sim";
     //QProcess::execute("killall", QStringList() << "shiva");
+    disconnect(&pShiva, nullptr, nullptr, nullptr);
     pShiva.terminate();
+    pShiva.waitForFinished(1000);
 }
 //=============================================================================
 void Simulator::detectXplane()

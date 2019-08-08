@@ -85,7 +85,7 @@ bool ProtocolVehicles::unpack(QByteArray packet)
         dIdent.read(&stream);
 
         IdentData d;
-        d.callsign = QString(QByteArray(dIdent.callsign.data(), dIdent.callsign.size()));
+        d.callsign = QString(QByteArray(dIdent.callsign.data(), dIdent.callsign.size())).trimmed();
         d.uid = QByteArray(reinterpret_cast<const char *>(dIdent.vuid.data()), dIdent.vuid.size())
                     .toHex()
                     .toUpper();
@@ -200,6 +200,7 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
         s = QString("UAVOS-%1").arg(static_cast<ulong>(squawk), 4, 16, QLatin1Char('0')).toUpper();
     s.truncate(sizeof(dIdent.callsign) - 1);
     s = s.toUpper();
+    dIdent.callsign.fill(0);
     std::copy(s.toUtf8().begin(), s.toUtf8().end(), dIdent.callsign.begin());
 
     QByteArray buid = QByteArray::fromHex(ident.uid.toUtf8());

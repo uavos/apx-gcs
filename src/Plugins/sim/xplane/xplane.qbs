@@ -23,6 +23,7 @@ ApxApp.ApxProduct {
             "Xbus",
             "Mandala",
             "TcpLink",
+            "Math",
         ]
         searchPaths: FileInfo.joinPaths(project.sourceDirectory, "../lib")
     }

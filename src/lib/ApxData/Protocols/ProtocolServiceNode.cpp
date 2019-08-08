@@ -678,14 +678,16 @@ QByteArray ProtocolServiceNode::packValue(DictNode::Field f, const QVariant &v) 
     case DictNode::String: {
         xbus::node::conf::ft_string_t a;
         QByteArray src(v.toString().toUtf8());
-        std::copy(src.begin(), src.end(), a.begin());
+        a.fill(0);
+        std::copy(src.constBegin(), src.constEnd(), a.begin());
         a[a.size() - 1] = 0;
         stream << a;
     } break;
     case DictNode::StringL: {
         xbus::node::conf::ft_lstr_t a;
         QByteArray src(v.toString().toUtf8());
-        std::copy(src.begin(), src.end(), a.begin());
+        a.fill(0);
+        std::copy(src.constBegin(), src.constEnd(), a.begin());
         a[a.size() - 1] = 0;
         stream << a;
     } break;

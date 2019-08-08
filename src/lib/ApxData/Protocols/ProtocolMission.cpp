@@ -280,6 +280,7 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
             ahdr.write(&stream);
             xbus::mission::ActionScr a;
             QByteArray src(amap.value("script").toUtf8());
+            a.scr.fill(0);
             std::copy(src.begin(), src.end(), a.scr.begin());
             a.scr[a.scr.size() - 1] = 0;
             a.write(&stream);

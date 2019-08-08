@@ -258,7 +258,7 @@ float flightLoopCallback(float inElapsedSinceLastCall,
                     continue;
                 auto it1 = std::find(s.begin(), s.end(), '[');
                 if (it1 != s.end()) {
-                    *it1 = 0;
+                    *it1++ = 0;
                     auto it2 = std::find(it1, s.end(), ']');
                     if (it2 == s.end())
                         continue;
