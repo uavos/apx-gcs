@@ -194,7 +194,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         nstat.canRxc = dStatus.can_rxc;
         nstat.canAdr = dStatus.can_adr;
         nstat.canErr = dStatus.can_err;
-        nstat.cpuLoad = dStatus.load;
+        nstat.cpuLoad = dStatus.load * 100u / 255u;
         nstat.dump = QByteArray(reinterpret_cast<char *>(dStatus.dump.data()), dStatus.dump.size());
         nstatReceived(nstat);
         service->acknowledgeRequest(sn, cmd);
@@ -521,6 +521,7 @@ void ProtocolServiceNode::fieldDictData(quint16 id, QByteArray data)
     sz = static_cast<int>(strlen(str)) + 1;
     if (sz > cnt)
         return;
+    //qDebug() << id << cnt << r.name << QString(QByteArray(str, sz - 1));
     r.opts = QString(QByteArray(str, sz - 1)).split(',', QString::SkipEmptyParts);
     str += sz;
     cnt -= sz;
