@@ -11,6 +11,7 @@ Product {
     Depends { name: "ApxCore" }
     Depends { name: "ApxData" }
     Depends { name: "ApxGcs" }
+    Depends { name: "ApxShared" }
 
 
     Group {
@@ -25,17 +26,18 @@ Product {
 
     type: ["archiver.archive"]
     Depends { name: "archiver" }
-    Depends { name: "apx" }
+    Depends { name: "app" }
+    Depends { name: "git" }
 
     Group {
         fileTagsFilter: ["archiver.archive"]
         qbs.install: true
-        qbs.installDir: apx.packages_path
+        qbs.installDir: app.packages_path
     }
 
     Rule {
-        inputs: ["sdk.extras"]
         inputsFromDependencies: ["sdk.prepare"]
+        inputs: ["sdk.extras"]
         multiplex: false
         Artifact {
             fileTags: ["sdk"]
@@ -59,6 +61,7 @@ Product {
         }
         prepare: {
             var cmd = new JavaScriptCommand();
+            cmd.highlight = "filegen"
             cmd.description = "adding to sdk package " + input.fileName
             cmd.sourceCode = function() {
                 File.copy(input.filePath, output.filePath)
@@ -91,5 +94,5 @@ Product {
     }
     archiver.type: "tar"
     archiver.workingDirectory: destinationDirectory + "/sdk"
-    archiver.archiveBaseName: "APX_SDK_"+qbs.targetPlatform+"-"+apx.git.version+"-"+project.arch
+    archiver.archiveBaseName: "APX_SDK_"+qbs.targetPlatform+"-"+git.probe.version+"-"+project.arch
 }

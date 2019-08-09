@@ -1,6 +1,6 @@
-import apx.Deploy as Deploy
+import ApxDeploy
 
-Deploy.ApxDeployQt {
+ApxDeploy.ApxDeployQt {
     name: "Qt Libs"
 
     Depends {

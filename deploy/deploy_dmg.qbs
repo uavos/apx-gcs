@@ -4,7 +4,8 @@ AppleApplicationDiskImage {
     condition: qbs.targetOS.contains("macos")
     name: "DMG"
 
-    Depends { name: "apx" }
+    Depends { name: "app" }
+    Depends { name: "git" }
 
     Depends {
         productTypes: [
@@ -16,7 +17,7 @@ AppleApplicationDiskImage {
         fileTagsFilter: [ "dmg.dmg" ]
         qbs.install: true
         qbs.installSourceBase: product.destinationDirectory
-        qbs.installDir: apx.packages_path
+        qbs.installDir: app.packages_path
     }
 
     Rule{
@@ -25,7 +26,7 @@ AppleApplicationDiskImage {
         outputFileTags: [ "dmg.input" ]
         outputArtifacts: {
             var v= [{
-                filePath: FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"),product.moduleProperty("apx","app_bundle_path")),
+                filePath: FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"),product.moduleProperty("app","app_bundle_path")),
                 fileTags: [ "dmg.input" ],
             }]
             return v
@@ -37,9 +38,9 @@ AppleApplicationDiskImage {
         }
     }
 
-    targetName: apx.app_display_name.replace(/ /g,"_")+"-"+apx.git.version+"-"+project.arch
+    targetName: app.app_display_name.replace(/ /g,"_")+"-"+git.probe.version+"-"+project.arch
     dmg.badgeVolumeIcon: true
-    dmg.volumeName: apx.app_display_name+" ("+apx.git.version+")"
+    dmg.volumeName: app.app_display_name+" ("+git.probe.version+")"
     dmg.iconSize: 128
     dmg.windowWidth: 640
     dmg.windowHeight: 280
@@ -47,7 +48,7 @@ AppleApplicationDiskImage {
     property int iposY: dmg.iconSize
     dmg.iconPositions: [
         {"path": "Applications", "x": 0*iposX, "y": iposY},
-        {"path": apx.app_display_name+".app", "x": 1*iposX, "y": iposY}
+        {"path": app.app_display_name+".app", "x": 1*iposX, "y": iposY}
     ]
     files: [
         resorcesDir+"/icons/uavos-logo.icns"

@@ -1,5 +1,6 @@
 import qbs
 import qbs.File
+import qbs.FileInfo
 
 Module {
 
@@ -34,26 +35,30 @@ Module {
         multiplex: false
         Artifact {
             filePath: {
-                var start = input.filePath.indexOf(product.sourceDirectory);
-                var path = "sdk/include"
-                if(start == 0)
-                {
-                    var tail = input.filePath.replace(product.sourceDirectory, '')
-                    path += tail
+                var dest = "sdk/include"
+                var inp = FileInfo.cleanPath(input.filePath)
+                var rpath =
+                        [
+                            FileInfo.cleanPath(product.sourceDirectory),
+                            FileInfo.cleanPath(FileInfo.joinPaths(project.sourceDirectory, "../lib")),
+                        ]
+                for(var i in rpath){
+                    if(inp.indexOf(rpath[i]) == 0)
+                    {
+                        var tail = FileInfo.relativePath(rpath[i], inp)
+                        return FileInfo.cleanPath(FileInfo.joinPaths(dest, product.name, tail))
+                    }
                 }
-                else
-                {
-                    path += "/" + product.name + "/" + input.fileName
-                }
-                return path
+                //console.info(input.filePath)
+                return FileInfo.joinPaths(dest, product.name, input.fileName)
             }
             fileTags: ["sdk.prepare"]
             qbs.install: false
-            property string hello: "hello world"
         }
 
         prepare: {
             var cmd = new JavaScriptCommand();
+            cmd.highlight = "filegen"
             cmd.description = "preparing for sdk " + input.fileName
             cmd.sourceCode = function() {
                 File.copy(input.filePath, output.filePath)
