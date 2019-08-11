@@ -113,7 +113,7 @@ void sendVars(void)
     var.agl = 0.2 + (_var_float) XPLMGetDataf(ref.agl);
     /*if((float)rand()/(float)RAND_MAX>0.99 || var.agl>7){
     float d=10.0*(float)rand()/(float)(RAND_MAX)-5;
-    if(fabs(d)>1)var.agl+=d;
+    if(std::abs(d)>1)var.agl+=d;
     if(var.agl<0)var.agl=0;
   }*/
     //if(var.power&power_agl)
@@ -135,7 +135,7 @@ void sendVars(void)
     //if(var.gps_home_hmsl==0)var.gps_home_hmsl=var.gps_hmsl;
     //var.altitude=var.gps_hmsl-var.gps_home_hmsl;
     //var.altitude=0.3048*(_var_float)XPLMGetDataf(ref.altitude); //knots to mps
-    var.altps = var.gps_pos[2]; //101325.0*pow(1.0-2.25577e-5*var.gps_pos[2],5.25588)/3386.389;
+    var.altps = var.gps_pos[2]; //101325.0*std::pow(1.0-2.25577e-5*var.gps_pos[2],5.25588)/3386.389;
     var.altps += noise(0.01);
     sendvar(idx_altps);
 

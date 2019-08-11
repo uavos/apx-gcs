@@ -180,7 +180,7 @@ bool DBReqMissionsFindSite::run(QSqlQuery &query)
                       " ORDER BY dist ASC LIMIT 1");
         query.addBindValue(lat);
         query.addBindValue(lat);
-        query.addBindValue(pow(cos(qDegreesToRadians(lat)), 2));
+        query.addBindValue(std::pow(std::cos(qDegreesToRadians(lat)), 2));
         query.addBindValue(lon);
         query.addBindValue(lon);
         if (!query.exec())

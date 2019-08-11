@@ -71,8 +71,8 @@ void Poi::updateTitle()
     QStringList st;
     st.append(QString::number(num() + 1));
     int r = f_radius->value().toInt();
-    if (abs(r) > 0) {
-        st.append(AppRoot::distanceToString(abs(r)));
+    if (std::abs(r) > 0) {
+        st.append(AppRoot::distanceToString(std::abs(r)));
         if (r < 0)
             st.append(tr("CCW"));
     } else
@@ -107,23 +107,23 @@ void Poi::selectTriggered()
 QGeoRectangle Poi::boundingGeoRectangle() const
 {
     return MissionItem::boundingGeoRectangle().united(
-        QGeoCircle(coordinate(), fabs(f_radius->value().toDouble())).boundingGeoRectangle());
+        QGeoCircle(coordinate(), std::abs(f_radius->value().toDouble())).boundingGeoRectangle());
 }
 //=============================================================================
 QGeoCoordinate Poi::radiusPoint() const
 {
     QGeoCoordinate p(f_latitude->value().toDouble(), f_longitude->value().toDouble());
-    return p.atDistanceAndAzimuth(abs(f_radius->value().toInt()), 90.0);
+    return p.atDistanceAndAzimuth(std::abs(f_radius->value().toInt()), 90.0);
 }
 void Poi::setRadiusPoint(const QGeoCoordinate &v)
 {
     QGeoCoordinate p(f_latitude->value().toDouble(), f_longitude->value().toDouble());
     double a = qDegreesToRadians(p.azimuthTo(v));
     double d = p.distanceTo(v);
-    QPointF ne(d * cos(a), d * sin(a));
+    QPointF ne(d * std::cos(a), d * std::sin(a));
     ne = AppRoot::rotate(ne, 90.0);
-    int rabs = abs(f_radius->value().toInt());
-    if (fabs(ne.y()) > (rabs / 2.0)) {
+    int rabs = std::abs(f_radius->value().toInt());
+    if (std::abs(ne.y()) > (rabs / 2.0)) {
         //switch turn direction
         f_radius->setValue(ne.y() > 0 ? rabs : -rabs);
     }

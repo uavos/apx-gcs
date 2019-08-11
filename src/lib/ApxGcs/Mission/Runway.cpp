@@ -158,8 +158,8 @@ QGeoCoordinate Runway::endPoint() const
     QGeoCoordinate p(coordinate());
     double dN = f_dN->value().toDouble();
     double dE = f_dE->value().toDouble();
-    double azimuth = qRadiansToDegrees(atan2(dE, dN));
-    double distance = sqrt(pow(dN, 2) + pow(dE, 2));
+    double azimuth = qRadiansToDegrees(std::atan2(dE, dN));
+    double distance = std::sqrt(std::pow(dN, 2) + std::pow(dE, 2));
     return p.atDistanceAndAzimuth(distance, azimuth);
 }
 void Runway::setEndPoint(const QGeoCoordinate &v)
@@ -167,15 +167,15 @@ void Runway::setEndPoint(const QGeoCoordinate &v)
     QGeoCoordinate p(coordinate());
     double a = qDegreesToRadians(p.azimuthTo(v));
     double d = p.distanceTo(v);
-    f_dN->setValue(d * cos(a));
-    f_dE->setValue(d * sin(a));
+    f_dN->setValue(d * std::cos(a));
+    f_dE->setValue(d * std::sin(a));
 }
 QGeoCoordinate Runway::appPoint() const
 {
     QGeoCoordinate p(coordinate());
     double dN = f_dN->value().toDouble();
     double dE = f_dE->value().toDouble();
-    double azimuth = qRadiansToDegrees(atan2(dE, dN)) + 180.0;
+    double azimuth = qRadiansToDegrees(std::atan2(dE, dN)) + 180.0;
     double distance = f_approach->value().toDouble();
     return p.atDistanceAndAzimuth(distance, azimuth);
 }
@@ -184,9 +184,9 @@ void Runway::setAppPoint(const QGeoCoordinate &v)
     QGeoCoordinate p(coordinate());
     double a = qDegreesToRadians(p.azimuthTo(v));
     double d = p.distanceTo(v);
-    QPointF ne(d * cos(a), d * sin(a));
+    QPointF ne(d * std::cos(a), d * std::sin(a));
     ne = AppRoot::rotate(ne, heading() + 180.0);
-    if (fabs(ne.y()) > (f_approach->value().toDouble() / 2.0)) {
+    if (std::abs(ne.y()) > (f_approach->value().toDouble() / 2.0)) {
         //switch turn direction
         f_type->setValue(ne.y() > 0 ? Left : Right);
     }
@@ -205,6 +205,6 @@ double Runway::heading() const
 {
     double dN = f_dN->value().toDouble();
     double dE = f_dE->value().toDouble();
-    return qRadiansToDegrees(atan2(dE, dN));
+    return qRadiansToDegrees(std::atan2(dE, dN));
 }
 //=============================================================================

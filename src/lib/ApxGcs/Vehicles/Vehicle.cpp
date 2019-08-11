@@ -230,7 +230,7 @@ void Vehicle::updateInfo()
     if (vehicleClass() != GCU) {
         QString s;
         int alt = f_gps_hmsl->value().toInt();
-        if (abs(alt) >= 50)
+        if (std::abs(alt) >= 50)
             alt = (alt / 10) * 10;
         else if (alt < 1)
             alt = 0;
@@ -387,8 +387,8 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
     const QGeoCoordinate h(f_home_lat->value().toDouble(), f_home_lon->value().toDouble());
     qreal azimuth_r = qDegreesToRadians(h.azimuthTo(c));
     qreal distance = h.distanceTo(c);
-    qreal n = cos(azimuth_r) * distance;
-    qreal e = sin(azimuth_r) * distance;
+    qreal n = std::cos(azimuth_r) * distance;
+    qreal e = std::sin(azimuth_r) * distance;
     protocol->telemetry->sendPointValue(f_mandala->factByName("cmd_north")->id(), n, e);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)

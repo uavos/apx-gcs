@@ -158,13 +158,13 @@ void DrawingArea::DrawData()
     double kxR = dxR; //(dxR <= dyR) ? dxR / dyR : 1;
     double kyR = dyR; //(dyR <= dxR) ? dyR / dxR : 1;
 
-    double bearingRadians = atan2f(cVector.y(), cVector.x()); // get bearing in radians
-    double bearingDegrees = bearingRadians * (180.0 / M_PI);  // convert to degrees
+    double bearingRadians = std::atan2(cVector.y(), cVector.x()); // get bearing in radians
+    double bearingDegrees = bearingRadians * (180.0 / M_PI);      // convert to degrees
     bearingDegrees = (bearingDegrees > 0.0 ? bearingDegrees
                                            : (360.0 + bearingDegrees)); // correct discontinuity
 
-    bearingRadians = atan2f(cVector.y() + dy, cVector.x() - dx); // get bearing in radians
-    double bearingDegrees2 = bearingRadians * (180.0 / M_PI);    // convert to degrees
+    bearingRadians = std::atan2(cVector.y() + dy, cVector.x() - dx); // get bearing in radians
+    double bearingDegrees2 = bearingRadians * (180.0 / M_PI);        // convert to degrees
     bearingDegrees2 = (bearingDegrees2 > 0.0 ? bearingDegrees2
                                              : (360.0 + bearingDegrees2)); // correct discontinuity
     double angError = bearingDegrees - bearingDegrees2;
@@ -185,7 +185,7 @@ void DrawingArea::DrawData()
         painter->drawPoint(DPoint(cv));
         double tx = cv.x() - dx;
         double ty = cv.y() + dy;
-        double r = sqrt(tx * tx + ty * ty);
+        double r = std::sqrt(tx * tx + ty * ty);
         MaxRadius = (MaxRadius < r) ? r : MaxRadius;
     }
 

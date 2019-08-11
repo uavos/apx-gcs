@@ -136,7 +136,7 @@ QGeoPath Waypoint::getPath()
             double deltaHdg = AppRoot::angle(pt.azimuthTo(dest) - crs);
             double deltaDist = pt.distanceTo(dest);
             double step = dt * spd;
-            if (wptLine || fabs(deltaHdg) < (dt * 10.0)) {
+            if (wptLine || std::abs(deltaHdg) < (dt * 10.0)) {
                 //crs ok (turn finished)
                 step = 10.0e+3 * dt;
                 crs += deltaHdg;
@@ -159,7 +159,7 @@ QGeoPath Waypoint::getPath()
             crs += deltaHdg;
             p.addCoordinate(pt);
             turnCnt += deltaHdg;
-            if (fabs(turnCnt) > (360 * 2)) { //(++cnt)>(360/turnRate)){
+            if (std::abs(turnCnt) > (360 * 2)) { //(++cnt)>(360/turnRate)){
                 wptReached = false;
                 break;
             }

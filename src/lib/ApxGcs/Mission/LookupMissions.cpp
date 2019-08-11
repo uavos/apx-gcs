@@ -105,7 +105,7 @@ void LookupMissions::dbLookupMissionsByArea(QGeoCoordinate c, QString siteName)
     QVariantList v;
     v << c.latitude();
     v << c.latitude();
-    v << pow(cos(qDegreesToRadians(c.latitude())), 2);
+    v << std::pow(std::cos(qDegreesToRadians(c.latitude())), 2);
     v << c.longitude();
     v << c.longitude();
     query("SELECT *, ((?-lat)*(?-lat)*?)+((?-lon)*(?-lon)) AS dist FROM Missions"

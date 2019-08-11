@@ -119,29 +119,29 @@ void AppRoot::factNotify(Fact *fact)
 //=============================================================================
 QString AppRoot::latToString(double v)
 {
-    double lat = fabs(v);
-    double lat_m = 60 * (lat - floor(lat)), lat_s = 60 * (lat_m - floor(lat_m)),
-           lat_ss = 100 * (lat_s - floor(lat_s));
+    double lat = std::abs(v);
+    double lat_m = 60 * (lat - std::floor(lat)), lat_s = 60 * (lat_m - std::floor(lat_m)),
+           lat_ss = 100 * (lat_s - std::floor(lat_s));
     return QString().sprintf("%c %g%c%02g'%02g.%02g\"",
                              (v >= 0) ? 'N' : 'S',
-                             floor(lat),
+                             std::floor(lat),
                              176,
-                             floor(lat_m),
-                             floor(lat_s),
-                             floor(lat_ss));
+                             std::floor(lat_m),
+                             std::floor(lat_s),
+                             std::floor(lat_ss));
 }
 QString AppRoot::lonToString(double v)
 {
-    double lat = fabs(v);
-    double lat_m = 60 * (lat - floor(lat)), lat_s = 60 * (lat_m - floor(lat_m)),
-           lat_ss = 100 * (lat_s - floor(lat_s));
+    double lat = std::abs(v);
+    double lat_m = 60 * (lat - std::floor(lat)), lat_s = 60 * (lat_m - std::floor(lat_m)),
+           lat_ss = 100 * (lat_s - std::floor(lat_s));
     return QString().sprintf("%c %g%c%02g'%02g.%02g\"",
                              (v >= 0) ? 'E' : 'W',
-                             floor(lat),
+                             std::floor(lat),
                              176,
-                             floor(lat_m),
-                             floor(lat_s),
-                             floor(lat_ss));
+                             std::floor(lat_m),
+                             std::floor(lat_s),
+                             std::floor(lat_ss));
 }
 double AppRoot::latFromString(QString s)
 {
@@ -222,7 +222,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += floor(dv * (double) (24 * 60 * 60));
+            t += std::floor(dv * (double) (24 * 60 * 60));
     }
     if (s.contains('h')) {
         QString ds = s.left(s.indexOf('h')).trimmed();
@@ -230,7 +230,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += floor(dv * (double) (60 * 60));
+            t += std::floor(dv * (double) (60 * 60));
     }
     if (s.contains('m')) {
         QString ds = s.left(s.indexOf('m')).trimmed();
@@ -238,7 +238,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += floor(dv * (double) (60));
+            t += std::floor(dv * (double) (60));
     }
     if (s.contains('s')) {
         QString ds = s.left(s.indexOf('s')).trimmed();
@@ -246,7 +246,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += floor(dv);
+            t += std::floor(dv);
         s.clear();
     }
     if (s.contains(':')) {
@@ -255,19 +255,19 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += floor(dv * (double) (60 * 60));
+            t += std::floor(dv * (double) (60 * 60));
         if (s.contains(':')) {
             QString ds = s.left(s.indexOf(':')).trimmed();
             s = s.remove(0, s.indexOf(':') + 1).trimmed();
             bool ok = false;
             double dv = ds.toDouble(&ok);
             if (ok && dv > 0)
-                t += floor(dv * (double) (60));
+                t += std::floor(dv * (double) (60));
         } else {
             bool ok = false;
             double dv = s.toDouble(&ok);
             if (ok && dv > 0)
-                t += floor(dv * (double) (60));
+                t += std::floor(dv * (double) (60));
             s.clear();
         }
     }
@@ -275,7 +275,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = s.toDouble(&ok);
         if (ok && dv > 0)
-            t += floor(dv);
+            t += std::floor(dv);
     }
     return t;
 }
@@ -309,7 +309,7 @@ double AppRoot::angle(double v)
 {
     const double span = 180.0;
     const double dspan = span * 2.0;
-    return v - floor(v / dspan + 0.5) * dspan;
+    return v - std::floor(v / dspan + 0.5) * dspan;
 }
 double AppRoot::angle360(double v)
 {
@@ -323,14 +323,14 @@ double AppRoot::angle90(double v)
 {
     const double span = 90.0;
     const double dspan = span * 2.0;
-    return v - floor(v / dspan + 0.5) * dspan;
+    return v - std::floor(v / dspan + 0.5) * dspan;
 }
 //=============================================================================
 QPointF AppRoot::rotate(const QPointF &p, double a)
 {
     const double psi_r = qDegreesToRadians(a);
-    double cos_theta = cos(psi_r);
-    double sin_theta = sin(psi_r);
+    double cos_theta = std::cos(psi_r);
+    double sin_theta = std::sin(psi_r);
     return QPointF(p.x() * cos_theta + p.y() * sin_theta, p.y() * cos_theta - p.x() * sin_theta);
 }
 //=============================================================================
