@@ -2,9 +2,10 @@
 #include "XPLMGraphics.h"
 #include "XPLMProcessing.h"
 #include "XPLMUtilities.h"
+#include <algorithm>
+#include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 //---------------
 #include <version.h>
 
