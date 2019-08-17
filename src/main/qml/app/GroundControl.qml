@@ -12,6 +12,13 @@ import Apx.Menu 1.0
 
 import "qrc:/app"
 
+/*
+
+    Main layout QML.
+    Copy this file to `~/Documents/UAVOS/Plugins` and edit to override.
+
+*/
+
 Item {
     id: groundControl
     //border.width: 0
