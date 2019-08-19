@@ -20,33 +20,32 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeTools_H
-#define NodeTools_H
+#ifndef NodeToolsGroup_H
+#define NodeToolsGroup_H
 //=============================================================================
-#include "LookupNodeBackup.h"
-#include "NodeToolsGroup.h"
+#include <Fact/Fact.h>
 class NodeItem;
 //=============================================================================
-class NodeTools : public NodeToolsGroup
+class NodeToolsGroup : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit NodeTools(NodeItem *node);
+    explicit NodeToolsGroup(Fact *parent,
+                            NodeItem *node,
+                            const QString &name,
+                            const QString &title,
+                            const QString &descr,
+                            FactBase::Flags flags = FactBase::Flags(Group));
 
-    Fact *addCommand(QString name, QString title, QString descr, uint cmd) override;
-    void clearCommands();
+    virtual Fact *addCommand(QString name, QString title, QString descr, uint cmd);
 
-    NodeToolsGroup *f_cmd;
-    NodeToolsGroup *f_syscmd;
-    NodeToolsGroup *f_maintenance;
+protected:
+    NodeItem *node;
+    QList<Fact *> onlineActions;
 
-    LookupNodeBackup *f_backups;
-    Fact *f_restore;
-
-    Fact *f_rebootall;
-
-    Fact *f_updates;
+protected slots:
+    void updateActions();
 };
 //=============================================================================
 #endif

@@ -710,7 +710,7 @@ void NodeItem::dictReceived(const DictNode::Dict &dict)
     clear();
     conf_hash = dict.chash;
     foreach (const DictNode::Command &c, dict.commands) {
-        tools->addCommand(c);
+        tools->addCommand(c.name, c.descr, "", c.cmd);
     }
     for (int i = 0; i < dict.fields.size(); ++i) {
         dictCreateField(dict.fields.at(i), nullptr);

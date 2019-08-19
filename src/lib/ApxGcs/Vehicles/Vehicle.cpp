@@ -48,7 +48,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
     , m_callsign(callsign)
     , m_vehicleClass(vclass)
     , m_follow(false)
-    , m_flying(false)
+    , m_flightState(FS_UNKNOWN)
 {
     setSection(vehicles->title());
     setIcon(vclass == LOCAL ? "chip" : vclass == REPLAY ? "play-circle" : "drone");
@@ -92,8 +92,8 @@ Vehicle::Vehicle(Vehicles *vehicles,
     connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
 
-    connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlying);
-    connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlying);
+    connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlightState);
+    connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlightState);
 
     connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
         setActive(v == this);
@@ -265,17 +265,15 @@ void Vehicle::updateCoordinate()
 {
     setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(), f_gps_lon->value().toDouble()));
 }
-void Vehicle::updateFlying()
+void Vehicle::updateFlightState()
 {
-    if (flying()) {
-        if ((f_mode->value().toUInt() == mode_LANDING) && (f_stage->value().toUInt() >= 250))
-            setFlying(false);
-    } else {
-        if ((f_mode->value().toUInt() == mode_TAKEOFF) && (f_stage->value().toUInt() >= 2)
-            && (f_stage->value().toUInt() < 100)) {
-            setFlying(true);
-        }
-    }
+    if ((f_mode->value().toUInt() == mode_LANDING) && (f_stage->value().toUInt() >= 250)) {
+        setFlightState(FS_LANDED);
+    } else if ((f_mode->value().toUInt() == mode_TAKEOFF) && (f_stage->value().toUInt() >= 2)
+               && (f_stage->value().toUInt() < 100)) {
+        setFlightState(FS_TAKEOFF);
+    } else
+        setFlightState(FS_UNKNOWN);
 }
 //=============================================================================
 bool Vehicle::isLocal() const
@@ -553,15 +551,15 @@ void Vehicle::setCoordinate(const QGeoCoordinate &v)
     m_coordinate = v;
     emit coordinateChanged();
 }
-bool Vehicle::flying(void) const
+Vehicle::FlightState Vehicle::flightState(void) const
 {
-    return m_flying;
+    return m_flightState;
 }
-void Vehicle::setFlying(const bool &v)
+void Vehicle::setFlightState(const FlightState &v)
 {
-    if (m_flying == v)
+    if (m_flightState == v)
         return;
-    m_flying = v;
-    emit flyingChanged();
+    m_flightState = v;
+    emit flightStateChanged();
 }
 //=============================================================================

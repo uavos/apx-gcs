@@ -19,6 +19,8 @@ StackView {
 
     property int maxEnumListSize: 5
 
+    property var currentFact: fact
+
     /*onFactChanged: {
         clear()
         openFact(fact)
@@ -59,6 +61,7 @@ StackView {
         if(typeof opts==='undefined')opts={}
         if(!opts.fact)opts.fact=f
         var c=pageDelegate.createObject(this,opts)
+        currentFact=f
         return c
     }
 
@@ -75,7 +78,7 @@ StackView {
         if(depth==1)stackEmpty()
         if(depth>1)pop();
         else if(parentStack)parentStack.pop();
-
+        currentFact=currentItem.fact
     }
 
     function openSystemTree()

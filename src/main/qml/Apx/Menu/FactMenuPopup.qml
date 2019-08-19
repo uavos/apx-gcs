@@ -14,6 +14,7 @@ Popup {
 
     //forward props
     property alias fact: factMenu.fact
+    property alias currentFact: factMenu.currentFact
     property alias showTitle: factMenu.showTitle
 
     property bool pinned: false

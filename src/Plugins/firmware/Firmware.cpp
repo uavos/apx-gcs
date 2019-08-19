@@ -160,6 +160,7 @@ void Firmware::requestUpgrade(const QString &nodeName,
         next();
     else
         updateStatus();
+    requestDefaultMenu();
 }
 void Firmware::requestInitialization(const QString &nodeName,
                                      const QString &hw,

@@ -49,7 +49,7 @@ private:
 
     //auto recorder
     bool checkAutoRecord(void);
-    bool recTrigger;
+    Vehicle::FlightState flightState_s;
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp

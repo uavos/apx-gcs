@@ -76,11 +76,12 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     recTelemetryID = 0;
     reqNewRecord = nullptr;
 
-    recTrigger = false;
     timeUpdateTimer.setSingleShot(true);
     timeUpdateTimer.setInterval(500);
     connect(&timeUpdateTimer, &QTimer::timeout, this, &TelemetryRecorder::timeUpdate);
 
+    // auto recorder
+    flightState_s = Vehicle::FS_UNKNOWN;
     recStopTimer.setSingleShot(true);
     connect(&recStopTimer, &QTimer::timeout, this, [=]() { setValue(false); });
 
@@ -95,9 +96,6 @@ void TelemetryRecorder::updateRecording()
 {
     recStopTimer.stop();
     reset();
-    if (!recording()) {
-        recTrigger = false;
-    }
 }
 //=============================================================================
 void TelemetryRecorder::invalidateCache()
@@ -347,24 +345,24 @@ void TelemetryRecorder::recordConfig()
 //=============================================================================
 bool TelemetryRecorder::checkAutoRecord(void)
 {
-    if (vehicle->streamType() == Vehicle::TELEMETRY) {
-        if (vehicle->flying()) {
-            if (!recTrigger) {
-                reset(); //restart
-                setValue(true);
-                recTrigger = true;
-            }
-        } else
-            recTrigger = false;
-        if (recording()) {
-            if ((!recStopTimer.isActive()) && (!vehicle->flying()))
-                recStopTimer.start(2000);
+    if (vehicle->streamType() != Vehicle::TELEMETRY)
+        return recording();
+
+    Vehicle::FlightState fs = vehicle->flightState();
+    if (flightState_s != fs) {
+        flightState_s = fs; //only once
+
+        // stop recording when landed
+        if (fs == Vehicle::FS_LANDED && recording() && !recStopTimer.isActive())
+            recStopTimer.start(2000);
+
+        // start or restart when starts flying
+        if (fs == Vehicle::FS_TAKEOFF) {
+            reset(); //restart
+            setValue(true);
         }
     }
-    if (!recording()) {
-        return false;
-    }
-    return true;
+    return recording();
 }
 //=============================================================================
 bool TelemetryRecorder::recording() const

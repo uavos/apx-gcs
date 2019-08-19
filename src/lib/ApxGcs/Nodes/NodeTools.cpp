@@ -22,18 +22,18 @@
  */
 #include "NodeTools.h"
 #include "NodeItem.h"
+#include "NodeToolBlackbox.h"
 #include "Nodes.h"
 #include <ApxApp.h>
 #include <Database/Database.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
-NodeTools::NodeTools(NodeItem *parent)
-    : Fact(nullptr, "tools", tr("Tools"), tr("Node tools"), Group)
-    , node(parent)
+NodeTools::NodeTools(NodeItem *node)
+    : NodeToolsGroup(nullptr, node, "tools", tr("Tools"), tr("Node tools"))
 {
     setIcon("wrench");
-    setParent(parent);
-    connect(parent, &Fact::removed, this, &Fact::removed);
+    setParent(node);
+    connect(node, &Fact::removed, this, &Fact::removed);
 
     model()->setFlat(true);
 
@@ -46,17 +46,28 @@ NodeTools::NodeTools(NodeItem *parent)
     f_restore->setIcon("undo");
     f_restore->setSection(sect);
     connect(f_restore, &Fact::triggered, node->nodes->storage, [this]() {
-        node->nodes->storage->restoreNodeConfig(node);
+        this->node->nodes->storage->restoreNodeConfig(this->node);
     });
 
     //sections
-    f_cmd = new Fact(this, "cmd", tr("Commands"), tr("Node hardware commands"), Section);
-    f_syscmd = new Fact(this, "syscmd", tr("System"), tr("System hardware commands"), Section);
-    f_maintenance = new Fact(this,
-                             "maintenance",
-                             tr("Maintenance"),
-                             tr("Hardware maintenance"),
-                             Section);
+    f_cmd = new NodeToolsGroup(this,
+                               node,
+                               "cmd",
+                               tr("Commands"),
+                               tr("Node hardware commands"),
+                               Section);
+    f_syscmd = new NodeToolsGroup(this,
+                                  node,
+                                  "syscmd",
+                                  tr("System"),
+                                  tr("System hardware commands"),
+                                  Section);
+    f_maintenance = new NodeToolsGroup(this,
+                                       node,
+                                       "maintenance",
+                                       tr("Maintenance"),
+                                       tr("Hardware maintenance"),
+                                       Section);
 
     //maintenance
     f_updates = new Fact(f_maintenance, "updates", tr("Updates"), tr("Firmware updates"), Group);
@@ -76,71 +87,28 @@ NodeTools::NodeTools(NodeItem *parent)
     connect(f_rebootall, &Fact::triggered, node->nodes, [=]() { node->nodes->rebootAll(); });
 
     onlineActions.append(f_updates);
-    connect(node, &NodeItem::offlineChanged, this, &NodeTools::updateActions);
     updateActions();
 }
 //=============================================================================
-void NodeTools::addCommand(DictNode::Command cmd)
+Fact *NodeTools::addCommand(QString name, QString title, QString descr, uint cmd)
 {
-    commands.append(cmd);
-    bool sys = cmd.cmd < 128;
+    bool sys = cmd < 128;
     //qDebug()<<node->title()<<name<<descr<<sys;
-    QString name = cmd.name.toLower();
-    QString descr = cmd.descr;
-    Fact *fp = sys ? f_syscmd : f_cmd;
-    if (descr.contains(':')) {
-        //grouping
-        QString sgroup = descr.left(descr.indexOf(':')).trimmed();
-        descr = descr.remove(0, descr.indexOf(':') + 1).trimmed();
-        Fact *fgroup = nullptr;
-        for (int i = 0; i < fp->size(); ++i) {
-            if (fp->child(i)->title() != sgroup)
-                continue;
-            fgroup = fp->child(i);
-            break;
-        }
-        if (!fgroup) {
-            fgroup = new Fact(fp, sgroup, sgroup, "", Group);
-            onlineActions.append(fgroup);
-        }
-        fp = fgroup;
-    }
-    Fact *f = new Fact(fp, name, descr, "");
-    if (name.contains("reboot") || name.contains("restart"))
-        f->setIcon("reload");
-    else if (name.contains("mute"))
-        f->setIcon("volume-mute");
-    else if (name.contains("erase") || name.contains("clear"))
-        f->setIcon("close-circle");
-    else if (name.contains("conf"))
-        f->setIcon("alert-octagram");
-    else if (name.startsWith("vm"))
-        f->setIcon("code-braces");
-    else if (name.startsWith("bb"))
-        f->setIcon("database");
-    else
-        f->setIcon("asterisk");
-    f->userData = cmd.cmd;
+    NodeToolsGroup *fp = sys ? f_syscmd : f_cmd;
+    Fact *f = fp->addCommand(name, title, descr, cmd);
+    if (!f)
+        return f;
+
     connect(f, &Fact::triggered, node, [this, f]() {
         node->execCommand(static_cast<quint16>(f->userData.toUInt()), f->name(), f->title());
     });
-    onlineActions.append(f);
-    updateActions();
-    //ApxApp::jsync(this);
+
+    return f;
 }
 void NodeTools::clearCommands()
 {
     onlineActions.clear();
-    commands.clear();
     f_cmd->removeAll();
     f_syscmd->removeAll();
-}
-//=============================================================================
-void NodeTools::updateActions()
-{
-    bool enb = !node->offline();
-    foreach (Fact *f, onlineActions) {
-        f->setEnabled(enb);
-    }
 }
 //=============================================================================

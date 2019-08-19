@@ -7,8 +7,8 @@ Flickable {
 
     property var factAction
 
-    Layout.preferredWidth: MenuStyle.itemWidth
-    Layout.preferredHeight: contentHeight
+    implicitWidth: MenuStyle.itemWidth
+    implicitHeight: contentHeight
     contentWidth: width
     contentHeight: layout.height
     ColumnLayout{
@@ -35,6 +35,7 @@ Flickable {
 
         TextArea {
             Layout.fillWidth: true
+            //Layout.preferredHeight: width
             selectByMouse: true
             selectByKeyboard: true
             text: getInfoText()

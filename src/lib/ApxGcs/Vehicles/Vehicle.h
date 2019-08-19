@@ -44,6 +44,7 @@ class Vehicle : public Fact
     Q_OBJECT
     Q_ENUMS(VehicleClass)
     Q_ENUMS(StreamType)
+    Q_ENUMS(FlightState)
 
     Q_PROPERTY(QString callsign READ callsign NOTIFY callsignChanged)
     Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
@@ -60,7 +61,7 @@ class Vehicle : public Fact
 
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
 
-    Q_PROPERTY(bool flying READ flying NOTIFY flyingChanged)
+    Q_PROPERTY(FlightState flightState READ flightState NOTIFY flightStateChanged)
 
 public:
     enum VehicleClass {
@@ -75,6 +76,9 @@ public:
 
     enum StreamType { OFFLINE = 0, SERVICE, DATA, XPDR, TELEMETRY };
     Q_ENUM(StreamType)
+
+    enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
+    Q_ENUM(FlightState)
 
     explicit Vehicle(Vehicles *vehicles,
                      QString callsign,
@@ -136,7 +140,7 @@ private slots:
     void updateInfo();
     void updateInfoReq();
     void updateCoordinate();
-    void updateFlying();
+    void updateFlightState();
 
     void dbSetVehicleKey(quint64 key);
 
@@ -200,8 +204,8 @@ public:
     QGeoCoordinate coordinate(void) const;
     void setCoordinate(const QGeoCoordinate &v);
 
-    bool flying(void) const;
-    void setFlying(const bool &v);
+    FlightState flightState(void) const;
+    void setFlightState(const FlightState &v);
 
 protected:
     StreamType m_streamType;
@@ -211,7 +215,7 @@ protected:
     VehicleClass m_vehicleClass;
     bool m_follow;
     QGeoCoordinate m_coordinate;
-    bool m_flying;
+    FlightState m_flightState;
 
 signals:
     void streamTypeChanged();
@@ -221,7 +225,7 @@ signals:
     void infoChanged();
     void followChanged();
     void coordinateChanged();
-    void flyingChanged();
+    void flightStateChanged();
 };
 //=============================================================================
 #endif

@@ -8,8 +8,9 @@ var options={}
 
 function show(fact,opts,parent)
 {
-    if(popup && typeof(popup.pinned)!=='undefined'){
-        if(!popup.pinned){
+    if(popup){
+        if(fact === popup.currentFact)return
+        if(typeof(popup.pinned)!=='undefined' && (!popup.pinned)){
             popup.close()
             popup=null
         }
