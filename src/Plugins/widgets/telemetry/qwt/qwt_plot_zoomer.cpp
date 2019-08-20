@@ -13,7 +13,7 @@
 #include "qwt_picker_machine.h"
 #include <qalgorithms.h>
 
-static QwtInterval qwtExpandedZoomInterval( double v1, double v2, 
+static QwtInterval qwtExpandedZoomInterval( double v1, double v2,
     double minRange, const QwtTransform* transform )
 {
     double min = v1;
@@ -565,7 +565,7 @@ bool QwtPlotZoomer::accept( QPolygon &pa ) const
     QRect rect = QRect( pa[0], pa[int( pa.count() ) - 1] );
     rect = rect.normalized();
 
-    const int minSize = 20;
+    const int minSize = 2;
     if ( rect.width() < minSize && rect.height() < minSize )
         return false;
 

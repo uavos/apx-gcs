@@ -422,7 +422,7 @@ void TelemetryPlot::resetZoom()
     //zoomer->zoom(r);
     //zoomer->setZoomBase(r);
     //QCoreApplication::processEvents();
-    //replot();
+    replot();
 }
 //=============================================================================
 void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)

@@ -62,7 +62,7 @@ Fact *NodeToolBlackbox::addCommand(QString name, QString title, QString descr, q
     if (!node->nodes->vehicle->isLocal() && node->nodes->vehicle->vehicleClass() != Vehicle::GCU) {
         f_callsign->setValue(node->nodes->vehicle->callsign());
     }
-    f_notes = new Fact(f_read, "notes", tr("Notes"), tr("Telemetry record notes"), Text);
+    //f_notes = new Fact(f_read, "notes", tr("Notes"), tr("Telemetry record notes"), Text);
 
     f_stats = new Fact(f_read, "stats", "", "", Const);
     connect(f_stats, &Fact::triggered, this, &NodeToolBlackbox::getStats);
