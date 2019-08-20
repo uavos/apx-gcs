@@ -38,7 +38,7 @@ public:
                             const QString &descr,
                             FactBase::Flags flags = FactBase::Flags(Group));
 
-    virtual Fact *addCommand(QString name, QString title, QString descr, uint cmd);
+    virtual Fact *addCommand(QString name, QString title, QString descr, quint16 cmd);
 
 protected:
     NodeItem *node;

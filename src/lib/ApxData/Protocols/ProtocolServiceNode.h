@@ -81,6 +81,8 @@ private slots:
     //export signals and slots
 signals:
     void unknownServiceData(quint16 cmd, QByteArray data);
+    void requestTimeout(quint16 cmd, QByteArray data);
+
     void searchReceived();
     void messageReceived(QString msg);
     void infoReceived(DictNode::Info info);
@@ -105,6 +107,8 @@ public slots:
     void requestUser(quint16 id, QByteArray data, int timeout_ms);
 
     void loadCachedDict(DictNode::Dict dict);
+
+    void acknowledgeRequest(quint16 cmd, QByteArray data = QByteArray());
 };
 //=============================================================================
 #endif

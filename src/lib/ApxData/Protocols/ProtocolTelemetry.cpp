@@ -107,8 +107,10 @@ void ProtocolTelemetry::sendValueRequest(quint16 id)
 //=============================================================================
 void ProtocolTelemetry::dlinkData(quint16 id, QByteArray data)
 {
-    if (!mandala->unpackValue(id, data))
+    if (!mandala->unpackValue(id, data)) {
+        //qDebug() << "unpack failed" << id << data.size();
         return;
+    }
     syncValues();
     emit valueDataReceived();
 }

@@ -126,6 +126,7 @@ public slots:
     //protocols:
 public slots:
     void dictReceived(const DictNode::Dict &dict);
+
 private slots:
     void messageReceived(const QString &msg);
     void infoReceived(const DictNode::Info &info);
@@ -143,6 +144,11 @@ signals:
     void saveValues();
     void requestNstat();
     void requestUser(quint16 id, QByteArray data, int timeout_ms);
+
+    //protocol forward for user commands (i.e. blackbox read)
+    void acknowledgeRequest(quint16 cmd, QByteArray data = QByteArray());
+    void serviceDataReceived(quint16 cmd, QByteArray data);
+    void requestTimeout(quint16 cmd, QByteArray data);
 
     //---------------------------------------
     // PROPERTIES

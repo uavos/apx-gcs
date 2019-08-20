@@ -116,14 +116,15 @@ ProtocolServiceRequest *ProtocolService::request(
 //=============================================================================
 ProtocolServiceRequest *ProtocolService::acknowledgeRequest(QString sn, quint16 cmd, QByteArray data)
 {
+    ProtocolServiceRequest *r = nullptr;
     for (int i = 0; i < pool.size(); ++i) {
-        ProtocolServiceRequest *r = pool.at(i);
-        if (!r->confirms(sn, cmd, data))
+        ProtocolServiceRequest *ri = pool.at(i);
+        if (!ri->confirms(sn, cmd, data))
             continue;
-        r->finish(true);
-        return r;
+        ri->finish(true);
+        r = ri;
     }
-    return nullptr;
+    return r;
 }
 //=============================================================================
 void ProtocolService::stop()

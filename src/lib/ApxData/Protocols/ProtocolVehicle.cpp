@@ -34,13 +34,15 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
     , ident(ident)
     , txbuf(xbus::size_packet_max, '\0')
 {
-    if (squawk) {
-        connect(this, &ProtocolVehicle::sendUplink, this, [this, vehicles](QByteArray packet) {
-            vehicles->vehicleSendUplink(this->squawk, packet);
-        });
-    } else {
-        //local
-        connect(this, &ProtocolVehicle::sendUplink, vehicles, &ProtocolVehicles::sendUplink);
+    if (vehicles) {
+        if (squawk) {
+            connect(this, &ProtocolVehicle::sendUplink, this, [this, vehicles](QByteArray packet) {
+                vehicles->vehicleSendUplink(this->squawk, packet);
+            });
+        } else {
+            //local
+            connect(this, &ProtocolVehicle::sendUplink, vehicles, &ProtocolVehicles::sendUplink);
+        }
     }
 
     telemetry = new ProtocolTelemetry(this);

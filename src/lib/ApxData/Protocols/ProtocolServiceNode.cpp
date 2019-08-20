@@ -41,6 +41,13 @@ ProtocolServiceNode::ProtocolServiceNode(ProtocolService *service, const QString
         if (!this->service->active())
             setProgress(-1);
     });
+    connect(service,
+            &ProtocolService::requestTimeout,
+            this,
+            [this](ProtocolServiceRequest *request, ProtocolServiceNode *node) {
+                if (node == this)
+                    emit requestTimeout(request->cmd, request->data);
+            });
 }
 //=============================================================================
 QString ProtocolServiceNode::name() const
@@ -111,9 +118,9 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
     uint8_t *pdata = reinterpret_cast<uint8_t *>(data.data());
 
     switch (cmd) {
-    default: {
+    default:
         emit unknownServiceData(cmd, data);
-    }
+        //qDebug() << cmd << data.size();
         return;
     case xbus::node::apc_search: { //response to search
         //qDebug() << "apc_search" << sn;
@@ -128,7 +135,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
     case xbus::node::apc_ack: { //user command acknowledge
         if (data.size() != 1)
             break;
-        service->acknowledgeRequest(sn, static_cast<quint8>(data.at(0)));
+        acknowledgeRequest(static_cast<quint8>(data.at(0)));
     } break;
 
     case xbus::node::apc_info: {
@@ -155,7 +162,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         infoReceived(d.info);
         if (!d.info.fwUpdating)
             requestDictInfo();
-        service->acknowledgeRequest(sn, cmd);
+        acknowledgeRequest(cmd);
     } break;
 
     case xbus::node::apc_conf_inf: {
@@ -176,7 +183,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
             d.dict.reset(d.dictInfo.chash, d.dictInfo.paramsCount);
         }
         dictInfoReceived(d.dictInfo);
-        service->acknowledgeRequest(sn, cmd);
+        acknowledgeRequest(cmd);
     } break;
 
     case xbus::node::apc_nstat: {
@@ -197,7 +204,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         nstat.cpuLoad = dStatus.load * 100u / 255u;
         nstat.dump = QByteArray(reinterpret_cast<char *>(dStatus.dump.data()), dStatus.dump.size());
         nstatReceived(nstat);
-        service->acknowledgeRequest(sn, cmd);
+        acknowledgeRequest(cmd);
     } break;
 
     case xbus::node::apc_conf_cmds: {
@@ -233,7 +240,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
             d.dict.commandsValid = true;
             requestDict();
         }
-        service->acknowledgeRequest(sn, cmd);
+        acknowledgeRequest(cmd);
     } break;
 
     case xbus::node::apc_conf_dsc: {
@@ -249,7 +256,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
 
         //qDebug()<<"apc_conf_dsc"<<data.size()<<data.toHex().toUpper();
         fieldDictData(fid, data.mid(stream.position()));
-        service->acknowledgeRequest(sn, cmd, data.left(stream.position()));
+        acknowledgeRequest(cmd, data.left(stream.position()));
     } break;
 
     case xbus::node::apc_conf_read: {
@@ -266,7 +273,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         stream >> fid;
 
         fieldValuesData(fid, data.mid(stream.position()));
-        service->acknowledgeRequest(sn, cmd, data.left(stream.position()));
+        acknowledgeRequest(cmd, data.left(stream.position()));
     } break;
 
     case xbus::node::apc_conf_write: {
@@ -283,7 +290,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
 
         if (stream.tail() == 0) {
             //request fid or response of write eeprom
-            service->acknowledgeRequest(sn, cmd, data.left(stream.position()));
+            acknowledgeRequest(cmd, data.left(stream.position()));
             //write field confirm
             if (fid >= 0xFF)
                 valuesSaved();
@@ -298,6 +305,11 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         }
     } break;
     }
+}
+//=============================================================================
+void ProtocolServiceNode::acknowledgeRequest(quint16 cmd, QByteArray data)
+{
+    service->acknowledgeRequest(sn, cmd, data);
 }
 //=============================================================================
 void ProtocolServiceNode::requestInfo()

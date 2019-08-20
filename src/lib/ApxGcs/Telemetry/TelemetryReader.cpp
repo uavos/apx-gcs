@@ -346,7 +346,16 @@ void TelemetryReader::addEventFact(quint64 time,
             f->setValue(f->value().toInt() + 1);
         }
     } else {
-        Fact *f = new Fact(g, name + "#", value, uid);
+        QString title = value;
+        QString descr = uid;
+        if (title.startsWith('[') && title.contains(']')) {
+            int i = title.indexOf(']');
+            QString s = title.mid(1, i - 1).trimmed();
+            title.remove(0, i + 1);
+            if (!s.isEmpty())
+                descr.prepend(QString("%1/").arg(s));
+        }
+        Fact *f = new Fact(g, name + "#", title, descr);
         f->setStatus(stime);
         connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
     }

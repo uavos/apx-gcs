@@ -262,6 +262,7 @@ QByteArray DictMandala::packPointValue(const Entry &i, double v1, double v2)
 //=============================================================================
 bool DictMandala::unpackValue(quint16 id, const QByteArray &data)
 {
+    //qDebug() << id << data.toHex();
     return m->unpack((quint8 *) data.data(), data.size(), id);
 }
 bool DictMandala::unpackStream(const QByteArray &data)

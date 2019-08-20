@@ -118,18 +118,30 @@ void NodeItem::setProtocol(ProtocolServiceNode *protocol)
     connect(protocol, &ProtocolServiceNode::valueUploaded, this, &NodeItem::valueUploaded);
     connect(protocol, &ProtocolServiceNode::valuesSaved, this, &NodeItem::valuesSaved);
     connect(protocol, &ProtocolServiceNode::nstatReceived, this, &NodeItem::nstatReceived);
+    connect(protocol,
+            &ProtocolServiceNode::unknownServiceData,
+            this,
+            &NodeItem::serviceDataReceived);
+
+    connect(protocol, &ProtocolServiceNode::requestTimeout, this, &NodeItem::requestTimeout);
 
     connect(protocol, &ProtocolServiceNode::progressChanged, this, [this, protocol]() {
         setProgress(protocol->progress());
     });
 
-    connect(this, &NodeItem::requestInfo, protocol, &ProtocolServiceNode::requestInfo);
-    connect(this, &NodeItem::requestDict, protocol, &ProtocolServiceNode::requestDict);
-    connect(this, &NodeItem::requestValues, protocol, &ProtocolServiceNode::requestValues);
-    connect(this, &NodeItem::uploadValue, protocol, &ProtocolServiceNode::uploadValue);
-    connect(this, &NodeItem::saveValues, protocol, &ProtocolServiceNode::saveValues);
-    connect(this, &NodeItem::requestNstat, protocol, &ProtocolServiceNode::requestNstat);
-    connect(this, &NodeItem::requestUser, protocol, &ProtocolServiceNode::requestUser);
+    if (!nodes->vehicle->isTemporary()) {
+        connect(this, &NodeItem::requestInfo, protocol, &ProtocolServiceNode::requestInfo);
+        connect(this, &NodeItem::requestDict, protocol, &ProtocolServiceNode::requestDict);
+        connect(this, &NodeItem::requestValues, protocol, &ProtocolServiceNode::requestValues);
+        connect(this, &NodeItem::uploadValue, protocol, &ProtocolServiceNode::uploadValue);
+        connect(this, &NodeItem::saveValues, protocol, &ProtocolServiceNode::saveValues);
+        connect(this, &NodeItem::requestNstat, protocol, &ProtocolServiceNode::requestNstat);
+        connect(this, &NodeItem::requestUser, protocol, &ProtocolServiceNode::requestUser);
+        connect(this,
+                &NodeItem::acknowledgeRequest,
+                protocol,
+                &ProtocolServiceNode::acknowledgeRequest);
+    }
 
     setDataValid(false);
     setDictValid(false);
@@ -363,6 +375,8 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
 //=============================================================================
 void NodeItem::message(QString msg)
 {
+    if (nodes->vehicle->isTemporary())
+        return;
     QString ns;
     if (Vehicles::instance()->f_list->size() > 0)
         ns = QString("%1/%2").arg(nodes->vehicle->callsign()).arg(title());

@@ -24,19 +24,63 @@
 #define NodeToolBlackbox_H
 //=============================================================================
 #include "NodeToolsGroup.h"
+#include <Protocols/ProtocolVehicle.h>
+#include <common/Escaped.h>
+class Vehicle;
 //=============================================================================
-class NodeToolBlackbox : public NodeToolsGroup
+class NodeToolBlackbox : public NodeToolsGroup, public Escaped
 {
     Q_OBJECT
 
 public:
     explicit NodeToolBlackbox(Fact *parent, NodeItem *node, const QString &title);
 
-    Fact *addCommand(QString name, QString title, QString descr, uint cmd) override;
+    Fact *addCommand(QString name, QString title, QString descr, quint16 cmd) override;
 
 private:
+    Fact *f_read;
+
     Fact *f_callsign;
     Fact *f_notes;
+    Fact *f_stats;
+
+    Fact *f_begin;
+    Fact *f_end;
+
+    FactAction *f_start;
+    FactAction *f_stop;
+
+    quint16 bb_read;
+    quint32 rec_size;
+    quint32 req_blk;
+    quint32 req_begin;
+    quint32 req_end;
+
+    enum Operation { op_idle, op_stats, op_read };
+    Operation op;
+
+    void request(Operation op, QByteArray data);
+    void request(quint32 blk);
+
+    //esc reader
+    QByteArray esc_input;
+    uint esc_read(uint8_t *buf, uint sz) override;
+    void escError(void) override;
+    void processData(QByteArray data);
+
+    //decoding
+    ProtocolVehicle *protocol;
+    Vehicle *vehicle;
+
+private slots:
+    void updateActions();
+
+    void serviceDataReceived(quint16 cmd, QByteArray data);
+
+public slots:
+    void getStats();
+    void download();
+    void stop();
 };
 //=============================================================================
 #endif

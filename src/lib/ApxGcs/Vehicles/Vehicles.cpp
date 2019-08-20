@@ -114,19 +114,26 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     connect(protocol, &ProtocolVehicles::vehicleIdentified, this, &Vehicles::vehicleIdentified);
 }
 //=============================================================================
-void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
+Vehicle *Vehicles::createVehicle(ProtocolVehicle *protocol)
 {
     Vehicle *v = new Vehicle(this,
                              protocol->ident.callsign,
                              protocol->squawk,
                              protocol->ident.uid,
-                             (Vehicle::VehicleClass) protocol->ident.vclass,
+                             static_cast<Vehicle::VehicleClass>(protocol->ident.vclass),
                              protocol);
+
+    emit vehicleRegistered(v);
+    return v;
+}
+//=============================================================================
+void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
+{
+    Vehicle *v = createVehicle(protocol);
 
     apxMsg() << tr("Vehicle identified").append(":") << v->vehicleClassText()
              << "'" + v->callsign() + "'"
              << "(" + v->squawkText() + ")";
-    emit vehicleRegistered(v);
 
     v->dbSaveVehicleInfo();
 

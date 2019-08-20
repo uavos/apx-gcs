@@ -248,6 +248,8 @@ void Nodes::sync()
 {
     if (!vehicle->protocol)
         return;
+    if (vehicle->isTemporary())
+        return;
     syncTime.start();
     if (syncActive) {
         vehicle->protocol->service->setActive(true);

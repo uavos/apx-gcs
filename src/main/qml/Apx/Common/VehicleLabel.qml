@@ -90,7 +90,7 @@ RowLayout {
         Rectangle {
             Layout.fillHeight: false
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            visible: vehicle.mission.missionSize>0
+            visible: vehicle && vehicle.mission.missionSize>0
             border.width: 0
             implicitWidth: radius*2
             implicitHeight: radius*2

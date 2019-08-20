@@ -95,28 +95,30 @@ Vehicle::Vehicle(Vehicles *vehicles,
     connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlightState);
     connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlightState);
 
-    connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
-        setActive(v == this);
-        if (active() && (!(isLocal() || isReplay())))
-            dlinkReqTimer.start();
-        else
-            dlinkReqTimer.stop();
-    });
-
-    connect(this, &Fact::activeChanged, this, [=]() { setFollow(false); });
-
-    onlineTimer.setSingleShot(true);
-    onlineTimer.setInterval(7000);
-    connect(&onlineTimer, &QTimer::timeout, this, [=]() { setStreamType(OFFLINE); });
-
-    //downlink request timer
-    if (!(isLocal() || isReplay())) {
-        dlinkReqTimer.setInterval(1000);
-        dlinkReqTimer.start();
-        connect(&dlinkReqTimer, &QTimer::timeout, this, [=]() {
-            if (active())
-                protocol->sendUplink(QByteArray()); //request telemetry
+    if (!isTemporary()) {
+        connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
+            setActive(v == this);
+            if (active() && (!(isLocal() || isReplay())))
+                dlinkReqTimer.start();
+            else
+                dlinkReqTimer.stop();
         });
+
+        connect(this, &Fact::activeChanged, this, [=]() { setFollow(false); });
+
+        onlineTimer.setSingleShot(true);
+        onlineTimer.setInterval(7000);
+        connect(&onlineTimer, &QTimer::timeout, this, [=]() { setStreamType(OFFLINE); });
+
+        //downlink request timer
+        if (!(isLocal() || isReplay())) {
+            dlinkReqTimer.setInterval(1000);
+            dlinkReqTimer.start();
+            connect(&dlinkReqTimer, &QTimer::timeout, this, [=]() {
+                if (active())
+                    protocol->sendUplink(QByteArray()); //request telemetry
+            });
+        }
     }
 
     updateStatus();
@@ -186,6 +188,10 @@ Vehicle::Vehicle(Vehicles *vehicles,
     //register JS new vehicles instantly
     connect(this, &Vehicle::nameChanged, this, [=]() { ApxApp::jsync(this); });
     ApxApp::jsync(this);
+}
+Vehicle::~Vehicle()
+{
+    qDebug() << "vehicle removed";
 }
 //=============================================================================
 //=============================================================================
@@ -283,6 +289,10 @@ bool Vehicle::isLocal() const
 bool Vehicle::isReplay() const
 {
     return !protocol; // vehicleClass()==REPLAY;
+}
+bool Vehicle::isTemporary() const
+{
+    return vehicleClass() == TEMPORARY;
 }
 void Vehicle::setReplay(bool v)
 {

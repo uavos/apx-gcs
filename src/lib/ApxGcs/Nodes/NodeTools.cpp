@@ -90,7 +90,7 @@ NodeTools::NodeTools(NodeItem *node)
     updateActions();
 }
 //=============================================================================
-Fact *NodeTools::addCommand(QString name, QString title, QString descr, uint cmd)
+Fact *NodeTools::addCommand(QString name, QString title, QString descr, quint16 cmd)
 {
     bool sys = cmd < 128;
     //qDebug()<<node->title()<<name<<descr<<sys;

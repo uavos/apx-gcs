@@ -34,7 +34,7 @@ class NodeTools : public NodeToolsGroup
 public:
     explicit NodeTools(NodeItem *node);
 
-    Fact *addCommand(QString name, QString title, QString descr, uint cmd) override;
+    Fact *addCommand(QString name, QString title, QString descr, quint16 cmd) override;
     void clearCommands();
 
     NodeToolsGroup *f_cmd;

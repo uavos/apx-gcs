@@ -46,6 +46,8 @@ public:
 
     ProtocolVehicles *protocol;
 
+    Vehicle *createVehicle(ProtocolVehicle *protocol);
+
 private:
     static Vehicles *_instance;
 

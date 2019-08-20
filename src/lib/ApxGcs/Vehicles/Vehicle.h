@@ -70,7 +70,8 @@ public:
 
         //internal use
         LOCAL = 100,
-        REPLAY
+        REPLAY,
+        TEMPORARY, //blackbox
     };
     Q_ENUM(VehicleClass)
 
@@ -86,6 +87,8 @@ public:
                      QString uid,
                      VehicleClass vclass,
                      ProtocolVehicle *protocol);
+
+    ~Vehicle();
 
     VehicleMandala *f_mandala;
     Nodes *f_nodes;
@@ -111,6 +114,7 @@ public:
 
     Q_INVOKABLE bool isLocal() const;
     Q_INVOKABLE bool isReplay() const;
+    Q_INVOKABLE bool isTemporary() const;
 
 private:
     QTimer dlinkReqTimer;

@@ -37,7 +37,7 @@ NodeToolsGroup::NodeToolsGroup(Fact *parent,
     updateActions();
 }
 //=============================================================================
-Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, uint cmd)
+Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, quint16 cmd)
 {
     name = name.toLower();
     if (title.contains(':')) {

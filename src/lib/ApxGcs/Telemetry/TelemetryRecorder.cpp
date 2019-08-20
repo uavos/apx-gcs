@@ -235,6 +235,7 @@ void TelemetryRecorder::recordDownlink()
             recValues.append(v);
         values.append(QPair<quint64, double>(fieldID, v));
     }
+    //qDebug() << values.size();
     if (values.isEmpty())
         return;
     for (int i = 0; i < values.size(); ++i) {
