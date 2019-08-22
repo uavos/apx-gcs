@@ -276,7 +276,7 @@ uint NodeToolBlackbox::esc_read(uint8_t *buf, uint sz)
     uint cnt = static_cast<uint>(esc_input.size());
     if (cnt > sz)
         cnt = sz;
-    std::memcpy(buf, esc_input.data(), cnt);
+    memcpy(buf, esc_input.data(), cnt);
     esc_input.remove(0, static_cast<int>(cnt));
     return cnt;
 }

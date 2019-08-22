@@ -93,6 +93,13 @@ Rectangle {
         }
 
         FactValue {
+            title: qsTr("WPT")
+            fact: m.wpidx
+            visible: ui.test || (m.mode.value===mode_WPT || m.mode.value===mode_STBY)
+            implicitWidth: itemWidth
+            implicitHeight: itemHeight
+        }
+        FactValue {
             title: qsTr("LPS")
             fact: m.loops
             visible: ui.test || (m.mode.value===mode_STBY && m.loops.value>0)
