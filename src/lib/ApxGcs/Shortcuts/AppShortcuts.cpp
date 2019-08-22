@@ -155,13 +155,13 @@ void AppShortcuts::load()
 
     foreach (QString key, lsys) {
         f_add->defaults();
-        f_add->fromJson(msys.value(key));
+        f_add->valuesFromJson(msys.value(key));
         new AppShortcut(f_sys, this, f_add, false);
     }
 
     foreach (QString key, lusr) {
         f_add->defaults();
-        f_add->fromJson(musr.value(key));
+        f_add->valuesFromJson(musr.value(key));
         addUserShortcut();
     }
     f_add->defaults();
@@ -174,11 +174,11 @@ void AppShortcuts::saveDo()
 {
     QJsonArray asys;
     for (int i = 0; i < f_sys->size(); ++i) {
-        asys.append(f_sys->child<AppShortcut>(i)->toJson());
+        asys.append(f_sys->child<AppShortcut>(i)->valuesToJson());
     }
     QJsonArray ausr;
     for (int i = 0; i < f_usr->size(); ++i) {
-        ausr.append(f_usr->child<AppShortcut>(i)->toJson());
+        ausr.append(f_usr->child<AppShortcut>(i)->valuesToJson());
     }
     //save json file
     QFile fusr(ApxDirs::prefs().filePath("shortcuts.json"));

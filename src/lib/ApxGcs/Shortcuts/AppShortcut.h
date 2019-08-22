@@ -41,8 +41,8 @@ public:
     FactAction *_save;
     FactAction *_remove;
 
-    QJsonObject toJson(bool array = false) const;
-    void fromJson(const QJsonObject &jso);
+    QJsonObject valuesToJson(bool array = false) const override;
+    void valuesFromJson(const QJsonObject &jso) override;
 
 private:
     AppShortcuts *container;

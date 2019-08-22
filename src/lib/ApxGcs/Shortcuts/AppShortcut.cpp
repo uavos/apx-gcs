@@ -121,7 +121,7 @@ void AppShortcut::disable()
     _enabled->setValue(false);
 }
 //=============================================================================
-QJsonObject AppShortcut::toJson(bool array) const
+QJsonObject AppShortcut::valuesToJson(bool array) const
 {
     Q_UNUSED(array)
     QJsonObject jso;
@@ -130,7 +130,7 @@ QJsonObject AppShortcut::toJson(bool array) const
     jso.insert("enb", _enabled->value().toBool());
     return jso;
 }
-void AppShortcut::fromJson(const QJsonObject &jso)
+void AppShortcut::valuesFromJson(const QJsonObject &jso)
 {
     _key->setValue(jso["key"].toVariant());
     _cmd->setValue(jso["scr"].toVariant());

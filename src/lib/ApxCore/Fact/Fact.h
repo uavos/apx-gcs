@@ -69,10 +69,10 @@ public:
     Q_INVOKABLE QString titlePath(const QChar pathDelimiter = QChar('/')) const;
     Q_INVOKABLE Fact *factByTitlePath(const QString &spath) const;
 
+    //Group fact values (settings)
     Q_INVOKABLE void setValues(const QVariantMap &values);
-
-    Q_INVOKABLE virtual QJsonObject toJson(bool array = false) const;
-    Q_INVOKABLE virtual void fromJson(const QJsonObject &jso);
+    Q_INVOKABLE virtual void valuesFromJson(const QJsonObject &jso);
+    Q_INVOKABLE virtual QJsonObject valuesToJson(bool array = false) const;
 
     QVariant userData;
 

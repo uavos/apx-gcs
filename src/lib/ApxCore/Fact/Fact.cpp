@@ -405,13 +405,13 @@ void Fact::setValues(const QVariantMap &values)
             f->setValue(values.value(key));
     }
 }
-QJsonObject Fact::toJson(bool array) const
+QJsonObject Fact::valuesToJson(bool array) const
 {
     if (array) {
         QJsonArray jsa;
         for (int i = 0; i < size(); ++i) {
             const Fact *f = static_cast<const Fact *>(child(i));
-            jsa.append(f->toJson(false));
+            jsa.append(f->valuesToJson(false));
         }
         QJsonObject jso;
         jso.insert(name(), jsa);
@@ -429,7 +429,7 @@ QJsonObject Fact::toJson(bool array) const
             v = f->text();
         bool noData = f->dataType() == NoFlags || f->dataType() == Const;
         if (f->size() > 0) {
-            QJsonObject vo = f->toJson(false);
+            QJsonObject vo = f->valuesToJson(false);
             if (!noData) {
                 vo.insert("value", v);
             }
@@ -442,7 +442,7 @@ QJsonObject Fact::toJson(bool array) const
     }
     return jso;
 }
-void Fact::fromJson(const QJsonObject &jso)
+void Fact::valuesFromJson(const QJsonObject &jso)
 {
     foreach (QString key, jso.keys()) {
         QJsonValue v = jso[key];
@@ -450,7 +450,7 @@ void Fact::fromJson(const QJsonObject &jso)
         if (!f)
             continue;
         if (v.isObject()) {
-            f->fromJson(v.toObject());
+            f->valuesFromJson(v.toObject());
             continue;
         }
         if (v.isArray()) {

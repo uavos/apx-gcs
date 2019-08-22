@@ -83,7 +83,7 @@ void DatalinkPorts::load()
         file.close();
         foreach (QJsonValue v, json["list"].toArray()) {
             f_add->clear();
-            f_add->fromJson(v.toObject());
+            f_add->valuesFromJson(v.toObject());
             addPort(new DatalinkPort(this, datalink, f_add));
         }
         f_add->defaults();
@@ -96,7 +96,7 @@ void DatalinkPorts::save()
         apxMsgW() << file.errorString();
         return;
     }
-    file.write(QJsonDocument(f_list->toJson(true)).toJson());
+    file.write(QJsonDocument(f_list->valuesToJson(true)).toJson());
     file.close();
 }
 //=============================================================================
