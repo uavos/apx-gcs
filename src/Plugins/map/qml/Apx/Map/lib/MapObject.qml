@@ -12,8 +12,10 @@ MapQuickItem {  //to be used inside MapComponent only
     property string title
     property bool interactive: visibleOnMap
     property bool draggable: true
+    property bool shadow: true
 
     property int implicitZ: 0
+    property int radius: 2
 
     property var implicitCoordinate
 
@@ -100,6 +102,8 @@ MapQuickItem {  //to be used inside MapComponent only
     property bool dragging: mouseArea.drag.active
     property bool selected: map.selectedObject===this
 
+    property bool interacting: selected || dragging || hover
+
     property real hoverScale: ((dragging||hover)?hoverScaleFactor:1)
 
     Behavior on hoverScale { enabled: ui.smooth; NumberAnimation {duration: 100; } }
@@ -138,19 +142,24 @@ MapQuickItem {  //to be used inside MapComponent only
     Item {
         width: textItem.width
         height: textItem.height
-        Rectangle {
-            id: frame
-            visible: selected
+        Loader {
             anchors.centerIn: textItem
-            width: textItem.width*textItem.scale+10
-            height: textItem.height*textItem.scale+10
-            antialiasing: true
-            //smooth: ui.antialiasing
-            border.width: 2
-            border.color: "#FFFFFF"
-            radius: 5
-            color: "#50FFFFFF"
-            opacity: ui.effects?0.6:1
+            active: selected
+            asynchronous: true
+            sourceComponent: Component {
+                Rectangle {
+                    id: frame
+                    width: textItem.width*textItem.scale+10
+                    height: textItem.height*textItem.scale+10
+                    antialiasing: true
+                    //smooth: ui.antialiasing
+                    border.width: 2
+                    border.color: "#FFFFFF"
+                    radius: 5
+                    color: "#50FFFFFF"
+                    opacity: ui.effects?0.6:1
+                }
+            }
         }
         MapText {
             id: textItem
@@ -160,24 +169,32 @@ MapQuickItem {  //to be used inside MapComponent only
             text: title
             font.pixelSize: map.fontSize * 0.8
             margins: 1
-            radius: 2
+            radius: mapObject.radius
             font.bold: false
             square: true
-            visible: false //!ui.effects
+            visible: shadowLoader.status!=Loader.Ready
         }
-        DropShadow {
-            anchors.fill: textItem
-            //scale: hoverScale*map.itemsScaleFactor*missionItemsScaleFactor
-            //horizontalOffset: 3
-            //verticalOffset: 3
-            //radius: 8
-            //spread: 0.1
-            samples: ui.effects?15:0
-            color: (dragging||hover)?"#8f8":"#a0000000"
-            source: textItem
-            cached: true
-            enabled: false
-            visible: !textItem.visible
+        Loader {
+            id: shadowLoader
+            anchors.fill: parent
+            active: shadow
+            asynchronous: true
+            sourceComponent: Component {
+                DropShadow {
+                    //anchors.fill: textItem
+                    //scale: hoverScale*map.itemsScaleFactor*missionItemsScaleFactor
+                    //horizontalOffset: 3
+                    //verticalOffset: 3
+                    //radius: 8
+                    //spread: 0.1
+                    samples: ui.effects?15:0
+                    color: (dragging||hover)?"#8f8":"#a0000000"
+                    source: textItem
+                    cached: true
+                    enabled: false
+                    visible: !textItem.visible
+                }
+            }
         }
         Item{
             id: containerCenter

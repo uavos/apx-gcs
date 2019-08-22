@@ -5,6 +5,9 @@ import QtQml 2.12
 
 import APX.Vehicles 1.0
 import APX.Mission 1.0
+import ".."
+import "../lib"
+
 
 MapItemGroup {
     id: missionMapItems
@@ -24,35 +27,52 @@ MapItemGroup {
 
 
 
-    MapItemView {
-        id: waypoints
-        model: visible?mission.waypoints.mapModel:0
-        delegate: WaypointItem { }
+    Loader {
+        active: parent.visible
+        asynchronous: true
+        onLoaded: map.addMapItemView(item)
+        sourceComponent: Component {
+            MapItemView {
+                z: 150
+                model: mission.waypoints.mapModel
+                delegate: WaypointItem { }
+            }
+        }
     }
-
-    MapItemView {
-        id: runways
-        model: visible?mission.runways.mapModel:0
-        delegate: RunwayItem { }
+    Loader {
+        active: parent.visible
+        asynchronous: true
+        onLoaded: map.addMapItemView(item)
+        sourceComponent: Component {
+            MapItemView {
+                z: 151
+                model: mission.runways.mapModel
+                delegate: RunwayItem { }
+            }
+        }
     }
-
-    MapItemView {
-        id: taxiways
-        model: visible?mission.taxiways.mapModel:0
-        delegate: TaxiwayItem { }
+    Loader {
+        active: parent.visible
+        asynchronous: true
+        onLoaded: map.addMapItemView(item)
+        sourceComponent: Component {
+            MapItemView {
+                z: 100
+                model: mission.taxiways.mapModel
+                delegate: TaxiwayItem { }
+            }
+        }
     }
-
-    MapItemView {
-        id: points
-        model: visible?mission.points.mapModel:0
-        delegate: PointItem { }
+    Loader {
+        active: parent.visible
+        asynchronous: true
+        onLoaded: map.addMapItemView(item)
+        sourceComponent: Component {
+            MapItemView {
+                z: 120
+                model: mission.points.mapModel
+                delegate: PointItem { }
+            }
+        }
     }
-
-    Component.onCompleted: {
-        map.addMapItemView(waypoints)
-        map.addMapItemView(runways)
-        map.addMapItemView(taxiways)
-        map.addMapItemView(points)
-    }
-
 }

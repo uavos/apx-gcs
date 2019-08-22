@@ -48,19 +48,27 @@ MissionObject {
 
 
     contentsRight: [
-        MapText {
-            textColor: "white"
-            color: f_current?Style.cBlue:Style.cNormal
-            text: rwName
-            opacity: (!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0
-            visible: opacity && showDetails
+        Loader {
+            active: showDetails && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
+            asynchronous: true
+            sourceComponent: Component {
+                MapText {
+                    textColor: "white"
+                    color: f_current?Style.cBlue:Style.cNormal
+                    text: rwName
+                }
+            }
         },
-        MapText {
-            visible: opacity && showDetails && f_hmsl!=0
-            textColor: "white"
-            color: Style.cGreen
-            text: f_hmsl+"m"
-            opacity: (!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0
+        Loader {
+            active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
+            asynchronous: true
+            sourceComponent: Component {
+                MapText {
+                    textColor: "white"
+                    color: Style.cGreen
+                    text: f_hmsl+"m"
+                }
+            }
         }
     ]
 
@@ -87,9 +95,9 @@ MissionObject {
 
     Component.onCompleted: {
         var c
-        c=createMapComponent(endPointC)
-        c=createMapComponent(appPointC)
-        appPoint=c
+        //c=createMapComponent(endPointC)
+        //c=createMapComponent(appPointC)
+        //appPoint=c
         //runway path
         c=createMapComponent(pathC)
         c.z=+10 //map.z+10
@@ -134,47 +142,64 @@ MissionObject {
         c=createMapComponent(deltaC)
         c.z=1
     }
-    Component {
-        id: endPointC
-        MissionObject {
-            id: endPoint
-            implicitZ: 20
-            visible: runwayItem.visible
-            color: "white"
-            textColor: "black"
-            //opacity: ui.effects?0.8:1
-            title: runwayItem.title
-            implicitCoordinate: endPointCoordinate
-            onMoved: updateEndPoint(coordinate)
-            contentsRight: [
-                MapText {
-                    textColor: "white"
-                    color: f_current?Style.cBlue:Style.cNormal
-                    text: runwayItem.rwName + " ("+Math.floor(apx.angle360(f_heading)).toFixed()+")"
-                    opacity: (dragging||hover||selected)?1:0
-                    visible: opacity && showDetails
-                }
-            ]
+
+    //handles
+    Loader {
+        //appPoint
+        asynchronous: true
+        onLoaded: {
+            map.addMapItem(item)
+            appPoint=item
         }
-    }
-    Component {
-        id: appPointC
-        MissionObject {
-            id: appPoint
-            implicitZ: 21
-            visible: runwayItem.visible && showDetailsApp
-            color: "white"
-            textColor: "black"
-            title: f_approach>0?(apx.distanceToString(f_approach)):"H----"
-            property double r: runwayItem.f_heading-90;
-            rotation: f_approach>0?apx.angle90(r):apx.angle(r);
-            implicitCoordinate: appPointCoordinate
-            onMoved: {
-                updateAppPoint(coordinate)
-                coordinate=implicitCoordinate //snap
+        sourceComponent: Component {
+            MissionObject {
+                implicitZ: runwayItem.implicitZ-1
+                visible: runwayItem.visible && showDetailsApp
+                color: "white"
+                textColor: "black"
+                title: f_approach>0?(apx.distanceToString(f_approach)):"H----"
+                property double r: runwayItem.f_heading-90;
+                rotation: f_approach>0?apx.angle90(r):apx.angle(r);
+                implicitCoordinate: appPointCoordinate
+                onMoved: {
+                    updateAppPoint(coordinate)
+                    coordinate=implicitCoordinate //snap
+                }
             }
         }
     }
+    Loader {
+        //endPoint
+        asynchronous: true
+        onLoaded: map.addMapItem(item)
+        sourceComponent: Component {
+            MissionObject {
+                id: endPoint
+                implicitZ: runwayItem.implicitZ-1
+                color: "white"
+                textColor: "black"
+                //opacity: ui.effects?0.8:1
+                title: runwayItem.title
+                implicitCoordinate: endPointCoordinate
+                onMoved: updateEndPoint(coordinate)
+                contentsRight: [
+                    Loader {
+                        active: showDetails && ((dragging||hover||selected)?1:0)
+                        asynchronous: true
+                        sourceComponent: Component {
+                            MapText {
+                                textColor: "white"
+                                color: f_current?Style.cBlue:Style.cNormal
+                                text: runwayItem.rwName + " ("+Math.floor(apx.angle360(f_heading)).toFixed()+")"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+
+
     //paths
     Component {
         id: pathC

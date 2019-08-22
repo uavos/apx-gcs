@@ -42,7 +42,7 @@ MapObject {  //to be used inside MapComponent only
     implicitCoordinate: fact?fact.coordinate:QtPositioning.coordinate()
 
     property real f_altitude: (fact && fact.altitude)?fact.altitude.value:0
-    property real active: fact?fact.active:0
+    property bool active: fact?fact.active:false
 
     //dragging support
     onMoved: {

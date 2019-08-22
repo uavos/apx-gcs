@@ -1,5 +1,5 @@
 ﻿import QtQuick          2.3
-import QtLocation       5.3
+import QtLocation       5.13
 import QtPositioning    5.3
 import QtQuick.Window   2.2
 import QtQuick.Layouts 1.3
@@ -89,6 +89,7 @@ Item {
                 focus: false
 
                 color: "#333"
+                copyrightsVisible: false
 
                 Component.onCompleted: {
                     var vtypes=[]
@@ -145,6 +146,79 @@ Item {
 
             color: "transparent"
             plugin: Plugin { name: "itemsoverlay" }
+
+            /*plugin: Plugin {
+                name: "mapboxgl"
+
+                PluginParameter {
+                    name: "mapboxgl.mapping.items.insert_before"
+                    value: "road-label-small"
+                }
+
+                PluginParameter {
+                    name: "mapboxgl.access_token"
+                    value: "pk.eyJ1IjoidG1wc2FudG9zIiwiYSI6ImNqMWVzZWthbDAwMGIyd3M3ZDR0aXl3cnkifQ.FNxMeWCZgmujeiHjl44G9Q"
+                }
+
+                PluginParameter {
+                    name: "mapboxgl.mapping.additional_style_urls"
+                    value: "mapbox://styles/mapbox/navigation-guidance-day-v2,mapbox://styles/mapbox/navigation-guidance-night-v2,mapbox://styles/mapbox/navigation-preview-day-v2,mapbox://styles/mapbox/navigation-preview-night-v2"
+                }
+            }
+            activeMapType: {
+                var v = "Satellite Streets"
+                for(var i in map.supportedMapTypes){
+                    var m=map.supportedMapTypes[i]
+                    if(m.description !== v) continue
+                    return m
+                }
+                return map.supportedMapTypes[0]
+            }
+            copyrightsVisible: false
+            MapParameter {
+                type: "layer"
+
+                property var name: "3d-buildings"
+                property var source: "composite"
+                property var sourceLayer: "building"
+                property var layerType: "fill-extrusion"
+                property var minzoom: 15.0
+            }
+
+            MapParameter {
+                type: "filter"
+
+                property var layer: "3d-buildings"
+                property var filter: [ "==", "extrude", "true" ]
+            }
+
+            MapParameter {
+                type: "paint"
+
+                property var layer: "3d-buildings"
+                property var fillExtrusionColor: "#00617f"
+                property var fillExtrusionOpacity: .6
+                property var fillExtrusionHeight: { return { type: "identity", property: "height" } }
+                property var fillExtrusionBase: { return { type: "identity", property: "min_height" } }
+            }*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             //initial animation
             PropertyAnimation {
