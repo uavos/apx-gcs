@@ -39,8 +39,10 @@ FactObject {
         icon: "settings"
         FactObject {
             title: qsTr("AHRS")
-            FactObject { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; onTriggered: apx.jsexec(descr); }
-            FactObject { title: qsTr("Reset static pressure"); descr: "zps()"; onTriggered: apx.jsexec(descr); }
+            FactObject { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; onTriggered: application.jsexec(descr); }
+            FactObject { title: qsTr("Reset static pressure"); descr: "zps()"; onTriggered: application.jsexec(descr); }
+            FactObject { }
+            FactObject { title: qsTr("Reset AHRS filter"); descr: "ahrs()"; onTriggered: application.jsexec(descr); }
             FactObject { }
             FactObject { title: m.cmode_ahrs.descr; fact: m.cmode_ahrs; dataType: Fact.Bool; }
         }

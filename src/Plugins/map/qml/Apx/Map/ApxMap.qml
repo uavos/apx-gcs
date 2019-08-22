@@ -268,7 +268,6 @@ Item {
                 active: showVehicleNav
                 asynchronous: true
                 sourceComponent: Component { EnergyCircle { } }
-                //sourceComponent: EnergyCircle { }
                 onLoaded: map.addMapItem(item)
             }
             Loader {
