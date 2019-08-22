@@ -101,6 +101,7 @@ Item {
                         apx.tools.location.maptype.enumStrings=vtypes
                         apx.tools.location.maptype.value=activeMapType.description
                     }
+                    application.registerUiComponent(mapBase,"mapbase")
                 }
                 property string mapTypeName: apx.tools.location?apx.tools.location.maptype.text:""
                 activeMapType: {
