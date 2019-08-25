@@ -51,14 +51,23 @@ VehicleMandalaFact::VehicleMandalaFact(VehicleMandala *parent,
         break;
     }
     setValueLocal(v);
+    sendTime.start();
+    sendTimer.setInterval(100);
+    sendTimer.setSingleShot(true);
+    connect(&sendTimer, &QTimer::timeout, this, &VehicleMandalaFact::send);
 }
 //=============================================================================
 bool VehicleMandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
     bool rv = Fact::setValue(v);
-    send();
     //qDebug()<<name()<<text();
+    if (sendTimer.isActive())
+        return rv;
+    if (sendTime.elapsed() >= sendTimer.interval())
+        send();
+    else
+        sendTimer.start();
     return rv;
 }
 //=============================================================================
@@ -78,6 +87,7 @@ void VehicleMandalaFact::request()
 }
 void VehicleMandalaFact::send()
 {
+    sendTime.start();
     emit sendValueUpdate(m_id, value().toDouble());
 }
 //=============================================================================

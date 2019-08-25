@@ -49,6 +49,8 @@ public:
 private:
     VehicleMandala *vehicleMandala;
     quint16 m_id;
+    QTime sendTime;
+    QTimer sendTimer;
 
 signals:
     void sendValueUpdate(quint16 id, double v);
