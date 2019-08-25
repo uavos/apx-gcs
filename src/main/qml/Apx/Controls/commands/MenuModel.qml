@@ -31,6 +31,7 @@ FactObject {
         icon: "power-standby"
         FactObject { title: qsTr("Payload"); fact: m.power_payload; dataType: Fact.Bool; }
         FactObject { title: qsTr("XPDR"); fact: m.power_xpdr; dataType: Fact.Bool; }
+        FactObject { title: qsTr("AGL"); fact: m.power_agl; dataType: Fact.Bool; }
         FactObject { }
         FactObject { title: qsTr("Servo"); fact: m.power_servo; dataType: Fact.Bool; }
     }
