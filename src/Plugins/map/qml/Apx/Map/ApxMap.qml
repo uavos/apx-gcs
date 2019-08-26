@@ -59,7 +59,7 @@ Item {
         Loader {
             id: mapLoader
             anchors.fill: parent
-            asynchronous: true
+            asynchronous: false
             property bool locationPluginAvailable:
                 apx.settings.application.plugins.location
                 && apx.settings.application.plugins.location.value
@@ -73,6 +73,7 @@ Item {
             }
             onLoaded: {
                 mapControlsItem.connectOverlay(mapLoader.item)
+                application.registerUiComponent(item,"mapbase")
             }
             onProviderChanged: {
                 mapLoader.active=false
@@ -101,7 +102,6 @@ Item {
                         apx.tools.location.maptype.enumStrings=vtypes
                         apx.tools.location.maptype.value=activeMapType.description
                     }
-                    application.registerUiComponent(mapBase,"mapbase")
                 }
                 property string mapTypeName: apx.tools.location?apx.tools.location.maptype.text:""
                 activeMapType: {

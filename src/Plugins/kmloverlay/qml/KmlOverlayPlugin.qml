@@ -3,10 +3,21 @@ import QtQuick 2.5
 import Apx.Common 1.0
 
 AppPlugin {
-    id: pluginKmlOverlay
+    id: plugin
     sourceComponent: Component { KmlMapItems { } }
 
     uiComponent: "map"
-    onConfigure: parent = ui.map
-    onLoaded: ui.map.addMapItemGroup(item)
+    onLoaded: updateMap() // when mapbase loads first
+
+    function updateMap()
+    {
+        if(ui.mapbase) {
+            ui.mapbase.addMapItemGroup(plugin.item)
+        }
+    }
+
+    Connections {
+        target: application
+        onUiComponentLoaded: updateMap() // when mapbase loads after plugin
+    }
 }

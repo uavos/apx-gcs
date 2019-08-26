@@ -5,7 +5,7 @@ import Apx.Map 1.0
 
 AppPlugin {
     id: pluginSites
-    sourceComponent: Component { SitesMapItems { } }
+    //sourceComponent: Component { SitesMapItems { } }
 
     uiComponent: "map"
     onConfigure: parent=ui.map
