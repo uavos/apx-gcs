@@ -54,7 +54,7 @@ NodeField::NodeField(NodeItem *node,
         break;
     case DictNode::Float:
         setDataType(Float);
-        setPrecision(5);
+        //setPrecision(0);
         break;
     case DictNode::Byte:
         setMax(255);

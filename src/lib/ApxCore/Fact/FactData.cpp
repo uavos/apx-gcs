@@ -22,6 +22,7 @@
  */
 #include "FactData.h"
 #include <App/AppRoot.h>
+#include <cmath>
 //=============================================================================
 FactData::FactData(
     FactBase *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
@@ -404,6 +405,14 @@ void FactData::setDescr(const QString &v)
     m_descr = s;
     emit descrChanged();
 }
+static double cint(double x)
+{
+    double i;
+    if (std::modf(x, &i) >= .5)
+        return x >= 0 ? std::ceil(x) : std::floor(x);
+    else
+        return x < 0 ? std::ceil(x) : std::floor(x);
+}
 QString FactData::text() const
 {
     if (bindedFactData)
@@ -440,9 +449,14 @@ QString FactData::text() const
         return v.toByteArray().toHex().toUpper();
     if (vtype(v, QMetaType::Double)) {
         double vf = v.toDouble();
+        if (m_precision > 0) {
+            double p = std::pow(10.0, m_precision);
+            vf = cint(vf * p) / p;
+        }
         if (vf == 0.0)
             return "0";
-        QString s = QString("%1").arg(vf, 0, 'f', m_precision > 0 ? m_precision : 8);
+        QString s;
+        s = QString("%1").arg(vf, 0, 'f', m_precision > 0 ? m_precision : 8);
         if (s.contains('.')) {
             if (m_precision > 0)
                 s = s.left(s.indexOf('.') + 1 + m_precision);
