@@ -29,6 +29,8 @@ CleanButton {
     property bool error: false
     property bool valueHighlight: false
 
+    property bool alerts: false
+
     property real valueScale: 1
 
     property color normalColor: "#222"
@@ -66,6 +68,50 @@ CleanButton {
         verticalAlignment: Text.AlignVCenter
         color: valueColor
         //BoundingRect{}
+    }
+
+    /*Connections {
+        target: control
+        enabled: alerts
+        function getDescr()
+        {
+            var s=[]
+            s.push(title+":")
+            if(descr)s.push(descr)
+            s.push("("+value+")")
+            return s.join(" ")
+        }
+        onWarningChanged: {
+            if(warning){
+                apx.vehicles.current.warnings.warning(getDescr())
+            }
+        }
+        onErrorChanged: {
+            if(error){
+                apx.vehicles.current.warnings.error(getDescr())
+            }
+        }
+    }*/
+
+    property string message: {
+        var s=[]
+        s.push(title+":")
+        if(descr)s.push(descr)
+        s.push("("+value+")")
+        return s.join(" ")
+    }
+
+    property bool doAlerts: alerts && apx.datalink.valid
+
+    onWarningChanged: {
+        if(warning && doAlerts){
+            apx.vehicles.current.warnings.warning(message)
+        }
+    }
+    onErrorChanged: {
+        if(error && doAlerts){
+            apx.vehicles.current.warnings.error(message)
+        }
     }
 
 }

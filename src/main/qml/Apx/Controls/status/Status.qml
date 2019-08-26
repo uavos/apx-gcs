@@ -38,7 +38,7 @@ Rectangle {
 
         FactValue {
             title: qsTr("LOS")
-            fact: m.dHome
+            //fact: m.dHome
             descr: qsTr("Line of Sight distance to Home")
             property double v: Math.sqrt(Math.pow(m.dHome.value,2) + Math.pow(m.gps_hmsl.value-m.home_hmsl.value,2))
             value: v>=1000?(v/1000).toFixed(1):v.toFixed()
@@ -53,6 +53,7 @@ Rectangle {
             error: errTimer.running
             warning: m.RSS>0 && (m.RSS<0.35 || v>70000)
             visible: ui.test || v>0 || error || warning
+            alerts: true
         }
 
 
@@ -109,7 +110,8 @@ Rectangle {
 
         FactValue {
             title: qsTr("WPT")
-            fact: m.wpidx+1
+            fact: m.wpidx
+            value: fact.value+1
             visible: ui.test || (m.mode.value===mode_WPT || m.mode.value===mode_STBY)
             implicitWidth: itemWidth
             implicitHeight: itemHeight

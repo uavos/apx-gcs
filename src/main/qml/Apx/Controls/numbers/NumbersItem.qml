@@ -6,6 +6,8 @@ FactValue {
 
     property bool light: false
 
+    alerts: true
+
     //valueScale: light?0.7:1
     normalColor: light?"#555":normalColor
     //implicitHeight: 0
