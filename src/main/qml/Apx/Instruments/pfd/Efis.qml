@@ -1,19 +1,20 @@
 ﻿import QtQuick 2.6
 import QtQuick.Controls 2.1
+
+import Apx.Controls 1.0
+
 import "../common"
-//import "../menu"
 
 Item{
-    id: window
-    //Material.theme: Material.Dark
+
     implicitWidth: 800
     implicitHeight: 400
 
 
     opacity: ui.effects?(loaded?1:0.3):1
-    property bool loaded: comm.status === Loader.Ready &&
-                          pfd.status === Loader.Ready &&
-                          nav.status === Loader.Ready
+    property bool loaded: comm.status === Loader.Ready
+                          && pfd.status === Loader.Ready
+                          && nav.status === Loader.Ready
     Behavior on opacity { enabled: ui.smooth; PropertyAnimation {duration: 500} }
 
     Loader {

@@ -36,6 +36,26 @@ Rectangle {
             implicitHeight: itemHeight
         }
 
+        FactValue {
+            title: qsTr("LOS")
+            fact: m.dHome
+            descr: qsTr("Line of Sight distance to Home")
+            property double v: Math.sqrt(Math.pow(m.dHome.value,2) + Math.pow(m.gps_hmsl.value-m.home_hmsl.value,2))
+            value: v>=1000?(v/1000).toFixed(1):v.toFixed()
+            implicitWidth: itemWidth
+            implicitHeight: itemHeight
+            property int err: m.errcnt
+            property var errTimer: Timer {
+                interval: 5000
+                repeat: false
+            }
+            onErrChanged: errTimer.restart()
+            error: errTimer.running
+            warning: m.RSS>0 && (m.RSS<0.35 || v>70000)
+            visible: ui.test || v>0 || error || warning
+        }
+
+
         /*FactValue {
             title: qsTr("EXT")
             value: apx.datalink.hosts.availableCount
@@ -50,21 +70,6 @@ Rectangle {
             implicitHeight: width/aspectRatio/2
         }
 
-        FactValue {
-            title: qsTr("FL")
-            fact: m.fuel
-            value: fact.value.toFixed(1)
-            implicitWidth: itemWidth
-            implicitHeight: itemHeight
-        }
-        FactValue {
-            title: qsTr("DH")
-            fact: m.dHome
-            property double v: (m.mode.value===mode_TAXI)?m.delta.value:m.dHome.value
-            value: v>=1000?(v/1000).toFixed(1):v.toFixed()
-            implicitWidth: itemWidth
-            implicitHeight: itemHeight
-        }
         FactValue {
             title: qsTr("DME")
             fact: m.dWPT
@@ -83,8 +88,18 @@ Rectangle {
             property int thrs: Math.floor(v/60/60)
             property string sETA: (thrs?thrs+":":"")+("0"+tmin).slice(-2)+":"+("0"+tsec).slice(-2)
             value: valid?sETA:"--:--"
+            valueScale: 0.8
             implicitWidth: itemWidth
             implicitHeight: itemHeight
+        }
+        FactValue {
+            title: qsTr("FL")
+            fact: m.fuel
+            value: fact.value.toFixed(1)
+            implicitWidth: itemWidth
+            implicitHeight: itemHeight
+            visible: ui.test || value>0
+            valueScale: 0.8
         }
 
         Item {
@@ -94,7 +109,7 @@ Rectangle {
 
         FactValue {
             title: qsTr("WPT")
-            fact: m.wpidx
+            fact: m.wpidx+1
             visible: ui.test || (m.mode.value===mode_WPT || m.mode.value===mode_STBY)
             implicitWidth: itemWidth
             implicitHeight: itemHeight
