@@ -42,6 +42,7 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
         switch (d.type) {
         default:
             t = Float;
+            break;
         case QMetaType::QStringList:
             t = Enum;
             break;
