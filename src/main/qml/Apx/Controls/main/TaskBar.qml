@@ -7,6 +7,16 @@ import Apx.Common 1.0
 
 RowLayout {
     id: control
+
+    //warnings fact
+    /*Loader {
+        asynchronous: true
+        active: true //apx.vehicles.current.warnings.active
+        sourceComponent: Component { WarningMessage { } }
+        visible: status===Loader.Ready
+    }*/
+
+    //tools list from plugins
     DelegateModel {
         id: toolsModel
         model: apx.windows.model

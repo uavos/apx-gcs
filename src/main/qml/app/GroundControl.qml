@@ -259,15 +259,14 @@ Item {
                         asynchronous: true
                         sourceComponent: Component {
                             NumbersBar {
+                                layoutDirection: Qt.RightToLeft
                                 settingsName: "map"
                                 defaults: [
                                     {"bind": "altitude", "title": "ALT", "prec": "0"},
                                 ]
                             }
                         }
-                        Layout.fillWidth: false
-                        Layout.fillHeight: false
-                        Layout.preferredHeight: 28*ui.scale
+                        Layout.fillWidth: true
                         Layout.alignment: Qt.AlignBottom | Qt.AlignRight
                     }
                 }

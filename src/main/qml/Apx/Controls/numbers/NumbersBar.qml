@@ -8,7 +8,7 @@ import QtQuick.Controls.Material 2.4
 
 import Apx.Common 1.0
 
-RowLayout {
+Flow {
     id: control
     spacing: 10
     clip: true
@@ -16,21 +16,12 @@ RowLayout {
     property alias settingsName: numbersModel.settingsName
     property alias defaults: numbersModel.defaults
 
-    ListView {
-        id: listView
-        orientation: ListView.Horizontal
-        spacing: 10
-        clip: true
-        snapMode: ListView.SnapToItem
-        Layout.preferredWidth: contentWidth
-        Layout.fillWidth: true
-        implicitHeight: control.height
-
+    Repeater {
         model: numbersModel
     }
 
     CleanButton {
-        implicitHeight: parent.height
+        implicitHeight: numbersModel.itemHeight
         implicitWidth: implicitHeight
         iconName: "note-plus-outline"//"plus-circle"
         toolTip: qsTr("Edit display values")
@@ -38,10 +29,11 @@ RowLayout {
         opacity: ui.effects?(hovered?1:0.5):1
     }
 
+
     NumbersModel {
         id: numbersModel
         minimumWidth: itemHeight*3
-        itemHeight: control.height
+        itemHeight: 28*ui.scale //control.height
         light: true
     }
 }

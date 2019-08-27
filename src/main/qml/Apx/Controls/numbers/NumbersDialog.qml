@@ -161,13 +161,14 @@ Dialog {
             }
             function updateDescr()
             {
-                descr=""
+                if(!menuSet)return
+                menuSet.descr=""
                 var s=[]
                 for(var i in children){
                     if(i<(editorsCnt+1))continue
                     s.push(children[i].title)
                 }
-                descr=s.join(',')
+                menuSet.descr=s.join(',')
             }
 
             actions: [
