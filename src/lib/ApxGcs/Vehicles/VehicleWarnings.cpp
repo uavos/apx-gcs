@@ -110,8 +110,9 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
 //=============================================================================
 void VehicleWarnings::showTimerTimeout()
 {
-    if (showList.isEmpty())
+    if (showList.isEmpty()) {
         return;
+    }
     //continuously show all facts
     if (showNum >= showList.size())
         showNum = 0;
@@ -127,8 +128,9 @@ void VehicleWarnings::showTimerTimeout()
         showNum++;
     if (showNum >= showList.size())
         showNum = 0;
-    if (!showList.isEmpty())
+    if (!showList.isEmpty()) {
         showTimer.start();
+    }
 }
 //=============================================================================
 //=============================================================================

@@ -30,6 +30,7 @@ CleanButton {
     property bool valueHighlight: false
 
     property bool alerts: false
+    property bool alertsVehicle: true
 
     property real valueScale: 1
 
@@ -53,6 +54,7 @@ CleanButton {
     }
     Component.onCompleted: {
         background.color=Qt.binding(function(){return control.color})
+        cv=apx.vehicles.current
     }
 
     titleColor: (active||warning||error)?Material.primaryTextColor:Qt.darker(Material.primaryTextColor,1.5)
@@ -101,14 +103,24 @@ CleanButton {
         return s.join(" ")
     }
 
-    property bool doAlerts: alerts && apx.datalink.valid
+    property bool doAlerts: alerts //&& apx.datalink.valid
+
+    property var cv
 
     onWarningChanged: {
+        if(alertsVehicle && cv !== apx.vehicles.current){
+            cv=apx.vehicles.current
+            return
+        }
         if(warning && doAlerts){
             apx.vehicles.current.warnings.warning(message)
         }
     }
     onErrorChanged: {
+        if(alertsVehicle && cv !== apx.vehicles.current){
+            cv=apx.vehicles.current
+            return
+        }
         if(error && doAlerts){
             apx.vehicles.current.warnings.error(message)
         }

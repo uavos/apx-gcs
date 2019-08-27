@@ -36,24 +36,9 @@ Rectangle {
             implicitHeight: itemHeight
         }
 
-        FactValue {
-            title: qsTr("LOS")
-            //fact: m.dHome
-            descr: qsTr("Line of Sight distance to Home")
-            property double v: Math.sqrt(Math.pow(m.dHome.value,2) + Math.pow(m.gps_hmsl.value-m.home_hmsl.value,2))
-            value: v>=1000?(v/1000).toFixed(1):v.toFixed()
+        ValueLOS {
             implicitWidth: itemWidth
             implicitHeight: itemHeight
-            property int err: m.errcnt
-            property var errTimer: Timer {
-                interval: 5000
-                repeat: false
-            }
-            onErrChanged: errTimer.restart()
-            error: errTimer.running
-            warning: m.RSS>0 && (m.RSS<0.35 || v>70000)
-            visible: ui.test || v>0 || error || warning
-            alerts: true
         }
 
 

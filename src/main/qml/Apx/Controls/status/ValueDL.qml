@@ -18,8 +18,8 @@ FactValue {
     warning: apx.datalink.readonly.value
 
     enabled: true
-    onClicked: m.errcnt=0
-    onMenuRequested: apx.datalink.requestMenu()
+    onClicked: apx.datalink.requestMenu()
+    onMenuRequested: m.errcnt=0
 
     readonly property color cGreen: warning?Material.color(Material.Yellow):Material.color(Material.LightGreen)
     readonly property color cRed: warning?Material.color(Material.Yellow):Material.color(Material.DeepOrange)
@@ -42,7 +42,7 @@ FactValue {
         font.family: font_narrow
         font.pixelSize: fontSize(bodyHeight*valueSize)
         verticalAlignment: Text.AlignVCenter
-        property int value: m.errcnt%1000
+        property int value: m.errcnt%10
         text: value+" "
         color: m.errcnt>1?(errTimer.running?cRed:cYellow):cGrey
         Behavior on color { enabled: ui.smooth; ColorAnimation {duration: 250} }

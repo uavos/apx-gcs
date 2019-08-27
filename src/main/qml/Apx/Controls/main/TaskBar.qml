@@ -9,12 +9,9 @@ RowLayout {
     id: control
 
     //warnings fact
-    /*Loader {
-        asynchronous: true
-        active: true //apx.vehicles.current.warnings.active
-        sourceComponent: Component { WarningMessage { } }
-        visible: status===Loader.Ready
-    }*/
+    WarningMessage {
+        Layout.fillHeight: true
+    }
 
     //tools list from plugins
     DelegateModel {
