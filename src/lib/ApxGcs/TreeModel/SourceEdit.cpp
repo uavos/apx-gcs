@@ -247,7 +247,8 @@ Highlighter::HighlightingRule Highlighter::addRule(const QString &pattern,
     QTextCharFormat charFormat;
     //QColor color(colorName);
     //QFont f(document()->defaultFont());
-    //charFormat.setFontFixedPitch(true);
+    charFormat.setFont(document()->defaultFont());
+    charFormat.setFontFixedPitch(true);
     charFormat.setForeground(color.lighter(150));
     if (style.contains("bold", Qt::CaseInsensitive)) //f.setBold(true);
         charFormat.setFontWeight(QFont::Bold);
