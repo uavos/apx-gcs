@@ -58,11 +58,14 @@ ObjectModel {
             s+="light: "+light+";"
             if(n.warn)s+="warning: "+n.warn+";"
             if(n.alarm)s+="error: "+n.alarm+";"
-            if(n.bind.indexOf(".")>0){
-                s+="value: ("+n.bind+")"+(n.prec?".toFixed("+n.prec+")":"")+";"
-            }else{
+            if(apx.vehicles.current.mandala.child(n.bind)){
                 s+="fact: m."+n.bind+";"
-                if(n.prec) s+="value: fact?fact.value.toFixed("+n.prec+"):0;"
+                s+="value: fact?fact.value:''"+";"
+            }else{
+                s+="value: "+n.bind+";"
+            }
+            if(n.prec){
+                s+="valueText: value.toFixed("+n.prec+")"+";"
             }
             if(n.act){
                 s+="enabled: true;"

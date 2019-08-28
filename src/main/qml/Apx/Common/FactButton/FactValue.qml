@@ -22,7 +22,8 @@ CleanButton {
     textAlignment: Text.AlignLeft
     font.family: font_condenced
 
-    property string value: fact?fact.text:""
+    property var value: fact?fact.text:""
+    property string valueText: value
 
     property bool active: fact?fact.active:false
     property bool warning: false
@@ -62,7 +63,7 @@ CleanButton {
 
     //value
     Label {
-        text: control.value
+        text: control.valueText
         Layout.maximumHeight: bodyHeight-Layout.topMargin
         Layout.topMargin: font.pixelSize*0.05+1
         font.family: font_narrow
@@ -99,7 +100,7 @@ CleanButton {
         var s=[]
         s.push(title+":")
         if(descr)s.push(descr)
-        s.push("("+value+")")
+        s.push("("+valueText+")")
         return s.join(" ")
     }
 
