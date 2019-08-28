@@ -49,6 +49,7 @@ void DatalinkPorts::updateStatus()
     int cnt = f_list->size();
     if (cnt <= 0) {
         setStatus("");
+        setActive(false);
     } else {
         int ecnt = 0, acnt = 0;
         for (int i = 0; i < cnt; ++i) {
@@ -59,6 +60,7 @@ void DatalinkPorts::updateStatus()
                 acnt++;
         }
         setStatus(QString("%1/%2/%3").arg(acnt).arg(ecnt).arg(cnt));
+        setActive(acnt > 0);
     }
 }
 //=============================================================================

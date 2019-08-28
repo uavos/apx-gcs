@@ -15,16 +15,19 @@ FactValue {
 
     valueScale: 0.8
 
+    active: !(apx.datalink.ports.active || apx.datalink.hosts.active)
     warning: apx.datalink.readonly.value
+
+    property bool light: active||warning
 
     enabled: true
     onClicked: apx.datalink.requestMenu()
     onMenuRequested: m.errcnt=0
 
-    readonly property color cGreen: warning?Material.color(Material.Yellow):Material.color(Material.LightGreen)
-    readonly property color cRed: warning?Material.color(Material.Yellow):Material.color(Material.DeepOrange)
+    readonly property color cGreen: light?Material.color(Material.Yellow):Material.color(Material.LightGreen)
+    readonly property color cRed: light?Material.color(Material.Yellow):Material.color(Material.DeepOrange)
     readonly property color cYellow: Material.color(Material.Amber)
-    readonly property color cCyan: warning?"#fff":Material.color(Material.Cyan)
+    readonly property color cCyan: light?"#fff":Material.color(Material.Cyan)
     readonly property color cGrey: Material.color(Material.Grey)
 
     Text {
@@ -60,7 +63,7 @@ FactValue {
         font.pixelSize: fontSize(bodyHeight*valueSize)
         verticalAlignment: Text.AlignVCenter
         text: "0%1".arg(apx.datalink.stats.uplink.cnt.value % 100).slice(-2)+" "
-        color: apx.datalink.readonly.value?cRed:cGreen
+        color: apx.datalink.hbeat.value?cGreen:cGrey
         //BoundingRect{}
     }
 }

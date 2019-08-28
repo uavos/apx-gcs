@@ -43,7 +43,7 @@ ColumnLayout {
             CleanButton {
                 font.family: font_mono
                 font.bold: true
-                implicitHeight: 16*ui.scale
+                defaultHeight: 16
                 titleSize: 1
                 //iconName: "chevron-double-right"
                 //showContents: true

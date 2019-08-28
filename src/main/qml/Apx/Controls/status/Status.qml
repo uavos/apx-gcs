@@ -37,6 +37,46 @@ Rectangle {
             implicitHeight: itemHeight
         }
 
+        Loader {
+            asynchronous: true
+            active: apx.datalink.server.status
+            visible: active
+            sourceComponent: Component {
+                FactValue {
+                    title: qsTr("RC")
+                    fact: apx.datalink.server
+                    active: false
+                    value: fact.status
+                    implicitWidth: itemWidth
+                    implicitHeight: itemHeight
+                    valueScale: 0.8
+                    valueColor: fact.extctr.value?Material.color(Material.LightGreen):Material.color(Material.Red)
+                    enabled: true
+                    onClicked: fact.requestMenu()
+                }
+            }
+        }
+
+        Loader {
+            asynchronous: true
+            active: apx.datalink.hosts.status
+            visible: active
+            sourceComponent: Component {
+                FactValue {
+                    title: qsTr("RS")
+                    fact: apx.datalink.hosts
+                    active: false
+                    value: fact.status
+                    implicitWidth: itemWidth
+                    implicitHeight: itemHeight
+                    valueScale: 0.8
+                    valueColor: apx.datalink.server.extctr.value?Material.color(Material.LightGreen):Material.color(Material.LightRed)
+                    enabled: true
+                    onClicked: fact.requestMenu()
+                }
+            }
+        }
+
         ValueLOS {
             implicitWidth: itemWidth
             implicitHeight: itemHeight
