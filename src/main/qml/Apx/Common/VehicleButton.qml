@@ -13,10 +13,12 @@ CleanButton {
     property var menuFact: vehicle
 
     implicitHeight: label.implicitHeight+padding*2
+
     highlighted: vehicle.active
     visible: vehicle.visible
 
     color: label.colorBG
+
 
     VehicleLabel {
         id: label

@@ -9,7 +9,7 @@ MissionListView   1.0 main/MissionListView.qml
 MissionTools      1.0 main/MissionTools.qml
 VehiclesListView  1.0 main/VehiclesListView.qml
 TaskBar           1.0 main/TaskBar.qml
-Numbers           1.0 numbers/Numbers.qml
+NumbersBox        1.0 numbers/NumbersBox.qml
 NumbersBar        1.0 numbers/NumbersBar.qml
 
 Commands          1.0 commands/Commands.qml

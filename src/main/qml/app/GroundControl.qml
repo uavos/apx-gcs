@@ -140,7 +140,7 @@ Item {
                     active: visible
                     visible: showNumbers
                     asynchronous: true
-                    sourceComponent: Component { Numbers { settingsName: "instruments" } }
+                    sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
                     Layout.fillHeight: true
                     Layout.fillWidth: false
                     Layout.leftMargin: 3

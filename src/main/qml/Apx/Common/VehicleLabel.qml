@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.12
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
@@ -7,8 +7,12 @@ import QtPositioning 5.6
 
 import APX.Vehicles 1.0
 
-RowLayout {
+
+Item {
     id: control
+
+    readonly property int dotSize: 8
+
     property var vehicle
 
     property font font: Qt.application.font
@@ -33,13 +37,58 @@ RowLayout {
     property string callsign: vehicle.callsign
 
 
-    spacing: 3
+    property int paddingRight: dotSize+3
+
+    implicitWidth: textLayout.implicitWidth+paddingRight
+    implicitHeight: textLayout.implicitHeight
+
+    Connections {
+        target: textLayout
+        onImplicitWidthChanged: timerWidthUpdate.start()
+    }
+    property Timer timerWidthUpdate: Timer {
+        interval: 1
+        onTriggered: {
+            implicitWidth=Math.max(textLayout.implicitWidth+paddingRight,implicitWidth)
+        }
+    }
+
+    //right side info
+    ColumnLayout {
+        visible: showDots
+        spacing: 3
+        anchors.fill: parent
+
+        //recording red point
+        Rectangle {
+            Layout.fillHeight: false
+            Layout.alignment: Qt.AlignRight | Qt.AlignTop
+            visible: vehicle.telemetry.active
+            border.width: 0
+            implicitWidth: dotSize
+            implicitHeight: dotSize
+            radius: 4
+            color: "#C0FF8080"
+        }
+        //mission available
+        Rectangle {
+            Layout.fillHeight: false
+            Layout.alignment: Qt.AlignRight | Qt.AlignTop
+            visible: vehicle && vehicle.mission.missionSize>0
+            border.width: 0
+            implicitWidth: dotSize
+            implicitHeight: dotSize
+            radius: width/2
+            color: "#C080FFFF"
+        }
+        Item {
+            Layout.fillHeight: true
+        }
+    }
 
     ColumnLayout {
+        id: textLayout
         spacing: 0
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        Layout.minimumWidth: height
         Label {
             Layout.minimumWidth: font.pixelSize
             verticalAlignment: Text.AlignVCenter
@@ -51,6 +100,7 @@ RowLayout {
             color: colorFG
         }
         Label {
+            id: infoText
             Layout.fillHeight: true
             Layout.minimumWidth: font.pixelSize
             verticalAlignment: Text.AlignVCenter
@@ -60,42 +110,14 @@ RowLayout {
             font.bold: control.font.bold
             text: vehicle.info
             color: colorFG
-        }
-    }
 
-    //right side info
-    ColumnLayout {
-        visible: showDots
-        Layout.fillWidth: false
-        Layout.fillHeight: true
-        Layout.alignment: Qt.AlignTop
-        //anchors.right: parent.right
-        //anchors.top: parent.top
-        //anchors.bottom: parent.bottom
-        //anchors.margins: 1
-        spacing: 3
-
-        //recording red point
-        Rectangle {
-            Layout.fillHeight: false
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            visible: vehicle.telemetry.active
-            border.width: 0
-            implicitWidth: radius*2
-            implicitHeight: radius*2
-            radius: 4
-            color: "#C0FF8080"
-        }
-        //mission available
-        Rectangle {
-            Layout.fillHeight: false
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            visible: vehicle && vehicle.mission.missionSize>0
-            border.width: 0
-            implicitWidth: radius*2
-            implicitHeight: radius*2
-            radius: 4
-            color: "#C080FFFF"
+            onImplicitWidthChanged: timerWidthUpdate.start()
+            property Timer timerWidthUpdate: Timer {
+                interval: 100
+                onTriggered: {
+                    infoText.width=Math.max(infoText.width,implicitWidth)
+                }
+            }
         }
     }
 }

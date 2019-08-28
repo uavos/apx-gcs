@@ -1,5 +1,6 @@
 ﻿import QtQuick 2.3
 import QtQuick.Layouts 1.3
+import QtQuick.Controls.Material 2.2
 
 import Apx.Common 1.0
 
@@ -56,6 +57,17 @@ Rectangle {
             implicitHeight: width/aspectRatio/2
         }
 
+        FactValue {
+            title: qsTr("H")
+            fact: m.gps_hmsl
+            property double v: m.gps_hmsl.value*(3.281/100)
+            value: "FL"+v.toFixed()
+            implicitWidth: itemWidth
+            implicitHeight: itemHeight
+            visible: ui.test || v>0
+            valueScale: 0.8
+            valueColor: Material.color(Material.BlueGrey)
+        }
         FactValue {
             title: qsTr("DME")
             fact: m.dWPT

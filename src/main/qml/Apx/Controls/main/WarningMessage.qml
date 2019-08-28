@@ -96,7 +96,7 @@ CleanButton {
         function add(msg, item)
         {
             for(var i=0;i<count;++i)
-                if(get(i).msg===msg)return
+                if(get(i).title===item.title)return
             model.insert(0, {"title": item.title, "descr": item.descr, "icon": item.icon, "cnt": 0, "msg": msg})
 
             pos=0

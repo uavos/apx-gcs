@@ -10,7 +10,7 @@ ColumnLayout {
     id: root
     property var vehicle: apx.vehicles.current
 
-    property int size: Math.max(50,height)*0.12
+    property int size: Math.max(50,width)*0.08
 
     spacing: 4
     //clip: true

@@ -304,6 +304,14 @@ Item {
                     mfield: m.gps_hmsl
                     label: qsTr("MSL")
                 }
+                /*Number {
+                    visible: ui.test || value>0
+                    anchors.bottom: parent.bottom
+                    height: pfdScene.txtHeight
+                    mfield: m.gps_hmsl
+                    label: qsTr("FL")
+                    value: m.gps_hmsl.value*(3.281/100)
+                }*/
             }
             Number {
                 visible: ui.test || value>0
@@ -439,7 +447,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
-            visible: !apx.datalink.online
+            visible: !apx.vehicles.current.isReplay() && !apx.datalink.online
             font.pixelSize: apx.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -453,7 +461,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: apx.vehicles.current.streamType===Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
-            visible: apx.datalink.valid && (apx.vehicles.current.streamType!==Vehicle.TELEMETRY)
+            visible: !apx.vehicles.current.isReplay() && apx.datalink.valid && (apx.vehicles.current.streamType!==Vehicle.TELEMETRY)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow

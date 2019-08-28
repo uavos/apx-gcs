@@ -1,4 +1,4 @@
-﻿import QtQuick 2.2
+﻿import QtQuick 2.12
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
@@ -66,7 +66,10 @@ Button {
 
     //implicitHeight: visible?contentItem.implicitHeight+topPadding+bottomPadding:0
     implicitHeight: defaultHeight*ui_scale
-    implicitWidth: showContents?Math.max(implicitHeight,Math.max(minimumWidth,contentItem.implicitWidth+leftPadding+rightPadding)):implicitHeight
+    implicitWidth: defaultWidth
+
+    property int defaultWidth: showContents?Math.max(implicitHeight,Math.max(minimumWidth,contentItem.implicitWidth+leftPadding+rightPadding)):implicitHeight
+
 
     ToolTip.delay: 1000
     ToolTip.timeout: 5000

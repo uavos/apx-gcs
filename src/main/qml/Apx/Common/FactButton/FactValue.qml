@@ -103,25 +103,27 @@ CleanButton {
         return s.join(" ")
     }
 
-    property bool doAlerts: alerts //&& apx.datalink.valid
+    property bool doAlerts: alerts && (apx.datalink.valid || apx.vehicles.current.isReplay())
 
     property var cv
 
     onWarningChanged: {
+        if(!warning)return
         if(alertsVehicle && cv !== apx.vehicles.current){
             cv=apx.vehicles.current
             return
         }
-        if(warning && doAlerts){
+        if(doAlerts){
             apx.vehicles.current.warnings.warning(message)
         }
     }
     onErrorChanged: {
+        if(!error)return
         if(alertsVehicle && cv !== apx.vehicles.current){
             cv=apx.vehicles.current
             return
         }
-        if(error && doAlerts){
+        if(doAlerts){
             apx.vehicles.current.warnings.error(message)
         }
     }

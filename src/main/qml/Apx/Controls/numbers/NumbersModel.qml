@@ -71,8 +71,8 @@ ObjectModel {
             s+="}"
             var obj = Qt.createQmlObject(s,model);
             //obj.Layout.fillHeight=true
-            if(itemWidth)obj.width=Qt.binding(function(){return itemWidth})
-            if(minimumWidth)obj.minimumWidth=Qt.binding(function(){return minimumWidth})
+            if(model.itemWidth)obj.width=Qt.binding(function(){return model.itemWidth})
+            if(model.minimumWidth)obj.minimumWidth=Qt.binding(function(){return model.minimumWidth})
             obj.height=Qt.binding(function(){return itemHeight})
             for(var p in n){
                 if(typeof(obj[p])=='undefined')continue
