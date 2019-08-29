@@ -22,6 +22,7 @@ CleanButton {
 
     property bool active: fact.active
     property bool selected: false
+    property bool draggable: true
 
     //toolTip: text+"\n"+descr
 
@@ -53,6 +54,8 @@ CleanButton {
     onFocusRequested: bFocusRequest=true
     onFocusFree: forceActiveFocus()
 
+    property bool held: false
+
     onTriggered: {
         focusRequested()
         //if(!activeFocus)return
@@ -64,8 +67,36 @@ CleanButton {
     }
 
     onMenuRequested: {
-        openFact(fact,{"pageInfo": true})
+        if(!draggable){
+            openFact(fact,{"pageInfo": true})
+        }else{
+            held = true
+        }
     }
+
+    onPressed: grabToImage(function(result) {Drag.imageSource = result.url})
+    onReleased: held = false
+
+    Drag.dragType: Drag.Automatic
+    Drag.active: held
+    Drag.hotSpot.x: 10
+    Drag.hotSpot.y: 10
+    Drag.supportedActions: Qt.MoveAction
+    //Drag.keys: String(parent) //fact.parentFact?fact.parentFact.name:"root"
+
+    DropArea {
+        anchors { fill: parent; margins: 10 }
+        //keys: String(factButton.parent)
+        onEntered: {
+            console.log(drag.source.title+" -> "+title)
+            //console.log(drag.target.title)
+            //fact.ParentFact.model.move(drag.source.fact.num,fact.num)
+            drag.source.fact.move(fact.num)
+        }
+    }
+
+
+
 
     onFactChanged: {
         if(!fact)fact=dummyFactC.createObject(factButton);
@@ -78,51 +109,53 @@ CleanButton {
     property real valueSize: 0.6
     property real nextSize: 0.7
 
-    //status
-    Label {
-        text: fact.status
-        font.family: font_fixed
-        font.pixelSize: fontSize(bodyHeight*statusSize)
-        color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
-    }
-    //value
-    Loader {
-        active: showValue && (!editorItem.active)
-        //Layout.fillHeight: true
-        //Layout.maximumHeight: size
-        sourceComponent: Component {
-            Label {
-                text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
-                font.family: font_condenced
-                font.pixelSize: fontSize(bodyHeight*valueSize)
-                color: Material.secondaryTextColor
+    contents: [
+        //status
+        Label {
+            text: fact.status
+            font.family: font_fixed
+            font.pixelSize: fontSize(bodyHeight*statusSize)
+            color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
+        },
+        //value
+        Loader {
+            active: showValue && (!editorItem.active)
+            //Layout.fillHeight: true
+            //Layout.maximumHeight: size
+            sourceComponent: Component {
+                Label {
+                    text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
+                    font.family: font_condenced
+                    font.pixelSize: fontSize(bodyHeight*valueSize)
+                    color: Material.secondaryTextColor
+                }
             }
+        },
+        Loader {
+            id: editorItem
+            Layout.maximumHeight: bodyHeight
+            Layout.maximumWidth: factButton.height*10
+            Layout.rightMargin: 4
+            asynchronous: true
+            Material.accent: Material.color(Material.Green)
+            property string src: showEditor?getEditorSource():""
+            active: src
+            visible: active
+            source: src
+        },
+        //next icon
+        Text {
+            visible: expandable
+            Layout.maximumWidth: font.pixelSize*0.7
+            Layout.leftMargin: -font.pixelSize*0.25
+            font.family: "Material Design Icons"
+            font.pixelSize: fontSize(bodyHeight*nextSize)
+            verticalAlignment: Text.AlignVCenter
+            height: bodyHeight
+            text: visible?materialIconChar["chevron-right"]:""
+            color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
         }
-    }
-    Loader {
-        id: editorItem
-        Layout.maximumHeight: bodyHeight
-        Layout.maximumWidth: factButton.height*10
-        Layout.rightMargin: 4
-        asynchronous: true
-        Material.accent: Material.color(Material.Green)
-        property string src: showEditor?getEditorSource():""
-        active: src
-        visible: active
-        source: src
-    }
-    //next icon
-    Text {
-        visible: expandable
-        Layout.maximumWidth: font.pixelSize*0.7
-        Layout.leftMargin: -font.pixelSize*0.25
-        font.family: "Material Design Icons"
-        font.pixelSize: fontSize(bodyHeight*nextSize)
-        verticalAlignment: Text.AlignVCenter
-        height: bodyHeight
-        text: visible?materialIconChar["chevron-right"]:""
-        color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
-    }
+    ]
 
 
     function getEditorSource()
@@ -165,6 +198,14 @@ CleanButton {
             c.createObject(ui.window,{"fact": fact});
         }
     }
+
+
+    /*MouseArea {
+        anchors.fill: factButton
+        propagateComposedEvents: true
+        drag.target: held ? factButton : undefined
+        drag.axis: Drag.YAxis
+    }*/
 }
 
 

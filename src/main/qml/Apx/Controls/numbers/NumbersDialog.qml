@@ -111,7 +111,7 @@ Dialog {
                     obj.values=[]
                     sets.unshift(obj)
                     menu.updateItems()
-                    factMenu.openFact(menu.children[0])
+                    factMenu.openFact(menu.childFact(0))
                 }
             }
         ]
@@ -164,9 +164,9 @@ Dialog {
                 if(!menuSet)return
                 menuSet.descr=""
                 var s=[]
-                for(var i in children){
+                for(var i=0;i<size;++i){
                     if(i<(editorsCnt+1))continue
-                    s.push(children[i].title)
+                    s.push(childFact(i).title)
                 }
                 menuSet.descr=s.join(',')
             }

@@ -47,16 +47,6 @@ ColumnLayout{
             }
         }
 
-        /*footerPositioning: ListView.OverlayFooter
-        footer: CleanButton {
-            defaultHeight: listView.implicitHeight
-            text: qsTr("RESET")
-            toolTip: qsTr("Cancel current procedure")
-            enabled: m.stage.value>0
-            highlighted: true
-            onTriggered: m.stage.value=100
-        }*/
-
     }
 
     function modeIcon(mode)

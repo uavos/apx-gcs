@@ -29,15 +29,17 @@ RowLayout {
         onMenuRequested: mission.requestMenu({"pos":Qt.point(0,ui.window.height)})
         onClicked: mission.trigger()
         onDoubleClicked: menuRequested()
-        Label {
-            id: label
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: missionButton.fontSize(missionButton.bodyHeight/2.3)
-            text: (mission.status)
-                  +"\n"+(mission.empty?"":mission.waypoints.descr)
-        }
+        contents: [
+            Label {
+                id: label
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: missionButton.fontSize(missionButton.bodyHeight/2.3)
+                text: (mission.status)
+                      +"\n"+(mission.empty?"":mission.waypoints.descr)
+            }
+        ]
     }
     FactMenuAction {
         factAction: mission.action.request

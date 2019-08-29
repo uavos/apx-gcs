@@ -20,6 +20,7 @@ MapItemGroup {
 
         z: 1
         delegate: MapPolygon {
+            opacity: 0.2
             color: polygonColor
             geoShape: polygon
         }

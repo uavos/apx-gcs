@@ -76,7 +76,7 @@ Button {
     ToolTip.visible: ToolTip.text && (down || hovered)
     ToolTip.text: toolTip
 
-    default property alias contents: bodyLayout.children
+    property alias contents: bodyLayout.children
 
     property real bodyHeight: height-padding*2
 

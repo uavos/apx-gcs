@@ -30,40 +30,42 @@ FactValue {
     readonly property color cCyan: light?"#fff":Material.color(Material.Cyan)
     readonly property color cGrey: Material.color(Material.Grey)
 
-    Text {
-        Layout.maximumHeight: bodyHeight-Layout.topMargin
-        Layout.topMargin: font.pixelSize*0.05
-        font.family: font_narrow
-        font.pixelSize: fontSize(bodyHeight*valueSize)
-        verticalAlignment: Text.AlignVCenter
-        text: "0%1".arg(apx.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
-        color: apx.datalink.online?(apx.vehicles.current.streamType===Vehicle.TELEMETRY?cGreen:cCyan):cRed
-    }
-    Text {
-        Layout.maximumHeight: bodyHeight-Layout.topMargin
-        Layout.topMargin: font.pixelSize*0.05
-        font.family: font_narrow
-        font.pixelSize: fontSize(bodyHeight*valueSize)
-        verticalAlignment: Text.AlignVCenter
-        property int value: m.errcnt%10
-        text: value+" "
-        color: m.errcnt>1?(errTimer.running?cRed:cYellow):cGrey
-        Behavior on color { enabled: ui.smooth; ColorAnimation {duration: 250} }
-        Timer {
-            id: errTimer
-            interval: 5000
-            repeat: false
+    contents: [
+        Text {
+            Layout.maximumHeight: bodyHeight-Layout.topMargin
+            Layout.topMargin: font.pixelSize*0.05
+            font.family: font_narrow
+            font.pixelSize: fontSize(bodyHeight*valueSize)
+            verticalAlignment: Text.AlignVCenter
+            text: "0%1".arg(apx.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
+            color: apx.datalink.online?(apx.vehicles.current.streamType===Vehicle.TELEMETRY?cGreen:cCyan):cRed
+        },
+        Text {
+            Layout.maximumHeight: bodyHeight-Layout.topMargin
+            Layout.topMargin: font.pixelSize*0.05
+            font.family: font_narrow
+            font.pixelSize: fontSize(bodyHeight*valueSize)
+            verticalAlignment: Text.AlignVCenter
+            property int value: m.errcnt%10
+            text: value+" "
+            color: m.errcnt>1?(errTimer.running?cRed:cYellow):cGrey
+            Behavior on color { enabled: ui.smooth; ColorAnimation {duration: 250} }
+            Timer {
+                id: errTimer
+                interval: 5000
+                repeat: false
+            }
+            onValueChanged: errTimer.restart()
+        },
+        Text {
+            Layout.maximumHeight: bodyHeight-Layout.topMargin
+            Layout.topMargin: font.pixelSize*0.05
+            font.family: font_narrow
+            font.pixelSize: fontSize(bodyHeight*valueSize)
+            verticalAlignment: Text.AlignVCenter
+            text: "0%1".arg(apx.datalink.stats.uplink.cnt.value % 100).slice(-2)+" "
+            color: apx.datalink.hbeat.value?cGreen:cGrey
+            //BoundingRect{}
         }
-        onValueChanged: errTimer.restart()
-    }
-    Text {
-        Layout.maximumHeight: bodyHeight-Layout.topMargin
-        Layout.topMargin: font.pixelSize*0.05
-        font.family: font_narrow
-        font.pixelSize: fontSize(bodyHeight*valueSize)
-        verticalAlignment: Text.AlignVCenter
-        text: "0%1".arg(apx.datalink.stats.uplink.cnt.value % 100).slice(-2)+" "
-        color: apx.datalink.hbeat.value?cGreen:cGrey
-        //BoundingRect{}
-    }
+    ]
 }

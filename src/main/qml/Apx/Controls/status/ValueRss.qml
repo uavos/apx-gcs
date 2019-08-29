@@ -25,34 +25,36 @@ FactValue {
     onClicked: apx.datalink.requestMenu()
     onMenuRequested: apx.datalink.requestMenu()
 
-    ColumnLayout {
-        //anchors.fill: parent
-        spacing: rssControl.height*0.1
-        //Layout.fillHeight: true
-        //Layout.fillWidth: true
-        Rectangle {
-            implicitHeight: barHeight
-            implicitWidth: barWidth
-            border.width: 0
-            color: barColorBG
+    contents: [
+        ColumnLayout {
+            //anchors.fill: parent
+            spacing: rssControl.height*0.1
+            //Layout.fillHeight: true
+            //Layout.fillWidth: true
             Rectangle {
-                anchors.fill: parent
-                anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value1)
+                implicitHeight: barHeight
+                implicitWidth: barWidth
                 border.width: 0
-                color: barColor(value1)
+                color: barColorBG
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value1)
+                    border.width: 0
+                    color: barColor(value1)
+                }
+            }
+            Rectangle {
+                implicitHeight: barHeight
+                implicitWidth: barWidth
+                border.width: 0
+                color: barColorBG
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value2)
+                    border.width: 0
+                    color: barColor(value2)
+                }
             }
         }
-        Rectangle {
-            implicitHeight: barHeight
-            implicitWidth: barWidth
-            border.width: 0
-            color: barColorBG
-            Rectangle {
-                anchors.fill: parent
-                anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value2)
-                border.width: 0
-                color: barColor(value2)
-            }
-        }
-    }
+    ]
 }
