@@ -45,18 +45,20 @@ class Fact : public FactData
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
-    Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
+    Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 
+    Q_PROPERTY(Fact *bind READ bind WRITE setBind NOTIFY bindChanged)
     Q_PROPERTY(Fact *link READ link NOTIFY linkChanged)
+
     Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
 public:
-    explicit Fact(FactBase *parent,
-                  const QString &name,
-                  const QString &title,
-                  const QString &descr,
+    explicit Fact(QObject *parent = nullptr,
+                  const QString &name = QString(),
+                  const QString &title = QString(),
+                  const QString &descr = QString(),
                   FactBase::Flags flags = FactBase::Flags(NoFlags));
 
     Q_INVOKABLE QByteArray hash() const;
@@ -129,12 +131,13 @@ public:
 
     virtual void hashData(QCryptographicHash *h) const;
 
-    void bind(FactData *fact) override;
+    Q_INVOKABLE void bind(FactData *fact) override;
 
 private:
-    QPointer<Fact> bindedFact;
-
     QString pTitle() const;
+
+    void updateDefaultIcon();
+    void updateParentConnections(Fact *prevParent);
 
 protected:
     bool blockNotify;
@@ -180,6 +183,9 @@ public:
     QString icon() const;
     void setIcon(const QString &v);
 
+    Fact *bind() const;
+    void setBind(Fact *v);
+
     Fact *link() const;
     void setLink(Fact *v);
 
@@ -200,7 +206,10 @@ protected:
     bool m_active;
     int m_progress;
     QString m_icon;
-    Fact *m_link;
+
+    QPointer<Fact> m_bind;
+    QPointer<Fact> m_link;
+
     QString m_qmlPage;
     QColor m_color;
 
@@ -216,7 +225,10 @@ signals:
     void progressChanged();
 
     void iconChanged();
+
+    void bindChanged();
     void linkChanged();
+
     void qmlPageChanged();
     void colorChanged();
 

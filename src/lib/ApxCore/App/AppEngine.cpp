@@ -23,6 +23,7 @@
 #include "AppEngine.h"
 #include <ApxDirs.h>
 #include <ApxLog.h>
+#include <ApxMisc/FactQml.h>
 //=============================================================================
 AppEngine::AppEngine(QObject *parent)
     : QQmlApplicationEngine(parent)
@@ -33,7 +34,8 @@ AppEngine::AppEngine(QObject *parent)
     addImportPath("qrc:/");
 
     // QML types register
-    qmlRegisterUncreatableType<Fact>("APX.Facts", 1, 0, "Fact", "Reference only");
+    //qmlRegisterType<Fact>("APX.Facts", 1, 0, "Fact");
+    qmlRegisterType<FactQml>("APX.Facts", 1, 0, "Fact");
     qmlRegisterUncreatableType<FactAction>("APX.Facts", 1, 0, "FactAction", "Reference only");
 
     jsRegisterFunctions();

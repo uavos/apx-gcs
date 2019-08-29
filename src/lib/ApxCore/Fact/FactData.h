@@ -29,7 +29,7 @@ class FactData : public FactBase
 {
     Q_OBJECT
 
-    Q_PROPERTY(FactBase::Flag dataType READ dataType NOTIFY dataTypeChanged)
+    Q_PROPERTY(FactBase::Flag dataType READ dataType WRITE setDataType NOTIFY dataTypeChanged)
 
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
@@ -52,7 +52,7 @@ class FactData : public FactBase
     Q_PROPERTY(
         QVariant defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
 public:
-    explicit FactData(FactBase *parent,
+    explicit FactData(QObject *parent,
                       const QString &name,
                       const QString &title,
                       const QString &descr,

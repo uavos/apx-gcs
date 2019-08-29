@@ -99,9 +99,8 @@ CleanButton {
 
 
     onFactChanged: {
-        if(!fact)fact=dummyFactC.createObject(factButton);
+        if(!fact)fact=new Fact(this)
     }
-    readonly property Component dummyFactC: Component { FactObject { } }
 
 
 

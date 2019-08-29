@@ -43,20 +43,20 @@ public:
     enum Flag {
         NoFlags = 0,
 
-        //type of item
+        //type of item [treeType]
         TypeMask = 0x0000000F,
         Root = 1,
         Group = 2,
         Action = 3,
 
-        //appearance options
+        //appearance options [options]
         OptsMask = 0x0000FFF0,
         Section = 1 << 4,        //flat model shows fact as section not folder
         CloseOnTrigger = 1 << 5, //close menu request on trigger
         IconOnly = 1 << 6,       //show only icon button (for actions)
         HideDisabbled = 1 << 7,  //hide when disabled (for actions)
 
-        //data types
+        //data types [dataType]
         DataMask = 0xFFFF0000,
         Const = 1 << 16,
         Text = 2 << 16,
@@ -65,12 +65,12 @@ public:
         Bool = 5 << 16,
         Enum = 6 << 16, // value=value of enumStrings (set by text or index or enumValues)
 
-        //complex types
+        //complex data types
         Mandala = 10 << 16, // Mandala ID
         Script = 11 << 16,  // script editor
         Key = 12 << 16,
 
-        //actions types
+        //actions data types
         Apply = 20 << 16,  // green apply button
         Remove = 21 << 16, // red trash button
         Stop = 22 << 16,   //red stop button
@@ -80,7 +80,7 @@ public:
     Q_FLAG(Flags)
     Q_ENUM(Flag)
 
-    explicit FactBase(FactBase *parent, const QString &name, FactBase::Flags flags);
+    explicit FactBase(QObject *parent, const QString &name, FactBase::Flags flags);
     ~FactBase();
 
     //internal tree
@@ -99,6 +99,8 @@ public:
     bool hasParent(const FactBase *parent) const;
     bool hasChild(const FactBase *child) const;
 
+    QList<FactBase *> actions() const;
+
 public slots:
     void remove();
     void removeAll();
@@ -116,6 +118,8 @@ signals:
 
 private:
     QList<FactBase *> m_children;
+    QList<FactBase *> m_actions;
+
     QString makeNameUnique(const QString &s);
     QString nameSuffix;
 

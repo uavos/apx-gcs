@@ -82,6 +82,7 @@ ApxApp.ApxLibrary {
             "SvgImageProvider.cpp", "SvgImageProvider.h",
             "SvgMaterialIcon.cpp", "SvgMaterialIcon.h",
             "QActionFact.cpp", "QActionFact.h",
+            "FactQml.cpp", "FactQml.h",
         ]
     }
 
