@@ -44,11 +44,16 @@ ColumnLayout {
     onFactChanged: {
         if(!fact){
             //console.log("page fact removed")
-            fact=new Fact(this)
+            fact=factC.createObject(this)
             //factRemoved()
             if(menuPage) popItem(menuPage)
         }
     }
+    Component {
+        id: factC
+        Fact {}
+    }
+
 
     property int padding: 4
     clip: true

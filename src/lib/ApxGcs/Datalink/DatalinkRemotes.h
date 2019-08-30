@@ -43,11 +43,11 @@ public:
 
     Fact *f_add;
     Fact *f_url;
-    FactAction *f_connect;
+    Fact *f_connect;
 
     Fact *f_servers;
 
-    FactAction *f_alloff;
+    Fact *f_alloff;
 
     DatalinkRemote *registerHost(QUrl url);
     DatalinkRemote *remoteByAddr(QHostAddress addr);

@@ -40,7 +40,7 @@ public:
 
     void addActions();
 
-    FactAction *f_revert;
+    Fact *f_revert;
 
 protected:
     //override

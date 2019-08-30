@@ -62,7 +62,7 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
               << "bldc";
 
     tools = new NodeTools(this);
-    new FactAction(this, tools);
+    tools->createAction(this);
 
     connect(this, &NodeItem::versionChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::updateDescr);

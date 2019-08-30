@@ -37,7 +37,7 @@ public:
     QJSValue jsexec(const QString &s);
 
     void jsSyncObject(QObject *obj);
-    void jsSync(Fact *item);
+    void jsSync(Fact *fact);
 
     Q_INVOKABLE void help();
     Q_INVOKABLE void sleep(quint16 ms);
@@ -50,16 +50,13 @@ public:
 protected:
     QHash<QString, QString> js_descr; //helper commands alias,descr
 
-    QJSValue jsSync(Fact *factItem, QJSValue parent); //recursive
+    QJSValue jsSync(Fact *fact, QJSValue parent); //recursive
 
     void jsRegister(QString fname, QString description, QString body);
 
 private:
     void jsRegisterFunctions();
-
-public slots:
-    void jsAddItem(FactBase *item);
-    void jsRemoveItem(FactBase *item);
+    void jsSetProperty(QJSValue parent, const QString &name, QJSValue v);
 };
 //=============================================================================
 #endif

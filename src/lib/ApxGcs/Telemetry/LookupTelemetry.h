@@ -38,10 +38,10 @@ class LookupTelemetry : public DatabaseLookup
 public:
     explicit LookupTelemetry(Fact *parent);
 
-    FactAction *f_latest;
-    FactAction *f_prev;
-    FactAction *f_next;
-    FactAction *f_remove;
+    Fact *f_latest;
+    Fact *f_prev;
+    Fact *f_next;
+    Fact *f_remove;
 
     void jumpToRecord(quint64 v);
 

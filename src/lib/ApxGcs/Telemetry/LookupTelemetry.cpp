@@ -44,31 +44,38 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupTelemetry::loadItem);
 
     //actions
-    f_latest = new FactAction(this,
-                              "latest",
-                              tr("Latest"),
-                              tr("Load latest"),
-                              "fast-forward",
-                              FactAction::ActionApply);
-    connect(f_latest, &FactAction::triggered, this, &LookupTelemetry::dbLoadLatest);
+    f_latest = new Fact(this,
+                        "latest",
+                        tr("Latest"),
+                        tr("Load latest"),
+                        Action | ShowDisabled | Apply,
+                        "fast-forward");
+    connect(f_latest, &Fact::triggered, this, &LookupTelemetry::dbLoadLatest);
 
-    f_prev = new FactAction(this, "prev", tr("Prev"), tr("Load previous"), "chevron-left");
-    connect(f_prev, &FactAction::triggered, this, &LookupTelemetry::dbLoadPrev);
+    f_prev = new Fact(this,
+                      "prev",
+                      tr("Prev"),
+                      tr("Load previous"),
+                      Action | ShowDisabled,
+                      "chevron-left");
+    connect(f_prev, &Fact::triggered, this, &LookupTelemetry::dbLoadPrev);
 
-    f_next = new FactAction(this, "next", tr("Next"), tr("Load next"), "chevron-right");
-    connect(f_next, &FactAction::triggered, this, &LookupTelemetry::dbLoadNext);
+    f_next = new Fact(this,
+                      "next",
+                      tr("Next"),
+                      tr("Load next"),
+                      Action | ShowDisabled,
+                      "chevron-right");
+    connect(f_next, &Fact::triggered, this, &LookupTelemetry::dbLoadNext);
 
-    f_remove = new FactAction(this,
-                              "remove",
-                              tr("Remove"),
-                              tr("Remove current record"),
-                              "delete",
-                              FactAction::ActionRemove);
-    connect(f_remove, &FactAction::triggered, this, &LookupTelemetry::dbRemove);
+    f_remove = new Fact(this,
+                        "remove",
+                        tr("Remove"),
+                        tr("Remove current record"),
+                        Action | ShowDisabled | Remove,
+                        "delete");
+    connect(f_remove, &Fact::triggered, this, &LookupTelemetry::dbRemove);
 
-    foreach (FactAction *a, actions) {
-        a->setHideDisabled(false);
-    }
     //status
     connect(this, &LookupTelemetry::recordsCountChanged, this, &LookupTelemetry::updateStatus);
     connect(this, &LookupTelemetry::recordNumChanged, this, &LookupTelemetry::updateStatus);
@@ -396,7 +403,7 @@ void LookupTelemetry::dbRemove()
         connect(req,
                 &DBReqTelemetryWriteInfo::finished,
                 f_latest,
-                &FactAction::trigger,
+                &Fact::trigger,
                 Qt::QueuedConnection);
     //else connect(req,&DBReqRemove::finished,this,&TelemetryReader::rescan,Qt::QueuedConnection);
     req->exec();

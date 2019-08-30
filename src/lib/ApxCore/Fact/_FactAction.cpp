@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "FactAction.h"
 #include "Fact.h"
+#include "FactAction.h"
 #include <QColor>
 //#include <QApplication>
 //=============================================================================

@@ -65,22 +65,18 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
                                tr("IP address of remote server"),
                                Text,
                                QString());
-    f_connect = new FactAction(f_add,
-                               "connect",
-                               tr("Connect"),
-                               "",
-                               "",
-                               FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
-    connect(f_connect, &FactAction::triggered, this, &DatalinkRemotes::connectTriggered);
+    f_connect = new Fact(f_add, "connect", tr("Connect"), "", Action | Apply | CloseOnTrigger);
+    connect(f_connect, &Fact::triggered, this, &DatalinkRemotes::connectTriggered);
 
     f_servers = new Fact(this, "servers", tr("Servers"), tr("Found servers"), Section | Const);
     connect(f_servers, &Fact::sizeChanged, this, &DatalinkRemotes::updateStatus);
 
-    f_alloff = new FactAction(this,
-                              "alloff",
-                              tr("Disconnect all"),
-                              tr("Close all connections to remote servers"),
-                              "lan-disconnect");
+    f_alloff = new Fact(this,
+                        "alloff",
+                        tr("Disconnect all"),
+                        tr("Close all connections to remote servers"),
+                        Action,
+                        "lan-disconnect");
 
     AppSettingFact::loadSettings(this);
     discover();
@@ -94,7 +90,7 @@ DatalinkRemote *DatalinkRemotes::registerHost(QUrl url)
         return c;
     c = new DatalinkRemote(f_servers, datalink, url);
     connect(c, &DatalinkRemote::activeChanged, this, &DatalinkRemotes::updateStatus);
-    connect(f_alloff, &FactAction::triggered, c, [c]() { c->setValue(false); });
+    connect(f_alloff, &Fact::triggered, c, [c]() { c->setValue(false); });
     apxMsg() << QString("#%1: %2").arg(tr("found server")).arg(url.toString());
     datalink->addConnection(c);
     return c;

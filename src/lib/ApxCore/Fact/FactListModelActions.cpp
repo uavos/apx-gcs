@@ -22,7 +22,6 @@
  */
 #include "FactListModelActions.h"
 #include "Fact.h"
-#include "FactAction.h"
 //=============================================================================
 FactListModelActions::FactListModelActions(Fact *parent)
     : QAbstractListModel(parent)
@@ -33,7 +32,7 @@ FactListModelActions::FactListModelActions(Fact *parent)
 int FactListModelActions::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return fact->actions.size();
+    return fact->actions().size();
 }
 //=============================================================================
 QHash<int, QByteArray> FactListModelActions::roleNames() const
@@ -47,7 +46,7 @@ QVariant FactListModelActions::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
         return QVariant();
-    FactAction *item = fact->actions.at(index.row());
+    Fact *item = qobject_cast<Fact *>(fact->actions().at(index.row()));
     return item->data(index.column(), role);
 }
 //=============================================================================

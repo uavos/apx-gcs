@@ -44,9 +44,9 @@ Telemetry::Telemetry(Vehicle *parent)
 
     if (vehicle->isReplay()) {
         f_lookup = new LookupTelemetry(this);
-        new FactAction(this, f_lookup->f_latest);
-        new FactAction(this, f_lookup->f_prev);
-        new FactAction(this, f_lookup->f_next);
+        f_lookup->f_latest->createAction(this);
+        f_lookup->f_prev->createAction(this);
+        f_lookup->f_next->createAction(this);
         f_reader = new TelemetryReader(f_lookup, this);
         connect(f_reader, &Fact::statusChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);

@@ -38,8 +38,8 @@ public:
     Fact *_key;
     Fact *_cmd;
 
-    FactAction *_save;
-    FactAction *_remove;
+    Fact *_save;
+    Fact *_remove;
 
     QJsonObject valuesToJson(bool array = false) const override;
     void valuesFromJson(const QJsonObject &jso) override;

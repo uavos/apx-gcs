@@ -26,8 +26,12 @@
 QActionFact::QActionFact(Fact *f)
     : QAction(f)
     , fact(f)
-    , act(nullptr)
 {
+    if (f->dataType() == Fact::Apply)
+        setObjectName("greenAction");
+    else if (f->dataType() == Fact::Remove)
+        setObjectName("redAction");
+
     connect(f, &Fact::titleChanged, this, &QActionFact::updateText);
     connect(f, &Fact::descrChanged, this, &QActionFact::updateToolTip);
     connect(f, &Fact::iconChanged, this, &QActionFact::updateIcon);
@@ -43,50 +47,25 @@ QActionFact::QActionFact(Fact *f)
     updateVisible();
 }
 //=============================================================================
-QActionFact::QActionFact(FactAction *f)
-    : QAction(f)
-    , fact(nullptr)
-    , act(f)
-{
-    if (f->flags() & FactAction::ActionApply)
-        setObjectName("greenAction");
-    else if (f->flags() & FactAction::ActionRemove)
-        setObjectName("redAction");
-
-    connect(f, &FactAction::titleChanged, this, &QActionFact::updateText);
-    connect(f, &FactAction::descrChanged, this, &QActionFact::updateToolTip);
-    connect(f, &FactAction::iconChanged, this, &QActionFact::updateIcon);
-    connect(f, &FactAction::enabledChanged, this, &QActionFact::updateEnabled);
-    connect(f, &FactAction::visibleChanged, this, &QActionFact::updateVisible);
-
-    connect(this, &QAction::triggered, f, &FactAction::trigger);
-
-    updateText();
-    updateToolTip();
-    updateIcon();
-    updateEnabled();
-    updateVisible();
-}
-//=============================================================================
 void QActionFact::updateText()
 {
-    setText(fact ? fact->title() : act->title());
+    setText(fact->title());
 }
 void QActionFact::updateToolTip()
 {
-    setToolTip(fact ? fact->descr() : act->descr());
+    setToolTip(fact->descr());
 }
 void QActionFact::updateIcon()
 {
-    setIcon(SvgMaterialIcon(fact ? fact->icon() : act->icon()));
+    setIcon(SvgMaterialIcon(fact->icon()));
 }
 void QActionFact::updateEnabled()
 {
-    setEnabled(fact ? fact->enabled() : act->enabled());
+    setEnabled(fact->enabled());
 }
 void QActionFact::updateVisible()
 {
-    setVisible(fact ? fact->visible() : act->visible());
+    setVisible(fact->visible());
 }
 //=============================================================================
 //=============================================================================

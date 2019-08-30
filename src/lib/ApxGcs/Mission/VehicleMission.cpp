@@ -73,55 +73,44 @@ VehicleMission::VehicleMission(Vehicle *parent)
     }
 
     //actions
-    f_request = new FactAction(this,
-                               "request",
-                               tr("Request"),
-                               tr("Download from vehicle"),
-                               "download");
+    f_request
+        = new Fact(this, "request", tr("Request"), tr("Download from vehicle"), Action, "download");
 
-    f_upload = new FactAction(this,
-                              "upload",
-                              tr("Upload"),
-                              tr("Upload to vehicle"),
-                              "upload",
-                              FactAction::ActionApply);
-    connect(f_upload, &FactAction::triggered, this, &VehicleMission::uploadMission);
+    f_upload
+        = new Fact(this, "upload", tr("Upload"), tr("Upload to vehicle"), Action | Apply, "upload");
+    connect(f_upload, &Fact::triggered, this, &VehicleMission::uploadMission);
 
-    f_clear = new FactAction(this,
-                             "clear",
-                             tr("Clear"),
-                             tr("Clear mission"),
-                             "",
-                             FactAction::ActionRemove);
-    f_clear->setFlag(FactAction::ActionHideTitle);
-    connect(f_clear, &FactAction::triggered, this, &VehicleMission::clearMission);
+    f_clear = new Fact(this, "clear", tr("Clear"), tr("Clear mission"), Action | Remove | IconOnly);
+    connect(f_clear, &Fact::triggered, this, &VehicleMission::clearMission);
 
     //tools actions
     f_tools = new MissionTools(this, nullptr);
     f_tools->setParent(this);
-    new FactAction(this, f_tools, FactAction::ActionHideTitle);
+    f_tools->createAction(this)->setOption(IconOnly);
 
     f_lookup = new LookupMissions(this, nullptr);
     f_lookup->setParent(this);
-    new FactAction(f_tools, f_lookup);
+    f_lookup->createAction(f_tools);
 
-    f_save = new FactAction(f_tools,
-                            "save",
-                            tr("Save mission"),
-                            tr("Commit to database"),
-                            "content-save",
-                            FactAction::ActionApply);
-    connect(f_save, &FactAction::triggered, storage, &MissionStorage::saveMission);
+    f_save = new Fact(f_tools,
+                      "save",
+                      tr("Save"),
+                      tr("Save mission to database"),
+                      Action | Apply | IconOnly,
+                      "content-save");
+    connect(f_save, &Fact::triggered, storage, &MissionStorage::saveMission);
 
     f_share = new MissionShare(this, nullptr);
     f_share->setParent(this);
-    new FactAction(f_tools, f_share);
+    f_share->createAction(f_tools)->setOption(IconOnly);
 
     //ApxApp::jsync(f_tools);
 
-    foreach (FactAction *a, actions) {
-        //a->setFlag(FactAction::ActionHideTitle);
-        connect(a, &FactAction::enabledChanged, this, &VehicleMission::actionsUpdated);
+    foreach (FactBase *a, actions()) {
+        connect(static_cast<Fact *>(a),
+                &Fact::enabledChanged,
+                this,
+                &VehicleMission::actionsUpdated);
     }
 
     //internal
@@ -176,7 +165,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
                 vehicle->protocol->mission,
                 &ProtocolMission::missionDataUpload);
         connect(f_request,
-                &FactAction::triggered,
+                &Fact::triggered,
                 vehicle->protocol->mission,
                 &ProtocolMission::downloadMission);
     }
@@ -188,7 +177,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
     if (!vehicle->isLocal()) {
         //f_request->trigger();
-        QTimer::singleShot(2000, f_request, &FactAction::trigger);
+        QTimer::singleShot(2000, f_request, &Fact::trigger);
     }
 
     qmlRegisterUncreatableType<VehicleMission>("APX.Mission", 1, 0, "Mission", "Reference only");

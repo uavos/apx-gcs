@@ -66,11 +66,12 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     f_clients = new Fact(this, "clients", tr("Clients"), tr("Connected clients"), Section | Const);
     connect(f_clients, &Fact::sizeChanged, this, &DatalinkServer::updateStatus);
 
-    f_alloff = new FactAction(this,
-                              "alloff",
-                              tr("Disconnect all"),
-                              tr("Drop all client connections"),
-                              "lan-disconnect");
+    f_alloff = new Fact(this,
+                        "alloff",
+                        tr("Disconnect all"),
+                        tr("Drop all client connections"),
+                        Action,
+                        "lan-disconnect");
 
     tcpServer = new QTcpServer(this);
     connect(tcpServer, &QTcpServer::newConnection, this, &DatalinkServer::newConnection);
@@ -164,7 +165,7 @@ void DatalinkServer::newConnection()
         DatalinkTcpSocket *c = new DatalinkTcpSocket(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
         c->setTitle(socket->peerAddress().toString());
-        connect(f_alloff, &FactAction::triggered, c, &DatalinkConnection::close);
+        connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
         connect(c, &DatalinkTcpSocket::httpRequest, http, &HttpService::httpRequest);
         datalink->addConnection(c);
         c->setValue(true);

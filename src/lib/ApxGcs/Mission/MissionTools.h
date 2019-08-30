@@ -36,9 +36,9 @@ public:
     explicit MissionTools(VehicleMission *mission, Fact *parent);
 
     Fact *f_altadjust;
-    FactAction *f_altadjustApply;
+    Fact *f_altadjustApply;
     Fact *f_altset;
-    FactAction *f_altsetApply;
+    Fact *f_altsetApply;
 
     Fact *f_copy;
 

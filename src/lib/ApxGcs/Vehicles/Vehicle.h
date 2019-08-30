@@ -96,7 +96,7 @@ public:
     Telemetry *f_telemetry;
     VehicleWarnings *f_warnings;
 
-    FactAction *f_select;
+    Fact *f_select;
 
     QString uid;
 

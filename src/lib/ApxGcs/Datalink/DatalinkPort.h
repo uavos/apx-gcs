@@ -52,8 +52,8 @@ public:
     QList<Fact *> f_rx;
     QList<Fact *> f_tx;
 
-    FactAction *f_save;
-    FactAction *f_remove;
+    Fact *f_save;
+    Fact *f_remove;
 
     DatalinkConnection *f_connection;
 

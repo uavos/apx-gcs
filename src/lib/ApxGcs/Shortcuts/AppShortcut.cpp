@@ -42,20 +42,15 @@ AppShortcut::AppShortcut(Fact *parent, AppShortcuts *shortcuts, const AppShortcu
     _cmd = new Fact(this, "jscmd", tr("Java script"), "", Text);
 
     if (_new) {
-        _save = new FactAction(this,
-                               "save",
-                               tr("Save"),
-                               "",
-                               "",
-                               FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
-        connect(_save, &FactAction::triggered, shortcuts, &AppShortcuts::addTriggered);
+        _save = new Fact(this, "save", tr("Save"), "", Action | Apply | CloseOnTrigger);
+        connect(_save, &Fact::triggered, shortcuts, &AppShortcuts::addTriggered);
         defaults();
     } else {
         setSection(bUsr ? shortcuts->f_usr->section() : shortcuts->f_sys->section());
         copyValuesFrom(sc);
-        _remove = new FactAction(this, "remove", tr("Remove"), "", "", FactAction::ActionRemove);
-        connect(_remove, &FactAction::triggered, this, &AppShortcut::remove);
-        connect(_remove, &FactAction::triggered, shortcuts, &AppShortcuts::save);
+        _remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove);
+        connect(_remove, &Fact::triggered, this, &AppShortcut::remove);
+        connect(_remove, &Fact::triggered, shortcuts, &AppShortcuts::save);
         connect(shortcuts, &Fact::sizeChanged, this, &AppShortcut::updateStats);
 
         connect(bUsr ? shortcuts->f_allonUsr : shortcuts->f_allonSys,

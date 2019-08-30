@@ -23,7 +23,6 @@
 #ifndef Fact_H
 #define Fact_H
 //=============================================================================
-#include "FactAction.h"
 #include "FactData.h"
 #include "FactListModel.h"
 #include "FactListModelActions.h"
@@ -59,7 +58,8 @@ public:
                   const QString &name = QString(),
                   const QString &title = QString(),
                   const QString &descr = QString(),
-                  FactBase::Flags flags = FactBase::Flags(NoFlags));
+                  FactBase::Flags flags = FactBase::Flags(NoFlags),
+                  const QString &icon = QString());
 
     Q_INVOKABLE QByteArray hash() const;
 
@@ -79,9 +79,6 @@ public:
     QVariant userData;
 
     virtual bool lessThan(Fact *rightFact) const; //sorting helper
-
-    //actions
-    QList<FactAction *> actions;
 
     //data model
     enum {
@@ -133,11 +130,13 @@ public:
 
     Q_INVOKABLE void bind(FactData *fact) override;
 
+    //create action fact that opens this fact, or binded to this action
+    Q_INVOKABLE Fact *createAction(Fact *parent);
+
 private:
     QString pTitle() const;
 
     void updateDefaultIcon();
-    void updateParentConnections(Fact *prevParent);
 
 protected:
     bool blockNotify;

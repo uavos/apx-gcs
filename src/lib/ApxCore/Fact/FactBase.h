@@ -54,7 +54,7 @@ public:
         Section = 1 << 4,        //flat model shows fact as section not folder
         CloseOnTrigger = 1 << 5, //close menu request on trigger
         IconOnly = 1 << 6,       //show only icon button (for actions)
-        HideDisabbled = 1 << 7,  //hide when disabled (for actions)
+        ShowDisabled = 1 << 7,   //action visible when disabled (for actions)
 
         //data types [dataType]
         DataMask = 0xFFFF0000,

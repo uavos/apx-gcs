@@ -618,7 +618,7 @@ void ProtocolServiceNode::unpackValue(DictNode::Field &f,
         v = QVariant::fromValue(stream->read<xbus::node::conf::ft_uint_t, int>());
         break;
     case DictNode::Float:
-        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_float_t, double>());
+        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_float_t, float>());
         break;
     case DictNode::Byte:
         v = QVariant::fromValue(stream->read<xbus::node::conf::ft_byte_t, int>());

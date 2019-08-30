@@ -36,7 +36,6 @@ AppEngine::AppEngine(QObject *parent)
     // QML types register
     //qmlRegisterType<Fact>("APX.Facts", 1, 0, "Fact");
     qmlRegisterType<FactQml>("APX.Facts", 1, 0, "Fact");
-    qmlRegisterUncreatableType<FactAction>("APX.Facts", 1, 0, "FactAction", "Reference only");
 
     jsRegisterFunctions();
 
@@ -65,48 +64,68 @@ AppEngine::AppEngine(QObject *parent)
 void AppEngine::jsSyncObject(QObject *obj)
 {
     QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
-    globalObject().setProperty(obj->objectName(), newQObject(obj));
+    jsSetProperty(globalObject(), obj->objectName(), newQObject(obj));
 }
 //=============================================================================
-void AppEngine::jsSync(Fact *item)
+void AppEngine::jsSync(Fact *fact)
 {
     //qDebug()<<item;
-    QList<FactBase *> list = item->pathList();
+    QList<FactBase *> list = fact->pathList();
     QJSValue v = globalObject();
+    //build tree from root
     for (int i = list.size() - 1; i > 0; --i) {
-        Fact *fact = static_cast<Fact *>(list.at(i));
-        QJSValue vp = v.property(fact->name());
-        if (vp.isUndefined() || (!vp.isQObject()) || vp.toQObject() != fact) {
-            vp = newQObject(fact);
-            v.setProperty(fact->name(), vp);
+        Fact *f = static_cast<Fact *>(list.at(i));
+        QJSValue vp = v.property(f->name());
+        if (vp.isUndefined() || (!vp.isQObject()) || vp.toQObject() != f) {
+            jsSetProperty(v, f->name(), newQObject(f));
         }
         v = vp;
     }
-    jsSync(item, v);
+    //set the property and value
+    jsSync(fact, v);
     //collectGarbage();
 }
 //=============================================================================
-QJSValue AppEngine::jsSync(Fact *factItem, QJSValue parent) //recursive
+QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 {
-    //qDebug()<<factItem->path();
-    QQmlEngine::setObjectOwnership(factItem, QQmlEngine::CppOwnership);
-    QJSValue js_factItem = newQObject(factItem); //toScriptValue<Fact*>(factItem);//
-    parent.setProperty(factItem->name(), js_factItem);
-    for (int i = 0; i < factItem->size(); ++i)
-        jsSync(factItem->child(i), js_factItem);
-    if (!factItem->actions.isEmpty()) {
+    //qDebug()<<fact->path();
+    QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);
+    QJSValue js_fact = newQObject(fact);
+    jsSetProperty(parent, fact->name(), js_fact);
+
+    //sync children
+    for (int i = 0; i < fact->size(); ++i)
+        jsSync(fact->child(i), js_fact);
+    //sync actions
+    if (!fact->actions().isEmpty()) {
         QJSValue js_actions = newObject();
-        foreach (FactAction *i, factItem->actions) {
-            QQmlEngine::setObjectOwnership(i, QQmlEngine::CppOwnership);
-            QJSValue js_action = newQObject(i);
-            js_actions.setProperty(i->name(), js_action);
-            if (i->fact()) {
-                jsSync(i->fact(), js_factItem);
+        foreach (FactBase *i, fact->actions()) {
+            Fact *f = static_cast<Fact *>(i);
+            QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
+            jsSetProperty(js_actions, f->name(), newQObject(f));
+            if (f->bind() && f->bind()->parentFact() == nullptr) {
+                //action opens fact page with no parent
+                jsSync(f->bind(), js_fact);
             }
         }
-        js_factItem.setProperty("action", js_actions);
+        js_fact.setProperty("action", js_actions);
     }
-    return js_factItem;
+    return js_fact;
+}
+//=============================================================================
+void AppEngine::jsSetProperty(QJSValue parent, const QString &name, QJSValue v)
+{
+    if ((!v.isUndefined()) && parent.hasProperty(name)) {
+        QJSValue vp = parent.property(name);
+        while (!vp.isUndefined()) {
+            if (vp.isQObject() && vp.toQObject() == v.toQObject())
+                return;
+            qWarning() << "Rewriting property:" << name << v.toString() << vp.toString()
+                       << "for parent" << parent.toString();
+            break;
+        }
+    }
+    parent.setProperty(name, v);
 }
 //=============================================================================
 QJSValue AppEngine::jsexec(const QString &s)
@@ -124,42 +143,6 @@ void AppEngine::jsRegister(QString fname, QString description, QString body)
     jsexec(QString("function %1 { %2;};").arg(fname).arg(body));
     jsexec(QString("%1.info=\"%2\";").arg(fname.left(fname.indexOf('('))).arg(description));
     js_descr[fname] = description;
-}
-//=============================================================================
-//=============================================================================
-void AppEngine::jsAddItem(FactBase *item)
-{
-    //qDebug()<<static_cast<Fact*>(item)->path();
-    QQmlEngine::setObjectOwnership(item, QQmlEngine::CppOwnership);
-    //find the parents tree, last item in list = this
-    QList<FactBase *> list = item->pathList();
-    QJSValue v = globalObject();
-    for (int i = list.size() - 1; i >= 0; --i) {
-        Fact *fact = static_cast<Fact *>(list.at(i));
-        QJSValue vp = v.property(fact->name());
-        if (vp.isUndefined() || (!vp.isQObject()) || vp.toQObject() != fact) {
-            vp = newQObject(fact);
-            v.setProperty(fact->name(), vp);
-            //qDebug()<<fact->path();
-        }
-        v = vp;
-    }
-    //collectGarbage();
-}
-void AppEngine::jsRemoveItem(FactBase *item)
-{
-    //qDebug()<<"jsRemoveItem"<<static_cast<Fact*>(item)->path();
-    //find the parents tree, last item in list = this
-    QList<FactBase *> list = item->pathList();
-    QJSValue v = globalObject();
-    for (int i = list.size() - 1; i > 0; --i) {
-        Fact *fact = static_cast<Fact *>(list.at(i));
-        QJSValue vp = v.property(fact->name());
-        if (vp.isUndefined())
-            return; //no parents?
-        v = vp;
-    }
-    v.deleteProperty(item->name());
 }
 //=============================================================================
 //=============================================================================

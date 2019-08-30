@@ -44,30 +44,20 @@ SiteEdit::SiteEdit(Fact *parent,
 
     if (!modelData.isEmpty()) {
         f_missions = new LookupMissions(nullptr, nullptr);
-        a_missions = new FactAction(this, f_missions);
-        connect(a_missions, &FactAction::triggered, this, &SiteEdit::lookupMissions);
-        a_remove = new FactAction(this,
-                                  "remove",
-                                  tr("Remove"),
-                                  "",
-                                  "",
-                                  FactAction::ActionRemove | FactAction::ActionCloseOnTrigger);
-        a_remove->setHideDisabled(false);
-        connect(a_remove, &FactAction::triggered, this, [this]() {
+        a_missions = f_missions->createAction(this);
+        connect(a_missions, &Fact::triggered, this, &SiteEdit::lookupMissions);
+        a_remove = new Fact(this,
+                            "remove",
+                            tr("Remove"),
+                            "",
+                            Action | Remove | CloseOnTrigger | ShowDisabled);
+        connect(a_remove, &Fact::triggered, this, [this]() {
             emit removeTriggered(this->modelData);
         });
     } else {
-        a_add = new FactAction(this,
-                               "add",
-                               tr("Add"),
-                               "",
-                               "",
-                               FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
-        a_add->setHideDisabled(false);
+        a_add = new Fact(this, "add", tr("Add"), "", Action | Apply | CloseOnTrigger | ShowDisabled);
         a_add->setEnabled(false);
-        connect(a_add, &FactAction::triggered, this, [this]() {
-            emit addTriggered(this->modelData);
-        });
+        connect(a_add, &Fact::triggered, this, [this]() { emit addTriggered(this->modelData); });
         connect(f_title, &Fact::textChanged, this, [=]() {
             a_add->setEnabled(!f_title->text().isEmpty());
         });

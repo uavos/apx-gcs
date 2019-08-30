@@ -32,11 +32,9 @@ class QActionFact : public QAction
     Q_OBJECT
 public:
     explicit QActionFact(Fact *f);
-    explicit QActionFact(FactAction *f);
 
 private:
     Fact *fact;
-    FactAction *act;
 private slots:
     void updateText();
     void updateToolTip();

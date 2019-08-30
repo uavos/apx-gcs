@@ -40,7 +40,7 @@ public:
     LookupTelemetry *lookup;
 
     Fact *f_notes;
-    FactAction *f_reload;
+    Fact *f_reload;
 
     //data from database
     QMap<QString, quint64> evtCountMap;

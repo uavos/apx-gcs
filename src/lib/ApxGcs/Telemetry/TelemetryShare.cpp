@@ -60,14 +60,9 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent)
     qexp->setSection(sect);
     connect(qexp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
 
-    f_stop = new FactAction(this,
-                            "stop",
-                            tr("Stop"),
-                            tr("Stop conversion"),
-                            "",
-                            FactAction::ActionStop);
-    connect(f_stop, &FactAction::triggered, qimp, &QueueJob::stop);
-    connect(f_stop, &FactAction::triggered, qexp, &QueueJob::stop);
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop conversion"), Action | Stop);
+    connect(f_stop, &Fact::triggered, qimp, &QueueJob::stop);
+    connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);
 
     connect(telemetry->f_lookup,
             &LookupTelemetry::recordIdChanged,

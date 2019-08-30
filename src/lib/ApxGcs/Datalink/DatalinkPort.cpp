@@ -127,20 +127,15 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     updateRoutingValue();
 
     if (_new) {
-        f_save = new FactAction(this,
-                                "save",
-                                tr("Save"),
-                                "",
-                                "",
-                                FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
-        connect(f_save, &FactAction::triggered, parent, &DatalinkPorts::addTriggered);
+        f_save = new Fact(this, "save", tr("Save"), "", Action | Apply | CloseOnTrigger);
+        connect(f_save, &Fact::triggered, parent, &DatalinkPorts::addTriggered);
         connect(this, &Fact::triggered, this, &DatalinkPort::defaults);
         connect(f_type, &Fact::valueChanged, this, &DatalinkPort::defaultUrl);
         defaults();
     } else {
         copyValuesFrom(port);
-        f_remove = new FactAction(this, "remove", tr("Remove"), "", "", FactAction::ActionRemove);
-        connect(f_remove, &FactAction::triggered, this, &DatalinkPort::removeTriggered);
+        f_remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove);
+        connect(f_remove, &Fact::triggered, this, &DatalinkPort::removeTriggered);
 
         for (int i = 0; i < size(); ++i) {
             connect(child(i), &Fact::valueChanged, parent, &DatalinkPorts::save);

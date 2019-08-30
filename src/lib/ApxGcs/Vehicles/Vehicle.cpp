@@ -56,8 +56,9 @@ Vehicle::Vehicle(Vehicles *vehicles,
     connect(this, &Vehicle::callsignChanged, this, &Vehicle::updateTitle);
     connect(this, &Vehicle::streamTypeChanged, this, &Vehicle::updateStatus);
 
-    f_select = new FactAction(this, "select", tr("Select"), tr("Make this vehicle active"), "select");
-    connect(f_select, &FactAction::triggered, this, [=]() { vehicles->selectVehicle(this); });
+    f_select
+        = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
+    connect(f_select, &Fact::triggered, this, [=]() { vehicles->selectVehicle(this); });
     connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
         f_select->setEnabled(v != this);
     });

@@ -37,7 +37,7 @@ class TelemetryShare : public Share
 public:
     explicit TelemetryShare(Telemetry *telemetry, Fact *parent);
 
-    FactAction *f_stop;
+    Fact *f_stop;
 
 private:
     Telemetry *telemetry;

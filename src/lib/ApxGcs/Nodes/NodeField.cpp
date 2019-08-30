@@ -54,7 +54,8 @@ NodeField::NodeField(NodeItem *node,
         break;
     case DictNode::Float:
         setDataType(Float);
-        //setPrecision(0);
+        if (!name.startsWith("mekf_"))
+            setPrecision(4);
         break;
     case DictNode::Byte:
         setMax(255);

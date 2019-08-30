@@ -36,8 +36,8 @@ public:
     explicit Simulator(Fact *parent = nullptr);
     ~Simulator();
 
-    FactAction *f_launch;
-    FactAction *f_stop;
+    Fact *f_launch;
+    Fact *f_stop;
 
     AppSettingFact *f_type;
 

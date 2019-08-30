@@ -36,7 +36,7 @@ class Releases : public Fact
 public:
     explicit Releases(Fact *parent);
 
-    FactAction *f_sync;
+    Fact *f_sync;
     Fact *f_current;
 
     bool loadFirmware(QString nodeName,

@@ -36,23 +36,13 @@ Simulator::Simulator(Fact *parent)
 
     ApxLog::add(SimLog().categoryName(), "sim.txt", true);
 
-    f_launch = new FactAction(this,
-                              "launch",
-                              tr("Launch"),
-                              tr("Start simulation"),
-                              "play",
-                              FactAction::ActionApply);
-    connect(f_launch, &FactAction::triggered, this, &Simulator::launch);
+    f_launch = new Fact(this, "launch", tr("Launch"), tr("Start simulation"), Action | Apply, "play");
+    connect(f_launch, &Fact::triggered, this, &Simulator::launch);
     //connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_select->setEnabled(v!=this); });
 
-    f_stop = new FactAction(this,
-                            "stop",
-                            tr("Stop"),
-                            tr("Stop simulation"),
-                            "stop",
-                            FactAction::ActionStop);
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop simulation"), Action | Stop, "stop");
     f_stop->setEnabled(false);
-    connect(f_stop, &FactAction::triggered, &pShiva, &QProcess::terminate);
+    connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
     QSettings *settings = AppSettings::settings();
 

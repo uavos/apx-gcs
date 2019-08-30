@@ -12,6 +12,16 @@ CleanButton {
     id: factButton
     property var fact
 
+
+    onFactChanged: {
+        if(!fact)fact=factC.createObject(this)
+    }
+    Component {
+        id: factC
+        Fact {}
+    }
+
+
     iconName: fact.icon
     title: fact.title
     descr: fact.descr
@@ -93,13 +103,6 @@ CleanButton {
             //fact.ParentFact.model.move(drag.source.fact.num,fact.num)
             drag.source.fact.move(fact.num)
         }
-    }
-
-
-
-
-    onFactChanged: {
-        if(!fact)fact=new Fact(this)
     }
 
 

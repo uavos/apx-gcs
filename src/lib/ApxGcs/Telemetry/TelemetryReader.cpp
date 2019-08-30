@@ -40,10 +40,14 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     connect(f_notes, &Fact::valueChanged, this, &TelemetryReader::notesChanged);
 
     //actions
-    f_reload = new FactAction(this, "reload", tr("Reload"), tr("Invalidate cache"), "reload");
-    f_reload->setHideDisabled(false);
+    f_reload = new Fact(this,
+                        "reload",
+                        tr("Reload"),
+                        tr("Invalidate cache"),
+                        Action | ShowDisabled,
+                        "reload");
     f_reload->setEnabled(false);
-    connect(f_reload, &FactAction::triggered, this, &TelemetryReader::reloadTriggered);
+    connect(f_reload, &Fact::triggered, this, &TelemetryReader::reloadTriggered);
 
     //status
     connect(lookup, &LookupTelemetry::recordInfoChanged, this, &TelemetryReader::updateRecordInfo);

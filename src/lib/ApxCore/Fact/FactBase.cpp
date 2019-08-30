@@ -199,7 +199,7 @@ FactBase *FactBase::child(const QString &name) const
 {
     for (int i = 0; i < m_children.size(); ++i) {
         FactBase *item = child(i);
-        if (item && item->name() == name)
+        if (item && (item->objectName() == name || item->name() == name))
             return item;
     }
     return nullptr;
@@ -277,6 +277,9 @@ void FactBase::setTreeType(FactBase::Flag v)
     if (m_treeType == v)
         return;
     m_treeType = v;
+    if (v == Action && parentFact()) {
+        parentFact()->removeChild(this);
+    }
     emit treeTypeChanged();
 }
 FactBase::Flags FactBase::options(void) const

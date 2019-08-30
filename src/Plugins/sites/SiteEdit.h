@@ -47,9 +47,9 @@ public:
     Fact *f_latitude;
     Fact *f_longitude;
 
-    FactAction *a_add;
-    FactAction *a_remove;
-    FactAction *a_missions;
+    Fact *a_add;
+    Fact *a_remove;
+    Fact *a_missions;
 
     LookupMissions *f_missions;
 

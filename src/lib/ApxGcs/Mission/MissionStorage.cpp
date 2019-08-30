@@ -202,7 +202,7 @@ void MissionStorage::saveItemsToDict(QList<DictMission::Item> &items, const Miss
                 continue;
             if (fv == f->f_longitude)
                 continue;
-            e.details.insert(fv->name(), fv->text());
+            e.details.insert(fv->objectName(), fv->text());
         }
         items.append(e);
     }

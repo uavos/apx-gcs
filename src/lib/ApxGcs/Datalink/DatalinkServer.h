@@ -40,7 +40,7 @@ public:
 
     Fact *f_clients;
 
-    FactAction *f_alloff;
+    Fact *f_alloff;
 
 private:
     Datalink *datalink;

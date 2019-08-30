@@ -43,20 +43,22 @@ void NodesBase::addActions()
 {
     if (!parentFact())
         return;
-    if (!actions.isEmpty())
+    if (!actions().isEmpty())
         return;
 
     disconnect(this, &Fact::parentFactChanged, this, &NodesBase::addActions);
 
-    f_revert = new FactAction(this, "revert", tr("Revert"), tr("Undo changes"), "undo");
-    connect(f_revert, &FactAction::triggered, this, &Fact::restore);
+    f_revert = new Fact(this, "revert", tr("Revert"), tr("Undo changes"), Action, "undo");
+    connect(f_revert, &Fact::triggered, this, &Fact::restore);
     connect(this, &Fact::modifiedChanged, f_revert, [=]() { f_revert->setEnabled(modified()); });
     f_revert->setEnabled(modified());
 
     Nodes *nodes = findParent<Nodes *>();
     if (!nodes)
         return;
-    new FactAction(this, nodes->f_upload);
+    Fact *f = nodes->f_upload->createAction(this);
+    f->setOption(IconOnly, false);
+    f->setOption(ShowDisabled, false);
 }
 //=============================================================================
 QVariant NodesBase::data(int col, int role) const

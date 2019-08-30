@@ -47,8 +47,8 @@ private:
     Fact *f_begin;
     Fact *f_end;
 
-    FactAction *f_start;
-    FactAction *f_stop;
+    Fact *f_start;
+    Fact *f_stop;
 
     quint16 bb_read;
     quint32 rec_size;
