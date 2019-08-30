@@ -76,10 +76,18 @@ Dialog {
         if(!json.active)json.active={}
         json.active[settingsName]=currentSetIdx
         json.sets=[]
-        for(var i in sets){
-            var set=sets[i]
-            var values=set.values
+        for(var i=0;i<menu.size;++i){
+            var set=menu.child(i)
+            if(!set.setFacts)continue
+            var values=[]
+            for(var j=0;j<set.size;++j){
+                var n=set.child(j)
+                if(!(n.obj && n.row>=0)) continue
+                values.push(n.obj)
+            }
             if(!values)continue
+            if(set.active)
+                json.active[settingsName]=i
             var o={}
             o.title=set.title
             o.values=values
@@ -87,8 +95,6 @@ Dialog {
         }
         apx.settings.saveFile("numbers.json",JSON.stringify(json,' ',2))
     }
-
-
 
     Component.onDestruction: menu.remove()
     Fact {
