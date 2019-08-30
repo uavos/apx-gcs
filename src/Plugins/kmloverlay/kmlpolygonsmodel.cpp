@@ -7,16 +7,28 @@
 
 KmlPolygonsModel::KmlPolygonsModel() {}
 
-QPointF KmlPolygonsModel::setPolygons(const QList<KmlPolygon> &polygons)
+QPointF KmlPolygonsModel::setPolygons(const QList<KmlPolygon> &kmlPolygons)
 {
+    m_allPolygons.clear();
+
     QPolygonF allPoints;
-    for (auto &p : polygons)
-        allPoints.append(toPolygon(p.data));
+    for (auto &p : kmlPolygons)
+    {
+        QPolygonF polygon = toPolygon(p.data);
+        allPoints.append(polygon);
+
+        KmlPolygonExtended kmlPolygonExtended;
+        kmlPolygonExtended.kmlPolygon = p;
+        kmlPolygonExtended.polygon = polygon;
+        m_allPolygons.append(kmlPolygonExtended);
+    }
 
     auto center = std::accumulate(allPoints.begin(), allPoints.end(), QPointF(0, 0))
                   / allPoints.size();
 
-    m_allPolygons = polygons;
+    beginResetModel();
+    m_viewPolygons.clear();
+    endResetModel();
     updateViewPolygons();
 
     return center;
@@ -24,7 +36,7 @@ QPointF KmlPolygonsModel::setPolygons(const QList<KmlPolygon> &polygons)
 
 void KmlPolygonsModel::setBoundingBox(const QRectF &bb)
 {
-    m_bb = QRectF(bb.x() - bb.width(), bb.y() - bb.height(), bb.width() * 3, bb.height() * 3);
+    m_bb = QRectF(bb.x(), bb.y(), bb.width(), bb.height());
     updateViewPolygons();
 }
 
@@ -46,9 +58,9 @@ QVariant KmlPolygonsModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     if (row >= 0 && row < m_viewPolygons.size()) {
         if (role == Polygon) {
-            result = QVariant::fromValue(m_viewPolygons[row].data);
+            result = QVariant::fromValue(m_viewPolygons[row].kmlPolygon.data);
         } else if (role == Color) {
-            result = m_viewPolygons[row].color;
+            result = m_viewPolygons[row].kmlPolygon.color;
         }
     }
     return result;
@@ -62,13 +74,22 @@ QHash<int, QByteArray> KmlPolygonsModel::roleNames() const
 
 void KmlPolygonsModel::updateViewPolygons()
 {
-    beginResetModel();
-    m_viewPolygons.clear();
-    for (auto &p : m_allPolygons) {
-        if (toPolygon(p.data).intersects(m_bb))
-            m_viewPolygons.append(p);
+    for (int i = 0; i < m_viewPolygons.size(); i++) {
+        if(!m_viewPolygons[i].polygon.intersects(m_bb)) {
+            beginRemoveRows(QModelIndex(), i, i);
+            m_viewPolygons.removeAt(i);
+            endRemoveRows();
+        }
     }
-    endResetModel();
+
+    for (auto &p : m_allPolygons) {
+        if (!m_viewPolygons.contains(p) && p.polygon.intersects(m_bb)) {
+            int row = m_viewPolygons.size();
+            beginInsertRows(QModelIndex(), row, row);
+            m_viewPolygons.append(p);
+            endInsertRows();
+        }
+    }
 }
 
 QPolygonF KmlPolygonsModel::toPolygon(const QGeoPolygon &geoPolygon)

@@ -9,6 +9,7 @@ KmlParser::KmlParser() {}
 
 void KmlParser::parse(const QByteArray &data)
 {
+    m_polygonId = 0;
     m_polygons.clear();
 
     QString errorMessage;
@@ -57,6 +58,7 @@ void KmlParser::polygonCallback(const QDomElement &el, const QColor &color)
 {
     KmlPolygon polygon;
     polygon.color = color;
+    polygon.id = m_polygonId++;
     auto cbouter = std::bind(&KmlParser::polygonOuterCallback, this, _1, std::ref(polygon));
     auto cbinner = std::bind(&KmlParser::polygonInnerCallback, this, _1, std::ref(polygon));
     iterateOverChildrenElements(el, "outerBoundaryIs", cbouter);

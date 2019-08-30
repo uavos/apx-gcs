@@ -17,6 +17,8 @@ ApxApp.ApxPlugin {
     Depends { name: "qmlqrc" }
 
     files: [
+        "kmlgeopolygon.cpp",
+        "kmlgeopolygon.h",
         "kmloverlayplugin.h",
         "kmloverlay.cpp",
         "kmloverlay.h",

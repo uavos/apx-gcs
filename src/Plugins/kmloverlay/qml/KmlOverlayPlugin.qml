@@ -11,8 +11,8 @@ AppPlugin {
 
     function updateMap()
     {
-        if(ui.mapbase) {
-            ui.mapbase.addMapItemGroup(plugin.item)
+        if(ui.map) {
+            ui.map.addMapItemGroup(plugin.item)
         }
     }
 

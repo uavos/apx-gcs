@@ -3,11 +3,14 @@
 #include "ApxApp.h"
 #include "kmlparser.h"
 #include <QFileDialog>
+#include "kmlgeopolygon.h"
 
 KmlOverlay::KmlOverlay(Fact *parent)
     : Fact(parent, "kmloverlay", tr("KML Overlay"), tr("KML objects overlay"), Group)
     , m_kmlPolygons(new KmlPolygonsModel())
 {
+    KmlGeoPolygon::registerQmlType();
+
     setIcon("google-earth");
 
     f_open = new Fact(this, "open", tr("Open..."), tr("Open KML file"));

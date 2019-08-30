@@ -1,7 +1,8 @@
-import QtQuick 2.5
+import QtQuick 2.13
 import QtLocation 5.13
 import QtPositioning 5.13
-import QtQml 2.12
+import QtQml 2.13
+import KmlGeoPolygon 1.0
 
 MapItemGroup {
     id: places
@@ -19,14 +20,21 @@ MapItemGroup {
         model: apx.tools.kmloverlay.kmlPolygons
 
         z: 1
-        delegate: MapPolygon {
-            color: polygonColor
-            geoShape: polygon
+        delegate: MapQuickItem
+        {
+            coordinate: apx.tools.map.area.boundingGeoRectangle().topLeft
+
+            sourceItem: KmlGeoPolygon {
+                id: kmlPolygon
+                area: apx.tools.map.area
+                map: ui.map
+                geoPolygon: polygon
+                color: polygonColor
+            }
         }
     }
 
     Component.onCompleted: {
         map.addMapItemView(borderPointsView)
-
     }
 }

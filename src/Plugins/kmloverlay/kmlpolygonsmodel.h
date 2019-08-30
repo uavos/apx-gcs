@@ -12,7 +12,7 @@ public:
     enum Roles { Polygon = Qt::UserRole + 1, Color };
     KmlPolygonsModel();
 
-    QPointF setPolygons(const QList<KmlPolygon> &polygons);
+    QPointF setPolygons(const QList<KmlPolygon> &kmlPolygons);
     void setBoundingBox(const QRectF &bb);
 
     int rowCount(const QModelIndex &index) const override;
@@ -21,9 +21,18 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    struct KmlPolygonExtended
+    {
+        KmlPolygon kmlPolygon;
+        QPolygonF polygon;
+        bool operator==(const KmlPolygonExtended &other) {
+            return kmlPolygon.id == other.kmlPolygon.id;
+        }
+    };
+
     QPolygonF m_bb;
-    QList<KmlPolygon> m_allPolygons;
-    QList<KmlPolygon> m_viewPolygons;
+    QList<KmlPolygonExtended> m_allPolygons;
+    QList<KmlPolygonExtended> m_viewPolygons;
 
     void updateViewPolygons();
 

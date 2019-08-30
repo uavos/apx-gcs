@@ -8,6 +8,7 @@
 
 struct KmlPolygon
 {
+    uint64_t id;
     QColor color;
     QGeoPolygon data;
 };
@@ -24,6 +25,7 @@ private:
 
     QList<KmlPolygon> m_polygons;
     QDomDocument m_dom;
+    uint64_t m_polygonId;
 
     void iterateOverChildrenElements(const QDomElement &parent,
                                      const QString &tagname,
