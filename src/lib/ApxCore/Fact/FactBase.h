@@ -114,6 +114,8 @@ signals:
     void itemToBeMoved(int row, int dest, FactBase *item);
     void itemMoved(FactBase *item);
 
+    void actionsUpdated();
+
     void removed();
 
 private:

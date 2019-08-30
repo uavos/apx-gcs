@@ -90,116 +90,138 @@ Dialog {
 
 
 
-    FactObject {
+    Component.onDestruction: menu.remove()
+    Fact {
         id: menu
-        Component.onCompleted: updateItems()
+        name: settingsName
+        treeType: Fact.Group
+        Component.onCompleted: {
+            //ensure mandala linked to vehicle
+            parentFact=apx.vehicles.current
+            //parent=editor
+
+            updateItems()
+        }
+
         function updateItems()
         {
-            clearChildren()
+            removeAll()
             for(var i=0;i<sets.length;++i){
-                add(menuSetC.createObject(this,{"setIdx": i}))
+                var c=menuSetC.createObject(menu,{"setIdx": i})
+                c.parentFact=menu
             }
         }
-        actions: [
-            FactObject {
-                title: qsTr("Add set")
-                flags: FactAction.ActionApply
-                icon: "plus-circle"
-                onTriggered: {
-                    var obj={}
-                    obj.title="#"+(sets.length+1)
-                    obj.values=[]
-                    sets.unshift(obj)
-                    menu.updateItems()
-                    factMenu.openFact(menu.childFact(0))
-                }
+        Fact {
+            title: qsTr("Add set")
+            treeType: Fact.Action
+            dataType: Fact.Apply
+            icon: "plus-circle"
+            onTriggered: {
+                var obj={}
+                obj.title="#"+(sets.length+1)
+                obj.values=[]
+                sets.unshift(obj)
+                menu.updateItems()
+                factMenu.openFact(menu.child(0))
             }
-        ]
+        }
     }
     Component {
         id: menuSetC
-        FactObject {
+        Fact {
             id: menuSet
             property int setIdx
             title: sets[setIdx].title
             treeType: Fact.Group
             active: setIdx==currentSetIdx
             property int editorsCnt: 1
-            FactObject {
+            Fact {
                 id: setTitle
                 title: qsTr("Description")
                 dataType: Fact.Text
                 icon: "rename-box"
-                m_value: sets[setIdx].title
-                onValueUpdated: {
+                value: sets[setIdx].title
+                onValueChanged: {
                     if(setIdx<sets.length){
-                        sets[setIdx].title=v
-                        menuSet.title=v
+                        sets[setIdx].title=value
+                        menuSet.title=value
                     }
                 }
             }
+            property var setFacts: ([])
 
             Component.onCompleted: updateSetItems()
             function updateSetItems()
             {
-                onChildrenChanged.disconnect(updateDescr)
-                clearChildren(editorsCnt)
-                var list=sets[setIdx].values
-                var c=menuNumberC.createObject(this,{"setIdx": setIdx}) //add number menu
-                c.addTriggered.connect(updateSetItems)
-                add(c)
-                for(var i=0;i<list.length;++i){
-                    if(!list[i].bind)continue
-                    if(list[i].bind==="")continue
-                    c=menuNumberC.createObject(this,{"setIdx": setIdx, "row": i})
-                    c.titleChanged.connect(updateDescr)
-                    c.removeTriggered.connect(updateDescr)
-                    add(c)
+                onSizeChanged.disconnect(updateDescr)
+                for(var i in setFacts){
+                    setFacts[i].remove()
+                }
+                setFacts=[]
+                var c=menuNumberC.createObject(menuSet,{"setIdx": setIdx}) //add number menu
+                c.addTriggered.connect(function(){addNewItem(sets[setIdx].values.length-1)})
+                c.parentFact=menuSet
+                setFacts.push(c)
+
+                for(i in sets[setIdx].values){
+                    addNewItem(i)
                 }
                 updateDescr()
-                onChildrenChanged.connect(updateDescr)
+                onSizeChanged.connect(updateDescr)
+            }
+            function addNewItem(i)
+            {
+                var list=sets[setIdx].values
+                if(!list[i].bind)return
+                if(list[i].bind==="")return
+                var c=menuNumberC.createObject(menuSet,{"setIdx": setIdx, "row": i})
+                c.titleChanged.connect(updateDescr)
+                c.removeTriggered.connect(updateDescr)
+                c.parentFact=menuSet
+                setFacts.push(c)
             }
             function updateDescr()
             {
                 if(!menuSet)return
                 menuSet.descr=""
                 var s=[]
-                for(var i=0;i<size;++i){
-                    if(i<(editorsCnt+1))continue
-                    s.push(childFact(i).title)
+                for(var i in setFacts){
+                    s.push(setFacts[i].title)
                 }
                 menuSet.descr=s.join(',')
             }
 
-            actions: [
-                FactObject {
-                    title: qsTr("Select")
-                    flags: FactAction.ActionApply
-                    icon: "check-circle"
-                    visible: !menuSet.active
-                    onTriggered: {
-                        factMenu.back()
-                        currentSetIdx=menuSet.setIdx
-                    }
-                },
-                FactObject {
-                    title: qsTr("Remove set")+" ("+menuSet.title+")"
-                    flags: FactAction.ActionRemove
-                    icon: "delete"
-                    onTriggered: {
-                        sets.splice(setIdx,1)
-                        menuSet.destroy()
-                        menu.updateItems()
-                    }
+            Fact {
+                treeType: Fact.Action
+                dataType: Fact.Apply
+                title: qsTr("Select")
+                icon: "check-circle"
+                visible: !menuSet.active
+                onTriggered: {
+                    factMenu.back()
+                    currentSetIdx=menuSet.setIdx
                 }
-            ]
+            }
+            Fact {
+                treeType: Fact.Action
+                dataType: Fact.Remove
+                title: qsTr("Remove set")+" ("+menuSet.title+")"
+                icon: "delete"
+                onTriggered: {
+                    sets.splice(setIdx,1)
+                    menuSet.destroy()
+                    menu.updateItems()
+                }
+            }
         }
     }
 
     Component {
         id: menuNumberC
-        FactObject {
+        Fact {
             id: menuNumber
+            treeType: Fact.Group
+
             property int setIdx
             property int row: -1
 
@@ -229,30 +251,30 @@ Dialog {
                 else descr=""
             }
             Component.onCompleted: updateDescr()
-            FactObject {
+            Fact {
                 id: mFact
                 title: qsTr("Binding")
                 descr: qsTr("Fact value")
                 dataType: Fact.Mandala
-                //m_value: obj?obj.bind:""
-                onValueUpdated: {
-                    mBind.setValue(value)
-                    m_value=""
+                onValueChanged: {
+                    //console.log(text)
+                    mBind.setValue(text)
+                    value=""
                 }
             }
-            FactObject {
+            Fact {
                 id: mBind
                 title: qsTr("Expression")
                 descr: "Math.atan(m.pitch.value/m.roll.value)"
                 dataType: Fact.Text
-                m_value: obj.bind?obj.bind:""
-                onValueUpdated: {
-                    var s=v.trim()
-                    if(s!==v){
+                value: obj.bind?obj.bind:""
+                onValueChanged: {
+                    var s=value.trim()
+                    if(s!==value){
                         setValue(s)
                         return
                     }
-                    if(v){
+                    if(value){
                         obj.bind=value
                         updateDescr()
                     }else if(obj.bind){
@@ -260,80 +282,81 @@ Dialog {
                     }
                 }
             }
-            FactObject {
+            Fact {
                 title: qsTr("Title")
                 descr: qsTr("Label text")
                 dataType: Fact.Text
-                m_value: obj.title?obj.title:""
-                onValueUpdated: {
+                value: obj.title?obj.title:""
+                onValueChanged: {
                     obj.title=value
                     updateDescr()
                 }
             }
-            FactObject {
+            Fact {
                 title: qsTr("Precision")
                 descr: qsTr("Digits after decimal point")
                 dataType: Fact.Text
-                m_value: obj.prec?obj.prec:""
-                onValueUpdated: {
+                value: obj.prec?obj.prec:""
+                onValueChanged: {
                     obj.prec=value
                     updateDescr()
                 }
             }
-            FactObject {
+            Fact {
                 title: qsTr("Warning")
                 descr: qsTr("Expression for warning")
                 dataType: Fact.Text
-                m_value: obj.warn?obj.warn:""
-                onValueUpdated: {
+                value: obj.warn?obj.warn:""
+                onValueChanged: {
                     obj.warn=value
                     updateDescr()
                 }
             }
-            FactObject {
+            Fact {
                 title: qsTr("Alarm")
                 descr: "value>1.8 || (value>0 && value<1)"
                 dataType: Fact.Text
-                m_value: obj.alarm?obj.alarm:""
-                onValueUpdated: {
+                value: obj.alarm?obj.alarm:""
+                onValueChanged: {
                     obj.alarm=value
                     updateDescr()
                 }
             }
-            FactObject {
+            Fact {
                 title: qsTr("Action")
                 descr: "m.stage.value=100"
                 dataType: Fact.Text
-                m_value: obj.act?obj.act:""
-                onValueUpdated: {
+                value: obj.act?obj.act:""
+                onValueChanged: {
                     obj.act=value
                     updateDescr()
                 }
             }
-            actions: [
-                FactObject {
-                    title: qsTr("Add")
-                    visible: row<0 && mBind.value
-                    flags: FactAction.ActionApply
-                    icon: "plus-circle"
-                    onTriggered: {
-                        list.push(obj)
-                        factMenu.back()
-                        addTriggered()
-                    }
-                },
-                FactObject {
-                    title: qsTr("Remove")
-                    visible: row>=0
-                    flags: FactAction.ActionRemove
-                    icon: "delete"
-                    onTriggered: {
-                        list.splice(row,1)
-                        menuNumber.destroy()
-                        removeTriggered()
-                    }
+            //actions
+            Fact {
+                treeType: Fact.Action
+                dataType: Fact.Apply
+                title: qsTr("Add")
+                enabled: (row<0 && mBind && mBind.value)?true:false
+                icon: "plus-circle"
+                onTriggered: {
+                    list.push(obj)
+                    factMenu.back()
+                    addTriggered()
                 }
-            ]
+            }
+            Fact {
+                treeType: Fact.Action
+                dataType: Fact.Remove
+                title: qsTr("Remove")
+                visible: row>=0
+                icon: "delete"
+                onTriggered: {
+                    list.splice(row,1)
+                    menuNumber.destroy()
+                    removeTriggered()
+                }
+            }
         }
     }
 }

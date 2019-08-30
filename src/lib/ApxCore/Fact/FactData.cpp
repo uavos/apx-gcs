@@ -554,19 +554,40 @@ QString FactData::mandalaToString(quint16 mid) const
 {
     if (bindedFactData)
         return bindedFactData->mandalaToString(mid);
-    return QString::number(mid);
+    QString s;
+    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
+        const FactData *f = static_cast<const FactData *>(i);
+        s = f->mandalaToString(mid);
+        if (!s.isEmpty())
+            break;
+    }
+    return s;
 }
 quint16 FactData::stringToMandala(const QString &s) const
 {
     if (bindedFactData)
         return bindedFactData->stringToMandala(s);
-    return s.toUInt();
+    quint16 mid = 0;
+    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
+        const FactData *f = static_cast<const FactData *>(i);
+        mid = f->stringToMandala(s);
+        if (mid)
+            break;
+    }
+    return mid;
 }
 const QStringList *FactData::mandalaNames() const
 {
     if (bindedFactData)
         return bindedFactData->mandalaNames();
-    return nullptr;
+    const QStringList *st = nullptr;
+    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
+        const FactData *f = static_cast<const FactData *>(i);
+        st = f->mandalaNames();
+        if (st)
+            break;
+    }
+    return st;
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)

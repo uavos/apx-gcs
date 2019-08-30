@@ -484,6 +484,36 @@ QString Vehicle::confTitle() const
 }
 //=============================================================================
 //=============================================================================
+QString Vehicle::mandalaToString(quint16 mid) const
+{
+    VehicleMandalaFact *mf = f_mandala->factById(mid);
+    return mf ? mf->title() : QString();
+}
+quint16 Vehicle::stringToMandala(const QString &s) const
+{
+    if ((!s.isEmpty()) && s != "0") {
+        VehicleMandalaFact *mf;
+        //try int
+        bool ok = false;
+        uint i = s.toUInt(&ok);
+        if (ok && i < 0xFFFF) {
+            mf = f_mandala->factById(static_cast<quint16>(i));
+            if (mf)
+                return mf->id();
+        }
+        //try text
+        mf = f_mandala->factByName(s);
+        if (mf)
+            return mf->id();
+    }
+    return 0;
+}
+const QStringList *Vehicle::mandalaNames() const
+{
+    return &f_mandala->names;
+}
+//=============================================================================
+//=============================================================================
 Vehicle::StreamType Vehicle::streamType(void) const
 {
     return m_streamType;

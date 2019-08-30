@@ -70,6 +70,9 @@ public:
     virtual void bind(FactData *fact);
 
     //Mandala support - must override in derived classes
+    // to collect dict ids from vehicle mandala
+    // default impl searches for parent facts and
+    // returns the first nonzero data found
     virtual QString mandalaToString(quint16 mid) const;
     virtual quint16 stringToMandala(const QString &s) const;
     virtual const QStringList *mandalaNames() const;

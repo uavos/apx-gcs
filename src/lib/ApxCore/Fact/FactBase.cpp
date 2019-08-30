@@ -59,9 +59,14 @@ void FactBase::addChild(FactBase *item)
 {
     item->setParent(this);
     if (item->treeType() == Action) {
-        m_actions.append(item);
+        if (!m_actions.contains(item)) {
+            m_actions.append(item);
+            emit actionsUpdated();
+        }
         return;
     }
+    if (m_children.contains(item))
+        return;
     emit itemToBeInserted(m_children.size(), item);
     m_children.append(item);
     updateChildrenNums();
@@ -70,7 +75,12 @@ void FactBase::addChild(FactBase *item)
 }
 void FactBase::removeChild(FactBase *item)
 {
-    int i = m_children.indexOf(item);
+    int i = m_actions.indexOf(item);
+    if (i >= 0) {
+        m_actions.removeAll(item);
+        emit actionsUpdated();
+    }
+    i = m_children.indexOf(item);
     if (i < 0)
         return;
     emit itemToBeRemoved(i, item);
@@ -277,10 +287,11 @@ void FactBase::setTreeType(FactBase::Flag v)
     if (m_treeType == v)
         return;
     m_treeType = v;
+    emit treeTypeChanged();
     if (v == Action && parentFact()) {
         parentFact()->removeChild(this);
+        parentFact()->addChild(this);
     }
-    emit treeTypeChanged();
 }
 FactBase::Flags FactBase::options(void) const
 {

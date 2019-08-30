@@ -22,10 +22,10 @@ FactMenuListView {
         height: visible?MenuStyle.itemSize:0
         width: listView.width
         onTriggered: {
-            parentFact.setValue(fact.title)
+            parentFact.setValue(modelData.title)
             factMenu.back()
         }
-        visible: fact && fact.visible && (listView.filter=="" || fact.title.startsWith(listView.filter))
+        visible: fact && fact.visible && (listView.filter=="" || fact.title.toLowerCase().includes(listView.filter.toLowerCase()))
     }
     contentsActions: [
         FactMenuAction {
@@ -52,10 +52,10 @@ FactMenuListView {
             border.width: 0
             color: Material.background
         }
-        onTextChanged: listView.filter=text
+        onTextChanged: listView.filter=text.trim()
         onAccepted: {
-            var f=mandala.fact(text,false)
-            console.log(f)
+            var f=mandala.findChild(text,false)
+            //console.log(f)
             if(f){
                 parentFact.setValue(f.title)
                 factMenu.back()

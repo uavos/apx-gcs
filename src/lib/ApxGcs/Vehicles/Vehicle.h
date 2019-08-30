@@ -88,7 +88,7 @@ public:
                      VehicleClass vclass,
                      ProtocolVehicle *protocol);
 
-    ~Vehicle();
+    ~Vehicle() override;
 
     VehicleMandala *f_mandala;
     Nodes *f_nodes;
@@ -115,6 +115,11 @@ public:
     Q_INVOKABLE bool isLocal() const;
     Q_INVOKABLE bool isReplay() const;
     Q_INVOKABLE bool isTemporary() const;
+
+    //Mandala support
+    QString mandalaToString(quint16 mid) const override;
+    quint16 stringToMandala(const QString &s) const override;
+    const QStringList *mandalaNames() const override;
 
 private:
     QTimer dlinkReqTimer;
@@ -200,7 +205,7 @@ public:
     void setVehicleClass(const VehicleClass v);
     void setVehicleClass(const QString &v);
 
-    QString info(void) const;
+    QString info(void) const override;
 
     bool follow(void) const;
     void setFollow(const bool &v);

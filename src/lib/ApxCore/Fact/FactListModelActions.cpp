@@ -26,7 +26,12 @@
 FactListModelActions::FactListModelActions(Fact *parent)
     : QAbstractListModel(parent)
     , fact(parent)
-{}
+{
+    connect(parent, &Fact::actionsUpdated, this, [this]() {
+        beginResetModel();
+        endResetModel();
+    });
+}
 //=============================================================================
 //=============================================================================
 int FactListModelActions::rowCount(const QModelIndex &parent) const
