@@ -23,6 +23,10 @@
 #include "DatalinkConnection.h"
 #include "Datalink.h"
 #include <ApxLog.h>
+
+#include <Dictionary/MandalaIndex.h>
+#include <Xbus/XbusPacket.h>
+#include <Xbus/XbusVehicle.h>
 //=============================================================================
 DatalinkConnection::DatalinkConnection(Fact *parent,
                                        const QString &name,
@@ -34,11 +38,14 @@ DatalinkConnection::DatalinkConnection(Fact *parent,
     , _allowed(true)
     , m_rxNetwork(rxNetwork)
     , m_txNetwork(txNetwork)
+    , m_blockControls(false)
+    , m_blockService(false)
 {
     connect(this, &Fact::valueChanged, this, [this]() { _allowed = value().toBool(); });
 
     connect(this, &DatalinkConnection::rxNetworkChanged, this, &DatalinkConnection::updateDescr);
     connect(this, &DatalinkConnection::txNetworkChanged, this, &DatalinkConnection::updateDescr);
+    connect(this, &DatalinkConnection::blockControlsChanged, this, &DatalinkConnection::updateDescr);
     updateDescr();
 }
 //=============================================================================
@@ -56,7 +63,11 @@ void DatalinkConnection::updateDescr()
         rx.append("NO");
     if (tx.isEmpty())
         tx.append("NO");
-    setDescr(QString("RX: %1 / TX: %2").arg(rx.join(',')).arg(tx.join(',')));
+
+    QString s = QString("RX: %1 / TX: %2").arg(rx.join(',')).arg(tx.join(','));
+    if (m_blockControls)
+        s.append(" NOCTR");
+    setDescr(s);
 }
 //=============================================================================
 void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
@@ -75,6 +86,12 @@ void DatalinkConnection::readDataAvailable()
         return;
     if (!(_allowed && active()))
         return;
+    bool ctr = isControlPacket(packet);
+    if (m_blockControls && ctr)
+        return;
+    if (m_blockService && (!ctr))
+        return;
+
     emit packetReceived(packet, m_rxNetwork);
 }
 void DatalinkConnection::opened()
@@ -90,6 +107,24 @@ void DatalinkConnection::closed()
     setActive(false);
 }
 //=============================================================================
+bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
+{
+    uint16_t psize = static_cast<uint16_t>(packet.size());
+    const uint8_t *pdata = reinterpret_cast<const uint8_t *>(packet.data());
+    XbusStreamReader stream(pdata, psize);
+    if (stream.tail() < sizeof(xbus::pid_t))
+        return true;
+    xbus::pid_t pid = stream.read<xbus::pid_t>();
+    if (pid == mandala::idx_service || pid == mandala::idx_xpdr || pid == mandala::idx_ident)
+        return false;
+
+    if (pid != mandala::idx_dlink)
+        return true;
+
+    stream.read<xbus::vehicle::squawk_t>();
+    pid = stream.read<xbus::pid_t>();
+    return pid != mandala::idx_service;
+}
 //=============================================================================
 void DatalinkConnection::open()
 {
@@ -132,5 +167,27 @@ void DatalinkConnection::setRxNetwork(const quint16 &v)
         return;
     m_rxNetwork = v;
     emit rxNetworkChanged();
+}
+bool DatalinkConnection::blockControls() const
+{
+    return m_blockControls;
+}
+void DatalinkConnection::setBlockControls(const bool &v)
+{
+    if (m_blockControls == v)
+        return;
+    m_blockControls = v;
+    emit blockControlsChanged();
+}
+bool DatalinkConnection::blockService() const
+{
+    return m_blockService;
+}
+void DatalinkConnection::setBlockService(const bool &v)
+{
+    if (m_blockService == v)
+        return;
+    m_blockService = v;
+    emit blockServiceChanged();
 }
 //=============================================================================

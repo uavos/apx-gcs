@@ -37,6 +37,7 @@ public:
 
     Fact *f_listen;
     Fact *f_extctr;
+    Fact *f_extsrv;
 
     Fact *f_clients;
 

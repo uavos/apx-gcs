@@ -32,6 +32,10 @@ class DatalinkConnection : public Fact
     Q_PROPERTY(quint16 rxNetwork READ rxNetwork WRITE setRxNetwork NOTIFY rxNetworkChanged)
     Q_PROPERTY(quint16 txNetwork READ txNetwork WRITE setTxNetwork NOTIFY txNetworkChanged)
 
+    Q_PROPERTY(
+        bool blockControls READ blockControls WRITE setBlockControls NOTIFY blockControlsChanged)
+    Q_PROPERTY(bool blockService READ blockService WRITE setBlockService NOTIFY blockServiceChanged)
+
 public:
     explicit DatalinkConnection(Fact *parent,
                                 const QString &name,
@@ -45,6 +49,9 @@ protected:
 
     virtual QByteArray read();
     virtual void write(const QByteArray &packet);
+
+private:
+    bool isControlPacket(const QByteArray &packet) const;
 
 protected slots:
     void updateDescr();
@@ -71,12 +78,23 @@ public:
     quint16 txNetwork() const;
     void setTxNetwork(const quint16 &v);
 
+    bool blockControls() const;
+    void setBlockControls(const bool &v);
+    bool blockService() const;
+    void setBlockService(const bool &v);
+
 private:
     quint16 m_rxNetwork;
     quint16 m_txNetwork;
+
+    bool m_blockControls;
+    bool m_blockService;
 signals:
     void rxNetworkChanged();
     void txNetworkChanged();
+
+    void blockControlsChanged();
+    void blockServiceChanged();
 };
 //=============================================================================
 #endif
