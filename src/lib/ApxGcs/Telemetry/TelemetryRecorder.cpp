@@ -37,6 +37,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     , v_dl_timestamp("dl_timestamp", vehicle)
     , dl_timestamp_s(0)
     , dl_timestamp_t0(0)
+    , m_currentTimestamp(0)
     , m_time(0)
 {
     setIcon("record-rec");
@@ -175,6 +176,7 @@ quint64 TelemetryRecorder::getDataTimestamp()
     } else if (vehicle->streamType() != Vehicle::TELEMETRY)
         t += static_cast<uint>(uplinkTime.elapsed());
     setTime(t / 1000);
+    m_currentTimestamp = t;
     return t;
 }
 //=============================================================================
@@ -377,6 +379,11 @@ void TelemetryRecorder::reset(void)
     dl_timestamp_t0 = 0;
     recValues.clear();
     setTime(0, true);
+}
+//=============================================================================
+quint64 TelemetryRecorder::currentTimstamp() const
+{
+    return m_currentTimestamp;
 }
 //=============================================================================
 quint64 TelemetryRecorder::time() const

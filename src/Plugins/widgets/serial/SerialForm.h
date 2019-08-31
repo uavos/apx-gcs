@@ -25,6 +25,8 @@ private:
     //Comm uart;
     QSocketNotifier *socketNotifier;
 
+    QFile dumpFile;
+
 private slots:
     void btnReset();
     void btnSend();
