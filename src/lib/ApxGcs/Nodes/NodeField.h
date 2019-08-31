@@ -49,12 +49,12 @@ public:
     QStringList groups;
 
     //Fact override
-    bool setValue(const QVariant &v); //override
-    void setModified(const bool &v, const bool &recursive = false);
+    bool setValue(const QVariant &v) override;
+    void setModified(const bool &v, const bool &recursive = false) override;
 
     QVariant uploadableValue(void) const;
 
-    void hashData(QCryptographicHash *h) const;
+    void hashData(QCryptographicHash *h) const override;
 
     NodeItem *node;
     PawnCompiler *pawncc;

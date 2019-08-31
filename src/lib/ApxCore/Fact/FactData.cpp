@@ -318,6 +318,7 @@ void FactData::setModified(const bool &v, const bool &recursive)
     if (m_modified == v)
         return;
     m_modified = v;
+    //qDebug() << path();
     emit modifiedChanged();
 }
 int FactData::precision(void) const

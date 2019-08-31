@@ -126,10 +126,11 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         if (!a_revert) {
             if (!m.isEmpty())
                 m.addSeparator();
-            a_revert = new QAction(f->f_revert->descr(), &m);
+            a_revert = new QActionFact(f->f_revert);
+            a_revert->setParent(&m);
             m.addAction(a_revert);
         }
-        connect(a_revert, &QAction::triggered, f->f_revert, &Fact::trigger);
+        //connect(a_revert, &QAction::triggered, f->f_revert, &Fact::trigger);
     }
 
     //node tools

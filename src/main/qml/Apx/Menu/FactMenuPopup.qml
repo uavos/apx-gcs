@@ -77,6 +77,7 @@ Popup {
             //popupItem.pos = Qt.point(popupItem.pos.x+delta.x,popupItem.pos.y+delta.y)
             popupItem.x+=delta.x
             popupItem.y+=delta.y
+            popupItem.pinned=true
             //console.log(mouse.x-clickPos.x,mouse.y-clickPos.y)
         }
         onDoubleClicked: popupItem.pinned=true

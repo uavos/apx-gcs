@@ -46,8 +46,8 @@ public:
         //type of item [treeType]
         TypeMask = 0x0000000F,
         Root = 1,
-        Group = 2,
-        Action = 3,
+        Group = 2,  // always expandable group
+        Action = 3, // action to be triggered and shown as button
 
         //appearance options [options]
         OptsMask = 0x0000FFF0,

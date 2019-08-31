@@ -162,10 +162,10 @@ public:
     void setActionsModel(FactListModelActions *v);
 
     bool enabled() const;
-    void setEnabled(const bool &v);
+    void setEnabled(const bool v);
 
     bool visible() const;
-    void setVisible(const bool &v);
+    void setVisible(const bool v);
 
     QString section() const;
     void setSection(const QString &v);
@@ -174,10 +174,10 @@ public:
     void setStatus(const QString &v);
 
     bool active() const;
-    void setActive(const bool &v);
+    void setActive(const bool v);
 
     int progress() const;
-    void setProgress(const int &v);
+    void setProgress(const int v);
 
     QString icon() const;
     void setIcon(const QString &v);

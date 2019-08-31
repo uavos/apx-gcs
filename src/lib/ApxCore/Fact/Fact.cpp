@@ -515,8 +515,9 @@ bool Fact::enabled() const
         return bind()->enabled();
     return m_enabled && m_parentEnabled;
 }
-void Fact::setEnabled(const bool &v)
+void Fact::setEnabled(const bool v)
 {
+    //qDebug() << "BEGIN" << path() << v << m_parentEnabled;
     if (bind()) {
         bind()->setEnabled(v);
         return;
@@ -529,6 +530,11 @@ void Fact::setEnabled(const bool &v)
     for (int i = 0; i < size(); ++i) {
         child(i)->updateParentEnabled();
     }
+    for (int i = 0; i < actions().size(); ++i) {
+        Fact *f = static_cast<Fact *>(actions().at(i));
+        f->updateParentEnabled();
+    }
+    //qDebug() << "END" << path() << v << m_parentEnabled;
 }
 void Fact::updateParentEnabled()
 {
@@ -544,7 +550,7 @@ bool Fact::visible() const
 {
     return m_visible;
 }
-void Fact::setVisible(const bool &v)
+void Fact::setVisible(const bool v)
 {
     if (m_visible == v)
         return;
@@ -553,6 +559,10 @@ void Fact::setVisible(const bool &v)
 
     for (int i = 0; i < size(); ++i) {
         child(i)->updateParentVisible();
+    }
+    for (int i = 0; i < actions().size(); ++i) {
+        Fact *f = static_cast<Fact *>(actions().at(i));
+        f->updateParentVisible();
     }
 }
 void Fact::updateParentVisible()
@@ -604,7 +614,7 @@ bool Fact::active() const
         return bind()->active();
     return m_active;
 }
-void Fact::setActive(const bool &v)
+void Fact::setActive(const bool v)
 {
     if (bind()) {
         bind()->setActive(v);
@@ -621,7 +631,7 @@ int Fact::progress() const
         return bind()->progress();
     return m_progress;
 }
-void Fact::setProgress(const int &v)
+void Fact::setProgress(const int v)
 {
     if (bind()) {
         bind()->setProgress(v);

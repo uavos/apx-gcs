@@ -9,6 +9,8 @@ CleanButton {
     id: control
     showText: true
 
+    enabled: fact.size
+
     readonly property var fact: apx.vehicles.current.warnings
     readonly property int showTimeout: 5000
     readonly property int showTimes: 3

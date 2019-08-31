@@ -337,7 +337,7 @@ void FactBase::setName(const QString &v)
 }
 FactBase *FactBase::parentFact() const
 {
-    return m_parentFact;
+    return m_parentFact.isNull() ? nullptr : m_parentFact;
 }
 void FactBase::setParentFact(FactBase *v)
 {
