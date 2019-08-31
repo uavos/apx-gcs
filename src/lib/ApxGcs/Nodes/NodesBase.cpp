@@ -48,8 +48,7 @@ void NodesBase::addActions()
 
     disconnect(this, &Fact::parentFactChanged, this, &NodesBase::addActions);
 
-    f_revert
-        = new Fact(this, "revert", tr("Revert") + " " + path(), tr("Undo changes"), Action, "undo");
+    f_revert = new Fact(this, "revert", tr("Revert"), tr("Undo changes"), Action, "undo");
     connect(f_revert, &Fact::triggered, this, &Fact::restore);
     connect(this, &Fact::modifiedChanged, f_revert, [this]() {
         //qDebug() << "modifiedChanged" << f_revert->path() << modified();
