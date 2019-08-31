@@ -62,6 +62,8 @@ bool ProtocolVehicle::unpack(QByteArray packet)
     xbus::pid_t pid = stream.read<xbus::pid_t>();
     QByteArray payload(packet.mid(stream.position()));
 
+    //qDebug() << ident.callsign << pid;
+
     switch (pid) {
     default:
         emit dlinkData(pid, payload);

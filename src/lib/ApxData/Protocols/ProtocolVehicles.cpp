@@ -50,7 +50,8 @@ bool ProtocolVehicles::unpack(QByteArray packet)
     if (stream.tail() < sizeof(xbus::pid_t))
         return false;
 
-    switch (stream.read<xbus::pid_t>()) {
+    xbus::pid_t pid = stream.read<xbus::pid_t>();
+    switch (pid) {
     case mandala::idx_xpdr: { //transponder from UAV received
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         if (xbus::vehicle::Xpdr::psize() != stream.tail())

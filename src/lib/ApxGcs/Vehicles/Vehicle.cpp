@@ -31,7 +31,10 @@
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
 
+namespace mandala {
 #include <Mandala/MandalaConstants.h>
+#include <Mandala/MandalaIndexes.h>
+}; // namespace mandala
 //=============================================================================
 Vehicle::Vehicle(Vehicles *vehicles,
                  QString callsign,
@@ -142,6 +145,11 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 &ProtocolTelemetry::serialDataReceived,
                 this,
                 &Vehicle::setStreamData);
+
+        connect(protocol->telemetry,
+                &ProtocolTelemetry::mandalaValueReceived,
+                this,
+                &Vehicle::updateDatalinkVars);
 
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
@@ -274,10 +282,10 @@ void Vehicle::updateCoordinate()
 }
 void Vehicle::updateFlightState()
 {
-    if ((f_mode->value().toUInt() == mode_LANDING) && (f_stage->value().toUInt() >= 250)) {
+    if ((f_mode->value().toUInt() == mandala::mode_LANDING) && (f_stage->value().toUInt() >= 250)) {
         setFlightState(FS_LANDED);
-    } else if ((f_mode->value().toUInt() == mode_TAKEOFF) && (f_stage->value().toUInt() >= 2)
-               && (f_stage->value().toUInt() < 100)) {
+    } else if ((f_mode->value().toUInt() == mandala::mode_TAKEOFF)
+               && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
     } else
         setFlightState(FS_UNKNOWN);
@@ -511,6 +519,25 @@ quint16 Vehicle::stringToMandala(const QString &s) const
 const QStringList *Vehicle::mandalaNames() const
 {
     return &f_mandala->names;
+}
+//=============================================================================
+void Vehicle::updateDatalinkVars(quint16 id, double)
+{
+    switch (id) {
+    default:
+        return;
+    case mandala::idx_gcu_RSS:
+    case mandala::idx_gcu_Ve:
+    case mandala::idx_gcu_MT:
+        break;
+    }
+    Fact *fdest = Vehicles::instance()->f_local->f_mandala->factById(id);
+    if (!fdest)
+        return;
+    Fact *fsrc = f_mandala->factById(id);
+    if (!fsrc)
+        return;
+    fdest->setValue(fsrc->value());
 }
 //=============================================================================
 //=============================================================================

@@ -160,6 +160,8 @@ private slots:
     void setStreamData();
     void setStreamService();
 
+    void updateDatalinkVars(quint16 id, double);
+
 signals:
     //forward from protocols
     void downstreamDataReceived(); //used by widgets like signals
