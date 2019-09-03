@@ -343,6 +343,8 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
             c.setLatitude(vLat->last().y());
             c.setLongitude(vLon->last().y());
             c.setAltitude(vHmsl->last().y());
+            if (!c.isValid())
+                break;
             if (c.latitude() == 0.0)
                 break;
             if (c.longitude() == 0.0)
@@ -356,6 +358,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
                 if (c0.distanceTo(c) < 10.0)
                     break;
             }
+
             path.addCoordinate(c);
             break;
         }
@@ -375,9 +378,6 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
     setTotalTime(totalTime);
 
     this->fieldNames = fieldNames;
-
-    if (path.size() < 2)
-        path.clearPath();
 
     QGeoRectangle r(path.boundingGeoRectangle());
     r.setWidth(r.width() * 1.2);
