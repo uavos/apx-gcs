@@ -289,6 +289,43 @@ Item {
                 sourceComponent: Component { LoiterCircle { } }
                 onLoaded: map.addMapItem(item)
             }
+
+            Loader { //travel path from telemetry
+                active: showVehicleNav && apx.vehicles.current.isReplay()
+                asynchronous: true
+                sourceComponent: Component {
+                    MapPolyline {
+                        z: 50 //-90 //waypointItem.implicitZ-1
+                        opacity: ui.effects?0.8:1
+                        line.width: 4
+                        line.color: Style.cBlue
+                        path: apx.vehicles.current.telemetry.reader.geoPath
+                        //Component.onCompleted: console.log(path)
+                        //onPathChanged: console.log(path)
+                        property var p: apx.vehicles.current.telemetry.reader.geoPath
+                        function updatePath()
+                        {
+                            setPath(p)
+                            showRegion()
+                        }
+                        function showRegion()
+                        {
+                            //if(apx.vehicles.current.telemetry.reader.geoPath.size>1){
+                            map.showRegion(apx.vehicles.current.telemetry.reader.geoRect)
+                            //}
+                        }
+                        Connections {
+                            target: apx.vehicles.current.telemetry.reader
+                            onGeoPathChanged: updatePath()
+                            onTriggered: showRegion()
+                        }
+                        Component.onCompleted: updatePath()
+                    }
+                }
+                onLoaded: map.addMapItem(item)
+            }
+
+
             Connections {
                 target: apx.vehicles.current.mission
                 onTriggered: map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle())

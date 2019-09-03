@@ -27,6 +27,8 @@
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
+
+#include <QGeoCoordinate>
 //=============================================================================
 TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     : Fact(parent, "reader", "", "", Group)
@@ -231,6 +233,14 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
     int iValue = records.names.indexOf("value");
     int iUid = records.names.indexOf("uid");
 
+    QGeoPath path;
+    quint64 fidLat = fieldNames.key("gps_lat");
+    quint64 fidLon = fieldNames.key("gps_lon");
+    quint64 fidHmsl = fieldNames.key("gps_hmsl");
+    QVector<QPointF> *vLat = nullptr;
+    QVector<QPointF> *vLon = nullptr;
+    QVector<QPointF> *vHmsl = nullptr;
+
     removeAll();
     f_reload->setEnabled(true);
 
@@ -238,7 +248,9 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
         delete d;
     }
     fieldData.clear();
+    fieldData.reserve(1000);
     times.clear();
+    times.reserve(1000000);
     events.clear();
     this->fieldNames.clear();
 
@@ -247,10 +259,18 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
     quint64 totalTime = this->totalTime();
     quint64 t0 = 0;
     QHash<quint64, double> fvalues;
+
     for (int i = 0; i < records.values.size(); ++i) {
         const QVariantList &r = records.values.at(i);
         if (r.isEmpty())
             continue;
+
+        //progress and abort
+        int vp = i * 100 / records.values.size();
+        if (progress() != vp) {
+            setProgress(vp);
+            QCoreApplication::processEvents();
+        }
 
         //time
         quint64 t = r.at(iTime).toULongLong();
@@ -294,6 +314,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
             pts = fieldData.value(fid);
         else {
             pts = new QVector<QPointF>;
+            pts->reserve(100000000);
             fieldData.insert(fid, pts);
         }
         double v = r.at(iValue).toDouble();
@@ -306,6 +327,38 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
             pts->append(QPointF(tf, pts->last().y()));
         }
         pts->append(QPointF(tf, v));
+
+        //path update
+        while (fid && (fid == fidLat || fid == fidLon || fid == fidHmsl)) {
+            QGeoCoordinate c;
+
+            if (!vLat)
+                vLat = fieldData.value(fidLat);
+            if (!vLon)
+                vLon = fieldData.value(fidLon);
+            if (!vHmsl)
+                vHmsl = fieldData.value(fidHmsl);
+            if (!(vLat && vLon && vHmsl))
+                break;
+            c.setLatitude(vLat->last().y());
+            c.setLongitude(vLon->last().y());
+            c.setAltitude(vHmsl->last().y());
+            if (c.latitude() == 0.0)
+                break;
+            if (c.longitude() == 0.0)
+                break;
+            if (!path.isEmpty()) {
+                QGeoCoordinate c0(path.path().last());
+                if (c0.latitude() == c.latitude())
+                    break;
+                if (c0.longitude() == c.longitude())
+                    break;
+                if (c0.distanceTo(c) < 10.0)
+                    break;
+            }
+            path.addCoordinate(c);
+            break;
+        }
     }
     //final data tail at max time
     double tMax = totalTime / 1000.0;
@@ -323,6 +376,17 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
 
     this->fieldNames = fieldNames;
 
+    if (path.size() < 2)
+        path.clearPath();
+
+    QGeoRectangle r(path.boundingGeoRectangle());
+    r.setWidth(r.width() * 1.2);
+    r.setHeight(r.height() * 1.2);
+
+    setGeoRect(r);
+    setGeoPath(path);
+
+    setProgress(-1);
     emit dataAvailable(cacheID);
 }
 void TelemetryReader::dbProgress(quint64 telemetryID, int v)
@@ -337,14 +401,26 @@ void TelemetryReader::addEventFact(quint64 time,
                                    const QString &value,
                                    const QString &uid)
 {
+    //qDebug() << name << value;
     QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
     Fact *g = child(name);
     if (!g)
         g = new Fact(this, name, "", "", Group | Const);
+
     if (name == "uplink") {
         Fact *f = g->child(value);
         if (!f) {
             f = new Fact(g, value, "", "", Const);
+            //qDebug() << name << value;
+            f->setValue(1);
+        } else {
+            f->setValue(f->value().toInt() + 1);
+        }
+    } else if (name == "serial") {
+        Fact *f = g->child(uid);
+        if (!f) {
+            f = new Fact(g, uid, "", "", Const);
+            //qDebug() << name << value;
             f->setValue(1);
         } else {
             f->setValue(f->value().toInt() + 1);
@@ -408,6 +484,28 @@ void TelemetryReader::setTotalTime(quint64 v)
         return;
     m_totalTime = v;
     emit totalTimeChanged();
+}
+QGeoPath TelemetryReader::geoPath() const
+{
+    return m_geoPath;
+}
+void TelemetryReader::setGeoPath(const QGeoPath &v)
+{
+    if (m_geoPath == v)
+        return;
+    m_geoPath = v;
+    emit geoPathChanged();
+}
+QGeoRectangle TelemetryReader::geoRect() const
+{
+    return m_geoRect;
+}
+void TelemetryReader::setGeoRect(const QGeoRectangle &v)
+{
+    if (m_geoRect == v)
+        return;
+    m_geoRect = v;
+    emit geoRectChanged();
 }
 //=============================================================================
 //=============================================================================
