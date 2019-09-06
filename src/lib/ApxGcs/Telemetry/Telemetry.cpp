@@ -55,6 +55,8 @@ Telemetry::Telemetry(Vehicle *parent)
                 this,
                 &Telemetry::recordFactTriggered);
 
+        connect(f_reader, &TelemetryReader::dataAvailable, this, &Telemetry::recordLoaded);
+
         f_player = new TelemetryPlayer(this, this);
         connect(f_player, &Fact::statusChanged, this, &Telemetry::updateStatus);
         connect(f_player, &Fact::activeChanged, this, [=]() { setActive(f_player->active()); });
@@ -116,4 +118,14 @@ void Telemetry::recordFactTriggered(Fact *f)
     }
 }
 //=============================================================================
+void Telemetry::recordLoaded()
+{
+    vehicle->f_select->trigger();
+    Fact *f = f_reader->child("mission");
+    if (f && f->size() > 0) {
+        f = f->child(f->size() - 1);
+        if (f)
+            f->trigger();
+    }
+}
 //=============================================================================

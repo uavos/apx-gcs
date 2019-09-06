@@ -55,6 +55,8 @@ private slots:
     void updateDescr();
 
     void recordFactTriggered(Fact *f);
+
+    void recordLoaded();
 };
 //=============================================================================
 #endif

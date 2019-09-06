@@ -57,6 +57,7 @@ public:
 private:
     bool blockNotesChange;
     DelayedEvent loadEvent;
+    bool discardRequested;
 
     void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);
 
@@ -81,6 +82,8 @@ private slots:
     void dbProgress(quint64 telemetryID, int v);
 
     void reloadTriggered();
+
+    void discardRequests(); //to stop loading on action
 
 signals:
     void statsAvailable();

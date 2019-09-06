@@ -24,7 +24,7 @@
 #define Vehicle_H
 //=============================================================================
 #include <QGeoCoordinate>
-#include <QtCore>
+#include <QGeoPath>
 
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
@@ -62,6 +62,8 @@ class Vehicle : public Fact
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
 
     Q_PROPERTY(FlightState flightState READ flightState NOTIFY flightStateChanged)
+
+    Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
 
 public:
     enum VehicleClass {
@@ -150,6 +152,7 @@ private slots:
     void updateInfoReq();
     void updateCoordinate();
     void updateFlightState();
+    void updateGeoPath();
 
     void dbSetVehicleKey(quint64 key);
 
@@ -177,6 +180,8 @@ signals:
     void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
 
+    void geoPathAppend(QGeoCoordinate p);
+
     //provided methods
 public slots:
     void vmexec(QString func);
@@ -186,6 +191,8 @@ public slots:
     void lookHere(const QGeoCoordinate &c);
     void setHomePoint(const QGeoCoordinate &c);
     void sendPositionFix(const QGeoCoordinate &c);
+
+    void resetGeoPath();
 
     //Database
 public slots:
@@ -218,6 +225,9 @@ public:
     FlightState flightState(void) const;
     void setFlightState(const FlightState &v);
 
+    QGeoPath geoPath() const;
+    void setGeoPath(const QGeoPath &v);
+
 protected:
     StreamType m_streamType;
     quint16 m_squawk;
@@ -227,6 +237,7 @@ protected:
     bool m_follow;
     QGeoCoordinate m_coordinate;
     FlightState m_flightState;
+    QGeoPath m_geoPath;
 
 signals:
     void streamTypeChanged();
@@ -237,6 +248,7 @@ signals:
     void followChanged();
     void coordinateChanged();
     void flightStateChanged();
+    void geoPathChanged();
 };
 //=============================================================================
 #endif

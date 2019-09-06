@@ -34,6 +34,7 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     : Fact(parent, "reader", "", "", Group)
     , lookup(lookup)
     , blockNotesChange(false)
+    , discardRequested(false)
     , m_totalSize(0)
     , m_totalTime(0)
 {
@@ -59,6 +60,8 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
 
     connect(&loadEvent, &DelayedEvent::triggered, this, &TelemetryReader::dbLoadData);
     loadEvent.setInterval(500);
+
+    connect(lookup, &LookupTelemetry::discardRequests, this, &TelemetryReader::discardRequests);
 
     connect(this, &Fact::triggered, lookup, [this]() {
         if (!this->lookup->recordId())
@@ -116,6 +119,7 @@ void TelemetryReader::load()
     setTotalSize(0);
     setTotalTime(0);
     setProgress(0);
+    discardRequested = false;
     removeAll();
     DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
     connect(req,
@@ -271,6 +275,8 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
             setProgress(vp);
             QCoreApplication::processEvents();
         }
+        if (discardRequested)
+            return;
 
         //time
         quint64 t = r.at(iTime).toULongLong();
@@ -394,6 +400,11 @@ void TelemetryReader::dbProgress(quint64 telemetryID, int v)
     if (telemetryID != lookup->recordId())
         return;
     setProgress(v);
+}
+//=============================================================================
+void TelemetryReader::discardRequests()
+{
+    discardRequested = true;
 }
 //=============================================================================
 void TelemetryReader::addEventFact(quint64 time,

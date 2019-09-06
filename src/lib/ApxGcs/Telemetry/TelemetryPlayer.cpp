@@ -357,6 +357,9 @@ void TelemetryPlayer::next()
                         if (sv.size() > (fn.size() + 32) || sv.contains('\n')) {
                             sv = fn + "=<data>";
                         }
+                    } else if (evt == "serial") {
+                        qDebug() << evt << sv;
+                        continue;
                     }
                     QString s = QString("[replay]%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
                     if (!sv.isEmpty())

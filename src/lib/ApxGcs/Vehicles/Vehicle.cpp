@@ -125,6 +125,22 @@ Vehicle::Vehicle(Vehicles *vehicles,
         }
     }
 
+    if (protocol && !isTemporary() && !isReplay()) {
+        connect(this,
+                &Vehicle::coordinateChanged,
+                this,
+                &Vehicle::updateGeoPath,
+                Qt::QueuedConnection);
+        //connect(f_telemetry, &Fact::activeChanged, this, &Vehicle::resetGeoPath);
+        Fact *f = new Fact(this,
+                           "rpath",
+                           tr("Reset Path"),
+                           tr("Clear travelled path"),
+                           Action | IconOnly,
+                           "history");
+        connect(f, &Fact::triggered, this, &Vehicle::resetGeoPath);
+    }
+
     updateStatus();
     updateInfo();
 
@@ -278,7 +294,9 @@ void Vehicle::updateInfoReq()
 }
 void Vehicle::updateCoordinate()
 {
-    setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(), f_gps_lon->value().toDouble()));
+    setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(),
+                                 f_gps_lon->value().toDouble(),
+                                 f_gps_hmsl->value().toDouble()));
 }
 void Vehicle::updateFlightState()
 {
@@ -289,6 +307,32 @@ void Vehicle::updateFlightState()
         setFlightState(FS_TAKEOFF);
     } else
         setFlightState(FS_UNKNOWN);
+}
+void Vehicle::updateGeoPath()
+{
+    QGeoCoordinate c(coordinate());
+    if (!c.isValid())
+        return;
+    if (c.latitude() == 0.0)
+        return;
+    if (c.longitude() == 0.0)
+        return;
+    if (!m_geoPath.isEmpty()) {
+        QGeoCoordinate c0(m_geoPath.path().last());
+        /*if (c0.latitude() == c.latitude())
+            return;
+        if (c0.longitude() == c.longitude())
+            return;*/
+        if (c0.distanceTo(c) < 10.0)
+            return;
+    }
+
+    m_geoPath.addCoordinate(c);
+    emit geoPathChanged();
+    //emit geoPathAppend(c);
+    if (m_geoPath.size() >= 3) {
+        emit geoPathAppend(m_geoPath.path().at(m_geoPath.size() - 3));
+    }
 }
 //=============================================================================
 bool Vehicle::isLocal() const
@@ -437,6 +481,11 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
         return;
     double hmsl = f_gps_hmsl->value().toDouble();
     protocol->telemetry->sendVectorValue(f_gps_lat->id(), c.latitude(), c.longitude(), hmsl);
+}
+//=============================================================================
+void Vehicle::resetGeoPath()
+{
+    setGeoPath(QGeoPath());
 }
 //=============================================================================
 //=============================================================================
@@ -629,5 +678,16 @@ void Vehicle::setFlightState(const FlightState &v)
         return;
     m_flightState = v;
     emit flightStateChanged();
+}
+QGeoPath Vehicle::geoPath(void) const
+{
+    return m_geoPath;
+}
+void Vehicle::setGeoPath(const QGeoPath &v)
+{
+    if (m_geoPath == v)
+        return;
+    m_geoPath = v;
+    emit geoPathChanged();
 }
 //=============================================================================
