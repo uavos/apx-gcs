@@ -16,12 +16,17 @@ KmlOverlay::KmlOverlay(Fact *parent)
     f_open = new Fact(this, "open", tr("Open..."), tr("Open KML file"));
     f_open->setIcon("import");
 
-    f_overlayVisible = new Fact(this, "overlay_visible", tr("Show overlay"), "", Fact::Bool);
-    f_overlayVisible->setIcon("check");
-    f_overlayVisible->setValue(true);
+    f_visible = new Fact(this, "visible", tr("Show overlay"), "", Fact::Bool);
+    f_visible->setIcon("check");
+    f_visible->setValue(true);
+
+    f_opacity = new Fact(this, "opacity", tr("Opacity"), "", Fact::Float);
+    f_opacity->setMin(0);
+    f_opacity->setMax(1);
+    f_opacity->setValue(1);
 
     connect(f_open, &Fact::triggered, this, &KmlOverlay::onOpenTriggered);
-    connect(f_overlayVisible, &Fact::valueChanged, this, &KmlOverlay::onOverlayVisibleValueChanged);
+    connect(f_visible, &Fact::valueChanged, this, &KmlOverlay::onOverlayVisibleValueChanged);
 
     ApxApp::instance()->engine()->loadQml("qrc:/kmloverlay/KmlOverlayPlugin.qml");
 }
@@ -69,13 +74,13 @@ void KmlOverlay::onOpenTriggered()
         m_center = p2gc(m_kmlPolygons->setPolygons(m_parser.getPolygons()));
         emit centerChanged();
 
-        f_overlayVisible->setValue(true);
+        f_visible->setValue(true);
     }
 }
 
 void KmlOverlay::onOverlayVisibleValueChanged()
 {
-    if (f_overlayVisible->value().toBool())
+    if (f_visible->value().toBool())
         m_kmlPolygons->setPolygons(m_parser.getPolygons());
     else
         m_kmlPolygons->setPolygons({});

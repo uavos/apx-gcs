@@ -30,6 +30,7 @@ MapItemGroup {
                 map: ui.map
                 geoPolygon: polygon
                 color: polygonColor
+                opacity: apx.tools.kmloverlay.opacity.value
             }
         }
     }

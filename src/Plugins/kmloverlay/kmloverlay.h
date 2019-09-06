@@ -15,7 +15,8 @@ public:
     explicit KmlOverlay(Fact *parent = nullptr);
 
     Fact *f_open;
-    Fact *f_overlayVisible;
+    Fact *f_visible;
+    Fact *f_opacity;
 
     KmlPolygonsModel *getKmlPolygons() const;
     QGeoCoordinate getCenter() const;
