@@ -39,9 +39,9 @@ public:
     Fact *f_time;
     Fact *f_speed;
 
-    FactAction *f_play;
-    FactAction *f_stop;
-    FactAction *f_rewind;
+    Fact *f_play;
+    Fact *f_stop;
+    Fact *f_rewind;
 
 private:
     Telemetry *telemetry;

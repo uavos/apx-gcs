@@ -106,6 +106,8 @@ ObjectModel {
                                    })
             obj.accepted.connect(model.loadSettings)
             obj.open()
+        }else{
+            console.log(c.errorString())
         }
     }
 

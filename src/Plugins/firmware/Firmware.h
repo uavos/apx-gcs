@@ -39,8 +39,8 @@ public:
     explicit Firmware(Fact *parent, ProtocolServiceFirmware *protocol);
     static Firmware *instance() { return _instance; }
 
-    FactAction *f_upgrade;
-    FactAction *f_stop;
+    Fact *f_upgrade;
+    Fact *f_stop;
 
     Releases *f_releases;
 

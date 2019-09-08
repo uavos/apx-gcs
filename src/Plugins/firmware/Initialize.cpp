@@ -48,18 +48,18 @@ Initialize::Initialize(Firmware *firmware, Fact *parent)
     f_continuous = new Fact(this, "continuous", tr("Continuous"), tr("Stop on user action"), Bool);
     f_continuous->setValue(true);
 
-    f_start = new FactAction(this,
-                             "start",
-                             tr("Start"),
-                             tr("System loader initialization"),
-                             "play",
-                             FactAction::ActionApply);
+    f_start = new Fact(this,
+                       "start",
+                       tr("Start"),
+                       tr("System loader initialization"),
+                       Action | Apply,
+                       "play");
     f_start->setEnabled(false);
-    new FactAction(this, firmware->f_stop); //link
-    connect(firmware->f_stop, &FactAction::enabledChanged, f_start, [this]() {
+    firmware->f_stop->createAction(this); //link
+    connect(firmware->f_stop, &Fact::enabledChanged, f_start, [this]() {
         f_start->setEnabled(!this->firmware->f_stop->enabled());
     });
-    connect(f_start, &FactAction::triggered, this, &Initialize::startTriggered);
+    connect(f_start, &Fact::triggered, this, &Initialize::startTriggered);
 
     connect(this, &Fact::triggered, this, &Initialize::updateNodeEnums);
     updateNodeEnums();

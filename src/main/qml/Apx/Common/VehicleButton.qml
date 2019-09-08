@@ -20,11 +20,13 @@ CleanButton {
     color: label.colorBG
 
 
-    VehicleLabel {
-        id: label
-        font: control.font
-        vehicle: control.vehicle
-    }
+    contents: [
+        VehicleLabel {
+            id: label
+            font: control.font
+            vehicle: control.vehicle
+        }
+    ]
 
     onClicked: {
         if(vehicle.active){

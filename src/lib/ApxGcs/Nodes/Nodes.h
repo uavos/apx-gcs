@@ -45,21 +45,21 @@ public:
 
     Vehicle *vehicle;
 
-    FactAction *f_upload;
-    FactAction *f_request;
-    FactAction *f_stop;
-    FactAction *f_reload;
-    FactAction *f_clear;
-    FactAction *f_nstat;
+    Fact *f_upload;
+    Fact *f_request;
+    Fact *f_stop;
+    Fact *f_reload;
+    Fact *f_clear;
+    Fact *f_nstat;
 
     LookupConfigs *f_lookup;
-    FactAction *a_lookup;
+    Fact *a_lookup;
 
     NodesStorage *storage;
     NodesShare *f_share;
-    FactAction *a_share;
+    Fact *a_share;
 
-    FactAction *f_save;
+    Fact *f_save;
 
     NodeItem *node(const QString &sn) { return snMap.value(sn, nullptr); }
     QList<NodeItem *> nodes() { return snMap.values(); }

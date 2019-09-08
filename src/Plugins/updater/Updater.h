@@ -36,7 +36,7 @@ public:
     Updater(Fact *parent = nullptr);
 
     AppSettingFact *f_auto;
-    FactAction *f_check;
+    Fact *f_check;
 
 private:
     SparkleAutoUpdater *sparkle;

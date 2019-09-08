@@ -26,10 +26,13 @@
 #include <QFont>
 #include <QFontDatabase>
 //=============================================================================
-Fact::Fact(
-    FactBase *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
+Fact::Fact(QObject *parent,
+           const QString &name,
+           const QString &title,
+           const QString &descr,
+           Flags flags,
+           const QString &icon)
     : FactData(parent, name, title, descr, flags)
-    , bindedFact(nullptr)
     , blockNotify(false)
     , m_model(nullptr)
     , m_actionsModel(nullptr)
@@ -37,6 +40,8 @@ Fact::Fact(
     , m_visible(true)
     , m_active(false)
     , m_progress(-1)
+    , m_icon(icon)
+    , m_bind(nullptr)
     , m_link(nullptr)
     , m_parentEnabled(true)
     , m_parentVisible(true)
@@ -50,34 +55,41 @@ Fact::Fact(
     connect(this, &Fact::parentFactChanged, this, &Fact::updateParentVisible);
     updateParentVisible();
 
-    //default icons
-    if (m_icon.isEmpty()) {
-        if (options() & Apply)
-            m_icon = "check";
-        else if (options() & Remove)
-            m_icon = "delete";
-        else if (options() & Stop)
-            m_icon = "close-circle";
-    }
-
-    if (treeType() == Action && parent) {
-        connect(this, &Fact::triggered, static_cast<Fact *>(parent), &Fact::actionTriggered);
-    }
+    connect(this, &Fact::optionsChanged, this, &Fact::updateDefaultIcon);
+    updateDefaultIcon();
 
     //number of children in status
-    if ((treeType() == Group) && (dataType() == Const)) {
-        connect(this, &Fact::sizeChanged, this, &Fact::statusChanged);
+    connect(this, &Fact::sizeChanged, this, &Fact::statusChanged);
+
+    if (m_name.contains('#')) {
+        connect(this, &Fact::numChanged, this, &Fact::nameChanged);
     }
 
-    //append to parent
-    if (parent) {
-        if (m_name.contains('#')) {
-            connect(parent, &FactData::sizeChanged, this, &FactData::nameChanged);
-        }
-        if (parent->options() & Section)
-            setSection(static_cast<Fact *>(parent)->title());
+    connect(this, &Fact::parentFactChanged, this, [this]() {
+        if (parentFact() && parentFact()->options() & Section)
+            setSection(static_cast<Fact *>(parentFact())->title());
+    });
 
-        setParentFact(parent);
+    //append to parent
+    setParentFact(qobject_cast<FactBase *>(parent));
+}
+//=============================================================================
+void Fact::updateDefaultIcon()
+{
+    if (!m_icon.isEmpty())
+        return;
+    switch (dataType()) {
+    default:
+        break;
+    case Apply:
+        setIcon("check");
+        break;
+    case Remove:
+        setIcon("delete");
+        break;
+    case Stop:
+        setIcon("close-circle");
+        break;
     }
 }
 //=============================================================================
@@ -196,7 +208,7 @@ QString Fact::info() const
     QStringList st;
     QString sDataType;
     if (dataType())
-        sDataType = QMetaEnum::fromType<FactBase::Flag>().valueToKey(dataType());
+        sDataType = QMetaEnum::fromType<FactBase::Flag>().valueToKey(static_cast<int>(dataType()));
     if (!units().isEmpty())
         sDataType += (sDataType.isEmpty() ? "" : ", ") + units();
     if (sDataType.isEmpty())
@@ -354,10 +366,13 @@ void Fact::trigger(void)
 {
     if (!enabled())
         return;
-    if (bindedFact)
-        bindedFact->trigger();
+    if (bind())
+        bind()->trigger();
     //qDebug()<<"trigger"<<name();
     emit triggered();
+
+    if (parentFact() && treeType() == Action)
+        parentFact()->actionTriggered();
 }
 void Fact::requestDefaultMenu()
 {
@@ -372,29 +387,40 @@ void Fact::requestMenu(QVariantMap opts)
 void Fact::bind(FactData *fact)
 {
     FactData::bind(fact);
-    bool rebind = bindedFact;
-    if (bindedFact) {
-        disconnect(bindedFact, nullptr, this, nullptr);
+    bool rebind = bind();
+    if (bind()) {
+        disconnect(m_bind, nullptr, this, nullptr);
     }
-    bindedFact = qobject_cast<Fact *>(fact);
-    if (bindedFact) {
-        connect(bindedFact, &Fact::actionsModelChanged, this, &Fact::actionsModelChanged);
-        connect(bindedFact, &Fact::statusChanged, this, &Fact::statusChanged);
-        connect(bindedFact, &Fact::activeChanged, this, &Fact::activeChanged);
-        connect(bindedFact, &Fact::progressChanged, this, &Fact::progressChanged);
-        connect(bindedFact, &Fact::iconChanged, this, &Fact::iconChanged);
-        connect(bindedFact, &Fact::qmlPageChanged, this, &Fact::qmlPageChanged);
+    m_bind = qobject_cast<Fact *>(fact);
+    if (bind()) {
+        connect(m_bind, &Fact::actionsModelChanged, this, &Fact::actionsModelChanged);
+        connect(m_bind, &Fact::statusChanged, this, &Fact::statusChanged);
+        connect(m_bind, &Fact::activeChanged, this, &Fact::activeChanged);
+        connect(m_bind, &Fact::progressChanged, this, &Fact::progressChanged);
+        connect(m_bind, &Fact::enabledChanged, this, &Fact::enabledChanged);
+        connect(m_bind, &Fact::iconChanged, this, &Fact::iconChanged);
+        connect(m_bind, &Fact::qmlPageChanged, this, &Fact::qmlPageChanged);
 
-        connect(bindedFact, &Fact::actionTriggered, this, &Fact::actionTriggered);
+        connect(m_bind, &Fact::actionTriggered, this, &Fact::actionTriggered);
     }
     if (rebind) {
         emit actionsModelChanged();
         emit statusChanged();
         emit activeChanged();
         emit progressChanged();
+        emit enabledChanged();
         emit iconChanged();
         emit qmlPageChanged();
     }
+}
+//=============================================================================
+Fact *Fact::createAction(Fact *parent)
+{
+    Fact *f = new Fact(parent, m_name, "", "", Action | dataType() | options());
+    if (treeType() != Action)
+        f->setDataType(Page);
+    f->bind(this);
+    return f;
 }
 //=============================================================================
 void Fact::setValues(const QVariantMap &values)
@@ -473,8 +499,8 @@ void Fact::setModel(FactListModel *v)
 }
 FactListModelActions *Fact::actionsModel() const
 {
-    if (bindedFact)
-        return bindedFact->actionsModel();
+    if (bind())
+        return bind()->actionsModel();
     return m_actionsModel;
 }
 void Fact::setActionsModel(FactListModelActions *v)
@@ -485,10 +511,17 @@ void Fact::setActionsModel(FactListModelActions *v)
 }
 bool Fact::enabled() const
 {
+    if (bind())
+        return bind()->enabled();
     return m_enabled && m_parentEnabled;
 }
-void Fact::setEnabled(const bool &v)
+void Fact::setEnabled(const bool v)
 {
+    //qDebug() << "BEGIN" << path() << v << m_parentEnabled;
+    if (bind()) {
+        bind()->setEnabled(v);
+        return;
+    }
     if (m_enabled == v)
         return;
     m_enabled = v;
@@ -497,6 +530,11 @@ void Fact::setEnabled(const bool &v)
     for (int i = 0; i < size(); ++i) {
         child(i)->updateParentEnabled();
     }
+    for (int i = 0; i < actions().size(); ++i) {
+        Fact *f = static_cast<Fact *>(actions().at(i));
+        f->updateParentEnabled();
+    }
+    //qDebug() << "END" << path() << v << m_parentEnabled;
 }
 void Fact::updateParentEnabled()
 {
@@ -512,7 +550,7 @@ bool Fact::visible() const
 {
     return m_visible;
 }
-void Fact::setVisible(const bool &v)
+void Fact::setVisible(const bool v)
 {
     if (m_visible == v)
         return;
@@ -521,6 +559,10 @@ void Fact::setVisible(const bool &v)
 
     for (int i = 0; i < size(); ++i) {
         child(i)->updateParentVisible();
+    }
+    for (int i = 0; i < actions().size(); ++i) {
+        Fact *f = static_cast<Fact *>(actions().at(i));
+        f->updateParentVisible();
     }
 }
 void Fact::updateParentVisible()
@@ -547,8 +589,8 @@ void Fact::setSection(const QString &v)
 }
 QString Fact::status() const
 {
-    if (bindedFact)
-        return bindedFact->status();
+    if (bind())
+        return bind()->status();
     if (treeType() == Group && dataType() == Const && m_status.isEmpty()) {
         return size() > 0 ? QString::number(size()) : QString();
     }
@@ -556,8 +598,8 @@ QString Fact::status() const
 }
 void Fact::setStatus(const QString &v)
 {
-    if (bindedFact) {
-        bindedFact->setStatus(v);
+    if (bind()) {
+        bind()->setStatus(v);
         return;
     }
     QString s = v.trimmed();
@@ -568,14 +610,14 @@ void Fact::setStatus(const QString &v)
 }
 bool Fact::active() const
 {
-    if (bindedFact)
-        return bindedFact->active();
+    if (bind())
+        return bind()->active();
     return m_active;
 }
-void Fact::setActive(const bool &v)
+void Fact::setActive(const bool v)
 {
-    if (bindedFact) {
-        bindedFact->setActive(v);
+    if (bind()) {
+        bind()->setActive(v);
         return;
     }
     if (m_active == v)
@@ -585,14 +627,14 @@ void Fact::setActive(const bool &v)
 }
 int Fact::progress() const
 {
-    if (bindedFact)
-        return bindedFact->progress();
+    if (bind())
+        return bind()->progress();
     return m_progress;
 }
-void Fact::setProgress(const int &v)
+void Fact::setProgress(const int v)
 {
-    if (bindedFact) {
-        bindedFact->setProgress(v);
+    if (bind()) {
+        bind()->setProgress(v);
         return;
     }
     if (m_progress == v)
@@ -605,8 +647,8 @@ void Fact::setProgress(const int &v)
 }
 QString Fact::icon() const
 {
-    if (bindedFact && m_icon.isEmpty())
-        return bindedFact->icon();
+    if (bind() && m_icon.isEmpty())
+        return bind()->icon();
     return m_icon;
 }
 void Fact::setIcon(const QString &v)
@@ -627,10 +669,21 @@ void Fact::setLink(Fact *v)
     m_link = v;
     emit linkChanged();
 }
+Fact *Fact::bind() const
+{
+    return m_bind.isNull() ? nullptr : m_bind;
+}
+void Fact::setBind(Fact *v)
+{
+    if (m_bind == v)
+        return;
+    bind(v);
+    emit bindChanged();
+}
 QString Fact::qmlPage() const
 {
-    if (bindedFact && m_qmlPage.isEmpty())
-        return bindedFact->qmlPage();
+    if (bind() && m_qmlPage.isEmpty())
+        return bind()->qmlPage();
     return m_qmlPage;
 }
 void Fact::setQmlPage(const QString &v)

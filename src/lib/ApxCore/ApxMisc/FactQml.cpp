@@ -20,64 +20,36 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkPort_H
-#define DatalinkPort_H
+#include "FactQml.h"
 //=============================================================================
-#include "DatalinkConnection.h"
-#include <Fact/Fact.h>
-#include <QtCore>
-class DatalinkPorts;
-class Datalink;
+FactQml::FactQml(QObject *parent)
+    : Fact(parent)
+{}
 //=============================================================================
-class DatalinkPort : public Fact
+QQmlListProperty<FactQml> FactQml::children()
 {
-    Q_OBJECT
-    Q_ENUMS(PortType)
-
-public:
-    explicit DatalinkPort(DatalinkPorts *parent,
-                          Datalink *datalink,
-                          const DatalinkPort *port = nullptr);
-
-    enum PortType { SERIAL, TCP };
-    Q_ENUM(PortType)
-
-    Fact *f_enable;
-    Fact *f_comment;
-    Fact *f_type;
-    Fact *f_url;
-    Fact *f_baud;
-
-    Fact *f_routing;
-    QList<Fact *> f_rx;
-    QList<Fact *> f_tx;
-
-    Fact *f_save;
-    Fact *f_remove;
-
-    DatalinkConnection *f_connection;
-
-private:
-    DatalinkPorts *ports;
-    bool _new;
-    bool _blockUpdateRoutingValue;
-    bool _blockUpdateRoutingFacts;
-
-private slots:
-    void updateStatus();
-
-    void updateRoutingValue();
-    void updateRoutingFacts();
-    void updateRoutingStatus();
-    void updateConnectionNetwork();
-
-    void removeTriggered();
-
-    void defaultUrl();
-    void syncUrlEnum();
-public slots:
-    void defaults();
-    void clear();
-};
+    return QQmlListProperty<FactQml>(this,
+                                     this,
+                                     &FactQml::appendChildren,
+                                     &FactQml::countChildren,
+                                     &FactQml::atChildren,
+                                     &FactQml::clearChildren);
+}
 //=============================================================================
-#endif
+void FactQml::appendChildren(QQmlListProperty<FactQml> *property, FactQml *value)
+{
+    value->setParentFact(reinterpret_cast<Fact *>(property->data));
+}
+FactQml *FactQml::atChildren(QQmlListProperty<FactQml> *property, int index)
+{
+    return reinterpret_cast<FactQml *>(reinterpret_cast<Fact *>(property->data)->child(index));
+}
+void FactQml::clearChildren(QQmlListProperty<FactQml> *property)
+{
+    reinterpret_cast<Fact *>(property->data)->removeAll();
+}
+int FactQml::countChildren(QQmlListProperty<FactQml> *property)
+{
+    return reinterpret_cast<Fact *>(property->data)->size();
+}
+//=============================================================================

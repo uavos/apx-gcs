@@ -137,8 +137,12 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
 
     v->dbSaveVehicleInfo();
 
-    if (f_list->size() == 1)
+    while (f_list->size() > 0) {
+        if (m_current->vehicleClass() == Vehicle::UAV)
+            break;
         selectVehicle(v);
+        break;
+    }
 }
 void Vehicles::identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentData &ident)
 {

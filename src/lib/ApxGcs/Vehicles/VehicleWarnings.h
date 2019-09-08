@@ -38,7 +38,7 @@ public:
     enum MsgType { INFO = 0, WARNING, ERROR };
     Q_ENUM(MsgType)
 
-    FactAction *f_clear;
+    Fact *f_clear;
 
 private:
     QTimer showTimer;

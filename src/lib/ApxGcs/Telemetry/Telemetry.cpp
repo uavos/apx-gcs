@@ -44,9 +44,9 @@ Telemetry::Telemetry(Vehicle *parent)
 
     if (vehicle->isReplay()) {
         f_lookup = new LookupTelemetry(this);
-        new FactAction(this, f_lookup->f_latest);
-        new FactAction(this, f_lookup->f_prev);
-        new FactAction(this, f_lookup->f_next);
+        f_lookup->f_latest->createAction(this);
+        f_lookup->f_prev->createAction(this);
+        f_lookup->f_next->createAction(this);
         f_reader = new TelemetryReader(f_lookup, this);
         connect(f_reader, &Fact::statusChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);
@@ -54,6 +54,8 @@ Telemetry::Telemetry(Vehicle *parent)
                 &TelemetryReader::recordFactTriggered,
                 this,
                 &Telemetry::recordFactTriggered);
+
+        connect(f_reader, &TelemetryReader::dataAvailable, this, &Telemetry::recordLoaded);
 
         f_player = new TelemetryPlayer(this, this);
         connect(f_player, &Fact::statusChanged, this, &Telemetry::updateStatus);
@@ -116,4 +118,14 @@ void Telemetry::recordFactTriggered(Fact *f)
     }
 }
 //=============================================================================
+void Telemetry::recordLoaded()
+{
+    vehicle->f_select->trigger();
+    Fact *f = f_reader->child("mission");
+    if (f && f->size() > 0) {
+        f = f->child(f->size() - 1);
+        if (f)
+            f->trigger();
+    }
+}
 //=============================================================================

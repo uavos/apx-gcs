@@ -58,8 +58,8 @@ public:
     Fact *f_latitude;
     Fact *f_longitude;
 
-    FactAction *f_remove;
-    FactAction *f_select;
+    Fact *f_remove;
+    Fact *f_select;
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
 

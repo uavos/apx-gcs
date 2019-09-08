@@ -21,7 +21,9 @@ MapItemGroup {
         target: mission
         onMissionAvailable: {
             //console.log("onMissionReceived")
-            map.showRegion(mission.boundingGeoRectangle())
+            if(!map.follow){
+                map.showRegion(mission.boundingGeoRectangle())
+            }
         }
     }
 

@@ -22,18 +22,18 @@
  */
 #include "FactBase.h"
 //=============================================================================
-FactBase::FactBase(FactBase *parent, const QString &name, FactBase::Flags flags)
+FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
     : QObject(parent)
-    , m_treeType(Flag(int(flags) & TypeMask))
-    , m_options(flags & OptsMask)
+    , m_treeType(NoFlags)
+    , m_options(NoFlags)
     , m_parentFact(nullptr)
-    , m_name(makeNameUnique(name))
+    , m_name()
     , m_size(0)
     , m_num(0)
 {
-    setObjectName(m_name);
-    if (m_options & Section)
-        m_treeType = Group;
+    setName(makeNameUnique(name));
+    setTreeType(Flag(uint(flags) & TypeMask));
+    setOptions(flags & OptsMask);
 }
 FactBase::~FactBase()
 {
@@ -50,9 +50,23 @@ FactBase::~FactBase()
     m_children.clear();*/
 }
 //=============================================================================
+QList<FactBase *> FactBase::actions() const
+{
+    return m_actions;
+}
+//=============================================================================
 void FactBase::addChild(FactBase *item)
 {
     item->setParent(this);
+    if (item->treeType() == Action) {
+        if (!m_actions.contains(item)) {
+            m_actions.append(item);
+            emit actionsUpdated();
+        }
+        return;
+    }
+    if (m_children.contains(item))
+        return;
     emit itemToBeInserted(m_children.size(), item);
     m_children.append(item);
     updateChildrenNums();
@@ -61,7 +75,12 @@ void FactBase::addChild(FactBase *item)
 }
 void FactBase::removeChild(FactBase *item)
 {
-    int i = m_children.indexOf(item);
+    int i = m_actions.indexOf(item);
+    if (i >= 0) {
+        m_actions.removeAll(item);
+        emit actionsUpdated();
+    }
+    i = m_children.indexOf(item);
     if (i < 0)
         return;
     emit itemToBeRemoved(i, item);
@@ -150,7 +169,7 @@ QString FactBase::makeNameUnique(const QString &s)
     QString suffix;
     while (1) {
         FactBase *dup = nullptr;
-        for (int i = 0; i < parentFact()->m_children.size(); ++i) {
+        for (int i = 0; i < parentFact()->size(); ++i) {
             FactBase *item = parentFact()->child(i);
             if (item == this)
                 continue;
@@ -190,7 +209,7 @@ FactBase *FactBase::child(const QString &name) const
 {
     for (int i = 0; i < m_children.size(); ++i) {
         FactBase *item = child(i);
-        if (item && item->name() == name)
+        if (item && (item->objectName() == name || item->name() == name))
             return item;
     }
     return nullptr;
@@ -269,6 +288,10 @@ void FactBase::setTreeType(FactBase::Flag v)
         return;
     m_treeType = v;
     emit treeTypeChanged();
+    if (v == Action && parentFact()) {
+        parentFact()->removeChild(this);
+        parentFact()->addChild(this);
+    }
 }
 FactBase::Flags FactBase::options(void) const
 {
@@ -281,6 +304,8 @@ void FactBase::setOptions(FactBase::Flags v)
         return;
     m_options = v;
     emit optionsChanged();
+    if (m_options & Section)
+        setTreeType(Group);
 }
 void FactBase::setOption(FactBase::Flag opt, bool v)
 {
@@ -295,8 +320,9 @@ int FactBase::size(void) const
 }
 QString FactBase::name(void) const
 {
-    return (m_name.contains('#') ? QString(m_name).replace('#', QString::number(num() + 1)) : m_name)
-           + nameSuffix;
+    if (m_name.contains('#'))
+        return QString(m_name).replace('#', QString::number(num() + 1)) + nameSuffix;
+    return m_name + nameSuffix;
 }
 void FactBase::setName(const QString &v)
 {
@@ -311,7 +337,7 @@ void FactBase::setName(const QString &v)
 }
 FactBase *FactBase::parentFact() const
 {
-    return m_parentFact;
+    return m_parentFact.isNull() ? nullptr : m_parentFact;
 }
 void FactBase::setParentFact(FactBase *v)
 {
@@ -325,7 +351,8 @@ void FactBase::setParentFact(FactBase *v)
     QObject::setParent(v);
     m_parentFact = v;
     emit parentFactChanged();
-    if (v)
-        v->addChild(this);
+    if (!v)
+        return;
+    v->addChild(this);
 }
 //=============================================================================

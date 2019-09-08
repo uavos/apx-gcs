@@ -9,11 +9,13 @@ CleanButton {
     id: control
     showText: true
 
+    enabled: fact.size
+
     readonly property var fact: apx.vehicles.current.warnings
     readonly property int showTimeout: 5000
     readonly property int showTimes: 3
 
-    property Connections conn: Connections {
+    Connections {
         target: fact
         onShow: message(msg, msgType)
     }
@@ -67,7 +69,8 @@ CleanButton {
 
     property var showItem: ({})
 
-    property ListModel model: ListModel {
+    ListModel {
+        id: model
         property int pos: 0
 
         function show()

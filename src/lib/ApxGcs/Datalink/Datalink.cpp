@@ -167,6 +167,7 @@ void Datalink::connectionPacketReceived(QByteArray packet, quint16 network)
             continue;
         if (c == src)
             continue;
+
         c->sendPacket(packet, network);
     }
     emit packetReceived(packet);

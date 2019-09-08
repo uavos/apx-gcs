@@ -50,7 +50,7 @@ public:
 
     MissionItem *addObject(const QGeoCoordinate &);
 
-    FactAction *f_clear;
+    Fact *f_clear;
 
 private:
     QTimer updateTimeTimer;

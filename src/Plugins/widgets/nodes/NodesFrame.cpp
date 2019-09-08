@@ -86,22 +86,10 @@ void NodesFrame::vehicleSelected(Vehicle *v)
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
         connect(a, &QAction::triggered, [this]() { treeWidget->tree->setFocus(); });
     }
-    connect(vehicle->f_nodes->f_request,
-            &FactAction::triggered,
-            treeWidget,
-            &FactTreeWidget::resetFilter);
-    connect(vehicle->f_nodes->f_reload,
-            &FactAction::triggered,
-            treeWidget,
-            &FactTreeWidget::resetFilter);
-    connect(vehicle->f_nodes->f_nstat,
-            &FactAction::triggered,
-            treeWidget,
-            &FactTreeWidget::resetFilter);
-    connect(vehicle->f_nodes->f_clear,
-            &FactAction::triggered,
-            treeWidget,
-            &FactTreeWidget::resetFilter);
+    connect(vehicle->f_nodes->f_request, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    connect(vehicle->f_nodes->f_reload, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    connect(vehicle->f_nodes->f_nstat, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    connect(vehicle->f_nodes->f_clear, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
@@ -138,10 +126,11 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         if (!a_revert) {
             if (!m.isEmpty())
                 m.addSeparator();
-            a_revert = new QAction(f->f_revert->descr(), &m);
+            a_revert = new QActionFact(f->f_revert);
+            a_revert->setParent(&m);
             m.addAction(a_revert);
         }
-        connect(a_revert, &QAction::triggered, f->f_revert, &FactAction::trigger);
+        //connect(a_revert, &QAction::triggered, f->f_revert, &Fact::trigger);
     }
 
     //node tools

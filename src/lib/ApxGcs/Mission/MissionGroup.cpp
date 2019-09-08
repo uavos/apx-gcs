@@ -42,14 +42,13 @@ MissionGroup::MissionGroup(VehicleMission *parent,
     //setSection(tr("Mission elements"));
     mission->groups.append(this);
 
-    f_clear = new FactAction(this,
-                             "clear",
-                             tr("Clear"),
-                             tr("Remove all objects"),
-                             "",
-                             FactAction::ActionRemove | FactAction::ActionCloseOnTrigger);
+    f_clear = new Fact(this,
+                       "clear",
+                       tr("Clear"),
+                       tr("Remove all objects"),
+                       Action | Remove | CloseOnTrigger);
     f_clear->setEnabled(false);
-    connect(f_clear, &FactAction::triggered, this, &MissionGroup::clearGroup);
+    connect(f_clear, &Fact::triggered, this, &MissionGroup::clearGroup);
 
     //status
     connect(this, &Fact::sizeChanged, this, &MissionGroup::updateStatus);

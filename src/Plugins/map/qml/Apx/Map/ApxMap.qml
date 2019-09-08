@@ -289,6 +289,22 @@ Item {
                 sourceComponent: Component { LoiterCircle { } }
                 onLoaded: map.addMapItem(item)
             }
+
+            Loader { //travel path from telemetry
+                active: showVehicleNav && apx.vehicles.current.isReplay()
+                asynchronous: true
+                source: "vehicle/PathTelemetry.qml"
+                onLoaded: map.addMapItem(item)
+            }
+
+            Loader { //travel path current
+                active: showVehicleNav && !apx.vehicles.current.isReplay()
+                asynchronous: true
+                source: "vehicle/PathCurrent.qml"
+                onLoaded: map.addMapItem(item)
+            }
+
+
             Connections {
                 target: apx.vehicles.current.mission
                 onTriggered: map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle())

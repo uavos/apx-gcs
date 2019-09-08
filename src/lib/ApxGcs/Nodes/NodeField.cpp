@@ -54,7 +54,8 @@ NodeField::NodeField(NodeItem *node,
         break;
     case DictNode::Float:
         setDataType(Float);
-        //setPrecision(0);
+        if (!name.startsWith("mekf_"))
+            setPrecision(4);
         break;
     case DictNode::Byte:
         setMax(255);
@@ -254,36 +255,6 @@ void NodeField::fromString(const QString &s)
         }
     }
     setValue(s);
-}
-//=============================================================================
-//=============================================================================
-QString NodeField::mandalaToString(quint16 mid) const
-{
-    VehicleMandalaFact *mf = node->nodes->vehicle->f_mandala->factById(mid);
-    return mf ? mf->title() : QString();
-}
-quint16 NodeField::stringToMandala(const QString &s) const
-{
-    if ((!s.isEmpty()) && s != "0") {
-        VehicleMandalaFact *mf;
-        //try int
-        bool ok = false;
-        uint i = s.toUInt(&ok);
-        if (ok && i < 0xFFFF) {
-            mf = node->nodes->vehicle->f_mandala->factById(static_cast<quint16>(i));
-            if (mf)
-                return mf->id();
-        }
-        //try text
-        mf = node->nodes->vehicle->f_mandala->factByName(s);
-        if (mf)
-            return mf->id();
-    }
-    return 0;
-}
-const QStringList *NodeField::mandalaNames() const
-{
-    return &node->nodes->vehicle->f_mandala->names;
 }
 //=============================================================================
 //=============================================================================

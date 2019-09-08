@@ -19,5 +19,5 @@ FactValue {
 
     //valueScale: light?0.7:1
     normalColor: light?"#555":normalColor
-    //implicitHeight: 0
+    //implicitHeight: 0    
 }

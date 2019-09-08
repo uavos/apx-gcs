@@ -25,23 +25,26 @@
 #include <cmath>
 //=============================================================================
 FactData::FactData(
-    FactBase *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
+    QObject *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
     : FactBase(parent, name, flags)
+    , backup_set(false)
     , bindedFactData(nullptr)
-    , m_dataType(Flag(int(flags) & DataMask))
+    , m_dataType(NoFlags)
     , m_modified(false)
     , m_precision(-1)
-    , m_title(title)
-    , m_descr(descr)
+    , m_title()
+    , m_descr()
 {
-    backup_set = false;
-    defaults();
     connect(this, &FactData::enumStringsChanged, this, &FactData::textChanged);
-    setTitle(m_title);
 
     connect(this, &FactData::dataTypeChanged, this, &FactData::defaults);
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);
     connect(this, &FactData::dataTypeChanged, this, &FactData::textChanged);
+
+    setTitle(title);
+    setDescr(descr);
+
+    setDataType(Flag(uint(flags) & DataMask));
 }
 //=============================================================================
 bool FactData::vtype(const QVariant &v, QMetaType::Type t) const
@@ -315,6 +318,7 @@ void FactData::setModified(const bool &v, const bool &recursive)
     if (m_modified == v)
         return;
     m_modified = v;
+    //qDebug() << path();
     emit modifiedChanged();
 }
 int FactData::precision(void) const
@@ -551,19 +555,40 @@ QString FactData::mandalaToString(quint16 mid) const
 {
     if (bindedFactData)
         return bindedFactData->mandalaToString(mid);
-    return QString::number(mid);
+    QString s;
+    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
+        const FactData *f = static_cast<const FactData *>(i);
+        s = f->mandalaToString(mid);
+        if (!s.isEmpty())
+            break;
+    }
+    return s;
 }
 quint16 FactData::stringToMandala(const QString &s) const
 {
     if (bindedFactData)
         return bindedFactData->stringToMandala(s);
-    return s.toUInt();
+    quint16 mid = 0;
+    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
+        const FactData *f = static_cast<const FactData *>(i);
+        mid = f->stringToMandala(s);
+        if (mid)
+            break;
+    }
+    return mid;
 }
 const QStringList *FactData::mandalaNames() const
 {
     if (bindedFactData)
         return bindedFactData->mandalaNames();
-    return nullptr;
+    const QStringList *st = nullptr;
+    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
+        const FactData *f = static_cast<const FactData *>(i);
+        st = f->mandalaNames();
+        if (st)
+            break;
+    }
+    return st;
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
@@ -629,24 +654,26 @@ void FactData::defaults()
         bindedFactData->defaults();
         return;
     }
-    switch (dataType()) {
-    case Float:
-        m_value = 0.0;
-        break;
-    case Int:
-        m_value = 0;
-        break;
-    case Bool:
-        m_value = false;
-        break;
-    case Enum:
-        m_value = 0;
-        break;
-    case Mandala:
-        m_value = 0;
-        break;
-    default:
-        m_value = QVariant();
+    if (m_value.isNull()) {
+        switch (dataType()) {
+        case Float:
+            m_value = 0.0;
+            break;
+        case Int:
+            m_value = 0;
+            break;
+        case Bool:
+            m_value = false;
+            break;
+        case Enum:
+            m_value = 0;
+            break;
+        case Mandala:
+            m_value = 0;
+            break;
+        default:
+            m_value = QVariant();
+        }
     }
 }
 //=============================================================================
@@ -654,7 +681,7 @@ void FactData::bind(FactData *fact)
 {
     bool rebind = bindedFactData;
     if (bindedFactData) {
-        disconnect(bindedFactData, 0, this, 0);
+        disconnect(bindedFactData, nullptr, this, nullptr);
     }
     bindedFactData = fact;
     if (bindedFactData) {
@@ -670,6 +697,8 @@ void FactData::bind(FactData *fact)
         connect(fact, &FactData::descrChanged, this, &FactData::descrChanged);
         connect(fact, &FactData::unitsChanged, this, &FactData::unitsChanged);
         connect(fact, &FactData::defaultValueChanged, this, &FactData::defaultValueChanged);
+        if (!dataType())
+            setDataType(bindedFactData->dataType());
     }
     if (rebind) {
         emit valueChanged();

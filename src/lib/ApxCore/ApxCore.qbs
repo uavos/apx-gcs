@@ -49,7 +49,6 @@ ApxApp.ApxLibrary {
         prefix: name+"/"
         files: [
             "Fact.cpp", "Fact.h",
-            "FactAction.cpp", "FactAction.h",
             "FactData.cpp", "FactData.h",
             "FactListModel.cpp", "FactListModel.h",
             "FactListModelActions.cpp", "FactListModelActions.h",
@@ -82,6 +81,7 @@ ApxApp.ApxLibrary {
             "SvgImageProvider.cpp", "SvgImageProvider.h",
             "SvgMaterialIcon.cpp", "SvgMaterialIcon.h",
             "QActionFact.cpp", "QActionFact.h",
+            "FactQml.cpp", "FactQml.h",
         ]
     }
 

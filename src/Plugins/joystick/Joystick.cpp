@@ -48,12 +48,12 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
     f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section);
     f_hats = new Fact(this, "hats", tr("Hats"), "", Section);
 
-    f_save = new FactAction(this,
-                            "save",
-                            tr("Save"),
-                            tr("Save configuration"),
-                            "content-save",
-                            FactAction::ActionApply);
+    f_save = new Fact(this,
+                      "save",
+                      tr("Save"),
+                      tr("Save configuration"),
+                      Action | Apply,
+                      "content-save");
 
     if (device_index < 0) {
         return;

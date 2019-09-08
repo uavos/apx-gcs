@@ -17,12 +17,10 @@ RowLayout {
     FactButton {
         fact: apx.vehicles.REPLAY.telemetry.reader
         Layout.fillHeight: true
+        expandable: false
         //implicitHeight: 18
         //implicitHeight: control.height
-        function openFact(fact)
-        {
-            fact.requestMenu()
-        }
+        onTriggered: fact.requestMenu()
     }
 
 }

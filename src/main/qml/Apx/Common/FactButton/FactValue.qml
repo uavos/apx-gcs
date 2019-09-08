@@ -62,39 +62,17 @@ CleanButton {
     disabledTitleColor: titleColor
 
     //value
-    Label {
-        text: control.valueText
-        Layout.maximumHeight: bodyHeight-Layout.topMargin
-        Layout.topMargin: font.pixelSize*0.05+1
-        font.family: font_narrow
-        font.pixelSize: fontSize(bodyHeight*valueSize-1)
-        verticalAlignment: Text.AlignVCenter
-        color: valueColor
-        //BoundingRect{}
-    }
-
-    /*Connections {
-        target: control
-        enabled: alerts
-        function getDescr()
-        {
-            var s=[]
-            s.push(title+":")
-            if(descr)s.push(descr)
-            s.push("("+value+")")
-            return s.join(" ")
+    contents: [
+        Label {
+            text: control.valueText
+            Layout.maximumHeight: bodyHeight-Layout.topMargin
+            Layout.topMargin: font.pixelSize*0.05+1
+            font.family: font_narrow
+            font.pixelSize: fontSize(bodyHeight*valueSize-1)
+            verticalAlignment: Text.AlignVCenter
+            color: valueColor
         }
-        onWarningChanged: {
-            if(warning){
-                apx.vehicles.current.warnings.warning(getDescr())
-            }
-        }
-        onErrorChanged: {
-            if(error){
-                apx.vehicles.current.warnings.error(getDescr())
-            }
-        }
-    }*/
+    ]
 
     property string message: {
         var s=[]

@@ -35,6 +35,8 @@ class TelemetryRecorder : public Fact
 public:
     explicit TelemetryRecorder(Vehicle *vehicle, Fact *parent);
 
+    quint64 currentTimstamp() const;
+
 private:
     Vehicle *vehicle;
 
@@ -70,6 +72,8 @@ private:
     QString missionHash;
 
     void invalidateCache();
+
+    quint64 m_currentTimestamp;
 
 private slots:
     void updateStatus();

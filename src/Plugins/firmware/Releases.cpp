@@ -34,13 +34,8 @@ Releases::Releases(Fact *parent)
 
     m_packagePrefix = "APX_Nodes_Firmware";
 
-    f_sync = new FactAction(this,
-                            "sync",
-                            tr("Sync"),
-                            tr("Check for updates"),
-                            "sync",
-                            FactAction::ActionApply);
-    connect(f_sync, &FactAction::triggered, this, &Releases::sync);
+    f_sync = new Fact(this, "sync", tr("Sync"), tr("Check for updates"), Action | Apply, "sync");
+    connect(f_sync, &Fact::triggered, this, &Releases::sync);
 
     net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     QTimer::singleShot(2300, this, &Releases::sync);

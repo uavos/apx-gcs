@@ -20,52 +20,31 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Joystick_H
-#define Joystick_H
-#include <QtCore>
-
-#include <ApxMisc/DelayedEvent.h>
+#ifndef FactQml_H
+#define FactQml_H
 #include <Fact/Fact.h>
-#include <SDL.h>
+#include <QQmlListProperty>
 //=============================================================================
-class Joystick : public Fact
+class FactQml : public Fact
 {
     Q_OBJECT
+
+    Q_PROPERTY(QQmlListProperty<FactQml> children READ children)
+    Q_CLASSINFO("DefaultProperty", "children")
+
 public:
-    explicit Joystick(Fact *parent, int device_index, QString uid);
-    ~Joystick();
+    explicit FactQml(QObject *parent = nullptr);
 
-    int device_index;
-    QString uid;
-    SDL_JoystickID instanceID;
-    QString devName;
+    //---------------------------------------
+    // PROPERTIES
+public:
+    QQmlListProperty<FactQml> children();
 
-    Fact *f_conf;
-
-    Fact *f_title;
-
-    Fact *f_axes;
-    Fact *f_buttons;
-    Fact *f_hats;
-
-    Fact *f_save;
-
-    QString juid() const;
-
-    void updateDevice(bool connected);
-    void updateAxis(int i, qreal v);
-    void updateButton(int i, bool v);
-    void updateHat(int i, quint8 v);
-
-    void loadConfig(const QJsonObject &config);
-    QJsonObject saveConfig();
-
-private:
-    SDL_Joystick *dev;
-    DelayedEvent saveEvent;
-
-signals:
-    void save();
+public:
+    static void appendChildren(QQmlListProperty<FactQml> *property, FactQml *value);
+    static FactQml *atChildren(QQmlListProperty<FactQml> *property, int index);
+    static void clearChildren(QQmlListProperty<FactQml> *property);
+    static int countChildren(QQmlListProperty<FactQml> *property);
 };
 //=============================================================================
 #endif

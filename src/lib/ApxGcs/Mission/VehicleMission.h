@@ -88,12 +88,12 @@ public:
 
     MissionStorage *storage;
 
-    FactAction *f_request;
-    FactAction *f_clear;
-    FactAction *f_upload;
+    Fact *f_request;
+    Fact *f_clear;
+    Fact *f_upload;
 
     LookupMissions *f_lookup;
-    FactAction *f_save;
+    Fact *f_save;
     MissionShare *f_share;
 
     MissionTools *f_tools;

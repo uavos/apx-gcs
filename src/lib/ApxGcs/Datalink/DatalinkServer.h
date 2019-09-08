@@ -37,10 +37,11 @@ public:
 
     Fact *f_listen;
     Fact *f_extctr;
+    Fact *f_extsrv;
 
     Fact *f_clients;
 
-    FactAction *f_alloff;
+    Fact *f_alloff;
 
 private:
     Datalink *datalink;

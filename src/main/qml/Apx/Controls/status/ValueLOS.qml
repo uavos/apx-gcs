@@ -14,12 +14,13 @@ FactValue {
     value: v>=1000?(v/1000).toFixed(1):v.toFixed()
 
     property int err: apx.vehicles.current.mandala.errcnt
-    property var errTimer: Timer {
+    Timer {
+        id: errTimer
         interval: 5000
         repeat: false
     }
 
-    property var conn: Connections {
+    Connections {
         target: apx.vehicles
         onVehicleSelected: {
             cv = apx.vehicles.current

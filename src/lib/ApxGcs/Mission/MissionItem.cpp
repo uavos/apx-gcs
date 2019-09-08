@@ -58,16 +58,16 @@ MissionItem::MissionItem(MissionGroup *parent,
                                    Float);
     f_longitude->setUnits("lon");
 
-    f_remove = new FactAction(this, "remove", tr("Remove"), "", "", FactAction::ActionRemove);
-    connect(f_remove, &FactAction::triggered, this, &Fact::remove);
+    f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove mission item"), Action | Remove);
+    connect(f_remove, &Fact::triggered, this, &Fact::remove);
 
-    f_select = new FactAction(this,
-                              "select",
-                              tr("Set as current"),
-                              "",
-                              "target",
-                              FactAction::ActionApply);
-    connect(f_select, &FactAction::triggered, this, &MissionItem::selectTriggered);
+    f_select = new Fact(this,
+                        "select",
+                        tr("Set as current"),
+                        tr("Navigate to mission item"),
+                        Action | Apply,
+                        "target");
+    connect(f_select, &Fact::triggered, this, &MissionItem::selectTriggered);
 
     connect(f_latitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
     connect(f_longitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);

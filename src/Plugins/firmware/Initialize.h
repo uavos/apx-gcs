@@ -39,7 +39,7 @@ public:
     Fact *f_port;
     Fact *f_continuous;
 
-    FactAction *f_start;
+    Fact *f_start;
 
 private:
     Firmware *firmware;

@@ -29,36 +29,38 @@ RowLayout {
         onMenuRequested: mission.requestMenu({"pos":Qt.point(0,ui.window.height)})
         onClicked: mission.trigger()
         onDoubleClicked: menuRequested()
-        Label {
-            id: label
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: missionButton.fontSize(missionButton.bodyHeight/2.3)
-            text: (mission.status)
-                  +"\n"+(mission.empty?"":mission.waypoints.descr)
-        }
+        contents: [
+            Label {
+                id: label
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: missionButton.fontSize(missionButton.bodyHeight/2.3)
+                text: (mission.status)
+                      +"\n"+(mission.empty?"":mission.waypoints.descr)
+            }
+        ]
     }
     FactMenuAction {
-        factAction: mission.action.request
+        fact: mission.action.request
         visible: (!mission.synced)
     }
     FactMenuAction {
-        factAction: mission.action.upload
+        fact: mission.action.upload
         visible: (!mission.synced) && (!mission.empty)
     }
     FactMenuAction {
-        factAction: mission.action.tools.fact.action.save
+        fact: mission.action.tools.bind.action.save
         visible: (!mission.saved) && (!mission.empty)
     }
     FactMenuAction {
-        factAction: mission.action.tools.fact.action.load
+        fact: mission.action.tools.bind.action.load
         visible: (mission.empty)
-        onTriggered: factAction.fact.requestMenu({"pos":Qt.point(0,ui.window.height)})
+        onTriggered: fact.bind.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }
     FactMenuAction {
-        factAction: mission.missionTitle
-        title: factAction.descr
+        fact: mission.missionTitle
+        title: fact.descr
         visible: (!mission.empty) && mission.missionTitle.text===""
         onTriggered: mission.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }

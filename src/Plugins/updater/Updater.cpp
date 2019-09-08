@@ -40,8 +40,8 @@ Updater::Updater(Fact *parent)
                                 true);
     f_auto->load();
 
-    f_check = new FactAction(this, "check", tr("Check"), title(), "update", FactAction::ActionApply);
-    connect(f_check, &FactAction::triggered, this, &Updater::check);
+    f_check = new Fact(this, "check", tr("Check"), title(), Action | Apply, "update");
+    connect(f_check, &Fact::triggered, this, &Updater::check);
 
 #ifdef Q_OS_MAC
     sparkle = new SparkleAutoUpdater();

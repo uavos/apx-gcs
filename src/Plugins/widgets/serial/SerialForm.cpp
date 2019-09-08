@@ -1,6 +1,11 @@
 #include "SerialForm.h"
 #include "ui_SerialForm.h"
+
+#include <ApxDirs.h>
 #include <ApxLog.h>
+
+#include <Telemetry/Telemetry.h>
+#include <Telemetry/TelemetryRecorder.h>
 #include <Vehicles/Vehicles.h>
 
 //==============================================================================
@@ -51,6 +56,8 @@ void SerialForm::closeEvent(QCloseEvent *event)
 //==============================================================================
 void SerialForm::btnReset()
 {
+    if (dumpFile.isOpen())
+        dumpFile.close();
     ui->textEdit->clear();
 }
 void SerialForm::btnSend()
@@ -92,9 +99,50 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
 {
     if ((int) portNo != ui->ePortID->value())
         return;
+
+    //dump log
+    if (ui->cbRec->isChecked()) {
+        int fcnt = 0;
+        while (!dumpFile.isOpen()) {
+            QString fname = QDateTime::currentDateTimeUtc().toString("yyyy_MM_dd_hh_mm_ss_zzz");
+            fname.append(QString("-%1").arg(portNo));
+            if (!ui->eRec->text().trimmed().isEmpty()) {
+                fname.append(QString("-%1").arg(ui->eRec->text().trimmed()));
+            }
+            if (fcnt > 0)
+                fname.append(QString("-%1").arg(fcnt));
+            fname.append(".log");
+            QDir dir(ApxDirs::logs().absoluteFilePath("serial"));
+            dir.mkpath(".");
+            dumpFile.setFileName(dir.absoluteFilePath(fname));
+            if (dumpFile.exists()) {
+                apxMsgW() << tr("File exists:") << fname;
+                fcnt++;
+                continue;
+            }
+            if (!dumpFile.open(QFile::WriteOnly)) {
+                apxMsgW() << tr("File error:") << fname;
+                ui->cbRec->setChecked(false);
+            }
+            break;
+        }
+
+    } else {
+        if (dumpFile.isOpen())
+            dumpFile.close();
+    }
+
     /*if (uart.isOpen()) {
         uart.write((uint8_t *) ba.data(), ba.size());
     }*/
+
+    QString sTimestamp;
+    if (dumpFile.isOpen()) {
+        TelemetryRecorder *rec = Vehicles::instance()->current()->f_telemetry->f_recorder;
+        if (rec)
+            sTimestamp.append(QString("%1").arg(rec->currentTimstamp()));
+    }
+
     if (!ui->cbRead->isChecked())
         return;
     if (ba.size() <= 0)
@@ -103,6 +151,13 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
     QString s;
     switch (ui->cbRxFormat->currentIndex()) {
     case 0: //ASCII
+        if (dumpFile.isOpen()) {
+            if (!sTimestamp.isEmpty()) {
+                dumpFile.write(sTimestamp.toUtf8().append(':'));
+            }
+            dumpFile.write(ba);
+        }
+
         s = QString(ba);
         s.remove('\r');
         s = s.trimmed();
@@ -111,6 +166,13 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
         for (int i = 0; i < ba.size(); i++)
             s += QString().sprintf("%.2X ", (unsigned char) ba.at(i));
         s = s.trimmed();
+
+        if (dumpFile.isOpen()) {
+            if (!sTimestamp.isEmpty()) {
+                dumpFile.write(sTimestamp.toUtf8().append(':'));
+            }
+            dumpFile.write(s.toUtf8().append('\n'));
+        }
         break;
     }
     if (s.isEmpty())

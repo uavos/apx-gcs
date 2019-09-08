@@ -6,10 +6,11 @@ import Apx.Common 1.0
 FactValue {
     id: rssControl
     title: qsTr("RSS")
-    descr: m.RSS.descr+"\n"+m.gcu_RSS.descr
+    descr: m.RSS.descr+"\n"+gcs_m.gcu_RSS.descr
 
+    property var gcs_m: apx.vehicles.LOCAL.mandala
     property real value1: Math.min(1,m.RSS.value)
-    property real value2: Math.min(1,m.gcu_RSS.value)
+    property real value2: Math.min(1,gcs_m.gcu_RSS.value)
 
     property color barColorBG: "#555"
 
@@ -25,34 +26,36 @@ FactValue {
     onClicked: apx.datalink.requestMenu()
     onMenuRequested: apx.datalink.requestMenu()
 
-    ColumnLayout {
-        //anchors.fill: parent
-        spacing: rssControl.height*0.1
-        //Layout.fillHeight: true
-        //Layout.fillWidth: true
-        Rectangle {
-            implicitHeight: barHeight
-            implicitWidth: barWidth
-            border.width: 0
-            color: barColorBG
+    contents: [
+        ColumnLayout {
+            //anchors.fill: parent
+            spacing: rssControl.height*0.1
+            //Layout.fillHeight: true
+            //Layout.fillWidth: true
             Rectangle {
-                anchors.fill: parent
-                anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value1)
+                implicitHeight: barHeight
+                implicitWidth: barWidth
                 border.width: 0
-                color: barColor(value1)
+                color: barColorBG
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value1)
+                    border.width: 0
+                    color: barColor(value1)
+                }
+            }
+            Rectangle {
+                implicitHeight: barHeight
+                implicitWidth: barWidth
+                border.width: 0
+                color: barColorBG
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value2)
+                    border.width: 0
+                    color: barColor(value2)
+                }
             }
         }
-        Rectangle {
-            implicitHeight: barHeight
-            implicitWidth: barWidth
-            border.width: 0
-            color: barColorBG
-            Rectangle {
-                anchors.fill: parent
-                anchors.leftMargin: Math.min(barWidth,barWidth-barWidth*value2)
-                border.width: 0
-                color: barColor(value2)
-            }
-        }
-    }
+    ]
 }

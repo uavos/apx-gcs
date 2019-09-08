@@ -64,24 +64,14 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     connect(f_speed, &Fact::valueChanged, this, &TelemetryPlayer::updateSpeed);
 
     //actions
-    f_play = new FactAction(this,
-                            "play",
-                            tr("Play"),
-                            tr("Play stream"),
-                            "play",
-                            FactAction::ActionApply);
-    connect(f_play, &FactAction::triggered, this, &TelemetryPlayer::play);
+    f_play = new Fact(this, "play", tr("Play"), tr("Play stream"), Action | Apply, "play");
+    connect(f_play, &Fact::triggered, this, &TelemetryPlayer::play);
 
-    f_stop = new FactAction(this,
-                            "stop",
-                            tr("Stop"),
-                            tr("Pause playing"),
-                            "stop",
-                            FactAction::ActionStop);
-    connect(f_stop, &FactAction::triggered, this, &TelemetryPlayer::stop);
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Pause playing"), Action | Stop, "stop");
+    connect(f_stop, &Fact::triggered, this, &TelemetryPlayer::stop);
 
-    f_rewind = new FactAction(this, "rewind", tr("Rewind"), tr("Jump back"), "rewind");
-    connect(f_rewind, &FactAction::triggered, this, &TelemetryPlayer::rewind);
+    f_rewind = new Fact(this, "rewind", tr("Rewind"), tr("Jump back"), Action, "rewind");
+    connect(f_rewind, &Fact::triggered, this, &TelemetryPlayer::rewind);
 
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &TelemetryPlayer::next);
@@ -367,6 +357,9 @@ void TelemetryPlayer::next()
                         if (sv.size() > (fn.size() + 32) || sv.contains('\n')) {
                             sv = fn + "=<data>";
                         }
+                    } else if (evt == "serial") {
+                        qDebug() << evt << sv;
+                        continue;
                     }
                     QString s = QString("[replay]%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
                     if (!sv.isEmpty())

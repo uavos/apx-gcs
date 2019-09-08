@@ -222,7 +222,7 @@ Joystick *Joysticks::addJoystick(int device_index, QString uid)
         }
         saveEvent.schedule();
     });
-    connect(j->f_save, &FactAction::triggered, this, [this, j]() {
+    connect(j->f_save, &Fact::triggered, this, [this, j]() {
         QJsonObject config = j->saveConfig();
         int i = configIndex(config);
         config.remove("index");

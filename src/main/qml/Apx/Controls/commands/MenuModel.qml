@@ -1,57 +1,56 @@
 ﻿import QtQuick 2.11
 
 import APX.Facts 1.0
-import Apx.Common 1.0
 
-FactObject {
-    FactObject {
+Fact {
+    Fact {
         title: qsTr("Controls")
-        icon: "dip-switch" //"google-controller"
-        FactObject { title: qsTr("Parking brake"); fact: m.ctr_brake; dataType: Fact.Bool; }
-        FactObject { title: qsTr("Flaps"); fact: m.ctr_flaps; dataType: Fact.Bool; }
-        FactObject { title: qsTr("Interceptors"); fact: m.ctr_airbrk; dataType: Fact.Bool; }
-        FactObject {
+        icon: "dip-switch"
+        Fact { title: qsTr("Parking brake"); bind: m.ctr_brake; dataType: Fact.Bool; }
+        Fact { title: qsTr("Flaps"); bind: m.ctr_flaps; dataType: Fact.Bool; }
+        Fact { title: qsTr("Interceptors"); bind: m.ctr_airbrk; dataType: Fact.Bool; }
+        Fact {
             title: qsTr("Lights")
-            FactObject { title: qsTr("Navigation"); fact: m.sw_lights; dataType: Fact.Bool; }
-            FactObject { title: qsTr("Taxi"); fact: m.sw_taxi; dataType: Fact.Bool; }
+            Fact { title: qsTr("Navigation"); bind: m.sw_lights; dataType: Fact.Bool; }
+            Fact { title: qsTr("Taxi"); bind: m.sw_taxi; dataType: Fact.Bool; }
         }
     }
-    FactObject {
+    Fact {
         title: qsTr("Engine")
         icon: "engine"
-        FactObject { title: qsTr("Mixture"); fact: m.ctr_mixture; dataType: Fact.Bool; }
-        FactObject { title: qsTr("Ignition"); fact: m.power_ignition; dataType: Fact.Bool; }
-        FactObject { title: qsTr("Cut throttle"); fact: m.cmode_thrcut; dataType: Fact.Bool; }
-        FactObject { title: qsTr("Override throttle"); fact: m.cmode_throvr; dataType: Fact.Bool; }
-        FactObject { }
-        FactObject { title: qsTr("Start engine"); fact: m.ctrb_starter; dataType: Fact.Bool; active: m.sw_starter.value; }
+        Fact { title: qsTr("Mixture"); bind: m.ctr_mixture; dataType: Fact.Bool; }
+        Fact { title: qsTr("Ignition"); bind: m.power_ignition; dataType: Fact.Bool; }
+        Fact { title: qsTr("Cut throttle"); bind: m.cmode_thrcut; dataType: Fact.Bool; }
+        Fact { title: qsTr("Override throttle"); bind: m.cmode_throvr; dataType: Fact.Bool; }
+        Fact { enabled: false }
+        Fact { title: qsTr("Start engine"); bind: m.ctrb_starter; dataType: Fact.Bool; active: m.sw_starter.value; }
     }
-    FactObject {
+    Fact {
         title: qsTr("Power")
         icon: "power-standby"
-        FactObject { title: qsTr("Payload"); fact: m.power_payload; dataType: Fact.Bool; }
-        FactObject { title: qsTr("XPDR"); fact: m.power_xpdr; dataType: Fact.Bool; }
-        FactObject { title: qsTr("AGL"); fact: m.power_agl; dataType: Fact.Bool; }
-        FactObject { }
-        FactObject { title: qsTr("Servo"); fact: m.power_servo; dataType: Fact.Bool; }
+        Fact { title: qsTr("Payload"); bind: m.power_payload; dataType: Fact.Bool; }
+        Fact { title: qsTr("XPDR"); bind: m.power_xpdr; dataType: Fact.Bool; }
+        Fact { title: qsTr("AGL"); bind: m.power_agl; dataType: Fact.Bool; }
+        Fact { enabled: false }
+        Fact { title: qsTr("Servo"); bind: m.power_servo; dataType: Fact.Bool; }
     }
-    FactObject {
+    Fact {
         title: qsTr("Service")
         icon: "settings"
-        FactObject {
+        Fact {
             title: qsTr("AHRS")
-            FactObject { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; onTriggered: application.jsexec(descr); }
-            FactObject { title: qsTr("Reset static pressure"); descr: "zps()"; onTriggered: application.jsexec(descr); }
-            FactObject { }
-            FactObject { title: qsTr("Reset AHRS filter"); descr: "ahrs()"; onTriggered: application.jsexec(descr); }
-            FactObject { }
-            FactObject { title: m.cmode_ahrs.descr; fact: m.cmode_ahrs; dataType: Fact.Bool; }
+            Fact { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; onTriggered: application.jsexec(descr); }
+            Fact { title: qsTr("Reset static pressure"); descr: "zps()"; onTriggered: application.jsexec(descr); }
+            Fact { enabled: false }
+            Fact { title: qsTr("Reset AHRS filter"); descr: "ahrs()"; onTriggered: application.jsexec(descr); }
+            Fact { enabled: false }
+            Fact { title: m.cmode_ahrs.descr; bind: m.cmode_ahrs; dataType: Fact.Bool; }
         }
     }
-    FactObject {
+    Fact {
         title: qsTr("Emergency")
         icon: "alert-box"
-        FactObject { title: qsTr("ERS"); fact: m.ctrb_ers; dataType: Fact.Bool; }
-        FactObject { title: qsTr("Release"); fact: m.ctrb_rel; dataType: Fact.Bool; }
+        Fact { title: qsTr("ERS"); bind: m.ctrb_ers; dataType: Fact.Bool; }
+        Fact { title: qsTr("Release"); bind: m.ctrb_rel; dataType: Fact.Bool; }
     }
 }

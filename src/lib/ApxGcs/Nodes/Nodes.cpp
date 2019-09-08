@@ -42,63 +42,57 @@ Nodes::Nodes(Vehicle *parent)
 
     model()->setFlat(true);
 
-    f_upload = new FactAction(this,
-                              "upload",
-                              tr("Upload"),
-                              tr("Upload modified values"),
-                              "upload",
-                              FactAction::ActionApply);
-    connect(f_upload, &FactAction::triggered, this, &Nodes::upload);
+    f_upload = new Fact(this,
+                        "upload",
+                        tr("Upload"),
+                        tr("Upload modified values"),
+                        Action | Apply,
+                        "upload");
+    connect(f_upload, &Fact::triggered, this, &Nodes::upload);
 
-    f_request = new FactAction(this,
-                               "request",
-                               tr("Request"),
-                               tr("Download from vehicle"),
-                               "download");
-    connect(f_request, &FactAction::triggered, this, &Nodes::request);
+    f_request
+        = new Fact(this, "request", tr("Request"), tr("Download from vehicle"), Action, "download");
+    connect(f_request, &Fact::triggered, this, &Nodes::request);
 
-    f_reload = new FactAction(this, "reload", tr("Reload"), tr("Clear and download all"), "reload");
-    connect(f_reload, &FactAction::triggered, this, &Nodes::reload);
+    f_reload = new Fact(this, "reload", tr("Reload"), tr("Clear and download all"), Action, "reload");
+    connect(f_reload, &Fact::triggered, this, &Nodes::reload);
 
-    f_stop = new FactAction(this,
-                            "stop",
-                            tr("Stop"),
-                            tr("Stop data requests"),
-                            "",
-                            FactAction::ActionStop);
-    connect(f_stop, &FactAction::triggered, this, &Nodes::stop);
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop data requests"), Action | Stop);
+    connect(f_stop, &Fact::triggered, this, &Nodes::stop);
 
-    f_clear = new FactAction(this,
-                             "clear",
-                             tr("Clear"),
-                             tr("Remove all nodes from list"),
-                             "notification-clear-all");
-    connect(f_clear, &FactAction::triggered, this, &Nodes::clear);
+    f_clear = new Fact(this,
+                       "clear",
+                       tr("Clear"),
+                       tr("Remove all nodes from list"),
+                       Action,
+                       "notification-clear-all");
+    connect(f_clear, &Fact::triggered, this, &Nodes::clear);
 
-    f_nstat = new FactAction(this,
-                             "nstat",
-                             tr("Stats"),
-                             tr("Request diagnostics"),
-                             "chart-bar-stacked");
-    connect(f_nstat, &FactAction::triggered, this, &Nodes::nstat);
+    f_nstat = new Fact(this,
+                       "nstat",
+                       tr("Stats"),
+                       tr("Request diagnostics"),
+                       Action,
+                       "chart-bar-stacked");
+    connect(f_nstat, &Fact::triggered, this, &Nodes::nstat);
 
     //storage actions
     storage = new NodesStorage(this);
 
     f_lookup = new LookupConfigs(this, nullptr);
     f_lookup->setParent(this);
-    a_lookup = new FactAction(this, f_lookup);
+    a_lookup = f_lookup->createAction(this);
 
-    f_save = new FactAction(this, "save", tr("Save"), tr("Save configuration"), "content-save");
-    connect(f_save, &FactAction::triggered, this, &Nodes::save);
+    f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
+    connect(f_save, &Fact::triggered, this, &Nodes::save);
 
     f_share = new NodesShare(this, nullptr);
     f_share->setParent(this);
-    a_share = new FactAction(this, f_share);
+    a_share = f_share->createAction(this);
 
-    foreach (FactAction *a, actions) {
-        a->setFlag(FactAction::ActionHideTitle);
-        a->setHideDisabled(false);
+    foreach (FactBase *a, actions()) {
+        a->setOption(IconOnly);
+        a->setOption(ShowDisabled);
     }
 
     connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
@@ -314,7 +308,7 @@ void Nodes::upgradeStarted(QString sn)
     connect(fw, &ProtocolServiceFirmware::statusChanged, node, [node, fw]() {
         node->setDescr(fw->status());
     });
-    connect(f_stop, &FactAction::triggered, fw, &ProtocolServiceFirmware::stop);
+    connect(f_stop, &Fact::triggered, fw, &ProtocolServiceFirmware::stop);
 }
 void Nodes::upgradeFinished(QString sn, bool success)
 {

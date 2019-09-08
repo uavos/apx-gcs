@@ -31,7 +31,10 @@
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
 
+namespace mandala {
 #include <Mandala/MandalaConstants.h>
+#include <Mandala/MandalaIndexes.h>
+}; // namespace mandala
 //=============================================================================
 Vehicle::Vehicle(Vehicles *vehicles,
                  QString callsign,
@@ -56,8 +59,9 @@ Vehicle::Vehicle(Vehicles *vehicles,
     connect(this, &Vehicle::callsignChanged, this, &Vehicle::updateTitle);
     connect(this, &Vehicle::streamTypeChanged, this, &Vehicle::updateStatus);
 
-    f_select = new FactAction(this, "select", tr("Select"), tr("Make this vehicle active"), "select");
-    connect(f_select, &FactAction::triggered, this, [=]() { vehicles->selectVehicle(this); });
+    f_select
+        = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
+    connect(f_select, &Fact::triggered, this, [=]() { vehicles->selectVehicle(this); });
     connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
         f_select->setEnabled(v != this);
     });
@@ -121,6 +125,22 @@ Vehicle::Vehicle(Vehicles *vehicles,
         }
     }
 
+    if (protocol && !isTemporary() && !isReplay()) {
+        connect(this,
+                &Vehicle::coordinateChanged,
+                this,
+                &Vehicle::updateGeoPath,
+                Qt::QueuedConnection);
+        //connect(f_telemetry, &Fact::activeChanged, this, &Vehicle::resetGeoPath);
+        Fact *f = new Fact(this,
+                           "rpath",
+                           tr("Reset Path"),
+                           tr("Clear travelled path"),
+                           Action | IconOnly,
+                           "history");
+        connect(f, &Fact::triggered, this, &Vehicle::resetGeoPath);
+    }
+
     updateStatus();
     updateInfo();
 
@@ -141,6 +161,11 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 &ProtocolTelemetry::serialDataReceived,
                 this,
                 &Vehicle::setStreamData);
+
+        connect(protocol->telemetry,
+                &ProtocolTelemetry::mandalaValueReceived,
+                this,
+                &Vehicle::updateDatalinkVars);
 
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
@@ -269,17 +294,45 @@ void Vehicle::updateInfoReq()
 }
 void Vehicle::updateCoordinate()
 {
-    setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(), f_gps_lon->value().toDouble()));
+    setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(),
+                                 f_gps_lon->value().toDouble(),
+                                 f_gps_hmsl->value().toDouble()));
 }
 void Vehicle::updateFlightState()
 {
-    if ((f_mode->value().toUInt() == mode_LANDING) && (f_stage->value().toUInt() >= 250)) {
+    if ((f_mode->value().toUInt() == mandala::mode_LANDING) && (f_stage->value().toUInt() >= 250)) {
         setFlightState(FS_LANDED);
-    } else if ((f_mode->value().toUInt() == mode_TAKEOFF) && (f_stage->value().toUInt() >= 2)
-               && (f_stage->value().toUInt() < 100)) {
+    } else if ((f_mode->value().toUInt() == mandala::mode_TAKEOFF)
+               && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
     } else
         setFlightState(FS_UNKNOWN);
+}
+void Vehicle::updateGeoPath()
+{
+    QGeoCoordinate c(coordinate());
+    if (!c.isValid())
+        return;
+    if (c.latitude() == 0.0)
+        return;
+    if (c.longitude() == 0.0)
+        return;
+    if (!m_geoPath.isEmpty()) {
+        QGeoCoordinate c0(m_geoPath.path().last());
+        /*if (c0.latitude() == c.latitude())
+            return;
+        if (c0.longitude() == c.longitude())
+            return;*/
+        if (c0.distanceTo(c) < 10.0)
+            return;
+    }
+
+    m_geoPath.addCoordinate(c);
+    emit geoPathChanged();
+    //emit geoPathAppend(c);
+    if (m_geoPath.size() >= 3) {
+        emit geoPathAppend(m_geoPath.path().at(m_geoPath.size() - 3));
+    }
 }
 //=============================================================================
 bool Vehicle::isLocal() const
@@ -430,6 +483,11 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
     protocol->telemetry->sendVectorValue(f_gps_lat->id(), c.latitude(), c.longitude(), hmsl);
 }
 //=============================================================================
+void Vehicle::resetGeoPath()
+{
+    setGeoPath(QGeoPath());
+}
+//=============================================================================
 //=============================================================================
 QString Vehicle::fileTitle() const
 {
@@ -480,6 +538,55 @@ QString Vehicle::confTitle() const
     if (!s.isEmpty())
         return s;
     return anyName;
+}
+//=============================================================================
+//=============================================================================
+QString Vehicle::mandalaToString(quint16 mid) const
+{
+    VehicleMandalaFact *mf = f_mandala->factById(mid);
+    return mf ? mf->title() : QString();
+}
+quint16 Vehicle::stringToMandala(const QString &s) const
+{
+    if ((!s.isEmpty()) && s != "0") {
+        VehicleMandalaFact *mf;
+        //try int
+        bool ok = false;
+        uint i = s.toUInt(&ok);
+        if (ok && i < 0xFFFF) {
+            mf = f_mandala->factById(static_cast<quint16>(i));
+            if (mf)
+                return mf->id();
+        }
+        //try text
+        mf = f_mandala->factByName(s);
+        if (mf)
+            return mf->id();
+    }
+    return 0;
+}
+const QStringList *Vehicle::mandalaNames() const
+{
+    return &f_mandala->names;
+}
+//=============================================================================
+void Vehicle::updateDatalinkVars(quint16 id, double)
+{
+    switch (id) {
+    default:
+        return;
+    case mandala::idx_gcu_RSS:
+    case mandala::idx_gcu_Ve:
+    case mandala::idx_gcu_MT:
+        break;
+    }
+    Fact *fdest = Vehicles::instance()->f_local->f_mandala->factById(id);
+    if (!fdest)
+        return;
+    Fact *fsrc = f_mandala->factById(id);
+    if (!fsrc)
+        return;
+    fdest->setValue(fsrc->value());
 }
 //=============================================================================
 //=============================================================================
@@ -571,5 +678,16 @@ void Vehicle::setFlightState(const FlightState &v)
         return;
     m_flightState = v;
     emit flightStateChanged();
+}
+QGeoPath Vehicle::geoPath(void) const
+{
+    return m_geoPath;
+}
+void Vehicle::setGeoPath(const QGeoPath &v)
+{
+    if (m_geoPath == v)
+        return;
+    m_geoPath = v;
+    emit geoPathChanged();
 }
 //=============================================================================

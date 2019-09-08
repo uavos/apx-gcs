@@ -10,43 +10,47 @@ import Apx.Common 1.0
 CleanButton {
     id: control
 
-    property var factAction
+    property var fact
 
-    property int flags: (factAction && factAction.flags)?factAction.flags:0
+    property int options: fact?fact.options:0
+    property int dataType: fact?fact.dataType:0
 
-    toolTip: factAction?factAction.descr:""
-    iconName: factAction?factAction.icon:""
-    title: ((!bHideTitle)&&factAction)?factAction.title:""
-    enabled: factAction?factAction.enabled:true
-    visible: factAction?factAction.visible:true
+    toolTip: fact?fact.descr:""
+    iconName: fact?fact.icon:""
+    title: (fact && (!bIconOnly))?fact.title:""
+    enabled: fact?fact.enabled:true
+    visible: (fact?fact.visible:true) && (bShowDisabled||enabled)
 
     //internal
-    property bool bApply: flags&FactAction.ActionApply
-    property bool bRemove: flags&FactAction.ActionRemove
-    property bool bStop: flags&FactAction.ActionStop
-    property bool bClose: flags&FactAction.ActionCloseOnTrigger
-    property bool bPage: flags&FactAction.ActionPage
-    property bool bHideTitle: flags&FactAction.ActionHideTitle
+    property bool bApply: dataType==Fact.Apply
+    property bool bRemove: dataType==Fact.Remove
+    property bool bStop: dataType==Fact.Stop
+    property bool bPage: dataType==Fact.Page
 
-    color: bApply?MenuStyle.cActionApply:
-                   bRemove?MenuStyle.cActionRemove:
-                            bStop?MenuStyle.cActionStop:
-                                   undefined
+    property bool bIconOnly: options&Fact.IconOnly
+    property bool bShowDisabled: options&Fact.ShowDisabled
+    property bool bClose: options&Fact.CloseOnTrigger
+
+    color: bApply
+           ? MenuStyle.cActionApply
+           : bRemove
+             ? MenuStyle.cActionRemove
+             : bStop
+               ? MenuStyle.cActionStop
+               : undefined
 
     onTriggered: {
+        if(fact) fact.trigger()
         if(bPage){
-            //console.log(factAction.fact)
-            if(factAction){
-                factAction.trigger()
-                if(typeof(openFact)!='undefined') openFact(factAction.fact)
-            }
+            //console.log(fact)
+            if(fact && fact.bind && typeof(openFact)!='undefined')
+                openFact(fact.bind)
             return
         }
-        if(factAction) factAction.trigger()
         if(bClose && typeof(factMenu)!=='undefined') factMenu.back()
     }
     onMenuRequested: {
-        if(typeof(fact)!=='undefined')openFact(fact,{"pageInfo": true, "pageInfoAction": factAction})
+        if(typeof(fact.bind)!=='undefined')openFact(fact.bind,{"pageInfo": true, "pageInfoAction": fact})
     }
 
 }

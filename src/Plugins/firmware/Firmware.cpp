@@ -58,24 +58,20 @@ Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
                            Section | Const);
     f_available->setIcon("star-circle");
 
-    f_upgrade = new FactAction(this,
-                               "upgrade",
-                               tr("Upgrade"),
-                               tr("Auto upgrade all nodes"),
-                               "auto-upload");
+    f_upgrade = new Fact(this,
+                         "upgrade",
+                         tr("Upgrade"),
+                         tr("Auto upgrade all nodes"),
+                         Action,
+                         "auto-upload");
 
-    f_stop = new FactAction(this,
-                            "stop",
-                            tr("Stop"),
-                            tr("Stop upgrading"),
-                            "",
-                            FactAction::ActionStop);
-    connect(f_stop, &FactAction::triggered, this, &Firmware::stop);
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
+    connect(f_stop, &Fact::triggered, this, &Firmware::stop);
 
     //tools actions
     f_tools = new FirmwareTools(this, nullptr);
     f_tools->setParent(this);
-    new FactAction(this, f_tools, FactAction::ActionHideTitle);
+    f_tools->createAction(this)->setOption(IconOnly);
 
     connect(f_queue, &Fact::sizeChanged, this, &Firmware::updateStatus);
     connect(f_available, &Fact::sizeChanged, this, &Firmware::updateStatus);

@@ -78,16 +78,11 @@ Fact *NodeToolBlackbox::addCommand(QString name, QString title, QString descr, q
     f_end->setMin(0);
 
     //actions
-    f_start = new FactAction(f_read, "start", tr("Start"), tr("Download data"), "download");
-    connect(f_start, &FactAction::triggered, this, &NodeToolBlackbox::download);
+    f_start = new Fact(f_read, "start", tr("Start"), tr("Download data"), Action, "download");
+    connect(f_start, &Fact::triggered, this, &NodeToolBlackbox::download);
 
-    f_stop = new FactAction(f_read,
-                            "stop",
-                            tr("Stop"),
-                            tr("Stop downloading"),
-                            "stop",
-                            FactAction::ActionStop);
-    connect(f_stop, &FactAction::triggered, this, &NodeToolBlackbox::stop);
+    f_stop = new Fact(f_read, "stop", tr("Stop"), tr("Stop downloading"), Action | Stop, "stop");
+    connect(f_stop, &Fact::triggered, this, &NodeToolBlackbox::stop);
 
     connect(this, &Fact::progressChanged, this, &NodeToolBlackbox::updateActions);
 
@@ -106,11 +101,12 @@ Fact *NodeToolBlackbox::addCommand(QString name, QString title, QString descr, q
 //=============================================================================
 void NodeToolBlackbox::updateActions()
 {
-    f_start->setEnabled(progress() < 0 && op == op_idle && rec_size > 0);
+    bool bOnline = !node->offline();
+    f_start->setEnabled(bOnline && progress() < 0 && op == op_idle && rec_size > 0);
     f_stop->setEnabled(op != op_idle);
 
-    f_begin->setEnabled(rec_size);
-    f_end->setEnabled(rec_size);
+    f_begin->setEnabled(bOnline && rec_size);
+    f_end->setEnabled(bOnline && rec_size);
 
     //propagate progress
     f_read->setProgress(progress());
@@ -148,6 +144,8 @@ void NodeToolBlackbox::request(quint32 blk)
 }
 void NodeToolBlackbox::getStats()
 {
+    if (node->offline())
+        return;
     if (op == op_read)
         return;
     f_stats->setTitle(tr("Getting blackbox info"));

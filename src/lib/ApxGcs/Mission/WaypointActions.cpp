@@ -28,6 +28,7 @@ WaypointActions::WaypointActions(Waypoint *parent)
     : Fact(parent, "actions", tr("Actions"), tr("Actions to perform on waypoint"), Group)
     , blockActionsValueChanged(false)
 {
+    setObjectName("actions"); //name to identify in text value
     f_speed = new MissionField(this,
                                "speed",
                                tr("Speed"),

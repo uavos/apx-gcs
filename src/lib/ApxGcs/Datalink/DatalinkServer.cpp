@@ -63,14 +63,25 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     f_extctr->setIcon("remote");
     connect(f_extctr, &Fact::valueChanged, this, &DatalinkServer::updateClientsNetworkMode);
 
+    f_extsrv = new AppSettingFact(AppSettings::settings(),
+                                  this,
+                                  "extsrv",
+                                  tr("Service requests from clients"),
+                                  tr("Don't block service requests from clients"),
+                                  Bool,
+                                  true);
+    f_extsrv->setIcon("puzzle");
+    connect(f_extsrv, &Fact::valueChanged, this, &DatalinkServer::updateClientsNetworkMode);
+
     f_clients = new Fact(this, "clients", tr("Clients"), tr("Connected clients"), Section | Const);
     connect(f_clients, &Fact::sizeChanged, this, &DatalinkServer::updateStatus);
 
-    f_alloff = new FactAction(this,
-                              "alloff",
-                              tr("Disconnect all"),
-                              tr("Drop all client connections"),
-                              "lan-disconnect");
+    f_alloff = new Fact(this,
+                        "alloff",
+                        tr("Disconnect all"),
+                        tr("Drop all client connections"),
+                        Action,
+                        "lan-disconnect");
 
     tcpServer = new QTcpServer(this);
     connect(tcpServer, &QTcpServer::newConnection, this, &DatalinkServer::newConnection);
@@ -164,7 +175,7 @@ void DatalinkServer::newConnection()
         DatalinkTcpSocket *c = new DatalinkTcpSocket(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
         c->setTitle(socket->peerAddress().toString());
-        connect(f_alloff, &FactAction::triggered, c, &DatalinkConnection::close);
+        connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
         connect(c, &DatalinkTcpSocket::httpRequest, http, &HttpService::httpRequest);
         datalink->addConnection(c);
         c->setValue(true);
@@ -175,12 +186,19 @@ void DatalinkServer::updateClientsNetworkMode()
 {
     quint16 rxNetwork = Datalink::CLIENTS | Datalink::LOCAL;
     quint16 txNetwork = Datalink::CLIENTS | Datalink::SERVERS | Datalink::LOCAL;
-    if (!f_extctr->value().toBool())
+
+    bool extctr = f_extctr->value().toBool();
+    bool extsrv = f_extsrv->value().toBool();
+
+    if (!(extctr || extsrv))
         rxNetwork = 0;
+
     for (int i = 0; i < f_clients->size(); ++i) {
         DatalinkConnection *c = static_cast<DatalinkConnection *>(f_clients->child(i));
         c->setRxNetwork(rxNetwork);
         c->setTxNetwork(txNetwork);
+        c->setBlockControls(rxNetwork && (!extctr));
+        c->setBlockService(rxNetwork && (!extsrv));
     }
 }
 //=============================================================================

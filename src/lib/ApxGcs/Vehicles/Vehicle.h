@@ -24,7 +24,7 @@
 #define Vehicle_H
 //=============================================================================
 #include <QGeoCoordinate>
-#include <QtCore>
+#include <QGeoPath>
 
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
@@ -63,6 +63,8 @@ class Vehicle : public Fact
 
     Q_PROPERTY(FlightState flightState READ flightState NOTIFY flightStateChanged)
 
+    Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
+
 public:
     enum VehicleClass {
         //must match the IDENT::_vclass type
@@ -88,7 +90,7 @@ public:
                      VehicleClass vclass,
                      ProtocolVehicle *protocol);
 
-    ~Vehicle();
+    ~Vehicle() override;
 
     VehicleMandala *f_mandala;
     Nodes *f_nodes;
@@ -96,7 +98,7 @@ public:
     Telemetry *f_telemetry;
     VehicleWarnings *f_warnings;
 
-    FactAction *f_select;
+    Fact *f_select;
 
     QString uid;
 
@@ -115,6 +117,11 @@ public:
     Q_INVOKABLE bool isLocal() const;
     Q_INVOKABLE bool isReplay() const;
     Q_INVOKABLE bool isTemporary() const;
+
+    //Mandala support
+    QString mandalaToString(quint16 mid) const override;
+    quint16 stringToMandala(const QString &s) const override;
+    const QStringList *mandalaNames() const override;
 
 private:
     QTimer dlinkReqTimer;
@@ -145,6 +152,7 @@ private slots:
     void updateInfoReq();
     void updateCoordinate();
     void updateFlightState();
+    void updateGeoPath();
 
     void dbSetVehicleKey(quint64 key);
 
@@ -154,6 +162,8 @@ private slots:
     void setStreamTelemetry();
     void setStreamData();
     void setStreamService();
+
+    void updateDatalinkVars(quint16 id, double);
 
 signals:
     //forward from protocols
@@ -170,6 +180,8 @@ signals:
     void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
 
+    void geoPathAppend(QGeoCoordinate p);
+
     //provided methods
 public slots:
     void vmexec(QString func);
@@ -179,6 +191,8 @@ public slots:
     void lookHere(const QGeoCoordinate &c);
     void setHomePoint(const QGeoCoordinate &c);
     void sendPositionFix(const QGeoCoordinate &c);
+
+    void resetGeoPath();
 
     //Database
 public slots:
@@ -200,7 +214,7 @@ public:
     void setVehicleClass(const VehicleClass v);
     void setVehicleClass(const QString &v);
 
-    QString info(void) const;
+    QString info(void) const override;
 
     bool follow(void) const;
     void setFollow(const bool &v);
@@ -211,6 +225,9 @@ public:
     FlightState flightState(void) const;
     void setFlightState(const FlightState &v);
 
+    QGeoPath geoPath() const;
+    void setGeoPath(const QGeoPath &v);
+
 protected:
     StreamType m_streamType;
     quint16 m_squawk;
@@ -220,6 +237,7 @@ protected:
     bool m_follow;
     QGeoCoordinate m_coordinate;
     FlightState m_flightState;
+    QGeoPath m_geoPath;
 
 signals:
     void streamTypeChanged();
@@ -230,6 +248,7 @@ signals:
     void followChanged();
     void coordinateChanged();
     void flightStateChanged();
+    void geoPathChanged();
 };
 //=============================================================================
 #endif

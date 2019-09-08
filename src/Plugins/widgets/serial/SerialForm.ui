@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
-    <height>327</height>
+    <width>693</width>
+    <height>323</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -79,6 +79,23 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="eRec">
+       <property name="toolTip">
+        <string>Device to forward data</string>
+       </property>
+       <property name="placeholderText">
+        <string>serial-dump</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="cbRec">
+       <property name="text">
+        <string>Record dump</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLineEdit" name="eForward">

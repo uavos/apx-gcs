@@ -5,6 +5,8 @@ import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
 import QtQml 2.12
 
+import APX.Facts 1.0
+
 import Apx.Common 1.0
 
 FactMenuListView {
@@ -25,7 +27,7 @@ FactMenuListView {
             FactButton {
                 height: MenuStyle.itemSize
                 property var d: modelData
-                fact: FactObject {
+                fact: Fact {
                     title: d.title?d.title:qsTr("No title")
                     descr: d.descr?d.descr:""
                     status: d.status?d.status:""

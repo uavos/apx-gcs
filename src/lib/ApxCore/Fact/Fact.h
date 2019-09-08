@@ -23,7 +23,6 @@
 #ifndef Fact_H
 #define Fact_H
 //=============================================================================
-#include "FactAction.h"
 #include "FactData.h"
 #include "FactListModel.h"
 #include "FactListModelActions.h"
@@ -45,19 +44,22 @@ class Fact : public FactData
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
 
-    Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
+    Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 
+    Q_PROPERTY(Fact *bind READ bind WRITE setBind NOTIFY bindChanged)
     Q_PROPERTY(Fact *link READ link NOTIFY linkChanged)
+
     Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
 public:
-    explicit Fact(FactBase *parent,
-                  const QString &name,
-                  const QString &title,
-                  const QString &descr,
-                  FactBase::Flags flags = FactBase::Flags(NoFlags));
+    explicit Fact(QObject *parent = nullptr,
+                  const QString &name = QString(),
+                  const QString &title = QString(),
+                  const QString &descr = QString(),
+                  FactBase::Flags flags = FactBase::Flags(NoFlags),
+                  const QString &icon = QString());
 
     Q_INVOKABLE QByteArray hash() const;
 
@@ -77,9 +79,6 @@ public:
     QVariant userData;
 
     virtual bool lessThan(Fact *rightFact) const; //sorting helper
-
-    //actions
-    QList<FactAction *> actions;
 
     //data model
     enum {
@@ -129,12 +128,15 @@ public:
 
     virtual void hashData(QCryptographicHash *h) const;
 
-    void bind(FactData *fact) override;
+    Q_INVOKABLE void bind(FactData *fact) override;
+
+    //create action fact that opens this fact, or binded to this action
+    Q_INVOKABLE Fact *createAction(Fact *parent);
 
 private:
-    QPointer<Fact> bindedFact;
-
     QString pTitle() const;
+
+    void updateDefaultIcon();
 
 protected:
     bool blockNotify;
@@ -160,10 +162,10 @@ public:
     void setActionsModel(FactListModelActions *v);
 
     bool enabled() const;
-    void setEnabled(const bool &v);
+    void setEnabled(const bool v);
 
     bool visible() const;
-    void setVisible(const bool &v);
+    void setVisible(const bool v);
 
     QString section() const;
     void setSection(const QString &v);
@@ -172,13 +174,16 @@ public:
     void setStatus(const QString &v);
 
     bool active() const;
-    void setActive(const bool &v);
+    void setActive(const bool v);
 
     int progress() const;
-    void setProgress(const int &v);
+    void setProgress(const int v);
 
     QString icon() const;
     void setIcon(const QString &v);
+
+    Fact *bind() const;
+    void setBind(Fact *v);
 
     Fact *link() const;
     void setLink(Fact *v);
@@ -200,7 +205,10 @@ protected:
     bool m_active;
     int m_progress;
     QString m_icon;
-    Fact *m_link;
+
+    QPointer<Fact> m_bind;
+    QPointer<Fact> m_link;
+
     QString m_qmlPage;
     QColor m_color;
 
@@ -216,7 +224,10 @@ signals:
     void progressChanged();
 
     void iconChanged();
+
+    void bindChanged();
     void linkChanged();
+
     void qmlPageChanged();
     void colorChanged();
 

@@ -52,14 +52,9 @@ MissionTools::MissionTools(VehicleMission *mission, Fact *parent)
         f_altadjust->setModified(false);
         f_altadjustApply->setEnabled(f_altadjust->value().toInt() != 0);
     });
-    f_altadjustApply = new FactAction(f,
-                                      "apply",
-                                      tr("Apply"),
-                                      "",
-                                      "",
-                                      FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
+    f_altadjustApply = new Fact(f, "apply", tr("Apply"), "", Action | Apply | CloseOnTrigger);
     f_altadjustApply->setEnabled(false);
-    connect(f_altadjustApply, &FactAction::triggered, this, &MissionTools::altadjustTriggered);
+    connect(f_altadjustApply, &Fact::triggered, this, &MissionTools::altadjustTriggered);
 
     f = new Fact(this, "altset", tr("Altitude set"), tr("Set all waypoints altitude"), Group);
     f->setIcon("format-align-middle");
@@ -72,14 +67,9 @@ MissionTools::MissionTools(VehicleMission *mission, Fact *parent)
         f_altset->setModified(false);
         f_altsetApply->setEnabled(f_altset->value().toInt() != 0);
     });
-    f_altsetApply = new FactAction(f,
-                                   "apply",
-                                   tr("Apply"),
-                                   "",
-                                   "",
-                                   FactAction::ActionApply | FactAction::ActionCloseOnTrigger);
+    f_altsetApply = new Fact(f, "apply", tr("Apply"), "", Action | Apply | CloseOnTrigger);
     f_altsetApply->setEnabled(false);
-    connect(f_altsetApply, &FactAction::triggered, this, &MissionTools::altsetTriggered);
+    connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
 
     VehicleSelect *fvs = new VehicleSelect(this, "copy", tr("Copy"), tr("Copy to vehicle"));
     if (!mission->vehicle->isLocal())

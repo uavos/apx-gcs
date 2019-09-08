@@ -25,6 +25,8 @@
 #include <ApxMisc/DelayedEvent.h>
 #include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
+#include <QGeoPath>
+#include <QGeoRectangle>
 #include <QtCore>
 class LookupTelemetry;
 //=============================================================================
@@ -34,13 +36,16 @@ class TelemetryReader : public Fact
     Q_PROPERTY(quint64 totalSize READ totalSize NOTIFY totalSizeChanged)
     Q_PROPERTY(quint64 totalTime READ totalTime NOTIFY totalTimeChanged)
 
+    Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
+    Q_PROPERTY(QGeoRectangle geoRect READ geoRect NOTIFY geoRectChanged)
+
 public:
     explicit TelemetryReader(LookupTelemetry *lookup, Fact *parent);
 
     LookupTelemetry *lookup;
 
     Fact *f_notes;
-    FactAction *f_reload;
+    Fact *f_reload;
 
     //data from database
     QMap<QString, quint64> evtCountMap;
@@ -52,6 +57,7 @@ public:
 private:
     bool blockNotesChange;
     DelayedEvent loadEvent;
+    bool discardRequested;
 
     void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);
 
@@ -77,6 +83,8 @@ private slots:
 
     void reloadTriggered();
 
+    void discardRequests(); //to stop loading on action
+
 signals:
     void statsAvailable();
     void dataAvailable(quint64 cacheID);
@@ -90,13 +98,22 @@ public:
     quint64 totalTime() const;
     void setTotalTime(quint64 v);
 
+    QGeoPath geoPath() const;
+    void setGeoPath(const QGeoPath &v);
+    QGeoRectangle geoRect() const;
+    void setGeoRect(const QGeoRectangle &v);
+
 private:
     quint64 m_totalSize;
     quint64 m_totalTime;
+    QGeoPath m_geoPath;
+    QGeoRectangle m_geoRect;
 
 signals:
     void totalSizeChanged();
     void totalTimeChanged();
+    void geoPathChanged();
+    void geoRectChanged();
 };
 //=============================================================================
 #endif
