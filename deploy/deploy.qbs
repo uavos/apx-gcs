@@ -4,7 +4,7 @@
 
     references: [
         "deploy_qt.qbs",
-        "deploy_dmg.qbs",
         "deploy_sdk.qbs",
     ]
+    .concat(qbs.targetOS.contains("macos")?["deploy_dmg.qbs"]:[])
 }
