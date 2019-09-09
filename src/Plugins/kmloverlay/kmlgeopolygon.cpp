@@ -1,12 +1,12 @@
 #include "kmlgeopolygon.h"
 
-#include <QPainter>
+#include <cmath>
 #include <QGeoRectangle>
-#include <math.h>
+#include <QPainter>
 
-KmlGeoPolygon::KmlGeoPolygon(QQuickItem *parent):
-    QQuickPaintedItem(parent),
-    m_map(nullptr)
+KmlGeoPolygon::KmlGeoPolygon(QQuickItem *parent)
+    : QQuickPaintedItem(parent)
+    , m_map(nullptr)
 {
     setRenderTarget(QQuickPaintedItem::FramebufferObject);
     setAntialiasing(false);
@@ -28,11 +28,11 @@ void KmlGeoPolygon::prepareForDrawing()
 {
     QRegion clip(m_polygon);
 
-    for(int i = 0; i < m_holes.size(); i++)
+    for (int i = 0; i < m_holes.size(); i++)
         clip -= QRegion(m_holes[i]);
 
     QRegion window(QRect(x(), y(), width(), height()));
-    m_clip = clip;//.intersected(window);
+    m_clip = clip; //.intersected(window);
 }
 
 void KmlGeoPolygon::setGeoPolygon(const QGeoPolygon &geoPolygon)
@@ -67,8 +67,7 @@ QGeoShape KmlGeoPolygon::getArea() const
 void KmlGeoPolygon::setArea(const QGeoShape &area)
 {
     m_area = area;
-    if(m_map)
-    {
+    if (m_map) {
         recalcCoordinates();
         prepareForDrawing();
         update();
@@ -77,8 +76,7 @@ void KmlGeoPolygon::setArea(const QGeoShape &area)
 
 void KmlGeoPolygon::setColor(const QColor &color)
 {
-    if(m_color != color)
-    {
+    if (m_color != color) {
         m_color = color;
         emit colorChanged();
         update();
@@ -103,7 +101,8 @@ void KmlGeoPolygon::paint(QPainter *painter)
 QPoint KmlGeoPolygon::fromCoordinate(const QGeoCoordinate &c)
 {
     QPointF point;
-    QMetaObject::invokeMethod(m_map, "fromCoordinate",
+    QMetaObject::invokeMethod(m_map,
+                              "fromCoordinate",
                               Q_RETURN_ARG(QPointF, point),
                               Q_ARG(QGeoCoordinate, c),
                               Q_ARG(bool, false));
@@ -114,23 +113,19 @@ void KmlGeoPolygon::recalcCoordinates()
 {
     clearPolygon();
     auto visibleRegion = m_map->property("visibleRegion").value<QGeoShape>().boundingGeoRectangle();
-    QRect vr(fromCoordinate(visibleRegion.topLeft()),
-             fromCoordinate(visibleRegion.bottomRight()));
-    for(int i = 0; i < m_geoPolygon.size(); i++)
-    {
+    QRect vr(fromCoordinate(visibleRegion.topLeft()), fromCoordinate(visibleRegion.bottomRight()));
+    for (int i = 0; i < m_geoPolygon.size(); i++) {
         QPoint point = fromCoordinate(m_geoPolygon.coordinateAt(i));
-        if(std::isnan(point.x()) || std::isnan(point.y()))
+        if (std::isnan(point.x()) || std::isnan(point.y()))
             continue;
 
         m_polygon.append(point);
     }
-    for(int j = 0; j < m_geoPolygon.holesCount(); j++)
-    {
+    for (int j = 0; j < m_geoPolygon.holesCount(); j++) {
         QPolygon polyHole;
-        for(int k = 0; k < m_geoPolygon.hole(j).size(); k++)
-        {
+        for (int k = 0; k < m_geoPolygon.hole(j).size(); k++) {
             QPoint point = fromCoordinate(m_geoPolygon.hole(j)[k].value<QGeoCoordinate>());
-            if(std::isnan(point.x()) || std::isnan(point.y()))
+            if (std::isnan(point.x()) || std::isnan(point.y()))
                 continue;
             polyHole.append(point);
         }
