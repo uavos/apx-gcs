@@ -34,7 +34,6 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     : Fact(parent, "reader", "", "", Group)
     , lookup(lookup)
     , blockNotesChange(false)
-    , discardRequested(false)
     , m_totalSize(0)
     , m_totalTime(0)
 {
@@ -60,8 +59,6 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
 
     connect(&loadEvent, &DelayedEvent::triggered, this, &TelemetryReader::dbLoadData);
     loadEvent.setInterval(500);
-
-    connect(lookup, &LookupTelemetry::discardRequests, this, &TelemetryReader::discardRequests);
 
     connect(this, &Fact::triggered, lookup, [this]() {
         if (!this->lookup->recordId())
@@ -119,7 +116,6 @@ void TelemetryReader::load()
     setTotalSize(0);
     setTotalTime(0);
     setProgress(0);
-    discardRequested = false;
     removeAll();
     DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
     connect(req,
@@ -273,10 +269,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
         int vp = i * 100 / records.values.size();
         if (progress() != vp) {
             setProgress(vp);
-            QCoreApplication::processEvents();
         }
-        if (discardRequested)
-            return;
 
         //time
         quint64 t = r.at(iTime).toULongLong();
@@ -315,12 +308,10 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
 
         if (!fid)
             continue;
-        QVector<QPointF> *pts;
-        if (fieldData.contains(fid))
-            pts = fieldData.value(fid);
-        else {
+        QVector<QPointF> *pts = fieldData.value(fid);
+        if (!pts) {
             pts = new QVector<QPointF>;
-            pts->reserve(100000000);
+            pts->reserve(1000000);
             fieldData.insert(fid, pts);
         }
         double v = r.at(iValue).toDouble();
@@ -344,11 +335,14 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
                 vLon = fieldData.value(fidLon);
             if (!vHmsl)
                 vHmsl = fieldData.value(fidHmsl);
+
             if (!(vLat && vLon && vHmsl))
                 break;
+
             c.setLatitude(vLat->last().y());
             c.setLongitude(vLon->last().y());
             c.setAltitude(vHmsl->last().y());
+
             if (!c.isValid())
                 break;
             if (c.latitude() == 0.0)
@@ -369,10 +363,13 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
             break;
         }
     }
+
     //final data tail at max time
     double tMax = totalTime / 1000.0;
-    for (int i = 0; i < fieldData.values().size(); i++) {
+    for (int i = 0; i < fieldData.values().size(); ++i) {
         QVector<QPointF> *pts = fieldData.values().at(i);
+        if (!pts)
+            continue;
         if (pts->isEmpty()) {
             pts->append(QPointF(0, 0));
             //continue;
@@ -385,9 +382,12 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
 
     this->fieldNames = fieldNames;
 
-    QGeoRectangle r(path.boundingGeoRectangle());
-    r.setWidth(r.width() * 1.2);
-    r.setHeight(r.height() * 1.2);
+    QGeoRectangle r;
+    if (path.size() > 1) {
+        r = path.boundingGeoRectangle();
+        r.setWidth(r.width() * 1.2);
+        r.setHeight(r.height() * 1.2);
+    }
 
     setGeoRect(r);
     setGeoPath(path);
@@ -400,11 +400,6 @@ void TelemetryReader::dbProgress(quint64 telemetryID, int v)
     if (telemetryID != lookup->recordId())
         return;
     setProgress(v);
-}
-//=============================================================================
-void TelemetryReader::discardRequests()
-{
-    discardRequested = true;
 }
 //=============================================================================
 void TelemetryReader::addEventFact(quint64 time,
