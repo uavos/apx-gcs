@@ -125,6 +125,7 @@ ApxApp.ApxLibrary {
             "Poi.cpp", "Poi.h",
             "Runway.cpp", "Runway.h",
             "Taxiway.cpp", "Taxiway.h",
+            "Area.cpp", "Area.h",
             "VehicleMission.cpp", "VehicleMission.h",
             "Waypoint.cpp", "Waypoint.h",
             "WaypointActions.cpp", "WaypointActions.h",

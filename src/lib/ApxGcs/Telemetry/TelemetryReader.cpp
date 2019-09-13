@@ -382,15 +382,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
 
     this->fieldNames = fieldNames;
 
-    QGeoRectangle r;
-    if (path.size() > 1) {
-        r = path.boundingGeoRectangle();
-        r.setWidth(r.width() * 1.2);
-        r.setHeight(r.height() * 1.2);
-    }
-
-    setGeoRect(r);
-    setGeoPath(path);
+    this->geoPath = path;
 
     setProgress(-1);
     emit dataAvailable(cacheID);
@@ -490,28 +482,6 @@ void TelemetryReader::setTotalTime(quint64 v)
         return;
     m_totalTime = v;
     emit totalTimeChanged();
-}
-QGeoPath TelemetryReader::geoPath() const
-{
-    return m_geoPath;
-}
-void TelemetryReader::setGeoPath(const QGeoPath &v)
-{
-    if (m_geoPath == v)
-        return;
-    m_geoPath = v;
-    emit geoPathChanged();
-}
-QGeoRectangle TelemetryReader::geoRect() const
-{
-    return m_geoRect;
-}
-void TelemetryReader::setGeoRect(const QGeoRectangle &v)
-{
-    if (m_geoRect == v)
-        return;
-    m_geoRect = v;
-    emit geoRectChanged();
 }
 //=============================================================================
 //=============================================================================

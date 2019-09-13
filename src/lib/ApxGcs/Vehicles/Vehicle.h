@@ -25,6 +25,7 @@
 //=============================================================================
 #include <QGeoCoordinate>
 #include <QGeoPath>
+#include <QGeoRectangle>
 
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
@@ -117,6 +118,8 @@ public:
     Q_INVOKABLE bool isLocal() const;
     Q_INVOKABLE bool isReplay() const;
     Q_INVOKABLE bool isTemporary() const;
+
+    Q_INVOKABLE QGeoRectangle geoPathRect() const;
 
     //Mandala support
     QString mandalaToString(quint16 mid) const override;

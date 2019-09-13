@@ -28,6 +28,7 @@
 Releases::Releases(Fact *parent)
     : Fact(parent, "releases", tr("Releases"), tr("Available firmware packages"), Group | Const)
     , f_current(nullptr)
+    , f_dev(nullptr)
     , reply(nullptr)
 {
     setIcon("alarm-light");
@@ -99,6 +100,10 @@ QDir Releases::releaseDir() const
                     QString("%1-%2").arg(m_packagePrefix).arg(releaseVersion())),
                 "*.apxfw");
 }
+QDir Releases::devDir() const
+{
+    return QDir(ApxDirs::firmware().absoluteFilePath("development"), "*.apxfw");
+}
 //=============================================================================
 QString Releases::releaseVersion() const
 {
@@ -122,6 +127,16 @@ void Releases::makeReleaseFact(const QDir &dir)
     }
     f_current->setTitle(dir.dirName());
     f_current->setStatus(QString::number(dir.entryList().size()));
+    makeReleaseFactDo(f_current, dir);
+
+    if (!f_dev && !devDir().entryList().isEmpty()) {
+        f_dev = new Fact(this, "dev", "Development", "", Group);
+        f_dev->setStatus(QString::number(devDir().entryList().size()));
+        makeReleaseFactDo(f_dev, devDir());
+    }
+}
+void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
+{
     //create content tree
     foreach (QFileInfo fi, dir.entryInfoList()) {
         if (fi.suffix() != "apxfw")
@@ -131,9 +146,9 @@ void Releases::makeReleaseFact(const QDir &dir)
             qWarning() << "invalid firmware file" << fi.filePath();
             continue;
         }
-        Fact *f_ng = f_current->child(st.at(0));
+        Fact *f_ng = fact->child(st.at(0));
         if (!f_ng)
-            f_ng = new Fact(f_current, st.at(0), "", "", Group);
+            f_ng = new Fact(fact, st.at(0), "", "", Group);
         Fact *f_hw = f_ng->child(st.at(1));
         if (!f_hw)
             f_hw = new Fact(f_ng, st.at(1), "", "", Group);
@@ -413,8 +428,7 @@ QString Releases::getApxfwFileName(QString nodeName, QString hw)
         vmap[QVersionNumber::fromString(st.last())] = fi.absoluteFilePath();
     }
     //search dev files
-    dir = QDir(ApxDirs::firmware().absoluteFilePath("development"),
-               QString("%1-*.apxfw").arg(fname));
+    dir = QDir(devDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
     foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
         QStringList st(fi.completeBaseName().split('-'));
         if (st.size() != ccnt)
@@ -432,7 +446,7 @@ QString Releases::getApxfwFileName(QString nodeName, QString hw)
         qWarning() << vmap;
         return QString();
     }
-    if (QFileInfo(QFileInfo(fileName).path()).completeBaseName() == "development") {
+    if (QFileInfo(fileName).absolutePath().startsWith(devDir().absolutePath())) {
         apxMsgW() << "Development firmware:" << QFileInfo(fileName).completeBaseName();
     }
     return fileName;

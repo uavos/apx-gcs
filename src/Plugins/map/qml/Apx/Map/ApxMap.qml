@@ -290,17 +290,10 @@ Item {
                 onLoaded: map.addMapItem(item)
             }
 
-            Loader { //travel path from telemetry
-                active: showVehicleNav && apx.vehicles.current.isReplay()
-                asynchronous: true
-                source: "vehicle/PathTelemetry.qml"
-                onLoaded: map.addMapItem(item)
-            }
-
             Loader { //travel path current
-                active: showVehicleNav && !apx.vehicles.current.isReplay()
+                active: showVehicleNav
                 asynchronous: true
-                source: "vehicle/PathCurrent.qml"
+                source: "vehicle/TravelPath.qml"
                 onLoaded: map.addMapItem(item)
             }
 

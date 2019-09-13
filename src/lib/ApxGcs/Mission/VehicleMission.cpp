@@ -28,6 +28,8 @@
 #include "MissionShare.h"
 #include "MissionStorage.h"
 #include "MissionTools.h"
+
+#include "Area.h"
 #include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
@@ -67,6 +69,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     f_waypoints = new Waypoints(this, "waypoints", tr("Waypoints"), "");
     f_taxiways = new Taxiways(this, "taxiways", tr("Taxiways"), "");
     f_pois = new Pois(this, "points", tr("Points"), tr("Points of Interest"));
+    f_areas = new Areas(this, "areas", tr("Area"), tr("Airspace definitions"));
 
     foreach (MissionGroup *group, groups) {
         connect(group, &Fact::sizeChanged, this, &VehicleMission::updateSize, Qt::QueuedConnection);

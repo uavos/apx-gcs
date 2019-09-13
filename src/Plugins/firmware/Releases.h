@@ -38,6 +38,7 @@ public:
 
     Fact *f_sync;
     Fact *f_current;
+    Fact *f_dev;
 
     bool loadFirmware(QString nodeName,
                       QString hw,
@@ -59,9 +60,11 @@ private:
     QNetworkReply *request(const QUrl &url);
 
     QDir releaseDir() const;
+    QDir devDir() const;
 
     bool extractRelease(const QString &fname);
     void makeReleaseFact(const QDir &dir);
+    void makeReleaseFactDo(Fact *fact, const QDir &dir);
     void clean();
 
     QNetworkReply *checkReply(QObject *sender);

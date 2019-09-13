@@ -13,6 +13,17 @@ RowLayout {
         Layout.fillHeight: true
     }
 
+    //reset path
+    CleanButton {
+        readonly property var fact: apx.vehicles.current.action.rpath
+        iconName: fact.icon
+        implicitHeight: parent.height
+        toolTip: fact.title
+        onTriggered: fact.trigger()
+        visible: fact.enabled
+    }
+
+
     //tools list from plugins
     DelegateModel {
         id: toolsModel

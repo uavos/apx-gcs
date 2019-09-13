@@ -34,6 +34,7 @@ class Waypoint;
 class Runway;
 class Taxiway;
 class Poi;
+class Area;
 class LookupMissions;
 class MissionShare;
 class MissionStorage;
@@ -68,6 +69,7 @@ public:
         RunwayType,
         TaxiwayType,
         PoiType,
+        AreaType,
     };
 
     Q_ENUM(MissionItemType)
@@ -76,11 +78,13 @@ public:
     typedef MissionGroupT<Waypoint, WaypointType> Waypoints;
     typedef MissionGroupT<Taxiway, TaxiwayType> Taxiways;
     typedef MissionGroupT<Poi, PoiType> Pois;
+    typedef MissionGroupT<Area, AreaType> Areas;
 
     Runways *f_runways;
     Waypoints *f_waypoints;
     Taxiways *f_taxiways;
     Pois *f_pois;
+    Areas *f_areas;
     //MissionItems *f_restricted;
     //MissionItems *f_emergency;
 

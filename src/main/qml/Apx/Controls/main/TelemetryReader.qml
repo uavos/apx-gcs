@@ -20,7 +20,7 @@ RowLayout {
         expandable: false
         //implicitHeight: 18
         //implicitHeight: control.height
-        onTriggered: fact.requestMenu()
+        //onMenuRequested: fact.requestMenu()
     }
 
 }

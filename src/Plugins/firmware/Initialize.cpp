@@ -74,6 +74,12 @@ void Initialize::updateNodeEnums()
     for (int i = 0; i < firmware->f_releases->f_current->size(); ++i) {
         st.append(firmware->f_releases->f_current->child(i)->name());
     }
+    if (firmware->f_releases->f_dev) {
+        for (int i = 0; i < firmware->f_releases->f_dev->size(); ++i) {
+            st.append(firmware->f_releases->f_dev->child(i)->name());
+        }
+    }
+    st.removeDuplicates();
     f_node->setEnumStrings(st);
     updateHwEnums();
 }
@@ -84,8 +90,12 @@ void Initialize::updateHwEnums()
         return;
     QStringList st;
     FactBase *f_n = firmware->f_releases->f_current->child(f_node->text());
-    if (!f_n)
-        return;
+    if (!f_n) {
+        if (firmware->f_releases->f_dev)
+            f_n = firmware->f_releases->f_dev->child(f_node->text());
+        if (!f_n)
+            return;
+    }
     for (int i = 0; i < f_n->size(); ++i) {
         st.append(f_n->child(i)->name());
     }

@@ -131,14 +131,20 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 this,
                 &Vehicle::updateGeoPath,
                 Qt::QueuedConnection);
+    }
+    if (!isTemporary()) {
         //connect(f_telemetry, &Fact::activeChanged, this, &Vehicle::resetGeoPath);
         Fact *f = new Fact(this,
                            "rpath",
                            tr("Reset Path"),
                            tr("Clear travelled path"),
-                           Action | IconOnly,
+                           Action,
                            "history");
         connect(f, &Fact::triggered, this, &Vehicle::resetGeoPath);
+        connect(this, &Vehicle::geoPathChanged, f, [this, f]() {
+            f->setEnabled(!geoPath().isEmpty());
+        });
+        f->setEnabled(false);
     }
 
     updateStatus();
@@ -356,6 +362,10 @@ void Vehicle::setReplay(bool v)
         onlineTimer.stop();
         setStreamType(OFFLINE);
     }
+}
+QGeoRectangle Vehicle::geoPathRect() const
+{
+    return geoPath().boundingGeoRectangle();
 }
 //=============================================================================
 QString Vehicle::streamTypeText() const

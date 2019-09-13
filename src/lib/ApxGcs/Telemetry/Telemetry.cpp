@@ -121,9 +121,12 @@ void Telemetry::recordFactTriggered(Fact *f)
 void Telemetry::recordLoaded()
 {
     vehicle->f_select->trigger();
+
+    vehicle->setGeoPath(f_reader->geoPath);
+
     Fact *f = f_reader->child("mission");
     if (f && f->size() > 0) {
-        f = f->child(f->size() - 1);
+        f = f->child(0);
         if (f)
             f->trigger();
     }

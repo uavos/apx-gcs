@@ -129,8 +129,8 @@ void AppEngine::jsSetProperty(QJSValue parent, const QString &name, QJSValue v)
         while (!vp.isUndefined()) {
             if (vp.isQObject() && vp.toQObject() == v.toQObject())
                 return;
-            qWarning() << "Rewriting property:" << name << v.toString() << vp.toString()
-                       << "for parent" << parent.toString();
+            //qWarning() << "Rewriting property:" << name << v.toString() << vp.toString()
+            //           << "for parent" << parent.toString();
             break;
         }
     }
