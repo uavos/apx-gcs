@@ -17,13 +17,15 @@ Map {
     property var defaultCoordinate: QtPositioning.coordinate(37.406015,-122.045175)
 
 
-    function showRegion(region)
+    function showRegion(r)
     {
         followStop()
         resetFlicking()
         tilt=0
         bearing=0
-        visibleRegion=region
+        r.width*=1.5
+        r.height*=1.5
+        visibleRegion=r
     }
 
     function centerOn(coord) {

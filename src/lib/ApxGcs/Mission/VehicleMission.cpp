@@ -243,8 +243,6 @@ QGeoRectangle VehicleMission::boundingGeoRectangle() const
             r = r.isValid() ? r.united(re) : re;
         }
     }
-    r.setWidth(r.width() * 1.2);
-    r.setHeight(r.height() * 1.2);
     return r;
 }
 //=============================================================================

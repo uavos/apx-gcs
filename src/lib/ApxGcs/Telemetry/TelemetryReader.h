@@ -34,6 +34,7 @@ class TelemetryReader : public Fact
     Q_OBJECT
     Q_PROPERTY(quint64 totalSize READ totalSize NOTIFY totalSizeChanged)
     Q_PROPERTY(quint64 totalTime READ totalTime NOTIFY totalTimeChanged)
+    Q_PROPERTY(quint64 totalDistance READ totalDistance NOTIFY totalDistanceChanged)
 
 public:
     explicit TelemetryReader(LookupTelemetry *lookup, Fact *parent);
@@ -59,6 +60,7 @@ private:
 
 private slots:
     void notesChanged();
+    void updateStatus();
 
     void updateRecordInfo();
     void load();
@@ -91,14 +93,18 @@ public:
     void setTotalSize(quint64 v);
     quint64 totalTime() const;
     void setTotalTime(quint64 v);
+    quint64 totalDistance() const;
+    void setTotalDistance(quint64 v);
 
 private:
     quint64 m_totalSize;
     quint64 m_totalTime;
+    quint64 m_totalDistance;
 
 signals:
     void totalSizeChanged();
     void totalTimeChanged();
+    void totalDistanceChanged();
 };
 //=============================================================================
 #endif

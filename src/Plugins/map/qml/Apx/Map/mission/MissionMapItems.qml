@@ -18,13 +18,18 @@ MapItemGroup {
     visible: vehicle.active
 
     Connections {
+        enabled: !map.follow
         target: mission
-        onMissionAvailable: {
-            //console.log("onMissionReceived")
-            if(!map.follow){
-                map.showRegion(mission.boundingGeoRectangle())
-            }
-        }
+        onMissionAvailable: showRegion()
+    }
+
+    function showRegion()
+    {
+        //if(mission.empty) return
+        var r=mission.boundingGeoRectangle().united(vehicle.geoPathRect())
+
+        if(!map.visibleRegion.boundingGeoRectangle().intersects(r))
+            map.showRegion(r)
     }
 
 

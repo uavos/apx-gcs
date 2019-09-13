@@ -36,6 +36,7 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     , blockNotesChange(false)
     , m_totalSize(0)
     , m_totalTime(0)
+    , m_totalDistance(0)
 {
     f_notes = new Fact(parent, "notes", tr("Notes"), tr("Current record notes"), Text);
     f_notes->setIcon("note-text");
@@ -53,6 +54,8 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
 
     //status
     connect(lookup, &LookupTelemetry::recordInfoChanged, this, &TelemetryReader::updateRecordInfo);
+    connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
+    connect(this, &TelemetryReader::totalDistanceChanged, this, &TelemetryReader::updateStatus);
 
     //load sequence
     connect(lookup, &LookupTelemetry::recordTriggered, this, &TelemetryReader::load);
@@ -66,6 +69,15 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     });
 
     updateRecordInfo();
+}
+//==============================================================================
+void TelemetryReader::updateStatus()
+{
+    QStringList st;
+    st << AppRoot::timeToString(totalTime() / 1000, true);
+    if (totalDistance() > 0)
+        st << AppRoot::distanceToString(totalDistance());
+    setStatus(st.join(' '));
 }
 //==============================================================================
 void TelemetryReader::updateRecordInfo()
@@ -86,7 +98,6 @@ void TelemetryReader::updateRecordInfo()
     }
     if (uplink)
         evtCountMap.insert("uplink", uplink);
-    setStatus(AppRoot::timeToString(totalTime() / 1000, true));
 
     qint64 t = info.value("time").toLongLong();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
@@ -115,6 +126,7 @@ void TelemetryReader::load()
         return;
     setTotalSize(0);
     setTotalTime(0);
+    setTotalDistance(0);
     setProgress(0);
     removeAll();
     DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
@@ -257,6 +269,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
     times.append(0);
     //quint64 timestamp=lookup->recordTimestamp();
     quint64 totalTime = this->totalTime();
+    qreal totalDistance = 0;
     quint64 t0 = 0;
     QHash<quint64, double> fvalues;
 
@@ -357,6 +370,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
                     break;
                 if (c0.distanceTo(c) < 10.0)
                     break;
+                totalDistance += c0.distanceTo(c);
             }
 
             path.addCoordinate(c);
@@ -379,6 +393,7 @@ void TelemetryReader::dbResultsData(quint64 telemetryID,
         pts->append(QPointF(tMax, pts->last().y()));
     }
     setTotalTime(totalTime);
+    setTotalDistance(qRound(totalDistance));
 
     this->fieldNames = fieldNames;
 
@@ -405,8 +420,9 @@ void TelemetryReader::addEventFact(quint64 time,
     if (!g)
         g = new Fact(this, name, "", "", Group | Const);
 
+    Fact *f = nullptr;
     if (name == "uplink") {
-        Fact *f = g->child(value);
+        f = g->child(value);
         if (!f) {
             f = new Fact(g, value, "", "", Const);
             //qDebug() << name << value;
@@ -415,7 +431,7 @@ void TelemetryReader::addEventFact(quint64 time,
             f->setValue(f->value().toInt() + 1);
         }
     } else if (name == "serial") {
-        Fact *f = g->child(uid);
+        f = g->child(uid);
         if (!f) {
             f = new Fact(g, uid, "", "", Const);
             //qDebug() << name << value;
@@ -433,10 +449,14 @@ void TelemetryReader::addEventFact(quint64 time,
             if (!s.isEmpty())
                 descr.prepend(QString("%1/").arg(s));
         }
-        Fact *f = new Fact(g, name + "#", title, descr);
+        f = new Fact(g, name + "#", title, descr);
         f->setStatus(stime);
         connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
     }
+
+    if (!f)
+        return;
+    f->userData = time;
 }
 //=============================================================================
 //=============================================================================
@@ -482,6 +502,17 @@ void TelemetryReader::setTotalTime(quint64 v)
         return;
     m_totalTime = v;
     emit totalTimeChanged();
+}
+quint64 TelemetryReader::totalDistance() const
+{
+    return m_totalDistance;
+}
+void TelemetryReader::setTotalDistance(quint64 v)
+{
+    if (m_totalDistance == v)
+        return;
+    m_totalDistance = v;
+    emit totalDistanceChanged();
 }
 //=============================================================================
 //=============================================================================

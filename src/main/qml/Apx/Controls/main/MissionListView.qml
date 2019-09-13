@@ -64,6 +64,7 @@ ColumnLayout {
                 onClicked: fact.trigger()
 
                 Component.onCompleted: {
+                    if(!fact)return;
                     switch(fact.missionItemType){
                     case Mission.RunwayType:
                         color=Material.color(Material.Blue) //Style.cListRunway

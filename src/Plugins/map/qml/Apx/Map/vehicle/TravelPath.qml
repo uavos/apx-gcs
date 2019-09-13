@@ -37,16 +37,12 @@ MapPolyline {
     function updatePath()
     {
         setPath(vehicle.geoPath)
-        if(replay)showRegion()
     }
 
     function showRegion()
     {
         if(path.length>0){
-            var r=vehicle.geoPathRect()
-            r.width*=1.5
-            r.height*=1.5
-            map.showRegion(r)
+            map.showRegion(vehicle.geoPathRect())
         }
     }
 

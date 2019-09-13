@@ -115,6 +115,9 @@ void Telemetry::recordFactTriggered(Fact *f)
         vehicle->f_nodes->storage->loadConfiguration(uid);
     } else if (s.startsWith("mission")) {
         vehicle->f_mission->storage->loadMission(uid);
+    } else if (s.startsWith("msg")) {
+        if (f_player)
+            f_player->f_time->setValue(f->userData.toULongLong() - 1);
     }
 }
 //=============================================================================
