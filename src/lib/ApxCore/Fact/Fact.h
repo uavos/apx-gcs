@@ -27,7 +27,6 @@
 #include "FactListModel.h"
 #include "FactListModelActions.h"
 #include <QColor>
-class FactSystem;
 //=============================================================================
 class Fact : public FactData
 {
@@ -238,5 +237,7 @@ private:
     bool m_parentVisible;
     void updateParentVisible();
 };
+//=============================================================================
+typedef QList<Fact *> FactList;
 //=============================================================================
 #endif

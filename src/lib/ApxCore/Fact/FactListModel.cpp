@@ -28,9 +28,10 @@ FactListModel::FactListModel(Fact *fact)
     , fact(fact)
     , m_flat(false)
 {
-    syncTimer.setSingleShot(true);
-    syncTimer.setInterval(200);
-    connect(&syncTimer, &QTimer::timeout, this, &FactListModel::delayedSync);
+    syncTimer = new QTimer(this);
+    syncTimer->setSingleShot(true);
+    syncTimer->setInterval(200);
+    connect(syncTimer, &QTimer::timeout, this, &FactListModel::delayedSync);
 
     if (fact) {
         populate(&_items, fact);
@@ -121,7 +122,7 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
 //=============================================================================
 void FactListModel::sync()
 {
-    syncTimer.start();
+    syncTimer->start();
 }
 void FactListModel::delayedSync()
 {

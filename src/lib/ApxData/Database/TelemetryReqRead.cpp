@@ -419,7 +419,7 @@ bool DBReqTelemetryReadData::run(QSqlQuery &query)
         return false;
     if (!query.next())
         return false;
-    quint64 cacheID = query.value(0).toULongLong();
+    cacheID = query.value(0).toULongLong();
 
     query.prepare("SELECT time,type,name,value,uid FROM TelemetryCacheData"
                   " WHERE cacheID=?");

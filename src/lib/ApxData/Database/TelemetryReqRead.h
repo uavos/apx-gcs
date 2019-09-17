@@ -88,19 +88,20 @@ class DBReqTelemetryReadData : public DBReqTelemetry
 public:
     explicit DBReqTelemetryReadData(quint64 telemetryID)
         : DBReqTelemetry()
+        , cacheID(0)
         , telemetryID(telemetryID)
     {}
     //result
+    quint64 cacheID;
     QVariantMap info;
     QVariantMap stats;
     Records records;
     QMap<quint64, QString> fieldNames;
 
-private:
+protected:
     quint64 telemetryID;
 
-protected:
-    bool run(QSqlQuery &query);
+    virtual bool run(QSqlQuery &query);
 signals:
     void progress(quint64 telemetryID, int v);
     void dataLoaded(quint64 telemetryID,

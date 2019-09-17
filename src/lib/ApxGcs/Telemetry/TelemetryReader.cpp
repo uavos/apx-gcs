@@ -23,7 +23,9 @@
 #include "TelemetryReader.h"
 #include "LookupTelemetry.h"
 #include <App/AppRoot.h>
+#include <ApxApp.h>
 #include <ApxLog.h>
+
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
@@ -58,6 +60,12 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     connect(this, &TelemetryReader::totalDistanceChanged, this, &TelemetryReader::updateStatus);
 
     //load sequence
+    qRegisterMetaType<fieldData_t>("fieldData_t");
+    qRegisterMetaType<fieldNames_t>("fieldNames_t");
+    qRegisterMetaType<times_t>("times_t");
+    qRegisterMetaType<events_t>("events_t");
+    qRegisterMetaType<FactList>("FactList");
+
     connect(lookup, &LookupTelemetry::recordTriggered, this, &TelemetryReader::load);
 
     connect(&loadEvent, &DelayedEvent::triggered, this, &TelemetryReader::dbLoadData);
@@ -199,16 +207,16 @@ void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
     Q_UNUSED(stats)
     if (telemetryID != lookup->recordId())
         return;
-    DBReqTelemetryReadData *req = new DBReqTelemetryReadData(telemetryID);
+    TelemetryReaderDataReq *req = new TelemetryReaderDataReq(telemetryID);
     connect(lookup,
             &LookupTelemetry::discardRequests,
             req,
             &DatabaseRequest::discard,
             Qt::QueuedConnection);
     connect(req,
-            &DBReqTelemetryReadData::dataLoaded,
+            &TelemetryReaderDataReq::dataProcessed,
             this,
-            &TelemetryReader::dbResultsData,
+            &TelemetryReader::dbResultsDataProc,
             Qt::QueuedConnection);
     connect(req,
             &DBReqTelemetryReadData::progress,
@@ -232,172 +240,46 @@ void TelemetryReader::dbStatsUpdated(quint64 telemetryID, QVariantMap stats)
     updateRecordInfo();
     dbStatsFound(telemetryID, stats);
 }
-void TelemetryReader::dbResultsData(quint64 telemetryID,
-                                    quint64 cacheID,
-                                    DatabaseRequest::Records records,
-                                    QMap<quint64, QString> fieldNames)
+void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
+                                        quint64 cacheID,
+                                        fieldData_t fieldData,
+                                        fieldNames_t fieldNames,
+                                        times_t times,
+                                        events_t events,
+                                        QGeoPath path,
+                                        qreal totalDistance,
+                                        Fact *f_events)
 {
     if (telemetryID != lookup->recordId())
         return;
-    int iTime = records.names.indexOf("time");
-    int iType = records.names.indexOf("type");
-    int iName = records.names.indexOf("name");
-    int iValue = records.names.indexOf("value");
-    int iUid = records.names.indexOf("uid");
-
-    QGeoPath path;
-    quint64 fidLat = fieldNames.key("gps_lat");
-    quint64 fidLon = fieldNames.key("gps_lon");
-    quint64 fidHmsl = fieldNames.key("gps_hmsl");
-    QVector<QPointF> *vLat = nullptr;
-    QVector<QPointF> *vLon = nullptr;
-    QVector<QPointF> *vHmsl = nullptr;
 
     removeAll();
     f_reload->setEnabled(true);
 
-    foreach (QVector<QPointF> *d, fieldData.values()) {
-        delete d;
-    }
-    fieldData.clear();
-    fieldData.reserve(1000);
-    times.clear();
-    times.reserve(1000000);
-    events.clear();
-    this->fieldNames.clear();
-
-    times.append(0);
-    //quint64 timestamp=lookup->recordTimestamp();
-    quint64 totalTime = this->totalTime();
-    qreal totalDistance = 0;
-    quint64 t0 = 0;
-    QHash<quint64, double> fvalues;
-
-    for (int i = 0; i < records.values.size(); ++i) {
-        const QVariantList &r = records.values.at(i);
-        if (r.isEmpty())
-            continue;
-
-        //progress and abort
-        int vp = i * 100 / records.values.size();
-        if (progress() != vp) {
-            setProgress(vp);
-        }
-
-        //time
-        quint64 t = r.at(iTime).toULongLong();
-        if (i == 0)
-            t0 = t;
-        t -= t0;
-        if (totalTime < t)
-            totalTime = t;
-        double tf = t / 1000.0;
-        if (times.last() != tf)
-            times.append(tf);
-
-        quint64 fid = 0;
-
-        switch (r.at(iType).toUInt()) {
-        case 0: {
-            //downlink data
-            fid = r.at(iName).toULongLong();
-        } break;
-        case 1: {
-            //uplink data
-            fid = r.at(iName).toULongLong();
-            events.insertMulti(tf, QString('>').append(fieldNames.value(fid, "uplink")));
-            addEventFact(t,
-                         "uplink",
-                         fieldNames.value(fid, QString::number(fid)),
-                         r.at(iUid).toString());
-        } break;
-        case 2:
-        case 3: {
-            //events
-            events.insertMulti(tf, r.at(iName).toString());
-            addEventFact(t, r.at(iName).toString(), r.at(iValue).toString(), r.at(iUid).toString());
-        } break;
-        }
-
-        if (!fid)
-            continue;
-        QVector<QPointF> *pts = fieldData.value(fid);
-        if (!pts) {
-            pts = new QVector<QPointF>;
-            pts->reserve(1000000);
-            fieldData.insert(fid, pts);
-        }
-        double v = r.at(iValue).toDouble();
-        if (fvalues.contains(fid) && fvalues.value(fid) == v)
-            continue;
-        fvalues[fid] = v;
-
-        if (pts->size() > 0 && (tf - pts->last().x()) > 0.5) {
-            //extrapolate unchanged value tail-1ms
-            pts->append(QPointF(tf, pts->last().y()));
-        }
-        pts->append(QPointF(tf, v));
-
-        //path update
-        while (fid && (fid == fidLat || fid == fidLon || fid == fidHmsl)) {
-            QGeoCoordinate c;
-
-            if (!vLat)
-                vLat = fieldData.value(fidLat);
-            if (!vLon)
-                vLon = fieldData.value(fidLon);
-            if (!vHmsl)
-                vHmsl = fieldData.value(fidHmsl);
-
-            if (!(vLat && vLon && vHmsl))
-                break;
-
-            c.setLatitude(vLat->last().y());
-            c.setLongitude(vLon->last().y());
-            c.setAltitude(vHmsl->last().y());
-
-            if (!c.isValid())
-                break;
-            if (c.latitude() == 0.0)
-                break;
-            if (c.longitude() == 0.0)
-                break;
-            if (!path.isEmpty()) {
-                QGeoCoordinate c0(path.path().last());
-                if (c0.latitude() == c.latitude())
-                    break;
-                if (c0.longitude() == c.longitude())
-                    break;
-                if (c0.distanceTo(c) < 10.0)
-                    break;
-                totalDistance += c0.distanceTo(c);
-            }
-
-            path.addCoordinate(c);
-            break;
-        }
-    }
-
-    //final data tail at max time
-    double tMax = totalTime / 1000.0;
-    for (int i = 0; i < fieldData.values().size(); ++i) {
-        QVector<QPointF> *pts = fieldData.values().at(i);
-        if (!pts)
-            continue;
-        if (pts->isEmpty()) {
-            pts->append(QPointF(0, 0));
-            //continue;
-        }
-        if (pts->last().x() >= tMax)
-            continue;
-        pts->append(QPointF(tMax, pts->last().y()));
-    }
-    setTotalTime(totalTime);
-    setTotalDistance(qRound(totalDistance));
-
-    this->fieldNames = fieldNames;
-
+    times.swap(this->times);
+    fieldNames.swap(this->fieldNames);
+    fieldData.swap(this->fieldData);
+    events.swap(this->events);
     this->geoPath = path;
+
+    /*for (int i = 0; i < this->events.size(); ++i) {
+        const event_t &e = this->events.at(i);
+        addEventFact(e.time, e.name, e.value, e.uid);
+    }*/
+    f_events->moveToThread(thread());
+    f_events->setParentFact(this);
+    for (int i = 0; i < f_events->size(); ++i) {
+        Fact *g = f_events->child(i);
+        for (int j = 0; j < g->size(); ++j) {
+            Fact *f = g->child(j);
+            connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
+        }
+    }
+    //ApxApp::jsync(this);
+
+    quint64 tMax = this->times.isEmpty() ? 0 : qRound(this->times.last() * 1000.0);
+    setTotalTime(tMax);
+    setTotalDistance(qRound(totalDistance));
 
     setProgress(-1);
     emit dataAvailable(cacheID);
@@ -408,57 +290,6 @@ void TelemetryReader::dbProgress(quint64 telemetryID, int v)
         return;
     setProgress(v);
 }
-//=============================================================================
-void TelemetryReader::addEventFact(quint64 time,
-                                   const QString &name,
-                                   const QString &value,
-                                   const QString &uid)
-{
-    //qDebug() << name << value;
-    QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
-    Fact *g = child(name);
-    if (!g)
-        g = new Fact(this, name, "", "", Group | Const);
-
-    Fact *f = nullptr;
-    if (name == "uplink") {
-        f = g->child(value);
-        if (!f) {
-            f = new Fact(g, value, "", "", Const);
-            //qDebug() << name << value;
-            f->setValue(1);
-        } else {
-            f->setValue(f->value().toInt() + 1);
-        }
-    } else if (name == "serial") {
-        f = g->child(uid);
-        if (!f) {
-            f = new Fact(g, uid, "", "", Const);
-            //qDebug() << name << value;
-            f->setValue(1);
-        } else {
-            f->setValue(f->value().toInt() + 1);
-        }
-    } else {
-        QString title = value;
-        QString descr = uid;
-        if (title.startsWith('[') && title.contains(']')) {
-            int i = title.indexOf(']');
-            QString s = title.mid(1, i - 1).trimmed();
-            title.remove(0, i + 1);
-            if (!s.isEmpty())
-                descr.prepend(QString("%1/").arg(s));
-        }
-        f = new Fact(g, name + "#", title, descr);
-        f->setStatus(stime);
-        connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
-    }
-
-    if (!f)
-        return;
-    f->userData = time;
-}
-//=============================================================================
 //=============================================================================
 //=============================================================================
 void TelemetryReader::notesChanged()

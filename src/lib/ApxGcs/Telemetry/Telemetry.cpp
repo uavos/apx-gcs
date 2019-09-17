@@ -115,7 +115,7 @@ void Telemetry::recordFactTriggered(Fact *f)
         vehicle->f_nodes->storage->loadConfiguration(uid);
     } else if (s.startsWith("mission")) {
         vehicle->f_mission->storage->loadMission(uid);
-    } else if (s.startsWith("msg")) {
+    } else {
         if (f_player)
             f_player->f_time->setValue(f->userData.toULongLong() - 1);
     }
@@ -127,11 +127,14 @@ void Telemetry::recordLoaded()
 
     vehicle->setGeoPath(f_reader->geoPath);
 
-    Fact *f = f_reader->child("mission");
-    if (f && f->size() > 0) {
-        f = f->child(0);
-        if (f)
-            f->trigger();
+    Fact *f_events = f_reader->child("events");
+    if (f_events) {
+        Fact *f = f_events->child("mission");
+        if (f && f->size() > 0) {
+            f = f->child(0);
+            if (f)
+                f->trigger();
+        }
     }
 }
 //=============================================================================

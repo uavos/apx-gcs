@@ -83,6 +83,7 @@ ApxApp.ApxLibrary {
             "TelemetryRecorder.cpp", "TelemetryRecorder.h",
             "LookupTelemetry.cpp", "LookupTelemetry.h",
             "TelemetryReader.cpp", "TelemetryReader.h",
+            "TelemetryReaderDataReq.cpp", "TelemetryReaderDataReq.h",
             "TelemetryPlayer.cpp", "TelemetryPlayer.h",
             "TelemetryShare.cpp", "TelemetryShare.h",
         ]

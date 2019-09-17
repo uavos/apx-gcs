@@ -44,7 +44,7 @@ public slots:
     void sync();
 
 private:
-    QTimer syncTimer;
+    QTimer *syncTimer;
 
 private slots:
     void delayedSync();

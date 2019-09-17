@@ -281,20 +281,19 @@ void TelemetryFrame::updateData()
         c->setSamples(*d);
     }
     //load events
-    for (QMultiHash<double, QString>::iterator i = reader->events.begin();
-         i != reader->events.end();
-         ++i) {
-        QString v = i.value();
-        if (v == "msg")
+    for (TelemetryReader::events_t::iterator e = reader->events.begin(); e != reader->events.end();
+         ++e) {
+        //const TelemetryReader::event_t &e = i;
+        if (e->name == "msg")
             continue;
         QColor c;
-        if (v == "mission")
+        if (e->name == "mission")
             c = QColor(50, 50, 100);
-        else if (v == "conf")
+        else if (e->name == "conf")
             c = QColor(100, 100, 50);
-        else if (v.startsWith('>'))
+        else if (e->name == "uplink")
             c = QColor(Qt::darkCyan);
-        plot->addEvent(i.key(), i.value(), c);
+        plot->addEvent(e->time / 1000.0, e->value, c);
     }
 
     plot->resetZoom();

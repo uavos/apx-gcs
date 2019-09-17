@@ -27,6 +27,8 @@
 #include <Fact/Fact.h>
 #include <QGeoPath>
 #include <QtCore>
+
+#include "TelemetryReaderDataReq.h"
 class LookupTelemetry;
 //=============================================================================
 class TelemetryReader : public Fact
@@ -45,18 +47,23 @@ public:
     Fact *f_reload;
 
     //data from database
-    QMap<QString, quint64> evtCountMap;
-    QHash<quint64, QVector<QPointF> *> fieldData;
-    QMap<quint64, QString> fieldNames;
-    QVector<double> times;
-    QMultiHash<double, QString> events;
+    typedef TelemetryReaderDataReq::fieldData_t fieldData_t;
+    typedef TelemetryReaderDataReq::evtCountMap_t evtCountMap_t;
+    typedef TelemetryReaderDataReq::fieldNames_t fieldNames_t;
+    typedef TelemetryReaderDataReq::times_t times_t;
+    typedef TelemetryReaderDataReq::event_t event_t;
+    typedef TelemetryReaderDataReq::events_t events_t;
+
+    fieldData_t fieldData;
+    evtCountMap_t evtCountMap;
+    fieldNames_t fieldNames;
+    times_t times;
+    events_t events;
     QGeoPath geoPath;
 
 private:
     bool blockNotesChange;
     DelayedEvent loadEvent;
-
-    void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);
 
 private slots:
     void notesChanged();
@@ -71,10 +78,17 @@ private slots:
 
     void dbCacheFound(quint64 telemetryID);
     void dbCacheNotFound(quint64 telemetryID);
-    void dbResultsData(quint64 telemetryID,
-                       quint64 cacheID,
-                       DatabaseRequest::Records records,
-                       QMap<quint64, QString> fieldNames);
+
+    void dbResultsDataProc(quint64 telemetryID,
+                           quint64 cacheID,
+                           fieldData_t fieldData,
+                           fieldNames_t fieldNames,
+                           times_t times,
+                           events_t events,
+                           QGeoPath path,
+                           qreal totalDistance,
+                           Fact *f_events);
+
     void dbStatsFound(quint64 telemetryID, QVariantMap stats);
     void dbStatsUpdated(quint64 telemetryID, QVariantMap stats);
     void dbProgress(quint64 telemetryID, int v);
