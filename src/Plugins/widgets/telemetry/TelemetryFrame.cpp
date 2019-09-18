@@ -286,6 +286,10 @@ void TelemetryFrame::updateData()
         //const TelemetryReader::event_t &e = i;
         if (e->name == "msg")
             continue;
+        if (e->name == "serial")
+            continue;
+        if (e->name == "xpdr")
+            continue;
         QColor c;
         if (e->name == "mission")
             c = QColor(50, 50, 100);
@@ -293,7 +297,7 @@ void TelemetryFrame::updateData()
             c = QColor(100, 100, 50);
         else if (e->name == "uplink")
             c = QColor(Qt::darkCyan);
-        plot->addEvent(e->time / 1000.0, e->value, c);
+        plot->addEvent(e->time / 1000.0, QString("%1: %2").arg(e->name).arg(e->value), c);
     }
 
     plot->resetZoom();
@@ -304,6 +308,8 @@ void TelemetryFrame::resetPlot()
 {
     if (aReplay->isChecked())
         aReplay->trigger();
+    if (aShowEvents->isChecked())
+        aShowEvents->trigger();
     plot->resetData();
 }
 //=============================================================================

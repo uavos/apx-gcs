@@ -33,7 +33,7 @@
 #include <QGeoCoordinate>
 //=============================================================================
 TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
-    : Fact(parent, "reader", "", "", Group)
+    : Fact(parent, "reader", "", "", Group, "progress-download")
     , lookup(lookup)
     , blockNotesChange(false)
     , m_totalSize(0)
@@ -109,16 +109,20 @@ void TelemetryReader::updateRecordInfo()
 
     qint64 t = info.value("time").toLongLong();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
-                          : tr("Current record");
+                          : tr("Telemetry Data");
     QString callsign = info.value("callsign").toString();
-    QString descr = info.value("comment").toString();
+    QString comment = info.value("comment").toString();
     QString notes = info.value("notes").toString();
     QString stime = AppRoot::timeToString(totalTime() / 1000, true);
 
+    QStringList descr;
     if (!callsign.isEmpty())
-        title.append(QString(" | %1").arg(callsign));
+        descr.append(callsign);
+    if (!comment.isEmpty() && comment != callsign)
+        descr.append(comment);
+
     setTitle(title);
-    setDescr(descr);
+    setDescr(descr.join(" | "));
     blockNotesChange = true;
     f_notes->setValue(notes);
     blockNotesChange = false;
