@@ -55,11 +55,19 @@ protected:
     virtual QString defaultImportFileName() const;
     virtual ShareXmlImport *importRequest(QString title, QString fileName);
 
+private slots:
+    void syncTemplates();
+
+    void dbExported(QByteArray data, QString fileName);
+    void dbImported(QString hash, QString title);
+
 protected slots:
     void exportTriggered();
     void importTriggered();
-    void exported(QByteArray data, QString fileName);
+
+signals:
     void imported(QString hash, QString title);
+    void exported(QByteArray data, QString fileName);
 };
 //=============================================================================
 #endif

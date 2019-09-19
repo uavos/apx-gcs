@@ -32,7 +32,9 @@
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent)
     : Share(parent, tr("Mission"), "mission", ApxDirs::missions())
     , mission(mission)
-{}
+{
+    connect(this, &Share::imported, mission->storage, &MissionStorage::loadMission);
+}
 //=============================================================================
 QString MissionShare::defaultExportFileName() const
 {
@@ -59,13 +61,7 @@ ShareXmlExport *MissionShare::exportRequest(QString title, QString fileName)
 }
 ShareXmlImport *MissionShare::importRequest(QString title, QString fileName)
 {
-    MissionsXmlImport *req = new MissionsXmlImport(title, fileName);
-    connect(req,
-            &MissionsXmlImport::imported,
-            mission->storage,
-            &MissionStorage::loadMission,
-            Qt::QueuedConnection);
-    return req;
+    return new MissionsXmlImport(title, fileName);
 }
 //=============================================================================
 //=============================================================================

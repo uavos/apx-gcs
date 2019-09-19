@@ -32,7 +32,9 @@
 NodesShare::NodesShare(Nodes *nodes, Fact *parent)
     : Share(parent, tr("Configuration"), "nodes", ApxDirs::configs())
     , nodes(nodes)
-{}
+{
+    connect(this, &Share::imported, nodes->storage, &NodesStorage::loadConfiguration);
+}
 //=============================================================================
 QString NodesShare::defaultExportFileName() const
 {
@@ -50,13 +52,7 @@ ShareXmlExport *NodesShare::exportRequest(QString title, QString fileName)
 }
 ShareXmlImport *NodesShare::importRequest(QString title, QString fileName)
 {
-    NodesXmlImport *req = new NodesXmlImport(title, fileName);
-    connect(req,
-            &NodesXmlImport::imported,
-            nodes->storage,
-            &NodesStorage::loadConfiguration,
-            Qt::QueuedConnection);
-    return req;
+    return new NodesXmlImport(title, fileName);
 }
 //=============================================================================
 //=============================================================================

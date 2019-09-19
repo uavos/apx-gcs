@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mission format="1" href="http://www.uavos.com/">
+  <title>Innsbruck-SIM-Xplane9</title>
+  <timestamp>18 Sep 2019 15:19:03 +0300</timestamp>
+  <exported>18 Sep 2019 15:19:22 +0300</exported>
+  <version>10.1.216</version>
+  <info>
+    <hash>0C1DE7ACCB9C3E6314FA568919F04DCAF39CDF6B</hash>
+    <lat>47.258792877197266</lat>
+    <lon>11.3309326171875</lon>
+    <site>Innsbruck</site>
+    <time>1568809143488</time>
+    <title>Xplane9</title>
+  </info>
+  <details>
+    <bottomRightLat>47.2528152237452</bottomRightLat>
+    <bottomRightLon>11.362149662372401</bottomRightLon>
+    <callsign>SIM</callsign>
+    <distance>12456</distance>
+    <runway>R08</runway>
+    <topLeftLat>47.263151475369234</topLeftLat>
+    <topLeftLon>11.322214250292827</topLeftLon>
+  </details>
+  <runways cnt="1">
+    <runway id="0">
+      <lat>47.258792877197266</lat>
+      <lon>11.3309326171875</lon>
+      <approach>400</approach>
+      <dE>536</dE>
+      <dN>90</dN>
+      <hmsl>default</hmsl>
+      <type>Right</type>
+    </runway>
+  </runways>
+  <waypoints cnt="9">
+    <waypoint id="0">
+      <lat>47.26169967651367</lat>
+      <lon>11.337461471557617</lon>
+      <actions>poi=1</actions>
+      <altitude>280</altitude>
+      <type>Line</type>
+    </waypoint>
+    <waypoint id="1">
+      <lat>47.25907897949219</lat>
+      <lon>11.356000900268555</lon>
+      <actions>loiter=yes,radius=9,loops=10,time=01:02:18</actions>
+      <altitude>280</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="2">
+      <lat>47.25925064086914</lat>
+      <lon>11.342439651489258</lon>
+      <actions>shot=single</actions>
+      <altitude>280</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="3">
+      <lat>47.254878997802734</lat>
+      <lon>11.361831665039062</lon>
+      <altitude>230</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="4">
+      <lat>47.262935638427734</lat>
+      <lon>11.336983680725098</lon>
+      <altitude>280</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="5">
+      <lat>47.26274871826172</lat>
+      <lon>11.352996826171875</lon>
+      <altitude>280</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="6">
+      <lat>47.259891510009766</lat>
+      <lon>11.349048614501953</lon>
+      <altitude>280</altitude>
+      <type>Line</type>
+    </waypoint>
+    <waypoint id="7">
+      <lat>47.260562896728516</lat>
+      <lon>11.336216926574707</lon>
+      <altitude>280</altitude>
+      <type>Line</type>
+    </waypoint>
+    <waypoint id="8">
+      <lat>47.26033020019531</lat>
+      <lon>11.354198455810547</lon>
+      <altitude>280</altitude>
+      <type>Line</type>
+    </waypoint>
+  </waypoints>
+  <taxiways cnt="11">
+    <taxiway id="0">
+      <lat>47.258216857910156</lat>
+      <lon>11.349761962890625</lon>
+    </taxiway>
+    <taxiway id="1">
+      <lat>47.258689880371094</lat>
+      <lon>11.349639892578125</lon>
+    </taxiway>
+    <taxiway id="2">
+      <lat>47.25766372680664</lat>
+      <lon>11.340288162231445</lon>
+    </taxiway>
+    <taxiway id="3">
+      <lat>47.257808685302734</lat>
+      <lon>11.3394193649292</lon>
+    </taxiway>
+    <taxiway id="4">
+      <lat>47.2593879699707</lat>
+      <lon>11.336141586303711</lon>
+    </taxiway>
+    <taxiway id="5">
+      <lat>47.258934020996094</lat>
+      <lon>11.332172393798828</lon>
+    </taxiway>
+    <taxiway id="6">
+      <lat>47.261478424072266</lat>
+      <lon>11.355713844299316</lon>
+    </taxiway>
+    <taxiway id="7">
+      <lat>47.2611198425293</lat>
+      <lon>11.352441787719727</lon>
+    </taxiway>
+    <taxiway id="8">
+      <lat>47.25905227661133</lat>
+      <lon>11.352964401245117</lon>
+    </taxiway>
+    <taxiway id="9">
+      <lat>47.258697509765625</lat>
+      <lon>11.349735260009766</lon>
+    </taxiway>
+    <taxiway id="10">
+      <lat>47.25823211669922</lat>
+      <lon>11.34986400604248</lon>
+    </taxiway>
+  </taxiways>
+  <points cnt="3">
+    <point id="0">
+      <lat>47.26102828979492</lat>
+      <lon>11.332633018493652</lon>
+      <hmsl>ground</hmsl>
+      <loops>2</loops>
+      <radius>200</radius>
+      <timeout>default</timeout>
+    </point>
+    <point id="1">
+      <lat>47.25611114501953</lat>
+      <lon>11.335068702697754</lon>
+      <hmsl>ground</hmsl>
+      <loops>default</loops>
+      <radius>-110</radius>
+      <timeout>default</timeout>
+    </point>
+    <point id="2">
+      <lat>47.256412506103516</lat>
+      <lon>11.344027519226074</lon>
+      <hmsl>ground</hmsl>
+      <loops>default</loops>
+      <radius>400</radius>
+      <timeout>default</timeout>
+    </point>
+  </points>
+</mission>

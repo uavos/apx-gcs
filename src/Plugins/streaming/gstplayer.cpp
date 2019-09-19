@@ -30,7 +30,8 @@ GstPlayer::GstPlayer(Fact *parent)
                                    "show_window",
                                    tr("Visible"),
                                    tr("Show video window"),
-                                   Bool);
+                                   Bool,
+                                   false);
     f_visible->setIcon("check");
 
     f_tune = new Fact(this, "tune", tr("Tune"), tr("Video stream settings"), Group);

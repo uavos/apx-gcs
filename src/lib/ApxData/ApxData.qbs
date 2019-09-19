@@ -93,4 +93,11 @@ ApxApp.ApxLibrary {
         ]
     }
 
+    ApxApp.ApxResource {
+        src: "templates"
+        files: [
+            "share/*",
+        ]
+    }
+
 }

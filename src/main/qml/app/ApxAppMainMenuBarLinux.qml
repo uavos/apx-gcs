@@ -100,5 +100,9 @@ MenuBar {
             onTriggered: Qt.openUrlExternally("http://docs.uavos.com")
             action: Action {shortcut: StandardKey.HelpContents}
         }
+        MenuItem {
+            text: qsTr("Report a problem")
+            onTriggered: Qt.openUrlExternally("https://github.com/uavos/apx-releases/issues")
+        }
     }
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mission format="1" href="http://www.uavos.com/">
+  <title>Seattle-SIM-Xplane11</title>
+  <timestamp>06 Apr 2015 13:28:56 +0300</timestamp>
+  <exported>18 Sep 2019 15:20:19 +0300</exported>
+  <version>10.1.216</version>
+  <info>
+    <hash>0A3D39A1A530D012A9A82CDC1FDB9B8C874E3816</hash>
+    <lat>47.462547</lat>
+    <lon>-122.30776683</lon>
+    <time>1428316136000</time>
+    <title>xplane seattle</title>
+  </info>
+  <details/>
+  <runways cnt="1">
+    <runway id="0">
+      <lat>47.462547</lat>
+      <lon>-122.30776683</lon>
+      <approach>400</approach>
+      <dE>-9</dE>
+      <dN>-1494</dN>
+      <hmsl>0</hmsl>
+      <type>Left</type>
+    </runway>
+  </runways>
+  <waypoints cnt="5">
+    <waypoint id="0">
+      <lat>47.46311575</lat>
+      <lon>-122.31006146</lon>
+      <altitude>200</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="1">
+      <lat>47.46060362</lat>
+      <lon>-122.3145398</lon>
+      <altitude>200</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="2">
+      <lat>47.46398887</lat>
+      <lon>-122.30662823</lon>
+      <altitude>200</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="3">
+      <lat>47.45897013</lat>
+      <lon>-122.31263637</lon>
+      <altitude>200</altitude>
+      <type>Hdg</type>
+    </waypoint>
+    <waypoint id="4">
+      <lat>47.46479591</lat>
+      <lon>-122.30735779</lon>
+      <altitude>200</altitude>
+      <type>Hdg</type>
+    </waypoint>
+  </waypoints>
+</mission>

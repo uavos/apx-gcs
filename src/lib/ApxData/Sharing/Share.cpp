@@ -22,6 +22,8 @@
  */
 #include "Share.h"
 
+#include <App/AppSettings.h>
+#include <ApxDirs.h>
 #include <ApxLog.h>
 #include <QFileDialog>
 //=============================================================================
@@ -47,6 +49,38 @@ Share::Share(Fact *parent,
     f_import->setIcon("import");
     connect(f_import, &Fact::triggered, this, &Fact::actionTriggered);
     connect(f_import, &Fact::triggered, this, &Share::importTriggered);
+
+    QTimer::singleShot(1000, this, &Share::syncTemplates);
+}
+//=============================================================================
+void Share::syncTemplates()
+{
+    //import default data from resources
+    QSettings *settings = AppSettings::settings();
+    settings->beginGroup("templates_update");
+    QStringList importedFiles = settings->value(fileType).toStringList();
+    QFileInfoList fiSrcList(
+        QDir(ApxDirs::res().absoluteFilePath("templates/share"), QString("*.%1").arg(fileType))
+            .entryInfoList());
+
+    bool updated = false;
+    foreach (QFileInfo fi, fiSrcList) {
+        if (importedFiles.contains(fi.completeBaseName()))
+            continue;
+        importedFiles.append(fi.completeBaseName());
+        updated = true;
+
+        qDebug() << "template update:" << fi.absoluteFilePath();
+        ShareXmlImport *req = importRequest(fi.completeBaseName(), fi.filePath());
+        if (req)
+            req->exec();
+    }
+    if (updated) {
+        importedFiles.sort();
+        importedFiles.removeDuplicates();
+        settings->setValue(fileType, importedFiles);
+    }
+    settings->endGroup();
 }
 //=============================================================================
 QString Share::defaultExportFileName() const
@@ -99,10 +133,11 @@ void Share::exportTriggered()
     ShareXmlExport *req = exportRequest(QFileInfo(fname).baseName(), fname);
     if (!req)
         return;
+    connect(req, &ShareXmlExport::exported, this, &Share::dbExported, Qt::QueuedConnection);
     connect(req, &ShareXmlExport::exported, this, &Share::exported, Qt::QueuedConnection);
     req->exec();
 }
-void Share::exported(QByteArray data, QString fileName)
+void Share::dbExported(QByteArray data, QString fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -149,11 +184,12 @@ void Share::importTriggered()
             continue;
         apxMsg() << tr("Importing")
                  << QString("%1: %2...").arg(dataTitle).arg(fi.completeBaseName());
+        connect(req, &ShareXmlImport::imported, this, &Share::dbImported, Qt::QueuedConnection);
         connect(req, &ShareXmlImport::imported, this, &Share::imported, Qt::QueuedConnection);
         req->exec();
     }
 }
-void Share::imported(QString hash, QString title)
+void Share::dbImported(QString hash, QString title)
 {
     Q_UNUSED(hash)
     apxMsg() << QString("%1 %2:").arg(dataTitle).arg(tr("imported")) << title;

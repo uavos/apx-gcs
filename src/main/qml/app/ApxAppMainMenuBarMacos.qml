@@ -101,7 +101,10 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
             MenuItem {
                 text: qsTr("Changelog")
                 onTriggered: Qt.openUrlExternally("http://uavos.github.io/apx-releases/CHANGELOG.html")
-                shortcut: StandardKey.HelpContents
+            }
+            MenuItem {
+                text: qsTr("Report a problem")
+                onTriggered: Qt.openUrlExternally("https://github.com/uavos/apx-releases/issues")
             }
         }
     }

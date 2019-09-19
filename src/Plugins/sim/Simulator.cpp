@@ -24,7 +24,6 @@
 #include <App/AppSettings.h>
 #include <ApxLog.h>
 #include <QDesktopServices>
-//#include <QtConcurrent>
 
 APX_LOGGING_CATEGORY(SimLog, "sim")
 //=============================================================================
@@ -240,5 +239,7 @@ void Simulator::pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus)
     apxMsg() << tr("SIL simulation stopped");
     f_launch->setEnabled(true);
     f_stop->setEnabled(false);
+    if (exitCode == 7)
+        f_launch->trigger();
 }
 //=============================================================================

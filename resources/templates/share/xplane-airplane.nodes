@@ -1,0 +1,3754 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes format="1" href="http://www.uavos.com/">
+  <title>xplane-airplane</title>
+  <timestamp>18 Sep 2019 15:12:26 +0300</timestamp>
+  <exported>18 Sep 2019 15:20:33 +0300</exported>
+  <version>10.1.216</version>
+  <info>
+    <hash>3FCC106598BAEFF305D1F2BDE9FBBA82269DB376</hash>
+    <time>1568808746085</time>
+    <title>xplane-airplane</title>
+  </info>
+  <vehicle>
+    <callsign>SIM</callsign>
+    <class>UAV</class>
+    <squawk>1FD</squawk>
+    <time>1568808741539</time>
+    <uid>FE0000000000000000000000</uid>
+  </vehicle>
+  <node sn="FE0000000000000000000000" name="nav">
+    <dictionary>
+      <chash>20BA04C79F6D1F</chash>
+      <hardware>SIM</hardware>
+      <hash>1CD5548C1DE0CD85E8B3F37F02922A7FEF586B03</hash>
+      <time>1568807479314</time>
+      <version>10.1.216</version>
+    </dictionary>
+    <config>
+      <hash>4585ABE9EFE0DCD13698CDFF93728E4F5619EAD1</hash>
+      <time>1568807836907</time>
+      <title>xplane-airplane</title>
+    </config>
+    <user>
+      <firstTime>1542969896894</firstTime>
+      <hostname>shiva-mbp.local</hostname>
+      <machineUID>A9AFFC44BD59CD7DE5C443DD8F3B7315BCC51AD7</machineUID>
+      <time>1568808745476</time>
+      <username>uavinda</username>
+    </user>
+    <commands cnt="1">
+      <command id="12" name="reconf">
+        <descr>Reset configuration</descr>
+      </command>
+    </commands>
+    <fields cnt="32">
+      <field id="0" name="comment">
+        <type>String</type>
+        <title>comment</title>
+        <value>xplane-airplane</value>
+      </field>
+      <field id="1" name="dl_callsign">
+        <type>String</type>
+        <title>callsign</title>
+        <descr>Callsign</descr>
+        <sect>Downlink</sect>
+        <value>SIM</value>
+      </field>
+      <field id="2" name="dl_mode">
+        <type>Option</type>
+        <title>mode</title>
+        <descr>mode</descr>
+        <opts>local,dlink</opts>
+        <sect>Downlink</sect>
+        <value>dlink</value>
+      </field>
+      <field id="3" name="dl_vclass">
+        <type>Option</type>
+        <title>vclass</title>
+        <descr>Vehicle class</descr>
+        <opts>UAV,GCU,UGV,USV,SAT,RELAY</opts>
+        <sect>Downlink</sect>
+        <value>UAV</value>
+      </field>
+      <field id="4" name="dl_XPDR">
+        <type>Option</type>
+        <title>XPDR</title>
+        <descr>Transponder</descr>
+        <opts>auto,silent,1sec,5sec</opts>
+        <sect>Downlink</sect>
+        <value>auto</value>
+      </field>
+      <field id="5" name="dl_squawk">
+        <type>UInt</type>
+        <title>squawk</title>
+        <descr>Squawk code</descr>
+        <units>hex</units>
+        <sect>Downlink</sect>
+        <value>1FD</value>
+      </field>
+      <field id="6" name="ctr_bind">
+        <type>Array</type>
+        <title>bind</title>
+        <descr>control binding</descr>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_bind_1">
+          <type>MandalaID</type>
+          <title>1</title>
+          <descr>bind/1</descr>
+          <value>ctr_ailerons</value>
+        </field>
+        <field id="1" name="ctr_bind_2">
+          <type>MandalaID</type>
+          <title>2</title>
+          <descr>bind/2</descr>
+          <value>ctr_elevator</value>
+        </field>
+        <field id="2" name="ctr_bind_3">
+          <type>MandalaID</type>
+          <title>3</title>
+          <descr>bind/3</descr>
+          <value>ctr_rudder</value>
+        </field>
+        <field id="3" name="ctr_bind_4">
+          <type>MandalaID</type>
+          <title>4</title>
+          <descr>bind/4</descr>
+          <value>ctr_throttle</value>
+        </field>
+        <field id="4" name="ctr_bind_5">
+          <type>MandalaID</type>
+          <title>5</title>
+          <descr>bind/5</descr>
+          <value>ctr_flaps</value>
+        </field>
+        <field id="5" name="ctr_bind_6">
+          <type>MandalaID</type>
+          <title>6</title>
+          <descr>bind/6</descr>
+          <value>ctr_brake</value>
+        </field>
+        <field id="6" name="ctr_bind_7">
+          <type>MandalaID</type>
+          <title>7</title>
+          <descr>bind/7</descr>
+          <value></value>
+        </field>
+        <field id="7" name="ctr_bind_8">
+          <type>MandalaID</type>
+          <title>8</title>
+          <descr>bind/8</descr>
+          <value></value>
+        </field>
+        <field id="8" name="ctr_bind_9">
+          <type>MandalaID</type>
+          <title>9</title>
+          <descr>bind/9</descr>
+          <value></value>
+        </field>
+        <field id="9" name="ctr_bind_10">
+          <type>MandalaID</type>
+          <title>10</title>
+          <descr>bind/10</descr>
+          <value></value>
+        </field>
+        <field id="10" name="ctr_bind_11">
+          <type>MandalaID</type>
+          <title>11</title>
+          <descr>bind/11</descr>
+          <value></value>
+        </field>
+        <field id="11" name="ctr_bind_12">
+          <type>MandalaID</type>
+          <title>12</title>
+          <descr>bind/12</descr>
+          <value></value>
+        </field>
+        <field id="12" name="ctr_bind_13">
+          <type>MandalaID</type>
+          <title>13</title>
+          <descr>bind/13</descr>
+          <value></value>
+        </field>
+        <field id="13" name="ctr_bind_14">
+          <type>MandalaID</type>
+          <title>14</title>
+          <descr>bind/14</descr>
+          <value></value>
+        </field>
+        <field id="14" name="ctr_bind_15">
+          <type>MandalaID</type>
+          <title>15</title>
+          <descr>bind/15</descr>
+          <value></value>
+        </field>
+        <field id="15" name="ctr_bind_16">
+          <type>MandalaID</type>
+          <title>16</title>
+          <descr>bind/16</descr>
+          <value></value>
+        </field>
+        <field id="16" name="ctr_bind_17">
+          <type>MandalaID</type>
+          <title>17</title>
+          <descr>bind/17</descr>
+          <value></value>
+        </field>
+        <field id="17" name="ctr_bind_18">
+          <type>MandalaID</type>
+          <title>18</title>
+          <descr>bind/18</descr>
+          <value></value>
+        </field>
+        <field id="18" name="ctr_bind_19">
+          <type>MandalaID</type>
+          <title>19</title>
+          <descr>bind/19</descr>
+          <value></value>
+        </field>
+        <field id="19" name="ctr_bind_20">
+          <type>MandalaID</type>
+          <title>20</title>
+          <descr>bind/20</descr>
+          <value></value>
+        </field>
+        <field id="20" name="ctr_bind_21">
+          <type>MandalaID</type>
+          <title>21</title>
+          <descr>bind/21</descr>
+          <value></value>
+        </field>
+        <field id="21" name="ctr_bind_22">
+          <type>MandalaID</type>
+          <title>22</title>
+          <descr>bind/22</descr>
+          <value></value>
+        </field>
+        <field id="22" name="ctr_bind_23">
+          <type>MandalaID</type>
+          <title>23</title>
+          <descr>bind/23</descr>
+          <value></value>
+        </field>
+        <field id="23" name="ctr_bind_24">
+          <type>MandalaID</type>
+          <title>24</title>
+          <descr>bind/24</descr>
+          <value></value>
+        </field>
+      </field>
+      <field id="7" name="ctr_mult">
+        <type>Array</type>
+        <title>mult</title>
+        <descr>control multiplier</descr>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_mult_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>mult/1</descr>
+          <value>1</value>
+        </field>
+        <field id="1" name="ctr_mult_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>mult/2</descr>
+          <value>1</value>
+        </field>
+        <field id="2" name="ctr_mult_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>mult/3</descr>
+          <value>1</value>
+        </field>
+        <field id="3" name="ctr_mult_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>mult/4</descr>
+          <value>1</value>
+        </field>
+        <field id="4" name="ctr_mult_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>mult/5</descr>
+          <value>1</value>
+        </field>
+        <field id="5" name="ctr_mult_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>mult/6</descr>
+          <value>1</value>
+        </field>
+        <field id="6" name="ctr_mult_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>mult/7</descr>
+          <value>0</value>
+        </field>
+        <field id="7" name="ctr_mult_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>mult/8</descr>
+          <value>0</value>
+        </field>
+        <field id="8" name="ctr_mult_9">
+          <type>Float</type>
+          <title>9</title>
+          <descr>mult/9</descr>
+          <value>0</value>
+        </field>
+        <field id="9" name="ctr_mult_10">
+          <type>Float</type>
+          <title>10</title>
+          <descr>mult/10</descr>
+          <value>0</value>
+        </field>
+        <field id="10" name="ctr_mult_11">
+          <type>Float</type>
+          <title>11</title>
+          <descr>mult/11</descr>
+          <value>0</value>
+        </field>
+        <field id="11" name="ctr_mult_12">
+          <type>Float</type>
+          <title>12</title>
+          <descr>mult/12</descr>
+          <value>0</value>
+        </field>
+        <field id="12" name="ctr_mult_13">
+          <type>Float</type>
+          <title>13</title>
+          <descr>mult/13</descr>
+          <value>0</value>
+        </field>
+        <field id="13" name="ctr_mult_14">
+          <type>Float</type>
+          <title>14</title>
+          <descr>mult/14</descr>
+          <value>0</value>
+        </field>
+        <field id="14" name="ctr_mult_15">
+          <type>Float</type>
+          <title>15</title>
+          <descr>mult/15</descr>
+          <value>0</value>
+        </field>
+        <field id="15" name="ctr_mult_16">
+          <type>Float</type>
+          <title>16</title>
+          <descr>mult/16</descr>
+          <value>0</value>
+        </field>
+        <field id="16" name="ctr_mult_17">
+          <type>Float</type>
+          <title>17</title>
+          <descr>mult/17</descr>
+          <value>0</value>
+        </field>
+        <field id="17" name="ctr_mult_18">
+          <type>Float</type>
+          <title>18</title>
+          <descr>mult/18</descr>
+          <value>0</value>
+        </field>
+        <field id="18" name="ctr_mult_19">
+          <type>Float</type>
+          <title>19</title>
+          <descr>mult/19</descr>
+          <value>0</value>
+        </field>
+        <field id="19" name="ctr_mult_20">
+          <type>Float</type>
+          <title>20</title>
+          <descr>mult/20</descr>
+          <value>0</value>
+        </field>
+        <field id="20" name="ctr_mult_21">
+          <type>Float</type>
+          <title>21</title>
+          <descr>mult/21</descr>
+          <value>0</value>
+        </field>
+        <field id="21" name="ctr_mult_22">
+          <type>Float</type>
+          <title>22</title>
+          <descr>mult/22</descr>
+          <value>0</value>
+        </field>
+        <field id="22" name="ctr_mult_23">
+          <type>Float</type>
+          <title>23</title>
+          <descr>mult/23</descr>
+          <value>0</value>
+        </field>
+        <field id="23" name="ctr_mult_24">
+          <type>Float</type>
+          <title>24</title>
+          <descr>mult/24</descr>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="8" name="ctr_diff">
+        <type>Array</type>
+        <title>diff</title>
+        <descr>control bias</descr>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_diff_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>diff/1</descr>
+          <value>0</value>
+        </field>
+        <field id="1" name="ctr_diff_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>diff/2</descr>
+          <value>0</value>
+        </field>
+        <field id="2" name="ctr_diff_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>diff/3</descr>
+          <value>0</value>
+        </field>
+        <field id="3" name="ctr_diff_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>diff/4</descr>
+          <value>0</value>
+        </field>
+        <field id="4" name="ctr_diff_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>diff/5</descr>
+          <value>0</value>
+        </field>
+        <field id="5" name="ctr_diff_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>diff/6</descr>
+          <value>0</value>
+        </field>
+        <field id="6" name="ctr_diff_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>diff/7</descr>
+          <value>0</value>
+        </field>
+        <field id="7" name="ctr_diff_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>diff/8</descr>
+          <value>0</value>
+        </field>
+        <field id="8" name="ctr_diff_9">
+          <type>Float</type>
+          <title>9</title>
+          <descr>diff/9</descr>
+          <value>0</value>
+        </field>
+        <field id="9" name="ctr_diff_10">
+          <type>Float</type>
+          <title>10</title>
+          <descr>diff/10</descr>
+          <value>0</value>
+        </field>
+        <field id="10" name="ctr_diff_11">
+          <type>Float</type>
+          <title>11</title>
+          <descr>diff/11</descr>
+          <value>0</value>
+        </field>
+        <field id="11" name="ctr_diff_12">
+          <type>Float</type>
+          <title>12</title>
+          <descr>diff/12</descr>
+          <value>0</value>
+        </field>
+        <field id="12" name="ctr_diff_13">
+          <type>Float</type>
+          <title>13</title>
+          <descr>diff/13</descr>
+          <value>0</value>
+        </field>
+        <field id="13" name="ctr_diff_14">
+          <type>Float</type>
+          <title>14</title>
+          <descr>diff/14</descr>
+          <value>0</value>
+        </field>
+        <field id="14" name="ctr_diff_15">
+          <type>Float</type>
+          <title>15</title>
+          <descr>diff/15</descr>
+          <value>0</value>
+        </field>
+        <field id="15" name="ctr_diff_16">
+          <type>Float</type>
+          <title>16</title>
+          <descr>diff/16</descr>
+          <value>0</value>
+        </field>
+        <field id="16" name="ctr_diff_17">
+          <type>Float</type>
+          <title>17</title>
+          <descr>diff/17</descr>
+          <value>0</value>
+        </field>
+        <field id="17" name="ctr_diff_18">
+          <type>Float</type>
+          <title>18</title>
+          <descr>diff/18</descr>
+          <value>0</value>
+        </field>
+        <field id="18" name="ctr_diff_19">
+          <type>Float</type>
+          <title>19</title>
+          <descr>diff/19</descr>
+          <value>0</value>
+        </field>
+        <field id="19" name="ctr_diff_20">
+          <type>Float</type>
+          <title>20</title>
+          <descr>diff/20</descr>
+          <value>0</value>
+        </field>
+        <field id="20" name="ctr_diff_21">
+          <type>Float</type>
+          <title>21</title>
+          <descr>diff/21</descr>
+          <value>0</value>
+        </field>
+        <field id="21" name="ctr_diff_22">
+          <type>Float</type>
+          <title>22</title>
+          <descr>diff/22</descr>
+          <value>0</value>
+        </field>
+        <field id="22" name="ctr_diff_23">
+          <type>Float</type>
+          <title>23</title>
+          <descr>diff/23</descr>
+          <value>0</value>
+        </field>
+        <field id="23" name="ctr_diff_24">
+          <type>Float</type>
+          <title>24</title>
+          <descr>diff/24</descr>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="9" name="ctr_speed">
+        <type>Array</type>
+        <title>speed</title>
+        <descr>control change speed</descr>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_speed_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>speed/1</descr>
+          <value>0</value>
+        </field>
+        <field id="1" name="ctr_speed_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>speed/2</descr>
+          <value>0</value>
+        </field>
+        <field id="2" name="ctr_speed_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>speed/3</descr>
+          <value>0</value>
+        </field>
+        <field id="3" name="ctr_speed_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>speed/4</descr>
+          <value>0</value>
+        </field>
+        <field id="4" name="ctr_speed_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>speed/5</descr>
+          <value>2</value>
+        </field>
+        <field id="5" name="ctr_speed_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>speed/6</descr>
+          <value>0</value>
+        </field>
+        <field id="6" name="ctr_speed_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>speed/7</descr>
+          <value>0</value>
+        </field>
+        <field id="7" name="ctr_speed_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>speed/8</descr>
+          <value>0</value>
+        </field>
+        <field id="8" name="ctr_speed_9">
+          <type>Float</type>
+          <title>9</title>
+          <descr>speed/9</descr>
+          <value>0</value>
+        </field>
+        <field id="9" name="ctr_speed_10">
+          <type>Float</type>
+          <title>10</title>
+          <descr>speed/10</descr>
+          <value>0</value>
+        </field>
+        <field id="10" name="ctr_speed_11">
+          <type>Float</type>
+          <title>11</title>
+          <descr>speed/11</descr>
+          <value>0</value>
+        </field>
+        <field id="11" name="ctr_speed_12">
+          <type>Float</type>
+          <title>12</title>
+          <descr>speed/12</descr>
+          <value>0</value>
+        </field>
+        <field id="12" name="ctr_speed_13">
+          <type>Float</type>
+          <title>13</title>
+          <descr>speed/13</descr>
+          <value>0</value>
+        </field>
+        <field id="13" name="ctr_speed_14">
+          <type>Float</type>
+          <title>14</title>
+          <descr>speed/14</descr>
+          <value>0</value>
+        </field>
+        <field id="14" name="ctr_speed_15">
+          <type>Float</type>
+          <title>15</title>
+          <descr>speed/15</descr>
+          <value>0</value>
+        </field>
+        <field id="15" name="ctr_speed_16">
+          <type>Float</type>
+          <title>16</title>
+          <descr>speed/16</descr>
+          <value>0</value>
+        </field>
+        <field id="16" name="ctr_speed_17">
+          <type>Float</type>
+          <title>17</title>
+          <descr>speed/17</descr>
+          <value>0</value>
+        </field>
+        <field id="17" name="ctr_speed_18">
+          <type>Float</type>
+          <title>18</title>
+          <descr>speed/18</descr>
+          <value>0</value>
+        </field>
+        <field id="18" name="ctr_speed_19">
+          <type>Float</type>
+          <title>19</title>
+          <descr>speed/19</descr>
+          <value>0</value>
+        </field>
+        <field id="19" name="ctr_speed_20">
+          <type>Float</type>
+          <title>20</title>
+          <descr>speed/20</descr>
+          <value>0</value>
+        </field>
+        <field id="20" name="ctr_speed_21">
+          <type>Float</type>
+          <title>21</title>
+          <descr>speed/21</descr>
+          <value>0</value>
+        </field>
+        <field id="21" name="ctr_speed_22">
+          <type>Float</type>
+          <title>22</title>
+          <descr>speed/22</descr>
+          <value>0</value>
+        </field>
+        <field id="22" name="ctr_speed_23">
+          <type>Float</type>
+          <title>23</title>
+          <descr>speed/23</descr>
+          <value>0</value>
+        </field>
+        <field id="23" name="ctr_speed_24">
+          <type>Float</type>
+          <title>24</title>
+          <descr>speed/24</descr>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="10" name="ctr_ch">
+        <type>Array</type>
+        <title>ch</title>
+        <descr>control output channel</descr>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_ch_1">
+          <type>Option</type>
+          <title>1</title>
+          <descr>ch/1</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="1" name="ctr_ch_2">
+          <type>Option</type>
+          <title>2</title>
+          <descr>ch/2</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH2</value>
+        </field>
+        <field id="2" name="ctr_ch_3">
+          <type>Option</type>
+          <title>3</title>
+          <descr>ch/3</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH3</value>
+        </field>
+        <field id="3" name="ctr_ch_4">
+          <type>Option</type>
+          <title>4</title>
+          <descr>ch/4</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH4</value>
+        </field>
+        <field id="4" name="ctr_ch_5">
+          <type>Option</type>
+          <title>5</title>
+          <descr>ch/5</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH5</value>
+        </field>
+        <field id="5" name="ctr_ch_6">
+          <type>Option</type>
+          <title>6</title>
+          <descr>ch/6</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH6</value>
+        </field>
+        <field id="6" name="ctr_ch_7">
+          <type>Option</type>
+          <title>7</title>
+          <descr>ch/7</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="7" name="ctr_ch_8">
+          <type>Option</type>
+          <title>8</title>
+          <descr>ch/8</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="8" name="ctr_ch_9">
+          <type>Option</type>
+          <title>9</title>
+          <descr>ch/9</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="9" name="ctr_ch_10">
+          <type>Option</type>
+          <title>10</title>
+          <descr>ch/10</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="10" name="ctr_ch_11">
+          <type>Option</type>
+          <title>11</title>
+          <descr>ch/11</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="11" name="ctr_ch_12">
+          <type>Option</type>
+          <title>12</title>
+          <descr>ch/12</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="12" name="ctr_ch_13">
+          <type>Option</type>
+          <title>13</title>
+          <descr>ch/13</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="13" name="ctr_ch_14">
+          <type>Option</type>
+          <title>14</title>
+          <descr>ch/14</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="14" name="ctr_ch_15">
+          <type>Option</type>
+          <title>15</title>
+          <descr>ch/15</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="15" name="ctr_ch_16">
+          <type>Option</type>
+          <title>16</title>
+          <descr>ch/16</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="16" name="ctr_ch_17">
+          <type>Option</type>
+          <title>17</title>
+          <descr>ch/17</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="17" name="ctr_ch_18">
+          <type>Option</type>
+          <title>18</title>
+          <descr>ch/18</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="18" name="ctr_ch_19">
+          <type>Option</type>
+          <title>19</title>
+          <descr>ch/19</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="19" name="ctr_ch_20">
+          <type>Option</type>
+          <title>20</title>
+          <descr>ch/20</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="20" name="ctr_ch_21">
+          <type>Option</type>
+          <title>21</title>
+          <descr>ch/21</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="21" name="ctr_ch_22">
+          <type>Option</type>
+          <title>22</title>
+          <descr>ch/22</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="22" name="ctr_ch_23">
+          <type>Option</type>
+          <title>23</title>
+          <descr>ch/23</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+        <field id="23" name="ctr_ch_24">
+          <type>Option</type>
+          <title>24</title>
+          <descr>ch/24</descr>
+          <opts>CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,CH9,CH10</opts>
+          <value>CH1</value>
+        </field>
+      </field>
+      <field id="11" name="ctr_ch_min">
+        <type>Array</type>
+        <title>ch_min</title>
+        <descr>channel minimum</descr>
+        <units>%</units>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_ch_min_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>ch_min/1</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="1" name="ctr_ch_min_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>ch_min/2</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="2" name="ctr_ch_min_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>ch_min/3</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="3" name="ctr_ch_min_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>ch_min/4</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="4" name="ctr_ch_min_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>ch_min/5</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="5" name="ctr_ch_min_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>ch_min/6</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="6" name="ctr_ch_min_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>ch_min/7</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="7" name="ctr_ch_min_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>ch_min/8</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="8" name="ctr_ch_min_9">
+          <type>Float</type>
+          <title>9</title>
+          <descr>ch_min/9</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+        <field id="9" name="ctr_ch_min_10">
+          <type>Float</type>
+          <title>10</title>
+          <descr>ch_min/10</descr>
+          <units>%</units>
+          <value>-100</value>
+        </field>
+      </field>
+      <field id="12" name="ctr_ch_max">
+        <type>Array</type>
+        <title>ch_max</title>
+        <descr>channel maximum</descr>
+        <units>%</units>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_ch_max_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>ch_max/1</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="1" name="ctr_ch_max_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>ch_max/2</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="ctr_ch_max_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>ch_max/3</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="3" name="ctr_ch_max_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>ch_max/4</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="4" name="ctr_ch_max_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>ch_max/5</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="5" name="ctr_ch_max_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>ch_max/6</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="6" name="ctr_ch_max_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>ch_max/7</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="7" name="ctr_ch_max_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>ch_max/8</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="8" name="ctr_ch_max_9">
+          <type>Float</type>
+          <title>9</title>
+          <descr>ch_max/9</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="9" name="ctr_ch_max_10">
+          <type>Float</type>
+          <title>10</title>
+          <descr>ch_max/10</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="13" name="ctr_ch_zero">
+        <type>Array</type>
+        <title>ch_zero</title>
+        <descr>channel zero position</descr>
+        <units>%</units>
+        <sect>Simulator/controls</sect>
+        <field id="0" name="ctr_ch_zero_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>ch_zero/1</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="ctr_ch_zero_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>ch_zero/2</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="ctr_ch_zero_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>ch_zero/3</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="ctr_ch_zero_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>ch_zero/4</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="ctr_ch_zero_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>ch_zero/5</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="5" name="ctr_ch_zero_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>ch_zero/6</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="ctr_ch_zero_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>ch_zero/7</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="7" name="ctr_ch_zero_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>ch_zero/8</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="8" name="ctr_ch_zero_9">
+          <type>Float</type>
+          <title>9</title>
+          <descr>ch_zero/9</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="9" name="ctr_ch_zero_10">
+          <type>Float</type>
+          <title>10</title>
+          <descr>ch_zero/10</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="14" name="ports_mixer">
+        <type>Option</type>
+        <title>mixer</title>
+        <descr>Hardware mixer</descr>
+        <opts>off,quadX,quadXC</opts>
+        <sect>Simulator</sect>
+        <value>off</value>
+      </field>
+      <field id="15" name="xpl">
+        <type>Array</type>
+        <title>xpl</title>
+        <descr>X-Plane controls assignments for PWM</descr>
+        <sect>Simulator</sect>
+        <field id="0" name="xpl_1">
+          <type>StringL</type>
+          <title>1</title>
+          <descr>xpl/1</descr>
+          <value>sim/joystick/yoke_roll_ratio</value>
+        </field>
+        <field id="1" name="xpl_2">
+          <type>StringL</type>
+          <title>2</title>
+          <descr>xpl/2</descr>
+          <value>sim/joystick/yoke_pitch_ratio</value>
+        </field>
+        <field id="2" name="xpl_3">
+          <type>StringL</type>
+          <title>3</title>
+          <descr>xpl/3</descr>
+          <value>sim/joystick/yoke_heading_ratio</value>
+        </field>
+        <field id="3" name="xpl_4">
+          <type>StringL</type>
+          <title>4</title>
+          <descr>xpl/4</descr>
+          <value>sim/flightmodel/engine/ENGN_thro_use[0]</value>
+        </field>
+        <field id="4" name="xpl_5">
+          <type>StringL</type>
+          <title>5</title>
+          <descr>xpl/5</descr>
+          <value>sim/flightmodel/controls/flaprqst</value>
+        </field>
+        <field id="5" name="xpl_6">
+          <type>StringL</type>
+          <title>6</title>
+          <descr>xpl/6</descr>
+          <value>sim/flightmodel/controls/parkbrake</value>
+        </field>
+        <field id="6" name="xpl_7">
+          <type>StringL</type>
+          <title>7</title>
+          <descr>xpl/7</descr>
+          <value></value>
+        </field>
+        <field id="7" name="xpl_8">
+          <type>StringL</type>
+          <title>8</title>
+          <descr>xpl/8</descr>
+          <value></value>
+        </field>
+        <field id="8" name="xpl_9">
+          <type>StringL</type>
+          <title>9</title>
+          <descr>xpl/9</descr>
+          <value></value>
+        </field>
+        <field id="9" name="xpl_10">
+          <type>StringL</type>
+          <title>10</title>
+          <descr>xpl/10</descr>
+          <value></value>
+        </field>
+      </field>
+      <field id="16" name="ahrs_align">
+        <type>Vector</type>
+        <title>align</title>
+        <descr>body frame align</descr>
+        <units>deg</units>
+        <sect>AHRS</sect>
+        <field id="0" name="ahrs_align_roll">
+          <type>Float</type>
+          <title>roll</title>
+          <descr>body frame align (roll)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="ahrs_align_pitch">
+          <type>Float</type>
+          <title>pitch</title>
+          <descr>body frame align (pitch)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="ahrs_align_yaw">
+          <type>Float</type>
+          <title>yaw</title>
+          <descr>body frame align (yaw)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="17" name="ahrs_gps_arm">
+        <type>Vector</type>
+        <title>gps_arm</title>
+        <descr>gps lever arm</descr>
+        <units>m</units>
+        <sect>AHRS</sect>
+        <field id="0" name="ahrs_gps_arm_x">
+          <type>Float</type>
+          <title>x</title>
+          <descr>gps lever arm (x)</descr>
+          <units>m</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="ahrs_gps_arm_y">
+          <type>Float</type>
+          <title>y</title>
+          <descr>gps lever arm (y)</descr>
+          <units>m</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="ahrs_gps_arm_z">
+          <type>Float</type>
+          <title>z</title>
+          <descr>gps lever arm (z)</descr>
+          <units>m</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="18" name="ahrs_decl">
+        <type>Float</type>
+        <title>decl</title>
+        <descr>magnetic declination</descr>
+        <units>deg</units>
+        <sect>AHRS</sect>
+        <value>0</value>
+      </field>
+      <field id="19" name="ahrs_fgyr">
+        <type>Option</type>
+        <title>fgyr</title>
+        <descr>gyro filter</descr>
+        <opts>off,soft,strong,mekf,raw</opts>
+        <sect>AHRS</sect>
+        <value>off</value>
+      </field>
+      <field id="20" name="ahrs_facc">
+        <type>Option</type>
+        <title>facc</title>
+        <descr>accelerometers vibrations filter</descr>
+        <opts>off,soft,strong</opts>
+        <sect>AHRS</sect>
+        <value>off</value>
+      </field>
+      <field id="21" name="ahrs_ftype">
+        <type>Option</type>
+        <title>ftype</title>
+        <descr>MEKF tuning</descr>
+        <opts>default,improved</opts>
+        <sect>AHRS</sect>
+        <value>improved</value>
+      </field>
+      <field id="22" name="ahrs_hAGL">
+        <type>UInt</type>
+        <title>hAGL</title>
+        <descr>altitude to turn on AGL</descr>
+        <units>m</units>
+        <sect>AHRS</sect>
+        <value>0</value>
+      </field>
+      <field id="23" name="ahrs_bAGL">
+        <type>Float</type>
+        <title>bAGL</title>
+        <descr>AGL altitude on ground level</descr>
+        <units>m</units>
+        <sect>AHRS</sect>
+        <value>0</value>
+      </field>
+      <field id="24" name="ahrs_hGPS">
+        <type>Option</type>
+        <title>hGPS</title>
+        <descr>preferred altitude source</descr>
+        <opts>auto,baro,gps</opts>
+        <sect>AHRS</sect>
+        <value>auto</value>
+      </field>
+      <field id="25" name="ahrs_vsGPS">
+        <type>Option</type>
+        <title>vsGPS</title>
+        <descr>preferred vspeed source</descr>
+        <opts>auto,gps</opts>
+        <sect>AHRS</sect>
+        <value>auto</value>
+      </field>
+      <field id="26" name="ahrs_noGPS">
+        <type>Option</type>
+        <title>noGPS</title>
+        <descr>don't wait GPS</descr>
+        <opts>no,yes</opts>
+        <sect>AHRS</sect>
+        <value>no</value>
+      </field>
+      <field id="27" name="ahrs_noMAG">
+        <type>Option</type>
+        <title>noMAG</title>
+        <descr>block magnetometer</descr>
+        <opts>off,auto,always</opts>
+        <sect>AHRS</sect>
+        <value>off</value>
+      </field>
+      <field id="28" name="ahrs_fbar">
+        <type>Option</type>
+        <title>fbar</title>
+        <descr>barometric altimeter filter</descr>
+        <opts>mekf,none</opts>
+        <sect>AHRS</sect>
+        <value>mekf</value>
+      </field>
+      <field id="29" name="ahrs_crs">
+        <type>Option</type>
+        <title>crs</title>
+        <descr>course source</descr>
+        <opts>mekf,smart,mag</opts>
+        <sect>AHRS</sect>
+        <value>mekf</value>
+      </field>
+      <field id="30" name="ahrs_cas">
+        <type>Option</type>
+        <title>cas</title>
+        <descr>CAS sensor</descr>
+        <opts>PsPt,Ps,Pt,off</opts>
+        <sect>AHRS</sect>
+        <value>PsPt</value>
+      </field>
+      <field id="31" name="ahrs_hspd">
+        <type>Float</type>
+        <title>hspd</title>
+        <descr>minimum airspeed to use</descr>
+        <sect>AHRS</sect>
+        <value>0</value>
+      </field>
+    </fields>
+  </node>
+  <node sn="FF0000000000000000000000" name="nav.shiva">
+    <dictionary>
+      <chash>B16B03A977711A</chash>
+      <hardware>SIM</hardware>
+      <hash>61A8D034FB9ADC890C7696425A3CDEB34777F361</hash>
+      <time>1568807479317</time>
+      <version>10.1.216</version>
+    </dictionary>
+    <config>
+      <hash>9662666CF499FF3E4B6EC9A5D3E1F1F7A53CF3DD</hash>
+      <time>1568807836974</time>
+      <title>xplane-airplane</title>
+    </config>
+    <user>
+      <firstTime>1542715437733</firstTime>
+      <hostname>shiva-mbp.local</hostname>
+      <machineUID>A9AFFC44BD59CD7DE5C443DD8F3B7315BCC51AD7</machineUID>
+      <time>1568808745479</time>
+      <username>uavinda</username>
+    </user>
+    <fields cnt="177">
+      <field id="0" name="comment">
+        <type>String</type>
+        <title>comment</title>
+        <value>xplane-airplane</value>
+      </field>
+      <field id="1" name="redundancy">
+        <type>Option</type>
+        <title>redundancy</title>
+        <descr>Redundancy</descr>
+        <opts>primary,secondary</opts>
+        <value>primary</value>
+      </field>
+      <field id="2" name="type">
+        <type>Option</type>
+        <title>type</title>
+        <descr>Type of control</descr>
+        <opts>airplane,helicopter,blimp,boat,car</opts>
+        <sect>System</sect>
+        <value>airplane</value>
+      </field>
+      <field id="3" name="telemetry">
+        <type>Option</type>
+        <title>telemetry</title>
+        <descr>Default downlink period</descr>
+        <opts>10Hz,5Hz,1Hz,REQUEST</opts>
+        <sect>System</sect>
+        <value>10Hz</value>
+      </field>
+      <field id="4" name="frm_mode">
+        <type>Option</type>
+        <title>mode</title>
+        <descr>mode</descr>
+        <opts>off,wingC,wingL,wingR</opts>
+        <sect>System/Formation</sect>
+        <value>off</value>
+      </field>
+      <field id="5" name="vsh_slipKp">
+        <type>Float</type>
+        <title>slipKp</title>
+        <descr>Slip</descr>
+        <units>deg</units>
+        <sect>System/Formation/Wing</sect>
+        <value>0</value>
+      </field>
+      <field id="6" name="vsh_rollKp">
+        <type>Float</type>
+        <title>rollKp</title>
+        <descr>Roll</descr>
+        <units>deg</units>
+        <sect>System/Formation/Wing</sect>
+        <value>0</value>
+      </field>
+      <field id="7" name="vsh_pitchKp">
+        <type>Float</type>
+        <title>pitchKp</title>
+        <descr>vshape pitch Kp</descr>
+        <units>deg</units>
+        <sect>System/Formation/Wing</sect>
+        <value>0</value>
+      </field>
+      <field id="8" name="vsh_pitchLo">
+        <type>Float</type>
+        <title>pitchLo</title>
+        <descr>vshape limit</descr>
+        <units>deg</units>
+        <sect>System/Formation/Wing</sect>
+        <value>0</value>
+      </field>
+      <field id="9" name="vsh_ailKp">
+        <type>Float</type>
+        <title>ailKp</title>
+        <descr>ailerons to pitch Kp</descr>
+        <units>deg</units>
+        <sect>System/Formation/Wing</sect>
+        <value>0</value>
+      </field>
+      <field id="10" name="vsh_ailLo">
+        <type>Float</type>
+        <title>ailLo</title>
+        <descr>ailerons to pitch limit</descr>
+        <units>deg</units>
+        <sect>System/Formation/Wing</sect>
+        <value>0</value>
+      </field>
+      <field id="11" name="init_mode">
+        <type>Option</type>
+        <title>mode</title>
+        <descr>Initial flight mode</descr>
+        <opts>TAXI,TAKEOFF,EMG</opts>
+        <sect>Init</sect>
+        <value>TAXI</value>
+      </field>
+      <field id="12" name="init_servo">
+        <type>Option</type>
+        <title>servo</title>
+        <descr>Servo power</descr>
+        <opts>on,off</opts>
+        <sect>Init</sect>
+        <value>on</value>
+      </field>
+      <field id="13" name="init_ignition">
+        <type>Option</type>
+        <title>ignition</title>
+        <descr>Ignition</descr>
+        <opts>on,off</opts>
+        <sect>Init</sect>
+        <value>on</value>
+      </field>
+      <field id="14" name="init_thrcut">
+        <type>Option</type>
+        <title>thrcut</title>
+        <descr>Throttle cut</descr>
+        <opts>on,override,off</opts>
+        <sect>Init</sect>
+        <value>off</value>
+      </field>
+      <field id="15" name="Roll">
+        <type>Hash</type>
+        <title>Roll</title>
+        <descr>PID</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Roll_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>8</value>
+        </field>
+        <field id="1" name="Roll_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Roll_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="Roll_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="Roll_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>1.2</value>
+        </field>
+        <field id="5" name="Roll_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>15</value>
+        </field>
+        <field id="6" name="Roll_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="16" name="Pitch">
+        <type>Hash</type>
+        <title>Pitch</title>
+        <descr>PID</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Pitch_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>3</value>
+        </field>
+        <field id="1" name="Pitch_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Pitch_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>3</value>
+        </field>
+        <field id="3" name="Pitch_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="4" name="Pitch_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>1</value>
+        </field>
+        <field id="5" name="Pitch_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>60</value>
+        </field>
+        <field id="6" name="Pitch_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="17" name="Yaw">
+        <type>Hash</type>
+        <title>Yaw</title>
+        <descr>PPI</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Yaw_Kpp">
+          <type>Float</type>
+          <title>Kpp</title>
+          <descr>Error to speed</descr>
+          <units>K</units>
+          <value>0.5</value>
+        </field>
+        <field id="1" name="Yaw_Lpp">
+          <type>Byte</type>
+          <title>Lpp</title>
+          <descr>Speed limit</descr>
+          <units>%</units>
+          <value>255</value>
+        </field>
+        <field id="2" name="Yaw_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>5</value>
+        </field>
+        <field id="3" name="Yaw_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="4" name="Yaw_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="5" name="Yaw_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="Yaw_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="18" name="Thr">
+        <type>Hash</type>
+        <title>Thr</title>
+        <descr>PI</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Thr_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>5</value>
+        </field>
+        <field id="1" name="Thr_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>30</value>
+        </field>
+        <field id="2" name="Thr_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>2</value>
+        </field>
+        <field id="3" name="Thr_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="4" name="Thr_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="19" name="Airspeed">
+        <type>Hash</type>
+        <title>Airspeed</title>
+        <descr>PID</descr>
+        <units>deg</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Airspeed_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0.9</value>
+        </field>
+        <field id="1" name="Airspeed_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Airspeed_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="Airspeed_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="Airspeed_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0.3</value>
+        </field>
+        <field id="5" name="Airspeed_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>12</value>
+        </field>
+        <field id="6" name="Airspeed_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>16</value>
+        </field>
+      </field>
+      <field id="20" name="Altitude">
+        <type>Hash</type>
+        <title>Altitude</title>
+        <descr>P</descr>
+        <units>m/s</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Altitude_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0.05</value>
+        </field>
+        <field id="1" name="Altitude_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>5</value>
+        </field>
+      </field>
+      <field id="21" name="VSpeed">
+        <type>Hash</type>
+        <title>VSpeed</title>
+        <descr>PID</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="VSpeed_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="VSpeed_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="VSpeed_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="VSpeed_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="VSpeed_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>500</value>
+        </field>
+        <field id="5" name="VSpeed_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>10</value>
+        </field>
+        <field id="6" name="VSpeed_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>20</value>
+        </field>
+      </field>
+      <field id="22" name="Course">
+        <type>Hash</type>
+        <title>Course</title>
+        <descr>PID</descr>
+        <units>deg</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Course_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0.8</value>
+        </field>
+        <field id="1" name="Course_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Course_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0.05</value>
+        </field>
+        <field id="3" name="Course_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>10</value>
+        </field>
+        <field id="4" name="Course_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0.1</value>
+        </field>
+        <field id="5" name="Course_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>2</value>
+        </field>
+        <field id="6" name="Course_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>25</value>
+        </field>
+      </field>
+      <field id="23" name="Line">
+        <type>Hash</type>
+        <title>Line</title>
+        <descr>PID</descr>
+        <units>deg</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Line_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>1.1</value>
+        </field>
+        <field id="1" name="Line_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Line_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0.35</value>
+        </field>
+        <field id="3" name="Line_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>60</value>
+        </field>
+        <field id="4" name="Line_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="5" name="Line_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="Line_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>80</value>
+        </field>
+      </field>
+      <field id="24" name="Path">
+        <type>Hash</type>
+        <title>Path</title>
+        <descr>PID</descr>
+        <units>deg</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Path_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0.3</value>
+        </field>
+        <field id="1" name="Path_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Path_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="Path_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="Path_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>6</value>
+        </field>
+        <field id="5" name="Path_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="Path_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>50</value>
+        </field>
+      </field>
+      <field id="25" name="Slip">
+        <type>Hash</type>
+        <title>Slip</title>
+        <descr>PID</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Slip_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>1.2</value>
+        </field>
+        <field id="1" name="Slip_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>10</value>
+        </field>
+        <field id="2" name="Slip_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0.3</value>
+        </field>
+        <field id="3" name="Slip_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>5</value>
+        </field>
+        <field id="4" name="Slip_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>100</value>
+        </field>
+        <field id="5" name="Slip_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="Slip_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="26" name="Governor">
+        <type>Hash</type>
+        <title>Governor</title>
+        <descr>PI</descr>
+        <units>%</units>
+        <sect>Regulator</sect>
+        <field id="0" name="Governor_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="Governor_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="Governor_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="Governor_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="Governor_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="27" name="Thermal">
+        <type>Hash</type>
+        <title>Thermal</title>
+        <descr>PI</descr>
+        <units>deg</units>
+        <sect>Regulator/Thermals</sect>
+        <field id="0" name="Thermal_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>5</value>
+        </field>
+        <field id="1" name="Thermal_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>30</value>
+        </field>
+        <field id="2" name="Thermal_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>25</value>
+        </field>
+        <field id="3" name="Thermal_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>35</value>
+        </field>
+        <field id="4" name="Thermal_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>45</value>
+        </field>
+      </field>
+      <field id="28" name="therm_flt">
+        <type>Float</type>
+        <title>flt</title>
+        <descr>venergy filter</descr>
+        <sect>Regulator/Thermals</sect>
+        <value>0.1</value>
+      </field>
+      <field id="29" name="therm_b">
+        <type>Float</type>
+        <title>b</title>
+        <descr>venergy bias</descr>
+        <sect>Regulator/Thermals</sect>
+        <value>-1</value>
+      </field>
+      <field id="30" name="Taxi">
+        <type>Hash</type>
+        <title>Taxi</title>
+        <descr>PID</descr>
+        <units>deg</units>
+        <sect>Regulator/Runway</sect>
+        <field id="0" name="Taxi_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>1.5</value>
+        </field>
+        <field id="1" name="Taxi_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>25</value>
+        </field>
+        <field id="2" name="Taxi_Kd">
+          <type>Float</type>
+          <title>Kd</title>
+          <descr>Derivative</descr>
+          <units>K</units>
+          <value>0.5</value>
+        </field>
+        <field id="3" name="Taxi_Ld">
+          <type>Byte</type>
+          <title>Ld</title>
+          <descr>Derivative limit</descr>
+          <units>%</units>
+          <value>15</value>
+        </field>
+        <field id="4" name="Taxi_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="5" name="Taxi_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="Taxi_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="31" name="Brakes">
+        <type>Hash</type>
+        <title>Brakes</title>
+        <descr>PI</descr>
+        <units>%</units>
+        <sect>Regulator/Runway</sect>
+        <field id="0" name="Brakes_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>1</value>
+        </field>
+        <field id="1" name="Brakes_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="2" name="Brakes_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0.5</value>
+        </field>
+        <field id="3" name="Brakes_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+        <field id="4" name="Brakes_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>100</value>
+        </field>
+      </field>
+      <field id="32" name="dbrk_steering">
+        <type>Float</type>
+        <title>steering</title>
+        <descr>Steering level</descr>
+        <units>%</units>
+        <sect>Regulator/Runway/DiffBrakes</sect>
+        <value>0</value>
+      </field>
+      <field id="33" name="dbrk_Kp">
+        <type>Float</type>
+        <title>Kp</title>
+        <descr>Steering Kp</descr>
+        <units>%</units>
+        <sect>Regulator/Runway/DiffBrakes</sect>
+        <value>0</value>
+      </field>
+      <field id="34" name="HoverX">
+        <type>Hash</type>
+        <title>HoverX</title>
+        <descr>PPI</descr>
+        <units>deg</units>
+        <sect>Regulator/Helicopter</sect>
+        <field id="0" name="HoverX_Kpp">
+          <type>Float</type>
+          <title>Kpp</title>
+          <descr>Error to speed</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="HoverX_Lpp">
+          <type>Byte</type>
+          <title>Lpp</title>
+          <descr>Speed limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="HoverX_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="HoverX_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="HoverX_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="5" name="HoverX_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="HoverX_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="35" name="HoverY">
+        <type>Hash</type>
+        <title>HoverY</title>
+        <descr>PPI</descr>
+        <units>deg</units>
+        <sect>Regulator/Helicopter</sect>
+        <field id="0" name="HoverY_Kpp">
+          <type>Float</type>
+          <title>Kpp</title>
+          <descr>Error to speed</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="HoverY_Lpp">
+          <type>Byte</type>
+          <title>Lpp</title>
+          <descr>Speed limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="HoverY_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="HoverY_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="HoverY_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="5" name="HoverY_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="6" name="HoverY_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="36" name="RpmPitch">
+        <type>Hash</type>
+        <title>RpmPitch</title>
+        <descr>PI</descr>
+        <units>%</units>
+        <sect>Regulator/Helicopter</sect>
+        <field id="0" name="RpmPitch_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="RpmPitch_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="RpmPitch_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="RpmPitch_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="RpmPitch_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="37" name="heli_yesc">
+        <type>Option</type>
+        <title>yesc</title>
+        <descr>electric tail by steering control</descr>
+        <opts>no,yes</opts>
+        <sect>Regulator/Helicopter/Steering</sect>
+        <value>no</value>
+      </field>
+      <field id="38" name="heli_ymin">
+        <type>Byte</type>
+        <title>ymin</title>
+        <descr>esc minimum output</descr>
+        <units>%</units>
+        <sect>Regulator/Helicopter/Steering</sect>
+        <value>0</value>
+      </field>
+      <field id="39" name="heli_ybias">
+        <type>Byte</type>
+        <title>ybias</title>
+        <descr>steering bias</descr>
+        <units>%</units>
+        <sect>Regulator/Helicopter/Steering</sect>
+        <value>0</value>
+      </field>
+      <field id="40" name="heli_rotor">
+        <type>Option</type>
+        <title>rotor</title>
+        <descr>Rotor spin</descr>
+        <opts>CCW,CW</opts>
+        <sect>Regulator/Helicopter</sect>
+        <value>CCW</value>
+      </field>
+      <field id="41" name="heli_Kcrs">
+        <type>Float</type>
+        <title>Kcrs</title>
+        <descr>Course error to yaw rate</descr>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="42" name="heli_Khs">
+        <type>Float</type>
+        <title>Khs</title>
+        <descr>Hover point Distnce to Airspeed Kp</descr>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="43" name="heli_Ktc">
+        <type>Float</type>
+        <title>Ktc</title>
+        <descr>Throttle to Climbing rate limit Kp</descr>
+        <sect>Regulator/Helicopter</sect>
+        <value>1</value>
+      </field>
+      <field id="44" name="heli_topt">
+        <type>Option</type>
+        <title>topt</title>
+        <descr>Optimize turn direction</descr>
+        <opts>no,yes</opts>
+        <sect>Regulator/Helicopter</sect>
+        <value>no</value>
+      </field>
+      <field id="45" name="heli_hYaw">
+        <type>Float</type>
+        <title>hYaw</title>
+        <descr>Hover yaw on wind compensation</descr>
+        <units>deg</units>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="46" name="heli_Kto">
+        <type>Float</type>
+        <title>Kto</title>
+        <descr>Liftoff pitch grow</descr>
+        <units>%/sec</units>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="47" name="heli_aspd">
+        <type>Float</type>
+        <title>aspd</title>
+        <descr>Minimum airspeed to use</descr>
+        <units>m/s</units>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="48" name="heli_Kyawr">
+        <type>Float</type>
+        <title>Kyawr</title>
+        <descr>Speed to max Yaw rate multiplier</descr>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="49" name="heli_vsMinH">
+        <type>Float</type>
+        <title>vsMinH</title>
+        <descr>max hover descending rate (&lt;0)</descr>
+        <units>m/s</units>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="50" name="heli_vsMaxH">
+        <type>Float</type>
+        <title>vsMaxH</title>
+        <descr>max hover climbing rate (>0)</descr>
+        <units>m/s</units>
+        <sect>Regulator/Helicopter</sect>
+        <value>0</value>
+      </field>
+      <field id="51" name="cam_control">
+        <type>Option</type>
+        <title>control</title>
+        <descr>control gimbal</descr>
+        <opts>off,front,down,roll</opts>
+        <sect>Regulator/Gimbal</sect>
+        <value>off</value>
+      </field>
+      <field id="52" name="cam_default">
+        <type>Option</type>
+        <title>default</title>
+        <descr>default mode</descr>
+        <opts>stab,position,speed</opts>
+        <sect>Regulator/Gimbal</sect>
+        <value>stab</value>
+      </field>
+      <field id="53" name="cam_align">
+        <type>Vector</type>
+        <title>align</title>
+        <descr>gimbal frame align</descr>
+        <units>deg</units>
+        <sect>Regulator/Gimbal</sect>
+        <field id="0" name="cam_align_roll">
+          <type>Float</type>
+          <title>roll</title>
+          <descr>gimbal frame align (roll)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="cam_align_pitch">
+          <type>Float</type>
+          <title>pitch</title>
+          <descr>gimbal frame align (pitch)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="cam_align_yaw">
+          <type>Float</type>
+          <title>yaw</title>
+          <descr>gimbal frame align (yaw)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="54" name="cam_stow">
+        <type>Vector</type>
+        <title>stow</title>
+        <descr>gimbal stow position</descr>
+        <units>deg</units>
+        <sect>Regulator/Gimbal</sect>
+        <field id="0" name="cam_stow_roll">
+          <type>Float</type>
+          <title>roll</title>
+          <descr>gimbal stow position (roll)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="cam_stow_pitch">
+          <type>Float</type>
+          <title>pitch</title>
+          <descr>gimbal stow position (pitch)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="cam_stow_yaw">
+          <type>Float</type>
+          <title>yaw</title>
+          <descr>gimbal stow position (yaw)</descr>
+          <units>deg</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="55" name="blimp_buoyancy">
+        <type>Float</type>
+        <title>buoyancy</title>
+        <descr>baloon pressure</descr>
+        <units>kPa</units>
+        <sect>Regulator/Blimp</sect>
+        <value>0</value>
+      </field>
+      <field id="56" name="blimp_buoyancy_hyst">
+        <type>Float</type>
+        <title>buoyancy_hyst</title>
+        <descr>baloon pressure control hysteresis</descr>
+        <units>kPa</units>
+        <sect>Regulator/Blimp</sect>
+        <value>0</value>
+      </field>
+      <field id="57" name="ar_Kp">
+        <type>Float</type>
+        <title>Kp</title>
+        <descr>angular acc Kp</descr>
+        <units>%</units>
+        <sect>Regulator/Dampers/Roll</sect>
+        <value>0</value>
+      </field>
+      <field id="58" name="ar_Lp">
+        <type>Float</type>
+        <title>Lp</title>
+        <descr>angular acc Lp</descr>
+        <units>%</units>
+        <sect>Regulator/Dampers/Roll</sect>
+        <value>0</value>
+      </field>
+      <field id="59" name="ap_Kp">
+        <type>Float</type>
+        <title>Kp</title>
+        <descr>angular acc Kp</descr>
+        <units>%</units>
+        <sect>Regulator/Dampers/Pitch</sect>
+        <value>0</value>
+      </field>
+      <field id="60" name="ap_Lp">
+        <type>Float</type>
+        <title>Lp</title>
+        <descr>angular acc Lp</descr>
+        <units>%</units>
+        <sect>Regulator/Dampers/Pitch</sect>
+        <value>0</value>
+      </field>
+      <field id="61" name="ay_Kp">
+        <type>Float</type>
+        <title>Kp</title>
+        <descr>angular acc Kp</descr>
+        <units>%</units>
+        <sect>Regulator/Dampers/Yaw</sect>
+        <value>0</value>
+      </field>
+      <field id="62" name="ay_Lp">
+        <type>Float</type>
+        <title>Lp</title>
+        <descr>angular acc Lp</descr>
+        <units>%</units>
+        <sect>Regulator/Dampers/Yaw</sect>
+        <value>0</value>
+      </field>
+      <field id="63" name="mix_elv_Kp">
+        <type>Float</type>
+        <title>elv_Kp</title>
+        <descr>Roll to Elevator mix</descr>
+        <sect>Mixer</sect>
+        <value>0.8</value>
+      </field>
+      <field id="64" name="mix_elv_Lo">
+        <type>Byte</type>
+        <title>elv_Lo</title>
+        <descr>Roll to Elevator limit</descr>
+        <sect>Mixer</sect>
+        <value>50</value>
+      </field>
+      <field id="65" name="mix_rud_Kp">
+        <type>Float</type>
+        <title>rud_Kp</title>
+        <descr>Roll to Rudder mix</descr>
+        <sect>Mixer</sect>
+        <value>0.9</value>
+      </field>
+      <field id="66" name="mix_rud_Lo">
+        <type>Byte</type>
+        <title>rud_Lo</title>
+        <descr>Roll to Rudder limit</descr>
+        <sect>Mixer</sect>
+        <value>100</value>
+      </field>
+      <field id="67" name="mix_grud_Kp">
+        <type>Float</type>
+        <title>grud_Kp</title>
+        <descr>Roll rate to Rudder mix</descr>
+        <sect>Mixer</sect>
+        <value>0</value>
+      </field>
+      <field id="68" name="mix_grud_Lo">
+        <type>Byte</type>
+        <title>grud_Lo</title>
+        <descr>Roll rate to Rudder limit</descr>
+        <sect>Mixer</sect>
+        <value>0</value>
+      </field>
+      <field id="69" name="mix_crud_Kp">
+        <type>Float</type>
+        <title>crud_Kp</title>
+        <descr>Collective to Rudder mix</descr>
+        <sect>Mixer</sect>
+        <value>0</value>
+      </field>
+      <field id="70" name="mix_crud_Lo">
+        <type>Byte</type>
+        <title>crud_Lo</title>
+        <descr>Collective to Rudder limit</descr>
+        <sect>Mixer</sect>
+        <value>0</value>
+      </field>
+      <field id="71" name="Ks_speed_low">
+        <type>Float</type>
+        <title>speed_low</title>
+        <descr>low speed value for multiplier</descr>
+        <units>m/s</units>
+        <sect>Gain</sect>
+        <value>15</value>
+      </field>
+      <field id="72" name="Ks_speed_high">
+        <type>Float</type>
+        <title>speed_high</title>
+        <descr>high speed value for multiplier</descr>
+        <units>m/s</units>
+        <sect>Gain</sect>
+        <value>30</value>
+      </field>
+      <field id="73" name="Ks_ailerons_low">
+        <type>Float</type>
+        <title>ailerons_low</title>
+        <descr>low speed ailerons multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>1.4</value>
+      </field>
+      <field id="74" name="Ks_ailerons_high">
+        <type>Float</type>
+        <title>ailerons_high</title>
+        <descr>high speed ailerons multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>0.5</value>
+      </field>
+      <field id="75" name="Ks_elevator_low">
+        <type>Float</type>
+        <title>elevator_low</title>
+        <descr>low speed elevator multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>2.8</value>
+      </field>
+      <field id="76" name="Ks_elevator_high">
+        <type>Float</type>
+        <title>elevator_high</title>
+        <descr>high speed elevator multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>0.7</value>
+      </field>
+      <field id="77" name="Ks_rudder_low">
+        <type>Float</type>
+        <title>rudder_low</title>
+        <descr>low speed rudder multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>3</value>
+      </field>
+      <field id="78" name="Ks_rudder_high">
+        <type>Float</type>
+        <title>rudder_high</title>
+        <descr>high speed rudder multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>0.3</value>
+      </field>
+      <field id="79" name="Ks_tas_stab">
+        <type>Option</type>
+        <title>tas_stab</title>
+        <descr>TAS to cruise gain for ail,elv,rud</descr>
+        <opts>no,yes</opts>
+        <sect>Gain</sect>
+        <value>no</value>
+      </field>
+      <field id="80" name="Ks_steering_low">
+        <type>Float</type>
+        <title>steering_low</title>
+        <descr>low speed steering multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>2</value>
+      </field>
+      <field id="81" name="Ks_roll_gs_low">
+        <type>Float</type>
+        <title>roll_gs_low</title>
+        <descr>low gspeed bank angle multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>0</value>
+      </field>
+      <field id="82" name="Ks_pitch_high">
+        <type>Float</type>
+        <title>pitch_high</title>
+        <descr>high speed pitch angle multiplier</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>0</value>
+      </field>
+      <field id="83" name="Ks_rudder_rpm">
+        <type>Float</type>
+        <title>rudder_rpm</title>
+        <descr>helicopter rudder on low rpm</descr>
+        <units>K</units>
+        <sect>Gain</sect>
+        <value>0</value>
+      </field>
+      <field id="84" name="Ks_collective_rpm">
+        <type>Float</type>
+        <title>collective_rpm</title>
+        <descr>helicopter collective divider on low rpm</descr>
+        <units>1/K</units>
+        <sect>Gain</sect>
+        <value>0</value>
+      </field>
+      <field id="85" name="dyn_roll">
+        <type>Float</type>
+        <title>roll</title>
+        <descr>Roll change rate</descr>
+        <units>deg/s</units>
+        <sect>Dynamics</sect>
+        <value>15</value>
+      </field>
+      <field id="86" name="dyn_pitch">
+        <type>Float</type>
+        <title>pitch</title>
+        <descr>Pitch change rate</descr>
+        <units>deg/s</units>
+        <sect>Dynamics</sect>
+        <value>20</value>
+      </field>
+      <field id="87" name="dyn_yaw">
+        <type>Float</type>
+        <title>yaw</title>
+        <descr>Yaw change rate</descr>
+        <units>deg/s</units>
+        <sect>Dynamics</sect>
+        <value>0</value>
+      </field>
+      <field id="88" name="dyn_vspeed">
+        <type>Float</type>
+        <title>vspeed</title>
+        <descr>Vspeed change rate</descr>
+        <units>m/s2</units>
+        <sect>Dynamics</sect>
+        <value>0</value>
+      </field>
+      <field id="89" name="dyn_speed">
+        <type>Float</type>
+        <title>speed</title>
+        <descr>Speed change rate</descr>
+        <units>m/s2</units>
+        <sect>Dynamics</sect>
+        <value>0</value>
+      </field>
+      <field id="90" name="dyn_vspeedMin">
+        <type>Float</type>
+        <title>vspeedMin</title>
+        <descr>max descending rate (&lt;0)</descr>
+        <units>m/s</units>
+        <sect>Dynamics</sect>
+        <value>0</value>
+      </field>
+      <field id="91" name="dyn_vspeedMax">
+        <type>Float</type>
+        <title>vspeedMax</title>
+        <descr>max climbing rate (>0)</descr>
+        <units>m/s</units>
+        <sect>Dynamics</sect>
+        <value>0</value>
+      </field>
+      <field id="92" name="dyn_pitchDiff">
+        <type>Float</type>
+        <title>pitchDiff</title>
+        <descr>Pitch down multiplier</descr>
+        <units>K</units>
+        <sect>Dynamics</sect>
+        <value>0</value>
+      </field>
+      <field id="93" name="dyn_pitchReg">
+        <type>Option</type>
+        <title>pitchReg</title>
+        <descr>Pitch control type</descr>
+        <opts>PID,PPI</opts>
+        <sect>Dynamics</sect>
+        <value>PPI</value>
+      </field>
+      <field id="94" name="dyn_rollReg">
+        <type>Option</type>
+        <title>rollReg</title>
+        <descr>Roll control type</descr>
+        <opts>PID,PPI</opts>
+        <sect>Dynamics</sect>
+        <value>PID</value>
+      </field>
+      <field id="95" name="dyn_slipReg">
+        <type>Option</type>
+        <title>slipReg</title>
+        <descr>Slip control type</descr>
+        <opts>PID,PPI</opts>
+        <sect>Dynamics</sect>
+        <value>PID</value>
+      </field>
+      <field id="96" name="dyn_courseReg">
+        <type>Option</type>
+        <title>courseReg</title>
+        <descr>Course control type</descr>
+        <opts>PID,PPI</opts>
+        <sect>Dynamics</sect>
+        <value>PID</value>
+      </field>
+      <field id="97" name="wpt_snap">
+        <type>Float</type>
+        <title>snap</title>
+        <descr>snap distance</descr>
+        <units>m</units>
+        <sect>Waypoints</sect>
+        <value>80</value>
+      </field>
+      <field id="98" name="wpt_drv">
+        <type>Float</type>
+        <title>drv</title>
+        <descr>course derivative threshold</descr>
+        <units>deg/s</units>
+        <sect>Waypoints</sect>
+        <value>5</value>
+      </field>
+      <field id="99" name="sf_dHome">
+        <type>Float</type>
+        <title>dHome</title>
+        <descr>max distance to go home</descr>
+        <units>m</units>
+        <sect>Safety</sect>
+        <value>0</value>
+      </field>
+      <field id="100" name="sf_dHomeERS">
+        <type>Float</type>
+        <title>dHomeERS</title>
+        <descr>max distance to activate ERS</descr>
+        <units>m</units>
+        <sect>Safety</sect>
+        <value>0</value>
+      </field>
+      <field id="101" name="sf_vspeedERS">
+        <type>Float</type>
+        <title>vspeedERS</title>
+        <descr>max descending speed to launch ERS</descr>
+        <units>m/s</units>
+        <sect>Safety</sect>
+        <value>0</value>
+      </field>
+      <field id="102" name="sfVe_action">
+        <type>Option</type>
+        <title>action</title>
+        <descr>action</descr>
+        <opts>off,landing</opts>
+        <sect>Safety/voltage</sect>
+        <value>off</value>
+      </field>
+      <field id="103" name="sf_Ve">
+        <type>Float</type>
+        <title>Ve</title>
+        <descr>min autopilot battery voltage</descr>
+        <units>v</units>
+        <sect>Safety/voltage</sect>
+        <value>0</value>
+      </field>
+      <field id="104" name="sf_Vs">
+        <type>Float</type>
+        <title>Vs</title>
+        <descr>min servo battery voltage</descr>
+        <units>v</units>
+        <sect>Safety/voltage</sect>
+        <value>0</value>
+      </field>
+      <field id="105" name="sf_VeERS">
+        <type>Float</type>
+        <title>VeERS</title>
+        <descr>min autopilot battery voltage to launch ERS</descr>
+        <units>v</units>
+        <sect>Safety/voltage</sect>
+        <value>0</value>
+      </field>
+      <field id="106" name="sfdl_action">
+        <type>Option</type>
+        <title>action</title>
+        <descr>action</descr>
+        <opts>off,landing,ERS</opts>
+        <sect>Safety/datalink</sect>
+        <value>off</value>
+      </field>
+      <field id="107" name="sfdl_timeout">
+        <type>Byte</type>
+        <title>timeout</title>
+        <descr>timeout</descr>
+        <units>s</units>
+        <sect>Safety/datalink</sect>
+        <value>0</value>
+      </field>
+      <field id="108" name="wrn_bind">
+        <type>Array</type>
+        <title>bind</title>
+        <descr>binding</descr>
+        <sect>Safety/warnings</sect>
+        <field id="0" name="wrn_bind_1">
+          <type>MandalaID</type>
+          <title>1</title>
+          <descr>bind/1</descr>
+          <value></value>
+        </field>
+        <field id="1" name="wrn_bind_2">
+          <type>MandalaID</type>
+          <title>2</title>
+          <descr>bind/2</descr>
+          <value></value>
+        </field>
+        <field id="2" name="wrn_bind_3">
+          <type>MandalaID</type>
+          <title>3</title>
+          <descr>bind/3</descr>
+          <value></value>
+        </field>
+        <field id="3" name="wrn_bind_4">
+          <type>MandalaID</type>
+          <title>4</title>
+          <descr>bind/4</descr>
+          <value></value>
+        </field>
+        <field id="4" name="wrn_bind_5">
+          <type>MandalaID</type>
+          <title>5</title>
+          <descr>bind/5</descr>
+          <value></value>
+        </field>
+        <field id="5" name="wrn_bind_6">
+          <type>MandalaID</type>
+          <title>6</title>
+          <descr>bind/6</descr>
+          <value></value>
+        </field>
+        <field id="6" name="wrn_bind_7">
+          <type>MandalaID</type>
+          <title>7</title>
+          <descr>bind/7</descr>
+          <value></value>
+        </field>
+        <field id="7" name="wrn_bind_8">
+          <type>MandalaID</type>
+          <title>8</title>
+          <descr>bind/8</descr>
+          <value></value>
+        </field>
+      </field>
+      <field id="109" name="wrn_min">
+        <type>Array</type>
+        <title>min</title>
+        <descr>min value</descr>
+        <sect>Safety/warnings</sect>
+        <field id="0" name="wrn_min_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>min/1</descr>
+          <value>0</value>
+        </field>
+        <field id="1" name="wrn_min_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>min/2</descr>
+          <value>0</value>
+        </field>
+        <field id="2" name="wrn_min_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>min/3</descr>
+          <value>0</value>
+        </field>
+        <field id="3" name="wrn_min_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>min/4</descr>
+          <value>0</value>
+        </field>
+        <field id="4" name="wrn_min_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>min/5</descr>
+          <value>0</value>
+        </field>
+        <field id="5" name="wrn_min_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>min/6</descr>
+          <value>0</value>
+        </field>
+        <field id="6" name="wrn_min_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>min/7</descr>
+          <value>0</value>
+        </field>
+        <field id="7" name="wrn_min_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>min/8</descr>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="110" name="wrn_max">
+        <type>Array</type>
+        <title>max</title>
+        <descr>max value</descr>
+        <sect>Safety/warnings</sect>
+        <field id="0" name="wrn_max_1">
+          <type>Float</type>
+          <title>1</title>
+          <descr>max/1</descr>
+          <value>0</value>
+        </field>
+        <field id="1" name="wrn_max_2">
+          <type>Float</type>
+          <title>2</title>
+          <descr>max/2</descr>
+          <value>0</value>
+        </field>
+        <field id="2" name="wrn_max_3">
+          <type>Float</type>
+          <title>3</title>
+          <descr>max/3</descr>
+          <value>0</value>
+        </field>
+        <field id="3" name="wrn_max_4">
+          <type>Float</type>
+          <title>4</title>
+          <descr>max/4</descr>
+          <value>0</value>
+        </field>
+        <field id="4" name="wrn_max_5">
+          <type>Float</type>
+          <title>5</title>
+          <descr>max/5</descr>
+          <value>0</value>
+        </field>
+        <field id="5" name="wrn_max_6">
+          <type>Float</type>
+          <title>6</title>
+          <descr>max/6</descr>
+          <value>0</value>
+        </field>
+        <field id="6" name="wrn_max_7">
+          <type>Float</type>
+          <title>7</title>
+          <descr>max/7</descr>
+          <value>0</value>
+        </field>
+        <field id="7" name="wrn_max_8">
+          <type>Float</type>
+          <title>8</title>
+          <descr>max/8</descr>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="111" name="sf_NoFlyZones">
+        <type>Option</type>
+        <title>NoFlyZones</title>
+        <descr>avoid restricted areas</descr>
+        <opts>no,yes</opts>
+        <sect>Safety</sect>
+        <value>no</value>
+      </field>
+      <field id="112" name="rpm">
+        <type>UInt</type>
+        <title>rpm</title>
+        <descr>cruise rpm</descr>
+        <units>rpm</units>
+        <sect>Engine</sect>
+        <value>5000</value>
+      </field>
+      <field id="113" name="rpm_idle">
+        <type>UInt</type>
+        <title>idle</title>
+        <descr>idle rpm</descr>
+        <units>rpm</units>
+        <sect>Engine</sect>
+        <value>3000</value>
+      </field>
+      <field id="114" name="rpm_max">
+        <type>UInt</type>
+        <title>max</title>
+        <descr>max rpm</descr>
+        <units>rpm</units>
+        <sect>Engine</sect>
+        <value>6000</value>
+      </field>
+      <field id="115" name="rpm_err">
+        <type>Option</type>
+        <title>err</title>
+        <descr>rpm error detect</descr>
+        <opts>derivative,off</opts>
+        <sect>Engine</sect>
+        <value>derivative</value>
+      </field>
+      <field id="116" name="rpm_pflt">
+        <type>Option</type>
+        <title>pflt</title>
+        <descr>rpm peaks filter</descr>
+        <opts>off,p2,p4,p8</opts>
+        <sect>Engine</sect>
+        <value>off</value>
+      </field>
+      <field id="117" name="maxThr">
+        <type>Float</type>
+        <title>maxThr</title>
+        <descr>max auto throttle</descr>
+        <sect>Engine</sect>
+        <value>0</value>
+      </field>
+      <field id="118" name="fuel">
+        <type>Float</type>
+        <title>fuel</title>
+        <descr>initial fuel capacity</descr>
+        <units>u</units>
+        <sect>Engine</sect>
+        <value>10</value>
+      </field>
+      <field id="119" name="frate">
+        <type>Float</type>
+        <title>frate</title>
+        <descr>fuel rate at max throttle</descr>
+        <units>u/h</units>
+        <sect>Engine</sect>
+        <value>10</value>
+      </field>
+      <field id="120" name="st_time">
+        <type>Byte</type>
+        <title>time</title>
+        <descr>starter timeout</descr>
+        <units>s</units>
+        <sect>Engine/Starter</sect>
+        <value>0</value>
+      </field>
+      <field id="121" name="st_pause">
+        <type>Byte</type>
+        <title>pause</title>
+        <descr>pause before start</descr>
+        <units>s</units>
+        <sect>Engine/Starter</sect>
+        <value>0</value>
+      </field>
+      <field id="122" name="st_thr">
+        <type>Float</type>
+        <title>thr</title>
+        <descr>initial throttle</descr>
+        <sect>Engine/Starter</sect>
+        <value>0</value>
+      </field>
+      <field id="123" name="st_choke">
+        <type>Byte</type>
+        <title>choke</title>
+        <descr>choke timeout</descr>
+        <units>s</units>
+        <sect>Engine/Starter</sect>
+        <value>0</value>
+      </field>
+      <field id="124" name="spd_stall">
+        <type>Float</type>
+        <title>stall</title>
+        <descr>VSO Velocity of Stall with everything hanging Out</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>18</value>
+      </field>
+      <field id="125" name="spd_cruise">
+        <type>Float</type>
+        <title>cruise</title>
+        <descr>Cruise Velocity</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>23</value>
+      </field>
+      <field id="126" name="spd_VSI">
+        <type>Float</type>
+        <title>VSI</title>
+        <descr>Velocity of the Stall with everything Inside</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>20</value>
+      </field>
+      <field id="127" name="spd_VFE">
+        <type>Float</type>
+        <title>VFE</title>
+        <descr>Maximum Velocity with Flaps Extended</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>30</value>
+      </field>
+      <field id="128" name="spd_VNO">
+        <type>Float</type>
+        <title>VNO</title>
+        <descr>Velocity of Normal Operations</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>32</value>
+      </field>
+      <field id="129" name="spd_VNE">
+        <type>Float</type>
+        <title>VNE</title>
+        <descr>Velocity Never Exceed</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>40</value>
+      </field>
+      <field id="130" name="spd_VY">
+        <type>Float</type>
+        <title>VY</title>
+        <descr>Velocity of Best Rate of Climb</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>23</value>
+      </field>
+      <field id="131" name="spd_flapsMin">
+        <type>Float</type>
+        <title>flapsMin</title>
+        <descr>Auto Flaps down Velocity</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>18</value>
+      </field>
+      <field id="132" name="spd_flapsMax">
+        <type>Float</type>
+        <title>flapsMax</title>
+        <descr>Auto Flaps up Velocity</descr>
+        <units>m/s</units>
+        <sect>Speeds</sect>
+        <value>23</value>
+      </field>
+      <field id="133" name="altitude">
+        <type>Float</type>
+        <title>altitude</title>
+        <descr>safe altitude</descr>
+        <units>m</units>
+        <sect>Flight</sect>
+        <value>80</value>
+      </field>
+      <field id="134" name="turnR">
+        <type>Float</type>
+        <title>turnR</title>
+        <descr>turn radius</descr>
+        <units>m</units>
+        <sect>Flight</sect>
+        <value>150</value>
+      </field>
+      <field id="135" name="ldratioMin">
+        <type>Float</type>
+        <title>ldratioMin</title>
+        <descr>gliding ratio minimum</descr>
+        <units>Lift/Drag</units>
+        <sect>Flight</sect>
+        <value>9</value>
+      </field>
+      <field id="136" name="ldratioMax">
+        <type>Float</type>
+        <title>ldratioMax</title>
+        <descr>gliding ratio maximum</descr>
+        <units>Lift/Drag</units>
+        <sect>Flight</sect>
+        <value>16</value>
+      </field>
+      <field id="137" name="stab_est">
+        <type>Float</type>
+        <title>est</title>
+        <descr>estimator</descr>
+        <units>400</units>
+        <sect>Flight/stability</sect>
+        <value>0</value>
+      </field>
+      <field id="138" name="stab_elv">
+        <type>Float</type>
+        <title>elv</title>
+        <descr>elevator multiplier</descr>
+        <sect>Flight/stability</sect>
+        <value>0</value>
+      </field>
+      <field id="139" name="stab_ail">
+        <type>Float</type>
+        <title>ail</title>
+        <descr>ailerons multiplier</descr>
+        <units>K</units>
+        <sect>Flight/stability</sect>
+        <value>0</value>
+      </field>
+      <field id="140" name="stab_opt">
+        <type>Option</type>
+        <title>opt</title>
+        <descr>option</descr>
+        <opts>HPF,airspeed</opts>
+        <sect>Flight/stability</sect>
+        <value>HPF</value>
+      </field>
+      <field id="141" name="flaps_auto">
+        <type>Float</type>
+        <title>auto</title>
+        <descr>maximum auto flaps level</descr>
+        <sect>Flaps</sect>
+        <value>1</value>
+      </field>
+      <field id="142" name="flaps_landing">
+        <type>Float</type>
+        <title>landing</title>
+        <descr>approach flaps level</descr>
+        <sect>Flaps</sect>
+        <value>0</value>
+      </field>
+      <field id="143" name="flaps_takeoff">
+        <type>Float</type>
+        <title>takeoff</title>
+        <descr>takeoff flaps level</descr>
+        <sect>Flaps</sect>
+        <value>0.1</value>
+      </field>
+      <field id="144" name="taxi_gSpeed">
+        <type>Float</type>
+        <title>gSpeed</title>
+        <descr>ground speed limit</descr>
+        <units>m/s</units>
+        <sect>Taxi</sect>
+        <value>7</value>
+      </field>
+      <field id="145" name="taxi_turnR">
+        <type>Float</type>
+        <title>turnR</title>
+        <descr>turn radius</descr>
+        <units>m</units>
+        <sect>Taxi</sect>
+        <value>20</value>
+      </field>
+      <field id="146" name="to_type">
+        <type>Option</type>
+        <title>type</title>
+        <descr>type of procedure</descr>
+        <opts>runway,launcher,taxitest</opts>
+        <sect>Takeoff</sect>
+        <value>runway</value>
+      </field>
+      <field id="147" name="to_thrRise">
+        <type>Float</type>
+        <title>thrRise</title>
+        <descr>initial throttle rise speed</descr>
+        <units>1/s</units>
+        <sect>Takeoff</sect>
+        <value>1</value>
+      </field>
+      <field id="148" name="to_thrDelay">
+        <type>Float</type>
+        <title>thrDelay</title>
+        <descr>liftoff throttle rise delay</descr>
+        <units>s</units>
+        <sect>Takeoff</sect>
+        <value>0</value>
+      </field>
+      <field id="149" name="to_launcherAx">
+        <type>Float</type>
+        <title>launcherAx</title>
+        <descr>launcher acceleration</descr>
+        <units>m/s^2</units>
+        <sect>Takeoff</sect>
+        <value>0</value>
+      </field>
+      <field id="150" name="to_launcherDelay">
+        <type>Float</type>
+        <title>launcherDelay</title>
+        <descr>launcher delay</descr>
+        <units>s</units>
+        <sect>Takeoff</sect>
+        <value>0</value>
+      </field>
+      <field id="151" name="to_runPitch">
+        <type>Float</type>
+        <title>runPitch</title>
+        <descr>running pitch angle</descr>
+        <units>deg</units>
+        <sect>Takeoff</sect>
+        <value>7</value>
+      </field>
+      <field id="152" name="to_liftSpeed">
+        <type>Float</type>
+        <title>liftSpeed</title>
+        <descr>airspeed to start liftoff</descr>
+        <units>m/s</units>
+        <sect>Takeoff</sect>
+        <value>15</value>
+      </field>
+      <field id="153" name="to_liftPitch">
+        <type>Float</type>
+        <title>liftPitch</title>
+        <descr>liftoff pitch angle</descr>
+        <units>deg</units>
+        <sect>Takeoff</sect>
+        <value>10</value>
+      </field>
+      <field id="154" name="to_liftAlt">
+        <type>Float</type>
+        <title>liftAlt</title>
+        <descr>final liftoff altitude</descr>
+        <units>m</units>
+        <sect>Takeoff</sect>
+        <value>5</value>
+      </field>
+      <field id="155" name="to_liftAGL">
+        <type>Option</type>
+        <title>liftAGL</title>
+        <descr>liftoff use AGL sensor</descr>
+        <opts>no,yes</opts>
+        <sect>Takeoff</sect>
+        <value>no</value>
+      </field>
+      <field id="156" name="to_climbThr">
+        <type>Float</type>
+        <title>climbThr</title>
+        <descr>climbing throttle setting</descr>
+        <sect>Takeoff</sect>
+        <value>1</value>
+      </field>
+      <field id="157" name="ld_type">
+        <type>Option</type>
+        <title>type</title>
+        <descr>type of procedure</descr>
+        <opts>runway,parachute</opts>
+        <sect>Landing</sect>
+        <value>runway</value>
+      </field>
+      <field id="158" name="ld_autocancel">
+        <type>Option</type>
+        <title>autocancel</title>
+        <descr>Auto cancel</descr>
+        <opts>no,yes</opts>
+        <sect>Landing</sect>
+        <value>no</value>
+      </field>
+      <field id="159" name="ld_maxRun">
+        <type>Float</type>
+        <title>maxRun</title>
+        <descr>maximum error to cancel</descr>
+        <units>m</units>
+        <sect>Landing</sect>
+        <value>0</value>
+      </field>
+      <field id="160" name="ld_thr">
+        <type>Float</type>
+        <title>thr</title>
+        <descr>approach throttle limit</descr>
+        <sect>Landing</sect>
+        <value>0</value>
+      </field>
+      <field id="161" name="ld_AGL">
+        <type>Option</type>
+        <title>AGL</title>
+        <descr>use AGL sensor</descr>
+        <opts>no,flare,always</opts>
+        <sect>Landing</sect>
+        <value>no</value>
+      </field>
+      <field id="162" name="ld_flareAlt">
+        <type>Float</type>
+        <title>flareAlt</title>
+        <descr>flare altitude</descr>
+        <units>m</units>
+        <sect>Landing</sect>
+        <value>20</value>
+      </field>
+      <field id="163" name="ld_flarePitch">
+        <type>Float</type>
+        <title>flarePitch</title>
+        <descr>flare target pitch</descr>
+        <units>deg</units>
+        <sect>Landing</sect>
+        <value>5</value>
+      </field>
+      <field id="164" name="ld_flareDS">
+        <type>Float</type>
+        <title>flareDS</title>
+        <descr>flare descending speed</descr>
+        <units>m/s</units>
+        <sect>Landing</sect>
+        <value>0</value>
+      </field>
+      <field id="165" name="ld_tdEvent">
+        <type>Option</type>
+        <title>tdEvent</title>
+        <descr>touchdown event</descr>
+        <opts>altitude,agl,command,hook</opts>
+        <sect>Landing</sect>
+        <value>agl</value>
+      </field>
+      <field id="166" name="ld_tdEngine">
+        <type>Option</type>
+        <title>tdEngine</title>
+        <descr>touchdown stage engine</descr>
+        <opts>auto,thrCut,ignOff</opts>
+        <sect>Landing</sect>
+        <value>auto</value>
+      </field>
+      <field id="167" name="ld_tdAlt">
+        <type>Float</type>
+        <title>tdAlt</title>
+        <descr>touchdown stage AGL altitude</descr>
+        <units>m</units>
+        <sect>Landing</sect>
+        <value>4</value>
+      </field>
+      <field id="168" name="ld_tdPitch">
+        <type>Float</type>
+        <title>tdPitch</title>
+        <descr>touchdown pitch</descr>
+        <units>deg</units>
+        <sect>Landing</sect>
+        <value>8</value>
+      </field>
+      <field id="169" name="ld_runSpeed">
+        <type>Float</type>
+        <title>runSpeed</title>
+        <descr>running stage speed</descr>
+        <units>m/s</units>
+        <sect>Landing</sect>
+        <value>15.5</value>
+      </field>
+      <field id="170" name="ld_runAz">
+        <type>Float</type>
+        <title>runAz</title>
+        <descr>running stage acceleration</descr>
+        <units>m/s^2</units>
+        <sect>Landing</sect>
+        <value>2</value>
+      </field>
+      <field id="171" name="ld_brkSpeed">
+        <type>Float</type>
+        <title>brkSpeed</title>
+        <descr>running stage brakes speed</descr>
+        <units>1/s</units>
+        <sect>Landing</sect>
+        <value>0.2</value>
+      </field>
+      <field id="172" name="ld_speedKp">
+        <type>Float</type>
+        <title>speedKp</title>
+        <descr>circle airspeed Kp</descr>
+        <units>K</units>
+        <sect>Landing</sect>
+        <value>0.05</value>
+      </field>
+      <field id="173" name="ld_windKp">
+        <type>Float</type>
+        <title>windKp</title>
+        <descr>wind to airspeed Kp</descr>
+        <units>K</units>
+        <sect>Landing</sect>
+        <value>0.005</value>
+      </field>
+      <field id="174" name="ld_AirbrkApp">
+        <type>Hash</type>
+        <title>AirbrkApp</title>
+        <descr>PI</descr>
+        <units>%</units>
+        <sect>Landing/Airbrakes</sect>
+        <field id="0" name="ld_AirbrkApp_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="ld_AirbrkApp_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="ld_AirbrkApp_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="ld_AirbrkApp_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="ld_AirbrkApp_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="175" name="ld_AirbrkDS">
+        <type>Hash</type>
+        <title>AirbrkDS</title>
+        <descr>PI</descr>
+        <units>%</units>
+        <sect>Landing/Airbrakes</sect>
+        <field id="0" name="ld_AirbrkDS_Kp">
+          <type>Float</type>
+          <title>Kp</title>
+          <descr>Proportional</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="1" name="ld_AirbrkDS_Lp">
+          <type>Byte</type>
+          <title>Lp</title>
+          <descr>Proportional limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="2" name="ld_AirbrkDS_Ki">
+          <type>Float</type>
+          <title>Ki</title>
+          <descr>Integral</descr>
+          <units>K</units>
+          <value>0</value>
+        </field>
+        <field id="3" name="ld_AirbrkDS_Li">
+          <type>Byte</type>
+          <title>Li</title>
+          <descr>Integral limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+        <field id="4" name="ld_AirbrkDS_Lo">
+          <type>Byte</type>
+          <title>Lo</title>
+          <descr>Output limit</descr>
+          <units>%</units>
+          <value>0</value>
+        </field>
+      </field>
+      <field id="176" name="ld_Airbrk_bias">
+        <type>Float</type>
+        <title>Airbrk_bias</title>
+        <descr>bias</descr>
+        <sect>Landing/Airbrakes</sect>
+        <value>0</value>
+      </field>
+    </fields>
+  </node>
+</nodes>
