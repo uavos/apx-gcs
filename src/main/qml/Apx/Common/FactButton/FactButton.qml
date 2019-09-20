@@ -45,7 +45,7 @@ CleanButton {
 
     titleColor: fact.modified?Material.color(Material.Yellow):active?"#A5D6A7":Material.primaryTextColor
 
-    property bool expandable: fact.treeType !== Fact.Action && (fact.size || (fact.treeType === Fact.Group) || isMandala)
+    property bool expandable: fact.treeType !== Fact.Action && (fact.size>0 || (fact.treeType === Fact.Group) || (fact.treeType === Fact.Page) || fact.qmlPage || isMandala)
     //property bool isAction: fact.dataType===Fact.Action
     //property bool isFact: fact.treeType===Fact.FactItem
     property bool isMandala: fact.dataType===Fact.Mandala

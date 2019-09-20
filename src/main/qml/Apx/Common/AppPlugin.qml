@@ -4,7 +4,7 @@ import QtQml 2.12
 Loader {
     id: plugin
     property string uiComponent
-    signal configure()
+    signal configure()  // called when uiComponent is loaded
 
     active: false
     asynchronous: true

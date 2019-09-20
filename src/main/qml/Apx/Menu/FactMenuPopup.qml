@@ -3,13 +3,14 @@ import QtQuick.Controls 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Controls.Material 2.2
 
+import APX.Facts 1.0
+
 import Apx.Common 1.0
 import Apx.Menu 1.0
 
 Popup {
     id: popupItem
 
-    property bool closeOnActionTrigger: false
     property point pos: Qt.point(parent.width/2,parent.height/2)
 
     //forward props
@@ -52,7 +53,10 @@ Popup {
         autoResize: true
         //onFactRemoved: popupItem.close()
         //onFactTriggered: if(closeOnTrigger)popupItem.close()
-        onFactActionTriggered: if(closeOnActionTrigger)popupItem.close()
+        onFactTriggered: {
+            if(fact.options & Fact.CloseOnTrigger)
+                popupItem.close()
+        }
         onStackEmpty: popupItem.close()
         titleRightMargin: btnClose.width
         CleanButton {

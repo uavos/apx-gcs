@@ -38,7 +38,6 @@ ColumnLayout {
 
     Connections {
         target: fact
-        onActionTriggered: factActionTriggered()
         onMenuBack: back()
     }
     onFactChanged: {

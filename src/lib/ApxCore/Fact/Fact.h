@@ -147,7 +147,6 @@ public slots:
 
 signals:
     void triggered();
-    void actionTriggered();
     void menuRequested(QVariantMap opts);
     void menuBack();
 

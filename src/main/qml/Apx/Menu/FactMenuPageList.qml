@@ -18,6 +18,10 @@ FactMenuListView {
             FactButton {
                 fact: modelData;
                 height: MenuStyle.itemSize
+                Connections {
+                    target: modelData
+                    onTriggered: if(factMenu)factMenu.factTriggered(modelData)
+                }
             }
         }
         onLoaded: {

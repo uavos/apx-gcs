@@ -53,11 +53,9 @@ public:
     Fact *f_nstat;
 
     LookupConfigs *f_lookup;
-    Fact *a_lookup;
 
     NodesStorage *storage;
     NodesShare *f_share;
-    Fact *a_share;
 
     Fact *f_save;
 

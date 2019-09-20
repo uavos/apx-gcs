@@ -232,10 +232,12 @@ void AppPlugin::load()
                         title = f->title();
                     if (descr.isEmpty())
                         descr = f->descr();
+                    f_enabled->setSection(tr("Tools"));
                     descr.prepend(tr("Tool").append(": "));
                     plugins->loadedTool(this);
                 } break;
                 case ApxPluginInterface::WidgetPlugin: {
+                    f_enabled->setSection(tr("Windows"));
                     descr.prepend(tr("Window").append(": "));
                     plugins->loadedWindow(this);
                 } break;
@@ -247,6 +249,7 @@ void AppPlugin::load()
             apxMsgW() << "QPluginLoader" << loader->errorString() << "(" + fname + ")";
         }
     } else if (fname.endsWith(".qml")) {
+        f_enabled->setSection(tr("Controls"));
         Fact *f = new Fact(nullptr, name, "", "", Fact::Group);
         f->setQmlPage(fname);
         control = f;

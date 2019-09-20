@@ -25,7 +25,7 @@ CleanButton {
     property bool bApply: dataType==Fact.Apply
     property bool bRemove: dataType==Fact.Remove
     property bool bStop: dataType==Fact.Stop
-    property bool bPage: dataType==Fact.Page
+    property bool bPage: dataType==Fact.Page || (fact?(fact.size>0||fact.qmlPage):false)
 
     property bool bIconOnly: options&Fact.IconOnly
     property bool bShowDisabled: options&Fact.ShowDisabled
@@ -40,17 +40,22 @@ CleanButton {
                : undefined
 
     onTriggered: {
-        if(fact) fact.trigger()
-        if(bPage){
-            //console.log(fact)
-            if(fact && fact.bind && typeof(openFact)!='undefined')
-                openFact(fact.bind)
-            return
+        if(fact){
+            fact.trigger()
+            if(showPage()) return
         }
         if(bClose && typeof(factMenu)!=='undefined') factMenu.back()
     }
-    onMenuRequested: {
-        if(typeof(fact.bind)!=='undefined')openFact(fact.bind,{"pageInfo": true, "pageInfoAction": fact})
-    }
+    onMenuRequested: showPage()
 
+    function showPage()
+    {
+        if(bPage && typeof(openFact)!='undefined'){
+            var f=fact.bind?fact.bind:fact
+            //console.log(f)
+            openFact(f)
+            return true
+        }
+        return false
+    }
 }

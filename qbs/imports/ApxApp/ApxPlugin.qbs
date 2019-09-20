@@ -36,6 +36,10 @@ ApxProduct {
 
     cpp.driverLinkerFlags: base.concat(["-rdynamic"])
 
+    cpp.defines: [
+        "PLUGIN_NAME=\""+name+"\"",
+    ]
+
     cpp.rpaths: qbs.targetOS.contains("macos")
             ? [
                   FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_library_path)),

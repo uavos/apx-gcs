@@ -82,6 +82,5 @@ void VehicleSelect::_factTriggered()
     Vehicle *v = map.key(qobject_cast<Fact *>(sender()));
     if (v)
         emit vehicleSelected(v);
-    emit actionTriggered();
 }
 //=============================================================================

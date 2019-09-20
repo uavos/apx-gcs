@@ -87,13 +87,9 @@ VehicleMission::VehicleMission(Vehicle *parent)
     connect(f_clear, &Fact::triggered, this, &VehicleMission::clearMission);
 
     //tools actions
-    f_tools = new MissionTools(this, nullptr);
-    f_tools->setParent(this);
-    f_tools->createAction(this)->setOption(IconOnly);
+    f_tools = new MissionTools(this, Action | IconOnly);
 
-    f_lookup = new LookupMissions(this, nullptr);
-    f_lookup->setParent(this);
-    f_lookup->createAction(f_tools);
+    f_lookup = new LookupMissions(this, f_tools, Action);
 
     f_save = new Fact(f_tools,
                       "save",
@@ -103,9 +99,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
                       "content-save");
     connect(f_save, &Fact::triggered, storage, &MissionStorage::saveMission);
 
-    f_share = new MissionShare(this, nullptr);
-    f_share->setParent(this);
-    f_share->createAction(f_tools)->setOption(IconOnly);
+    f_share = new MissionShare(this, f_tools, Action | IconOnly);
 
     //ApxApp::jsync(f_tools);
 

@@ -28,12 +28,10 @@
 #include <Database/Database.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
-NodeTools::NodeTools(NodeItem *node)
-    : NodeToolsGroup(nullptr, node, "tools", tr("Tools"), tr("Node tools"))
+NodeTools::NodeTools(NodeItem *anode, Flags flags)
+    : NodeToolsGroup(anode, anode, "tools", tr("Tools"), tr("Node tools"), flags)
 {
     setIcon("wrench");
-    setParent(node);
-    connect(node, &Fact::removed, this, &Fact::removed);
 
     model()->setFlat(true);
 

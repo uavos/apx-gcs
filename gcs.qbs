@@ -14,7 +14,7 @@ Project {
     references: [
         "src/lib/lib.qbs",
         "src/main/main.qbs",
-        "src/Plugins/plugins.qbs",
+        "src/Plugins/Plugins.qbs",
         "src/pawncc/pawncc.qbs",
 
         "../fw/sim.qbs",

@@ -29,12 +29,13 @@
 #include <Mission/VehicleMission.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
-LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent)
+LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent, Flags flags)
     : DatabaseLookup(parent,
                      "load",
                      tr("Load mission"),
                      tr("Database lookup"),
-                     Database::instance()->missions)
+                     Database::instance()->missions,
+                     flags)
     , mission(mission)
 {
     connect(this, &Fact::triggered, this, &LookupMissions::dbLookupMissionsByDate);

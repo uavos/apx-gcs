@@ -58,7 +58,14 @@ ListView {
             Layout.topMargin: toolsLayout.visible?10:0
             Repeater {
                 model: fact.actionsModel
-                delegate: FactMenuAction { fact: modelData; showText: toolsLayout.actionsText }
+                delegate: FactMenuAction {
+                    fact: modelData;
+                    showText: toolsLayout.actionsText
+                    Connections {
+                        target: modelData
+                        onTriggered: if(factMenu)factMenu.factTriggered(modelData)
+                    }
+                }
                 onItemAdded: timer.restart()
             }
             Timer {

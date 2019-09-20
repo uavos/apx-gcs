@@ -31,23 +31,33 @@ Share::Share(Fact *parent,
              QString dataTitle,
              QString fileType,
              QDir defaultDir,
-             const QStringList &exportFileTypes)
-    : Fact(parent, "share", tr("Share"), tr("Share").append(" ").append(dataTitle))
+             const QStringList &exportFileTypes,
+             Flags flags)
+    : Fact(parent,
+           "share",
+           tr("Share"),
+           tr("Share").append(" ").append(dataTitle),
+           flags,
+           "share-variant")
     , dataTitle(dataTitle)
     , fileType(fileType)
     , defaultDir(defaultDir)
     , exportFileTypes(exportFileTypes)
 {
-    setIcon("share-variant");
-
-    f_export = new Fact(this, "exp", tr("Export"), tr("Export").append(" ").append(dataTitle));
-    f_export->setIcon("export");
-    connect(f_export, &Fact::triggered, this, &Fact::actionTriggered); //to close popups
+    f_export = new Fact(this,
+                        "exp",
+                        tr("Export"),
+                        tr("Export").append(" ").append(dataTitle),
+                        CloseOnTrigger,
+                        "export");
     connect(f_export, &Fact::triggered, this, &Share::exportTriggered);
 
-    f_import = new Fact(this, "imp", tr("Import"), tr("Import").append(" ").append(dataTitle));
-    f_import->setIcon("import");
-    connect(f_import, &Fact::triggered, this, &Fact::actionTriggered);
+    f_import = new Fact(this,
+                        "imp",
+                        tr("Import"),
+                        tr("Import").append(" ").append(dataTitle),
+                        CloseOnTrigger,
+                        "import");
     connect(f_import, &Fact::triggered, this, &Share::importTriggered);
 
     QTimer::singleShot(1000, this, &Share::syncTemplates);

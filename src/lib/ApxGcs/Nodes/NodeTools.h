@@ -32,7 +32,7 @@ class NodeTools : public NodeToolsGroup
     Q_OBJECT
 
 public:
-    explicit NodeTools(NodeItem *node);
+    explicit NodeTools(NodeItem *anode, FactBase::Flags flags = FactBase::Flags(Group));
 
     Fact *addCommand(QString name, QString title, QString descr, quint16 cmd) override;
     void clearCommands();

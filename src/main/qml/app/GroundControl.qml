@@ -21,16 +21,12 @@ import "qrc:/app"
 
 Item {
     id: groundControl
-    //border.width: 0
-    //color: "#244"
 
     readonly property real pfdAspectRatio: 2
     readonly property int pfdMinHeight: 0 //280
 
     readonly property int instrumentsHeight: Math.max(width*0.4/pfdAspectRatio,pfdMinHeight)
     readonly property color sepColor: "#244"
-
-    //property alias containerInstruments:   containerInstruments
 
     property alias containerMain:   containerMain
     property alias containerTop:    containerTop
@@ -96,6 +92,11 @@ Item {
         height: instrumentsHeight
     }
 
+    function addBackground(item)
+    {
+        item.parent=containerMain
+        item.anchors.fill=containerMain
+    }
 
     //CONTENT
     GridLayout {
@@ -148,45 +149,15 @@ Item {
                 }
                 Rectangle { Layout.fillHeight: true; implicitWidth: showNumbers?1:0; border.width: 0; color: sepColor; }
 
-                /*Loader {
-                    active: visible
-                    visible: showNodes
-                    asynchronous: true
-                    sourceComponent: Component { NodesState { } }
-                    Layout.fillHeight: true
-                    Layout.fillWidth: false
-                    Layout.leftMargin: 3
-                    Layout.rightMargin: 3
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: showNodes?1:0; border.width: 0; color: sepColor; }*/
-
                 Loader {
                     active: visible
-                    visible: apx.tools.terminal?true:false
+                    visible: apx.tools.Terminal?true:false
                     asynchronous: true
-                    source: "qrc:/terminal/Terminal.qml"
+                    source: apx.tools.Terminal.qmlPage
                     Layout.fillHeight: true
                     Layout.fillWidth: false
                 }
                 Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
-
-                /*Loader {
-                    id: vehicleMenu
-                    property bool upd: true
-                    active: visible && upd
-                    asynchronous: true
-                    sourceComponent: Component { FactMenu { fact: apx.vehicles.current } }
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    Connections {
-                        target: apx.vehicles
-                        onCurrentChanged: {
-                            vehicleMenu.upd=false
-                            vehicleMenu.upd=true
-                        }
-                    }
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }*/
 
                 Loader {
                     id: commands

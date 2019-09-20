@@ -38,7 +38,8 @@ public:
                    QString fileType,
                    QDir defaultDir,
                    //additional export formats
-                   const QStringList &exportFileTypes = QStringList());
+                   const QStringList &exportFileTypes = QStringList(),
+                   FactBase::Flags flags = FactBase::Flags(Group));
 
     Fact *f_export;
     Fact *f_import;

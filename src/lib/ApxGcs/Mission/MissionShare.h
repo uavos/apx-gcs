@@ -34,7 +34,9 @@ class MissionShare : public Share
     Q_OBJECT
 
 public:
-    explicit MissionShare(VehicleMission *mission, Fact *parent);
+    explicit MissionShare(VehicleMission *mission,
+                          Fact *parent,
+                          FactBase::Flags flags = FactBase::Flags(Group));
 
 private:
     VehicleMission *mission;

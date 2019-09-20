@@ -34,7 +34,9 @@ class LookupMissions : public DatabaseLookup
     Q_OBJECT
 
 public:
-    explicit LookupMissions(VehicleMission *mission, Fact *parent);
+    explicit LookupMissions(VehicleMission *mission,
+                            Fact *parent,
+                            FactBase::Flags flags = FactBase::Flags(Page));
 
 private:
     VehicleMission *mission;

@@ -32,7 +32,8 @@ LookupConfigs::LookupConfigs(Nodes *nodes, Fact *parent)
                      "load",
                      tr("Load configuration"),
                      tr("Database lookup"),
-                     Database::instance()->nodes)
+                     Database::instance()->nodes,
+                     Action)
     , nodes(nodes)
 {
     connect(this, &Fact::triggered, this, &LookupConfigs::dbLookupByDate);

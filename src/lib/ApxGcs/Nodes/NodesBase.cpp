@@ -56,9 +56,8 @@ void NodesBase::addActions()
     Nodes *nodes = findParent<Nodes *>();
     if (!nodes)
         return;
-    Fact *f = nodes->f_upload->createAction(this);
-    f->setOption(IconOnly, false);
-    f->setOption(ShowDisabled, false);
+    Fact *f = new Fact(this, nodes->f_upload->name(), "", "", Action);
+    f->bind(nodes->f_upload);
 }
 //=============================================================================
 QVariant NodesBase::data(int col, int role) const

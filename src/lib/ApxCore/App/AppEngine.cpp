@@ -110,12 +110,13 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
         QJSValue js_actions = newObject();
         foreach (FactBase *i, fact->actions()) {
             Fact *f = static_cast<Fact *>(i);
-            QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
+            jsSync(f, js_actions);
+            /*QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
             jsSetProperty(js_actions, f->name(), newQObject(f));
             if (f->bind() && f->bind()->parentFact() == nullptr) {
                 //action opens fact page with no parent
                 jsSync(f->bind(), js_fact);
-            }
+            }*/
         }
         js_fact.setProperty("action", js_actions);
     }

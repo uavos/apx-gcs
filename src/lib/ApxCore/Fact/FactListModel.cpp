@@ -22,6 +22,8 @@
  */
 #include "FactListModel.h"
 #include "Fact.h"
+
+#include <algorithm>
 //=============================================================================
 FactListModel::FactListModel(Fact *fact)
     : QAbstractListModel(fact)
@@ -106,10 +108,13 @@ int FactListModel::count() const
 //=============================================================================
 void FactListModel::populate(ItemsList *list, Fact *fact)
 {
+    bool sect = false;
     for (int i = 0; i < fact->size(); ++i) {
         Fact *item = fact->child(i);
         if (!item)
             continue;
+        if (!sect && !item->section().isEmpty())
+            sect = true;
         if (m_flat && (item->options() & Fact::Section)) {
             connect(item, &Fact::itemInserted, this, &FactListModel::sync, Qt::UniqueConnection);
             connect(item, &Fact::itemRemoved, this, &FactListModel::sync, Qt::UniqueConnection);
@@ -117,6 +122,11 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
         } else
             list->append(item);
         connect(item, &FactBase::destroyed, this, &FactListModel::sync, Qt::UniqueConnection);
+    }
+    if (sect) {
+        std::sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
+            return a->section() < b->section();
+        });
     }
 }
 //=============================================================================

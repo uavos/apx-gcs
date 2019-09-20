@@ -50,13 +50,13 @@ RowLayout {
         visible: (!mission.synced) && (!mission.empty)
     }
     FactMenuAction {
-        fact: mission.action.tools.bind.action.save
+        fact: mission.action.tools.action.save
         visible: (!mission.saved) && (!mission.empty)
     }
     FactMenuAction {
-        fact: mission.action.tools.bind.action.load
+        fact: mission.action.tools.action.load
         visible: (mission.empty)
-        onTriggered: fact.bind.requestMenu({"pos":Qt.point(0,ui.window.height)})
+        onTriggered: fact.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }
     FactMenuAction {
         fact: mission.missionTitle

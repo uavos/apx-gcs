@@ -31,8 +31,8 @@
 #include <Vehicles/VehicleSelect.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
-MissionTools::MissionTools(VehicleMission *mission, Fact *parent)
-    : Fact(parent, "tools", tr("Tools"), tr("Mission edit tools"), Group)
+MissionTools::MissionTools(VehicleMission *mission, Flags flags)
+    : Fact(mission, "tools", tr("Tools"), tr("Mission edit tools"), flags)
     , mission(mission)
 {
     setIcon("dots-horizontal");

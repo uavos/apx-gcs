@@ -40,12 +40,18 @@ public:
         PluginLauncher = 0x0200, //show quick launcher icon on main screen
     };
 
+    // called after loading when enabled in preferences
     virtual void init() {}
+
+    // called if FeaturePlugin on demand to create Fact or QWidget
     virtual QObject *createControl() { return nullptr; }
+
     virtual int flags() { return FeaturePlugin; }
     virtual QString title() { return QString(); }
     virtual QString descr() { return QString(); }
     virtual QString icon() { return QString(); }
+
+    virtual QStringList depends() { return QStringList(); }
 
     virtual bool closeEvent() { return true; }
 };

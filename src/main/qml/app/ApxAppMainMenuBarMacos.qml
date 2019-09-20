@@ -15,13 +15,13 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
                 onTriggered: fact.trigger()
             }
             MenuItem {
-                property var fact: apx.vehicles.REPLAY.nodes.share.imp
+                property var fact: apx.vehicles.REPLAY.nodes.action.share.imp
                 text: fact.descr
                 onTriggered: fact.trigger()
             }
             MenuItem {
                 role: MenuItem.PreferencesRole
-                onTriggered: apx.requestMenu({"closeOnActionTrigger": false})
+                onTriggered: apx.requestMenu()
             }
             MenuItem {
                 property var fact: apx.settings.application.updater
@@ -54,7 +54,7 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
                 model: apx.tools.model
                 MenuItem {
                     text: modelData.title
-                    onTriggered: modelData.requestMenu({"closeOnActionTrigger": false})
+                    onTriggered: modelData.requestMenu()
                 }
                 onObjectAdded: toolsMenu.insertItem(index,object)
                 onObjectRemoved: toolsMenu.removeItem(object)

@@ -72,13 +72,13 @@ RowLayout {
     //simulator
     Loader {
         asynchronous: true
-        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.sim)!=='undefined' && (apx.vehicles.current===apx.vehicles.LOCAL || apx.tools.sim.action.stop.enabled)
+        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.Simulator)!=='undefined' && (apx.vehicles.current===apx.vehicles.LOCAL || apx.tools.Simulator.action.stop.enabled)
         sourceComponent: Component {
             CleanButton {
-                iconName: apx.tools.sim.icon
+                iconName: apx.tools.Simulator.icon
                 implicitHeight: control.height
-                toolTip: apx.tools.sim.descr
-                onTriggered: apx.tools.sim.requestMenu()
+                toolTip: apx.tools.Simulator.descr
+                onTriggered: apx.tools.Simulator.requestMenu()
             }
         }
         visible: status===Loader.Ready

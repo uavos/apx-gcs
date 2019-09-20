@@ -370,9 +370,6 @@ void Fact::trigger(void)
         bind()->trigger();
     //qDebug()<<"trigger"<<name();
     emit triggered();
-
-    if (parentFact() && treeType() == Action)
-        parentFact()->actionTriggered();
 }
 void Fact::requestDefaultMenu()
 {
@@ -400,8 +397,6 @@ void Fact::bind(FactData *fact)
         connect(m_bind, &Fact::enabledChanged, this, &Fact::enabledChanged);
         connect(m_bind, &Fact::iconChanged, this, &Fact::iconChanged);
         connect(m_bind, &Fact::qmlPageChanged, this, &Fact::qmlPageChanged);
-
-        connect(m_bind, &Fact::actionTriggered, this, &Fact::actionTriggered);
     }
     if (rebind) {
         emit actionsModelChanged();

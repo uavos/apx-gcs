@@ -41,7 +41,8 @@ public:
                             const QString &name,
                             const QString &title,
                             const QString &descr,
-                            DatabaseSession *db);
+                            DatabaseSession *db,
+                            FactBase::Flags flags = FactBase::Flags(Page));
 
     Q_INVOKABLE void query(const QString &queryString,
                            const QVariantList &bindValues = QVariantList());

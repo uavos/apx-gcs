@@ -79,16 +79,12 @@ Nodes::Nodes(Vehicle *parent)
     //storage actions
     storage = new NodesStorage(this);
 
-    f_lookup = new LookupConfigs(this, nullptr);
-    f_lookup->setParent(this);
-    a_lookup = f_lookup->createAction(this);
+    f_lookup = new LookupConfigs(this, this);
 
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
 
-    f_share = new NodesShare(this, nullptr);
-    f_share->setParent(this);
-    a_share = f_share->createAction(this);
+    f_share = new NodesShare(this, this);
 
     foreach (FactBase *a, actions()) {
         a->setOption(IconOnly);

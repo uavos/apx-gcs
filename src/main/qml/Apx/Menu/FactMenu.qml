@@ -21,11 +21,6 @@ StackView {
 
     property var currentFact: fact
 
-    /*onFactChanged: {
-        clear()
-        openFact(fact)
-    }*/
-
     clip: true
     initialItem: createFactPage(fact)
 
@@ -46,11 +41,8 @@ StackView {
 
     signal opened()
 
-    //signal factTriggered(var fact)
-    signal factActionTriggered()
+    signal factTriggered(var fact)
     signal stackEmpty()
-
-    //signal factRemoved()
 
     property StackView parentStack
     property bool showBtnBack: depth>1 || parentStack

@@ -33,7 +33,7 @@ class MissionTools : public Fact
     Q_OBJECT
 
 public:
-    explicit MissionTools(VehicleMission *mission, Fact *parent);
+    explicit MissionTools(VehicleMission *mission, FactBase::Flags flags = FactBase::Flags(Group));
 
     Fact *f_altadjust;
     Fact *f_altadjustApply;

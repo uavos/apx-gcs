@@ -27,12 +27,12 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
                                const QString &name,
                                const QString &title,
                                const QString &descr,
-                               DatabaseSession *db)
-    : Fact(parent, name, title, descr, Group)
+                               DatabaseSession *db,
+                               Flags flags)
+    : Fact(parent, name, title, descr, flags, "database-search")
     , db(db)
     , m_filterEnabled(true)
 {
-    setIcon("database-search");
     setQmlPage("Menu/FactMenuPageLookupDB.qml");
 
     m_dbModel = new DatabaseLookupModel(this);

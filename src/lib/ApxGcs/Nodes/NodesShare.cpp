@@ -30,7 +30,7 @@
 #include <Vehicles/Vehicle.h>
 //=============================================================================
 NodesShare::NodesShare(Nodes *nodes, Fact *parent)
-    : Share(parent, tr("Configuration"), "nodes", ApxDirs::configs())
+    : Share(parent, tr("Configuration"), "nodes", ApxDirs::configs(), QStringList(), Action)
     , nodes(nodes)
 {
     connect(this, &Share::imported, nodes->storage, &NodesStorage::loadConfiguration);

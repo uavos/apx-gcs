@@ -1,22 +1,20 @@
-import qbs
-import ApxApp
+﻿import qbs.FileInfo
 
-ApxApp.ApxPlugin {
+Project {
 
-    Depends {
-        name: "Qt";
-        submodules: [
-            "core",
-            "location",
-        ]
-    }
-
-
-    files: [
-        "MapPlugin.h",
-        "MapTools.cpp", "MapTools.h",
+    property var plugins: [
+        "Location",
+        "MapView",
+        "Sites",
+        "KmlOverlay",
     ]
 
-    Depends { name: "qmlqrc" }
-    qmlqrc.usePrefix: false
+    references: {
+        var refList=[]
+        for(var i in plugins){
+            var n=plugins[i]
+            refList.push(FileInfo.joinPaths(n,n+".qbs"))
+        }
+        return refList
+    }
 }
