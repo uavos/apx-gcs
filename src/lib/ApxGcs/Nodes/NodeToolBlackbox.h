@@ -33,7 +33,7 @@ class NodeToolBlackbox : public NodeToolsGroup, public Escaped
     Q_OBJECT
 
 public:
-    explicit NodeToolBlackbox(Fact *parent, NodeItem *node, const QString &title);
+    explicit NodeToolBlackbox(Fact *parent, NodeItem *anode, const QString &title);
 
     Fact *addCommand(QString name, QString title, QString descr, quint16 cmd) override;
 
@@ -55,6 +55,8 @@ private:
     quint32 req_blk;
     quint32 req_begin;
     quint32 req_end;
+
+    uint32_t block_size;
 
     enum Operation { op_idle, op_stats, op_read };
     Operation op;

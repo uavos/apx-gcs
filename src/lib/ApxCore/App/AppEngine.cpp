@@ -107,10 +107,10 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
         jsSync(fact->child(i), js_fact);
     //sync actions
     if (!fact->actions().isEmpty()) {
-        QJSValue js_actions = newObject();
+        //QJSValue js_actions = newObject();
         foreach (FactBase *i, fact->actions()) {
             Fact *f = static_cast<Fact *>(i);
-            jsSync(f, js_actions);
+            jsSync(f, js_fact);
             /*QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
             jsSetProperty(js_actions, f->name(), newQObject(f));
             if (f->bind() && f->bind()->parentFact() == nullptr) {
@@ -118,7 +118,7 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
                 jsSync(f->bind(), js_fact);
             }*/
         }
-        js_fact.setProperty("action", js_actions);
+        //js_fact.setProperty("action", js_actions);
     }
     return js_fact;
 }

@@ -15,7 +15,7 @@ RowLayout {
 
     //reset path
     CleanButton {
-        readonly property var fact: apx.vehicles.current.action.rpath
+        readonly property var fact: apx.vehicles.current.rpath
         iconName: fact.icon
         implicitHeight: parent.height
         toolTip: fact.title
@@ -72,7 +72,7 @@ RowLayout {
     //simulator
     Loader {
         asynchronous: true
-        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.Simulator)!=='undefined' && (apx.vehicles.current===apx.vehicles.LOCAL || apx.tools.Simulator.action.stop.enabled)
+        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.Simulator)!=='undefined' && (apx.vehicles.current===apx.vehicles.LOCAL || apx.tools.Simulator.stop.enabled)
         sourceComponent: Component {
             CleanButton {
                 iconName: apx.tools.Simulator.icon

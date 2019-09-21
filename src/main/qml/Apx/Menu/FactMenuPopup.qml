@@ -57,6 +57,10 @@ Popup {
             if(fact.options & Fact.CloseOnTrigger)
                 popupItem.close()
         }
+        Connections {
+            target: currentFact
+            onProgressChanged: popupItem.pinned=true
+        }
         onStackEmpty: popupItem.close()
         titleRightMargin: btnClose.width
         CleanButton {

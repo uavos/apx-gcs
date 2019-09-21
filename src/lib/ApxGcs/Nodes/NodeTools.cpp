@@ -84,8 +84,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_rebootall->setIcon("reload");
     connect(f_rebootall, &Fact::triggered, node->nodes, [=]() { node->nodes->rebootAll(); });
 
-    onlineActions.append(f_updates);
-    updateActions();
+    registerOnlineAction(f_updates);
 }
 //=============================================================================
 Fact *NodeTools::addCommand(QString name, QString title, QString descr, quint16 cmd)
@@ -105,7 +104,6 @@ Fact *NodeTools::addCommand(QString name, QString title, QString descr, quint16 
 }
 void NodeTools::clearCommands()
 {
-    onlineActions.clear();
     f_cmd->removeAll();
     f_syscmd->removeAll();
 }

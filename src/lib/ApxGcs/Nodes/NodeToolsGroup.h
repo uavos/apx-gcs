@@ -42,10 +42,7 @@ public:
 
 protected:
     NodeItem *node;
-    QList<Fact *> onlineActions;
-
-protected slots:
-    void updateActions();
+    void registerOnlineAction(Fact *fact);
 };
 //=============================================================================
 #endif

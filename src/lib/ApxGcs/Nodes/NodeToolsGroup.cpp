@@ -32,10 +32,7 @@ NodeToolsGroup::NodeToolsGroup(Fact *parent,
                                Flags flags)
     : Fact(parent, name, title, descr, flags)
     , node(node)
-{
-    connect(node, &NodeItem::offlineChanged, this, &NodeToolsGroup::updateActions);
-    updateActions();
-}
+{}
 //=============================================================================
 Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, quint16 cmd)
 {
@@ -62,7 +59,7 @@ Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, qui
                 if (name.startsWith("vm"))
                     fg->setIcon("code-braces");
             }
-            onlineActions.append(fg);
+            registerOnlineAction(fg);
         }
         return fg->addCommand(name, title, descr, cmd);
     }
@@ -80,17 +77,16 @@ Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, qui
     else
         f->setIcon("asterisk");
     f->userData = cmd;
-    onlineActions.append(f);
-    updateActions();
+    registerOnlineAction(f);
     //ApxApp::jsync(this);
     return f;
 }
 //=============================================================================
-void NodeToolsGroup::updateActions()
+void NodeToolsGroup::registerOnlineAction(Fact *fact)
 {
-    bool enb = !node->offline();
-    foreach (Fact *f, onlineActions) {
-        f->setEnabled(enb);
-    }
+    connect(node, &NodeItem::offlineChanged, fact, [fact, this]() {
+        fact->setEnabled(!node->offline());
+    });
+    fact->setEnabled(!node->offline());
 }
 //=============================================================================

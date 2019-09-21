@@ -25,20 +25,14 @@ Item {
     property bool showWind: showVehicleNav
     property bool showScale: showVehicleNav
 
-    //property var location: apx.tools.Location
+    property var mapPlugin: apx.tools.MapView
 
     Item {
         id: mapControlsItem
         anchors.fill: parent
         layer.enabled: ui.effects
-        //layer.smooth: ui.antialiasing
         layer.effect: ShaderEffect {
             fragmentShader: Qt.resolvedUrl("/shaders/vignette.fsh")
-        }
-
-        Component.onCompleted: {
-            application.registerUiComponent(map,"map")
-            ui.main.containerBottom.anchors.rightMargin=scaleLegend.width+scaleLegend.anchors.margins+ui.main.containerBottom.anchors.margins
         }
 
         function connectOverlay(mapBase)
@@ -55,34 +49,23 @@ Item {
             mapBase.zoomLevel=Qt.binding(function(){return map.zoomLevel})
             mapBase.tilt=Qt.binding(function(){return map.tilt})
             mapBase.bearing=Qt.binding(function(){return map.bearing})
-            //mapBase.fieldOfView=Qt.binding(function(){return map.fieldOfView})
-            //mapBase.scale=Qt.binding(function(){return map.scale})
         }
 
         Loader {
             id: mapLoader
             anchors.fill: parent
             asynchronous: false
-            property bool locationPluginAvailable:
-                apx.settings.application.plugins.Location
-                && apx.settings.application.plugins.Location.value
-                && ((apx.tools && apx.tools.Location)?true:false)
-            property string provider: {
-                var s="" //default
-                if(!mapLoader.locationPluginAvailable)return s
-                var v=apx.tools.Location.provider.text.trim()
-                if(!v)return s
-                return v
-            }
+            sourceComponent: mapBaseC
             onLoaded: {
-                mapControlsItem.connectOverlay(mapLoader.item)
+                mapControlsItem.connectOverlay(item)
                 application.registerUiComponent(item,"mapbase")
             }
+            //reload map item on provider change
+            property string provider: mapPlugin.prefs.provider.text.trim()
             onProviderChanged: {
                 mapLoader.active=false
                 mapLoader.active=true
             }
-            sourceComponent: mapBaseC
         }
 
         Component {
@@ -101,14 +84,10 @@ Item {
                         var m=mapBase.supportedMapTypes[i]
                         vtypes.push(m.description)
                     }
-                    //console.log(apx.tools.Location)
-                    //console.log(apx.tools.Location.maptype)
-                    if(apx.tools.Location){
-                        apx.tools.Location.maptype.enumStrings=vtypes
-                        apx.tools.Location.maptype.value=activeMapType.description
-                    }
+                    mapPlugin.prefs.maptype.enumStrings=vtypes
+                    mapPlugin.prefs.maptype.value=activeMapType.description
                 }
-                property string mapTypeName: apx.tools.Location?apx.tools.Location.maptype.text:""
+                property string mapTypeName: mapPlugin.prefs.maptype.text
                 activeMapType: {
                     var v = mapTypeName
                     for(var i in mapBase.supportedMapTypes){
@@ -126,15 +105,11 @@ Item {
                         "osm"
                     ]
                     Component.onCompleted: {
-                        if(apx.tools.Location){
-                            apx.tools.Location.provider.enumStrings=availableServiceProviders
-                        }
+                        mapPlugin.prefs.provider.enumStrings=availableServiceProviders
                     }
                 }
 
-                //visible: false
                 layer.enabled: ui.effects
-                //layer.smooth: ui.antialiasing
                 layer.effect: FastBlur {
                     id: mapBlur
                     anchors.fill: mapBase
@@ -152,6 +127,23 @@ Item {
 
             color: "transparent"
             plugin: Plugin { name: "itemsoverlay" }
+
+            Component.onCompleted: {
+                application.registerUiComponent(map,"map")
+                ui.main.containerBottom.anchors.rightMargin=scaleLegend.width+scaleLegend.anchors.margins+ui.main.containerBottom.anchors.margins
+            }
+
+            //initial animation
+            PropertyAnimation {
+                running: true
+                target: map
+                property: "zoomLevel"
+                from: 12
+                to: 16.33
+                duration: 1000
+                easing.type: Easing.OutInCirc
+            }
+
 
             /*plugin: Plugin {
                 name: "mapboxgl"
@@ -226,16 +218,6 @@ Item {
 
 
 
-            //initial animation
-            PropertyAnimation {
-                running: true
-                target: map
-                property: "zoomLevel"
-                from: 12
-                to: 16.33
-                duration: 1000
-                easing.type: Easing.OutInCirc
-            }
 
             //VEHICLES
             Loader {
@@ -304,6 +286,7 @@ Item {
 
 
             Connections {
+                enabled: showVehicles && showVehicleNav
                 target: apx.vehicles.current.mission
                 onTriggered: map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle())
             }

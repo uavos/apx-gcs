@@ -42,19 +42,19 @@ RowLayout {
         ]
     }
     FactMenuAction {
-        fact: mission.action.request
+        fact: mission.request
         visible: (!mission.synced)
     }
     FactMenuAction {
-        fact: mission.action.upload
+        fact: mission.upload
         visible: (!mission.synced) && (!mission.empty)
     }
     FactMenuAction {
-        fact: mission.action.tools.action.save
+        fact: mission.tools.save
         visible: (!mission.saved) && (!mission.empty)
     }
     FactMenuAction {
-        fact: mission.action.tools.action.load
+        fact: mission.tools.load
         visible: (mission.empty)
         onTriggered: fact.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }

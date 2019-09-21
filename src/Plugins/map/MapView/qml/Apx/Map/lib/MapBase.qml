@@ -130,12 +130,8 @@ Map {
 
     //internal
     color: '#333'
-    //plugin: Plugin { name: "uavos" }
-    //activeMapType: supportedMapTypes[0]
 
     center: defaultCoordinate
-    //zoomLevel: 14
-    //fieldOfView: 15
 
     gesture.acceptedGestures: MapGestureArea.PanGesture | MapGestureArea.FlickGesture | MapGestureArea.PinchGesture | MapGestureArea.RotationGesture | MapGestureArea.TiltGesture
     gesture.flickDeceleration: 30

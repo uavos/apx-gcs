@@ -33,7 +33,7 @@
 //=============================================================================
 TileLoader *TileLoader::_instance = nullptr;
 TileLoader::TileLoader(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Tile loader"), tr("Map tiles loader service"), Group)
+    : Fact(parent, PLUGIN_NAME, tr("Tile loader"), tr("Map tiles loader service"))
 {
     _instance = this;
 

@@ -64,8 +64,8 @@ ColumnLayout {
             active: fact.modified || fact.progress>=0
             enabled: true
             onTriggered: {
-                if(fact.missionSize<=0) fact.action.request.trigger()
-                //else if(!fact.synced) fact.action.upload.trigger()
+                if(fact.missionSize<=0) fact.request.trigger()
+                //else if(!fact.synced) fact.upload.trigger()
                 fact.requestMenu()
             }
             onMenuRequested: fact.requestMenu()

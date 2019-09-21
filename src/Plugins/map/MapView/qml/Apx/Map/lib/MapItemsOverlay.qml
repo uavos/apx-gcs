@@ -20,18 +20,7 @@ MapBase {
 
     //map item setup
     color: 'transparent' // Necessary to make this map transparent
-    //plugin: Plugin { name: "itemsoverlay" }
-    //gesture.enabled: false
-    //focus: false
 
-    //---------------------------
-    //helpers
-    /*function metersToPixels(meters)
-    {
-        var coord = toCoordinate(Qt.point(width,height/2))
-        var dist = center.distanceTo(coord)
-        return meters*(width/2)/dist;
-    }*/
     Connections {
         target: map
         onCenterChanged: mpTimer.start()

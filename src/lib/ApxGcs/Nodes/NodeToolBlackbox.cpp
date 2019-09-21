@@ -34,12 +34,13 @@
 #include <Xbus/XbusNodeBlackbox.h>
 #include <common/Escaped.h>
 //=============================================================================
-NodeToolBlackbox::NodeToolBlackbox(Fact *parent, NodeItem *node, const QString &title)
-    : NodeToolsGroup(parent, node, "blackbox", title, "", Group)
+NodeToolBlackbox::NodeToolBlackbox(Fact *parent, NodeItem *anode, const QString &title)
+    : NodeToolsGroup(parent, anode, "blackbox", title, "", Group)
     , Escaped()
     , bb_read(0)
     , rec_size(0)
     , req_blk(0)
+    , block_size(512)
     , op(op_idle)
     , protocol(nullptr)
 {
@@ -124,10 +125,10 @@ void NodeToolBlackbox::request(Operation op, QByteArray data)
 }
 void NodeToolBlackbox::request(quint32 blk)
 {
-    if (rec_size == 0 || blk >= rec_size) {
+    /*if (rec_size == 0 || blk >= rec_size) {
         stop();
         return;
-    }
+    }*/
     req_blk = blk;
     QByteArray data;
     data.resize(sizeof(uint32_t));
@@ -139,8 +140,8 @@ void NodeToolBlackbox::request(quint32 blk)
     quint32 sz = req_end - req_begin;
     setProgress(static_cast<int>(blk * 100 / sz));
     f_stats->setStatus(QString("%1/%2 MB")
-                           .arg(blk * (512.0 / 1024.0 / 1024.0), 0, 'f', 2)
-                           .arg(sz * (512.0 / 1024.0 / 1024.0), 0, 'f', 2));
+                           .arg(blk * (block_size / 1024.0 / 1024.0), 0, 'f', 2)
+                           .arg(sz * (block_size / 1024.0 / 1024.0), 0, 'f', 2));
 }
 void NodeToolBlackbox::getStats()
 {
@@ -177,6 +178,8 @@ void NodeToolBlackbox::download()
     vehicle->setParentFact(f_read);
     node->nodes->vehicle->setActive(false);
 
+    esc_input.clear();
+    esc_state = esc_cnt = esc_pos_save = 0;
     request(req_begin);
 }
 
@@ -185,7 +188,7 @@ void NodeToolBlackbox::stop()
     op = op_idle;
     setProgress(-1);
     f_stats->setTitle(rec_size ? tr("Statistics") : tr("Empty"));
-    f_stats->setStatus(QString("%1 MB").arg(rec_size * (512.0 / 1024.0 / 1024.0), 0, 'f', 2));
+    f_stats->setStatus(QString("%1 MB").arg(rec_size * (block_size / 1024.0 / 1024.0), 0, 'f', 2));
     node->acknowledgeRequest(bb_read);
     if (protocol) {
         protocol->deleteLater();
@@ -222,11 +225,14 @@ void NodeToolBlackbox::serviceDataReceived(quint16 cmd, QByteArray data)
         if (stream.tail() != dHdr.psize())
             break;
         dHdr.read(&stream);
-        rec_size = dHdr.rec_size * 16;
+
+        rec_size = dHdr.rec_size;
+        if (dHdr.block_size != 0xFFFF && dHdr.block_size != 0 && (dHdr.block_size & 0xFF) == 0)
+            block_size = dHdr.block_size;
 
         f_begin->setMax(rec_size);
-        f_end->setMax(rec_size);
-        f_end->setValue(rec_size > 17 ? rec_size - 17 : rec_size);
+        //f_end->setMax(rec_size);
+        f_end->setValue(rec_size);
         QStringList st;
         st << QString("on: %1 times").arg(dHdr.oncnt);
         st << QString("up: %1").arg(AppRoot::timeToString(dHdr.uptime, true));
@@ -238,7 +244,7 @@ void NodeToolBlackbox::serviceDataReceived(quint16 cmd, QByteArray data)
     case xbus::node::blackbox::bbr_data: {
         if (op != op_read)
             return;
-        if (stream.tail() != (4 + 512))
+        if (stream.tail() != (4 + block_size))
             break;
         if (!protocol)
             break;
@@ -287,14 +293,21 @@ void NodeToolBlackbox::escError(void)
 //=============================================================================
 void NodeToolBlackbox::processData(QByteArray data)
 {
+    //qDebug() << data.toHex().toUpper();
+    /*if (data != QByteArray(data.size(), (char) 0xFF)) {
+        //qDebug() << data.toHex().toUpper();
+    } else
+        qDebug() << "erased" << req_blk;*/
     esc_input.append(data);
     uint cnt;
-    while ((cnt = readEscaped()) > 0) {
-        QByteArray packet = QByteArray(reinterpret_cast<const char *>(esc_rx),
-                                       static_cast<int>(cnt));
+    while (!esc_input.isEmpty()) {
+        while ((cnt = readEscaped()) > 0) {
+            QByteArray packet = QByteArray(reinterpret_cast<const char *>(esc_rx),
+                                           static_cast<int>(cnt));
 
-        vehicle->f_telemetry->f_recorder->setValue(true);
-        protocol->unpack(packet);
+            vehicle->f_telemetry->f_recorder->setValue(true);
+            protocol->unpack(packet);
+        }
     }
 }
 //=============================================================================

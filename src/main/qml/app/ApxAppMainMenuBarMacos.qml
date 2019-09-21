@@ -15,7 +15,7 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
                 onTriggered: fact.trigger()
             }
             MenuItem {
-                property var fact: apx.vehicles.REPLAY.nodes.action.share.imp
+                property var fact: apx.vehicles.REPLAY.nodes.share.imp
                 text: fact.descr
                 onTriggered: fact.trigger()
             }
