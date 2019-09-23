@@ -29,7 +29,7 @@
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 Nodes::Nodes(Vehicle *parent)
-    : NodeItemBase(parent, "nodes", "Nodes", Group)
+    : NodeItemBase(parent, "nodes", "Nodes", Group | FlatModel)
     , vehicle(parent)
     , syncCount(0)
     , syncActive(false)
@@ -39,8 +39,6 @@ Nodes::Nodes(Vehicle *parent)
 {
     setIcon("puzzle");
     setDescr(tr("Vehicle components"));
-
-    model()->setFlat(true);
 
     f_upload = new Fact(this,
                         "upload",

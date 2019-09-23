@@ -81,6 +81,8 @@ signals:
     void nodeUpgradeLD(NodeItem *node);
     void nodeUpgradeMHX(NodeItem *node);
 
+    void nodeAvailable(NodeItem *node);
+
     //---------------------------------------
     // PROPERTIES
 public:

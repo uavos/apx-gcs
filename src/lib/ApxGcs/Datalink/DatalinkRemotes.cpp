@@ -30,13 +30,15 @@
 #include <common/ApxTcpPorts.h>
 //=============================================================================
 DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
-    : Fact(datalink, "hosts", tr("Remote servers"), tr("Discovered remote hosts"), Group)
+    : Fact(datalink,
+           "hosts",
+           tr("Remote servers"),
+           tr("Discovered remote hosts"),
+           Group | FlatModel,
+           "download-network")
     , datalink(datalink)
     , m_connectedCount(0)
 {
-    setIcon("download-network");
-    model()->setFlat(true);
-
     QSettings *settings = AppSettings::settings();
 
     //discover service

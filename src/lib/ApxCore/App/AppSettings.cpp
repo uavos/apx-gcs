@@ -25,13 +25,12 @@
 #include <ApxDirs.h>
 //=============================================================================
 AppSettings::AppSettings(Fact *parent)
-    : Fact(parent, "settings", tr("Preferences"), tr("Application settings"), Group) //root
+    : Fact(parent, "settings", tr("Preferences"), tr("Application settings"), Group | FlatModel) //root
 {
     _instance = this;
 
     //setSection(FactSystem::ApplicationSection);
     setIcon("settings");
-    model()->setFlat(true);
 
     m_readOnly = false;
     m_settings = createSettings(this);

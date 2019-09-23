@@ -29,12 +29,8 @@
 #include <QQmlEngine>
 //=============================================================================
 AppShortcuts::AppShortcuts(Fact *parent)
-    : Fact(parent, "shortcuts", tr("Shortcuts"), tr("Keyboard hotkeys"), Group)
+    : Fact(parent, "shortcuts", tr("Shortcuts"), tr("Keyboard hotkeys"), Group | FlatModel)
 {
-    model()->setFlat(true);
-
-    //setSection("");
-
     // QML types register
     qmlRegisterUncreatableType<AppShortcuts>("APX.AppShortcuts",
                                              1,

@@ -28,14 +28,12 @@
 #include "JoystickAxis.h"
 //=============================================================================
 Joystick::Joystick(Fact *parent, int device_index, QString uid)
-    : Fact(parent, "j#", "", "", Group | Bool)
+    : Fact(parent, "j#", "", "", Group | Bool | FlatModel)
     , device_index(device_index)
     , uid(uid)
     , instanceID(-1)
     , dev(nullptr)
 {
-    model()->setFlat(true);
-
     f_conf = new Fact(this, "conf", tr("Configuration"), tr("Configuration title"), Enum);
 
     f_title = new Fact(this, "ctitle", tr("Title"), tr("Configuration title"), Text);

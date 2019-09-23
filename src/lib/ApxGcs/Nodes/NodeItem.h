@@ -68,13 +68,6 @@ public:
 
     NodeTools *tools;
 
-    struct
-    {
-        bool valid;
-        QList<uint> cmd;
-        QStringList name;
-        QStringList descr;
-    } commands;
     void execCommand(quint16 cmd, const QString &name, const QString &descr);
 
     void setProtocol(ProtocolServiceNode *protocol);
@@ -136,6 +129,7 @@ private slots:
     void valueUploaded(quint16 id);
     void valuesSaved();
     void nstatReceived(const DictNode::Stats &nstat);
+
 signals:
     void requestInfo();
     void requestDict();

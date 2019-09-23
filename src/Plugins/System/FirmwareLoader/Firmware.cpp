@@ -35,13 +35,10 @@ APX_LOGGING_CATEGORY(FirmwareLog, "core.Firmware")
 //=============================================================================
 Firmware *Firmware::_instance = nullptr;
 Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
-    : Fact(parent, PLUGIN_NAME, tr("Firmware"), tr("Firmware updates"), Group)
+    : Fact(parent, PLUGIN_NAME, tr("Firmware"), tr("Firmware updates"), Group | FlatModel, "update")
     , protocol(protocol)
 {
     _instance = this;
-    setIcon("update");
-
-    model()->setFlat(true);
 
     f_loader = new Loader(this, protocol);
     connect(f_loader, &Loader::finished, this, &Firmware::loaderFinished);

@@ -48,7 +48,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                         "latest",
                         tr("Latest"),
                         tr("Load latest"),
-                        Action | ShowDisabled | Apply,
+                        Action | ShowDisabled | Apply | IconOnly,
                         "fast-forward");
     connect(f_latest, &Fact::triggered, this, &LookupTelemetry::dbLoadLatest);
 
@@ -56,7 +56,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                       "prev",
                       tr("Prev"),
                       tr("Load previous"),
-                      Action | ShowDisabled,
+                      Action | ShowDisabled | IconOnly,
                       "chevron-left");
     connect(f_prev, &Fact::triggered, this, &LookupTelemetry::dbLoadPrev);
 
@@ -64,7 +64,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                       "next",
                       tr("Next"),
                       tr("Load next"),
-                      Action | ShowDisabled,
+                      Action | ShowDisabled | IconOnly,
                       "chevron-right");
     connect(f_next, &Fact::triggered, this, &LookupTelemetry::dbLoadNext);
 
@@ -72,7 +72,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                         "remove",
                         tr("Remove"),
                         tr("Remove current record"),
-                        Action | ShowDisabled | Remove,
+                        Action | ShowDisabled | Remove | IconOnly,
                         "delete");
     connect(f_remove, &Fact::triggered, this, &LookupTelemetry::dbRemove);
 

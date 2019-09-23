@@ -153,6 +153,8 @@ void Vehicles::identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentDa
 //=============================================================================
 void Vehicles::selectVehicle(Vehicle *v)
 {
+    v->setActive(true); //ensure is active
+
     if (m_current == v)
         return;
     if (!v)

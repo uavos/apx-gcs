@@ -25,13 +25,14 @@
 #include <ApxApp.h>
 //=============================================================================
 VehicleWarnings::VehicleWarnings(Vehicle *parent)
-    : Fact(parent, "warnings", tr("Warnings"), tr("Malfunctions and warnings list"), Group | Const)
+    : Fact(parent,
+           "warnings",
+           tr("Warnings"),
+           tr("Malfunctions and warnings list"),
+           Group | Const | FlatModel,
+           "alert")
     , showNum(0)
 {
-    setIcon("alert");
-
-    model()->setFlat(true);
-
     f_clear = new Fact(this,
                        "clear",
                        tr("Clear"),

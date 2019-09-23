@@ -28,7 +28,6 @@
 FactListModel::FactListModel(Fact *fact)
     : QAbstractListModel(fact)
     , fact(fact)
-    , m_flat(false)
 {
     syncTimer = new QTimer(this);
     syncTimer->setSingleShot(true);
@@ -39,7 +38,6 @@ FactListModel::FactListModel(Fact *fact)
         populate(&_items, fact);
         connectFact(fact);
     }
-    connect(this, &FactListModel::flatChanged, this, &FactListModel::sync);
 }
 //=============================================================================
 void FactListModel::connectFact(Fact *fact)
@@ -47,6 +45,7 @@ void FactListModel::connectFact(Fact *fact)
     connect(fact, &Fact::itemInserted, this, &FactListModel::sync, Qt::QueuedConnection);
     connect(fact, &Fact::itemRemoved, this, &FactListModel::sync);
     connect(fact, &Fact::itemMoved, this, &FactListModel::sync);
+    connect(fact, &Fact::optionsChanged, this, &FactListModel::sync);
 }
 //=============================================================================int FactListModel::rowCount(const QModelIndex & parent) const
 int FactListModel::rowCount(const QModelIndex &parent) const
@@ -90,17 +89,6 @@ bool FactListModel::setData(const QModelIndex &index, const QVariant &value, int
 }
 //=============================================================================
 //=============================================================================
-bool FactListModel::flat() const
-{
-    return m_flat;
-}
-void FactListModel::setFlat(const bool &v)
-{
-    if (m_flat == v)
-        return;
-    m_flat = v;
-    emit flatChanged();
-}
 int FactListModel::count() const
 {
     return rowCount();
@@ -115,7 +103,7 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
             continue;
         if (!sect && !item->section().isEmpty())
             sect = true;
-        if (m_flat && (item->options() & Fact::Section)) {
+        if (fact->options() & Fact::FlatModel && (item->options() & Fact::Section)) {
             connect(item, &Fact::itemInserted, this, &FactListModel::sync, Qt::UniqueConnection);
             connect(item, &Fact::itemRemoved, this, &FactListModel::sync, Qt::UniqueConnection);
             populate(list, item);

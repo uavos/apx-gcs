@@ -180,6 +180,9 @@ void NodeItem::validateData()
         setNconfID(0);
         nodes->storage->saveNodeConfig(this);
     }
+    if (!offline()) {
+        Vehicles::instance()->nodeAvailable(this);
+    }
     //qDebug()<<"Node dataValid"<<path();
 }
 void NodeItem::validateInfo()
@@ -255,10 +258,7 @@ void NodeItem::notifyUpdater()
 {
     if (!protocol)
         return;
-    if (m_version == ApxApp::version())
-        return;
-
-    if (fwSupport()) {
+    if (m_version != ApxApp::version() && fwSupport()) {
         Vehicles::instance()->nodeUpgradable(this);
     }
 }

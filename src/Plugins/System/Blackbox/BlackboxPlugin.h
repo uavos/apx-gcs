@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,49 +20,20 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatabaseWorker_H
-#define DatabaseWorker_H
-//=============================================================================
-#include "DatabaseRequest.h"
-#include <atomic>
-#include <deque>
+#ifndef BlackboxPlugin_H
+#define BlackboxPlugin_H
+#include "Blackbox.h"
+#include <App/AppSettings.h>
+#include <ApxPluginInterface.h>
 #include <QtCore>
-#include <QtSql>
-class DatabaseSession;
 //=============================================================================
-class DatabaseWorker : public QThread
+class BlackboxPlugin : public ApxPluginInterface
 {
     Q_OBJECT
-
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
+    Q_INTERFACES(ApxPluginInterface)
 public:
-    explicit DatabaseWorker(DatabaseSession *db, QObject *parent = nullptr);
-    ~DatabaseWorker() override;
-
-    void request(DatabaseRequest *req);
-
-    int queueSize();
-    int rate();
-
-protected:
-    void run() override;
-
-private:
-    DatabaseSession *db;
-
-    std::deque<DatabaseRequest *> queue;
-    QReadWriteLock queueMutex;
-    QWaitCondition waitCondition;
-
-    //info
-    int rcnt;
-    std::atomic_int m_rate;
-    QTime infoUpdateTime;
-    bool infoUpdate(bool force);
-    void enqueue(DatabaseRequest *req);
-    void eraseRequests(int count);
-
-signals:
-    void infoChanged();
+    QObject *createControl() { return new Blackbox(); }
 };
 //=============================================================================
-#endif
+#endif // BlackboxPlugin_H

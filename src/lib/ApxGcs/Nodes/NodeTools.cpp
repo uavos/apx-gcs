@@ -22,18 +22,15 @@
  */
 #include "NodeTools.h"
 #include "NodeItem.h"
-#include "NodeToolBlackbox.h"
 #include "Nodes.h"
 #include <ApxApp.h>
 #include <Database/Database.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 NodeTools::NodeTools(NodeItem *anode, Flags flags)
-    : NodeToolsGroup(anode, anode, "tools", tr("Tools"), tr("Node tools"), flags)
+    : NodeToolsGroup(anode, anode, "tools", tr("Tools"), tr("Node tools"), flags | FlatModel)
 {
     setIcon("wrench");
-
-    model()->setFlat(true);
 
     QString sect = tr("Backups");
 

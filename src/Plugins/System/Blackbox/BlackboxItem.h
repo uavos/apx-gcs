@@ -20,58 +20,44 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactListModel_H
-#define FactListModel_H
+#ifndef BlackboxItem_H
+#define BlackboxItem_H
 //=============================================================================
-#include <QtCore>
-class Fact;
-class FactBase;
+#include <Fact/Fact.h>
+class BlackboxReader;
 //=============================================================================
-class FactListModel : public QAbstractListModel
+class BlackboxItem : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    explicit FactListModel(Fact *fact);
+    explicit BlackboxItem(Fact *parent,
+                          const QString &name,
+                          const QString &title,
+                          const QString &descr,
+                          FactBase::Flags flags,
+                          const QString &uid = QString());
 
-    typedef QList<QPointer<Fact>> ItemsList;
+    Fact *f_callsign;
+    Fact *f_stats;
 
-    QHash<int, QByteArray> roleNames() const;
-
-public slots:
-    void sync();
-
-private:
-    QTimer *syncTimer;
-
-private slots:
-    void delayedSync();
+    Fact *f_start;
+    Fact *f_stop;
 
 protected:
-    Fact *fact;
-    ItemsList _items;
+    BlackboxReader *reader;
 
-    virtual void populate(ItemsList *list, Fact *fact);
-    void connectFact(Fact *fact);
+    QString uid;
+    quint64 totalSize;
 
-    virtual void syncModel(const ItemsList &list);
+protected slots:
+    virtual void updateActions();
+    virtual void updateStats();
 
-    //ListModel override
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-public:
-    Q_INVOKABLE Fact *get(int i) const;
-
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    int count() const;
-
-signals:
-    void countChanged();
+public slots:
+    virtual void getStats();
+    virtual void download();
+    virtual void stop();
 };
 //=============================================================================
 #endif

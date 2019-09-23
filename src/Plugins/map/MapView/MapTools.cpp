@@ -27,11 +27,13 @@
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 MapTools::MapTools(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Map tools"), tr("Mission planner map tools"), Group)
+    : Fact(parent,
+           PLUGIN_NAME,
+           tr("Map tools"),
+           tr("Mission planner map tools"),
+           Group | FlatModel,
+           "map")
 {
-    setIcon("map");
-    model()->setFlat(true);
-
     f_add = new Fact(this, "add", tr("Add object"), tr("Add new map object"), Section, "plus-circle");
 
     f_vehicle

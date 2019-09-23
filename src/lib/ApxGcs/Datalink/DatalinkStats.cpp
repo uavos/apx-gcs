@@ -24,11 +24,13 @@
 #include "Datalink.h"
 //=============================================================================
 DatalinkStats::DatalinkStats(Datalink *parent)
-    : Fact(parent, "stats", tr("Statistics"), tr("Data traffic usage"), Group)
+    : Fact(parent,
+           "stats",
+           tr("Statistics"),
+           tr("Data traffic usage"),
+           Group | FlatModel,
+           "chart-line")
 {
-    setIcon("chart-line");
-    model()->setFlat(true);
-
     f_datalink = parent;
 
     f_uplink = new DatalinkStatsCounter(this, "uplink", tr("Uplink"), "");

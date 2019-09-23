@@ -12,6 +12,7 @@ Project {
         "Sounds",
         "Terminal",
         "VideoStreaming",
+        "Blackbox",
     ]
 
     references: {

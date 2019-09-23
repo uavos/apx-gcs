@@ -112,7 +112,9 @@ NodeField::NodeField(NodeItem *node,
 
         //check if comment field and bind to node value
         if (name == "comment" || (name == "name" && id == 0)) {
-            connect(this, &NodeField::textChanged, node, [=]() { node->setStatus(text()); });
+            connect(this, &NodeField::textChanged, node, [=]() {
+                node->setStatus(text().trimmed());
+            });
         }
     } else {
         //expanded sub field

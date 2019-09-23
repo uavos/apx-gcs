@@ -43,6 +43,11 @@ DatabaseWorker::~DatabaseWorker()
 }
 void DatabaseWorker::run()
 {
+    bool bEmpty = true;
+    uint qcnt = 0;
+    QSqlQuery query(db->sql);
+    query.setForwardOnly(true);
+
     while (!isInterruptionRequested()) {
         //wait for requests and update info every 1 sec
         if (queueSize() == 0) {
@@ -55,48 +60,59 @@ void DatabaseWorker::run()
                 continue;
             }
         }
-        //don't check interruption and wait condition every iteration if we have a batch of requests
-        int size = queueSize();
-        for (int i = 0; i < size; i++) {
-            DatabaseRequest *req = queue[i];
-            rcnt++;
-            infoUpdate(false);
-            if (req->discarded()) {
-                req->finish(false);
-                if (!req->isSynchronous)
-                    req->deleteLater();
-                continue;
-            }
-            //process request
-            QSqlQuery query(db->sql);
-            query.setForwardOnly(true);
-            if (!db->inTransaction)
-                db->transaction(query); //begin if not already
-            //req->moveToThread(this);
-            bool rv = req->run(query);
-            if (!rv) {
-                apxConsoleW() << "query error:" << query.lastError().text() << query.lastQuery()
-                              << req;
-                db->commit(query, true);
-            } else if (req->discarded()) {
-                db->rollback(query);
-            }
-            req->finish(!rv);
+        //take next request from queue
+        queueMutex.lockForWrite();
+        DatabaseRequest *req = queue.front();
+        queue.pop_front();
+        queueMutex.unlock();
+        rcnt++;
+        infoUpdate(false);
+        if (!req)
+            continue;
+        if (req->discarded()) {
+            req->finish(false);
             if (!req->isSynchronous)
-                req->deleteLater();
-            if (i == size - 1 || size % 200 == 0)
-                db->commit(query);
+                delete req; //->deleteLater();
+            continue;
         }
-        eraseRequests(size);
-        if (queueSize() == 0)
-            emit empty();
+        //process request
+        if (bEmpty) {
+            qcnt = 0;
+        } else {
+            qcnt++;
+        }
+        if (!db->inTransaction)
+            db->transaction(query); //begin if not already
+        bool rv = req->run(query);
+        if (!rv) {
+            apxConsoleW() << "query error:" << query.lastError().text() << query.lastQuery() << req;
+            db->commit(query, true);
+        } else if (req->discarded()) {
+            db->rollback(query);
+        }
+        req->finish(!rv);
+        query.finish();
+
+        if (!req->isSynchronous)
+            delete req; //req->deleteLater();
+
+        queueMutex.lockForRead();
+        bEmpty = queue.empty();
+        queueMutex.unlock();
+
+        if (bEmpty || qcnt > 200) {
+            qcnt = 0;
+            db->commit(query);
+            query.finish();
+            //qDebug()<<"empty";
+        }
     }
     QWriteLocker locker(&queueMutex);
     for (auto req : queue) {
         req->discard();
         req->finish(false);
         if (!req->isSynchronous)
-            req->deleteLater();
+            delete req; //req->deleteLater();
     }
     queue.clear();
 }

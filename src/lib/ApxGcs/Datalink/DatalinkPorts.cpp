@@ -27,12 +27,14 @@
 #include <ApxLog.h>
 //=============================================================================
 DatalinkPorts::DatalinkPorts(Datalink *datalink)
-    : Fact(datalink, "ports", tr("Local ports"), tr("Modems and persistent remotes"), Group)
+    : Fact(datalink,
+           "ports",
+           tr("Local ports"),
+           tr("Modems and persistent remotes"),
+           Group | FlatModel,
+           "usb")
     , datalink(datalink)
 {
-    setIcon("usb");
-    model()->setFlat(true);
-
     f_add = new DatalinkPort(this, datalink);
     f_add->setIcon("plus-circle");
 

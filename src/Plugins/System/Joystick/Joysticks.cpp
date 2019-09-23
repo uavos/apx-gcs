@@ -35,10 +35,12 @@ static int sdlWaitEvent()
 }
 //=============================================================================
 Joysticks::Joysticks(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Joystick"), tr("Hardware input devices"), Group | Bool)
+    : Fact(parent,
+           PLUGIN_NAME,
+           tr("Joystick"),
+           tr("Hardware input devices"),
+           Group | Bool | FlatModel)
 {
-    model()->setFlat(true);
-
     f_enabled = new AppSettingFact(AppSettings::settings(),
                                    this,
                                    "enabled",

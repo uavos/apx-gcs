@@ -20,49 +20,23 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatabaseWorker_H
-#define DatabaseWorker_H
-//=============================================================================
-#include "DatabaseRequest.h"
-#include <atomic>
-#include <deque>
+#ifndef Blackbox_H
+#define Blackbox_H
 #include <QtCore>
-#include <QtSql>
-class DatabaseSession;
+
+#include <Fact/Fact.h>
+class NodeItem;
 //=============================================================================
-class DatabaseWorker : public QThread
+class Blackbox : public Fact
 {
     Q_OBJECT
-
 public:
-    explicit DatabaseWorker(DatabaseSession *db, QObject *parent = nullptr);
-    ~DatabaseWorker() override;
+    Blackbox(Fact *parent = nullptr);
 
-    void request(DatabaseRequest *req);
+    Fact *f_import;
 
-    int queueSize();
-    int rate();
-
-protected:
-    void run() override;
-
-private:
-    DatabaseSession *db;
-
-    std::deque<DatabaseRequest *> queue;
-    QReadWriteLock queueMutex;
-    QWaitCondition waitCondition;
-
-    //info
-    int rcnt;
-    std::atomic_int m_rate;
-    QTime infoUpdateTime;
-    bool infoUpdate(bool force);
-    void enqueue(DatabaseRequest *req);
-    void eraseRequests(int count);
-
-signals:
-    void infoChanged();
+private slots:
+    void nodeAvailable(NodeItem *node);
 };
 //=============================================================================
 #endif

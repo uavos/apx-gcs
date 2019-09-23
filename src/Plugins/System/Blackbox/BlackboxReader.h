@@ -20,58 +20,32 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactListModel_H
-#define FactListModel_H
+#ifndef BlackboxReader_H
+#define BlackboxReader_H
 //=============================================================================
-#include <QtCore>
-class Fact;
-class FactBase;
+#include <Fact/Fact.h>
+#include <common/Escaped.h>
+class Vehicle;
+class ProtocolVehicle;
 //=============================================================================
-class FactListModel : public QAbstractListModel
+class BlackboxReader : public Fact, public Escaped
 {
     Q_OBJECT
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    explicit FactListModel(Fact *fact);
+    explicit BlackboxReader(Fact *parent, QString callsign, QString uid);
 
-    typedef QList<QPointer<Fact>> ItemsList;
-
-    QHash<int, QByteArray> roleNames() const;
-
-public slots:
-    void sync();
+    void processData(QByteArray data);
 
 private:
-    QTimer *syncTimer;
+    ProtocolVehicle *protocol;
+    Vehicle *vehicle;
+    quint32 dataCnt;
 
-private slots:
-    void delayedSync();
-
-protected:
-    Fact *fact;
-    ItemsList _items;
-
-    virtual void populate(ItemsList *list, Fact *fact);
-    void connectFact(Fact *fact);
-
-    virtual void syncModel(const ItemsList &list);
-
-    //ListModel override
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-public:
-    Q_INVOKABLE Fact *get(int i) const;
-
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    int count() const;
-
-signals:
-    void countChanged();
+    //esc reader
+    QByteArray esc_input;
+    uint esc_read(uint8_t *buf, uint sz) override;
+    void escError(void) override;
 };
 //=============================================================================
 #endif

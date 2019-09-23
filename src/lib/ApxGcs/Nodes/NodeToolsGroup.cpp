@@ -22,7 +22,6 @@
  */
 #include "NodeToolsGroup.h"
 #include "NodeItem.h"
-#include "NodeToolBlackbox.h"
 //=============================================================================
 NodeToolsGroup::NodeToolsGroup(Fact *parent,
                                NodeItem *node,
@@ -52,13 +51,11 @@ Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, qui
             }
         }
         if (!fg) {
-            if (name.startsWith("bb")) {
-                fg = new NodeToolBlackbox(this, node, sgroup);
-            } else {
-                fg = new NodeToolsGroup(this, node, sgroup, sgroup, "");
-                if (name.startsWith("vm"))
-                    fg->setIcon("code-braces");
-            }
+            fg = new NodeToolsGroup(this, node, sgroup, sgroup, "");
+            if (name.startsWith("bb"))
+                fg->setIcon("database");
+            if (name.startsWith("vm"))
+                fg->setIcon("code-braces");
             registerOnlineAction(fg);
         }
         return fg->addCommand(name, title, descr, cmd);

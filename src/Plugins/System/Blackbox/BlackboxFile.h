@@ -20,58 +20,33 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactListModel_H
-#define FactListModel_H
+#ifndef BlackboxFile_H
+#define BlackboxFile_H
 //=============================================================================
-#include <QtCore>
-class Fact;
-class FactBase;
+#include "BlackboxItem.h"
+#include <Fact/Fact.h>
 //=============================================================================
-class FactListModel : public QAbstractListModel
+class BlackboxFile : public BlackboxItem
 {
     Q_OBJECT
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    explicit FactListModel(Fact *fact);
-
-    typedef QList<QPointer<Fact>> ItemsList;
-
-    QHash<int, QByteArray> roleNames() const;
-
-public slots:
-    void sync();
+    explicit BlackboxFile(Fact *parent);
 
 private:
-    QTimer *syncTimer;
-
-private slots:
-    void delayedSync();
+    QFileInfo fi;
+    QFile file;
 
 protected:
-    Fact *fact;
-    ItemsList _items;
+    void updateStats();
 
-    virtual void populate(ItemsList *list, Fact *fact);
-    void connectFact(Fact *fact);
+private slots:
+    void readNext();
 
-    virtual void syncModel(const ItemsList &list);
-
-    //ListModel override
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-public:
-    Q_INVOKABLE Fact *get(int i) const;
-
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    int count() const;
-
-signals:
-    void countChanged();
+public slots:
+    virtual void getStats();
+    virtual void download();
+    virtual void stop();
 };
 //=============================================================================
 #endif

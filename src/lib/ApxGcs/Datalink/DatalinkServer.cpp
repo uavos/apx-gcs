@@ -32,13 +32,15 @@
 #include <common/ApxTcpPorts.h>
 //=============================================================================
 DatalinkServer::DatalinkServer(Datalink *datalink)
-    : Fact(datalink, "server", tr("Server"), tr("Remote clients connections"), Group | Bool)
+    : Fact(datalink,
+           "server",
+           tr("Server"),
+           tr("Remote clients connections"),
+           Group | Bool | FlatModel,
+           "lan-connect")
     , datalink(datalink)
     , announceString(QString("%1@server.gcs.uavos.com").arg(ApxApp::username()).toUtf8())
 {
-    setIcon("lan-connect");
-    model()->setFlat(true);
-
     AppSettingFact *s_listen = new AppSettingFact(AppSettings::settings(),
                                                   this,
                                                   "listen",

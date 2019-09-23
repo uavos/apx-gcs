@@ -507,11 +507,11 @@ bool NodesXmlImport::readOldFormat(const QDomNode &dom, int fmt)
         nodes.append(nodesItem);
         //ident callsign from modem sn
         if (vuid.isEmpty() && (nodeName == "mhx" || nodeName == "modem")) {
-            QString s = values.value("comment", values.value("name")).toString();
+            QString s = values.value("comment", values.value("name")).toString().trimmed();
             if (!s.contains("gcu", Qt::CaseInsensitive)) {
                 vuid = sn;
                 callsign = nodes_title.isEmpty() ? title : nodes_title;
-                callsign = callsign.simplified();
+                callsign = callsign.simplified().trimmed();
             }
         }
     }

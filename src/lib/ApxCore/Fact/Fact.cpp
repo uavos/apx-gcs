@@ -390,7 +390,7 @@ void Fact::bind(FactData *fact)
     }
     m_bind = qobject_cast<Fact *>(fact);
     if (bind()) {
-        connect(m_bind, &Fact::actionsModelChanged, this, &Fact::actionsModelChanged);
+        //connect(m_bind, &Fact::actionsModelChanged, this, &Fact::actionsModelChanged);
         connect(m_bind, &Fact::statusChanged, this, &Fact::statusChanged);
         connect(m_bind, &Fact::activeChanged, this, &Fact::activeChanged);
         connect(m_bind, &Fact::progressChanged, this, &Fact::progressChanged);
@@ -399,7 +399,7 @@ void Fact::bind(FactData *fact)
         connect(m_bind, &Fact::qmlPageChanged, this, &Fact::qmlPageChanged);
     }
     if (rebind) {
-        emit actionsModelChanged();
+        //emit actionsModelChanged();
         emit statusChanged();
         emit activeChanged();
         emit progressChanged();
@@ -494,8 +494,8 @@ void Fact::setModel(FactListModel *v)
 }
 FactListModelActions *Fact::actionsModel() const
 {
-    if (bind())
-        return bind()->actionsModel();
+    //if (bind())
+    //return bind()->actionsModel();
     return m_actionsModel;
 }
 void Fact::setActionsModel(FactListModelActions *v)
