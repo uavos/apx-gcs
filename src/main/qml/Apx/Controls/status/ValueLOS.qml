@@ -27,7 +27,10 @@ FactValue {
         }
     }
     property var cv
-    Component.onCompleted: cv = apx.vehicles.current
+    Component.onCompleted: {
+        cv = apx.vehicles.current
+        visible=bvisible
+    }
 
     onErrChanged: {
         if(m.errcnt<=0) return
@@ -40,6 +43,11 @@ FactValue {
 
     error: errTimer.running && err>0
     warning: m.RSS>0 && (m.RSS<0.35 || v>70000)
-    visible: ui.test || v>0 || error || warning
     alerts: true
+
+
+    property bool bvisible: ui.test || v>0 || error || warning
+    visible: false
+    onBvisibleChanged: if(bvisible)visible=true
+
 }

@@ -47,7 +47,7 @@ void BlackboxFile::readNext()
 {
     if (!file.isOpen())
         return;
-    reader->processData(file.read(256));
+    reader->processData(file.read(1024));
 
     if (file.atEnd()) {
         apxMsg() << tr("Blackbox import finished");
