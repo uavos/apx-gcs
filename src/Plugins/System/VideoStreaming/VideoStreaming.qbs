@@ -7,6 +7,7 @@ import ApxDeploy
 Project {
 
     ApxApp.ApxPlugin {
+        id: _plugin
 
         Depends {
             name: "Qt";
@@ -69,11 +70,13 @@ Project {
                 cmd.silent = true;
                 cmds.push(cmd);
 
+                var targetName = "VideoStreaming"
+                var targetLibPath = FileInfo.joinPaths(targetPath, "Contents/PlugIns", targetName+".bundle", "Contents/MacOS", targetName);
                 cmd = new Command("install_name_tool",
                                   [
                                       "-change", "/Library/Frameworks/GStreamer.framework/Versions/1.0/lib/GStreamer",
                                       "@rpath/GStreamer.framework/Versions/1.0/lib/GStreamer",
-                                      targetPath+"/Contents/PlugIns/streaming.bundle/Contents/MacOS/streaming",
+                                      targetLibPath,
                                   ]);
                 cmd.silent = true;
                 cmds.push(cmd);
