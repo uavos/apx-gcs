@@ -98,16 +98,33 @@ void Simulator::detectXplane()
             apxConsoleW() << "Can't open file for reading:" << file.fileName();
             continue;
         }
-        QDir dir(file.readLine().trimmed());
-        if (!dir.exists()) {
-            apxConsoleW() << "Error reading X-Plane config:" << file.fileName()
-                          << dir.absolutePath();
-            continue;
+        QString xpath;
+        while (!file.atEnd()) {
+            QString s = file.readLine().trimmed();
+            if (s.isEmpty())
+                continue;
+            QDir dir(s);
+            if (!dir.exists())
+                continue;
+            xpath = dir.absolutePath();
+            xplaneDirs.append(xpath);
+            s = QString("XPlane %1").arg(ver);
+            if (!st.contains(s)) {
+                st.append(s);
+                continue;
+            }
+            int n = 2;
+            QString sn = s;
+            while (st.contains(sn)) {
+                sn = QString("%1 (%2)").arg(s).arg(n++);
+            }
+            st.append(sn);
         }
-        xplaneDirs.append(dir.absolutePath());
-        st.append(QString("XPlane %1").arg(ver));
+        if (xpath.isEmpty()) {
+            apxConsoleW() << "Error reading X-Plane config:" << file.fileName() << xpath;
+        }
     }
-    //qDebug()<<st<<xplaneDirs;
+    //qDebug() << st << xplaneDirs;
     f_type->setEnumStrings(st);
     if (st.isEmpty())
         f_type->setEnabled(false);
