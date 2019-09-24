@@ -32,13 +32,13 @@ Item {
             spacing: vehiclesList.spacing
             VehicleButton {
                 enabled: true
-                vehicle: apx.vehicles.LOCAL
+                vehicle: apx.vehicles.local
                 menuFact: apx
 
             }
             VehicleButton {
                 enabled: true
-                vehicle: apx.vehicles.REPLAY
+                vehicle: apx.vehicles.replay
                 menuFact: vehicle
 
             }

@@ -72,13 +72,13 @@ RowLayout {
     //simulator
     Loader {
         asynchronous: true
-        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.Simulator)!=='undefined' && (apx.vehicles.current===apx.vehicles.LOCAL || apx.tools.Simulator.stop.enabled)
+        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (apx.vehicles.current.isLocal() || apx.tools.simulator.stop.enabled)
         sourceComponent: Component {
             CleanButton {
-                iconName: apx.tools.Simulator.icon
+                iconName: apx.tools.simulator.icon
                 implicitHeight: control.height
-                toolTip: apx.tools.Simulator.descr
-                onTriggered: apx.tools.Simulator.requestMenu()
+                toolTip: apx.tools.simulator.descr
+                onTriggered: apx.tools.simulator.requestMenu()
             }
         }
         visible: status===Loader.Ready
@@ -87,7 +87,7 @@ RowLayout {
     Loader {
         Layout.fillHeight: true
         asynchronous: true
-        active: apx.vehicles.current===apx.vehicles.REPLAY
+        active: apx.vehicles.current.isReplay()
         sourceComponent: Component { TelemetryReader { } }
         visible: status===Loader.Ready
     }

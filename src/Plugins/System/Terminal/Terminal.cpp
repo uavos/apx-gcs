@@ -32,7 +32,7 @@ static QtMessageHandler messageHandlerChain;
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 //=============================================================================
 Terminal::Terminal(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Terminal"), tr("System terminal"), Group)
+    : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Terminal"), tr("System terminal"), Group)
 {
     setIcon("console-line");
     setQmlPage("qrc:/" PLUGIN_NAME "/Terminal.qml");

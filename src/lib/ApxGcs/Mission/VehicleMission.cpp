@@ -59,7 +59,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
             emit missionAvailable();
     });
 
-    f_title = new MissionField(this, "missionTitle", tr("Title"), tr("Mission title"), Text);
+    f_title = new MissionField(this, "mission_title", tr("Title"), tr("Mission title"), Text);
 
     connect(f_title, &Fact::textChanged, this, &VehicleMission::updateStatus);
     connect(this, &VehicleMission::missionSizeChanged, this, &VehicleMission::updateStatus);

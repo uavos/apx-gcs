@@ -79,6 +79,9 @@ void AppEngine::jsSyncObject(QObject *obj)
 void AppEngine::jsSync(Fact *fact)
 {
     //qDebug()<<item;
+    if (fact->name().isEmpty())
+        return;
+
     QList<FactBase *> list = fact->pathList();
     QJSValue v = globalObject();
     //build tree from root
@@ -98,8 +101,11 @@ void AppEngine::jsSync(Fact *fact)
 QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 {
     //qDebug()<<fact->path();
+    if (fact->name().isEmpty())
+        return QJSValue();
     QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);
     QJSValue js_fact = newQObject(fact);
+
     jsSetProperty(parent, fact->name(), js_fact);
 
     //sync children

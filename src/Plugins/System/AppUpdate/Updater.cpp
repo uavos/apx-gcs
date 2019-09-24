@@ -28,7 +28,11 @@
 #include "sparkle/SparkleAutoUpdater.h"
 //=============================================================================
 Updater::Updater(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Check for updates"), tr("Update application"), Group)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Check for updates"),
+           tr("Update application"),
+           Group)
     , sparkle(nullptr)
 {
     f_auto = new AppSettingFact(AppSettings::settings(),

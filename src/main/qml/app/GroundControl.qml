@@ -92,7 +92,7 @@ Item {
         height: instrumentsHeight
     }
 
-    function addBackground(item)
+    function addMainItem(item)
     {
         item.parent=containerMain
         item.anchors.fill=containerMain
@@ -115,15 +115,6 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.maximumHeight: instrumentsHeight
-                Loader {
-                    active: visible
-                    visible: showPfd
-                    asynchronous: true
-                    sourceComponent: Component { Pfd { } }
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: instrumentsHeight*pfdAspectRatio
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
 
                 Loader {
                     active: visible
@@ -139,6 +130,16 @@ Item {
 
                 Loader {
                     active: visible
+                    visible: showPfd
+                    asynchronous: true
+                    sourceComponent: Component { Pfd { } }
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: instrumentsHeight*pfdAspectRatio
+                }
+                Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
+
+                Loader {
+                    active: visible
                     visible: showNumbers
                     asynchronous: true
                     sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
@@ -151,9 +152,9 @@ Item {
 
                 Loader {
                     active: visible
-                    visible: apx.tools.Terminal?true:false
+                    visible: apx.tools.terminal?true:false
                     asynchronous: true
-                    source: apx.tools.Terminal.qmlPage
+                    source: apx.tools.terminal.qmlPage
                     Layout.fillHeight: true
                     Layout.fillWidth: false
                 }

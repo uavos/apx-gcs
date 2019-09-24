@@ -25,7 +25,7 @@ Item {
     property bool showWind: showVehicleNav
     property bool showScale: showVehicleNav
 
-    property var mapPlugin: apx.tools.MapView
+    property var mapPlugin: apx.tools.mapview
 
     Item {
         id: mapControlsItem
@@ -223,7 +223,7 @@ Item {
             Loader {
                 active: showVehicles
                 asynchronous: true
-                Component.onCompleted: setSource("vehicle/VehicleItem.qml",{"vehicle": apx.vehicles.LOCAL, "z": z})
+                Component.onCompleted: setSource("vehicle/VehicleItem.qml",{"vehicle": apx.vehicles.local, "z": z})
                 onLoaded: {
                     item.z=200
                     map.addMapItem(item)
@@ -234,7 +234,7 @@ Item {
             Loader {
                 active: showVehicles
                 asynchronous: true
-                Component.onCompleted: setSource("vehicle/VehicleItem.qml",{"vehicle": apx.vehicles.REPLAY, "z": z})
+                Component.onCompleted: setSource("vehicle/VehicleItem.qml",{"vehicle": apx.vehicles.replay, "z": z})
                 onLoaded: {
                     item.z=201
                     map.addMapItem(item)

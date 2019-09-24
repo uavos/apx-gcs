@@ -8,8 +8,8 @@ MapItemGroup {
     id: control
 
     property var map: ui.map
-    property var area: apx.tools.MapView.area
-    property var plugin: apx.tools.KmlOverlay
+    property var area: apx.tools.mapview.area
+    property var plugin: apx.tools.kmloverlay
     property var kmlCenter: plugin.center
     onKmlCenterChanged: {
         ui.map.centerOn(kmlCenter)

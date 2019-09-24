@@ -27,7 +27,11 @@
 #include <Fact/Fact.h>
 //=============================================================================
 Sounds::Sounds(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Sounds"), tr("Sound effects and speech"), Group | Bool)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Sounds"),
+           tr("Sound effects and speech"),
+           Group | Bool)
     , effect(nullptr)
     , lastEffect(nullptr)
     , tts(nullptr)

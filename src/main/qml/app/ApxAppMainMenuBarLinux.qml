@@ -8,13 +8,13 @@ MenuBar {
         id: fileMenu
         title: qsTr("File")
         MenuItem {
-            property var fact: apx.vehicles.REPLAY.telemetry.share.imp
+            property var fact: apx.vehicles.replay.telemetry.share.imp
             text: fact.descr
             action: Action { shortcut: StandardKey.Open }
             onTriggered: fact.trigger()
         }
         MenuItem {
-            property var fact: apx.vehicles.REPLAY.nodes.share.imp
+            property var fact: apx.vehicles.replay.nodes.share.imp
             text: fact.descr
             onTriggered: fact.trigger()
         }

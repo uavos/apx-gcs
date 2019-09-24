@@ -8,7 +8,7 @@ ColumnLayout {
     spacing: 0
     anchors.margins: 3
 
-    property var terminal: apx.tools.Terminal
+    property var terminal: apx.tools.terminal
 
     ListView {
         id: listView

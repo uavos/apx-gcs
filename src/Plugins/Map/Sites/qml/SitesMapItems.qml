@@ -8,7 +8,7 @@ MapItemGroup {
     id: places
     property bool showPlaces: apx.tools && sites
     property var map: ui.map
-    property var sites: apx.tools.Sites
+    property var sites: apx.tools.sites
 
     z: 1
 

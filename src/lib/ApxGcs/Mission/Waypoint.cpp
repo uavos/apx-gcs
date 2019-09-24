@@ -27,7 +27,7 @@
 #include <ApxApp.h>
 //=============================================================================
 Waypoint::Waypoint(MissionGroup *parent)
-    : MissionItem(parent, "W#", "", tr("Waypoint"))
+    : MissionItem(parent, "w#", "", tr("Waypoint"))
     , icourse(0)
     , m_reachable(false)
     , m_warning(false)

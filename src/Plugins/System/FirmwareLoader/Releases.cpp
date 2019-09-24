@@ -151,12 +151,12 @@ void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
             f_ng = new Fact(fact, st.at(0), "", "", Group);
         Fact *f_hw = f_ng->child(st.at(1));
         if (!f_hw)
-            f_hw = new Fact(f_ng, st.at(1), "", "", Group);
+            f_hw = new Fact(f_ng, st.at(1).toLower(), st.at(1), "", Group);
 
         bool bLoader = st.contains("loader");
 
         Fact *f = new Fact(f_hw,
-                           fi.completeBaseName(),
+                           fi.completeBaseName().toLower(),
                            QString("%1: %2").arg(f_ng->title()).arg(f_hw->title()),
                            fi.completeBaseName());
         f->setStatus(bLoader ? "LOADER" : "FIRMWARE");

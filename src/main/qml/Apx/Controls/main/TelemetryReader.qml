@@ -7,15 +7,15 @@ import Apx.Menu 1.0
 RowLayout {
     id: control
     CleanButton {
-        iconName: apx.vehicles.REPLAY.telemetry.player.icon
+        iconName: apx.vehicles.replay.telemetry.player.icon
         //implicitHeight: control.height
         Layout.fillHeight: true
-        toolTip: apx.vehicles.REPLAY.telemetry.player.descr
-        onTriggered: apx.vehicles.REPLAY.telemetry.requestMenu()
+        toolTip: apx.vehicles.replay.telemetry.player.descr
+        onTriggered: apx.vehicles.replay.telemetry.requestMenu()
     }
 
     FactButton {
-        fact: apx.vehicles.REPLAY.telemetry.reader
+        fact: apx.vehicles.replay.telemetry.reader
         Layout.fillHeight: true
         expandable: false
         //implicitHeight: 18

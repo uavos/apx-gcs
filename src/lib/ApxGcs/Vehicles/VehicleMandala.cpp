@@ -105,7 +105,7 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
 VehicleMandalaFact *VehicleMandala::registerFact(
     quint16 id, const QString &name, const QString &descr, const QString &units, Flags flags)
 {
-    VehicleMandalaFact *f = new VehicleMandalaFact(this, id, name, "", descr, units, flags);
+    VehicleMandalaFact *f = new VehicleMandalaFact(this, id, name, name, descr, units, flags);
     factByIdMap[id] = f;
     allFacts.append(f);
     names.append(name);

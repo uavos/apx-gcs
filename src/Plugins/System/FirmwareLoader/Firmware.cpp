@@ -35,7 +35,12 @@ APX_LOGGING_CATEGORY(FirmwareLog, "core.Firmware")
 //=============================================================================
 Firmware *Firmware::_instance = nullptr;
 Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
-    : Fact(parent, PLUGIN_NAME, tr("Firmware"), tr("Firmware updates"), Group | FlatModel, "update")
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Firmware"),
+           tr("Firmware updates"),
+           Group | FlatModel,
+           "update")
     , protocol(protocol)
 {
     _instance = this;

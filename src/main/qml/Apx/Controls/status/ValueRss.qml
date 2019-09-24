@@ -8,7 +8,7 @@ FactValue {
     title: qsTr("RSS")
     descr: m.RSS.descr+"\n"+gcs_m.gcu_RSS.descr
 
-    property var gcs_m: apx.vehicles.LOCAL.mandala
+    property var gcs_m: apx.vehicles.local.mandala
     property real value1: Math.min(1,m.RSS.value)
     property real value2: Math.min(1,gcs_m.gcu_RSS.value)
 

@@ -6,7 +6,7 @@ import QtQml 2.12
 Item {
     id: mapBusy
 
-    property var fact: apx.tools?apx.tools.Location:null
+    property var fact: apx.tools?apx.tools.location:null
     property int value: fact?fact.requestCount:0
 
     visible: value>0

@@ -49,7 +49,7 @@ MapPolyline {
 
     Connections {
         enabled: replay
-        target: apx.vehicles.REPLAY.telemetry.reader
+        target: apx.vehicles.replay.telemetry.reader
         onTriggered: showRegion()
     }
     Component.onCompleted: updatePath()

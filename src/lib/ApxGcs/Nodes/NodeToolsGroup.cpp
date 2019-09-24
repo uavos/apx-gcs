@@ -29,7 +29,7 @@ NodeToolsGroup::NodeToolsGroup(Fact *parent,
                                const QString &title,
                                const QString &descr,
                                Flags flags)
-    : Fact(parent, name, title, descr, flags)
+    : Fact(parent, name.toLower(), title, descr, flags)
     , node(node)
 {}
 //=============================================================================

@@ -8,7 +8,7 @@ AppPlugin {
     id: plugin
     sourceComponent: Video {
         id: video
-        visible: apx.tools.VideoStreaming.show_window.value
+        visible: apx.tools.videostreaming.show_window.value
     }
     state: "none"
 

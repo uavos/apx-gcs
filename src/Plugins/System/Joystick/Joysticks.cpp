@@ -36,7 +36,7 @@ static int sdlWaitEvent()
 //=============================================================================
 Joysticks::Joysticks(Fact *parent)
     : Fact(parent,
-           PLUGIN_NAME,
+           QString(PLUGIN_NAME).toLower(),
            tr("Joystick"),
            tr("Hardware input devices"),
            Group | Bool | FlatModel)

@@ -22,7 +22,7 @@ Rectangle {
 
     anchors.fill: parent
 
-    readonly property var stream: apx.tools.VideoStreaming
+    readonly property var stream: apx.tools.videostreaming
     readonly property bool running: stream?stream.tune.running.value:false
     readonly property bool recording: stream?stream.tune.record.value:false
 

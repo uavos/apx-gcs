@@ -29,7 +29,7 @@
 AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
     : AppSettingFact(AppSettings::settings(),
                      parent,
-                     plugin->name,
+                     plugin->name.toLower(),
                      plugin->interface->title(),
                      plugin->interface->descr(),
                      Bool,

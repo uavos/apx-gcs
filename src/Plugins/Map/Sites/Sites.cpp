@@ -25,7 +25,7 @@
 #include <Database/MissionsDB.h>
 //=============================================================================
 Sites::Sites(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Sites"), tr("Geographic objects"), Group)
+    : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Sites"), tr("Geographic objects"), Group)
     , f_edit(nullptr)
 {
     setIcon("city");
@@ -47,7 +47,7 @@ void Sites::appLoaded()
 {
     //qDebug()<<"appLoaded";
     //add menus to map tools plugin
-    Fact *fMapAdd = AppRoot::instance()->findChild("apx.tools.MapView.add");
+    Fact *fMapAdd = AppRoot::instance()->findChild("apx.tools.mapview.add");
     if (!fMapAdd)
         return;
     //create tool for map

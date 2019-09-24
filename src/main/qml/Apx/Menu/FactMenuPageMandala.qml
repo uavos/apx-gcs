@@ -8,7 +8,7 @@ import Apx.Common 1.0
 
 FactMenuListView {
     id: listView
-    property var mandala: apx.vehicles.LOCAL.mandala
+    property var mandala: apx.vehicles.local.mandala
     property var parentFact: fact
     property string filter: ""
 

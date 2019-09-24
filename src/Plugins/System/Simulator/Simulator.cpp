@@ -28,7 +28,11 @@
 APX_LOGGING_CATEGORY(SimLog, "Simulator")
 //=============================================================================
 Simulator::Simulator(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Simulator"), tr("Software in the loop simulation"), Group)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Simulator"),
+           tr("Software in the loop simulation"),
+           Group)
 {
     setIcon("fan");
     //parent->insertIntoSection(FactSystem::ApplicationSection,this);

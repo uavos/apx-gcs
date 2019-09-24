@@ -91,7 +91,8 @@ public:
     Q_INVOKABLE int indexOfChild(FactBase *item) const;
 
     Q_INVOKABLE FactBase *child(int n) const;
-    Q_INVOKABLE FactBase *child(const QString &name) const;
+    Q_INVOKABLE FactBase *child(const QString &name,
+                                Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
 
     Q_INVOKABLE QString path(const QChar pathDelimiter = QChar('.')) const;
 

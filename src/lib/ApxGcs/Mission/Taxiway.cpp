@@ -25,7 +25,7 @@
 #include <ApxApp.h>
 //=============================================================================
 Taxiway::Taxiway(MissionGroup *parent)
-    : MissionItem(parent, "T#", "", tr("Taxiway"))
+    : MissionItem(parent, "t#", "", tr("Taxiway"))
 {
     //title
     connect(this, &Taxiway::distanceChanged, this, &Taxiway::updateTitle);

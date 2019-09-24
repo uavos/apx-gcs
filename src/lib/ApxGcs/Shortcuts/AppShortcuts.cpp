@@ -49,17 +49,17 @@ AppShortcuts::AppShortcuts(Fact *parent)
     QString sect;
     sect = tr("User");
 
-    f_allonUsr = new Fact(this, "allonUsr", tr("Enable all"), tr("Turn on all shortcuts"));
+    f_allonUsr = new Fact(this, "allon_usr", tr("Enable all"), tr("Turn on all shortcuts"));
     f_allonUsr->setSection(sect);
-    f_alloffUsr = new Fact(this, "alloffUsr", tr("Disable all"), tr("Turn off all shortcuts"));
+    f_alloffUsr = new Fact(this, "alloff_usr", tr("Disable all"), tr("Turn off all shortcuts"));
     f_alloffUsr->setSection(sect);
     f_usr = new Fact(this, "user", sect, tr("User defined shortcuts"), Section);
     f_usr->setSection(sect);
 
     sect = tr("System");
-    f_allonSys = new Fact(this, "allonSys", tr("Enable all"), tr("Turn on all shortcuts"));
+    f_allonSys = new Fact(this, "allon_sys", tr("Enable all"), tr("Turn on all shortcuts"));
     f_allonSys->setSection(sect);
-    f_alloffSys = new Fact(this, "alloffSys", tr("Disable all"), tr("Turn off all shortcuts"));
+    f_alloffSys = new Fact(this, "alloff_sys", tr("Disable all"), tr("Turn off all shortcuts"));
     f_alloffSys->setSection(sect);
     f_sys = new Fact(this, "system", sect, tr("System default shortcuts"), Section);
     f_sys->setSection(sect);

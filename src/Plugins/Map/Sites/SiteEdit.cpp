@@ -75,7 +75,7 @@ SiteEdit::SiteEdit(Fact *parent,
 void SiteEdit::reset()
 {
     modelData.remove("title");
-    QGeoCoordinate c(ApxApp::propertyValue<QGeoCoordinate>("apx.tools.MapView.clickCoordinate"));
+    QGeoCoordinate c(ApxApp::propertyValue<QGeoCoordinate>("apx.tools.mapview.clickCoordinate"));
     modelData["lat"] = c.latitude();
     modelData["lon"] = c.longitude();
     loadFromModelData();

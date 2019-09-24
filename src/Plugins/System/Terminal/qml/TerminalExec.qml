@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
+
 //import APX.Terminal 1.0
 
 
@@ -15,7 +16,7 @@ Rectangle{
     readonly property string pdel: "> "
     readonly property string prefix: user+pdel
 
-    property var terminal: apx.tools.Terminal
+    property var terminal: apx.tools.terminal
 
     signal focused()
 

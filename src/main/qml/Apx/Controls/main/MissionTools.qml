@@ -59,9 +59,9 @@ RowLayout {
         onTriggered: fact.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }
     FactMenuAction {
-        fact: mission.missionTitle
+        fact: mission.mission_title
         title: fact.descr
-        visible: (!mission.empty) && mission.missionTitle.text===""
+        visible: (!mission.empty) && mission.mission_title.text===""
         onTriggered: mission.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }
 }

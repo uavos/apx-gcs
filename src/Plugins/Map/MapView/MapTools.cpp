@@ -28,7 +28,7 @@
 //=============================================================================
 MapTools::MapTools(Fact *parent)
     : Fact(parent,
-           PLUGIN_NAME,
+           QString(PLUGIN_NAME).toLower(),
            tr("Map tools"),
            tr("Mission planner map tools"),
            Group | FlatModel,

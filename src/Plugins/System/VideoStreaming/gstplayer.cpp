@@ -12,7 +12,11 @@
 using namespace std::placeholders;
 
 GstPlayer::GstPlayer(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Video"), tr("Camera link and streaming"), Group)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Video"),
+           tr("Camera link and streaming"),
+           Group)
 {
     if (!ApxDirs::images().exists())
         ApxDirs::images().mkpath(ApxDirs::images().absolutePath());

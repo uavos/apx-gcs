@@ -31,7 +31,12 @@
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 Blackbox::Blackbox(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Blackbox"), tr("Blackbox data downloader"), Group, "dropbox")
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Blackbox"),
+           tr("Blackbox data downloader"),
+           Group,
+           "dropbox")
 {
     connect(Vehicles::instance(), &Vehicles::nodeAvailable, this, &Blackbox::nodeAvailable);
 

@@ -6,7 +6,11 @@
 #include <QFileDialog>
 
 KmlOverlay::KmlOverlay(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("KML Overlay"), tr("KML objects overlay"), Group)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("KML Overlay"),
+           tr("KML objects overlay"),
+           Group)
     , m_kmlPolygons(new KmlPolygonsModel())
 {
     KmlGeoPolygon::registerQmlType();

@@ -91,7 +91,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             s = tr("Forward to AUX ports");
             break;
         }
-        Fact *f = new Fact(f_routing, "rx_" + key, key, s, Bool);
+        Fact *f = new Fact(f_routing, "rx_" + key.toLower(), key, s, Bool);
         f->setSection(tr("Receive network"));
         connect(f, &Fact::valueChanged, this, &DatalinkPort::updateRoutingValue);
         f_rx.append(f);
@@ -117,7 +117,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             s = tr("Transmit data from AUX ports");
             break;
         }
-        Fact *f = new Fact(f_routing, "tx_" + key, key, s, Bool);
+        Fact *f = new Fact(f_routing, "tx_" + key.toLower(), key, s, Bool);
         f->setSection(tr("Transmit network"));
         connect(f, &Fact::valueChanged, this, &DatalinkPort::updateRoutingValue);
         f_tx.append(f);

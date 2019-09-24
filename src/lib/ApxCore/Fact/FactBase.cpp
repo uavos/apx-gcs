@@ -162,8 +162,10 @@ QString FactBase::makeNameUnique(const QString &s)
                      .replace('?', '_')
                      .replace('-', '_')
                      .replace('+', '_');
+
     if (!parentFact())
         return sr;
+
     int i = 0;
     nameSuffix = QString();
     QString suffix;
@@ -205,11 +207,12 @@ int FactBase::indexInParent() const
     return parentFact() ? parentFact()->indexOfChild(const_cast<FactBase *>(this)) : -1;
 }
 //=============================================================================
-FactBase *FactBase::child(const QString &name) const
+FactBase *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
 {
     for (int i = 0; i < m_children.size(); ++i) {
         FactBase *item = child(i);
-        if (item && (item->objectName() == name || item->name() == name))
+        if (item
+            && (item->objectName().compare(name, cs) == 0 || item->name().compare(name, cs) == 0))
             return item;
     }
     return nullptr;

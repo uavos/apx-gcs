@@ -27,7 +27,7 @@
 #include <ApxApp.h>
 //=============================================================================
 Runway::Runway(MissionGroup *parent)
-    : MissionItem(parent, "R#", "", tr("Runway"))
+    : MissionItem(parent, "r#", "", tr("Runway"))
 {
     f_type = new MissionField(this, "type", tr("Type"), tr("Landing pattern type"), Enum);
     f_type->setEnumStrings(QMetaEnum::fromType<RunwayType>());

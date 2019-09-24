@@ -9,13 +9,13 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
         Menu {
             title: qsTr("File")
             MenuItem {
-                property var fact: apx.vehicles.REPLAY.telemetry.share.imp
+                property var fact: apx.vehicles.replay.telemetry.share.imp
                 text: fact.descr
                 shortcut: StandardKey.Open
                 onTriggered: fact.trigger()
             }
             MenuItem {
-                property var fact: apx.vehicles.REPLAY.nodes.share.imp
+                property var fact: apx.vehicles.replay.nodes.share.imp
                 text: fact.descr
                 onTriggered: fact.trigger()
             }

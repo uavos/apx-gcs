@@ -54,7 +54,9 @@ void AppPlugins::load(const QStringList &names)
     foreach (QString fileName, userp.entryList(filters, QDir::Files)) {
         if (fileName.startsWith('-'))
             continue;
-        QString pname = QString(fileName).remove("lib");
+        QString pname = QString(fileName);
+        if (pname.startsWith("lib"))
+            pname.remove(0, 3);
         if (!pname.endsWith(".qml")) {
             pname.truncate(pname.lastIndexOf('.'));
             stRep.append(pname);
@@ -110,7 +112,10 @@ void AppPlugins::load(const QStringList &names)
         QStringList st;
         foreach (QString pname, names) {
             foreach (QString fname, allFiles) {
-                if (QFileInfo(fname).baseName().remove("lib") != pname)
+                QString s = QFileInfo(fname).baseName();
+                if (s.startsWith("lib"))
+                    s.remove(0, 3);
+                if (s != pname)
                     continue;
                 st.append(fname);
             }
@@ -151,7 +156,9 @@ void AppPlugins::loadFiles(const QStringList &fileNames)
     st.beginGroup("plugins");
     QStringList loadedNames;
     foreach (QString fileName, fileNames) {
-        QString pname = QFileInfo(fileName).baseName().remove("lib");
+        QString pname = QFileInfo(fileName).baseName();
+        if (pname.startsWith("lib"))
+            pname.remove(0, 3);
         if (loadedNames.contains(pname)) {
             apxMsgW() << tr("Duplicate plugin").append(":") << pname;
             continue;
@@ -184,8 +191,8 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
 {
     AppSettingFact *f = new AppSettingFact(AppSettings::settings(),
                                            plugins->f_enabled,
+                                           name.toLower(),
                                            name,
-                                           "",
                                            "",
                                            Fact::Bool,
                                            true);
@@ -289,7 +296,7 @@ void AppPlugin::loadLib()
 void AppPlugin::loadQml()
 {
     f_enabled->setSection(tr("Controls"));
-    Fact *f = new Fact(nullptr, name, "", "", Fact::Group);
+    Fact *f = new Fact(nullptr, name.toLower(), name, "", Fact::Group);
     f->setQmlPage(fileName);
     control = f;
     plugins->loadedControl(this);

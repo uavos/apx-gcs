@@ -29,7 +29,7 @@ QueueItem::QueueItem(Fact *parent,
                      const QString &hw,
                      const QString &ver,
                      Firmware::UpgradeType type)
-    : Fact(parent, sn, "", "")
+    : Fact(parent, QString("fw_%1").arg(sn), "", "")
     , nodeName(nodeName)
     , nodeDescr(nodeDescr)
     , sn(sn)

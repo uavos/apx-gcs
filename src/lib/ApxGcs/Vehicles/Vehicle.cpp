@@ -42,7 +42,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
                  QString uid,
                  VehicleClass vclass,
                  ProtocolVehicle *protocol)
-    : Fact(vclass >= LOCAL ? vehicles : vehicles->f_list, callsign, callsign, "", Group)
+    : Fact(vclass >= LOCAL ? vehicles : vehicles->f_list, callsign.toLower(), callsign, "", Group)
     , uid(uid)
     , dbKey(0)
     , protocol(protocol)
