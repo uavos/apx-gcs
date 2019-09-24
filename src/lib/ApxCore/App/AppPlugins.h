@@ -69,7 +69,11 @@ public:
     ApxPluginInterface *interface;
     QObject *control;
     QPluginLoader *loader;
+    QStringList depends;
 
+private:
+    void loadLib();
+    void loadQml();
 private slots:
     void enabledChanged();
 };
