@@ -71,6 +71,8 @@ public:
     QPluginLoader *loader;
     QStringList depends;
 
+    QString section;
+
 private:
     void loadLib();
     void loadQml();

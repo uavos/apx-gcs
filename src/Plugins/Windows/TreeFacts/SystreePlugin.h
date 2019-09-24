@@ -36,7 +36,7 @@ class SystreePlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new FactTreeWidget(AppRoot::instance(), true, true); }
-    int flags() { return WidgetPlugin; }
+    int flags() { return Widget; }
     QString title() { return tr("System tree"); }
     QString descr() { return tr("Application tree view"); }
     QString icon() { return "file-tree"; }

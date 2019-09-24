@@ -44,7 +44,7 @@ AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
     saveStateTimer.setInterval(100);
     connect(&saveStateTimer, &QTimer::timeout, this, &AppWindow::saveStateDo);
 
-    if (!(plugin->interface->flags() & ApxPluginInterface::PluginRestore)) {
+    if (!(plugin->interface->flags() & ApxPluginInterface::Restore)) {
         load();
         setValue(false);
     }
@@ -232,6 +232,6 @@ void AppWindow::restoreState()
 //=============================================================================
 bool AppWindow::showLauncher()
 {
-    return plugin->interface->flags() & ApxPluginInterface::PluginLauncher;
+    return plugin->interface->flags() & ApxPluginInterface::Launcher;
 }
 //=============================================================================

@@ -34,7 +34,7 @@ class TelemetryPlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new TelemetryFrame(); }
-    int flags() { return WidgetPlugin | PluginRestore | PluginLauncher; }
+    int flags() { return Widget | Restore | Launcher; }
     QString title() { return tr("Telemetry"); }
     QString descr() { return tr("Recorded data chart"); }
     QString icon() { return "chart-line"; }

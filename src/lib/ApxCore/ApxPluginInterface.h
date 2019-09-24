@@ -32,12 +32,17 @@ public:
 
     enum PluginFlags {
         //Plugin type
-        FeaturePlugin = 0x0000, //called init() and createControl(), Fact added to Tools
-        WidgetPlugin = 0x0001,  //window created on demand
+        Feature = 0x0000, //called init() and createControl(), Fact added to Tools
+        Widget = 0x0001,  //window created on demand
         PluginTypeMask = 0x0007,
         //Options
-        PluginRestore = 0x0100,  //restore window on startup
-        PluginLauncher = 0x0200, //show quick launcher icon on main screen
+        Restore = 1 << 4,  //restore window on startup
+        Launcher = 2 << 4, //show quick launcher icon on main screen
+        //Tools Sections
+        PluginSectionMask = 0xF << 16,
+        System = 1 << 16,
+        Tool = 2 << 16,
+        Map = 3 << 16,
     };
 
     // called after loading when enabled in preferences
@@ -46,7 +51,7 @@ public:
     // called if FeaturePlugin on demand to create Fact or QWidget
     virtual QObject *createControl() { return nullptr; }
 
-    virtual int flags() { return FeaturePlugin; }
+    virtual int flags() { return Feature; }
     virtual QString title() { return QString(); }
     virtual QString descr() { return QString(); }
     virtual QString icon() { return QString(); }

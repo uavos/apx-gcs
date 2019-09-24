@@ -34,7 +34,7 @@ class ServosPlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new ServosForm(); }
-    int flags() { return WidgetPlugin; }
+    int flags() { return Widget; }
     QString title() { return tr("Generic Servo config"); }
     QString descr() { return tr("Addressing and testing"); }
     QString icon() { return "screwdriver"; }

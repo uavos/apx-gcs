@@ -241,6 +241,22 @@ void AppPlugin::loadLib()
         apxConsole() << tr("Initializing").append(":") << name;
     }
 
+    //define section
+    switch (p->flags() & ApxPluginInterface::PluginSectionMask) {
+    default:
+        section = tr("Other");
+        break;
+    case ApxPluginInterface::System:
+        section = tr("System features");
+        break;
+    case ApxPluginInterface::Tool:
+        section = tr("Tools");
+        break;
+    case ApxPluginInterface::Map:
+        section = tr("Map view features");
+        break;
+    }
+
     //initialize lib
     p->init();
     QString title = p->title();
@@ -248,7 +264,7 @@ void AppPlugin::loadLib()
     switch (p->flags() & ApxPluginInterface::PluginTypeMask) {
     default:
         break;
-    case ApxPluginInterface::FeaturePlugin: {
+    case ApxPluginInterface::Feature: {
         control = p->createControl();
         Fact *f = qobject_cast<Fact *>(control);
         if (!f)
@@ -257,11 +273,11 @@ void AppPlugin::loadLib()
             title = f->title();
         if (descr.isEmpty())
             descr = f->descr();
-        f_enabled->setSection(tr("Tools"));
+        f_enabled->setSection(section);
         descr.prepend(tr("Tool").append(": "));
         plugins->loadedTool(this);
     } break;
-    case ApxPluginInterface::WidgetPlugin: {
+    case ApxPluginInterface::Widget: {
         f_enabled->setSection(tr("Windows"));
         descr.prepend(tr("Window").append(": "));
         plugins->loadedWindow(this);

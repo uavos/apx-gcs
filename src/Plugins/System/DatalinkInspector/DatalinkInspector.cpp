@@ -20,31 +20,47 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Terminal.h"
+#include "DatalinkInspector.h"
 #include <ApxApp.h>
 #include <ApxLog.h>
 #include <QDesktopServices>
 #include <QQmlEngine>
 #define MAX_HISTORY 50
 //=============================================================================
-static Terminal *terminal;
+static DatalinkInspector *terminal;
 static QtMessageHandler messageHandlerChain;
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 //=============================================================================
-Terminal::Terminal(Fact *parent)
-    : Fact(parent, "terminal", tr("Terminal"), tr("System terminal"), Group)
+DatalinkInspector::DatalinkInspector(Fact *parent)
+    : Fact(parent,
+           PLUGIN_NAME,
+           tr("DatalinkInspector"),
+           tr("Serial data analyzer"),
+           Group,
+           "swap-vertical")
 {
-    setIcon("console-line");
-    setQmlPage("qrc:/terminal/Terminal.qml");
+    setQmlPage("qrc:/" PLUGIN_NAME "/DatalinkInspector.qml");
 
-    _model = new TerminalListModel(this);
-    connect(this, &Terminal::newMessage, _model, &TerminalListModel::append, Qt::QueuedConnection);
+    _model = new DatalinkInspectorListModel(this);
+    connect(this,
+            &DatalinkInspector::newMessage,
+            _model,
+            &DatalinkInspectorListModel::append,
+            Qt::QueuedConnection);
 
     _history = QSettings().value("consoleHistory").toStringList();
     historyReset();
 
-    qmlRegisterUncreatableType<Terminal>("APX.Terminal", 1, 0, "Terminal", "Reference only");
-    qmlRegisterUncreatableType<TerminalListModel>("APX.Terminal", 1, 0, "Terminal", "Reference only");
+    qmlRegisterUncreatableType<DatalinkInspector>("APX.DatalinkInspector",
+                                                  1,
+                                                  0,
+                                                  "DatalinkInspector",
+                                                  "Reference only");
+    qmlRegisterUncreatableType<DatalinkInspectorListModel>("APX.DatalinkInspector",
+                                                           1,
+                                                           0,
+                                                           "DatalinkInspector",
+                                                           "Reference only");
 
     terminal = this;
     messageHandlerChain = qInstallMessageHandler(messageHandler);
@@ -58,9 +74,9 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     terminal->handleMessage(type, context, message);
 }
 //============================================================================
-void Terminal::handleMessage(QtMsgType type,
-                             const QMessageLogContext &context,
-                             const QString &message)
+void DatalinkInspector::handleMessage(QtMsgType type,
+                                      const QMessageLogContext &context,
+                                      const QString &message)
 {
     if (!ApxLog::display(context))
         return;
@@ -68,7 +84,7 @@ void Terminal::handleMessage(QtMsgType type,
     //_model->append(type,context.category,message);
 }
 //=============================================================================
-void Terminal::exec(const QString &cmd)
+void DatalinkInspector::exec(const QString &cmd)
 {
     QString s = cmd.simplified();
     if (s.isEmpty())
@@ -98,12 +114,12 @@ void Terminal::exec(const QString &cmd)
     _model->enterResult(!v.isError());
 }
 //=============================================================================
-void Terminal::historyReset()
+void DatalinkInspector::historyReset()
 {
     _historyIndex = -1;
     _replacedHistory = "";
 }
-QString Terminal::historyNext(const QString &cmd)
+QString DatalinkInspector::historyNext(const QString &cmd)
 {
     //qDebug()<<_history<<_historyIndex<<cmd;
     if (_historyIndex < 0) {
@@ -128,7 +144,7 @@ QString Terminal::historyNext(const QString &cmd)
     }
     return cmd;
 }
-QString Terminal::historyPrev(const QString &cmd)
+QString DatalinkInspector::historyPrev(const QString &cmd)
 {
     //qDebug()<<_history<<_historyIndex<<cmd;
     if (_historyIndex < 0)
@@ -154,7 +170,7 @@ QString Terminal::historyPrev(const QString &cmd)
     return _history[_historyIndex].trimmed();
 }
 //=============================================================================
-QString Terminal::autocomplete(const QString &cmd)
+QString DatalinkInspector::autocomplete(const QString &cmd)
 {
     QStringList hints;
     QString prefix = cmd;
@@ -257,7 +273,7 @@ QString Terminal::autocomplete(const QString &cmd)
 }
 //=============================================================================
 //=============================================================================
-TerminalListModel *Terminal::outModel() const
+DatalinkInspectorListModel *DatalinkInspector::outModel() const
 {
     return _model;
 }

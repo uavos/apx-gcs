@@ -32,7 +32,8 @@ class TerminalPlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
-    QObject *createControl() { return new Terminal(); }
+    int flags() override { return Feature | Tool; }
+    QObject *createControl() override { return new Terminal(); }
 };
 //=============================================================================
 #endif // TerminalPlugin_H

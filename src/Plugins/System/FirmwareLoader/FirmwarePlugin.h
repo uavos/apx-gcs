@@ -23,7 +23,6 @@
 #ifndef FirmwarePlugin_H
 #define FirmwarePlugin_H
 #include "Firmware.h"
-#include <App/AppRoot.h>
 #include <ApxGcs.h>
 #include <ApxPluginInterface.h>
 #include <QtCore>
@@ -34,7 +33,8 @@ class FirmwarePlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
-    QObject *createControl()
+    int flags() override { return Feature | Tool; }
+    QObject *createControl() override
     {
         return new Firmware(nullptr, ApxGcs::instance()->protocol->vehicles->firmware);
     }

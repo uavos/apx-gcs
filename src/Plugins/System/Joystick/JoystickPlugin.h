@@ -33,7 +33,11 @@ class JoystickPlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
-    QObject *createControl() { return new Joysticks(AppSettings::instance()->f_interface); }
+    int flags() override { return Feature | System; }
+    QObject *createControl() override
+    {
+        return new Joysticks(AppSettings::instance()->f_interface);
+    }
 };
 //=============================================================================
 #endif // JoystickPlugin_H

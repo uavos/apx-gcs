@@ -81,6 +81,7 @@ void AppRoot::addToolPlugin(AppPlugin *plugin)
     if (f->parentFact())
         return;
     f->setParentFact(f_tools);
+    f->setSection(plugin->section);
     f_tools->setVisible(true);
     ApxApp::jsync(f_tools);
 }

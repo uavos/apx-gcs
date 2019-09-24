@@ -23,7 +23,6 @@
 #ifndef BlackboxPlugin_H
 #define BlackboxPlugin_H
 #include "Blackbox.h"
-#include <App/AppSettings.h>
 #include <ApxPluginInterface.h>
 #include <QtCore>
 //=============================================================================
@@ -33,7 +32,8 @@ class BlackboxPlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
-    QObject *createControl() { return new Blackbox(); }
+    int flags() override { return Feature | Tool; }
+    QObject *createControl() override { return new Blackbox(); }
 };
 //=============================================================================
 #endif // BlackboxPlugin_H

@@ -34,7 +34,7 @@ class CompassPlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new CompassFrame(); }
-    int flags() { return WidgetPlugin; }
+    int flags() { return Widget; }
     QString title() { return tr("Compass Calibration"); }
     QString descr() { return tr("Hard-iron compensation"); }
     QString icon() { return "compass"; }

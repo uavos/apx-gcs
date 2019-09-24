@@ -33,7 +33,11 @@ class UpdaterPlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
-    QObject *createControl() { return new Updater(AppSettings::instance()->f_application); }
+    int flags() override { return Feature | System; }
+    QObject *createControl() override
+    {
+        return new Updater(AppSettings::instance()->f_application);
+    }
 };
 //=============================================================================
 #endif // UpdaterPlugin_H

@@ -17,7 +17,7 @@ class GeoPlugin : public ApxPluginInterface, public QGeoServiceProviderFactory
 
 public:
     void init() override;
-    int flags() override { return FeaturePlugin; }
+    int flags() override { return Feature | Map; }
     QString title() override { return tr("Location"); }
     QString descr() override { return tr("Location service provider"); }
     QObject *createControl() override { return new TileLoader(); }

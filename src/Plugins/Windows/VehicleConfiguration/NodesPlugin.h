@@ -34,7 +34,7 @@ class NodesPlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new NodesFrame(); }
-    int flags() { return WidgetPlugin | PluginRestore | PluginLauncher; }
+    int flags() { return Widget | Restore | Launcher; }
     QString title() { return tr("Vehicle parameters"); }
     QString descr() { return tr("Hardware tuning"); }
     QString icon() { return "puzzle"; }

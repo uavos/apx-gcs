@@ -20,25 +20,25 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef TerminalListModel_H
-#define TerminalListModel_H
+#ifndef DatalinkInspectorListModel_H
+#define DatalinkInspectorListModel_H
 //=============================================================================
 #include <QtCore>
 class Fact;
 class FactBase;
 //=============================================================================
-class TerminalListModel : public QAbstractListModel
+class DatalinkInspectorListModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_ENUMS(TerminalLineType)
+    Q_ENUMS(DatalinkInspectorLineType)
     Q_ENUMS(QtMsgType)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
-    explicit TerminalListModel(QObject *parent = nullptr);
-    ~TerminalListModel();
+    explicit DatalinkInspectorListModel(QObject *parent = nullptr);
+    ~DatalinkInspectorListModel();
 
-    enum TerminalListModelRoles {
+    enum DatalinkInspectorListModelRoles {
         ModelDataRole = Qt::UserRole + 1,
         TextRole,
         CategoryRole,
@@ -47,23 +47,23 @@ public:
     };
     QHash<int, QByteArray> roleNames() const;
 
-    enum TerminalLineType {
+    enum DatalinkInspectorLineType {
         InputLine,
         InfoGrayLine,
         InfoVehicleLine,
         ErrorLine,
     };
-    Q_ENUM(TerminalLineType)
+    Q_ENUM(DatalinkInspectorLineType)
 
 private:
-    struct TerminalListItem
+    struct DatalinkInspectorListItem
     {
         QtMsgType type;
         QString category;
         QString text;
         quint64 timestamp;
     };
-    QList<TerminalListItem *> _items;
+    QList<DatalinkInspectorListItem *> _items;
     int _enterIndex;
 
 protected:

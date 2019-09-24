@@ -32,8 +32,8 @@ class SitesPlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
+    int flags() override { return Feature | Map; }
     QObject *createControl() override { return new Sites(); }
-
     QStringList depends() override { return QStringList() << "MapView"; }
 };
 //=============================================================================

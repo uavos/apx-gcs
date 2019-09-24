@@ -18,8 +18,8 @@ ColumnLayout {
         implicitWidth: 300
         implicitHeight: 400
 
-        model: apx.tools.terminal.outModel
-        delegate: TerminalLine {
+        model: apx.tools.DatalinkInspector.outModel
+        delegate: DatalinkInspectorLine {
             width: listView.width
             line: model
             fontSize: consoleItem.fontSize
@@ -78,7 +78,7 @@ ColumnLayout {
             //currentIndex=count-1
             //positionViewAtIndex(count-1,ListView.End)
         }
-        /*footer: TerminalExec {
+        /*footer: DatalinkInspectorExec {
             width: parent.width
             fontSize: consoleItem.fontSize
             onFocused: listView.positionViewAtEnd()
@@ -89,7 +89,7 @@ ColumnLayout {
         }
     }
 
-    TerminalExec {
+    DatalinkInspectorExec {
         id: execControl
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignBottom

@@ -34,7 +34,7 @@ class SerialPlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new SerialForm(); }
-    int flags() { return WidgetPlugin; }
+    int flags() { return Widget; }
     QString title() { return tr("Serial Port Console"); }
     QString descr() { return tr("Data manipulation tool"); }
     QString icon() { return "serial-port"; }

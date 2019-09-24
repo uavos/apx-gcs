@@ -33,7 +33,8 @@ class SoundsPlugin : public ApxPluginInterface
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
     Q_INTERFACES(ApxPluginInterface)
 public:
-    QObject *createControl() { return new Sounds(AppSettings::instance()->f_interface); }
+    int flags() override { return Feature | System; }
+    QObject *createControl() override { return new Sounds(AppSettings::instance()->f_interface); }
 };
 //=============================================================================
 #endif // SoundsPlugin_H

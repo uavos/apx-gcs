@@ -1,7 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
-//import APX.Terminal 1.0
+//import APX.DatalinkInspector 1.0
 
 
 Rectangle{

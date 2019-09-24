@@ -36,7 +36,7 @@ class SystreePlugin : public ApxPluginInterface
     Q_INTERFACES(ApxPluginInterface)
 public:
     QObject *createControl() { return new JSTreeWidget(ApxApp::instance()->engine(), true, true); }
-    int flags() { return WidgetPlugin; }
+    int flags() { return Widget; }
     QString title() { return tr("JS tree"); }
     QString descr() { return tr("Developer JavaScript tree view"); }
     QString icon() { return "developer-board"; }

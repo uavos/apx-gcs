@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,19 +20,43 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef TerminalPlugin_H
-#define TerminalPlugin_H
-#include "Terminal.h"
-#include <ApxPluginInterface.h>
+#ifndef DatalinkInspector_H
+#define DatalinkInspector_H
+//=============================================================================
+#include "DatalinkInspectorListModel.h"
+#include <Fact/Fact.h>
 #include <QtCore>
 //=============================================================================
-class TerminalPlugin : public ApxPluginInterface
+class DatalinkInspector : public Fact
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PROPERTY(DatalinkInspectorListModel *outModel READ outModel CONSTANT)
+
 public:
-    QObject *createControl() { return new Terminal(); }
+    explicit DatalinkInspector(Fact *parent = nullptr);
+
+    void handleMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
+
+    Q_INVOKABLE void exec(const QString &cmd);
+
+    Q_INVOKABLE void historyReset();
+    Q_INVOKABLE QString historyNext(const QString &cmd);
+    Q_INVOKABLE QString historyPrev(const QString &cmd);
+
+    Q_INVOKABLE QString autocomplete(const QString &cmd);
+
+private:
+    DatalinkInspectorListModel *_model;
+    QStringList _history;
+    int _historyIndex;
+    QString _replacedHistory;
+
+public:
+    //---------------------------------------
+    DatalinkInspectorListModel *outModel() const;
+
+signals:
+    void newMessage(QtMsgType type, QString category, QString text);
 };
 //=============================================================================
-#endif // TerminalPlugin_H
+#endif

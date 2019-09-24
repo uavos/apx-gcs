@@ -13,9 +13,9 @@ ApxApp.ApxPlugin {
 
 
     files: [
-        "TerminalPlugin.h",
-        "Terminal.cpp", "Terminal.h",
-        "TerminalListModel.cpp", "TerminalListModel.h",
+        "DatalinkInspectorPlugin.h",
+        "DatalinkInspector.cpp", "DatalinkInspector.h",
+        "DatalinkInspectorListModel.cpp", "DatalinkInspectorListModel.h",
     ]
 
     Depends { name: "qmlqrc" }

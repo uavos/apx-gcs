@@ -20,42 +20,42 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "TerminalListModel.h"
+#include "DatalinkInspectorListModel.h"
 #include <Fact/Fact.h>
 //=============================================================================
-TerminalListModel::TerminalListModel(QObject *parent)
+DatalinkInspectorListModel::DatalinkInspectorListModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     _enterIndex = 0;
     qRegisterMetaType<QtMsgType>("QtMsgType");
 }
-TerminalListModel::~TerminalListModel()
+DatalinkInspectorListModel::~DatalinkInspectorListModel()
 {
     qDeleteAll(_items);
 }
 //=============================================================================
 //=============================================================================
-int TerminalListModel::rowCount(const QModelIndex &parent) const
+int DatalinkInspectorListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return _items.size();
 }
 //=============================================================================
-QHash<int, QByteArray> TerminalListModel::roleNames() const
+QHash<int, QByteArray> DatalinkInspectorListModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[TerminalListModel::TextRole] = "text";
-    roles[TerminalListModel::CategoryRole] = "category";
-    roles[TerminalListModel::TypeRole] = "type";
-    roles[TerminalListModel::TimestampRole] = "timestamp";
+    roles[DatalinkInspectorListModel::TextRole] = "text";
+    roles[DatalinkInspectorListModel::CategoryRole] = "category";
+    roles[DatalinkInspectorListModel::TypeRole] = "type";
+    roles[DatalinkInspectorListModel::TimestampRole] = "timestamp";
     return roles;
 }
 //=============================================================================
-QVariant TerminalListModel::data(const QModelIndex &index, int role) const
+QVariant DatalinkInspectorListModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
         return QVariant();
-    TerminalListItem *item = _items.at(index.row());
+    DatalinkInspectorListItem *item = _items.at(index.row());
     switch (role) {
     case TextRole:
         return item->text;
@@ -70,7 +70,7 @@ QVariant TerminalListModel::data(const QModelIndex &index, int role) const
 }
 //=============================================================================
 //=============================================================================
-void TerminalListModel::append(QtMsgType type, QString category, QString text)
+void DatalinkInspectorListModel::append(QtMsgType type, QString category, QString text)
 {
     int row = rowCount();
     if (row > 1000) {
@@ -81,7 +81,7 @@ void TerminalListModel::append(QtMsgType type, QString category, QString text)
     }
     row = rowCount();
     beginInsertRows(QModelIndex(), row, row);
-    TerminalListItem *item = new TerminalListItem;
+    DatalinkInspectorListItem *item = new DatalinkInspectorListItem;
     item->type = type;
     item->category = category;
     item->text = text;
@@ -92,12 +92,12 @@ void TerminalListModel::append(QtMsgType type, QString category, QString text)
     //qDebug()<<"rows"<<rowCount();
 }
 //=============================================================================
-void TerminalListModel::enter(const QString &line)
+void DatalinkInspectorListModel::enter(const QString &line)
 {
     append(QtInfoMsg, "input", line);
     _enterIndex = _items.size() - 1;
 }
-void TerminalListModel::enterResult(bool ok)
+void DatalinkInspectorListModel::enterResult(bool ok)
 {
     if (_enterIndex >= _items.size())
         return;
