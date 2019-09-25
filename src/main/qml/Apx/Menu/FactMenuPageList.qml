@@ -13,7 +13,7 @@ ColumnLayout {
 
     property alias model: listView.model
     property alias delegate: listView.delegate
-    property alias actionsModel: actionsListView.model
+    property alias actionsModel: actionsItem.model
 
     property alias header: listView.header
     property alias headerItem: listView.headerItem
@@ -49,37 +49,32 @@ ColumnLayout {
     }
 
     //actions
-    ListView {
-        id: actionsListView
+    RowLayout {
+        id: actionsItem
 
         Layout.alignment: Qt.AlignRight
         Layout.bottomMargin: control.spacing
 
-        implicitHeight: MenuStyle.itemSize
-        implicitWidth: contentItem.childrenRect.width
-
-        clip: true
-        focus: true
         spacing: 5
+        visible: repeater.count>0
 
-        model: fact.actionsModel
-        snapMode: ListView.SnapToItem
-        orientation: ListView.Horizontal
-
-        visible: count>0
-
+        property alias model: repeater.model
         property bool actionsText: true
-        delegate: Loader{
-            asynchronous: true
-            active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
-            visible: active
-            sourceComponent: Component {
-                FactMenuAction {
-                    fact: modelData;
-                    showText: actionsListView.actionsText
-                    Connections {
-                        target: modelData
-                        onTriggered: if(factMenu)factMenu.factTriggered(modelData)
+        Repeater {
+            id: repeater
+            model: fact.actionsModel
+            delegate: Loader{
+                asynchronous: true
+                active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
+                visible: active
+                sourceComponent: Component {
+                    FactMenuAction {
+                        fact: modelData
+                        showText: actionsItem.actionsText
+                        Connections {
+                            target: modelData
+                            onTriggered: if(factMenu)factMenu.factTriggered(modelData)
+                        }
                     }
                 }
             }

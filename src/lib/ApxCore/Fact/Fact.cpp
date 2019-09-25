@@ -47,8 +47,11 @@ Fact::Fact(QObject *parent,
     , m_parentVisible(true)
 {
     //models
-    m_model = new FactListModel(this);
-    m_actionsModel = new FactListModelActions(this);
+    //m_model = new FactListModel(this);
+    //m_actionsModel = new FactListModelActions(this);
+    connect(this, &Fact::actionsUpdated, this, &Fact::updateModels);
+    connect(this, &Fact::itemInserted, this, &Fact::updateModels);
+    connect(this, &Fact::itemRemoved, this, &Fact::updateModels);
 
     connect(this, &Fact::parentFactChanged, this, &Fact::updateParentEnabled);
     updateParentEnabled();
@@ -94,6 +97,28 @@ void Fact::updateDefaultIcon()
     case Stop:
         setIcon("close-circle");
         break;
+    }
+}
+//=============================================================================
+void Fact::updateModels()
+{
+    if (size() > 0) {
+        if (!m_model) {
+            setModel(new FactListModel(this));
+        }
+    } else {
+        if (m_model) {
+            setModel(nullptr);
+        }
+    }
+    if (!actions().isEmpty()) {
+        if (!m_actionsModel) {
+            setActionsModel(new FactListModelActions(this));
+        }
+    } else {
+        if (m_actionsModel) {
+            setActionsModel(nullptr);
+        }
     }
 }
 //=============================================================================
@@ -492,7 +517,8 @@ FactListModel *Fact::model() const
 }
 void Fact::setModel(FactListModel *v)
 {
-    m_model->deleteLater();
+    if (m_model)
+        m_model->deleteLater();
     m_model = v;
     emit modelChanged();
 }
@@ -504,7 +530,8 @@ FactListModelActions *Fact::actionsModel() const
 }
 void Fact::setActionsModel(FactListModelActions *v)
 {
-    m_actionsModel->deleteLater();
+    if (m_actionsModel)
+        m_actionsModel->deleteLater();
     m_actionsModel = v;
     emit actionsModelChanged();
 }

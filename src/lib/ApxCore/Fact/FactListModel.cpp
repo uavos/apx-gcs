@@ -35,8 +35,9 @@ FactListModel::FactListModel(Fact *fact)
     connect(syncTimer, &QTimer::timeout, this, &FactListModel::delayedSync);
 
     if (fact) {
-        populate(&_items, fact);
         connectFact(fact);
+        //populate(&_items, fact);
+        sync();
     }
 }
 //=============================================================================

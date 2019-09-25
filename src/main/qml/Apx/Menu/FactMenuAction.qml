@@ -18,6 +18,7 @@ CleanButton {
     toolTip: fact?fact.descr:""
     iconName: fact?fact.icon:""
     title: (fact && (!bIconOnly))?fact.title:""
+
     enabled: fact?fact.enabled:true
     visible: (fact?fact.visible:true) && (bShowDisabled||enabled)
 

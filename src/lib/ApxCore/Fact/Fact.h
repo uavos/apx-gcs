@@ -140,6 +140,9 @@ private:
 protected:
     bool blockNotify;
 
+private slots:
+    void updateModels();
+
 public slots:
     virtual void trigger(void); //execute fact event (onClick)
     void requestDefaultMenu();
