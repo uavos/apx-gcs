@@ -550,6 +550,34 @@ QString Vehicle::confTitle() const
     return anyName;
 }
 //=============================================================================
+void Vehicle::message(QString msg, QString subsystem, QString prefix)
+{
+    if (isTemporary())
+        return;
+
+    QString ns = callsign();
+    if (!subsystem.isEmpty())
+        ns.append('/').append(subsystem);
+
+    QString s = QString("%1[%2]%3").arg(prefix).arg(ns).arg(msg);
+
+    if (msg.contains("error", Qt::CaseInsensitive)) {
+        f_warnings->error(msg);
+        apxMsgW() << s;
+    } else if (msg.contains("fail", Qt::CaseInsensitive)) {
+        f_warnings->error(msg);
+        apxMsgW() << s;
+    } else if (msg.contains("timeout", Qt::CaseInsensitive)) {
+        f_warnings->warning(msg);
+        apxMsgW() << s;
+    } else if (msg.contains("warning", Qt::CaseInsensitive)) {
+        f_warnings->warning(msg);
+        apxMsgW() << s;
+    } else {
+        apxMsg() << s;
+    }
+}
+//=============================================================================
 //=============================================================================
 QString Vehicle::mandalaToString(quint16 mid) const
 {

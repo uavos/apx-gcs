@@ -299,18 +299,18 @@ void VehicleMission::missionDataReceived(DictMission::Mission d)
     clearMission();
     storage->loadFromDict(d);
     if (empty()) {
-        apxMsgW() << tr("Empty mission received from vehicle");
+        vehicle->message(tr("Empty mission received from vehicle"));
     } else {
         emit missionAvailable();
         emit missionDownloaded();
         f_save->trigger();
-        apxMsg() << tr("Mission received from vehicle") << size();
+        vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()));
     }
     setModified(false, true);
 }
 void VehicleMission::missionDataError()
 {
-    apxMsgW() << tr("Error in mission data from vehicle");
+    vehicle->message(tr("Error in mission data from vehicle"));
     clearMission();
 }
 //=============================================================================

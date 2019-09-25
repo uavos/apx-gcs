@@ -31,6 +31,32 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
 {
     qRegisterMetaType<QMap<quint64, QString>>("QMap<quint64,QString>");
 
+    f_stats = new Fact(this, "stats", tr("Get statistics"), tr("Analyze totals"), NoFlags, "numeric");
+    connect(f_stats, &Fact::triggered, this, &TelemetryDB::getStats);
+    connect(this, &Fact::triggered, f_stats, &Fact::trigger);
+    connect(this, &Fact::menuRequested, f_stats, &Fact::trigger);
+
+    f_cache = new Fact(this,
+                       "cache",
+                       tr("Reset cache"),
+                       tr("Invalidate cached records"),
+                       NoFlags,
+                       "cached");
+    connect(f_cache, &Fact::triggered, this, &TelemetryDB::emptyCache);
+    connect(f_cache, &Fact::progressChanged, this, [this]() { setProgress(f_cache->progress()); });
+
+    f_trash = new Fact(this,
+                       "trash",
+                       tr("Empty trash"),
+                       tr("Permanently remove deleted records"),
+                       Remove);
+    connect(f_trash, &Fact::triggered, this, &TelemetryDB::emptyTrash);
+    connect(f_trash, &Fact::progressChanged, this, [this]() { setProgress(f_trash->progress()); });
+
+    f_stop = new Fact(this, "stop", tr("Abort"), tr("Abort current operation"), Action | Stop);
+    f_stop->setEnabled(false);
+    connect(this, &Fact::progressChanged, this, [this]() { f_stop->setEnabled(progress() >= 0); });
+
     new DBReqMakeTable(this,
                        "Telemetry",
                        QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
@@ -185,6 +211,68 @@ void TelemetryDB::clearInvalidCacheList()
     latestInvalidCacheID = 0;
 }
 //=============================================================================
+void TelemetryDB::emptyTrash()
+{
+    if (!checkActive())
+        return;
+    DBReqTelemetryEmptyTrash *req = new DBReqTelemetryEmptyTrash();
+    connect(
+        req,
+        &DBReqTelemetryEmptyTrash::progress,
+        this,
+        [this](int v) { f_trash->setProgress(v); },
+        Qt::QueuedConnection);
+    connect(req,
+            &DBReqTelemetryEmptyTrash::finished,
+            this,
+            &TelemetryDB::invalidateRecords,
+            Qt::QueuedConnection);
+    connect(req,
+            &DBReqTelemetryEmptyTrash::finished,
+            this,
+            &TelemetryDB::getStats,
+            Qt::QueuedConnection);
+    connect(f_stop, &Fact::triggered, req, &DatabaseRequest::discard, Qt::QueuedConnection);
+    req->exec();
+}
+void TelemetryDB::emptyCache()
+{
+    if (!checkActive())
+        return;
+    DBReqTelemetryEmptyCache *req = new DBReqTelemetryEmptyCache();
+    connect(
+        req,
+        &DBReqTelemetryEmptyCache::progress,
+        this,
+        [this](int v) { f_cache->setProgress(v); },
+        Qt::QueuedConnection);
+    connect(f_stop, &Fact::triggered, req, &DatabaseRequest::discard, Qt::QueuedConnection);
+    req->exec();
+}
+void TelemetryDB::getStats()
+{
+    DBReqTelemetryStats *req = new DBReqTelemetryStats();
+    connect(
+        req,
+        &DBReqTelemetryStats::totals,
+        this,
+        [this](quint64 total, quint64 trash) {
+            f_stats->setStatus(
+                QString("%1 %2, %3 %4").arg(total).arg(tr("total")).arg(trash).arg(tr("trash")));
+        },
+        Qt::QueuedConnection);
+    req->exec();
+}
+//=============================================================================
+bool TelemetryDB::checkActive()
+{
+    if (queueSize() > 0 || m_worker->rate() > 0) {
+        apxMsgW() << tr("Can't modify database while datalink is active");
+        return false;
+    }
+    return true;
+}
+//=============================================================================
 //=============================================================================
 DBReqTelemetry::DBReqTelemetry()
     : DatabaseRequest(Database::instance()->telemetry)
@@ -248,6 +336,120 @@ bool DBReqTelemetryUpdateFields::run(QSqlQuery &query)
             return false;
     }
     static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
+    return true;
+}
+//=============================================================================
+bool DBReqTelemetryEmptyTrash::run(QSqlQuery &query)
+{
+    emit progress(0);
+    query.prepare("SELECT COUNT(*) FROM Telemetry WHERE trash IS NOT NULL");
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+
+    qint64 cnt = query.value(0).toLongLong();
+    qint64 dcnt = 0;
+    if (cnt > 0) {
+        apxMsg() << tr("Permanently deleting %1 records").arg(cnt).append("...");
+
+        while (dcnt < cnt) {
+            query.prepare(
+                "SELECT key FROM Telemetry WHERE trash IS NOT NULL ORDER BY time DESC LIMIT 1");
+            if (!query.exec())
+                return false;
+            if (!query.next())
+                return false;
+            quint64 key = query.value(0).toULongLong();
+
+            if (!db->transaction(query))
+                return false;
+            query.prepare("DELETE FROM Telemetry WHERE key=?");
+            query.addBindValue(key);
+            if (!query.exec())
+                return false;
+            if (!db->commit(query))
+                return false;
+
+            dcnt++;
+            emit progress((dcnt * 100 / cnt));
+            if (discarded())
+                break;
+        }
+    }
+    if (dcnt < cnt)
+        apxMsgW() << tr("Telemetry trash not empty") << cnt - dcnt;
+    else
+        apxMsg() << tr("Telemetry trash is empty");
+    emit progress(-1);
+    return true;
+}
+//=============================================================================
+bool DBReqTelemetryEmptyCache::run(QSqlQuery &query)
+{
+    emit progress(0);
+    query.prepare("SELECT COUNT(*) FROM TelemetryCache");
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+
+    qint64 cnt = query.value(0).toLongLong();
+    qint64 dcnt = 0;
+    if (cnt > 0) {
+        apxMsg() << tr("Deleting %1 cached records").arg(cnt).append("...");
+
+        while (dcnt < cnt) {
+            query.prepare("SELECT key FROM TelemetryCache ORDER BY time DESC LIMIT 1");
+            if (!query.exec())
+                return false;
+            if (!query.next())
+                return false;
+            quint64 key = query.value(0).toULongLong();
+
+            if (!db->transaction(query))
+                return false;
+            query.prepare("DELETE FROM TelemetryCache WHERE key=?");
+            query.addBindValue(key);
+            if (!query.exec())
+                return false;
+            if (!db->commit(query))
+                return false;
+
+            dcnt++;
+            emit progress((dcnt * 100 / cnt));
+            if (discarded())
+                break;
+        }
+    }
+    if (dcnt < cnt)
+        apxMsgW() << tr("Telemetry cache not empty") << cnt - dcnt;
+    else
+        apxMsg() << tr("Telemetry cache is empty");
+    emit progress(-1);
+    return true;
+}
+//=============================================================================
+bool DBReqTelemetryStats::run(QSqlQuery &query)
+{
+    query.prepare("SELECT COUNT(*) FROM Telemetry");
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+    quint64 cntTotal = query.value(0).toULongLong();
+
+    query.prepare("SELECT COUNT(*) FROM Telemetry WHERE trash IS NOT NULL");
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+    quint64 cntTrash = query.value(0).toULongLong();
+
+    apxMsg() << tr("Telemetry records").append(":") << cntTotal << tr("total").append(",")
+             << cntTrash << tr("deleted");
+
+    emit totals(cntTotal, cntTrash);
     return true;
 }
 //=============================================================================

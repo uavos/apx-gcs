@@ -93,9 +93,9 @@ void MissionStorage::dbSaved(QString hash)
     dbHash = hash;
     emit saved();
     if (bHashUpdate) {
-        apxMsg() << tr("Mission record updated");
+        mission->vehicle->message(tr("Mission record updated"));
     } else {
-        apxMsg() << tr("Mission saved");
+        mission->vehicle->message(tr("Mission saved"));
     }
     mission->backup();
 }
@@ -151,9 +151,9 @@ void MissionStorage::dbLoaded(QVariantMap info, QVariantMap details, DictMission
     }
     QString s(tr("Mission loaded"));
     if (data.title.isEmpty())
-        apxMsg() << s;
+        mission->vehicle->message(s);
     else
-        apxMsg() << s.append(':') << data.title;
+        mission->vehicle->message(s.append(": ").append(data.title));
 }
 //=============================================================================
 //=============================================================================

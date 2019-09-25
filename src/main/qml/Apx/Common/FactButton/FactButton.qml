@@ -33,7 +33,7 @@ CleanButton {
     property bool active: fact?fact.active:false
     property bool modified: fact?fact.modified:false
 
-    property int treeType: fact?fact.treeType:Fact.Group
+    property int treeType: fact?fact.treeType:Fact.NoFlags
     property int dataType: fact?fact.dataType:Fact.NoFlags
     property int factSize: fact?fact.size:0
     property string qmlPage: fact?fact.qmlPage:""
@@ -85,7 +85,7 @@ CleanButton {
         //if(!activeFocus)return
         //if(typeof(listView)!='undefined')listView.currentIndex=index
         if(isScript) openDialog("EditorScript")
-        else if(expandable && fact) openFact(fact)
+        else if(expandable && fact) openFact(fact.bind?fact.bind:fact)
         //else if(isAction)actionTriggered(fact)
         if(factTrigger && fact)fact.trigger()
     }

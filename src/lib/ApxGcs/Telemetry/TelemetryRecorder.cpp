@@ -46,7 +46,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     //vehicle forwarded recording signals
     connect(vehicle, &Vehicle::recordDownlink, this, &TelemetryRecorder::recordDownlink);
     connect(vehicle, &Vehicle::recordUplink, this, &TelemetryRecorder::recordUplink);
-    connect(vehicle, &Vehicle::recordMessage, this, &TelemetryRecorder::recordMessage);
+    connect(vehicle, &Vehicle::recordNodeMessage, this, &TelemetryRecorder::recordNodeMessage);
     connect(vehicle, &Vehicle::recordConfigUpdate, this, &TelemetryRecorder::recordConfigUpdate);
     connect(vehicle, &Vehicle::recordSerialData, this, &TelemetryRecorder::recordSerialData);
 
@@ -70,7 +70,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
                 &TelemetryRecorder::recordMissionUplink);
     });
 
-    connect(this, &Fact::valueChanged, this, &TelemetryRecorder::updateRecording);
+    connect(this, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
 
     connect(this, &TelemetryRecorder::timeChanged, this, &TelemetryRecorder::updateStatus);
 
@@ -86,6 +86,12 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     recStopTimer.setSingleShot(true);
     connect(&recStopTimer, &QTimer::timeout, this, [=]() { setValue(false); });
 
+    //invalidate record ID after trash empty
+    connect(Database::instance()->telemetry,
+            &TelemetryDB::invalidateRecords,
+            this,
+            &TelemetryRecorder::restartRecording);
+
     updateStatus();
 }
 //=============================================================================
@@ -93,7 +99,7 @@ void TelemetryRecorder::updateStatus()
 {
     setStatus(AppRoot::timeToString(time(), true));
 }
-void TelemetryRecorder::updateRecording()
+void TelemetryRecorder::restartRecording()
 {
     recStopTimer.stop();
     reset();
@@ -274,7 +280,7 @@ void TelemetryRecorder::recordUplink(Fact *f)
 //=============================================================================
 // write data slots
 //=============================================================================
-void TelemetryRecorder::recordMessage(QString nodeName, QString text, QString sn)
+void TelemetryRecorder::recordNodeMessage(QString nodeName, QString text, QString sn)
 {
     writeEvent("msg", QString("[%1]%2").arg(nodeName).arg(text), sn, false);
 }

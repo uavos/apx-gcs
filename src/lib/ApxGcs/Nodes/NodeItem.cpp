@@ -376,34 +376,16 @@ void NodeItem::message(QString msg)
 {
     if (nodes->vehicle->isTemporary())
         return;
-    QString ns;
-    if (Vehicles::instance()->f_list->size() > 0)
-        ns = QString("%1/%2").arg(nodes->vehicle->callsign()).arg(title());
-    else
-        ns = title();
+
     QStringList st = msg.trimmed().split('\n', QString::SkipEmptyParts);
     foreach (QString s, st) {
         s = s.trimmed();
         if (s.isEmpty())
             continue;
-        nodes->vehicle->recordMessage(ns, s, sn());
         ApxApp::sound(s);
-        QString sd = QString("<[%1]%2").arg(ns).arg(qApp->translate("msg", s.toUtf8().data()));
-        if (s.contains("error", Qt::CaseInsensitive)) {
-            nodes->vehicle->f_warnings->error(s);
-            apxMsgW() << sd;
-        } else if (s.contains("fail", Qt::CaseInsensitive)) {
-            nodes->vehicle->f_warnings->error(s);
-            apxMsgW() << sd;
-        } else if (s.contains("timeout", Qt::CaseInsensitive)) {
-            nodes->vehicle->f_warnings->warning(s);
-            apxMsgW() << sd;
-        } else if (s.contains("warning", Qt::CaseInsensitive)) {
-            nodes->vehicle->f_warnings->warning(s);
-            apxMsgW() << sd;
-        } else {
-            apxMsg() << sd;
-        }
+        QString nodeName = QString("%1/%2").arg(nodes->vehicle->callsign()).arg(title());
+        nodes->vehicle->recordNodeMessage(nodeName, s, sn());
+        nodes->vehicle->message(qApp->translate("msg", s.toUtf8().data()), title(), "<");
     }
 }
 //=============================================================================

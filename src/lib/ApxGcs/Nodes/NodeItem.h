@@ -55,8 +55,6 @@ public:
     QList<NodeField *> allFields;
     QMap<QString, NodeField *> allFieldsByName;
 
-    void message(QString msg);
-
     //override
     QVariant data(int col, int role) const;
     void hashData(QCryptographicHash *h) const;
@@ -115,6 +113,8 @@ public slots:
     //db sync
     void setDictInfo(QVariantMap dictInfo);
     void setNconfID(quint64 nconfID);
+
+    void message(QString msg);
 
     //protocols:
 public slots:

@@ -50,7 +50,7 @@ public:
     Fact *fact() { return f; }
 
 protected:
-    Fact *f;
+    QPointer<Fact> f;
 signals:
     void valueChanged();
 };

@@ -45,6 +45,14 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
     connect(this, &DatabaseLookup::filterChanged, this, &DatabaseLookup::trigger);
     connect(db, &DatabaseSession::modified, this, &DatabaseLookup::trigger, Qt::QueuedConnection);
 
+    Fact *f_tools = new Fact(this,
+                             "tools",
+                             tr("Tools"),
+                             tr("Database maintenance"),
+                             Action | IconOnly,
+                             "wrench");
+    connect(f_tools, &Fact::triggered, db, &Fact::requestDefaultMenu);
+
     modelSyncTimer.setSingleShot(true);
     modelSyncTimer.setInterval(500);
     connect(&modelSyncTimer, &QTimer::timeout, this, &DatabaseLookup::loadItems);

@@ -236,7 +236,11 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
             f->setValue(f->value().toInt() + 1);
         }
     } else {
-        QString title = value;
+        QString title;
+        if (name == "xpdr")
+            title = name;
+        else
+            title = value;
         QString descr = uid;
         if (title.startsWith('[') && title.contains(']')) {
             int i = title.indexOf(']');

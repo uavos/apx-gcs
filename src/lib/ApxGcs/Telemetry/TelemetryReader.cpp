@@ -85,7 +85,7 @@ void TelemetryReader::updateStatus()
     st << AppRoot::timeToString(totalTime() / 1000, true);
     if (totalDistance() > 0)
         st << AppRoot::distanceToString(totalDistance());
-    setStatus(st.join(' '));
+    setStatus(st.join('/'));
 }
 //==============================================================================
 void TelemetryReader::updateRecordInfo()

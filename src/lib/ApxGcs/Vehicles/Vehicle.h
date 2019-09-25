@@ -179,7 +179,7 @@ signals:
     void recordDownlink();
     void recordUplink(Fact *f);
     //events
-    void recordMessage(QString nodeName, QString text, QString sn);
+    void recordNodeMessage(QString nodeName, QString text, QString sn);
     void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
 
@@ -196,6 +196,8 @@ public slots:
     void sendPositionFix(const QGeoCoordinate &c);
 
     void resetGeoPath();
+
+    void message(QString msg, QString subsystem = QString(), QString prefix = QString());
 
     //Database
 public slots:
