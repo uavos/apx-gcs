@@ -33,15 +33,18 @@
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 Telemetry::Telemetry(Vehicle *parent)
-    : Fact(parent, "telemetry", tr("Telemetry"), tr("Telemetry data recorder"))
+    : Fact(parent,
+           "telemetry",
+           tr("Telemetry"),
+           tr("Telemetry data recorder"),
+           Group,
+           "inbox-arrow-down")
     , vehicle(parent)
     , f_recorder(nullptr)
     , f_lookup(nullptr)
     , f_reader(nullptr)
     , f_share(nullptr)
 {
-    setIcon("inbox-arrow-down");
-
     if (vehicle->isReplay()) {
         f_lookup = new LookupTelemetry(this);
         f_lookup->f_latest->createAction(this);

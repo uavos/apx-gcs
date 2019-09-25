@@ -80,7 +80,7 @@ Fact::Fact(QObject *parent,
 //=============================================================================
 void Fact::updateDefaultIcon()
 {
-    if (!m_icon.isEmpty())
+    if (!icon().isEmpty())
         return;
     switch (dataType()) {
     default:
@@ -415,7 +415,7 @@ void Fact::bind(FactData *fact)
 //=============================================================================
 Fact *Fact::createAction(Fact *parent)
 {
-    Fact *f = new Fact(parent, m_name, "", "", Action | dataType() | options());
+    Fact *f = new Fact(parent, m_name, "", "", Action | dataType() | options(), icon());
     if (treeType() != Action)
         f->setDataType(Page);
     f->bind(this);
