@@ -22,15 +22,24 @@ CleanButton {
     }
 
 
-    iconName: fact.icon
-    title: fact.title
-    descr: fact.descr
+    iconName: fact?fact.icon:""
+    title: fact?fact.title:""
+    descr: fact?fact.descr:""
 
-    progress: fact.progress
+    progress: fact?fact.progress:-1
 
-    property string value: fact.text
+    property string value: fact?fact.text:""
+    property string status: fact?fact.status:""
+    property bool active: fact?fact.active:false
+    property bool modified: fact?fact.modified:false
 
-    property bool active: fact.active
+    property int treeType: fact?fact.treeType:Fact.Group
+    property int dataType: fact?fact.dataType:Fact.NoFlags
+    property int factSize: fact?fact.size:0
+    property string qmlPage: fact?fact.qmlPage:""
+
+    enabled: fact?fact.enabled:true
+
     property bool selected: false
     property bool draggable: true
 
@@ -39,18 +48,23 @@ CleanButton {
     showText: true
     textAlignment: Text.AlignLeft
 
-    enabled: fact.enabled
 
     highlighted: activeFocus || selected
 
-    titleColor: fact.modified?Material.color(Material.Yellow):active?"#A5D6A7":Material.primaryTextColor
+    titleColor: modified?Material.color(Material.Yellow):active?"#A5D6A7":Material.primaryTextColor
 
-    property bool expandable: fact.treeType !== Fact.Action && (fact.size>0 || (fact.treeType === Fact.Group) || (fact.treeType === Fact.Page) || fact.qmlPage || isMandala)
-    //property bool isAction: fact.dataType===Fact.Action
-    //property bool isFact: fact.treeType===Fact.FactItem
-    property bool isMandala: fact.dataType===Fact.Mandala
-    property bool isScript: fact.dataType===Fact.Script
-    property bool hasValue: fact.dataType && (!isScript)
+
+    property bool expandable: treeType !== Fact.Action
+                              && (
+                                  factSize>0
+                                  || (treeType === Fact.Group)
+                                  || (treeType === Fact.Page)
+                                  || qmlPage
+                                  || isMandala
+                                  )
+    property bool isMandala: dataType===Fact.Mandala
+    property bool isScript: dataType===Fact.Script
+    property bool hasValue: dataType && (!isScript)
 
     property bool showEditor: hasValue
     property bool showValue: hasValue
@@ -69,16 +83,16 @@ CleanButton {
     onTriggered: {
         focusRequested()
         //if(!activeFocus)return
-        if(typeof(listView)!='undefined')listView.currentIndex=index
+        //if(typeof(listView)!='undefined')listView.currentIndex=index
         if(isScript) openDialog("EditorScript")
-        else if(expandable) openFact(fact)
+        else if(expandable && fact) openFact(fact)
         //else if(isAction)actionTriggered(fact)
-        if(factTrigger)fact.trigger()
+        if(factTrigger && fact)fact.trigger()
     }
 
     onMenuRequested: {
         if(!draggable){
-            openFact(fact,{"pageInfo": true})
+            if(fact)openFact(fact,{"pageInfo": true})
         }else{
             held = true
         }
@@ -101,7 +115,7 @@ CleanButton {
             console.log(drag.source.title+" -> "+title)
             //console.log(drag.target.title)
             //fact.ParentFact.model.move(drag.source.fact.num,fact.num)
-            drag.source.fact.move(fact.num)
+            if(fact)drag.source.fact.move(fact.num)
         }
     }
 
@@ -114,7 +128,7 @@ CleanButton {
     contents: [
         //status
         Label {
-            text: fact.status
+            text: factButton.status
             font.family: font_fixed
             font.pixelSize: fontSize(bodyHeight*statusSize)
             color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
@@ -162,6 +176,7 @@ CleanButton {
 
     function getEditorSource()
     {
+        if(!fact)return ""
         var qml=""
         switch(fact.dataType){
         case Fact.Bool:
@@ -195,6 +210,7 @@ CleanButton {
 
     function openDialog(name)
     {
+        if(!fact)return
         var c=Qt.createComponent(name+".qml",factButton)
         if(c.status===Component.Ready) {
             c.createObject(ui.window,{"fact": fact});

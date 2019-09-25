@@ -34,6 +34,7 @@ class Database;
 class DatabaseSession : public Fact //, public QSqlDatabase
 {
     Q_OBJECT
+    Q_PROPERTY(quint64 capacity READ capacity NOTIFY capacityChanged)
 
 public:
     explicit DatabaseSession(QObject *parent, const QString &fileName, const QString &sessionName);
@@ -69,6 +70,8 @@ protected:
 
 private slots:
     void updateInfo();
+    void updateDescr();
+    void updateCapacity();
 
     //tools
     void vacuumTriggered();
@@ -79,6 +82,16 @@ public slots:
 
 signals:
     void modified();
+
+    //-----------------------------------------
+    //PROPERTIES
+public:
+    quint64 capacity() const;
+
+protected:
+    quint64 m_capacity;
+signals:
+    void capacityChanged();
 };
 //=============================================================================
 class DBReqMakeTable : public DatabaseRequest

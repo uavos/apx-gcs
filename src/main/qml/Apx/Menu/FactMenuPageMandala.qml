@@ -6,13 +6,16 @@ import QtQuick.Layouts 1.3
 
 import Apx.Common 1.0
 
-FactMenuListView {
-    id: listView
+import APX.Facts 1.0
+
+FactMenuPageList {
+    id: control
     property var mandala: apx.vehicles.local.mandala
     property var parentFact: fact
     property string filter: ""
 
     model: mandala.model
+
     //currentIndex: fact
     delegate: FactButton {
         fact: modelData
@@ -25,23 +28,25 @@ FactMenuListView {
             parentFact.setValue(modelData.title)
             factMenu.back()
         }
-        visible: fact && fact.visible && (listView.filter=="" || fact.title.toLowerCase().includes(listView.filter.toLowerCase()))
+        visible: fact && fact.visible && (control.filter=="" || fact.title.toLowerCase().includes(control.filter.toLowerCase()))
     }
-    contentsActions: [
-        FactMenuAction {
-            z: 10
-            showText: true
-            bRemove: true
-            text: qsTr("Remove")
-            iconName: "delete"
-            visible: parentFact.text
+
+    Fact {
+        id: actionsFact
+        treeType: Fact.Group
+        Fact {
+            title: qsTr("Remove")
+            treeType: Fact.Action
+            dataType: Fact.Remove
             onTriggered: {
-                parentFact.value=""
+                control.parentFact.value=""
                 factMenu.back()
             }
         }
-    ]
-    headerPositioning: ListView.OverlayHeader
+    }
+    actionsModel: actionsFact.actionsModel
+
+    //filter
     header: TextField {
         z: 100
         width: listView.width
@@ -52,7 +57,7 @@ FactMenuListView {
             border.width: 0
             color: Material.background
         }
-        onTextChanged: listView.filter=text.trim()
+        onTextChanged: control.filter=text.trim()
         onAccepted: {
             var f=mandala.findChild(text,false)
             //console.log(f)
@@ -67,13 +72,15 @@ FactMenuListView {
         interval: 100
         onTriggered: updateIndex()
     }
+
+    property int count: model.count
     onCountChanged: posTimer.start() //updateIndex()
     function updateIndex()
     {
         headerItem.forceActiveFocus()
         for(var i=0;i<mandala.size;++i){
             if(mandala.child(i).title!==parentFact.text)continue
-            positionViewAtIndex(i,ListView.Center)
+            listView.positionViewAtIndex(i,ListView.Center)
             break
         }
     }

@@ -36,6 +36,7 @@ DatabaseSession::DatabaseSession(QObject *parent,
     , sql(QSqlDatabase::addDatabase("QSQLITE", sessionName))
     , database(Database::instance())
     , m_worker(nullptr)
+    , m_capacity(0)
 {
     setParent(parent);
     connect(parent, &QObject::destroyed, this, &Fact::remove);
@@ -88,8 +89,6 @@ DatabaseSession::DatabaseSession(QObject *parent,
             &DelayedEvent::schedule,
             Qt::QueuedConnection);
 
-    setDescr(AppRoot::capacityToString(static_cast<quint64>(QFileInfo(fileName).size())));
-
     //tools
     f_vacuum = new Fact(this, "vacuum", tr("Optimize"), tr("Compress size"));
     f_vacuum->setIcon("arrow-collapse-vertical");
@@ -98,7 +97,13 @@ DatabaseSession::DatabaseSession(QObject *parent,
     f_analyze->setIcon("check-all");
     connect(f_analyze, &Fact::triggered, this, &DatabaseSession::analyzeTriggered);
 
+    //capacity
+    connect(this, &DatabaseSession::capacityChanged, this, &DatabaseSession::updateDescr);
+    connect(this, &Fact::triggered, this, &DatabaseSession::updateCapacity);
+    updateCapacity();
+
     updateInfo();
+    updateDescr();
 }
 DatabaseSession::~DatabaseSession()
 {
@@ -135,6 +140,18 @@ void DatabaseSession::updateInfo()
     if (rate > 0 || qsz != infoQueueSize)
         evtUpdateInfo.schedule();
     infoQueueSize = qsz;
+}
+void DatabaseSession::updateDescr()
+{
+    setDescr(AppRoot::capacityToString(capacity()));
+}
+void DatabaseSession::updateCapacity()
+{
+    quint64 v = static_cast<quint64>(QFileInfo(fileName).size());
+    if (m_capacity == v)
+        return;
+    m_capacity = v;
+    emit capacityChanged();
 }
 //=============================================================================
 //=============================================================================
@@ -214,6 +231,12 @@ void DatabaseSession::analyzeTriggered()
         Qt::QueuedConnection);
     f_analyze->setProgress(0);
     req->exec();
+}
+//=============================================================================
+//=============================================================================
+quint64 DatabaseSession::capacity() const
+{
+    return m_capacity;
 }
 //=============================================================================
 //=============================================================================

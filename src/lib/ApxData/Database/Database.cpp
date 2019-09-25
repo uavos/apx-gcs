@@ -52,11 +52,13 @@ Database::~Database()
 //=============================================================================
 void Database::add(DatabaseSession *session)
 {
+    //qDebug() << session->name();
     if (sessions.contains(session))
         return;
     sessions.append(session);
     connect(session, &DatabaseSession::destroyed, this, [=]() {
         sessions.removeAll(static_cast<DatabaseSession *>(sender()));
     });
+    //connect(session,&Fact::
 }
 //=============================================================================

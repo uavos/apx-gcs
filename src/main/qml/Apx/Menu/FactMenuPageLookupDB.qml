@@ -9,12 +9,12 @@ import APX.Facts 1.0
 
 import Apx.Common 1.0
 
-FactMenuListView {
-    id: listView
+FactMenuPageList {
+    id: control
 
     property var parentFact: fact
 
-    property bool filterEnabled: (fact && fact.filterEnabled)?fact.filterEnabled:false
+    property bool filterEnabled: true
 
     model: fact.dbModel
     delegate: Loader{
@@ -27,24 +27,20 @@ FactMenuListView {
             FactButton {
                 height: MenuStyle.itemSize
                 property var d: modelData
-                fact: Fact {
-                    title: d.title?d.title:qsTr("No title")
-                    descr: d.descr?d.descr:""
-                    status: d.status?d.status:""
-                    active: d.active?d.active:false
-                }
+                title: d.title?d.title:qsTr("No title")
+                descr: d.descr?d.descr:""
+                status: d.status?d.status:""
+                active: d.active?d.active:false
                 showEditor: false
-                factTrigger: false
                 onTriggered: {
-                    //parentFact.setValue(fact.title)
-                    //factMenu.back()
                     parentFact.triggerItem(modelData)
                 }
+
             }
         }
     }
+
     //filter
-    headerPositioning: ListView.OverlayHeader
     header: TextField {
         id: filterText
         z: 100
@@ -64,10 +60,12 @@ FactMenuListView {
         Connections {
             //prefent focus change on model updates
             target: listView
-            enabled: filterEnabled
+            enabled: control.filterEnabled
             onCountChanged: filterText.forceActiveFocus()
         }
     }
+
+
     Timer {
         //initial focus
         interval: 500

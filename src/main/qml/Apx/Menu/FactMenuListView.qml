@@ -6,20 +6,22 @@ import QtQuick.Layouts 1.3
 
 
 ListView {
-    id: control
-    //implicitWidth: MenuStyle.itemWidth
+    id: listView
+
+    model: fact.model
+    property string descr: fact.descr
+
     implicitHeight: MenuStyle.itemSize //contentHeight
     clip: true
     focus: true
     //cacheBuffer: 0
-    model: fact.model
     spacing: 0
     snapMode: ListView.SnapToItem
     readonly property int sectionSize: MenuStyle.itemSize*0.5
     section.property: "modelData.section"
     section.criteria: ViewSection.FullString
     section.delegate: Label {
-        width: control.width
+        width: listView.width
         height: sectionSize
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
@@ -28,83 +30,30 @@ ListView {
         font.family: font_narrow
         text: section
     }
+
+    headerPositioning: ListView.OverlayHeader
     header: Text {
-        width: control.width
+        width: listView.width
         height: visible?implicitHeight:0
         verticalAlignment: Text.AlignTop
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: MenuStyle.itemSize*0.33
         font.family: font_condenced
         color: MenuStyle.cTextDisabled
-        visible: fact.descr && showTitle
-        text: visible?fact.descr:""
-    }
-    footerPositioning: ListView.OverlayFooter
-    Item {
-        id: actionsContainer
-    }
-    property alias contentsActions: actionsContainer.children
-    footer: RowLayout {
-        id: toolsLayout
-        z: 10
-        width: control.width
-        //height: toolsItem.height //childrenRect.height
-        spacing: 5
-        visible: false
-        property bool actionsText: true
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignRight
-            Layout.topMargin: toolsLayout.visible?10:0
-            Repeater {
-                model: fact.actionsModel
-                delegate: FactMenuAction {
-                    fact: modelData;
-                    showText: toolsLayout.actionsText
-                    Connections {
-                        target: modelData
-                        onTriggered: if(factMenu)factMenu.factTriggered(modelData)
-                    }
-                }
-                onItemAdded: timer.restart()
-            }
-            Timer {
-                id: timer
-                running: false
-                repeat: false
-                interval: 10
-                onTriggered: {
-                    for(var i=0;i<contentsActions.length;++i){
-                        var c=contentsActions[i]
-                        c.parent=toolsLayout
-                    }
-                    toolsLayout.visible=true
-                    updateHeight()
-                }
-            }
-            readonly property var contentsActions: actionsContainer.children
-            onContentsActionsChanged: if(contentsActions.length>0)timer.restart()
-        }
-    }
-    onHeightChanged: {
-        if(control){
-            control.footerPositioning=ListView.PullBackFooter
-            control.footerPositioning=ListView.OverlayFooter
-        }
+        visible: listView.descr && showTitle
+        text: visible?listView.descr:""
     }
 
     //scroll
     ScrollBar.vertical: ScrollBar {
         id: scrollBar
         width: 6
-        policy: ScrollBar.AsNeeded //atTop?ScrollBar.AsNeeded:ScrollBar.AlwaysOn
-        //property bool atTop: (control.originY-control.contentY)==0
-        //onAtTopChanged: console.log(atTop)
+        policy: ScrollBar.AsNeeded
     }
 
     //restore pos
     onVisibleChanged: {
-        if(control && visible){
+        if(listView && visible){
             forceLayout()
             positionViewAtIndex(currentIndex,ListView.Center)
         }
@@ -114,11 +63,10 @@ ListView {
     property int itemsCount: count
     onItemsCountChanged: updateHeight()
     onHeaderItemChanged: updateHeight()
-    onFooterItemChanged: updateHeight()
 
     function updateHeight()
     {
-        if(!control)return
+        if(!listView)return
         var h=0
         var s=[]
         for(var i=0;i<itemsCount;++i){
@@ -139,12 +87,12 @@ ListView {
             s.push(f.section)
         }
         if(headerItem)h+=headerItem.height
-        if(footerItem)h+=footerItem.height
+        //if(footerItem)h+=footerItem.height
         if(s[0]==="")s.shift()
         h+=sectionSize*s.length
         h+=MenuStyle.itemSize
 
-        control.implicitHeight=h
+        listView.implicitHeight=h
         //console.log("h",h,count,footerItem?footerItem.implicitHeight:-1)
     }
 }
