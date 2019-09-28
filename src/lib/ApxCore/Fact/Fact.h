@@ -26,13 +26,12 @@
 #include "FactData.h"
 #include "FactListModel.h"
 #include "FactListModelActions.h"
-#include <QColor>
 //=============================================================================
 class Fact : public FactData
 {
     Q_OBJECT
 
-    Q_PROPERTY(FactBase::Flags flags READ flags WRITE setFlags)
+    Q_PROPERTY(FactBase::Flags flags READ flags WRITE setFlags NOTIFY flagsChanged)
 
     Q_PROPERTY(FactListModel *model READ model NOTIFY modelChanged)
     Q_PROPERTY(FactListModelActions *actionsModel READ actionsModel NOTIFY actionsModelChanged)
@@ -49,9 +48,8 @@ class Fact : public FactData
 
     Q_PROPERTY(Fact *bind READ bind WRITE setBind NOTIFY bindChanged)
 
-    Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
-
-    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(QString qmlPage READ qmlPage WRITE setQmlPage NOTIFY qmlPageChanged)
+    Q_PROPERTY(QVariantMap opts READ opts WRITE setOpts NOTIFY optsChanged)
 
 public:
     explicit Fact(QObject *parent = nullptr,
@@ -197,8 +195,9 @@ public:
     QString qmlPage() const;
     void setQmlPage(const QString &v);
 
-    QColor color() const;
-    void setColor(const QColor &v);
+    QVariantMap opts() const;
+    void setOpts(const QVariantMap &v);
+    void setOpt(const QString &name, const QVariant &v);
 
 protected:
     FactListModel *m_model;
@@ -215,7 +214,7 @@ protected:
     QPointer<Fact> m_bind;
 
     QString m_qmlPage;
-    QColor m_color;
+    QVariantMap m_opts;
 
 signals:
     void flagsChanged();
@@ -235,7 +234,7 @@ signals:
     void bindChanged();
 
     void qmlPageChanged();
-    void colorChanged();
+    void optsChanged();
 
     //tree properties propagate
 private:

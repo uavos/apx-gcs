@@ -21,7 +21,6 @@ FactMenuPageList {
         fact: modelData
         showEditor: false
         selected: fact.title===parentFact.text
-        factTrigger: false
         height: visible?MenuStyle.itemSize:0
         width: listView.width
         onTriggered: {

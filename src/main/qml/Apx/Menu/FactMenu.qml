@@ -35,19 +35,6 @@ StackView {
     clip: true
     implicitWidth: currentItem?currentItem.implicitWidth:MenuStyle.itemWidth
     implicitHeight: currentItem?currentItem.implicitHeight:MenuStyle.itemWidth/3
-    //width: currentItem?currentItem.implicitWidth:0
-    //height: currentItem?currentItem.implicitHeight:0
-
-    //onImplicitHeightChanged: console.log(implicitHeight)
-
-    /*property int iHeight: Math.max(currentItem?currentItem.implicitHeight:0,MenuStyle.itemWidth/3)
-    onIHeightChanged: heightTimer.restart()
-    Timer {
-        id: heightTimer
-        interval: 100
-        onTriggered: implicitHeight=iHeight
-    }*/
-
 
     signal factButtonTriggered(var fact)
     signal factOpened(var fact)
@@ -59,7 +46,6 @@ StackView {
 
     function showFact(f)
     {
-        //console.log("showFact", f)
         var c=pageDelegate.createObject(this, {"fact": f})
         fact=f
         push(c)
@@ -95,17 +81,5 @@ StackView {
         clear()
         openFact(apx)
     }
-
-
-    function popItem(pageItem)
-    {
-        if(depth==1)stackEmpty()
-        if(pageItem && factMenu.contains(pageItem)){
-            pop(pageItem,StackView.Immediate);
-        }
-        back();
-        //console.log("pop",depth,typeof(fact))
-    }
-
 }
 

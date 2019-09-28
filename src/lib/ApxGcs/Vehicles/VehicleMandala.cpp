@@ -24,6 +24,7 @@
 #include "Vehicle.h"
 #include "VehicleMandalaFact.h"
 #include <ApxLog.h>
+#include <QColor>
 //=============================================================================
 VehicleMandala::VehicleMandala(Vehicle *parent)
     : Fact(parent, "mandala", "Mandala", tr("Vehicle data tree"), Group)
@@ -66,7 +67,7 @@ VehicleMandala::VehicleMandala(Vehicle *parent)
         if (!d.opts.isEmpty())
             f->setEnumStrings(d.opts);
         f->setPrecision(getPrecision(d));
-        f->setColor(getColor(d));
+        f->setOpt("color", getColor(d));
         if (vehicle->protocol) {
             connect(f,
                     &VehicleMandalaFact::sendValueUpdate,

@@ -11,7 +11,8 @@ import Apx.Menu 1.0
 Popup {
     id: popup
 
-    property point pos: Qt.point(parent.width/2,parent.height/2)
+    property point pos: Qt.point(0.5, 0.5)
+    property point posXY: Qt.point(parent.width*pos.x, parent.height*pos.y)
     property bool pinned: false
 
     property real implicitOpacity: ui.smooth?0.92:1
@@ -23,8 +24,13 @@ Popup {
 
     function showFact(f)
     {
-        Menu.raisePopup(popup)
+        raise()
         factMenu.showFact(f)
+    }
+
+    function raise()
+    {
+        Menu.raisePopup(popup)
     }
 
     opacity: menuEnabled?implicitOpacity:inactiveOpacity
@@ -41,8 +47,8 @@ Popup {
     }
     onFactChanged: if(!fact)factMenu.back()
 
-    x: pos.x - width/2
-    y: pos.y
+    x: posXY.x - width/2
+    y: posXY.y
 
     padding: 0
     margins: 0
@@ -56,14 +62,12 @@ Popup {
         priority: popup.z
         autoResize: true
 
-        onFactOpened: {
-            Menu.raisePopup(popup)
-        }
+        onFactOpened: raise()
 
         onFactButtonTriggered: {
             if(fact.options & Fact.CloseOnTrigger)
                 popup.close()
-            else Menu.raisePopup(popup)
+            else popup.raise()
         }
         Connections {
             target: fact
@@ -94,7 +98,7 @@ Popup {
         property point clickPos: Qt.point(0,0)
         onPressed: {
             clickPos = Qt.point(mouse.x,mouse.y)
-            Menu.raisePopup(popup)
+            popup.raise()
         }
         onPositionChanged: {
             var delta = Qt.point(mouse.x-clickPos.x, mouse.y-clickPos.y)

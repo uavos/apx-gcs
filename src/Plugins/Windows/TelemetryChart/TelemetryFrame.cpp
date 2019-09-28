@@ -184,7 +184,8 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
             style = Qt::DashLine;
         else if (sn.contains("rc_"))
             style = Qt::DotLine;
-        QwtPlotCurve *cv = plot->addCurve(sn, f->descr(), f->units(), QPen(f->color(), 0, style));
+        QColor c(f->opts().value("color", QColor(Qt::white)).value<QColor>());
+        QwtPlotCurve *cv = plot->addCurve(sn, f->descr(), f->units(), QPen(c, 0, style));
         plotMap.insert(cv, f);
     }
     plot->calc = plot->addCurve("calculated",

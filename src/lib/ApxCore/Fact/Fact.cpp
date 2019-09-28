@@ -758,16 +758,31 @@ void Fact::setQmlPage(const QString &v)
     m_qmlPage = v;
     emit qmlPageChanged();
 }
-QColor Fact::color() const
+QVariantMap Fact::opts() const
 {
-    return m_color;
+    return m_opts;
 }
-void Fact::setColor(const QColor &v)
+void Fact::setOpts(const QVariantMap &v)
 {
-    if (m_color == v)
+    if (m_opts == v)
         return;
-    m_color = v;
-    emit colorChanged();
+    m_opts = v;
+    emit optsChanged();
+}
+void Fact::setOpt(const QString &name, const QVariant &v)
+{
+    if (name.isEmpty())
+        return;
+    if (v.isNull()) {
+        if (!m_opts.contains(name))
+            return;
+        m_opts.remove(name);
+    } else {
+        if (m_opts.value(name) == v)
+            return;
+        m_opts.insert(name, v);
+    }
+    emit optsChanged();
 }
 //=============================================================================
 //=============================================================================

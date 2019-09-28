@@ -41,7 +41,7 @@
 #include <QQmlEngine>
 //=============================================================================
 VehicleMission::VehicleMission(Vehicle *parent)
-    : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group)
+    : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group, "ship-wheel")
     , vehicle(parent)
     , blockSizeUpdate(false)
     , m_startHeading(0)
@@ -51,7 +51,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     , m_synced(false)
     , m_saved(false)
 {
-    setIcon("ship-wheel");
+    setOpt("pos", QPointF(0, 1));
 
     storage = new MissionStorage(this);
     connect(storage, &MissionStorage::loaded, this, [=]() {

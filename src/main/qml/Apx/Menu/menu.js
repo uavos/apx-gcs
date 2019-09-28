@@ -40,6 +40,11 @@ function show(fact,opts,parent)
 
     opts.fact = factMenu
 
+    for(var opt in factMenu.opts){
+        if(opts[opt]) continue
+        opts[opt] = factMenu.opts[opt]
+    }
+
     var component = Qt.createComponent("FactMenuPopup.qml",Qml.Component.Asynchronous,parent);
     if (component.status === Qml.Component.Ready){
         createMenuObject(component, opts, parent);
@@ -69,14 +74,14 @@ function createMenuObject(component, opts, parent)
 function raisePopup(popup)
 {
     menuPopups.delete(null)
-    var z=popup.z
+    var z = popup.z
     for(var p of menuPopups){
-        if(p==popup)continue
+        if(p === popup)continue
         p.menuEnabled=false
-        if(z<=p.z)
-            z=p.z+1
+        if(z <= p.z)
+            z = p.z+1
     }
-    popup.z=z
+    popup.z = z
     popup.menuEnabled=true
     //console.log(z)
 }

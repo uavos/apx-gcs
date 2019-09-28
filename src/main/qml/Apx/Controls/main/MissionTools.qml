@@ -26,7 +26,6 @@ RowLayout {
         //implicitHeight: label.height+padding*2
         color: mission.modified?"#FFF59D":"#A5D6A7"
         Material.theme: Material.Light
-        onMenuRequested: mission.trigger({"pos":Qt.point(0,ui.window.height)})
         onClicked: mission.trigger()
         onDoubleClicked: menuRequested()
         contents: [

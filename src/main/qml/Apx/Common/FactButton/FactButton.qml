@@ -66,7 +66,6 @@ CleanButton {
 
     property bool showEditor: hasValue
     property bool showValue: hasValue
-    property bool factTrigger: true
 
     //focus requests
     signal focusRequested()
@@ -80,13 +79,8 @@ CleanButton {
 
     onTriggered: {
         focusRequested()
-
         if(isScript) openDialog("EditorScript")
-        /*else if(expandable && fact){
-            openFact((fact.bind && fact.size<=0)?fact.bind:fact)
-        }*/
-        //else if(isAction)actionTriggered(fact)
-        if(factTrigger && fact)fact.trigger()
+        if(fact)fact.trigger()
     }
 
     onMenuRequested: {

@@ -54,7 +54,7 @@ ColumnLayout {
                 property string sstatus: fact?fact.status:""
                 property int num: fact?fact.num:-1
 
-                onClicked: fact.trigger({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
+                onClicked: fact.trigger()
 
                 Component.onCompleted: {
                     if(!fact)return;

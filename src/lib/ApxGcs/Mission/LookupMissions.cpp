@@ -38,6 +38,8 @@ LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent, Flags flag
                      flags)
     , mission(mission)
 {
+    setOpt("pos", QPointF(0, 1));
+
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupMissions::loadItem);
 }
 //=============================================================================

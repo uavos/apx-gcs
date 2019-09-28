@@ -187,13 +187,16 @@ Item {
             s.useOpenGL = Qt.binding(function(){return openGL})
             s.capStyle=Qt.RoundCap
             //s.opacity=0.7
+
+            var color = fact.opts.color
+            if(!color) color = Qt.rgba(1,1,1,1)
+
             if(fact.name.startsWith("cmd")){
                 s.width=Qt.binding(function(){return lineWidthCmd})
-                s.color=Qt.hsla(fact.color.hslHue, fact.color.hslSaturation/2, fact.color.hslLightness*1.2, 1)
+                s.color=Qt.hsla(color.hslHue, color.hslSaturation/2, color.hslLightness*1.2, 1)
             }else{
                 s.width=Qt.binding(function(){return lineWidth})
-                //s.color=Qt.hsla(fact.color.hslHue, fact.color.hslSaturation, fact.color.hslLightness, 0.5)
-                s.color=fact.color
+                s.color=color
             }
             return s
         }

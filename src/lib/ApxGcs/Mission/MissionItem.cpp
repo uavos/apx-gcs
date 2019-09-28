@@ -38,6 +38,8 @@ MissionItem::MissionItem(MissionGroup *parent,
     , m_totalDistance(0)
     , m_totalTime(0)
 {
+    setOpt("pos", QPointF(0.25, 0.5));
+
     f_order = new MissionField(this, "order", tr("Order"), tr("Object sequence number"), Int);
     f_order->setMin(1);
     updateOrderState();
