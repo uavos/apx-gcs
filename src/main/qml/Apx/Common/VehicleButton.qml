@@ -42,5 +42,5 @@ CleanButton {
         }
     }
 
-    onMenuRequested: menuFact.requestMenu()
+    onMenuRequested: menuFact.trigger()
 }

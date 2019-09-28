@@ -78,6 +78,7 @@ protected:
 
     void groupFields(void);
     void groupNodes(void);
+    void groupArrays(NodesBase *group);
 
     void saveTelemetryUploadEvent();
     void saveTelemetryConf(NodeField *f);
@@ -101,6 +102,8 @@ private slots:
     void updateReconf();
 
     void notifyUpdater();
+
+    void updateArrayRowDescr(Fact *fRow);
 
 public slots:
     void upload();

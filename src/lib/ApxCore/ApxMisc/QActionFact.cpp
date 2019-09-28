@@ -38,7 +38,7 @@ QActionFact::QActionFact(Fact *f)
     connect(f, &Fact::enabledChanged, this, &QActionFact::updateEnabled);
     connect(f, &Fact::visibleChanged, this, &QActionFact::updateVisible);
 
-    connect(this, &QAction::triggered, f, &Fact::trigger);
+    connect(this, &QAction::triggered, f, [f]() { f->trigger(); });
 
     updateText();
     updateToolTip();

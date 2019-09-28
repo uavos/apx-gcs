@@ -165,17 +165,17 @@ VehicleMission::VehicleMission(Vehicle *parent)
                 &Fact::triggered,
                 vehicle->protocol->mission,
                 &ProtocolMission::downloadMission);
+
+        if (!vehicle->isLocal()) {
+            //f_request->trigger();
+            QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
+        }
     }
 
     //reset and update
     clearMission();
     updateActions();
     updateStatus();
-
-    if (!vehicle->isLocal()) {
-        //f_request->trigger();
-        QTimer::singleShot(2000, f_request, &Fact::trigger);
-    }
 
     qmlRegisterUncreatableType<VehicleMission>("APX.Mission", 1, 0, "Mission", "Reference only");
     qmlRegisterUncreatableType<MissionItem>("APX.Mission", 1, 0, "MissionItem", "Reference only");
@@ -303,7 +303,7 @@ void VehicleMission::missionDataReceived(DictMission::Mission d)
     } else {
         emit missionAvailable();
         emit missionDownloaded();
-        f_save->trigger();
+        storage->saveMission();
         vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()));
     }
     setModified(false, true);

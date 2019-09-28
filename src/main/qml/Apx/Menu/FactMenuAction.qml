@@ -12,8 +12,8 @@ CleanButton {
 
     property var fact
 
-    property int options: fact?fact.options:0
-    property int dataType: fact?fact.dataType:0
+    property int options: fact?fact.options:Fact.NoFlags
+    property int dataType: fact?fact.dataType:Fact.NoFlags
 
     toolTip: fact?fact.descr:""
     iconName: fact?fact.icon:""
@@ -26,11 +26,9 @@ CleanButton {
     property bool bApply: dataType==Fact.Apply
     property bool bRemove: dataType==Fact.Remove
     property bool bStop: dataType==Fact.Stop
-    property bool bPage: dataType==Fact.Page || (fact?(fact.size>0||fact.qmlPage):false)
 
     property bool bIconOnly: options&Fact.IconOnly
     property bool bShowDisabled: options&Fact.ShowDisabled
-    property bool bClose: options&Fact.CloseOnTrigger
 
     color: bApply
            ? MenuStyle.cActionApply
@@ -41,22 +39,6 @@ CleanButton {
                : undefined
 
     onTriggered: {
-        if(fact){
-            fact.trigger()
-            if(showPage()) return
-        }
-        if(bClose && typeof(factMenu)!=='undefined') factMenu.back()
-    }
-    onMenuRequested: showPage()
-
-    function showPage()
-    {
-        if(bPage && typeof(openFact)!='undefined'){
-            var f=fact.bind?fact.bind:fact
-            //console.log(f)
-            openFact(f)
-            return true
-        }
-        return false
+        if(fact) fact.trigger()
     }
 }

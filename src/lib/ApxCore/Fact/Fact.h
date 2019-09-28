@@ -32,6 +32,8 @@ class Fact : public FactData
 {
     Q_OBJECT
 
+    Q_PROPERTY(FactBase::Flags flags READ flags WRITE setFlags)
+
     Q_PROPERTY(FactListModel *model READ model NOTIFY modelChanged)
     Q_PROPERTY(FactListModelActions *actionsModel READ actionsModel NOTIFY actionsModelChanged)
 
@@ -46,7 +48,6 @@ class Fact : public FactData
     Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 
     Q_PROPERTY(Fact *bind READ bind WRITE setBind NOTIFY bindChanged)
-    Q_PROPERTY(Fact *link READ link NOTIFY linkChanged)
 
     Q_PROPERTY(QString qmlPage READ qmlPage NOTIFY qmlPageChanged)
 
@@ -98,6 +99,9 @@ public:
     // type conversions
     Fact *parentFact() const { return qobject_cast<Fact *>(FactBase::parentFact()); }
 
+    Q_INVOKABLE bool hasParent(Fact *parent) const;
+    Q_INVOKABLE bool hasChild(Fact *child) const;
+
     template<class T>
     T findParent() const
     {
@@ -132,6 +136,9 @@ public:
     //create action fact that opens this fact, or binded to this action
     Q_INVOKABLE Fact *createAction(Fact *parent);
 
+    //fact menu. returns fact (this or binded) which has the menu or null
+    Q_INVOKABLE Fact *menu();
+
 private:
     QString pTitle() const;
 
@@ -144,22 +151,23 @@ private slots:
     void updateModels();
 
 public slots:
-    virtual void trigger(void); //execute fact event (onClick)
-    void requestDefaultMenu();
-    void requestMenu(QVariantMap opts = QVariantMap());
+    //trigger fact from UI (f.ex. to display menu)
+    void trigger(QVariantMap opts = QVariantMap());
 
 signals:
-    void triggered();
-    void menuRequested(QVariantMap opts);
+    void triggered(QVariantMap opts);
     void menuBack();
 
     //---------------------------------------
     // PROPERTIES
 public:
-    FactListModel *model() const;
+    FactBase::Flags flags() const;
+    void setFlags(FactBase::Flags v);
+
+    FactListModel *model();
     void setModel(FactListModel *v);
 
-    FactListModelActions *actionsModel() const;
+    FactListModelActions *actionsModel();
     void setActionsModel(FactListModelActions *v);
 
     bool enabled() const;
@@ -186,9 +194,6 @@ public:
     Fact *bind() const;
     void setBind(Fact *v);
 
-    Fact *link() const;
-    void setLink(Fact *v);
-
     QString qmlPage() const;
     void setQmlPage(const QString &v);
 
@@ -208,12 +213,13 @@ protected:
     QString m_icon;
 
     QPointer<Fact> m_bind;
-    QPointer<Fact> m_link;
 
     QString m_qmlPage;
     QColor m_color;
 
 signals:
+    void flagsChanged();
+
     void modelChanged();
     void actionsModelChanged();
     void enabledChanged();
@@ -227,7 +233,6 @@ signals:
     void iconChanged();
 
     void bindChanged();
-    void linkChanged();
 
     void qmlPageChanged();
     void colorChanged();

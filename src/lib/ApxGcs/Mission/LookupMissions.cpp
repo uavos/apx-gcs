@@ -38,7 +38,6 @@ LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent, Flags flag
                      flags)
     , mission(mission)
 {
-    connect(this, &Fact::triggered, this, &LookupMissions::dbLookupMissionsByDate);
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupMissions::loadItem);
 }
 //=============================================================================
@@ -85,7 +84,7 @@ bool LookupMissions::fixItemDataThr(QVariantMap *item)
 //=============================================================================
 //=============================================================================
 //=============================================================================
-void LookupMissions::dbLookupMissionsByDate()
+void LookupMissions::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
     query("SELECT * FROM Missions"

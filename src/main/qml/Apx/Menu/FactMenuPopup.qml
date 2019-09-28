@@ -9,59 +9,67 @@ import Apx.Common 1.0
 import Apx.Menu 1.0
 
 Popup {
-    id: popupItem
+    id: popup
 
     property point pos: Qt.point(parent.width/2,parent.height/2)
+    property bool pinned: false
+
+    property real implicitOpacity: ui.smooth?0.92:1
+    property real inactiveOpacity: 0.65
 
     //forward props
     property alias fact: factMenu.fact
-    property alias currentFact: factMenu.currentFact
-    property alias showTitle: factMenu.showTitle
+    property bool menuEnabled: true
 
-    property bool pinned: false
-
-    onClosed: {
-        if(typeof(destroy)!=='undefined')destroy()
+    function showFact(f)
+    {
+        Menu.raisePopup(popup)
+        factMenu.showFact(f)
     }
-    onFactChanged: if(!fact)close()
+
+    opacity: menuEnabled?implicitOpacity:inactiveOpacity
+
+    onAboutToHide: {
+        Menu.unregisterMenuView(factMenu)
+        Menu.unregisterMenuPopup(popup)
+    }
+    onOpened: {
+        Menu.registerMenuPopup(popup)
+    }
+    onClosed: {
+        if(popup && popup.destroy)popup.destroy()
+    }
+    onFactChanged: if(!fact)factMenu.back()
 
     x: pos.x - width/2
-    y: py
-    readonly property int py: pos.y// - height/2
-    onPyChanged: {
-        //y=Qt.binding(function(){return py<0?py:Math.min(y,py)})
-        //console.log(y,height)
-    }
-
-    /*onAboutToShow: {
-        x=pos.x - width/2
-        y=pos.y - height/2
-    }*/
+    y: pos.y
 
     padding: 0
     margins: 0
 
-    //Material.background: "black"
-    //opacity: 1
-
-    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: ui.smooth?0.9:1 } }
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: implicitOpacity } }
 
     closePolicy: pinned?Popup.NoAutoClose:(Popup.CloseOnEscape|Popup.CloseOnPressOutside)
 
     contentItem: FactMenu {
         id: factMenu
+        priority: popup.z
         autoResize: true
-        //onFactRemoved: popupItem.close()
-        //onFactTriggered: if(closeOnTrigger)popupItem.close()
-        onFactTriggered: {
+
+        onFactOpened: {
+            Menu.raisePopup(popup)
+        }
+
+        onFactButtonTriggered: {
             if(fact.options & Fact.CloseOnTrigger)
-                popupItem.close()
+                popup.close()
+            else Menu.raisePopup(popup)
         }
         Connections {
-            target: currentFact
-            onProgressChanged: popupItem.pinned=true
+            target: fact
+            onProgressChanged: popup.pinned=true
         }
-        onStackEmpty: popupItem.close()
+        onStackEmpty: popup.close()
         titleRightMargin: btnClose.width
         CleanButton {
             id: btnClose
@@ -70,25 +78,31 @@ Popup {
             anchors.top: factMenu.top
             anchors.margins: 5
             iconName: "close"
-            color: popupItem.pinned?Material.BlueGrey:undefined
+            color: popup.pinned?Material.BlueGrey:undefined
             height: MenuStyle.titleSize*0.8
             width: height
-            onClicked: popupItem.close()
+            onClicked: popup.close()
         }
     }
+
+    //draggable window
     MouseArea {
+        id: mouseArea
+        z: popup.menuEnabled?0:(contentItem.z+100)
         anchors.fill: parent
+        propagateComposedEvents: popup.menuEnabled
         property point clickPos: Qt.point(0,0)
-        onPressed: clickPos = Qt.point(mouse.x,mouse.y)
+        onPressed: {
+            clickPos = Qt.point(mouse.x,mouse.y)
+            Menu.raisePopup(popup)
+        }
         onPositionChanged: {
             var delta = Qt.point(mouse.x-clickPos.x, mouse.y-clickPos.y)
-            //popupItem.pos = Qt.point(popupItem.pos.x+delta.x,popupItem.pos.y+delta.y)
-            popupItem.x+=delta.x
-            popupItem.y+=delta.y
-            popupItem.pinned=true
-            //console.log(mouse.x-clickPos.x,mouse.y-clickPos.y)
+            popup.x+=delta.x
+            popup.y+=delta.y
+            popup.pinned=true
         }
-        onDoubleClicked: popupItem.pinned=true
-        onPressAndHold: popupItem.pinned=true
+        onDoubleClicked: popup.pinned=true
+        onPressAndHold: popup.pinned=true
     }
 }

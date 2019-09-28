@@ -26,7 +26,7 @@ RowLayout {
         //implicitHeight: label.height+padding*2
         color: mission.modified?"#FFF59D":"#A5D6A7"
         Material.theme: Material.Light
-        onMenuRequested: mission.requestMenu({"pos":Qt.point(0,ui.window.height)})
+        onMenuRequested: mission.trigger({"pos":Qt.point(0,ui.window.height)})
         onClicked: mission.trigger()
         onDoubleClicked: menuRequested()
         contents: [
@@ -56,12 +56,11 @@ RowLayout {
     FactMenuAction {
         fact: mission.tools.load
         visible: (mission.empty)
-        onTriggered: fact.requestMenu({"pos":Qt.point(0,ui.window.height)})
     }
     FactMenuAction {
         fact: mission.mission_title
         title: fact.descr
         visible: (!mission.empty) && mission.mission_title.text===""
-        onTriggered: mission.requestMenu({"pos":Qt.point(0,ui.window.height)})
+        onTriggered: mission.trigger()
     }
 }

@@ -52,7 +52,6 @@ Rectangle {
                     valueScale: 0.8
                     valueColor: fact.extctr.value?Material.color(Material.LightGreen):Material.color(Material.Red)
                     enabled: true
-                    onClicked: fact.requestMenu()
                 }
             }
         }
@@ -72,7 +71,6 @@ Rectangle {
                     valueScale: 0.8
                     valueColor: apx.datalink.server.extctr.value?Material.color(Material.LightGreen):Material.color(Material.LightRed)
                     enabled: true
-                    onClicked: fact.requestMenu()
                 }
             }
         }

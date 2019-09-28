@@ -261,6 +261,6 @@ void Simulator::pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus)
     f_launch->setEnabled(true);
     f_stop->setEnabled(false);
     if (exitCode == 7)
-        f_launch->trigger();
+        launch();
 }
 //=============================================================================

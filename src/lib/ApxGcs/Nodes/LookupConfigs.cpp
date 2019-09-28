@@ -36,7 +36,6 @@ LookupConfigs::LookupConfigs(Nodes *nodes, Fact *parent)
                      Action)
     , nodes(nodes)
 {
-    connect(this, &Fact::triggered, this, &LookupConfigs::dbLookupByDate);
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupConfigs::loadItem);
 }
 //=============================================================================
@@ -63,7 +62,7 @@ bool LookupConfigs::fixItemDataThr(QVariantMap *item)
 //=============================================================================
 //=============================================================================
 //=============================================================================
-void LookupConfigs::dbLookupByDate()
+void LookupConfigs::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
     query("SELECT * FROM VehicleConfigs"

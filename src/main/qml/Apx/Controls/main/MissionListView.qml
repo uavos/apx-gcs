@@ -45,9 +45,6 @@ ColumnLayout {
                 font.bold: true
                 defaultHeight: 16
                 titleSize: 1
-                //iconName: "chevron-double-right"
-                //showContents: true
-                //showIcon: false
 
                 titleColor: (fact && fact.modified)?Material.color(Material.Yellow):Material.primaryTextColor
 
@@ -57,11 +54,7 @@ ColumnLayout {
                 property string sstatus: fact?fact.status:""
                 property int num: fact?fact.num:-1
 
-                onMenuRequested: {
-                    fact.trigger()
-                    fact.requestMenu({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
-                }
-                onClicked: fact.trigger()
+                onClicked: fact.trigger({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
 
                 Component.onCompleted: {
                     if(!fact)return;

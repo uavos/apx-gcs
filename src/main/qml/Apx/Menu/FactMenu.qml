@@ -4,6 +4,9 @@ import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
 
 import Apx.Common 1.0
+import Apx.Menu 1.0
+
+import "."
 
 StackView {
     id: factMenu
@@ -19,50 +22,56 @@ StackView {
 
     property int maxEnumListSize: 5
 
-    property var currentFact: fact
+    property int priority: 0
+
+    Component.onCompleted: {
+        Menu.registerMenuView(factMenu)
+        showFact(fact)
+    }
+    Component.onDestruction: {
+        Menu.unregisterMenuView(factMenu)
+    }
 
     clip: true
-    initialItem: createFactPage(fact)
-
     implicitWidth: currentItem?currentItem.implicitWidth:MenuStyle.itemWidth
-    //implicitHeight: currentItem?currentItem.implicitHeight:MenuStyle.itemWidth/3
+    implicitHeight: currentItem?currentItem.implicitHeight:MenuStyle.itemWidth/3
     //width: currentItem?currentItem.implicitWidth:0
     //height: currentItem?currentItem.implicitHeight:0
 
     //onImplicitHeightChanged: console.log(implicitHeight)
 
-    property int iHeight: Math.max(currentItem?currentItem.implicitHeight:0,MenuStyle.itemWidth/3)
+    /*property int iHeight: Math.max(currentItem?currentItem.implicitHeight:0,MenuStyle.itemWidth/3)
     onIHeightChanged: heightTimer.restart()
     Timer {
         id: heightTimer
         interval: 100
         onTriggered: implicitHeight=iHeight
-    }
+    }*/
 
-    signal opened()
 
-    signal factTriggered(var fact)
+    signal factButtonTriggered(var fact)
+    signal factOpened(var fact)
     signal stackEmpty()
 
     property StackView parentStack
     property bool showBtnBack: depth>1 || parentStack
 
 
-    function createFactPage(f,opts)
+    function showFact(f)
     {
-        if(typeof opts==='undefined')opts={}
-        if(!opts.fact)opts.fact=f
-        var c=pageDelegate.createObject(this,opts)
-        currentFact=f
-        return c
+        //console.log("showFact", f)
+        var c=pageDelegate.createObject(this, {"fact": f})
+        fact=f
+        push(c)
+        forceActiveFocus()
+        factOpened(f)
     }
 
-    function openFact(f,opts)
-    {
-        //console.log(f,opts)
-        push(createFactPage(f,opts))
-        opened()
+    Component {
+        id: pageDelegate
+        FactMenuPage { }
     }
+
 
     function back()
     {
@@ -70,18 +79,21 @@ StackView {
         if(depth==1)stackEmpty()
         if(depth>1)pop();
         else if(parentStack)parentStack.pop();
-        currentFact=currentItem.fact
+        fact=currentItem.fact
     }
+    Connections {
+        target: factMenu.fact
+        onMenuBack: {
+            //console.log("menuBack")
+            back()
+        }
+    }
+
 
     function openSystemTree()
     {
         clear()
         openFact(apx)
-    }
-
-    Component {
-        id: pageDelegate
-        FactMenuPage { }
     }
 
 
@@ -91,7 +103,7 @@ StackView {
         if(pageItem && factMenu.contains(pageItem)){
             pop(pageItem,StackView.Immediate);
         }
-        pop();
+        back();
         //console.log("pop",depth,typeof(fact))
     }
 

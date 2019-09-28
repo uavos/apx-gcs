@@ -40,7 +40,6 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
     , m_recordId(0)
     , m_recordTimestamp(0)
 {
-    connect(this, &Fact::triggered, this, &LookupTelemetry::dbLookup);
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupTelemetry::loadItem);
 
     //actions
@@ -99,7 +98,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
     updateActions();
 
     //refresh on load
-    QTimer::singleShot(3000, this, &Fact::trigger);
+    QTimer::singleShot(3000, this, &LookupTelemetry::defaultLookup);
 }
 //==============================================================================
 void LookupTelemetry::updateActions()
@@ -183,7 +182,7 @@ QString LookupTelemetry::filterTrash() const
 }
 //=============================================================================
 //=============================================================================
-void LookupTelemetry::dbLookup()
+void LookupTelemetry::defaultLookup()
 {
     //qDebug()<<filter();
     query("SELECT * FROM Telemetry"
@@ -313,7 +312,7 @@ void LookupTelemetry::dbResultsNumNext(DatabaseRequest::Records records)
 void LookupTelemetry::dbLoadLatest()
 {
     emit discardRequests();
-    dbLookup();
+    defaultLookup();
     QString qs = "SELECT * FROM Telemetry"
                  " WHERE "
                  + filterTrash() + (filter().isEmpty() ? "" : " AND " + filterQuery())
@@ -400,11 +399,12 @@ void LookupTelemetry::dbRemove()
     info.insert("trash", 1);
     DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(key, info);
     if (num <= 0)
-        connect(req,
-                &DBReqTelemetryWriteInfo::finished,
-                f_latest,
-                &Fact::trigger,
-                Qt::QueuedConnection);
+        connect(
+            req,
+            &DBReqTelemetryWriteInfo::finished,
+            this,
+            [this]() { f_latest->trigger(); },
+            Qt::QueuedConnection);
     //else connect(req,&DBReqRemove::finished,this,&TelemetryReader::rescan,Qt::QueuedConnection);
     req->exec();
 }

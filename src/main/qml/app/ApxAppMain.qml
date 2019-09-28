@@ -13,20 +13,9 @@ Item {
     //fact system menu support
     Connections {
         target: apx
-        onMenuRequested: {
-            if(Menu.popup){
-                //Menu.popup.close()
-            }
-            Menu.show(fact,opts)
-        }
-    }
-    Component.onDestruction: {
-        //if(Menu.popup && Menu.popup.close)Menu.popup.close()
-        //delete Menu.popup
+        onFactTriggered: Menu.show(fact,opts)
     }
 
-    //system menu
-    //property var menuBar: ApxAppMainMenuBar {}
 
     //Shortcuts
     property bool shortcutsEnabled: !apx.settings.interface.shortcuts.blocked.value

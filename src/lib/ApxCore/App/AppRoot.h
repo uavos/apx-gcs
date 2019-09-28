@@ -73,13 +73,12 @@ private:
 
 public:
     void factRequestMenu(Fact *fact, QVariantMap opts);
-    void factNotify(Fact *fact);
 
     Q_INVOKABLE static void sound(const QString &v);
 
 signals:
+    void factTriggered(Fact *fact, QVariantMap opts);
     void menuRequested(Fact *fact, QVariantMap opts);
-    void notify(Fact *fact);
 };
 //=============================================================================
 #endif

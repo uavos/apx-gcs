@@ -102,7 +102,6 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBar->addAction(new QActionFact(lookup->f_next));
     toolBar->addSeparator();
     a = new QActionFact(lookup);
-    connect(a, &QAction::triggered, lookup, &Fact::requestDefaultMenu);
     toolBar->addAction(a);
     toolBar->addSeparator();
     aSplit = toolBar->addAction(SvgMaterialIcon("book-open-variant"),

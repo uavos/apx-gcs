@@ -47,7 +47,8 @@ public:
 
     //DatabaseLookup override
 protected:
-    bool fixItemDataThr(QVariantMap *item);
+    bool fixItemDataThr(QVariantMap *item) override;
+    void defaultLookup() override;
 
 private:
     QString filterQuery() const;
@@ -65,7 +66,6 @@ private slots:
 
     //database
 public slots:
-    void dbLookup();
     void dbLoadInfo();
 
 private slots:

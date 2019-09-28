@@ -19,33 +19,17 @@ ColumnLayout {
     property string pageTitle: fact.title
     property string pageStatus: fact.status
 
-    //implicitHeight: 500 //childrenRect.height
-    //implicitWidth: MenuStyle.itemWidth
-    //Component.onDestruction: console.log("page delete: "+fact.title)
-    StackView.onRemoved: {
-        //console.log("page removed from stack: "+fact.title)
-        if(menuPage)menuPage.destroy()
-    }
-    StackView.onActivated: {
-        //forceActiveFocus()
-        //implicitHeight=0
-        //implicitHeight=childrenRect.height
-        /*if(autoResize){
-            autoResize=false
-            autoResize=true
-        }*/
+    Component.onCompleted: {
+        pageLoader.source=pageSource()
     }
 
-    Connections {
-        target: fact
-        onMenuBack: back()
+    StackView.onRemoved: {
+        if(menuPage)menuPage.destroy()
     }
+
     onFactChanged: {
         if(!fact){
-            //console.log("page fact removed")
             fact=factC.createObject(this)
-            //factRemoved()
-            if(menuPage) popItem(menuPage)
         }
     }
     Component {
@@ -72,30 +56,17 @@ ColumnLayout {
         id: pageLoader
         active: true
         asynchronous: true
-        //source: pageSource()
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.leftMargin: padding
         Layout.rightMargin: padding
         Layout.topMargin: padding
         clip: true
-        property var opts
-        onLoaded: {
-            for(i in opts){
-                item[i]=opts[i]
-            }
-        }
     }
 
     function pageSource()
     {
-        if(pageInfo){
-            if(pageInfoAction){
-                pageTitle+=": "+pageInfoAction.title
-                pageLoader.opts.factAction=pageInfoAction
-            }
-            return "FactMenuPageInfo.qml"
-        }else if(fact.qmlPage){
+        if(fact.qmlPage){
             var s=fact.qmlPage
             if(s.indexOf(":")>=0){
                 return s
@@ -107,13 +78,6 @@ ColumnLayout {
             return "FactMenuPageMandala.qml"
         }else{
             return "FactMenuPageList.qml"
-        }
-    }
-
-    Component.onCompleted: {
-        var src=pageSource()
-        if(src){
-            pageLoader.source=src
         }
     }
 }

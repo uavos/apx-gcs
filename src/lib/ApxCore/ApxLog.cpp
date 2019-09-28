@@ -83,7 +83,7 @@ ApxLog::~ApxLog()
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     messageHandlerChain(type, context, message);
-    ApxLog::message(type, context, message);
+    ApxLog::instance()->message(type, context, message);
 }
 //============================================================================
 //============================================================================
@@ -114,17 +114,28 @@ void ApxLog::message(QtMsgType type, const QMessageLogContext &context, const QS
     if (!msg.endsWith('\n'))
         msg.append('\n');
 
-    ApxLog *log = ApxLog::_instance;
-    QTextStream *stream = log->streams.value(context.category);
+    QTextStream *stream = streams.value(context.category);
     if (stream) {
         *stream << qPrintable(msg);
         stream->flush();
     }
-    if (log->debugStreams.contains(stream))
+
+    switch (type) {
+    default:
+        break;
+    case QtInfoMsg:
+        emit infoMessage(message);
+        break;
+    case QtWarningMsg:
+        emit warningMessage(message);
+        break;
+    }
+
+    if (debugStreams.contains(stream))
         return;
-    if (log->logStream) {
-        *log->logStream << qPrintable(msg);
-        log->logStream->flush();
+    if (logStream) {
+        *logStream << qPrintable(msg);
+        logStream->flush();
     }
 }
 //=============================================================================

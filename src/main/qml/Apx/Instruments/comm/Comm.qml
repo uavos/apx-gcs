@@ -70,7 +70,7 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: apx.vehicles.select.requestMenu() //menuUAV.open() //.popup(mouseX,mouseY)
+            onClicked: apx.vehicles.select.trigger() //menuUAV.open() //.popup(mouseX,mouseY)
         }
     }
 
@@ -105,7 +105,7 @@ Rectangle {
                 id: menuServersArea
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: apx.datalink.servers.requestMenu()
+                onClicked: apx.datalink.servers.trigger()
             }
         }
 

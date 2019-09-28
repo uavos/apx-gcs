@@ -33,8 +33,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
 
     f_stats = new Fact(this, "stats", tr("Get statistics"), tr("Analyze totals"), NoFlags, "numeric");
     connect(f_stats, &Fact::triggered, this, &TelemetryDB::getStats);
-    connect(this, &Fact::triggered, f_stats, &Fact::trigger);
-    connect(this, &Fact::menuRequested, f_stats, &Fact::trigger);
+    connect(this, &Fact::triggered, this, &TelemetryDB::getStats);
 
     f_cache = new Fact(this,
                        "cache",

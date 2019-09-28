@@ -42,7 +42,7 @@ public:
                             const QString &title,
                             const QString &descr,
                             DatabaseSession *db,
-                            FactBase::Flags flags = FactBase::Flags(Page));
+                            FactBase::Flags flags = FactBase::Flags(Group));
 
     Q_INVOKABLE void query(const QString &queryString,
                            const QVariantList &bindValues = QVariantList());
@@ -65,6 +65,7 @@ protected slots:
     virtual void loadItems();
 
 public slots:
+    virtual void defaultLookup();
     void loadQueryResults(DatabaseRequest::Records records);
     void triggerItem(QVariantMap modelData);
 

@@ -72,11 +72,11 @@ class ApxLog : public QObject
 public:
     explicit ApxLog(QObject *parent = nullptr);
     ~ApxLog();
+    static ApxLog *instance() { return _instance; }
+
+    void message(QtMsgType type, const QMessageLogContext &context, const QString &message);
 
     static void add(const QString &categoryName, const QString &fileName, bool debug);
-
-    static void message(QtMsgType type, const QMessageLogContext &context, const QString &message);
-
     static bool display(const QMessageLogContext &context);
 
 private:
@@ -86,6 +86,11 @@ private:
     QList<QTextStream *> debugStreams;    //no print to global log
 
     QTextStream *logStream;
+
+    //notifications support
+signals:
+    void infoMessage(QString msg);
+    void warningMessage(QString msg);
 };
 
 //block standard behavior

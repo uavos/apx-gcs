@@ -322,7 +322,7 @@ void AppSettingFact::save()
     m_settings->setValue(name(), text());
     m_settings->endGroup();
 }
-void AppSettingFact::loadSettings(const Fact *group)
+void AppSettingFact::loadSettings(Fact *group)
 {
     foreach (AppSettingFact *i, AppSettingFact::list) {
         if (group && (!i->hasParent(group)))

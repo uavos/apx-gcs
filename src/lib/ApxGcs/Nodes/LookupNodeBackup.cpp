@@ -34,9 +34,8 @@ LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
                      Database::instance()->nodes)
     , node(node)
 {
-    connect(this, &Fact::triggered, this, &LookupNodeBackup::dbLookup);
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupNodeBackup::loadItem);
-    QTimer::singleShot(500, this, &LookupNodeBackup::trigger);
+    QTimer::singleShot(500, this, &DatabaseLookup::defaultLookup);
 }
 //=============================================================================
 void LookupNodeBackup::loadItem(QVariantMap modelData)
@@ -64,7 +63,7 @@ bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
 //=============================================================================
 //=============================================================================
 //=============================================================================
-void LookupNodeBackup::dbLookup()
+void LookupNodeBackup::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
     query("SELECT * FROM NodeConfigs"

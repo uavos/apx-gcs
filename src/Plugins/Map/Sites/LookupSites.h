@@ -45,11 +45,11 @@ private:
     QMutex mutex;
 
 protected:
-    bool fixItemDataThr(QVariantMap *item);
+    bool fixItemDataThr(QVariantMap *item) override;
+    void defaultLookup() override;
 
 private slots:
     void updateRect();
-    void dbLookup();
 
     //---------------------------------------
     // PROPERTIES

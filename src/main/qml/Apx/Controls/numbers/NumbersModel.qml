@@ -5,6 +5,10 @@ import QtQml.Models 2.11
 import QtQuick.Controls 2.4
 import QtQuick.Controls.Material 2.4
 
+import Apx.Menu 1.0
+
+import APX.Facts 1.0
+
 ObjectModel {
     id: model
 
@@ -96,16 +100,20 @@ ObjectModel {
     }
 
     //EDITOR
+    property Popup popup
     function edit()
     {
-        var c=Qt.createComponent("NumbersDialog.qml",Component.PreferSynchronous,ui.window)
+        if(popup)return
+
+        var c=Qt.createComponent("NumbersMenuPopup.qml",Component.PreferSynchronous,ui.window)
         if (c.status === Component.Ready) {
             var obj = c.createObject(ui.window,{
-                                   "defaults": model.defaults,
-                                   "settingsName": model.settingsName
-                                   })
-            obj.accepted.connect(model.loadSettings)
-            obj.open()
+                                         "defaults": model.defaults,
+                                         "settingsName": model.settingsName
+                                     })
+            popup=obj
+            popup.accepted.connect(loadSettings)
+            popup.open()
         }else{
             console.log(c.errorString())
         }

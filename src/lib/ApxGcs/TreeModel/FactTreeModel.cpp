@@ -80,7 +80,6 @@ QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent)
     Fact *childFact = parentFact->child(row);
     if (!childFact)
         return QModelIndex();
-    //QModelIndex i=createIndex(row, column, childFact);
     checkConnections(childFact);
     return factIndex(childFact, column);
 }
@@ -92,14 +91,11 @@ QModelIndex FactTreeModel::parent(const QModelIndex &index) const
     Fact *i = fact(index);
     if (!i)
         return QModelIndex();
-    //checkConnections(i);
     if (!i->parentFact())
         return QModelIndex();
     Fact *p = i->parentFact();
     if (!p || p == root)
         return QModelIndex();
-    //QModelIndex parentIndex=createIndex(parentFact->num(),0,parentFact);
-    //parentFact->model_index=parentIndex;
     checkConnections(p);
     return factIndex(p);
 }

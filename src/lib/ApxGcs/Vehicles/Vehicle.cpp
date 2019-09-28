@@ -559,9 +559,25 @@ void Vehicle::message(QString msg, QString subsystem, QString prefix)
     if (!subsystem.isEmpty())
         ns.append('/').append(subsystem);
 
+    bool warn = false, err = false;
+    if (prefix.contains("warn", Qt::CaseInsensitive)) {
+        warn = true;
+        prefix.clear();
+    } else if (prefix.contains("err", Qt::CaseInsensitive)) {
+        err = true;
+        prefix.clear();
+    }
+
+    if (!warn) {
+        warn = msg.contains("error", Qt::CaseInsensitive)
+               || msg.contains("fail", Qt::CaseInsensitive)
+               || msg.contains("timeout", Qt::CaseInsensitive)
+               || msg.contains("error", Qt::CaseInsensitive);
+    }
+
     QString s = QString("%1[%2]%3").arg(prefix).arg(ns).arg(msg);
 
-    if (msg.contains("error", Qt::CaseInsensitive)) {
+    if (warn) {
         f_warnings->error(msg);
         apxMsgW() << s;
     } else if (msg.contains("fail", Qt::CaseInsensitive)) {

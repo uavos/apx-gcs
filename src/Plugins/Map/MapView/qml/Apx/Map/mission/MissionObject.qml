@@ -23,7 +23,7 @@ MapObject {  //to be used inside MapComponent only
     }
 
     onMenuRequested: {
-        if(fact) fact.requestMenu({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
+        if(fact) fact.trigger() //({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
     }
 
     property int detailsLevel: 20

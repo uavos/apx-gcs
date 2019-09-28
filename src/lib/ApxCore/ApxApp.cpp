@@ -46,6 +46,9 @@ ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
 
     qRegisterMetaType<QScreen *>("QScreen");
 
+    connect(&log, &ApxLog::infoMessage, this, &ApxApp::logInfoMessage, Qt::QueuedConnection);
+    connect(&log, &ApxLog::warningMessage, this, &ApxApp::logWarningMessage, Qt::QueuedConnection);
+
     //---------------------------------------
     // command line options
     QCommandLineParser parser;
@@ -421,5 +424,23 @@ void ApxApp::setScale(double v)
         return;
     m_scale = v;
     emit scaleChanged();
+}
+//=============================================================================
+//=============================================================================
+void ApxApp::report(QString msg, QString subsystem, ApxApp::NotifyFlags flags)
+{
+    emit notification(msg, subsystem, flags, nullptr);
+}
+void ApxApp::report(Fact *fact)
+{
+    emit notification("", "", FromApp, fact);
+}
+void ApxApp::logInfoMessage(QString msg)
+{
+    emit notification(msg, QString(), Console, nullptr);
+}
+void ApxApp::logWarningMessage(QString msg)
+{
+    emit notification(msg, QString(), Console | Warning, nullptr);
 }
 //=============================================================================

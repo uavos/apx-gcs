@@ -21,7 +21,7 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
             }
             MenuItem {
                 role: MenuItem.PreferencesRole
-                onTriggered: apx.requestMenu()
+                onTriggered: apx.trigger()
             }
             MenuItem {
                 property var fact: apx.settings.application.updater
@@ -54,7 +54,7 @@ Item //external Item wrapper needed, because ApplicationWindow expect classic, n
                 model: apx.tools.model
                 MenuItem {
                     text: modelData.title
-                    onTriggered: modelData.requestMenu()
+                    onTriggered: modelData.trigger()
                 }
                 onObjectAdded: toolsMenu.insertItem(index,object)
                 onObjectRemoved: toolsMenu.removeItem(object)

@@ -36,20 +36,20 @@ class LookupMissions : public DatabaseLookup
 public:
     explicit LookupMissions(VehicleMission *mission,
                             Fact *parent,
-                            FactBase::Flags flags = FactBase::Flags(Page));
+                            FactBase::Flags flags = FactBase::Flags(Group));
 
 private:
     VehicleMission *mission;
     QGeoCoordinate reqPoint;
 
 protected:
-    bool fixItemDataThr(QVariantMap *item);
+    bool fixItemDataThr(QVariantMap *item) override;
+    void defaultLookup() override;
 
 private slots:
     void loadItem(QVariantMap modelData);
 
 public slots:
-    void dbLookupMissionsByDate();
     void dbLookupMissionsByArea(QGeoCoordinate c, QString siteName = QString());
 };
 //=============================================================================

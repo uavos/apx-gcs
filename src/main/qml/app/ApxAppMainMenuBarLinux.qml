@@ -20,7 +20,7 @@ MenuBar {
         }
         MenuItem {
             text: qsTr("Preferences")
-            onTriggered: apx.requestMenu()
+            onTriggered: apx.trigger()
         }
         Instantiator {
             active: apx.settings.application.updater !== undefined
@@ -55,7 +55,7 @@ MenuBar {
             model: apx.tools.model
             MenuItem {
                 text: modelData.title
-                onTriggered: modelData.requestMenu()
+                onTriggered: modelData.trigger()
             }
             onObjectAdded: toolsMenu.insertItem(index,object)
             onObjectRemoved: toolsMenu.removeItem(object)

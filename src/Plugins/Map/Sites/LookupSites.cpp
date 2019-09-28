@@ -40,7 +40,6 @@ LookupSites::LookupSites(Sites *sites)
     dbModel()->qmlMapSafe = true;
     dbModel()->ordered = false;
 
-    connect(this, &Fact::triggered, this, &LookupSites::dbLookup);
     connect(this, &LookupSites::areaChanged, this, &LookupSites::updateRect);
 
     disconnect(db, &DatabaseSession::modified, this, nullptr);
@@ -90,10 +89,10 @@ void LookupSites::updateRect()
     mutex.lock();
     reqDist = r.topLeft().distanceTo(r.bottomRight());
     mutex.unlock();
-    trigger();
+    defaultLookup();
 }
 //=============================================================================
-void LookupSites::dbLookup()
+void LookupSites::defaultLookup()
 {
     if (reqRect.isEmpty())
         return;

@@ -171,7 +171,6 @@ MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
     f->f_latitude->setValue(p.latitude());
     f->f_longitude->setValue(p.longitude());
     f->setModified(true, true);
-    QTimer::singleShot(200, f, &Fact::trigger);
     return f;
 }
 //=============================================================================

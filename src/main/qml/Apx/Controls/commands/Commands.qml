@@ -34,7 +34,6 @@ ColumnLayout {
             active: false
             warning: vehicle.streamType<=0
             enabled: true
-            onTriggered: vehicle.requestMenu()
         }
 
         FactValue {
@@ -48,10 +47,7 @@ ColumnLayout {
             enabled: true
             onTriggered: {
                 if(fact.progress<0)fact.request()
-                else fact.stop()
-                fact.requestMenu()
             }
-            onMenuRequested: fact.requestMenu()
         }
 
         FactValue {
@@ -65,10 +61,7 @@ ColumnLayout {
             enabled: true
             onTriggered: {
                 if(fact.missionSize<=0) fact.request.trigger()
-                //else if(!fact.synced) fact.upload.trigger()
-                fact.requestMenu()
             }
-            onMenuRequested: fact.requestMenu()
         }
     }
 

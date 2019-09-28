@@ -23,6 +23,7 @@
 #ifndef Notifications_H
 #define Notifications_H
 //=============================================================================
+#include <ApxApp.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #include <QtCore>
@@ -43,7 +44,7 @@ private:
     void createItem(Fact *fact);
 
 private slots:
-    void notify(Fact *fact);
+    void appNotification(QString msg, QString subsystem, ApxApp::NotifyFlags flags, Fact *fact);
     void updateItems();
 };
 //=============================================================================

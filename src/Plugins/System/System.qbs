@@ -7,7 +7,7 @@ Project {
         //"DatalinkInspector",
         "FirmwareLoader",
         "Joystick",
-        //"Notifications",
+        "Notifications",
         "Simulator",
         "Sounds",
         "Terminal",

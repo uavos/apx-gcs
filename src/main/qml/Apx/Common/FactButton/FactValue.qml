@@ -22,6 +22,10 @@ CleanButton {
     textAlignment: Text.AlignLeft
     font.family: font_condenced
 
+    onTriggered: {
+        if(fact) fact.trigger()
+    }
+
     property var value: fact?fact.text:""
     property string valueText: value
 

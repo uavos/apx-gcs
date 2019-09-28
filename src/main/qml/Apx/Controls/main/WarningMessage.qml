@@ -19,7 +19,7 @@ CleanButton {
         target: fact
         onShow: message(msg, msgType)
     }
-    onTriggered: fact.requestMenu()
+    onTriggered: fact.trigger()
 
     state: "NORMAL"
     states: [

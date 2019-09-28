@@ -21,7 +21,7 @@
  *
  */
 #include "Fact.h"
-#include <App/AppRoot.h>
+#include <ApxApp.h>
 #include <ApxLog.h>
 #include <QFont>
 #include <QFontDatabase>
@@ -42,7 +42,6 @@ Fact::Fact(QObject *parent,
     , m_progress(-1)
     , m_icon(icon)
     , m_bind(nullptr)
-    , m_link(nullptr)
     , m_parentEnabled(true)
     , m_parentVisible(true)
 {
@@ -73,6 +72,11 @@ Fact::Fact(QObject *parent,
             setSection(static_cast<Fact *>(parentFact())->title());
     });
 
+    //flags
+    connect(this, &Fact::treeTypeChanged, this, &Fact::flagsChanged);
+    connect(this, &Fact::dataTypeChanged, this, &Fact::flagsChanged);
+    connect(this, &Fact::optionsChanged, this, &Fact::flagsChanged);
+
     //append to parent
     setParentFact(qobject_cast<FactBase *>(parent));
 
@@ -97,28 +101,6 @@ void Fact::updateDefaultIcon()
     case Stop:
         setIcon("close-circle");
         break;
-    }
-}
-//=============================================================================
-void Fact::updateModels()
-{
-    if (size() > 0) {
-        if (!m_model) {
-            setModel(new FactListModel(this));
-        }
-    } else {
-        if (m_model) {
-            setModel(nullptr);
-        }
-    }
-    if (!actions().isEmpty()) {
-        if (!m_actionsModel) {
-            setActionsModel(new FactListModelActions(this));
-        }
-    } else {
-        if (m_actionsModel) {
-            setActionsModel(nullptr);
-        }
     }
 }
 //=============================================================================
@@ -285,6 +267,19 @@ void Fact::hashData(QCryptographicHash *h) const
     h->addData(userData.toString().toUtf8());
 }
 //=============================================================================
+bool Fact::hasParent(Fact *parent) const
+{
+    for (const Fact *i = parentFact(); i; i = i->parentFact()) {
+        if (i == parent)
+            return true;
+    }
+    return false;
+}
+bool Fact::hasChild(Fact *child) const
+{
+    return children().contains(child);
+}
+//=============================================================================
 QVariant Fact::findValue(const QString &namePath)
 {
     Fact *f = findChild(namePath);
@@ -391,23 +386,34 @@ bool Fact::lessThan(Fact *rightFact) const
     return num() < rightFact->num();
 }
 //=============================================================================
-void Fact::trigger(void)
+void Fact::trigger(QVariantMap opts)
 {
     if (!enabled())
         return;
+
+    if (bind() && bind()->treeType() == Action) {
+        bind()->trigger(opts);
+    } else {
+        //qDebug() << "trigger" << path();
+        emit triggered(opts);
+        AppRoot::instance()->factTriggered(this, opts);
+    }
+}
+Fact *Fact::menu()
+{
+    if (size() > 0)
+        return this;
+    if (!qmlPage().isEmpty())
+        return this;
+    if (treeType() == Group)
+        return this;
+    if (treeType() == Root)
+        return this;
+    if (dataType() == Mandala)
+        return this;
     if (bind())
-        bind()->trigger();
-    //qDebug()<<"trigger"<<name();
-    emit triggered();
-}
-void Fact::requestDefaultMenu()
-{
-    requestMenu(QVariantMap());
-}
-void Fact::requestMenu(QVariantMap opts)
-{
-    emit menuRequested(opts);
-    AppRoot::instance()->factRequestMenu(this, opts);
+        return bind()->menu();
+    return nullptr;
 }
 //=============================================================================
 void Fact::bind(FactData *fact)
@@ -441,8 +447,6 @@ void Fact::bind(FactData *fact)
 Fact *Fact::createAction(Fact *parent)
 {
     Fact *f = new Fact(parent, m_name, "", "", Action | dataType() | options(), icon());
-    if (treeType() != Action)
-        f->setDataType(Page);
     f->bind(this);
     return f;
 }
@@ -511,8 +515,48 @@ void Fact::valuesFromJson(const QJsonObject &jso)
 }
 //=============================================================================
 //=============================================================================
-FactListModel *Fact::model() const
+void Fact::updateModels()
 {
+    if (size() > 0) {
+        if (!m_model) {
+            emit modelChanged();
+        }
+    } else {
+        if (m_model) {
+            emit modelChanged();
+        }
+    }
+    if (!actions().isEmpty()) {
+        if (!m_actionsModel) {
+            emit actionsModelChanged();
+        }
+    } else {
+        if (m_actionsModel) {
+            emit actionsModelChanged();
+        }
+    }
+}
+//=============================================================================
+FactBase::Flags Fact::flags(void) const
+{
+    return treeType() | dataType() | options();
+}
+void Fact::setFlags(FactBase::Flags v)
+{
+    setTreeType(static_cast<Flag>(static_cast<int>(v & TypeMask)));
+    setDataType(static_cast<Flag>(static_cast<int>(v & DataMask)));
+    setOptions(v & OptsMask);
+}
+FactListModel *Fact::model()
+{
+    bool bEmpty = size() <= 0;
+    if (!m_model) {
+        if (!bEmpty)
+            m_model = new FactListModel(this);
+    } else if (bEmpty) {
+        m_model->deleteLater();
+        m_model = nullptr;
+    }
     return m_model;
 }
 void Fact::setModel(FactListModel *v)
@@ -522,10 +566,16 @@ void Fact::setModel(FactListModel *v)
     m_model = v;
     emit modelChanged();
 }
-FactListModelActions *Fact::actionsModel() const
+FactListModelActions *Fact::actionsModel()
 {
-    //if (bind())
-    //return bind()->actionsModel();
+    bool bEmpty = actions().isEmpty();
+    if (!m_actionsModel) {
+        if (!bEmpty)
+            m_actionsModel = new FactListModelActions(this);
+    } else if (bEmpty) {
+        m_actionsModel->deleteLater();
+        m_actionsModel = nullptr;
+    }
     return m_actionsModel;
 }
 void Fact::setActionsModel(FactListModelActions *v)
@@ -668,7 +718,7 @@ void Fact::setProgress(const int v)
     m_progress = v;
     emit progressChanged();
     if (!blockNotify) {
-        AppRoot::instance()->factNotify(this);
+        ApxApp::instance()->report(this);
     }
 }
 QString Fact::icon() const
@@ -683,17 +733,6 @@ void Fact::setIcon(const QString &v)
         return;
     m_icon = v;
     emit iconChanged();
-}
-Fact *Fact::link() const
-{
-    return m_link;
-}
-void Fact::setLink(Fact *v)
-{
-    if (m_link == v)
-        return;
-    m_link = v;
-    emit linkChanged();
 }
 Fact *Fact::bind() const
 {

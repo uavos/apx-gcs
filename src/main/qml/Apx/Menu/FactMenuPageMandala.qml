@@ -33,11 +33,10 @@ FactMenuPageList {
 
     Fact {
         id: actionsFact
-        treeType: Fact.Group
+        flags: Fact.Group
         Fact {
             title: qsTr("Remove")
-            treeType: Fact.Action
-            dataType: Fact.Remove
+            flags: (Fact.Action | Fact.Remove)
             onTriggered: {
                 control.parentFact.value=""
                 factMenu.back()

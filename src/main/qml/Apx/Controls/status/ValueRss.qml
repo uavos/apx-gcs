@@ -23,8 +23,7 @@ FactValue {
     }
 
     enabled: true
-    onClicked: apx.datalink.requestMenu()
-    onMenuRequested: apx.datalink.requestMenu()
+    onClicked: apx.datalink.trigger()
 
     contents: [
         ColumnLayout {

@@ -21,7 +21,6 @@
  *
  */
 #include "NodeItem.h"
-#include "NodeArrayListModel.h"
 #include "NodeField.h"
 #include "NodeTools.h"
 #include "Nodes.h"
@@ -378,7 +377,7 @@ void NodeItem::message(QString msg)
         return;
 
     QStringList st = msg.trimmed().split('\n', QString::SkipEmptyParts);
-    foreach (QString s, st) {
+    for (auto s : st) {
         s = s.trimmed();
         if (s.isEmpty())
             continue;
@@ -392,8 +391,7 @@ void NodeItem::message(QString msg)
 void NodeItem::groupFields(void)
 {
     //qDebug()<<"groupFields ----------- "<<allFields.size()<<conf_hash;
-    foreach (FactBase *i, allFields) {
-        NodeField *f = static_cast<NodeField *>(i);
+    for (auto f : allFields) {
         //grouping
         Fact *groupItem = nullptr;
         Fact *groupParent = this;
@@ -417,9 +415,16 @@ void NodeItem::groupFields(void)
         }
         if (!f->parentFact())
             f->setParentFact(this);
-        //qDebug()<<"grp"<<f->id<<f->name()<<groupItem;
-        //hide grouped arrays (gpio, controls etc)
+    }
+    //hide grouped arrays (gpio, controls etc)
+    QSet<NodesBase *> groups;
+    for (auto f : allFields) {
+        NodesBase *groupItem = qobject_cast<NodesBase *>(f->parentFact());
+        if (!groupItem || groupItem == this)
+            continue;
+        //continue;
         if (groupItem && groupItem->size() >= 2) {
+            //check if group members are arrays
             bool bArray = false;
             uint cnt = 0;
             for (int i = 0; i < groupItem->size(); ++i) {
@@ -436,20 +441,92 @@ void NodeItem::groupFields(void)
                 cnt++;
                 bArray = true;
             }
-            if (bArray) {
-                //qDebug()<<cnt<<groupItem->path();
-                for (int i = 0; i < groupItem->size(); ++i) {
-                    groupItem->child<NodeField>(i)->setVisible(false);
-                }
-                connect(groupItem->child(0), &Fact::statusChanged, this, [=]() {
-                    groupItem->setStatus(groupItem->child(0)->status());
+            if (bArray)
+                groups.insert(groupItem);
+        }
+    }
+    for (auto group : groups) {
+        qDebug() << group->path();
+        groupArrays(group);
+    }
+}
+//=============================================================================
+void NodeItem::groupArrays(NodesBase *group)
+{
+    //create action with underlaying table structure to edit arrays rows
+
+    Fact *action = new Fact(group, group->name(), group->title(), group->descr(), Action);
+    group->bind(action);
+    group->setModel(action->model());
+
+    connect(group->child(0), &Fact::statusChanged, group, [group]() {
+        group->setStatus(group->child(0)->status());
+    });
+    group->setStatus(group->child(0)->status());
+
+    //hide group members
+    for (int i = 0; i < group->size(); ++i) {
+        NodeField *f = group->child<NodeField>(i);
+        if (!f)
+            continue;
+        f->setVisible(false);
+    }
+
+    Fact *f1 = group->child(0);
+    int colCnt = group->size();
+    for (int row = 0; row < f1->size(); ++row) {
+        Fact *fi = f1->child(row);
+        Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Fact::Group);
+        //fRow->setActionsModel(group->actionsModel());
+        connect(group, &Fact::modifiedChanged, fRow, [fRow, group]() {
+            fRow->setModified(group->modified());
+        });
+        connect(fi, &Fact::textChanged, fRow, [fRow, fi]() { fRow->setStatus(fi->text()); });
+        connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
+
+        Fact *f_ch = nullptr;
+        for (int i = 0; i < colCnt; ++i) {
+            Fact *fArray = group->child(i);
+            if (!fArray)
+                continue;
+            Fact *fp;
+            bool bChParam = false;
+            if (f_ch && fArray->name().startsWith("ctr_ch_")) {
+                fp = fArray->child(f_ch->value().toInt());
+                bChParam = true;
+            } else {
+                fp = fArray->child(row);
+            }
+            if (!fp)
+                continue;
+            Fact *f = new Fact(fRow,
+                               fArray->name(),
+                               fArray->title(),
+                               fArray->descr(),
+                               fp->treeType() | fp->dataType());
+            f->bind(fp);
+            connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
+            if (bChParam) {
+                connect(f_ch, &Fact::valueChanged, f, [f, fArray, f_ch]() {
+                    f->bind(fArray->child(f_ch->value().toInt()));
                 });
-                groupItem->setStatus(groupItem->child(0)->status());
-                //make table model for fields
-                groupItem->setModel(new NodeArrayListModel(groupItem));
+            }
+
+            if (f->name() == "ctr_ch") {
+                f_ch = f;
             }
         }
-    } //foreach field
+    }
+}
+void NodeItem::updateArrayRowDescr(Fact *fRow)
+{
+    QStringList st;
+    if (!fRow->status().isEmpty()) {
+        for (int i = 0; i < fRow->size(); ++i) {
+            st.append(fRow->child(i)->text());
+        }
+    }
+    fRow->setDescr(st.join(", "));
 }
 //=============================================================================
 void NodeItem::groupNodes(void)

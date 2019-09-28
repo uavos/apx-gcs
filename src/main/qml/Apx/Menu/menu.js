@@ -2,37 +2,53 @@
 .import QtQuick.Controls 2.4 as Controls
 .import QtQml 2.11 as Qml
 
-var component
-var popup=null
-var options={}
+
+var popupItem = null
+var menuViews = new Set()
+var menuPopups = new Set()
 
 function show(fact,opts,parent)
 {
-    if(popup){
-        if(fact === popup.currentFact)return
-        if(typeof(popup.pinned)!=='undefined' && (!popup.pinned)){
-            popup.close()
-            popup=null
+    if(!fact) return
+    var factMenu=fact.menu()
+    if(!factMenu) return
+
+    if(!opts) opts={}
+    if(!parent) parent=ui.window
+
+    //console.log("Menu.show", fact, JSON.stringify(opts), parent)
+
+    var av=Array.from(menuViews).sort((a,b) => b.priority-a.priority)
+    for(var i in av){
+        var menuItem=av[i]
+        if(menuItem){
+            //console.log(menuItem.priority)
+            if(menuItem.fact === factMenu || menuItem.fact === fact){
+                //already displaying fact
+                //console.log("Menu.skip", fact)
+                menuItem.factOpened(menuItem.fact)
+                return
+            }
+            if(fact.hasParent(menuItem.fact) || factMenu.hasParent(menuItem.fact)){
+            //if(fact.parentFact==menuItem.fact || factMenu.parentFact==menuItem.fact){
+                //console.log("Menu.update", menuItem)
+                menuItem.showFact(factMenu)
+                return
+            }
         }
     }
 
-    if(!opts)opts={}
-    if(!parent)parent=ui.window //Controls.ApplicationWindow.contentItem
-    //console.log(fact,opts)
+    opts.fact = factMenu
 
-    options=opts
-    options.fact=fact
-    options.parentObject=parent
-
-    component = Qt.createComponent("FactMenuPopup.qml",Qml.Component.Asynchronous,parent);
+    var component = Qt.createComponent("FactMenuPopup.qml",Qml.Component.Asynchronous,parent);
     if (component.status === Qml.Component.Ready){
-        createMenuObject(component);
+        createMenuObject(component, opts, parent);
     }else{
-        component.statusChanged.connect(createMenuObject);
+        component.statusChanged.connect(function(){createMenuObject(component, opts, parent)});
     }
 }
 
-function createMenuObject()
+function createMenuObject(component, opts, parent)
 {
     if (component.status === Qml.Component.Error) {
         console.log("Error loading component:", component.errorString());
@@ -40,30 +56,62 @@ function createMenuObject()
     }
     if (component.status !== Qml.Component.Ready) return;
 
-    popup = component.createObject(options.parentObject, options);
-    /*if (popup.status !== Qml.Component.Ready) {
-        popup.onStatusChanged = function(status) {
-            if (status === Qml.Component.Ready) {
-                createPopup();
-            }
-        }
-    } else {
-        createPopup();
-    }*/
-    createPopup()
-}
+    var obj = component.createObject(parent, opts);
 
-function createPopup()
-{
-    if (popup === null || popup.status === Qml.Component.Error) {
-        console.log("Error creating object:", popup.errorString());
+    if (obj === null || obj.status === Qml.Component.Error) {
+        console.log("Error creating object:", obj.errorString());
         return
     }
-    //ui.popup=popup
-    //console.log(options.fact)
-    popup.open()
-    popup.closed.connect(function(){
-        //delete ui.popup
-        //popup=null
-    })
+
+    obj.open()
+}
+
+function raisePopup(popup)
+{
+    menuPopups.delete(null)
+    var z=popup.z
+    for(var p of menuPopups){
+        if(p==popup)continue
+        p.menuEnabled=false
+        if(z<=p.z)
+            z=p.z+1
+    }
+    popup.z=z
+    popup.menuEnabled=true
+    //console.log(z)
+}
+function activatePopup()
+{
+    menuPopups.delete(null)
+    if(menuPopups.length<=0)return
+    //activate highest z popup
+    var popup=menuPopups.values().next().value
+    for(var p of menuPopups){
+        if(!p)continue
+        p.menuEnabled=false
+        if(popup.z>p.z)continue
+        popup=p
+    }
+    if(popup)
+        popup.menuEnabled=true
+}
+
+function registerMenuView(menu)
+{
+    //console.log("MENU:", menu)
+    menuViews.add(menu)
+}
+function unregisterMenuView(menu)
+{
+    //console.log("MENU REMOVE:", menu)
+    menuViews.delete(menu)
+}
+function registerMenuPopup(popup)
+{
+    menuPopups.add(popup)
+}
+function unregisterMenuPopup(popup)
+{
+    menuPopups.delete(popup)
+    activatePopup()
 }

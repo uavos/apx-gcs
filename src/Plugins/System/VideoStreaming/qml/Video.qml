@@ -118,7 +118,7 @@ Rectangle {
         CleanButton {
             iconName: "tune"
             onTriggered: {
-                stream.tune.requestMenu()
+                stream.tune.trigger()
             }
         }
 

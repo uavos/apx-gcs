@@ -23,21 +23,28 @@
 #include "Notifications.h"
 #include "NotifyItem.h"
 #include <App/AppRoot.h>
+#include <ApxApp.h>
 //=============================================================================
 Notifications::Notifications(Fact *parent)
-    : Fact(parent, PLUGIN_NAME, tr("Notifications"), tr("Application notifications"), Group)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Notifications"),
+           tr("Application notifications"),
+           Group,
+           "comment")
     , notifyEvent(100, true)
 {
-    setIcon("comment");
-
     connect(&notifyEvent, &DelayedEvent::triggered, this, &Notifications::updateItems);
 
-    connect(AppRoot::instance(), &AppRoot::notify, this, &Notifications::notify);
+    connect(ApxApp::instance(), &ApxApp::notification, this, &Notifications::appNotification);
 
-    //ApxApp::instance()->engine()->loadQml("qrc:/sites/NotificationsPlugin.qml");
+    ApxApp::instance()->engine()->loadQml("qrc:/" PLUGIN_NAME "/NotificationsPlugin.qml");
 }
 //=============================================================================
-void Notifications::notify(Fact *fact)
+void Notifications::appNotification(QString msg,
+                                    QString subsystem,
+                                    ApxApp::NotifyFlags flags,
+                                    Fact *fact)
 {
     if (items.contains(fact))
         return;

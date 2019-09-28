@@ -67,13 +67,11 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
     QAction *aLookup = new QActionFact(vehicle->f_nodes->f_lookup);
-    connect(aLookup, &QAction::triggered, vehicle->f_nodes->f_lookup, &Fact::requestDefaultMenu);
     toolBar->addAction(aLookup);
 
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
 
     QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
-    connect(aShare, &QAction::triggered, vehicle->f_nodes->f_share, &Fact::requestDefaultMenu);
     toolBar->addAction(aShare);
 
     aUndo = toolBar->addAction(SvgMaterialIcon("undo"),
@@ -185,7 +183,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
                             groups.insert(cname, mGroup);
                         }
                         if (dbq) {
-                            dbq->trigger(); //refresh db (delayed thread)
+                            dbq->defaultLookup(); //refresh db (delayed thread)
                             int cnt = dbq->dbModel()->count();
                             if (cnt > 30)
                                 cnt = 30;
@@ -212,14 +210,14 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
                                     f = c->child(i);
                                     if (!f)
                                         continue;
-                                    connect(a, &QAction::triggered, f, &Fact::trigger);
+                                    connect(a, &QAction::triggered, f, [f]() { f->trigger(); });
                                 }
                             }
                         }
                     } else
                         m.addAction(a);
                     foreach (Fact *c, nl) {
-                        connect(a, &QAction::triggered, c, &Fact::trigger);
+                        connect(a, &QAction::triggered, c, [c]() { c->trigger(); });
                     }
                 }
             }
@@ -231,7 +229,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         m.addSeparator();
     Fact *c = vehicle->f_nodes->nodes().first()->tools->f_rebootall;
     QAction *a = new QAction(c->title(), &m);
-    connect(a, &QAction::triggered, c, &Fact::trigger);
+    connect(a, &QAction::triggered, c, [c]() { c->trigger(); });
     m.addAction(a);
 
     if (!m.isEmpty())

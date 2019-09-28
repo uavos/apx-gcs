@@ -48,7 +48,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
     Nodes *nodes = fact->findParent<Nodes *>();
     if (nodes) {
         aUpload = new QAction(SvgMaterialIcon("upload"), tr("Upload"), this);
-        connect(aUpload, &QAction::triggered, nodes->f_upload, &Fact::trigger);
+        connect(aUpload, &QAction::triggered, nodes, [nodes]() { nodes->f_upload->trigger(); });
         connect(nodes->f_upload, &Fact::enabledChanged, this, [=]() {
             Nodes *nodes = fact->findParent<Nodes *>();
             aUpload->setEnabled(nodes && nodes->f_upload->enabled());

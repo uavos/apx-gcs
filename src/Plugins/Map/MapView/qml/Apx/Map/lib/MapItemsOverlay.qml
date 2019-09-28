@@ -51,7 +51,7 @@ MapBase {
     }
     onMenuRequested: {
         if(mapPlugin){
-            mapPlugin.requestMenu({"pos": mouseClickPoint})
+            mapPlugin.trigger({"pos": mouseClickPoint})
         }
     }
     onCenterChanged: mapToolsUpdateTimer.start()

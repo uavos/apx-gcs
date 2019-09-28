@@ -103,8 +103,45 @@ signals:
     void visibilityChanged(QWindow::Visibility visibility);
     void playSoundEffect(const QString &v);
 
+    // notifications and text messages
 public:
+    enum NotifyFlag {
+        //message origin [enum]
+        NotifyOriginMask = 0x0F,
+        FromApp = 0,     // msg from app
+        FromVehicle = 1, // msg from vehicle
+
+        //importance [enum]
+        NotifyTypeMask = 0xF0,
+        Info = 0 << 4,
+        Important = 1 << 4,
+        Warning = 2 << 4,
+        Error = 3 << 4,
+
+        //options [bits]
+        NotifyOptionsMask = 0xF00,
+        Console = 1 << 8,     // msg from log stream
+        MenuRequest = 2 << 8, // requesting menu from fact
+    };
+    Q_DECLARE_FLAGS(NotifyFlags, NotifyFlag)
+    Q_FLAG(NotifyFlags)
+    Q_ENUM(NotifyFlag)
+
+public slots:
+    void report(QString msg,
+                QString subsystem = QString(),
+                ApxApp::NotifyFlags flags = ApxApp::NotifyFlags(FromApp));
+    void report(Fact *fact);
+private slots:
+    void logInfoMessage(QString msg);
+    void logWarningMessage(QString msg);
+
+signals:
+    void notification(QString msg, QString subsystem, ApxApp::NotifyFlags flags, Fact *fact);
+
     //---------------------------------------
+    //PROPERTIES
+public:
     AppEngine *engine() const;
     QQuickWindow *window() const;
     double scale() const;
@@ -118,5 +155,6 @@ signals:
     void windowChanged();
     void scaleChanged();
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(ApxApp::NotifyFlags)
 //=============================================================================
 #endif

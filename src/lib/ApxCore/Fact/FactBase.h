@@ -69,13 +69,12 @@ public:
         //complex data types
         Mandala = 10 << 16, // Mandala ID
         Script = 11 << 16,  // script editor
-        Key = 12 << 16,
+        Key = 12 << 16,     // keyboard shortcut
 
         //actions data types
         Apply = 20 << 16,  // green apply button
         Remove = 21 << 16, // red trash button
         Stop = 22 << 16,   //red stop button
-        Page = 23 << 16,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
     Q_FLAG(Flags)
@@ -97,9 +96,6 @@ public:
     Q_INVOKABLE QString path(const QChar pathDelimiter = QChar('.')) const;
 
     QList<FactBase *> pathList() const;
-
-    bool hasParent(const FactBase *parent) const;
-    bool hasChild(const FactBase *child) const;
 
     QList<FactBase *> actions() const;
 

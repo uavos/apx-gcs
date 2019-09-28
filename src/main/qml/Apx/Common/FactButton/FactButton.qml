@@ -35,6 +35,7 @@ CleanButton {
 
     property int treeType: fact?fact.treeType:Fact.NoFlags
     property int dataType: fact?fact.dataType:Fact.NoFlags
+
     property int factSize: fact?fact.size:0
     property string qmlPage: fact?fact.qmlPage:""
 
@@ -42,8 +43,6 @@ CleanButton {
 
     property bool selected: false
     property bool draggable: true
-
-    //toolTip: text+"\n"+descr
 
     showText: true
     textAlignment: Text.AlignLeft
@@ -58,7 +57,6 @@ CleanButton {
                               && (
                                   factSize>0
                                   || (treeType === Fact.Group)
-                                  || (treeType === Fact.Page)
                                   || qmlPage
                                   || isMandala
                                   )
@@ -82,10 +80,11 @@ CleanButton {
 
     onTriggered: {
         focusRequested()
-        //if(!activeFocus)return
-        //if(typeof(listView)!='undefined')listView.currentIndex=index
+
         if(isScript) openDialog("EditorScript")
-        else if(expandable && fact) openFact(fact.bind?fact.bind:fact)
+        /*else if(expandable && fact){
+            openFact((fact.bind && fact.size<=0)?fact.bind:fact)
+        }*/
         //else if(isAction)actionTriggered(fact)
         if(factTrigger && fact)fact.trigger()
     }

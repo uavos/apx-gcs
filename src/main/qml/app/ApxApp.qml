@@ -1,11 +1,6 @@
-﻿import QtQml 2.12
-import QtQuick 2.11
-
-import QtQuick.Controls 2.5
-//import Qt.labs.platform 1.0
+﻿import QtQuick 2.12
 
 import Apx.Common 1.0
-//import Apx.Menu 1.0
 
 
 AppWindow {
@@ -35,16 +30,10 @@ AppWindow {
 
     showBgImage: loaderMain.opacity!=1
 
-    //menuBar: ApxAppMainMenuBar {}
-    //menuBar: MenuBar {}
-
     Connections {
         target: application
         onLoadingFinished: {
             loaderMain.active=true
-            //showBgImage=false
-            //menuBar=loaderMain.item.menuBar
-            //menuItem.window=control
         }
     }
 

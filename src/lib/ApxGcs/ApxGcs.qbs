@@ -98,7 +98,6 @@ ApxApp.ApxLibrary {
             "NodeItem.cpp", "NodeItem.h",
             "NodeItemBase.cpp", "NodeItemBase.h",
             "NodeItemData.cpp", "NodeItemData.h",
-            "NodeArrayListModel.cpp", "NodeArrayListModel.h",
             "NodesStorage.cpp", "NodesStorage.h",
             "NodeTools.cpp", "NodeTools.h",
             "NodeToolsGroup.cpp", "NodeToolsGroup.h",

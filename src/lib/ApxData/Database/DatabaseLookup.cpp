@@ -42,8 +42,14 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
             &DatabaseLookup::loadRecordsItems,
             Qt::QueuedConnection);
 
-    connect(this, &DatabaseLookup::filterChanged, this, &DatabaseLookup::trigger);
-    connect(db, &DatabaseSession::modified, this, &DatabaseLookup::trigger, Qt::QueuedConnection);
+    connect(this, &DatabaseLookup::filterChanged, this, &DatabaseLookup::defaultLookup);
+    connect(db,
+            &DatabaseSession::modified,
+            this,
+            &DatabaseLookup::defaultLookup,
+            Qt::QueuedConnection);
+
+    connect(this, &Fact::triggered, this, &DatabaseLookup::defaultLookup);
 
     Fact *f_tools = new Fact(this,
                              "tools",
@@ -51,7 +57,7 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
                              tr("Database maintenance"),
                              Action | IconOnly,
                              "wrench");
-    connect(f_tools, &Fact::triggered, db, &Fact::requestDefaultMenu);
+    f_tools->bind(db);
 
     modelSyncTimer.setSingleShot(true);
     modelSyncTimer.setInterval(500);
@@ -122,6 +128,8 @@ void DatabaseLookup::triggerItem(QVariantMap modelData)
 {
     emit itemTriggered(modelData);
 }
+//=============================================================================
+void DatabaseLookup::defaultLookup() {}
 //=============================================================================
 //=============================================================================
 DatabaseLookupModel *DatabaseLookup::dbModel() const

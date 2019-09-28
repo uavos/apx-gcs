@@ -71,8 +71,7 @@ BlackboxNode::BlackboxNode(Fact *parent, NodeItem *node)
         }
     });
 
-    connect(this, &Fact::triggered, f_stats, &Fact::trigger);
-    connect(this, &Fact::menuRequested, f_stats, &Fact::trigger);
+    connect(this, &Fact::triggered, this, &BlackboxItem::getStats);
 
     updateActions();
 }
@@ -97,7 +96,7 @@ void BlackboxNode::addCommand(Fact *fact)
         return;
     }
     bb_read = fact->userData.toUInt();
-    connect(fact, &Fact::triggered, this, &Fact::requestDefaultMenu);
+    connect(fact, &Fact::triggered, this, &Fact::trigger);
 }
 //=============================================================================
 void BlackboxNode::request(Operation op, QByteArray data)

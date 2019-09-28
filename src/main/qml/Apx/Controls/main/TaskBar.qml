@@ -60,13 +60,13 @@ RowLayout {
         iconName: apx.tools.icon
         implicitHeight: parent.height
         toolTip: apx.tools.title
-        onTriggered: apx.tools.requestMenu()
+        onTriggered: apx.tools.trigger()
     }
     CleanButton {
         iconName: apx.windows.icon
         implicitHeight: parent.height
         toolTip: apx.windows.title
-        onTriggered: apx.windows.requestMenu()
+        onTriggered: apx.windows.trigger()
     }
 
     //simulator
@@ -78,7 +78,7 @@ RowLayout {
                 iconName: apx.tools.simulator.icon
                 implicitHeight: control.height
                 toolTip: apx.tools.simulator.descr
-                onTriggered: apx.tools.simulator.requestMenu()
+                onTriggered: apx.tools.simulator.trigger()
             }
         }
         visible: status===Loader.Ready

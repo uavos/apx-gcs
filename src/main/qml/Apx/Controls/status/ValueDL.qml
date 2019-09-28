@@ -21,7 +21,7 @@ FactValue {
     property bool light: active||warning
 
     enabled: true
-    onClicked: apx.datalink.requestMenu()
+    onClicked: apx.datalink.trigger()
     onMenuRequested: m.errcnt=0
 
     readonly property color cGreen: light?Material.color(Material.Yellow):Material.color(Material.LightGreen)

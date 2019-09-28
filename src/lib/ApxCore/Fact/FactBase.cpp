@@ -243,19 +243,6 @@ QList<FactBase *> FactBase::pathList() const
     return list;
 }
 //=============================================================================
-bool FactBase::hasParent(const FactBase *parent) const
-{
-    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
-        if (i == parent)
-            return true;
-    }
-    return false;
-}
-bool FactBase::hasChild(const FactBase *child) const
-{
-    return children().contains(const_cast<FactBase *>(child));
-}
-//=============================================================================
 void FactBase::updateNum()
 {
     int v = indexInParent();
@@ -340,7 +327,7 @@ void FactBase::setName(const QString &v)
 }
 FactBase *FactBase::parentFact() const
 {
-    return m_parentFact.isNull() ? nullptr : m_parentFact;
+    return m_parentFact;
 }
 void FactBase::setParentFact(FactBase *v)
 {

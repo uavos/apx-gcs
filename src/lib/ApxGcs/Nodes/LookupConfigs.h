@@ -39,13 +39,11 @@ private:
     Nodes *nodes;
 
 protected:
-    bool fixItemDataThr(QVariantMap *item);
+    bool fixItemDataThr(QVariantMap *item) override;
+    void defaultLookup() override;
 
 private slots:
     void loadItem(QVariantMap modelData);
-
-public slots:
-    void dbLookupByDate();
 };
 //=============================================================================
 #endif

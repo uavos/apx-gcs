@@ -97,7 +97,7 @@ public:
                             QVariant defaultValue = QVariant());
 
     static QList<AppSettingFact *> list;
-    static void loadSettings(const Fact *group);
+    static void loadSettings(Fact *group);
 
     void load();
     void save();

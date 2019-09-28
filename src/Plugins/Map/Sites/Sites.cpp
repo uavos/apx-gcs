@@ -107,7 +107,11 @@ void Sites::dbAddSite(QVariantMap item)
     DBReqMissionsSaveSite *req = new DBReqMissionsSaveSite(item.value("title").toString(),
                                                            item.value("lat").toDouble(),
                                                            item.value("lon").toDouble());
-    connect(req, &DatabaseRequest::finished, f_lookup, &Fact::trigger, Qt::QueuedConnection);
+    connect(req,
+            &DatabaseRequest::finished,
+            f_lookup,
+            &DatabaseLookup::defaultLookup,
+            Qt::QueuedConnection);
     connect(
         req,
         &DBReqMissionsSaveSite::siteAdded,
@@ -125,7 +129,11 @@ void Sites::dbRemoveSite(QVariantMap item)
     if (!key)
         return;
     DBReqMissionsRemoveSite *req = new DBReqMissionsRemoveSite(key);
-    connect(req, &DatabaseRequest::finished, f_lookup, &Fact::trigger, Qt::QueuedConnection);
+    connect(req,
+            &DatabaseRequest::finished,
+            f_lookup,
+            &DatabaseLookup::defaultLookup,
+            Qt::QueuedConnection);
     connect(
         req,
         &DBReqMissionsRemoveSite::siteRemoved,
@@ -145,7 +153,11 @@ void Sites::dbUpdateSite(QVariantMap item)
                                                            item.value("lat").toDouble(),
                                                            item.value("lon").toDouble(),
                                                            key);
-    connect(req, &DatabaseRequest::finished, f_lookup, &Fact::trigger, Qt::QueuedConnection);
+    connect(req,
+            &DatabaseRequest::finished,
+            f_lookup,
+            &DatabaseLookup::defaultLookup,
+            Qt::QueuedConnection);
     connect(
         req,
         &DBReqMissionsSaveSite::siteModified,

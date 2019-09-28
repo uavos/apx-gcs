@@ -22,7 +22,7 @@ MapObject {
     opacity: ui.effects?((hover||selected)?1:0.7):1
 
     onMenuRequested: {
-        sites.edit.requestMenu({"pos":Qt.point(0,ui.window.height)})
+        sites.edit.trigger() //({"pos":Qt.point(0,ui.window.height)})
     }
 
     //dragging support
