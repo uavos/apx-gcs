@@ -101,6 +101,9 @@ signals:
 
     void recordFactTriggered(Fact *f);
 
+public slots:
+    void loadCurrent();
+
     //PROPERTIES
 public:
     quint64 totalSize() const;

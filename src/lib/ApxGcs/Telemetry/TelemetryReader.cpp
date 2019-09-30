@@ -71,10 +71,7 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     connect(&loadEvent, &DelayedEvent::triggered, this, &TelemetryReader::dbLoadData);
     loadEvent.setInterval(500);
 
-    connect(this, &Fact::triggered, lookup, [this]() {
-        if (!this->lookup->recordId())
-            this->lookup->f_latest->trigger();
-    });
+    connect(this, &Fact::triggered, this, &TelemetryReader::loadCurrent);
 
     updateRecordInfo();
 }
@@ -86,6 +83,12 @@ void TelemetryReader::updateStatus()
     if (totalDistance() > 0)
         st << AppRoot::distanceToString(totalDistance());
     setStatus(st.join('/'));
+}
+//==============================================================================
+void TelemetryReader::loadCurrent()
+{
+    if (!lookup->recordId())
+        lookup->f_latest->trigger();
 }
 //==============================================================================
 void TelemetryReader::updateRecordInfo()

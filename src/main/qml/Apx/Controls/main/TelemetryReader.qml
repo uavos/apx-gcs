@@ -20,7 +20,7 @@ RowLayout {
         noFactTrigger: true
         onTriggered: {
             apx.vehicles.replay.telemetry.trigger()
-            apx.vehicles.replay.telemetry.latest.trigger()
+            apx.vehicles.replay.telemetry.reader.loadCurrent()
         }
     }
 

@@ -42,7 +42,7 @@ CleanButton {
     enabled: fact?fact.enabled:true
 
     property bool selected: false
-    property bool draggable: true
+    property bool draggable: fact && fact.parentFact && (fact.parentFact.options&Fact.DragChildren)
 
     property bool noFactTrigger: false
 
@@ -88,29 +88,32 @@ CleanButton {
 
     onMenuRequested: {
         if(!draggable){
-            if(fact)openFact(fact,{"pageInfo": true})
+            //if(fact)openFact(fact,{"pageInfo": true})
         }else{
             held = true
         }
     }
 
-    onPressed: grabToImage(function(result) {Drag.imageSource = result.url})
+    onPressed: {
+        if(draggable)
+            grabToImage(function(result) {Drag.imageSource = result.url})
+    }
     onReleased: held = false
 
-    Drag.dragType: Drag.Automatic
-    Drag.active: held
+    Drag.dragType: draggable?Drag.Automatic:Drag.None
+    Drag.active: draggable && held
     Drag.hotSpot.x: 10
     Drag.hotSpot.y: 10
     Drag.supportedActions: Qt.MoveAction
     //Drag.keys: String(parent) //fact.parentFact?fact.parentFact.name:"root"
 
     DropArea {
+        enabled: factButton.draggable
         anchors { fill: parent; margins: 10 }
         //keys: String(factButton.parent)
         onEntered: {
             console.log(drag.source.title+" -> "+title)
             //console.log(drag.target.title)
-            //fact.ParentFact.model.move(drag.source.fact.num,fact.num)
             if(fact)drag.source.fact.move(fact.num)
         }
     }

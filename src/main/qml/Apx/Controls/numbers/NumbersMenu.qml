@@ -8,7 +8,7 @@ Fact {
     property string settingsName
 
     name: settingsName
-    flags: Fact.Group
+    flags: (Fact.Group | Fact.DragChildren)
     title: qsTr("Numbers")+": "+settingsName
     descr: qsTr("Instrument editor")
     icon: "gauge"

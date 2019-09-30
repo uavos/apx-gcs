@@ -107,6 +107,8 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
         if (fact->options() & Fact::FlatModel && (item->options() & Fact::Section)) {
             connect(item, &Fact::itemInserted, this, &FactListModel::sync, Qt::UniqueConnection);
             connect(item, &Fact::itemRemoved, this, &FactListModel::sync, Qt::UniqueConnection);
+            connect(item, &Fact::itemMoved, this, &FactListModel::sync, Qt::UniqueConnection);
+            connect(item, &Fact::optionsChanged, this, &FactListModel::sync, Qt::UniqueConnection);
             populate(list, item);
         } else
             list->append(item);

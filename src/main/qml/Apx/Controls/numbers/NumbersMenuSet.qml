@@ -33,7 +33,7 @@ Fact {
     Fact {
         id: setValues
         title: qsTr("Values")
-        flags: (Fact.Group | Fact.Section)
+        flags: (Fact.Group | Fact.Section | Fact.DragChildren)
     }
 
     Component.onCompleted: updateSetItems()

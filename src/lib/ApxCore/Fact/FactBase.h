@@ -56,6 +56,7 @@ public:
         IconOnly = 1 << 6,       //show only icon button (for actions)
         ShowDisabled = 1 << 7,   //action visible when disabled (for actions)
         FlatModel = 1 << 8,      //child items shown expanded as sections
+        DragChildren = 1 << 9,   //child items are draggable to change order
 
         //data types [dataType]
         DataMask = 0xFFFF0000,
