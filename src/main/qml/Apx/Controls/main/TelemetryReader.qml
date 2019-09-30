@@ -17,6 +17,11 @@ RowLayout {
         fact: apx.vehicles.replay.telemetry.reader
         Layout.fillHeight: true
         expandable: false
+        noFactTrigger: true
+        onTriggered: {
+            apx.vehicles.replay.telemetry.trigger()
+            apx.vehicles.replay.telemetry.latest.trigger()
+        }
     }
 
 }

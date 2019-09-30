@@ -40,6 +40,8 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
     , m_recordId(0)
     , m_recordTimestamp(0)
 {
+    setOpt("pos", QPointF(1, 1));
+
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupTelemetry::loadItem);
 
     //actions

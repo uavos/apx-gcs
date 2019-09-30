@@ -44,6 +44,8 @@ CleanButton {
     property bool selected: false
     property bool draggable: true
 
+    property bool noFactTrigger: false
+
     showText: true
     textAlignment: Text.AlignLeft
 
@@ -79,8 +81,9 @@ CleanButton {
 
     onTriggered: {
         focusRequested()
-        if(isScript) openDialog("EditorScript")
+        if(noFactTrigger) return
         if(fact)fact.trigger()
+        if(isScript) openDialog("EditorScript")
     }
 
     onMenuRequested: {

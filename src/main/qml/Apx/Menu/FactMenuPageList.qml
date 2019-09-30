@@ -25,6 +25,12 @@ ColumnLayout {
         if(factMenu)
             factMenu.factButtonTriggered(fact)
     }
+    property int maximumHeight: ui.window.height
+                                -MenuStyle.titleSize
+                                -(actionsItem.visible?actionsItem.implicitHeight+spacing:0)
+                                -(listView.headerItem?listView.headerItem.implicitHeight:0)
+                                -(listView.footerItem?listView.footerItem.implicitHeight:0)
+                                -8
 
     //facts
     ListView {
@@ -35,7 +41,7 @@ ColumnLayout {
         model: fact.model
         property string descr: fact.descr
 
-        implicitHeight: Math.max(contentHeight,MenuStyle.itemSize*3)+5
+        implicitHeight: Math.min(maximumHeight, Math.max(contentHeight,MenuStyle.itemSize*3+5))
         clip: true
         focus: true
         //cacheBuffer: 0

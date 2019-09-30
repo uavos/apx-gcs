@@ -113,8 +113,8 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
         connect(item, &FactBase::destroyed, this, &FactListModel::sync, Qt::UniqueConnection);
     }
     if (sect) {
-        std::sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
-            return a->section() < b->section();
+        std::stable_sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
+            return a->section().localeAwareCompare(b->section()) < 0;
         });
     }
 }

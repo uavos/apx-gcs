@@ -46,6 +46,8 @@ Telemetry::Telemetry(Vehicle *parent)
     , f_share(nullptr)
 {
     if (vehicle->isReplay()) {
+        setOpt("pos", QPointF(1, 1));
+
         f_lookup = new LookupTelemetry(this);
         f_lookup->f_latest->createAction(this);
         f_lookup->f_prev->createAction(this);
