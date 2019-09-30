@@ -38,7 +38,7 @@ Terminal::Terminal(Fact *parent)
     setQmlPage("qrc:/" PLUGIN_NAME "/Terminal.qml");
 
     _model = new TerminalListModel(this);
-    connect(this, &Terminal::newMessage, _model, &TerminalListModel::append, Qt::QueuedConnection);
+    //connect(this, &Terminal::newMessage, _model, &TerminalListModel::append, Qt::QueuedConnection);
 
     _history = QSettings().value("consoleHistory").toStringList();
     historyReset();
@@ -47,7 +47,7 @@ Terminal::Terminal(Fact *parent)
     qmlRegisterUncreatableType<TerminalListModel>("APX.Terminal", 1, 0, "Terminal", "Reference only");
 
     terminal = this;
-    messageHandlerChain = qInstallMessageHandler(messageHandler);
+    //messageHandlerChain = qInstallMessageHandler(messageHandler);
 }
 //=============================================================================
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)

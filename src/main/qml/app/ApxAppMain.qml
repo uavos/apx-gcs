@@ -13,7 +13,9 @@ Item {
     //fact system menu support
     Connections {
         target: apx
-        onFactTriggered: Menu.show(fact,opts)
+        onFactTriggered: {
+            Menu.show(fact,opts)
+        }
     }
 
 

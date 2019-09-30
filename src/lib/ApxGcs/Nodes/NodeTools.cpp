@@ -62,11 +62,14 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                        "maintenance",
                                        tr("Maintenance"),
                                        tr("Hardware maintenance"),
-                                       Section);
+                                       Group);
+    f_maintenance->setSection(f_syscmd->title());
+    f_maintenance->setIcon("wrench");
 
     //maintenance
     f_updates = new Fact(f_maintenance, "updates", tr("Updates"), tr("Firmware updates"), Group);
     f_updates->setIcon("chip");
+
     Fact *f;
     f = new Fact(f_updates, "firmware", tr("Firmware"), tr("Update node firmware"));
     connect(f, &Fact::triggered, node, &NodeItem::upgradeFirmware);

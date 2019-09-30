@@ -226,7 +226,7 @@ void NodesStorage::saveConfiguration(bool force)
     }
     quint64 vehicleID = nodes->vehicle->dbKey;
     if (list.isEmpty() || (vehicleID == 0 && force == false)) {
-        nodes->vehicle->message(QString("Warning: %1").arg(tr("Configuration not saved")));
+        nodes->vehicle->message(tr("Configuration not saved"), ApxApp::Warning);
         return;
     }
     if (!vehicleID)
@@ -251,11 +251,11 @@ void NodesStorage::saveConfiguration(bool force)
 }
 void NodesStorage::vehicleConfigUpdated()
 {
-    nodes->vehicle->message(tr("Configuration exists"));
+    nodes->vehicle->message(tr("Configuration exists"), ApxApp::Important);
 }
 void NodesStorage::vehicleConfigCreated()
 {
-    nodes->vehicle->message(tr("Configuration created"));
+    nodes->vehicle->message(tr("Configuration created"), ApxApp::Important);
 }
 //=============================================================================
 void NodesStorage::setConfigInfo(QVariantMap info)
@@ -297,8 +297,9 @@ void NodesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap
                 s.append(QString(" (%1)").arg(title));
             if (data.size() != rcnt) {
                 s.append(QString(" %1 of %2 nodes").arg(rcnt).arg(data.size()));
-            }
-            nodes->vehicle->message(s);
+                nodes->vehicle->message(s, ApxApp::Warning);
+            } else
+                nodes->vehicle->message(s, ApxApp::Important);
             return;
         }
     }
@@ -319,7 +320,7 @@ void NodesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap
     QString s = tr("Configuration loaded");
     if (!title.isEmpty())
         s.append(QString(" (%1)").arg(title));
-    nodes->vehicle->message(s);
+    nodes->vehicle->message(s, ApxApp::Important);
 }
 //=============================================================================
 void NodesStorage::newNodeDict(QVariantMap info, DictNode::Dict dict)

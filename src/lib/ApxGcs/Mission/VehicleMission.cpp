@@ -299,18 +299,19 @@ void VehicleMission::missionDataReceived(DictMission::Mission d)
     clearMission();
     storage->loadFromDict(d);
     if (empty()) {
-        vehicle->message(tr("Empty mission received from vehicle"));
+        vehicle->message(tr("Empty mission received from vehicle"), ApxApp::Warning);
     } else {
         emit missionAvailable();
         emit missionDownloaded();
         storage->saveMission();
-        vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()));
+        vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()),
+                         ApxApp::Important);
     }
     setModified(false, true);
 }
 void VehicleMission::missionDataError()
 {
-    vehicle->message(tr("Error in mission data from vehicle"));
+    vehicle->message(tr("Error in mission data from vehicle"), ApxApp::Error);
     clearMission();
 }
 //=============================================================================

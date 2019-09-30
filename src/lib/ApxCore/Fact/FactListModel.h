@@ -41,12 +41,10 @@ public:
 
 public slots:
     void sync();
+    void scheduleSync();
 
 private:
     QTimer *syncTimer;
-
-private slots:
-    void delayedSync();
 
 protected:
     Fact *fact;

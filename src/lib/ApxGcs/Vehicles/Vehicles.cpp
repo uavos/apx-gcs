@@ -131,9 +131,11 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
 {
     Vehicle *v = createVehicle(protocol);
 
-    apxMsg() << tr("Vehicle identified").append(":") << v->vehicleClassText()
-             << "'" + v->callsign() + "'"
-             << "(" + v->squawkText() + ")";
+    QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->vehicleClassText());
+    msg.append(QString(" '%1'").arg(v->callsign()));
+    if (v->squawk() > 0)
+        msg.append(QString(" (%1)").arg(v->squawkText()));
+    v->message(msg, ApxApp::Important);
 
     v->dbSaveVehicleInfo();
 
@@ -146,9 +148,11 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
 }
 void Vehicles::identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentData &ident)
 {
-    apxMsg() << tr("Assigning squawk to") << ident.callsign
-             << "(" + QString::number(v->squawk, 16).toUpper() + "->"
-                    + QString::number(v->squawk, 16).toUpper() + ")";
+    QString msg = QString("%1 %2 (%3)")
+                      .arg(tr("Assigning squawk to"))
+                      .arg(ident.callsign)
+                      .arg(QString::number(v->squawk, 16).toUpper());
+    ApxApp::instance()->report(msg, ApxApp::FromApp | ApxApp::Warning);
 }
 //=============================================================================
 void Vehicles::selectVehicle(Vehicle *v)
@@ -160,15 +164,17 @@ void Vehicles::selectVehicle(Vehicle *v)
     if (!v)
         return;
     //v->f_recorder->recordEvent("info",QString("%1: %2 '%3' (%4)").arg("Vehicle selected").arg(v->f_vclass->text()).arg(v->f_callsign->text()).arg(v->f_squawk->text()));
-    apxMsg() << tr("Vehicle selected").append(":") << v->vehicleClassText()
-             << "'" + v->callsign() + "'"
-             << "(" + v->squawkText() + ")";
+
+    QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->vehicleClassText());
+    if (!(v->isReplay() || v->isLocal()))
+        msg.append(QString(" '%1'").arg(v->callsign()));
+    if (v->squawk() > 0)
+        msg.append(QString(" (%1)").arg(v->squawkText()));
+    v->message(msg, ApxApp::Important);
     m_current = v;
+
     //update JSengine
-    //for QML
     ApxApp::instance()->engine()->rootContext()->setContextProperty("m", v->f_mandala);
-    //for console
-    //e->globalObject().setProperty("m",e->newQObject(v->f_mandala));
 
     //current vehicle signals wrappers
     foreach (QMetaObject::Connection c, currentVehicleConnections)

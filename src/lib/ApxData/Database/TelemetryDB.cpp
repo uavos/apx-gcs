@@ -446,7 +446,7 @@ bool DBReqTelemetryStats::run(QSqlQuery &query)
     quint64 cntTrash = query.value(0).toULongLong();
 
     apxMsg() << tr("Telemetry records").append(":") << cntTotal << tr("total").append(",")
-             << cntTrash << tr("deleted");
+             << cntTrash << tr("trash");
 
     emit totals(cntTotal, cntTrash);
     return true;

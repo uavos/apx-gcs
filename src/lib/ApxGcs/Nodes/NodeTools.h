@@ -42,6 +42,7 @@ public:
     NodeToolsGroup *f_maintenance;
 
     LookupNodeBackup *f_backups;
+
     Fact *f_restore;
 
     Fact *f_rebootall;

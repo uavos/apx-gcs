@@ -42,7 +42,7 @@ CleanButton {
     enabled: fact?fact.enabled:true
 
     property bool selected: false
-    property bool draggable: fact && fact.parentFact && (fact.parentFact.options&Fact.DragChildren)
+    property bool draggable: (fact && fact.parentFact)?fact.parentFact.options&Fact.DragChildren:false
 
     property bool noFactTrigger: false
 

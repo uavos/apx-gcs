@@ -346,7 +346,7 @@ int NodeItem::loadConfigValues(QVariantMap values)
         QString s = QString("%1: %2").arg(sname).arg(cnt);
         if (cnt < 5)
             s.append(QString(" (%1)").arg(missingValues.join(',')));
-        apxMsgW() << tr("Missing values") << s;
+        nodes->vehicle->message(tr("Missing values").append(": ").append(s), ApxApp::Warning);
         qWarning() << missingValues;
     }
     cnt = ignoredValues.size();
@@ -354,7 +354,7 @@ int NodeItem::loadConfigValues(QVariantMap values)
         QString s = QString("%1: %2").arg(sname).arg(cnt);
         if (cnt < 5)
             s.append(QString(" (%1)").arg(ignoredValues.join(',')));
-        apxMsgW() << tr("Ignored values") << s;
+        nodes->vehicle->message(tr("Ignored values").append(": ").append(s), ApxApp::Warning);
         qWarning() << ignoredValues;
     }
     return rcnt;
@@ -382,9 +382,13 @@ void NodeItem::message(QString msg)
         if (s.isEmpty())
             continue;
         ApxApp::sound(s);
+        nodes->vehicle->message(qApp->translate("msg", s.toUtf8().data()),
+                                ApxApp::FromVehicle | ApxApp::Important,
+                                title());
+
+        //record
         QString nodeName = QString("%1/%2").arg(nodes->vehicle->callsign()).arg(title());
         nodes->vehicle->recordNodeMessage(nodeName, s, sn());
-        nodes->vehicle->message(qApp->translate("msg", s.toUtf8().data()), title(), "<");
     }
 }
 //=============================================================================
@@ -446,7 +450,7 @@ void NodeItem::groupFields(void)
         }
     }
     for (auto group : groups) {
-        qDebug() << group->path();
+        //qDebug() << group->path();
         groupArrays(group);
     }
 }
@@ -697,7 +701,7 @@ NodeItem *NodeItem::subNode() const
 //=============================================================================
 void NodeItem::execCommand(quint16 cmd, const QString &name, const QString &descr)
 {
-    apxMsg() << title().append(":") << descr;
+    nodes->vehicle->message(tr("cmd").append(": ").append(descr), ApxApp::Important, title());
     emit requestUser(cmd, QByteArray(), 1000);
     if (name.startsWith("conf") || name.contains("reconf")) {
         setDataValid(false);

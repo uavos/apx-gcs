@@ -23,15 +23,12 @@
 #ifndef TerminalListModel_H
 #define TerminalListModel_H
 //=============================================================================
+#include <ApxApp.h>
 #include <QtCore>
-class Fact;
-class FactBase;
 //=============================================================================
 class TerminalListModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_ENUMS(TerminalLineType)
-    Q_ENUMS(QtMsgType)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
@@ -41,27 +38,26 @@ public:
     enum TerminalListModelRoles {
         ModelDataRole = Qt::UserRole + 1,
         TextRole,
-        CategoryRole,
+        SubsystemRole,
+
+        SourceRole,
         TypeRole,
+        OptionsRole,
+
+        FactRole,
+
         TimestampRole,
     };
     QHash<int, QByteArray> roleNames() const;
 
-    enum TerminalLineType {
-        InputLine,
-        InfoGrayLine,
-        InfoVehicleLine,
-        ErrorLine,
-    };
-    Q_ENUM(TerminalLineType)
-
 private:
     struct TerminalListItem
     {
-        QtMsgType type;
-        QString category;
+        qint64 timestamp;
         QString text;
-        quint64 timestamp;
+        QString subsystem;
+        ApxApp::NotifyFlags flags;
+        QPointer<Fact> fact;
     };
     QList<TerminalListItem *> _items;
     int _enterIndex;
@@ -71,8 +67,11 @@ protected:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
+private slots:
+    void notification(QString msg, QString subsystem, ApxApp::NotifyFlags flags, Fact *fact);
+
 public slots:
-    void append(QtMsgType type, QString category, QString text);
+    //void append(QtMsgType type, QString category, QString text);
     void enter(const QString &line);
     void enterResult(bool ok);
 

@@ -391,13 +391,19 @@ void Fact::trigger(QVariantMap opts)
     if (!enabled())
         return;
 
-    if (bind() && bind()->treeType() == Action) {
-        bind()->trigger(opts);
-    } else {
-        //qDebug() << "trigger" << path();
-        emit triggered(opts);
-        AppRoot::instance()->factTriggered(this, opts);
+    if (bind()) {
+        if (bind()->treeType() == Action) {
+            bind()->trigger(opts);
+            return;
+        }
     }
+
+    //qDebug() << "trigger" << path();
+    emit triggered(opts);
+    AppRoot::instance()->factTriggered(this, opts);
+
+    if (bind())
+        bind()->trigger(opts);
 }
 Fact *Fact::menu()
 {

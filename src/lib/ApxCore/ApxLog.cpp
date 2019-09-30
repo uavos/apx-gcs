@@ -120,15 +120,17 @@ void ApxLog::message(QtMsgType type, const QMessageLogContext &context, const QS
         stream->flush();
     }
 
-    switch (type) {
-    default:
-        break;
-    case QtInfoMsg:
-        emit infoMessage(message);
-        break;
-    case QtWarningMsg:
-        emit warningMessage(message);
-        break;
+    if (display(context)) {
+        switch (type) {
+        default:
+            break;
+        case QtInfoMsg:
+            emit infoMessage(message);
+            break;
+        case QtWarningMsg:
+            emit warningMessage(message);
+            break;
+        }
     }
 
     if (debugStreams.contains(stream))

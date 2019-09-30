@@ -550,47 +550,38 @@ QString Vehicle::confTitle() const
     return anyName;
 }
 //=============================================================================
-void Vehicle::message(QString msg, QString subsystem, QString prefix)
+void Vehicle::message(QString msg, ApxApp::NotifyFlags flags, QString subsystem)
 {
     if (isTemporary())
         return;
 
-    QString ns = callsign();
-    if (!subsystem.isEmpty())
-        ns.append('/').append(subsystem);
+    if (subsystem.isEmpty())
+        subsystem = callsign();
+    else
+        subsystem = QString("%1/%2").arg(callsign()).arg(subsystem);
 
-    bool warn = false, err = false;
-    if (prefix.contains("warn", Qt::CaseInsensitive)) {
-        warn = true;
-        prefix.clear();
-    } else if (prefix.contains("err", Qt::CaseInsensitive)) {
-        err = true;
-        prefix.clear();
+    ApxApp::NotifyFlags fType = flags & ApxApp::NotifyTypeMask;
+
+    if (fType != ApxApp::Error && fType != ApxApp::Warning) {
+        ApxApp::NotifyFlags t = fType;
+        if (msg.contains("error", Qt::CaseInsensitive))
+            t = ApxApp::Error;
+        else if (msg.contains("fail", Qt::CaseInsensitive))
+            t = ApxApp::Error;
+        else if (msg.contains("timeout", Qt::CaseInsensitive))
+            t = ApxApp::Error;
+        else if (msg.contains("warn", Qt::CaseInsensitive))
+            t = ApxApp::Warning;
+        if (t != fType)
+            flags = (flags & ~ApxApp::NotifyTypeMask) | t;
+        fType = t;
     }
+    ApxApp::instance()->report(msg, flags, subsystem);
 
-    if (!warn) {
-        warn = msg.contains("error", Qt::CaseInsensitive)
-               || msg.contains("fail", Qt::CaseInsensitive)
-               || msg.contains("timeout", Qt::CaseInsensitive)
-               || msg.contains("error", Qt::CaseInsensitive);
-    }
-
-    QString s = QString("%1[%2]%3").arg(prefix).arg(ns).arg(msg);
-
-    if (warn) {
+    if (fType == ApxApp::Error) {
         f_warnings->error(msg);
-        apxMsgW() << s;
-    } else if (msg.contains("fail", Qt::CaseInsensitive)) {
-        f_warnings->error(msg);
-        apxMsgW() << s;
-    } else if (msg.contains("timeout", Qt::CaseInsensitive)) {
+    } else if (fType == ApxApp::Warning) {
         f_warnings->warning(msg);
-        apxMsgW() << s;
-    } else if (msg.contains("warning", Qt::CaseInsensitive)) {
-        f_warnings->warning(msg);
-        apxMsgW() << s;
-    } else {
-        apxMsg() << s;
     }
 }
 //=============================================================================

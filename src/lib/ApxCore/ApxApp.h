@@ -107,9 +107,10 @@ signals:
 public:
     enum NotifyFlag {
         //message origin [enum]
-        NotifyOriginMask = 0x0F,
+        NotifySourceMask = 0x0F,
         FromApp = 0,     // msg from app
-        FromVehicle = 1, // msg from vehicle
+        FromInput = 1,   // msg from user terminal input
+        FromVehicle = 2, // msg from vehicle
 
         //importance [enum]
         NotifyTypeMask = 0xF0,
@@ -120,17 +121,20 @@ public:
 
         //options [bits]
         NotifyOptionsMask = 0xF00,
-        Console = 1 << 8,     // msg from log stream
-        MenuRequest = 2 << 8, // requesting menu from fact
+        Console = 1 << 8, // msg from log stream
     };
     Q_DECLARE_FLAGS(NotifyFlags, NotifyFlag)
     Q_FLAG(NotifyFlags)
     Q_ENUM(NotifyFlag)
 
+    struct
+    {
+    } Notification;
+
 public slots:
     void report(QString msg,
-                QString subsystem = QString(),
-                ApxApp::NotifyFlags flags = ApxApp::NotifyFlags(FromApp));
+                ApxApp::NotifyFlags flags = ApxApp::NotifyFlags(FromApp),
+                QString subsystem = QString());
     void report(Fact *fact);
 private slots:
     void logInfoMessage(QString msg);

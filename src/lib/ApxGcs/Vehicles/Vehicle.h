@@ -27,6 +27,7 @@
 #include <QGeoPath>
 #include <QGeoRectangle>
 
+#include <ApxApp.h>
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
 
@@ -197,7 +198,9 @@ public slots:
 
     void resetGeoPath();
 
-    void message(QString msg, QString subsystem = QString(), QString prefix = QString());
+    void message(QString msg,
+                 ApxApp::NotifyFlags flags = ApxApp::FromApp | ApxApp::Info,
+                 QString subsystem = QString());
 
     //Database
 public slots:

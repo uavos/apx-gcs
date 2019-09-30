@@ -57,6 +57,9 @@ private:
         return list;
     }
 
+    void addNodeTools(QMenu *menu, Fact *fact, QString nodeName);
+    void updateMenuTitles(QMenu *menu);
+
     Vehicle *vehicle;
 
 private slots:

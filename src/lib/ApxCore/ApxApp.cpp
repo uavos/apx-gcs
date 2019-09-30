@@ -46,6 +46,8 @@ ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
 
     qRegisterMetaType<QScreen *>("QScreen");
 
+    qmlRegisterUncreatableType<ApxApp>("APX.Facts", 1, 0, "ApxApp", "Reference only");
+
     connect(&log, &ApxLog::infoMessage, this, &ApxApp::logInfoMessage, Qt::QueuedConnection);
     connect(&log, &ApxLog::warningMessage, this, &ApxApp::logWarningMessage, Qt::QueuedConnection);
 
@@ -427,7 +429,7 @@ void ApxApp::setScale(double v)
 }
 //=============================================================================
 //=============================================================================
-void ApxApp::report(QString msg, QString subsystem, ApxApp::NotifyFlags flags)
+void ApxApp::report(QString msg, ApxApp::NotifyFlags flags, QString subsystem)
 {
     emit notification(msg, subsystem, flags, nullptr);
 }

@@ -72,13 +72,10 @@ private:
     static AppRoot *_instance;
 
 public:
-    void factRequestMenu(Fact *fact, QVariantMap opts);
-
     Q_INVOKABLE static void sound(const QString &v);
 
 signals:
     void factTriggered(Fact *fact, QVariantMap opts);
-    void menuRequested(Fact *fact, QVariantMap opts);
 };
 //=============================================================================
 #endif

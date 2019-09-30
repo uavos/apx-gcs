@@ -122,21 +122,34 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
         if (!f->modified())
             continue;
         if (!a_revert) {
-            if (!m.isEmpty())
-                m.addSeparator();
             a_revert = new QActionFact(f->f_revert);
             a_revert->setParent(&m);
             m.addAction(a_revert);
+            m.addSeparator();
         }
-        //connect(a_revert, &QAction::triggered, f->f_revert, &Fact::trigger);
     }
 
     //node tools
-    if (!nlist.isEmpty()) {
+    for (auto node : nlist) {
+        QString sect;
+        for (int i = 0; i < node->tools->size(); ++i) {
+            Fact *f = node->tools->child(i);
+            if (sect.isEmpty())
+                sect = f->section();
+            else if (f->section() != sect && !m.isEmpty()) {
+                m.addSeparator();
+                sect = f->section();
+            }
+            addNodeTools(&m, f, node->title());
+        }
+    }
+    if (nlist.size() > 1)
+        updateMenuTitles(&m);
+    /*if (!nlist.isEmpty()) {
         QHash<QString, QList<Fact *>> cmdHash;
         QHash<QString, QStringList> sectionHash;
         QStringList sections;
-        foreach (NodeItem *node, nlist) {
+        for (auto node : nlist) {
             for (int i = 0; i < node->tools->model()->count(); ++i) {
                 Fact *c = node->tools->model()->get(i);
                 if (!c->enabled())
@@ -157,6 +170,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
                     sl.append(aname);
             }
         }
+
         if (!cmdHash.isEmpty()) {
             QHash<QString, QMenu *> groups;
             foreach (QString sect, sections) {
@@ -222,15 +236,15 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
                 }
             }
         }
-    }
+    }*/
 
     //reset all nodes action
-    if (!m.isEmpty())
+    /*if (!m.isEmpty())
         m.addSeparator();
     Fact *c = vehicle->f_nodes->nodes().first()->tools->f_rebootall;
     QAction *a = new QAction(c->title(), &m);
     connect(a, &QAction::triggered, c, [c]() { c->trigger(); });
-    m.addAction(a);
+    m.addAction(a);*/
 
     if (!m.isEmpty())
         m.exec(treeWidget->tree->mapToGlobal(pos));
@@ -246,5 +260,100 @@ void NodesFrame::aUndo_triggered(void)
     }
     if (list.isEmpty())
         vehicle->f_nodes->f_revert->trigger();
+}
+//=============================================================================
+void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
+{
+    if (fact->menu()) {
+        //fact is group
+        QMenu *m = nullptr;
+        for (auto i : menu->findChildren<QMenu *>()) {
+            if (i->objectName() == fact->title()) {
+                m = i;
+                break;
+            }
+        }
+        if (!m) {
+            m = menu->addMenu(fact->title());
+            m->setObjectName(fact->title());
+            m->setToolTip(nodeName);
+        } else {
+            //list nodes in tooltip
+            QStringList st = m->toolTip().split(',', QString::SkipEmptyParts);
+            st.append(nodeName);
+            st.removeDuplicates();
+            m->setToolTip(st.join(','));
+        }
+        //add sub items
+        DatabaseLookup *dbq = qobject_cast<DatabaseLookup *>(fact);
+        if (dbq) {
+            if (!m->actions().isEmpty()) {
+                m->setEnabled(false);
+                return;
+            }
+            dbq->defaultLookup(); //refresh db (delayed thread)
+            int cnt = dbq->dbModel()->count();
+            if (cnt > 30)
+                cnt = 30;
+            else if (cnt <= 0)
+                m->setEnabled(false);
+            for (int i = 0; i < cnt; ++i) {
+                QVariantMap modelData = dbq->dbModel()->get(i);
+                QString s = modelData.value("title").toString();
+                QString s2 = modelData.value("status").toString();
+                if (!s2.isEmpty())
+                    s.append(QString(" (%1)").arg(s2));
+
+                QAction *a = new QAction(s, m);
+                a->setObjectName(s);
+                a->setToolTip(nodeName);
+                m->addAction(a);
+                connect(a, &QAction::triggered, [dbq, modelData]() { dbq->triggerItem(modelData); });
+            }
+            return;
+        }
+        for (int i = 0; i < fact->size(); ++i) {
+            addNodeTools(m, fact->child(i), nodeName);
+        }
+        return;
+    }
+
+    //fact is command
+    QAction *a = nullptr;
+    for (auto i : menu->actions()) {
+        if (i->objectName() == fact->title()) {
+            a = i;
+            break;
+        }
+    }
+    if (!a) {
+        a = menu->addAction(fact->title());
+        a->setObjectName(fact->title());
+        a->setToolTip(nodeName);
+    } else {
+        //list nodes in tooltip
+        QStringList st = a->toolTip().split(',', QString::SkipEmptyParts);
+        st.append(nodeName);
+        st.removeDuplicates();
+        a->setToolTip(st.join(','));
+    }
+
+    connect(a, &QAction::triggered, fact, [fact]() { fact->trigger(); });
+}
+void NodesFrame::updateMenuTitles(QMenu *menu)
+{
+    QStringList st = menu->toolTip().split(',', QString::SkipEmptyParts);
+    QString s = st.size() > 3 ? QString::number(st.size()) : st.join(',');
+    menu->setTitle(QString("%1 [%2]").arg(menu->objectName()).arg(s));
+
+    for (auto a : menu->actions()) {
+        QStringList st = a->toolTip().split(',', QString::SkipEmptyParts);
+        QString s = st.size() > 3 ? QString::number(st.size()) : st.join(',');
+        a->setText(QString("%1 [%2]").arg(a->objectName()).arg(s));
+    }
+
+    for (auto i : menu->findChildren<QMenu *>()) {
+        updateMenuTitles(i);
+    }
 }
 //=============================================================================

@@ -27,7 +27,6 @@ RowLayout {
         color: mission.modified?"#FFF59D":"#A5D6A7"
         Material.theme: Material.Light
         onClicked: mission.trigger()
-        onDoubleClicked: menuRequested()
         contents: [
             Label {
                 id: label

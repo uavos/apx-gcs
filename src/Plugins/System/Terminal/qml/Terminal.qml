@@ -1,6 +1,6 @@
-import QtQuick 2.7
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtQuick.Controls 2.12
 
 ColumnLayout {
     id: consoleItem
@@ -23,8 +23,14 @@ ColumnLayout {
         model: terminal.outModel
         delegate: TerminalLine {
             width: listView.width
-            line: model
             fontSize: consoleItem.fontSize
+            text: model.text
+            subsystem: model.subsystem
+            source: model.source
+            type: model.type
+            options: model.options
+            fact: model.fact
+            timestamp: model.timestamp
         }
 
         /*add: Transition {

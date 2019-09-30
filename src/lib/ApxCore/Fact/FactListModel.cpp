@@ -32,21 +32,21 @@ FactListModel::FactListModel(Fact *fact)
     syncTimer = new QTimer(this);
     syncTimer->setSingleShot(true);
     syncTimer->setInterval(200);
-    connect(syncTimer, &QTimer::timeout, this, &FactListModel::delayedSync);
+    connect(syncTimer, &QTimer::timeout, this, &FactListModel::sync);
 
     if (fact) {
         connectFact(fact);
         //populate(&_items, fact);
-        sync();
+        scheduleSync();
     }
 }
 //=============================================================================
 void FactListModel::connectFact(Fact *fact)
 {
-    connect(fact, &Fact::itemInserted, this, &FactListModel::sync, Qt::QueuedConnection);
-    connect(fact, &Fact::itemRemoved, this, &FactListModel::sync);
-    connect(fact, &Fact::itemMoved, this, &FactListModel::sync);
-    connect(fact, &Fact::optionsChanged, this, &FactListModel::sync);
+    connect(fact, &Fact::itemInserted, this, &FactListModel::scheduleSync, Qt::QueuedConnection);
+    connect(fact, &Fact::itemRemoved, this, &FactListModel::scheduleSync);
+    connect(fact, &Fact::itemMoved, this, &FactListModel::scheduleSync);
+    connect(fact, &Fact::optionsChanged, this, &FactListModel::scheduleSync);
 }
 //=============================================================================int FactListModel::rowCount(const QModelIndex & parent) const
 int FactListModel::rowCount(const QModelIndex &parent) const
@@ -105,14 +105,26 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
         if (!sect && !item->section().isEmpty())
             sect = true;
         if (fact->options() & Fact::FlatModel && (item->options() & Fact::Section)) {
-            connect(item, &Fact::itemInserted, this, &FactListModel::sync, Qt::UniqueConnection);
-            connect(item, &Fact::itemRemoved, this, &FactListModel::sync, Qt::UniqueConnection);
-            connect(item, &Fact::itemMoved, this, &FactListModel::sync, Qt::UniqueConnection);
-            connect(item, &Fact::optionsChanged, this, &FactListModel::sync, Qt::UniqueConnection);
+            connect(item,
+                    &Fact::itemInserted,
+                    this,
+                    &FactListModel::scheduleSync,
+                    Qt::UniqueConnection);
+            connect(item,
+                    &Fact::itemRemoved,
+                    this,
+                    &FactListModel::scheduleSync,
+                    Qt::UniqueConnection);
+            connect(item, &Fact::itemMoved, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
+            connect(item,
+                    &Fact::optionsChanged,
+                    this,
+                    &FactListModel::scheduleSync,
+                    Qt::UniqueConnection);
             populate(list, item);
         } else
             list->append(item);
-        connect(item, &FactBase::destroyed, this, &FactListModel::sync, Qt::UniqueConnection);
+        connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
     }
     if (sect) {
         std::stable_sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
@@ -121,11 +133,11 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
     }
 }
 //=============================================================================
-void FactListModel::sync()
+void FactListModel::scheduleSync()
 {
     syncTimer->start();
 }
-void FactListModel::delayedSync()
+void FactListModel::sync()
 {
     ItemsList list;
     populate(&list, fact);
