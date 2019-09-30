@@ -112,8 +112,7 @@ CleanButton {
         anchors { fill: parent; margins: 10 }
         //keys: String(factButton.parent)
         onEntered: {
-            console.log(drag.source.title+" -> "+title)
-            //console.log(drag.target.title)
+            //console.log(drag.source.title+" -> "+title)
             if(fact)drag.source.fact.move(fact.num)
         }
     }

@@ -53,7 +53,7 @@ ColumnLayout {
             if(scrolling && (!atYEnd)){
                 scrollTimer.stop()
                 stickEnd=false
-            }else scrollTimer.restart()
+            }//else scrollTimer.restart()
         }
         Timer {
             id: scrollTimer
@@ -70,34 +70,32 @@ ColumnLayout {
         focus: false
         keyNavigationEnabled: false
 
-        //onCountChanged: positionViewAtIndex(count-1,ListView.End)
+        footer: TerminalExec {
+            width: parent.width
+            fontSize: consoleItem.fontSize
+            onFocused: listView.scrollToEnd()
+        }
 
-        //Behavior on contentY { enabled: ui.smooth; NumberAnimation { duration: 100 } }
         function scrollToEnd()
         {
             positionViewAtEnd()
-            //flick(0,-height)
-            //currentIndex=count-1
-            //positionViewAtIndex(count-1,ListView.End)
         }
-        /*footer: TerminalExec {
-            width: parent.width
-            fontSize: consoleItem.fontSize
-            onFocused: listView.positionViewAtEnd()
-        }*/
         MouseArea {
             anchors.fill: parent
-            onClicked: execControl.focusRequested()
+            onClicked: {
+                listView.footerItem.focusRequested()
+                listView.scrollToEnd()
+            }
         }
     }
 
-    TerminalExec {
+    /*TerminalExec {
         id: execControl
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignBottom
         Layout.maximumWidth: listView.width
         fontSize: consoleItem.fontSize
         onFocused: listView.scrollToEnd()
-    }
+    }*/
 
 }
