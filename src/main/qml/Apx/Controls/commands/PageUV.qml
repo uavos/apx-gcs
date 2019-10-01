@@ -6,21 +6,19 @@ import QtQml.Models 2.12
 import Apx.Common 1.0
 
 RowLayout {
-    spacing: 8
-    ListView {
-        clip: true
+    //spacing: buttonHeight/4
+    ColumnLayout {
         Layout.fillHeight: true
-        implicitWidth: root.size*5
-        spacing: 0
-        model: ObjectModel {
-            CtrNum { title: "THR"; fact: m.rc_throttle; min: 0; max: 100; mult: 100; stepSize: 1; }
-            CtrNum { title: "FLP"; fact: m.ctr_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
-            CtrNum { title: "ADJ"; fact: m.rwAdj; }
-        }
+        Layout.alignment: Qt.AlignTop|Qt.AlignLeft
+        spacing: 3
+        CtrNum { title: "THR"; fact: m.rc_throttle; min: 0; max: 100; mult: 100; stepSize: 1; }
+        CtrNum { title: "FLP"; fact: m.ctr_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
+        CtrNum { title: "ADJ"; fact: m.rwAdj; }
     }
     CtrFlow {
         Layout.fillWidth: true
         Layout.fillHeight: true
+        Layout.alignment: Qt.AlignTop
         key: m.mode.text
         controls: {
             "TAXI": [btnCANCEL,btnATAXI,btnBRK_TAXI],
@@ -28,6 +26,7 @@ RowLayout {
             "LANDING": [btnCANCEL,btnNEXT,btnBRK],
             "WPT": [btnINC,btnDEC],
             "STBY": [btnRESET],
+            "UAV": [btnNEXT],
         }
     }
 

@@ -33,7 +33,6 @@ Fact::Fact(QObject *parent,
            Flags flags,
            const QString &icon)
     : FactData(parent, name, title, descr, flags)
-    , blockNotify(false)
     , m_model(nullptr)
     , m_actionsModel(nullptr)
     , m_enabled(true)
@@ -721,11 +720,19 @@ void Fact::setProgress(const int v)
     }
     if (m_progress == v)
         return;
+    int vp = m_progress;
     m_progress = v;
     emit progressChanged();
-    if (!blockNotify) {
-        ApxApp::instance()->report(this);
+    if ((vp < 0 && v >= 0) || (vp >= 0 && v < 0)) {
+        emit busyChanged();
+        if (busy()) {
+            ApxApp::instance()->report(this);
+        }
     }
+}
+bool Fact::busy() const
+{
+    return progress() >= 0;
 }
 QString Fact::icon() const
 {

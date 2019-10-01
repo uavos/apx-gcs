@@ -9,23 +9,17 @@ Rectangle {
     id: control
     border.width: 0
     color: "#000"
-    implicitWidth: list.implicitWidth //temWidth
-    Layout.margins: 1
+    implicitWidth: layout.implicitWidth
+    implicitHeight: 200
 
-    readonly property real maxItems: 14
-    readonly property real aspectRatio: 3.8
-
-    readonly property real itemWidth: height/maxItems*aspectRatio
-    readonly property real itemHeight: 20*ui.scale //width/aspectRatio
+    readonly property int margins: 3
+    readonly property real itemHeight: 20*ui.scale
 
     property alias settingsName: numbersModel.settingsName
 
     NumbersModel {
         id: numbersModel
-        //minimumWidth: control.implicitWidth //Math.max(control.itemHeight*3,control.implicitWidth)
-        //itemWidth: control.itemWidth
         itemHeight: control.itemHeight
-        //itemHeight: 20*ui.scale
         defaults: [
             {"bind":"user1","prec":"2","title":"u1"},
             {"bind":"user2","prec":"2","title":"u2"},
@@ -35,45 +29,45 @@ Rectangle {
         ]
     }
 
-    ListView {
-        id: list
-        //anchors.fill: parent
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        implicitWidth: contentWidth
-        clip: true
-        spacing: 0
-        model: numbersModel
-        snapMode: ListView.SnapToItem
-        ScrollBar.vertical: ScrollBar { width: 6 }
-        footer: NumbersItem {
-            title: " +"
-            height: control.itemHeight
-            minimumWidth: height
-            enabled: true
-            toolTip: qsTr("Edit display values")
-            onTriggered: numbersModel.edit()
-        }
-        onCountChanged: {
-            numbersModel.minimumWidth=0
-            updateWidth(0)
-            numbersModel.minimumWidth=Qt.binding(function(){return control.implicitWidth})
-        }
-        //Component.onCompleted: updateWidth()
-
-        function updateWidth(w)
-        {
-            if(typeof(w)=='undefined')w=implicitWidth
-            for(var i=0;i<count;++i){
-                var m=model.get(i)
-                m.implicitWidthChanged.disconnect(updateWidth)
-                m.implicitWidthChanged.connect(updateWidth)
-                if(w>m.implicitWidth)continue
-                w=m.implicitWidth
+    ColumnLayout{
+        id: layout
+        height: control.height
+        ListView {
+            id: list
+            Layout.margins: control.margins
+            Layout.fillHeight: true
+            implicitWidth: contentWidth
+            clip: true
+            spacing: 0
+            model: numbersModel
+            snapMode: ListView.SnapToItem
+            ScrollBar.vertical: ScrollBar { width: 6 }
+            footer: NumbersItem {
+                title: " +"
+                height: control.itemHeight
+                minimumWidth: height
+                enabled: true
+                toolTip: qsTr("Edit display values")
+                onTriggered: numbersModel.edit()
             }
-            implicitWidth=Math.max(control.itemHeight*3,w)
+            onCountChanged: {
+                numbersModel.minimumWidth=0
+                updateWidth(0)
+                numbersModel.minimumWidth=Qt.binding(function(){return layout.implicitWidth-control.margins*2})
+            }
+
+            function updateWidth(w)
+            {
+                if(typeof(w)=='undefined')w=implicitWidth
+                for(var i=0;i<count;++i){
+                    var m=model.get(i)
+                    m.implicitWidthChanged.disconnect(updateWidth)
+                    m.implicitWidthChanged.connect(updateWidth)
+                    if(w>m.implicitWidth)continue
+                    w=m.implicitWidth
+                }
+                implicitWidth=Math.max(control.itemHeight*3,w)
+            }
         }
     }
-
 }

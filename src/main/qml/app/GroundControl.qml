@@ -98,6 +98,79 @@ Item {
         item.anchors.fill=containerMain
     }
 
+    function addInstrument(c)
+    {
+        c.parent=instrumentsPanel
+        c_vsep.createObject(instrumentsPanel)
+    }
+
+
+    Component.onCompleted: {
+        addInstrument(l_status)
+        addInstrument(l_pfd)
+        addInstrument(l_numbers)
+        addInstrument(l_commands)
+        addInstrument(l_terminal)
+    }
+
+    Loader {
+        id: l_status
+        visible: showStatus
+        active: visible
+        asynchronous: true
+        sourceComponent: Component { Status { } }
+        Layout.fillHeight: true
+        Layout.fillWidth: false
+    }
+    Loader {
+        id: l_pfd
+        visible: showPfd
+        active: visible
+        asynchronous: true
+        sourceComponent: Component { Pfd { } }
+        Layout.fillHeight: true
+        Layout.preferredWidth: instrumentsHeight*pfdAspectRatio
+    }
+    Loader {
+        id: l_numbers
+        visible: showNumbers
+        active: visible
+        asynchronous: true
+        sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
+        Layout.fillHeight: true
+        Layout.fillWidth: false
+    }
+    Loader {
+        id: l_terminal
+        visible: apx.tools.terminal?true:false
+        active: visible
+        asynchronous: true
+        source: apx.tools.terminal.qmlPage
+        Layout.fillHeight: true
+        Layout.fillWidth: true
+    }
+    Loader {
+        id: l_commands
+        active: visible
+        asynchronous: true
+        sourceComponent: Component { Commands { } }
+        Layout.fillHeight: true
+        Layout.fillWidth: false
+    }
+
+
+    Component {
+        id: c_vsep
+        Rectangle {
+            Layout.fillHeight: true
+            implicitWidth: 1
+            border.width: 0
+            color: sepColor
+        }
+    }
+
+
+
     //CONTENT
     GridLayout {
         anchors.fill: parent
@@ -116,7 +189,7 @@ Item {
                 Layout.fillHeight: true
                 Layout.maximumHeight: instrumentsHeight
 
-                Loader {
+                /*Loader {
                     active: visible
                     visible: showStatus
                     asynchronous: true
@@ -168,7 +241,7 @@ Item {
                     Layout.fillWidth: true
                 }
                 Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
-
+*/
             }
 
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; border.width: 0; color: sepColor; }

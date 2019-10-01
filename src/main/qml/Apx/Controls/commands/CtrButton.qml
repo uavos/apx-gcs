@@ -8,7 +8,7 @@ import Apx.Common 1.0
 CleanButton {
     id: control
     property var fact
-    property int size: root.size*0.85
+    property int size: buttonHeight
 
     property real value: 1
     property real resetValue: 0

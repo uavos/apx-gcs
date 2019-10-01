@@ -6,6 +6,7 @@ import QtQuick.Controls.Material 2.2
 import Apx.Common 1.0
 
 RowLayout {
+    property int buttonHeight: root.buttonHeight*0.9
 
     SwipeView {
         id: pagesView
@@ -39,13 +40,13 @@ RowLayout {
         id: plistView
         Layout.alignment: Qt.AlignBottom
         implicitHeight: contentHeight
-        implicitWidth: root.size*0.85
+        implicitWidth: buttonHeight
         spacing: 3
         clip: true
         model: pagesModel
         delegate: CleanButton {
-            width: plistView.width
-            height: width
+            height: buttonHeight
+            width: height
             ui_scale: 1
             text: name
             highlighted: pagesView.currentIndex==index

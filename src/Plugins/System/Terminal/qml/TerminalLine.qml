@@ -37,27 +37,6 @@ RowLayout {
         return true
     }
 
-    //internal
-    /*
-    readonly property bool err: line.type===1 || line.type===2 || line.type===3
-    readonly property bool app: line.category==="app"
-    readonly property bool qml: line.category==="qml"
-
-    readonly property bool appGray: app && line.text.startsWith("#")
-    readonly property bool appVehicle: app && (!html) && line.text.startsWith("<")
-    readonly property bool appMark: (appVehicle || line.text.startsWith("["))
-    readonly property string lineText: {
-        var s=line.text.trim()
-        if(appGray) return s.slice(1).trim()
-        if(appMark) return s.slice(s.indexOf("]")+1).trim()
-        if(html) return s.slice(6).trim()
-        return s
-    }
-    readonly property string mark: {
-        var s=line.text
-        if(appMark)return s.slice(s.indexOf("[")+1,s.indexOf("]")).trim()
-        return ""
-    }*/
     Label {
         Layout.fillWidth: true
         focus: false
@@ -71,7 +50,7 @@ RowLayout {
     }
     Label {
         Layout.alignment: Qt.AlignRight|Qt.AlignVCenter
-        visible: text
+        visible: text //&& control.x==0
         text: control.subsystem
         color: "#aaa"
         font.family: font_condenced

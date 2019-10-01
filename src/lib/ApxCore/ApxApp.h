@@ -127,10 +127,6 @@ public:
     Q_FLAG(NotifyFlags)
     Q_ENUM(NotifyFlag)
 
-    struct
-    {
-    } Notification;
-
 public slots:
     void report(QString msg,
                 ApxApp::NotifyFlags flags = ApxApp::NotifyFlags(FromApp),

@@ -16,7 +16,7 @@ RowLayout {
     property int precision: 0
     property real mult: 1
 
-    property int size: root.size*0.85
+    property int size: buttonHeight
     property int titleWidth: size*1.8
     property int valueWidth: size
 

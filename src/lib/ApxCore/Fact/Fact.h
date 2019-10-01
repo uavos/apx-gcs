@@ -43,6 +43,7 @@ class Fact : public FactData
     Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
+    Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
 
     Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 
@@ -142,9 +143,6 @@ private:
 
     void updateDefaultIcon();
 
-protected:
-    bool blockNotify;
-
 private slots:
     void updateModels();
 
@@ -185,6 +183,7 @@ public:
 
     int progress() const;
     void setProgress(const int v);
+    bool busy() const;
 
     QString icon() const;
     void setIcon(const QString &v);
@@ -228,6 +227,7 @@ signals:
     void statusChanged();
     void activeChanged();
     void progressChanged();
+    void busyChanged();
 
     void iconChanged();
 

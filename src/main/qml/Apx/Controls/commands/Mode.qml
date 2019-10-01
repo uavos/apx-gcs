@@ -5,49 +5,43 @@ import QtQuick.Controls.Material 2.2
 
 import Apx.Common 1.0
 
-ColumnLayout{
-    id: control
+ListView {
+    id: listView
+
+    implicitHeight: 32
+
     property var modes: []
 
-    spacing: 10
-    //clip: true
-
-    ListView {
-        id: listView
-        Layout.fillWidth: true
-        implicitHeight: root.size
-        orientation: ListView.Horizontal
-
-        spacing: 8
-        model: control.modes
-        delegate: CleanButton {
-            text: modelData
-            toolTip: m.mode.descr+": "+modelData
-            showText: true
-            defaultHeight: listView.implicitHeight
-            ui_scale: 1
-            titleSize: 0.5
-            onTriggered: {
-                m.mode.value=modelData
-            }
-            iconName: modeIcon(modelData)
+    orientation: ListView.Horizontal
+    spacing: 8
+    model: modes
+    delegate: CleanButton {
+        text: modelData
+        toolTip: m.mode.descr+": "+modelData
+        showText: true
+        defaultHeight: listView.height
+        ui_scale: 1
+        titleSize: 0.5
+        onTriggered: {
+            m.mode.value=modelData
         }
-        headerPositioning: ListView.OverlayHeader
-        header: CleanButton {
-            defaultHeight: listView.implicitHeight
-            ui_scale: 1
-            text: m.mode.text
-            property int v: m.mode.value
-            property bool warning: v==mode_EMG || v==mode_RPV || v==mode_HOME || v==mode_TAXI
-            property bool active: v==mode_LANDING || v==mode_TAKEOFF
-            color: "#000"
-            titleColor: warning?Material.color(Material.Yellow):active?Material.color(Material.Blue):Qt.darker(Material.primaryTextColor,1.5)
-            onTriggered: {
-                popupC.createObject(this)
-            }
-        }
-
+        iconName: listView.modeIcon(modelData)
     }
+    headerPositioning: ListView.OverlayHeader
+    header: CleanButton {
+        defaultHeight: listView.height
+        ui_scale: 1
+        text: m.mode.text
+        property int v: m.mode.value
+        property bool warning: v==mode_EMG || v==mode_RPV || v==mode_HOME || v==mode_TAXI
+        property bool active: v==mode_LANDING || v==mode_TAKEOFF
+        color: "#000"
+        titleColor: warning?Material.color(Material.Yellow):active?Material.color(Material.Blue):Qt.darker(Material.primaryTextColor,1.5)
+        onTriggered: {
+            popupC.createObject(this)
+        }
+    }
+
 
     function modeIcon(mode)
     {
@@ -75,7 +69,7 @@ ColumnLayout{
             bottomMargin: 6
             padding: 0
             margins: 0
-            x: parent.width //(control.width-width)/2
+            x: parent.width
 
             Component.onCompleted: open()
             onClosed: destroy()
@@ -85,7 +79,6 @@ ColumnLayout{
                 implicitHeight: contentHeight
                 implicitWidth: contentWidth
                 model: m.mode.enumStrings
-                //currentIndex: control.highlightedIndex
                 highlightMoveDuration: 0
                 delegate: ItemDelegate {
                     text: modelData
@@ -101,3 +94,4 @@ ColumnLayout{
         }
     }
 }
+

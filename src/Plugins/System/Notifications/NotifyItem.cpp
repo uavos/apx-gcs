@@ -27,7 +27,6 @@ NotifyItem::NotifyItem(Fact *fact, Fact *parent)
     , m_fact(fact)
 {
     setIcon(fact->icon());
-    blockNotify = true;
     bind(fact);
 
     //connect(fact, &Fact::progressChanged, this, &NotifyItem::updateProgress);

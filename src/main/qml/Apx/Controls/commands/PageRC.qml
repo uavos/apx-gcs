@@ -7,7 +7,7 @@ Page {
         id: listView
         width: parent.width
         height: parent.height
-        spacing: 0
+        spacing: 2
         model: ObjectModel {
             CtrSlider { title: "AIL"; fact: m.rc_roll; width: listView.width }
             CtrSlider { title: "ELV"; fact: m.rc_pitch; width: listView.width }

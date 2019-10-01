@@ -8,15 +8,15 @@ import Apx.Menu 1.0
 
 ListView {
     id: listView
-    Layout.fillWidth: true
-    implicitHeight: root.size
     orientation: ListView.Horizontal
-
-    spacing: 8
     model: model.model
+    spacing: 4
+
+    implicitHeight: 32
+    implicitWidth: 100
 
     delegate: CleanButton {
-        defaultHeight: listView.implicitHeight
+        defaultHeight: listView.height
         ui_scale: 1
         text: modelData.title
         toolTip: modelData.descr?modelData.descr:modelData.title

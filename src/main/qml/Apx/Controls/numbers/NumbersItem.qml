@@ -13,7 +13,8 @@ FactValue {
     property Timer timerWidthUpdate: Timer {
         interval: 1
         onTriggered: {
-            implicitWidth=Math.max(implicitWidth,defaultWidth)
+            var v=Math.max(implicitWidth,defaultWidth)
+            if(v!=implicitWidth)implicitWidth=v
         }
     }
 
