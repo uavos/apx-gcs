@@ -187,6 +187,11 @@ VehicleMission::VehicleMission(Vehicle *parent)
                                                  "MissionListModel",
                                                  "Reference only");
 
+    connect(this, &Fact::triggered, this, [this]() {
+        if (missionSize() <= 0)
+            f_request->trigger();
+    });
+
     ApxApp::jsync(this);
 }
 //=============================================================================

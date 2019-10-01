@@ -36,8 +36,6 @@ class Terminal : public Fact
 public:
     explicit Terminal(Fact *parent = nullptr);
 
-    void handleMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
-
     Q_INVOKABLE void exec(const QString &cmd);
 
     Q_INVOKABLE void historyReset();

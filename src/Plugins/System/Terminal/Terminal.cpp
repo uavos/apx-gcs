@@ -27,10 +27,6 @@
 #include <QQmlEngine>
 #define MAX_HISTORY 50
 //=============================================================================
-static Terminal *terminal;
-static QtMessageHandler messageHandlerChain;
-void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
-//=============================================================================
 Terminal::Terminal(Fact *parent)
     : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Terminal"), tr("System terminal"), Group)
 {
@@ -45,27 +41,6 @@ Terminal::Terminal(Fact *parent)
 
     qmlRegisterUncreatableType<Terminal>("APX.Terminal", 1, 0, "Terminal", "Reference only");
     qmlRegisterUncreatableType<TerminalListModel>("APX.Terminal", 1, 0, "Terminal", "Reference only");
-
-    terminal = this;
-    //messageHandlerChain = qInstallMessageHandler(messageHandler);
-}
-//=============================================================================
-void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
-{
-    static QMutex mutex;
-    QMutexLocker lock(&mutex);
-    messageHandlerChain(type, context, message);
-    terminal->handleMessage(type, context, message);
-}
-//============================================================================
-void Terminal::handleMessage(QtMsgType type,
-                             const QMessageLogContext &context,
-                             const QString &message)
-{
-    if (!ApxLog::display(context))
-        return;
-    emit newMessage(type, context.category, message);
-    //_model->append(type,context.category,message);
 }
 //=============================================================================
 void Terminal::exec(const QString &cmd)

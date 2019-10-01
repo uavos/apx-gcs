@@ -45,9 +45,6 @@ ColumnLayout {
             warning: fact.nodesCount<=0
             active: fact.modified || fact.progress>=0 || (!fact.dataValid)
             enabled: true
-            onTriggered: {
-                if(fact.progress<0)fact.request()
-            }
         }
 
         FactValue {
@@ -59,9 +56,6 @@ ColumnLayout {
             warning: fact.missionSize<=0
             active: fact.modified || fact.progress>=0
             enabled: true
-            onTriggered: {
-                if(fact.missionSize<=0) fact.request.trigger()
-            }
         }
     }
 

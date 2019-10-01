@@ -82,6 +82,7 @@ ApxApp.ApxLibrary {
             "SvgMaterialIcon.cpp", "SvgMaterialIcon.h",
             "QActionFact.cpp", "QActionFact.h",
             "FactQml.cpp", "FactQml.h",
+            "WidgetQmlItem.cpp", "WidgetQmlItem.h",
         ]
     }
 

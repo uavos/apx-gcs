@@ -116,6 +116,8 @@ Nodes::Nodes(Vehicle *parent)
         connect(fw, &ProtocolServiceFirmware::finished, this, &Nodes::upgradeFinished);
     }
 
+    connect(this, &Fact::triggered, this, &Nodes::request);
+
     ApxApp::jsync(this);
 }
 //=============================================================================
