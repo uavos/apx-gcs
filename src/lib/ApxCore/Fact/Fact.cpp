@@ -402,7 +402,7 @@ void Fact::trigger(QVariantMap opts)
     emit triggered(opts);
     AppRoot::instance()->factTriggered(this, opts);
 
-    if (bind())
+    if (bind() && size() <= 0)
         bind()->trigger(opts);
 }
 Fact *Fact::menu()

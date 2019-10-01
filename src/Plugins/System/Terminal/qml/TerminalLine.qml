@@ -74,7 +74,8 @@ RowLayout {
         visible: text
         text: control.subsystem
         color: "#aaa"
-        font.pixelSize: fontSize*0.9
+        font.family: font_condenced
+        font.pixelSize: fontSize*0.85
         background: Rectangle {
             border.width: 0
             color: "#223"

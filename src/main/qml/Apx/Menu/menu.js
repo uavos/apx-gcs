@@ -68,6 +68,13 @@ function createMenuObject(component, opts, parent)
         return
     }
 
+    //close all unpinned popups
+    for(var p of menuPopups){
+        if(p === obj)continue
+        if(p.pinned)continue
+        p.close()
+    }
+
     obj.open()
 }
 

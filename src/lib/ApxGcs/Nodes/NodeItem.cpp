@@ -701,7 +701,7 @@ NodeItem *NodeItem::subNode() const
 //=============================================================================
 void NodeItem::execCommand(quint16 cmd, const QString &name, const QString &descr)
 {
-    nodes->vehicle->message(tr("cmd").append(": ").append(descr), ApxApp::Important, title());
+    nodes->vehicle->message(descr + "...", ApxApp::Important, title());
     emit requestUser(cmd, QByteArray(), 1000);
     if (name.startsWith("conf") || name.contains("reconf")) {
         setDataValid(false);
