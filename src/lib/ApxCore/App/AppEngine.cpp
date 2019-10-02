@@ -281,18 +281,18 @@ QJSValue AppEngine::jsGetProperty(const QString &path)
 }
 //=============================================================================
 //=============================================================================
-QObject *AppEngine::loadQml(const QString &qmlFile)
+QObject *AppEngine::loadQml(const QString &qmlFile, const QVariantMap &opts)
 {
-    //qDebug()<<qmlFile;
     QQmlComponent c(this, qmlFile, QQmlComponent::PreferSynchronous);
-    //setObjectOwnership(&c,CppOwnership);
-    QObject *obj = c.create();
+    QObject *obj = c.beginCreate(rootContext());
+    for (auto key : opts.keys()) {
+        QQmlProperty::write(obj, key.toUtf8(), opts.value(key));
+    }
     c.completeCreate();
     if (c.isError()) {
         apxMsgW() << c.errorString();
         return nullptr;
     }
-    //setObjectOwnership(obj,CppOwnership);
     return obj;
 }
 //=============================================================================

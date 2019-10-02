@@ -40,7 +40,7 @@ Sites::Sites(Fact *parent)
 
     //ApxApp::jsync(this);
 
-    ApxApp::instance()->engine()->loadQml("qrc:/" PLUGIN_NAME "/SitesPlugin.qml");
+    loadQml("qrc:/" PLUGIN_NAME "/SitesPlugin.qml");
 }
 //=============================================================================
 void Sites::appLoaded()

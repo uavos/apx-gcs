@@ -1,12 +1,16 @@
-import QtQuick 2.5
+import QtQuick 2.12
 
 import Apx.Common 1.0
 
-import QtQuick.Layouts 1.12
-
 AppPlugin {
     id: plugin
-    sourceComponent: Video {
+    sourceComponent: Component { Video { } }
+    uiComponent: "main"
+    onConfigure: {
+        ui.main.addInstrumentPlugin(plugin)
+    }
+
+    /*sourceComponent: Video {
         id: video
         visible: apx.tools.videostreaming.show_window.value
     }
@@ -49,5 +53,6 @@ AppPlugin {
     onConfigure: {
         plugin.parent = ui.main.containerMain
         plugin.state = "small"
-    }
+    }*/
+
 }

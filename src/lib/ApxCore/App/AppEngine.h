@@ -45,7 +45,7 @@ public:
     Q_INVOKABLE QByteArray jsToArray(QJSValue data);
     QJSValue jsGetProperty(const QString &path);
 
-    Q_INVOKABLE QObject *loadQml(const QString &qmlFile);
+    Q_INVOKABLE QObject *loadQml(const QString &qmlFile, const QVariantMap &opts);
 
 protected:
     QHash<QString, QString> js_descr; //helper commands alias,descr

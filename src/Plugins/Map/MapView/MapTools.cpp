@@ -67,7 +67,7 @@ MapTools::MapTools(Fact *parent)
 
     new MapPrefs(this);
 
-    qml = ApxApp::instance()->engine()->loadQml("qrc:/MapPlugin.qml");
+    qml = loadQml("qrc:/MapPlugin.qml");
 }
 MapTools::~MapTools()
 {

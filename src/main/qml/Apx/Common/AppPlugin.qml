@@ -6,13 +6,21 @@ Loader {
     property string uiComponent
     signal configure()  // called when uiComponent is loaded
 
+    property var fact
+    property string name: fact?fact.name:""
+    property string title: fact?fact.title:""
+    property string descr: fact?fact.descr:""
+    property string icon: fact?fact.icon:""
+
+
     active: false
     asynchronous: true
     Component.onCompleted: {
         if(uiComponent && (!(ui && ui[uiComponent])))return
         activate()
     }
-    function activate()
+
+    function activate(object)
     {
         configure()
         active=true
@@ -20,6 +28,6 @@ Loader {
     Connections {
         target: application
         enabled: uiComponent
-        onUiComponentLoaded: if(name==plugin.uiComponent)activate()
+        onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
     }
 }

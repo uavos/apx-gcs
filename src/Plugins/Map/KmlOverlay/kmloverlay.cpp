@@ -32,7 +32,7 @@ KmlOverlay::KmlOverlay(Fact *parent)
     connect(f_open, &Fact::triggered, this, &KmlOverlay::onOpenTriggered);
     connect(f_visible, &Fact::valueChanged, this, &KmlOverlay::onOverlayVisibleValueChanged);
 
-    ApxApp::instance()->engine()->loadQml("qrc:/" PLUGIN_NAME "/KmlOverlayPlugin.qml");
+    loadQml("qrc:/" PLUGIN_NAME "/KmlOverlayPlugin.qml");
 }
 
 KmlPolygonsModel *KmlOverlay::getKmlPolygons() const

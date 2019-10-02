@@ -98,66 +98,58 @@ Item {
         item.anchors.fill=containerMain
     }
 
-    function addInstrument(c)
+    property var instruments
+    function addInstrumentPlugin(plugin)
     {
-        c.parent=instrumentsPanel
-        c_vsep.createObject(instrumentsPanel)
+        instruments.add(plugin)
+        if(plugin.name)
+            application.registerUiComponent(plugin,"instruments."+plugin.name)
     }
 
+    function addDefaultInstrument(c)
+    {
+        c.parent=containerInstruments
+        c.Layout.fillHeight=true
+        c_vsep.createObject(containerInstruments)
+    }
 
     Component.onCompleted: {
-        addInstrument(l_status)
-        addInstrument(l_pfd)
-        addInstrument(l_numbers)
-        addInstrument(l_commands)
-        addInstrument(l_terminal)
+        addDefaultInstrument(status)
+        addDefaultInstrument(pfd)
+        addDefaultInstrument(numbers)
+        addDefaultInstrument(commands)
+        instruments=c_instruments.createObject(containerInstruments)
+        addDefaultInstrument(instruments)
     }
 
     Loader {
-        id: l_status
+        id: status
         visible: showStatus
         active: visible
         asynchronous: true
         sourceComponent: Component { Status { } }
-        Layout.fillHeight: true
-        Layout.fillWidth: false
     }
     Loader {
-        id: l_pfd
+        id: pfd
         visible: showPfd
         active: visible
         asynchronous: true
         sourceComponent: Component { Pfd { } }
-        Layout.fillHeight: true
         Layout.preferredWidth: instrumentsHeight*pfdAspectRatio
     }
     Loader {
-        id: l_numbers
+        id: numbers
         visible: showNumbers
         active: visible
         asynchronous: true
         sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
-        Layout.fillHeight: true
-        Layout.fillWidth: false
     }
     Loader {
-        id: l_terminal
-        visible: apx.tools.terminal?true:false
-        active: visible
-        asynchronous: true
-        source: apx.tools.terminal.qmlPage
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-    }
-    Loader {
-        id: l_commands
+        id: commands
         active: visible
         asynchronous: true
         sourceComponent: Component { Commands { } }
-        Layout.fillHeight: true
-        Layout.fillWidth: false
     }
-
 
     Component {
         id: c_vsep
@@ -169,81 +161,69 @@ Item {
         }
     }
 
+    Component {
+        id: c_instruments
+        ColumnLayout {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            spacing: 1
+            function add(c)
+            {
+                c.parent=swipeView
+                pagesModel.append(c)
+            }
+            ListModel {
+                id: pagesModel
+            }
+            SwipeView {
+                id: swipeView
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                interactive: true
+                orientation: Qt.Horizontal
+                clip: true
+            }
+            ListView {
+                id: listView
+                Layout.fillWidth: true
+                Layout.margins: 3
+                spacing: 3
+                model: pagesModel
+                visible: count>1
+                orientation: ListView.Horizontal
+                delegate: CleanButton {
+                    text: model.title?model.title:index
+                    toolTip: model.descr
+                    iconName: model.icon
+                    highlighted: swipeView.currentIndex==index
+                    onTriggered: swipeView.currentIndex=index
+                    Component.onCompleted: {
+                        listView.implicitHeight=Math.max(listView.implicitHeight, implicitHeight)
+                    }
+                }
+            }
+        }
+    }
+
 
 
     //CONTENT
     GridLayout {
         anchors.fill: parent
-        //spacing: 0
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 0
 
             RowLayout {
-                id: instrumentsPanel
+                id: containerInstruments
                 visible: showInstruments
                 spacing: 0
                 Layout.rightMargin: activityControl.width+3
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.maximumHeight: instrumentsHeight
-
-                /*Loader {
-                    active: visible
-                    visible: showStatus
-                    asynchronous: true
-                    sourceComponent: Component { Status { } }
-                    Layout.fillHeight: true
-                    Layout.fillWidth: false
-                    Layout.leftMargin: 3
-                    Layout.rightMargin: 3
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: showStatus?1:0; border.width: 0; color: sepColor; }
-
-                Loader {
-                    active: visible
-                    visible: showPfd
-                    asynchronous: true
-                    sourceComponent: Component { Pfd { } }
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: instrumentsHeight*pfdAspectRatio
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
-
-                Loader {
-                    active: visible
-                    visible: showNumbers
-                    asynchronous: true
-                    sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
-                    Layout.fillHeight: true
-                    Layout.fillWidth: false
-                    Layout.leftMargin: 3
-                    Layout.rightMargin: 3
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: showNumbers?1:0; border.width: 0; color: sepColor; }
-
-                Loader {
-                    active: visible
-                    visible: apx.tools.terminal?true:false
-                    asynchronous: true
-                    source: apx.tools.terminal.qmlPage
-                    Layout.fillHeight: true
-                    Layout.fillWidth: false
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
-
-                Loader {
-                    id: commands
-                    asynchronous: true
-                    sourceComponent: Component { Commands { } }
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                }
-                Rectangle { Layout.fillHeight: true; implicitWidth: 1; border.width: 0; color: sepColor; }
-*/
             }
-
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; border.width: 0; color: sepColor; }
 
             //MAIN PART

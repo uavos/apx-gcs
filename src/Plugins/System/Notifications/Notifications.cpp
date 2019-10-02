@@ -38,7 +38,7 @@ Notifications::Notifications(Fact *parent)
 
     connect(ApxApp::instance(), &ApxApp::notification, this, &Notifications::appNotification);
 
-    ApxApp::instance()->engine()->loadQml("qrc:/" PLUGIN_NAME "/NotificationsPlugin.qml");
+    loadQml("qrc:/" PLUGIN_NAME "/NotificationsPlugin.qml");
 }
 //=============================================================================
 void Notifications::appNotification(QString msg,

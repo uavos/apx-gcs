@@ -114,7 +114,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
     m_videoThread.setOverlayCallback(std::bind(&Overlay::drawOverlay, f_overlay, _1));
 
-    ApxApp::instance()->engine()->loadQml("qrc:/" PLUGIN_NAME "/VideoPlugin.qml");
+    loadQml("qrc:/" PLUGIN_NAME "/VideoPlugin.qml");
 
     AppSettingFact::loadSettings(this);
     connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);

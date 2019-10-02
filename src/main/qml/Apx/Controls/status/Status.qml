@@ -11,7 +11,7 @@ Rectangle {
     implicitHeight: 200
 
     readonly property int margins: 3
-    readonly property real itemHeight: height/15
+    readonly property real itemHeight: height/15//*ui.scale
 
     property bool isLanding:
         m.mode.value===mode_LANDING ||

@@ -20,6 +20,7 @@ Rectangle {
     NumbersModel {
         id: numbersModel
         itemHeight: control.itemHeight
+        fixedWidth: true
         defaults: [
             {"bind":"user1","prec":"2","title":"u1"},
             {"bind":"user2","prec":"2","title":"u2"},
@@ -36,7 +37,7 @@ Rectangle {
             id: list
             Layout.margins: control.margins
             Layout.fillHeight: true
-            implicitWidth: contentWidth
+            implicitWidth: numbersModel.minimumWidth
             clip: true
             spacing: 0
             model: numbersModel
@@ -50,7 +51,7 @@ Rectangle {
                 toolTip: qsTr("Edit display values")
                 onTriggered: numbersModel.edit()
             }
-            onCountChanged: {
+            /*onCountChanged: {
                 numbersModel.minimumWidth=0
                 updateWidth(0)
                 numbersModel.minimumWidth=Qt.binding(function(){return layout.implicitWidth-control.margins*2})
@@ -61,13 +62,13 @@ Rectangle {
                 if(typeof(w)=='undefined')w=implicitWidth
                 for(var i=0;i<count;++i){
                     var m=model.get(i)
-                    m.implicitWidthChanged.disconnect(updateWidth)
-                    m.implicitWidthChanged.connect(updateWidth)
+                   // m.implicitWidthChanged.disconnect(updateWidth)
+                   // m.implicitWidthChanged.connect(updateWidth)
                     if(w>m.implicitWidth)continue
                     w=m.implicitWidth
                 }
-                implicitWidth=Math.max(control.itemHeight*3,w)
-            }
+                //implicitWidth=Math.max(control.itemHeight*3,w)
+            }*/
         }
     }
 }

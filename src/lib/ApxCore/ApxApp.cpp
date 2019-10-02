@@ -303,8 +303,9 @@ void ApxApp::setGlobalProperty(const QString &path, const QJSValue &value)
 void ApxApp::registerUiComponent(QObject *item, QString name)
 {
     //qDebug()<<item<<name;
-    setGlobalProperty(QString("ui.%1").arg(name), m_engine->newQObject(item));
-    emit uiComponentLoaded(name);
+    QJSValue obj = m_engine->newQObject(item);
+    setGlobalProperty(QString("ui.%1").arg(name), obj);
+    emit uiComponentLoaded(name, obj);
 }
 //=============================================================================
 //=============================================================================

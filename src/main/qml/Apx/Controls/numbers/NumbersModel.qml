@@ -12,10 +12,11 @@ import APX.Facts 1.0
 ObjectModel {
     id: model
 
-    property int itemWidth: 0
     property int minimumWidth: 0
     property int itemHeight: 32
+
     property bool light: false
+    property bool fixedWidth: false
 
     property string settingsName: "default"
 
@@ -55,6 +56,7 @@ ObjectModel {
     {
         clearObjList()
         model.clear()
+        model.minimumWidth=0
         for(var i in list){
             var n=list[i]
             //console.log(n.bind)
@@ -78,8 +80,10 @@ ObjectModel {
             s+="}"
             var obj = Qt.createQmlObject(s,model);
 
-            if(model.itemWidth)obj.width=Qt.binding(function(){return model.itemWidth})
-            if(model.minimumWidth)obj.minimumWidth=Qt.binding(function(){return model.minimumWidth})
+            if(model.fixedWidth){
+                obj.model=model
+                obj.minimumWidth=Qt.binding(function(){return model.minimumWidth})
+            }
 
             obj.height=Qt.binding(function(){return itemHeight})
             for(var p in n){

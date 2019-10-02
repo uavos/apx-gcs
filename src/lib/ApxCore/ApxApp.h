@@ -98,7 +98,7 @@ public slots:
 
 signals:
     void loadingFinished();
-    void uiComponentLoaded(QString name);
+    void uiComponentLoaded(QString name, QJSValue object);
 
     void visibilityChanged(QWindow::Visibility visibility);
     void playSoundEffect(const QString &v);

@@ -38,7 +38,7 @@ RowLayout {
 
     ListView {
         id: plistView
-        Layout.alignment: Qt.AlignBottom
+        Layout.alignment: Qt.AlignTop
         implicitHeight: contentHeight
         implicitWidth: buttonHeight
         spacing: 3

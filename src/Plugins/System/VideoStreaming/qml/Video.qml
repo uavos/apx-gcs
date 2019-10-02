@@ -9,7 +9,7 @@ import GstPlayer 1.0
 import Apx.Common 1.0
 
 // sample stream:
-// rtspt://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
+// rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
 Rectangle {
     id: videoItem
@@ -20,23 +20,21 @@ Rectangle {
 
     color: "black"
 
-    anchors.fill: parent
-
-    readonly property var stream: apx.tools.videostreaming
-    readonly property bool running: stream?stream.tune.running.value:false
-    readonly property bool recording: stream?stream.tune.record.value:false
+    readonly property var plugin: apx.tools.videostreaming
+    readonly property bool running: plugin?plugin.tune.running.value:false
+    readonly property bool recording: plugin?plugin.tune.record.value:false
 
     VideoOutput {
         id: videoOutput
         anchors.fill: parent
-        source: stream
+        source: plugin
         ColumnLayout {
             visible: running
             x: videoOutput.contentRect.x
             y: videoOutput.contentRect.y
             spacing: 0
             Repeater {
-                model: stream.tune.overlay.varnames
+                model: plugin.tune.overlay.varnames
                 Label {
                     property var v: apx.vehicles.current.mandala.findChild(modelData)
                     text: v.name + ": " + v.value.toFixed(5)
@@ -48,7 +46,7 @@ Rectangle {
         }
         Item {
             id: crosshair
-            visible: running && stream.tune.overlay.crosshair.value
+            visible: running && plugin.tune.overlay.crosshair.value
             property int lineSize: Math.min(videoOutput.contentRect.width, videoOutput.contentRect.height) / 10;
             Rectangle {
                 x: videoOutput.contentRect.x + (videoOutput.contentRect.width - crosshair.lineSize) / 2
@@ -75,10 +73,10 @@ Rectangle {
         anchors.centerIn: parent
         text: qsTr("connect")
         scale: ui.scale
-        onClicked: stream.tune.running.value = true
+        onClicked: plugin.tune.running.value = true
     }
     BusyIndicator {
-        visible: stream.connectionState === GstPlayer.STATE_CONNECTING
+        visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
         anchors.centerIn: parent
         running: true
     }
@@ -90,24 +88,20 @@ Rectangle {
         spacing: 5
 
         CleanButton {
-            iconName: "close"
-            onTriggered: stream.show_window.value = false
-        }
-        CleanButton {
             visible: running
             iconName: "record-rec"
             iconColor: recording ? Material.color(Material.DeepOrange) : Material.primaryTextColor
-            onTriggered: stream.tune.record.value =! stream.tune.record.value
+            onTriggered: plugin.tune.record.value =! plugin.tune.record.value
         }
         CleanButton {
             visible: running
             iconName: "image"
-            onTriggered: stream.snapshot()
+            onTriggered: plugin.snapshot()
         }
         CleanButton {
             visible: running
             iconName: "cast-off"
-            onTriggered: stream.tune.running.value=false
+            onTriggered: plugin.tune.running.value=false
         }
 
         Item {
@@ -118,11 +112,11 @@ Rectangle {
         CleanButton {
             iconName: "tune"
             onTriggered: {
-                stream.tune.trigger()
+                plugin.tune.trigger()
             }
         }
 
-        CleanButton {
+        /*CleanButton {
             id: resizeButton
             iconName: checked ? "fullscreen-exit" : "fullscreen"
             checkable: true
@@ -132,6 +126,6 @@ Rectangle {
                 else
                     plugin.state = "small"
             }
-        }
+        }*/
     }
 }

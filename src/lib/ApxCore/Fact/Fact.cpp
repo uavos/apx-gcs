@@ -421,6 +421,13 @@ Fact *Fact::menu()
     return nullptr;
 }
 //=============================================================================
+QObject *Fact::loadQml(const QString &qmlFile)
+{
+    QVariantMap opts;
+    opts.insert("fact", QVariant::fromValue(this));
+    return ApxApp::instance()->engine()->loadQml(qmlFile, opts);
+}
+//=============================================================================
 void Fact::bind(FactData *fact)
 {
     FactData::bind(fact);

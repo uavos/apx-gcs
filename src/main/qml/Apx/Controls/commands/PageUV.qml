@@ -26,7 +26,7 @@ RowLayout {
             "LANDING": [btnCANCEL,btnNEXT,btnBRK],
             "WPT": [btnINC,btnDEC],
             "STBY": [btnRESET],
-            "UAV": [btnNEXT],
+            "UAV": [btnNEXT,btnCANCEL],
         }
     }
 
@@ -59,7 +59,6 @@ RowLayout {
             title: v<=1?"AUTO":"STOP"
             value: v+1
             width: height*4
-            //size: root.size
             highlighted: v>1
             resetValue: 100
         }
@@ -99,7 +98,6 @@ RowLayout {
         CtrButton {
             fact: m.stage
             title: "CANCEL"
-            //enabled: m.stage.value<100
             value: 100
             width: height*4
             highlighted: false
@@ -110,7 +108,6 @@ RowLayout {
         CtrButton {
             fact: m.stage
             title: "RESET"
-            //enabled: m.stage.value<100
             value: 100
             width: height*4
             highlighted: false

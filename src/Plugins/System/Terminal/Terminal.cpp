@@ -28,19 +28,24 @@
 #define MAX_HISTORY 50
 //=============================================================================
 Terminal::Terminal(Fact *parent)
-    : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Terminal"), tr("System terminal"), Group)
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Terminal"),
+           tr("System terminal"),
+           Group,
+           "console-line")
 {
-    setIcon("console-line");
     setQmlPage("qrc:/" PLUGIN_NAME "/Terminal.qml");
 
     _model = new TerminalListModel(this);
-    //connect(this, &Terminal::newMessage, _model, &TerminalListModel::append, Qt::QueuedConnection);
 
     _history = QSettings().value("consoleHistory").toStringList();
     historyReset();
 
     qmlRegisterUncreatableType<Terminal>("APX.Terminal", 1, 0, "Terminal", "Reference only");
     qmlRegisterUncreatableType<TerminalListModel>("APX.Terminal", 1, 0, "Terminal", "Reference only");
+
+    loadQml("qrc:/" PLUGIN_NAME "/TerminalPlugin.qml");
 }
 //=============================================================================
 void Terminal::exec(const QString &cmd)

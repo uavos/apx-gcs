@@ -14,7 +14,7 @@ FactValue {
 
     property color barColorBG: "#555"
 
-    property int barHeight: rssControl.implicitHeight/2*0.5
+    property int barHeight: rssControl.height/2*0.5
     property int barWidth: rssControl.width*0.6
 
     function barColor(v)

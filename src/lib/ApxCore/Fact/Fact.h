@@ -138,6 +138,9 @@ public:
     //fact menu. returns fact (this or binded) which has the menu or null
     Q_INVOKABLE Fact *menu();
 
+    //forward to app instance with fact opts
+    Q_INVOKABLE QObject *loadQml(const QString &qmlFile);
+
 private:
     QString pTitle() const;
 
