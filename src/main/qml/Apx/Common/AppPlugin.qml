@@ -14,6 +14,7 @@ Loader {
 
 
     active: false
+    visible: active
     asynchronous: true
     Component.onCompleted: {
         if(uiComponent && (!(ui && ui[uiComponent])))return

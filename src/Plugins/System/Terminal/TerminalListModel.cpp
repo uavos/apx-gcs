@@ -108,31 +108,9 @@ void TerminalListModel::notification(QString msg,
     emit countChanged();
     //qDebug()<<"rows"<<rowCount();
 }
-/*void TerminalListModel::append(QtMsgType type, QString category, QString text)
-{
-    int row = rowCount();
-    if (row > 1000) {
-        beginRemoveRows(QModelIndex(), 0, 1);
-        _items.removeAt(0);
-        _items.removeAt(0);
-        endRemoveRows();
-    }
-    row = rowCount();
-    beginInsertRows(QModelIndex(), row, row);
-    TerminalListItem *item = new TerminalListItem;
-    item->type = type;
-    item->category = category;
-    item->text = text;
-    item->timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    _items.append(item);
-    endInsertRows();
-    emit countChanged();
-    //qDebug()<<"rows"<<rowCount();
-}*/
 //=============================================================================
 void TerminalListModel::enter(const QString &line)
 {
-    //append(QtInfoMsg, "input", line);
     notification(line, "", ApxApp::FromInput, nullptr);
     _enterIndex = _items.size() - 1;
 }
@@ -140,7 +118,9 @@ void TerminalListModel::enterResult(bool ok)
 {
     if (_enterIndex >= _items.size())
         return;
-    _items[_enterIndex]->text.insert(0, QString("[%1]").arg(ok ? tr("ok") : tr("error")));
+    _items[_enterIndex]->subsystem = ok ? tr("ok") : tr("error");
+    if (!ok)
+        _items[_enterIndex]->flags |= ApxApp::Error;
     QModelIndex i = index(_enterIndex, 0);
     emit dataChanged(i, i, QVector<int>() << TextRole);
 }

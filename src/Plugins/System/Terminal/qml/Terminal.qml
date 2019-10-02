@@ -2,6 +2,8 @@ import QtQuick 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 
+import APX.Facts 1.0
+
 Rectangle {
     id: control
     border.width: 0
@@ -44,11 +46,12 @@ Rectangle {
             }
 
             add: Transition {
+                id: transAdd
                 enabled: ui.smooth
                 NumberAnimation {
                     properties: "x";
                     from: -listView.width;
-                    duration: 150
+                    duration: transAdd.ViewTransition.item.source==ApxApp.FromInput?0:150
                     easing.type: Easing.OutCubic
                 }
             }

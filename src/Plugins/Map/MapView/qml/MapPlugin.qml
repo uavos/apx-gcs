@@ -9,7 +9,7 @@ AppPlugin {
 
     uiComponent: "main"
     onConfigure: {
-        ui.main.addMainItem(plugin)
+        ui.main.addMainPlugin(plugin)
         //parent=ui.main.containerMain
         //anchors.fill=parent
     }

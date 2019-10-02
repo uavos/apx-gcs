@@ -22,23 +22,16 @@ import "qrc:/app"
 Item {
     id: groundControl
 
-    readonly property real pfdAspectRatio: 2
-    readonly property int pfdMinHeight: 0 //280
 
-    readonly property int instrumentsHeight: Math.max(width*0.4/pfdAspectRatio,pfdMinHeight)
+    readonly property int instrumentsHeight: width*0.2
     readonly property color sepColor: "#244"
 
-    property alias containerMain:   containerMain
     property alias containerTop:    containerTop
     property alias containerBottom: containerBottom
     property alias containerLeft:   containerLeft
     property alias containerRight:  containerRight
 
     property bool showInstruments: true
-    property bool showPfd: true
-    property bool showStatus: true
-    property bool showNumbers: true
-    property bool showNodes: true
     property bool showSignals: true
 
     readonly property real containerMargins: 10*ui.scale
@@ -56,7 +49,6 @@ Item {
             PropertyChanges {
                 target: groundControl;
                 showInstruments: true
-                showNodes: false
                 showSignals: false
             }
         },
@@ -75,7 +67,6 @@ Item {
             property string icon: "settings"
             PropertyChanges {
                 target: groundControl;
-                showNodes: true
                 showSignals: true
             }
         }
@@ -89,122 +80,18 @@ Item {
         z: 10000
         anchors.top: parent.top
         anchors.right: parent.right
-        height: instrumentsHeight
     }
 
-    function addMainItem(item)
+    function addMainPlugin(plugin)
     {
-        item.parent=containerMain
-        item.anchors.fill=containerMain
+        plugin.parent=mainPanel
+        plugin.anchors.fill=mainPanel
     }
 
-    property var instruments
     function addInstrumentPlugin(plugin)
     {
-        instruments.add(plugin)
-        if(plugin.name)
-            application.registerUiComponent(plugin,"instruments."+plugin.name)
+        instrumentsPanel.addPlugin(plugin)
     }
-
-    function addDefaultInstrument(c)
-    {
-        c.parent=containerInstruments
-        c.Layout.fillHeight=true
-        c_vsep.createObject(containerInstruments)
-    }
-
-    Component.onCompleted: {
-        addDefaultInstrument(status)
-        addDefaultInstrument(pfd)
-        addDefaultInstrument(numbers)
-        addDefaultInstrument(commands)
-        instruments=c_instruments.createObject(containerInstruments)
-        addDefaultInstrument(instruments)
-    }
-
-    Loader {
-        id: status
-        visible: showStatus
-        active: visible
-        asynchronous: true
-        sourceComponent: Component { Status { } }
-    }
-    Loader {
-        id: pfd
-        visible: showPfd
-        active: visible
-        asynchronous: true
-        sourceComponent: Component { Pfd { } }
-        Layout.preferredWidth: instrumentsHeight*pfdAspectRatio
-    }
-    Loader {
-        id: numbers
-        visible: showNumbers
-        active: visible
-        asynchronous: true
-        sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
-    }
-    Loader {
-        id: commands
-        active: visible
-        asynchronous: true
-        sourceComponent: Component { Commands { } }
-    }
-
-    Component {
-        id: c_vsep
-        Rectangle {
-            Layout.fillHeight: true
-            implicitWidth: 1
-            border.width: 0
-            color: sepColor
-        }
-    }
-
-    Component {
-        id: c_instruments
-        ColumnLayout {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            spacing: 1
-            function add(c)
-            {
-                c.parent=swipeView
-                pagesModel.append(c)
-            }
-            ListModel {
-                id: pagesModel
-            }
-            SwipeView {
-                id: swipeView
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                interactive: true
-                orientation: Qt.Horizontal
-                clip: true
-            }
-            ListView {
-                id: listView
-                Layout.fillWidth: true
-                Layout.margins: 3
-                spacing: 3
-                model: pagesModel
-                visible: count>1
-                orientation: ListView.Horizontal
-                delegate: CleanButton {
-                    text: model.title?model.title:index
-                    toolTip: model.descr
-                    iconName: model.icon
-                    highlighted: swipeView.currentIndex==index
-                    onTriggered: swipeView.currentIndex=index
-                    Component.onCompleted: {
-                        listView.implicitHeight=Math.max(listView.implicitHeight, implicitHeight)
-                    }
-                }
-            }
-        }
-    }
-
 
 
     //CONTENT
@@ -215,23 +102,26 @@ Item {
             Layout.fillHeight: true
             spacing: 0
 
-            RowLayout {
-                id: containerInstruments
+            InstrumentsPanel {
+                id: instrumentsPanel
                 visible: showInstruments
-                spacing: 0
                 Layout.rightMargin: activityControl.width+3
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.maximumHeight: instrumentsHeight
             }
-            Rectangle { Layout.fillWidth: true; implicitHeight: 1; border.width: 0; color: sepColor; }
+            Rectangle { visible: showInstruments; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
 
             //MAIN PART
             Item {
-                id: containerMain
+                id: mainPanel
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.minimumHeight: 200*ui.scale
+                BoundingRect { anchors.fill: containerTop }
+                BoundingRect { anchors.fill: containerBottom }
+                BoundingRect { anchors.fill: containerLeft }
+                BoundingRect { anchors.fill: containerRight }
                 RowLayout {
                     id: containerTop
                     z: 100

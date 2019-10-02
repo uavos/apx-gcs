@@ -22,10 +22,11 @@ RowLayout {
     readonly property color color: {
 
         var cImportant = (source==ApxApp.FromVehicle)?"#aff":"#afa"
+        var cInfo = (source==ApxApp.FromInput)?"#ccc":"#aaa"
 
         switch(type){
         default:
-        case ApxApp.Info: return "#aaa"
+        case ApxApp.Info: return cInfo
         case ApxApp.Important: return cImportant
         case ApxApp.Warning: return "#ff8"
         case ApxApp.Error: return "#f88"
@@ -33,7 +34,8 @@ RowLayout {
     }
     readonly property bool html: text.startsWith("<html>")
     readonly property bool bold: {
-        if(type==ApxApp.Info)return false
+        if(source==ApxApp.FromInput) return true
+        if(type==ApxApp.Info) return false
         return true
     }
 
@@ -54,7 +56,7 @@ RowLayout {
         text: control.subsystem
         color: "#aaa"
         font.family: font_condenced
-        font.pixelSize: fontSize*0.85
+        font.pixelSize: fontSize*0.9
         background: Rectangle {
             border.width: 0
             color: "#223"

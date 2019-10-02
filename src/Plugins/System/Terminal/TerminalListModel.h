@@ -71,7 +71,6 @@ private slots:
     void notification(QString msg, QString subsystem, ApxApp::NotifyFlags flags, Fact *fact);
 
 public slots:
-    //void append(QtMsgType type, QString category, QString text);
     void enter(const QString &line);
     void enterResult(bool ok);
 
