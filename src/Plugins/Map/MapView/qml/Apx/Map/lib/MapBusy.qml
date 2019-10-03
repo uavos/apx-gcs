@@ -9,11 +9,13 @@ Item {
     property var fact: apx.tools?apx.tools.location:null
     property int value: fact?fact.requestCount:0
 
-    visible: value>0
+    implicitWidth: 100
+    implicitHeight: 10
 
     ProgressBar {
         anchors.fill: parent
-        value: 0
+        visible: value>=0
+        value: -1
         indeterminate: true
         opacity: ui.effects?0.9:1
         background.height: height
@@ -23,10 +25,11 @@ Item {
     //running: visible
     Label {
         anchors.fill: parent
+        visible: value>=0
         color: "#60FFFFFF"
         text: value.toFixed()
         font.bold: true
-        horizontalAlignment: Qt.AlignRight
+        horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter
         font.pixelSize: Math.max(8,height)
     }
@@ -34,9 +37,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            if(typeof mapLoader != "undefined"){
-                mapLoader.abort();
-            }
+            fact.abort();
         }
     }
 }

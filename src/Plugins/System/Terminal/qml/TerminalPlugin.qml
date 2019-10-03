@@ -8,6 +8,6 @@ AppPlugin {
     sourceComponent: Terminal { }
     uiComponent: "main"
     onConfigure: {
-        ui.main.addInstrumentPlugin(plugin)
+        ui.main.instrumentsLayout.addPlugin(plugin)
     }
 }

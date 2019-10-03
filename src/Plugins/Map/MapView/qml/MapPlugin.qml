@@ -9,11 +9,6 @@ AppPlugin {
 
     uiComponent: "main"
     onConfigure: {
-        ui.main.addMainPlugin(plugin)
-        //parent=ui.main.containerMain
-        //anchors.fill=parent
-    }
-    Component.onDestruction: {
-        //console.log("map destroyed")
+        ui.main.mainLayout.addMainItem(plugin)
     }
 }

@@ -8,7 +8,7 @@ import Apx.Common 1.0
 Item {
     id: control
 
-    implicitWidth: 50
+    implicitWidth: 100
 
     height: width*0.18
 
@@ -23,7 +23,7 @@ Item {
     readonly property int lineWidth: Math.max(1,1*ui.scale)
     readonly property int markSize: control.height*0.5
 
-    //BoundingRect { }
+    BoundingRect { }
 
     Rectangle {
         id: scaleImage

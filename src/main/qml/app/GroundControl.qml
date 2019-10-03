@@ -26,15 +26,11 @@ Item {
     readonly property int instrumentsHeight: width*0.2
     readonly property color sepColor: "#244"
 
-    property alias containerTop:    containerTop
-    property alias containerBottom: containerBottom
-    property alias containerLeft:   containerLeft
-    property alias containerRight:  containerRight
+    property alias mainLayout: mainLayout
+    property alias instrumentsLayout: instrumentsLayout
 
     property bool showInstruments: true
     property bool showSignals: true
-
-    readonly property real containerMargins: 10*ui.scale
 
     Settings {
         id: settings
@@ -82,19 +78,6 @@ Item {
         anchors.right: parent.right
     }
 
-    function addMainPlugin(plugin)
-    {
-        plugin.parent=mainPanel
-        plugin.anchors.fill=mainPanel
-    }
-
-    function addInstrumentPlugin(plugin)
-    {
-        instrumentsPanel.addPlugin(plugin)
-    }
-
-
-    //CONTENT
     GridLayout {
         anchors.fill: parent
         ColumnLayout {
@@ -102,9 +85,10 @@ Item {
             Layout.fillHeight: true
             spacing: 0
 
-            InstrumentsPanel {
-                id: instrumentsPanel
+            InstrumentsLayout {
+                id: instrumentsLayout
                 visible: showInstruments
+                state: groundControl.state
                 Layout.rightMargin: activityControl.width+3
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -112,88 +96,12 @@ Item {
             }
             Rectangle { visible: showInstruments; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
 
-            //MAIN PART
-            Item {
-                id: mainPanel
+            MainLayout {
+                id: mainLayout
+                state: groundControl.state
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.minimumHeight: 200*ui.scale
-                BoundingRect { anchors.fill: containerTop }
-                BoundingRect { anchors.fill: containerBottom }
-                BoundingRect { anchors.fill: containerLeft }
-                BoundingRect { anchors.fill: containerRight }
-                RowLayout {
-                    id: containerTop
-                    z: 100
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.margins: containerMargins
-                    anchors.rightMargin: showInstruments?0:activityControl.width+containerMargins
-                    VehiclesListView {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                    }
-                    TaskBar {
-                        Layout.fillWidth: false
-                        Layout.fillHeight: false
-                        Layout.preferredHeight: 32*ui.scale
-                        Layout.alignment: Qt.AlignTop | Qt.AlignRight
-                    }
-                }
-                ColumnLayout {
-                    id: containerLeft
-                    z: 100
-                    anchors.left: parent.left
-                    anchors.top: containerTop.bottom
-                    anchors.bottom: parent.bottom
-                    anchors.margins: containerMargins
-                    Loader {
-                        id: loaderMission
-                        Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-                        Layout.fillHeight: true
-                        sourceComponent: Component { MissionListView { } }
-                    }
-                    Loader {
-                        id: loaderSignals
-                        active: showSignals
-                        Layout.alignment: Qt.AlignBottom | Qt.AlignLeft
-                        sourceComponent: Component { Signals { } }
-                        visible: active
-                    }
-                }
-                RowLayout {
-                    id: containerBottom
-                    z: 100
-                    anchors.left: containerLeft.right
-                    anchors.bottom: parent.bottom
-                    anchors.right: parent.right
-                    anchors.margins: containerMargins
-                    Loader {
-                        active: visible
-                        asynchronous: true
-                        sourceComponent: Component {
-                            NumbersBar {
-                                layoutDirection: Qt.RightToLeft
-                                settingsName: "map"
-                                defaults: [
-                                    {"bind": "altitude", "title": "ALT", "prec": "0"},
-                                ]
-                            }
-                        }
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignBottom | Qt.AlignRight
-                    }
-                }
-                ColumnLayout {
-                    id: containerRight
-                    z: 100
-                    anchors.right: parent.right
-                    anchors.top: containerTop.bottom
-                    anchors.bottom: containerBottom.top
-                    anchors.margins: containerMargins
-                    anchors.rightMargin: (showInstruments?0:activityControl.width)+containerMargins
-                }
             }
         }
     }

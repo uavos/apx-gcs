@@ -22,7 +22,7 @@ Item {
     width: visible?textItem.height*1.7:0
     height: visible?textItem.height+10+arrowSize:0
 
-    visible: f_windSpd>0
+    //visible: f_windSpd>0
 
     property bool smoothMove: true
     Timer {

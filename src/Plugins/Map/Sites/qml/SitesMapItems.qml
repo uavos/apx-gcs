@@ -33,7 +33,6 @@ MapItemGroup {
 
     //CURRENT SITE LABEL
     Text {
-        //z: -1000
         parent: map //ui.main
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom

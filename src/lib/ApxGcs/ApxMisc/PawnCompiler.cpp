@@ -65,7 +65,7 @@ bool PawnCompiler::compile()
         foreach (VehicleMandalaFact *f, vehicle->f_mandala->allFacts)
             args << "f_" + f->name() + "=" + QString::number(f->id());
         foreach (QString name, vehicle->f_mandala->constants.keys())
-            args << name + "=" + vehicle->f_mandala->constants.value(name).toInt();
+            args << name + "=" + vehicle->f_mandala->constants.value(name).toString();
     }
     args << "-i" + ApxDirs::res().absoluteFilePath("scripts/pawn/include");
     args << "-i" + ApxDirs::scripts().absoluteFilePath("pawn");

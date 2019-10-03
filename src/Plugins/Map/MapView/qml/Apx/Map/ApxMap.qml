@@ -130,7 +130,7 @@ Item {
 
             Component.onCompleted: {
                 application.registerUiComponent(map,"map")
-                ui.main.containerBottom.anchors.rightMargin=scaleLegend.width+scaleLegend.anchors.margins+ui.main.containerBottom.anchors.margins
+                //ui.main.containerBottom.anchors.rightMargin=scaleLegend.width+scaleLegend.anchors.margins+ui.main.containerBottom.anchors.margins
             }
 
             //initial animation
@@ -295,37 +295,31 @@ Item {
     }
 
     //Controls
-    Loader {
+    Component.onCompleted: {
+        ui.main.mainLayout.addItem(mapBusy,Qt.AlignRight|Qt.AlignBottom)
+        ui.main.mainLayout.addItem(scaleLegend,Qt.AlignRight|Qt.AlignBottom)
+    }
+    /*Loader {
         id: windItem
         active: showWind
         asynchronous: true
         sourceComponent: Component { Wind { } }
-        anchors.bottom: scaleLegend.top
-        anchors.right: parent.right
-        anchors.margins: 10*ui.scale
+        //anchors.bottom: scaleLegend.top
+        //anchors.right: parent.right
+        //anchors.margins: 10*ui.scale
+        Component.onCompleted: ui.main.mainLayout.addItem(windItem,Qt.AlignRight|Qt.AlignBottom)
+    }*/
+    Loader {
+        id: mapBusy
+        active: showScale
+        asynchronous: true
+        sourceComponent: Component { MapBusy { } }
     }
     Loader {
         id: scaleLegend
         active: showScale
         asynchronous: true
         sourceComponent: Component { MapScale { } }
-        width: 100*ui.scale
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 20*ui.scale
-    }
-    Loader {
-        id: mapBusy
-        active: showScale
-        asynchronous: true
-        sourceComponent: Component { MapBusy { } }
-        z: scaleLegend.z
-        anchors.left: scaleLegend.left
-        anchors.right: scaleLegend.right
-        anchors.top: scaleLegend.bottom
-        anchors.bottom: parent.bottom
-        anchors.topMargin: 2*ui.scale
-        anchors.bottomMargin: 4*ui.scale
     }
 
 }

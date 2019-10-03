@@ -11,13 +11,14 @@ RowLayout {
     //warnings fact
     WarningMessage {
         Layout.fillHeight: true
+        //implicitWidth: height
     }
 
     //reset path
     CleanButton {
+        Layout.fillHeight: true
         readonly property var fact: apx.vehicles.current.rpath
         iconName: fact.icon
-        implicitHeight: parent.height
         toolTip: fact.title
         onTriggered: fact.trigger()
         visible: fact.enabled
@@ -32,7 +33,6 @@ RowLayout {
         filterOnGroup: "launcher"
         delegate: CleanButton {
             iconName: modelData.icon
-            implicitHeight: parent.height
             onTriggered: modelData.trigger()
             toolTip: modelData.title+" - "+modelData.descr
         }
@@ -57,26 +57,26 @@ RowLayout {
         model: toolsModel
     }
     CleanButton {
+        Layout.fillHeight: true
         iconName: apx.tools.icon
-        implicitHeight: parent.height
         toolTip: apx.tools.title
         onTriggered: apx.tools.trigger()
     }
     CleanButton {
+        Layout.fillHeight: true
         iconName: apx.windows.icon
-        implicitHeight: parent.height
         toolTip: apx.windows.title
         onTriggered: apx.windows.trigger()
     }
 
     //simulator
     Loader {
+        Layout.fillHeight: true
         asynchronous: true
         active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (apx.vehicles.current.isLocal() || apx.tools.simulator.stop.enabled)
         sourceComponent: Component {
             CleanButton {
                 iconName: apx.tools.simulator.icon
-                implicitHeight: control.height
                 toolTip: apx.tools.simulator.descr
                 onTriggered: apx.tools.simulator.trigger()
             }

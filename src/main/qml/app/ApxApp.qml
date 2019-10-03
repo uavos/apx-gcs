@@ -15,7 +15,7 @@ AppWindow {
         visible: false
         onLoaded: {
             visible=true
-            var cname="ApxAppMainMenuBar"
+            var cname="MenuBar"
             if(Qt.platform.os=="linux")cname+="Linux"
             else cname+="Macos"
             var component = Qt.createComponent(cname+".qml");

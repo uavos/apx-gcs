@@ -1,14 +1,10 @@
-﻿import QtQuick 2.11
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.3
-import QtQml 2.12
-
-import Qt.labs.settings 1.0
+﻿import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtQuick.Controls 2.12
 
 import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Instruments 1.0
-import Apx.Menu 1.0
 
 import "qrc:/app"
 

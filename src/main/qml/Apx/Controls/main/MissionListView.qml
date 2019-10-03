@@ -23,9 +23,9 @@ ColumnLayout {
         fact.trigger()
     }
 
-    MissionTools {
+    /*MissionTools {
         Layout.alignment: Qt.AlignTop
-    }
+    }*/
     ListView {
         id: missionListView
         Layout.fillHeight: true
