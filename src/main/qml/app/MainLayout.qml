@@ -82,7 +82,7 @@ Item {
 
     RowLayout {
         id: bottom
-        anchors.left: parent.left
+        anchors.left: bottomLeft.implicitHeight?parent.left:left.right
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.leftMargin: margins
@@ -101,11 +101,24 @@ Item {
                 visible: active
             }
         }
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: 1000
+        }
         RowLayout {
             id: bottomRight
             Layout.alignment: Qt.AlignBottom|Qt.AlignRight
-            //Layout.fillWidth: false
             //Layout.fillHeight: true
+            NumbersBar {
+                //Layout.alignment: Qt.AlignBottom|Qt.AlignRight
+                //Layout.fillWidth: true
+                //layoutDirection: Qt.RightToLeft
+                settingsName: "map"
+                defaults: [
+                    {"bind": "altitude", "title": "ALT", "prec": "0"},
+                ]
+            }
         }
     }
 
@@ -147,37 +160,5 @@ Item {
             //Layout.fillHeight: true
         }
     }
-
-
-    /*RowLayout {
-        id: containerBottom
-        anchors.left: containerLeft.right
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: margins
-        Loader {
-            active: visible
-            asynchronous: true
-            sourceComponent: Component {
-                NumbersBar {
-                    layoutDirection: Qt.RightToLeft
-                    settingsName: "map"
-                    defaults: [
-                        {"bind": "altitude", "title": "ALT", "prec": "0"},
-                    ]
-                }
-            }
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignBottom | Qt.AlignRight
-        }
-    }
-    ColumnLayout {
-        id: containerRight
-        anchors.right: parent.right
-        anchors.top: topRight.bottom
-        anchors.bottom: containerBottom.top
-        anchors.margins: margins
-        anchors.rightMargin: (showInstruments?0:activityControl.width)+margins
-    }*/
 }
 

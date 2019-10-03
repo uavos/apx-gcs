@@ -11,11 +11,11 @@ FactValue {
 
     //ensure width only grows
     Component.onCompleted: {
-        implicitWidth=defaultWidth //unbind
+        implicitWidth=0
     }
     onDefaultWidthChanged: timerWidthUpdate.start()
     property Timer timerWidthUpdate: Timer {
-        interval: 10
+        interval: 0
         onTriggered: {
             if(implicitWidth<defaultWidth)
                 implicitWidth=defaultWidth

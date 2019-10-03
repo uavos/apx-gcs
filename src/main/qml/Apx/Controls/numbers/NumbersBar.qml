@@ -10,7 +10,7 @@ import Apx.Common 1.0
 
 Flow {
     id: control
-    spacing: 10
+    spacing: 8
     clip: true
 
     property alias settingsName: numbersModel.settingsName
@@ -32,7 +32,7 @@ Flow {
 
     NumbersModel {
         id: numbersModel
-        minimumWidth: itemHeight*3
+        //minimumWidth: itemHeight*3
         itemHeight: 28*ui.scale //control.height
         light: true
     }
