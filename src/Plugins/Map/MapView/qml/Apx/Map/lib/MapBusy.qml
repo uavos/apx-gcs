@@ -4,18 +4,20 @@ import QtLocation       5.3
 import QtQml 2.12
 
 Item {
-    id: mapBusy
+    id: control
 
     property var fact: apx.tools?apx.tools.location:null
-    property int value: fact?fact.requestCount:0
+    property string text: fact?fact.status:""
+    property int progress: fact?fact.progress:-1
 
     implicitWidth: 100
     implicitHeight: 10
 
+    visible: progress>=0
+
     ProgressBar {
         anchors.fill: parent
-        visible: value>=0
-        value: -1
+        value: progress
         indeterminate: true
         opacity: ui.effects?0.9:1
         background.height: height
@@ -25,9 +27,8 @@ Item {
     //running: visible
     Label {
         anchors.fill: parent
-        visible: value>=0
         color: "#60FFFFFF"
-        text: value.toFixed()
+        text: control.text
         font.bold: true
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter

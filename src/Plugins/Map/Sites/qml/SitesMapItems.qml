@@ -33,10 +33,11 @@ MapItemGroup {
 
     //CURRENT SITE LABEL
     Text {
+        id: siteText
         parent: map //ui.main
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: ui.main.containerBottom.height?ui.main.containerBottom.height+20:0
+        anchors.bottomMargin: map.height*0.15
         visible: text
         font.pixelSize: 24
         font.bold: true

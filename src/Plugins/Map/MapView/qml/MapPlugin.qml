@@ -11,4 +11,9 @@ AppPlugin {
     onConfigure: {
         ui.main.mainLayout.addMainItem(plugin)
     }
+
+    Loader {
+        active: plugin.active && plugin.status==Loader.Ready
+        sourceComponent: Component { ApxMapTools { } }
+    }
 }

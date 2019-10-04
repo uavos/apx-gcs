@@ -11,11 +11,12 @@ import "qrc:/app"
 Item {
     id: control
 
-    BoundingRect { anchors.fill: top }
-    BoundingRect { anchors.fill: top2 }
+    /*BoundingRect { anchors.fill: top }
+    BoundingRect { anchors.fill: topMission }
+    BoundingRect { anchors.fill: leftMission }
     BoundingRect { anchors.fill: left }
     BoundingRect { anchors.fill: bottom }
-    BoundingRect { anchors.fill: right }
+    BoundingRect { anchors.fill: right }*/
 
     implicitWidth: 600
     implicitHeight: 500
@@ -35,8 +36,20 @@ Item {
         if(alignment&Qt.AlignRight){
             if(alignment&Qt.AlignBottom){
                 item.parent=rightBottom
+                item.Layout.alignment=Qt.AlignRight
             }else{
                 item.parent=rightTop
+                item.Layout.alignment=Qt.AlignRight
+            }
+        }else if(alignment&Qt.AlignLeft){
+            if(alignment&Qt.AlignBottom){
+                item.parent=bottomLeft
+                item.Layout.alignment=Qt.AlignBottom
+            }else if(alignment&Qt.AlignVCenter){
+                item.parent=left
+                item.Layout.alignment=Qt.AlignTop
+            }else{
+                item.parent=topMission
             }
         }
     }
@@ -50,8 +63,6 @@ Item {
         RowLayout {
             id: topLeft
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            //Layout.fillWidth: true
-            //Layout.fillHeight: true
             VehiclesListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -72,7 +83,7 @@ Item {
     }
 
     RowLayout {
-        id: top2
+        id: topMission
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.leftMargin: margins
@@ -82,7 +93,7 @@ Item {
 
     RowLayout {
         id: bottom
-        anchors.left: bottomLeft.implicitHeight?parent.left:left.right
+        anchors.left: bottomLeft.implicitHeight?parent.left:leftMission.right
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.leftMargin: margins
@@ -91,41 +102,29 @@ Item {
         RowLayout {
             id: bottomLeft
             Layout.alignment: Qt.AlignBottom|Qt.AlignLeft
-            //Layout.fillWidth: true
-            //Layout.fillHeight: true
             Loader {
                 id: loaderSignals
                 active: showSignals
-                //Layout.alignment: Qt.AlignBottom | Qt.AlignLeft
                 sourceComponent: Component { Signals { } }
                 visible: active
             }
         }
-        Item {
+        NumbersBar {
+            Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.preferredWidth: 1000
-        }
-        RowLayout {
-            id: bottomRight
-            Layout.alignment: Qt.AlignBottom|Qt.AlignRight
-            //Layout.fillHeight: true
-            NumbersBar {
-                //Layout.alignment: Qt.AlignBottom|Qt.AlignRight
-                //Layout.fillWidth: true
-                //layoutDirection: Qt.RightToLeft
-                settingsName: "map"
-                defaults: [
-                    {"bind": "altitude", "title": "ALT", "prec": "0"},
-                ]
-            }
+            layoutDirection: Qt.RightToLeft
+            //flow: Flow.TopToBottom
+            settingsName: "map"
+            defaults: [
+                {"bind": "altitude", "title": "ALT", "prec": "0"},
+            ]
         }
     }
 
 
     ColumnLayout {
-        id: left
-        anchors.top: top2.bottom
+        id: leftMission
+        anchors.top: topMission.bottom
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.topMargin: margins
@@ -137,6 +136,16 @@ Item {
             Layout.fillHeight: true
             sourceComponent: Component { MissionListView { } }
         }
+    }
+
+    ColumnLayout {
+        id: left
+        anchors.top: topMission.bottom
+        anchors.bottom: bottom.top
+        anchors.left: parent.left
+        anchors.topMargin: margins
+        anchors.bottomMargin: margins
+        anchors.leftMargin: leftMission.implicitWidth?leftMission.implicitWidth+margins*2:margins
     }
 
     ColumnLayout {

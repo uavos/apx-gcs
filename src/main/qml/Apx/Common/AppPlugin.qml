@@ -23,12 +23,21 @@ Loader {
 
     function activate(object)
     {
-        configure()
         active=true
+        configure()
     }
     Connections {
         target: application
         enabled: uiComponent
         onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
     }
+
+    /*onLoaded: {
+        console.log("loaded", title, plugin)
+    }
+    onStatusChanged: {
+        if(status==Loader.Null){
+            console.log("unloaded", title, plugin)
+        }
+    }*/
 }

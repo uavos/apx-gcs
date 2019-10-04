@@ -296,27 +296,24 @@ Item {
 
     //Controls
     Component.onCompleted: {
-        ui.main.mainLayout.addItem(mapBusy,Qt.AlignRight|Qt.AlignBottom)
-        ui.main.mainLayout.addItem(scaleLegend,Qt.AlignRight|Qt.AlignBottom)
+        ui.main.mainLayout.addItem(wind,Qt.AlignRight|Qt.AlignBottom)
+        ui.main.mainLayout.addItem(busy,Qt.AlignRight|Qt.AlignBottom)
+        ui.main.mainLayout.addItem(scale,Qt.AlignRight|Qt.AlignBottom)
     }
-    /*Loader {
-        id: windItem
+    Loader {
+        id: wind
         active: showWind
         asynchronous: true
         sourceComponent: Component { Wind { } }
-        //anchors.bottom: scaleLegend.top
-        //anchors.right: parent.right
-        //anchors.margins: 10*ui.scale
-        Component.onCompleted: ui.main.mainLayout.addItem(windItem,Qt.AlignRight|Qt.AlignBottom)
-    }*/
+    }
     Loader {
-        id: mapBusy
+        id: busy
         active: showScale
         asynchronous: true
         sourceComponent: Component { MapBusy { } }
     }
     Loader {
-        id: scaleLegend
+        id: scale
         active: showScale
         asynchronous: true
         sourceComponent: Component { MapScale { } }

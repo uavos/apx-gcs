@@ -18,7 +18,7 @@ Button {
 
     property string title: text
     property string descr
-    property string toolTip
+    property string toolTip: descr?descr:title
 
     property int progress: -1
 

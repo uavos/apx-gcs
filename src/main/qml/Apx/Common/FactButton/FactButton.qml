@@ -66,8 +66,8 @@ CleanButton {
     property bool isScript: dataType===Fact.Script
     property bool hasValue: dataType && (!isScript)
 
-    property bool showEditor: hasValue
-    property bool showValue: hasValue
+    property bool showEditor: hasValue && showText
+    property bool showValue: hasValue && showText
 
     //focus requests
     signal focusRequested()

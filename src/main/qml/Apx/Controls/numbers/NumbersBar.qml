@@ -32,8 +32,7 @@ Flow {
 
     NumbersModel {
         id: numbersModel
-        //minimumWidth: itemHeight*3
-        itemHeight: 28*ui.scale //control.height
+        itemHeight: 28*ui.scale
         light: true
     }
 }

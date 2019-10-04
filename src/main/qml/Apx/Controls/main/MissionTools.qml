@@ -16,7 +16,7 @@ import Apx.Menu 1.0
 RowLayout {
     property Mission mission: apx.vehicles.current.mission
     height: missionButton.height
-    spacing: 10*ui.scale
+    //spacing: 10*ui.scale
     //property int itemSize: Math.max(10,missionButton.height)
     //property int iconFontSize: itemSize*0.8
     //property int titleFontSize: itemSize*0.8

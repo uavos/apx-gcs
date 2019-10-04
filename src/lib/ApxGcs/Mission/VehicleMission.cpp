@@ -60,6 +60,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
 
     f_title = new MissionField(this, "mission_title", tr("Title"), tr("Mission title"), Text);
+    f_title->setIcon("square-edit-outline");
 
     connect(f_title, &Fact::textChanged, this, &VehicleMission::updateStatus);
     connect(this, &VehicleMission::missionSizeChanged, this, &VehicleMission::updateStatus);

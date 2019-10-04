@@ -7,7 +7,7 @@ Map {
 
 
     signal moved()
-    signal clicked()
+    signal clicked(var coordinate)
     signal menuRequested()
 
     readonly property var mouseCoordinate: mouseCoordinateRaw.isValid?mouseCoordinateRaw:center
@@ -199,7 +199,7 @@ Map {
 
         onClicked: {
             if (mouse.button === Qt.LeftButton) {
-                control.clicked()
+                control.clicked(mouseClickCoordinate)
             }else if (mouse.button === Qt.RightButton) {
                 control.menuRequested()
             }
