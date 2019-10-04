@@ -142,6 +142,7 @@ void FactBase::remove()
     setParentFact(nullptr);
     emit removed();
     deleteLater();
+    //removeAll();
     //delete this;
 }
 void FactBase::move(int n, bool safeMode)

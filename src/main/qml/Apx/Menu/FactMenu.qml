@@ -40,8 +40,7 @@ StackView {
     signal factOpened(var fact)
     signal stackEmpty()
 
-    property StackView parentStack
-    property bool showBtnBack: depth>1 || parentStack
+    property bool showBtnBack: depth>1
 
 
     function showFact(f)
@@ -64,7 +63,6 @@ StackView {
         //console.log("back")
         if(depth==1)stackEmpty()
         if(depth>1)pop();
-        else if(parentStack)parentStack.pop();
         fact=currentItem.fact
     }
     Connections {
@@ -72,6 +70,10 @@ StackView {
         onMenuBack: {
             //console.log("menuBack")
             back()
+        }
+        onRemoved: {
+            //console.log("removed")
+            factMenu.fact=null
         }
     }
 

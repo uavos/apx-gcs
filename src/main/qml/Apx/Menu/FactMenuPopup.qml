@@ -38,6 +38,11 @@ Popup {
     onAboutToHide: {
         Menu.unregisterMenuView(factMenu)
         Menu.unregisterMenuPopup(popup)
+
+        //destroy immediately on deletion
+        if(!fact){
+            if(popup && popup.destroy)popup.destroy()
+        }
     }
     onOpened: {
         Menu.registerMenuPopup(popup)
@@ -65,7 +70,7 @@ Popup {
         onFactOpened: raise()
 
         onFactButtonTriggered: {
-            if(fact.options & Fact.CloseOnTrigger)
+            if(!fact || (fact.options & Fact.CloseOnTrigger))
                 popup.close()
             else popup.raise()
         }
