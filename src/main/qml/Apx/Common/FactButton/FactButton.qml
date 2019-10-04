@@ -1,9 +1,12 @@
-﻿import QtQuick 2.6
-import QtQuick.Controls 2.3
+﻿import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles 1.4
-import QtQuick.Layouts 1.3
+import QtQuick.Layouts 1.12
 import QtGraphicalEffects 1.0
-import QtQuick.Controls.Material 2.2
+
+import QtQuick.Controls.Material 2.12
+import QtQuick.Controls.Material.impl 2.12
+
 
 import APX.Facts 1.0
 import Apx.Common 1.0
@@ -43,6 +46,8 @@ CleanButton {
 
     property bool selected: false
     property bool draggable: (fact && fact.parentFact)?fact.parentFact.options&Fact.DragChildren:false
+
+    property bool signaled: false
 
     property bool noFactTrigger: false
 
@@ -212,6 +217,29 @@ CleanButton {
         var c=Qt.createComponent(name+".qml",factButton)
         if(c.status===Component.Ready) {
             c.createObject(ui.window,{"fact": fact});
+        }
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: signaled
+        asynchronous: true
+        sourceComponent: Component {
+            Ripple {
+                id: ripple
+                clipRadius: 2
+                anchor: factButton
+                active: false
+                color: factButton.flat && factButton.highlighted ? factButton.Material.highlightedRippleColor : factButton.Material.rippleColor
+                Timer {
+                    interval: 500
+                    repeat: true
+                    running: true
+                    onTriggered: {
+                        ripple.pressed=!ripple.pressed
+                    }
+                }
+            }
         }
     }
 

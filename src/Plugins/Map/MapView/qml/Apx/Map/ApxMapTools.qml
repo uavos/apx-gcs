@@ -2,6 +2,9 @@
 import QtQuick.Layouts  1.12
 import QtQuick.Controls 2.12
 
+import QtLocation 5.12
+import QtPositioning 5.12
+
 import Apx.Common 1.0
 import Apx.Menu 1.0
 
@@ -25,14 +28,13 @@ ColumnLayout {
 
 
     property var selectedFact
+    property var selectedGroup
+
+    property bool active: activeTool || (selectedGroup?true:false)
+    property bool activeTool: selectedFact?true:false
+
     Repeater {
-        model: selectedFact
-               ? null
-               : add.highlighted
-                 ? factAdd.model
-                 : vehicle.highlighted
-                   ? factVehicle.model
-                   : null
+        model: selectedFact ? null : selectedGroup ? selectedGroup.model : null
         delegate: FactButton {
             fact: model.fact
             noFactTrigger: true
@@ -41,49 +43,96 @@ ColumnLayout {
         }
     }
 
+
+
     Connections {
         target: ui.map
+        enabled: control.active
         onClicked: {
             if(selectedFact){
                 selectedFact.trigger()
             }else reset()
         }
-        onMoved: {
-            if(!selectedFact) reset()
+    }
+    Connections {
+        target: ui.map
+        enabled: !activeTool
+        onMoved: reset()
+    }
+    Connections {
+        target: apx
+        enabled: control.active
+        onFactTriggered: {
+            if(fact==selectedFact)return
+            reset()
         }
+    }
+    Connections {
+        target: apx.vehicles
+        enabled: control.active
+        onVehicleSelected: reset()
     }
 
     function reset()
     {
         selectedFact=null
-        add.highlighted=false
-        vehicle.highlighted=false
+        selectedGroup=null
+    }
+
+    Loader {
+        active: activeTool
+        asynchronous: true
+        sourceComponent: Component {
+            MapQuickItem {
+                coordinate: ui.map.mouseCoordinate
+
+                //constants
+                anchorPoint.x: icon.implicitWidth/2
+                anchorPoint.y: icon.implicitHeight*0.85
+
+                sourceItem: Text {
+                    id: icon
+                    font.family: "Material Design Icons"
+                    font.pixelSize: 60
+                    text: materialIconChar["chevron-double-down"]
+                    color: "#fff"
+                }
+            }
+        }
+        onLoaded: {
+            ui.map.addMapItem(item)
+        }
     }
 
 
-    property bool sel: selectedFact?true:false
     FactButton {
         id: add
-        fact: (highlighted && sel)?selectedFact:control.factAdd
+        fact: (highlighted && activeTool)?selectedFact:control.factAdd
         noFactTrigger: true
-        showText: highlighted && sel
+        showText: highlighted && activeTool
+        signaled: showText
+        highlighted: selectedGroup==factAdd
         onTriggered: {
-            vehicle.highlighted=false
-            selectedFact=null
-            highlighted=!highlighted
+            if(highlighted)reset()
+            else{
+                if(activeTool)reset()
+                selectedGroup=factAdd
+            }
         }
     }
     FactButton {
         id: vehicle
-        fact: (highlighted && sel)?selectedFact:control.factVehicle
+        fact: (highlighted && activeTool)?selectedFact:control.factVehicle
         noFactTrigger: true
-        showText: highlighted && sel
+        showText: highlighted && activeTool
+        signaled: showText
+        highlighted: selectedGroup==factVehicle
         onTriggered: {
-            add.highlighted=false
-            selectedFact=null
-            highlighted=!highlighted
+            if(highlighted)reset()
+            else{
+                if(activeTool)reset()
+                selectedGroup=factVehicle
+            }
         }
     }
-
-
 }
