@@ -24,6 +24,7 @@ Item {
     property bool showVehicleNav: showVehicles
     property bool showWind: showVehicleNav
     property bool showScale: showVehicleNav
+    property bool showInfo: showVehicleNav
 
     property var mapPlugin: apx.tools.mapview
 
@@ -145,80 +146,6 @@ Item {
             }
 
 
-            /*plugin: Plugin {
-                name: "mapboxgl"
-
-                PluginParameter {
-                    name: "mapboxgl.mapping.items.insert_before"
-                    value: "road-label-small"
-                }
-
-                PluginParameter {
-                    name: "mapboxgl.access_token"
-                    value: "pk.eyJ1IjoidG1wc2FudG9zIiwiYSI6ImNqMWVzZWthbDAwMGIyd3M3ZDR0aXl3cnkifQ.FNxMeWCZgmujeiHjl44G9Q"
-                }
-
-                PluginParameter {
-                    name: "mapboxgl.mapping.additional_style_urls"
-                    value: "mapbox://styles/mapbox/navigation-guidance-day-v2,mapbox://styles/mapbox/navigation-guidance-night-v2,mapbox://styles/mapbox/navigation-preview-day-v2,mapbox://styles/mapbox/navigation-preview-night-v2"
-                }
-            }
-            activeMapType: {
-                var v = "Satellite Streets"
-                for(var i in map.supportedMapTypes){
-                    var m=map.supportedMapTypes[i]
-                    if(m.description !== v) continue
-                    return m
-                }
-                return map.supportedMapTypes[0]
-            }
-            copyrightsVisible: false
-            MapParameter {
-                type: "layer"
-
-                property var name: "3d-buildings"
-                property var source: "composite"
-                property var sourceLayer: "building"
-                property var layerType: "fill-extrusion"
-                property var minzoom: 15.0
-            }
-
-            MapParameter {
-                type: "filter"
-
-                property var layer: "3d-buildings"
-                property var filter: [ "==", "extrude", "true" ]
-            }
-
-            MapParameter {
-                type: "paint"
-
-                property var layer: "3d-buildings"
-                property var fillExtrusionColor: "#00617f"
-                property var fillExtrusionOpacity: .6
-                property var fillExtrusionHeight: { return { type: "identity", property: "height" } }
-                property var fillExtrusionBase: { return { type: "identity", property: "min_height" } }
-            }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             //VEHICLES
             Loader {
                 active: showVehicles
@@ -290,20 +217,20 @@ Item {
                 target: apx.vehicles.current.mission
                 onTriggered: map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle())
             }
-
         }
     }
 
     //Controls
     Component.onCompleted: {
-        ui.main.mainLayout.addItem(wind,Qt.AlignRight|Qt.AlignBottom)
-        ui.main.mainLayout.addItem(busy,Qt.AlignRight|Qt.AlignBottom)
-        ui.main.mainLayout.addItem(scale,Qt.AlignRight|Qt.AlignBottom)
+        ui.main.mainLayout.addToolInfo(wind, Qt.AlignLeft|Qt.AlignBottom)
+        //ui.main.mainLayout.addItem(busy,Qt.AlignRight|Qt.AlignBottom)
+        ui.main.mainLayout.addInfo(info)
+        ui.main.mainLayout.addInfo(scale)
     }
     Loader {
         id: wind
         active: showWind
-        asynchronous: true
+        //asynchronous: true
         sourceComponent: Component { Wind { } }
     }
     Loader {
@@ -317,6 +244,14 @@ Item {
         active: showScale
         asynchronous: true
         sourceComponent: Component { MapScale { } }
+        //onLoaded: ui.main.mainLayout.addInfo(item)
+    }
+    Loader {
+        id: info
+        active: showInfo
+        asynchronous: true
+        sourceComponent: Component { MapInfo { } }
+        //onLoaded: ui.main.mainLayout.addInfo(item)
     }
 
 }

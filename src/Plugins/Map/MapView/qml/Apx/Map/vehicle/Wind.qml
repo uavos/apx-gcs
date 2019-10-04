@@ -25,6 +25,8 @@ Item {
 
     visible: f_windSpd>0
 
+    //BoundingRect {}
+
     property bool smoothMove: true
     Timer {
         id: smoothMoveTimer

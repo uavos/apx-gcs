@@ -83,14 +83,6 @@ RowLayout {
         }
         visible: status===Loader.Ready
     }
-    //telemetry player
-    Loader {
-        Layout.fillHeight: true
-        asynchronous: true
-        active: apx.vehicles.current.isReplay()
-        sourceComponent: Component { TelemetryReader { } }
-        visible: status===Loader.Ready
-    }
 
     RecLabel {
         Layout.fillHeight: true

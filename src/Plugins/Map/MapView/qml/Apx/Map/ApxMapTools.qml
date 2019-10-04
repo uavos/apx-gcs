@@ -20,9 +20,9 @@ ColumnLayout {
     property var factVehicle: plugin.vehicle
 
     Component.onCompleted: {
-        ui.main.mainLayout.addItem(add,Qt.AlignLeft|Qt.AlignTop)
-        ui.main.mainLayout.addItem(vehicle,Qt.AlignLeft|Qt.AlignTop)
-        ui.main.mainLayout.addItem(control,Qt.AlignLeft|Qt.AlignVCenter)
+        ui.main.mainLayout.addTool(add)
+        ui.main.mainLayout.addTool(vehicle)
+        ui.main.mainLayout.addToolInfo(control)
     }
 
 

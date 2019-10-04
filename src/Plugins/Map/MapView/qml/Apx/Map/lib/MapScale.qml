@@ -32,6 +32,7 @@ Item {
         height: lineWidth
         anchors.bottom: parent.bottom
         anchors.right: control.right
+        anchors.bottomMargin: 1
     }
 
     Rectangle {
