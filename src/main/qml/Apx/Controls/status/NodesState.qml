@@ -38,7 +38,6 @@ Rectangle {
                 if(fact.active)apx.vehicles.current.nodes.request()
                 else apx.vehicles.current.nodes.nstat()
             }
-            onMenuRequested: fact.trigger()
             titleColor: {
                 if(fact){
                     if(fact.modified)return "#ffa" //Material.color(Material.Yellow)
@@ -60,7 +59,6 @@ Rectangle {
                 if(fact.progress<0)fact.request()
                 else fact.stop()
             }
-            onMenuRequested: fact.trigger()
         }
         ScrollBar.vertical: ScrollBar { width: 6 }
     }

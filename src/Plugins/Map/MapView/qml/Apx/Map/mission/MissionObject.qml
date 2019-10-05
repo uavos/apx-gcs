@@ -49,6 +49,23 @@ MapObject {  //to be used inside MapComponent only
         }
     }
 
+    contentsCenter: Loader {
+        z: -1
+        active: fact?fact.active:false
+        anchors.centerIn: parent
+        width: missionObject.width*1.8
+        height: width
+        sourceComponent: Component {
+            Rectangle {
+                radius: width/2
+                color: "transparent"
+                border.width: 2
+                border.color: missionObject.color //"#fff"
+                //opacity: 0.5
+            }
+        }
+    }
+
     //Fact bindings
     title: fact?fact.num+1:0
     implicitCoordinate: fact?fact.coordinate:QtPositioning.coordinate()

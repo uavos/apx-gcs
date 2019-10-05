@@ -41,6 +41,9 @@ CleanButton {
             vehicle.follow=true
         }
     }
-
-    onMenuRequested: menuFact.trigger()
+    onPressAndHold: {
+        if(vehicle.active){
+            vehicle.follow=true
+        }
+    }
 }

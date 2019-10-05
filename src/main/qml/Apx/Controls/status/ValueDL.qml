@@ -22,7 +22,7 @@ FactValue {
 
     enabled: true
     onClicked: apx.datalink.trigger()
-    onMenuRequested: m.errcnt=0
+    onPressAndHold: m.errcnt=0
 
     readonly property color cGreen: light?Material.color(Material.Yellow):Material.color(Material.LightGreen)
     readonly property color cRed: light?Material.color(Material.Yellow):Material.color(Material.DeepOrange)

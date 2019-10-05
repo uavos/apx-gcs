@@ -30,7 +30,6 @@ Button {
 
     property real ui_scale: ui.scale
 
-    signal menuRequested()
     signal triggered()
     signal activated()
 
@@ -195,18 +194,8 @@ Button {
     }
 
 
-    property bool blockPressAndHold: false
-
     onClicked: {
-        blockPressAndHold=true
         triggered()
-        blockPressAndHold=false
-    }
-
-    onPressAndHold: {
-        //console.log("menu")
-        if(blockPressAndHold)return
-        menuRequested()
     }
 
     onCheckedChanged: if(checked)activated()

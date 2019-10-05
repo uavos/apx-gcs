@@ -92,14 +92,7 @@ CleanButton {
         if(isScript) openDialog("EditorScript")
     }
 
-    onMenuRequested: {
-        if(!draggable){
-            //if(fact)openFact(fact,{"pageInfo": true})
-        }else{
-            held = true
-        }
-    }
-
+    onPressAndHold: held = draggable
     onPressed: {
         if(draggable)
             grabToImage(function(result) {Drag.imageSource = result.url})
@@ -170,6 +163,7 @@ CleanButton {
             Layout.leftMargin: -size*0.25
             Layout.preferredHeight: bodyHeight
             active: showNext
+            visible: active
             asynchronous: true
             property int size: fontSize(bodyHeight*nextSize)
             sourceComponent: Component {
