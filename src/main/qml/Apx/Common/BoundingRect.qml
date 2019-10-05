@@ -1,6 +1,7 @@
 import QtQuick 2.5;
 
 Rectangle {
+    id: rect
     z: 9999
 
     property var item
@@ -13,7 +14,7 @@ Rectangle {
 
     Component.onCompleted: {
         if(!item)return
-        console.log(item)
+        //console.log(item)
 
         x = Qt.binding(function(){return itemRect().x})
         y = Qt.binding(function(){return itemRect().y})
@@ -22,6 +23,7 @@ Rectangle {
     }
     function itemRect()
     {
-        return parent.mapFromItem(item.parent, item.x, item.y)
+        var p=item.parent.mapToGlobal(item.x, item.y)
+        return parent.mapFromGlobal(p.x,p.y)
     }
 }

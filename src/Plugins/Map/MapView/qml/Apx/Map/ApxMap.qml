@@ -203,6 +203,18 @@ Item {
                 sourceComponent: Component { LoiterCircle { } }
                 onLoaded: map.addMapItem(item)
             }
+            Loader {
+                active: showVehicleNav
+                asynchronous: true
+                sourceComponent: Component { CamTargetCircleCmd { } }
+                onLoaded: map.addMapItem(item)
+            }
+            Loader {
+                active: showVehicleNav
+                asynchronous: true
+                sourceComponent: Component { CamTargetCircle { } }
+                onLoaded: map.addMapItem(item)
+            }
 
             Loader { //travel path current
                 active: showVehicleNav
@@ -225,13 +237,14 @@ Item {
         ui.main.mainLayout.addToolInfo(wind, Qt.AlignLeft|Qt.AlignBottom)
         //ui.main.mainLayout.addItem(busy,Qt.AlignRight|Qt.AlignBottom)
         ui.main.mainLayout.addInfo(info)
-        ui.main.mainLayout.addInfo(scale)
+        //ui.main.mainLayout.addInfo(scale)
     }
     Loader {
         id: wind
-        active: showWind
-        //asynchronous: true
+        active: showWind && m.windSpd.value>0
+        asynchronous: true
         sourceComponent: Component { Wind { } }
+        visible: status===Loader.Ready
     }
     Loader {
         id: busy
@@ -239,13 +252,13 @@ Item {
         asynchronous: true
         sourceComponent: Component { MapBusy { } }
     }
-    Loader {
+    /*Loader {
         id: scale
         active: showScale
         asynchronous: true
         sourceComponent: Component { MapScale { } }
         //onLoaded: ui.main.mainLayout.addInfo(item)
-    }
+    }*/
     Loader {
         id: info
         active: showInfo

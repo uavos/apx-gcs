@@ -23,9 +23,6 @@ ColumnLayout {
         fact.trigger()
     }
 
-    /*MissionTools {
-        Layout.alignment: Qt.AlignTop
-    }*/
     ListView {
         id: missionListView
         Layout.fillHeight: true
@@ -39,12 +36,14 @@ ColumnLayout {
 
 
         delegate: RowLayout{
-            spacing: 8*ui.scale
+            //spacing: 8*ui.scale
             CleanButton {
-                font.family: font_mono
-                font.bold: true
-                defaultHeight: 16
-                titleSize: 1
+                //font.family: font_mono
+                //font.bold: true
+                defaultHeight: 24
+                titleSize: 0.55
+                descrSize: 0.45
+                textAlignment: Text.AlignLeft
 
                 titleColor: (fact && fact.modified)?Material.color(Material.Yellow):Material.primaryTextColor
 
@@ -54,29 +53,33 @@ ColumnLayout {
                 property string sstatus: fact?fact.status:""
                 property int num: fact?fact.num:-1
 
+                descr: sdescr
+                title: stitle
+                toolTip: sstatus
+
                 onClicked: fact.trigger()
 
                 Component.onCompleted: {
                     if(!fact)return;
                     switch(fact.missionItemType){
                     case Mission.RunwayType:
-                        color=Material.color(Material.Blue) //Style.cListRunway
-                        title=Qt.binding(function(){return stitle})
+                        color=Material.color(Material.Blue, Material.Shade900) //Style.cListRunway
+                        //title=Qt.binding(function(){return stitle})
                         iconItem.active=Qt.binding(function(){return vehicle.mandala.rwidx.value===num})
                         break;
                     case Mission.WaypointType:
-                        color=Material.color(Material.BlueGrey) //Style.cListWaypoint
-                        title=Qt.binding(function(){return stitle+(sdescr?" A":"")})
+                        color=Material.color(Material.BlueGrey, Material.Shade500) //Style.cListWaypoint
+                        //title=Qt.binding(function(){return stitle+(sdescr?" A":"")})
                         iconItem.active=Qt.binding(function(){return vehicle.mandala.wpidx.value===num})
                         break;
                     case Mission.PoiType:
-                        color=Material.color(Material.Teal) //Style.cListPoint
-                        title=Qt.binding(function(){return stitle+(sstatus?" "+sstatus:"")})
+                        color=Material.color(Material.Teal, Material.Shade700) //Style.cListPoint
+                        //title=Qt.binding(function(){return stitle+(sstatus?" "+sstatus:"")})
                         iconItem.active=Qt.binding(function(){return vehicle.mandala.piidx.value===num})
                         break;
                     case Mission.TaxiwayType:
-                        color=Material.color(Material.Grey) //Style.cListTaxiway
-                        title=Qt.binding(function(){return stitle})
+                        color=Material.color(Material.Grey, Material.Shade800) //Style.cListTaxiway
+                        //title=Qt.binding(function(){return stitle})
                         iconItem.active=Qt.binding(function(){return vehicle.mandala.twidx.value===num})
                         break;
                     }

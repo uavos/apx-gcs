@@ -22,6 +22,8 @@
  */
 #include "MissionItem.h"
 #include "MissionField.h"
+#include "VehicleMission.h"
+
 #include <App/AppRoot.h>
 #include <QGeoCircle>
 //=============================================================================
@@ -37,6 +39,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     , m_distance(0)
     , m_totalDistance(0)
     , m_totalTime(0)
+    , m_selected(false)
 {
     setOpt("pos", QPointF(0.25, 0.5));
 
@@ -77,6 +80,12 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &MissionItem::coordinateChanged, this, &MissionItem::updatePath);
 
     connect(this, &Fact::numChanged, this, &MissionItem::updatePath, Qt::QueuedConnection);
+
+    //selection support
+    connect(group->mission,
+            &VehicleMission::selectedItemChanged,
+            this,
+            &MissionItem::updateSelected);
 
     //title
     connect(parent, &Fact::numChanged, this, &Fact::nameChanged);
@@ -165,6 +174,10 @@ void MissionItem::updateOrderState()
 {
     f_order->setValue(num() + 1);
     f_order->setEnabled(group->size() > 1);
+}
+void MissionItem::updateSelected()
+{
+    setSelected(group->mission->selectedItem() == this);
 }
 //=============================================================================
 void MissionItem::selectTriggered() {}
@@ -278,6 +291,21 @@ void MissionItem::setTotalTime(uint v)
         return;
     m_totalTime = v;
     emit totalTimeChanged();
+}
+bool MissionItem::selected() const
+{
+    return m_selected;
+}
+void MissionItem::setSelected(bool v)
+{
+    if (m_selected == v)
+        return;
+    m_selected = v;
+    emit selectedChanged();
+    if (v)
+        group->mission->setSelectedItem(this);
+    else if (group->mission->selectedItem() == this)
+        group->mission->setSelectedItem(nullptr);
 }
 //=============================================================================
 //=============================================================================

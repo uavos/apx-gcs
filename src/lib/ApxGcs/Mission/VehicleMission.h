@@ -61,6 +61,7 @@ class VehicleMission : public Fact
     Q_PROPERTY(bool synced READ synced NOTIFY syncedChanged)
     Q_PROPERTY(bool saved READ saved NOTIFY savedChanged)
 
+    Q_PROPERTY(Fact *selectedItem READ selectedItem WRITE setSelectedItem NOTIFY selectedItemChanged)
 public:
     explicit VehicleMission(Vehicle *parent);
 
@@ -173,6 +174,9 @@ public:
     bool saved() const;
     void setSaved(const bool v);
 
+    Fact *selectedItem() const;
+    void setSelectedItem(Fact *v);
+
 protected:
     QGeoCoordinate m_startPoint;
     double m_startHeading;
@@ -189,6 +193,8 @@ protected:
     bool m_synced;
     bool m_saved;
 
+    QPointer<Fact> m_selectedItem;
+
 signals:
     void startPointChanged();
     void startHeadingChanged();
@@ -199,6 +205,7 @@ signals:
     void siteChanged();
     void syncedChanged();
     void savedChanged();
+    void selectedItemChanged();
 };
 //=============================================================================
 #endif

@@ -10,21 +10,27 @@ import "qrc:/app"
 
 Item {
     id: control
-/*
-    BoundingRect { item: top }
-    BoundingRect { item: vehicles }
-    BoundingRect { item: taskbar }
-    BoundingRect { item: tools }
-    BoundingRect { item: toolsItem }
-    BoundingRect { item: leftTop }
-    BoundingRect { item: leftBottom }
-    BoundingRect { item: info }
-    BoundingRect { item: notifications }
-*/
+
+    /*Item {
+        z: 9999
+        //visible: false
+        BoundingRect { item: top }
+        BoundingRect { item: vehicles }
+        BoundingRect { item: taskbar }
+        BoundingRect { item: tools }
+        BoundingRect { item: toolsItem }
+        BoundingRect { item: leftTop }
+        BoundingRect { item: leftBottom }
+        BoundingRect { item: bottom }
+        BoundingRect { item: bottomLeft }
+        BoundingRect { item: bottomRight }
+        BoundingRect { item: notifications }
+    }*/
+
     implicitWidth: 600
     implicitHeight: 500
 
-    readonly property real margins: 10*ui.scale
+    readonly property real margins: 10
 
 
     function addMainItem(item)
@@ -40,17 +46,14 @@ Item {
     }
     function addToolInfo(item, alignment)
     {
-        //if(typeof(alignment)=="undefined")alignment=Qt.AlignLeft|Qt.AlignBottom
         if(alignment&Qt.AlignBottom)
             item.parent=leftBottom
         else
             item.parent=leftTop
-
-        //item.Layout.alignment=alignment//?alignment:(Qt.AlignLeft|Qt.AlignBottom)
     }
     function addInfo(item)
     {
-        item.parent=info
+        item.parent=bottomLeft
         item.Layout.alignment=Qt.AlignBottom
     }
 
@@ -128,7 +131,7 @@ Item {
         id: missionList
         anchors.left: parent.left
         anchors.top: toolsItem.bottom
-        anchors.bottom: info.top
+        anchors.bottom: leftBottom.top
         anchors.margins: margins
         MissionListView {
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
@@ -138,9 +141,10 @@ Item {
 
     RowLayout {
         id: leftBottom
-        anchors.left: missionList.right
-        anchors.bottom: info.top
-        anchors.margins: margins
+        anchors.left: parent.left
+        anchors.bottom: bottom.bottom
+        anchors.leftMargin: margins
+        anchors.bottomMargin: bottomLeft.implicitHeight+margins
     }
 
     RowLayout {
@@ -151,36 +155,66 @@ Item {
     }
 
     RowLayout {
-        id: info
+        id: bottom
         anchors.left: parent.left
+        anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.leftMargin: margins
+        anchors.rightMargin: margins
         anchors.bottomMargin: margins/2
+
+        RowLayout {
+            id: bottomLeft
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignLeft|Qt.AlignBottom
+        }
+        RowLayout {
+            id: bottomRight
+            Layout.alignment: Qt.AlignRight|Qt.AlignBottom
+            NumbersBar {
+                Layout.fillWidth: true
+                layoutDirection: Qt.RightToLeft
+                //Layout.bottomMargin: 15
+                //flow: Flow.TopToBottom
+                settingsName: "map"
+                defaults: [
+                    {"bind": "altitude", "title": "ALT", "prec": "0"},
+                ]
+            }
+        }
     }
+
+    Loader {
+        id: signals
+        anchors.right: parent.right
+        anchors.bottom: bottom.bottom
+        anchors.bottomMargin: bottomRight.implicitHeight+margins
+        anchors.rightMargin: margins
+        active: showSignals
+        sourceComponent: Component { Signals { } }
+        visible: status===Loader.Ready
+    }
+
 
     ColumnLayout {
         id: notifications
         anchors.top: top.top
+        anchors.bottom: signals.top
         anchors.right: parent.right
         anchors.rightMargin: margins
-        anchors.topMargin: taskbar.implicitHeight+margins
+        anchors.bottomMargin: margins
+        anchors.topMargin: taskbar.height+margins
         Loader {
-            Layout.alignment: Qt.AlignRight
+            Layout.alignment: Qt.AlignRight|Qt.AlignTop
             asynchronous: true
             active: apx.vehicles.current.isReplay()
             sourceComponent: Component { TelemetryReader { } }
             visible: status===Loader.Ready
         }
-        Loader {
-            Layout.alignment: Qt.AlignRight
-            active: showSignals
-            sourceComponent: Component { Signals { } }
-            visible: active
-        }
     }
 
 
-    RowLayout {
+    /*RowLayout {
         id: bottom
         anchors.left: bottomLeft.implicitHeight?parent.left:leftMission.right
         anchors.bottom: parent.bottom
@@ -207,7 +241,7 @@ Item {
                 ]
             }
         }
-    }
+    }*/
 
 
     /*ColumnLayout {

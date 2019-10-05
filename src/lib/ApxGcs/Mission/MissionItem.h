@@ -45,6 +45,8 @@ class MissionItem : public Fact
     Q_PROPERTY(uint totalDistance READ totalDistance NOTIFY totalDistanceChanged)
     Q_PROPERTY(uint totalTime READ totalTime NOTIFY totalTimeChanged)
 
+    Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
+
 public:
     explicit MissionItem(MissionGroup *parent,
                          const QString &name,
@@ -82,6 +84,7 @@ private slots:
     virtual void updateOrder();
 
     void updateOrderState();
+    void updateSelected();
 
     virtual void selectTriggered();
 
@@ -112,6 +115,9 @@ public:
     uint totalTime() const; //estimated total time of arrival [s]
     void setTotalTime(uint v);
 
+    bool selected() const;
+    void setSelected(bool v);
+
 protected:
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
@@ -122,6 +128,8 @@ protected:
     uint m_totalDistance;
     uint m_totalTime;
 
+    bool m_selected;
+
 signals:
     void coordinateChanged();
     void geoPathChanged();
@@ -131,6 +139,8 @@ signals:
 
     void totalDistanceChanged();
     void totalTimeChanged();
+
+    void selectedChanged();
 };
 //=============================================================================
 #endif

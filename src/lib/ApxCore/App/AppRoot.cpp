@@ -111,7 +111,7 @@ QString AppRoot::latToString(double v)
     double lat = std::abs(v);
     double lat_m = 60 * (lat - std::floor(lat)), lat_s = 60 * (lat_m - std::floor(lat_m)),
            lat_ss = 100 * (lat_s - std::floor(lat_s));
-    return QString().sprintf("%c %g%c%02g'%02g.%02g\"",
+    return QString().sprintf("%c %02g%c%02g'%02g.%02g\"",
                              (v >= 0) ? 'N' : 'S',
                              std::floor(lat),
                              176,
@@ -124,7 +124,7 @@ QString AppRoot::lonToString(double v)
     double lat = std::abs(v);
     double lat_m = 60 * (lat - std::floor(lat)), lat_s = 60 * (lat_m - std::floor(lat_m)),
            lat_ss = 100 * (lat_s - std::floor(lat_s));
-    return QString().sprintf("%c %g%c%02g'%02g.%02g\"",
+    return QString().sprintf("%c %02g%c%02g'%02g.%02g\"",
                              (v >= 0) ? 'E' : 'W',
                              std::floor(lat),
                              176,

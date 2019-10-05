@@ -14,7 +14,7 @@ Item {
 
     property color color: "#fff"
 
-    property int alignment: Qt.AlignRight
+    property int alignment: Qt.AlignHCenter
 
 
     property real value: 0
@@ -31,8 +31,10 @@ Item {
         color: control.color
         height: lineWidth
         anchors.bottom: parent.bottom
-        anchors.right: control.right
-        anchors.bottomMargin: 1
+        anchors.right: (alignment&Qt.AlignRight)?control.right:undefined
+        anchors.left: (alignment&Qt.AlignLeft)?control.left:undefined
+        anchors.horizontalCenter: (alignment&Qt.AlignHCenter)?control.horizontalCenter:undefined
+        anchors.bottomMargin: 2
     }
 
     Rectangle {
@@ -59,6 +61,7 @@ Item {
         anchors.horizontalCenter: scaleImage.horizontalCenter
         text: Apx.formatDistance(control.value)
         font.pixelSize: control.height*0.7
+        font.family: font_condenced
     }
 
     Timer {

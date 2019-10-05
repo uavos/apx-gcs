@@ -50,6 +50,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     , m_empty(true)
     , m_synced(false)
     , m_saved(false)
+    , m_selectedItem(nullptr)
 {
     setOpt("pos", QPointF(0, 1));
 
@@ -68,8 +69,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
     //groups of items
     f_runways = new Runways(this, "runways", tr("Runways"), tr("Takeoff and Landing"));
     f_waypoints = new Waypoints(this, "waypoints", tr("Waypoints"), "");
-    f_taxiways = new Taxiways(this, "taxiways", tr("Taxiways"), "");
     f_pois = new Pois(this, "points", tr("Points"), tr("Points of Interest"));
+    f_taxiways = new Taxiways(this, "taxiways", tr("Taxiways"), "");
     f_areas = new Areas(this, "areas", tr("Area"), tr("Airspace definitions"));
 
     foreach (MissionGroup *group, groups) {
@@ -432,6 +433,17 @@ void VehicleMission::setSaved(const bool v)
         return;
     m_saved = v;
     emit savedChanged();
+}
+Fact *VehicleMission::selectedItem() const
+{
+    return m_selectedItem;
+}
+void VehicleMission::setSelectedItem(Fact *v)
+{
+    if (m_selectedItem == v)
+        return;
+    m_selectedItem = v;
+    emit selectedItemChanged();
 }
 //=============================================================================
 //=============================================================================
