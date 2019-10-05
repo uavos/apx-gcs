@@ -5,7 +5,7 @@ import "../lib"
 
 MapIcon {
 
-    iconName: "blur"
+    name: "blur"
 
     //Fact bindings
     property real lat: m.cam_lat.value

@@ -92,11 +92,10 @@ ColumnLayout {
                 //asynchronous: true
                 Layout.fillHeight: true
                 sourceComponent: Component {
-                    Label {
+                    MaterialIcon {
                         verticalAlignment: Text.AlignVCenter
-                        font.family: "Material Design Icons"
-                        font.pixelSize: Math.max(8,height)
-                        text: materialIconChar["chevron-double-left"]
+                        size: Math.max(8,height)
+                        name: "chevron-double-left"
                         color: Material.iconColor
                     }
                 }

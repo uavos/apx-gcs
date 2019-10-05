@@ -2,13 +2,15 @@ import QtQuick 2.12
 import QtLocation 5.12
 import QtPositioning 5.12
 
+import Apx.Common 1.0
+
 MapQuickItem {
     id: control
 
-    property string iconName
+    property alias name: icon.name
 
-    property color color: "#fff"
-    property int size: 32
+    property alias color: icon.color
+    property alias size: icon.size
 
     visible: coordinate.isValid && coordinate!=QtPositioning.coordinate(0,0,0)
 
@@ -16,11 +18,8 @@ MapQuickItem {
     anchorPoint.x: icon.implicitWidth/2
     anchorPoint.y: icon.implicitHeight/2
 
-    sourceItem: Text {
+    sourceItem: MaterialIcon {
         id: icon
-        font.family: "Material Design Icons"
-        font.pixelSize: control.size
-        text: materialIconChar[iconName]
-        color: control.color
+        size: 32
     }
 }

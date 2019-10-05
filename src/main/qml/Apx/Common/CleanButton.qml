@@ -104,12 +104,12 @@ Button {
                 //Layout.fillWidth: !showContents
                 Layout.alignment: Qt.AlignCenter
                 sourceComponent: Component {
-                    Label {
+                    MaterialIcon {
                         verticalAlignment: Text.AlignVCenter
                         //horizontalAlignment: showContents?Text.AlignLeft:Text.AlignHCenter
-                        font.family: "Material Design Icons"
-                        font.pixelSize: fontSize(bodyHeight*iconSize)
-                        text: materialIconChar[iconName]
+                        //font.family: "Material Design Icons"
+                        size: fontSize(bodyHeight*iconSize)
+                        name: iconName
                         color: control.enabled?control.iconColor:Material.iconDisabledColor
                     }
                 }

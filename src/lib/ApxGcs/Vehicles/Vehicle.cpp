@@ -52,6 +52,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
     , m_vehicleClass(vclass)
     , m_follow(false)
     , m_flightState(FS_UNKNOWN)
+    , m_totalDistance(0)
 {
     setSection(vehicles->title());
     setIcon(vclass == LOCAL ? "chip" : vclass == REPLAY ? "play-circle" : "drone");
@@ -323,15 +324,19 @@ void Vehicle::updateGeoPath()
         return;
     if (c.longitude() == 0.0)
         return;
+    qint64 dist = 0;
     if (!m_geoPath.isEmpty()) {
         QGeoCoordinate c0(m_geoPath.path().last());
         /*if (c0.latitude() == c.latitude())
             return;
         if (c0.longitude() == c.longitude())
             return;*/
-        if (c0.distanceTo(c) < 10.0)
+        qint64 d = c0.distanceTo(c);
+        if (d < 10)
             return;
+        dist = d;
     }
+    setTotalDistance(totalDistance() + static_cast<quint64>(dist));
 
     m_geoPath.addCoordinate(c);
     emit geoPathChanged();
@@ -384,27 +389,6 @@ QString Vehicle::squawkText(quint16 v) const
 {
     return QString::number(v, 16).toUpper();
 }
-//=============================================================================
-/*void Vehicle::dlinkData(const QByteArray &packet)
-{
-  if(isReplay()) return;
-  if(f_nodes->unpackService(packet)){
-    emit nmtReceived(packet);
-    if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
-      setStreamType(SERVICE);
-  }else if(f_mandala->unpackTelemetry(packet)){
-    emit recordDownlink(packet);
-    setStreamType(TELEMETRY);
-    telemetryTime.start();
-  }else if(f_mandala->unpackData(packet)){
-    if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
-      setStreamType(DATA);
-  }else if(f_mission->unpackMission(packet)){
-    if(telemetryTime.elapsed()>2000 && xpdrTime.elapsed()>3000)
-      setStreamType(DATA);
-  }else return;
-  onlineTimer.start();
-}*/
 //=============================================================================
 //=============================================================================
 void Vehicle::setStreamXpdr()
@@ -734,5 +718,26 @@ void Vehicle::setGeoPath(const QGeoPath &v)
         return;
     m_geoPath = v;
     emit geoPathChanged();
+
+    //reset total distance
+    quint64 dist = 0;
+    QGeoCoordinate c;
+    for (auto p : m_geoPath.path()) {
+        if (c.isValid() && p.isValid())
+            dist += static_cast<quint64>(c.distanceTo(p));
+        c = p;
+    }
+    setTotalDistance(dist);
+}
+quint64 Vehicle::totalDistance() const
+{
+    return m_totalDistance;
+}
+void Vehicle::setTotalDistance(quint64 v)
+{
+    if (m_totalDistance == v)
+        return;
+    m_totalDistance = v;
+    emit totalDistanceChanged();
 }
 //=============================================================================

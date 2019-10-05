@@ -8,24 +8,49 @@ RowLayout {
     Text {
         Layout.preferredWidth: height*8
         font.family: font_narrow
-        //font.pixelSize: 13
         color: "#fff"
         property var c: map.mouseCoordinate
         text: apx.latToString(c.latitude)+" "+apx.lonToString(c.longitude)
     }
 
-    MapScale { }
+    Item {
+        implicitWidth: loader.implicitWidth
+        implicitHeight: loader.implicitHeight
+        Loader {
+            id: loader
+            asynchronous: true
+            property int idx: 0
+            sourceComponent: scale
+            Component {
+                id: scale
+                MapScale { width: 100 }
+            }
 
-    Text {
-        Layout.preferredWidth: height*3
-        font.family: font_condenced
-        color: "#fff"
-        property var c: map.mouseCoordinate
-        property var c0: map.mouseClickCoordinate
-        text: apx.distanceToString(c0.distanceTo(c))
-        horizontalAlignment: Qt.AlignHCenter
-        ToolTipArea {
-            text: qsTr("Distance between points")
+            Component {
+                id: dist
+                MapDistance { width: 100 }
+            }
+            function advance()
+            {
+                active=false
+                switch(++idx){
+                default:
+                    sourceComponent=scale
+                    idx=0
+                    break
+                case 1:
+                    sourceComponent=dist
+                    break
+                }
+                active=true
+            }
+        }
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: loader.advance()
         }
     }
+
 }

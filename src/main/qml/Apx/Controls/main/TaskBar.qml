@@ -17,9 +17,11 @@ RowLayout {
     //reset path
     CleanButton {
         Layout.fillHeight: true
-        readonly property var fact: apx.vehicles.current.rpath
+        readonly property var vehicle: apx.vehicles.current
+        readonly property var fact: vehicle.rpath
+        readonly property int dist: vehicle.totalDistance/100*100
         iconName: fact.icon
-        toolTip: fact.title
+        toolTip: fact.title + (dist>0?" ("+apx.distanceToString(dist)+")":"")
         onTriggered: fact.trigger()
         visible: fact.enabled
     }

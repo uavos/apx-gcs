@@ -23,6 +23,7 @@ Item {
     readonly property int lineWidth: Math.max(1,1*ui.scale)
     readonly property int markSize: control.height*0.5
 
+
     //BoundingRect { }
 
     Rectangle {
@@ -81,6 +82,9 @@ Item {
         onWidthChanged: update()
         onHeightChanged: update()
     }
+
+    Component.onCompleted: calculateScale()
+
 
     function update()
     {

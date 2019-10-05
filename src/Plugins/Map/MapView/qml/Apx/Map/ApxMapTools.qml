@@ -90,12 +90,17 @@ ColumnLayout {
                 anchorPoint.x: icon.implicitWidth/2
                 anchorPoint.y: icon.implicitHeight*0.85
 
-                sourceItem: Text {
+                sourceItem: MaterialIcon {
                     id: icon
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 60
-                    text: materialIconChar["chevron-double-down"]
-                    color: "#fff"
+                    size: 60
+                    name: "chevron-double-down"
+                    MaterialIcon {
+                        //anchors.bottom: parent.top
+                        anchors.verticalCenterOffset: -parent.implicitHeight/2
+                        anchors.centerIn: parent
+                        //size: 60
+                        name: selectedFact.icon
+                    }
                 }
             }
         }

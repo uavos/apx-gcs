@@ -213,7 +213,7 @@ Item {
                 active: showVehicleNav
                 asynchronous: true
                 sourceComponent: Component { CamTargetCircle { } }
-                onLoaded: map.addMapItem(item)
+                onLoaded: map.addMapItemGroup(item)
             }
 
             Loader { //travel path current

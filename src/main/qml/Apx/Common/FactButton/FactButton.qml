@@ -163,15 +163,14 @@ CleanButton {
             source: src
         },
         //next icon
-        Text {
+        MaterialIcon {
             visible: expandable
             Layout.maximumWidth: font.pixelSize*0.7
             Layout.leftMargin: -font.pixelSize*0.25
-            font.family: "Material Design Icons"
-            font.pixelSize: fontSize(bodyHeight*nextSize)
+            size: fontSize(bodyHeight*nextSize)
             verticalAlignment: Text.AlignVCenter
             height: bodyHeight
-            text: visible?materialIconChar["chevron-right"]:""
+            name: "chevron-right"
             color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
         }
     ]
