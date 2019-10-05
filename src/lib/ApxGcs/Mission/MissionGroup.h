@@ -40,7 +40,8 @@ public:
     explicit MissionGroup(VehicleMission *parent,
                           const QString &name,
                           const QString &title,
-                          const QString &descr);
+                          const QString &descr,
+                          Fact *activeIndex);
 
     VehicleMission *mission;
 
@@ -51,6 +52,8 @@ public:
     MissionItem *addObject(const QGeoCoordinate &);
 
     Fact *f_clear;
+
+    Fact *f_activeIndex; //mandala fact to reflect current item index in group
 
 private:
     QTimer updateTimeTimer;
@@ -102,8 +105,9 @@ public:
     explicit MissionGroupT(VehicleMission *parent,
                            const QString &name,
                            const QString &title,
-                           const QString &descr)
-        : MissionGroup(parent, name, title, descr)
+                           const QString &descr,
+                           Fact *activeIndex = nullptr)
+        : MissionGroup(parent, name, title, descr, activeIndex)
     {}
     int missionItemType() const { return miType; }
 

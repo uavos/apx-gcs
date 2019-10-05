@@ -30,9 +30,11 @@
 MissionGroup::MissionGroup(VehicleMission *parent,
                            const QString &name,
                            const QString &title,
-                           const QString &descr)
+                           const QString &descr,
+                           Fact *activeIndex)
     : Fact(parent, name, title, descr, Group)
     , mission(parent)
+    , f_activeIndex(activeIndex)
     , _descr(descr)
     , m_distance(0)
     , m_time(0)

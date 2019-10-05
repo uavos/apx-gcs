@@ -32,7 +32,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
-    signal menuRequested()
+    signal triggered()
     signal moved()
     signal movingFinished()
 
@@ -59,21 +59,6 @@ MapQuickItem {  //to be used inside MapComponent only
     //optimizations
     property bool visibleOnMap: true
     signal updateMapViewport()
-    /*Connections {
-        target: map
-        onCenterChanged: updateViewportTimer.restart()
-        onZoomLevelChanged: updateViewportTimer.restart()
-    }
-    Timer {
-        id: updateViewportTimer
-        interval: 1000
-        repeat: false
-        running: true
-        onTriggered: {
-            visibleOnMap=map.visibleRegion.contains(coordinate)
-            updateMapViewport()
-        }
-    }*/
 
     Connections {
         target: map
@@ -81,6 +66,7 @@ MapQuickItem {  //to be used inside MapComponent only
         onMenuRequested: deselect()
     }
 
+    onTriggered: center()
 
     function select()
     {
@@ -93,6 +79,10 @@ MapQuickItem {  //to be used inside MapComponent only
     function selectAndCenter()
     {
         select()
+        center()
+    }
+    function center()
+    {
         map.showCoordinate(mapObject.coordinate)
     }
 
@@ -234,24 +224,15 @@ MapQuickItem {  //to be used inside MapComponent only
             enabled: interactive
             hoverEnabled: enabled
             cursorShape: (enabled && (!drag.active))?Qt.PointingHandCursor:Qt.ArrowCursor
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            //acceptedButtons: Qt.LeftButton | Qt.RightButton
             anchors.fill: textItem
             scale: textItem.scale
             drag.target: mapObject.draggable?mapObject:null
             onPositionChanged: if(drag.active) objectMoving()
             onClicked: {
-                if (mouse.button === Qt.LeftButton) {
-                    select()
-                }else if (mouse.button === Qt.RightButton) {
-                    selectAndCenter()
-                    menuRequested()
-                }
+                if(selected)triggered()
+                else select()
             }
-            onDoubleClicked: {
-                selectAndCenter()
-                menuRequested()
-            }
-            onPressAndHold: doubleClicked(mouse)
         }
     }
 

@@ -92,6 +92,14 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &Fact::numChanged, this, &MissionItem::updateTitle);
     updateTitle();
 
+    //active index
+    if (group->f_activeIndex) {
+        connect(group->f_activeIndex, &Fact::valueChanged, this, [this]() {
+            setActive(group->f_activeIndex->value().toInt() == num());
+        });
+        setActive(group->f_activeIndex->value().toInt() == num());
+    }
+
     //status totals
     connect(this, &MissionItem::timeChanged, group, &MissionGroup::updateTime);
     connect(this, &MissionItem::distanceChanged, group, &MissionGroup::updateDistance);

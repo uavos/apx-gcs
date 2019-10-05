@@ -67,10 +67,26 @@ VehicleMission::VehicleMission(Vehicle *parent)
     connect(this, &VehicleMission::missionSizeChanged, this, &VehicleMission::updateStatus);
 
     //groups of items
-    f_runways = new Runways(this, "runways", tr("Runways"), tr("Takeoff and Landing"));
-    f_waypoints = new Waypoints(this, "waypoints", tr("Waypoints"), "");
-    f_pois = new Pois(this, "points", tr("Points"), tr("Points of Interest"));
-    f_taxiways = new Taxiways(this, "taxiways", tr("Taxiways"), "");
+    f_runways = new Runways(this,
+                            "runways",
+                            tr("Runways"),
+                            tr("Takeoff and Landing"),
+                            vehicle->f_mandala->factByName("rwidx"));
+    f_waypoints = new Waypoints(this,
+                                "waypoints",
+                                tr("Waypoints"),
+                                "",
+                                vehicle->f_mandala->factByName("wpidx"));
+    f_pois = new Pois(this,
+                      "points",
+                      tr("Points"),
+                      tr("Points of Interest"),
+                      vehicle->f_mandala->factByName("piidx"));
+    f_taxiways = new Taxiways(this,
+                              "taxiways",
+                              tr("Taxiways"),
+                              "",
+                              vehicle->f_mandala->factByName("twidx"));
     f_areas = new Areas(this, "areas", tr("Area"), tr("Airspace definitions"));
 
     foreach (MissionGroup *group, groups) {

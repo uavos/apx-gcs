@@ -22,7 +22,7 @@ MapObject {  //to be used inside MapComponent only
         onTriggered: selectAndCenter()
     }
 
-    onMenuRequested: {
+    onTriggered: {
         if(fact) fact.trigger() //({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
     }
 
@@ -30,11 +30,23 @@ MapObject {  //to be used inside MapComponent only
     Connections {
         target: map
         onZoomLevelChanged: dlTimer.start()
+        onSelectedObjectChanged: {
+            if(!fact)return
+            fact.selected = selected
+        }
     }
     Timer {
         id: dlTimer
         interval: 1000
         onTriggered: detailsLevel=map.zoomLevel
+    }
+
+    Connections {
+        target: mission
+        onSelectedItemChanged: {
+            if(!fact)return
+            if(mission.selectedItem == fact && !selected) selectAndCenter()
+        }
     }
 
     //Fact bindings

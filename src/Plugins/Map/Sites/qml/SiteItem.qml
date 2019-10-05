@@ -21,7 +21,7 @@ MapObject {
     hoverScaleFactor: 1
     opacity: ui.effects?((hover||selected)?1:0.7):1
 
-    onMenuRequested: {
+    onTriggered: {
         sites.edit.trigger() //({"pos":Qt.point(0,ui.window.height)})
     }
 

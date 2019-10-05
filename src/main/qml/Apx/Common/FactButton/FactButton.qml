@@ -73,6 +73,7 @@ CleanButton {
 
     property bool showEditor: hasValue && showText
     property bool showValue: hasValue && showText
+    property bool showNext: expandable
 
     //focus requests
     signal focusRequested()
@@ -163,15 +164,22 @@ CleanButton {
             source: src
         },
         //next icon
-        MaterialIcon {
-            visible: expandable
-            Layout.maximumWidth: font.pixelSize*0.7
-            Layout.leftMargin: -font.pixelSize*0.25
-            size: fontSize(bodyHeight*nextSize)
-            verticalAlignment: Text.AlignVCenter
-            height: bodyHeight
-            name: "chevron-right"
-            color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
+        Loader {
+            id: nextIcon
+            Layout.maximumWidth: size*0.7
+            Layout.leftMargin: -size*0.25
+            Layout.preferredHeight: bodyHeight
+            active: showNext
+            asynchronous: true
+            property int size: fontSize(bodyHeight*nextSize)
+            sourceComponent: Component {
+                MaterialIcon {
+                    size: nextIcon.size
+                    verticalAlignment: Text.AlignVCenter
+                    name: "chevron-right"
+                    color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
+                }
+            }
         }
     ]
 
