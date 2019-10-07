@@ -7,6 +7,7 @@ import QtMultimedia 5.7
 import GstPlayer 1.0
 
 import Apx.Common 1.0
+import Aim 1.0
 
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
@@ -21,8 +22,10 @@ Rectangle {
     color: "black"
 
     readonly property var plugin: apx.tools.videostreaming
+    readonly property var overlay: plugin?plugin.tune.overlay:undefined
     readonly property bool running: plugin?plugin.tune.running.value:false
     readonly property bool recording: plugin?plugin.tune.record.value:false
+    readonly property var scale: overlay?overlay.scale:0.1
 
     VideoOutput {
         id: videoOutput
@@ -44,26 +47,12 @@ Rectangle {
                 }
             }
         }
-        Item {
-            id: crosshair
-            visible: running && plugin.tune.overlay.crosshair.value
-            property int lineSize: Math.min(videoOutput.contentRect.width, videoOutput.contentRect.height) / 10;
-            Rectangle {
-                x: videoOutput.contentRect.x + (videoOutput.contentRect.width - crosshair.lineSize) / 2
-                y: videoOutput.contentRect.y + (videoOutput.contentRect.height - height) / 2
-                width: crosshair.lineSize
-                height: 4
-                color: "white"
-                border.color: "black"
-            }
-            Rectangle {
-                x: videoOutput.contentRect.x + (videoOutput.contentRect.width  - width) / 2
-                y: videoOutput.contentRect.y + (videoOutput.contentRect.height - crosshair.lineSize) / 2
-                width: 4
-                height: crosshair.lineSize
-                color: "white"
-                border.color: "black"
-            }
+        Aim {
+            anchors.centerIn: parent
+            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+            height: parent.height * videoItem.scale.value
+            width: height
+            type: plugin.tune.overlay.aim.value
         }
     }
 
