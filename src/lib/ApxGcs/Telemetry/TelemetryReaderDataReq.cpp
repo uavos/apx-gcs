@@ -50,7 +50,6 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
 
     times.append(0);
 
-    qreal totalDistance = 0;
     quint64 t0 = 0;
     QHash<quint64, double> fvalues;
     int progress_s = 0;
@@ -138,8 +137,6 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
 
         //path update
         while (fid && (fid == fidLat || fid == fidLon || fid == fidHmsl)) {
-            QGeoCoordinate c;
-
             if (!vLat)
                 vLat = fieldData.value(fidLat);
             if (!vLon)
@@ -150,9 +147,7 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
             if (!(vLat && vLon && vHmsl))
                 break;
 
-            c.setLatitude(vLat->last().y());
-            c.setLongitude(vLon->last().y());
-            c.setAltitude(vHmsl->last().y());
+            QGeoCoordinate c(vLat->last().y(), vLon->last().y(), vHmsl->last().y());
 
             if (!c.isValid())
                 break;
@@ -160,17 +155,17 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
                 break;
             if (c.longitude() == 0.0)
                 break;
+            qreal dist = 0;
             if (!path.isEmpty()) {
                 QGeoCoordinate c0(path.path().last());
                 if (c0.latitude() == c.latitude())
                     break;
                 if (c0.longitude() == c.longitude())
                     break;
-                if (c0.distanceTo(c) < 10.0)
+                dist = c0.distanceTo(c);
+                if (dist < 10.0)
                     break;
-                totalDistance += c0.distanceTo(c);
             }
-
             path.addCoordinate(c);
             break;
         }
@@ -194,15 +189,7 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
     if (discarded())
         return true;
 
-    emit dataProcessed(telemetryID,
-                       cacheID,
-                       fieldData,
-                       fieldNames,
-                       times,
-                       events,
-                       path,
-                       totalDistance,
-                       f_events);
+    emit dataProcessed(telemetryID, cacheID, fieldData, fieldNames, times, events, path, f_events);
 
     return true;
 }

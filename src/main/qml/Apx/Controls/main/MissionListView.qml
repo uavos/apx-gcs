@@ -47,7 +47,7 @@ ColumnLayout {
                 fact: modelData
                 toolTip: fact?fact.status:""
                 status: ""
-                showNext: fact.selected
+                showNext: (fact && fact.selected)?true:false
                 active: false
 
                 noFactTrigger: true

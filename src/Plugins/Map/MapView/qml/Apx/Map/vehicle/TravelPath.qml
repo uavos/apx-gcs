@@ -30,7 +30,7 @@ MapPolyline {
         onGeoPathChanged: updatePath()
     }
     Connections {
-        target: vehicle.rpath
+        target: vehicle.telemetry.rpath
         onTriggered: setPath(QtPositioning.path())
     }
 

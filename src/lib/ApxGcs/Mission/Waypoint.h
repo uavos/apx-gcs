@@ -60,7 +60,6 @@ private:
 private slots:
     void updateTitle();
     void updateDescr();
-    void selectTriggered();
 
     //---------------------------------------
     // PROPERTIES

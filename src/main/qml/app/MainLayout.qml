@@ -191,8 +191,29 @@ Item {
         anchors.bottomMargin: bottomRight.implicitHeight+margins
         anchors.rightMargin: margins
         active: showSignals
+        asynchronous: true
         sourceComponent: Component { Signals { } }
         visible: status===Loader.Ready
+        /*states: [
+            State {
+                name: "hidden"
+                when: !signals.visible
+                PropertyChanges { target: signals; anchors.rightMargin: -600 }
+            },
+            State {
+                name: "shown"
+                when: signals.visible
+                PropertyChanges { target: signals; anchors.rightMargin: margins }
+            }
+        ]
+        onStateChanged: console.log(state)
+        transitions: Transition {
+            NumberAnimation {
+                duration: 200
+                properties: "anchors.rightMargin"
+                easing.type: Easing.InOutQuad
+            }
+        }*/
     }
 
 

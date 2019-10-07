@@ -61,7 +61,6 @@ public:
     Fact *f_longitude;
 
     Fact *f_remove;
-    Fact *f_select;
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
 
@@ -86,7 +85,7 @@ private slots:
     void updateOrderState();
     void updateSelected();
 
-    virtual void selectTriggered();
+    void selectTriggered();
 
 private:
     bool blockUpdateCoordinate;

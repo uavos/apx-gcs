@@ -99,11 +99,6 @@ void Area::updateDescr()
     setStatus(sts);
 }
 //=============================================================================
-void Area::selectTriggered()
-{
-    group->mission->vehicle->f_mandala->factByName("piidx")->setValue(num());
-}
-//=============================================================================
 QGeoRectangle Area::boundingGeoRectangle() const
 {
     return MissionItem::boundingGeoRectangle().united(

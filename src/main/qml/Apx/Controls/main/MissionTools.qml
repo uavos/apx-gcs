@@ -55,10 +55,10 @@ RowLayout {
         fact: mission.tools.load
         visible: (mission.empty)
     }
-    FactMenuAction {
+    /*FactMenuAction {
         fact: mission.mission_title
         title: fact.descr
         visible: (!mission.empty) && mission.mission_title.text===""
         onTriggered: mission.trigger()
-    }
+    }*/
 }

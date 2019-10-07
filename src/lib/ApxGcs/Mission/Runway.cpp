@@ -132,11 +132,6 @@ void Runway::updateMissionStartPoint()
     group->mission->setCoordinate(p);
 }
 //=============================================================================
-void Runway::selectTriggered()
-{
-    group->mission->vehicle->f_mandala->factByName("rwidx")->setValue(num());
-}
-//=============================================================================
 QGeoRectangle Runway::boundingGeoRectangle() const
 {
     QList<QGeoCoordinate> clist;

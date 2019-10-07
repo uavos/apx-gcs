@@ -66,13 +66,21 @@ MissionItem::MissionItem(MissionGroup *parent,
     f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove mission item"), Action | Remove);
     connect(f_remove, &Fact::triggered, this, &Fact::remove);
 
-    f_select = new Fact(this,
-                        "select",
-                        tr("Set as current"),
-                        tr("Navigate to mission item"),
-                        Action | Apply,
-                        "target");
-    connect(f_select, &Fact::triggered, this, &MissionItem::selectTriggered);
+    //active index
+    if (group->f_activeIndex) {
+        Fact *f_select = new Fact(this,
+                                  "select",
+                                  tr("Set as current"),
+                                  group->f_activeIndex->descr(),
+                                  Action | Apply,
+                                  "target");
+        connect(f_select, &Fact::triggered, this, &MissionItem::selectTriggered);
+
+        connect(group->f_activeIndex, &Fact::valueChanged, this, [this]() {
+            setActive(group->f_activeIndex->value().toInt() == num());
+        });
+        setActive(group->f_activeIndex->value().toInt() == num());
+    }
 
     connect(f_latitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
     connect(f_longitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
@@ -91,14 +99,6 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(parent, &Fact::numChanged, this, &Fact::nameChanged);
     connect(this, &Fact::numChanged, this, &MissionItem::updateTitle);
     updateTitle();
-
-    //active index
-    if (group->f_activeIndex) {
-        connect(group->f_activeIndex, &Fact::valueChanged, this, [this]() {
-            setActive(group->f_activeIndex->value().toInt() == num());
-        });
-        setActive(group->f_activeIndex->value().toInt() == num());
-    }
 
     //status totals
     connect(this, &MissionItem::timeChanged, group, &MissionGroup::updateTime);
@@ -188,7 +188,10 @@ void MissionItem::updateSelected()
     setSelected(group->mission->selectedItem() == this);
 }
 //=============================================================================
-void MissionItem::selectTriggered() {}
+void MissionItem::selectTriggered()
+{
+    group->f_activeIndex->setValue(num());
+}
 //=============================================================================
 void MissionItem::resetPath()
 {

@@ -62,7 +62,6 @@ signals:
                        times_t times,
                        events_t events,
                        QGeoPath path,
-                       qreal totalDistance,
                        Fact *f_events);
 };
 //=============================================================================

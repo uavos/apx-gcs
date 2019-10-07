@@ -99,11 +99,6 @@ void Poi::updateDescr()
     setStatus(sts);
 }
 //=============================================================================
-void Poi::selectTriggered()
-{
-    group->mission->vehicle->f_mandala->factByName("piidx")->setValue(num());
-}
-//=============================================================================
 QGeoRectangle Poi::boundingGeoRectangle() const
 {
     return MissionItem::boundingGeoRectangle().united(

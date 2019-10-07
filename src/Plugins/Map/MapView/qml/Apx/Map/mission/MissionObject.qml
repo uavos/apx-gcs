@@ -3,6 +3,7 @@ import QtQml 2.12
 import QtLocation 5.9
 import QtPositioning 5.6
 
+import Apx.Common 1.0
 
 import "../lib"
 import ".."
@@ -49,7 +50,7 @@ MapObject {  //to be used inside MapComponent only
         }
     }
 
-    contentsCenter: Loader {
+    /*contentsCenter: Loader {
         z: -1
         active: fact?fact.active:false
         anchors.centerIn: parent
@@ -62,6 +63,33 @@ MapObject {  //to be used inside MapComponent only
                 border.width: 2
                 border.color: missionObject.color //"#fff"
                 //opacity: 0.5
+            }
+        }
+    }*/
+    /*contentsCenter: Loader {
+        z: -1
+        active: fact?fact.active:false
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: -missionObject.height
+        width: missionObject.width*1.8
+        height: width
+        sourceComponent: Component {
+            MaterialIcon {
+                name: "chevron-down"
+                color: missionObject.color
+            }
+        }
+    }*/
+    contentsCenter: Loader {
+        z: -1
+        active: fact?fact.active:false
+        anchors.centerIn: parent
+        anchors.horizontalCenterOffset: missionObject.width
+        sourceComponent: Component {
+            MaterialIcon {
+                size: missionObject.width*1.8
+                name: "chevron-left"
+                color: missionObject.color
             }
         }
     }

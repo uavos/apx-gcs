@@ -134,8 +134,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 Qt::QueuedConnection);
     }
     if (!isTemporary()) {
-        //connect(f_telemetry, &Fact::activeChanged, this, &Vehicle::resetGeoPath);
-        Fact *f = new Fact(this,
+        Fact *f = new Fact(f_telemetry,
                            "rpath",
                            tr("Reset Path"),
                            tr("Clear travelled path"),
@@ -332,11 +331,11 @@ void Vehicle::updateGeoPath()
         if (c0.longitude() == c.longitude())
             return;*/
         qint64 d = c0.distanceTo(c);
+        dist = d;
+        setTotalDistance(totalDistance() + static_cast<quint64>(dist));
         if (d < 10)
             return;
-        dist = d;
     }
-    setTotalDistance(totalDistance() + static_cast<quint64>(dist));
 
     m_geoPath.addCoordinate(c);
     emit geoPathChanged();
@@ -720,11 +719,11 @@ void Vehicle::setGeoPath(const QGeoPath &v)
     emit geoPathChanged();
 
     //reset total distance
-    quint64 dist = 0;
+    qreal dist = 0;
     QGeoCoordinate c;
     for (auto p : m_geoPath.path()) {
         if (c.isValid() && p.isValid())
-            dist += static_cast<quint64>(c.distanceTo(p));
+            dist += c.distanceTo(p);
         c = p;
     }
     setTotalDistance(dist);

@@ -38,7 +38,6 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     , blockNotesChange(false)
     , m_totalSize(0)
     , m_totalTime(0)
-    , m_totalDistance(0)
 {
     f_notes = new Fact(parent, "notes", tr("Notes"), tr("Current record notes"), Text);
     f_notes->setIcon("note-text");
@@ -57,7 +56,6 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     //status
     connect(lookup, &LookupTelemetry::recordInfoChanged, this, &TelemetryReader::updateRecordInfo);
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
-    connect(this, &TelemetryReader::totalDistanceChanged, this, &TelemetryReader::updateStatus);
 
     //load sequence
     qRegisterMetaType<fieldData_t>("fieldData_t");
@@ -80,8 +78,6 @@ void TelemetryReader::updateStatus()
 {
     QStringList st;
     st << AppRoot::timeToString(totalTime() / 1000, true);
-    if (totalDistance() > 0)
-        st << AppRoot::distanceToString(totalDistance());
     setStatus(st.join('/'));
 }
 //==============================================================================
@@ -141,7 +137,6 @@ void TelemetryReader::load()
         return;
     setTotalSize(0);
     setTotalTime(0);
-    setTotalDistance(0);
     setProgress(0);
     removeAll();
     DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
@@ -254,7 +249,6 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
                                         times_t times,
                                         events_t events,
                                         QGeoPath path,
-                                        qreal totalDistance,
                                         Fact *f_events)
 {
     if (telemetryID != lookup->recordId())
@@ -284,9 +278,10 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
     }
     //ApxApp::jsync(this);
 
-    quint64 tMax = this->times.isEmpty() ? 0 : qRound(this->times.last() * 1000.0);
+    quint64 tMax = 0;
+    if (!this->times.isEmpty())
+        tMax = qRound(this->times.last() * 1000.0);
     setTotalTime(tMax);
-    setTotalDistance(qRound(totalDistance));
 
     setProgress(-1);
     emit dataAvailable(cacheID);
@@ -341,16 +336,4 @@ void TelemetryReader::setTotalTime(quint64 v)
     m_totalTime = v;
     emit totalTimeChanged();
 }
-quint64 TelemetryReader::totalDistance() const
-{
-    return m_totalDistance;
-}
-void TelemetryReader::setTotalDistance(quint64 v)
-{
-    if (m_totalDistance == v)
-        return;
-    m_totalDistance = v;
-    emit totalDistanceChanged();
-}
-//=============================================================================
 //=============================================================================

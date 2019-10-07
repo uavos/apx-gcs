@@ -19,18 +19,20 @@ function show(fact,opts,parent)
     //console.log("Menu.show", fact, JSON.stringify(opts), parent)
 
     var av=Array.from(menuViews).sort((a,b) => b.priority-a.priority)
-    for(var i in av){
-        var menuItem=av[i]
+    for(var menuItem of av){
         if(menuItem){
             //console.log(menuItem.priority)
-            if(menuItem.fact === factMenu || menuItem.fact === fact){
+            if(menuItem.fact === factMenu
+                    || menuItem.fact === fact
+                    || menuItem.fact.bind === factMenu
+                    || menuItem.fact.bind === fact){
                 //already displaying fact
                 //console.log("Menu.skip", fact)
                 menuItem.factOpened(menuItem.fact)
                 return
             }
             if(fact.hasParent(menuItem.fact) || factMenu.hasParent(menuItem.fact)){
-            //if(fact.parentFact==menuItem.fact || factMenu.parentFact==menuItem.fact){
+                //if(fact.parentFact==menuItem.fact || factMenu.parentFact==menuItem.fact){
                 //console.log("Menu.update", menuItem)
                 menuItem.showFact(factMenu)
                 return

@@ -73,11 +73,6 @@ void Waypoint::updateDescr()
     setDescr(f_actions->status());
 }
 //=============================================================================
-void Waypoint::selectTriggered()
-{
-    group->mission->vehicle->f_mandala->factByName("wpidx")->setValue(num());
-}
-//=============================================================================
 QGeoPath Waypoint::getPath()
 {
     QGeoPath p;

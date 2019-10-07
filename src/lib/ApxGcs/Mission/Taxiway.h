@@ -34,7 +34,6 @@ public:
 
 private slots:
     void updateTitle();
-    void selectTriggered();
 
 protected:
     QGeoPath getPath();

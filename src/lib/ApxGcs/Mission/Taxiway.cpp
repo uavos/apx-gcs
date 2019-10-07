@@ -64,8 +64,3 @@ QGeoPath Taxiway::getPath()
     return p;
 }
 //=============================================================================
-void Taxiway::selectTriggered()
-{
-    group->mission->vehicle->f_mandala->factByName("twidx")->setValue(num());
-}
-//=============================================================================
