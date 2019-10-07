@@ -32,9 +32,12 @@ Item {
 
     readonly property real margins: 10
 
+    property var mainItem
+
 
     function addMainItem(item)
     {
+        mainItem=control
         item.parent=control
         item.anchors.fill=control
         item.z=-1

@@ -33,6 +33,11 @@ Item {
     property bool showSignals: true
 
     Settings {
+        category: "ViewState"
+        property alias showInstruments: groundControl.showInstruments
+        property alias showSignals: groundControl.showSignals
+    }
+    /*Settings {
         id: settings
         category: "Activity"
         property alias state: groundControl.state
@@ -76,6 +81,14 @@ Item {
         z: 10000
         anchors.top: parent.top
         anchors.right: parent.right
+    }*/
+
+    property var maximizedItem
+    function showMaximized(item)
+    {
+        maximizedItem=item
+        showInstruments=false
+
     }
 
     GridLayout {
@@ -89,7 +102,7 @@ Item {
                 id: instrumentsLayout
                 visible: showInstruments
                 state: groundControl.state
-                Layout.rightMargin: activityControl.width+3
+                //Layout.rightMargin: activityControl.width+3
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.maximumHeight: instrumentsHeight

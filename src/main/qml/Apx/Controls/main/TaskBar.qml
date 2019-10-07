@@ -86,6 +86,13 @@ RowLayout {
         visible: status===Loader.Ready
     }
 
+    CleanButton {
+        Layout.fillHeight: true
+        iconName: showInstruments?"fullscreen":"fullscreen-exit"
+        toolTip: qsTr("Switch view")
+        onTriggered: showInstruments=!showInstruments
+    }
+
     RecLabel {
         Layout.fillHeight: true
     }

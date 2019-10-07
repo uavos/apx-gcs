@@ -48,19 +48,21 @@ RowLayout {
                 active=true
             }
         }
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
+        ToolTipArea {
             cursorShape: Qt.PointingHandCursor
             onClicked: loader.advance()
+            text: qsTr("Distance measurement tool")
         }
     }
 
     // travel path
     Item {
+        id: control
         implicitHeight: 20
-        implicitWidth: Math.max(icon.width+text.implicitWidth, height*4)
+        implicitWidth: Math.max(icon.width+textItem.implicitWidth, height*4)
 
+        opacity: apx.vehicles.current.totalDistance>0?1:0.5
+        property string text: apx.distanceToString(apx.vehicles.current.totalDistance)
         MaterialIcon {
             id: icon
             anchors.left: parent.left
@@ -71,13 +73,13 @@ RowLayout {
             size: height
         }
         Text {
-            id: text
+            id: textItem
             anchors.left: icon.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             font.family: font_condenced
             color: "#fff"
-            text: apx.distanceToString(apx.vehicles.current.totalDistance)
+            text: control.text
         }
         ToolTipArea {
             text: qsTr("Distance travelled")

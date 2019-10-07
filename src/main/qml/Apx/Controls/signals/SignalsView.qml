@@ -28,17 +28,6 @@ Item {
         onCurrentDownstreamDataReceived: chartView.appendData();
     }
 
-    /*Timer {
-        interval: 100
-        repeat: true
-        running: true
-        onTriggered: chartView.appendData()
-    }*/
-
-    /*color: 'transparent'
-    border.width: 1
-    border.color: "red"*/
-
     ChartView {
         id: chartView
 
@@ -161,26 +150,6 @@ Item {
             dataExist=true
         }
 
-        /*Timer {
-            id: timer
-            interval: 10
-            repeat: true
-            //running: chartView.dataExist
-            property int t: chartView.time
-            property int t0: 0
-            property int dt: 0
-            onTChanged: {
-                dt=t-t0
-                t0=t
-                start()
-            }
-            onTriggered: {
-                var dx=0.5 //dt/(500/interval)
-
-                chartView.scrollRight(dx)
-            }
-        }*/
-
         function addFactSeries(fact)
         {
             var s = chartView.createSeries(ui.antialiasing?ChartView.SeriesTypeLine:ChartView.SeriesTypeLine,fact.title,axisX, axisY)
@@ -211,7 +180,7 @@ Item {
         //console.log(speed)
     }
 
-    ToolTip {
+    /*ToolTip {
         delay: 1000
         timeout: 5000
         visible: text && (mouseArea.containsMouse)
@@ -222,17 +191,6 @@ Item {
             radius: 5
         }
     }
-
-    /*Drawer {
-        id: drawer
-        height: parent.height
-        contentItem: ScrollView {
-            //anchors.fill: parent
-            Label {
-                text: getToolTip(facts)
-            }
-        }
-    }*/
 
 
     function getToolTip(facts)
@@ -251,7 +209,7 @@ Item {
         hoverEnabled: true
         onDoubleClicked: changeSpeed()
         //onPressAndHold: drawer.open()
-    }
+    }*/
 
 }
 

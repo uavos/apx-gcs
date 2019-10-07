@@ -3,14 +3,8 @@
 Project {
 
     property var plugins: [
-        "AppUpdate",
-        "FirmwareLoader",
-        "Joystick",
-        "Notifications",
-        "Simulator",
-        "Sounds",
-        "Terminal",
-        "Blackbox",
+        //"DatalinkInspector",
+        "VideoStreaming",
     ]
 
     references: {
