@@ -29,15 +29,6 @@ GstPlayer::GstPlayer(Fact *parent)
 
     setIcon("video");
 
-    f_visible = new AppSettingFact(settings,
-                                   this,
-                                   "show_window",
-                                   tr("Visible"),
-                                   tr("Show video window"),
-                                   Bool,
-                                   false);
-    f_visible->setIcon("check");
-
     f_tune = new Fact(this, "tune", tr("Tune"), tr("Video stream settings"), Group);
     f_tune->setIcon("tune");
 

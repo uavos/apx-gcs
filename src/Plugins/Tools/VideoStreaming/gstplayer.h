@@ -25,7 +25,6 @@ public:
     explicit GstPlayer(Fact *parent = nullptr);
     ~GstPlayer() override;
 
-    Fact *f_visible;
     Fact *f_tune;
     Fact *f_active;
     Fact *f_record;
