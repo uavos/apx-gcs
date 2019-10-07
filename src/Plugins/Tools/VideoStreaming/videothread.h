@@ -84,7 +84,7 @@ public:
 
     void stop();
 
-    static bool getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height);
+    static bool getFrameSizeFromCaps(const std::shared_ptr<GstCaps> &caps, int &width, int &height);
     static std::shared_ptr<GstCaps> getCapsForAppSink();
     static std::shared_ptr<GstCaps> getCapsForUdpSrc(const std::string &codec);
 
@@ -108,7 +108,7 @@ private:
 
     void onSampleReceived(StreamContext *context, GstElement *appsink);
 
-    QImage sample2qimage(std::shared_ptr<GstSample> sample);
+    QImage sample2qimage(const std::shared_ptr<GstSample> &sample);
 
     void setupEnvironment();
 

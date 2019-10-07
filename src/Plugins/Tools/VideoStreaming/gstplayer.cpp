@@ -144,7 +144,8 @@ void GstPlayer::snapshot() const
 
 QString GstPlayer::getMediaFileName(MediaType type)
 {
-    QString base, ext;
+    QString base;
+    QString ext;
     if (type == mtImage) {
         base = ApxDirs::images().absolutePath();
         ext = "png";

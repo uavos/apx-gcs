@@ -137,8 +137,6 @@ static GstPadProbeReturn draw_overlay(GstPad *pad, GstPadProbeInfo *info, Stream
 
 void VideoThread::run()
 {
-    QString url = getUri();
-
     auto context = std::make_unique<StreamContext>();
     context->reencoding = m_reencoding;
 
@@ -420,7 +418,7 @@ void VideoThread::onSampleReceived(StreamContext *context, GstElement *appsink)
     emit frameReceived(frame);
 }
 
-QImage VideoThread::sample2qimage(std::shared_ptr<GstSample> sample)
+QImage VideoThread::sample2qimage(const std::shared_ptr<GstSample> &sample)
 {
     std::shared_ptr<GstCaps> caps(gst_sample_get_caps(sample.get()), [](auto) {});
     int width = 0;
@@ -441,7 +439,9 @@ QImage VideoThread::sample2qimage(std::shared_ptr<GstSample> sample)
 
 void VideoThread::setupEnvironment()
 {
-    QString scannerPath, pluginsPath, gioPath;
+    QString scannerPath;
+    QString pluginsPath;
+    QString gioPath;
 
 #ifdef Q_OS_LINUX
     scannerPath = "../lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0";
@@ -455,7 +455,9 @@ void VideoThread::setupEnvironment()
 #endif
 
     QDir appDir(QCoreApplication::applicationDirPath());
-    QDir scannerDir(appDir), pluginsDir(appDir), gioDir(appDir);
+    QDir scannerDir(appDir);
+    QDir pluginsDir(appDir);
+    QDir gioDir(appDir);
 
     if (scannerDir.cd(scannerPath) && scannerDir.exists("gst-plugin-scanner")
         && pluginsDir.cd(pluginsPath) && gioDir.cd(gioPath)) {
@@ -482,7 +484,7 @@ std::shared_ptr<GstCaps> VideoThread::getCapsForUdpSrc(const std::string &codec)
     return std::shared_ptr<GstCaps>(caps, &gst_caps_unref);
 }
 
-bool VideoThread::getFrameSizeFromCaps(std::shared_ptr<GstCaps> caps, int &width, int &height)
+bool VideoThread::getFrameSizeFromCaps(const std::shared_ptr<GstCaps> &caps, int &width, int &height)
 {
     GstStructure *capsStruct = gst_caps_get_structure(caps.get(), 0);
     bool result = gst_structure_get_int(capsStruct, "width", &width)
