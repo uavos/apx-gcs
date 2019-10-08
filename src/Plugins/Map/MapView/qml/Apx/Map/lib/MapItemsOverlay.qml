@@ -38,6 +38,13 @@ MapBase {
         }
     }
 
+    //select tool to trigger on click
+    property var selectedTool
+    onClicked: {
+        if(!selectedTool)return
+        selectedTool.trigger()
+    }
+
 
     //internal
     property double itemsScaleFactor: 1
@@ -50,9 +57,12 @@ MapBase {
         if(mapPlugin) mapPlugin.clickCoordinate=map.mouseClickCoordinate
     }
     onMenuRequested: {
-        if(mapPlugin){
-            mapPlugin.trigger({"posXY": mouseClickPoint})
+        if(selectedTool){
+            selectedTool=null
+            return
         }
+        if(!mapPlugin)return
+        mapPlugin.trigger({"posXY": mouseClickPoint})
     }
     onCenterChanged: mapToolsUpdateTimer.start()
     onZoomLevelChanged: mapToolsUpdateTimer.start()

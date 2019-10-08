@@ -87,6 +87,7 @@ Rectangle {
                 onTriggered: if(!listView.scrolling)listView.scrollToEnd()
             }
 
+            Component.onCompleted: scrollToEnd()
 
             focus: false
             keyNavigationEnabled: false

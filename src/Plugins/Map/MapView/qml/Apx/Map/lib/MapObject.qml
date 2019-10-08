@@ -32,6 +32,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
+
     signal triggered()
     signal moved()
     signal movingFinished()
@@ -221,7 +222,7 @@ MapQuickItem {  //to be used inside MapComponent only
         }
         MouseArea {
             id: mouseArea
-            enabled: interactive
+            enabled: interactive && !map.selectedTool
             hoverEnabled: enabled
             cursorShape: (enabled && (!drag.active))?Qt.PointingHandCursor:Qt.ArrowCursor
             //acceptedButtons: Qt.LeftButton | Qt.RightButton

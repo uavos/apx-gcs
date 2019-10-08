@@ -20,36 +20,41 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppPlugins_H
-#define AppPlugins_H
+#ifndef AppPlugin_H
+#define AppPlugin_H
 //=============================================================================
 #include <ApxPluginInterface.h>
 #include <Fact/Fact.h>
 #include <QtCore>
-
-#include "AppPlugin.h"
+class AppPlugins;
 //=============================================================================
-class AppPlugins : public QObject, public QList<AppPlugin *>
+class AppPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit AppPlugins(Fact *f_enabled, QObject *parent = nullptr);
-    ~AppPlugins();
+    explicit AppPlugin(AppPlugins *plugins, QString name, QString fileName);
+    ~AppPlugin();
 
-    void load(const QStringList &names = QStringList());
+    void load();
     void unload();
 
+    AppPlugins *plugins;
+
+    QString name;
+    QString fileName;
     Fact *f_enabled;
+    ApxPluginInterface *interface;
+    QObject *control;
+    QPluginLoader *loader;
+    QStringList depends;
+
+    QString section;
 
 private:
-    void loadFiles(const QStringList &fileNames);
-
-signals:
-    void loaded();
-
-    void loadedTool(AppPlugin *plugin);
-    void loadedWindow(AppPlugin *plugin);
-    void loadedControl(AppPlugin *plugin);
+    void loadLib();
+    void loadQml();
+private slots:
+    void enabledChanged();
 };
 //=============================================================================
 #endif

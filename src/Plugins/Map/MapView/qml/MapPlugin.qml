@@ -7,6 +7,8 @@ AppPlugin {
     id: plugin
     sourceComponent: Component { ApxMap { } }
 
+    unloadOnHide: false
+
     uiComponent: "main"
     onConfigure: {
         ui.main.mainLayout.addMainItem(plugin)

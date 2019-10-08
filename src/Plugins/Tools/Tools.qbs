@@ -5,6 +5,8 @@ Project {
     property var plugins: [
         //"DatalinkInspector",
         "VideoStreaming",
+        "Signals",
+        "HeadingWheel",
     ]
 
     references: {

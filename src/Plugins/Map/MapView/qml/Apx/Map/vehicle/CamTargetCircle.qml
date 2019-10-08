@@ -48,7 +48,6 @@ MapItemGroup {
             enabled: ui.smooth
             CoordinateAnimation {
                 duration: 1000
-                easing.type: Easing.InOutCubic
             }
         }
     }

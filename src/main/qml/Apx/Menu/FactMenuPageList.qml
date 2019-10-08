@@ -41,7 +41,7 @@ ColumnLayout {
         model: fact.model
         property string descr: fact.descr
 
-        implicitHeight: Math.min(maximumHeight, Math.max(contentHeight,MenuStyle.itemSize*3+5))
+        implicitHeight: Math.min(maximumHeight, Math.max(contentHeight,MenuStyle.itemSize*3)+8)
         clip: true
         focus: true
         //cacheBuffer: 0
@@ -74,10 +74,6 @@ ColumnLayout {
                         listView.currentIndex=index
                         control.factButtonTriggered(modelData)
                     }
-                    /*Connections {
-                        target: modelData
-                        onTriggered: control.factTriggered(modelData)
-                    }*/
                 }
             }
             onLoaded: {
@@ -98,7 +94,7 @@ ColumnLayout {
             text: section
         }
 
-        headerPositioning: ListView.OverlayHeader
+        /*headerPositioning: ListView.OverlayHeader
         header: Text {
             width: listView.width
             height: visible?implicitHeight:0
@@ -109,7 +105,7 @@ ColumnLayout {
             color: MenuStyle.cTextDisabled
             visible: listView.descr && showTitle
             text: visible?listView.descr:""
-        }
+        }*/
 
         //scroll
         ScrollBar.vertical: ScrollBar {

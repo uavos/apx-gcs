@@ -22,65 +22,64 @@ ColumnLayout {
     Component.onCompleted: {
         ui.main.mainLayout.addTool(add)
         ui.main.mainLayout.addTool(vehicle)
+        ui.main.mainLayout.addTool(tool)
         ui.main.mainLayout.addToolInfo(control)
     }
 
 
 
-    property var selectedFact
+
+    property var selectedTool: ui.map.selectedTool
     property var selectedGroup
 
-    property bool active: activeTool || (selectedGroup?true:false)
-    property bool activeTool: selectedFact?true:false
+    function selectTool(fact)
+    {
+        ui.map.selectedTool=fact
+        selectedGroup=null
+    }
+    function reset()
+    {
+        selectTool(null)
+    }
+    onSelectedGroupChanged: {
+        if(selectedGroup)
+            ui.map.selectedTool=null
+    }
+
+    readonly property bool selGroup: selectedGroup?true:false
+    readonly property bool selTool: selectedTool?true:false
 
     Repeater {
-        model: selectedFact ? null : selectedGroup ? selectedGroup.model : null
+        visible: selGroup
+        model: selectedGroup ? selectedGroup.model : null
         delegate: FactButton {
             fact: model.fact
             noFactTrigger: true
-            onTriggered: selectedFact=highlighted?null:fact
-            highlighted: selectedFact==fact
+            onTriggered: selectTool(fact)
         }
     }
 
 
-
     Connections {
         target: ui.map
-        enabled: control.active
-        onClicked: {
-            if(selectedFact){
-                selectedFact.trigger()
-            }else reset()
-        }
-    }
-    Connections {
-        target: ui.map
-        enabled: !activeTool
+        enabled: selGroup
+        onClicked: reset()
         onMoved: reset()
     }
     Connections {
         target: apx
-        enabled: control.active
-        onFactTriggered: {
-            if(fact==selectedFact)return
-            reset()
-        }
+        enabled: selTool || selGroup
+        onFactTriggered: if(fact!=selectedTool) reset()
     }
     Connections {
         target: apx.vehicles
-        enabled: control.active
+        enabled: selTool || selGroup
         onVehicleSelected: reset()
     }
 
-    function reset()
-    {
-        selectedFact=null
-        selectedGroup=null
-    }
 
     Loader {
-        active: activeTool
+        active: selTool
         asynchronous: true
         sourceComponent: Component {
             MapQuickItem {
@@ -99,7 +98,7 @@ ColumnLayout {
                         anchors.verticalCenterOffset: -parent.implicitHeight/2
                         anchors.centerIn: parent
                         //size: 60
-                        name: selectedFact.icon
+                        name: selectedTool.icon
                     }
                 }
             }
@@ -112,31 +111,38 @@ ColumnLayout {
 
     FactButton {
         id: add
-        fact: (highlighted && activeTool)?selectedFact:control.factAdd
+        fact: factAdd
         noFactTrigger: true
-        showText: highlighted && activeTool
-        signaled: showText
-        highlighted: selectedGroup==factAdd
+        showText: false
+        highlighted: selectedGroup==fact
         onTriggered: {
             if(highlighted)reset()
-            else{
-                if(activeTool)reset()
-                selectedGroup=factAdd
-            }
+            else selectedGroup=fact
         }
     }
     FactButton {
         id: vehicle
-        fact: (highlighted && activeTool)?selectedFact:control.factVehicle
+        fact: factVehicle
         noFactTrigger: true
-        showText: highlighted && activeTool
-        signaled: showText
-        highlighted: selectedGroup==factVehicle
+        showText: false
+        highlighted: selectedGroup==fact
         onTriggered: {
             if(highlighted)reset()
-            else{
-                if(activeTool)reset()
-                selectedGroup=factVehicle
+            else selectedGroup=fact
+        }
+    }
+    Loader {
+        id: tool
+        active: selTool
+        asynchronous: true
+        sourceComponent: Component {
+            FactButton {
+                fact: selectedTool
+                noFactTrigger: true
+                showText: true
+                signaled: true
+                highlighted: true
+                onTriggered: reset()
             }
         }
     }

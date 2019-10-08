@@ -6,15 +6,17 @@ Loader {
     property string uiComponent
     signal configure()  // called when uiComponent is loaded
 
-    property var fact
+    property bool unloadOnHide: true
+
+    property var fact   //set by C++ Fact->loadQml()
     property string name: fact?fact.name:""
     property string title: fact?fact.title:""
     property string descr: fact?fact.descr:""
     property string icon: fact?fact.icon:""
 
+    visible: true
 
     active: false
-    visible: active
     asynchronous: true
     Component.onCompleted: {
         if(uiComponent && (!(ui && ui[uiComponent])))return
@@ -23,7 +25,7 @@ Loader {
 
     function activate(object)
     {
-        active=true
+        active=unloadOnHide?Qt.binding(function(){return visible}):true
         configure()
     }
     Connections {

@@ -18,7 +18,7 @@ RowLayout {
 
     function addPlugin(plugin)
     {
-        plugin.active=Qt.binding(function(){return control.visible && instrumentsItem.currentIndex==plugin.SwipeView.index})
+        plugin.visible=Qt.binding(function(){return control.visible && instrumentsItem.currentIndex==plugin.SwipeView.index})
         instrumentsItem.add(plugin)
         if(plugin.name)
             application.registerUiComponent(plugin,"instruments."+plugin.name)

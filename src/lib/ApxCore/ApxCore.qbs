@@ -64,6 +64,7 @@ ApxApp.ApxLibrary {
             "AppRoot.cpp", "AppRoot.h",
             "AppEngine.cpp", "AppEngine.h",
             "AppPlugins.cpp", "AppPlugins.h",
+            "AppPlugin.cpp", "AppPlugin.h",
             "AppSettings.cpp", "AppSettings.h",
             "AppWindow.cpp", "AppWindow.h",
             "AppInstances.cpp", "AppInstances.h",
