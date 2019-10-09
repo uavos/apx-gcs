@@ -23,7 +23,6 @@
 #include "ApxGcs.h"
 #include <ApxDirs.h>
 #include <ApxLog.h>
-#include <Shortcuts/AppShortcuts.h>
 #include <QFileDialog>
 //=============================================================================
 ApxGcs *ApxGcs::_instance = nullptr;
@@ -41,9 +40,6 @@ void ApxGcs::loadServices()
 
     new Database(f_app);
     Vehicles *vehicles = new Vehicles(f_app, protocol->vehicles);
-    //new Spark(f_app,protocol->vehicles->firmware);
-
-    new AppShortcuts(f_app->f_settings->f_interface);
 
     //datalink
     f_datalink = new Datalink(f_app);

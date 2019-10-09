@@ -150,15 +150,6 @@ ApxApp.ApxLibrary {
     }
 
     Group {
-        name: "Shortcuts"
-        prefix: name+"/"
-        files: [
-            "AppShortcut.cpp", "AppShortcut.h",
-            "AppShortcuts.cpp", "AppShortcuts.h",
-        ]
-    }
-
-    Group {
         name: "ApxMisc"
         prefix: name+"/"
         files: [
@@ -172,14 +163,5 @@ ApxApp.ApxLibrary {
             "pawn/**/*",
         ]
     }
-
-    ApxApp.ApxResource {
-        src: "templates"
-        files: [
-            "shortcuts.json",
-        ]
-    }
-
-
 
 }

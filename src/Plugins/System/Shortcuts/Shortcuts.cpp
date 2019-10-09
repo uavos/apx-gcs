@@ -20,31 +20,26 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "AppShortcuts.h"
-#include "AppShortcut.h"
+#include "Shortcuts.h"
+#include "Shortcut.h"
 #include <App/AppSettings.h>
 #include <ApxApp.h>
 #include <ApxDirs.h>
 #include <QKeySequence>
 #include <QQmlEngine>
 //=============================================================================
-AppShortcuts::AppShortcuts(Fact *parent)
+Shortcuts::Shortcuts(Fact *parent)
     : Fact(parent, "shortcuts", tr("Shortcuts"), tr("Keyboard hotkeys"), Group | FlatModel)
 {
     // QML types register
-    qmlRegisterUncreatableType<AppShortcuts>("APX.AppShortcuts",
-                                             1,
-                                             0,
-                                             "AppShortcuts",
-                                             "Reference only");
+    qmlRegisterUncreatableType<Shortcuts>("APX.Shortcuts", 1, 0, "Shortcuts", "Reference only");
 
-    f_add = new AppShortcut(this, this, nullptr, false);
+    f_add = new Shortcut(this, this, nullptr, false);
     f_blocked = new Fact(this,
                          "blocked",
                          tr("Block all"),
                          tr("Temporally block all shortcuts"),
                          Bool);
-    //f_blocked->setVisible(false);
 
     QString sect;
     sect = tr("User");
@@ -68,16 +63,17 @@ AppShortcuts::AppShortcuts(Fact *parent)
 
     saveTimer.setSingleShot(true);
     saveTimer.setInterval(500);
-    connect(&saveTimer, &QTimer::timeout, this, &AppShortcuts::saveDo);
+    connect(&saveTimer, &QTimer::timeout, this, &Shortcuts::saveDo);
 
-    connect(this, &Fact::sizeChanged, this, &AppShortcuts::updateStats);
-    //connect(this,&Fact::childValueChanged,this,&AppShortcuts::updateStats);
+    connect(this, &Fact::sizeChanged, this, &Shortcuts::updateStats);
     updateStats();
 
     ApxApp::jsync(this);
+
+    loadQml("qrc:/" PLUGIN_NAME "/ShortcutsPlugin.qml");
 }
 //=============================================================================
-void AppShortcuts::updateStats()
+void Shortcuts::updateStats()
 {
     bool bSz = f_sys->size();
     f_allonSys->setEnabled(bSz);
@@ -87,11 +83,11 @@ void AppShortcuts::updateStats()
     f_alloffUsr->setEnabled(bSz);
     //disable f_sys shortcuts found in user
     for (int i = 0; i < f_usr->size(); ++i) {
-        AppShortcut *item = f_usr->child<AppShortcut>(i);
+        Shortcut *item = f_usr->child<Shortcut>(i);
         if (item->_enabled->value().toBool() == false)
             continue;
         for (int j = 0; j < f_sys->size(); ++j) {
-            AppShortcut *fsys = f_sys->child<AppShortcut>(j);
+            Shortcut *fsys = f_sys->child<Shortcut>(j);
             if (fsys->_enabled->value().toBool() == false)
                 continue;
             if (fsys->_key->text() == item->_key->text()) {
@@ -102,19 +98,19 @@ void AppShortcuts::updateStats()
     }
 }
 //=============================================================================
-void AppShortcuts::addTriggered()
+void Shortcuts::addTriggered()
 {
     addUserShortcut();
     saveDo();
     f_add->defaults();
 }
 //=============================================================================
-void AppShortcuts::addUserShortcut()
+void Shortcuts::addUserShortcut()
 {
-    new AppShortcut(f_usr, this, f_add, true);
+    new Shortcut(f_usr, this, f_add, true);
 }
 //=============================================================================
-void AppShortcuts::load()
+void Shortcuts::load()
 {
     QMap<QString, QJsonObject> msys, musr;
     QStringList lsys, lusr;
@@ -152,7 +148,7 @@ void AppShortcuts::load()
     foreach (QString key, lsys) {
         f_add->defaults();
         f_add->valuesFromJson(msys.value(key));
-        new AppShortcut(f_sys, this, f_add, false);
+        new Shortcut(f_sys, this, f_add, false);
     }
 
     foreach (QString key, lusr) {
@@ -162,19 +158,19 @@ void AppShortcuts::load()
     }
     f_add->defaults();
 }
-void AppShortcuts::save()
+void Shortcuts::save()
 {
     saveTimer.start();
 }
-void AppShortcuts::saveDo()
+void Shortcuts::saveDo()
 {
     QJsonArray asys;
     for (int i = 0; i < f_sys->size(); ++i) {
-        asys.append(f_sys->child<AppShortcut>(i)->valuesToJson());
+        asys.append(f_sys->child<Shortcut>(i)->valuesToJson());
     }
     QJsonArray ausr;
     for (int i = 0; i < f_usr->size(); ++i) {
-        ausr.append(f_usr->child<AppShortcut>(i)->valuesToJson());
+        ausr.append(f_usr->child<Shortcut>(i)->valuesToJson());
     }
     //save json file
     QFile fusr(ApxDirs::prefs().filePath("shortcuts.json"));
@@ -190,7 +186,7 @@ void AppShortcuts::saveDo()
     //qDebug()<<"saved";
 }
 //=============================================================================
-QString AppShortcuts::keyToPortableString(int key, int modifier) const
+QString Shortcuts::keyToPortableString(int key, int modifier) const
 {
     //qDebug()<<key<<modifier;
     if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta)

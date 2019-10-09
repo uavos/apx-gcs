@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,42 +20,24 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppShortcut_H
-#define AppShortcut_H
-//=============================================================================
-#include <Fact/Fact.h>
+#ifndef ShortcutsPlugin_H
+#define ShortcutsPlugin_H
+#include "Shortcuts.h"
+#include <App/AppSettings.h>
+#include <ApxPluginInterface.h>
 #include <QtCore>
-class AppShortcuts;
 //=============================================================================
-class AppShortcut : public Fact
+class ShortcutsPlugin : public ApxPluginInterface
 {
     Q_OBJECT
-
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
+    Q_INTERFACES(ApxPluginInterface)
 public:
-    explicit AppShortcut(Fact *parent, AppShortcuts *shortcuts, const AppShortcut *sc, bool bUsr);
-
-    Fact *_enabled;
-    Fact *_key;
-    Fact *_cmd;
-
-    Fact *_save;
-    Fact *_remove;
-
-    QJsonObject valuesToJson(bool array = false) const override;
-    void valuesFromJson(const QJsonObject &jso) override;
-
-private:
-    AppShortcuts *container;
-    bool _new;
-    bool bUsr;
-
-private slots:
-    void updateStats();
-    void enable();
-    void disable();
-
-public slots:
-    void defaults();
+    int flags() override { return Feature | System; }
+    QObject *createControl() override
+    {
+        return new Shortcuts(AppSettings::instance()->f_interface);
+    }
 };
 //=============================================================================
-#endif
+#endif // ShortcutsPlugin_H

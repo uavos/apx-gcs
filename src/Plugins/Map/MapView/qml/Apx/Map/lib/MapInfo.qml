@@ -15,6 +15,33 @@ RowLayout {
         text: apx.latToString(c.latitude)+" "+apx.lonToString(c.longitude)
     }
 
+    BusyIndicator {
+        id: busy
+        property var fact: apx.tools?apx.tools.location:null
+        property string text: fact?fact.status:""
+        property int progress: fact?fact.progress:-1
+
+        padding: 1
+        implicitHeight: 20
+        implicitWidth: implicitHeight
+        running: progress>=0
+        Text {
+            anchors.fill: parent
+            color: "#60FFFFFF"
+            text: busy.text
+            font.bold: true
+            horizontalAlignment: Qt.AlignHCenter
+            verticalAlignment: Qt.AlignVCenter
+            font.pixelSize: Math.max(8,height*0.6)
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                busy.fact.abort();
+            }
+        }
+    }
+
     // map scale and distance measure
     Item {
         implicitWidth: loader.implicitWidth
@@ -87,6 +114,8 @@ RowLayout {
             onClicked: apx.vehicles.current.telemetry.rpath.trigger()
         }
     }
+
+
 
 
 }

@@ -16,9 +16,6 @@ Flow {
     property alias settingsName: numbersModel.settingsName
     property alias defaults: numbersModel.defaults
 
-    Repeater {
-        model: numbersModel
-    }
 
     CleanButton {
         implicitHeight: numbersModel.itemHeight
@@ -27,6 +24,9 @@ Flow {
         toolTip: qsTr("Edit display values")
         onTriggered: numbersModel.edit()
         opacity: ui.effects?(hovered?1:0.5):1
+    }
+    Repeater {
+        model: numbersModel
     }
 
 

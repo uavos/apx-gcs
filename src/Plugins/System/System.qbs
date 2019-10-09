@@ -11,6 +11,7 @@ Project {
         "Sounds",
         "Terminal",
         "Blackbox",
+        "Shortcuts",
     ]
 
     references: {

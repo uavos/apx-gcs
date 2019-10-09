@@ -246,13 +246,13 @@ Item {
         sourceComponent: Component { Wind { } }
         visible: status===Loader.Ready
     }
-    Loader {
+    /*Loader {
         id: busy
         active: showScale
         asynchronous: true
         sourceComponent: Component { MapBusy { } }
     }
-    /*Loader {
+    Loader {
         id: scale
         active: showScale
         asynchronous: true

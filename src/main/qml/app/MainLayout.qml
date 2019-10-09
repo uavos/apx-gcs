@@ -11,7 +11,7 @@ import "qrc:/app"
 Item {
     id: control
 
-    /*Item {
+    Item {
         z: 9999
         //visible: false
         BoundingRect { item: top }
@@ -25,7 +25,7 @@ Item {
         BoundingRect { item: bottomLeft }
         BoundingRect { item: bottomRight }
         BoundingRect { item: notifications }
-    }*/
+    }
 
     implicitWidth: 600
     implicitHeight: 500
@@ -171,23 +171,23 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft|Qt.AlignBottom
         }
+        NumbersBar {
+            Layout.fillWidth: true
+            //layoutDirection: Qt.RightToLeft
+            //Layout.bottomMargin: 15
+            //flow: Flow.TopToBottom
+            settingsName: "map"
+            defaults: [
+                {"bind": "altitude", "title": "ALT", "prec": "0"},
+            ]
+        }
         RowLayout {
             id: bottomRight
             Layout.alignment: Qt.AlignRight|Qt.AlignBottom
-            NumbersBar {
-                Layout.fillWidth: true
-                layoutDirection: Qt.RightToLeft
-                //Layout.bottomMargin: 15
-                //flow: Flow.TopToBottom
-                settingsName: "map"
-                defaults: [
-                    {"bind": "altitude", "title": "ALT", "prec": "0"},
-                ]
-            }
         }
     }
 
-    Loader {
+    /*Loader {
         id: signals
         anchors.right: parent.right
         anchors.bottom: bottom.bottom
@@ -197,7 +197,7 @@ Item {
         asynchronous: true
         sourceComponent: Component { Signals { } }
         visible: status===Loader.Ready
-        /*states: [
+        states: [
             State {
                 name: "hidden"
                 when: !signals.visible
@@ -216,14 +216,14 @@ Item {
                 properties: "anchors.rightMargin"
                 easing.type: Easing.InOutQuad
             }
-        }*/
-    }
+        }
+    }*/
 
 
     ColumnLayout {
         id: notifications
         anchors.top: top.top
-        anchors.bottom: signals.top
+        anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.rightMargin: margins
         anchors.bottomMargin: margins

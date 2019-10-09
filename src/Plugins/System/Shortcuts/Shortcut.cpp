@@ -20,13 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "AppShortcut.h"
-#include "AppShortcuts.h"
+#include "Shortcut.h"
+#include "Shortcuts.h"
 
-#include <App/AppSettings.h>
 #include <ApxApp.h>
 //=============================================================================
-AppShortcut::AppShortcut(Fact *parent, AppShortcuts *shortcuts, const AppShortcut *sc, bool bUsr)
+Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool bUsr)
     : Fact(parent,
            sc ? (bUsr ? "usr#" : "sys#") : tr("add"),
            sc ? "" : tr("Add new shortcut"),
@@ -43,28 +42,28 @@ AppShortcut::AppShortcut(Fact *parent, AppShortcuts *shortcuts, const AppShortcu
 
     if (_new) {
         _save = new Fact(this, "save", tr("Save"), "", Action | Apply | CloseOnTrigger);
-        connect(_save, &Fact::triggered, shortcuts, &AppShortcuts::addTriggered);
+        connect(_save, &Fact::triggered, shortcuts, &Shortcuts::addTriggered);
         defaults();
     } else {
         setSection(bUsr ? shortcuts->f_usr->section() : shortcuts->f_sys->section());
         copyValuesFrom(sc);
         _remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove);
-        connect(_remove, &Fact::triggered, this, &AppShortcut::remove);
-        connect(_remove, &Fact::triggered, shortcuts, &AppShortcuts::save);
-        connect(shortcuts, &Fact::sizeChanged, this, &AppShortcut::updateStats);
+        connect(_remove, &Fact::triggered, this, &Shortcut::remove);
+        connect(_remove, &Fact::triggered, shortcuts, &Shortcuts::save);
+        connect(shortcuts, &Fact::sizeChanged, this, &Shortcut::updateStats);
 
         connect(bUsr ? shortcuts->f_allonUsr : shortcuts->f_allonSys,
                 &Fact::triggered,
                 this,
-                &AppShortcut::enable);
+                &Shortcut::enable);
         connect(bUsr ? shortcuts->f_alloffUsr : shortcuts->f_alloffSys,
                 &Fact::triggered,
                 this,
-                &AppShortcut::disable);
+                &Shortcut::disable);
         connect(this,
-                &AppShortcut::titleChanged,
+                &Shortcut::titleChanged,
                 shortcuts,
-                &AppShortcuts::updateStats,
+                &Shortcuts::updateStats,
                 Qt::QueuedConnection);
 
         connect(this, &Fact::valueChanged, this, [this]() { _enabled->setValue(value()); });
@@ -72,15 +71,10 @@ AppShortcut::AppShortcut(Fact *parent, AppShortcuts *shortcuts, const AppShortcu
         setValue(_enabled->value());
     }
 
-    /*if(!sc)shortcuts->addItem(this);
-  else if(bUsr){
-    shortcuts->f_usr->addItem(this);
-  }else shortcuts->f_sys->addItem(this);*/
-
     for (int i = 0; i < size(); ++i) {
-        connect(child(i), &Fact::valueChanged, this, &AppShortcut::updateStats);
+        connect(child(i), &Fact::valueChanged, this, &Shortcut::updateStats);
         if (!_new) {
-            connect(child(i), &Fact::valueChanged, shortcuts, &AppShortcuts::save);
+            connect(child(i), &Fact::valueChanged, shortcuts, &Shortcuts::save);
         }
     }
     updateStats();
@@ -88,14 +82,14 @@ AppShortcut::AppShortcut(Fact *parent, AppShortcuts *shortcuts, const AppShortcu
     ApxApp::jsync(this);
 }
 //=============================================================================
-void AppShortcut::defaults()
+void Shortcut::defaults()
 {
     _enabled->setValue(true);
     _key->setValue("");
     _cmd->setValue("");
 }
 //=============================================================================
-void AppShortcut::updateStats()
+void Shortcut::updateStats()
 {
     if (_new) {
         _save->setEnabled(!(_key->text().isEmpty() || _cmd->text().isEmpty()));
@@ -107,16 +101,16 @@ void AppShortcut::updateStats()
     }
 }
 //=============================================================================
-void AppShortcut::enable()
+void Shortcut::enable()
 {
     _enabled->setValue(true);
 }
-void AppShortcut::disable()
+void Shortcut::disable()
 {
     _enabled->setValue(false);
 }
 //=============================================================================
-QJsonObject AppShortcut::valuesToJson(bool array) const
+QJsonObject Shortcut::valuesToJson(bool array) const
 {
     Q_UNUSED(array)
     QJsonObject jso;
@@ -125,7 +119,7 @@ QJsonObject AppShortcut::valuesToJson(bool array) const
     jso.insert("enb", _enabled->value().toBool());
     return jso;
 }
-void AppShortcut::valuesFromJson(const QJsonObject &jso)
+void Shortcut::valuesFromJson(const QJsonObject &jso)
 {
     _key->setValue(jso["key"].toVariant());
     _cmd->setValue(jso["scr"].toVariant());

@@ -39,7 +39,7 @@ RowLayout {
             toolTip: modelData.title+" - "+modelData.descr
         }
         Component.onCompleted: sync()
-        property int size: apx.windows.model.count
+        property int size: apx.windows?apx.windows.model.count:0
         onSizeChanged: sync()
         function sync()
         {

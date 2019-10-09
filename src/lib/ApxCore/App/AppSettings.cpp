@@ -29,7 +29,6 @@ AppSettings::AppSettings(Fact *parent)
 {
     _instance = this;
 
-    //setSection(FactSystem::ApplicationSection);
     setIcon("settings");
 
     m_readOnly = false;
@@ -39,8 +38,6 @@ AppSettings::AppSettings(Fact *parent)
     f_graphics = new Fact(this, "graphics", tr("Graphics"), "", Section);
     f_application = new Fact(this, "application", tr("Application"), "", Section);
     AppSettingFact *item;
-
-    //item=new AppSettingFact(m_settings,f_interface,"sounds",tr("Sounds"),tr("Enable all application sounds and voice"),sect,BoolData,true);
 
     item = new AppSettingFact(m_settings,
                               f_interface,
@@ -55,14 +52,6 @@ AppSettings::AppSettings(Fact *parent)
     foreach (QFileInfo f, langp.entryInfoList(QStringList() << "*.qm"))
         st << f.baseName();
     item->setEnumStrings(st);
-
-    /*item=new AppSettingFact(m_settings,this,"voice",tr("Voice"),tr("Speech voice"),sect,EnumData,0);
-  st.clear();
-  st<<"default";
-  QDir voicep(ApxDirs::res().filePath("audio/speech"));
-  foreach(QString s,voicep.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
-    st<<s;
-  item->setEnumStrings(st);*/
 
     item = new AppSettingFact(m_settings,
                               f_graphics,

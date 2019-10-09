@@ -30,7 +30,7 @@ ColumnLayout {
                                 -(actionsItem.visible?actionsItem.implicitHeight+spacing:0)
                                 -(listView.headerItem?listView.headerItem.implicitHeight:0)
                                 -(listView.footerItem?listView.footerItem.implicitHeight:0)
-                                -8
+                                -32
 
     //facts
     ListView {
@@ -55,6 +55,7 @@ ColumnLayout {
                 positionViewAtIndex(currentIndex,ListView.Center)
             }
         }
+        headerPositioning: ListView.OverlayHeader
 
         //resize to contents
         onCountChanged: updateHeight()

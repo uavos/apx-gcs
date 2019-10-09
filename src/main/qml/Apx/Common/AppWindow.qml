@@ -34,11 +34,15 @@ ApplicationWindow {
     property bool showBgImage: true
     background: Rectangle {
         border.width: 0
-        color: "#111"
-        Image {
-            visible: showBgImage
+        color: "#080808"
+        Loader {
             anchors.centerIn: parent
-            source: "qrc:///icons/uavos-logo.ico"
+            active: control.showBgImage
+            sourceComponent: Component {
+                Image {
+                    source: "qrc:///icons/uavos-logo.ico"
+                }
+            }
         }
     }
 

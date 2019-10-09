@@ -20,19 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppShortcuts_H
-#define AppShortcuts_H
+#ifndef Shortcuts_H
+#define Shortcuts_H
 //=============================================================================
 #include <Fact/Fact.h>
 #include <QtCore>
-class AppShortcut;
+class Shortcut;
 class AppSettings;
 //=============================================================================
-class AppShortcuts : public Fact
+class Shortcuts : public Fact
 {
     Q_OBJECT
 public:
-    explicit AppShortcuts(Fact *parent);
+    explicit Shortcuts(Fact *parent);
 
     Q_INVOKABLE QString keyToPortableString(int key, int modifier) const;
 
@@ -47,7 +47,7 @@ public:
     Fact *f_sys;
 
 private:
-    AppShortcut *f_add;
+    Shortcut *f_add;
 
     QTimer saveTimer;
 
