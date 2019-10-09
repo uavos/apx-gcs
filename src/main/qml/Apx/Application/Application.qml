@@ -2,7 +2,7 @@
 
 import Apx.Common 1.0
 import Apx.Menu 1.0
-
+import Apx.Application 1.0
 
 AppWindow {
     id: control
@@ -17,21 +17,15 @@ AppWindow {
         visible: false //hide to show BG image
         onLoaded: {
             visible=true
-            //menu bar
-            var cname="MenuBar"
-            if(Qt.platform.os=="linux")cname+="Linux"
-            else cname+="Macos"
-            var component = Qt.createComponent(cname+".qml");
-            if (component.status === Component.Ready) {
-                var menu=component.createObject(control)
-                menuBar=menu
-            }
             //register and broadcast ui component availability for plugins
             application.registerUiComponent(item,"main")
         }
         opacity: visible?1:0
         Behavior on opacity { PropertyAnimation { duration: 2000; easing.type: Easing.InQuart; } }
     }
+
+    //system menu
+    AppMenuBar { }
 
     //fact menu dispatcher
     Connections {

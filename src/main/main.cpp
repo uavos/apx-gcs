@@ -92,7 +92,10 @@ int main(int argc, char *argv[])
     f.setDepthBufferSize(8);
     QGLFormat::setDefaultFormat(f);*/
 
-    ApxGcs app(argc, argv, "Ground Control", QUrl(QStringLiteral("qrc:/app/ApxApp.qml")));
+    ApxGcs app(argc,
+               argv,
+               "Ground Control",
+               QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
 
     //check instances
     /*if(!QSettings().value("multipleInstances").toBool()){

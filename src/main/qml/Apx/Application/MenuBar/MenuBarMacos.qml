@@ -1,16 +1,17 @@
 ﻿import QtQml 2.12
 import QtQuick 2.11
 
-import QtQuick.Controls 2.4
+import Qt.labs.platform 1.1
+
+import Apx.Application 1.0
 
 MenuBar {
     Menu {
-        id: fileMenu
         title: qsTr("File")
         MenuItem {
             property var fact: apx.vehicles.replay.telemetry.share.imp
             text: fact.descr
-            action: Action { shortcut: StandardKey.Open }
+            shortcut: StandardKey.Open
             onTriggered: fact.trigger()
         }
         MenuItem {
@@ -19,17 +20,15 @@ MenuBar {
             onTriggered: fact.trigger()
         }
         MenuItem {
-            text: qsTr("Preferences")
+            role: MenuItem.PreferencesRole
             onTriggered: apx.trigger()
         }
-        Instantiator {
-            active: apx.settings.application.updater !== undefined
-            MenuItem {
-                property var fact: apx.settings.application.updater
-                text: fact ? fact.title : ""
-                onTriggered: fact.check()
-            }
-            onObjectAdded: fileMenu.addItem(object)
+        MenuItem {
+            property var fact: apx.settings.application.updater
+            visible: fact?true:false
+            role: MenuItem.ApplicationSpecificRole
+            text: fact?fact.title:""
+            onTriggered: fact.check()
         }
     }
 
@@ -63,32 +62,31 @@ MenuBar {
     }
 
     Menu {
-        id: windowsMenu
+        id: controlsMenu
         title: apx.windows.title
-        property var model: apx.windows.model
         Instantiator {
-            model: windowsMenu.model
+            model: apx.windows.model
             MenuItem {
                 text: modelData.title
                 checked: modelData.value
                 onTriggered: modelData.value=!modelData.value
             }
-            onObjectAdded: windowsMenu.insertItem(index,object)
-            onObjectRemoved: windowsMenu.removeItem(object)
+            onObjectAdded: controlsMenu.insertItem(index,object)
+            onObjectRemoved: controlsMenu.removeItem(object)
         }
     }
 
     Menu {
         title: qsTr("Help")
         MenuItem {
-            text: qsTr("About")
+            role: MenuItem.AboutRole
             onTriggered: {
-                var c = Qt.createComponent("AboutDialog.qml")
-                if (c.status === Component.Ready){
-                    c=c.createObject(control)
-                    c.closed.connect(c.destroy)
-                    c.open()
-                }
+                var c=about.createObject(application.window)
+                c.closed.connect(c.destroy)
+                c.open()
+            }
+            property var about: Component {
+                AboutDialog { }
             }
         }
         MenuItem {
@@ -98,7 +96,11 @@ MenuBar {
         MenuItem {
             text: qsTr("Documentation")
             onTriggered: Qt.openUrlExternally("http://docs.uavos.com")
-            action: Action {shortcut: StandardKey.HelpContents}
+            shortcut: StandardKey.HelpContents
+        }
+        MenuItem {
+            text: qsTr("Changelog")
+            onTriggered: Qt.openUrlExternally("http://uavos.github.io/apx-releases/CHANGELOG.html")
         }
         MenuItem {
             text: qsTr("Report a problem")

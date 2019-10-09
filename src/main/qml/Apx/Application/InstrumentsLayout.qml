@@ -6,8 +6,6 @@ import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Instruments 1.0
 
-import "qrc:/app"
-
 RowLayout {
     id: control
 

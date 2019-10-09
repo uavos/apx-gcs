@@ -1,0 +1,6 @@
+module Apx.Application
+
+AppMenuBar      1.0 MenuBar/AppMenuBar.qml
+AboutDialog     1.0 AboutDialog.qml
+
+GroundControl   1.0 GroundControl.qml
