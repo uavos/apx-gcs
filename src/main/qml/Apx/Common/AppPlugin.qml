@@ -33,13 +33,4 @@ Loader {
         enabled: uiComponent
         onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
     }
-
-    /*onLoaded: {
-        console.log("loaded", title, plugin)
-    }
-    onStatusChanged: {
-        if(status==Loader.Null){
-            console.log("unloaded", title, plugin)
-        }
-    }*/
 }

@@ -3,8 +3,11 @@ import QtQuick 2.11
 
 import QtQuick.Controls 2.4
 
+import Apx.Application 1.0
+
 MenuBar {
-    id: menuBar
+
+    Component.onCompleted: manuBar=this
 
     Menu {
         id: fileMenu
@@ -44,6 +47,7 @@ MenuBar {
                 text: modelData.title
                 onTriggered: modelData.trigger()
                 checked: modelData.active
+                checkable: true
             }
             onObjectAdded: vehiclesMenu.insertItem(index,object)
             onObjectRemoved: vehiclesMenu.removeItem(object)
@@ -73,6 +77,7 @@ MenuBar {
             MenuItem {
                 text: modelData.title
                 checked: modelData.value
+                checkable: true
                 onTriggered: modelData.value=!modelData.value
             }
             onObjectAdded: windowsMenu.insertItem(index,object)
@@ -85,12 +90,12 @@ MenuBar {
         MenuItem {
             text: qsTr("About")
             onTriggered: {
-                var c = Qt.createComponent("AboutDialog.qml")
-                if (c.status === Component.Ready){
-                    c=c.createObject(control)
-                    c.closed.connect(c.destroy)
-                    c.open()
-                }
+                var c=about.createObject(application.window)
+                c.closed.connect(c.destroy)
+                c.open()
+            }
+            property var about: Component {
+                AboutDialog { }
             }
         }
         MenuItem {

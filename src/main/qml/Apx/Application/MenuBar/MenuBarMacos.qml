@@ -41,6 +41,7 @@ MenuBar {
                 text: modelData.title
                 onTriggered: modelData.trigger()
                 checked: modelData.active
+                checkable: true
             }
             onObjectAdded: vehiclesMenu.insertItem(index,object)
             onObjectRemoved: vehiclesMenu.removeItem(object)
@@ -69,6 +70,7 @@ MenuBar {
             MenuItem {
                 text: modelData.title
                 checked: modelData.value
+                checkable: true
                 onTriggered: modelData.value=!modelData.value
             }
             onObjectAdded: controlsMenu.insertItem(index,object)

@@ -2,25 +2,17 @@
 import QtQml 2.12
 
 Loader {
-    asynchronous: true
+    active: false
+    asynchronous: false
     source: {
         var cname="MenuBar"
         if(Qt.platform.os=="linux")cname+="Linux"
         else cname+="Macos"
         return cname+".qml"
     }
-
-    /*ListModel {
-        id: model
+    Connections {
+        target: application
+        onLoadingFinished: active=true
     }
-    Instantiator {
-        model: apx.vehicles.select.model
-        ListElement {
-            text: modelData.title
-            onTriggered: modelData.trigger()
-            checked: modelData.active
-        }
-        onObjectAdded: model.insert(index,object)
-        onObjectRemoved: model.remove(object)
-    }*/
+
 }
