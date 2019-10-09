@@ -7,7 +7,8 @@ import QtMultimedia 5.7
 import GstPlayer 1.0
 
 import Apx.Common 1.0
-import Aim 1.0
+import OverlayAim 1.0
+import OverlayVars 1.0
 
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
@@ -47,12 +48,25 @@ Rectangle {
                 }
             }
         }
-        Aim {
-            anchors.centerIn: parent
+        OverlayAim {
             visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-            height: parent.height * videoItem.scale.value
-            width: height
             type: plugin.tune.overlay.aim.value
+            scale: overlay.scale.value
+            x: videoOutput.contentRect.x
+            y: videoOutput.contentRect.y
+            width: videoOutput.contentRect.width
+            height: videoOutput.contentRect.height
+        }
+        OverlayVars {
+            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+            topLeftVars: overlay.topLeftVars.value
+            topCenterVars: overlay.topCenterVars.value
+            topRightVars: overlay.topRightVars.value
+            scale: overlay.scale.value
+            x: videoOutput.contentRect.x
+            y: videoOutput.contentRect.y
+            width: videoOutput.contentRect.width
+            height: videoOutput.contentRect.height
         }
     }
 
