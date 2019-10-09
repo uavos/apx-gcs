@@ -7,7 +7,7 @@ import Apx.Application 1.0
 
 MenuBar {
 
-    Component.onCompleted: manuBar=this
+    Component.onCompleted: menuBar=this
 
     Menu {
         id: fileMenu
