@@ -410,12 +410,14 @@ Fact *Fact::menu()
         return this;
     if (!qmlPage().isEmpty())
         return this;
-    if (treeType() == Group)
-        return this;
     if (treeType() == Root)
         return this;
     if (dataType() == Mandala)
         return this;
+
+    if (treeType() == Group)
+        return bind() ? bind()->menu() : this;
+
     if (bind())
         return bind()->menu();
     return nullptr;
@@ -561,6 +563,9 @@ void Fact::setFlags(FactBase::Flags v)
 }
 FactListModel *Fact::model()
 {
+    /*if (!m_model && size() <= 0 && bind()) {
+        return bind()->model();
+    }*/
     bool bEmpty = size() <= 0;
     if (!m_model) {
         if (!bEmpty)

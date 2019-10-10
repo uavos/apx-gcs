@@ -138,6 +138,7 @@ private slots:
 
 signals:
     void notification(QString msg, QString subsystem, App::NotifyFlags flags, Fact *fact);
+    void about();
 
     //---------------------------------------
     //PROPERTIES

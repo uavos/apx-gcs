@@ -46,10 +46,10 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                                                 "VehicleWarnings",
                                                 "Reference only");
 
-    VehicleSelect *f_select = new VehicleSelect(this,
-                                                "select",
-                                                tr("Select vehicle"),
-                                                tr("Change the active vehicle"));
+    f_select = new VehicleSelect(this,
+                                 "select",
+                                 tr("Select vehicle"),
+                                 tr("Change the active vehicle"));
     f_select->setIcon("select");
     f_select->setSection(title());
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);

@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Application_H
-#define Application_H
+#ifndef AppGcs_H
+#define AppGcs_H
 #include <App/App.h>
 
 #include <App/App.h>
@@ -36,14 +36,14 @@
 #include <Protocols/ApxProtocol.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
-class Application : public App
+class AppGcs : public App
 {
     Q_OBJECT
     Q_ENUMS(FileType)
 
 public:
-    explicit Application(int &argc, char **argv, const QString &name, const QUrl &url);
-    static Application *instance() { return _instance; }
+    explicit AppGcs(int &argc, char **argv, const QString &name, const QUrl &url);
+    static AppGcs *instance() { return _instance; }
 
     enum FileType {
         UnknownFile = 0,
@@ -55,17 +55,16 @@ public:
 
     ApxProtocol *protocol;
     Datalink *f_datalink;
-
     AppMenu *f_menu;
 
 private:
-    static Application *_instance;
+    static AppGcs *_instance;
 
 protected:
     void loadServices();
 
 public slots:
-    void openFile(Application::FileType type = FileType::UnknownFile);
+    void openFile(AppGcs::FileType type = FileType::UnknownFile);
 
 signals:
     void fileOpenRequest(QString fileName);

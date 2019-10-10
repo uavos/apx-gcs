@@ -5,13 +5,16 @@ import QtQuick.Controls.Material 2.12
 
 Dialog {
     id: dialog
+
     title: qsTr("About")+" "+Qt.application.name
     standardButtons: Dialog.Close
 
-    x: (parent.width-width)/2
-    y: (parent.height-height)/2
+    property var w: parent
+    x: (w.width-width)/2
+    y: (w.height-height)/2
 
-    implicitWidth: Math.max(parent.width/4,800)
+
+    implicitWidth: Math.max(w.width/4,800)
     //implicitHeight: Math.max(parent.height/4,100)
 
     contentItem: RowLayout {

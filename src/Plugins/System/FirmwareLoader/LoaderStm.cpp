@@ -23,8 +23,8 @@
 #include "LoaderStm.h"
 #include "Loader.h"
 #include <App/App.h>
+#include <App/AppGcs.h>
 #include <App/AppLog.h>
-#include <App/Application.h>
 #include <QSerialPortInfo>
 //=============================================================================
 #define SLDR_ACK 0x79
@@ -42,7 +42,7 @@ LoaderStm::LoaderStm(Loader *loader,
     , portName(portName)
     , continuous(continuous)
 {
-    Application::instance()->f_datalink->f_ports->blockSerialPorts();
+    AppGcs::instance()->f_datalink->f_ports->blockSerialPorts();
     connect(loader, &Loader::stop, this, &LoaderStm::stop);
 
     dev = new QSerialPort(QSerialPortInfo(portName), this);
@@ -59,7 +59,7 @@ LoaderStm::LoaderStm(Loader *loader,
 LoaderStm::~LoaderStm()
 {
     dev->close();
-    Application::instance()->f_datalink->f_ports->unblockSerialPorts();
+    AppGcs::instance()->f_datalink->f_ports->unblockSerialPorts();
     loader->finish(success);
     if (success) {
         apxMsg() << tr("Firmware uploaded");

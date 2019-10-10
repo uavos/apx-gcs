@@ -45,7 +45,7 @@ ApxApp.ApxLibrary {
         name: "App"
         prefix: name+"/"
         files: [
-            "Application.cpp", "Application.h",
+            "AppGcs.cpp", "AppGcs.h",
             "AppMenu.cpp", "AppMenu.h",
         ]
     }

@@ -38,6 +38,13 @@ AppWindow {
         }
     }
 
+    //about dialog
+    Component {
+        id: c_about
+        AboutDialog { }
+    }
+
+
 
     //loader and temporary image
     showBgImage: loaderMain.opacity!=1
@@ -45,7 +52,12 @@ AppWindow {
         target: application
         onLoadingFinished: {
             loaderMain.active=true
-            appMenu.active=true
+            //appMenu.active=true
+        }
+        onAbout: {
+            var c=c_about.createObject(application.window)
+            c.closed.connect(c.destroy)
+            c.open()
         }
     }
     Component.onCompleted: {

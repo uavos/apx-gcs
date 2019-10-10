@@ -34,6 +34,7 @@ function show(fact,opts,parent)
             if(fact.hasParent(menuItem.fact) || factMenu.hasParent(menuItem.fact)){
                 //if(fact.parentFact==menuItem.fact || factMenu.parentFact==menuItem.fact){
                 //console.log("Menu.update", menuItem)
+                //console.log(factMenu.path())
                 menuItem.showFact(factMenu)
                 return
             }

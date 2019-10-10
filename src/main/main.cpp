@@ -22,8 +22,8 @@
  */
 #include "RunGuard.h"
 #include <App/AppDirs.h>
+#include <App/AppGcs.h>
 #include <App/AppLog.h>
-#include <App/Application.h>
 #include <QApplication>
 #include <QGLWidget>
 #include <QQuickStyle>
@@ -92,10 +92,10 @@ int main(int argc, char *argv[])
     f.setDepthBufferSize(8);
     QGLFormat::setDefaultFormat(f);*/
 
-    Application app(argc,
-                    argv,
-                    "Ground Control",
-                    QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
+    AppGcs app(argc,
+               argv,
+               "Ground Control",
+               QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
 
     //check instances
     /*if(!QSettings().value("multipleInstances").toBool()){

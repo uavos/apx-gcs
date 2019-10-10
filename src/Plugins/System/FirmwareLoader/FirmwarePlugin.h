@@ -23,7 +23,7 @@
 #ifndef FirmwarePlugin_H
 #define FirmwarePlugin_H
 #include "Firmware.h"
-#include <App/Application.h>
+#include <App/AppGcs.h>
 #include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
@@ -36,7 +36,7 @@ public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override
     {
-        return new Firmware(nullptr, Application::instance()->protocol->vehicles->firmware);
+        return new Firmware(nullptr, AppGcs::instance()->protocol->vehicles->firmware);
     }
 };
 //=============================================================================

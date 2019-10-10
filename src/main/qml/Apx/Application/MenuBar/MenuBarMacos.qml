@@ -5,8 +5,50 @@ import Qt.labs.platform 1.1
 
 import Apx.Application 1.0
 
+import APX.Facts 1.0
+
 MenuBar {
-    Menu {
+    id: menuBar
+    /*Instantiator {
+        id: rootMenus
+        active: false
+        asynchronous: false
+        model: apx.sysmenu.model
+        delegate: Menu {
+            title: "Title "+modelData.title
+            MenuItem { text: "item" }
+            Component.onCompleted: title="asgfsgsfdg"
+        }
+        onObjectAdded: {
+            var m=object
+            m.title="fasgfsg"
+            menuBar.addMenu(object)
+        }
+        onObjectRemoved: removeMenu(object)
+    }*/
+    Component.onCompleted: {
+        var c=c_menu.createObject(menuBar) //,{"title":"sfdgfhd"})
+        menuBar.addMenu(test)
+    }
+
+    Component {
+        id: c_menu
+        Menu {
+            id: m
+            title: "hello"
+            MenuItem {
+                text: "item"
+            }
+        }
+    }
+    property var test: Menu {
+        //id: test
+        title: "hello"
+        MenuItem {
+            text: "item"
+        }
+    }
+    /*Menu {
         title: qsTr("File")
         MenuItem {
             property var fact: apx.vehicles.replay.telemetry.share.imp
@@ -108,5 +150,5 @@ MenuBar {
             text: qsTr("Report a problem")
             onTriggered: Qt.openUrlExternally("https://github.com/uavos/apx-releases/issues")
         }
-    }
+    }*/
 }

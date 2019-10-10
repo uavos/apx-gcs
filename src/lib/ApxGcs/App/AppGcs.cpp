@@ -20,19 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Application.h"
+#include "AppGcs.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <QFileDialog>
 //=============================================================================
-Application *Application::_instance = nullptr;
-Application::Application(int &argc, char **argv, const QString &name, const QUrl &url)
+AppGcs *AppGcs::_instance = nullptr;
+AppGcs::AppGcs(int &argc, char **argv, const QString &name, const QUrl &url)
     : App(argc, argv, name, url)
 {
     _instance = this;
 }
 //=============================================================================
-void Application::loadServices()
+void AppGcs::loadServices()
 {
     App::loadServices();
 
@@ -57,7 +57,7 @@ void Application::loadServices()
     jsync(f_app);
 }
 //=============================================================================
-void Application::openFile(Application::FileType type)
+void AppGcs::openFile(AppGcs::FileType type)
 {
     QString title;
     QString ftype;

@@ -24,6 +24,7 @@
 #define AppMenu_H
 //=============================================================================
 #include <Fact/Fact.h>
+#include <QMenuBar>
 //=============================================================================
 class AppMenu : public Fact
 {
@@ -31,6 +32,15 @@ class AppMenu : public Fact
 
 public:
     explicit AppMenu(Fact *parent);
+
+    Fact *app;
+    Fact *file;
+    Fact *vehicle;
+    Fact *tools;
+    Fact *windows;
+    Fact *help;
+
+    QMenuBar *createMenuBar();
 };
 //=============================================================================
 #endif

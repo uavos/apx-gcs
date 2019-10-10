@@ -24,6 +24,7 @@
 #define Vehicles_H
 //=============================================================================
 #include "Vehicle.h"
+#include "VehicleSelect.h"
 #include <Fact/Fact.h>
 #include <Protocols/ApxProtocol.h>
 class NodeItem;
@@ -43,6 +44,8 @@ public:
 
     Vehicle *f_local;
     Vehicle *f_replay;
+
+    VehicleSelect *f_select;
 
     ProtocolVehicles *protocol;
 
