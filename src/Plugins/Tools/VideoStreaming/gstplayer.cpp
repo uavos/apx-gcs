@@ -32,6 +32,42 @@ GstPlayer::GstPlayer(Fact *parent)
     f_tune = new Fact(this, "tune", tr("Tune"), tr("Video stream settings"), Group);
     f_tune->setIcon("tune");
 
+    f_sourceType = new AppSettingFact(settings,
+                                      f_tune,
+                                      "source_type",
+                                      tr("Source"),
+                                      tr("Source type"),
+                                      Enum,
+                                      0);
+    f_sourceType->setEnumStrings({"URI", "RTSP", "TCP", "UDP", "Webcam"});
+
+    f_rtspInput
+        = new AppSettingFact(settings, f_tune, "rtsp_input", tr("URL"), tr("rtsp://<..>"), Text);
+    f_rtspTcpForce = new AppSettingFact(settings,
+                                        f_tune,
+                                        "rtspforcetcp_input",
+                                        tr("Force tcp"),
+                                        "",
+                                        Bool,
+                                        false);
+    f_tcpInput = new AppSettingFact(settings, f_tune, "tcp_input", tr("IP"), tr("IP address"), Text);
+    f_tcpPortInput
+        = new AppSettingFact(settings, f_tune, "tcpport_input", tr("Port"), tr("Port number"), Int);
+    f_udpInput
+        = new AppSettingFact(settings, f_tune, "udp_input", tr("Port"), tr("Port number"), Int);
+    f_udpCodecInput
+        = new AppSettingFact(settings, f_tune, "udpcodec_input", tr("Codec"), "", Enum, 0);
+    f_udpCodecInput->setEnumStrings({"H264", "H265"});
+    f_webcamInput = new AppSettingFact(settings, f_tune, "webcam_input", tr("Webcam"), "", Enum);
+    f_webcamInput->setEnumStrings(getAvailableWebcams());
+
+    f_uriInput = new AppSettingFact(settings,
+                                    f_tune,
+                                    "uri_input",
+                                    tr("URI"),
+                                    tr("rtsp://<..>, file://<..>, etc."),
+                                    Text);
+
     f_active = new Fact(f_tune, "running", tr("Active"), tr("Receive video stream"), Bool);
     f_active->setIcon("video-input-antenna");
 
@@ -55,41 +91,6 @@ GstPlayer::GstPlayer(Fact *parent)
                                       true);
     f_lowLatency->setIcon("speedometer");
 
-    f_sourceType = new AppSettingFact(settings,
-                                      f_tune,
-                                      "source_type",
-                                      tr("Source"),
-                                      tr("Source type"),
-                                      Enum,
-                                      0);
-    f_sourceType->setEnumStrings({"URI", "RTSP", "TCP", "UDP", "Webcam"});
-
-    f_uriInput = new AppSettingFact(settings,
-                                    f_tune,
-                                    "uri_input",
-                                    tr("URI"),
-                                    tr("rtsp://<..>, file://<..>, etc."),
-                                    Text);
-    f_rtspInput
-        = new AppSettingFact(settings, f_tune, "rtsp_input", tr("URL"), tr("rtsp://<..>"), Text);
-    f_rtspTcpForce = new AppSettingFact(settings,
-                                        f_tune,
-                                        "rtspforcetcp_input",
-                                        tr("Force tcp"),
-                                        "",
-                                        Bool,
-                                        false);
-    f_tcpInput = new AppSettingFact(settings, f_tune, "tcp_input", tr("IP"), tr("IP address"), Text);
-    f_tcpPortInput
-        = new AppSettingFact(settings, f_tune, "tcpport_input", tr("Port"), tr("Port number"), Int);
-    f_udpInput
-        = new AppSettingFact(settings, f_tune, "udp_input", tr("Port"), tr("Port number"), Int);
-    f_udpCodecInput
-        = new AppSettingFact(settings, f_tune, "udpcodec_input", tr("Codec"), "", Enum, 0);
-    f_udpCodecInput->setEnumStrings({"H264", "H265"});
-    f_webcamInput = new AppSettingFact(settings, f_tune, "webcam_input", tr("Webcam"), "", Enum);
-    f_webcamInput->setEnumStrings(getAvailableWebcams());
-
     f_overlay = new Overlay(f_tune);
     f_overlay->setIcon("image-plus");
 
@@ -105,7 +106,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
     m_videoThread.setOverlayCallback(std::bind(&Overlay::drawOverlay, f_overlay, _1));
 
-    loadQml("qrc:/" PLUGIN_NAME "/VideoPlugin.qml");
+    loadQml(QString("qrc:/%1/VideoPlugin.qml").arg(PLUGIN_NAME));
 
     AppSettingFact::loadSettings(this);
     connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);

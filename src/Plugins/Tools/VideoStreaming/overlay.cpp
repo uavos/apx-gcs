@@ -12,8 +12,7 @@ qreal AbstractOverlayItem::getScale() const
 
 void AbstractOverlayItem::setScale(qreal scale)
 {
-    if(m_scale != scale)
-    {
+    if (m_scale != scale) {
         m_scale = scale;
         emit scaleChanged();
         update();
@@ -38,8 +37,7 @@ void OverlayAim::render(const QRectF &box, QPainter *painter)
     const qreal sideSize = std::round(std::min(box.width(), box.height()) / 7.0 * m_scale);
     const qreal lineWidth = 2;
 
-    if(m_type == Crosshair)
-    {
+    if (m_type == Crosshair) {
         QRectF r1;
         r1.setSize(QSizeF(sideSize, lineWidth));
         r1.moveCenter(center);
@@ -52,9 +50,7 @@ void OverlayAim::render(const QRectF &box, QPainter *painter)
 
         painter->drawRect(r1);
         painter->drawRect(r2);
-    }
-    else if(m_type == Rectangle)
-    {
+    } else if (m_type == Rectangle) {
         QRectF box;
         box.setSize(QSizeF(sideSize, sideSize));
         box.moveCenter(center);
@@ -72,14 +68,20 @@ void OverlayAim::render(const QRectF &box, QPainter *painter)
             QRectF(box.bottomLeft().x(), box.bottomLeft().y() - lineWidth, lineSize, lineWidth),
             QRectF(box.bottomLeft().x(), box.bottomLeft().y() - lineSize, lineWidth, lineSize),
             //br
-            QRectF(box.bottomRight().x() - lineSize, box.bottomRight().y() - lineWidth, lineSize, lineWidth),
-            QRectF(box.bottomRight().x() - lineWidth, box.bottomRight().y() - lineSize, lineWidth, lineSize),
+            QRectF(box.bottomRight().x() - lineSize,
+                   box.bottomRight().y() - lineWidth,
+                   lineSize,
+                   lineWidth),
+            QRectF(box.bottomRight().x() - lineWidth,
+                   box.bottomRight().y() - lineSize,
+                   lineWidth,
+                   lineSize),
         };
 
         painter->setPen(Qt::black);
         painter->setBrush(QBrush(Qt::white, Qt::SolidPattern));
 
-        for(const auto &r: rects)
+        for (const auto &r : rects)
             painter->drawRect(r);
     }
     painter->restore();
@@ -92,8 +94,7 @@ int OverlayAim::getType() const
 
 void OverlayAim::setType(int type)
 {
-    if(m_type != type)
-    {
+    if (m_type != type) {
         m_type = type;
         emit typeChanged();
         update();
@@ -117,16 +118,14 @@ void OverlayVars::render(const QRectF &box, QPainter *painter)
     QFontMetricsF metrics(font);
 
     int y = 0;
-    for(const auto &varname: m_topLeftVars)
-    {
+    for (const auto &varname : m_topLeftVars) {
         y += fontSize;
         QString value = Vehicles::instance()->current()->f_mandala->factByName(varname)->text();
         painter->drawText(0, y, pattern.arg(varname, value));
     }
 
     y = 0;
-    for(const auto &varname: m_topCenterVars)
-    {
+    for (const auto &varname : m_topCenterVars) {
         y += fontSize;
         QString value = Vehicles::instance()->current()->f_mandala->factByName(varname)->text();
         QString text = pattern.arg(varname, value);
@@ -135,8 +134,7 @@ void OverlayVars::render(const QRectF &box, QPainter *painter)
     }
 
     y = 0;
-    for(const auto &varname: m_topRightVars)
-    {
+    for (const auto &varname : m_topRightVars) {
         y += fontSize;
         QString value = Vehicles::instance()->current()->f_mandala->factByName(varname)->text();
         QString text = pattern.arg(varname, value);
@@ -182,15 +180,14 @@ void OverlayVars::setTopRightVars(const QString &topRightVars)
     update();
 }
 
-OverlayGimbal::OverlayGimbal():
-    m_gimbalTop(QString(":/%1/sprites/gimbal_top.svg").arg(PLUGIN_NAME)),
-    m_gimbalTopArrow(QString(":/%1/sprites/gimbal_top_a.svg").arg(PLUGIN_NAME)),
-    m_gimbalProfile(QString(":/%1/sprites/gimbal_profile.svg").arg(PLUGIN_NAME)),
-    m_gimbalProfileArrow(QString(":/%1/sprites/gimbal_profile_a.svg").arg(PLUGIN_NAME)),
-    m_yawVar("cam_yaw"),
-    m_pitchVar("cam_pitch")
-{
-}
+OverlayGimbal::OverlayGimbal()
+    : m_gimbalTop(QString(":/%1/sprites/gimbal_top.svg").arg(PLUGIN_NAME))
+    , m_gimbalTopArrow(QString(":/%1/sprites/gimbal_top_a.svg").arg(PLUGIN_NAME))
+    , m_gimbalProfile(QString(":/%1/sprites/gimbal_profile.svg").arg(PLUGIN_NAME))
+    , m_gimbalProfileArrow(QString(":/%1/sprites/gimbal_profile_a.svg").arg(PLUGIN_NAME))
+    , m_yawVar("cam_yaw")
+    , m_pitchVar("cam_pitch")
+{}
 
 void OverlayGimbal::registerQmlType()
 {
@@ -204,7 +201,8 @@ void OverlayGimbal::render(const QRectF &box, QPainter *painter)
     const int padding = int(std::round(box.height() / 100.0));
     const int gimbalSpriteSize = int(std::round(box.height() / 10.0 * m_scale));
     qreal yaw = Vehicles::instance()->current()->f_mandala->factByName(m_yawVar)->value().toReal();
-    qreal pitch = Vehicles::instance()->current()->f_mandala->factByName(m_pitchVar)->value().toReal();
+    qreal pitch
+        = Vehicles::instance()->current()->f_mandala->factByName(m_pitchVar)->value().toReal();
 
     QMatrix m1;
     m1.rotate(yaw);
@@ -212,21 +210,27 @@ void OverlayGimbal::render(const QRectF &box, QPainter *painter)
     m2.rotate(pitch);
 
     QImage gimbalTop = m_gimbalTop.scaled(gimbalSpriteSize, gimbalSpriteSize);
-    QImage gimbalTopArrow = m_gimbalTopArrow.scaled(gimbalSpriteSize, gimbalSpriteSize).transformed(m1);
+    QImage gimbalTopArrow = m_gimbalTopArrow.scaled(gimbalSpriteSize, gimbalSpriteSize)
+                                .transformed(m1);
     QImage gimbalProfile = m_gimbalProfile.scaledToWidth(gimbalSpriteSize);
     QImage gimbalProfileArrow = m_gimbalProfileArrow.scaledToWidth(gimbalSpriteSize).transformed(m2);
     gimbalTopArrow = gimbalTopArrow.copy((gimbalTopArrow.width() - gimbalSpriteSize) / 2,
                                          (gimbalTopArrow.height() - gimbalSpriteSize) / 2,
-                                         gimbalSpriteSize, gimbalSpriteSize);
+                                         gimbalSpriteSize,
+                                         gimbalSpriteSize);
     gimbalProfileArrow = gimbalProfileArrow.copy((gimbalProfileArrow.width() - gimbalSpriteSize) / 2,
-                                                 (gimbalProfileArrow.height() - gimbalSpriteSize) / 2,
-                                                 gimbalSpriteSize, gimbalSpriteSize);
+                                                 (gimbalProfileArrow.height() - gimbalSpriteSize)
+                                                     / 2,
+                                                 gimbalSpriteSize,
+                                                 gimbalSpriteSize);
 
     QPoint center = box.center().toPoint();
     painter->drawImage(0, center.y() - gimbalTop.height() - padding, gimbalTop);
     painter->drawImage(0, center.y() - gimbalTopArrow.height() - padding, gimbalTopArrow);
     painter->drawImage(0, center.y() + padding, gimbalProfile);
-    painter->drawImage(0, center.y() + padding + gimbalProfile.height() - gimbalTopArrow.height(), gimbalProfileArrow);
+    painter->drawImage(0,
+                       center.y() + padding + gimbalProfile.height() - gimbalTopArrow.height(),
+                       gimbalProfileArrow);
     painter->restore();
 }
 
@@ -235,10 +239,9 @@ QString OverlayGimbal::getYawVar() const
     return m_yawVar;
 }
 
-void OverlayGimbal::setYawVar(QString yawVar)
+void OverlayGimbal::setYawVar(const QString &yawVar)
 {
-    if (m_yawVar != yawVar)
-    {
+    if (m_yawVar != yawVar) {
         m_yawVar = yawVar;
         emit yawVarChanged();
     }
@@ -249,10 +252,9 @@ QString OverlayGimbal::getPitchVar() const
     return m_pitchVar;
 }
 
-void OverlayGimbal::setPitchVar(QString pitchVar)
+void OverlayGimbal::setPitchVar(const QString &pitchVar)
 {
-    if (m_pitchVar == pitchVar)
-    {
+    if (m_pitchVar == pitchVar) {
         m_pitchVar = pitchVar;
         emit pitchVarChanged();
     }
@@ -269,7 +271,7 @@ Overlay::Overlay(Fact *parent)
 
     f_aim = new AppSettingFact(settings, this, "aim", tr("Aim"), "", Enum, 0);
     f_aim->setIcon("crosshairs");
-    f_aim->setEnumStrings({"None", "Crosshair", "Rectangle"});
+    f_aim->setEnumStrings({"none", "crosshair", "rectangle"});
 
     f_topLeftVars = new AppSettingFact(settings,
                                        this,

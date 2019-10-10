@@ -18,7 +18,6 @@ Project {
             ]
         }
 
-
         files: [
             "StreamingPlugin.h",
             "gstplayer.cpp",

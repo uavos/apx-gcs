@@ -1,12 +1,12 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
+#include "Fact/Fact.h"
 #include <QImage>
 #include <QQuickPaintedItem>
 #include <QTimer>
-#include "Fact/Fact.h"
 
-class AbstractOverlayItem: public QQuickPaintedItem
+class AbstractOverlayItem : public QQuickPaintedItem
 {
     Q_OBJECT
     Q_PROPERTY(qreal scale READ getScale WRITE setScale NOTIFY scaleChanged)
@@ -26,16 +26,12 @@ signals:
     void scaleChanged();
 };
 
-class OverlayAim: public AbstractOverlayItem
+class OverlayAim : public AbstractOverlayItem
 {
     Q_OBJECT
     Q_PROPERTY(int type READ getType WRITE setType NOTIFY typeChanged)
 public:
-    enum AimType {
-        None,
-        Crosshair,
-        Rectangle
-    };
+    enum AimType { None, Crosshair, Rectangle };
     Q_ENUM(AimType)
     OverlayAim() = default;
     static void registerQmlType();
@@ -51,12 +47,14 @@ signals:
     void typeChanged();
 };
 
-class OverlayVars: public AbstractOverlayItem
+class OverlayVars : public AbstractOverlayItem
 {
     Q_OBJECT
     Q_PROPERTY(QString topLeftVars READ getTopLeftVars WRITE setTopLeftVars NOTIFY topLeftVarsChanged)
-    Q_PROPERTY(QString topCenterVars READ getTopCenterVars WRITE setTopCenterVars NOTIFY topCenterVarsChanged)
-    Q_PROPERTY(QString topRightVars READ getTopRightVars WRITE setTopRightVars NOTIFY topRightVarsChanged)
+    Q_PROPERTY(QString topCenterVars READ getTopCenterVars WRITE setTopCenterVars NOTIFY
+                   topCenterVarsChanged)
+    Q_PROPERTY(
+        QString topRightVars READ getTopRightVars WRITE setTopRightVars NOTIFY topRightVarsChanged)
 public:
     OverlayVars() = default;
     static void registerQmlType();
@@ -82,7 +80,7 @@ signals:
     void topRightVarsChanged();
 };
 
-class OverlayGimbal: public AbstractOverlayItem
+class OverlayGimbal : public AbstractOverlayItem
 {
     Q_OBJECT
     Q_PROPERTY(QString yawVar READ getYawVar WRITE setYawVar NOTIFY yawVarChanged)
@@ -93,12 +91,10 @@ public:
     void render(const QRectF &box, QPainter *painter) override;
 
     QString getYawVar() const;
-
-    void setYawVar(QString yawVar);
+    void setYawVar(const QString &yawVar);
 
     QString getPitchVar() const;
-
-    void setPitchVar(QString pitchVar);
+    void setPitchVar(const QString &pitchVar);
 
 signals:
     void yawVarChanged();
