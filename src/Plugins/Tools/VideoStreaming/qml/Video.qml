@@ -9,6 +9,7 @@ import GstPlayer 1.0
 import Apx.Common 1.0
 import OverlayAim 1.0
 import OverlayVars 1.0
+import OverlayGimbal 1.0
 
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
@@ -59,9 +60,19 @@ Rectangle {
         }
         OverlayVars {
             visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-            topLeftVars: overlay.topLeftVars.value
-            topCenterVars: overlay.topCenterVars.value
-            topRightVars: overlay.topRightVars.value
+            topLeftVars: overlay.top_left_vars.value
+            topCenterVars: overlay.top_center_vars.value
+            topRightVars: overlay.top_right_vars.value
+            scale: overlay.scale.value
+            x: videoOutput.contentRect.x
+            y: videoOutput.contentRect.y
+            width: videoOutput.contentRect.width
+            height: videoOutput.contentRect.height
+        }
+        OverlayGimbal {
+            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+            yawVar: overlay.gimbal_yaw_var.value
+            pitchVar: overlay.gimbal_pitch_var.value
             scale: overlay.scale.value
             x: videoOutput.contentRect.x
             y: videoOutput.contentRect.y

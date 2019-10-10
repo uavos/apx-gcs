@@ -37,6 +37,7 @@ void OverlayAim::render(const QRectF &box, QPainter *painter)
     const QPointF center = box.center();
     const qreal sideSize = std::round(std::min(box.width(), box.height()) / 7.0 * m_scale);
     const qreal lineWidth = 2;
+
     if(m_type == Crosshair)
     {
         QRectF r1;
@@ -181,22 +182,98 @@ void OverlayVars::setTopRightVars(const QString &topRightVars)
     update();
 }
 
+OverlayGimbal::OverlayGimbal():
+    m_gimbalTop(QString(":/%1/sprites/gimbal_top.svg").arg(PLUGIN_NAME)),
+    m_gimbalTopArrow(QString(":/%1/sprites/gimbal_top_a.svg").arg(PLUGIN_NAME)),
+    m_gimbalProfile(QString(":/%1/sprites/gimbal_profile.svg").arg(PLUGIN_NAME)),
+    m_gimbalProfileArrow(QString(":/%1/sprites/gimbal_profile_a.svg").arg(PLUGIN_NAME)),
+    m_yawVar("cam_yaw"),
+    m_pitchVar("cam_pitch")
+{
+}
+
+void OverlayGimbal::registerQmlType()
+{
+    qmlRegisterType<OverlayGimbal>("OverlayGimbal", 1, 0, "OverlayGimbal");
+}
+
+void OverlayGimbal::render(const QRectF &box, QPainter *painter)
+{
+    painter->save();
+
+    const int padding = int(std::round(box.height() / 100.0));
+    const int gimbalSpriteSize = int(std::round(box.height() / 10.0 * m_scale));
+    qreal yaw = Vehicles::instance()->current()->f_mandala->factByName(m_yawVar)->value().toReal();
+    qreal pitch = Vehicles::instance()->current()->f_mandala->factByName(m_pitchVar)->value().toReal();
+
+    QMatrix m1;
+    m1.rotate(yaw);
+    QMatrix m2;
+    m2.rotate(pitch);
+
+    QImage gimbalTop = m_gimbalTop.scaled(gimbalSpriteSize, gimbalSpriteSize);
+    QImage gimbalTopArrow = m_gimbalTopArrow.scaled(gimbalSpriteSize, gimbalSpriteSize).transformed(m1);
+    QImage gimbalProfile = m_gimbalProfile.scaledToWidth(gimbalSpriteSize);
+    QImage gimbalProfileArrow = m_gimbalProfileArrow.scaledToWidth(gimbalSpriteSize).transformed(m2);
+    gimbalTopArrow = gimbalTopArrow.copy((gimbalTopArrow.width() - gimbalSpriteSize) / 2,
+                                         (gimbalTopArrow.height() - gimbalSpriteSize) / 2,
+                                         gimbalSpriteSize, gimbalSpriteSize);
+    gimbalProfileArrow = gimbalProfileArrow.copy((gimbalProfileArrow.width() - gimbalSpriteSize) / 2,
+                                                 (gimbalProfileArrow.height() - gimbalSpriteSize) / 2,
+                                                 gimbalSpriteSize, gimbalSpriteSize);
+
+    QPoint center = box.center().toPoint();
+    painter->drawImage(0, center.y() - gimbalTop.height() - padding, gimbalTop);
+    painter->drawImage(0, center.y() - gimbalTopArrow.height() - padding, gimbalTopArrow);
+    painter->drawImage(0, center.y() + padding, gimbalProfile);
+    painter->drawImage(0, center.y() + padding + gimbalProfile.height() - gimbalTopArrow.height(), gimbalProfileArrow);
+    painter->restore();
+}
+
+QString OverlayGimbal::getYawVar() const
+{
+    return m_yawVar;
+}
+
+void OverlayGimbal::setYawVar(QString yawVar)
+{
+    if (m_yawVar != yawVar)
+    {
+        m_yawVar = yawVar;
+        emit yawVarChanged();
+    }
+}
+
+QString OverlayGimbal::getPitchVar() const
+{
+    return m_pitchVar;
+}
+
+void OverlayGimbal::setPitchVar(QString pitchVar)
+{
+    if (m_pitchVar == pitchVar)
+    {
+        m_pitchVar = pitchVar;
+        emit pitchVarChanged();
+    }
+}
+
 Overlay::Overlay(Fact *parent)
     : Fact(parent, "overlay", tr("Overlay"), tr("Show additional info on video"), Group)
 {
     OverlayAim::registerQmlType();
     OverlayVars::registerQmlType();
+    OverlayGimbal::registerQmlType();
 
     QSettings *settings = AppSettings::settings();
 
-    f_aim = new AppSettingFact(settings, this, "aim", tr("Aim"), "", Enum, false);
+    f_aim = new AppSettingFact(settings, this, "aim", tr("Aim"), "", Enum, 0);
     f_aim->setIcon("crosshairs");
     f_aim->setEnumStrings({"None", "Crosshair", "Rectangle"});
 
-
     f_topLeftVars = new AppSettingFact(settings,
                                        this,
-                                       "topLeftVars",
+                                       "top_left_vars",
                                        tr("Top-Left variables"),
                                        tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
                                        Text,
@@ -204,7 +281,7 @@ Overlay::Overlay(Fact *parent)
     f_topLeftVars->setIcon("format-list-bulleted");
     f_topCenterVars = new AppSettingFact(settings,
                                          this,
-                                         "topCenterVars",
+                                         "top_center_vars",
                                          tr("Top-Center variables"),
                                          tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
                                          Text,
@@ -212,28 +289,48 @@ Overlay::Overlay(Fact *parent)
     f_topCenterVars->setIcon("format-list-bulleted");
     f_topRightVars = new AppSettingFact(settings,
                                         this,
-                                        "topRightVars",
+                                        "top_right_vars",
                                         tr("Top-Right variables"),
                                         tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
                                         Text,
                                         "cam_zoom");
     f_topRightVars->setIcon("format-list-bulleted");
 
+    f_gimbalYawVar = new AppSettingFact(settings,
+                                        this,
+                                        "gimbal_yaw_var",
+                                        tr("Gimbal yaw"),
+                                        tr("Gimbal yaw position variable"),
+                                        Text,
+                                        "cam_yaw");
+    f_gimbalPitchVar = new AppSettingFact(settings,
+                                          this,
+                                          "gimbal_pitch_var",
+                                          tr("Gimbal pitch"),
+                                          tr("Gimbal pitch position variable"),
+                                          Text,
+                                          "cam_pitch");
+
     f_scale = new AppSettingFact(settings, this, "scale", tr("Scale"), "", Float, 1);
     f_scale->setIcon("format-size");
-
-    AppSettingFact::loadSettings(this);
-
-    f_scale->setMin(0.1);
-    f_scale->setMax(5.0);
 
     connect(f_aim, &Fact::valueChanged, this, &Overlay::onAimChanged);
     connect(f_topLeftVars, &Fact::valueChanged, this, &Overlay::onVariablesValueChanged);
     connect(f_topCenterVars, &Fact::valueChanged, this, &Overlay::onVariablesValueChanged);
     connect(f_topRightVars, &Fact::valueChanged, this, &Overlay::onVariablesValueChanged);
     connect(f_scale, &Fact::valueChanged, this, &Overlay::onScaleChanged);
+    connect(f_gimbalYawVar, &Fact::valueChanged, this, &Overlay::onGimbalVarsChanged);
+    connect(f_gimbalPitchVar, &Fact::valueChanged, this, &Overlay::onGimbalVarsChanged);
 
+    AppSettingFact::loadSettings(this);
+
+    f_scale->setMin(0.1);
+    f_scale->setMax(5.0);
+
+    onAimChanged();
+    onScaleChanged();
     onVariablesValueChanged();
+    onGimbalVarsChanged();
 }
 
 void Overlay::drawOverlay(QImage &image)
@@ -242,6 +339,7 @@ void Overlay::drawOverlay(QImage &image)
 
     m_aim.render(image.rect(), &painter);
     m_vars.render(image.rect(), &painter);
+    m_gimbal.render(image.rect(), &painter);
 }
 
 void Overlay::onVariablesValueChanged()
@@ -258,5 +356,14 @@ void Overlay::onAimChanged()
 
 void Overlay::onScaleChanged()
 {
-    m_aim.setScale(f_scale->value().toReal());
+    qreal scale = f_scale->value().toReal();
+    m_aim.setScale(scale);
+    m_vars.setScale(scale);
+    m_gimbal.setScale(scale);
+}
+
+void Overlay::onGimbalVarsChanged()
+{
+    m_gimbal.setYawVar(f_gimbalYawVar->value().toString());
+    m_gimbal.setPitchVar(f_gimbalPitchVar->value().toString());
 }

@@ -3,6 +3,7 @@
 
 #include <QImage>
 #include <QQuickPaintedItem>
+#include <QTimer>
 #include "Fact/Fact.h"
 
 class AbstractOverlayItem: public QQuickPaintedItem
@@ -81,6 +82,38 @@ signals:
     void topRightVarsChanged();
 };
 
+class OverlayGimbal: public AbstractOverlayItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QString yawVar READ getYawVar WRITE setYawVar NOTIFY yawVarChanged)
+    Q_PROPERTY(QString pitchVar READ getPitchVar WRITE setPitchVar NOTIFY pitchVarChanged)
+public:
+    OverlayGimbal();
+    static void registerQmlType();
+    void render(const QRectF &box, QPainter *painter) override;
+
+    QString getYawVar() const;
+
+    void setYawVar(QString yawVar);
+
+    QString getPitchVar() const;
+
+    void setPitchVar(QString pitchVar);
+
+signals:
+    void yawVarChanged();
+
+    void pitchVarChanged();
+
+private:
+    QImage m_gimbalTop;
+    QImage m_gimbalTopArrow;
+    QImage m_gimbalProfile;
+    QImage m_gimbalProfileArrow;
+    QString m_yawVar;
+    QString m_pitchVar;
+};
+
 class Overlay : public Fact
 {
     Q_OBJECT
@@ -93,6 +126,8 @@ public:
     Fact *f_topCenterVars;
     Fact *f_topRightVars;
     Fact *f_scale;
+    Fact *f_gimbalYawVar;
+    Fact *f_gimbalPitchVar;
 
     QStringList getVarNames() const;
 
@@ -101,11 +136,13 @@ public:
 private:
     OverlayAim m_aim;
     OverlayVars m_vars;
+    OverlayGimbal m_gimbal;
 
 private slots:
     void onVariablesValueChanged();
     void onAimChanged();
     void onScaleChanged();
+    void onGimbalVarsChanged();
 };
 
 #endif // OVERLAY_H
