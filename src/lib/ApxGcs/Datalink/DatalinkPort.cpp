@@ -26,8 +26,8 @@
 #include "DatalinkRemote.h"
 #include "DatalinkSerial.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 //=============================================================================
 DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const DatalinkPort *port)
     : Fact(port ? parent->f_list : parent,

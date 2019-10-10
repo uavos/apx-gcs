@@ -22,7 +22,7 @@
  */
 #include "DatabaseWorker.h"
 #include "DatabaseSession.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 //=============================================================================
 DatabaseWorker::DatabaseWorker(DatabaseSession *db, QObject *parent)
     : QThread(parent)

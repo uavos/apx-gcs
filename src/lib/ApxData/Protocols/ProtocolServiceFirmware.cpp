@@ -25,7 +25,7 @@
 #include "ProtocolServiceNode.h"
 #include "ProtocolServiceRequest.h"
 
-#include <ApxLog.h>
+#include <App/AppLog.h>
 
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusNodeFile.h>

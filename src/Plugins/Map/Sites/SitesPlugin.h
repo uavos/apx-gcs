@@ -23,14 +23,14 @@
 #ifndef SitesPlugin_H
 #define SitesPlugin_H
 #include "Sites.h"
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
-class SitesPlugin : public ApxPluginInterface
+class SitesPlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | Map; }
     QObject *createControl() override { return new Sites(); }

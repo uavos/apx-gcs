@@ -24,14 +24,14 @@
 #define COMPASSPLUGIN_H
 
 #include "CompassFrame.h"
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
-class CompassPlugin : public ApxPluginInterface
+class CompassPlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
     QObject *createControl() { return new CompassFrame(); }
     int flags() { return Widget; }

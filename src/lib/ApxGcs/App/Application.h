@@ -20,12 +20,55 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ApxCore_H
-#define ApxCore_H
+#ifndef Application_H
+#define Application_H
+#include <App/App.h>
+
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
+#include <App/AppMenu.h>
+#include <App/AppSettings.h>
+
+#include <Database/Database.h>
+#include <Datalink/Datalink.h>
+
+#include <Protocols/ApxProtocol.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
-#include "AppDirs.h"
-#include "ApxLog.h"
-#include "Fact.h"
-#include "FactValue.h"
+class Application : public App
+{
+    Q_OBJECT
+    Q_ENUMS(FileType)
+
+public:
+    explicit Application(int &argc, char **argv, const QString &name, const QUrl &url);
+    static Application *instance() { return _instance; }
+
+    enum FileType {
+        UnknownFile = 0,
+        TelemetryFile,
+        ConfigFile,
+        FirmwareFile,
+    };
+    Q_ENUM(FileType)
+
+    ApxProtocol *protocol;
+    Datalink *f_datalink;
+
+    AppMenu *f_menu;
+
+private:
+    static Application *_instance;
+
+protected:
+    void loadServices();
+
+public slots:
+    void openFile(Application::FileType type = FileType::UnknownFile);
+
+signals:
+    void fileOpenRequest(QString fileName);
+};
 //=============================================================================
 #endif

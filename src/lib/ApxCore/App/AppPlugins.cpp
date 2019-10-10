@@ -22,9 +22,9 @@
  */
 #include "AppPlugins.h"
 #include "AppSettings.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 //=============================================================================
 AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     : QObject(parent)
@@ -45,7 +45,7 @@ void AppPlugins::load(const QStringList &names)
                                       << "*.bundle"
                                       << "*.qml");
 
-    QDir userp = ApxDirs::userPlugins();
+    QDir userp = AppDirs::userPlugins();
     userp.setSorting(QDir::Name | QDir::IgnoreCase);
     userp.refresh();
     if (!userp.exists())
@@ -70,7 +70,7 @@ void AppPlugins::load(const QStringList &names)
     if (!stRepQml.isEmpty())
         apxConsole() << QObject::tr("User QML plugins").append(": ").append(stRepQml.join(','));
 
-    QDir pluginsDir = ApxDirs::plugins();
+    QDir pluginsDir = AppDirs::plugins();
     pluginsDir.setSorting(QDir::Name | QDir::IgnoreCase);
     pluginsDir.refresh();
     //apxDebug()<<pluginsDir;

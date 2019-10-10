@@ -1,6 +1,6 @@
 #include "kmlparser.h"
 
-#include "ApxLog.h"
+#include <App/AppLog.h>
 #include <QDomNodeList>
 
 using namespace std::placeholders;

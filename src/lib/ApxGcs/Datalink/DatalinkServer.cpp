@@ -25,9 +25,9 @@
 #include "DatalinkTcpSocket.h"
 #include "HttpService.h"
 
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <App/AppSettings.h>
-#include <ApxApp.h>
-#include <ApxLog.h>
 
 #include <common/ApxTcpPorts.h>
 //=============================================================================
@@ -39,7 +39,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
            Group | Bool | FlatModel,
            "lan-connect")
     , datalink(datalink)
-    , announceString(QString("%1@server.gcs.uavos.com").arg(ApxApp::username()).toUtf8())
+    , announceString(QString("%1@server.gcs.uavos.com").arg(App::username()).toUtf8())
 {
     AppSettingFact *s_listen = new AppSettingFact(AppSettings::settings(),
                                                   this,

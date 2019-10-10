@@ -20,21 +20,21 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ApxGcs.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include "Application.h"
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <QFileDialog>
 //=============================================================================
-ApxGcs *ApxGcs::_instance = nullptr;
-ApxGcs::ApxGcs(int &argc, char **argv, const QString &name, const QUrl &url)
-    : ApxApp(argc, argv, name, url)
+Application *Application::_instance = nullptr;
+Application::Application(int &argc, char **argv, const QString &name, const QUrl &url)
+    : App(argc, argv, name, url)
 {
     _instance = this;
 }
 //=============================================================================
-void ApxGcs::loadServices()
+void Application::loadServices()
 {
-    ApxApp::loadServices();
+    App::loadServices();
 
     protocol = new ApxProtocol(f_app);
 
@@ -52,10 +52,12 @@ void ApxGcs::loadServices()
 
     vehicles->move(f_app->size());
 
+    f_menu = new AppMenu(f_app);
+
     jsync(f_app);
 }
 //=============================================================================
-void ApxGcs::openFile(ApxGcs::FileType type)
+void Application::openFile(Application::FileType type)
 {
     QString title;
     QString ftype;
@@ -63,22 +65,22 @@ void ApxGcs::openFile(ApxGcs::FileType type)
     switch (type) {
     default:
         title = tr("Import");
-        defaultDir = ApxDirs::user();
+        defaultDir = AppDirs::user();
         break;
     case TelemetryFile:
         title = tr("Import telemetry data");
         ftype = "telemetry";
-        defaultDir = ApxDirs::user();
+        defaultDir = AppDirs::user();
         break;
     case ConfigFile:
         title = tr("Import configuration");
         ftype = "nodes";
-        defaultDir = ApxDirs::configs();
+        defaultDir = AppDirs::configs();
         break;
     case FirmwareFile:
         title = tr("Firmware");
         ftype = "apxfw";
-        defaultDir = ApxDirs::user();
+        defaultDir = AppDirs::user();
         break;
     }
     QString settingName = QString("SharePath_%1")

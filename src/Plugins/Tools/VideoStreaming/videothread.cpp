@@ -1,8 +1,8 @@
 #include "videothread.h"
 
-#include "ApxDirs.h"
-#include "ApxLog.h"
 #include "gstplayer.h"
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <gst/app/gstappsink.h>
 #include <QPainter>
 

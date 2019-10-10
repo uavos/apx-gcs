@@ -22,9 +22,9 @@
  */
 #include "TelemetryReader.h"
 #include "LookupTelemetry.h"
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <ApxApp.h>
-#include <ApxLog.h>
 
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
@@ -276,7 +276,7 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
             connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
         }
     }
-    //ApxApp::jsync(this);
+    //App::jsync(this);
 
     quint64 tMax = 0;
     if (!this->times.isEmpty())

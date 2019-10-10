@@ -23,7 +23,7 @@
 #include "ProtocolService.h"
 #include "ProtocolVehicle.h"
 
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <Xbus/XbusNode.h>
 //=============================================================================
 QStringList ProtocolService::upgradingNodes;

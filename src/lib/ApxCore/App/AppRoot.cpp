@@ -22,8 +22,8 @@
  */
 #include "AppRoot.h"
 #include "AppWindow.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <QtCore>
 //=============================================================================
 AppRoot *AppRoot::_instance = nullptr;
@@ -41,7 +41,7 @@ AppRoot::AppRoot(QObject *parent)
 //=============================================================================
 void AppRoot::sound(const QString &v)
 {
-    ApxApp::sound(v);
+    App::sound(v);
 }
 //=============================================================================
 void AppRoot::createTools()
@@ -63,14 +63,14 @@ void AppRoot::createTools()
     f_windows->setIcon("monitor");
     f_windows->setVisible(false);
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 
     f_pluginsSettings = new Fact(f_settings->f_application,
                                  "plugins",
                                  tr("Plugins"),
                                  tr("Application PligIns"),
                                  Group | Const);
-    ApxApp::jsync(f_settings);
+    App::jsync(f_settings);
 }
 //=============================================================================
 void AppRoot::addToolPlugin(AppPlugin *plugin)
@@ -83,14 +83,14 @@ void AppRoot::addToolPlugin(AppPlugin *plugin)
     f->setParentFact(f_tools);
     f->setSection(plugin->section);
     f_tools->setVisible(true);
-    ApxApp::jsync(f_tools);
+    App::jsync(f_tools);
 }
 //=============================================================================
 void AppRoot::addWindowPlugin(AppPlugin *plugin)
 {
     new AppWindow(f_windows, plugin);
     f_windows->setVisible(true);
-    ApxApp::jsync(f_windows);
+    App::jsync(f_windows);
 }
 //=============================================================================
 void AppRoot::addControlPlugin(AppPlugin *plugin)
@@ -100,7 +100,7 @@ void AppRoot::addControlPlugin(AppPlugin *plugin)
         return;
     f->setParentFact(f_controls);
     f_controls->setVisible(true);
-    ApxApp::jsync(f_controls);
+    App::jsync(f_controls);
 }
 //=============================================================================
 //=============================================================================

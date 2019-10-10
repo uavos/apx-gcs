@@ -21,8 +21,8 @@
  *
  */
 #include "PawnCompiler.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 PawnCompiler::PawnCompiler(Fact *fact)
@@ -67,9 +67,9 @@ bool PawnCompiler::compile()
         foreach (QString name, vehicle->f_mandala->constants.keys())
             args << name + "=" + vehicle->f_mandala->constants.value(name).toString();
     }
-    args << "-i" + ApxDirs::res().absoluteFilePath("scripts/pawn/include");
-    args << "-i" + ApxDirs::scripts().absoluteFilePath("pawn");
-    args << "-i" + ApxDirs::scripts().absoluteFilePath(".");
+    args << "-i" + AppDirs::res().absoluteFilePath("scripts/pawn/include");
+    args << "-i" + AppDirs::scripts().absoluteFilePath("pawn");
+    args << "-i" + AppDirs::scripts().absoluteFilePath(".");
     args << "-o" + outFileName;
     args << tmpFile.fileName();
     pawncc.setArguments(args);

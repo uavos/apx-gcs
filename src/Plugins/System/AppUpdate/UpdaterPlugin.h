@@ -24,14 +24,14 @@
 #define UpdaterPlugin_H
 #include "Updater.h"
 #include <App/AppSettings.h>
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
-class UpdaterPlugin : public ApxPluginInterface
+class UpdaterPlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | System; }
     QObject *createControl() override

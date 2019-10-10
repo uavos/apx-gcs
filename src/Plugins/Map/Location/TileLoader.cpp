@@ -23,8 +23,8 @@
 #include "TileLoader.h"
 #include "GeoPlugin.h"
 #include "MapsDB.h"
+#include <App/AppLog.h>
 #include <App/AppSettings.h>
-#include <ApxLog.h>
 #include <Database/Database.h>
 #include <Fact/Fact.h>
 #include <QImage>

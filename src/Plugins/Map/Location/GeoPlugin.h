@@ -1,17 +1,17 @@
 #ifndef GeoPlugin_H
 #define GeoPlugin_H
 #include "TileLoader.h"
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <QtCore/QObject>
 #include <QtCore>
 #include <QtLocation/QGeoServiceProviderFactory>
 #include <QtPlugin>
 //=============================================================================
-class GeoPlugin : public ApxPluginInterface, public QGeoServiceProviderFactory
+class GeoPlugin : public PluginInterface, public QGeoServiceProviderFactory
 {
     Q_OBJECT
     Q_INTERFACES(QGeoServiceProviderFactory)
-    Q_INTERFACES(ApxPluginInterface)
+    Q_INTERFACES(PluginInterface)
     Q_PLUGIN_METADATA(IID "org.qt-project.qt.geoservice.serviceproviderfactory/5.0" FILE
                           "GeoPlugin.json")
 

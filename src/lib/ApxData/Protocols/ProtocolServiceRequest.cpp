@@ -24,7 +24,7 @@
 #include "ProtocolService.h"
 #include "ProtocolServiceNode.h"
 
-#include <ApxLog.h>
+#include <App/AppLog.h>
 //=============================================================================
 ProtocolServiceRequest::ProtocolServiceRequest(ProtocolService *service,
                                                const QString &sn,

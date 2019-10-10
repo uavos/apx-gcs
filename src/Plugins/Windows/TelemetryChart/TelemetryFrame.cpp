@@ -21,8 +21,8 @@
  *
  */
 #include "TelemetryFrame.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <ApxMisc/QActionFact.h>
 #include <ApxMisc/SvgMaterialIcon.h>
 #include <Telemetry/LookupTelemetry.h>
@@ -165,7 +165,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     connect(playerSlider, &QSlider::sliderMoved, this, &TelemetryFrame::playerSliderMoved);
     connect(plot, &TelemetryPlot::timeCursorChanged, this, &TelemetryFrame::plotTimeCursorMoved);
     lbPlayerTime = new QLabel(this);
-    lbPlayerTime->setFont(ApxApp::getMonospaceFont());
+    lbPlayerTime->setFont(App::getMonospaceFont());
     toolBarPlayer->addWidget(lbPlayerTime);
     plotCursorUpdateTimer.setSingleShot(true);
     connect(&plotCursorUpdateTimer, &QTimer::timeout, this, &TelemetryFrame::updatePlotPlayerTime);
@@ -508,7 +508,7 @@ void TelemetryFrame::export_fdr(QString fileName)
   out << "\n\n";
   //export data...
   //read config
-  QSettings st(ApxDirs::res().filePath("preferences/xplane-fdr.conf"),QSettings::IniFormat);
+  QSettings st(AppDirs::res().filePath("preferences/xplane-fdr.conf"),QSettings::IniFormat);
   uint colCount=st.value("columns").toUInt();
   st.beginGroup("columns");
   QMap<int,QString> map;

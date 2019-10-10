@@ -27,7 +27,7 @@
 #include <QGeoPath>
 #include <QGeoRectangle>
 
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
 
@@ -200,7 +200,7 @@ public slots:
     void resetGeoPath();
 
     void message(QString msg,
-                 ApxApp::NotifyFlags flags = ApxApp::FromApp | ApxApp::Info,
+                 App::NotifyFlags flags = App::FromApp | App::Info,
                  QString subsystem = QString());
 
     //Database

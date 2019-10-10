@@ -20,53 +20,34 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ApxGcs_H
-#define ApxGcs_H
-#include <ApxApp.h>
-
-#include <App/AppSettings.h>
-#include <ApxApp.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
-
-#include <Database/Database.h>
-#include <Datalink/Datalink.h>
-
-#include <Protocols/ApxProtocol.h>
-#include <Vehicles/Vehicles.h>
+#ifndef ApxDirs_H
+#define ApxDirs_H
+#include <QtCore>
 //=============================================================================
-class ApxGcs : public ApxApp
+class AppDirs
 {
-    Q_OBJECT
-    Q_ENUMS(FileType)
-
 public:
-    explicit ApxGcs(int &argc, char **argv, const QString &name, const QUrl &url);
-    static ApxGcs *instance() { return _instance; }
+    static QDir res();
+    static QDir user();
 
-    enum FileType {
-        UnknownFile = 0,
-        TelemetryFile,
-        ConfigFile,
-        FirmwareFile,
-    };
-    Q_ENUM(FileType)
+    static QDir plugins();
+    static QDir userPlugins();
 
-    ApxProtocol *protocol;
+    static QDir firmware();
 
-    Datalink *f_datalink;
+    static QDir prefs();
+    static QDir lang();
+    static QDir missions();
+    static QDir configs();
+    static QDir scripts();
+    static QDir db();
+    static QDir logs();
+    static QDir video();
+    static QDir images();
 
-private:
-    static ApxGcs *_instance;
-
-protected:
-    void loadServices();
-
-public slots:
-    void openFile(ApxGcs::FileType type = FileType::UnknownFile);
-
-signals:
-    void fileOpenRequest(QString fileName);
+    //-------------------------------------------
+    //HELPERS
+    static bool copyPath(QString sourceDir, QString destinationDir);
 };
 //=============================================================================
 #endif

@@ -23,7 +23,7 @@
 #include "NodeField.h"
 #include "NodeItem.h"
 #include "Nodes.h"
-#include <ApxMisc/PawnCompiler.h>
+#include <Pawn/PawnCompiler.h>
 #include <Protocols/ProtocolServiceNode.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================

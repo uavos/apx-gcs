@@ -21,9 +21,9 @@
  *
  */
 #include "Updater.h"
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <App/AppSettings.h>
-#include <ApxApp.h>
-#include <ApxDirs.h>
 
 #include "sparkle/SparkleAutoUpdater.h"
 //=============================================================================
@@ -57,7 +57,7 @@ Updater::Updater(Fact *parent)
     updateAuto();
 #endif
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Updater::check()

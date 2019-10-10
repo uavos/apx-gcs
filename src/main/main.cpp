@@ -21,9 +21,9 @@
  *
  */
 #include "RunGuard.h"
-#include <ApxDirs.h>
-#include <ApxGcs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
+#include <App/Application.h>
 #include <QApplication>
 #include <QGLWidget>
 #include <QQuickStyle>
@@ -92,10 +92,10 @@ int main(int argc, char *argv[])
     f.setDepthBufferSize(8);
     QGLFormat::setDefaultFormat(f);*/
 
-    ApxGcs app(argc,
-               argv,
-               "Ground Control",
-               QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
+    Application app(argc,
+                    argv,
+                    "Ground Control",
+                    QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
 
     //check instances
     /*if(!QSettings().value("multipleInstances").toBool()){
@@ -238,23 +238,23 @@ void checkPaths()
 {
     //qDebug()<<"checkPaths";
 
-    if (!ApxDirs::db().exists())
-        ApxDirs::db().mkpath(".");
+    if (!AppDirs::db().exists())
+        AppDirs::db().mkpath(".");
 
     //fix old paths
-    fixDeprecatedPath("config/uav.conf.d", ApxDirs::configs());
-    fixDeprecatedPath("flightplans", ApxDirs::missions());
-    //fixDeprecatedPath("maps",QDir(ApxDirs::maps().absoluteFilePath("google-tiles")));
-    //fixDeprecatedPath("nodes",ApxDirs::nodes());
-    fixDeprecatedPath("plugins", ApxDirs::userPlugins());
-    fixDeprecatedPath("scripts", ApxDirs::scripts());
-    //fixDeprecatedPath("data",ApxDirs::telemetry());
+    fixDeprecatedPath("config/uav.conf.d", AppDirs::configs());
+    fixDeprecatedPath("flightplans", AppDirs::missions());
+    //fixDeprecatedPath("maps",QDir(AppDirs::maps().absoluteFilePath("google-tiles")));
+    //fixDeprecatedPath("nodes",AppDirs::nodes());
+    fixDeprecatedPath("plugins", AppDirs::userPlugins());
+    fixDeprecatedPath("scripts", AppDirs::scripts());
+    //fixDeprecatedPath("data",AppDirs::telemetry());
 
     // link sample files
-    linkFiles(ApxDirs::res().absoluteFilePath("nodes/sample-configs"), ApxDirs::configs());
-    linkFiles(ApxDirs::res().absoluteFilePath("missions"), ApxDirs::missions());
-    //linkFiles(ApxDirs::res().absoluteFilePath("telemetry"),ApxDirs::telemetry());
-    linkDir(ApxDirs::res().absoluteFilePath("scripts/pawn"), ApxDirs::scripts(), "-examples");
+    linkFiles(AppDirs::res().absoluteFilePath("nodes/sample-configs"), AppDirs::configs());
+    linkFiles(AppDirs::res().absoluteFilePath("missions"), AppDirs::missions());
+    //linkFiles(AppDirs::res().absoluteFilePath("telemetry"),AppDirs::telemetry());
+    linkDir(AppDirs::res().absoluteFilePath("scripts/pawn"), AppDirs::scripts(), "-examples");
 
     //warn if exists old dir
     QDir src(QDir::home().absoluteFilePath(".gcu"));
@@ -267,6 +267,6 @@ void checkPaths()
                          .append(src.absolutePath());
     apxConsoleW() << QObject::tr("New storage directory")
                          .append(": ")
-                         .append(ApxDirs::user().absolutePath());
+                         .append(AppDirs::user().absolutePath());
 }
 //============================================================================

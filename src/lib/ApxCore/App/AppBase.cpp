@@ -21,7 +21,7 @@
  *
  */
 #include "AppBase.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <version.h>
 #include <QIcon>
 #include <QSettings>

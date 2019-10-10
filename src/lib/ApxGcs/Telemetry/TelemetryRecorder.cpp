@@ -22,8 +22,8 @@
  */
 #include "TelemetryRecorder.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <Database/Database.h>
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
@@ -162,9 +162,9 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
     reqPendingList.clear();
     //record shared info
     QVariantMap info;
-    info["machineUID"] = ApxApp::machineUID();
-    info["hostname"] = ApxApp::hostname();
-    info["username"] = ApxApp::username();
+    info["machineUID"] = App::machineUID();
+    info["hostname"] = App::hostname();
+    info["username"] = App::username();
     DBReqTelemetryWriteSharedInfo *req = new DBReqTelemetryWriteSharedInfo(telemetryID, info);
     req->exec();
 }

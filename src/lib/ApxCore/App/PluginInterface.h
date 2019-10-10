@@ -20,15 +20,15 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ApxPluginInterface_H
-#define ApxPluginInterface_H
+#ifndef PluginInterface_H
+#define PluginInterface_H
 #include <QtPlugin>
 //=============================================================================
-class ApxPluginInterface : public QObject
+class PluginInterface : public QObject
 {
     Q_OBJECT
 public:
-    virtual ~ApxPluginInterface() {}
+    virtual ~PluginInterface() {}
 
     enum PluginFlags {
         //Plugin type
@@ -62,7 +62,7 @@ public:
 };
 //=============================================================================
 QT_BEGIN_NAMESPACE
-Q_DECLARE_INTERFACE(ApxPluginInterface, "com.uavos.gcs.ApxPluginInterface/1.0")
+Q_DECLARE_INTERFACE(PluginInterface, "com.uavos.gcs.PluginInterface/1.0")
 QT_END_NAMESPACE
 //=============================================================================
 #endif

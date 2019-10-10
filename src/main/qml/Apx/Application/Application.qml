@@ -25,7 +25,10 @@ AppWindow {
     }
 
     //system menu
-    AppMenuBar { }
+    AppMenuBar {
+        id: appMenu
+        active: false
+    }
 
     //fact menu dispatcher
     Connections {
@@ -42,6 +45,7 @@ AppWindow {
         target: application
         onLoadingFinished: {
             loaderMain.active=true
+            appMenu.active=true
         }
     }
     Component.onCompleted: {

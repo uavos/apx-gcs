@@ -21,9 +21,9 @@
  *
  */
 #include "Joysticks.h"
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <App/AppSettings.h>
-#include <ApxApp.h>
-#include <ApxDirs.h>
 
 #include "Joystick.h"
 #include <SDL.h>
@@ -266,8 +266,8 @@ void Joysticks::loadConfigs()
     configIds.clear();
     configTitles.clear();
     for (int pass = 0; pass < 2; ++pass) {
-        QFile file(pass == 0 ? ApxDirs::res().filePath("templates/joystick.json")
-                             : ApxDirs::prefs().filePath("joystick.json"));
+        QFile file(pass == 0 ? AppDirs::res().filePath("templates/joystick.json")
+                             : AppDirs::prefs().filePath("joystick.json"));
         if (file.open(QFile::ReadOnly | QFile::Text)) {
             QJsonDocument json = QJsonDocument::fromJson(file.readAll());
             file.close();
@@ -310,7 +310,7 @@ void Joysticks::saveConfigs()
     }
     json.insert("configs", a);
 
-    QFile file(ApxDirs::prefs().filePath("joystick.json"));
+    QFile file(AppDirs::prefs().filePath("joystick.json"));
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         apxMsgW() << file.errorString();
         return;

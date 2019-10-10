@@ -24,16 +24,16 @@
 #define SystreePlugin_H
 
 #include <App/AppRoot.h>
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <TreeModel/FactTreeView.h>
 #include <QtCore>
 //=============================================================================
-class SystreePlugin : public ApxPluginInterface
+class SystreePlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
     QObject *createControl() { return new FactTreeWidget(AppRoot::instance(), true, true); }
     int flags() { return Widget; }

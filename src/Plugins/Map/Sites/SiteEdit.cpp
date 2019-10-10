@@ -21,7 +21,7 @@
  *
  */
 #include "SiteEdit.h"
-#include <ApxApp.h>
+#include <App/App.h>
 //=============================================================================
 SiteEdit::SiteEdit(Fact *parent,
                    const QString &name,
@@ -75,7 +75,7 @@ SiteEdit::SiteEdit(Fact *parent,
 void SiteEdit::reset()
 {
     modelData.remove("title");
-    QGeoCoordinate c(ApxApp::propertyValue<QGeoCoordinate>("apx.tools.mapview.clickCoordinate"));
+    QGeoCoordinate c(App::propertyValue<QGeoCoordinate>("apx.tools.mapview.clickCoordinate"));
     modelData["lat"] = c.latitude();
     modelData["lon"] = c.longitude();
     loadFromModelData();

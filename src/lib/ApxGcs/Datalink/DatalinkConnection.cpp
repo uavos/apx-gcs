@@ -22,7 +22,7 @@
  */
 #include "DatalinkConnection.h"
 #include "Datalink.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 
 #include <Dictionary/MandalaIndex.h>
 #include <Xbus/XbusPacket.h>

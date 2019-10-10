@@ -24,18 +24,18 @@
 #define SystreePlugin_H
 
 #include "JSTreeView.h"
-#include <ApxApp.h>
-#include <ApxPluginInterface.h>
+#include <App/App.h>
+#include <App/PluginInterface.h>
 #include <TreeModel/JSTreeModel.h>
 #include <QtCore>
 //=============================================================================
-class SystreePlugin : public ApxPluginInterface
+class SystreePlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    QObject *createControl() { return new JSTreeWidget(ApxApp::instance()->engine(), true, true); }
+    QObject *createControl() { return new JSTreeWidget(App::instance()->engine(), true, true); }
     int flags() { return Widget; }
     QString title() { return tr("JS tree"); }
     QString descr() { return tr("Developer JavaScript tree view"); }

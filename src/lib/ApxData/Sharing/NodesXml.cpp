@@ -21,7 +21,7 @@
  *
  */
 #include "NodesXml.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <Database/Database.h>
 #include <Database/NodesReqDict.h>
 #include <Database/NodesReqNconf.h>

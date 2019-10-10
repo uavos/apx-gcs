@@ -24,7 +24,7 @@
 //#include "Mission.h"
 #include "MissionField.h"
 #include "VehicleMission.h"
-#include <ApxApp.h>
+#include <App/App.h>
 //=============================================================================
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", tr("Runway"))
@@ -98,7 +98,7 @@ Runway::Runway(MissionGroup *parent)
         }
     });
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Runway::updateTitle()

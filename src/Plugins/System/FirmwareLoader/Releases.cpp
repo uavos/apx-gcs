@@ -21,8 +21,8 @@
  *
  */
 #include "Releases.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <JlCompress.h>
 //=============================================================================
 Releases::Releases(Fact *parent)
@@ -54,8 +54,8 @@ void Releases::abort()
 void Releases::sync()
 {
     m_releaseFile.clear();
-    if (!ApxDirs::firmware().exists())
-        ApxDirs::firmware().mkpath(".");
+    if (!AppDirs::firmware().exists())
+        AppDirs::firmware().mkpath(".");
     //find existing package
     QDir dir = releaseDir();
     if (dir.exists() && (!dir.entryList().isEmpty())) {
@@ -68,15 +68,15 @@ void Releases::sync()
         return;
     }
     //find release archive
-    if (extractRelease(QString("%1-%2.zip").arg(m_packagePrefix).arg(ApxApp::version())))
+    if (extractRelease(QString("%1-%2.zip").arg(m_packagePrefix).arg(App::version())))
         return;
-    requestRelease(QString("tags/%1").arg(ApxApp::version()));
+    requestRelease(QString("tags/%1").arg(App::version()));
 }
 //=============================================================================
 bool Releases::extractRelease(const QString &fname)
 {
     QDir dir = releaseDir();
-    QFileInfo fzip(QDir(ApxDirs::firmware().absoluteFilePath("releases")).absoluteFilePath(fname));
+    QFileInfo fzip(QDir(AppDirs::firmware().absoluteFilePath("releases")).absoluteFilePath(fname));
     if (!fzip.exists())
         return false;
     dir.mkpath(".");
@@ -96,18 +96,18 @@ bool Releases::extractRelease(const QString &fname)
 //=============================================================================
 QDir Releases::releaseDir() const
 {
-    return QDir(ApxDirs::firmware().absoluteFilePath(
+    return QDir(AppDirs::firmware().absoluteFilePath(
                     QString("%1-%2").arg(m_packagePrefix).arg(releaseVersion())),
                 "*.apxfw");
 }
 QDir Releases::devDir() const
 {
-    return QDir(ApxDirs::firmware().absoluteFilePath("development"), "*.apxfw");
+    return QDir(AppDirs::firmware().absoluteFilePath("development"), "*.apxfw");
 }
 //=============================================================================
 QString Releases::releaseVersion() const
 {
-    QString s = ApxApp::version();
+    QString s = App::version();
     if (!m_releaseFile.isEmpty()) {
         s = QFileInfo(m_releaseFile).completeBaseName();
         s = s.mid(s.lastIndexOf('-') + 1);
@@ -168,7 +168,7 @@ void Releases::clean()
     QDir dir = releaseDir();
     //clean up other extracted packages
     foreach (QFileInfo fi,
-             QDir(ApxDirs::firmware().absolutePath(),
+             QDir(AppDirs::firmware().absolutePath(),
                   "*",
                   QDir::NoSort,
                   QDir::Dirs | QDir::NoDotAndDotDot)
@@ -181,9 +181,9 @@ void Releases::clean()
         qDebug() << "removed" << fi.absoluteFilePath();
     }
     //clean up dev firmwares
-    QVersionNumber ver = QVersionNumber::fromString(ApxApp::version());
+    QVersionNumber ver = QVersionNumber::fromString(App::version());
     foreach (QFileInfo fi,
-             QDir(ApxDirs::firmware().absolutePath(), "*.apxfw", QDir::NoSort, QDir::Files)
+             QDir(AppDirs::firmware().absolutePath(), "*.apxfw", QDir::NoSort, QDir::Files)
                  .entryInfoList()) {
         QString s = fi.completeBaseName();
         s.remove(0, s.lastIndexOf('-') + 1);
@@ -215,7 +215,7 @@ QNetworkReply *Releases::request(const QUrl &url)
     request->setRawHeader("User-Agent",
                           QString("%1 (v%2)")
                               .arg(QCoreApplication::applicationName())
-                              .arg(ApxApp::version())
+                              .arg(App::version())
                               .toUtf8());
 
     QNetworkReply *reply = net.get(*request);
@@ -349,11 +349,11 @@ void Releases::responseDownload()
         apxMsgW() << title().append(':') << tr("Unknown response") << s;
         return;
     }
-    if (!isFirmwarePackageFile(s, ApxApp::version())) {
+    if (!isFirmwarePackageFile(s, App::version())) {
         apxMsg() << title().append(':') << tr("Received") << s;
     }
 
-    QDir dir(ApxDirs::firmware().absoluteFilePath("releases"));
+    QDir dir(AppDirs::firmware().absoluteFilePath("releases"));
     dir.mkpath(".");
     QFile fzip(dir.absoluteFilePath(s));
     if (!fzip.open(QFile::WriteOnly)) {
@@ -437,8 +437,8 @@ QString Releases::getApxfwFileName(QString nodeName, QString hw)
     }
 
     QString fileName;
-    if (vmap.contains(QVersionNumber::fromString(ApxApp::version()))) {
-        fileName = vmap.value(QVersionNumber::fromString(ApxApp::version()));
+    if (vmap.contains(QVersionNumber::fromString(App::version()))) {
+        fileName = vmap.value(QVersionNumber::fromString(App::version()));
     } else if (!vmap.isEmpty()) {
         fileName = vmap.last();
     } else {
@@ -656,7 +656,7 @@ bool Releases::loadFileMHX(QString ver, QByteArray *data)
     //load corresponding file
     QString fileName;
     while (1) {
-        QString prefix(ApxDirs::res().absoluteFilePath("firmware"));
+        QString prefix(AppDirs::res().absoluteFilePath("firmware"));
         QDir dir(prefix);
         if (!dir.cd("mhx"))
             break;

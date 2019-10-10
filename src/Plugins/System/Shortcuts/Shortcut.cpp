@@ -23,7 +23,7 @@
 #include "Shortcut.h"
 #include "Shortcuts.h"
 
-#include <ApxApp.h>
+#include <App/App.h>
 //=============================================================================
 Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool bUsr)
     : Fact(parent,
@@ -79,7 +79,7 @@ Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool 
     }
     updateStats();
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Shortcut::defaults()

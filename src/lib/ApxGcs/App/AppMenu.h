@@ -20,34 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ApxDirs_H
-#define ApxDirs_H
-#include <QtCore>
+#ifndef AppMenu_H
+#define AppMenu_H
 //=============================================================================
-class ApxDirs
+#include <Fact/Fact.h>
+//=============================================================================
+class AppMenu : public Fact
 {
+    Q_OBJECT
+
 public:
-    static QDir res();
-    static QDir user();
-
-    static QDir plugins();
-    static QDir userPlugins();
-
-    static QDir firmware();
-
-    static QDir prefs();
-    static QDir lang();
-    static QDir missions();
-    static QDir configs();
-    static QDir scripts();
-    static QDir db();
-    static QDir logs();
-    static QDir video();
-    static QDir images();
-
-    //-------------------------------------------
-    //HELPERS
-    static bool copyPath(QString sourceDir, QString destinationDir);
+    explicit AppMenu(Fact *parent);
 };
 //=============================================================================
 #endif

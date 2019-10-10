@@ -23,8 +23,8 @@
 #include "DatalinkPorts.h"
 #include "Datalink.h"
 #include "DatalinkPort.h"
+#include <App/AppLog.h>
 #include <App/AppSettings.h>
-#include <ApxLog.h>
 //=============================================================================
 DatalinkPorts::DatalinkPorts(Datalink *datalink)
     : Fact(datalink,
@@ -81,7 +81,7 @@ void DatalinkPorts::addPort(DatalinkPort *port)
 //=============================================================================
 void DatalinkPorts::load()
 {
-    QFile file(ApxDirs::prefs().filePath("ports.json"));
+    QFile file(AppDirs::prefs().filePath("ports.json"));
     if (file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(file.readAll());
         file.close();
@@ -95,7 +95,7 @@ void DatalinkPorts::load()
 }
 void DatalinkPorts::save()
 {
-    QFile file(ApxDirs::prefs().filePath("ports.json"));
+    QFile file(AppDirs::prefs().filePath("ports.json"));
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         apxMsgW() << file.errorString();
         return;

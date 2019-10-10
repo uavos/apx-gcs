@@ -26,7 +26,7 @@
 #include "Nodes.h"
 #include <QtSql>
 
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Database/NodesDB.h>
 #include <Vehicles/VehicleWarnings.h>
 #include <Vehicles/Vehicles.h>
@@ -195,7 +195,7 @@ void NodeItem::validateInfo()
         nodes->storage->saveNodeInfo(this);
         nodes->storage->saveNodeUser(this);
     }
-    //ApxApp::jsync(this);
+    //App::jsync(this);
     //qDebug()<<"Node infoValid"<<path();
 }
 void NodeItem::updateReconf()
@@ -243,7 +243,7 @@ void NodeItem::updateDescr()
     setActive(false);
     QStringList st;
     st.append(m_hardware);
-    if (m_version != ApxApp::version())
+    if (m_version != App::version())
         st.append(m_version);
     if (offline())
         st.append(tr("offline"));
@@ -257,7 +257,7 @@ void NodeItem::notifyUpdater()
 {
     if (!protocol)
         return;
-    if (m_version != ApxApp::version() && fwSupport()) {
+    if (m_version != App::version() && fwSupport()) {
         Vehicles::instance()->nodeUpgradable(this);
     }
 }
@@ -346,7 +346,7 @@ int NodeItem::loadConfigValues(QVariantMap values)
         QString s = QString("%1: %2").arg(sname).arg(cnt);
         if (cnt < 5)
             s.append(QString(" (%1)").arg(missingValues.join(',')));
-        nodes->vehicle->message(tr("Missing values").append(": ").append(s), ApxApp::Warning);
+        nodes->vehicle->message(tr("Missing values").append(": ").append(s), App::Warning);
         qWarning() << missingValues;
     }
     cnt = ignoredValues.size();
@@ -354,7 +354,7 @@ int NodeItem::loadConfigValues(QVariantMap values)
         QString s = QString("%1: %2").arg(sname).arg(cnt);
         if (cnt < 5)
             s.append(QString(" (%1)").arg(ignoredValues.join(',')));
-        nodes->vehicle->message(tr("Ignored values").append(": ").append(s), ApxApp::Warning);
+        nodes->vehicle->message(tr("Ignored values").append(": ").append(s), App::Warning);
         qWarning() << ignoredValues;
     }
     return rcnt;
@@ -381,9 +381,9 @@ void NodeItem::message(QString msg)
         s = s.trimmed();
         if (s.isEmpty())
             continue;
-        ApxApp::sound(s);
+        App::sound(s);
         nodes->vehicle->message(qApp->translate("msg", s.toUtf8().data()),
-                                ApxApp::FromVehicle | ApxApp::Important,
+                                App::FromVehicle | App::Important,
                                 title());
 
         //record
@@ -701,7 +701,7 @@ NodeItem *NodeItem::subNode() const
 //=============================================================================
 void NodeItem::execCommand(quint16 cmd, const QString &name, const QString &descr)
 {
-    nodes->vehicle->message(descr + "...", ApxApp::Important, title());
+    nodes->vehicle->message(descr + "...", App::Important, title());
     emit requestUser(cmd, QByteArray(), 1000);
     if (name.startsWith("conf") || name.contains("reconf")) {
         setDataValid(false);
@@ -793,7 +793,7 @@ void NodeItem::dictReceived(const DictNode::Dict &dict)
     }
     setDictValid(true);
     requestFieldValues();
-    //ApxApp::jsync(this);
+    //App::jsync(this);
 
     nodes->skipCache.removeAll(sn());
     if (dictInfo.value("hash").toString().isEmpty()) {

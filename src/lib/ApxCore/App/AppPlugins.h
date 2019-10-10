@@ -23,7 +23,7 @@
 #ifndef AppPlugins_H
 #define AppPlugins_H
 //=============================================================================
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <QtCore>
 

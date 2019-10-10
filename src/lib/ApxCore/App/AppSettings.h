@@ -23,7 +23,7 @@
 #ifndef AppSettings_H
 #define AppSettings_H
 //=============================================================================
-#include <ApxDirs.h>
+#include <App/AppDirs.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #include <QtCore>
@@ -44,7 +44,7 @@ public:
 
     static QSettings *createSettings(QObject *parent = nullptr)
     {
-        QDir spath(ApxDirs::prefs());
+        QDir spath(AppDirs::prefs());
         if (!spath.exists())
             spath.mkpath(".");
         return new QSettings(spath.absoluteFilePath(QCoreApplication::applicationName() + ".ini"),

@@ -23,7 +23,7 @@
 #include "BlackboxItem.h"
 #include "BlackboxReader.h"
 
-#include <ApxLog.h>
+#include <App/AppLog.h>
 //=============================================================================
 BlackboxItem::BlackboxItem(Fact *parent,
                            const QString &name,

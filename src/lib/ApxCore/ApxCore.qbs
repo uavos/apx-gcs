@@ -60,6 +60,7 @@ ApxApp.ApxLibrary {
         name: "App"
         prefix: name+"/"
         files: [
+            "App.cpp", "App.h",
             "AppBase.cpp", "AppBase.h",
             "AppRoot.cpp", "AppRoot.h",
             "AppEngine.cpp", "AppEngine.h",
@@ -68,6 +69,9 @@ ApxApp.ApxLibrary {
             "AppSettings.cpp", "AppSettings.h",
             "AppWindow.cpp", "AppWindow.h",
             "AppInstances.cpp", "AppInstances.h",
+            "AppLog.cpp", "AppLog.h",
+            "AppDirs.cpp", "AppDirs.h",
+            "PluginInterface.h",
         ]
     }
 
@@ -88,10 +92,6 @@ ApxApp.ApxLibrary {
     }
 
     files: [
-        "ApxLog.cpp", "ApxLog.h",
-        "ApxApp.cpp", "ApxApp.h",
-        "ApxDirs.cpp", "ApxDirs.h",
-        "ApxPluginInterface.h",
     ]
 
     Group {

@@ -22,9 +22,9 @@
  */
 #include "Shortcuts.h"
 #include "Shortcut.h"
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <App/AppSettings.h>
-#include <ApxApp.h>
-#include <ApxDirs.h>
 #include <QKeySequence>
 #include <QQmlEngine>
 //=============================================================================
@@ -68,7 +68,7 @@ Shortcuts::Shortcuts(Fact *parent)
     connect(this, &Fact::sizeChanged, this, &Shortcuts::updateStats);
     updateStats();
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 
     loadQml("qrc:/" PLUGIN_NAME "/ShortcutsPlugin.qml");
 }
@@ -114,7 +114,7 @@ void Shortcuts::load()
 {
     QMap<QString, QJsonObject> msys, musr;
     QStringList lsys, lusr;
-    QFile fsys(ApxDirs::res().filePath("templates/shortcuts.json"));
+    QFile fsys(AppDirs::res().filePath("templates/shortcuts.json"));
     if (fsys.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(fsys.readAll());
         fsys.close();
@@ -126,7 +126,7 @@ void Shortcuts::load()
             msys.insert(key, jso);
         }
     }
-    QFile fusr(ApxDirs::prefs().filePath("shortcuts.json"));
+    QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));
     if (fusr.exists() && fusr.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(fusr.readAll());
         fusr.close();
@@ -173,7 +173,7 @@ void Shortcuts::saveDo()
         ausr.append(f_usr->child<Shortcut>(i)->valuesToJson());
     }
     //save json file
-    QFile fusr(ApxDirs::prefs().filePath("shortcuts.json"));
+    QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));
     if (!fusr.open(QFile::WriteOnly | QFile::Text)) {
         apxMsgW() << fusr.errorString();
         return;

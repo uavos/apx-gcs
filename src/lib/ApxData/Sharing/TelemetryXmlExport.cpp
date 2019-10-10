@@ -24,8 +24,8 @@
 #include "MissionsXml.h"
 #include "NodesXml.h"
 #include <App/AppBase.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
 #include <Fact/Fact.h>

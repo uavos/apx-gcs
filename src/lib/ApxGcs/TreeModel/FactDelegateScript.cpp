@@ -22,10 +22,10 @@
  */
 #include "FactDelegateScript.h"
 #include "SourceEdit.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
-#include <ApxMisc/PawnCompiler.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <ApxMisc/SvgMaterialIcon.h>
+#include <Pawn/PawnCompiler.h>
 #include <Vehicles/Vehicles.h>
 #include <QtWidgets>
 //=============================================================================
@@ -106,11 +106,11 @@ bool FactDelegateScript::aboutToClose(void)
 //=============================================================================
 void FactDelegateScript::aSave_triggered(void)
 {
-    QFileDialog dlg(this, aSave->toolTip(), ApxDirs::scripts().canonicalPath());
+    QFileDialog dlg(this, aSave->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptSave);
     dlg.setOption(QFileDialog::DontConfirmOverwrite, false);
     if (!scrName.isEmpty())
-        dlg.selectFile(ApxDirs::scripts().filePath(scrName + ".p"));
+        dlg.selectFile(AppDirs::scripts().filePath(scrName + ".p"));
     QStringList filters;
     filters << tr("Script files") + " (*.p)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
@@ -121,10 +121,10 @@ void FactDelegateScript::aSave_triggered(void)
 //=============================================================================
 void FactDelegateScript::aLoad_triggered(void)
 {
-    QFileDialog dlg(this, aLoad->toolTip(), ApxDirs::scripts().canonicalPath());
+    QFileDialog dlg(this, aLoad->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptOpen);
     if (!scrName.isEmpty())
-        dlg.selectFile(ApxDirs::scripts().filePath(scrName + ".p"));
+        dlg.selectFile(AppDirs::scripts().filePath(scrName + ".p"));
     QStringList filters;
     filters << tr("Script files") + " (*.p)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);

@@ -22,11 +22,11 @@
  */
 #include "MapsDB.h"
 #include "TileLoader.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 //=============================================================================
 MapsDB::MapsDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("maps.db"), sessionName)
+    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("maps.db"), sessionName)
 {
     new DBReqMakeTable(this,
                        "TileProviders",

@@ -41,9 +41,14 @@ ApxApp.ApxLibrary {
     }
 
 
-    files: [
-        "ApxGcs.cpp", "ApxGcs.h",
-    ]
+    Group {
+        name: "App"
+        prefix: name+"/"
+        files: [
+            "Application.cpp", "Application.h",
+            "AppMenu.cpp", "AppMenu.h",
+        ]
+    }
 
     Group {
         name: "TreeModel"
@@ -150,7 +155,7 @@ ApxApp.ApxLibrary {
     }
 
     Group {
-        name: "ApxMisc"
+        name: "Pawn"
         prefix: name+"/"
         files: [
             "PawnCompiler.cpp", "PawnCompiler.h",

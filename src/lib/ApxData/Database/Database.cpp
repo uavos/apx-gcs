@@ -24,7 +24,7 @@
 #include "MissionsDB.h"
 #include "NodesDB.h"
 #include "TelemetryDB.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 //=============================================================================
 APX_LOGGING_CATEGORY(DatabaseLog, "core.Database")
 //=============================================================================

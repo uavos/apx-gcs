@@ -1,8 +1,8 @@
 #include "SerialForm.h"
 #include "ui_SerialForm.h"
 
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryRecorder.h>
@@ -112,7 +112,7 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
             if (fcnt > 0)
                 fname.append(QString("-%1").arg(fcnt));
             fname.append(".log");
-            QDir dir(ApxDirs::logs().absoluteFilePath("serial"));
+            QDir dir(AppDirs::logs().absoluteFilePath("serial"));
             dir.mkpath(".");
             dumpFile.setFileName(dir.absoluteFilePath(fname));
             if (dumpFile.exists()) {

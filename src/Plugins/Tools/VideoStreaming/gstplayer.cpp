@@ -1,10 +1,10 @@
 ﻿#include "gstplayer.h"
 
 #include "App/AppSettings.h"
-#include "ApxApp.h"
-#include "ApxDirs.h"
-#include "ApxLog.h"
 #include "Vehicles/Vehicle.h"
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <QCameraInfo>
 #include <QVideoSurfaceFormat>
 #include <QtQml>
@@ -18,10 +18,10 @@ GstPlayer::GstPlayer(Fact *parent)
            tr("Camera link and streaming"),
            Group)
 {
-    if (!ApxDirs::images().exists())
-        ApxDirs::images().mkpath(ApxDirs::images().absolutePath());
-    if (!ApxDirs::video().exists())
-        ApxDirs::video().mkpath(ApxDirs::video().absolutePath());
+    if (!AppDirs::images().exists())
+        AppDirs::images().mkpath(AppDirs::images().absolutePath());
+    if (!AppDirs::video().exists())
+        AppDirs::video().mkpath(AppDirs::video().absolutePath());
 
     qmlRegisterType<GstPlayer>("GstPlayer", 1, 0, "GstPlayer");
 
@@ -146,10 +146,10 @@ QString GstPlayer::getMediaFileName(MediaType type)
 {
     QString base, ext;
     if (type == mtImage) {
-        base = ApxDirs::images().absolutePath();
+        base = AppDirs::images().absolutePath();
         ext = "png";
     } else if (type == mtVideo) {
-        base = ApxDirs::video().absolutePath();
+        base = AppDirs::video().absolutePath();
         ext = "mkv";
     }
 

@@ -21,7 +21,7 @@
  *
  */
 #include "SvgMaterialIcon.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <QApplication>
 #include <QFontDatabase>
 #include <QPainter>

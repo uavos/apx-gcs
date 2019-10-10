@@ -24,13 +24,13 @@
 #include "MissionStorage.h"
 #include "VehicleMission.h"
 
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <Sharing/MissionsXml.h>
 #include <Vehicles/Vehicle.h>
 //=============================================================================
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
-    : Share(parent, tr("Mission"), "mission", ApxDirs::missions(), QStringList(), flags)
+    : Share(parent, tr("Mission"), "mission", AppDirs::missions(), QStringList(), flags)
     , mission(mission)
 {
     connect(this, &Share::imported, mission->storage, &MissionStorage::loadMission);

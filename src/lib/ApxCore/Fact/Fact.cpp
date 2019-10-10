@@ -21,8 +21,8 @@
  *
  */
 #include "Fact.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <QFont>
 #include <QFontDatabase>
 //=============================================================================
@@ -425,7 +425,7 @@ QObject *Fact::loadQml(const QString &qmlFile)
 {
     QVariantMap opts;
     opts.insert("fact", QVariant::fromValue(this));
-    return ApxApp::instance()->engine()->loadQml(qmlFile, opts);
+    return App::instance()->engine()->loadQml(qmlFile, opts);
 }
 //=============================================================================
 void Fact::bind(FactData *fact)
@@ -733,7 +733,7 @@ void Fact::setProgress(const int v)
     if ((vp < 0 && v >= 0) || (vp >= 0 && v < 0)) {
         emit busyChanged();
         if (busy()) {
-            ApxApp::instance()->report(this);
+            App::instance()->report(this);
         }
     }
 }

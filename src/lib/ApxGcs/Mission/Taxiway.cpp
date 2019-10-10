@@ -22,7 +22,7 @@
  */
 #include "Taxiway.h"
 #include "VehicleMission.h"
-#include <ApxApp.h>
+#include <App/App.h>
 //=============================================================================
 Taxiway::Taxiway(MissionGroup *parent)
     : MissionItem(parent, "t#", "", tr("Taxiway"))
@@ -31,7 +31,7 @@ Taxiway::Taxiway(MissionGroup *parent)
     connect(this, &Taxiway::distanceChanged, this, &Taxiway::updateTitle);
     updateTitle();
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Taxiway::updateTitle()

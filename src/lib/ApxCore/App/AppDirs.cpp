@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ApxDirs.h"
+#include "AppDirs.h"
 //=============================================================================
-QDir ApxDirs::res()
+QDir AppDirs::res()
 {
 #ifdef __ANDROID__
     const QString hpath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -33,7 +33,7 @@ QDir ApxDirs::res()
 #endif
 }
 
-QDir ApxDirs::user()
+QDir AppDirs::user()
 {
 #ifdef __ANDROID__
     return QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/.gcu");
@@ -43,63 +43,63 @@ QDir ApxDirs::user()
 #endif
 }
 
-QDir ApxDirs::plugins()
+QDir AppDirs::plugins()
 {
     return QDir(QCoreApplication::applicationDirPath() + "/"
                 + RELATIVE_PLUGIN_PATH); //"/../Plugins/gcs");
 }
 
-QDir ApxDirs::userPlugins()
+QDir AppDirs::userPlugins()
 {
     return QDir(user().absoluteFilePath("Plugins"));
 }
 
-QDir ApxDirs::firmware()
+QDir AppDirs::firmware()
 {
-    return QDir(ApxDirs::user().absoluteFilePath("Firmware"));
+    return QDir(AppDirs::user().absoluteFilePath("Firmware"));
 }
 
-QDir ApxDirs::prefs()
+QDir AppDirs::prefs()
 {
-    return QDir(ApxDirs::user().absoluteFilePath("Preferences"));
+    return QDir(AppDirs::user().absoluteFilePath("Preferences"));
 }
 
-QDir ApxDirs::lang()
+QDir AppDirs::lang()
 {
     return QDir(QCoreApplication::applicationDirPath() + "/../Localization/gcs");
 }
 
-QDir ApxDirs::missions()
+QDir AppDirs::missions()
 {
     return QDir(user().absoluteFilePath("Missions"));
 }
 
-QDir ApxDirs::configs()
+QDir AppDirs::configs()
 {
     return QDir(user().absoluteFilePath("Configs"));
 }
 
-QDir ApxDirs::scripts()
+QDir AppDirs::scripts()
 {
     return QDir(user().absoluteFilePath("Scripts"));
 }
 
-QDir ApxDirs::db()
+QDir AppDirs::db()
 {
     return QDir(user().absoluteFilePath("Data"));
 }
 
-QDir ApxDirs::logs()
+QDir AppDirs::logs()
 {
     return QDir(user().absoluteFilePath("Logs"));
 }
 
-QDir ApxDirs::video()
+QDir AppDirs::video()
 {
     return QDir(user().absoluteFilePath("Video"));
 }
 
-QDir ApxDirs::images()
+QDir AppDirs::images()
 {
     return QDir(user().absoluteFilePath("Images"));
 }
@@ -107,7 +107,7 @@ QDir ApxDirs::images()
 //-------------------------------------------
 //HELPERS
 
-bool ApxDirs::copyPath(QString sourceDir, QString destinationDir)
+bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
 {
     QDir originDirectory(sourceDir);
 

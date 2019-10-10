@@ -21,8 +21,8 @@
  *
  */
 #include "JoystickAxis.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <cmath>
 
 //=============================================================================
@@ -64,7 +64,7 @@ void JoystickAxis::update(qreal v)
     if (s.isEmpty())
         return;
     s.replace("$", QString("(%1)").arg(v));
-    ApxApp::jsexec(s);
+    App::jsexec(s);
 }
 //=============================================================================
 void JoystickAxis::loadConfig(const QJsonObject &config)

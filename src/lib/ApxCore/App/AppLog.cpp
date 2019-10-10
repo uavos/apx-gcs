@@ -20,26 +20,26 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ApxLog.h"
-#include <ApxDirs.h>
+#include "AppLog.h"
+#include "AppDirs.h"
 //=============================================================================
-APX_LOGGING_CATEGORY(AppLog, "app")
+APX_LOGGING_CATEGORY(ApplicationLog, "app")
 APX_LOGGING_CATEGORY(ConsoleLog, "console")
 //=============================================================================
 static QtMessageHandler messageHandlerChain = nullptr;
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
-ApxLog *ApxLog::_instance = nullptr;
-QMutex ApxLog::_mutex;
+AppLog *AppLog::_instance = nullptr;
+QMutex AppLog::_mutex;
 //=============================================================================
-ApxLog::ApxLog(QObject *parent)
+AppLog::AppLog(QObject *parent)
     : QObject(parent)
     , logStream(nullptr)
 {
     _instance = this;
 
-    if (!ApxDirs::logs().exists())
-        ApxDirs::logs().mkpath(".");
-    QFile *f = new QFile(ApxDirs::logs().absoluteFilePath("APX.txt"), this);
+    if (!AppDirs::logs().exists())
+        AppDirs::logs().mkpath(".");
+    QFile *f = new QFile(AppDirs::logs().absoluteFilePath("APX.txt"), this);
     if (!f->open(QFile::WriteOnly | QFile::Truncate)) {
         apxMsgW() << "Cant write log file" << f->fileName();
         f->deleteLater();
@@ -62,7 +62,7 @@ ApxLog::ApxLog(QObject *parent)
     messageHandlerChain = qInstallMessageHandler(messageHandler);
 }
 //============================================================================
-ApxLog::~ApxLog()
+AppLog::~AppLog()
 {
     qInstallMessageHandler(messageHandlerChain);
 
@@ -83,30 +83,30 @@ ApxLog::~ApxLog()
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     messageHandlerChain(type, context, message);
-    ApxLog::instance()->message(type, context, message);
+    AppLog::instance()->message(type, context, message);
 }
 //============================================================================
 //============================================================================
-void ApxLog::add(const QString &categoryName, const QString &fileName, bool debug)
+void AppLog::add(const QString &categoryName, const QString &fileName, bool debug)
 {
-    QDir dir(QFileInfo(ApxDirs::logs().absoluteFilePath(fileName)).absoluteDir());
+    QDir dir(QFileInfo(AppDirs::logs().absoluteFilePath(fileName)).absoluteDir());
     if (!dir.exists())
         dir.mkpath(".");
 
-    QFile *f = new QFile(ApxDirs::logs().absoluteFilePath(fileName), ApxLog::_instance);
+    QFile *f = new QFile(AppDirs::logs().absoluteFilePath(fileName), AppLog::_instance);
     if (!f->open(QFile::WriteOnly | QFile::Truncate)) {
         apxMsgW() << "Cant write log file" << fileName;
         f->deleteLater();
         return;
     }
     QTextStream *stream = new QTextStream(f);
-    QMutexLocker lock(&ApxLog::_mutex);
-    ApxLog::_instance->streams.insert(categoryName, stream);
+    QMutexLocker lock(&AppLog::_mutex);
+    AppLog::_instance->streams.insert(categoryName, stream);
     if (debug)
-        ApxLog::_instance->debugStreams.append(stream);
+        AppLog::_instance->debugStreams.append(stream);
 }
 //=============================================================================
-void ApxLog::message(QtMsgType type, const QMessageLogContext &context, const QString &message)
+void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     QMutexLocker lock(&_mutex);
 
@@ -141,10 +141,10 @@ void ApxLog::message(QtMsgType type, const QMessageLogContext &context, const QS
     }
 }
 //=============================================================================
-bool ApxLog::display(const QMessageLogContext &context)
+bool AppLog::display(const QMessageLogContext &context)
 {
     QString cat(context.category);
-    if (cat == AppLog().categoryName())
+    if (cat == ApplicationLog().categoryName())
         return true;
     if (cat == "qml")
         return true; //console from qml and jsengine

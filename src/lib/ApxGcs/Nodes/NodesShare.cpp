@@ -24,13 +24,13 @@
 #include "Nodes.h"
 #include "NodesStorage.h"
 
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <Sharing/NodesXml.h>
 #include <Vehicles/Vehicle.h>
 //=============================================================================
 NodesShare::NodesShare(Nodes *nodes, Fact *parent)
-    : Share(parent, tr("Configuration"), "nodes", ApxDirs::configs(), QStringList(), Action)
+    : Share(parent, tr("Configuration"), "nodes", AppDirs::configs(), QStringList(), Action)
     , nodes(nodes)
 {
     connect(this, &Share::imported, nodes->storage, &NodesStorage::loadConfiguration);

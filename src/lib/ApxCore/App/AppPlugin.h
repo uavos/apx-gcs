@@ -23,7 +23,7 @@
 #ifndef AppPlugin_H
 #define AppPlugin_H
 //=============================================================================
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <QtCore>
 class AppPlugins;
@@ -43,7 +43,7 @@ public:
     QString name;
     QString fileName;
     Fact *f_enabled;
-    ApxPluginInterface *interface;
+    PluginInterface *interface;
     QObject *control;
     QPluginLoader *loader;
     QStringList depends;

@@ -25,8 +25,8 @@
 #include "VehicleWarnings.h"
 #include "Vehicles.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
@@ -217,8 +217,8 @@ Vehicle::Vehicle(Vehicles *vehicles,
     }
 
     //register JS new vehicles instantly
-    connect(this, &Vehicle::nameChanged, this, [=]() { ApxApp::jsync(this); });
-    ApxApp::jsync(this);
+    connect(this, &Vehicle::nameChanged, this, [=]() { App::jsync(this); });
+    App::jsync(this);
 }
 Vehicle::~Vehicle()
 {
@@ -533,7 +533,7 @@ QString Vehicle::confTitle() const
     return anyName;
 }
 //=============================================================================
-void Vehicle::message(QString msg, ApxApp::NotifyFlags flags, QString subsystem)
+void Vehicle::message(QString msg, App::NotifyFlags flags, QString subsystem)
 {
     if (isTemporary())
         return;
@@ -543,27 +543,27 @@ void Vehicle::message(QString msg, ApxApp::NotifyFlags flags, QString subsystem)
     else
         subsystem = QString("%1/%2").arg(callsign()).arg(subsystem);
 
-    ApxApp::NotifyFlags fType = flags & ApxApp::NotifyTypeMask;
+    App::NotifyFlags fType = flags & App::NotifyTypeMask;
 
-    if (fType != ApxApp::Error && fType != ApxApp::Warning) {
-        ApxApp::NotifyFlags t = fType;
+    if (fType != App::Error && fType != App::Warning) {
+        App::NotifyFlags t = fType;
         if (msg.contains("error", Qt::CaseInsensitive))
-            t = ApxApp::Error;
+            t = App::Error;
         else if (msg.contains("fail", Qt::CaseInsensitive))
-            t = ApxApp::Error;
+            t = App::Error;
         else if (msg.contains("timeout", Qt::CaseInsensitive))
-            t = ApxApp::Error;
+            t = App::Error;
         else if (msg.contains("warn", Qt::CaseInsensitive))
-            t = ApxApp::Warning;
+            t = App::Warning;
         if (t != fType)
-            flags = (flags & ~ApxApp::NotifyTypeMask) | t;
+            flags = (flags & ~App::NotifyTypeMask) | t;
         fType = t;
     }
-    ApxApp::instance()->report(msg, flags, subsystem);
+    App::instance()->report(msg, flags, subsystem);
 
-    if (fType == ApxApp::Error) {
+    if (fType == App::Error) {
         f_warnings->error(msg);
-    } else if (fType == ApxApp::Warning) {
+    } else if (fType == App::Warning) {
         f_warnings->warning(msg);
     }
 }

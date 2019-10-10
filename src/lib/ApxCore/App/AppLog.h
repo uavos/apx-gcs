@@ -20,14 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ApxLog_H
-#define ApxLog_H
+#ifndef AppLog_H
+#define AppLog_H
 #include <QLoggingCategory>
 #include <QMessageLogContext>
 #include <QMessageLogger>
 #include <QtCore>
 //=============================================================================
-Q_DECLARE_LOGGING_CATEGORY(AppLog)
+Q_DECLARE_LOGGING_CATEGORY(ApplicationLog)
 Q_DECLARE_LOGGING_CATEGORY(ConsoleLog)
 
 #define APX_LOGGING_CATEGORY(name, ...) Q_LOGGING_CATEGORY(name, __VA_ARGS__)
@@ -42,14 +42,14 @@ Q_DECLARE_LOGGING_CATEGORY(ConsoleLog)
     QMessageLogger(QT_MESSAGELOG_FILE, \
                    QT_MESSAGELOG_LINE, \
                    QT_MESSAGELOG_FUNC, \
-                   AppLog().categoryName()) \
+                   ApplicationLog().categoryName()) \
         .info() APX_LOGGING_STREAM_MOD
 
 #define apxMsgW() \
     QMessageLogger(QT_MESSAGELOG_FILE, \
                    QT_MESSAGELOG_LINE, \
                    QT_MESSAGELOG_FUNC, \
-                   AppLog().categoryName()) \
+                   ApplicationLog().categoryName()) \
         .warning() APX_LOGGING_STREAM_MOD
 
 #define apxConsole() \
@@ -66,13 +66,13 @@ Q_DECLARE_LOGGING_CATEGORY(ConsoleLog)
                    ConsoleLog().categoryName()) \
         .warning() APX_LOGGING_STREAM_MOD
 
-class ApxLog : public QObject
+class AppLog : public QObject
 {
     Q_OBJECT
 public:
-    explicit ApxLog(QObject *parent = nullptr);
-    ~ApxLog();
-    static ApxLog *instance() { return _instance; }
+    explicit AppLog(QObject *parent = nullptr);
+    ~AppLog();
+    static AppLog *instance() { return _instance; }
 
     void message(QtMsgType type, const QMessageLogContext &context, const QString &message);
 
@@ -80,7 +80,7 @@ public:
     static bool display(const QMessageLogContext &context);
 
 private:
-    static ApxLog *_instance;
+    static AppLog *_instance;
     static QMutex _mutex;
     QMap<QString, QTextStream *> streams; //category -> file
     QList<QTextStream *> debugStreams;    //no print to global log

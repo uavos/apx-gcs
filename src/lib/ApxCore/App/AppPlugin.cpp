@@ -25,9 +25,9 @@
 
 #include "AppSettings.h"
 
-#include <ApxApp.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 //=============================================================================
 AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     : QObject(plugins)
@@ -46,7 +46,7 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
                                            "",
                                            Fact::Bool,
                                            true);
-    ApxApp::jsync(plugins->f_enabled);
+    App::jsync(plugins->f_enabled);
     f_enabled = f;
     f->load();
     connect(f, &Fact::valueChanged, this, &AppPlugin::enabledChanged);
@@ -66,7 +66,7 @@ void AppPlugin::loadLib()
     apxConsole() << tr("Loading").append(":") << name;
     loader = new QPluginLoader(fname);
     QObject *instance = nullptr;
-    ApxPluginInterface *p = nullptr;
+    PluginInterface *p = nullptr;
     try {
         instance = loader->instance();
     } catch (...) {
@@ -89,7 +89,7 @@ void AppPlugin::loadLib()
         apxMsgW() << lib.errorString() << "(" + fname + ")";
         return;
     }
-    p = reinterpret_cast<ApxPluginInterface *>(instance);
+    p = reinterpret_cast<PluginInterface *>(instance);
     interface = p;
     if (!f_enabled->value().toBool())
         return;
@@ -113,17 +113,17 @@ void AppPlugin::loadLib()
     }
 
     //define section
-    switch (p->flags() & ApxPluginInterface::PluginSectionMask) {
+    switch (p->flags() & PluginInterface::PluginSectionMask) {
     default:
         section = tr("Other");
         break;
-    case ApxPluginInterface::System:
+    case PluginInterface::System:
         section = tr("System features");
         break;
-    case ApxPluginInterface::Tool:
+    case PluginInterface::Tool:
         section = tr("Tools");
         break;
-    case ApxPluginInterface::Map:
+    case PluginInterface::Map:
         section = tr("Map view features");
         break;
     }
@@ -132,10 +132,10 @@ void AppPlugin::loadLib()
     p->init();
     QString title = p->title();
     QString descr = p->descr();
-    switch (p->flags() & ApxPluginInterface::PluginTypeMask) {
+    switch (p->flags() & PluginInterface::PluginTypeMask) {
     default:
         break;
-    case ApxPluginInterface::Feature: {
+    case PluginInterface::Feature: {
         control = p->createControl();
         Fact *f = qobject_cast<Fact *>(control);
         if (f) {
@@ -150,7 +150,7 @@ void AppPlugin::loadLib()
             descr.prepend(tr("Tool").append(": "));
         plugins->loadedTool(this);
     } break;
-    case ApxPluginInterface::Widget: {
+    case PluginInterface::Widget: {
         f_enabled->setSection(tr("Windows"));
         descr.prepend(tr("Window").append(": "));
         plugins->loadedWindow(this);
@@ -165,7 +165,7 @@ void AppPlugin::loadQml()
     if (QFileInfo(fileName).completeBaseName().contains("Plugin")) {
         QVariantMap opts;
         opts.insert("name", name.toLower());
-        ApxApp::instance()->engine()->loadQml(fileName, opts);
+        App::instance()->engine()->loadQml(fileName, opts);
     } else {
         Fact *f = new Fact(nullptr, name.toLower(), name, "", Fact::Group);
         f->setQmlPage(fileName);

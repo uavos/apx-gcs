@@ -21,7 +21,7 @@
  *
  */
 #include "Sites.h"
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Database/MissionsDB.h>
 //=============================================================================
 Sites::Sites(Fact *parent)
@@ -29,7 +29,7 @@ Sites::Sites(Fact *parent)
     , f_edit(nullptr)
 {
     setIcon("city");
-    connect(ApxApp::instance(), &ApxApp::loadingFinished, this, &Sites::appLoaded);
+    connect(App::instance(), &App::loadingFinished, this, &Sites::appLoaded);
 
     f_lookup = new LookupSites(this);
 
@@ -38,7 +38,7 @@ Sites::Sites(Fact *parent)
     f_add->setIcon("plus-circle");
     connect(f_add, &SiteEdit::addTriggered, this, &Sites::dbAddSite);
 
-    //ApxApp::jsync(this);
+    //App::jsync(this);
 
     loadQml("qrc:/" PLUGIN_NAME "/SitesPlugin.qml");
 }
@@ -73,7 +73,7 @@ void Sites::createEditor(QVariantMap item)
             &SiteEdit::updateFromEditedModelData);
     connect(f_lookup->dbModel(), &DatabaseLookupModel::synced, this, &Sites::syncEditorFromModel);
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 void Sites::destroyEditor(QVariantMap item)
 {
@@ -86,7 +86,7 @@ void Sites::destroyEditor(QVariantMap item)
     f_edit->remove();
     f_edit = nullptr;
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 void Sites::syncEditorFromModel()
 {

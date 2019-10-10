@@ -51,7 +51,7 @@ Rectangle {
                 NumberAnimation {
                     properties: "x";
                     from: -listView.width;
-                    duration: transAdd.ViewTransition.item.source==ApxApp.FromInput?0:150
+                    duration: transAdd.ViewTransition.item.source==App.FromInput?0:150
                     easing.type: Easing.OutCubic
                 }
             }

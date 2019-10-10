@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ApxApp_H
-#define ApxApp_H
+#ifndef App_H
+#define App_H
 #include <QApplication>
 #include <QQuickWindow>
 #include <QtCore>
@@ -29,12 +29,12 @@
 #include <App/AppBase.h>
 #include <App/AppEngine.h>
 #include <App/AppInstances.h>
+#include <App/AppLog.h>
 #include <App/AppPlugins.h>
 #include <App/AppRoot.h>
 #include <App/AppSettings.h>
-#include <ApxLog.h>
 //=============================================================================
-class ApxApp : public AppBase
+class App : public AppBase
 {
     Q_OBJECT
     Q_PROPERTY(AppEngine *engine READ engine CONSTANT)
@@ -42,9 +42,9 @@ class ApxApp : public AppBase
     Q_PROPERTY(double scale READ scale NOTIFY scaleChanged)
 
 public:
-    explicit ApxApp(int &argc, char **argv, const QString &name, const QUrl &url);
-    ~ApxApp();
-    static ApxApp *instance() { return _instance; }
+    explicit App(int &argc, char **argv, const QString &name, const QUrl &url);
+    ~App();
+    static App *instance() { return _instance; }
 
     void load(const QUrl &qml);
 
@@ -65,12 +65,12 @@ public:
     static bool isFixedPitch(const QFont &font);
 
 private:
-    static ApxApp *_instance;
+    static App *_instance;
 
     QStringList oPlugins;
     QString oQml;
 
-    ApxLog log;
+    AppLog log;
 
     AppPlugins *plugins;
     AppInstances *appInstances;
@@ -129,7 +129,7 @@ public:
 
 public slots:
     void report(QString msg,
-                ApxApp::NotifyFlags flags = ApxApp::NotifyFlags(FromApp),
+                App::NotifyFlags flags = App::NotifyFlags(FromApp),
                 QString subsystem = QString());
     void report(Fact *fact);
 private slots:
@@ -137,7 +137,7 @@ private slots:
     void logWarningMessage(QString msg);
 
 signals:
-    void notification(QString msg, QString subsystem, ApxApp::NotifyFlags flags, Fact *fact);
+    void notification(QString msg, QString subsystem, App::NotifyFlags flags, Fact *fact);
 
     //---------------------------------------
     //PROPERTIES
@@ -155,6 +155,6 @@ signals:
     void windowChanged();
     void scaleChanged();
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(ApxApp::NotifyFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(App::NotifyFlags)
 //=============================================================================
 #endif

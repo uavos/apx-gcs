@@ -22,7 +22,7 @@
  */
 #include "MapTools.h"
 #include "MapPrefs.h"
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Mission/VehicleMission.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
@@ -72,9 +72,9 @@ MapTools::MapTools(Fact *parent)
 MapTools::~MapTools()
 {
     //qDebug()<<"del begin"<<this;
-    //ApxApp::jsexec("ui.map.clearMapItems()");
-    //ApxApp::jsexec("ui.map.destroy()");
-    //ApxApp::jsexec("delete ui.map");
+    //App::jsexec("ui.map.clearMapItems()");
+    //App::jsexec("ui.map.destroy()");
+    //App::jsexec("delete ui.map");
     //qml->deleteLater();
     //delete qml;
     //qDebug()<<"del"<<this;

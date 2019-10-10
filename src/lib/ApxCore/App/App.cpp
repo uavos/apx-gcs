@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ApxApp.h"
+#include "App.h"
+#include <App/AppDirs.h>
 #include <App/AppWindow.h>
-#include <ApxDirs.h>
 #include <ApxMisc/SvgImageProvider.h>
 #include <ApxMisc/SvgMaterialIcon.h>
 #include <version.h>
@@ -35,8 +35,8 @@
 #include <QScreen>
 #include <QStyleFactory>
 //=============================================================================
-ApxApp *ApxApp::_instance = nullptr;
-ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
+App *App::_instance = nullptr;
+App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     : AppBase(argc, argv, name)
     , url(url)
     , m_window(nullptr)
@@ -46,10 +46,10 @@ ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
 
     qRegisterMetaType<QScreen *>("QScreen");
 
-    qmlRegisterUncreatableType<ApxApp>("APX.Facts", 1, 0, "ApxApp", "Reference only");
+    qmlRegisterUncreatableType<App>("APX.Facts", 1, 0, "App", "Reference only");
 
-    connect(&log, &ApxLog::infoMessage, this, &ApxApp::logInfoMessage, Qt::QueuedConnection);
-    connect(&log, &ApxLog::warningMessage, this, &ApxApp::logWarningMessage, Qt::QueuedConnection);
+    connect(&log, &AppLog::infoMessage, this, &App::logInfoMessage, Qt::QueuedConnection);
+    connect(&log, &AppLog::warningMessage, this, &App::logWarningMessage, Qt::QueuedConnection);
 
     //---------------------------------------
     // command line options
@@ -96,8 +96,8 @@ ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
     if (style)
         qApp->setStyle(style);
 
-    connect(this, &QCoreApplication::aboutToQuit, this, &ApxApp::quitRequested);
-    connect(this, &QGuiApplication::applicationStateChanged, this, &ApxApp::appStateChanged);
+    connect(this, &QCoreApplication::aboutToQuit, this, &App::quitRequested);
+    connect(this, &QGuiApplication::applicationStateChanged, this, &App::appStateChanged);
 
     //js engine
     m_engine = new AppEngine(this);
@@ -105,7 +105,7 @@ ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
         m_engine->globalObject().setProperty("qmlMainFile", oQml);
     } else {
         //check for overrided layout file
-        QString fname = ApxDirs::userPlugins().absoluteFilePath(
+        QString fname = AppDirs::userPlugins().absoluteFilePath(
             QString("%1.qml").arg(QCoreApplication::applicationName().remove(' ')));
         QFileInfo fi(fname);
         if (fi.exists()) {
@@ -137,11 +137,11 @@ ApxApp::ApxApp(int &argc, char **argv, const QString &name, const QUrl &url)
     connect(m_engine, &QQmlApplicationEngine::quit, m_engine, &QQmlApplicationEngine::deleteLater);
     connect(m_engine, &QQmlApplicationEngine::destroyed, this, &QGuiApplication::quit);
 
-    QTimer::singleShot(1, this, &ApxApp::loadUrl);
+    QTimer::singleShot(1, this, &App::loadUrl);
 }
-ApxApp::~ApxApp() {}
+App::~App() {}
 //=============================================================================
-void ApxApp::loadApp()
+void App::loadApp()
 {
     apxConsole() << QObject::tr("Loading application").append("...");
     loadTranslations();
@@ -152,7 +152,7 @@ void ApxApp::loadApp()
     emit loadingFinished();
 }
 //=============================================================================
-void ApxApp::quitRequested()
+void App::quitRequested()
 {
     apxMsg() << tr("Quit").append("...");
     f_app->removeAll();
@@ -160,7 +160,7 @@ void ApxApp::quitRequested()
 }
 //=============================================================================
 //=============================================================================
-void ApxApp::loadServices()
+void App::loadServices()
 {
     apxConsole() << QObject::tr("Loading services").append("...");
 
@@ -170,14 +170,14 @@ void ApxApp::loadServices()
     m_engine->rootContext()->setContextProperty("svgRenderer", svgProvider);
 
     //SoundEffects *soundEffects=new SoundEffects(this);
-    //QObject::connect(this,&ApxApp::playSoundEffect,soundEffects,&SoundEffects::play);
+    //QObject::connect(this,&App::playSoundEffect,soundEffects,&SoundEffects::play);
 }
 //=============================================================================
-void ApxApp::loadUrl()
+void App::loadUrl()
 {
     load(url);
 }
-void ApxApp::load(const QUrl &qml)
+void App::load(const QUrl &qml)
 {
     if (qml.isEmpty())
         return;
@@ -190,7 +190,7 @@ void ApxApp::load(const QUrl &qml)
 
     //update property
     if (m_window != w) {
-        connect(w, &QQuickWindow::visibilityChanged, this, &ApxApp::visibilityChanged);
+        connect(w, &QQuickWindow::visibilityChanged, this, &App::visibilityChanged);
         m_window = w;
         emit windowChanged();
     }
@@ -199,17 +199,17 @@ void ApxApp::load(const QUrl &qml)
     Fact *f;
     f = AppSettings::instance()->findChild("graphics.opengl");
     if (f)
-        connect(f, &Fact::valueChanged, this, &ApxApp::updateSurfaceFormat);
+        connect(f, &Fact::valueChanged, this, &App::updateSurfaceFormat);
     f = AppSettings::instance()->findChild("graphics.antialiasing");
     if (f)
-        connect(f, &Fact::valueChanged, this, &ApxApp::updateSurfaceFormat);
+        connect(f, &Fact::valueChanged, this, &App::updateSurfaceFormat);
     updateSurfaceFormat();
 
     //update global property
     registerUiComponent(w, "window"); //setGlobalProperty("ui.window",m_engine->newQObject(w));
 }
 //=============================================================================
-void ApxApp::updateSurfaceFormat()
+void App::updateSurfaceFormat()
 {
     if (!m_window)
         return;
@@ -271,7 +271,7 @@ void ApxApp::updateSurfaceFormat()
     m_window->setFormat(fmt);
 }
 //=============================================================================
-void ApxApp::appStateChanged(Qt::ApplicationState state)
+void App::appStateChanged(Qt::ApplicationState state)
 {
     if (m_window && state == Qt::ApplicationActive) {
         if (m_window->visibility() != QWindow::FullScreen)
@@ -279,7 +279,7 @@ void ApxApp::appStateChanged(Qt::ApplicationState state)
     }
 }
 //=============================================================================
-void ApxApp::setGlobalProperty(const QString &path, const QJSValue &value)
+void App::setGlobalProperty(const QString &path, const QJSValue &value)
 {
     QJSValue v = m_engine->globalObject();
 
@@ -300,7 +300,7 @@ void ApxApp::setGlobalProperty(const QString &path, const QJSValue &value)
     //m_engine->collectGarbage();
 }
 //=============================================================================
-void ApxApp::registerUiComponent(QObject *item, QString name)
+void App::registerUiComponent(QObject *item, QString name)
 {
     //qDebug()<<item<<name;
     QJSValue obj = m_engine->newQObject(item);
@@ -309,7 +309,7 @@ void ApxApp::registerUiComponent(QObject *item, QString name)
 }
 //=============================================================================
 //=============================================================================
-void ApxApp::loadFonts()
+void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
     QFile res;
@@ -348,13 +348,13 @@ void ApxApp::loadFonts()
     m_engine->rootContext()->setContextProperty("font_fixed", "FreeMono");
 #endif
 }
-bool ApxApp::isFixedPitch(const QFont &font)
+bool App::isFixedPitch(const QFont &font)
 {
     const QFontInfo fi(font);
     //qDebug() << fi.family() << fi.fixedPitch();
     return fi.fixedPitch();
 }
-QFont ApxApp::getMonospaceFont()
+QFont App::getMonospaceFont()
 {
     QFont font("FreeMono");
     if (isFixedPitch(font))
@@ -378,7 +378,7 @@ QFont ApxApp::getMonospaceFont()
 }
 //=============================================================================
 //=============================================================================
-void ApxApp::loadTranslations()
+void App::loadTranslations()
 {
     apxConsole() << QObject::tr("Loading translations").append("...");
     QSettings *s = AppSettings::createSettings();
@@ -389,7 +389,7 @@ void ApxApp::loadTranslations()
         s->setValue("lang", lang);
     }
     delete s;
-    QDir langp(ApxDirs::lang());
+    QDir langp(AppDirs::lang());
     QString langf;
     langf = langp.filePath(lang + ".qm");
     if (QFile::exists(langf)) {
@@ -409,19 +409,19 @@ void ApxApp::loadTranslations()
 }
 //=============================================================================
 //=============================================================================
-QQuickWindow *ApxApp::window() const
+QQuickWindow *App::window() const
 {
     return m_window;
 }
-AppEngine *ApxApp::engine() const
+AppEngine *App::engine() const
 {
     return m_engine;
 }
-double ApxApp::scale() const
+double App::scale() const
 {
     return m_scale;
 }
-void ApxApp::setScale(double v)
+void App::setScale(double v)
 {
     if (m_scale == v)
         return;
@@ -430,19 +430,19 @@ void ApxApp::setScale(double v)
 }
 //=============================================================================
 //=============================================================================
-void ApxApp::report(QString msg, ApxApp::NotifyFlags flags, QString subsystem)
+void App::report(QString msg, App::NotifyFlags flags, QString subsystem)
 {
     emit notification(msg, subsystem, flags, nullptr);
 }
-void ApxApp::report(Fact *fact)
+void App::report(Fact *fact)
 {
     emit notification("", "", FromApp, fact);
 }
-void ApxApp::logInfoMessage(QString msg)
+void App::logInfoMessage(QString msg)
 {
     emit notification(msg, QString(), Console, nullptr);
 }
-void ApxApp::logWarningMessage(QString msg)
+void App::logWarningMessage(QString msg)
 {
     emit notification(msg, QString(), Console | Warning, nullptr);
 }

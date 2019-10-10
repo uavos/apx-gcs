@@ -23,8 +23,8 @@
 #include "DatalinkSerial.h"
 #include "Datalink.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 //-----------------------------------------------------------------------------
 QStringList DatalinkSerial::openPorts;
 //=============================================================================

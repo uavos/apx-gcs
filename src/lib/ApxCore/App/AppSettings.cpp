@@ -21,8 +21,8 @@
  *
  */
 #include "AppSettings.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
 //=============================================================================
 AppSettings::AppSettings(Fact *parent)
     : Fact(parent, "settings", tr("Preferences"), tr("Application settings"), Group | FlatModel) //root
@@ -48,7 +48,7 @@ AppSettings::AppSettings(Fact *parent)
                               0);
     QStringList st;
     st << "default";
-    QDir langp(ApxDirs::lang());
+    QDir langp(AppDirs::lang());
     foreach (QFileInfo f, langp.entryInfoList(QStringList() << "*.qm"))
         st << f.baseName();
     item->setEnumStrings(st);
@@ -67,9 +67,9 @@ AppSettings::AppSettings(Fact *parent)
     scaleEvent.setInterval(1000);
     connect(item, &Fact::valueChanged, &scaleEvent, &DelayedEvent::schedule);
     connect(&scaleEvent, &DelayedEvent::triggered, this, [item]() {
-        ApxApp::instance()->setScale(item->value().toDouble());
+        App::instance()->setScale(item->value().toDouble());
     });
-    ApxApp::instance()->setScale(item->value().toDouble());
+    App::instance()->setScale(item->value().toDouble());
 
     item = new AppSettingFact(m_settings,
                               f_graphics,
@@ -121,20 +121,20 @@ AppSettings::AppSettings(Fact *parent)
     //load all settings
     AppSettingFact::loadSettings(this);
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 
-    //ApxApp::jsexec(QString("ui.%1=apx.settings.graphics.%1.value;").arg("scale"));
-    //ApxApp::jsexec(QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });").arg("scale"));
-    ApxApp::jsexec(
+    //App::jsexec(QString("ui.%1=apx.settings.graphics.%1.value;").arg("scale"));
+    //App::jsexec(QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });").arg("scale"));
+    App::jsexec(
         QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });")
             .arg("smooth"));
-    ApxApp::jsexec(
+    App::jsexec(
         QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });")
             .arg("antialiasing"));
-    ApxApp::jsexec(
+    App::jsexec(
         QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });")
             .arg("effects"));
-    ApxApp::jsexec(
+    App::jsexec(
         QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });")
             .arg("test"));
 }
@@ -240,7 +240,7 @@ bool AppSettings::readOnly()
 //=============================================================================
 void AppSettings::saveFile(const QString &name, const QString &v)
 {
-    QFile file(ApxDirs::prefs().absoluteFilePath(name));
+    QFile file(AppDirs::prefs().absoluteFilePath(name));
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         apxMsgW() << file.errorString();
         return;
@@ -252,7 +252,7 @@ void AppSettings::saveFile(const QString &name, const QString &v)
 }
 QString AppSettings::loadFile(const QString &name, const QString &defaultValue)
 {
-    QFile file(ApxDirs::prefs().absoluteFilePath(name));
+    QFile file(AppDirs::prefs().absoluteFilePath(name));
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         if (file.exists())
             apxMsgW() << file.errorString();
