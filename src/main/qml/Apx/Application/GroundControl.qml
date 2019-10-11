@@ -20,10 +20,8 @@ Item {
     enum Layout {
         Instrument,
         Background,
-        ToolBar,
-        Tool,
-        Info,
-        Status
+        Main,
+        Notifications
     }
     function add(item, layout, index)
     {

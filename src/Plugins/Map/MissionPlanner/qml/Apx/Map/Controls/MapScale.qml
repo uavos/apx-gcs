@@ -1,7 +1,5 @@
-import QtQuick          2.3
-import QtQuick.Controls 1.2
-import QtLocation       5.3
-import QtQml 2.12
+import QtQuick          2.12
+import QtQuick.Controls 2.12
 
 import Apx.Common 1.0
 

@@ -4,7 +4,7 @@ Project {
 
     property var plugins: [
         "Location",
-        "MapView",
+        "MissionPlanner",
         "Sites",
         "KmlOverlay",
     ]

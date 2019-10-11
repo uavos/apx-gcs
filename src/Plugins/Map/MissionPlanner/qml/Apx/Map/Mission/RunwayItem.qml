@@ -4,7 +4,7 @@ import QtGraphicalEffects 1.0
 
 import Apx.Map.Common 1.0
 
-import APX.Mission 1.0
+import APX.Mission 1.0 as APX
 
 
 MissionObject {
@@ -86,7 +86,7 @@ MissionObject {
     property real appCircleOpacity: ui.effects?(appCircleActive?0.8:0.6):1
 
     property variant appCircleAppCoord: appPointCoordinate
-    property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===Runway.Left?-90:90))
+    property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===APX.Runway.Left?-90:90))
     property real appCircleRadiusDefault: f_approach/2
     property real appCircleRadius: Math.max(100,f_landing?Math.abs(f_turnR):appCircleRadiusDefault)
 

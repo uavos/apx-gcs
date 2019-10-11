@@ -13,8 +13,8 @@ ApxApp.ApxPlugin {
 
 
     files: [
-        "MapPlugin.h",
-        "MapTools.cpp", "MapTools.h",
+        "MissionPlannerPlugin.h",
+        "MissionPlanner.cpp", "MissionPlanner.h",
         "MapPrefs.cpp", "MapPrefs.h",
     ]
 

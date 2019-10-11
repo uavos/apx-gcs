@@ -1,9 +1,0 @@
-module Map
-
-depends Apx.Map.MapView 1.0
-
-MapControl      1.0 Controls/MapControl.qml
-MapObject       1.0 Objects/MapObject.qml
-
-
-

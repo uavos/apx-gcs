@@ -20,17 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "MapTools.h"
+#include "MissionPlanner.h"
 #include "MapPrefs.h"
 #include <App/App.h>
 #include <Mission/VehicleMission.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
-MapTools::MapTools(Fact *parent)
+MissionPlanner::MissionPlanner(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
-           tr("Map tools"),
-           tr("Mission planner map tools"),
+           tr("Mission Planner"),
+           tr("Map view and mission editor"),
            Group | FlatModel,
            "map")
 {
@@ -67,9 +67,9 @@ MapTools::MapTools(Fact *parent)
 
     new MapPrefs(this);
 
-    qml = loadQml("qrc:/MapPlugin.qml");
+    qml = loadQml("qrc:/MissionPlannerPlugin.qml");
 }
-MapTools::~MapTools()
+MissionPlanner::~MissionPlanner()
 {
     //qDebug()<<"del begin"<<this;
     //App::jsexec("ui.map.clearMapItems()");
@@ -81,33 +81,33 @@ MapTools::~MapTools()
 }
 //=============================================================================
 //=============================================================================
-Vehicle *MapTools::vehicle() const
+Vehicle *MissionPlanner::vehicle() const
 {
     return Vehicles::instance()->current();
 }
-VehicleMission *MapTools::mission() const
+VehicleMission *MissionPlanner::mission() const
 {
     return vehicle()->f_mission;
 }
 //=============================================================================
 //=============================================================================
 //=============================================================================
-QGeoCoordinate MapTools::clickCoordinate() const
+QGeoCoordinate MissionPlanner::clickCoordinate() const
 {
     return m_clickCoordinate;
 }
-void MapTools::setClickCoordinate(const QGeoCoordinate &v)
+void MissionPlanner::setClickCoordinate(const QGeoCoordinate &v)
 {
     if (m_clickCoordinate == v)
         return;
     m_clickCoordinate = v;
     emit clickCoordinateChanged();
 }
-QGeoShape MapTools::area() const
+QGeoShape MissionPlanner::area() const
 {
     return m_area;
 }
-void MapTools::setArea(const QGeoShape &v)
+void MissionPlanner::setArea(const QGeoShape &v)
 {
     if (m_area == v)
         return;

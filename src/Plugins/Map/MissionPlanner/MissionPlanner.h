@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MapTools_H
-#define MapTools_H
+#ifndef MissionPlanner_H
+#define MissionPlanner_H
 //=============================================================================
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
@@ -31,7 +31,7 @@
 class Vehicle;
 class VehicleMission;
 //=============================================================================
-class MapTools : public Fact
+class MissionPlanner : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(QGeoCoordinate clickCoordinate READ clickCoordinate WRITE setClickCoordinate NOTIFY
@@ -39,8 +39,8 @@ class MapTools : public Fact
     Q_PROPERTY(QGeoShape area READ area WRITE setArea NOTIFY areaChanged)
 
 public:
-    explicit MapTools(Fact *parent = nullptr);
-    ~MapTools();
+    explicit MissionPlanner(Fact *parent = nullptr);
+    ~MissionPlanner();
 
     Fact *f_add;
     Fact *f_vehicle;

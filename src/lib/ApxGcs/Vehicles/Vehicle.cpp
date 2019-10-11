@@ -109,7 +109,11 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 dlinkReqTimer.stop();
         });
 
-        connect(this, &Fact::activeChanged, this, [=]() { setFollow(false); });
+        connect(this, &Fact::activeChanged, this, [this]() {
+            if (active())
+                emit selected();
+            setFollow(false);
+        });
 
         onlineTimer.setSingleShot(true);
         onlineTimer.setInterval(7000);

@@ -185,7 +185,6 @@ VehicleMission::VehicleMission(Vehicle *parent)
                 &ProtocolMission::downloadMission);
 
         if (!vehicle->isLocal()) {
-            //f_request->trigger();
             QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
         }
     }

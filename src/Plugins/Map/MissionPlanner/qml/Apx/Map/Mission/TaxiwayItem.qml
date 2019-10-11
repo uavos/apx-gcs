@@ -4,9 +4,6 @@ import QtGraphicalEffects 1.0
 
 import Apx.Map.Common 1.0
 
-import APX.Mission 1.0
-
-
 MissionObject {
     id: taxiwayItem
     color: Style.cTaxiway

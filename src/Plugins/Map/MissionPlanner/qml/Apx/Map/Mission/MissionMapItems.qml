@@ -1,8 +1,8 @@
 import QtQuick 2.12
 import QtLocation 5.13
 
-import APX.Vehicles 1.0
-import APX.Mission 1.0
+import APX.Vehicles 1.0 as APX
+import APX.Mission 1.0 as APX
 
 
 MapItemGroup {
@@ -13,8 +13,8 @@ MapItemGroup {
         map.addMapItemGroup(group)
     }
 
-    property Vehicle vehicle: apx.vehicles.current
-    property Mission mission: vehicle.mission
+    property APX.Vehicle vehicle: apx.vehicles.current
+    property APX.Mission mission: vehicle.mission
 
     visible: !mission.empty
 

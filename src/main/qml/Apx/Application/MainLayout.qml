@@ -15,13 +15,7 @@ Item {
         BoundingRect { item: top }
         BoundingRect { item: vehicles }
         BoundingRect { item: taskbar }
-        BoundingRect { item: tools }
-        BoundingRect { item: toolsItem }
-        BoundingRect { item: leftTop }
-        BoundingRect { item: leftBottom }
-        BoundingRect { item: bottom }
-        BoundingRect { item: bottomLeft }
-        BoundingRect { item: bottomRight }
+        BoundingRect { item: main }
         BoundingRect { item: notifications }
     }
 
@@ -38,18 +32,12 @@ Item {
             item.anchors.fill=control
             item.z=-1
             return true
-        case GroundControl.Layout.ToolBar:
-            item.parent=tools
+        case GroundControl.Layout.Main:
+            item.parent=main
+            item.anchors.fill=main
             return true
-        case GroundControl.Layout.Tool:
-            item.parent=leftTop
-            return true
-        case GroundControl.Layout.Info:
-            item.parent=leftBottom
-            return true
-        case GroundControl.Layout.Status:
-            item.parent=bottomLeft
-            item.Layout.alignment=Qt.AlignBottom
+        case GroundControl.Layout.Notifications:
+            item.parent=notifications
             return true
         }
         return false
@@ -75,75 +63,17 @@ Item {
         }
     }
 
-    RowLayout {
-        id: toolsItem
-        anchors.left: parent.left
+    Item {
+        id: main
         anchors.top: top.top
-        anchors.leftMargin: margins
-        anchors.topMargin: vehicles.implicitHeight+margins
-        spacing: margins
-        MissionTools {
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-        }
-        RowLayout {
-            id: tools
-        }
-    }
-
-    RowLayout {
-        id: missionList
-        anchors.left: parent.left
-        anchors.top: toolsItem.bottom
-        anchors.bottom: leftBottom.top
-        anchors.margins: margins
-        MissionListView {
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.fillHeight: true
-        }
-    }
-
-    RowLayout {
-        id: leftBottom
-        anchors.left: parent.left
-        anchors.bottom: bottom.bottom
-        anchors.leftMargin: margins
-        anchors.bottomMargin: bottomLeft.implicitHeight+margins
-    }
-
-    RowLayout {
-        id: leftTop
-        anchors.left: missionList.right
-        anchors.top: toolsItem.bottom
-        anchors.margins: margins
-    }
-
-    RowLayout {
-        id: bottom
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
         anchors.leftMargin: margins
         anchors.rightMargin: margins
-        anchors.bottomMargin: margins/2
-
-        RowLayout {
-            id: bottomLeft
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignLeft|Qt.AlignBottom
-        }
-        NumbersBar {
-            Layout.fillWidth: true
-            settingsName: "map"
-            defaults: [
-                {"bind": "altitude", "title": "ALT", "prec": "0"},
-            ]
-        }
-        RowLayout {
-            id: bottomRight
-            Layout.alignment: Qt.AlignRight|Qt.AlignBottom
-        }
+        anchors.bottomMargin: margins
+        anchors.topMargin: vehicles.implicitHeight+margins
     }
-
 
     ColumnLayout {
         id: notifications
@@ -155,10 +85,9 @@ Item {
         anchors.topMargin: taskbar.height+margins
         Loader {
             Layout.alignment: Qt.AlignRight|Qt.AlignTop
-            asynchronous: true
             active: apx.vehicles.current.isReplay()
+            visible: active
             sourceComponent: Component { TelemetryReader { } }
-            visible: status===Loader.Ready
         }
     }
 }

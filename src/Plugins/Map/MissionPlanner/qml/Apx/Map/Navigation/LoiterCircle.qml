@@ -8,7 +8,6 @@ MapCircle {
     color: "#100000FF"
     border.color: "#500000FF"
     border.width: 2
-    //smooth: ui.antialiasing
 
     //Fact bindings
     property real cmd_east: m.cmd_east.value

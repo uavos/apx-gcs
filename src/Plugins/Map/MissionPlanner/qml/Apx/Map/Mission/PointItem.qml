@@ -1,11 +1,9 @@
 import QtQuick 2.12
 import QtLocation 5.13
+import QtPositioning 5.13
 import QtGraphicalEffects 1.0
 
 import Apx.Map.Common 1.0
-
-import APX.Mission 1.0
-
 
 MissionObject {
     id: pointItem

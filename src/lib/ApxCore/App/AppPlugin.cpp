@@ -124,7 +124,7 @@ void AppPlugin::loadLib()
         section = tr("Tools");
         break;
     case PluginInterface::Map:
-        section = tr("Map view features");
+        section = tr("Mission");
         break;
     }
 

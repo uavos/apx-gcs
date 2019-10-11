@@ -8,7 +8,7 @@ MapBase {
 
     readonly property real fontSize: Qt.application.font.pixelSize*ui.scale
 
-    property var mapPlugin: apx.tools.mapview
+    property var mapPlugin: apx.tools.missionplanner
 
     //map item setup
     color: 'transparent' // Necessary to make this map transparent

@@ -3,10 +3,8 @@ import QtLocation 5.9
 import QtPositioning 5.6
 import QtGraphicalEffects 1.0
 
-//import APX.Places 1.0
 import Apx.Map 1.0
-import Apx.Common 1.0
-
+import Apx.Map.Common 1.0
 
 MapObject {
     id: control

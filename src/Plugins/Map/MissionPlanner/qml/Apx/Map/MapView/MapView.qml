@@ -24,7 +24,7 @@ Item {
     signal mapBackgroundItemLoaded(var item)
 
     //internal
-    property var mapPlugin: apx.tools.mapview
+    property var mapPlugin: apx.tools.missionplanner
 
     Item {
         id: mapTilesItem

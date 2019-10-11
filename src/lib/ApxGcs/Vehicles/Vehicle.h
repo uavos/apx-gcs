@@ -171,6 +171,8 @@ private slots:
     void updateDatalinkVars(quint16 id, double);
 
 signals:
+    void selected();
+
     //forward from protocols
     void downstreamDataReceived(); //used by widgets like signals
     void valueDataReceived();

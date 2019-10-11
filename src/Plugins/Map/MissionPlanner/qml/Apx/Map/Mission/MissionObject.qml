@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtLocation 5.13
+import QtPositioning 5.13
 
 import Apx.Map.Common 1.0
 import Apx.Common 1.0

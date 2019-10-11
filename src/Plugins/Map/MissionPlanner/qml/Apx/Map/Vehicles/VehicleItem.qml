@@ -4,14 +4,15 @@ import QtPositioning 5.12
 
 import QtGraphicalEffects 1.0
 
-import APX.Vehicles 1.0
 import Apx.Common 1.0
+
+import APX.Vehicles 1.0 as APX
 
 
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
 
-    property Vehicle vehicle: modelData
+    property APX.Vehicle vehicle: modelData
 
     //Fact bindings
     property var vm: vehicle.mandala
@@ -28,8 +29,8 @@ MapQuickItem {  //to be used inside MapComponent only
 
     visible: vehicle.visible
 
-    property bool bGCU: vehicle.vehicleClass===Vehicle.GCU
-    property bool bLOCAL: vehicle.vehicleClass===Vehicle.LOCAL
+    property bool bGCU: vehicle.vehicleClass===APX.Vehicle.GCU
+    property bool bLOCAL: vehicle.vehicleClass===APX.Vehicle.LOCAL
 
     Connections {
         target: vehicle

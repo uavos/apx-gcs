@@ -21,7 +21,6 @@
  *
  */
 #include "Waypoint.h"
-//#include "Mission.h"
 #include "MissionField.h"
 #include "VehicleMission.h"
 #include <App/App.h>

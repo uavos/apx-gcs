@@ -5,7 +5,6 @@ import QtPositioning 5.12
 import Apx.Map.Common 1.0
 
 MapPolyline {
-    z: 50
     opacity: ui.effects?0.8:1
     line.width: replay?4:2
     line.color: replay

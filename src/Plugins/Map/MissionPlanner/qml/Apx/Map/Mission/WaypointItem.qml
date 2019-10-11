@@ -4,7 +4,7 @@ import QtGraphicalEffects 1.0
 
 import Apx.Map.Common 1.0
 
-import APX.Mission 1.0
+import APX.Mission 1.0 as APX
 
 
 MissionObject {
@@ -35,7 +35,7 @@ MissionObject {
 
 
     //internal
-    property color cReachable: f_warning?Style.cLineYellow:f_type===Waypoint.Hdg?Style.cLineCyan:Style.cLineBlue
+    property color cReachable: f_warning?Style.cLineYellow:f_type===APX.Waypoint.Hdg?Style.cLineCyan:Style.cLineBlue
     property color pathColor: f_first?Style.cLineGreen: f_reachable?cReachable:Style.cLineRed
     property real pathWidth: Math.max(1,(f_first?2:4)*ui.scale)
 

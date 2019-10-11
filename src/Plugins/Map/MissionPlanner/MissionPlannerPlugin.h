@@ -20,21 +20,21 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MapPlugin_H
-#define MapPlugin_H
-#include "MapTools.h"
+#ifndef MissionPlannerPlugin_H
+#define MissionPlannerPlugin_H
+#include "MissionPlanner.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
-class MapPlugin : public PluginInterface
+class MissionPlannerPlugin : public PluginInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
     Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | Map; }
-    QObject *createControl() override { return new MapTools(); }
+    QObject *createControl() override { return new MissionPlanner(); }
     QStringList depends() override { return QStringList() << "Location"; }
 };
 //=============================================================================
-#endif // MapPlugin_H
+#endif // MissionPlannerPlugin_H

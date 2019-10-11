@@ -8,7 +8,7 @@ MapItemGroup {
     id: control
 
     property var map: ui.map
-    property var area: apx.tools.mapview.area
+    property var area: apx.tools.missionplanner.area
     property var plugin: apx.tools.kmloverlay
     property var kmlCenter: plugin.center
     onKmlCenterChanged: {

@@ -72,6 +72,8 @@ Telemetry::Telemetry(Vehicle *parent)
         });
         connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
 
+        connect(vehicle, &Vehicle::selected, f_reader, &TelemetryReader::loadCurrent);
+
     } else {
         f_recorder = new TelemetryRecorder(vehicle, this);
         connect(f_recorder, &Fact::valueChanged, this, [=]() {

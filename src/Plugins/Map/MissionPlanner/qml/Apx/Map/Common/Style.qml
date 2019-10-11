@@ -1,5 +1,5 @@
 pragma Singleton
-import QtQuick 2.0
+import QtQuick 2.12
 
 QtObject {
     property color cBlue:   "#3779C5"

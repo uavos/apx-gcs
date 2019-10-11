@@ -1,11 +1,6 @@
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-
-import APX.Vehicles 1.0
+import QtQuick          2.12
 
 import Apx.Common 1.0
-
-import "../lib"
 
 Item {
     id: control
