@@ -32,7 +32,7 @@ ApxProduct {
     //COMPILER
     Depends { name: "cpp" }
 
-    cpp.visibility: "minimal"
+    //cpp.visibility: "minimal"
 
     cpp.driverLinkerFlags: base.concat(["-rdynamic"])
 

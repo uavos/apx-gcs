@@ -86,6 +86,8 @@ Item {
         active: value>=0
         visible: active
         ProgressBar {
+            height: bottomBar.height
+            width: control.width
             //anchors.fill: bottomBar
             value: progress.value/100
             indeterminate: progress.value==0
