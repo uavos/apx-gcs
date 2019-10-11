@@ -5,6 +5,14 @@
 #include "Vehicles/Vehicles.h"
 #include <QPainter>
 
+AbstractOverlayItem::AbstractOverlayItem()
+{
+    m_timer.setSingleShot(false);
+    m_timer.setInterval(33);
+    connect(&m_timer, &QTimer::timeout, [this](){ update(); });
+    setAutoRepaint(true);
+}
+
 qreal AbstractOverlayItem::getScale() const
 {
     return m_scale;
@@ -17,6 +25,14 @@ void AbstractOverlayItem::setScale(qreal scale)
         emit scaleChanged();
         update();
     }
+}
+
+void AbstractOverlayItem::setAutoRepaint(bool b)
+{
+    if(b)
+        m_timer.start();
+    else
+        m_timer.stop();
 }
 
 void AbstractOverlayItem::paint(QPainter *painter)
@@ -266,6 +282,10 @@ Overlay::Overlay(Fact *parent)
     OverlayAim::registerQmlType();
     OverlayVars::registerQmlType();
     OverlayGimbal::registerQmlType();
+
+    m_aim.setAutoRepaint(false);
+    m_gimbal.setAutoRepaint(false);
+    m_vars.setAutoRepaint(false);
 
     QSettings *settings = AppSettings::settings();
 

@@ -11,15 +11,17 @@ class AbstractOverlayItem : public QQuickPaintedItem
     Q_OBJECT
     Q_PROPERTY(qreal scale READ getScale WRITE setScale NOTIFY scaleChanged)
 public:
-    AbstractOverlayItem() = default;
+    AbstractOverlayItem();
     virtual void render(const QRectF &box, QPainter *painter) = 0;
     qreal getScale() const;
     void setScale(qreal scale);
+    void setAutoRepaint(bool b);
 
 protected:
     qreal m_scale = 1.0;
 
 private:
+    QTimer m_timer;
     void paint(QPainter *painter) override;
 
 signals:
