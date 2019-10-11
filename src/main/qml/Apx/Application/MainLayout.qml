@@ -30,67 +30,29 @@ Item {
 
     readonly property real margins: 10
 
-    property var mainItem
-
-
-    function addMainItem(item)
+    function add(item, layout)
     {
-        mainItem=control
-        item.parent=control
-        item.anchors.fill=control
-        item.z=-1
-    }
-
-    function addTool(item)
-    {
-        item.parent=tools
-    }
-    function addToolInfo(item, alignment)
-    {
-        if(alignment&Qt.AlignBottom)
-            item.parent=leftBottom
-        else
+        switch(layout){
+        case GroundControl.Layout.Background:
+            item.parent=control
+            item.anchors.fill=control
+            item.z=-1
+            return true
+        case GroundControl.Layout.ToolBar:
+            item.parent=tools
+            return true
+        case GroundControl.Layout.Tool:
             item.parent=leftTop
-    }
-    function addInfo(item)
-    {
-        item.parent=bottomLeft
-        item.Layout.alignment=Qt.AlignBottom
-    }
-
-    function addItem(item, alignment)
-    {
-        if(alignment&Qt.AlignRight){
-            if(alignment&Qt.AlignBottom){
-                item.parent=rightBottom
-                item.Layout.alignment=Qt.AlignRight
-                return
-            }else{
-                item.parent=rightTop
-                item.Layout.alignment=Qt.AlignRight
-                return
-            }
-        }else if(alignment&Qt.AlignLeft){
-            if(alignment&Qt.AlignBottom){
-                item.parent=bottomLeft
-                item.Layout.alignment=Qt.AlignBottom
-                return
-            }else if(alignment&Qt.AlignVCenter){
-                item.parent=left
-                item.Layout.alignment=Qt.AlignTop
-                return
-            }else{
-                item.parent=missionTools
-                return
-            }
-        }else if(alignment&Qt.AlignCenter){
-            if(alignment&Qt.AlignBottom){
-                item.parent=bottomRight
-                item.Layout.alignment=Qt.AlignRight
-                return
-            }
+            return true
+        case GroundControl.Layout.Info:
+            item.parent=leftBottom
+            return true
+        case GroundControl.Layout.Status:
+            item.parent=bottomLeft
+            item.Layout.alignment=Qt.AlignBottom
+            return true
         }
-        console.error("Unsupported item alignment:", item, alignment)
+        return false
     }
 
     RowLayout {
@@ -171,9 +133,6 @@ Item {
         }
         NumbersBar {
             Layout.fillWidth: true
-            //layoutDirection: Qt.RightToLeft
-            //Layout.bottomMargin: 15
-            //flow: Flow.TopToBottom
             settingsName: "map"
             defaults: [
                 {"bind": "altitude", "title": "ALT", "prec": "0"},
@@ -184,38 +143,6 @@ Item {
             Layout.alignment: Qt.AlignRight|Qt.AlignBottom
         }
     }
-
-    /*Loader {
-        id: signals
-        anchors.right: parent.right
-        anchors.bottom: bottom.bottom
-        anchors.bottomMargin: bottomRight.implicitHeight+margins
-        anchors.rightMargin: margins
-        active: showSignals
-        asynchronous: true
-        sourceComponent: Component { Signals { } }
-        visible: status===Loader.Ready
-        states: [
-            State {
-                name: "hidden"
-                when: !signals.visible
-                PropertyChanges { target: signals; anchors.rightMargin: -600 }
-            },
-            State {
-                name: "shown"
-                when: signals.visible
-                PropertyChanges { target: signals; anchors.rightMargin: margins }
-            }
-        ]
-        onStateChanged: console.log(state)
-        transitions: Transition {
-            NumberAnimation {
-                duration: 200
-                properties: "anchors.rightMargin"
-                easing.type: Easing.InOutQuad
-            }
-        }
-    }*/
 
 
     ColumnLayout {
@@ -234,90 +161,5 @@ Item {
             visible: status===Loader.Ready
         }
     }
-
-
-    /*RowLayout {
-        id: bottom
-        anchors.left: bottomLeft.implicitHeight?parent.left:leftMission.right
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.leftMargin: margins
-        anchors.bottomMargin: margins
-        anchors.rightMargin: rightBottom.implicitWidth?rightBottom.implicitWidth+margins*2:margins
-        RowLayout {
-            id: bottomLeft
-            Layout.alignment: Qt.AlignBottom|Qt.AlignLeft
-        }
-        ColumnLayout {
-            id: bottomRight
-            Layout.alignment: Qt.AlignBottom
-            Layout.fillWidth: true
-            NumbersBar {
-                Layout.fillWidth: true
-                layoutDirection: Qt.RightToLeft
-                //Layout.bottomMargin: 15
-                //flow: Flow.TopToBottom
-                settingsName: "map"
-                defaults: [
-                    {"bind": "altitude", "title": "ALT", "prec": "0"},
-                ]
-            }
-        }
-    }*/
-
-
-    /*ColumnLayout {
-        id: leftMission
-        anchors.top: topMission.bottom
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        anchors.topMargin: margins
-        anchors.leftMargin: margins
-        anchors.bottomMargin: bottomLeft.implicitHeight?bottomLeft.implicitHeight+margins*2:margins
-        Loader {
-            id: loaderMission
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.fillHeight: true
-            sourceComponent: Component { MissionListView { } }
-        }
-    }
-
-    ColumnLayout {
-        id: left
-        anchors.top: topMission.bottom
-        anchors.bottom: bottom.top
-        anchors.left: parent.left
-        anchors.topMargin: margins
-        anchors.bottomMargin: margins
-        anchors.leftMargin: leftMission.implicitWidth?leftMission.implicitWidth+margins*2:margins
-        Loader {
-            //id: loaderMission
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.fillHeight: true
-            sourceComponent: Component { MissionListView { } }
-        }
-    }
-
-    ColumnLayout {
-        id: right
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: margins
-        anchors.bottomMargin: margins
-        anchors.topMargin: topRight.implicitHeight?topRight.implicitHeight+margins*2:margins
-        ColumnLayout {
-            id: rightTop
-            Layout.alignment: Qt.AlignTop|Qt.AlignRight
-            //Layout.fillWidth: false
-            //Layout.fillHeight: true
-        }
-        ColumnLayout {
-            id: rightBottom
-            Layout.alignment: Qt.AlignBottom|Qt.AlignRight
-            //Layout.fillWidth: false
-            //Layout.fillHeight: true
-        }
-    }*/
 }
 

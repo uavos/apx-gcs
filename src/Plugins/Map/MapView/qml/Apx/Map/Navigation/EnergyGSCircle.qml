@@ -1,6 +1,6 @@
-import QtQuick 2.5
-import QtLocation 5.6
-import QtPositioning 5.6
+import QtQuick 2.12
+import QtLocation 5.12
+import QtPositioning 5.12
 
 MapCircle {
     color: "transparent"

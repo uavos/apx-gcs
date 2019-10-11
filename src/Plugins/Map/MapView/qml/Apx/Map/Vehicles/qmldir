@@ -1,0 +1,7 @@
+module Vehicles
+depends Apx.Map.Objects 1.0
+
+VehiclesMapItems 1.0 VehiclesMapItems.qml
+
+
+

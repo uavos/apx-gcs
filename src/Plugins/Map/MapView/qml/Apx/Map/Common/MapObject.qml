@@ -1,10 +1,6 @@
-import QtQuick 2.5
-import QtLocation 5.9
-import QtPositioning 5.6
-import QtQml 2.12
-import QtGraphicalEffects 1.12
-
-import "../lib"
+import QtQuick 2.12
+import QtLocation 5.13
+import QtGraphicalEffects 1.0
 
 MapQuickItem {  //to be used inside MapComponent only
     id: mapObject
@@ -125,7 +121,7 @@ MapQuickItem {  //to be used inside MapComponent only
     coordinate: implicitCoordinate?implicitCoordinate:QtPositioning.coordinate()
     anchorPoint.x: textItem.width/2
     anchorPoint.y: textItem.height/2
-    z: (dragging||selected||hover)?1000:mapObject.implicitZ
+    z: interacting?99999:mapObject.implicitZ
     width: sourceItem.width
     height: sourceItem.height
 

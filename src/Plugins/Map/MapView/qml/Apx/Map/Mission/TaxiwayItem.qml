@@ -1,14 +1,11 @@
-import QtQuick 2.5
-import QtLocation 5.9
-import QtPositioning 5.6
+import QtQuick 2.12
+import QtLocation 5.13
 import QtGraphicalEffects 1.0
-import QtQml 2.12
 
-import APX.Vehicles 1.0
+import Apx.Map.Common 1.0
+
 import APX.Mission 1.0
 
-import "../lib"
-import ".."
 
 MissionObject {
     id: taxiwayItem

@@ -1,15 +1,7 @@
 ﻿import QtQuick          2.12
 import QtLocation       5.12
 import QtPositioning    5.12
-import QtQuick.Window   2.12
 
-import QtQml            2.12
-import QtGraphicalEffects 1.0
-
-import APX.Vehicles     1.0
-
-import "../vehicle"
-import "../mission"
 
 MapBase {
     id: map
@@ -47,7 +39,7 @@ MapBase {
 
 
     //internal
-    property double itemsScaleFactor: 1
+    property real itemsScaleFactor: 1
 
     property var selectedObject
 

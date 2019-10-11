@@ -6,6 +6,7 @@ import QtLocation 5.12
 import QtPositioning 5.12
 
 import Apx.Common 1.0
+import Apx.Application 1.0
 import Apx.Menu 1.0
 
 import APX.Facts 1.0
@@ -20,10 +21,10 @@ ColumnLayout {
     property var factVehicle: plugin.vehicle
 
     Component.onCompleted: {
-        ui.main.mainLayout.addTool(add)
-        ui.main.mainLayout.addTool(vehicle)
-        ui.main.mainLayout.addTool(tool)
-        ui.main.mainLayout.addToolInfo(control)
+        ui.main.add(add, GroundControl.Layout.ToolBar)
+        ui.main.add(vehicle, GroundControl.Layout.ToolBar)
+        ui.main.add(tool, GroundControl.Layout.ToolBar)
+        ui.main.add(control, GroundControl.Layout.Tool)
     }
 
 

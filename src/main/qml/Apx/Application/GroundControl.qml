@@ -17,11 +17,26 @@ Item {
     id: groundControl
 
 
+    enum Layout {
+        Instrument,
+        Background,
+        ToolBar,
+        Tool,
+        Info,
+        Status
+    }
+    function add(item, layout, index)
+    {
+        if(instrumentsLayout.add(item, layout, index))
+            return
+        if(mainLayout.add(item, layout, index))
+            return
+        console.error("Unsupported item position:", layout, item)
+    }
+
+    //internal
     readonly property int instrumentsHeight: width*0.2
     readonly property color sepColor: "#244"
-
-    property alias mainLayout: mainLayout
-    property alias instrumentsLayout: instrumentsLayout
 
     Settings {
         id: settings

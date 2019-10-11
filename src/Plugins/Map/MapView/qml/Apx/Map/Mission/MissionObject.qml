@@ -1,14 +1,10 @@
-import QtQuick 2.5
-import QtQml 2.12
-import QtLocation 5.9
-import QtPositioning 5.6
+import QtQuick 2.12
+import QtLocation 5.13
 
+import Apx.Map.Common 1.0
 import Apx.Common 1.0
 
-import "../lib"
-import ".."
-
-MapObject {  //to be used inside MapComponent only
+MapObject {
     id: missionObject
 
     property var fact: null
@@ -24,7 +20,7 @@ MapObject {  //to be used inside MapComponent only
     }
 
     onTriggered: {
-        if(fact) fact.trigger() //({"pos":Qt.point(ui.window.width/4,ui.window.height/2)})
+        if(fact) fact.trigger()
     }
 
     property int detailsLevel: 20
@@ -50,36 +46,6 @@ MapObject {  //to be used inside MapComponent only
         }
     }
 
-    /*contentsCenter: Loader {
-        z: -1
-        active: fact?fact.active:false
-        anchors.centerIn: parent
-        width: missionObject.width*1.8
-        height: width
-        sourceComponent: Component {
-            Rectangle {
-                radius: width/2
-                color: "transparent"
-                border.width: 2
-                border.color: missionObject.color //"#fff"
-                //opacity: 0.5
-            }
-        }
-    }*/
-    /*contentsCenter: Loader {
-        z: -1
-        active: fact?fact.active:false
-        anchors.centerIn: parent
-        anchors.verticalCenterOffset: -missionObject.height
-        width: missionObject.width*1.8
-        height: width
-        sourceComponent: Component {
-            MaterialIcon {
-                name: "chevron-down"
-                color: missionObject.color
-            }
-        }
-    }*/
     contentsCenter: Loader {
         z: -1
         active: fact?fact.active:false

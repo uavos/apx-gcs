@@ -1,14 +1,12 @@
-import QtQuick 2.5
-import QtLocation 5.9
-import QtPositioning 5.6
+import QtQuick 2.12
+import QtLocation 5.12
+import QtPositioning 5.12
+
 import QtGraphicalEffects 1.0
-import QtQml 2.12
 
 import APX.Vehicles 1.0
 import Apx.Common 1.0
 
-import "../mission"
-import "../lib"
 
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
@@ -286,18 +284,4 @@ MapQuickItem {  //to be used inside MapComponent only
             }
         ]
     }
-
-    //Mission
-    Component.onCompleted: {
-        var c=missionC.createObject(map)
-        map.addMapItemGroup(c)
-        vehicle.removed.connect(function(){c.destroy()})
-    }
-    Component {
-        id: missionC
-        MissionMapItems {
-            vehicle: vehicleItem.vehicle
-        }
-    }
-
 }

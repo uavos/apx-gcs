@@ -8,21 +8,28 @@ import QtQml.Models 2.13
 import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Instruments 1.0
+import Apx.Application 1.0
 
 RowLayout {
     id: control
 
-    spacing: 0
-
-    readonly property color sepColor: "#244"
-
-
-    function addPlugin(plugin, index)
+    function add(item, layout, index)
     {
-        instrumentsItem.add(plugin, index)
-        if(plugin.name)
-            application.registerUiComponent(plugin,"instruments."+plugin.name)
+        switch(layout){
+        case GroundControl.Layout.Instrument:
+            instrumentsItem.add(item, index)
+            if(item.name)
+                application.registerUiComponent(item,"instruments."+item.name)
+            return true
+        }
+        return false
+
     }
+
+
+    //internal
+    readonly property color sepColor: "#244"
+    spacing: 0
 
     function addComponent(c)
     {
@@ -105,8 +112,7 @@ RowLayout {
                     index=pluginsModel.count
                 if(!plugin.title)
                     plugin.title=pluginsModel.count+1
-                //plugin.parent=view
-                //pluginsModel.insert(index, plugin)
+
                 plugins.push(plugin)
                 var p = {}
                 for(var i in plugin) p[i]=plugin[i]
