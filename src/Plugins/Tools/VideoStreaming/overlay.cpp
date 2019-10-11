@@ -278,7 +278,7 @@ QString OverlayGimbal::getPitchVar() const
 
 void OverlayGimbal::setPitchVar(const QString &pitchVar)
 {
-    if (m_pitchVar == pitchVar) {
+    if (m_pitchVar != pitchVar) {
         m_pitchVar = pitchVar;
         emit pitchVarChanged();
     }
