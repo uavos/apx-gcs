@@ -30,6 +30,7 @@ ApxApp.ApxProduct {
     Depends { name: "qmlqrc" }
     qmlqrc.usePrefix: false
 
+
     Depends {
         name: "Qt";
         submodules: [

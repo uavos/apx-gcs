@@ -71,6 +71,9 @@ Product {
     cpp.cLanguageVersion: "c11"
     //cpp.visibility: "minimal"
 
+    //eliminate no debug symbols in executable warning
+    cpp.separateDebugInformation: qbs.buildVariant != "release"
+
 
     cpp.defines: {
         var v=base

@@ -2,6 +2,9 @@
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 
+import Qt.labs.settings 1.0
+import QtQml.Models 2.13
+
 import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Instruments 1.0
@@ -14,10 +17,9 @@ RowLayout {
     readonly property color sepColor: "#244"
 
 
-    function addPlugin(plugin)
+    function addPlugin(plugin, index)
     {
-        plugin.visible=Qt.binding(function(){return control.visible && instrumentsItem.currentIndex==plugin.SwipeView.index})
-        instrumentsItem.add(plugin)
+        instrumentsItem.add(plugin, index)
         if(plugin.name)
             application.registerUiComponent(plugin,"instruments."+plugin.name)
     }
@@ -86,25 +88,56 @@ RowLayout {
     Component {
         id: c_instruments
         ColumnLayout {
+            id: instrumentsView
             Layout.fillHeight: true
             Layout.fillWidth: true
             spacing: 1
 
-            property int currentIndex: swipeView.currentIndex
-            function add(c)
+            Settings {
+                id: settings
+                category: "Layout"
+                property string instrumentsPlugin
+            }
+
+            function add(plugin, index)
             {
-                c.parent=swipeView
-                pagesModel.append(c)
+                if(typeof(index)=='undefined')
+                    index=pluginsModel.count
+                if(!plugin.title)
+                    plugin.title=pluginsModel.count+1
+                //plugin.parent=view
+                //pluginsModel.insert(index, plugin)
+                plugins.push(plugin)
+                var p = {}
+                for(var i in plugin) p[i]=plugin[i]
+                p.idx = plugins.length-1
+                pluginsModel.insert(index, p)
+
+                //show by saved state
+                if(plugin.title===settings.instrumentsPlugin)
+                    show(plugin)
+                else if(view.empty)
+                    view.push(plugin)
+
+                //unload on close
+                plugin.visible=Qt.binding(function(){return control.visible && view.currentItem===plugin})
             }
+            function show(plugin)
+            {
+                //console.log(plugin)
+                if(view.currentItem===plugin)
+                    return
+                view.replace(plugin)
+                settings.instrumentsPlugin=plugin.title
+            }
+            property var plugins: []
             ListModel {
-                id: pagesModel
+                id: pluginsModel
             }
-            SwipeView {
-                id: swipeView
+            StackView {
+                id: view
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                interactive: false
-                orientation: Qt.Horizontal
                 clip: true
             }
             ListView {
@@ -113,15 +146,16 @@ RowLayout {
                 Layout.margins: 3
                 implicitWidth: contentWidth
                 spacing: 3
-                model: pagesModel
+                model: pluginsModel
                 visible: count>1
                 orientation: ListView.Horizontal
                 delegate: CleanButton {
-                    text: model.title?model.title:index
-                    toolTip: model.descr
-                    iconName: model.icon
-                    highlighted: swipeView.currentIndex==index
-                    onTriggered: swipeView.currentIndex=index
+                    property var plugin: plugins[model.idx]
+                    text: plugin.title
+                    toolTip: plugin.descr
+                    iconName: plugin.icon
+                    highlighted: view.currentItem===plugin
+                    onTriggered: show(plugin)
                     Component.onCompleted: {
                         listView.implicitHeight=Math.max(listView.implicitHeight, implicitHeight)
                     }

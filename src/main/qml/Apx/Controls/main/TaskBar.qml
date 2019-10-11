@@ -14,18 +14,6 @@ RowLayout {
         //implicitWidth: height
     }
 
-    //reset path
-    /*CleanButton {
-        Layout.fillHeight: true
-        readonly property var vehicle: apx.vehicles.current
-        readonly property var fact: vehicle.telemetry.rpath
-        readonly property int dist: vehicle.totalDistance/100*100
-        iconName: fact.icon
-        toolTip: fact.title + (dist>0?" ("+apx.distanceToString(dist)+")":"")
-        onTriggered: fact.trigger()
-        visible: fact.enabled
-    }*/
-
 
     //tools list from plugins
     DelegateModel {
@@ -88,9 +76,9 @@ RowLayout {
 
     CleanButton {
         Layout.fillHeight: true
-        iconName: showInstruments?"fullscreen":"fullscreen-exit"
+        iconName: groundControl.maximized?"fullscreen-exit":"fullscreen"
         toolTip: qsTr("Switch view")
-        onTriggered: showInstruments=!showInstruments
+        onTriggered: groundControl.toggleState()
     }
 
     RecLabel {

@@ -33,4 +33,5 @@ Loader {
         enabled: uiComponent
         onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
     }
+    //onLoaded: console.log(plugin)
 }

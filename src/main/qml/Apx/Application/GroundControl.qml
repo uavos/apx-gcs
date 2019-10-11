@@ -23,66 +23,34 @@ Item {
     property alias mainLayout: mainLayout
     property alias instrumentsLayout: instrumentsLayout
 
-    property bool showInstruments: true
-    property bool showSignals: true
-
     Settings {
-        category: "ViewState"
-        property alias showInstruments: groundControl.showInstruments
-        property alias showSignals: groundControl.showSignals
-    }
-    /*Settings {
         id: settings
-        category: "Activity"
+        category: "Layout"
         property alias state: groundControl.state
     }
 
+    state: "normal"
     states: [
         State {
-            name: "flight"
-            property string icon: "airplane"
+            name: "normal"
             PropertyChanges {
-                target: groundControl;
-                showInstruments: true
-                showSignals: false
+                target: instrumentsLayout;
+                visible: true
             }
         },
         State {
-            name: "mission"
-            property string icon: "map"
+            name: "maximized"
             PropertyChanges {
-                target: groundControl;
-                showInstruments: false
-                showSignals: false
-            }
-        },
-        State {
-            name: "tuning"
-            extend: "flight"
-            property string icon: "settings"
-            PropertyChanges {
-                target: groundControl;
-                showSignals: true
+                target: instrumentsLayout;
+                visible: false
             }
         }
     ]
-    state: "flight"
 
-    property string mainState: state
-
-    Activities {
-        id: activityControl
-        z: 10000
-        anchors.top: parent.top
-        anchors.right: parent.right
-    }*/
-
-    property var maximizedItem
-    function showMaximized(item)
+    property bool maximized: state=="maximized"
+    function toggleState()
     {
-        maximizedItem=item
-        showInstruments=false
-
+        state=maximized?"normal":"maximized"
     }
 
     GridLayout {
@@ -94,14 +62,12 @@ Item {
 
             InstrumentsLayout {
                 id: instrumentsLayout
-                visible: showInstruments
                 state: groundControl.state
-                //Layout.rightMargin: activityControl.width+3
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.maximumHeight: instrumentsHeight
             }
-            Rectangle { visible: showInstruments; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
+            Rectangle { visible: instrumentsLayout.visible; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
 
             MainLayout {
                 id: mainLayout

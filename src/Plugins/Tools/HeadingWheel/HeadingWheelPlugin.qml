@@ -10,8 +10,6 @@ AppPlugin {
     descr: qsTr("Navigation instrument")
     icon: "navigation"
 
-    unloadOnHide: false
-
     sourceComponent: Hdg { }
     uiComponent: "main"
     onConfigure: {
