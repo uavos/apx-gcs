@@ -326,6 +326,13 @@ Overlay::Overlay(Fact *parent)
                                         "cam_zoom");
     f_topRightVars->setIcon("format-list-bulleted");
 
+    f_gimbalShow = new AppSettingFact(settings,
+                                      this,
+                                      "show_gimbal",
+                                      tr("Show gimbal position"),
+                                      "",
+                                      Bool,
+                                      false);
     f_gimbalYawVar = new AppSettingFact(settings,
                                         this,
                                         "gimbal_yaw_var",
@@ -369,7 +376,8 @@ void Overlay::drawOverlay(QImage &image)
 
     m_aim.render(image.rect(), &painter);
     m_vars.render(image.rect(), &painter);
-    m_gimbal.render(image.rect(), &painter);
+    if(f_gimbalShow->value().toBool())
+        m_gimbal.render(image.rect(), &painter);
 }
 
 void Overlay::onVariablesValueChanged()

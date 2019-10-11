@@ -70,7 +70,7 @@ Rectangle {
             height: videoOutput.contentRect.height
         }
         OverlayGimbal {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED && overlay.show_gimbal.value === true
             yawVar: overlay.gimbal_yaw_var.value
             pitchVar: overlay.gimbal_pitch_var.value
             scale: overlay.scale.value

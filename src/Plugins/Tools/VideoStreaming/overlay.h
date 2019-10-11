@@ -125,6 +125,7 @@ public:
     Fact *f_topCenterVars;
     Fact *f_topRightVars;
     Fact *f_scale;
+    Fact *f_gimbalShow;
     Fact *f_gimbalYawVar;
     Fact *f_gimbalPitchVar;
 
