@@ -145,6 +145,7 @@ void FactListModel::sync()
 }
 void FactListModel::syncModel(const ItemsList &list)
 {
+    bool bLayoutChanged = false;
     //find deleted
     for (int i = 0; i < _items.size(); ++i) {
         if (list.contains(_items.at(i)))
@@ -152,6 +153,7 @@ void FactListModel::syncModel(const ItemsList &list)
         beginRemoveRows(QModelIndex(), i, i);
         _items.removeAt(i);
         endRemoveRows();
+        bLayoutChanged = true;
         //qDebug()<<"del"<<i<<this;
         emit countChanged();
         i--;
@@ -169,15 +171,19 @@ void FactListModel::syncModel(const ItemsList &list)
             _items.removeAt(j);
             _items.insert(i, src);
             endMoveRows();
+            bLayoutChanged = true;
             //qDebug()<<"mov"<<j<<i<<this;
         } else {
             //inserted
             beginInsertRows(QModelIndex(), i, i);
             _items.insert(i, src);
             endInsertRows();
+            bLayoutChanged = true;
             //qDebug()<<"ins"<<i<<this;
             emit countChanged();
         }
     }
+    if (bLayoutChanged)
+        emit layoutChanged();
 }
 //=============================================================================

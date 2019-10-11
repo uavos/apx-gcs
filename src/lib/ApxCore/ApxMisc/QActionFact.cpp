@@ -23,9 +23,10 @@
 #include "QActionFact.h"
 #include <ApxMisc/SvgMaterialIcon.h>
 //=============================================================================
-QActionFact::QActionFact(Fact *f)
+QActionFact::QActionFact(Fact *f, const QColor &iconColor)
     : QAction(f)
     , fact(f)
+    , iconColor(iconColor)
 {
     if (f->dataType() == Fact::Apply)
         setObjectName("greenAction");
@@ -37,14 +38,24 @@ QActionFact::QActionFact(Fact *f)
     connect(f, &Fact::iconChanged, this, &QActionFact::updateIcon);
     connect(f, &Fact::enabledChanged, this, &QActionFact::updateEnabled);
     connect(f, &Fact::visibleChanged, this, &QActionFact::updateVisible);
+    connect(f, &Fact::valueChanged, this, &QActionFact::updateChecked);
 
     connect(this, &QAction::triggered, f, [f]() { f->trigger(); });
+
+    QKeySequence::StandardKey key
+        = f->opts().value("shortcut", QKeySequence::UnknownKey).value<QKeySequence::StandardKey>();
+    if (key != QKeySequence::UnknownKey)
+        setShortcut(key);
+
+    setCheckable(f->dataType() == Fact::Bool);
+    connect(this, &QAction::triggered, this, &QActionFact::actionTriggered);
 
     updateText();
     updateToolTip();
     updateIcon();
     updateEnabled();
     updateVisible();
+    updateChecked();
 }
 //=============================================================================
 void QActionFact::updateText()
@@ -57,7 +68,7 @@ void QActionFact::updateToolTip()
 }
 void QActionFact::updateIcon()
 {
-    setIcon(SvgMaterialIcon(fact->icon()));
+    setIcon(SvgMaterialIcon(fact->icon(), iconColor));
 }
 void QActionFact::updateEnabled()
 {
@@ -66,6 +77,22 @@ void QActionFact::updateEnabled()
 void QActionFact::updateVisible()
 {
     setVisible(fact->visible());
+}
+//=============================================================================
+void QActionFact::updateChecked()
+{
+    if (!isCheckable())
+        return;
+    setChecked(fact->value().toBool());
+}
+void QActionFact::actionTriggered(bool checked)
+{
+    if (!isCheckable())
+        return;
+    if (fact->dataType() == Fact::Bool) {
+        fact->setValue(checked);
+        return;
+    }
 }
 //=============================================================================
 //=============================================================================

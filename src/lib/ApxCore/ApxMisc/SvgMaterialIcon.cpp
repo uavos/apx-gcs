@@ -81,36 +81,40 @@ void SvgMaterialIcon::updateMap()
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/icons/material-icons.css");
-    QStringList st;
-    if (res.open(QIODevice::ReadOnly)) {
-        QString s = res.readAll();
-        st = s.split(".mdi-");
+    res.setFileName(":/icons/material-icons.json");
+    if (res.open(QFile::ReadOnly | QFile::Text)) {
+        QJsonDocument json = QJsonDocument::fromJson(res.readAll());
         res.close();
-    }
-    if (st.isEmpty()) {
-        apxConsoleW() << "Material icons CSS is missing";
-        return;
-    }
-    for (int i = 0; i < st.size(); ++i) {
-        QString s = st.at(i);
-        int pos = s.indexOf(":before");
-        if (pos < 1)
-            continue;
-        QString sname = s.left(pos).trimmed();
-        s = s.mid(pos + 1);
-        pos = s.indexOf("content:");
-        if (pos < 1)
-            continue;
-        s = s.mid(pos);
-        s = s.mid(s.indexOf(':') + 1);
-        s = s.left(s.indexOf(';')).trimmed().remove('"').replace("\\", "\\u");
-        QRegExp rx("(\\\\u[0-9a-fA-F]{4})");
-        if (rx.indexIn(s) != -1) {
-            map[sname] = QChar(rx.cap(1).right(4).toUShort(0, 16));
+        QJsonObject obj = json.object();
+        for (auto v = obj.constBegin(); v != obj.constEnd(); ++v) {
+            QString s = v.value().toVariant().toString(); //.toString();
+            QChar c = 0;
+            if (s.size() == 1) {
+                c = s.at(0);
+            } else if (s.startsWith("\\u")) {
+                std::wstring str = s.toStdWString();
+                s = QString::fromStdWString(str);
+                if (s.size() == 1)
+                    c = s.at(0);
+            } else if (s.startsWith("\\F", Qt::CaseInsensitive)) {
+                /*QTextCodec *codec = QTextCodec::codecForName("UTF-32BE");
+                QString sc = codec->toUnicode(s.mid(1).prepend("\\U").toUtf8());
+                uint v = s.mid(1).prepend("0x").toUInt(nullptr, 16);
+                c = QChar(v); //sc.at(0);*/
+                /*bool ok;
+                uint v = s.mid(1).toUInt(&ok, 16);
+                if (ok)
+                    c = v;*/
+
+                //qDebug() << s << sc;
+            }
+            if (c == 0) {
+                //qWarning() << v.key() << s << v.value() << s.size();
+                continue;
+            }
+            map[v.key()] = c;
         }
     }
-    //qDebug()<<map;
 }
 //=============================================================================
 //=============================================================================

@@ -7,8 +7,8 @@ import Apx.Application 1.0
 
 import APX.Facts 1.0
 
-MenuBar {
-    id: menuBar
+Loader {
+    //id: menuBar
     /*Instantiator {
         id: rootMenus
         active: false
@@ -27,27 +27,32 @@ MenuBar {
         onObjectRemoved: removeMenu(object)
     }*/
     Component.onCompleted: {
-        var c=c_menu.createObject(menuBar) //,{"title":"sfdgfhd"})
-        menuBar.addMenu(test)
+        var c=c_menu.createObject() //,{"title":"sfdgfhd"})
+        var m=c_menuBar.createObject()
+        m.addMenu(c)
+
+        //m.window=application.window
+        //console.log(m,c)
     }
 
     Component {
         id: c_menu
         Menu {
-            id: m
             title: "hello"
+            type: Menu.DefaultMenu
             MenuItem {
                 text: "item"
             }
         }
     }
-    property var test: Menu {
-        //id: test
-        title: "hello"
-        MenuItem {
-            text: "item"
+
+    Component {
+        id: c_menuBar
+        MenuBar {
         }
     }
+
+
     /*Menu {
         title: qsTr("File")
         MenuItem {

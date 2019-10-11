@@ -566,7 +566,7 @@ FactListModel *Fact::model()
     /*if (!m_model && size() <= 0 && bind()) {
         return bind()->model();
     }*/
-    bool bEmpty = size() <= 0;
+    bool bEmpty = size() <= 0 && treeType() != Group;
     if (!m_model) {
         if (!bEmpty)
             m_model = new FactListModel(this);

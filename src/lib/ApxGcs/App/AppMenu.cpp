@@ -23,11 +23,14 @@
 #include "AppMenu.h"
 
 #include <App/App.h>
+#include <App/AppGcs.h>
 #include <App/AppRoot.h>
+#include <ApxMisc/QActionFact.h>
 
 #include <Nodes/Nodes.h>
 #include <Nodes/NodesShare.h>
 
+#include <Datalink/Datalink.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicles.h>
@@ -45,10 +48,10 @@ AppMenu::AppMenu(Fact *parent)
                  QString("%1 %2").arg(tr("About")).arg(QCoreApplication::applicationName()),
                  "",
                  NoFlags,
-                 "information");
+                 "information-outline");
     connect(f, &Fact::triggered, App::instance(), &App::about);
 
-    f = new Fact(app, "preferences", tr("Preferences"), "", NoFlags, "settings");
+    f = new Fact(app, "preferences", tr("Preferences"), "", NoFlags, "settings-outline");
     connect(f, &Fact::triggered, AppRoot::instance(), &Fact::trigger);
 
     file = new Fact(this, "file", tr("File"), "", Group, "file");
@@ -57,9 +60,21 @@ AppMenu::AppMenu(Fact *parent)
     f->bind(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
     f = new Fact(file, "nodes");
     f->bind(Vehicles::instance()->f_replay->f_nodes->f_share->f_import);
+    f = new Fact(file, "datalink");
+    f->bind(AppGcs::instance()->f_datalink);
+    f->setSection(tr("Communication"));
 
     vehicle = new Fact(this, "vehicle", tr("Vehicle"), "", Group, "airplane");
     vehicle->bind(Vehicles::instance()->f_select);
+    connect(
+        Vehicles::instance(),
+        &Vehicles::currentChanged,
+        vehicle,
+        [this]() { updateMenu(vehicle->bind()); },
+        Qt::QueuedConnection);
+
+    //datalink = new Fact(this, "datalink");
+    //datalink->bind(AppGcs::instance()->f_datalink);
 
     tools = new Fact(this, "tools", "", "", Group);
     tools->bind(AppRoot::instance()->f_tools);
@@ -72,7 +87,7 @@ AppMenu::AppMenu(Fact *parent)
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("http://127.0.0.1:9080/mandala?descr"));
     });
-    f = new Fact(help, "docs", tr("Documentation"), "", NoFlags, "help-circle");
+    f = new Fact(help, "docs", tr("Documentation"), "", NoFlags, "help-circle-outline");
     f->setOpt("shortcut", QKeySequence::HelpContents);
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("http://docs.uavos.com"));
@@ -81,27 +96,91 @@ AppMenu::AppMenu(Fact *parent)
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("http://uavos.github.io/apx-releases/CHANGELOG.html"));
     });
-    f = new Fact(help, "issue", tr("Report a problem"), "", NoFlags, "bug");
+    f = new Fact(help, "issue", tr("Report a problem"), "", NoFlags, "bug-outline");
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("https://github.com/uavos/apx-releases/issues"));
     });
     createMenuBar();
 }
 //=============================================================================
-QMenuBar *AppMenu::createMenuBar()
+void AppMenu::createMenuBar()
 {
     QMenuBar *menuBar = new QMenuBar(nullptr);
     for (int i = 0; i < size(); ++i) {
         Fact *g = child(i);
-        Fact *gm = g->menu();
+        Fact *f = g->menu();
+        if (!f)
+            continue;
         QMenu *menu = menuBar->addMenu(g->title());
-        for (int j = 0; j < gm->size(); ++j) {
-            Fact *f = gm->child(j);
-            if (f->menu())
-                f = f->menu();
-            menu->addAction(f->title());
+        f->setOpt("qmenu", QVariant::fromValue(menu));
+        updateMenu(f);
+        FactListModel *model = f->model();
+        if (model) {
+            connect(
+                model,
+                &FactListModel::layoutChanged,
+                this,
+                [this, f]() { updateMenu(f); },
+                Qt::QueuedConnection);
         }
     }
-    return menuBar;
+}
+void AppMenu::updateMenu(Fact *fact)
+{
+    QMenu *menu = fact->opts().value("qmenu").value<QMenu *>();
+    if (!menu)
+        return;
+
+    menu->clear();
+
+    FactListModel *model = fact->model();
+    if (!model)
+        return;
+    model->sync();
+
+    bool isVehicle = fact == vehicle || fact == vehicle->bind();
+    QString sect;
+    for (int i = 0; i < model->count(); ++i) {
+        Fact *f = model->get(i);
+        Fact *fm = f->menu();
+        if (fm)
+            f = fm;
+        if (sect != f->section()) {
+            sect = f->section();
+            menu->addSection(sect);
+        }
+        QAction *a = new QActionFact(f, QColor(Qt::black));
+
+        if (isVehicle) {
+            a->setCheckable(true);
+            connect(f, &Fact::activeChanged, a, [f, a]() { a->setChecked(f->active()); });
+            a->setChecked(f->active());
+        }
+
+        menu->addAction(a);
+    }
+    if (isVehicle) {
+        qDebug() << fact;
+        //append vehicle contents
+        menu->addSection(tr("Current vehicle"));
+        FactListModel *model = Vehicles::instance()->current()->model();
+        if (!model)
+            return;
+        model->sync();
+
+        QString sect;
+        for (int i = 0; i < model->count(); ++i) {
+            Fact *f = model->get(i);
+            Fact *fm = f->menu();
+            if (fm)
+                f = fm;
+            if (sect != f->section()) {
+                sect = f->section();
+                menu->addSection(sect);
+            }
+            QAction *a = new QActionFact(f, QColor(Qt::black));
+            menu->addAction(a);
+        }
+    }
 }
 //=============================================================================

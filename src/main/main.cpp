@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     //performance graphics
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
+    //QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 
     //qputenv("QSG_RENDER_LOOP", "basic");
 

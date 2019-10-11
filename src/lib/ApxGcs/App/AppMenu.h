@@ -36,11 +36,16 @@ public:
     Fact *app;
     Fact *file;
     Fact *vehicle;
+    Fact *datalink;
     Fact *tools;
     Fact *windows;
     Fact *help;
 
-    QMenuBar *createMenuBar();
+private slots:
+    void updateMenu(Fact *fact);
+
+public slots:
+    void createMenuBar();
 };
 //=============================================================================
 #endif
