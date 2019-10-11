@@ -23,8 +23,8 @@
 #include "App.h"
 #include <App/AppDirs.h>
 #include <App/AppWindow.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/SvgImageProvider.h>
-#include <ApxMisc/SvgMaterialIcon.h>
 #include <version.h>
 
 #include <QApplication>
@@ -164,7 +164,6 @@ void App::loadServices()
 {
     apxConsole() << QObject::tr("Loading services").append("...");
 
-    SvgMaterialIcon::initialize(m_engine);
     SvgImageProvider *svgProvider = new SvgImageProvider(":/");
     m_engine->addImageProvider("svg", svgProvider);
     m_engine->rootContext()->setContextProperty("svgRenderer", svgProvider);
@@ -375,6 +374,11 @@ QFont App::getMonospaceFont()
     if (isFixedPitch(font))
         return font;
     return font;
+}
+//=============================================================================
+QChar App::materialIconChar(const QString &name)
+{
+    return MaterialIcon::getChar(name);
 }
 //=============================================================================
 //=============================================================================

@@ -21,7 +21,7 @@
  *
  */
 #include "QActionFact.h"
-#include <ApxMisc/SvgMaterialIcon.h>
+#include <ApxMisc/MaterialIcon.h>
 //=============================================================================
 QActionFact::QActionFact(Fact *f, const QColor &iconColor)
     : QAction(f)
@@ -68,7 +68,7 @@ void QActionFact::updateToolTip()
 }
 void QActionFact::updateIcon()
 {
-    setIcon(SvgMaterialIcon(fact->icon(), iconColor));
+    setIcon(MaterialIcon(fact->icon(), iconColor));
 }
 void QActionFact::updateEnabled()
 {

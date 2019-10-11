@@ -42,7 +42,7 @@ Rectangle {
         id: textItem
         anchors.centerIn: parent
         anchors.verticalCenterOffset: iconName?0:1
-        text: iconName?materialIconChar[iconName]:root.text
+        text: iconName?application.materialIconChar(iconName):root.text
         font.pixelSize: parent.height-(iconName?1:2)
         font.family: iconName?"Material Design Icons":font_narrow
         color: colorFG

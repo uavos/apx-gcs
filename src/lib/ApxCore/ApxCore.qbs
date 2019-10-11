@@ -84,7 +84,7 @@ ApxApp.ApxLibrary {
             "DelayedEvent.cpp", "DelayedEvent.h",
             "FactValue.h",
             "SvgImageProvider.cpp", "SvgImageProvider.h",
-            "SvgMaterialIcon.cpp", "SvgMaterialIcon.h",
+            "MaterialIcon.cpp", "MaterialIcon.h",
             "QActionFact.cpp", "QActionFact.h",
             "FactQml.cpp", "FactQml.h",
             "WidgetQmlItem.cpp", "WidgetQmlItem.h",

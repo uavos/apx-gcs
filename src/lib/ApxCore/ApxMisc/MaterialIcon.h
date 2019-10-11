@@ -28,18 +28,16 @@
 #include <QQmlEngine>
 #include <QtCore>
 //=============================================================================
-class SvgMaterialIcon : public QIcon
+class MaterialIcon : public QIcon
 {
 public:
-    SvgMaterialIcon(const QString &name, const QColor &color = QColor(Qt::white));
-    static void initialize(QQmlEngine *e);
+    MaterialIcon(const QString &name, const QColor &color = QColor(Qt::white));
+
     static QChar getChar(const QString &name);
 
 private:
     static QHash<QString, QChar> map;
     static void updateMap();
-
-    static QVariantMap qmlMap;
 
     QIcon icon(const QString &name, const QColor &color) const;
 };
@@ -48,7 +46,7 @@ class QFontIconEngine : public QIconEngine
 {
 public:
     QFontIconEngine();
-    ~QFontIconEngine();
+    virtual ~QFontIconEngine();
     virtual void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
         Q_DECL_OVERRIDE;
     virtual QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;

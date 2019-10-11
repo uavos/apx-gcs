@@ -24,7 +24,7 @@
 #include "SourceEdit.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-#include <ApxMisc/SvgMaterialIcon.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <Pawn/PawnCompiler.h>
 #include <Vehicles/Vehicles.h>
 #include <QtWidgets>
@@ -32,14 +32,14 @@
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     : FactDelegateDialog(fact, parent)
 {
-    aCompile = new QAction(SvgMaterialIcon("code-tags-check"), tr("Compile"), this);
+    aCompile = new QAction(MaterialIcon("code-tags-check"), tr("Compile"), this);
     addAction(aCompile);
 
-    aLoad = new QAction(SvgMaterialIcon("folder-open"), tr("Load"), this);
+    aLoad = new QAction(MaterialIcon("folder-open"), tr("Load"), this);
     connect(aLoad, &QAction::triggered, this, &FactDelegateScript::aLoad_triggered);
     addAction(aLoad);
 
-    aSave = new QAction(SvgMaterialIcon("content-save"), tr("Save"), this);
+    aSave = new QAction(MaterialIcon("content-save"), tr("Save"), this);
     connect(aSave, &QAction::triggered, this, &FactDelegateScript::aSave_triggered);
     addAction(aSave);
 

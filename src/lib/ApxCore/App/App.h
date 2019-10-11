@@ -23,6 +23,7 @@
 #ifndef App_H
 #define App_H
 #include <QApplication>
+#include <QFont>
 #include <QQuickWindow>
 #include <QtCore>
 
@@ -61,8 +62,9 @@ public:
     }
     void setGlobalProperty(const QString &path, const QJSValue &value);
 
-    static QFont getMonospaceFont();
-    static bool isFixedPitch(const QFont &font);
+    Q_INVOKABLE static QFont getMonospaceFont();
+    Q_INVOKABLE static bool isFixedPitch(const QFont &font);
+    Q_INVOKABLE static QChar materialIconChar(const QString &name);
 
 private:
     static App *_instance;

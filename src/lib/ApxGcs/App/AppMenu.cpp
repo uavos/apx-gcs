@@ -153,14 +153,19 @@ void AppMenu::updateMenu(Fact *fact)
 
         if (isVehicle) {
             a->setCheckable(true);
-            connect(f, &Fact::activeChanged, a, [f, a]() { a->setChecked(f->active()); });
+            connect(
+                f,
+                &Fact::activeChanged,
+                a,
+                [f, a]() { a->setChecked(f->active()); },
+                Qt::QueuedConnection);
             a->setChecked(f->active());
         }
 
         menu->addAction(a);
     }
     if (isVehicle) {
-        qDebug() << fact;
+        //qDebug() << fact;
         //append vehicle contents
         menu->addSection(tr("Current vehicle"));
         FactListModel *model = Vehicles::instance()->current()->model();

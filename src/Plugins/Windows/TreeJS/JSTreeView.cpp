@@ -1,5 +1,5 @@
 #include "JSTreeView.h"
-#include <ApxMisc/SvgMaterialIcon.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <TreeModel/JSTreeModel.h>
 #include <QHeaderView>
 #include <QtWidgets>
@@ -147,7 +147,7 @@ JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, Q
     toolBar = new QToolBar(this);
     toolBar->setIconSize(QSize(14, 14));
     toolBar->layout()->setMargin(0);
-    aBack = new QAction(SvgMaterialIcon("arrow-left"), tr("Back"), this);
+    aBack = new QAction(MaterialIcon("arrow-left"), tr("Back"), this);
     aBack->setVisible(backNavigation);
     connect(aBack, &QAction::triggered, this, &JSTreeWidget::back);
     toolBar->addAction(aBack);

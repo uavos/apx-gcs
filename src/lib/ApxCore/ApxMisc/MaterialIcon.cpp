@@ -20,7 +20,7 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "SvgMaterialIcon.h"
+#include "MaterialIcon.h"
 #include <App/AppLog.h>
 #include <QApplication>
 #include <QFontDatabase>
@@ -28,15 +28,15 @@
 #include <QPalette>
 #include <QSvgRenderer>
 //=============================================================================
-QHash<QString, QChar> SvgMaterialIcon::map;
-QVariantMap SvgMaterialIcon::qmlMap;
-SvgMaterialIcon::SvgMaterialIcon(const QString &name, const QColor &color)
+QHash<QString, QChar> MaterialIcon::map;
+
+MaterialIcon::MaterialIcon(const QString &name, const QColor &color)
     : QIcon(icon(name, color))
 {
     //https://materialdesignicons.com/
 }
 //=============================================================================
-QIcon SvgMaterialIcon::icon(const QString &name, const QColor &color) const
+QIcon MaterialIcon::icon(const QString &name, const QColor &color) const
 {
     QChar c = getChar(name);
     if (c.isNull()) {
@@ -49,31 +49,19 @@ QIcon SvgMaterialIcon::icon(const QString &name, const QColor &color) const
     return QIcon(engine);
 }
 //=============================================================================
-//=============================================================================
-void SvgMaterialIcon::initialize(QQmlEngine *e)
-{
-    updateMap();
-    QHashIterator<QString, QChar> i(map);
-    while (i.hasNext()) {
-        i.next();
-        qmlMap[i.key()] = QString(i.value()); //.toLatin1();
-    }
-    e->globalObject().setProperty("materialIconChar", e->toScriptValue(qmlMap));
-    //e->rootContext()->setContextProperty("materialIconChar",qmlMap);
-}
-//=============================================================================
-QChar SvgMaterialIcon::getChar(const QString &name)
+QChar MaterialIcon::getChar(const QString &name)
 {
     if (map.isEmpty())
         updateMap();
-    if (!map.contains(name)) {
+
+    QChar c = map.value(name);
+    if (c == '\0') {
         apxConsoleW() << "Material icon is missing:" << name;
-        return QChar();
     }
-    return map.value(name);
+    return c;
 }
 //=============================================================================
-void SvgMaterialIcon::updateMap()
+void MaterialIcon::updateMap()
 {
     QFile res;
     res.setFileName(":/icons/material-icons.ttf");
@@ -108,13 +96,15 @@ void SvgMaterialIcon::updateMap()
 
                 //qDebug() << s << sc;
             }
-            if (c == 0) {
+            if (c == '\0') {
                 //qWarning() << v.key() << s << v.value() << s.size();
                 continue;
             }
             map[v.key()] = c;
         }
     }
+    if (map.isEmpty())
+        map.insert("", QChar('\0'));
 }
 //=============================================================================
 //=============================================================================
@@ -127,7 +117,8 @@ void QFontIconEngine::paint(QPainter *painter,
                             QIcon::Mode mode,
                             QIcon::State state)
 {
-    Q_UNUSED(state);
+    Q_UNUSED(state)
+
     QFont font = QFont(mFontFamily);
     int drawSize = rect.height(); //qRound(rect.height() * 0.8);
     font.setPixelSize(drawSize > 1 ? drawSize : 1);

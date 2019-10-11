@@ -21,7 +21,7 @@
  *
  */
 #include "FactDelegateDialog.h"
-#include <ApxMisc/SvgMaterialIcon.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <Nodes/Nodes.h>
 //=============================================================================
 QHash<Fact *, FactDelegateDialog *> FactDelegateDialog::dlgMap;
@@ -47,7 +47,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
 
     Nodes *nodes = fact->findParent<Nodes *>();
     if (nodes) {
-        aUpload = new QAction(SvgMaterialIcon("upload"), tr("Upload"), this);
+        aUpload = new QAction(MaterialIcon("upload"), tr("Upload"), this);
         connect(aUpload, &QAction::triggered, nodes, [nodes]() { nodes->f_upload->trigger(); });
         connect(nodes->f_upload, &Fact::enabledChanged, this, [=]() {
             Nodes *nodes = fact->findParent<Nodes *>();
@@ -64,7 +64,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
             QString("%1-%2: %3").arg(node->title()).arg(node->status()).arg(windowTitle()));
     }
 
-    aUndo = new QAction(SvgMaterialIcon("undo"), tr("Revert"), this);
+    aUndo = new QAction(MaterialIcon("undo"), tr("Revert"), this);
     connect(aUndo, &QAction::triggered, fact, &Fact::restore);
     connect(fact, &Fact::modifiedChanged, this, [=]() { aUndo->setEnabled(fact->modified()); });
     aUndo->setEnabled(fact->modified());
@@ -75,7 +75,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
     aSep = toolBar->addSeparator();
 
     //close button
-    QAction *aClose = new QAction(SvgMaterialIcon("close"), tr("Close"), this);
+    QAction *aClose = new QAction(MaterialIcon("close"), tr("Close"), this);
     connect(aClose, &QAction::triggered, this, [=]() {
         if (aboutToClose())
             accept();

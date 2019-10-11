@@ -23,8 +23,8 @@
 #include "TelemetryFrame.h"
 #include <App/App.h>
 #include <App/AppDirs.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
-#include <ApxMisc/SvgMaterialIcon.h>
 #include <Telemetry/LookupTelemetry.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
@@ -104,12 +104,12 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     a = new QActionFact(lookup);
     toolBar->addAction(a);
     toolBar->addSeparator();
-    aSplit = toolBar->addAction(SvgMaterialIcon("book-open-variant"),
+    aSplit = toolBar->addAction(MaterialIcon("book-open-variant"),
                                 tr("Split view"),
                                 this,
                                 &TelemetryFrame::aSplit_triggered);
     aSplit->setCheckable(true);
-    aShowEvents = toolBar->addAction(SvgMaterialIcon("ray-vertex"),
+    aShowEvents = toolBar->addAction(MaterialIcon("ray-vertex"),
                                      tr("Show events"),
                                      this,
                                      &TelemetryFrame::aShowEvents_triggered);
@@ -123,7 +123,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBar->addAction(new QActionFact(lookup->f_remove));
     toolBar->addSeparator();
 
-    aReplay = toolBar->addAction(SvgMaterialIcon(player->icon()),
+    aReplay = toolBar->addAction(MaterialIcon(player->icon()),
                                  tr("Replay"),
                                  this,
                                  &TelemetryFrame::aReplay_triggered);
