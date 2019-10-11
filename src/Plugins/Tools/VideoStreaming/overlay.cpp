@@ -136,14 +136,14 @@ void OverlayVars::render(const QRectF &box, QPainter *painter)
     int y = 0;
     for (const auto &varname : m_topLeftVars) {
         y += fontSize;
-        QString value = Vehicles::instance()->current()->f_mandala->factByName(varname)->text();
+        QString value = var2text(Vehicles::instance()->current()->f_mandala->factByName(varname));
         painter->drawText(0, y, pattern.arg(varname, value));
     }
 
     y = 0;
     for (const auto &varname : m_topCenterVars) {
         y += fontSize;
-        QString value = Vehicles::instance()->current()->f_mandala->factByName(varname)->text();
+        QString value = var2text(Vehicles::instance()->current()->f_mandala->factByName(varname));
         QString text = pattern.arg(varname, value);
         qreal stringWidth = metrics.width(text);
         painter->drawText(int(round(box.center().x() - stringWidth / 2.0)), y, text);
@@ -152,7 +152,7 @@ void OverlayVars::render(const QRectF &box, QPainter *painter)
     y = 0;
     for (const auto &varname : m_topRightVars) {
         y += fontSize;
-        QString value = Vehicles::instance()->current()->f_mandala->factByName(varname)->text();
+        QString value = var2text(Vehicles::instance()->current()->f_mandala->factByName(varname));
         QString text = pattern.arg(varname, value);
         qreal stringWidth = metrics.width(text);
         painter->drawText(int(round(box.width() - stringWidth)), y, text);
@@ -194,6 +194,14 @@ void OverlayVars::setTopRightVars(const QString &topRightVars)
     m_topRightVars = topRightVars.split(',');
     emit topRightVarsChanged();
     update();
+}
+
+QString OverlayVars::var2text(Fact *var)
+{
+    if(var->name() == "gps_time")
+        return QDateTime::fromSecsSinceEpoch(var->value().toLongLong()).time().toString("HH-mm-ss");
+    else
+        return var->text();
 }
 
 OverlayGimbal::OverlayGimbal()

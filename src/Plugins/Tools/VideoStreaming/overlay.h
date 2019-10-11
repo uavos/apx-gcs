@@ -75,6 +75,7 @@ private:
     QStringList m_topLeftVars;
     QStringList m_topCenterVars;
     QStringList m_topRightVars;
+    QString var2text(Fact *var);
 
 signals:
     void topLeftVarsChanged();
