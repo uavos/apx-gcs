@@ -3,10 +3,10 @@
 Project {
 
     property var plugins: [
-        "Location",
+        //"Location",
         "MissionPlanner",
-        "Sites",
-        "KmlOverlay",
+        //"Sites",
+        //"KmlOverlay",
     ]
 
     references: {
