@@ -34,15 +34,14 @@ MapView {
 
 
     //Controls
-    Item {
+    /*Item {
         z: 9999
-        //visible: false
         BoundingRect { item: toolBar }
         BoundingRect { item: missionList }
         BoundingRect { item: bottom }
         BoundingRect { item: info }
         BoundingRect { item: status }
-    }
+    }*/
 
 
     Item {

@@ -9,15 +9,14 @@ import Apx.Instruments 1.0
 Item {
     id: control
 
-    Item {
+    /*Item {
         z: 9999
-        //visible: false
         BoundingRect { item: top }
         BoundingRect { item: vehicles }
         BoundingRect { item: taskbar }
         BoundingRect { item: main }
         BoundingRect { item: notifications }
-    }
+    }*/
 
     implicitWidth: 600
     implicitHeight: 500
