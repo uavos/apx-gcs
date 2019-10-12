@@ -35,14 +35,20 @@ public:
 
     Fact *app;
     Fact *file;
-    Fact *vehicle;
+    Fact *vehicles;
     Fact *datalink;
     Fact *tools;
     Fact *windows;
     Fact *help;
 
+    Fact *vehicleSelect;
+    Fact *vehicleTools;
+
 private slots:
     void updateMenu(Fact *fact);
+
+    void updateVehicleTools();
+    void updateVehicleSelect();
 
 public slots:
     void createMenuBar();

@@ -126,7 +126,7 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
             list->append(item);
         connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
     }
-    if (sect) {
+    if (sect && fact == this->fact) {
         std::stable_sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
             return a->section().localeAwareCompare(b->section()) < 0;
         });

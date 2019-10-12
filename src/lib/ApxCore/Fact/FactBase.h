@@ -59,7 +59,7 @@ public:
         DragChildren = 1 << 9,   //child items are draggable to change order
 
         //data types [dataType]
-        DataMask = 0xFFFF0000,
+        DataMask = 0x00FF0000,
         Const = 1 << 16,
         Text = 2 << 16,
         Float = 3 << 16,

@@ -38,7 +38,7 @@
 #include <QDesktopServices>
 //=============================================================================
 AppMenu::AppMenu(Fact *parent)
-    : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Action | IconOnly, "menu")
+    : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Group | IconOnly, "menu")
 {
     setOpt("pos", QPointF(1, 0.3));
 
@@ -66,17 +66,26 @@ AppMenu::AppMenu(Fact *parent)
     f->bind(AppGcs::instance()->f_datalink);
     f->setSection(tr("Communication"));
 
-    vehicle = new Fact(this, "vehicle", tr("Vehicle"), "", Group, "airplane");
-    vehicle->bind(Vehicles::instance()->f_select);
-    connect(
-        Vehicles::instance(),
-        &Vehicles::currentChanged,
-        vehicle,
-        [this]() { updateMenu(vehicle->bind()); },
-        Qt::QueuedConnection);
-
-    //datalink = new Fact(this, "datalink");
-    //datalink->bind(AppGcs::instance()->f_datalink);
+    vehicles = new Fact(this, "vehicles", tr("Vehicles"), "", Group | FlatModel, "airplane");
+    vehicleSelect = new Fact(vehicles, "select", tr("Select vehicle"), "", Group | Section);
+    vehicleTools = new Fact(vehicles, "vehicle", tr("Current vehicle"), "", Group | Section);
+    connect(Vehicles::instance(),
+            &Vehicles::currentChanged,
+            this,
+            &AppMenu::updateVehicleTools,
+            Qt::QueuedConnection);
+    updateVehicleTools();
+    connect(Vehicles::instance()->f_select,
+            &Fact::itemInserted,
+            this,
+            &AppMenu::updateVehicleSelect,
+            Qt::QueuedConnection);
+    connect(Vehicles::instance()->f_select,
+            &Fact::itemRemoved,
+            this,
+            &AppMenu::updateVehicleSelect,
+            Qt::QueuedConnection);
+    updateVehicleSelect();
 
     tools = new Fact(this, "tools", "", "", Group);
     tools->bind(AppRoot::instance()->f_tools);
@@ -104,6 +113,31 @@ AppMenu::AppMenu(Fact *parent)
     });
 
     createMenuBar();
+}
+//=============================================================================
+void AppMenu::updateVehicleTools()
+{
+    Vehicle *v = Vehicles::instance()->current();
+    if (!v)
+        return;
+    vehicleTools->removeAll();
+    for (int i = 0; i < v->size(); ++i) {
+        Fact *f = v->child(i);
+        Fact *a = new Fact(vehicleTools, f->name());
+        a->bind(f);
+    }
+}
+void AppMenu::updateVehicleSelect()
+{
+    Fact *v = Vehicles::instance()->f_select;
+    vehicleSelect->removeAll();
+    for (int i = 0; i < v->size(); ++i) {
+        Fact *f = v->child(i);
+        Fact *a = new Fact(vehicleSelect, f->name(), f->title(), f->descr(), Bool);
+        a->setValue(f->active());
+        connect(f, &Fact::activeChanged, a, [a, f]() { a->setValue(f->active()); });
+        connect(a, &Fact::triggered, f, &Fact::trigger);
+    }
 }
 //=============================================================================
 void AppMenu::createMenuBar()
@@ -141,7 +175,6 @@ void AppMenu::updateMenu(Fact *fact)
         return;
     model->sync();
 
-    bool isVehicle = fact == vehicle || fact == vehicle->bind();
     QString sect;
     for (int i = 0; i < model->count(); ++i) {
         Fact *f = model->get(i);
@@ -153,42 +186,7 @@ void AppMenu::updateMenu(Fact *fact)
             menu->addSection(sect);
         }
         QAction *a = new QActionFact(f, QColor(Qt::black));
-
-        if (isVehicle) {
-            a->setCheckable(true);
-            connect(
-                f,
-                &Fact::activeChanged,
-                a,
-                [f, a]() { a->setChecked(f->active()); },
-                Qt::QueuedConnection);
-            a->setChecked(f->active());
-        }
-
         menu->addAction(a);
-    }
-    if (isVehicle) {
-        //qDebug() << fact;
-        //append vehicle contents
-        menu->addSection(tr("Current vehicle"));
-        FactListModel *model = Vehicles::instance()->current()->model();
-        if (!model)
-            return;
-        model->sync();
-
-        QString sect;
-        for (int i = 0; i < model->count(); ++i) {
-            Fact *f = model->get(i);
-            Fact *fm = f->menu();
-            if (fm)
-                f = fm;
-            if (sect != f->section()) {
-                sect = f->section();
-                menu->addSection(sect);
-            }
-            QAction *a = new QActionFact(f, QColor(Qt::black));
-            menu->addAction(a);
-        }
     }
 }
 //=============================================================================

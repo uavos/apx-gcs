@@ -568,8 +568,10 @@ FactListModel *Fact::model()
     }*/
     bool bEmpty = size() <= 0 && treeType() != Group;
     if (!m_model) {
-        if (!bEmpty)
+        if (!bEmpty) {
             m_model = new FactListModel(this);
+            m_model->sync();
+        }
     } else if (bEmpty) {
         m_model->deleteLater();
         m_model = nullptr;
