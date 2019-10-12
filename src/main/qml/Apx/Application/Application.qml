@@ -1,8 +1,6 @@
 ﻿import QtQuick 2.12
 
-import Apx.Common 1.0
 import Apx.Menu 1.0
-import Apx.Application 1.0
 
 AppWindow {
     id: control
@@ -22,12 +20,6 @@ AppWindow {
         }
         opacity: visible?1:0
         Behavior on opacity { PropertyAnimation { duration: 2000; easing.type: Easing.InQuart; } }
-    }
-
-    //system menu
-    AppMenuBar {
-        id: appMenu
-        active: false
     }
 
     //fact menu dispatcher
@@ -52,7 +44,6 @@ AppWindow {
         target: application
         onLoadingFinished: {
             loaderMain.active=true
-            //appMenu.active=true
         }
         onAbout: {
             var c=c_about.createObject(application.window)

@@ -119,18 +119,18 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     setGlobalProperty("ui", m_engine->newObject());
     jsexec(QString("ui.__defineGetter__('%1', function(){ return application.%1; });").arg("scale"));
 
-    f_app = new AppRoot(this);
+    f_apx = new AppRoot(this);
 
-    connect(this, &QCoreApplication::aboutToQuit, f_app->f_settings, &AppSettings::setReadOnly);
+    connect(this, &QCoreApplication::aboutToQuit, f_apx->f_settings, &AppSettings::setReadOnly);
 
     //plugins
-    plugins = new AppPlugins(f_app->f_pluginsSettings, this);
-    connect(plugins, &AppPlugins::loadedTool, f_app, &AppRoot::addToolPlugin);
-    connect(plugins, &AppPlugins::loadedWindow, f_app, &AppRoot::addWindowPlugin);
-    connect(plugins, &AppPlugins::loadedControl, f_app, &AppRoot::addControlPlugin);
+    plugins = new AppPlugins(f_apx->f_pluginsSettings, this);
+    connect(plugins, &AppPlugins::loadedTool, f_apx, &AppRoot::addToolPlugin);
+    connect(plugins, &AppPlugins::loadedWindow, f_apx, &AppRoot::addWindowPlugin);
+    connect(plugins, &AppPlugins::loadedControl, f_apx, &AppRoot::addControlPlugin);
     connect(this, &QCoreApplication::aboutToQuit, plugins, &AppPlugins::unload);
 
-    jsync(f_app);
+    jsync(f_apx);
 
     m_engine->jsSyncObject(this);
 
@@ -155,7 +155,7 @@ void App::loadApp()
 void App::quitRequested()
 {
     apxMsg() << tr("Quit").append("...");
-    f_app->removeAll();
+    f_apx->removeAll();
     //jsexec("ui.map.destroy()");
 }
 //=============================================================================

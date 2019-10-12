@@ -94,4 +94,14 @@ RowLayout {
         Layout.fillHeight: true
         Layout.rightMargin: height*0.3
     }
+    Loader {
+        active: Qt.platform.os === "linux"
+        visible: active
+        sourceComponent: Component {
+            FactButton {
+                fact: apx.sysmenu
+                showText: false
+            }
+        }
+    }
 }

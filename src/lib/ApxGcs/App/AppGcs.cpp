@@ -36,13 +36,13 @@ void AppGcs::loadServices()
 {
     App::loadServices();
 
-    protocol = new ApxProtocol(f_app);
+    protocol = new ApxProtocol(f_apx);
 
-    new Database(f_app);
-    Vehicles *vehicles = new Vehicles(f_app, protocol->vehicles);
+    new Database(f_apx);
+    Vehicles *vehicles = new Vehicles(f_apx, protocol->vehicles);
 
     //datalink
-    f_datalink = new Datalink(f_app);
+    f_datalink = new Datalink(f_apx);
     QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ApxProtocol::unpack);
     QObject::connect(protocol, &ApxProtocol::sendUplink, f_datalink, &Datalink::sendPacket);
     QObject::connect(f_datalink,
@@ -50,11 +50,11 @@ void AppGcs::loadServices()
                      protocol->vehicles,
                      &ProtocolVehicles::sendHeartbeat);
 
-    vehicles->move(f_app->size());
+    vehicles->move(f_apx->size());
 
-    f_menu = new AppMenu(f_app);
+    f_menu = new AppMenu(f_apx);
 
-    jsync(f_app);
+    jsync(f_apx);
 }
 //=============================================================================
 void AppGcs::openFile(AppGcs::FileType type)

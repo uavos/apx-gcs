@@ -1,6 +1,5 @@
 module Apx.Application
 
-AppMenuBar      1.0 MenuBar/AppMenuBar.qml
 AboutDialog     1.0 AboutDialog.qml
 AppWindow       1.0 AppWindow.qml
 AppPlugin       1.0 AppPlugin.qml

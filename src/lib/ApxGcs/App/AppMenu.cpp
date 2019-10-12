@@ -38,8 +38,10 @@
 #include <QDesktopServices>
 //=============================================================================
 AppMenu::AppMenu(Fact *parent)
-    : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Group, "menu")
+    : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Action | IconOnly, "menu")
 {
+    setOpt("pos", QPointF(1, 0.3));
+
     Fact *f;
 
     app = new Fact(this, "app", tr("Application"), "", Group, "application");
@@ -100,6 +102,7 @@ AppMenu::AppMenu(Fact *parent)
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("https://github.com/uavos/apx-releases/issues"));
     });
+
     createMenuBar();
 }
 //=============================================================================

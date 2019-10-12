@@ -79,7 +79,7 @@ private:
 
 protected:
     QUrl url;
-    AppRoot *f_app;
+    AppRoot *f_apx;
 
 private slots:
     void loadUrl();
