@@ -47,6 +47,10 @@ QActionFact::QActionFact(Fact *f, const QColor &iconColor)
     if (key != QKeySequence::UnknownKey)
         setShortcut(key);
 
+    QAction::MenuRole role = f->opts().value("role", QAction::NoRole).value<QAction::MenuRole>();
+    if (role != QAction::NoRole)
+        setMenuRole(role);
+
     setCheckable(f->dataType() == Fact::Bool);
     connect(this, &QAction::triggered, this, &QActionFact::actionTriggered);
 

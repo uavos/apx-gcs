@@ -44,6 +44,9 @@ public:
     Fact *vehicleSelect;
     Fact *vehicleTools;
 
+private:
+    QMenuBar *menuBar;
+
 private slots:
     void updateMenu(Fact *fact);
 

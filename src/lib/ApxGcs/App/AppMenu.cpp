@@ -38,7 +38,8 @@
 #include <QDesktopServices>
 //=============================================================================
 AppMenu::AppMenu(Fact *parent)
-    : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Group | IconOnly, "menu")
+    : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Action | IconOnly, "menu")
+    , menuBar(nullptr)
 {
     setOpt("pos", QPointF(1, 0.3));
 
@@ -51,9 +52,11 @@ AppMenu::AppMenu(Fact *parent)
                  "",
                  NoFlags,
                  "information-outline");
+    f->setOpt("role", QAction::AboutRole);
     connect(f, &Fact::triggered, App::instance(), &App::about);
 
     f = new Fact(app, "preferences", tr("Preferences"), "", NoFlags, "settings-outline");
+    f->setOpt("role", QAction::PreferencesRole);
     connect(f, &Fact::triggered, AppRoot::instance(), &Fact::trigger);
 
     file = new Fact(this, "file", tr("File"), "", Group, "file");
@@ -112,7 +115,7 @@ AppMenu::AppMenu(Fact *parent)
         QDesktopServices::openUrl(QUrl("https://github.com/uavos/apx-releases/issues"));
     });
 
-    createMenuBar();
+    connect(App::instance(), &App::loadingFinished, this, &AppMenu::createMenuBar);
 }
 //=============================================================================
 void AppMenu::updateVehicleTools()
@@ -142,7 +145,10 @@ void AppMenu::updateVehicleSelect()
 //=============================================================================
 void AppMenu::createMenuBar()
 {
-    QMenuBar *menuBar = new QMenuBar(nullptr);
+    if (menuBar)
+        delete menuBar;
+
+    menuBar = new QMenuBar(nullptr);
     for (int i = 0; i < size(); ++i) {
         Fact *g = child(i);
         Fact *f = g->menu();

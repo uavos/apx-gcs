@@ -23,6 +23,7 @@
 #include "Updater.h"
 #include <App/App.h>
 #include <App/AppDirs.h>
+#include <App/AppGcs.h>
 #include <App/AppSettings.h>
 
 #include "sparkle/SparkleAutoUpdater.h"
@@ -44,8 +45,13 @@ Updater::Updater(Fact *parent)
                                 true);
     f_auto->load();
 
-    f_check = new Fact(this, "check", tr("Check"), title(), Action | Apply, "update");
+    f_check = new Fact(this, "update", tr("Check for updates"), title(), Action | Apply, "update");
     connect(f_check, &Fact::triggered, this, &Updater::check);
+
+    //add menu to app
+    Fact *m = new Fact(AppGcs::instance()->f_menu->app, f_check->name());
+    m->setOpt("role", QAction::ApplicationSpecificRole);
+    m->bind(f_check);
 
 #ifdef Q_OS_MAC
     sparkle = new SparkleAutoUpdater();
