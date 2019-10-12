@@ -1,6 +1,7 @@
-﻿import QtQuick 2.3
-import QtQuick.Layouts 1.3
-import QtQuick.Controls.Material 2.2
+﻿import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtQuick.Controls 2.12
+import QtQuick.Controls.Material 2.12
 
 import Apx.Common 1.0
 
@@ -8,7 +9,7 @@ Rectangle {
     border.width: 0
     color: "#000"
     implicitWidth: itemHeight*4
-    implicitHeight: 200
+    implicitHeight: layout.implicitHeight
 
     readonly property int margins: 3
     readonly property real itemHeight: height/15//*ui.scale
@@ -19,6 +20,18 @@ Rectangle {
         m.mode.value===mode_TAXI ||
         (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
 
+    ProgressBar {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 3
+        property int v: apx.progress
+        to: 100
+        value: v
+        visible: v>=0
+        indeterminate: v==0
+        Material.accent: Material.color(Material.Green)
+    }
 
     ColumnLayout{
         id: layout

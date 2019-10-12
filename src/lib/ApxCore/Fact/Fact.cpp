@@ -735,6 +735,7 @@ void Fact::setProgress(const int v)
     int vp = m_progress;
     m_progress = v;
     emit progressChanged();
+    AppRoot::instance()->updateProgress(this);
     if ((vp < 0 && v >= 0) || (vp >= 0 && v < 0)) {
         emit busyChanged();
         if (busy()) {

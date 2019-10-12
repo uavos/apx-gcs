@@ -45,6 +45,13 @@ public:
     void addWindowPlugin(AppPlugin *plugin);
     void addControlPlugin(AppPlugin *plugin);
 
+    //global progress
+    void updateProgress(Fact *fact);
+
+private:
+    static AppRoot *_instance;
+    QList<QPointer<Fact>> progressList;
+
     //----------------------------------
     // static helpers and data converters
 public:
@@ -67,9 +74,6 @@ public:
     Q_INVOKABLE static QPointF rotate(const QPointF &p, double a);
 
     Q_INVOKABLE static QPointF seriesBounds(const QVariantList &series);
-
-private:
-    static AppRoot *_instance;
 
 public:
     Q_INVOKABLE static void sound(const QString &v);

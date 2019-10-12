@@ -83,12 +83,7 @@ Item {
         anchors.rightMargin: margins
         anchors.bottomMargin: margins
         anchors.topMargin: taskbar.height+margins
-        Loader {
-            Layout.alignment: Qt.AlignRight|Qt.AlignTop
-            active: apx.vehicles.current.isReplay()
-            visible: active
-            sourceComponent: Component { TelemetryReader { } }
-        }
+        spacing: margins
     }
 }
 

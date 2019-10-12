@@ -81,6 +81,12 @@ RowLayout {
         onTriggered: groundControl.toggleState()
     }
 
+    Loader {
+        Layout.alignment: Qt.AlignRight|Qt.AlignTop
+        active: apx.vehicles.current.isReplay()
+        visible: active
+        sourceComponent: Component { TelemetryReader { } }
+    }
     RecLabel {
         Layout.fillHeight: true
     }

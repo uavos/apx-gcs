@@ -82,15 +82,15 @@ Item {
         anchors.right: control.right
         anchors.bottom: control.bottom
         height: bottomBar.height
-        property int value: fact.progress
-        active: value>=0
+        property int v: fact.progress
+        active: v>=0
         visible: active
         ProgressBar {
             height: bottomBar.height
             width: control.width
-            //anchors.fill: bottomBar
-            value: progress.value/100
-            indeterminate: progress.value==0
+            to: 100
+            value: progress.v
+            indeterminate: progress.v==0
             Material.accent: Material.color(Material.LightGreen)
         }
     }

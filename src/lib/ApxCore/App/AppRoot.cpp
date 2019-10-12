@@ -103,6 +103,30 @@ void AppRoot::addControlPlugin(AppPlugin *plugin)
     App::jsync(f_controls);
 }
 //=============================================================================
+void AppRoot::updateProgress(Fact *fact)
+{
+    if (!progressList.contains(fact)) {
+        progressList.append(fact);
+    }
+    int total = 0;
+    int cnt = 0;
+    for (int i = 0; i < progressList.size(); ++i) {
+        auto f = progressList.at(i);
+        int v = f ? f->progress() : -1;
+        if (v < 0) {
+            progressList.removeAt(i--);
+            continue;
+        }
+        cnt++;
+        total += v;
+    }
+    int v = cnt > 0 ? total / cnt : -1;
+    if (m_progress == v)
+        return;
+    m_progress = v;
+    emit progressChanged();
+}
+//=============================================================================
 //=============================================================================
 // utils library
 //=============================================================================
