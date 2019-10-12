@@ -54,6 +54,8 @@ QChar MaterialIcon::getChar(const QString &name)
     if (map.isEmpty())
         updateMap();
 
+    if (name.isEmpty())
+        return QChar();
     QChar c = map.value(name);
     if (c == '\0') {
         apxConsoleW() << "Material icon is missing:" << name;
