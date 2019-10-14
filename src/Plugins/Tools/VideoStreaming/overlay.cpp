@@ -9,7 +9,7 @@ AbstractOverlayItem::AbstractOverlayItem()
 {
     m_timer.setSingleShot(false);
     m_timer.setInterval(33);
-    connect(&m_timer, &QTimer::timeout, [this](){ update(); });
+    connect(&m_timer, &QTimer::timeout, [this]() { update(); });
     setAutoRepaint(true);
 }
 
@@ -29,7 +29,7 @@ void AbstractOverlayItem::setScale(qreal scale)
 
 void AbstractOverlayItem::setAutoRepaint(bool b)
 {
-    if(b)
+    if (b)
         m_timer.start();
     else
         m_timer.stop();
@@ -198,7 +198,7 @@ void OverlayVars::setTopRightVars(const QString &topRightVars)
 
 QString OverlayVars::var2text(Fact *var)
 {
-    if(var->name() == "gps_time")
+    if (var->name() == "gps_time")
         return QDateTime::fromSecsSinceEpoch(var->value().toLongLong()).time().toString("HH-mm-ss");
     else
         return var->text();
@@ -376,7 +376,7 @@ void Overlay::drawOverlay(QImage &image)
 
     m_aim.render(image.rect(), &painter);
     m_vars.render(image.rect(), &painter);
-    if(f_gimbalShow->value().toBool())
+    if (f_gimbalShow->value().toBool())
         m_gimbal.render(image.rect(), &painter);
 }
 
