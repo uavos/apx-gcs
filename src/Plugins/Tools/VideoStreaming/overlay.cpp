@@ -231,7 +231,7 @@ void OverlayGimbal::render(const QRectF &box, QPainter *painter)
     QMatrix m1;
     m1.rotate(yaw);
     QMatrix m2;
-    m2.rotate(pitch);
+    m2.rotate(-pitch);
 
     QImage gimbalTop = m_gimbalTop.scaled(gimbalSpriteSize, gimbalSpriteSize);
     QImage gimbalTopArrow = m_gimbalTopArrow.scaled(gimbalSpriteSize, gimbalSpriteSize)
