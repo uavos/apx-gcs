@@ -7,6 +7,8 @@ Module {
 
     Depends { name: "git" }
 
+    property string version: git.probe.version
+
     property string minimumMacosVersion: "10.8.0"
     property string minimumWindowsVersion: "6.1"
 
