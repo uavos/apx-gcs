@@ -2,7 +2,6 @@ import qbs
 import qbs.Environment
 import qbs.File
 import qbs.FileInfo
-//import "ap.js" as HelperFunctions
 
 Module {
 
@@ -27,13 +26,8 @@ Module {
     property bool linux: project.qbs.targetOS.contains("linux")
     property bool windows: project.qbs.targetOS.contains("windows")
 
-    property string app_dest_path: {
-        if (macos)
-            return "Applications"
-        if (linux)
-            return "usr"
-        return ""
-    }
+    property string app_dest_path: "app"
+
     property string app_bundle_path: {
         if (macos)
             return FileInfo.joinPaths(app_dest_path, app_display_name+".app")

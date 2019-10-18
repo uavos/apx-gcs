@@ -1,6 +1,5 @@
 import qbs
 import ApxApp
-import ApxDeploy
 
 Project {
 

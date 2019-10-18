@@ -21,6 +21,8 @@ ApxProduct {
     Depends { name: "ApxCore" }
     Depends { name: "ApxGcs" }
 
+    //Depends { name: "frameworks" } //export frameworks.json
+
     Depends { name: "bundle" }
     bundle.identifierPrefix: app.bundle_identifier+".plugin"
 

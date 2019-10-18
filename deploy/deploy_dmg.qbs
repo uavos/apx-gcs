@@ -1,7 +1,7 @@
 import qbs.FileInfo
 
 AppleApplicationDiskImage {
-    condition: qbs.targetOS.contains("macos")
+    condition: false //qbs.targetOS.contains("macos")
     name: "DMG"
 
     Depends { name: "app" }

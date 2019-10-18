@@ -13,6 +13,8 @@ Product {
     Depends { name: "cpp" }
     Depends { name: "bundle" }
 
+    Depends { name: "appdata" } //export frameworks.json
+
     //qt creator support for qml files lookup
     property pathList qmlImportPaths: File.exists(sourceDirectory+"/qml")?["qml"]:[]
 
