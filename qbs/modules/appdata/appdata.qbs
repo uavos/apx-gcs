@@ -26,6 +26,9 @@ Module {
                 json.frameworks=[]
                 var f=product.cpp.frameworks
                 var paths=product.cpp.frameworkPaths
+                .concat(product.cpp.compilerFrameworkPaths)
+                .concat(product.cpp.systemFrameworkPaths)
+                .concat(product.cpp.distributionFrameworkPaths)
                 for(var i in f){
                     var fname=f[i]+".framework"
                     var v=fname
@@ -36,6 +39,7 @@ Module {
                         break
                     }
                     if(!v)continue
+                    v=FileInfo.cleanPath(v)
                     if(json.frameworks.contains(v)) continue
                     json.frameworks.push(v)
                 }
@@ -45,8 +49,15 @@ Module {
                 json.libs=[]
                 var f=product.cpp.dynamicLibraries
                 var paths=product.cpp.libraryPaths
+                .concat(product.cpp.compilerLibraryPaths)
+                .concat(product.cpp.systemLibraryPaths)
+                .concat(product.cpp.distributionLibraryPaths)
+                .concat(product.cpp.systemRunPaths)
                 for(var i in f){
-                    var fname="lib"+f[i]+".so"
+                    var fname="lib"+f[i]
+                    if(product.qbs.targetOS.contains("macos"))fname=fname+".dylib"
+                    else if(product.qbs.targetOS.contains("linux"))fname=fname+".so"
+                    else if(product.qbs.targetOS.contains("windows"))fname=fname+".dll"
                     var v=fname
                     for(var p in paths){
                         p=FileInfo.joinPaths(paths[p],fname)
@@ -55,6 +66,7 @@ Module {
                         break
                     }
                     if(!v)continue
+                    v=FileInfo.cleanPath(v)
                     if(json.libs.contains(v)) continue
                     json.libs.push(v)
                 }
