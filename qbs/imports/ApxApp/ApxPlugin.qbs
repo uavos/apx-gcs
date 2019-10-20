@@ -16,6 +16,14 @@ ApxProduct {
         return v
     }
 
+    appdata.plugins: [
+        isForDarwin
+        ? bundle.executablePath
+        : isForLinux
+          ? "lib"+product.targetName+cpp.variantSuffix
+          : product.targetName+cpp.variantSuffix
+    ]
+
     targetInstallDir: app.app_plugin_path
 
     Depends { name: "ApxCore" }
@@ -42,8 +50,8 @@ ApxProduct {
 
     cpp.rpaths: qbs.targetOS.contains("macos")
             ? [
-                  FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_library_path)),
-                  FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_plugin_path))
+                  FileInfo.joinPaths("@executable_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_library_path)),
+                 // FileInfo.joinPaths("@loader_path", FileInfo.relativePath("/"+app.app_bin_path, "/"+app.app_plugin_path))
               ]
             : [
                   "$ORIGIN",

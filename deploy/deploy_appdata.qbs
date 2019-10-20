@@ -1,3 +1,4 @@
+import qbs.FileInfo
 import qbs.TextFile
 
 Product {
@@ -6,6 +7,7 @@ Product {
     type: ["appdata.deploy.all"]
 
     Depends { name: "app" }
+    Depends { name: "Qt.core" }
 
     Depends {
         productTypes: [
@@ -50,7 +52,10 @@ Product {
                                     appdata[j].sort()
                                 }
                             }else{
-                                appdata[j]=json[j]
+                                if(json[j].constructor === Array)
+                                    appdata[j]=json[j]
+                                else
+                                    appdata[j]=json[j]
                             }
                     }
                 }
@@ -68,6 +73,10 @@ Product {
                 appdata.app.library_path = product.app.app_library_path
                 appdata.app.plugin_path = product.app.app_plugin_path
                 appdata.app.data_path = product.app.app_data_path
+
+                //deploy source data
+                appdata.app.qt_bin = product.Qt.core.binPath
+                appdata.app.src = FileInfo.joinPaths(project.sourceDirectory, "src")
 
                 var file = new TextFile(output.filePath, TextFile.WriteOnly);
                 file.write(JSON.stringify(appdata,0,2))

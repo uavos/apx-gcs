@@ -20,4 +20,7 @@ ApxApp.ApxPlugin {
 
     Depends { name: "qmlqrc" }
     qmlqrc.usePrefix: false
+
+    appdata.qtplugins: [ "geoservices" ]
+
 }

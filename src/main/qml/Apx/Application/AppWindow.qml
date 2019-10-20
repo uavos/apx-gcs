@@ -4,7 +4,6 @@
 import QtQuick.Controls 2.4
 
 import QtQuick.Window 2.2
-import QtQuick.Controls.Styles 1.4
 
 import Qt.labs.settings 1.0
 

@@ -466,7 +466,8 @@ void VideoThread::setupEnvironment()
         qputenv("GST_PLUGIN_PATH_1_0", pluginsDir.absolutePath().toUtf8());
         qputenv("GST_PLUGIN_PATH", pluginsDir.absolutePath().toUtf8());
     } else
-        qInfo() << "Can't find gstreamer in bundle, try to use system libs";
+        qInfo() << "Can't find gstreamer in bundle, try to use system libs"
+                << scannerDir.absolutePath();
 }
 
 std::shared_ptr<GstCaps> VideoThread::getCapsForAppSink()

@@ -33,6 +33,8 @@ Module {
     property string app_bundle_path: {
         if (macos)
             return FileInfo.joinPaths(app_dest_path, app_display_name+".app")
+        if(linux)
+            return FileInfo.joinPaths(app_dest_path, "usr")
         return app_dest_path
     }
 

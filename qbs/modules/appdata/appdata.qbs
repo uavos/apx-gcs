@@ -8,6 +8,10 @@ Module {
 
     additionalProductTypes: ["appdata.deploy"]
 
+    property var data: ({})
+    property var plugins: []
+    property var qtplugins: []
+
     Rule {
         inputs: product.type.filter(function(v){return v!="appdata.deploy"}) //["dynamiclibrary"]
         multiplex: true
@@ -21,7 +25,11 @@ Module {
             var cmd = new JavaScriptCommand();
             cmd.description = "preparing appdata: " + product.name
             cmd.sourceCode = function() {
-                var json={}
+                var json = product.appdata.data
+                if(product.appdata.plugins.length>0)
+                    json.plugins=product.appdata.plugins
+                if(product.appdata.qtplugins.length>0)
+                    json.qtplugins=product.appdata.qtplugins
                 //frameworks
                 json.frameworks=[]
                 var f=product.cpp.frameworks
@@ -72,6 +80,17 @@ Module {
                 }
                 if(json.libs.length<=0)
                     delete json.libs
+
+                if(product.type.contains("application")){
+                    json.executables = []
+                    json.executables.push(product.targetName)
+                    /*if(product.bundle.isBundle)
+                        json.executables.push(product.bundle.executablePath)
+                    else
+                        json.executables.push(FileInfo.joinPaths(product.app.app_bin_path, product.targetName))
+                        */
+                }
+
                 //write metadata to file
                 var file = new TextFile(output.filePath, TextFile.WriteOnly);
                 file.write(JSON.stringify(json,0,2))

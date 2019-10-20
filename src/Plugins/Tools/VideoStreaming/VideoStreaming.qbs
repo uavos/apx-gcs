@@ -49,42 +49,7 @@ ApxApp.ApxPlugin {
 }
 
     //GStreamer
-    /*ApxDeploy.ApxDeployLibs {
-        condition: false
-
-        outputs: qbs.targetOS.contains("macos") ?
-                     [ "Contents/Frameworks/GStreamer.framework" ] :
-                     [ "lib/x86_64-linux-gnu" ]
-
-        ApxDeploy.ApxDeployRule {
-            condition: qbs.targetOS.contains("macos") && qbs.buildVariant.contains("release")
-            prepare: {
-                var cmds=[];
-                var targetPath = FileInfo.joinPaths(product.moduleProperty("qbs","installRoot"), product.moduleProperty("app","app_bundle_path"));
-                var cmd = new Command(FileInfo.joinPaths(product.sourceDirectory, "tools", "prepare_gstreamer_framework.sh"),
-                                      [
-                                          project.buildDirectory+"/GStreamer-prepare",
-                                          targetPath,
-                                          "gcs",
-                                      ]);
-                cmd.silent = true;
-                cmds.push(cmd);
-
-                var targetName = "VideoStreaming"
-                var targetLibPath = FileInfo.joinPaths(targetPath, "Contents/PlugIns", targetName+".bundle", "Contents/MacOS", targetName);
-                cmd = new Command("install_name_tool",
-                                  [
-                                      "-change", "/Library/Frameworks/GStreamer.framework/Versions/1.0/lib/GStreamer",
-                                      "@rpath/GStreamer.framework/Versions/1.0/lib/GStreamer",
-                                      targetLibPath,
-                                  ]);
-                cmd.silent = true;
-                cmds.push(cmd);
-
-                return cmds;
-            }
-        }
-        ApxDeploy.ApxDeployRule {
+    /*ApxDeploy.ApxDeployRule {
             condition: qbs.targetOS.contains("linux") && qbs.buildVariant.contains("release")
             prepare: {
                 var cmds=[];
