@@ -28,7 +28,7 @@ $(GCS_STAMP)-install: deploy
 	@touch $@
 
 # prepare bundle with libs and frameworks
-deploy: build deploy-qt deploy-libs image-$(HOST_OS)
+deploy: build deploy-app image-$(HOST_OS)
 
 deploy-clean: 
 	@rm -rf $(GCS_ROOT_DIR)/*
@@ -41,6 +41,10 @@ deploy-qt: $(APP_DATA)
 deploy-libs: $(APP_DATA)
 	@echo "Deploy app libs..."
 	@python $(TOOLS_DIR)/deploy/deploy_app_libs.py --appdata=$< --dist=$(APX_DIR)/../dist
+
+deploy-app: $(APP_DATA)
+	@echo "Deploy app..."
+	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< --dist=$(APX_DIR)/../dist
 
 
 # $(CODE_IDENTITY):
