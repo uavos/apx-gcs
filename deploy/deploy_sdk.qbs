@@ -19,7 +19,9 @@ Product {
         fileTags: ["sdk.extras"]
         prefix: FileInfo.joinPaths(project.sourceDirectory, "/")
         files: [
-            "src/main/qml/app/GroundControl.qml",
+            "src/main/qml/Apx/Application/GroundControl.qml",
+            "src/main/qml/Apx/Application/InstrumentsLayout.qml",
+            "src/main/qml/Apx/Application/MainLayout.qml",
         ]
     }
 

@@ -1,7 +1,7 @@
 #include "FactTreeView.h"
 #include "FactDelegate.h"
 #include "FactTreeModel.h"
-#include <ApxMisc/SvgMaterialIcon.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <QHeaderView>
 #include <QtWidgets>
 //=============================================================================
@@ -139,7 +139,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     //toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setIconSize(QSize(14, 14));
     toolBar->layout()->setMargin(0);
-    aBack = new QAction(SvgMaterialIcon("arrow-left"), tr("Back"), this);
+    aBack = new QAction(MaterialIcon("arrow-left"), tr("Back"), this);
     aBack->setVisible(backNavigation);
     connect(aBack, &QAction::triggered, this, &FactTreeWidget::back);
     toolBar->addAction(aBack);

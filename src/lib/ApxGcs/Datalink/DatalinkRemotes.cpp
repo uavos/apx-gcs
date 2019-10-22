@@ -24,8 +24,8 @@
 #include "Datalink.h"
 #include "DatalinkRemote.h"
 
+#include <App/AppLog.h>
 #include <App/AppSettings.h>
-#include <ApxLog.h>
 
 #include <common/ApxTcpPorts.h>
 //=============================================================================

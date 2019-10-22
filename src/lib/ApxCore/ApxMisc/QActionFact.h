@@ -31,16 +31,20 @@ class QActionFact : public QAction
 {
     Q_OBJECT
 public:
-    explicit QActionFact(Fact *f);
+    explicit QActionFact(Fact *f, const QColor &iconColor = QColor(Qt::white));
 
 private:
     Fact *fact;
+    QColor iconColor;
 private slots:
     void updateText();
     void updateToolTip();
     void updateIcon();
     void updateEnabled();
     void updateVisible();
+    void updateChecked();
+
+    void actionTriggered(bool checked);
 };
 //=============================================================================
 #endif

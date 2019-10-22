@@ -22,7 +22,7 @@
  */
 #include "VehicleWarnings.h"
 #include "Vehicle.h"
-#include <ApxApp.h>
+#include <App/App.h>
 //=============================================================================
 VehicleWarnings::VehicleWarnings(Vehicle *parent)
     : Fact(parent,
@@ -52,12 +52,12 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
 void VehicleWarnings::warning(const QString &msg)
 {
     createItem(msg, WARNING);
-    ApxApp::sound("warning");
+    App::sound("warning");
 }
 void VehicleWarnings::error(const QString &msg)
 {
     createItem(msg, ERROR);
-    ApxApp::sound("error");
+    App::sound("error");
 }
 //=============================================================================
 Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)

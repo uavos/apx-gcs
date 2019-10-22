@@ -25,8 +25,8 @@
 #include "Telemetry.h"
 #include "TelemetryReader.h"
 
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <Sharing/TelemetryXmlExport.h>
 #include <Sharing/TelemetryXmlImport.h>
 #include <Vehicles/Vehicle.h>

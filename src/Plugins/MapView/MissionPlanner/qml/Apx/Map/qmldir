@@ -1,0 +1,7 @@
+module Map
+
+MapControl      1.0 Controls/MapControl.qml
+MapObject       1.0 Common/MapObject.qml
+
+
+

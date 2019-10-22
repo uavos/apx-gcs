@@ -2,13 +2,14 @@ import qbs
 import qbs.Environment
 import qbs.File
 import qbs.FileInfo
-//import "ap.js" as HelperFunctions
 
 Module {
 
     Depends { name: "git" }
 
-    property string minimumMacosVersion: "10.8"
+    property string version: git.probe.version
+
+    property string minimumMacosVersion: "10.8.0"
     property string minimumWindowsVersion: "6.1"
 
     property string copyright_year: git.probe.year
@@ -27,16 +28,13 @@ Module {
     property bool linux: project.qbs.targetOS.contains("linux")
     property bool windows: project.qbs.targetOS.contains("windows")
 
-    property string app_dest_path: {
-        if (macos)
-            return "Applications"
-        if (linux)
-            return "usr"
-        return ""
-    }
+    property string app_dest_path: "app"
+
     property string app_bundle_path: {
         if (macos)
             return FileInfo.joinPaths(app_dest_path, app_display_name+".app")
+        if(linux)
+            return FileInfo.joinPaths(app_dest_path, "usr")
         return app_dest_path
     }
 

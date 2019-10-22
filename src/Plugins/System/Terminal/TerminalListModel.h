@@ -23,7 +23,7 @@
 #ifndef TerminalListModel_H
 #define TerminalListModel_H
 //=============================================================================
-#include <ApxApp.h>
+#include <App/App.h>
 #include <QtCore>
 //=============================================================================
 class TerminalListModel : public QAbstractListModel
@@ -56,7 +56,7 @@ private:
         qint64 timestamp;
         QString text;
         QString subsystem;
-        ApxApp::NotifyFlags flags;
+        App::NotifyFlags flags;
         QPointer<Fact> fact;
     };
     QList<TerminalListItem *> _items;
@@ -68,7 +68,7 @@ protected:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
 private slots:
-    void notification(QString msg, QString subsystem, ApxApp::NotifyFlags flags, Fact *fact);
+    void notification(QString msg, QString subsystem, App::NotifyFlags flags, Fact *fact);
 
 public slots:
     void enter(const QString &line);

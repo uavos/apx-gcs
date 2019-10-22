@@ -13,6 +13,8 @@ Product {
     Depends { name: "cpp" }
     Depends { name: "bundle" }
 
+    Depends { name: "appdata" } //export frameworks.json
+
     //qt creator support for qml files lookup
     property pathList qmlImportPaths: File.exists(sourceDirectory+"/qml")?["qml"]:[]
 
@@ -70,6 +72,9 @@ Product {
     cpp.useCxxPrecompiledHeader: true
     cpp.cLanguageVersion: "c11"
     //cpp.visibility: "minimal"
+
+    //eliminate no debug symbols in executable warning
+    cpp.separateDebugInformation: qbs.buildVariant != "release"
 
 
     cpp.defines: {

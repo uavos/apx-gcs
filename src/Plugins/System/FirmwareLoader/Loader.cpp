@@ -21,10 +21,10 @@
  *
  */
 #include "Loader.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
-#include <ApxGcs.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppGcs.h>
+#include <App/AppLog.h>
 
 #include <Protocols/ApxProtocol.h>
 #include <Protocols/ProtocolServiceFirmware.h>

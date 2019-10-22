@@ -1,0 +1,7 @@
+module Apx.Application
+
+AboutDialog     1.0 AboutDialog.qml
+AppWindow       1.0 AppWindow.qml
+AppPlugin       1.0 AppPlugin.qml
+
+GroundControl   1.0 GroundControl.qml

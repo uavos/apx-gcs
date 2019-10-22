@@ -70,6 +70,7 @@ public:
 
 signals:
     void countChanged();
+    void layoutChanged();
 };
 //=============================================================================
 #endif

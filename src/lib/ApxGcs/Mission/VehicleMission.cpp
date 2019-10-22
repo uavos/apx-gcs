@@ -35,7 +35,7 @@
 #include "Taxiway.h"
 #include "Waypoint.h"
 
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Protocols/ProtocolMission.h>
 #include <Vehicles/Vehicles.h>
 #include <QQmlEngine>
@@ -119,7 +119,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
     f_share = new MissionShare(this, f_tools, Action | IconOnly);
 
-    //ApxApp::jsync(f_tools);
+    //App::jsync(f_tools);
 
     foreach (FactBase *a, actions()) {
         connect(static_cast<Fact *>(a),
@@ -185,7 +185,6 @@ VehicleMission::VehicleMission(Vehicle *parent)
                 &ProtocolMission::downloadMission);
 
         if (!vehicle->isLocal()) {
-            //f_request->trigger();
             QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
         }
     }
@@ -210,7 +209,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
             f_request->trigger();
     });
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void VehicleMission::updateActions()
@@ -276,7 +275,7 @@ void VehicleMission::clearMission()
     blockSizeUpdate = false;
     setModified(false, true);
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void VehicleMission::backup()
@@ -322,19 +321,19 @@ void VehicleMission::missionDataReceived(DictMission::Mission d)
     clearMission();
     storage->loadFromDict(d);
     if (empty()) {
-        vehicle->message(tr("Empty mission received from vehicle"), ApxApp::Warning);
+        vehicle->message(tr("Empty mission received from vehicle"), App::Warning);
     } else {
         emit missionAvailable();
         emit missionDownloaded();
         storage->saveMission();
         vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()),
-                         ApxApp::Important);
+                         App::Important);
     }
     setModified(false, true);
 }
 void VehicleMission::missionDataError()
 {
-    vehicle->message(tr("Error in mission data from vehicle"), ApxApp::Error);
+    vehicle->message(tr("Error in mission data from vehicle"), App::Error);
     clearMission();
 }
 //=============================================================================

@@ -22,9 +22,9 @@
  */
 #include "DatabaseSession.h"
 #include "Database.h"
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
 //=============================================================================
 DatabaseSession::DatabaseSession(QObject *parent,
                                  const QString &fileName,

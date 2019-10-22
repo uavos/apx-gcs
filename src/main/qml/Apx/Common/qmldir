@@ -1,11 +1,9 @@
-module APX.Common
+module Apx.Common
 
 Apx 1.0 helpers.js
 
 FactObject      1.0 FactObject.qml
 
-AppWindow       1.0 AppWindow.qml
-AppPlugin       1.0 AppPlugin.qml
 SvgImage        1.0 SvgImage.qml
 CleanButton     1.0 CleanButton.qml
 VehicleButton   1.0 VehicleButton.qml

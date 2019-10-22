@@ -21,8 +21,8 @@
  *
  */
 #include "Simulator.h"
+#include <App/AppLog.h>
 #include <App/AppSettings.h>
-#include <ApxLog.h>
 #include <QDesktopServices>
 
 APX_LOGGING_CATEGORY(SimLog, "Simulator")
@@ -37,7 +37,7 @@ Simulator::Simulator(Fact *parent)
     setIcon("fan");
     //parent->insertIntoSection(FactSystem::ApplicationSection,this);
 
-    ApxLog::add(SimLog().categoryName(), "sim.txt", true);
+    AppLog::add(SimLog().categoryName(), "sim.txt", true);
 
     f_launch = new Fact(this, "launch", tr("Launch"), tr("Start simulation"), Action | Apply, "play");
     connect(f_launch, &Fact::triggered, this, &Simulator::launch);
@@ -149,7 +149,7 @@ void Simulator::launch()
         QDir d(xplaneDir);
         if (d.cd("Resources") && d.cd("plugins")) {
             QFileInfoList fiSrcList(
-                QDir(ApxDirs::res().absoluteFilePath("xplane"), "*.xpl").entryInfoList());
+                QDir(AppDirs::res().absoluteFilePath("xplane"), "*.xpl").entryInfoList());
             foreach (QFileInfo fi, fiSrcList) {
                 QString dest = d.absoluteFilePath(fi.fileName());
                 QFileInfo fiDest(dest);
@@ -171,7 +171,7 @@ void Simulator::launch()
         if (d.cd(xplaneDir) && d.cd("Aircraft")) {
             d.mkpath("APX");
             d.cd("APX");
-            QFileInfoList fiSrcList(QDir(ApxDirs::res().absoluteFilePath("xplane/models"),
+            QFileInfoList fiSrcList(QDir(AppDirs::res().absoluteFilePath("xplane/models"),
                                          "",
                                          QDir::Unsorted,
                                          QDir::AllDirs | QDir::NoDotAndDotDot)
@@ -181,7 +181,7 @@ void Simulator::launch()
                 //qDebug()<<fiDest.absoluteFilePath();
                 if (fiDest.exists())
                     continue;
-                ApxDirs::copyPath(fi.absoluteFilePath(), fiDest.absoluteFilePath());
+                AppDirs::copyPath(fi.absoluteFilePath(), fiDest.absoluteFilePath());
                 apxMsg() << tr("XPL Aircraft installed").append(":") << fiDest.absoluteFilePath();
             }
         }

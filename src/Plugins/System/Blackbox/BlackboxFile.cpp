@@ -23,7 +23,7 @@
 #include "BlackboxFile.h"
 #include "BlackboxReader.h"
 
-#include <ApxLog.h>
+#include <App/AppLog.h>
 
 #include <QFileDialog>
 //=============================================================================

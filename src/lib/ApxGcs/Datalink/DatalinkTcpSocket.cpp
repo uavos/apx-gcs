@@ -23,8 +23,8 @@
 #include "DatalinkTcpSocket.h"
 #include "Datalink.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 
 #include <Math/crc.h>
 //=============================================================================
@@ -34,7 +34,7 @@ DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
                                      quint16 txNetwork)
     : DatalinkConnection(parent, "socket#", "", "", rxNetwork, txNetwork)
     , socket(socket)
-    , serverName(ApxApp::username())
+    , serverName(App::username())
 {
     _serverClient = socket->isOpen();
 

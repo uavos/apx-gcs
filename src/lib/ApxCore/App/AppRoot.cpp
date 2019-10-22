@@ -22,8 +22,8 @@
  */
 #include "AppRoot.h"
 #include "AppWindow.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <QtCore>
 //=============================================================================
 AppRoot *AppRoot::_instance = nullptr;
@@ -41,7 +41,7 @@ AppRoot::AppRoot(QObject *parent)
 //=============================================================================
 void AppRoot::sound(const QString &v)
 {
-    ApxApp::sound(v);
+    App::sound(v);
 }
 //=============================================================================
 void AppRoot::createTools()
@@ -63,14 +63,14 @@ void AppRoot::createTools()
     f_windows->setIcon("monitor");
     f_windows->setVisible(false);
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 
     f_pluginsSettings = new Fact(f_settings->f_application,
                                  "plugins",
                                  tr("Plugins"),
                                  tr("Application PligIns"),
                                  Group | Const);
-    ApxApp::jsync(f_settings);
+    App::jsync(f_settings);
 }
 //=============================================================================
 void AppRoot::addToolPlugin(AppPlugin *plugin)
@@ -83,14 +83,14 @@ void AppRoot::addToolPlugin(AppPlugin *plugin)
     f->setParentFact(f_tools);
     f->setSection(plugin->section);
     f_tools->setVisible(true);
-    ApxApp::jsync(f_tools);
+    App::jsync(f_tools);
 }
 //=============================================================================
 void AppRoot::addWindowPlugin(AppPlugin *plugin)
 {
     new AppWindow(f_windows, plugin);
     f_windows->setVisible(true);
-    ApxApp::jsync(f_windows);
+    App::jsync(f_windows);
 }
 //=============================================================================
 void AppRoot::addControlPlugin(AppPlugin *plugin)
@@ -100,7 +100,31 @@ void AppRoot::addControlPlugin(AppPlugin *plugin)
         return;
     f->setParentFact(f_controls);
     f_controls->setVisible(true);
-    ApxApp::jsync(f_controls);
+    App::jsync(f_controls);
+}
+//=============================================================================
+void AppRoot::updateProgress(Fact *fact)
+{
+    if (!progressList.contains(fact)) {
+        progressList.append(fact);
+    }
+    int total = 0;
+    int cnt = 0;
+    for (int i = 0; i < progressList.size(); ++i) {
+        auto f = progressList.at(i);
+        int v = f ? f->progress() : -1;
+        if (v < 0) {
+            progressList.removeAt(i--);
+            continue;
+        }
+        cnt++;
+        total += v;
+    }
+    int v = cnt > 0 ? total / cnt : -1;
+    if (m_progress == v)
+        return;
+    m_progress = v;
+    emit progressChanged();
 }
 //=============================================================================
 //=============================================================================

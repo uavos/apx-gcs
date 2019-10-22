@@ -26,7 +26,7 @@
  */
 
 #include "SvgImageProvider.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <QDebug>
 #include <QPainter>
 #include <QUrl>

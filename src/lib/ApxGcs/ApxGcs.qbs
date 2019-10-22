@@ -41,9 +41,14 @@ ApxApp.ApxLibrary {
     }
 
 
-    files: [
-        "ApxGcs.cpp", "ApxGcs.h",
-    ]
+    Group {
+        name: "App"
+        prefix: name+"/"
+        files: [
+            "AppGcs.cpp", "AppGcs.h",
+            "AppMenu.cpp", "AppMenu.h",
+        ]
+    }
 
     Group {
         name: "TreeModel"
@@ -150,16 +155,7 @@ ApxApp.ApxLibrary {
     }
 
     Group {
-        name: "Shortcuts"
-        prefix: name+"/"
-        files: [
-            "AppShortcut.cpp", "AppShortcut.h",
-            "AppShortcuts.cpp", "AppShortcuts.h",
-        ]
-    }
-
-    Group {
-        name: "ApxMisc"
+        name: "Pawn"
         prefix: name+"/"
         files: [
             "PawnCompiler.cpp", "PawnCompiler.h",
@@ -172,14 +168,5 @@ ApxApp.ApxLibrary {
             "pawn/**/*",
         ]
     }
-
-    ApxApp.ApxResource {
-        src: "templates"
-        files: [
-            "shortcuts.json",
-        ]
-    }
-
-
 
 }

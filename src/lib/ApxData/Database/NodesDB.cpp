@@ -22,10 +22,10 @@
  */
 #include "NodesDB.h"
 #include "Database.h"
-#include <ApxDirs.h>
+#include <App/AppDirs.h>
 //=============================================================================
 NodesDB::NodesDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("vehicles.db"), sessionName)
+    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("vehicles.db"), sessionName)
 {
     qRegisterMetaType<DictNode::Info>("DictNode::Info");
     qRegisterMetaType<DictNode::DictInfo>("DictNode::DictInfo");

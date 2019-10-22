@@ -40,7 +40,7 @@ Popup {
         Menu.unregisterMenuPopup(popup)
 
         //destroy immediately on deletion
-        if(!fact){
+        if(popup && !popup.fact){
             if(popup && popup.destroy)popup.destroy()
         }
     }

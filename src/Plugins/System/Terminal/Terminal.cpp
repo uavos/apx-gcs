@@ -21,8 +21,8 @@
  *
  */
 #include "Terminal.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <QDesktopServices>
 #include <QQmlEngine>
 #define MAX_HISTORY 50
@@ -66,7 +66,7 @@ void Terminal::exec(const QString &cmd)
         }
         s = sc + "(" + st.join(",") + ")";
     }
-    QJSValue v = ApxApp::jsexec(s);
+    QJSValue v = App::jsexec(s);
     //history
     _history.removeAll(cmd);
     //if(!v.isError())
@@ -151,16 +151,16 @@ QString Terminal::autocomplete(const QString &cmd)
     QRegExp del("[\\ \\,\\:\\t\\{\\}\\[\\]\\(\\)\\=]");
     if (!(c.contains(del) || prefix.startsWith('!') || c.contains('.'))) {
         //first word input (std command?)
-        result = ApxApp::jsexec(QString("(function(){var s='';for(var v in "
-                                        "%1)if(typeof(%1[v])=='function')s+=v+';';return s;})()")
-                                    .arg(scope));
+        result = App::jsexec(QString("(function(){var s='';for(var v in "
+                                     "%1)if(typeof(%1[v])=='function')s+=v+';';return s;})()")
+                                 .arg(scope));
         QStringList st(result.toString().replace('\n', ',').split(';', QString::SkipEmptyParts));
         st = st.filter(QRegExp("^" + c));
         if (st.size()) {
             if (st.size() == 1)
                 st.append(prefix.left(prefix.size() - c.size()) + st.takeFirst() + " ");
         } else {
-            result = ApxApp::jsexec(
+            result = App::jsexec(
                 QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
             st = result.toString().replace('\n', ',').split(';', QString::SkipEmptyParts);
             st = st.filter(QRegExp("^" + c));
@@ -177,7 +177,7 @@ QString Terminal::autocomplete(const QString &cmd)
             scope = c.left(c.lastIndexOf('.'));
             c.remove(0, c.lastIndexOf('.') + 1);
         }
-        result = ApxApp::jsexec(
+        result = App::jsexec(
             QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
         QStringList st(result.toString().replace('\n', ',').split(';', QString::SkipEmptyParts));
         //QStringList st(FactSystem::instance()->jsexec(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',QString::SkipEmptyParts));
@@ -218,13 +218,13 @@ QString Terminal::autocomplete(const QString &cmd)
     }
     //hints output formatting
     for (int i = 0; i < hints.size(); i++) {
-        if (ApxApp::jsexec(QString("typeof(%1['%2'])=='function'").arg(scope).arg(hints.at(i)))
+        if (App::jsexec(QString("typeof(%1['%2'])=='function'").arg(scope).arg(hints.at(i)))
                 .toBool()) {
             hints[i] = "<font color='white'><b>" + hints.at(i) + "</b></font>";
-        } else if (ApxApp::jsexec(QString("typeof(%1['%2'])=='object'").arg(scope).arg(hints.at(i)))
+        } else if (App::jsexec(QString("typeof(%1['%2'])=='object'").arg(scope).arg(hints.at(i)))
                        .toBool()) {
             hints[i] = "<font color='yellow'>" + hints.at(i) + "</font>";
-        } else if (ApxApp::jsexec(QString("typeof(%1['%2'])=='number'").arg(scope).arg(hints.at(i)))
+        } else if (App::jsexec(QString("typeof(%1['%2'])=='number'").arg(scope).arg(hints.at(i)))
                        .toBool()) {
             hints[i] = "<font color='cyan'>" + hints.at(i) + "</font>";
         } else

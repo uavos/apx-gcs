@@ -1,8 +1,8 @@
 ﻿#include "NodesFrame.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
-#include <ApxMisc/SvgMaterialIcon.h>
 #include <Nodes/Nodes.h>
 #include <QAction>
 //=============================================================================
@@ -74,7 +74,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
     toolBar->addAction(aShare);
 
-    aUndo = toolBar->addAction(SvgMaterialIcon("undo"),
+    aUndo = toolBar->addAction(MaterialIcon("undo"),
                                tr("Revert"),
                                this,
                                &NodesFrame::aUndo_triggered);

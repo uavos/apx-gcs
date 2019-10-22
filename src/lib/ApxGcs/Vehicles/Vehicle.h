@@ -27,7 +27,7 @@
 #include <QGeoPath>
 #include <QGeoRectangle>
 
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
 
@@ -171,6 +171,8 @@ private slots:
     void updateDatalinkVars(quint16 id, double);
 
 signals:
+    void selected();
+
     //forward from protocols
     void downstreamDataReceived(); //used by widgets like signals
     void valueDataReceived();
@@ -200,7 +202,7 @@ public slots:
     void resetGeoPath();
 
     void message(QString msg,
-                 ApxApp::NotifyFlags flags = ApxApp::FromApp | ApxApp::Info,
+                 App::NotifyFlags flags = App::FromApp | App::Info,
                  QString subsystem = QString());
 
     //Database

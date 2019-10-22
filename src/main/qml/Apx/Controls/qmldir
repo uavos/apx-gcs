@@ -1,7 +1,6 @@
 module Apx.Controls
 depends Apx.Common 1.0
 
-Signals           1.0 signals/Signals.qml
 Status            1.0 status/Status.qml
 NodesState        1.0 status/NodesState.qml
 

@@ -25,9 +25,9 @@
 #include "Loader.h"
 #include "QueueItem.h"
 #include "Releases.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 
-#include <ApxApp.h>
+#include <App/App.h>
 #include <Nodes/NodeItem.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
@@ -111,7 +111,7 @@ Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
                        Firmware::MHX);
     });
 
-    //ApxApp::jsync(this);
+    //App::jsync(this);
 }
 //=============================================================================
 void Firmware::updateStatus()

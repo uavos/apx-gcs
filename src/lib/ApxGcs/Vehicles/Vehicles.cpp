@@ -25,8 +25,8 @@
 #include "VehicleMandalaFact.h"
 #include "VehicleSelect.h"
 #include "VehicleWarnings.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <Database/TelemetryDB.h>
 #include <QQmlEngine>
 //=============================================================================
@@ -46,10 +46,10 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                                                 "VehicleWarnings",
                                                 "Reference only");
 
-    VehicleSelect *f_select = new VehicleSelect(this,
-                                                "select",
-                                                tr("Select vehicle"),
-                                                tr("Change the active vehicle"));
+    f_select = new VehicleSelect(this,
+                                 "select",
+                                 tr("Select vehicle"),
+                                 tr("Change the active vehicle"));
     f_select->setIcon("select");
     f_select->setSection(title());
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);
@@ -75,8 +75,8 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     f_select->addVehicle(f_replay);
 
     //JS register mandala
-    ApxApp *app = ApxApp::instance();
-    ApxApp::jsync(this);
+    App *app = App::instance();
+    App::jsync(this);
     foreach (QString key, f_local->f_mandala->constants.keys())
         app->engine()->globalObject().setProperty(key,
                                                   app->engine()->toScriptValue(
@@ -135,7 +135,7 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
     msg.append(QString(" '%1'").arg(v->callsign()));
     if (v->squawk() > 0)
         msg.append(QString(" (%1)").arg(v->squawkText()));
-    v->message(msg, ApxApp::Important);
+    v->message(msg, App::Important);
 
     v->dbSaveVehicleInfo();
 
@@ -152,7 +152,7 @@ void Vehicles::identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentDa
                       .arg(tr("Assigning squawk to"))
                       .arg(ident.callsign)
                       .arg(QString::number(v->squawk, 16).toUpper());
-    ApxApp::instance()->report(msg, ApxApp::FromApp | ApxApp::Warning);
+    App::instance()->report(msg, App::FromApp | App::Warning);
 }
 //=============================================================================
 void Vehicles::selectVehicle(Vehicle *v)
@@ -170,11 +170,11 @@ void Vehicles::selectVehicle(Vehicle *v)
         msg.append(QString(" '%1'").arg(v->callsign()));
     if (v->squawk() > 0)
         msg.append(QString(" (%1)").arg(v->squawkText()));
-    v->message(msg, ApxApp::Important);
+    v->message(msg, App::Important);
     m_current = v;
 
     //update JSengine
-    ApxApp::instance()->engine()->rootContext()->setContextProperty("m", v->f_mandala);
+    App::instance()->engine()->rootContext()->setContextProperty("m", v->f_mandala);
 
     //current vehicle signals wrappers
     foreach (QMetaObject::Connection c, currentVehicleConnections)

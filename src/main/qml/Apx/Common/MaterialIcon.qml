@@ -11,6 +11,6 @@ Text {
 
     font.family: "Material Design Icons"
     font.pixelSize: control.size
-    text: (name&&visible)?materialIconChar[name]:""
+    text: (name&&visible)?application.materialIconChar(name):""
     color: "#fff"
 }

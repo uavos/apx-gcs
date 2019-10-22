@@ -21,8 +21,8 @@
  *
  */
 #include "AppEngine.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <ApxMisc/FactQml.h>
 //=============================================================================
 AppEngine::AppEngine(QObject *parent)
@@ -30,7 +30,7 @@ AppEngine::AppEngine(QObject *parent)
 {
     installExtensions(QJSEngine::AllExtensions);
     //installExtensions(QJSEngine::TranslationExtension|QJSEngine::ConsoleExtension);
-    addImportPath(ApxDirs::userPlugins().absolutePath());
+    addImportPath(AppDirs::userPlugins().absolutePath());
     addImportPath("qrc:/");
 
     // QML types register
@@ -49,7 +49,7 @@ AppEngine::AppEngine(QObject *parent)
     jsRegisterFunctions();
 
     // script include file (default)
-    QFile jsFile(ApxDirs::res().filePath("scripts/gcs.js"));
+    QFile jsFile(AppDirs::res().filePath("scripts/gcs.js"));
     if (jsFile.open(QIODevice::ReadOnly)) {
         QTextStream stream(&jsFile);
         QString contents = stream.readAll();
@@ -57,7 +57,7 @@ AppEngine::AppEngine(QObject *parent)
         jsexec(contents);
     }
     // script include file (user commands)
-    QFile jsFile2(ApxDirs::scripts().filePath("gcs.js"));
+    QFile jsFile2(AppDirs::scripts().filePath("gcs.js"));
     if (jsFile2.open(QIODevice::ReadOnly)) {
         QTextStream stream(&jsFile2);
         QString contents = stream.readAll();
@@ -78,12 +78,12 @@ void AppEngine::jsSyncObject(QObject *obj)
 //=============================================================================
 void AppEngine::jsSync(Fact *fact)
 {
-    //qDebug()<<item;
     if (fact->name().isEmpty())
         return;
 
     QList<FactBase *> list = fact->pathList();
     QJSValue v = globalObject();
+    //qDebug() << fact << list;
     //build tree from root
     for (int i = list.size() - 1; i > 0; --i) {
         Fact *f = static_cast<Fact *>(list.at(i));
@@ -100,7 +100,7 @@ void AppEngine::jsSync(Fact *fact)
 //=============================================================================
 QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 {
-    //qDebug()<<fact->path();
+    //qDebug() << fact->path();
     if (fact->name().isEmpty())
         return QJSValue();
     QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);

@@ -3,6 +3,8 @@ import ApxDeploy
 ApxDeploy.ApxDeployQt {
     name: "Qt Libs"
 
+    condition: false
+
     Depends {
         productTypes: [
             "xplane_plugin",

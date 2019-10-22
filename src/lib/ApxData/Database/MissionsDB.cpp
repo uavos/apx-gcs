@@ -22,10 +22,10 @@
  */
 #include "MissionsDB.h"
 #include "Database.h"
-#include <ApxDirs.h>
+#include <App/AppDirs.h>
 //=============================================================================
 MissionsDB::MissionsDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("missions.db"), sessionName)
+    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("missions.db"), sessionName)
 {
     new DBReqMakeTable(this,
                        "Missions",

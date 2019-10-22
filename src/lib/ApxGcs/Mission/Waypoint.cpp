@@ -21,10 +21,9 @@
  *
  */
 #include "Waypoint.h"
-//#include "Mission.h"
 #include "MissionField.h"
 #include "VehicleMission.h"
-#include <ApxApp.h>
+#include <App/App.h>
 //=============================================================================
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", tr("Waypoint"))
@@ -57,7 +56,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_actions, &Fact::statusChanged, this, &Waypoint::updateDescr);
     updateDescr();
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Waypoint::updateTitle()

@@ -22,11 +22,11 @@
  */
 #include "TelemetryDB.h"
 #include "Database.h"
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 //=============================================================================
 TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, ApxDirs::db().absoluteFilePath("telemetry.db"), sessionName)
+    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("telemetry.db"), sessionName)
     , latestInvalidCacheID(0)
 {
     qRegisterMetaType<QMap<quint64, QString>>("QMap<quint64,QString>");

@@ -21,21 +21,21 @@ RowLayout {
 
     readonly property color color: {
 
-        var cImportant = (source==ApxApp.FromVehicle)?"#aff":"#afa"
-        var cInfo = (source==ApxApp.FromInput)?"#ccc":"#aaa"
+        var cImportant = (source==App.FromVehicle)?"#aff":"#afa"
+        var cInfo = (source==App.FromInput)?"#ccc":"#aaa"
 
         switch(type){
         default:
-        case ApxApp.Info: return cInfo
-        case ApxApp.Important: return cImportant
-        case ApxApp.Warning: return "#ff8"
-        case ApxApp.Error: return "#f88"
+        case App.Info: return cInfo
+        case App.Important: return cImportant
+        case App.Warning: return "#ff8"
+        case App.Error: return "#f88"
         }
     }
     readonly property bool html: text.startsWith("<html>")
     readonly property bool bold: {
-        if(source==ApxApp.FromInput) return true
-        if(type==ApxApp.Info) return false
+        if(source==App.FromInput) return true
+        if(type==App.Info) return false
         return true
     }
 

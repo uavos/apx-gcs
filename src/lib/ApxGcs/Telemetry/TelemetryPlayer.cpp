@@ -25,8 +25,8 @@
 #include "Telemetry.h"
 #include "TelemetryReader.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <Database/Database.h>
 #include <Database/TelemetryReqRead.h>
 
@@ -343,7 +343,7 @@ void TelemetryPlayer::next()
                 const QString &uid = r.at(n.indexOf("uid")).toString();
                 if (evt == "msg") {
                     apxMsg() << QString("<[replay]%1").arg(sv);
-                    ApxApp::sound(sv);
+                    App::sound(sv);
                 } else {
                     if (evt == "mission") {
                         //emit discardRequests();

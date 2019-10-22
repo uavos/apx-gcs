@@ -25,8 +25,8 @@
 
 #include <Xbus/XbusMission.h>
 
+#include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <ApxLog.h>
 //=============================================================================
 ProtocolMission::ProtocolMission(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle)

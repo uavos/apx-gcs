@@ -21,10 +21,10 @@
  *
  */
 #include "TelemetryFrame.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
-#include <ApxMisc/SvgMaterialIcon.h>
 #include <Telemetry/LookupTelemetry.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
@@ -104,12 +104,12 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     a = new QActionFact(lookup);
     toolBar->addAction(a);
     toolBar->addSeparator();
-    aSplit = toolBar->addAction(SvgMaterialIcon("book-open-variant"),
+    aSplit = toolBar->addAction(MaterialIcon("book-open-variant"),
                                 tr("Split view"),
                                 this,
                                 &TelemetryFrame::aSplit_triggered);
     aSplit->setCheckable(true);
-    aShowEvents = toolBar->addAction(SvgMaterialIcon("ray-vertex"),
+    aShowEvents = toolBar->addAction(MaterialIcon("ray-vertex"),
                                      tr("Show events"),
                                      this,
                                      &TelemetryFrame::aShowEvents_triggered);
@@ -123,7 +123,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBar->addAction(new QActionFact(lookup->f_remove));
     toolBar->addSeparator();
 
-    aReplay = toolBar->addAction(SvgMaterialIcon(player->icon()),
+    aReplay = toolBar->addAction(MaterialIcon(player->icon()),
                                  tr("Replay"),
                                  this,
                                  &TelemetryFrame::aReplay_triggered);
@@ -165,7 +165,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     connect(playerSlider, &QSlider::sliderMoved, this, &TelemetryFrame::playerSliderMoved);
     connect(plot, &TelemetryPlot::timeCursorChanged, this, &TelemetryFrame::plotTimeCursorMoved);
     lbPlayerTime = new QLabel(this);
-    lbPlayerTime->setFont(ApxApp::getMonospaceFont());
+    lbPlayerTime->setFont(App::getMonospaceFont());
     toolBarPlayer->addWidget(lbPlayerTime);
     plotCursorUpdateTimer.setSingleShot(true);
     connect(&plotCursorUpdateTimer, &QTimer::timeout, this, &TelemetryFrame::updatePlotPlayerTime);
@@ -508,7 +508,7 @@ void TelemetryFrame::export_fdr(QString fileName)
   out << "\n\n";
   //export data...
   //read config
-  QSettings st(ApxDirs::res().filePath("preferences/xplane-fdr.conf"),QSettings::IniFormat);
+  QSettings st(AppDirs::res().filePath("preferences/xplane-fdr.conf"),QSettings::IniFormat);
   uint colCount=st.value("columns").toUInt();
   st.beginGroup("columns");
   QMap<int,QString> map;

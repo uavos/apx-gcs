@@ -21,7 +21,7 @@
  *
  */
 #include "AppWindow.h"
-#include <ApxApp.h>
+#include <App/App.h>
 #include <QCoreApplication>
 #include <QScreen>
 #include <QWidget>
@@ -44,7 +44,7 @@ AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
     saveStateTimer.setInterval(100);
     connect(&saveStateTimer, &QTimer::timeout, this, &AppWindow::saveStateDo);
 
-    if (!(plugin->interface->flags() & ApxPluginInterface::Restore)) {
+    if (!(plugin->interface->flags() & PluginInterface::Restore)) {
         load();
         setValue(false);
     }
@@ -76,12 +76,12 @@ void AppWindow::updateWidget()
                 plugin->control = nullptr;
                 setValue(false);
             });
-            connect(ApxApp::instance(),
-                    &ApxApp::applicationStateChanged,
+            connect(App::instance(),
+                    &App::applicationStateChanged,
                     this,
                     &AppWindow::applicationStateChanged);
-            connect(ApxApp::instance(),
-                    &ApxApp::visibilityChanged,
+            connect(App::instance(),
+                    &App::visibilityChanged,
                     this,
                     &AppWindow::applicationVisibilityChanged);
             w->setWindowIcon(QApplication::windowIcon());
@@ -138,8 +138,7 @@ void AppWindow::applicationStateChanged(Qt::ApplicationState state)
     if (!w)
         return;
     if (state == Qt::ApplicationActive) {
-        if (!(w->isFullScreen()
-              || ApxApp::instance()->window()->visibility() == QWindow::FullScreen)) {
+        if (!(w->isFullScreen() || App::instance()->window()->visibility() == QWindow::FullScreen)) {
             w->raise();
         }
     }
@@ -232,6 +231,6 @@ void AppWindow::restoreState()
 //=============================================================================
 bool AppWindow::showLauncher()
 {
-    return plugin->interface->flags() & ApxPluginInterface::Launcher;
+    return plugin->interface->flags() & PluginInterface::Launcher;
 }
 //=============================================================================

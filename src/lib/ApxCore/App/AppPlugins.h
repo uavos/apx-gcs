@@ -23,10 +23,11 @@
 #ifndef AppPlugins_H
 #define AppPlugins_H
 //=============================================================================
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <QtCore>
-class AppPlugin;
+
+#include "AppPlugin.h"
 //=============================================================================
 class AppPlugins : public QObject, public QList<AppPlugin *>
 {
@@ -49,35 +50,6 @@ signals:
     void loadedTool(AppPlugin *plugin);
     void loadedWindow(AppPlugin *plugin);
     void loadedControl(AppPlugin *plugin);
-};
-//=============================================================================
-class AppPlugin : public QObject
-{
-    Q_OBJECT
-public:
-    explicit AppPlugin(AppPlugins *plugins, QString name, QString fileName);
-    ~AppPlugin();
-
-    void load();
-    void unload();
-
-    AppPlugins *plugins;
-
-    QString name;
-    QString fileName;
-    Fact *f_enabled;
-    ApxPluginInterface *interface;
-    QObject *control;
-    QPluginLoader *loader;
-    QStringList depends;
-
-    QString section;
-
-private:
-    void loadLib();
-    void loadQml();
-private slots:
-    void enabledChanged();
 };
 //=============================================================================
 #endif

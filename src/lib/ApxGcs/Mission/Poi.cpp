@@ -23,7 +23,7 @@
 #include "Poi.h"
 #include "MissionField.h"
 #include "VehicleMission.h"
-#include <ApxApp.h>
+#include <App/App.h>
 #include <QGeoCircle>
 //=============================================================================
 Poi::Poi(MissionGroup *parent)
@@ -63,7 +63,7 @@ Poi::Poi(MissionGroup *parent)
     connect(f_time, &Fact::valueChanged, this, &Poi::updateDescr);
     updateDescr();
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Poi::updateTitle()

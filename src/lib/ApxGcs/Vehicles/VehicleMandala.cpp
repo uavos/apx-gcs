@@ -23,7 +23,7 @@
 #include "VehicleMandala.h"
 #include "Vehicle.h"
 #include "VehicleMandalaFact.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <QColor>
 //=============================================================================
 VehicleMandala::VehicleMandala(Vehicle *parent)

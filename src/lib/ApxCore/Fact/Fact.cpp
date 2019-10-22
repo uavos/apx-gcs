@@ -21,8 +21,8 @@
  *
  */
 #include "Fact.h"
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <QFont>
 #include <QFontDatabase>
 //=============================================================================
@@ -410,12 +410,14 @@ Fact *Fact::menu()
         return this;
     if (!qmlPage().isEmpty())
         return this;
-    if (treeType() == Group)
-        return this;
     if (treeType() == Root)
         return this;
     if (dataType() == Mandala)
         return this;
+
+    if (treeType() == Group)
+        return bind() ? bind()->menu() : this;
+
     if (bind())
         return bind()->menu();
     return nullptr;
@@ -425,7 +427,7 @@ QObject *Fact::loadQml(const QString &qmlFile)
 {
     QVariantMap opts;
     opts.insert("fact", QVariant::fromValue(this));
-    return ApxApp::instance()->engine()->loadQml(qmlFile, opts);
+    return App::instance()->engine()->loadQml(qmlFile, opts);
 }
 //=============================================================================
 void Fact::bind(FactData *fact)
@@ -561,10 +563,15 @@ void Fact::setFlags(FactBase::Flags v)
 }
 FactListModel *Fact::model()
 {
-    bool bEmpty = size() <= 0;
+    /*if (!m_model && size() <= 0 && bind()) {
+        return bind()->model();
+    }*/
+    bool bEmpty = size() <= 0 && treeType() != Group;
     if (!m_model) {
-        if (!bEmpty)
+        if (!bEmpty) {
             m_model = new FactListModel(this);
+            m_model->sync();
+        }
     } else if (bEmpty) {
         m_model->deleteLater();
         m_model = nullptr;
@@ -730,10 +737,11 @@ void Fact::setProgress(const int v)
     int vp = m_progress;
     m_progress = v;
     emit progressChanged();
+    AppRoot::instance()->updateProgress(this);
     if ((vp < 0 && v >= 0) || (vp >= 0 && v < 0)) {
         emit busyChanged();
         if (busy()) {
-            ApxApp::instance()->report(this);
+            App::instance()->report(this);
         }
     }
 }

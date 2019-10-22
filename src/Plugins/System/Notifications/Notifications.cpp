@@ -22,8 +22,8 @@
  */
 #include "Notifications.h"
 #include "NotifyItem.h"
+#include <App/App.h>
 #include <App/AppRoot.h>
-#include <ApxApp.h>
 //=============================================================================
 Notifications::Notifications(Fact *parent)
     : Fact(parent,
@@ -36,14 +36,14 @@ Notifications::Notifications(Fact *parent)
 {
     connect(&notifyEvent, &DelayedEvent::triggered, this, &Notifications::updateItems);
 
-    connect(ApxApp::instance(), &ApxApp::notification, this, &Notifications::appNotification);
+    connect(App::instance(), &App::notification, this, &Notifications::appNotification);
 
     loadQml("qrc:/" PLUGIN_NAME "/NotificationsPlugin.qml");
 }
 //=============================================================================
 void Notifications::appNotification(QString msg,
                                     QString subsystem,
-                                    ApxApp::NotifyFlags flags,
+                                    App::NotifyFlags flags,
                                     Fact *fact)
 {
     if (items.contains(fact))

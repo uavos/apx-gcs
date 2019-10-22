@@ -10,21 +10,25 @@ Item {
     id: control
     implicitHeight: vehiclesList.height
     implicitWidth: vehiclesList.width
-    Layout.minimumWidth: height
+    Layout.minimumWidth: height*2
     ListView {
         id: vehiclesList
         model: apx.vehicles.list.model
         implicitHeight: contentItem.childrenRect.height
         implicitWidth: Math.min(contentItem.childrenRect.width,parent.width)
         orientation: ListView.Horizontal
+        snapMode: ListView.SnapToItem
         delegate: VehicleButton {
             enabled: true
             vehicle: modelData
+            Connections {
+                target: vehicle
+                onSelected: vehiclesList.positionViewAtIndex(index, ListView.Beginning)
+            }
         }
 
         spacing: 10*ui.scale
         clip: true
-        snapMode: ListView.SnapToItem
 
         header: RowLayout {
             //width: hdr.width+10

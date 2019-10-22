@@ -21,9 +21,9 @@
  *
  */
 #include "Sounds.h"
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <App/AppSettings.h>
-#include <ApxApp.h>
-#include <ApxDirs.h>
 #include <Fact/Fact.h>
 //=============================================================================
 Sounds::Sounds(Fact *parent)
@@ -127,7 +127,7 @@ Sounds::Sounds(Fact *parent)
     });
 
     //read phrases config
-    QFile fsys(ApxDirs::res().filePath("templates/speech.json"));
+    QFile fsys(AppDirs::res().filePath("templates/speech.json"));
     if (fsys.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(fsys.readAll());
         fsys.close();
@@ -148,7 +148,7 @@ Sounds::Sounds(Fact *parent)
     alias["connected"] = "radar_lock";
     //load files and create effects
     //qDebug() << QSoundEffect::supportedMimeTypes();
-    QDir fdir(ApxDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
+    QDir fdir(AppDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
     foreach (QFileInfo fi, fdir.entryInfoList()) {
         if (!alias.values().contains(fi.baseName()))
             continue;
@@ -170,7 +170,7 @@ Sounds::Sounds(Fact *parent)
     effectTimer.setInterval(50);
     connect(&effectTimer, &QTimer::timeout, this, &Sounds::effectTimeout);
 
-    connect(ApxApp::instance(), &ApxApp::playSoundEffect, this, &Sounds::play);
+    connect(App::instance(), &App::playSoundEffect, this, &Sounds::play);
 
     engineChanged();
 }
@@ -239,7 +239,7 @@ void Sounds::langChanged()
                 voices[0] = voice;
         }
     } else {
-        QDir voicep(ApxDirs::res().filePath("audio/speech"));
+        QDir voicep(AppDirs::res().filePath("audio/speech"));
         foreach (QString s, voicep.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
             st << s;
     }
@@ -277,7 +277,7 @@ void Sounds::voiceChanged()
             else
                 voice = "vicki";
         }
-        QDir fdir(ApxDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
+        QDir fdir(AppDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
         //qDebug()<<fdir.absolutePath();
         foreach (QString file, fdir.entryList()) {
             speech.insert(file.left(file.indexOf('.')),

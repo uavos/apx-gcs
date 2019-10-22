@@ -23,7 +23,7 @@
 #include "Area.h"
 #include "MissionField.h"
 #include "VehicleMission.h"
-#include <ApxApp.h>
+#include <App/App.h>
 #include <QGeoCircle>
 //=============================================================================
 Area::Area(MissionGroup *parent)
@@ -63,7 +63,7 @@ Area::Area(MissionGroup *parent)
     connect(f_time, &Fact::valueChanged, this, &Area::updateDescr);
     updateDescr();
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Area::updateTitle()

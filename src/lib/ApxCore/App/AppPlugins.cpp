@@ -22,9 +22,9 @@
  */
 #include "AppPlugins.h"
 #include "AppSettings.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 //=============================================================================
 AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     : QObject(parent)
@@ -45,7 +45,7 @@ void AppPlugins::load(const QStringList &names)
                                       << "*.bundle"
                                       << "*.qml");
 
-    QDir userp = ApxDirs::userPlugins();
+    QDir userp = AppDirs::userPlugins();
     userp.setSorting(QDir::Name | QDir::IgnoreCase);
     userp.refresh();
     if (!userp.exists())
@@ -70,7 +70,7 @@ void AppPlugins::load(const QStringList &names)
     if (!stRepQml.isEmpty())
         apxConsole() << QObject::tr("User QML plugins").append(": ").append(stRepQml.join(','));
 
-    QDir pluginsDir = ApxDirs::plugins();
+    QDir pluginsDir = AppDirs::plugins();
     pluginsDir.setSorting(QDir::Name | QDir::IgnoreCase);
     pluginsDir.refresh();
     //apxDebug()<<pluginsDir;
@@ -79,14 +79,14 @@ void AppPlugins::load(const QStringList &names)
         allFiles.append(pluginsDir.absoluteFilePath(fileName));
     }
 
-    allFiles.append("qrc:///app/EFIS.qml");
+    /*allFiles.append("qrc:///app/EFIS.qml");
     (void) QT_TRANSLATE_NOOP("Plugins", "EFIS");
 
     allFiles.append("qrc:///app/PFD.qml");
     (void) QT_TRANSLATE_NOOP("Plugins", "PFD");
 
     allFiles.append("qrc:///app/HDG.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "HDG");
+    (void) QT_TRANSLATE_NOOP("Plugins", "HDG");*/
 
     //allFiles.append("qrc:///Apx/Controls/video/Video.qml");
     //(void)QT_TRANSLATE_NOOP("Plugins","Video");
@@ -175,168 +175,5 @@ void AppPlugins::unload()
 {
     qDeleteAll(*this);
     clear();
-}
-//=============================================================================
-//=============================================================================
-//=============================================================================
-AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
-    : QObject(plugins)
-    , plugins(plugins)
-    , name(name)
-    , fileName(fileName)
-    , f_enabled(nullptr)
-    , interface(nullptr)
-    , control(nullptr)
-    , loader(nullptr)
-{
-    AppSettingFact *f = new AppSettingFact(AppSettings::settings(),
-                                           plugins->f_enabled,
-                                           name.toLower(),
-                                           name,
-                                           "",
-                                           Fact::Bool,
-                                           true);
-    ApxApp::jsync(plugins->f_enabled);
-    f_enabled = f;
-    f->load();
-    connect(f, &Fact::valueChanged, this, &AppPlugin::enabledChanged);
-}
-AppPlugin::~AppPlugin()
-{
-    unload();
-}
-//=============================================================================
-void AppPlugin::loadLib()
-{
-    QString fname = fileName;
-    if (fname.endsWith(".bundle")) {
-        fname += "/Contents/MacOS/" + QFileInfo(fname).baseName();
-    }
-    //load lib
-    apxConsole() << tr("Loading").append(":") << name;
-    loader = new QPluginLoader(fname);
-    QObject *instance = nullptr;
-    try {
-        instance = loader->instance();
-    } catch (...) {
-        apxMsgW() << "Plugin load error" << name << "(" + fname + ")";
-    }
-    if (!instance) {
-        apxMsgW() << "QPluginLoader" << loader->errorString() << "(" + fname + ")";
-        return;
-    }
-    ApxPluginInterface *p = reinterpret_cast<ApxPluginInterface *>(instance);
-    interface = p;
-    if (!f_enabled->value().toBool())
-        return;
-
-    //check depends
-    depends = p->depends();
-    if (!depends.isEmpty()) {
-        bool ok = false;
-        //apxConsole() << tr("Deps").append(":") << depends;
-        for (auto d : *plugins) {
-            if (!depends.contains(d->name))
-                continue;
-            ok = true;
-            apxConsole() << tr("Depends").append(":") << d->name;
-            d->load();
-        }
-        if (!ok) {
-            apxConsoleW() << tr("Dependency not found").append(":") << depends;
-        }
-        apxConsole() << tr("Initializing").append(":") << name;
-    }
-
-    //define section
-    switch (p->flags() & ApxPluginInterface::PluginSectionMask) {
-    default:
-        section = tr("Other");
-        break;
-    case ApxPluginInterface::System:
-        section = tr("System features");
-        break;
-    case ApxPluginInterface::Tool:
-        section = tr("Tools");
-        break;
-    case ApxPluginInterface::Map:
-        section = tr("Map view features");
-        break;
-    }
-
-    //initialize lib
-    p->init();
-    QString title = p->title();
-    QString descr = p->descr();
-    switch (p->flags() & ApxPluginInterface::PluginTypeMask) {
-    default:
-        break;
-    case ApxPluginInterface::Feature: {
-        control = p->createControl();
-        Fact *f = qobject_cast<Fact *>(control);
-        if (!f)
-            break;
-        if (title.isEmpty())
-            title = f->title();
-        if (descr.isEmpty())
-            descr = f->descr();
-        f_enabled->setSection(section);
-        descr.prepend(tr("Tool").append(": "));
-        plugins->loadedTool(this);
-    } break;
-    case ApxPluginInterface::Widget: {
-        f_enabled->setSection(tr("Windows"));
-        descr.prepend(tr("Window").append(": "));
-        plugins->loadedWindow(this);
-    } break;
-    }
-    f_enabled->setTitle(title);
-    f_enabled->setDescr(descr);
-}
-void AppPlugin::loadQml()
-{
-    f_enabled->setSection(tr("Controls"));
-    Fact *f = new Fact(nullptr, name.toLower(), name, "", Fact::Group);
-    f->setQmlPage(fileName);
-    control = f;
-    plugins->loadedControl(this);
-}
-//=============================================================================
-void AppPlugin::load()
-{
-    if (loader || control)
-        return;
-    if (fileName.endsWith(".so") || fileName.endsWith(".dylib") || fileName.endsWith(".bundle")) {
-        loadLib();
-    } else if (fileName.endsWith(".qml")) {
-        loadQml();
-    }
-}
-void AppPlugin::unload()
-{
-    /*Fact *f = qobject_cast<Fact *>(control);
-    if (f && f->parentFact())
-        f->setParentFact(nullptr);
-    if (control) {
-        delete control;
-    }
-    if (loader) {
-        loader->unload();
-        delete loader;
-    }
-    loader = nullptr;
-    control = nullptr;*/
-}
-//=============================================================================
-void AppPlugin::enabledChanged()
-{
-    Fact *f = qobject_cast<Fact *>(sender());
-    if (!f)
-        return;
-    if (f->value().toBool()) {
-        load();
-    } else {
-        //unload();
-    }
 }
 //=============================================================================

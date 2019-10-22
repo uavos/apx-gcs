@@ -24,14 +24,14 @@
 #define SoundsPlugin_H
 #include "Sounds.h"
 #include <App/AppSettings.h>
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
-class SoundsPlugin : public ApxPluginInterface
+class SoundsPlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | System; }
     QObject *createControl() override { return new Sounds(AppSettings::instance()->f_interface); }

@@ -22,7 +22,7 @@
  */
 #include "BlackboxReader.h"
 
-#include <ApxLog.h>
+#include <App/AppLog.h>
 
 #include <Protocols/ProtocolVehicle.h>
 #include <Telemetry/Telemetry.h>

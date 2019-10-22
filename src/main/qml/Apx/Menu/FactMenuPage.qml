@@ -17,6 +17,7 @@ ColumnLayout {
     property var pageInfoAction //load fact action info instead fact info
 
     property string pageTitle: fact.title
+    property string pageDescr: fact.descr
     property string pageStatus: fact.status
 
     Component.onCompleted: {

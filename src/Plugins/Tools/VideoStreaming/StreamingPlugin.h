@@ -23,14 +23,14 @@
 #ifndef StreamingPlugin_H
 #define StreamingPlugin_H
 #include "gstplayer.h"
-#include <ApxPluginInterface.h>
+#include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
-class StreamingPlugin : public ApxPluginInterface
+class StreamingPlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.ApxPluginInterface/1.0")
-    Q_INTERFACES(ApxPluginInterface)
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override { return new GstPlayer(); }

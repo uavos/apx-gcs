@@ -21,7 +21,7 @@
  *
  */
 #include "AppInstances.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <QLocalSocket>
 const char *AppInstances::ack = "ack";
 //=============================================================================

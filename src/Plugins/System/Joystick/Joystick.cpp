@@ -21,9 +21,9 @@
  *
  */
 #include "Joystick.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 
 #include "JoystickAxis.h"
 //=============================================================================
@@ -161,7 +161,7 @@ void Joystick::updateButton(int i, bool v)
     QString s = f->text().simplified();
     if (s.isEmpty())
         return;
-    ApxApp::jsexec(s);
+    App::jsexec(s);
 }
 void Joystick::updateHat(int i, quint8 v)
 {
@@ -178,7 +178,7 @@ void Joystick::updateHat(int i, quint8 v)
         QString s = f->text().simplified();
         if (s.isEmpty())
             return;
-        ApxApp::jsexec(s);
+        App::jsexec(s);
     }
 }
 //=============================================================================

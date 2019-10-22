@@ -23,9 +23,9 @@
 #include "Initialize.h"
 #include "Firmware.h"
 #include "Releases.h"
-#include <ApxApp.h>
-#include <ApxGcs.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppGcs.h>
+#include <App/AppLog.h>
 #include <QSerialPortInfo>
 //=============================================================================
 Initialize::Initialize(Firmware *firmware, Fact *parent)
@@ -113,7 +113,7 @@ void Initialize::updatePortEnums()
     }
     f_port->setEnumStrings(st);
     //select active port
-    QStringList sta = ApxGcs::instance()->f_datalink->f_ports->activeSerialPorts();
+    QStringList sta = AppGcs::instance()->f_datalink->f_ports->activeSerialPorts();
     if (!sta.isEmpty())
         f_port->setValue(sta.first());
     else {

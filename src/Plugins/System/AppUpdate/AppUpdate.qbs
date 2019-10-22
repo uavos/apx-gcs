@@ -1,6 +1,5 @@
 import qbs
 import ApxApp
-import ApxDeploy
 
 Project {
 
@@ -40,9 +39,5 @@ Project {
             ]
         }
 
-    }
-
-    ApxDeploy.ApxDeployFramework {
-        framework: "Sparkle"
     }
 }

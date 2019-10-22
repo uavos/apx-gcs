@@ -22,8 +22,8 @@
  */
 #include "Datalink.h"
 
+#include <App/App.h>
 #include <App/AppSettings.h>
-#include <ApxApp.h>
 //=============================================================================
 Datalink::Datalink(Fact *parent)
     : Fact(parent, "datalink", tr("Datalink"), tr("Communication and networks"), Group)
@@ -84,12 +84,12 @@ Datalink::Datalink(Fact *parent)
     connect(this, &Datalink::onlineChanged, this, [=]() {
         if (!m_online)
             setErrcnt(0);
-        ApxApp::sound(m_online ? "connected" : "error");
+        App::sound(m_online ? "connected" : "error");
     });
 
     connect(this, &Datalink::packetReceived, this, [=]() { setValid(true); });
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 void Datalink::addConnection(DatalinkConnection *c)

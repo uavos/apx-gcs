@@ -12,6 +12,13 @@ ApxApp.ApxPlugin {
         ]
     }
 
+    /*appdata.data: {
+        var json = base
+        json.qtplugins = []
+        json.qtplugins.push("texttospeech")
+        return json
+    }*/
+    appdata.qtplugins: [ "texttospeech" ]
 
     files: [
         "SoundsPlugin.h",

@@ -24,8 +24,8 @@
 #include "BlackboxFile.h"
 #include "BlackboxNode.h"
 
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <Fact/Fact.h>
 #include <Nodes/NodeItem.h>
 #include <Vehicles/Vehicles.h>

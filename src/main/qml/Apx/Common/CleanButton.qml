@@ -186,9 +186,10 @@ Button {
             contentItem.implicitHeight: control.contentItem.height-anchors.margins*2
             opacity: 0.33
             to: 100
-            value: control.progress
-            visible: control.progress>=0
-            indeterminate: control.progress===0
+            property int v: control.progress
+            value: v
+            visible: v>=0
+            indeterminate: v==0
             Material.accent: Material.color(Material.Green)
         }
     }

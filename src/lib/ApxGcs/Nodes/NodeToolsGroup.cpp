@@ -75,7 +75,7 @@ Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, qui
         f->setIcon("asterisk");
     f->userData = cmd;
     registerOnlineAction(f);
-    //ApxApp::jsync(this);
+    //App::jsync(this);
     return f;
 }
 //=============================================================================

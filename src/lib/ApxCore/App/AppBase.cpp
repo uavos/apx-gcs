@@ -21,7 +21,7 @@
  *
  */
 #include "AppBase.h"
-#include <ApxLog.h>
+#include <App/AppLog.h>
 #include <version.h>
 #include <QIcon>
 #include <QSettings>
@@ -113,48 +113,43 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
 //=============================================================================
 QString AppBase::aboutString()
 {
-    const QString additionalInfo
-        = QString("<br>"
-                  "%1: <a href='http://docs.uavos.com/'><span "
-                  "style='color:#aaf;'>docs.uavos.com</span></a>"
-                  "<br>"
-                  "%2: <a href='https://uavos.github.io/apx-releases/CHANGELOG.html'><span "
-                  "style='color:#aaf;'>view</span></a>"
-                  "<br>"
-                  "%3: <a href='https://github.com/uavos/apx-releases/releases'><span "
-                  "style='color:#aaf;'>download</span></a>"
-                  "<br>"
-                  "")
-              .arg(tr("Documentation"))
-              .arg(tr("Changelog"))
-              .arg(tr("Releases"));
-    QStringList stver;
-    stver << tr("Branch '%1' dated %2").arg(branch()).arg(git_time());
-    stver << tr("Based on Qt %1 (%2, %3 bit)")
-                 .arg(QLatin1String(qVersion()),
-                      compilerString(),
-                      QString::number(QSysInfo::WordSize));
-    stver << tr("Built on %1 %2").arg(QLatin1String(__DATE__), QLatin1String(__TIME__));
-    stver << tr("Hash %1").arg(git_hash());
-    stver << tr("Machine UID %1 (%2@%3)").arg(machineUID()).arg(username()).arg(hostname());
-    const QString s
-        = QString("<h3>%1</h3>"
-                  "%2"
-                  "<hr size=1/>"
-                  "%3"
-                  "<hr size=1/>"
-                  "Copyright 2007-%4<br>"
-                  "Aliaksei Stratsilatau &lt;sa@uavos.com&gt;<br>"
-                  "All rights reserved.<br/>"
-                  "<br/>"
-                  "The program is provided AS IS with NO WARRANTY OF ANY KIND, "
-                  "INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A "
-                  "PARTICULAR PURPOSE.<br/>")
-              .arg(QString("%1 %2").arg(QCoreApplication::applicationName()).arg(version()),
-                   stver.join("<br/>"),
-                   additionalInfo,
-                   git_year());
-    return s;
+    QStringList lines;
+    lines << QString("%1: %2 %3")
+                 .arg(tr("Version"))
+                 .arg(QCoreApplication::applicationName())
+                 .arg(version());
+    lines << QString("%1: '%2' %3").arg(tr("Branch")).arg(branch()).arg(git_time());
+    lines << QString("Qt: %1 (%2, %3 bit)")
+                 .arg(QLatin1String(qVersion()))
+                 .arg(compilerString())
+                 .arg(QString::number(QSysInfo::WordSize));
+    lines << QString("%1: %2 %3")
+                 .arg(tr("Built"))
+                 .arg(QLatin1String(__DATE__))
+                 .arg(QLatin1String(__TIME__));
+    lines << QString("%1: %2").arg(tr("Hash")).arg(git_hash());
+    lines << QString("%1: %2 (%3@%4)")
+                 .arg(tr("Machine"))
+                 .arg(machineUID())
+                 .arg(username())
+                 .arg(hostname());
+
+    /*lines << "";
+    lines << QString("%1: http://docs.uavos.com/").arg(tr("Documentation"));
+    lines << QString("%1: https://uavos.github.io/apx-releases/CHANGELOG.html").arg(tr("Changelog"));
+    lines << QString("%1: https://github.com/uavos/apx-releases/releases").arg(tr("Releases"));
+*/
+    lines << "";
+    lines << QString("%1: 2007-%2").arg(tr("Copyright")).arg(git_year());
+    lines << "Aliaksei Stratsilatau <sa@uavos.com>";
+    lines << "All rights reserved.";
+
+    lines << "";
+    lines << "The program is provided AS IS with NO WARRANTY OF ANY KIND, "
+             "INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A "
+             "PARTICULAR PURPOSE.";
+
+    return lines.join('\n');
 }
 QString AppBase::compilerString()
 {

@@ -1,0 +1,7 @@
+module Navigation
+depends Apx.Map.Objects 1.0
+
+NavigationMapItems 1.0 NavigationMapItems.qml
+
+
+

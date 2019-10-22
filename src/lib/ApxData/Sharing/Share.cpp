@@ -22,9 +22,9 @@
  */
 #include "Share.h"
 
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 #include <App/AppSettings.h>
-#include <ApxDirs.h>
-#include <ApxLog.h>
 #include <QFileDialog>
 //=============================================================================
 Share::Share(Fact *parent,
@@ -46,16 +46,16 @@ Share::Share(Fact *parent,
 {
     f_export = new Fact(this,
                         "exp",
-                        tr("Export"),
                         tr("Export").append(" ").append(dataTitle),
+                        tr("Save data to file"),
                         CloseOnTrigger,
                         "export");
     connect(f_export, &Fact::triggered, this, &Share::exportTriggered);
 
     f_import = new Fact(this,
                         "imp",
-                        tr("Import"),
                         tr("Import").append(" ").append(dataTitle),
+                        tr("Load data from file"),
                         CloseOnTrigger,
                         "import");
     connect(f_import, &Fact::triggered, this, &Share::importTriggered);
@@ -70,7 +70,7 @@ void Share::syncTemplates()
     settings->beginGroup("templates_update");
     QStringList importedFiles = settings->value(fileType).toStringList();
     QFileInfoList fiSrcList(
-        QDir(ApxDirs::res().absoluteFilePath("templates/share"), QString("*.%1").arg(fileType))
+        QDir(AppDirs::res().absoluteFilePath("templates/share"), QString("*.%1").arg(fileType))
             .entryInfoList());
 
     bool updated = false;

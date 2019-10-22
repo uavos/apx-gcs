@@ -21,8 +21,8 @@
  *
  */
 #include "HttpService.h"
-#include <ApxApp.h>
-#include <ApxDirs.h>
+#include <App/App.h>
+#include <App/AppDirs.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 HttpService::HttpService(QObject *parent)
@@ -115,10 +115,10 @@ QString HttpService::reply_mandala(const QString &req)
             } else if (s.contains('=')) {
                 QString sname = s.left(s.indexOf('='));
                 if (sname == "scr") {
-                    ApxApp::instance()->jsexec(s.mid(sname.size() + 1));
+                    App::instance()->jsexec(s.mid(sname.size() + 1));
                     s = "";
                 } else {
-                    ApxApp::instance()->jsexec(
+                    App::instance()->jsexec(
                         s); //QString("set('%1',%2)").arg(sname).arg(s.mid(sname.size()+1)));
                     s = sname;
                 }
@@ -177,7 +177,7 @@ QString HttpService::reply_google(const QString &req)
         return reply_chase_upd();
 
     if (req.contains(".dae")) {
-        QFile f(ApxDirs::res().filePath("bitmaps" + req));
+        QFile f(AppDirs::res().filePath("bitmaps" + req));
         if (f.open(QIODevice::ReadOnly | QIODevice::Text))
             return f.readAll();
         //apxMsgW()<<"Model not found: %s",req.toUtf8().data());

@@ -1,0 +1,7 @@
+module Mission
+depends Apx.Map.Objects 1.0
+
+MissionMapItems 1.0 MissionMapItems.qml
+
+
+

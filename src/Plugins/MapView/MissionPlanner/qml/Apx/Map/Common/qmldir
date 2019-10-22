@@ -1,0 +1,11 @@
+module Common
+
+singleton Style 1.0 Style.qml
+
+MapIcon         1.0 MapIcon.qml
+MapLine         1.0 MapLine.qml
+MapObject       1.0 MapObject.qml
+MapSvgImage     1.0 MapSvgImage.qml
+MapText         1.0 MapText.qml
+
+

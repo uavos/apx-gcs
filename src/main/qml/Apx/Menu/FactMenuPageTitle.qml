@@ -14,14 +14,26 @@ Item {
     clip: true
     Text {
         id: titleText
+        z: 10
         anchors.top: parent.top
         anchors.left: showBtnBack?btnBack.right:parent.left
         anchors.leftMargin: 8
-        font.pixelSize: Math.max(8,parent.height*0.8)
+        font.pixelSize: Math.max(8,parent.height*(titleDescr.visible?0.65:0.8))
         font.family: font_narrow
         color: "white"
         visible: text!=""
         text: pageTitle
+    }
+    Text {
+        id: titleDescr
+        anchors.bottom: parent.bottom
+        anchors.left: titleText.left
+        anchors.bottomMargin: 1
+        font.pixelSize: Math.max(8,parent.height*0.35)
+        font.family: font_condenced
+        color: "#aaa"
+        visible: text!=""
+        text: pageDescr
     }
     Text {
         id: statusText
@@ -52,25 +64,9 @@ Item {
         width: height
         onClicked: back()
         color: "#478fff"
-        //effects: factMenu.effects
-    }
-    ProgressBar {
-        anchors.right: parent.right
-        anchors.left: titleText.left
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 1
-        //anchors.leftMargin: MenuStyle.itemSize
-        //anchors.verticalCenter: parent.verticalCenter
-        property int v: fact.progress
-        visible: v>0
-        value: v/100
-        indeterminate: v<0
-        Material.accent: Material.color(Material.Green)
     }
     Rectangle {
-        /*anchors.left: control.left
-        anchors.right: control.right
-        anchors.bottom: control.bottom*/
+        id: bottomBar
         height: 2
         color: MenuStyle.cTitleSep
         border.width: 0
@@ -78,6 +74,24 @@ Item {
             anchors.left=control.left
             anchors.right=control.right
             anchors.bottom=control.bottom
+        }
+    }
+    Loader {
+        id: progress
+        anchors.left: control.left
+        anchors.right: control.right
+        anchors.bottom: control.bottom
+        height: bottomBar.height
+        property int v: fact.progress
+        active: v>=0
+        visible: active
+        ProgressBar {
+            height: bottomBar.height
+            width: control.width
+            to: 100
+            value: progress.v
+            indeterminate: progress.v==0
+            Material.accent: Material.color(Material.LightGreen)
         }
     }
 }

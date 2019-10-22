@@ -29,7 +29,7 @@ TerminalListModel::TerminalListModel(QObject *parent)
     _enterIndex = 0;
     qRegisterMetaType<QtMsgType>("QtMsgType");
 
-    connect(ApxApp::instance(), &ApxApp::notification, this, &TerminalListModel::notification);
+    connect(App::instance(), &App::notification, this, &TerminalListModel::notification);
 }
 TerminalListModel::~TerminalListModel()
 {
@@ -67,11 +67,11 @@ QVariant TerminalListModel::data(const QModelIndex &index, int role) const
     case SubsystemRole:
         return item->subsystem;
     case SourceRole:
-        return static_cast<int>(item->flags) & ApxApp::NotifySourceMask;
+        return static_cast<int>(item->flags) & App::NotifySourceMask;
     case TypeRole:
-        return static_cast<int>(item->flags) & ApxApp::NotifyTypeMask;
+        return static_cast<int>(item->flags) & App::NotifyTypeMask;
     case OptionsRole:
-        return static_cast<int>(item->flags) & ApxApp::NotifyOptionsMask;
+        return static_cast<int>(item->flags) & App::NotifyOptionsMask;
     case FactRole:
         return QVariant::fromValue(item->fact);
     case TimestampRole:
@@ -83,7 +83,7 @@ QVariant TerminalListModel::data(const QModelIndex &index, int role) const
 //=============================================================================
 void TerminalListModel::notification(QString msg,
                                      QString subsystem,
-                                     ApxApp::NotifyFlags flags,
+                                     App::NotifyFlags flags,
                                      Fact *fact)
 {
     if (msg.isEmpty())
@@ -111,7 +111,7 @@ void TerminalListModel::notification(QString msg,
 //=============================================================================
 void TerminalListModel::enter(const QString &line)
 {
-    notification(line, "", ApxApp::FromInput, nullptr);
+    notification(line, "", App::FromInput, nullptr);
     _enterIndex = _items.size() - 1;
 }
 void TerminalListModel::enterResult(bool ok)
@@ -120,7 +120,7 @@ void TerminalListModel::enterResult(bool ok)
         return;
     _items[_enterIndex]->subsystem = ok ? tr("ok") : tr("error");
     if (!ok)
-        _items[_enterIndex]->flags |= ApxApp::Error;
+        _items[_enterIndex]->flags |= App::Error;
     QModelIndex i = index(_enterIndex, 0);
     emit dataChanged(i, i, QVector<int>() << TextRole);
 }

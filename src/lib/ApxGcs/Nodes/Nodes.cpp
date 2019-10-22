@@ -24,8 +24,8 @@
 #include "NodeField.h"
 #include "NodeItem.h"
 
-#include <ApxApp.h>
-#include <ApxLog.h>
+#include <App/App.h>
+#include <App/AppLog.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 Nodes::Nodes(Vehicle *parent)
@@ -118,7 +118,7 @@ Nodes::Nodes(Vehicle *parent)
 
     connect(this, &Fact::triggered, this, &Nodes::request);
 
-    ApxApp::jsync(this);
+    App::jsync(this);
 }
 //=============================================================================
 int Nodes::nodesCount() const
@@ -351,7 +351,7 @@ void Nodes::clear()
     emit nodesCountChanged();
     setModified(false);
     //updateProgress();
-    //ApxApp::jsync(this);
+    //App::jsync(this);
 }
 //=============================================================================
 void Nodes::reload()
