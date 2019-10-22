@@ -41,4 +41,7 @@ deploy-app: $(APP_DATA)
 deploy-osx: $(APP_DATA)
 	@python $(TOOLS_DIR)/deploy/deploy_dmg.py --appdata=$<
 
+deploy-linux: $(APP_DATA)
+	@python $(TOOLS_DIR)/deploy/deploy_appimage.py --appdata=$<
+
 
