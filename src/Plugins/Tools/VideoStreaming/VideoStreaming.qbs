@@ -13,7 +13,8 @@ ApxApp.ApxPlugin {
         submodules: [
             "core",
             "multimedia",
-            "qml"
+            "qml",
+            "quick"
         ]
     }
 
