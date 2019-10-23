@@ -3,6 +3,8 @@
 # APX project makefile to build Ground Control application release package
 #
 ###########################################################################
+all: build
+
 include ../Rules.mk
 
 # Environment variables:
@@ -13,14 +15,11 @@ include ../Rules.mk
 GCS_BUILD_DIR := $(BUILD_DIR)/gcs-$(HOST_OS)
 GCS_ROOT_DIR := $(GCS_BUILD_DIR)/release/install-root
 
-DIST_DIR := $(APX_DIR)/../dist
-
+DIST_DIR := /dist
 
 APP_DATA = $(GCS_ROOT_DIR)/appdata.json
 
-all: build
 
-# compile app bundle and SDK archive
 build: qt-version qbs-version $(APP_DATA)
 
 $(APP_DATA): qbs-init
@@ -28,7 +27,7 @@ $(APP_DATA): qbs-init
 	@$(QBS) build -d $(GCS_BUILD_DIR) -f gcs.qbs config:release $(QBS_OPTS)
 
 
-clean: 
+clean: FORCE
 	@rm -rf $(GCS_BUILD_DIR)
 
 # prepare bundle with libs and frameworks
