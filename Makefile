@@ -15,8 +15,6 @@ include ../Rules.mk
 GCS_BUILD_DIR := $(BUILD_DIR)/gcs-$(HOST_OS)
 GCS_ROOT_DIR := $(GCS_BUILD_DIR)/release/install-root
 
-DIST_DIR := /dist
-
 APP_DATA = $(GCS_ROOT_DIR)/appdata.json
 
 
@@ -39,7 +37,7 @@ deploy-clean:
 	@rm -rf $(GCS_ROOT_DIR)/*
 
 deploy-app: $(APP_DATA)
-	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(DIST_DIR:%=--dist=%) $(CODE_IDENTITY:%=--sign=%)
+	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(LIBS_DIST_DIR:%=--dist=%) $(CODE_IDENTITY:%=--sign=%)
 
 
 # build dist image
