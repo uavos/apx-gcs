@@ -3,7 +3,7 @@ import ApxApp
 
 Project {
 
-    condition: qbs.targetOS.contains("macos")
+    condition: qbs.targetOS.contains("macos") || qbs.targetOS.contains("linux")
 
     ApxApp.ApxPlugin {
 
@@ -15,8 +15,11 @@ Project {
         }
 
         files: [
+            "AppImageAutoUpdater.cpp",
+            "AppImageAutoUpdater.h",
             "UpdaterPlugin.h",
-            "Updater.cpp", "Updater.h",
+            "Updater.cpp",
+            "Updater.h",
         ]
 
         Properties {
@@ -26,12 +29,21 @@ Project {
                 "Sparkle",
                 "AppKit",
             ]
-            cpp.includePaths: base.concat([
-                "/Library/Frameworks/Sparkle.framework/Headers",
-            ])
+            cpp.includePaths: base.concat(["/Library/Frameworks/Sparkle.framework/Headers"])
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.staticLibraries: ["/usr/local/lib/libappimageupdate.a",
+                "/usr/local/lib/libappimage_shared.a",
+                "/usr/local/lib/libcpr.a",
+                "/usr/local/lib/libzsync2.a",
+                "/usr/local/lib/libzsync.a",
+                "curl"]
         }
 
         Group {
+            condition: qbs.targetOS.contains("macos")
             name: "sparkle"
             prefix: name+"/"
             files: [

@@ -27,7 +27,12 @@
 #include <App/AppSettings.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
-class SparkleAutoUpdater;
+#ifdef Q_OS_MAC
+#include "sparkle/SparkleAutoUpdater.h"
+#endif
+#ifdef Q_OS_UNIX
+#include "AppImageAutoUpdater.h"
+#endif
 //=============================================================================
 class Updater : public Fact
 {
@@ -39,7 +44,13 @@ public:
     Fact *f_check;
 
 private:
-    SparkleAutoUpdater *sparkle;
+#ifdef Q_OS_MAC
+    SparkleAutoUpdater m_impl;
+#endif
+#ifdef Q_OS_UNIX
+    AppImageAutoUpdater m_impl;
+#endif
+    void initUpdaterImpl();
 
 private slots:
     void updateAuto();

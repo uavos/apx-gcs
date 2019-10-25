@@ -25,8 +25,6 @@
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
 #include <App/AppSettings.h>
-
-#include "sparkle/SparkleAutoUpdater.h"
 //=============================================================================
 Updater::Updater(Fact *parent)
     : Fact(parent,
@@ -34,7 +32,6 @@ Updater::Updater(Fact *parent)
            tr("Check for updates"),
            tr("Update application"),
            Group)
-    , sparkle(nullptr)
 {
     f_auto = new AppSettingFact(AppSettings::settings(),
                                 this,
@@ -53,39 +50,37 @@ Updater::Updater(Fact *parent)
     m->setOpt("role", QAction::ApplicationSpecificRole);
     m->bind(f_check);
 
-#ifdef Q_OS_MAC
-    sparkle = new SparkleAutoUpdater();
-    sparkle->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
-    //sparkle->setAutomaticallyDownloadsUpdates(false);
-    //sparkle->setUpdateCheckInterval(3600);
+    initUpdaterImpl();
 
     connect(f_auto, &Fact::valueChanged, this, &Updater::updateAuto);
     updateAuto();
-#endif
 
     App::jsync(this);
+}
+
+void Updater::initUpdaterImpl()
+{
+#ifdef Q_OS_MAC
+    m_impl.setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
+    //m_impl.setAutomaticallyDownloadsUpdates(false);
+    //m_impl.setUpdateCheckInterval(3600);
+#endif
 }
 //=============================================================================
 void Updater::check()
 {
-    if (sparkle) {
-        sparkle->checkForUpdates();
-    }
+    m_impl.checkForUpdates();
 }
 //=============================================================================
 void Updater::checkInBackground()
 {
-    if (sparkle) {
-        sparkle->checkForUpdatesInBackground();
-    }
+    m_impl.checkForUpdatesInBackground();
 }
 //=============================================================================
 void Updater::updateAuto()
 {
-    if (!sparkle)
-        return;
     bool v = f_auto->value().toBool();
-    sparkle->setAutomaticallyChecksForUpdates(v);
+    m_impl.setAutomaticallyChecksForUpdates(v);
     if (v) {
         checkInBackground();
     }
