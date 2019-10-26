@@ -40,7 +40,7 @@ deploy-app: $(APP_DATA)
 
 # build dist image
 deploy-osx: $(APP_DATA)
-	# @python $(TOOLS_DIR)/deploy/deploy_dmg.py --appdata=$<
+	@python $(TOOLS_DIR)/deploy/deploy_dmg.py --appdata=$<
 	@mkdir -p $(BUILD_DIR_OUT)
 	@install $(GCS_ROOT_DIR)/packages/* $(BUILD_DIR_OUT)
 	@python $(TOOLS_DIR)/release/make_sparkle.py $(GITHUB_TOKEN:%=--token=%) --assets=$(BUILD_DIR_OUT)
