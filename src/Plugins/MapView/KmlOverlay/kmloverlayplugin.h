@@ -13,7 +13,7 @@ class KmlOverlayPlugin : public PluginInterface
 public:
     int flags() override { return Feature | Map; }
     QObject *createControl() override { return new KmlOverlay(); }
-    QStringList depends() override { return QStringList() << "MapView"; }
+    QStringList depends() override { return QStringList() << "MissionPlanner"; }
 };
 
 #endif //KMLOVERLAYPLUGIN_H

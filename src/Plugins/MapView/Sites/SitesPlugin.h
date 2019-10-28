@@ -34,7 +34,7 @@ class SitesPlugin : public PluginInterface
 public:
     int flags() override { return Feature | Map; }
     QObject *createControl() override { return new Sites(); }
-    QStringList depends() override { return QStringList() << "MapView"; }
+    QStringList depends() override { return QStringList() << "MissionPlanner"; }
 };
 //=============================================================================
 #endif

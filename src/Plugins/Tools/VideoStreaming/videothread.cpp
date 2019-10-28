@@ -469,8 +469,14 @@ void VideoThread::setupEnvironment()
         qputenv("GST_PLUGIN_PATH", pluginsDir.absolutePath().toUtf8());
 #ifdef Q_OS_LINUX
         pluginsDir.cdUp();
+        QDir ld1(pluginsDir);
+        pluginsDir.cdUp();
+        QDir ld2(pluginsDir);
         qputenv("LD_LIBRARY_PATH",
-                QString("$LD_LIBRARY_PATH:%1").arg(pluginsDir.absolutePath()).toUtf8());
+                QString("$LD_LIBRARY_PATH:%1:%2")
+                    .arg(ld1.absolutePath())
+                    .arg(ld2.absolutePath())
+                    .toUtf8());
 #endif
     } else
         qInfo() << "Can't find gstreamer in bundle, try to use system libs"
