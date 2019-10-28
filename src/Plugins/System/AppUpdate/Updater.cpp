@@ -65,6 +65,9 @@ void Updater::initUpdaterImpl()
     //m_impl.setAutomaticallyDownloadsUpdates(false);
     //m_impl.setUpdateCheckInterval(3600);
 #endif
+#ifdef Q_OS_UNIX
+    m_impl.setParentFact(this);
+#endif
 }
 //=============================================================================
 void Updater::check()

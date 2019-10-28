@@ -14,12 +14,12 @@ Project {
             ]
         }
 
+        Depends { name: "qmlqrc" }
+
         files: [
-            "AppImageAutoUpdater.cpp",
-            "AppImageAutoUpdater.h",
             "UpdaterPlugin.h",
             "Updater.cpp",
-            "Updater.h",
+            "Updater.h"
         ]
 
         Properties {
@@ -39,6 +39,7 @@ Project {
                 "/usr/local/lib/libcpr.a",
                 "/usr/local/lib/libzsync2.a",
                 "/usr/local/lib/libzsync.a",
+                "/usr/local/lib/librcksum.a",
                 "curl"]
         }
 
@@ -48,6 +49,13 @@ Project {
             prefix: name+"/"
             files: [
                 "SparkleAutoUpdater.mm", "SparkleAutoUpdater.h",
+            ]
+        }
+        Group {
+            condition: qbs.targetOS.contains("linux")
+            files: [
+                "AppImageAutoUpdater.cpp",
+                "AppImageAutoUpdater.h",
             ]
         }
 
