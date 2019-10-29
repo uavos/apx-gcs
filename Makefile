@@ -15,8 +15,6 @@ include ../Rules.mk
 GCS_BUILD_DIR := $(BUILD_DIR)/gcs-$(HOST_OS)
 GCS_ROOT_DIR := $(GCS_BUILD_DIR)/release/install-root
 
-DIST_DIR := /dist
-
 APP_DATA = $(GCS_ROOT_DIR)/appdata.json
 
 
@@ -32,22 +30,25 @@ clean: FORCE
 
 # prepare bundle with libs and frameworks
 deploy: build deploy-app deploy-$(HOST_OS)
-	@mkdir -p $(BUILD_DIR_OUT)
-	@install $(GCS_ROOT_DIR)/packages/* $(BUILD_DIR_OUT)
 
 deploy-clean: 
 	@rm -rf $(GCS_ROOT_DIR)/*
 
 deploy-app: $(APP_DATA)
-	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(DIST_DIR:%=--dist=%) $(CODE_IDENTITY:%=--sign=%)
+	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(CODE_IDENTITY:%=--sign=%) $(LIBS_DIST_DIR:%=--dist=%) 
 
 
 # build dist image
 deploy-osx: $(APP_DATA)
 	@python $(TOOLS_DIR)/deploy/deploy_dmg.py --appdata=$<
+	@mkdir -p $(BUILD_DIR_OUT)
+	@install $(GCS_ROOT_DIR)/packages/* $(BUILD_DIR_OUT)
+	@python $(TOOLS_DIR)/release/make_sparkle.py $(GITHUB_TOKEN:%=--token=%) --assets=$(BUILD_DIR_OUT)
 
 deploy-linux: $(APP_DATA)
 	@python $(TOOLS_DIR)/deploy/deploy_appimage.py --appdata=$<
+	@mkdir -p $(BUILD_DIR_OUT)
+	@install $(GCS_ROOT_DIR)/packages/* $(BUILD_DIR_OUT)
 
 
 

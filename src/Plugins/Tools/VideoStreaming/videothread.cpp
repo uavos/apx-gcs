@@ -19,6 +19,8 @@ VideoThread::VideoThread()
 
     if (!gst_is_initialized())
         gst_init(nullptr, nullptr);
+    else
+        apxMsgW() << "GST already initialized";
 }
 
 QString VideoThread::getUri()
@@ -439,20 +441,16 @@ QImage VideoThread::sample2qimage(const std::shared_ptr<GstSample> &sample)
 
 void VideoThread::setupEnvironment()
 {
+#ifdef Q_OS_LINUX
+    return;
+#else
     QString scannerPath;
     QString pluginsPath;
     QString gioPath;
 
-#ifdef Q_OS_LINUX
-    scannerPath = "../lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0";
-    pluginsPath = "../lib/x86_64-linux-gnu/gstreamer-1.0";
-    gioPath = "../lib/x86_64-linux-gnu/gio/modules";
-#endif
-#ifdef Q_OS_MAC
     scannerPath = "../Frameworks/GStreamer.framework/Versions/Current/libexec/gstreamer-1.0";
     pluginsPath = "../Frameworks/GStreamer.framework/Versions/Current/lib/gstreamer-1.0";
     gioPath = "../Frameworks/GStreamer.framework/Versions/Current/lib/gio/modules";
-#endif
 
     QDir appDir(QCoreApplication::applicationDirPath());
     QDir scannerDir(appDir);
@@ -467,14 +465,9 @@ void VideoThread::setupEnvironment()
         qputenv("GST_PLUGIN_SYSTEM_PATH", pluginsDir.absolutePath().toUtf8());
         qputenv("GST_PLUGIN_PATH_1_0", pluginsDir.absolutePath().toUtf8());
         qputenv("GST_PLUGIN_PATH", pluginsDir.absolutePath().toUtf8());
-#ifdef Q_OS_LINUX
-        pluginsDir.cdUp();
-        qputenv("LD_LIBRARY_PATH",
-                QString("$LD_LIBRARY_PATH:%1").arg(pluginsDir.absolutePath()).toUtf8());
-#endif
     } else
-        qInfo() << "Can't find gstreamer in bundle, try to use system libs"
-                << scannerDir.absolutePath();
+        qInfo() << "GStreamer not in bundle";
+#endif
 }
 
 std::shared_ptr<GstCaps> VideoThread::getCapsForAppSink()

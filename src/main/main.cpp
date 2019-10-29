@@ -26,6 +26,7 @@
 #include <App/AppLog.h>
 #include <QApplication>
 #include <QGLWidget>
+#include <QProcessEnvironment>
 #include <QQuickStyle>
 #include <QStyleFactory>
 #include <QtCore>
@@ -55,9 +56,9 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
 
     //high DPI scaling
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, false);
+    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, false);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, false);
-    QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+    //QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_Use96Dpi);
 
     //performance graphics
