@@ -31,7 +31,7 @@
 #include "sparkle/SparkleAutoUpdater.h"
 #endif
 #ifdef Q_OS_UNIX
-#include "AppImageAutoUpdater.h"
+#include "appimage/AppImageAutoUpdater.h"
 #endif
 //=============================================================================
 class Updater : public Fact
