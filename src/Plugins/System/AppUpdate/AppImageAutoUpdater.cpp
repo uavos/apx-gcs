@@ -59,6 +59,11 @@ int AppImageAutoUpdater::getUpdateProgress() const
     return m_updateProgress;
 }
 
+QString AppImageAutoUpdater::getStatusMessage() const
+{
+    return m_statusMessage;
+}
+
 void AppImageAutoUpdater::start(bool keepOldVersion)
 {
     auto updater = createUpdater(qgetenv("APPIMAGE"), keepOldVersion);
@@ -66,6 +71,7 @@ void AppImageAutoUpdater::start(bool keepOldVersion)
     {
         setUpdateProgress(0);
         setState(Updating);
+        setStatusMessage("");
         m_stopUpdate = false;
         updater->start();
         while(!updater->isDone())
@@ -94,7 +100,14 @@ void AppImageAutoUpdater::start(bool keepOldVersion)
             updater->progress(progress);
             setUpdateProgress(qRound(progress * 100));
             QCoreApplication::processEvents();
+            std::string nextMessage;
+            while(updater->nextStatusMessage(nextMessage))
+            {
+                setStatusMessage(QString::fromStdString(nextMessage));
+                QCoreApplication::processEvents();
+            }
         }
+
         //It's workaround for updater, that for some reason keep .zs-old file after update.
         QFile zsOld(qgetenv("APPIMAGE"));
         zsOld.setFileName(zsOld.fileName() + ".zs-old");
@@ -134,6 +147,15 @@ void AppImageAutoUpdater::setUpdateProgress(int progress)
     {
         m_updateProgress = progress;
         emit updateProgressChanged();
+    }
+}
+
+void AppImageAutoUpdater::setStatusMessage(const QString &status)
+{
+    if(m_statusMessage != status)
+    {
+        m_statusMessage = status;
+        emit statusMessageChanged();
     }
 }
 

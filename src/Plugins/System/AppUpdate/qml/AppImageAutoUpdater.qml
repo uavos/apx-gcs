@@ -7,7 +7,7 @@ Pane {
     id: root
     anchors.fill: parent
     implicitWidth: 300
-    implicitHeight: 200
+    implicitHeight: 400
     property var updater: apx.settings.application.appupdate.appimage_updater
     property var state: updater.state
     onStateChanged: {
@@ -37,6 +37,7 @@ Pane {
             Layout.alignment: Qt.AlignHCenter
             horizontalAlignment: Qt.AlignHCenter
         }
+
         RowLayout {
             Layout.fillHeight: false
             Layout.fillWidth: true
@@ -52,6 +53,16 @@ Pane {
                 visible: root.state === AppImageAutoUpdater.Updating
                 text: updater.updateProgress + "%"
             }
+        }
+
+        Label {
+            Layout.fillHeight: false
+            Layout.maximumWidth: 300
+            Layout.alignment: Qt.AlignHCenter
+            horizontalAlignment: Qt.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: updater.statusMessage
+            visible: root.state === AppImageAutoUpdater.Updating
         }
 
         Switch {
