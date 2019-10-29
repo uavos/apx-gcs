@@ -13,6 +13,7 @@ ApxProduct {
             v.push("dynamiclibrary")
             if(isForAndroid) v.push("android.nativelibrary")
         }
+        v.push("lupdate.ts")
         return v
     }
 

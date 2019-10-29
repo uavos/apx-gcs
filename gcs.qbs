@@ -20,6 +20,7 @@ Project {
         "../fw/sim.qbs",
 
         "deploy/deploy.qbs",
+        "translations/translations.qbs",
     ]
 
     Product {
