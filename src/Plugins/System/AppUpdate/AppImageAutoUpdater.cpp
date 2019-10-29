@@ -14,6 +14,7 @@ AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent):
 {
     qmlRegisterType<AppImageAutoUpdater>("AppImageAutoUpdater", 1, 0, "AppImageAutoUpdater");
     setQmlPage(QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
+    setVisible(false);
 }
 
 void AppImageAutoUpdater::checkForUpdates()
@@ -115,9 +116,9 @@ void AppImageAutoUpdater::setState(State newState)
     {
         m_state = newState;
         if(m_state == NoUpdates)
-            setEnabled(false);
+            setVisible(false);
         else
-            setEnabled(true);
+            setVisible(true);
         emit stateChanged();
     }
 }
