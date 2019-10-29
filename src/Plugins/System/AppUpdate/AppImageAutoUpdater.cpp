@@ -101,6 +101,11 @@ void AppImageAutoUpdater::start(bool keepOldVersion)
         if(zsOld.exists())
             zsOld.remove();
 
+        std::string newFile;
+        updater->pathToNewFile(newFile);
+        QProcess::startDetached(QString::fromStdString(newFile));
+        QCoreApplication::exit(0);
+
         setState(NoUpdates);
     }
 }
