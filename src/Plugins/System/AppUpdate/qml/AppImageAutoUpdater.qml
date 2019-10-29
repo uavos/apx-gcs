@@ -33,10 +33,13 @@ Pane {
         anchors.fill: parent
         Label {
             id: label
+            Layout.fillHeight: false
             Layout.alignment: Qt.AlignHCenter
             horizontalAlignment: Qt.AlignHCenter
         }
         RowLayout {
+            Layout.fillHeight: false
+            Layout.fillWidth: true
             ProgressBar {
                 visible: root.state === AppImageAutoUpdater.CheckForUpdates || root.state === AppImageAutoUpdater.Updating
                 indeterminate: root.state === AppImageAutoUpdater.CheckForUpdates
@@ -51,12 +54,22 @@ Pane {
             }
         }
 
+        Switch {
+            id: keepOldVersionSwitch
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+            text: qsTr("Keep current version")
+            checked: false
+            visible: root.state === AppImageAutoUpdater.UpdateAvailable
+        }
+
         Item {
             Layout.fillHeight: true
         }
 
         RowLayout {
             Layout.fillWidth: true
+            Layout.fillHeight: false
             Button {
                 text: qsTr("Don't ask me again")
                 visible: root.state === AppImageAutoUpdater.UpdateAvailable
@@ -72,7 +85,7 @@ Pane {
             Button {
                 text: qsTr("Update!")
                 visible: root.state === AppImageAutoUpdater.UpdateAvailable
-                onClicked: updater.start()
+                onClicked: updater.start(keepOldVersionSwitch.checked)
             }
             Button {
                 text: qsTr("Cancel")

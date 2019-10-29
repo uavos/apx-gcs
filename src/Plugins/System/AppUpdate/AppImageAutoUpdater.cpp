@@ -25,7 +25,7 @@ void AppImageAutoUpdater::checkForUpdates()
 
 void AppImageAutoUpdater::checkForUpdatesInBackground()
 {
-    auto updater = createUpdater(qgetenv("APPIMAGE"));
+    auto updater = createUpdater(qgetenv("APPIMAGE"), false);
     if(updater)
     {
         auto t = std::thread([this, updater](){
@@ -58,9 +58,9 @@ int AppImageAutoUpdater::getUpdateProgress() const
     return m_updateProgress;
 }
 
-void AppImageAutoUpdater::start()
+void AppImageAutoUpdater::start(bool keepOldVersion)
 {
-    auto updater = createUpdater(qgetenv("APPIMAGE"));
+    auto updater = createUpdater(qgetenv("APPIMAGE"), keepOldVersion);
     if(updater)
     {
         setUpdateProgress(0);
@@ -74,6 +74,7 @@ void AppImageAutoUpdater::start()
                 QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Unknown error during update"),
                                       QMessageBox::Ok);
                 setState(UpdateAvailable);
+                return;
             }
             if(m_stopUpdate)
             {
@@ -85,6 +86,7 @@ void AppImageAutoUpdater::start()
                 {
                 }
                 setState(UpdateAvailable);
+                return;
             }
 
             double progress = 0;
@@ -92,6 +94,12 @@ void AppImageAutoUpdater::start()
             setUpdateProgress(qRound(progress * 100));
             QCoreApplication::processEvents();
         }
+        //It's workaround for updater, that for some reason keep .zs-old file after update.
+        QFile zsOld(qgetenv("APPIMAGE"));
+        zsOld.setFileName(zsOld.fileName() + ".zs-old");
+        if(zsOld.exists())
+            zsOld.remove();
+
         setState(NoUpdates);
     }
 }
@@ -123,11 +131,11 @@ void AppImageAutoUpdater::setUpdateProgress(int progress)
     }
 }
 
-std::shared_ptr<appimage::update::Updater> AppImageAutoUpdater::createUpdater(const QString &str)
+std::shared_ptr<appimage::update::Updater> AppImageAutoUpdater::createUpdater(const QString &str, bool keepOldVersion)
 {
     try
     {
-        return std::make_shared<appimage::update::Updater>(str.toStdString());
+        return std::make_shared<appimage::update::Updater>(str.toStdString(), !keepOldVersion);
     }
     catch(std::exception &e)
     {

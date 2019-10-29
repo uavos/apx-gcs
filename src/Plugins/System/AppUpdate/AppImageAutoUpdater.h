@@ -28,7 +28,7 @@ public:
     void setAutomaticallyChecksForUpdates(bool b);
     State getState() const;
     int getUpdateProgress() const;
-    Q_INVOKABLE void start();
+    Q_INVOKABLE void start(bool keepOldVersion);
     Q_INVOKABLE void stop();
 
 private:
@@ -39,7 +39,7 @@ private:
     void setState(State newState);
     void setUpdateProgress(int progress);
 
-    std::shared_ptr<appimage::update::Updater> createUpdater(const QString &str);
+    std::shared_ptr<appimage::update::Updater> createUpdater(const QString &str, bool keepOldVersion);
 
 signals:
     void stateChanged();
