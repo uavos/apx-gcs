@@ -35,7 +35,7 @@ deploy-clean:
 	@rm -rf $(GCS_ROOT_DIR)/*
 
 deploy-app: $(APP_DATA)
-	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(LIBS_DIST_DIR:%=--dist=%) $(CODE_IDENTITY:%=--sign=%)
+	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(CODE_IDENTITY:%=--sign=%) $(LIBS_DIST_DIR:%=--dist=%) 
 
 
 # build dist image

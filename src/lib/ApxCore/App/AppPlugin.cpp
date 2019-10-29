@@ -87,6 +87,9 @@ void AppPlugin::loadLib()
         }
         apxMsgW() << loader->errorString() << "(" + fname + ")";
         apxMsgW() << lib.errorString() << "(" + fname + ")";
+        loader->unload();
+        delete loader;
+        loader = nullptr;
         return;
     }
     p = reinterpret_cast<PluginInterface *>(instance);

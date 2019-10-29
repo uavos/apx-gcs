@@ -19,6 +19,8 @@ VideoThread::VideoThread()
 
     if (!gst_is_initialized())
         gst_init(nullptr, nullptr);
+    else
+        apxMsgW() << "GST already initialized";
 }
 
 QString VideoThread::getUri()
@@ -439,6 +441,7 @@ QImage VideoThread::sample2qimage(const std::shared_ptr<GstSample> &sample)
 
 void VideoThread::setupEnvironment()
 {
+    return;
     QString scannerPath;
     QString pluginsPath;
     QString gioPath;
@@ -473,7 +476,7 @@ void VideoThread::setupEnvironment()
         pluginsDir.cdUp();
         QDir ld2(pluginsDir);
         qputenv("LD_LIBRARY_PATH",
-                QString("$LD_LIBRARY_PATH:%1:%2")
+                QString("%1:%2:$LD_LIBRARY_PATH")
                     .arg(ld1.absolutePath())
                     .arg(ld2.absolutePath())
                     .toUtf8());
