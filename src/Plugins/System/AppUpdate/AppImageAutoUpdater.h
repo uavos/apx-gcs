@@ -5,8 +5,8 @@
 #include <QProgressDialog>
 #include <QDialogButtonBox>
 #include <memory>
-#include <appimage/update.h>
 #include "Fact/Fact.h"
+#include <appimage/update.h>
 
 class AppImageAutoUpdater: public Fact
 {
@@ -32,7 +32,6 @@ public:
     Q_INVOKABLE void stop();
 
 private:
-    std::unique_ptr<appimage::update::Updater> m_updater;
     State m_state = NoUpdates;
     int m_updateProgress = 0;
     bool m_stopUpdate = false;
@@ -40,8 +39,7 @@ private:
     void setState(State newState);
     void setUpdateProgress(int progress);
 
-private slots:
-    void onDialogYesClicked();
+    std::shared_ptr<appimage::update::Updater> createUpdater(const QString &str);
 
 signals:
     void stateChanged();

@@ -29,53 +29,56 @@ Pane {
         }
     }
 
-    Label {
-        id: label
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        horizontalAlignment: Qt.AlignHCenter
-    }
-    RowLayout {
-        anchors {
-            top: label.bottom
-            left: parent.left
-            right: parent.right
-        }
-        ProgressBar {
-            visible: root.state === AppImageAutoUpdater.CheckForUpdates || root.state === AppImageAutoUpdater.Updating
-            indeterminate: root.state === AppImageAutoUpdater.CheckForUpdates
-            value: updater.updateProgress
-            from: 0
-            to: 100
-            Layout.fillWidth: true
-        }
+    ColumnLayout {
+        anchors.fill: parent
         Label {
-            visible: root.state === AppImageAutoUpdater.Updating
-            text: updater.updateProgress + "%"
+            id: label
+            Layout.alignment: Qt.AlignHCenter
+            horizontalAlignment: Qt.AlignHCenter
         }
-    }
+        RowLayout {
+            ProgressBar {
+                visible: root.state === AppImageAutoUpdater.CheckForUpdates || root.state === AppImageAutoUpdater.Updating
+                indeterminate: root.state === AppImageAutoUpdater.CheckForUpdates
+                value: updater.updateProgress
+                from: 0
+                to: 100
+                Layout.fillWidth: true
+            }
+            Label {
+                visible: root.state === AppImageAutoUpdater.Updating
+                text: updater.updateProgress + "%"
+            }
+        }
 
-    RowLayout {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        Button {
-            text: qsTr("Don't ask me again")
-            visible: root.state === AppImageAutoUpdater.UpdateAvailable
-        }
         Item {
-            Layout.fillWidth: true
+            Layout.fillHeight: true
         }
 
-        Button {
-            text: qsTr("Update!")
-            visible: root.state === AppImageAutoUpdater.UpdateAvailable
-            onClicked: updater.start()
-        }
-        Button {
-            text: qsTr("Cancel")
-            visible: root.state === AppImageAutoUpdater.Updating
-            onClicked: updater.stop()
+        RowLayout {
+            Layout.fillWidth: true
+            Button {
+                text: qsTr("Don't ask me again")
+                visible: root.state === AppImageAutoUpdater.UpdateAvailable
+                onClicked: {
+                    apx.settings.application.appupdate.auto.value = false;
+                    updater.menuBack();
+                }
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: qsTr("Update!")
+                visible: root.state === AppImageAutoUpdater.UpdateAvailable
+                onClicked: updater.start()
+            }
+            Button {
+                text: qsTr("Cancel")
+                visible: root.state === AppImageAutoUpdater.Updating
+                onClicked: updater.stop()
+            }
         }
     }
 }

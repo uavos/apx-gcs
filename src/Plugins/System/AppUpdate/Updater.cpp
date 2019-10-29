@@ -61,32 +61,30 @@ Updater::Updater(Fact *parent)
 void Updater::initUpdaterImpl()
 {
 #ifdef Q_OS_MAC
-    m_impl.setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
-    //m_impl.setAutomaticallyDownloadsUpdates(false);
-    //m_impl.setUpdateCheckInterval(3600);
+    m_impl = std::make_unique<SparkleAutoUpdater>();
+    m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
 #endif
 #ifdef Q_OS_UNIX
-    m_impl.setParentFact(this);
+    m_impl = new AppImageAutoUpdater(this);
 #endif
 }
 //=============================================================================
 void Updater::check()
 {
-    m_impl.checkForUpdates();
+    m_impl->checkForUpdates();
 }
 //=============================================================================
 void Updater::checkInBackground()
 {
-    m_impl.checkForUpdatesInBackground();
+    m_impl->checkForUpdatesInBackground();
 }
 //=============================================================================
 void Updater::updateAuto()
 {
     bool v = f_auto->value().toBool();
-    m_impl.setAutomaticallyChecksForUpdates(v);
+    m_impl->setAutomaticallyChecksForUpdates(v);
     if (v) {
         checkInBackground();
     }
 }
-//=============================================================================
 //=============================================================================

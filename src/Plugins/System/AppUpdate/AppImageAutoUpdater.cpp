@@ -1,44 +1,36 @@
 #include "AppImageAutoUpdater.h"
 
 #include "App/AppDirs.h"
+#include "App/AppLog.h"
 #include <QtQml>
-#include <QMessageBox>
-#include <QDebug>
-#include <QObject>
-#include <QProgressDialog>
 #include <future>
-#include <QDialogButtonBox>
+#include <QMessageBox>
+
+#include <memory>
+#include <utility>
 
 AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent):
     Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
 {
     qmlRegisterType<AppImageAutoUpdater>("AppImageAutoUpdater", 1, 0, "AppImageAutoUpdater");
-    std::string pathToAppImage = qgetenv("APPIMAGE").toStdString();
-    if(!pathToAppImage.empty())
-    {
-        m_updater = std::make_unique<appimage::update::Updater>(pathToAppImage, true);
-    }
-
     setQmlPage(QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
 }
 
 void AppImageAutoUpdater::checkForUpdates()
 {
-    if(m_updater)
-    {
-        setState(CheckForUpdates);
-        trigger();
-        checkForUpdatesInBackground();
-    }
+    setState(CheckForUpdates);
+    trigger();
+    checkForUpdatesInBackground();
 }
 
 void AppImageAutoUpdater::checkForUpdatesInBackground()
 {
-    if(m_updater)
+    auto updater = createUpdater(qgetenv("APPIMAGE"));
+    if(updater)
     {
-        auto t = std::thread([this](){
+        auto t = std::thread([this, updater](){
             bool updateAvailable = false;
-            m_updater->checkForChanges(updateAvailable);
+            updater->checkForChanges(updateAvailable);
             if(updateAvailable)
             {
                 setState(UpdateAvailable);
@@ -53,7 +45,7 @@ void AppImageAutoUpdater::checkForUpdatesInBackground()
 
 void AppImageAutoUpdater::setAutomaticallyChecksForUpdates(bool b)
 {
-    qDebug() << "setAutomaticallyChecksForUpdates" << b;
+    Q_UNUSED(b)
 }
 
 AppImageAutoUpdater::State AppImageAutoUpdater::getState() const
@@ -68,15 +60,16 @@ int AppImageAutoUpdater::getUpdateProgress() const
 
 void AppImageAutoUpdater::start()
 {
-    if(m_updater)
+    auto updater = createUpdater(qgetenv("APPIMAGE"));
+    if(updater)
     {
         setUpdateProgress(0);
         setState(Updating);
         m_stopUpdate = false;
-        m_updater->start();
-        while(!m_updater->isDone())
+        updater->start();
+        while(!updater->isDone())
         {
-            if(m_updater->hasError())
+            if(updater->hasError())
             {
                 QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Unknown error during update"),
                                       QMessageBox::Ok);
@@ -86,7 +79,7 @@ void AppImageAutoUpdater::start()
             {
                 try
                 {
-                    m_updater->stop();
+                    updater->stop();
                 }
                 catch(std::exception&)
                 {
@@ -95,7 +88,7 @@ void AppImageAutoUpdater::start()
             }
 
             double progress = 0;
-            m_updater->progress(progress);
+            updater->progress(progress);
             setUpdateProgress(qRound(progress * 100));
             QCoreApplication::processEvents();
         }
@@ -128,4 +121,17 @@ void AppImageAutoUpdater::setUpdateProgress(int progress)
         m_updateProgress = progress;
         emit updateProgressChanged();
     }
+}
+
+std::shared_ptr<appimage::update::Updater> AppImageAutoUpdater::createUpdater(const QString &str)
+{
+    try
+    {
+        return std::make_shared<appimage::update::Updater>(str.toStdString());
+    }
+    catch(std::exception &e)
+    {
+        apxMsgW() << tr("Can't create AppImage updater instance: ") << e.what();
+    }
+    return std::shared_ptr<appimage::update::Updater>();
 }
