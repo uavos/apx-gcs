@@ -2,7 +2,7 @@
 
 Project {
 
-    condition: qbs.buildVariant.contains("release")
+    condition: false //qbs.buildVariant.contains("release")
 
 
 
@@ -43,6 +43,7 @@ Project {
 
             prepare: {
                 var cmds = []
+
                 var qt_bin_path = product.moduleProperty("Qt.core", "binPath")
                 var targetOS = product.moduleProperty("qbs", "targetOS")
                 if (targetOS.contains("macos")) {
@@ -56,7 +57,6 @@ Project {
                 var args = []
 
                 args.push(project.sourceDirectory)
-                //args.push("-silent")
 
                 args.push("-locations")
                 args.push("none")

@@ -54,9 +54,10 @@ Project {
         Group {
             condition: qbs.targetOS.contains("linux")
             name: "linux"
+            prefix: name+"/"
             files: [
-                "appimage/AppImageAutoUpdater.cpp",
-                "appimage/AppImageAutoUpdater.h",
+                "AppImageAutoUpdater.cpp",
+                "AppImageAutoUpdater.h",
             ]
         }
 
