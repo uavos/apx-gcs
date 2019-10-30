@@ -44,11 +44,8 @@ Product {
     property bool isForLinux: qbs.targetOS.contains("linux")
 
     type: (isForAndroid && !consoleApplication)
-        ? ["dynamiclibrary", "android.nativelibrary", "translation"]
-        : ["application", "lupdate.ts" ]
-
-
-    Depends { name: "lupdate" }
+        ? ["dynamiclibrary", "android.nativelibrary"]
+        : ["application"]
 
     aggregate: {
         if (!isForDarwin)

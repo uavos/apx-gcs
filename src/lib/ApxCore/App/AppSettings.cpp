@@ -48,9 +48,7 @@ AppSettings::AppSettings(Fact *parent)
                               0);
     QStringList st;
     st << "default";
-    QDir langp(AppDirs::lang());
-    foreach (QFileInfo f, langp.entryInfoList(QStringList() << "*.qm"))
-        st << f.baseName();
+    st.append(App::instance()->languages());
     item->setEnumStrings(st);
 
     item = new AppSettingFact(m_settings,

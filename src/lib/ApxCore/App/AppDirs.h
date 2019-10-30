@@ -36,7 +36,6 @@ public:
     static QDir firmware();
 
     static QDir prefs();
-    static QDir lang();
     static QDir missions();
     static QDir configs();
     static QDir scripts();

@@ -1,0 +1,2111 @@
+<!DOCTYPE QPH>
+<QPH language="be_BY">
+<phrase>
+    <source>System</source>
+    <target>Сістэма</target>
+</phrase>
+<phrase>
+    <source>print commands help</source>
+    <target>даведка па загадах</target>
+</phrase>
+<phrase>
+    <source>list keyboard shortcuts</source>
+    <target>спіс клавіятурных скаротаў</target>
+</phrase>
+<phrase>
+    <source>set var n to value v and send to UAV</source>
+    <target>надаць зменнай n значэнне v і даслаць у БЛА</target>
+</phrase>
+<phrase>
+    <source>request var n from UAV</source>
+    <target>запыт зменнай n з БЛА</target>
+</phrase>
+<phrase>
+    <source>send var n to UAV</source>
+    <target>даслаць зменную n у БЛА</target>
+</phrase>
+<phrase>
+    <source>rescan bus nodes</source>
+    <target>перасканаваць вузлы шыны</target>
+</phrase>
+<phrase>
+    <source>print nodes status</source>
+    <target>вывесці стан вузлоў</target>
+</phrase>
+<phrase>
+    <source>Functions</source>
+    <target>Функцыі</target>
+</phrase>
+<phrase>
+    <source>trigger value of v to a or b</source>
+    <target>пераключыць значэнне v у a або b</target>
+</phrase>
+<phrase>
+    <source>wrap angle -180..+180</source>
+    <target>вугал павароту -180..+180</target>
+</phrase>
+<phrase>
+    <source>print variables for scope a</source>
+    <target>вывесці зменныя прасторы a</target>
+</phrase>
+<phrase>
+    <source>print functions for scope a</source>
+    <target>вывесці зменныя прасторы b</target>
+</phrase>
+<phrase>
+    <source>Configuration</source>
+    <target>Канфігурацыя</target>
+</phrase>
+<phrase>
+    <source>reset AHRS</source>
+    <target>скінуць AHRS</target>
+</phrase>
+<phrase>
+    <source>reset pilot controls</source>
+    <target>скінуць загады пілота</target>
+</phrase>
+<phrase>
+    <source>reset barometric altitude on ground</source>
+    <target>скінуць статычны ціск да зямнога ўзроўню</target>
+</phrase>
+<phrase>
+    <source>reset local GPS coordinates</source>
+    <target>скінуць лакальныя каардынаты GPS</target>
+</phrase>
+<phrase>
+    <source>reset local GPS altitude</source>
+    <target>скінуць лакальную вышыню GPS</target>
+</phrase>
+<phrase>
+    <source>Compass Calibration</source>
+    <target>Каліброўка Компаса</target>
+</phrase>
+<phrase>
+    <source>Clear</source>
+    <target>Ачысціць</target>
+</phrase>
+<phrase>
+    <source>Trace</source>
+    <target>Адсочваць</target>
+</phrase>
+<phrase>
+    <source>Close</source>
+    <target>Закрыць</target>
+</phrase>
+<phrase>
+    <source>Compass Calibration</source>
+    <target>Каліброўка Компаса</target>
+</phrase>
+<phrase>
+    <source>Edit..</source>
+    <target>Рэдагаваць...</target>
+</phrase>
+<phrase>
+    <source>System Configuration</source>
+    <target>Настáўленні</target>
+</phrase>
+<phrase>
+    <source>Communication</source>
+    <target>Сувязь</target>
+</phrase>
+<phrase>
+    <source>Port</source>
+    <target>Порт</target>
+</phrase>
+<phrase>
+    <source>auto</source>
+    <target>аўтаматычна</target>
+</phrase>
+<phrase>
+    <source>/dev/ttyUSB0</source>
+    <target>/dev/ttyUSB0</target>
+</phrase>
+<phrase>
+    <source>/dev/ttyUSB1</source>
+    <target>/dev/ttyUSB1</target>
+</phrase>
+<phrase>
+    <source>/dev/ttyUSB2</source>
+    <target>/dev/ttyUSB2</target>
+</phrase>
+<phrase>
+    <source>/dev/ttyUSB3</source>
+    <target>/dev/ttyUSB3</target>
+</phrase>
+<phrase>
+    <source>/dev/ttyUSB4</source>
+    <target>/dev/ttyUSB4</target>
+</phrase>
+<phrase>
+    <source>/dev/rfcomm0</source>
+    <target>/dev/rfcomm0</target>
+</phrase>
+<phrase>
+    <source>/dev/ttyACM0</source>
+    <target>/dev/ttyACM0</target>
+</phrase>
+<phrase>
+    <source>Baudrate</source>
+    <target>Хуткасць, бод</target>
+</phrase>
+<phrase>
+    <source>460800</source>
+    <target>460800</target>
+</phrase>
+<phrase>
+    <source>921600</source>
+    <target>921600</target>
+</phrase>
+<phrase>
+    <source>Graphics</source>
+    <target>Графіка</target>
+</phrase>
+<phrase>
+    <source>OpenGL acceleration</source>
+    <target>OpenGL-паскарэнне</target>
+</phrase>
+<phrase>
+    <source>Antialiased plot curves</source>
+    <target>Згладжваць графікі тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Smooth map panning</source>
+    <target>Мяккая пракрутка мапы</target>
+</phrase>
+<phrase>
+    <source>Smooth UAV Trace</source>
+    <target>Згладжваць траекторыю БЛА</target>
+</phrase>
+<phrase>
+    <source>Google Maps</source>
+    <target>Мапы Google</target>
+</phrase>
+<phrase>
+    <source>maps.google.com version</source>
+    <target>версія maps.google.com</target>
+</phrase>
+<phrase>
+    <source>Server port</source>
+    <target>Порт KML-сервера</target>
+</phrase>
+<phrase>
+    <source>Server port for Google Earth visualization</source>
+    <target>Порт сервера для візуалізацыі праз Google Earth</target>
+</phrase>
+<phrase>
+    <source>Network</source>
+    <target>Сетка</target>
+</phrase>
+<phrase>
+    <source>Modem Host</source>
+    <target>Адрас мадэма</target>
+</phrase>
+<phrase>
+    <source>HTTP Proxy</source>
+    <target>HTTP-проксі</target>
+</phrase>
+<phrase>
+    <source>user:pass@proxy:port</source>
+    <target>карыстальнік:пароль@проксі:порт</target>
+</phrase>
+<phrase>
+    <source>Instruments</source>
+    <target>Іншае</target>
+</phrase>
+<phrase>
+    <source>Airspeed in km/h</source>
+    <target>Паветраная хуткасць у км/г</target>
+</phrase>
+<phrase>
+    <source>System</source>
+    <target>Сістэма</target>
+</phrase>
+<phrase>
+    <source>Text Editor</source>
+    <target>Тэкставы рэдактар</target>
+</phrase>
+<phrase>
+    <source>Language</source>
+    <target>Мова</target>
+</phrase>
+<phrase>
+    <source>Sound and Speech</source>
+    <target>Гук і голас</target>
+</phrase>
+<phrase>
+    <source>Voice</source>
+    <target>Голас</target>
+</phrase>
+<phrase>
+    <source>Speed</source>
+    <target>Хуткасць</target>
+</phrase>
+<phrase>
+    <source>Warning: restart GCU for changes to take effect.</source>
+    <target>Папярэджанне: перазапусціце НПК, каб змены пачалі дзейнічаць.</target>
+</phrase>
+<phrase>
+    <source>Request</source>
+    <target>Запыт</target>
+</phrase>
+<phrase>
+    <source>Request Current configurations..</source>
+    <target>Запыт дзейнай канфігурацыі...</target>
+</phrase>
+<phrase>
+    <source>Upload</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Upload configurations</source>
+    <target>Даслаць канфігурацыю</target>
+</phrase>
+<phrase>
+    <source>Save</source>
+    <target>Захаваць</target>
+</phrase>
+<phrase>
+    <source>Save to file..</source>
+    <target>Захаваць у файл...</target>
+</phrase>
+<phrase>
+    <source>Load</source>
+    <target>Загрузіць</target>
+</phrase>
+<phrase>
+    <source>Load from file..</source>
+    <target>Загрузіць з файла.</target>
+</phrase>
+<phrase>
+    <source>Console</source>
+    <target>Кансоль</target>
+</phrase>
+<phrase>
+    <source>Variable</source>
+    <target>Зменная</target>
+</phrase>
+<phrase>
+    <source>Channel</source>
+    <target>Канал</target>
+</phrase>
+<phrase>
+    <source>Mult</source>
+    <target>Множнік</target>
+</phrase>
+<phrase>
+    <source>Diff</source>
+    <target>Розніца</target>
+</phrase>
+<phrase>
+    <source>Speed</source>
+    <target>Хуткасць</target>
+</phrase>
+<phrase>
+    <source>min</source>
+    <target>мінімум</target>
+</phrase>
+<phrase>
+    <source>max</source>
+    <target>максімум</target>
+</phrase>
+<phrase>
+    <source>zero</source>
+    <target>нуль</target>
+</phrase>
+<phrase>
+    <source>Can&apos;t connect to local server</source>
+    <target>Немагчыма злучыцца з лакальным серверам</target>
+</phrase>
+<phrase>
+    <source>Configuration</source>
+    <target>Канфігурацыя</target>
+</phrase>
+<phrase>
+    <source>Upload</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Upload configurations</source>
+    <target>Даслаць канфігурацыю</target>
+</phrase>
+<phrase>
+    <source>F5</source>
+    <target>F5</target>
+</phrase>
+<phrase>
+    <source>Dialog</source>
+    <target>Дыялог</target>
+</phrase>
+<phrase>
+    <source>Upload</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Upload configurations</source>
+    <target>Даслаць канфігурацыю</target>
+</phrase>
+<phrase>
+    <source>F5</source>
+    <target>F5</target>
+</phrase>
+<phrase>
+    <source>Filter</source>
+    <target>Filter</target>
+</phrase>
+<phrase>
+    <source>SL Filter [filter]</source>
+    <target>SL Filter [filter]</target>
+</phrase>
+<phrase>
+    <source>Freq </source>
+    <target>Freq </target>
+</phrase>
+<phrase>
+    <source>Hz</source>
+    <target>Hz</target>
+</phrase>
+<phrase>
+    <source>S </source>
+    <target>S</target>
+</phrase>
+<phrase>
+    <source>L </source>
+    <target>L</target>
+</phrase>
+<phrase>
+    <source>Derivative Filter [filter_dt]</source>
+    <target>Derivative Filter [filter_dt]</target>
+</phrase>
+<phrase>
+    <source>Telemetry file is too big (%1 MB). Load it?</source>
+    <target>Файл тэлеметрыі занадта вялікі (%1 МБ). Загрузіць яго?</target>
+</phrase>
+<phrase>
+    <source>Flight Plan</source>
+    <target>План палёту</target>
+</phrase>
+<phrase>
+    <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;toggle panel&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0057ae;&quot;&gt;Flight Plan&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+    <target>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;toggle panel&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0057ae;&quot;&gt;План палёту&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</target>
+</phrase>
+<phrase>
+    <source>Save</source>
+    <target>Захаваць</target>
+</phrase>
+<phrase>
+    <source>Save flight plan..</source>
+    <target>Захаваць план палёту</target>
+</phrase>
+<phrase>
+    <source>Load</source>
+    <target>Загрузіць</target>
+</phrase>
+<phrase>
+    <source>Load flight plan..</source>
+    <target>Загрузіць план палёту...</target>
+</phrase>
+<phrase>
+    <source>Save As..</source>
+    <target>Захаваць як...</target>
+</phrase>
+<phrase>
+    <source>Save flight plan as..</source>
+    <target>Захаваць план палёту як...</target>
+</phrase>
+<phrase>
+    <source>New</source>
+    <target>Стварыць</target>
+</phrase>
+<phrase>
+    <source>Create new flight plan</source>
+    <target>Стварыць новы план палёту</target>
+</phrase>
+<phrase>
+    <source>Add Waypoint</source>
+    <target>Дадаць пункт маршруту</target>
+</phrase>
+<phrase>
+    <source>Remove Waypoint</source>
+    <target>Выдаліць пункт маршруту</target>
+</phrase>
+<phrase>
+    <source>Add Runway</source>
+    <target>Дадаць УП паласу</target>
+</phrase>
+<phrase>
+    <source>Remove Runway</source>
+    <target>Выдаліць УП паласу</target>
+</phrase>
+<phrase>
+    <source>Adjust waypoints altitude...</source>
+    <target>Змяніць вышыню пункта(ў) маршруту...</target>
+</phrase>
+<phrase>
+    <source>Land to selected runway</source>
+    <target>Прызямліцца на вылучанай УП паласе</target>
+</phrase>
+<phrase>
+    <source>Fly to selected waypoint</source>
+    <target>Ляцець да вылучанага ПМ</target>
+</phrase>
+<phrase>
+    <source>Insert Waypoint</source>
+    <target>Уставіць пункт маршруту</target>
+</phrase>
+<phrase>
+    <source>Insert waypoint after selected one</source>
+    <target>Уставіць пункт маршруту пасля вылучанага</target>
+</phrase>
+<phrase>
+    <source>Telemetry</source>
+    <target>Тэлеметрыя</target>
+</phrase>
+<phrase>
+    <source>Load from telemetry file</source>
+    <target>Загрузіць з файла тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Change %1 waypoint(s):</source>
+    <target>Змяніць %1 пункт(аў) маршруту:</target>
+</phrase>
+<phrase>
+    <source>Cannot write file</source>
+    <target>Не выйшла запісаць файл</target>
+</phrase>
+<phrase>
+    <source>XML Files (*.xml)</source>
+    <target>Файлы XML (*.xml)</target>
+</phrase>
+<phrase>
+    <source>Flight plan &apos;%1&apos; modified. Save changes?</source>
+    <target>План палёту &apos;%1&apos; зменены. Захаваць змены?</target>
+</phrase>
+<phrase>
+    <source>Cannot read file</source>
+    <target>Не выйшла прачытаць файл</target>
+</phrase>
+<phrase>
+    <source>Altitude</source>
+    <target>Вышыня</target>
+</phrase>
+<phrase>
+    <source>Type</source>
+    <target>Тып</target>
+</phrase>
+<phrase>
+    <source>Latitude</source>
+    <target>Шырата</target>
+</phrase>
+<phrase>
+    <source>Longitude</source>
+    <target>Даўгата</target>
+</phrase>
+<phrase>
+    <source>Command</source>
+    <target>Загад</target>
+</phrase>
+<phrase>
+    <source>Turn</source>
+    <target>Кірунак разваротаў</target>
+</phrase>
+<phrase>
+    <source>APP length</source>
+    <target>Даўжыня глісады</target>
+</phrase>
+<phrase>
+    <source>TA distance</source>
+    <target>Радыюс развароту</target>
+</phrase>
+<phrase>
+    <source>HMSL</source>
+    <target>HMSL</target>
+</phrase>
+<phrase>
+    <source>Safe altitude</source>
+    <target>Бяспечная вышыня</target>
+</phrase>
+<phrase>
+    <source>dHome</source>
+    <target>dHome</target>
+</phrase>
+<phrase>
+    <source>dHomeERS</source>
+    <target>dHomeERS</target>
+</phrase>
+<phrase>
+    <source>Runway</source>
+    <target>УП паласа</target>
+</phrase>
+<phrase>
+    <source>Site</source>
+    <target>Сайт</target>
+</phrase>
+<phrase>
+    <source>home_hmsl</source>
+    <target>home_hmsl</target>
+</phrase>
+<phrase>
+    <source>default</source>
+    <target>стандартна</target>
+</phrase>
+<phrase>
+    <source>Configure INF</source>
+    <target>Наставіць INF</target>
+</phrase>
+<phrase>
+    <source>Developers only</source>
+    <target>Для распрацоўнікаў</target>
+</phrase>
+<phrase>
+    <source>INF vars to display, separated by commas</source>
+    <target>Якія INF-зменныя паказваць, праз коску</target>
+</phrase>
+<phrase>
+    <source>complains to standard of</source>
+    <target>паводле правілаў</target>
+</phrase>
+<phrase>
+    <source>It defaults to</source>
+    <target>Стандартна гэта</target>
+</phrase>
+<phrase>
+    <source>Examples</source>
+    <target>Узоры</target>
+</phrase>
+<phrase>
+    <source>Gauges</source>
+    <target>Прылады</target>
+</phrase>
+<phrase>
+    <source>Record</source>
+    <target>Запісваць</target>
+</phrase>
+<phrase>
+    <source>Record telemetry</source>
+    <target>Запісваць тэлеметрыю</target>
+</phrase>
+<phrase>
+    <source>New File</source>
+    <target>Новы файл</target>
+</phrase>
+<phrase>
+    <source>Create a New file</source>
+    <target>Стварыць новы файл</target>
+</phrase>
+<phrase>
+    <source>Discard File</source>
+    <target>Адкінуць файл</target>
+</phrase>
+<phrase>
+    <source>Discard current file</source>
+    <target>Закрыць дзейны файл без захоўвання</target>
+</phrase>
+<phrase>
+    <source>Auto</source>
+    <target>Аўта</target>
+</phrase>
+<phrase>
+    <source>Auto Recording</source>
+    <target>Аўтазапісванне</target>
+</phrase>
+<phrase>
+    <source>Enable Sound</source>
+    <target>Уключыць гук</target>
+</phrase>
+<phrase>
+    <source>Test</source>
+    <target>Тэст</target>
+</phrase>
+<phrase>
+    <source>Enable Speech</source>
+    <target>Уключыць голас</target>
+</phrase>
+<phrase>
+    <source>Edit..</source>
+    <target>Рэдагаваць.</target>
+</phrase>
+<phrase>
+    <source>Loading</source>
+    <target>Сцягваецца</target>
+</phrase>
+<phrase>
+    <source>Error</source>
+    <target>Памылка</target>
+</phrase>
+<phrase>
+    <source>Got authorization</source>
+    <target>Кукі атрыманы</target>
+</phrase>
+<phrase>
+    <source>Version</source>
+    <target>Версія</target>
+</phrase>
+<phrase>
+    <source>System Configuration</source>
+    <target>Атрыманне кукі</target>
+</phrase>
+<phrase>
+    <source>Select Satellite map style and download some maps to take authorization.</source>
+    <target>Задайце стыль мапы Satellite і сцягніце некалькі мапаў, каб аўтарызавацца.</target>
+</phrase>
+<phrase>
+    <source>Status</source>
+    <target>Стан</target>
+</phrase>
+<phrase>
+    <source>TextLabel</source>
+    <target>Тэкставая пазнака</target>
+</phrase>
+<phrase>
+    <source>Variable</source>
+    <target>Зменная</target>
+</phrase>
+<phrase>
+    <source>Protocol</source>
+    <target>Пратакол</target>
+</phrase>
+<phrase>
+    <source>Invert</source>
+    <target>Інвертаваць</target>
+</phrase>
+<phrase>
+    <source>Multiplier</source>
+    <target>Множнік</target>
+</phrase>
+<phrase>
+    <source>Bias</source>
+    <target>Зрушэнне</target>
+</phrase>
+<phrase>
+    <source>Instruments</source>
+    <target>Абсталяванне</target>
+</phrase>
+<phrase>
+    <source>Numbers</source>
+    <target>Лікі</target>
+</phrase>
+<phrase>
+    <source>Configure</source>
+    <target>Наставіць</target>
+</phrase>
+<phrase>
+    <source>INF vars to display, separated by commas</source>
+    <target>Якія INF-зменныя паказваць, праз коску</target>
+</phrase>
+<phrase>
+    <source>number of digits after point</source>
+    <target>колькасць лічбаў пасля кропкі</target>
+</phrase>
+<phrase>
+    <source>Examples</source>
+    <target>Узоры</target>
+</phrase>
+<phrase>
+    <source>Home position</source>
+    <target>Месцазнаходжанне дома</target>
+</phrase>
+<phrase>
+    <source>Altitude</source>
+    <target>Вышыня</target>
+</phrase>
+<phrase>
+    <source>Type</source>
+    <target>Тып</target>
+</phrase>
+<phrase>
+    <source>Distance to home</source>
+    <target>Адлегласць ад дома</target>
+</phrase>
+<phrase>
+    <source>Travel distance</source>
+    <target>Адлегласць палёту</target>
+</phrase>
+<phrase>
+    <source>Distance to previous WP</source>
+    <target>Адлегласць ад папярэдняга ПМ</target>
+</phrase>
+<phrase>
+    <source>Joystick</source>
+    <target>Джойстык</target>
+</phrase>
+<phrase>
+    <source>Configure</source>
+    <target>Наставіць</target>
+</phrase>
+<phrase>
+    <source>Reload</source>
+    <target>Перачытаць</target>
+</phrase>
+<phrase>
+    <source>Reload configurations</source>
+    <target>Перачытаць канфігурацыю</target>
+</phrase>
+<phrase>
+    <source>&amp;File</source>
+    <target>&amp;Файл</target>
+</phrase>
+<phrase>
+    <source>&amp;Edit</source>
+    <target>&amp;Змяніць</target>
+</phrase>
+<phrase>
+    <source>&amp;Tools</source>
+    <target>&amp;Інструменты</target>
+</phrase>
+<phrase>
+    <source>&amp;Window</source>
+    <target>&amp;Акно</target>
+</phrase>
+<phrase>
+    <source>&amp;Help</source>
+    <target>&amp;Даведка</target>
+</phrase>
+<phrase>
+    <source>System Configuration</source>
+    <target>Настáўленні</target>
+</phrase>
+<phrase>
+    <source>Shortcuts Configuration</source>
+    <target>Настáўленні скаротаў</target>
+</phrase>
+<phrase>
+    <source>Toggle Full Screen</source>
+    <target>На ўвесь экран</target>
+</phrase>
+<phrase>
+    <source>Auto arrange</source>
+    <target>Аўтарасстаноўка</target>
+</phrase>
+<phrase>
+    <source>Mandala Report</source>
+    <target>Значэнні Mandala</target>
+</phrase>
+<phrase>
+    <source>Documentation</source>
+    <target>Дакументацыя</target>
+</phrase>
+<phrase>
+    <source>VPN support</source>
+    <target>Падтрымка VPN</target>
+</phrase>
+<phrase>
+    <source>Record data</source>
+    <target>Запісваць даныя</target>
+</phrase>
+<phrase>
+    <source>Discard current file</source>
+    <target>Закрыць дзейны файл без захоўвання</target>
+</phrase>
+<phrase>
+    <source>Speech</source>
+    <target>Голас</target>
+</phrase>
+<phrase>
+    <source>Read only</source>
+    <target>Толькі чытанне</target>
+</phrase>
+<phrase>
+    <source>Exit</source>
+    <target>Выйсці</target>
+</phrase>
+<phrase>
+    <source>Username</source>
+    <target>Імя карыстальніка</target>
+</phrase>
+<phrase>
+    <source>Password</source>
+    <target>Пароль</target>
+</phrase>
+<phrase>
+    <source>Login</source>
+    <target>Увайсці</target>
+</phrase>
+<phrase>
+    <source>Servers</source>
+    <target>Серверы</target>
+</phrase>
+<phrase>
+    <source>Joystick</source>
+    <target>Джойстык</target>
+</phrase>
+<phrase>
+    <source>...</source>
+    <target>...</target>
+</phrase>
+<phrase>
+    <source>Debug output:</source>
+    <target>Адладачны вывад:</target>
+</phrase>
+<phrase>
+    <source>Open config...</source>
+    <target>Адкрыць канфіг...</target>
+</phrase>
+<phrase>
+    <source>MainWindow</source>
+    <target></target>
+</phrase>
+<phrase>
+    <source>TextLabel</source>
+    <target>Тэкставая пазнака</target>
+</phrase>
+<phrase>
+    <source>STBY</source>
+    <target></target>
+</phrase>
+<phrase>
+    <source>Standby mode</source>
+    <target></target>
+</phrase>
+<phrase>
+    <source>HOME</source>
+    <target></target>
+</phrase>
+<phrase>
+    <source>Home mode</source>
+    <target></target>
+</phrase>
+<phrase>
+    <source>Downloading..</source>
+    <target>Сцягваецца...</target>
+</phrase>
+<phrase>
+    <source>Flight Plan</source>
+    <target>План палёту</target>
+</phrase>
+<phrase>
+    <source>Lat</source>
+    <target>Шыр</target>
+</phrase>
+<phrase>
+    <source>Lon</source>
+    <target>Даўг</target>
+</phrase>
+<phrase>
+    <source>Map level</source>
+    <target>Узровень мапы</target>
+</phrase>
+<phrase>
+    <source>Level</source>
+    <target>Узровень</target>
+</phrase>
+<phrase>
+    <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;font color=darkRed&gt;Modified&lt;/font&gt;&lt;/body&gt;&lt;/html&gt;</source>
+    <target>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;font color=darkRed&gt;Зменена&lt;/font&gt;&lt;/body&gt;&lt;/html&gt;</target>
+</phrase>
+<phrase>
+    <source>Distance to home</source>
+    <target>Адлегласць ад дома</target>
+</phrase>
+<phrase>
+    <source>DH</source>
+    <target>АаД</target>
+</phrase>
+<phrase>
+    <source>Flight plan travel distance</source>
+    <target>Адлегласць па плане палёту</target>
+</phrase>
+<phrase>
+    <source>PD</source>
+    <target>АпП</target>
+</phrase>
+<phrase>
+    <source>UAV travelled distance from telemetry file</source>
+    <target>Адлегласць, пройдзеная БЛА, з файла тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>FD</source>
+    <target>ПрА</target>
+</phrase>
+<phrase>
+    <source>UAV travelled distance</source>
+    <target>Адлегласць, пройдзеная БЛА</target>
+</phrase>
+<phrase>
+    <source>TD</source>
+    <target>ТА</target>
+</phrase>
+<phrase>
+    <source>Home</source>
+    <target>Дом</target>
+</phrase>
+<phrase>
+    <source>Go to GCU location</source>
+    <target>Размяшчэнне НПК</target>
+</phrase>
+<phrase>
+    <source>Download</source>
+    <target>Сцягнуць</target>
+</phrase>
+<phrase>
+    <source>Download visible map</source>
+    <target>Сцягнуць бачную мапу</target>
+</phrase>
+<phrase>
+    <source>Auto Download</source>
+    <target>Аўтасцягванне</target>
+</phrase>
+<phrase>
+    <source>Download map automatically</source>
+    <target>Сцягваць мапы аўтаматычна</target>
+</phrase>
+<phrase>
+    <source>Download Deep..</source>
+    <target>Глыбіня сцягвання...</target>
+</phrase>
+<phrase>
+    <source>Download all maps in clicked area</source>
+    <target>Сцягнуць усе мапы ў зоне пстрыку</target>
+</phrase>
+<phrase>
+    <source>Stop Downloading</source>
+    <target>Спыніць сцягванне</target>
+</phrase>
+<phrase>
+    <source>Setup Cookie..</source>
+    <target>Атрымаць кукі...</target>
+</phrase>
+<phrase>
+    <source>Setup cookies..</source>
+    <target>Атрымаць кукі...</target>
+</phrase>
+<phrase>
+    <source>Upload</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Upload flight plan to UAV</source>
+    <target>Даслаць план палёту на БЛА</target>
+</phrase>
+<phrase>
+    <source>Refresh</source>
+    <target>Абнавіць</target>
+</phrase>
+<phrase>
+    <source>Refresh maps from google</source>
+    <target>Абнавіць мапы з google</target>
+</phrase>
+<phrase>
+    <source>UAV</source>
+    <target>БЛА</target>
+</phrase>
+<phrase>
+    <source>Go to UAV position</source>
+    <target>Размяшчэнне БЛА</target>
+</phrase>
+<phrase>
+    <source>Full Screen</source>
+    <target>На ўвесь экран</target>
+</phrase>
+<phrase>
+    <source>Toggle Full Screen</source>
+    <target>На ўвесь экран</target>
+</phrase>
+<phrase>
+    <source>Reset Trace</source>
+    <target>Скінуць траекторыю</target>
+</phrase>
+<phrase>
+    <source>Reset UAV trace</source>
+    <target>Скінуць траекторыю БЛА</target>
+</phrase>
+<phrase>
+    <source>Clear File Trace</source>
+    <target>Выдаліць траекторыю, узятую з файла</target>
+</phrase>
+<phrase>
+    <source>Clear UAV trace from telemetry file</source>
+    <target>Выдаліць траекторыю БЛА, узятую з файла тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Show Trace</source>
+    <target>Паказваць траекторыю палёту</target>
+</phrase>
+<phrase>
+    <source>Show UAV trace</source>
+    <target>Паказваць траекторыю палёту БЛА</target>
+</phrase>
+<phrase>
+    <source>Request</source>
+    <target>Запыт</target>
+</phrase>
+<phrase>
+    <source>Request flight plan from UAV</source>
+    <target>Запыт плана палёту з БЛА</target>
+</phrase>
+<phrase>
+    <source>Set home</source>
+    <target>Размясціць дом тут</target>
+</phrase>
+<phrase>
+    <source>Set home position here</source>
+    <target>Задаць месцазнаходжанне дома тут</target>
+</phrase>
+<phrase>
+    <source>Fly here</source>
+    <target>Ляцець сюды</target>
+</phrase>
+<phrase>
+    <source>Send position fix</source>
+    <target>Даслаць карэкцыю месцазнаходжання</target>
+</phrase>
+<phrase>
+    <source>Send a position update for inertial navigation</source>
+    <target>Даслаць карэкцыю месцазнаходжання для інерцыяльнай навігацыі</target>
+</phrase>
+<phrase>
+    <source>Save</source>
+    <target>Захаваць</target>
+</phrase>
+<phrase>
+    <source>Save flight plan..</source>
+    <target>Захаваць план палёту</target>
+</phrase>
+<phrase>
+    <source>Load</source>
+    <target>Загрузіць</target>
+</phrase>
+<phrase>
+    <source>Load flight plan..</source>
+    <target>Загрузіць план палёту...</target>
+</phrase>
+<phrase>
+    <source>Save As..</source>
+    <target>Захаваць як...</target>
+</phrase>
+<phrase>
+    <source>Save flight plan as..</source>
+    <target>Захаваць план палёту як...</target>
+</phrase>
+<phrase>
+    <source>New</source>
+    <target>Стварыць</target>
+</phrase>
+<phrase>
+    <source>Create new flight plan</source>
+    <target>Стварыць новы план палёту</target>
+</phrase>
+<phrase>
+    <source>Add Waypoint</source>
+    <target>Дадаць пункт маршруту</target>
+</phrase>
+<phrase>
+    <source>Remove Waypoint</source>
+    <target>Выдаліць пункт маршруту</target>
+</phrase>
+<phrase>
+    <source>Add Runway</source>
+    <target>Дадаць УП паласу</target>
+</phrase>
+<phrase>
+    <source>Remove Runway</source>
+    <target>Выдаліць УП паласу</target>
+</phrase>
+<phrase>
+    <source>Adjust waypoints altitude...</source>
+    <target>Змяніць вышыню пункта(ў) маршруту...</target>
+</phrase>
+<phrase>
+    <source>Land to selected runway</source>
+    <target>Прызямліцца на вылучанай УП паласе</target>
+</phrase>
+<phrase>
+    <source>Fly to selected waypoint</source>
+    <target>Ляцець да вылучанага пункта маршруту</target>
+</phrase>
+<phrase>
+    <source>Telemetry</source>
+    <target>Тэлеметрыя</target>
+</phrase>
+<phrase>
+    <source>Load from telemetry file</source>
+    <target>Загрузіць з файла тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Add Taxiway</source>
+    <target>Дадаць рулёжную дарожку</target>
+</phrase>
+<phrase>
+    <source>Remove Taxiway</source>
+    <target>Выдаліць рулёжную дарожку</target>
+</phrase>
+<phrase>
+    <source>Add Point</source>
+    <target>Дадаць пункт</target>
+</phrase>
+<phrase>
+    <source>Add Point of Interest</source>
+    <target>Дадаць пункт цікавасці</target>
+</phrase>
+<phrase>
+    <source>Remove Point</source>
+    <target>Выдаліць пункт</target>
+</phrase>
+<phrase>
+    <source>Remove Point of Interest</source>
+    <target>Выдаліць пункт цікавасці</target>
+</phrase>
+<phrase>
+    <source>Fly to POI</source>
+    <target>Ляцець да пункта цікавасці</target>
+</phrase>
+<phrase>
+    <source>Fly to selected Point of Interest</source>
+    <target>Ляцець да вылучанага пункта цікавасці</target>
+</phrase>
+<phrase>
+    <source>Look here</source>
+    <target>Глядзець сюды</target>
+</phrase>
+<phrase>
+    <source>Turn gimbal to coordinates</source>
+    <target>Павярнуць рамку па каардынатах</target>
+</phrase>
+<phrase>
+    <source>Zoom In</source>
+    <target>Наблізііць</target>
+</phrase>
+<phrase>
+    <source>FPS</source>
+    <target>FPS</target>
+</phrase>
+<phrase>
+    <source>Waypont stats</source>
+    <target>Статыстыка пункта маршруту</target>
+</phrase>
+<phrase>
+    <source>WP</source>
+    <target>ПМ</target>
+</phrase>
+<phrase>
+    <source>Distance to mouse click</source>
+    <target>Адлегласць да пстрыка мышы</target>
+</phrase>
+<phrase>
+    <source>DM</source>
+    <target>АМ</target>
+</phrase>
+<phrase>
+    <source>Zoom Out</source>
+    <target>Аддаліць</target>
+</phrase>
+<phrase>
+    <source>Show heading wheel</source>
+    <target>Паказальнік курса</target>
+</phrase>
+<phrase>
+    <source>Change %1 waypoint(s):</source>
+    <target>Змяніць %1 пункт(аў) маршруту:</target>
+</phrase>
+<phrase>
+    <source>Mission &apos;%1&apos; was modified. Save changes?</source>
+    <target>Заданне &apos;%1&apos; было зменена. Захаваць змены?</target>
+</phrase>
+<phrase>
+    <source>XML Files</source>
+    <target>XML-файлы</target>
+</phrase>
+<phrase>
+    <source>Any files</source>
+    <target>Усе файлы</target>
+</phrase>
+<phrase>
+    <source>XML Files (*.xml)</source>
+    <target>XML-файлы (*.xml)</target>
+</phrase>
+<phrase>
+    <source>Download aborted.</source>
+    <target>Сцягванне перарвана.</target>
+</phrase>
+<phrase>
+    <source>Error downloading map</source>
+    <target>Памылка сцягвання мапы</target>
+</phrase>
+<phrase>
+    <source>Download aborted.</source>
+    <target>Сцягванне перарвана.</target>
+</phrase>
+<phrase>
+    <source>Error downloading map</source>
+    <target>Памылка сцягвання мапы</target>
+</phrase>
+<phrase>
+    <source>Home</source>
+    <target>Дом</target>
+</phrase>
+<phrase>
+    <source>Point of interest global position (latitude)</source>
+    <target>Глабальная пазіцыя пункта цікавасці (шырата)</target>
+</phrase>
+<phrase>
+    <source>Point of interest global position (longitude)</source>
+    <target>Глабальная пазіцыя пункта цікавасці (даўгата)</target>
+</phrase>
+<phrase>
+    <source>Camera view altitude</source>
+    <target>Вышыня агляду камеры</target>
+</phrase>
+<phrase>
+    <source>Loiter radius</source>
+    <target>Радыюс патрулявання</target>
+</phrase>
+<phrase>
+    <source>Loiter loops limit</source>
+    <target>Ліміт кругоў патрулявання</target>
+</phrase>
+<phrase>
+    <source>Loiter time limit</source>
+    <target>Ліміт часу патрулявання</target>
+</phrase>
+<phrase>
+    <source>Landing pattern turn</source>
+    <target>Узор вітка пасадкі</target>
+</phrase>
+<phrase>
+    <source>Approach (straight path) length</source>
+    <target>Даўжыня глісады (прамы шлях)</target>
+</phrase>
+<phrase>
+    <source>Runway ground altitude</source>
+    <target>Вышыня УП паласы</target>
+</phrase>
+<phrase>
+    <source>Runway global position (latitude)</source>
+    <target>Глабальная пазіцыя УП паласы (шырата)</target>
+</phrase>
+<phrase>
+    <source>Runway global position (longitude)</source>
+    <target>Глабальная пазіцыя УП паласы (даўгата)</target>
+</phrase>
+<phrase>
+    <source>Runway direction point (north)</source>
+    <target>Кірунак свету УП паласы (поўнач)</target>
+</phrase>
+<phrase>
+    <source>Runway direction point (east)</source>
+    <target>Кірунак свету УП паласы (усход)</target>
+</phrase>
+<phrase>
+    <source>Runway</source>
+    <target>УП паласа</target>
+</phrase>
+<phrase>
+    <source>DH</source>
+    <target>АаД</target>
+</phrase>
+<phrase>
+    <source>DW</source>
+    <target>АаПМ</target>
+</phrase>
+<phrase>
+    <source>DT</source>
+    <target>ПА</target>
+</phrase>
+<phrase>
+    <source>DH</source>
+    <target>АаД</target>
+</phrase>
+<phrase>
+    <source>DW</source>
+    <target>АаПМ</target>
+</phrase>
+<phrase>
+    <source>DT</source>
+    <target>ПА</target>
+</phrase>
+<phrase>
+    <source>Waypoint altitude</source>
+    <target>Вышыня пункта маршруту</target>
+</phrase>
+<phrase>
+    <source>Maneuver type</source>
+    <target>Тып манеўра</target>
+</phrase>
+<phrase>
+    <source>Waypoint global position (latitude)</source>
+    <target>Глабальная пазіцыя пункта маршруту (шырата)</target>
+</phrase>
+<phrase>
+    <source>Waypoint global position (longitude)</source>
+    <target>Глабальная пазіцыя пункта маршруту (даўгата)</target>
+</phrase>
+<phrase>
+    <source>Actions to perform on waypoint</source>
+    <target>Дзеянні для выканання ў пункце маршруту</target>
+</phrase>
+<phrase>
+    <source>Fly with this speed to waypoint</source>
+    <target>Ляцець на гэтай хуткасці да пункта маршруту</target>
+</phrase>
+<phrase>
+    <source>Make a cam shot on waypoint</source>
+    <target>Зрабіць здымак у пункце маршруту</target>
+</phrase>
+<phrase>
+    <source>Execute VM script (@function) on waypoint</source>
+    <target>Выканаць скрыпт на ВМ (@function) у пункце маршруту</target>
+</phrase>
+<phrase>
+    <source>Linked POI</source>
+    <target>Звязаныя ПЦ</target>
+</phrase>
+<phrase>
+    <source>Loiter around POI or waypoint</source>
+    <target>Патруляванне вакол ПЦ ці пункта маршруту</target>
+</phrase>
+<phrase>
+    <source>Loiter radius</source>
+    <target>Радыюс патрулявання</target>
+</phrase>
+<phrase>
+    <source>Loiter loops limit</source>
+    <target>Ліміт кругоў патрулявання</target>
+</phrase>
+<phrase>
+    <source>Loiter time limit</source>
+    <target>Ліміт часу патрулявання</target>
+</phrase>
+<phrase>
+    <source>Mission</source>
+    <target>Заданне</target>
+</phrase>
+<phrase>
+    <source>Waypoints</source>
+    <target>Пункты маршруту</target>
+</phrase>
+<phrase>
+    <source>Points</source>
+    <target>Пункты</target>
+</phrase>
+<phrase>
+    <source>Runways</source>
+    <target>УП палосы</target>
+</phrase>
+<phrase>
+    <source>Taxiways</source>
+    <target>Рулёжныя дарожкі</target>
+</phrase>
+<phrase>
+    <source>Cannot write file</source>
+    <target>Не выйшла запісаць файл</target>
+</phrase>
+<phrase>
+    <source>Cannot read file</source>
+    <target>Не выйшла прачытаць файл</target>
+</phrase>
+<phrase>
+    <source>From Telemetry</source>
+    <target>З тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Mission received from UAV.</source>
+    <target>Заданне атрымана з БЛА.</target>
+</phrase>
+<phrase>
+    <source>The file format is not correct.</source>
+    <target>Нядзейсны фармат файла.</target>
+</phrase>
+<phrase>
+    <source>Nodes request error.</source>
+    <target>Памылка апытання вузлоў.</target>
+</phrase>
+<phrase>
+    <source>Nodes request done.</source>
+    <target>Апытанне вузлоў выканана.</target>
+</phrase>
+<phrase>
+    <source>AP Configuration</source>
+    <target>Канфігурацыя AP</target>
+</phrase>
+<phrase>
+    <source>OK</source>
+    <target>ТАК</target>
+</phrase>
+<phrase>
+    <source>Request</source>
+    <target>Запыт</target>
+</phrase>
+<phrase>
+    <source>Request nodes for configuration..</source>
+    <target>Запыт канфігурацыі вузлоў...</target>
+</phrase>
+<phrase>
+    <source>Upload</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Upload configurations</source>
+    <target>Даслаць канфігурацыю</target>
+</phrase>
+<phrase>
+    <source>F5</source>
+    <target>F5</target>
+</phrase>
+<phrase>
+    <source>Save</source>
+    <target>Захаваць</target>
+</phrase>
+<phrase>
+    <source>Save to file..</source>
+    <target>Захаваць у файл...</target>
+</phrase>
+<phrase>
+    <source>Load</source>
+    <target>Загрузіць</target>
+</phrase>
+<phrase>
+    <source>Load from file..</source>
+    <target>Загрузіць з файла...</target>
+</phrase>
+<phrase>
+    <source>Restore data</source>
+    <target>Аднавіць даныя</target>
+</phrase>
+<phrase>
+    <source>Undo changes</source>
+    <target>Адрабіць змены</target>
+</phrase>
+<phrase>
+    <source>Reload</source>
+    <target>Перазагрузіць</target>
+</phrase>
+<phrase>
+    <source>Reload everything</source>
+    <target>Перазагрузіць усё</target>
+</phrase>
+<phrase>
+    <source>Clear Cache</source>
+    <target>Ачысціць кэш</target>
+</phrase>
+<phrase>
+    <source>Import</source>
+    <target>Імпарт</target>
+</phrase>
+<phrase>
+    <source>Import configuration data</source>
+    <target>Імпарт канфігурацыі</target>
+</phrase>
+<phrase>
+    <source>Load from telemetry</source>
+    <target>Загрузіць з тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Load nodes config from telemetry file</source>
+    <target>Загрузіць канфігурацыю вузлоў з файла тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Stop</source>
+    <target>Спыніць</target>
+</phrase>
+<phrase>
+    <source>Stop syncronization</source>
+    <target>Спыніць сінхранізацыю</target>
+</phrase>
+<phrase>
+    <source>Update firmware</source>
+    <target>Абнавіць firmware</target>
+</phrase>
+<phrase>
+    <source>Backups</source>
+    <target>Рэзервовыя копіі</target>
+</phrase>
+<phrase>
+    <source>Restore recent backup</source>
+    <target>Аднавіць з апошняй рэзервовай копіі</target>
+</phrase>
+<phrase>
+    <source>Update</source>
+    <target>Абнавіць</target>
+</phrase>
+<phrase>
+    <source>Firmware</source>
+    <target>Firmware</target>
+</phrase>
+<phrase>
+    <source>Virtual Machine</source>
+    <target>Віртуальная машына</target>
+</phrase>
+<phrase>
+    <source>Loader</source>
+    <target>Загрузчык</target>
+</phrase>
+<phrase>
+    <source>Reboot all nodes</source>
+    <target>Перазагрузіць усе вузлы</target>
+</phrase>
+<phrase>
+    <source>Node conf files</source>
+    <target>Файлы канф. вузлоў</target>
+</phrase>
+<phrase>
+    <source>Any files</source>
+    <target>Усе файлы</target>
+</phrase>
+<phrase>
+    <source>downloading...</source>
+    <target>сцягваецца...</target>
+</phrase>
+<phrase>
+    <source>Cannot write file</source>
+    <target>Не выйшла запісаць файл</target>
+</phrase>
+<phrase>
+    <source>The file format is not correct.</source>
+    <target>Нядзейсны фармат файла.</target>
+</phrase>
+<phrase>
+    <source>Parameter</source>
+    <target>Параметр</target>
+</phrase>
+<phrase>
+    <source>Value</source>
+    <target>Значэнне</target>
+</phrase>
+<phrase>
+    <source>Description</source>
+    <target>Апісанне</target>
+</phrase>
+<phrase>
+    <source>Nodes request timeout...</source>
+    <target>Інтэрвал апытання вузлоў...</target>
+</phrase>
+<phrase>
+    <source>Nodes request timeout</source>
+    <target>Інтэрвал апытання вузлоў</target>
+</phrase>
+<phrase>
+    <source>Cannot write file</source>
+    <target>Не выйшла запісаць файл</target>
+</phrase>
+<phrase>
+    <source>Cannot read file</source>
+    <target>Не выйшла прачытаць файл</target>
+</phrase>
+<phrase>
+    <source>The file format is not correct.</source>
+    <target>Нядзейсны фармат файла.</target>
+</phrase>
+<phrase>
+    <source>Flight Player</source>
+    <target>Плэер палёту</target>
+</phrase>
+<phrase>
+    <source>00:00:00/00:00:00</source>
+    <target>00:00:00/00:00:00</target>
+</phrase>
+<phrase>
+    <source>Play/Pause</source>
+    <target>Граць/Прып.</target>
+</phrase>
+<phrase>
+    <source>Play/Pause telemetry data</source>
+    <target>Граць/Прыпыніць даныя тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Stop</source>
+    <target>Спыніць</target>
+</phrase>
+<phrase>
+    <source>Read only datalink.</source>
+    <target>Канал толькі на чытанне.</target>
+</phrase>
+<phrase>
+    <source>Uplink allowed.</source>
+    <target>Перадача дазволена.</target>
+</phrase>
+<phrase>
+    <source>The file format is not correct.</source>
+    <target>Нядзейсны фармат файла.</target>
+</phrase>
+<phrase>
+    <source>Ground Control Unit</source>
+    <target>Наземны Пункт Кіравання</target>
+</phrase>
+<phrase>
+    <source>print commands help</source>
+    <target>даведка па загадах</target>
+</phrase>
+<phrase>
+    <source>set var n to value v and send to UAV</source>
+    <target>надаць зменнай n значэнне v і даслаць у БЛА</target>
+</phrase>
+<phrase>
+    <source>request var n from UAV</source>
+    <target>запыт зменнай n з БЛА</target>
+</phrase>
+<phrase>
+    <source>send var n to UAV</source>
+    <target>даслаць зменную n у БЛА</target>
+</phrase>
+<phrase>
+    <source>rescan bus nodes</source>
+    <target>перасканаваць вузлы шыны</target>
+</phrase>
+<phrase>
+    <source>print nodes status</source>
+    <target>вывесці стан вузлоў</target>
+</phrase>
+<phrase>
+    <source>send data v to serial port ID p</source>
+    <target>даслаць даныя v на серыйны порт ID p</target>
+</phrase>
+<phrase>
+    <source>send data v to CAN ID i with IDE e</source>
+    <target>даслаць даныя v на CAN ID i з IDE e</target>
+</phrase>
+<phrase>
+    <source>execute function on VMs</source>
+    <target>выканаць функцыю на ВМ-ах</target>
+</phrase>
+<phrase>
+    <source>sleep n milliseconds</source>
+    <target>чакаць n мілісекунд</target>
+</phrase>
+<phrase>
+    <source>trigger value of v to a or b</source>
+    <target>пераключыць значэнне v у a або b</target>
+</phrase>
+<phrase>
+    <source>wrap angle -180..+180</source>
+    <target>вугал павароту -180..+180</target>
+</phrase>
+<phrase>
+    <source>print members of type b for scope a</source>
+    <target>вывесці аб&apos;екты тыпу b прасторы a</target>
+</phrase>
+<phrase>
+    <source>print variables for scope a</source>
+    <target>вывесці зменныя прасторы a</target>
+</phrase>
+<phrase>
+    <source>print functions for scope a</source>
+    <target>вывесці функцыі прасторы a</target>
+</phrase>
+<phrase>
+    <source>reset AHRS</source>
+    <target>скінуць AHRS</target>
+</phrase>
+<phrase>
+    <source>reset pilot controls</source>
+    <target>скінуць загады пілота</target>
+</phrase>
+<phrase>
+    <source>reset barometric altitude on ground</source>
+    <target>скінуць статычны ціск да зямнога ўзроўню</target>
+</phrase>
+<phrase>
+    <source>reset local GPS coordinates</source>
+    <target>скінуць лакальныя каардынаты GPS</target>
+</phrase>
+<phrase>
+    <source>reset local GPS altitude</source>
+    <target>скінуць лакальную вышыню GPS</target>
+</phrase>
+<phrase>
+    <source>Documents</source>
+    <target>Дакументы</target>
+</phrase>
+<phrase>
+    <source>Images</source>
+    <target>Выявы</target>
+</phrase>
+<phrase>
+    <source>Export File Name</source>
+    <target>Назва файла для экспарту</target>
+</phrase>
+<phrase>
+    <source>Report</source>
+    <target>Справаздача</target>
+</phrase>
+<phrase>
+    <source>Save PDF</source>
+    <target>Захаваць у PDF</target>
+</phrase>
+<phrase>
+    <source>Save HTML</source>
+    <target>Захаваць у HTML</target>
+</phrase>
+<phrase>
+    <source>Print</source>
+    <target>Друкаваць</target>
+</phrase>
+<phrase>
+    <source>Edit Template</source>
+    <target>Рэдагаваць шаблон</target>
+</phrase>
+<phrase>
+    <source>Serial port connected</source>
+    <target>Серыйны порт далучаны</target>
+</phrase>
+<phrase>
+    <source>Serial port disconnected.</source>
+    <target>Серыйны порт адлучаны</target>
+</phrase>
+<phrase>
+    <source>Serial Port console</source>
+    <target>Кансоль серыйнага порта</target>
+</phrase>
+<phrase>
+    <source>Port:</source>
+    <target>Порт:</target>
+</phrase>
+<phrase>
+    <source>Read</source>
+    <target>Чытаць</target>
+</phrase>
+<phrase>
+    <source>ASCII</source>
+    <target>ASCII</target>
+</phrase>
+<phrase>
+    <source>HEX</source>
+    <target>HEX</target>
+</phrase>
+<phrase>
+    <source>Clear received data</source>
+    <target>Ачысціць атрыманыя даныя</target>
+</phrase>
+<phrase>
+    <source>Reset</source>
+    <target>Скінуць</target>
+</phrase>
+<phrase>
+    <source>CR</source>
+    <target>CR</target>
+</phrase>
+<phrase>
+    <source>LF</source>
+    <target>LF</target>
+</phrase>
+<phrase>
+    <source>Send</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Serial Port Console</source>
+    <target>Кансоль серыйнага порта</target>
+</phrase>
+<phrase>
+    <source>Signals</source>
+    <target>Сігналы</target>
+</phrase>
+<phrase>
+    <source>Example Plugin</source>
+    <target>Узорны плагін</target>
+</phrase>
+<phrase>
+    <source>Telemetry Chart</source>
+    <target>Дыяграма тэлеметрыі</target>
+</phrase>
+<phrase>
+    <source>Click to select flight number</source>
+    <target>Пстрыкніце, каб задаць нумар палёту</target>
+</phrase>
+<phrase>
+    <source># &lt;a href=&quot;flight&quot;&gt;0&lt;/a&gt;/0</source>
+    <target># &lt;a href=&quot;палёт&quot;&gt;0&lt;/a&gt;/0</target>
+</phrase>
+<phrase>
+    <source>Top</source>
+    <target>Верх</target>
+</phrase>
+<phrase>
+    <source>Load the most recent flight</source>
+    <target>Загрузіць апошні палёт</target>
+</phrase>
+<phrase>
+    <source>Delete</source>
+    <target>Выдаліць</target>
+</phrase>
+<phrase>
+    <source>Delete current flight</source>
+    <target>Выдаліць дзейны палёт</target>
+</phrase>
+<phrase>
+    <source>Edit</source>
+    <target>Рэдагаваць</target>
+</phrase>
+<phrase>
+    <source>Open in external editor</source>
+    <target>Адкрыць у тэкставым рэдактары</target>
+</phrase>
+<phrase>
+    <source>Export data..</source>
+    <target>Экспартаваць даныя...</target>
+</phrase>
+<phrase>
+    <source>Cut</source>
+    <target>Абрэзаць</target>
+</phrase>
+<phrase>
+    <source>Cut file to fit current view</source>
+    <target>Абрэзаць файл паводле межаў бачнага</target>
+</phrase>
+<phrase>
+    <source>Filter</source>
+    <target>Фільтр</target>
+</phrase>
+<phrase>
+    <source>Show filter configuration...</source>
+    <target>Паказаць канфігурацыю фільтра...</target>
+</phrase>
+<phrase>
+    <source>Full Screen</source>
+    <target>На ўвесь экран</target>
+</phrase>
+<phrase>
+    <source>Toggle Full Screen</source>
+    <target>На ўвесь экран</target>
+</phrase>
+<phrase>
+    <source>Previous</source>
+    <target>Папярэдні</target>
+</phrase>
+<phrase>
+    <source>Load previous flight</source>
+    <target>Загрузіць папярэдні палёт</target>
+</phrase>
+<phrase>
+    <source>Next</source>
+    <target>Наступны</target>
+</phrase>
+<phrase>
+    <source>Load next flight</source>
+    <target>Загрузіць наступны палёт</target>
+</phrase>
+<phrase>
+    <source>Show Files</source>
+    <target>Паказаць файлы</target>
+</phrase>
+<phrase>
+    <source>Show file manager...</source>
+    <target>Адкрыць у файлавым кіраўніку...</target>
+</phrase>
+<phrase>
+    <source>Reload</source>
+    <target>Перачытаць</target>
+</phrase>
+<phrase>
+    <source>Reload current file</source>
+    <target>Перачытаць дзейны файл</target>
+</phrase>
+<phrase>
+    <source>Split Vertically</source>
+    <target>Падзяліць вертыкальна</target>
+</phrase>
+<phrase>
+    <source>Split view vertically</source>
+    <target>Падзяліць прагляд вертыкальна</target>
+</phrase>
+<phrase>
+    <source>Play</source>
+    <target>Граць</target>
+</phrase>
+<phrase>
+    <source>Play telemetry data...</source>
+    <target>Граць даныя тэлеметрыі...</target>
+</phrase>
+<phrase>
+    <source>Filter UAV</source>
+    <target>Фільтр БЛА</target>
+</phrase>
+<phrase>
+    <source>Filter data files by UAV name...</source>
+    <target>Фільтр файлаў даных па назве БЛА...</target>
+</phrase>
+<phrase>
+    <source>STD</source>
+    <target>STD</target>
+</phrase>
+<phrase>
+    <source>Show common plots</source>
+    <target>Паказаць звычайны набор графікаў</target>
+</phrase>
+<phrase>
+    <source>IMU</source>
+    <target>IMU</target>
+</phrase>
+<phrase>
+    <source>Show IMU sensors</source>
+    <target>Паказаць сэнсары IMU</target>
+</phrase>
+<phrase>
+    <source>CTR</source>
+    <target>CTR</target>
+</phrase>
+<phrase>
+    <source>Show controls</source>
+    <target>Паказаць элементы кіравання</target>
+</phrase>
+<phrase>
+    <source>CLR</source>
+    <target>CLR</target>
+</phrase>
+<phrase>
+    <source>Clear visible plots</source>
+    <target>Скiнуць бачныя графікі</target>
+</phrase>
+<phrase>
+    <source>Report</source>
+    <target>Справаздача</target>
+</phrase>
+<phrase>
+    <source>0</source>
+    <target>0</target>
+</phrase>
+<phrase>
+    <source>/</source>
+    <target>/</target>
+</phrase>
+<phrase>
+    <source>Notes</source>
+    <target>Заўвагі</target>
+</phrase>
+<phrase>
+    <source>Create Report</source>
+    <target>Стварыць справаздачу</target>
+</phrase>
+<phrase>
+    <source>File &apos;%s&apos; moved to trash.</source>
+    <target>Файл &apos;%s&apos; перанесены ў сметніцу.</target>
+</phrase>
+<phrase>
+    <source>File &apos;%s&apos; deleted permanently.</source>
+    <target>Файл &apos;%s&apos; назаўсёды выдалены.</target>
+</phrase>
+<phrase>
+    <source>Flight number to load</source>
+    <target>Нумар палёту для загрузкі</target>
+</phrase>
+<phrase>
+    <source>Telemetry file updated.</source>
+    <target>Файл тэлеметрыі абноўлены.</target>
+</phrase>
+<phrase>
+    <source>Unknown filter selected</source>
+    <target>Зададзены невядомы фільтр</target>
+</phrase>
+<phrase>
+    <source>File exported</source>
+    <target>Файл экспартаваны</target>
+</phrase>
+<phrase>
+    <source>Cannot write file</source>
+    <target>Не выйшла запісаць файл</target>
+</phrase>
+<phrase>
+    <source>Exporting telemetry file...</source>
+    <target>Экспартуецца файл тэлеметрыі...</target>
+</phrase>
+<phrase>
+    <source>Abort</source>
+    <target>Спыніць</target>
+</phrase>
+<phrase>
+    <source>Calculated user variable</source>
+    <target>Разлічаныя зменныя карыстальніка</target>
+</phrase>
+<phrase>
+    <source>Calculated field</source>
+    <target>Разлічаныя палі</target>
+</phrase>
+<phrase>
+    <source>QtScript expression:</source>
+    <target>Выраз QtScript:</target>
+</phrase>
+<phrase>
+    <source> (view copy)</source>
+    <target> (прагляд копіі)</target>
+</phrase>
+<phrase>
+    <source>Upload</source>
+    <target>Даслаць</target>
+</phrase>
+<phrase>
+    <source>Form</source>
+    <target>Форма</target>
+</phrase>
+<phrase>
+    <source>Load</source>
+    <target>Загрузіць</target>
+</phrase>
+<phrase>
+    <source>Load from file..</source>
+    <target>Загрузіць з файла...</target>
+</phrase>
+<phrase>
+    <source>Restore data</source>
+    <target>Аднавіць даныя</target>
+</phrase>
+<phrase>
+    <source>Undo changes</source>
+    <target>Адрабіць змены</target>
+</phrase>
+<phrase>
+    <source>Save</source>
+    <target>Захаваць</target>
+</phrase>
+<phrase>
+    <source>Save to file..</source>
+    <target>Захаваць у файл...</target>
+</phrase>
+<phrase>
+    <source>Compile</source>
+    <target>Кампіляваць</target>
+</phrase>
+<phrase>
+    <source>Compile script</source>
+    <target>Кампіляваць скрыпт</target>
+</phrase>
+<phrase>
+    <source>Clear</source>
+    <target>Ачысціць</target>
+</phrase>
+<phrase>
+    <source>Clear script</source>
+    <target>Ачысціць скрыпт</target>
+</phrase>
+<phrase>
+    <source>Script files</source>
+    <target>Файлы скрыптоў</target>
+</phrase>
+<phrase>
+    <source>Any files</source>
+    <target>Усе файлы</target>
+</phrase>
+<phrase>
+    <source>Cannot write file</source>
+    <target>Не выйшла запісаць файл</target>
+</phrase>
+<phrase>
+    <source>Cannot read file</source>
+    <target>Не выйшла прачытаць файл</target>
+</phrase>
+<phrase>
+    <source>Video</source>
+    <target>Відэа</target>
+</phrase>
+<phrase>
+    <source>VOLZ Servos</source>
+    <target>Сервапрывады VOLZ</target>
+</phrase>
+<phrase>
+    <source>Port:</source>
+    <target>Порт:</target>
+</phrase>
+<phrase>
+    <source>Find Servos</source>
+    <target>Знайсці сервапрывады</target>
+</phrase>
+<phrase>
+    <source>Move</source>
+    <target>Зрабіць рух</target>
+</phrase>
+<phrase>
+    <source>Set Address</source>
+    <target>Ужыць адрас</target>
+</phrase>
+<phrase>
+    <source>VOLZ Servos</source>
+    <target>Сервапрывады VOLZ</target>
+</phrase>
+</QPH>
