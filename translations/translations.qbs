@@ -2,7 +2,7 @@
 
 Project {
 
-    condition: false //qbs.buildVariant.contains("release")
+    condition: qbs.buildVariant.contains("release")
 
 
 
