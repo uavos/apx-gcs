@@ -66,6 +66,8 @@ public:
     Q_INVOKABLE static bool isFixedPitch(const QFont &font);
     Q_INVOKABLE static QChar materialIconChar(const QString &name);
 
+    QStringList languages() const { return m_languages; }
+
 private:
     static App *_instance;
 
@@ -73,9 +75,13 @@ private:
     QString oQml;
 
     AppLog log;
+    QStringList m_languages;
 
     AppPlugins *plugins;
     AppInstances *appInstances;
+
+    void loadTranslations();
+    void loadTranslator(const QString &fileName);
 
 protected:
     QUrl url;
@@ -94,7 +100,6 @@ public slots:
 
     //load
     virtual void loadApp();
-    virtual void loadTranslations();
     virtual void loadFonts();
     virtual void loadServices();
 

@@ -64,11 +64,6 @@ QDir AppDirs::prefs()
     return QDir(AppDirs::user().absoluteFilePath("Preferences"));
 }
 
-QDir AppDirs::lang()
-{
-    return QDir(QCoreApplication::applicationDirPath() + "/../Localization/gcs");
-}
-
 QDir AppDirs::missions()
 {
     return QDir(user().absoluteFilePath("Missions"));

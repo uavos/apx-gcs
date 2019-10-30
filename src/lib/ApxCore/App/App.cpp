@@ -21,8 +21,9 @@
  *
  */
 #include "App.h"
-#include <App/AppDirs.h>
-#include <App/AppWindow.h>
+#include "AppDirs.h"
+#include "AppWindow.h"
+
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/SvgImageProvider.h>
 #include <version.h>
@@ -43,6 +44,8 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     , m_scale(1.0)
 {
     _instance = this;
+
+    loadTranslations();
 
     qRegisterMetaType<QScreen *>("QScreen");
 
@@ -144,7 +147,6 @@ App::~App() {}
 void App::loadApp()
 {
     apxConsole() << QObject::tr("Loading application").append("...");
-    loadTranslations();
     loadFonts();
     loadServices();
     plugins->load(oPlugins);
@@ -386,30 +388,45 @@ void App::loadTranslations()
 {
     apxConsole() << QObject::tr("Loading translations").append("...");
     QSettings *s = AppSettings::createSettings();
-    s->beginGroup("apx.settings");
+    s->beginGroup("interface");
     QString lang = s->value("lang").toString();
-    if (QLocale().country() == QLocale::Belarus && (lang == "ru")) {
-        lang = "by";
-        s->setValue("lang", lang);
-    }
     delete s;
-    QDir langp(AppDirs::lang());
-    QString langf;
-    langf = langp.filePath(lang + ".qm");
-    if (QFile::exists(langf)) {
-        QTranslator *translator = new QTranslator();
-        translator->load(langf);
-        qApp->installTranslator(translator);
-        apxConsole() << QObject::tr("Translator added").append(": ").append(langf);
+
+    QDir trDir(AppDirs::res().absoluteFilePath("translations"));
+    for (auto fi : trDir.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
+        m_languages.append(fi.baseName());
     }
-    QDir langsp("/usr/share/qt5/translations/");
+    QDir trDirUser(AppDirs::user().absoluteFilePath("Translations"));
+    for (auto fi : trDirUser.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
+        m_languages.append(fi.baseName());
+    }
+    m_languages.removeDuplicates();
+    m_languages.sort();
+
+    QFileInfo fi = QFileInfo(trDir.absoluteFilePath(lang + ".qm"));
+    if (fi.exists()) {
+        loadTranslator(fi.absoluteFilePath());
+    }
+    fi = QFileInfo(trDirUser.absoluteFilePath(lang + ".qm"));
+    if (fi.exists()) {
+        loadTranslator(fi.absoluteFilePath());
+    }
+
+    /*QDir langsp("/usr/share/qt5/translations/");
     QString qt_langf = langsp.filePath("qt_" + lang + ".qm");
     if (QFile::exists(qt_langf)) {
         QTranslator *translator = new QTranslator();
         translator->load(qt_langf);
         qApp->installTranslator(translator);
         apxConsole() << QObject::tr("Translator added").append(": ").append(qt_langf);
-    }
+    }*/
+}
+void App::loadTranslator(const QString &fileName)
+{
+    QTranslator *translator = new QTranslator();
+    translator->load(fileName);
+    installTranslator(translator);
+    apxConsole() << "Translator added:" << QFileInfo(fileName).fileName();
 }
 //=============================================================================
 //=============================================================================

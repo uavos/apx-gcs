@@ -35,7 +35,6 @@ Product {
             cmd.sourceCode = function() {
                 var appdata={}
                 //collect appdata from products
-                var f=inputs
                 var tag=inputs["appdata.deploy"]
                 for(var i in tag){
                     var inp=tag[i]

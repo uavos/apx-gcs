@@ -45,7 +45,7 @@ Product {
 
     type: (isForAndroid && !consoleApplication)
         ? ["dynamiclibrary", "android.nativelibrary"]
-        : ["application" ]
+        : ["application"]
 
     aggregate: {
         if (!isForDarwin)
