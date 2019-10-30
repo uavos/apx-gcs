@@ -64,7 +64,7 @@ void Updater::initUpdaterImpl()
     m_impl = std::make_unique<SparkleAutoUpdater>();
     m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
 #endif
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_LINUX
     m_impl = new AppImageAutoUpdater(this);
 #endif
 }

@@ -30,7 +30,7 @@
 #ifdef Q_OS_MAC
 #include "sparkle/SparkleAutoUpdater.h"
 #endif
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_LINUX
 #include "appimage/AppImageAutoUpdater.h"
 #endif
 //=============================================================================
@@ -47,7 +47,7 @@ private:
 #ifdef Q_OS_MAC
     std::unique_ptr<SparkleAutoUpdater> m_impl;
 #endif
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_LINUX
     AppImageAutoUpdater *m_impl;
 #endif
     void initUpdaterImpl();
