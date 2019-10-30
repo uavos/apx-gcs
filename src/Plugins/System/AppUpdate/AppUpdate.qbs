@@ -45,7 +45,7 @@ Project {
 
         Group {
             condition: qbs.targetOS.contains("macos")
-            name: "sparkle"
+            name: "macos"
             prefix: name+"/"
             files: [
                 "SparkleAutoUpdater.mm", "SparkleAutoUpdater.h",
@@ -53,6 +53,7 @@ Project {
         }
         Group {
             condition: qbs.targetOS.contains("linux")
+            name: "linux"
             files: [
                 "appimage/AppImageAutoUpdater.cpp",
                 "appimage/AppImageAutoUpdater.h",

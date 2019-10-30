@@ -1,9 +1,9 @@
 #ifndef APPIMAGEAUTOUPDATER_H
 #define APPIMAGEAUTOUPDATER_H
 
-#include <memory>
-#include <appimage/update.h>
 #include "Fact/Fact.h"
+#include <appimage/update.h>
+#include <memory>
 
 class AppImageAutoUpdater : public Fact
 {

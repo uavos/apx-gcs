@@ -1,9 +1,9 @@
 #include "AppImageAutoUpdater.h"
 
-#include <QtQml>
 #include "App/AppDirs.h"
 #include "App/AppLog.h"
 #include <QMessageBox>
+#include <QtQml>
 
 AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent)
     : Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
@@ -37,7 +37,10 @@ void AppImageAutoUpdater::checkForUpdatesInBackground()
     }
 }
 
-void AppImageAutoUpdater::setAutomaticallyChecksForUpdates(bool b){Q_UNUSED(b)}
+void AppImageAutoUpdater::setAutomaticallyChecksForUpdates(bool b)
+{
+    Q_UNUSED(b)
+}
 
 AppImageAutoUpdater::State AppImageAutoUpdater::getState() const
 {
