@@ -1,16 +1,12 @@
 #include "AppImageAutoUpdater.h"
 
+#include <QtQml>
 #include "App/AppDirs.h"
 #include "App/AppLog.h"
-#include <QtQml>
-#include <future>
 #include <QMessageBox>
 
-#include <memory>
-#include <utility>
-
-AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent):
-    Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
+AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent)
+    : Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
 {
     qmlRegisterType<AppImageAutoUpdater>("AppImageAutoUpdater", 1, 0, "AppImageAutoUpdater");
     setQmlPage(QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
@@ -27,27 +23,21 @@ void AppImageAutoUpdater::checkForUpdates()
 void AppImageAutoUpdater::checkForUpdatesInBackground()
 {
     auto updater = createUpdater(qgetenv("APPIMAGE"), false);
-    if(updater)
-    {
-        auto t = std::thread([this, updater](){
+    if (updater) {
+        auto t = std::thread([this, updater]() {
             bool updateAvailable = false;
             updater->checkForChanges(updateAvailable);
-            if(updateAvailable)
-            {
+            if (updateAvailable) {
                 setState(UpdateAvailable);
                 trigger();
-            }
-            else
+            } else
                 setState(NoUpdates);
         });
         t.detach();
     }
 }
 
-void AppImageAutoUpdater::setAutomaticallyChecksForUpdates(bool b)
-{
-    Q_UNUSED(b)
-}
+void AppImageAutoUpdater::setAutomaticallyChecksForUpdates(bool b){Q_UNUSED(b)}
 
 AppImageAutoUpdater::State AppImageAutoUpdater::getState() const
 {
@@ -67,30 +57,25 @@ QString AppImageAutoUpdater::getStatusMessage() const
 void AppImageAutoUpdater::start(bool keepOldVersion)
 {
     auto updater = createUpdater(qgetenv("APPIMAGE"), keepOldVersion);
-    if(updater)
-    {
+    if (updater) {
         setUpdateProgress(0);
         setState(Updating);
         setStatusMessage("");
         m_stopUpdate = false;
         updater->start();
-        while(!updater->isDone())
-        {
-            if(updater->hasError())
-            {
-                QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Unknown error during update"),
+        while (!updater->isDone()) {
+            if (updater->hasError()) {
+                QMessageBox::critical(nullptr,
+                                      QObject::tr("Error"),
+                                      QObject::tr("Unknown error during update"),
                                       QMessageBox::Ok);
                 setState(UpdateAvailable);
                 return;
             }
-            if(m_stopUpdate)
-            {
-                try
-                {
+            if (m_stopUpdate) {
+                try {
                     updater->stop();
-                }
-                catch(std::exception&)
-                {
+                } catch (std::exception &) {
                 }
                 setState(UpdateAvailable);
                 return;
@@ -101,8 +86,7 @@ void AppImageAutoUpdater::start(bool keepOldVersion)
             setUpdateProgress(qRound(progress * 100));
             QCoreApplication::processEvents();
             std::string nextMessage;
-            while(updater->nextStatusMessage(nextMessage))
-            {
+            while (updater->nextStatusMessage(nextMessage)) {
                 setStatusMessage(QString::fromStdString(nextMessage));
                 QCoreApplication::processEvents();
             }
@@ -111,7 +95,7 @@ void AppImageAutoUpdater::start(bool keepOldVersion)
         //It's workaround for updater, that for some reason keep .zs-old file after update.
         QFile zsOld(qgetenv("APPIMAGE"));
         zsOld.setFileName(zsOld.fileName() + ".zs-old");
-        if(zsOld.exists())
+        if (zsOld.exists())
             zsOld.remove();
 
         std::string newFile;
@@ -130,10 +114,9 @@ void AppImageAutoUpdater::stop()
 
 void AppImageAutoUpdater::setState(State newState)
 {
-    if(m_state != newState)
-    {
+    if (m_state != newState) {
         m_state = newState;
-        if(m_state == NoUpdates)
+        if (m_state == NoUpdates)
             setVisible(false);
         else
             setVisible(true);
@@ -143,8 +126,7 @@ void AppImageAutoUpdater::setState(State newState)
 
 void AppImageAutoUpdater::setUpdateProgress(int progress)
 {
-    if(m_updateProgress != progress)
-    {
+    if (m_updateProgress != progress) {
         m_updateProgress = progress;
         emit updateProgressChanged();
     }
@@ -152,21 +134,18 @@ void AppImageAutoUpdater::setUpdateProgress(int progress)
 
 void AppImageAutoUpdater::setStatusMessage(const QString &status)
 {
-    if(m_statusMessage != status)
-    {
+    if (m_statusMessage != status) {
         m_statusMessage = status;
         emit statusMessageChanged();
     }
 }
 
-std::shared_ptr<appimage::update::Updater> AppImageAutoUpdater::createUpdater(const QString &str, bool keepOldVersion)
+std::shared_ptr<appimage::update::Updater> AppImageAutoUpdater::createUpdater(const QString &str,
+                                                                              bool keepOldVersion)
 {
-    try
-    {
+    try {
         return std::make_shared<appimage::update::Updater>(str.toStdString(), !keepOldVersion);
-    }
-    catch(std::exception &e)
-    {
+    } catch (std::exception &e) {
         apxMsgW() << tr("Can't create AppImage updater instance: ") << e.what();
     }
     return std::shared_ptr<appimage::update::Updater>();

@@ -1,27 +1,18 @@
 #ifndef APPIMAGEAUTOUPDATER_H
 #define APPIMAGEAUTOUPDATER_H
 
-#include <QObject>
-#include <QProgressDialog>
-#include <QDialogButtonBox>
 #include <memory>
-#include "Fact/Fact.h"
 #include <appimage/update.h>
+#include "Fact/Fact.h"
 
-class AppImageAutoUpdater: public Fact
+class AppImageAutoUpdater : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(State state READ getState NOTIFY stateChanged)
     Q_PROPERTY(int updateProgress READ getUpdateProgress NOTIFY updateProgressChanged)
     Q_PROPERTY(QString statusMessage READ getStatusMessage NOTIFY statusMessageChanged)
 public:
-    enum State
-    {
-        CheckForUpdates,
-        Updating,
-        UpdateAvailable,
-        NoUpdates
-    };
+    enum State { CheckForUpdates, Updating, UpdateAvailable, NoUpdates };
     Q_ENUM(State)
     AppImageAutoUpdater(Fact *parent = nullptr);
     void checkForUpdates();
@@ -43,7 +34,8 @@ private:
     void setUpdateProgress(int progress);
     void setStatusMessage(const QString &status);
 
-    std::shared_ptr<appimage::update::Updater> createUpdater(const QString &str, bool keepOldVersion);
+    std::shared_ptr<appimage::update::Updater> createUpdater(const QString &str,
+                                                             bool keepOldVersion);
 
 signals:
     void stateChanged();
