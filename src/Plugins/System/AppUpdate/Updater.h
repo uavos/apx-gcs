@@ -28,10 +28,10 @@
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #ifdef Q_OS_MAC
-#include "sparkle/SparkleAutoUpdater.h"
+#include "macos/SparkleAutoUpdater.h"
 #endif
 #ifdef Q_OS_LINUX
-#include "appimage/AppImageAutoUpdater.h"
+#include "linux/AppImageAutoUpdater.h"
 #endif
 //=============================================================================
 class Updater : public Fact
