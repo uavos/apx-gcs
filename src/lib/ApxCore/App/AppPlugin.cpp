@@ -28,6 +28,8 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
+
+#include <QCryptographicHash>
 //=============================================================================
 AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     : QObject(plugins)
@@ -65,33 +67,16 @@ void AppPlugin::loadLib()
     //load lib
     apxConsole() << tr("Loading").append(":") << name;
     QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
 
-    //check with tool
-    QFileInfo tool(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("gcs_plugin_test"));
-    if (tool.exists()) {
-        QProcess proc;
-        proc.start(tool.absoluteFilePath(), QStringList() << fname);
-        if (!proc.waitForStarted())
-            return;
-        if (!proc.waitForFinished())
-            return;
-        if (proc.exitCode() != 0) {
-            m_errorString = proc.readAllStandardError();
-            apxMsgW() << "Error loading plugin:" << name;
-            apxMsgW() << m_errorString;
-            f_enabled->setStatus(tr("error").toUpper());
-            return;
-        }
-    }
+    if (!checkLib(fname))
+        return;
 
     QObject *instance = nullptr;
     PluginInterface *p = nullptr;
     QLibrary lib(fname);
     try {
         if (!lib.load()) {
-            apxMsgW() << "lib:" << lib.errorString() << "(" + fname + ")";
+            apxMsgW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
             return;
         }
         loader = new QPluginLoader(fname);
@@ -242,5 +227,48 @@ void AppPlugin::enabledChanged()
 QString AppPlugin::errorString()
 {
     return m_errorString;
+}
+//=============================================================================
+bool AppPlugin::checkLib(const QString &fname)
+{
+    QFileInfo tool(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("gcs_plugin_test"));
+    if (!tool.exists()) {
+        //qWarning() << "missing tool" << tool.absoluteFilePath();
+        return true;
+    }
+
+    QSettings spt;
+    spt.beginGroup("plugins_test");
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    QFileInfo fi(fname);
+    hash.addData(fname.toUtf8());
+    hash.addData(fi.canonicalPath().toUtf8());
+    hash.addData(fi.lastModified().toString().toUtf8());
+    hash.addData(tool.canonicalPath().toUtf8());
+    hash.addData(tool.lastModified().toString().toUtf8());
+    QString sptKey = hash.result().toHex().toUpper();
+    if (spt.value(sptKey).toString() == name) {
+        //qDebug() << "already checked" << name << sptKey;
+        return true;
+    }
+
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
+    QProcess proc;
+    proc.start(tool.absoluteFilePath(), QStringList() << fname);
+    if (!proc.waitForStarted())
+        return false;
+    if (!proc.waitForFinished())
+        return false;
+    if (proc.exitCode() != 0) {
+        m_errorString = proc.readAllStandardError();
+        apxMsgW() << "Error loading plugin:" << name;
+        apxMsgW() << m_errorString;
+        f_enabled->setStatus(tr("error").toUpper());
+        return false;
+    }
+    spt.setValue(sptKey, name);
+    // qDebug() << "checked" << name << sptKey;
+    return true;
 }
 //=============================================================================

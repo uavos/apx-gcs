@@ -46,11 +46,12 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 {
     _instance = this;
 
+    //setup logging
     m_appLog = new AppLog(this);
-
     m_appNotify = new AppNotify(this);
     m_notifyModel = new AppNotifyListModel(m_appNotify);
 
+    //load
     loadTranslations();
 
     qRegisterMetaType<QScreen *>("QScreen");
@@ -126,6 +127,8 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     setGlobalProperty("ui", m_engine->newObject());
     jsexec(QString("ui.__defineGetter__('%1', function(){ return application.%1; });").arg("scale"));
 
+    loadFonts();
+
     f_apx = new AppRoot(this);
 
     connect(this, &QCoreApplication::aboutToQuit, f_apx->f_settings, &AppSettings::setReadOnly);
@@ -151,7 +154,6 @@ App::~App() {}
 void App::loadApp()
 {
     apxConsole() << QObject::tr("Loading application").append("...");
-    loadFonts();
     loadServices();
     plugins->load(oPlugins);
     apxConsole() << QObject::tr("Loading finished");
@@ -351,6 +353,7 @@ void App::loadFonts()
     m_engine->rootContext()->setContextProperty("font_fixed", "Menlo");
 #else
     m_engine->rootContext()->setContextProperty("font_fixed", "FreeMono");
+    qApp->setFont(QFont("Arial"));
 #endif
 }
 bool App::isFixedPitch(const QFont &font)

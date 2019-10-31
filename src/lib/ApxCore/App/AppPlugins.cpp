@@ -30,7 +30,14 @@ AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     : QObject(parent)
     , QList<AppPlugin *>()
     , f_enabled(f_enabled)
-{}
+{
+    if (App::dryRun() || App::segfault()) {
+        QSettings spt;
+        spt.beginGroup("plugins_test");
+        for (auto k : spt.allKeys())
+            spt.remove(k);
+    }
+}
 AppPlugins::~AppPlugins()
 {
     unload();

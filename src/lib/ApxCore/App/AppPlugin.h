@@ -57,6 +57,9 @@ private:
 
     void loadLib();
     void loadQml();
+
+    bool checkLib(const QString &fname);
+
 private slots:
     void enabledChanged();
 };

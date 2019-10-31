@@ -45,8 +45,14 @@ public:
     Q_INVOKABLE static QString hostname() { return _instance->m_hostname; }
     Q_INVOKABLE static QString username() { return _instance->m_username; }
 
+    Q_INVOKABLE static bool dryRun() { return _instance->m_dryRun; }
+    Q_INVOKABLE static bool segfault() { return _instance->m_segfault; }
+
 private:
     static AppBase *_instance;
+
+    bool m_dryRun;
+    bool m_segfault;
 
     QString m_version;
     QString m_branch;

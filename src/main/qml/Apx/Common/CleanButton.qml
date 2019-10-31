@@ -61,6 +61,7 @@ Button {
     Material.primary: Material.color(Material.LightGreen)
 
 
+    //font.family: font_app
     font.pixelSize: 14*ui_scale //Qt.application.font.pixelSize*ui_scale
 
     //implicitHeight: visible?contentItem.implicitHeight+topPadding+bottomPadding:0
@@ -80,10 +81,10 @@ Button {
     property real bodyHeight: height-padding*2
 
     property real iconSize: 0.9
-    property real titleSize: showDescr?0.6:0.99
+    property real titleSize: showDescr?0.6:0.9
     property real descrSize: 0.35
 
-    function fontSize(v){return Math.max(8,v)}
+    function fontSize(v){return Math.max(7,v)}
 
     contentItem: Item {
         implicitWidth: rowItem.implicitWidth

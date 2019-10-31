@@ -109,6 +109,30 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         break;
     }
     m_username = sname;
+
+    //check dry run
+    QString lastVer = QSettings().value("version").toString();
+    m_dryRun = lastVer != version();
+    if (m_dryRun) {
+        apxConsole() << tr("First time run of this version");
+        connect(this, &QCoreApplication::aboutToQuit, this, []() {
+            QSettings().setValue("version", version());
+        });
+    }
+
+    //check last segfault
+    if (m_dryRun) {
+        m_segfault = false;
+    } else {
+        m_segfault = QSettings().value("segfault").toString() != version();
+        if (m_segfault) {
+            apxConsole() << tr("Application didn't exit properly");
+        }
+    }
+    QSettings().remove("segfault");
+    connect(this, &QCoreApplication::aboutToQuit, this, []() {
+        QSettings().setValue("segfault", version());
+    });
 }
 //=============================================================================
 QString AppBase::aboutString()

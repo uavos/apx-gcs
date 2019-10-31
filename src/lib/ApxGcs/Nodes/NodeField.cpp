@@ -59,6 +59,7 @@ NodeField::NodeField(NodeItem *node,
         break;
     case DictNode::Byte:
         setMax(255);
+        //fallthru
     case DictNode::UInt:
         setMin(0);
         setDataType(Int);
