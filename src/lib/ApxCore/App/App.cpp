@@ -46,6 +46,14 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 {
     _instance = this;
 
+    //prefs
+    QDir pPrefs(AppDirs::prefs());
+    if (!pPrefs.exists())
+        pPrefs.mkpath(".");
+    m_prefs = new QSettings(pPrefs.absoluteFilePath(QCoreApplication::applicationName() + ".ini"),
+                            QSettings::IniFormat,
+                            this);
+
     //qputenv("LD_LIBRARY_PATH", AppDirs::libs().absolutePath().toUtf8());
 
     //setup logging
@@ -469,5 +477,9 @@ AppNotify *App::appNotify() const
 AppNotifyListModel *App::notifyModel() const
 {
     return m_notifyModel;
+}
+QSettings *App::prefs() const
+{
+    return m_prefs;
 }
 //=============================================================================

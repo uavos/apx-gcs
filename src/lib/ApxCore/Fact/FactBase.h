@@ -51,12 +51,14 @@ public:
 
         //appearance options [options]
         OptsMask = 0x0000FFF0,
-        Section = 1 << 4,        //flat model shows fact as section not folder
-        CloseOnTrigger = 1 << 5, //close menu request on trigger
-        IconOnly = 1 << 6,       //show only icon button (for actions)
-        ShowDisabled = 1 << 7,   //action visible when disabled (for actions)
-        FlatModel = 1 << 8,      //child items shown expanded as sections
-        DragChildren = 1 << 9,   //child items are draggable to change order
+        Section = 1 << 4,          //flat model shows fact as section not folder
+        CloseOnTrigger = 1 << 5,   //close menu request on trigger
+        IconOnly = 1 << 6,         //show only icon button (for actions)
+        ShowDisabled = 1 << 7,     //action visible when disabled (for actions)
+        FlatModel = 1 << 8,        //child items shown expanded as sections
+        DragChildren = 1 << 9,     //child items are draggable to change order
+        PersistentValue = 1 << 10, //save and restore value in QSettings
+        Preferences = 1 << 11,     //use app prefs file to save value
 
         //data types [dataType]
         DataMask = 0x00FF0000,

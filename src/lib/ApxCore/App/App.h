@@ -74,8 +74,12 @@ public:
 
     QStringList languages() const { return m_languages; }
 
+    QSettings *prefs() const;
+
 private:
     static App *_instance;
+
+    QSettings *m_prefs;
 
     QStringList oPlugins;
     QString oQml;
