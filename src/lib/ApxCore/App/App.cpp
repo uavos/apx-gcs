@@ -54,7 +54,13 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
                             QSettings::IniFormat,
                             this);
 
-    //qputenv("LD_LIBRARY_PATH", AppDirs::libs().absolutePath().toUtf8());
+    //    QStringList ldp;
+    //    ldp << qgetenv("LD_LIBRARY_PATH");
+    //    ldp << AppDirs::libs().absolutePath();
+    //    ldp.removeAll("");
+    //    ldp.removeDuplicates();
+    //    qputenv("LD_LIBRARY_PATH", ldp.join(':').toUtf8());
+    //qDebug() << qgetenv("LD_LIBRARY_PATH");
 
     //setup logging
     m_appLog = new AppLog(this);
