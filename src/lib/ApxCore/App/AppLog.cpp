@@ -120,6 +120,8 @@ void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QS
         stream->flush();
     }
 
+    emit consoleMessage(message);
+
     if (display(context)) {
         switch (type) {
         default:

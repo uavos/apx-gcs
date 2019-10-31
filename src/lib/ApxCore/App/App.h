@@ -27,13 +27,15 @@
 #include <QQuickWindow>
 #include <QtCore>
 
-#include <App/AppBase.h>
-#include <App/AppEngine.h>
-#include <App/AppInstances.h>
-#include <App/AppLog.h>
-#include <App/AppPlugins.h>
-#include <App/AppRoot.h>
-#include <App/AppSettings.h>
+#include "AppBase.h"
+#include "AppEngine.h"
+#include "AppInstances.h"
+#include "AppLog.h"
+#include "AppNotify.h"
+#include "AppNotifyListModel.h"
+#include "AppPlugins.h"
+#include "AppRoot.h"
+#include "AppSettings.h"
 //=============================================================================
 class App : public AppBase
 {
@@ -41,6 +43,10 @@ class App : public AppBase
     Q_PROPERTY(AppEngine *engine READ engine CONSTANT)
     Q_PROPERTY(QQuickWindow *window READ window NOTIFY windowChanged)
     Q_PROPERTY(double scale READ scale NOTIFY scaleChanged)
+
+    Q_PROPERTY(AppLog *appLog READ appLog CONSTANT)
+    Q_PROPERTY(AppNotify *appNotify READ appNotify CONSTANT)
+    Q_PROPERTY(AppNotifyListModel *notifyModel READ notifyModel CONSTANT)
 
 public:
     explicit App(int &argc, char **argv, const QString &name, const QUrl &url);
@@ -74,7 +80,6 @@ private:
     QStringList oPlugins;
     QString oQml;
 
-    AppLog log;
     QStringList m_languages;
 
     AppPlugins *plugins;
@@ -110,41 +115,7 @@ signals:
     void visibilityChanged(QWindow::Visibility visibility);
     void playSoundEffect(const QString &v);
 
-    // notifications and text messages
-public:
-    enum NotifyFlag {
-        //message origin [enum]
-        NotifySourceMask = 0x0F,
-        FromApp = 0,     // msg from app
-        FromInput = 1,   // msg from user terminal input
-        FromVehicle = 2, // msg from vehicle
-
-        //importance [enum]
-        NotifyTypeMask = 0xF0,
-        Info = 0 << 4,
-        Important = 1 << 4,
-        Warning = 2 << 4,
-        Error = 3 << 4,
-
-        //options [bits]
-        NotifyOptionsMask = 0xF00,
-        Console = 1 << 8, // msg from log stream
-    };
-    Q_DECLARE_FLAGS(NotifyFlags, NotifyFlag)
-    Q_FLAG(NotifyFlags)
-    Q_ENUM(NotifyFlag)
-
-public slots:
-    void report(QString msg,
-                App::NotifyFlags flags = App::NotifyFlags(FromApp),
-                QString subsystem = QString());
-    void report(Fact *fact);
-private slots:
-    void logInfoMessage(QString msg);
-    void logWarningMessage(QString msg);
-
 signals:
-    void notification(QString msg, QString subsystem, App::NotifyFlags flags, Fact *fact);
     void about();
 
     //---------------------------------------
@@ -155,14 +126,20 @@ public:
     double scale() const;
     void setScale(double v);
 
+    AppLog *appLog() const;
+    AppNotify *appNotify() const;
+    AppNotifyListModel *notifyModel() const;
+
 protected:
     AppEngine *m_engine;
     QQuickWindow *m_window;
     double m_scale;
+    AppNotify *m_appNotify;
+    AppNotifyListModel *m_notifyModel;
+    AppLog *m_appLog;
 signals:
     void windowChanged();
     void scaleChanged();
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(App::NotifyFlags)
 //=============================================================================
 #endif

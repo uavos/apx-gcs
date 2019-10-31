@@ -23,6 +23,8 @@
 #include "Fact.h"
 #include <App/App.h>
 #include <App/AppLog.h>
+#include <App/AppNotify.h>
+#include <QColor>
 #include <QFont>
 #include <QFontDatabase>
 //=============================================================================
@@ -741,7 +743,7 @@ void Fact::setProgress(const int v)
     if ((vp < 0 && v >= 0) || (vp >= 0 && v < 0)) {
         emit busyChanged();
         if (busy()) {
-            App::instance()->report(this);
+            AppNotify::instance()->report(this);
         }
     }
 }

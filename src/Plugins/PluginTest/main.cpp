@@ -8,44 +8,42 @@
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3, or
  * (at your option) any later version.
- *
+
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
+
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Notifications_H
-#define Notifications_H
-//=============================================================================
-#include <App/AppNotify.h>
-#include <ApxMisc/DelayedEvent.h>
-#include <Fact/Fact.h>
 #include <QtCore>
-class NotifyItem;
-//=============================================================================
-class Notifications : public Fact
+//============================================================================
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
+    QCoreApplication app(argc, argv);
 
-public:
-    explicit Notifications(Fact *parent = nullptr);
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Ground Control Software by UAVOS (C) Aliaksei Stratsilatau "
+                                     "<sa@uavos.com>. Plugin test utility.");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("plugins", "Plugin[s] to load and test.");
+    parser.process(*qApp);
 
-private:
-    QHash<Fact *, NotifyItem *> items;
-    QList<QPointer<Fact>> newItems;
+    const QStringList args = parser.positionalArguments();
 
-    DelayedEvent notifyEvent;
-    void createItem(Fact *fact);
+    for (auto fname : args) {
+        QLibrary lib(fname);
+        if (!lib.load()) {
+            const char *err = lib.errorString().toUtf8();
+            qFatal("%s", err);
+        }
+    }
 
-private slots:
-    void appNotification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
-    void updateItems();
-};
-//=============================================================================
-#endif
+    return 0;
+}
+//============================================================================

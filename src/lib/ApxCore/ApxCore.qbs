@@ -71,6 +71,8 @@ ApxApp.ApxLibrary {
             "AppInstances.cpp", "AppInstances.h",
             "AppLog.cpp", "AppLog.h",
             "AppDirs.cpp", "AppDirs.h",
+            "AppNotify.cpp", "AppNotify.h",
+            "AppNotifyListModel.cpp", "AppNotifyListModel.h",
             "PluginInterface.h",
         ]
     }

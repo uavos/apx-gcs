@@ -40,6 +40,16 @@ ApplicationWindow {
             sourceComponent: Component {
                 Image {
                     source: "qrc:///icons/uavos-logo.ico"
+                    Text {
+                        id: loadingText
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: parent.bottom
+                        color: "#888"
+                        Connections {
+                            target: application.appLog
+                            onConsoleMessage: loadingText.text=msg
+                        }
+                    }
                 }
             }
         }

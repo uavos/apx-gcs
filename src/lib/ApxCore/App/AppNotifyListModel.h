@@ -20,23 +20,23 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef TerminalListModel_H
-#define TerminalListModel_H
+#ifndef AppNotifyListModel_H
+#define AppNotifyListModel_H
 //=============================================================================
-#include <App/App.h>
+#include "AppNotify.h"
 #include <QtCore>
 //=============================================================================
-class TerminalListModel : public QAbstractListModel
+class AppNotifyListModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
-    explicit TerminalListModel(QObject *parent = nullptr);
-    ~TerminalListModel();
+    explicit AppNotifyListModel(AppNotify *appNotify);
+    ~AppNotifyListModel() override;
 
-    enum TerminalListModelRoles {
-        ModelDataRole = Qt::UserRole + 1,
+    enum AppNotifyListModelRoles {
+        ModelDataRoleDis = Qt::UserRole + 1,
         TextRole,
         SubsystemRole,
 
@@ -48,31 +48,26 @@ public:
 
         TimestampRole,
     };
-    QHash<int, QByteArray> roleNames() const;
+    QHash<int, QByteArray> roleNames() const override;
 
-private:
-    struct TerminalListItem
+    void updateItem(int row, const QVariant &value, int role = TextRole);
+
+    //ListModel override
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+    struct NotifyListItem
     {
         qint64 timestamp;
         QString text;
         QString subsystem;
-        App::NotifyFlags flags;
+        AppNotify::NotifyFlags flags;
         QPointer<Fact> fact;
     };
-    QList<TerminalListItem *> _items;
-    int _enterIndex;
-
-protected:
-    //ListModel override
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QList<NotifyListItem *> m_items;
 
 private slots:
-    void notification(QString msg, QString subsystem, App::NotifyFlags flags, Fact *fact);
-
-public slots:
-    void enter(const QString &line);
-    void enterResult(bool ok);
+    void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
 
     //-----------------------------------------
     //PROPERTIES

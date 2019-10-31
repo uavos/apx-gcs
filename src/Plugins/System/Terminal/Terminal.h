@@ -23,15 +23,12 @@
 #ifndef Terminal_H
 #define Terminal_H
 //=============================================================================
-#include "TerminalListModel.h"
-
 #include <Fact/Fact.h>
 #include <QtCore>
 //=============================================================================
 class Terminal : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(TerminalListModel *outModel READ outModel CONSTANT)
 
 public:
     explicit Terminal(Fact *parent = nullptr);
@@ -45,14 +42,14 @@ public:
     Q_INVOKABLE QString autocomplete(const QString &cmd);
 
 private:
-    TerminalListModel *_model;
+    int _enterIndex;
     QStringList _history;
     int _historyIndex;
     QString _replacedHistory;
 
-public:
-    //---------------------------------------
-    TerminalListModel *outModel() const;
+public slots:
+    void enter(const QString &line);
+    void enterResult(bool ok);
 
 signals:
     void newMessage(QtMsgType type, QString category, QString text);

@@ -135,7 +135,7 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
     msg.append(QString(" '%1'").arg(v->callsign()));
     if (v->squawk() > 0)
         msg.append(QString(" (%1)").arg(v->squawkText()));
-    v->message(msg, App::Important);
+    v->message(msg, AppNotify::Important);
 
     v->dbSaveVehicleInfo();
 
@@ -152,7 +152,7 @@ void Vehicles::identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentDa
                       .arg(tr("Assigning squawk to"))
                       .arg(ident.callsign)
                       .arg(QString::number(v->squawk, 16).toUpper());
-    App::instance()->report(msg, App::FromApp | App::Warning);
+    AppNotify::instance()->report(msg, AppNotify::FromApp | AppNotify::Warning);
 }
 //=============================================================================
 void Vehicles::selectVehicle(Vehicle *v)
@@ -170,7 +170,7 @@ void Vehicles::selectVehicle(Vehicle *v)
         msg.append(QString(" '%1'").arg(v->callsign()));
     if (v->squawk() > 0)
         msg.append(QString(" (%1)").arg(v->squawkText()));
-    v->message(msg, App::Important);
+    v->message(msg, AppNotify::Important);
     m_current = v;
 
     //update JSengine

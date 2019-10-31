@@ -91,6 +91,7 @@ private:
 signals:
     void infoMessage(QString msg);
     void warningMessage(QString msg);
+    void consoleMessage(QString msg);
 };
 
 //block standard behavior

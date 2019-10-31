@@ -50,7 +50,11 @@ public:
 
     QString section;
 
+    QString errorString();
+
 private:
+    QString m_errorString;
+
     void loadLib();
     void loadQml();
 private slots:

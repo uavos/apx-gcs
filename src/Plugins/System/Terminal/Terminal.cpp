@@ -23,6 +23,7 @@
 #include "Terminal.h"
 #include <App/App.h>
 #include <App/AppLog.h>
+#include <App/AppNotifyListModel.h>
 #include <QDesktopServices>
 #include <QQmlEngine>
 #define MAX_HISTORY 50
@@ -37,13 +38,12 @@ Terminal::Terminal(Fact *parent)
 {
     setQmlPage("qrc:/" PLUGIN_NAME "/Terminal.qml");
 
-    _model = new TerminalListModel(this);
+    _enterIndex = 0;
 
     _history = QSettings().value("consoleHistory").toStringList();
     historyReset();
 
     qmlRegisterUncreatableType<Terminal>("APX.Terminal", 1, 0, "Terminal", "Reference only");
-    qmlRegisterUncreatableType<TerminalListModel>("APX.Terminal", 1, 0, "Terminal", "Reference only");
 
     loadQml("qrc:/" PLUGIN_NAME "/TerminalPlugin.qml");
 }
@@ -75,7 +75,7 @@ void Terminal::exec(const QString &cmd)
         _history.removeFirst();
     QSettings().setValue("consoleHistory", _history);
     historyReset();
-    _model->enterResult(!v.isError());
+    enterResult(!v.isError());
 }
 //=============================================================================
 void Terminal::historyReset()
@@ -232,13 +232,25 @@ QString Terminal::autocomplete(const QString &cmd)
     }
     hints.removeDuplicates();
     hints.sort();
-    _model->enter(hints.join(" "));
+    enter(hints.join(" "));
     return c;
 }
 //=============================================================================
-//=============================================================================
-TerminalListModel *Terminal::outModel() const
+void Terminal::enter(const QString &line)
 {
-    return _model;
+    App *app = App::instance();
+    AppNotify::instance()->notification(line, "", AppNotify::FromInput, nullptr);
+    _enterIndex = app->notifyModel()->rowCount() - 1;
+}
+void Terminal::enterResult(bool ok)
+{
+    App *app = App::instance();
+    if (_enterIndex >= app->notifyModel()->rowCount())
+        return;
+    app->notifyModel()->updateItem(_enterIndex,
+                                   ok ? tr("ok") : tr("error"),
+                                   AppNotifyListModel::SubsystemRole);
+    if (!ok)
+        app->notifyModel()->updateItem(_enterIndex, AppNotify::Error, AppNotifyListModel::TypeRole);
 }
 //=============================================================================

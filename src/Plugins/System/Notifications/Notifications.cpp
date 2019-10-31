@@ -36,14 +36,14 @@ Notifications::Notifications(Fact *parent)
 {
     connect(&notifyEvent, &DelayedEvent::triggered, this, &Notifications::updateItems);
 
-    connect(App::instance(), &App::notification, this, &Notifications::appNotification);
+    connect(AppNotify::instance(), &AppNotify::notification, this, &Notifications::appNotification);
 
     loadQml("qrc:/" PLUGIN_NAME "/NotificationsPlugin.qml");
 }
 //=============================================================================
 void Notifications::appNotification(QString msg,
                                     QString subsystem,
-                                    App::NotifyFlags flags,
+                                    AppNotify::NotifyFlags flags,
                                     Fact *fact)
 {
     if (items.contains(fact))

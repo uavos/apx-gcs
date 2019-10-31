@@ -27,7 +27,7 @@
 #include <QGeoPath>
 #include <QGeoRectangle>
 
-#include <App/App.h>
+#include <App/AppNotify.h>
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicle.h>
 
@@ -202,7 +202,7 @@ public slots:
     void resetGeoPath();
 
     void message(QString msg,
-                 App::NotifyFlags flags = App::FromApp | App::Info,
+                 AppNotify::NotifyFlags flags = AppNotify::FromApp | AppNotify::Info,
                  QString subsystem = QString());
 
     //Database

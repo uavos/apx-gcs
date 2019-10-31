@@ -22,6 +22,7 @@
  */
 #include "App.h"
 #include "AppDirs.h"
+#include "AppNotifyListModel.h"
 #include "AppWindow.h"
 
 #include <ApxMisc/MaterialIcon.h>
@@ -45,14 +46,17 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 {
     _instance = this;
 
+    m_appLog = new AppLog(this);
+
+    m_appNotify = new AppNotify(this);
+    m_notifyModel = new AppNotifyListModel(m_appNotify);
+
     loadTranslations();
 
     qRegisterMetaType<QScreen *>("QScreen");
 
     qmlRegisterUncreatableType<App>("APX.Facts", 1, 0, "App", "Reference only");
-
-    connect(&log, &AppLog::infoMessage, this, &App::logInfoMessage, Qt::QueuedConnection);
-    connect(&log, &AppLog::warningMessage, this, &App::logWarningMessage, Qt::QueuedConnection);
+    qmlRegisterUncreatableType<AppNotify>("APX.Facts", 1, 0, "AppNotify", "Reference only");
 
     //---------------------------------------
     // command line options
@@ -449,22 +453,16 @@ void App::setScale(double v)
     m_scale = v;
     emit scaleChanged();
 }
-//=============================================================================
-//=============================================================================
-void App::report(QString msg, App::NotifyFlags flags, QString subsystem)
+AppLog *App::appLog() const
 {
-    emit notification(msg, subsystem, flags, nullptr);
+    return m_appLog;
 }
-void App::report(Fact *fact)
+AppNotify *App::appNotify() const
 {
-    emit notification("", "", FromApp, fact);
+    return m_appNotify;
 }
-void App::logInfoMessage(QString msg)
+AppNotifyListModel *App::notifyModel() const
 {
-    emit notification(msg, QString(), Console, nullptr);
-}
-void App::logWarningMessage(QString msg)
-{
-    emit notification(msg, QString(), Console | Warning, nullptr);
+    return m_notifyModel;
 }
 //=============================================================================

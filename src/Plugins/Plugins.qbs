@@ -1,4 +1,5 @@
-﻿
+﻿import ApxApp
+
 Project {
 
     references: [
@@ -6,5 +7,6 @@ Project {
         "Tools/Tools.qbs",
         "MapView/MapView.qbs",
         "Windows/Windows.qbs",
+        "PluginTest/PluginTest.qbs",
     ]
 }

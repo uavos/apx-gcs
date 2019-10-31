@@ -15,7 +15,6 @@ ApxApp.ApxPlugin {
     files: [
         "TerminalPlugin.h",
         "Terminal.cpp", "Terminal.h",
-        "TerminalListModel.cpp", "TerminalListModel.h",
     ]
 
     Depends { name: "qmlqrc" }

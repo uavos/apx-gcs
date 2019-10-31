@@ -135,7 +135,7 @@ Rectangle{
     function reset()
     {
         consoleExec.focused()
-        terminal.outModel.enter(cmdText.text)
+        terminal.enter(cmdText.text)
         setCmd("")
         terminal.historyReset()
     }

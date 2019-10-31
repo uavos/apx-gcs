@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 #endif
 
     //app initialization
-    //QApplication::setAttribute(Qt::AA_PluginApplication); //macos faster?
+    QApplication::setAttribute(Qt::AA_PluginApplication); //macos faster?
     QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
 
     //high DPI scaling

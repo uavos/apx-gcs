@@ -537,7 +537,7 @@ QString Vehicle::confTitle() const
     return anyName;
 }
 //=============================================================================
-void Vehicle::message(QString msg, App::NotifyFlags flags, QString subsystem)
+void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsystem)
 {
     if (isTemporary())
         return;
@@ -547,27 +547,27 @@ void Vehicle::message(QString msg, App::NotifyFlags flags, QString subsystem)
     else
         subsystem = QString("%1/%2").arg(callsign()).arg(subsystem);
 
-    App::NotifyFlags fType = flags & App::NotifyTypeMask;
+    AppNotify::NotifyFlags fType = flags & AppNotify::NotifyTypeMask;
 
-    if (fType != App::Error && fType != App::Warning) {
-        App::NotifyFlags t = fType;
+    if (fType != AppNotify::Error && fType != AppNotify::Warning) {
+        AppNotify::NotifyFlags t = fType;
         if (msg.contains("error", Qt::CaseInsensitive))
-            t = App::Error;
+            t = AppNotify::Error;
         else if (msg.contains("fail", Qt::CaseInsensitive))
-            t = App::Error;
+            t = AppNotify::Error;
         else if (msg.contains("timeout", Qt::CaseInsensitive))
-            t = App::Error;
+            t = AppNotify::Error;
         else if (msg.contains("warn", Qt::CaseInsensitive))
-            t = App::Warning;
+            t = AppNotify::Warning;
         if (t != fType)
-            flags = (flags & ~App::NotifyTypeMask) | t;
+            flags = (flags & ~AppNotify::NotifyTypeMask) | t;
         fType = t;
     }
-    App::instance()->report(msg, flags, subsystem);
+    AppNotify::instance()->report(msg, flags, subsystem);
 
-    if (fType == App::Error) {
+    if (fType == AppNotify::Error) {
         f_warnings->error(msg);
-    } else if (fType == App::Warning) {
+    } else if (fType == AppNotify::Warning) {
         f_warnings->warning(msg);
     }
 }

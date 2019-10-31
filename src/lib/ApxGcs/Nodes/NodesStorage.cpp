@@ -226,7 +226,7 @@ void NodesStorage::saveConfiguration(bool force)
     }
     quint64 vehicleID = nodes->vehicle->dbKey;
     if (list.isEmpty() || (vehicleID == 0 && force == false)) {
-        nodes->vehicle->message(tr("Configuration not saved"), App::Warning);
+        nodes->vehicle->message(tr("Configuration not saved"), AppNotify::Warning);
         return;
     }
     if (!vehicleID)
@@ -251,11 +251,11 @@ void NodesStorage::saveConfiguration(bool force)
 }
 void NodesStorage::vehicleConfigUpdated()
 {
-    nodes->vehicle->message(tr("Configuration exists"), App::Important);
+    nodes->vehicle->message(tr("Configuration exists"), AppNotify::Important);
 }
 void NodesStorage::vehicleConfigCreated()
 {
-    nodes->vehicle->message(tr("Configuration created"), App::Important);
+    nodes->vehicle->message(tr("Configuration created"), AppNotify::Important);
 }
 //=============================================================================
 void NodesStorage::setConfigInfo(QVariantMap info)
@@ -297,9 +297,9 @@ void NodesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap
                 s.append(QString(" (%1)").arg(title));
             if (data.size() != rcnt) {
                 s.append(QString(" %1 of %2 nodes").arg(rcnt).arg(data.size()));
-                nodes->vehicle->message(s, App::Warning);
+                nodes->vehicle->message(s, AppNotify::Warning);
             } else
-                nodes->vehicle->message(s, App::Important);
+                nodes->vehicle->message(s, AppNotify::Important);
             return;
         }
     }
@@ -320,7 +320,7 @@ void NodesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap
     QString s = tr("Configuration loaded");
     if (!title.isEmpty())
         s.append(QString(" (%1)").arg(title));
-    nodes->vehicle->message(s, App::Important);
+    nodes->vehicle->message(s, AppNotify::Important);
 }
 //=============================================================================
 void NodesStorage::newNodeDict(QVariantMap info, DictNode::Dict dict)

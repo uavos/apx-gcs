@@ -14,7 +14,7 @@ Rectangle {
     readonly property int margins: 3
     property int fontSize: 12
 
-    property var terminal: apx.tools.terminal
+    //property var terminal: apx.tools.terminal
 
     ColumnLayout {
         spacing: 0
@@ -32,7 +32,7 @@ Rectangle {
 
             clip: true
 
-            model: terminal.outModel
+            model: application.notifyModel
             delegate: TerminalLine {
                 width: listView.width
                 fontSize: control.fontSize
@@ -51,7 +51,7 @@ Rectangle {
                 NumberAnimation {
                     properties: "x";
                     from: -listView.width;
-                    duration: transAdd.ViewTransition.item.source==App.FromInput?0:150
+                    duration: transAdd.ViewTransition.item.source==AppNotify.FromInput?0:150
                     easing.type: Easing.OutCubic
                 }
             }

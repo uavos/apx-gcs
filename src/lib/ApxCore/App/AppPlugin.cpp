@@ -64,32 +64,56 @@ void AppPlugin::loadLib()
     }
     //load lib
     apxConsole() << tr("Loading").append(":") << name;
-    loader = new QPluginLoader(fname);
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
+
+    //check with tool
+    QFileInfo tool(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("gcs_plugin_test"));
+    if (tool.exists()) {
+        QProcess proc;
+        proc.start(tool.absoluteFilePath(), QStringList() << fname);
+        if (!proc.waitForStarted())
+            return;
+        if (!proc.waitForFinished())
+            return;
+        if (proc.exitCode() != 0) {
+            m_errorString = proc.readAllStandardError();
+            apxMsgW() << "Error loading plugin:" << name;
+            apxMsgW() << m_errorString;
+            f_enabled->setStatus(tr("error").toUpper());
+            return;
+        }
+    }
+
     QObject *instance = nullptr;
     PluginInterface *p = nullptr;
+    QLibrary lib(fname);
     try {
+        if (!lib.load()) {
+            apxMsgW() << "lib:" << lib.errorString() << "(" + fname + ")";
+            return;
+        }
+        loader = new QPluginLoader(fname);
         instance = loader->instance();
     } catch (...) {
         apxMsgW() << "Plugin load error" << name << "(" + fname + ")";
+        instance = nullptr;
     }
-    while (!instance) {
+    if (!instance) {
         //try to load pure qml qrc plugin
-        QLibrary lib(fname);
-        if (lib.load()) {
-            QString qrcFileName = QString(":/%1/%1Plugin.qml").arg(name);
-            if (QFile::exists(qrcFileName)) {
-                //instance = new AppPluginQML();
-                fileName = "qrc" + qrcFileName;
-                loadQml();
-                return;
-            } else
-                lib.unload();
+        if (!lib.isLoaded()) {
+            return;
         }
-        apxMsgW() << loader->errorString() << "(" + fname + ")";
-        apxMsgW() << lib.errorString() << "(" + fname + ")";
-        loader->unload();
-        delete loader;
-        loader = nullptr;
+        QString qrcFileName = QString(":/%1/%1Plugin.qml").arg(name);
+        if (QFile::exists(qrcFileName)) {
+            fileName = "qrc" + qrcFileName;
+            loadQml();
+            return;
+        }
+        if (loader) {
+            apxMsgW() << "loader:" << loader->errorString() << "(" + fname + ")";
+        }
         return;
     }
     p = reinterpret_cast<PluginInterface *>(instance);
@@ -213,5 +237,10 @@ void AppPlugin::enabledChanged()
     } else {
         //unload();
     }
+}
+//=============================================================================
+QString AppPlugin::errorString()
+{
+    return m_errorString;
 }
 //=============================================================================

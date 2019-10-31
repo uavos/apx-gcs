@@ -346,7 +346,7 @@ int NodeItem::loadConfigValues(QVariantMap values)
         QString s = QString("%1: %2").arg(sname).arg(cnt);
         if (cnt < 5)
             s.append(QString(" (%1)").arg(missingValues.join(',')));
-        nodes->vehicle->message(tr("Missing values").append(": ").append(s), App::Warning);
+        nodes->vehicle->message(tr("Missing values").append(": ").append(s), AppNotify::Warning);
         qWarning() << missingValues;
     }
     cnt = ignoredValues.size();
@@ -354,7 +354,7 @@ int NodeItem::loadConfigValues(QVariantMap values)
         QString s = QString("%1: %2").arg(sname).arg(cnt);
         if (cnt < 5)
             s.append(QString(" (%1)").arg(ignoredValues.join(',')));
-        nodes->vehicle->message(tr("Ignored values").append(": ").append(s), App::Warning);
+        nodes->vehicle->message(tr("Ignored values").append(": ").append(s), AppNotify::Warning);
         qWarning() << ignoredValues;
     }
     return rcnt;
@@ -383,7 +383,7 @@ void NodeItem::message(QString msg)
             continue;
         App::sound(s);
         nodes->vehicle->message(qApp->translate("msg", s.toUtf8().data()),
-                                App::FromVehicle | App::Important,
+                                AppNotify::FromVehicle | AppNotify::Important,
                                 title());
 
         //record
@@ -701,7 +701,7 @@ NodeItem *NodeItem::subNode() const
 //=============================================================================
 void NodeItem::execCommand(quint16 cmd, const QString &name, const QString &descr)
 {
-    nodes->vehicle->message(descr + "...", App::Important, title());
+    nodes->vehicle->message(descr + "...", AppNotify::Important, title());
     emit requestUser(cmd, QByteArray(), 1000);
     if (name.startsWith("conf") || name.contains("reconf")) {
         setDataValid(false);
