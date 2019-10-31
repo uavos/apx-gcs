@@ -12,6 +12,7 @@ ApxApp.ApxLibrary {
             "core",
             "sql",
             "qml",
+            "quick",
             "xml",
             "widgets",
         ]

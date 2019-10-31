@@ -22,6 +22,7 @@
  */
 #include "Share.h"
 
+#include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <App/AppSettings.h>
@@ -60,7 +61,9 @@ Share::Share(Fact *parent,
                         "import");
     connect(f_import, &Fact::triggered, this, &Share::importTriggered);
 
-    QTimer::singleShot(1000, this, &Share::syncTemplates);
+    connect(App::instance(), &App::loadingFinished, this, [this]() {
+        QTimer::singleShot(1000, this, &Share::syncTemplates);
+    });
 }
 //=============================================================================
 void Share::syncTemplates()

@@ -28,8 +28,7 @@ QDir AppDirs::res()
     const QString hpath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     return QDir("assets:/data/");
 #else
-    return QDir(QCoreApplication::applicationDirPath() + "/"
-                + RELATIVE_DATA_PATH); //+"/../Resources");
+    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_DATA_PATH);
 #endif
 }
 
@@ -43,10 +42,14 @@ QDir AppDirs::user()
 #endif
 }
 
+QDir AppDirs::libs()
+{
+    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_LIB_PATH);
+}
+
 QDir AppDirs::plugins()
 {
-    return QDir(QCoreApplication::applicationDirPath() + "/"
-                + RELATIVE_PLUGIN_PATH); //"/../Plugins/gcs");
+    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_PLUGIN_PATH);
 }
 
 QDir AppDirs::userPlugins()

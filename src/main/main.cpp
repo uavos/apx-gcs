@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 #endif
 
     //app initialization
-    QApplication::setAttribute(Qt::AA_PluginApplication); //macos faster?
+    //QApplication::setAttribute(Qt::AA_PluginApplication); //macos faster?
     QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
 
     //high DPI scaling
@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
 
     //qputenv("QT_QUICK_CONTROLS_STYLE", "Android");
 
-    //qputenv("LD_LIBRARY_PATH", "/usr/lib/uavos/Qt/lib/");
     /*QString qmlcache = QStandardPaths::standardLocations(QStandardPaths::CacheLocation).first();
     QDir qmlCacheDir(qmlcache);
     qDebug() << "removing" << qmlCacheDir.absolutePath();

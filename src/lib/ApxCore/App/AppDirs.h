@@ -30,6 +30,8 @@ public:
     static QDir res();
     static QDir user();
 
+    static QDir libs();
+
     static QDir plugins();
     static QDir userPlugins();
 

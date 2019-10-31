@@ -103,7 +103,7 @@ RowLayout {
             Settings {
                 id: settings
                 category: "Layout"
-                property string instrumentsPlugin
+                property string instrumentsPlugin: "Terminal"
             }
 
             function add(plugin, index)

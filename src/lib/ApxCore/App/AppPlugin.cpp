@@ -242,9 +242,9 @@ bool AppPlugin::checkLib(const QString &fname)
     QCryptographicHash hash(QCryptographicHash::Sha1);
     QFileInfo fi(fname);
     hash.addData(fname.toUtf8());
-    hash.addData(fi.canonicalPath().toUtf8());
+    hash.addData(fi.filePath().toUtf8());
     hash.addData(fi.lastModified().toString().toUtf8());
-    hash.addData(tool.canonicalPath().toUtf8());
+    hash.addData(tool.filePath().toUtf8());
     hash.addData(tool.lastModified().toString().toUtf8());
     QString sptKey = hash.result().toHex().toUpper();
     if (spt.value(sptKey).toString() == name) {

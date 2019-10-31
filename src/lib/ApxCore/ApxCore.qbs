@@ -32,6 +32,7 @@ ApxApp.ApxLibrary {
     cpp.defines: base.concat([
         'RELATIVE_PLUGIN_PATH="' + FileInfo.relativePath('/' + app.app_bin_path, '/' + app.app_plugin_path) + '"',
         'RELATIVE_DATA_PATH="' + FileInfo.relativePath('/' + app.app_bin_path, '/' + app.app_data_path) + '"',
+        'RELATIVE_LIB_PATH="' + FileInfo.relativePath('/' + app.app_bin_path, '/' + app.app_library_path) + '"',
     ])
 
     cpp.includePaths: [

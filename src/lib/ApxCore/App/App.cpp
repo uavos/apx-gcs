@@ -46,6 +46,8 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 {
     _instance = this;
 
+    //qputenv("LD_LIBRARY_PATH", AppDirs::libs().absolutePath().toUtf8());
+
     //setup logging
     m_appLog = new AppLog(this);
     m_appNotify = new AppNotify(this);
