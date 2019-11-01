@@ -37,7 +37,6 @@ deploy-clean:
 deploy-app: $(APP_DATA)
 	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(CODE_IDENTITY:%=--sign=%) $(LIBS_DIST_DIR:%=--dist=%) 
 
-
 # build dist image
 deploy-osx: $(APP_DATA)
 	@python $(TOOLS_DIR)/deploy/deploy_dmg.py --appdata=$<
@@ -46,7 +45,7 @@ deploy-osx: $(APP_DATA)
 	@python $(TOOLS_DIR)/release/make_sparkle.py $(GITHUB_TOKEN:%=--token=%) --assets=$(BUILD_DIR_OUT)
 
 deploy-linux: $(APP_DATA)
-	@python $(TOOLS_DIR)/deploy/deploy_appimage.py --appdata=$<
+	@python $(TOOLS_DIR)/deploy/deploy_appimage.py --appdata=$< --apprun=$(TOOLS_DIR)/deploy/AppRun.sh
 	@mkdir -p $(BUILD_DIR_OUT)
 	@install $(GCS_ROOT_DIR)/packages/* $(BUILD_DIR_OUT)
 
