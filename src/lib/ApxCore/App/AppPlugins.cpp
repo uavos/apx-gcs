@@ -159,8 +159,6 @@ void AppPlugins::load(const QStringList &names)
 //=============================================================================
 void AppPlugins::loadFiles(const QStringList &fileNames)
 {
-    QSettings st;
-    st.beginGroup("plugins");
     QStringList loadedNames;
     foreach (QString fileName, fileNames) {
         QString pname = QFileInfo(fileName).baseName();

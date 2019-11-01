@@ -111,7 +111,8 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     m_username = sname;
 
     //check dry run
-    QString lastVer = QSettings().value("version").toString();
+    QSettings sx;
+    QString lastVer = sx.value("version").toString();
     m_dryRun = lastVer != version();
     if (m_dryRun) {
         apxConsole() << tr("First time run of this version");
@@ -124,12 +125,12 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     if (m_dryRun) {
         m_segfault = false;
     } else {
-        m_segfault = QSettings().value("segfault").toString() != version();
+        m_segfault = sx.value("segfault").toString() != version();
         if (m_segfault) {
             apxConsole() << tr("Application didn't exit properly");
         }
     }
-    QSettings().remove("segfault");
+    sx.remove("segfault");
     connect(this, &QCoreApplication::aboutToQuit, this, []() {
         QSettings().setValue("segfault", version());
     });

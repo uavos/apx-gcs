@@ -14,8 +14,6 @@ ServosForm::ServosForm(QWidget *parent)
     connect(ui->btnMove, SIGNAL(pressed()), this, SLOT(btnMove()));
     connect(ui->btnSetAdr, SIGNAL(pressed()), this, SLOT(btnSetAdr()));
 
-    restoreGeometry(QSettings().value(objectName()).toByteArray());
-
     connect(Vehicles::instance(),
             &Vehicles::currentSerialDataReceived,
             this,
@@ -30,7 +28,6 @@ void ServosForm::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)
     disconnect(this);
-    QSettings().setValue(objectName(), saveGeometry());
     emit finished();
 }
 //=============================================================================

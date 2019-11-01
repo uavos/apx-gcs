@@ -24,7 +24,7 @@ SerialForm::SerialForm(QWidget *parent)
     connect(ui->btnForward, SIGNAL(pressed()), this, SLOT(btnForward()));
     connect(ui->eTxText, SIGNAL(returnPressed()), this, SLOT(btnSend()));
 
-    restoreGeometry(QSettings().value(objectName()).toByteArray());
+    //restoreGeometry(QSettings().value(objectName()).toByteArray());
     ui->ePortID->setValue(QSettings().value(objectName() + "_port").toUInt());
 
     ui->eForward->setText(QSettings().value(objectName() + "_fwdDev").toString());
@@ -48,7 +48,7 @@ void SerialForm::closeEvent(QCloseEvent *event)
         uart.close();
         apxMsg() << tr("Serial port forwarding stopped");
     }*/
-    QSettings().setValue(objectName(), saveGeometry());
+    //QSettings().setValue(objectName(), saveGeometry());
     QSettings().setValue(objectName() + "_port", ui->ePortID->value());
     emit finished();
 }

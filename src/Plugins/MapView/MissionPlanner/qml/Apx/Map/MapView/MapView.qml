@@ -84,7 +84,7 @@ Item {
                         vtypes.push(m.description)
                     }
                     mapPlugin.prefs.maptype.enumStrings=vtypes
-                    mapPlugin.prefs.maptype.value=activeMapType.description
+                    //mapPlugin.prefs.maptype.value=activeMapType.description
                 }
                 property string mapTypeName: mapPlugin.prefs.maptype.text
                 activeMapType: {

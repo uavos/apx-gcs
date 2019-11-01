@@ -85,7 +85,6 @@ void CompassFrame::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)
     disconnect(this);
-    QSettings().setValue(objectName(), saveGeometry());
     emit closed();
 }
 //=============================================================================
