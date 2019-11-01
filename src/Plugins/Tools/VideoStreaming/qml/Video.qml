@@ -11,17 +11,18 @@ import OverlayAim 1.0
 import OverlayVars 1.0
 import OverlayGimbal 1.0
 
+import Apx.Application 1.0
+
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
-Rectangle {
-    id: videoItem
+Control {
+    id: control
 
     Component.onCompleted: {
-        application.registerUiComponent(videoItem, "video")
+        application.registerUiComponent(control, "video")
+        //ui.main.add(control, GroundControl.Layout.Main, 1)
     }
-
-    color: "black"
 
     readonly property var plugin: apx.tools.videostreaming
     readonly property var overlay: plugin?plugin.tune.overlay:undefined
@@ -29,117 +30,131 @@ Rectangle {
     readonly property bool recording: plugin?plugin.tune.record.value:false
     readonly property var scale: overlay?overlay.scale:0.1
 
-    VideoOutput {
-        id: videoOutput
-        anchors.fill: parent
-        source: plugin
-        ColumnLayout {
-            visible: running
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            spacing: 0
-            Repeater {
-                model: plugin.tune.overlay.varnames
-                Label {
-                    property var v: apx.vehicles.current.mandala.findChild(modelData)
-                    text: v.name + ": " + v.value.toFixed(5)
-                    font.pixelSize: videoOutput.contentRect.height / 40
-                    styleColor: "black"
-                    style: Text.Outline
+
+    background: Rectangle {
+
+        implicitWidth: 400
+        implicitHeight: implicitWidth*3/4
+
+        border.width: 0
+        color: "#000"
+        radius: 5
+
+        VideoOutput {
+            id: videoOutput
+            anchors.fill: parent
+            source: plugin
+            ColumnLayout {
+                visible: running
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                spacing: 0
+                Repeater {
+                    model: plugin.tune.overlay.varnames
+                    Label {
+                        property var v: apx.vehicles.current.mandala.findChild(modelData)
+                        text: v.name + ": " + v.value.toFixed(5)
+                        font.pixelSize: videoOutput.contentRect.height / 40
+                        styleColor: "black"
+                        style: Text.Outline
+                    }
                 }
             }
-        }
-        OverlayAim {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-            type: plugin.tune.overlay.aim.value
-            scale: overlay.scale.value
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            width: videoOutput.contentRect.width
-            height: videoOutput.contentRect.height
-        }
-        OverlayVars {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-            topLeftVars: overlay.top_left_vars.value
-            topCenterVars: overlay.top_center_vars.value
-            topRightVars: overlay.top_right_vars.value
-            scale: overlay.scale.value
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            width: videoOutput.contentRect.width
-            height: videoOutput.contentRect.height
-        }
-        OverlayGimbal {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED && overlay.show_gimbal.value === true
-            yawVar: overlay.gimbal_yaw_var.value
-            pitchVar: overlay.gimbal_pitch_var.value
-            scale: overlay.scale.value
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            width: videoOutput.contentRect.width
-            height: videoOutput.contentRect.height
-        }
-    }
-
-    Button {
-        id: connectButton
-        visible: !running
-        anchors.centerIn: parent
-        text: qsTr("connect")
-        scale: ui.scale
-        onClicked: plugin.tune.running.value = true
-    }
-    BusyIndicator {
-        visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
-        anchors.centerIn: parent
-        running: true
-    }
-
-    ColumnLayout {
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 3
-        spacing: 5
-
-        CleanButton {
-            visible: running
-            iconName: "record-rec"
-            iconColor: recording ? Material.color(Material.DeepOrange) : Material.primaryTextColor
-            onTriggered: plugin.tune.record.value =! plugin.tune.record.value
-        }
-        CleanButton {
-            visible: running
-            iconName: "image"
-            onTriggered: plugin.snapshot()
-        }
-        CleanButton {
-            visible: running
-            iconName: "cast-off"
-            onTriggered: plugin.tune.running.value=false
-        }
-
-        Item {
-            height: 16
-            width: height
-        }
-
-        CleanButton {
-            iconName: "tune"
-            onTriggered: {
-                plugin.tune.trigger()
+            OverlayAim {
+                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+                type: plugin.tune.overlay.aim.value
+                scale: overlay.scale.value
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                width: videoOutput.contentRect.width
+                height: videoOutput.contentRect.height
+            }
+            OverlayVars {
+                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+                topLeftVars: overlay.top_left_vars.value
+                topCenterVars: overlay.top_center_vars.value
+                topRightVars: overlay.top_right_vars.value
+                scale: overlay.scale.value
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                width: videoOutput.contentRect.width
+                height: videoOutput.contentRect.height
+            }
+            OverlayGimbal {
+                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED && overlay.show_gimbal.value === true
+                yawVar: overlay.gimbal_yaw_var.value
+                pitchVar: overlay.gimbal_pitch_var.value
+                scale: overlay.scale.value
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                width: videoOutput.contentRect.width
+                height: videoOutput.contentRect.height
             }
         }
+    }
 
-        /*CleanButton {
-            id: resizeButton
-            iconName: checked ? "fullscreen-exit" : "fullscreen"
-            checkable: true
-            onCheckedChanged: {
-                if(checked)
-                    plugin.state = "big"
-                else
-                    plugin.state = "small"
+    contentItem: Item {
+
+        Button {
+            id: connectButton
+            visible: !running
+            anchors.centerIn: parent
+            text: qsTr("connect")
+            scale: ui.scale
+            onClicked: plugin.tune.running.value = true
+        }
+        BusyIndicator {
+            visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
+            anchors.centerIn: parent
+            running: true
+        }
+
+        ColumnLayout {
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.margins: 3
+            spacing: 5
+
+            CleanButton {
+                visible: running
+                iconName: "record-rec"
+                iconColor: recording ? Material.color(Material.DeepOrange) : Material.primaryTextColor
+                onTriggered: plugin.tune.record.value =! plugin.tune.record.value
             }
-        }*/
+            CleanButton {
+                visible: running
+                iconName: "image"
+                onTriggered: plugin.snapshot()
+            }
+            CleanButton {
+                visible: running
+                iconName: "cast-off"
+                onTriggered: plugin.tune.running.value=false
+            }
+
+            Item {
+                height: 16
+                width: height
+            }
+
+            CleanButton {
+                iconName: "tune"
+                onTriggered: {
+                    plugin.tune.trigger()
+                }
+            }
+
+            /*CleanButton {
+                id: resizeButton
+                iconName: checked ? "fullscreen-exit" : "fullscreen"
+                checkable: true
+                onCheckedChanged: {
+                    if(checked)
+                        plugin.state = "big"
+                    else
+                        plugin.state = "small"
+                }
+            }*/
+        }
     }
 }

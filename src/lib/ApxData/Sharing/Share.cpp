@@ -69,8 +69,9 @@ Share::Share(Fact *parent,
 void Share::syncTemplates()
 {
     //import default data from resources
-    const QString sgrp("templates_update");
-    QStringList importedFiles = AppPrefs::instance()->loadValue(fileType, sgrp).toStringList();
+    QSettings sx;
+    sx.beginGroup("templates_update");
+    QStringList importedFiles = sx.value(fileType).toStringList();
     QFileInfoList fiSrcList(
         QDir(AppDirs::res().absoluteFilePath("templates/share"), QString("*.%1").arg(fileType))
             .entryInfoList());
@@ -90,7 +91,7 @@ void Share::syncTemplates()
     if (updated) {
         importedFiles.sort();
         importedFiles.removeDuplicates();
-        AppPrefs::instance()->saveValue(fileType, importedFiles, sgrp);
+        sx.setValue(fileType, importedFiles);
     }
 }
 //=============================================================================

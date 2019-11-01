@@ -1,13 +1,14 @@
 ﻿import QtQuick          2.12
 import QtLocation       5.12
 
+import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.0
 
 import Apx.Map.Vehicles 1.0
 import Apx.Map.Mission 1.0
 import Apx.Map.Navigation 1.0
 
-Item {
+Control {
     id: control
 
     property bool showVehicles: true
@@ -26,7 +27,7 @@ Item {
     //internal
     property var mapPlugin: apx.tools.missionplanner
 
-    Item {
+    background: Item {
         id: mapTilesItem
         anchors.fill: parent
         layer.enabled: ui.effects
