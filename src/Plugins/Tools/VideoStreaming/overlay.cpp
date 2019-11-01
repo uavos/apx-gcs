@@ -48,7 +48,8 @@ void OverlayAim::registerQmlType()
 void OverlayAim::render(const QRectF &box, QPainter *painter)
 {
     painter->save();
-    const QPointF center = box.center();
+
+    const QPointF center(box.width() / 2.0, box.height() / 2.0);
     const qreal sideSize = std::round(std::min(box.width(), box.height()) / 7.0 * m_scale);
     const qreal lineWidth = 2;
 
@@ -66,29 +67,29 @@ void OverlayAim::render(const QRectF &box, QPainter *painter)
         painter->drawRect(r1);
         painter->drawRect(r2);
     } else if (m_type == Rectangle) {
-        QRectF box;
-        box.setSize(QSizeF(sideSize, sideSize));
-        box.moveCenter(center);
+        QRectF bb;
+        bb.setSize(QSizeF(sideSize, sideSize));
+        bb.moveCenter(center);
 
         const qreal lineSize = sideSize / 3.0;
 
         QVector<QRectF> rects = {
             //tl
-            QRectF(box.x(), box.y(), lineSize, lineWidth),
-            QRectF(box.x(), box.y(), lineWidth, lineSize),
+            QRectF(bb.x(), bb.y(), lineSize, lineWidth),
+            QRectF(bb.x(), bb.y(), lineWidth, lineSize),
             //tr
-            QRectF(box.topRight().x() - lineSize, box.topRight().y(), lineSize, lineWidth),
-            QRectF(box.topRight().x() - lineWidth, box.topRight().y(), lineWidth, lineSize),
+            QRectF(bb.topRight().x() - lineSize, bb.topRight().y(), lineSize, lineWidth),
+            QRectF(bb.topRight().x() - lineWidth, bb.topRight().y(), lineWidth, lineSize),
             //bl
-            QRectF(box.bottomLeft().x(), box.bottomLeft().y() - lineWidth, lineSize, lineWidth),
-            QRectF(box.bottomLeft().x(), box.bottomLeft().y() - lineSize, lineWidth, lineSize),
+            QRectF(bb.bottomLeft().x(), bb.bottomLeft().y() - lineWidth, lineSize, lineWidth),
+            QRectF(bb.bottomLeft().x(), bb.bottomLeft().y() - lineSize, lineWidth, lineSize),
             //br
-            QRectF(box.bottomRight().x() - lineSize,
-                   box.bottomRight().y() - lineWidth,
+            QRectF(bb.bottomRight().x() - lineSize,
+                   bb.bottomRight().y() - lineWidth,
                    lineSize,
                    lineWidth),
-            QRectF(box.bottomRight().x() - lineWidth,
-                   box.bottomRight().y() - lineSize,
+            QRectF(bb.bottomRight().x() - lineWidth,
+                   bb.bottomRight().y() - lineSize,
                    lineWidth,
                    lineSize),
         };
@@ -127,6 +128,7 @@ void OverlayVars::render(const QRectF &box, QPainter *painter)
     painter->setPen(Qt::white);
     const QString pattern = "%1: %2";
     const int fontSize = int(round(box.height() / 30.0 * m_scale));
+    const QPointF center(box.width() / 2.0, box.height() / 2.0);
     QFont font(painter->font());
     font.setPixelSize(fontSize);
     painter->setFont(font);
@@ -145,7 +147,7 @@ void OverlayVars::render(const QRectF &box, QPainter *painter)
         QString value = var2text(Vehicles::instance()->current()->f_mandala->factByName(varname));
         QString text = pattern.arg(varname, value);
         qreal stringWidth = metrics.width(text);
-        painter->drawText(int(round(box.center().x() - stringWidth / 2.0)), y, text);
+        painter->drawText(int(round(center.x() - stringWidth / 2.0)), y, text);
     }
 
     y = 0;

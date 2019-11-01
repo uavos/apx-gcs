@@ -33,22 +33,7 @@ Rectangle {
         id: videoOutput
         anchors.fill: parent
         source: plugin
-        ColumnLayout {
-            visible: running
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            spacing: 0
-            Repeater {
-                model: plugin.tune.overlay.varnames
-                Label {
-                    property var v: apx.vehicles.current.mandala.findChild(modelData)
-                    text: v.name + ": " + v.value.toFixed(5)
-                    font.pixelSize: videoOutput.contentRect.height / 40
-                    styleColor: "black"
-                    style: Text.Outline
-                }
-            }
-        }
+
         OverlayAim {
             visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
             type: plugin.tune.overlay.aim.value
