@@ -20,43 +20,40 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Simulator_H
-#define Simulator_H
+#ifndef AppPrefs_H
+#define AppPrefs_H
 //=============================================================================
-#include <Fact/Fact.h>
 #include <QtCore>
-Q_DECLARE_LOGGING_CATEGORY(SimLog)
 //=============================================================================
-class Simulator : public Fact
+class AppPrefs : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Simulator(Fact *parent = nullptr);
-    ~Simulator();
+    explicit AppPrefs(QObject *parent = nullptr);
 
-    Fact *f_launch;
-    Fact *f_stop;
+    static AppPrefs *instance() { return _instance; }
 
-    Fact *f_type;
+    static QSettings *settings() { return _instance->m_settings; }
 
-    Fact *f_oXplane;
+    //called from qml to store json configs
+    Q_INVOKABLE void saveFile(const QString &name, const QString &v);
+    Q_INVOKABLE QString loadFile(const QString &name, const QString &defaultValue = QString());
 
-    Fact *f_oAHRS;
-    Fact *f_oNoise;
-    Fact *f_oDLHD;
+    // called by facts to store persistent data
+    // supports QVariantList, path can be '<grp1>/<grp2>/<etc>'
+    Q_INVOKABLE void saveValue(const QString &name,
+                               const QVariant &v,
+                               const QString &path = QStringLiteral("qml"));
+    Q_INVOKABLE QVariant loadValue(const QString &name,
+                                   const QString &path = QStringLiteral("qml"),
+                                   const QVariant &defaultValue = QVariant());
+    Q_INVOKABLE QStringList allKeys(const QString &path);
 
 private:
-    QStringList xplaneDirs;
-    QProcess pShiva;
+    static AppPrefs *_instance;
 
-private slots:
-    void detectXplane();
-    void launch();
-
-    static void launchXplane(QString xplaneDir);
-
-    void pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    QSettings *m_settings;
 };
 //=============================================================================
 #endif

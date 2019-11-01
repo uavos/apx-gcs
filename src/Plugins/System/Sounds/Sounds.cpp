@@ -23,7 +23,6 @@
 #include "Sounds.h"
 #include <App/App.h>
 #include <App/AppDirs.h>
-#include <App/AppSettings.h>
 #include <Fact/Fact.h>
 //=============================================================================
 Sounds::Sounds(Fact *parent)
@@ -38,26 +37,22 @@ Sounds::Sounds(Fact *parent)
 {
     QStringList st;
 
-    f_enabled = new AppSettingFact(AppSettings::settings(),
-                                   this,
-                                   "sounds",
-                                   tr("Enable sounds"),
-                                   tr("Alarms and speech enable"),
-                                   Bool,
-                                   true);
+    f_enabled = new Fact(this,
+                         "sounds",
+                         tr("Enable sounds"),
+                         tr("Alarms and speech enable"),
+                         Bool | PersistentValue);
+    f_enabled->setDefaultValue(true);
     connect(f_enabled, &Fact::valueChanged, this, [this]() { setValue(f_enabled->value()); });
+    setValue(f_enabled->value());
     connect(this, &Fact::valueChanged, f_enabled, [this]() { f_enabled->setValue(value()); });
     connect(f_enabled, &Fact::valueChanged, this, &Sounds::enabledChanged);
-    f_enabled->load();
-    setValue(f_enabled->value());
 
-    f_engine = new AppSettingFact(AppSettings::settings(),
-                                  this,
-                                  "engine",
-                                  tr("Engine"),
-                                  tr("Text to speech engine"),
-                                  Enum,
-                                  0);
+    f_engine = new Fact(this,
+                        "engine",
+                        tr("Engine"),
+                        tr("Text to speech engine"),
+                        Enum | PersistentValue);
     st.clear();
     st << "default";
     st << "internal";
@@ -65,56 +60,33 @@ Sounds::Sounds(Fact *parent)
         st.append(engine);
     }
     f_engine->setEnumStrings(st);
-    f_engine->load();
     connect(f_engine, &Fact::valueChanged, this, &Sounds::engineChanged);
 
-    f_lang = new AppSettingFact(AppSettings::settings(),
-                                this,
-                                "lang",
-                                tr("Language"),
-                                tr("Voice locale"),
-                                Enum,
-                                0);
+    f_lang = new Fact(this, "lang", tr("Language"), tr("Voice locale"), Enum | PersistentValue);
     st.clear();
     st << "default";
     f_lang->setEnumStrings(st);
 
-    f_voice = new AppSettingFact(AppSettings::settings(),
-                                 this,
-                                 "voice",
-                                 tr("Voice"),
-                                 tr("Speech voice"),
-                                 Enum,
-                                 0);
+    f_voice = new Fact(this, "voice", tr("Voice"), tr("Speech voice"), Enum | PersistentValue);
     st.clear();
     st << "default";
     f_voice->setEnumStrings(st);
 
-    f_rate = new AppSettingFact(AppSettings::settings(),
-                                this,
-                                "rate",
-                                tr("Rate"),
-                                tr("Voice rate [-1..+1]"),
-                                Float,
-                                0.0);
+    f_rate = new Fact(this, "rate", tr("Rate"), tr("Voice rate [-1..+1]"), Float | PersistentValue);
     f_rate->setMin(-1.0);
     f_rate->setMax(1.0);
-    f_rate->load();
     connect(f_rate, &Fact::valueChanged, this, [this]() {
         if (tts)
             tts->setRate(f_rate->value().toDouble());
     });
 
-    f_pitch = new AppSettingFact(AppSettings::settings(),
-                                 this,
-                                 "pitch",
-                                 tr("Pitch"),
-                                 tr("Voice pitch [-1..+1]"),
-                                 Float,
-                                 0.0);
+    f_pitch = new Fact(this,
+                       "pitch",
+                       tr("Pitch"),
+                       tr("Voice pitch [-1..+1]"),
+                       Float | PersistentValue);
     f_pitch->setMin(-1.0);
     f_pitch->setMax(1.0);
-    f_pitch->load();
     connect(f_pitch, &Fact::valueChanged, this, [this]() {
         if (tts)
             tts->setPitch(f_pitch->value().toDouble());
@@ -208,8 +180,6 @@ void Sounds::engineChanged()
         }
     }
     f_lang->setEnumStrings(st);
-    f_lang->setValue(0);
-    f_lang->load();
     if (f_lang->value().toInt() < 0) {
         f_lang->setValue(0);
     }
@@ -244,8 +214,6 @@ void Sounds::langChanged()
             st << s;
     }
     f_voice->setEnumStrings(st);
-    f_voice->setValue(0);
-    f_voice->load();
     if (f_voice->value().toInt() < 0) {
         f_voice->setValue(0);
     }
@@ -269,7 +237,7 @@ void Sounds::voiceChanged()
     } else {
         //load Sounds files
         speech.clear();
-        QString lang = AppSettings::value("interface.lang").toString();
+        QString lang = App::instance()->lang();
         QString voice = f_voice->text();
         if (i == 0) {
             if (lang == "ru")

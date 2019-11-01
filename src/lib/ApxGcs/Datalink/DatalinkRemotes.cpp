@@ -25,7 +25,6 @@
 #include "DatalinkRemote.h"
 
 #include <App/AppLog.h>
-#include <App/AppSettings.h>
 
 #include <common/ApxTcpPorts.h>
 //=============================================================================
@@ -39,16 +38,13 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     , datalink(datalink)
     , m_connectedCount(0)
 {
-    QSettings *settings = AppSettings::settings();
-
     //discover service
-    f_discover = new AppSettingFact(settings,
-                                    this,
-                                    "discover",
-                                    tr("Discover"),
-                                    tr("Find remote servers"),
-                                    Bool,
-                                    true);
+    f_discover = new Fact(this,
+                          "discover",
+                          tr("Discover"),
+                          tr("Find remote servers"),
+                          Bool | PersistentValue);
+    f_discover->setDefaultValue(true);
     connect(f_discover, &Fact::valueChanged, this, &DatalinkRemotes::discover);
     udpDiscover = new QUdpSocket(this);
     connect(udpDiscover,
@@ -60,13 +56,11 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     //connect to specific host menu
     f_add = new Fact(this, "add", tr("Connect to host"), tr("Create new connection"), Group);
     f_add->setIcon("plus-network");
-    f_url = new AppSettingFact(settings,
-                               f_add,
-                               "host",
-                               tr("Host address"),
-                               tr("IP address of remote server"),
-                               Text,
-                               QString());
+    f_url = new Fact(f_add,
+                     "host",
+                     tr("Host address"),
+                     tr("IP address of remote server"),
+                     Text | PersistentValue);
     f_connect = new Fact(f_add, "connect", tr("Connect"), "", Action | Apply | CloseOnTrigger);
     connect(f_connect, &Fact::triggered, this, &DatalinkRemotes::connectTriggered);
 
@@ -80,7 +74,6 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
                         Action,
                         "lan-disconnect");
 
-    AppSettingFact::loadSettings(this);
     discover();
     updateStatus();
 }

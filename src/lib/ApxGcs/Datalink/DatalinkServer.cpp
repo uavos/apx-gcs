@@ -27,7 +27,6 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <App/AppSettings.h>
 
 #include <common/ApxTcpPorts.h>
 //=============================================================================
@@ -41,38 +40,33 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     , datalink(datalink)
     , announceString(QString("%1@server.gcs.uavos.com").arg(App::username()).toUtf8())
 {
-    AppSettingFact *s_listen = new AppSettingFact(AppSettings::settings(),
-                                                  this,
-                                                  "listen",
-                                                  tr("Listen"),
-                                                  tr("Accept incoming connections"),
-                                                  Bool,
-                                                  true);
-    f_listen = s_listen;
-    f_listen->setIcon("access-point-network");
-    s_listen->load();
-    connect(this, &Fact::valueChanged, this, [this]() { f_listen->setValue(value()); });
+    f_listen = new Fact(this,
+                        "listen",
+                        tr("Listen"),
+                        tr("Accept incoming connections"),
+                        Bool | PersistentValue,
+                        "access-point-network");
+    f_listen->setDefaultValue(true);
     connect(f_listen, &Fact::valueChanged, this, [this]() { setValue(f_listen->value()); });
     setValue(f_listen->value());
+    connect(this, &Fact::valueChanged, this, [this]() { f_listen->setValue(value()); });
 
-    f_extctr = new AppSettingFact(AppSettings::settings(),
-                                  this,
-                                  "extctr",
-                                  tr("Controls from clients"),
-                                  tr("Don't block uplink from remote clients"),
-                                  Bool,
-                                  true);
-    f_extctr->setIcon("remote");
+    f_extctr = new Fact(this,
+                        "extctr",
+                        tr("Controls from clients"),
+                        tr("Don't block uplink from remote clients"),
+                        Bool | PersistentValue,
+                        "remote");
+    f_extctr->setDefaultValue(true);
     connect(f_extctr, &Fact::valueChanged, this, &DatalinkServer::updateClientsNetworkMode);
 
-    f_extsrv = new AppSettingFact(AppSettings::settings(),
-                                  this,
-                                  "extsrv",
-                                  tr("Service requests from clients"),
-                                  tr("Don't block service requests from clients"),
-                                  Bool,
-                                  true);
-    f_extsrv->setIcon("puzzle");
+    f_extsrv = new Fact(this,
+                        "extsrv",
+                        tr("Service requests from clients"),
+                        tr("Don't block service requests from clients"),
+                        Bool | PersistentValue,
+                        "puzzle");
+    f_extsrv->setDefaultValue(true);
     connect(f_extsrv, &Fact::valueChanged, this, &DatalinkServer::updateClientsNetworkMode);
 
     f_clients = new Fact(this, "clients", tr("Clients"), tr("Connected clients"), Section | Const);

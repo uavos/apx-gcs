@@ -98,13 +98,25 @@ protected:
 
     bool vtype(const QVariant &v, QMetaType::Type t) const;
 
+    bool updateValue(const QVariant &v);
+
+    QString toText(const QVariant &v) const;
+
+    QString prefsGroup() const;
+
+private slots:
+    void getPresistentValue();
+public slots:
+    void savePresistentValue();
+    void loadPresistentValue();
+
     //---------------------------------------
     // PROPERTIES
 public:
     FactBase::Flag dataType() const;
     void setDataType(FactBase::Flag v);
 
-    virtual QVariant value(void) const;
+    QVariant value(void) const;
     Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
     bool modified() const;

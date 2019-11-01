@@ -21,6 +21,7 @@
  *
  */
 #include "FactData.h"
+#include <App/AppPrefs.h>
 #include <App/AppRoot.h>
 #include <cmath>
 //=============================================================================
@@ -40,6 +41,12 @@ FactData::FactData(
     connect(this, &FactData::dataTypeChanged, this, &FactData::defaults);
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);
     connect(this, &FactData::dataTypeChanged, this, &FactData::textChanged);
+
+    connect(this, &FactData::optionsChanged, this, &FactData::getPresistentValue);
+    connect(this, &FactData::pathChanged, this, &FactData::getPresistentValue);
+    connect(this, &FactData::defaultValueChanged, this, &FactData::getPresistentValue);
+    connect(this, &FactData::dataTypeChanged, this, &FactData::getPresistentValue);
+    connect(this, &FactData::enumStringsChanged, this, &FactData::getPresistentValue);
 
     setTitle(title);
     setDescr(descr);
@@ -76,11 +83,30 @@ bool FactData::setValue(const QVariant &v)
 {
     if (bindedFactData)
         return bindedFactData->setValue(v);
+
+    if (!updateValue(v))
+        return false;
+
+    if (backup_set)
+        setModified(backup_value != m_value);
+
+    if (m_options & PersistentValue)
+        savePresistentValue();
+
+    emit valueChanged();
+    emit textChanged();
+    return true;
+}
+bool FactData::updateValue(const QVariant &v)
+{
+    if (bindedFactData)
+        return bindedFactData->updateValue(v);
     //filter the same
+    QVariant v_prev = value();
     if (vtype(v, QMetaType::QByteArray)) {
-        if (vtype(m_value, QMetaType::QByteArray) && m_value.toByteArray() == v.toByteArray())
+        if (vtype(v_prev, QMetaType::QByteArray) && v_prev.toByteArray() == v.toByteArray())
             return false;
-    } else if (m_value == v)
+    } else if (v_prev == v)
         return false;
     QVariant vx = v;
     int ev = enumValue(v);
@@ -98,12 +124,12 @@ bool FactData::setValue(const QVariant &v)
                     else if (s == "false" || s == "off" || s == "no")
                         ev = enumValue(0);
                     if (ev < 0) {
-                        if (m_value.isNull())
+                        if (v_prev.isNull())
                             ev = 0;
                         else
                             return false;
                     }
-                } else if (m_value.isNull())
+                } else if (v_prev.isNull())
                     ev = 0;
                 else
                     return false;
@@ -200,10 +226,10 @@ bool FactData::setValue(const QVariant &v)
             break;
         }
     }
-    if (m_value == vx)
+    if (v_prev == vx)
         return false;
     if (dataType() == Float || dataType() == Text) {
-        QVariant vbak = m_value;
+        QVariant vbak = v_prev;
         QString sv = text();
         m_value = vx;
         if (sv == text()) {
@@ -213,11 +239,6 @@ bool FactData::setValue(const QVariant &v)
     } else {
         m_value = vx;
     }
-
-    if (backup_set)
-        setModified(backup_value != m_value);
-    emit valueChanged();
-    emit textChanged();
     return true;
 }
 //=============================================================================
@@ -263,6 +284,72 @@ QString FactData::enumText(int v) const
             return m_enumStrings.at(v);
     }
     return QString();
+}
+//=============================================================================
+static double cint(double x)
+{
+    double i;
+    if (std::modf(x, &i) >= .5)
+        return x >= 0 ? std::ceil(x) : std::floor(x);
+    else
+        return x < 0 ? std::ceil(x) : std::floor(x);
+}
+QString FactData::toText(const QVariant &v) const
+{
+    if ((dataType() != Group) && (!m_enumStrings.isEmpty())) {
+        int ev = enumValue(v);
+        //qDebug()<<"text"<<v<<ev;
+        if (ev >= 0 && ev < m_enumStrings.size())
+            return enumText(ev);
+        if (dataType() == Enum)
+            return v.toString();
+    }
+    if (dataType() == Int) {
+        if (units() == "hex")
+            return QString::number(v.toUInt(), 16).toUpper();
+        if (units() == "time") {
+            return AppRoot::timeToString(v.toUInt(), true);
+        }
+        return QString::number(v.toInt());
+    }
+    if (dataType() == Bool) {
+        return QVariant(v.toBool()).toString();
+    }
+    if (dataType() == Mandala) {
+        return mandalaToString(v.toUInt());
+    }
+    if (dataType() == Float) {
+        if (units() == "lat") {
+            return AppRoot::latToString(v.toDouble());
+        }
+        if (units() == "lon") {
+            return AppRoot::lonToString(v.toDouble());
+        }
+    }
+    if (vtype(v, QMetaType::QByteArray))
+        return v.toByteArray().toHex().toUpper();
+    if (vtype(v, QMetaType::Double)) {
+        double vf = v.toDouble();
+        if (m_precision > 0) {
+            double p = std::pow(10.0, m_precision);
+            vf = cint(vf * p) / p;
+        }
+        if (vf == 0.0)
+            return "0";
+        QString s;
+        s = QString("%1").arg(vf, 0, 'f', m_precision > 0 ? m_precision : 8);
+        if (s.contains('.')) {
+            if (m_precision > 0)
+                s = s.left(s.indexOf('.') + 1 + m_precision);
+            while (s.endsWith('0'))
+                s.chop(1);
+            if (s.endsWith('.'))
+                s.chop(1);
+        }
+        return s;
+        //return QString::asprintf("%f").arg(vf,0,'g',m_precision);
+    }
+    return v.toString();
 }
 //=============================================================================
 bool FactData::isZero() const
@@ -410,70 +497,11 @@ void FactData::setDescr(const QString &v)
     m_descr = s;
     emit descrChanged();
 }
-static double cint(double x)
-{
-    double i;
-    if (std::modf(x, &i) >= .5)
-        return x >= 0 ? std::ceil(x) : std::floor(x);
-    else
-        return x < 0 ? std::ceil(x) : std::floor(x);
-}
 QString FactData::text() const
 {
     if (bindedFactData)
         return bindedFactData->text();
-    const QVariant &v = value();
-    if ((dataType() != Group) && (!m_enumStrings.isEmpty())) {
-        int ev = enumValue(v);
-        //qDebug()<<"text"<<v<<ev;
-        if (ev >= 0 && ev < m_enumStrings.size())
-            return enumText(ev);
-        if (dataType() == Enum)
-            return v.toString();
-    }
-    if (dataType() == Int) {
-        if (units() == "hex")
-            return QString::number(v.toUInt(), 16).toUpper();
-        if (units() == "time") {
-            return AppRoot::timeToString(v.toUInt(), true);
-        }
-        return QString::number(v.toInt());
-    }
-    if (dataType() == Mandala) {
-        return mandalaToString(v.toUInt());
-    }
-    if (dataType() == Float) {
-        if (units() == "lat") {
-            return AppRoot::latToString(v.toDouble());
-        }
-        if (units() == "lon") {
-            return AppRoot::lonToString(v.toDouble());
-        }
-    }
-    if (vtype(v, QMetaType::QByteArray))
-        return v.toByteArray().toHex().toUpper();
-    if (vtype(v, QMetaType::Double)) {
-        double vf = v.toDouble();
-        if (m_precision > 0) {
-            double p = std::pow(10.0, m_precision);
-            vf = cint(vf * p) / p;
-        }
-        if (vf == 0.0)
-            return "0";
-        QString s;
-        s = QString("%1").arg(vf, 0, 'f', m_precision > 0 ? m_precision : 8);
-        if (s.contains('.')) {
-            if (m_precision > 0)
-                s = s.left(s.indexOf('.') + 1 + m_precision);
-            while (s.endsWith('0'))
-                s.chop(1);
-            if (s.endsWith('.'))
-                s.chop(1);
-        }
-        return s;
-        //return QString::asprintf("%f").arg(vf,0,'g',m_precision);
-    }
-    return v.toString();
+    return toText(value());
 }
 const QStringList &FactData::enumStrings() const
 {
@@ -715,5 +743,48 @@ void FactData::bind(FactData *fact)
         emit unitsChanged();
         emit defaultValueChanged();
     }
+}
+//=============================================================================
+void FactData::getPresistentValue()
+{
+    if (m_options & PersistentValue)
+        loadPresistentValue();
+}
+void FactData::loadPresistentValue()
+{
+    if (!parentFact())
+        return;
+    QVariant v = defaultValue();
+    if (m_options & SystemSettings) {
+        v = QSettings().value(path(), v);
+    } else {
+        v = AppPrefs::instance()->loadValue(name(), prefsGroup(), v);
+    }
+    if (!updateValue(v))
+        return;
+    emit valueChanged();
+    emit textChanged();
+}
+void FactData::savePresistentValue()
+{
+    const QString s = toText(m_value);
+    const bool rm = m_value == defaultValue() || (s == toText(defaultValue()));
+    if (m_options & SystemSettings) {
+        if (rm)
+            QSettings().remove(path());
+        else
+            QSettings().setValue(path(), s);
+    } else {
+        QVariant v;
+        if (!rm)
+            v = s;
+        AppPrefs::instance()->saveValue(name(), v, prefsGroup());
+    }
+}
+QString FactData::prefsGroup() const
+{
+    QStringList p = pathStringList();
+    p.removeLast();
+    return p.join('.');
 }
 //=============================================================================

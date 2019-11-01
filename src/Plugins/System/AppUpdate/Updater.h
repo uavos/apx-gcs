@@ -24,7 +24,6 @@
 #define Updater_H
 #include <QtCore>
 
-#include <App/AppSettings.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #ifdef Q_OS_MAC
@@ -40,7 +39,7 @@ class Updater : public Fact
 public:
     Updater(Fact *parent = nullptr);
 
-    AppSettingFact *f_auto;
+    Fact *f_auto;
     Fact *f_check;
 
 private:

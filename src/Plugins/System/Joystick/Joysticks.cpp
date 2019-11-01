@@ -23,7 +23,6 @@
 #include "Joysticks.h"
 #include <App/App.h>
 #include <App/AppDirs.h>
-#include <App/AppSettings.h>
 
 #include "Joystick.h"
 #include <SDL.h>
@@ -41,18 +40,16 @@ Joysticks::Joysticks(Fact *parent)
            tr("Hardware input devices"),
            Group | Bool | FlatModel)
 {
-    f_enabled = new AppSettingFact(AppSettings::settings(),
-                                   this,
-                                   "enabled",
-                                   tr("Enable"),
-                                   tr("Joysticks enable"),
-                                   Bool,
-                                   true);
+    f_enabled = new Fact(this,
+                         "enabled",
+                         tr("Enable"),
+                         tr("Joysticks enable"),
+                         Bool | PersistentValue);
+    f_enabled->setDefaultValue(true);
     connect(f_enabled, &Fact::valueChanged, this, [this]() { setValue(f_enabled->value()); });
+    setValue(f_enabled->value());
     connect(this, &Fact::valueChanged, f_enabled, [this]() { f_enabled->setValue(value()); });
     connect(f_enabled, &Fact::valueChanged, this, &Joysticks::enabledChanged);
-    f_enabled->load();
-    setValue(f_enabled->value());
 
     f_list = new Fact(this, "list", tr("Controllers"), "", Section);
     connect(f_list, &Fact::sizeChanged, this, &Joysticks::updateStatus);

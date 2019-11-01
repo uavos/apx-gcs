@@ -27,26 +27,23 @@
 #include <QWidget>
 //=============================================================================
 AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
-    : AppSettingFact(AppSettings::settings(),
-                     parent,
-                     plugin->name.toLower(),
-                     plugin->interface->title(),
-                     plugin->interface->descr(),
-                     Bool,
-                     false)
+    : Fact(parent,
+           plugin->name.toLower(),
+           plugin->interface->title(),
+           plugin->interface->descr(),
+           Bool,
+           plugin->interface->icon())
     , plugin(plugin)
     , w(nullptr)
     , blockWidgetVisibilityEvent(true)
 {
-    setIcon(plugin->interface->icon());
-
     saveStateTimer.setSingleShot(true);
     saveStateTimer.setInterval(100);
     connect(&saveStateTimer, &QTimer::timeout, this, &AppWindow::saveStateDo);
 
-    if (!(plugin->interface->flags() & PluginInterface::Restore)) {
-        load();
-        setValue(false);
+    if (plugin->interface->flags() & PluginInterface::Restore) {
+        loadPresistentValue();
+        updateWidget();
     }
     connect(this, &Fact::valueChanged, this, &AppWindow::updateWidget);
     connect(this, &Fact::triggered, this, [=]() {
@@ -55,7 +52,10 @@ AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
         else
             setValue(true);
     });
-    load();
+
+    if (plugin->interface->flags() & PluginInterface::Restore) {
+        connect(this, &Fact::valueChanged, this, &Fact::savePresistentValue, Qt::QueuedConnection);
+    }
 }
 //=============================================================================
 void AppWindow::updateWidget()

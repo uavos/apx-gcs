@@ -1,6 +1,5 @@
 #include "overlay.h"
 
-#include "App/AppSettings.h"
 #include "Vehicles/Vehicle.h"
 #include "Vehicles/Vehicles.h"
 #include <QPainter>
@@ -295,61 +294,54 @@ Overlay::Overlay(Fact *parent)
     m_gimbal.setAutoRepaint(false);
     m_vars.setAutoRepaint(false);
 
-    QSettings *settings = AppSettings::settings();
-
-    f_aim = new AppSettingFact(settings, this, "aim", tr("Aim"), "", Enum, 0);
-    f_aim->setIcon("crosshairs");
+    f_aim = new Fact(this, "aim", tr("Aim"), "", Enum | PersistentValue, "crosshairs");
     f_aim->setEnumStrings({"none", "crosshair", "rectangle"});
 
-    f_topLeftVars = new AppSettingFact(settings,
-                                       this,
-                                       "top_left_vars",
-                                       tr("Top-Left variables"),
-                                       tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
-                                       Text,
-                                       "yaw,pitch,roll");
-    f_topLeftVars->setIcon("format-list-bulleted");
-    f_topCenterVars = new AppSettingFact(settings,
-                                         this,
-                                         "top_center_vars",
-                                         tr("Top-Center variables"),
-                                         tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
-                                         Text,
-                                         "gps_time");
-    f_topCenterVars->setIcon("format-list-bulleted");
-    f_topRightVars = new AppSettingFact(settings,
-                                        this,
-                                        "top_right_vars",
-                                        tr("Top-Right variables"),
-                                        tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
-                                        Text,
-                                        "cam_zoom");
-    f_topRightVars->setIcon("format-list-bulleted");
+    f_topLeftVars = new Fact(this,
+                             "top_left_vars",
+                             tr("Top-Left variables"),
+                             tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
+                             Text | PersistentValue,
+                             "format-list-bulleted");
+    f_topLeftVars->setDefaultValue("yaw,pitch,roll");
 
-    f_gimbalShow = new AppSettingFact(settings,
-                                      this,
-                                      "show_gimbal",
-                                      tr("Show gimbal position"),
-                                      "",
-                                      Bool,
-                                      false);
-    f_gimbalYawVar = new AppSettingFact(settings,
-                                        this,
-                                        "gimbal_yaw_var",
-                                        tr("Gimbal yaw"),
-                                        tr("Gimbal yaw position variable"),
-                                        Text,
-                                        "cam_yaw");
-    f_gimbalPitchVar = new AppSettingFact(settings,
-                                          this,
-                                          "gimbal_pitch_var",
-                                          tr("Gimbal pitch"),
-                                          tr("Gimbal pitch position variable"),
-                                          Text,
-                                          "cam_pitch");
+    f_topCenterVars = new Fact(this,
+                               "top_center_vars",
+                               tr("Top-Center variables"),
+                               tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
+                               Text | PersistentValue,
+                               "format-list-bulleted");
+    f_topCenterVars->setDefaultValue("gps_time");
 
-    f_scale = new AppSettingFact(settings, this, "scale", tr("Scale"), "", Float, 1);
-    f_scale->setIcon("format-size");
+    f_topRightVars = new Fact(this,
+                              "top_right_vars",
+                              tr("Top-Right variables"),
+                              tr("Comma-separated f.ex. (yaw,pitch,etc...)"),
+                              Text | PersistentValue,
+                              "format-list-bulleted");
+    f_topRightVars->setDefaultValue("cam_zoom");
+
+    f_gimbalShow = new Fact(this,
+                            "show_gimbal",
+                            tr("Show gimbal position"),
+                            "",
+                            Bool | PersistentValue);
+    f_gimbalYawVar = new Fact(this,
+                              "gimbal_yaw_var",
+                              tr("Gimbal yaw"),
+                              tr("Gimbal yaw position variable"),
+                              Text | PersistentValue);
+    f_gimbalYawVar->setDefaultValue("cam_yaw");
+
+    f_gimbalPitchVar = new Fact(this,
+                                "gimbal_pitch_var",
+                                tr("Gimbal pitch"),
+                                tr("Gimbal pitch position variable"),
+                                Text | PersistentValue);
+    f_gimbalPitchVar->setDefaultValue("cam_pitch");
+
+    f_scale = new Fact(this, "scale", tr("Scale"), "", Float | PersistentValue, "format-size");
+    f_scale->setDefaultValue(1);
 
     connect(f_aim, &Fact::valueChanged, this, &Overlay::onAimChanged);
     connect(f_topLeftVars, &Fact::valueChanged, this, &Overlay::onVariablesValueChanged);
@@ -358,8 +350,6 @@ Overlay::Overlay(Fact *parent)
     connect(f_scale, &Fact::valueChanged, this, &Overlay::onScaleChanged);
     connect(f_gimbalYawVar, &Fact::valueChanged, this, &Overlay::onGimbalVarsChanged);
     connect(f_gimbalPitchVar, &Fact::valueChanged, this, &Overlay::onGimbalVarsChanged);
-
-    AppSettingFact::loadSettings(this);
 
     f_scale->setMin(0.1);
     f_scale->setMax(5.0);

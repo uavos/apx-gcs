@@ -23,8 +23,6 @@
 #include "AppPlugin.h"
 #include "AppPlugins.h"
 
-#include "AppSettings.h"
-
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
@@ -41,16 +39,14 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     , control(nullptr)
     , loader(nullptr)
 {
-    AppSettingFact *f = new AppSettingFact(AppSettings::settings(),
-                                           plugins->f_enabled,
-                                           name.toLower(),
-                                           name,
-                                           "",
-                                           Fact::Bool,
-                                           true);
+    Fact *f = new Fact(plugins->f_enabled,
+                       name.toLower(),
+                       name,
+                       "",
+                       Fact::Bool | Fact::PersistentValue);
+    f->setDefaultValue(true);
     App::jsync(plugins->f_enabled);
     f_enabled = f;
-    f->load();
     connect(f, &Fact::valueChanged, this, &AppPlugin::enabledChanged);
 }
 AppPlugin::~AppPlugin()

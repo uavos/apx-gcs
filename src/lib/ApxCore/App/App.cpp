@@ -46,14 +46,6 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 {
     _instance = this;
 
-    //prefs
-    QDir pPrefs(AppDirs::prefs());
-    if (!pPrefs.exists())
-        pPrefs.mkpath(".");
-    m_prefs = new QSettings(pPrefs.absoluteFilePath(QCoreApplication::applicationName() + ".ini"),
-                            QSettings::IniFormat,
-                            this);
-
     //    QStringList ldp;
     //    ldp << qgetenv("LD_LIBRARY_PATH");
     //    ldp << AppDirs::libs().absolutePath();
@@ -61,6 +53,9 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     //    ldp.removeDuplicates();
     //    qputenv("LD_LIBRARY_PATH", ldp.join(':').toUtf8());
     //qDebug() << qgetenv("LD_LIBRARY_PATH");
+
+    m_prefs = new AppPrefs(this);
+    m_lang = m_prefs->loadValue("lang").toString();
 
     //setup logging
     m_appLog = new AppLog(this);
@@ -146,8 +141,6 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     loadFonts();
 
     f_apx = new AppRoot(this);
-
-    connect(this, &QCoreApplication::aboutToQuit, f_apx->f_settings, &AppSettings::setReadOnly);
 
     //plugins
     plugins = new AppPlugins(f_apx->f_pluginsSettings, this);
@@ -410,10 +403,6 @@ QChar App::materialIconChar(const QString &name)
 void App::loadTranslations()
 {
     apxConsole() << QObject::tr("Loading translations").append("...");
-    QSettings *s = AppSettings::createSettings();
-    s->beginGroup("interface");
-    QString lang = s->value("lang").toString();
-    delete s;
 
     QDir trDir(AppDirs::res().absoluteFilePath("translations"));
     for (auto fi : trDir.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
@@ -426,11 +415,11 @@ void App::loadTranslations()
     m_languages.removeDuplicates();
     m_languages.sort();
 
-    QFileInfo fi = QFileInfo(trDir.absoluteFilePath(lang + ".qm"));
+    QFileInfo fi = QFileInfo(trDir.absoluteFilePath(lang() + ".qm"));
     if (fi.exists()) {
         loadTranslator(fi.absoluteFilePath());
     }
-    fi = QFileInfo(trDirUser.absoluteFilePath(lang + ".qm"));
+    fi = QFileInfo(trDirUser.absoluteFilePath(lang() + ".qm"));
     if (fi.exists()) {
         loadTranslator(fi.absoluteFilePath());
     }
@@ -484,8 +473,12 @@ AppNotifyListModel *App::notifyModel() const
 {
     return m_notifyModel;
 }
-QSettings *App::prefs() const
+AppPrefs *App::prefs() const
 {
     return m_prefs;
+}
+QString App::lang() const
+{
+    return m_lang;
 }
 //=============================================================================

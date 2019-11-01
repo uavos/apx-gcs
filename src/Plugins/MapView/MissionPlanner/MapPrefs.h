@@ -24,7 +24,6 @@
 #define MapPrefs_H
 //=============================================================================
 #include <Fact/Fact.h>
-class AppSettingFact;
 //=============================================================================
 class MapPrefs : public Fact
 {
@@ -33,8 +32,8 @@ class MapPrefs : public Fact
 public:
     explicit MapPrefs(Fact *parent = nullptr);
 
-    AppSettingFact *f_provider;
-    AppSettingFact *f_type;
+    Fact *f_provider;
+    Fact *f_type;
 };
 //=============================================================================
 #endif

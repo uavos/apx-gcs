@@ -26,7 +26,6 @@
 #include <QtConcurrent>
 #include <QtCore>
 
-#include <App/AppSettings.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 class Joystick;
@@ -37,7 +36,7 @@ class Joysticks : public Fact
 public:
     Joysticks(Fact *parent = nullptr);
 
-    AppSettingFact *f_enabled;
+    Fact *f_enabled;
 
     Fact *f_configs;
 

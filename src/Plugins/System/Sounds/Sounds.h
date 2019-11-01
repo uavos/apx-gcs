@@ -26,7 +26,6 @@
 #include <QTextToSpeech>
 #include <QtCore>
 
-#include <App/AppSettings.h>
 #include <Fact/Fact.h>
 //=============================================================================
 class Sounds : public Fact
@@ -35,12 +34,12 @@ class Sounds : public Fact
 public:
     Sounds(Fact *parent = nullptr);
 
-    AppSettingFact *f_enabled;
-    AppSettingFact *f_engine;
-    AppSettingFact *f_lang;
-    AppSettingFact *f_voice;
-    AppSettingFact *f_rate;
-    AppSettingFact *f_pitch;
+    Fact *f_enabled;
+    Fact *f_engine;
+    Fact *f_lang;
+    Fact *f_voice;
+    Fact *f_rate;
+    Fact *f_pitch;
 
     Fact *f_test;
 

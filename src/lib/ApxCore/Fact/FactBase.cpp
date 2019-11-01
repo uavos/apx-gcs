@@ -219,18 +219,21 @@ FactBase *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
     return nullptr;
 }
 //=============================================================================
-QString FactBase::path(const QChar pathDelimiter) const
+QStringList FactBase::pathStringList(int maxLevel) const
 {
-    QString s;
+    QStringList st;
     for (const FactBase *i = this; i; i = i->parentFact()) {
-        if (s.isEmpty())
-            s = i->name();
-        else
-            s.prepend(i->name() + pathDelimiter);
+        st.insert(0, i->name());
         if (i->treeType() == Root)
             break;
+        if (maxLevel-- == 0)
+            break;
     }
-    return s.isEmpty() ? name() : s;
+    return st;
+}
+QString FactBase::path(const QChar pathDelimiter) const
+{
+    return pathStringList().join(pathDelimiter);
 }
 QList<FactBase *> FactBase::pathList() const
 {
@@ -345,5 +348,13 @@ void FactBase::setParentFact(FactBase *v)
     if (!v)
         return;
     v->addChild(this);
+    updatePath();
+}
+void FactBase::updatePath()
+{
+    for (auto f : m_children) {
+        f->updatePath();
+    }
+    emit pathChanged();
 }
 //=============================================================================

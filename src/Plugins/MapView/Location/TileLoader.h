@@ -26,7 +26,6 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
-class AppSettingFact;
 //=============================================================================
 class TileLoader : public Fact
 {

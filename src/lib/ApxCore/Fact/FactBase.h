@@ -58,7 +58,7 @@ public:
         FlatModel = 1 << 8,        //child items shown expanded as sections
         DragChildren = 1 << 9,     //child items are draggable to change order
         PersistentValue = 1 << 10, //save and restore value in QSettings
-        Preferences = 1 << 11,     //use app prefs file to save value
+        SystemSettings = 1 << 11,  //use default QSettings to store value
 
         //data types [dataType]
         DataMask = 0x00FF0000,
@@ -97,6 +97,7 @@ public:
                                 Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
 
     Q_INVOKABLE QString path(const QChar pathDelimiter = QChar('.')) const;
+    Q_INVOKABLE QStringList pathStringList(int maxLevel = -1) const;
 
     QList<FactBase *> pathList() const;
 
@@ -134,6 +135,8 @@ private:
     void updateSize();
     void updateChildrenNums();
 
+    void updatePath();
+
     //-----------------------------------------
     //PROPERTIES
 public:
@@ -168,6 +171,7 @@ signals:
     void optionsChanged();
 
     void parentFactChanged();
+    void pathChanged();
 
     void nameChanged();
     void sizeChanged();

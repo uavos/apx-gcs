@@ -61,6 +61,7 @@ ApxApp.ApxLibrary {
         name: "App"
         prefix: name+"/"
         files: [
+            "PluginInterface.h",
             "App.cpp", "App.h",
             "AppBase.cpp", "AppBase.h",
             "AppRoot.cpp", "AppRoot.h",
@@ -74,7 +75,7 @@ ApxApp.ApxLibrary {
             "AppDirs.cpp", "AppDirs.h",
             "AppNotify.cpp", "AppNotify.h",
             "AppNotifyListModel.cpp", "AppNotifyListModel.h",
-            "PluginInterface.h",
+            "AppPrefs.cpp", "AppPrefs.h",
         ]
     }
 

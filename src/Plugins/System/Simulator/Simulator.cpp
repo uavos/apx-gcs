@@ -21,8 +21,8 @@
  *
  */
 #include "Simulator.h"
+#include <App/AppDirs.h>
 #include <App/AppLog.h>
-#include <App/AppSettings.h>
 #include <QDesktopServices>
 
 APX_LOGGING_CATEGORY(SimLog, "Simulator")
@@ -47,14 +47,16 @@ Simulator::Simulator(Fact *parent)
     f_stop->setEnabled(false);
     connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
-    QSettings *settings = AppSettings::settings();
-
     /*QMetaEnum m=QMetaEnum::fromType<QStandardPaths::StandardLocation>();
   for(int i=0;i<m.keyCount();++i) {
     qDebug()<<m.key(i)<<QStandardPaths::standardLocations((QStandardPaths::StandardLocation)m.value(i));
   }*/
     //QStandardPaths::GenericConfigLocation
-    f_type = new AppSettingFact(settings, this, "type", tr("Type"), tr("Simulator type"), Enum, 0);
+    f_type = new Fact(this,
+                      "type",
+                      tr("Type"),
+                      tr("Simulator type"),
+                      Enum | PersistentValue | SystemSettings);
     f_type->setIcon("package-variant");
 
     f_oXplane = new Fact(this, "oxplane", tr("X-Plane"), tr("Run X-Plane on start"), Bool);
@@ -134,7 +136,6 @@ void Simulator::detectXplane()
         f_type->setEnabled(false);
     else {
         f_type->setEnabled(true);
-        f_type->load();
     }
 }
 //=============================================================================

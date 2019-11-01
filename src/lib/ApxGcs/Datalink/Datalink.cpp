@@ -23,7 +23,6 @@
 #include "Datalink.h"
 
 #include <App/App.h>
-#include <App/AppSettings.h>
 //=============================================================================
 Datalink::Datalink(Fact *parent)
     : Fact(parent, "datalink", tr("Datalink"), tr("Communication and networks"), Group)
@@ -34,27 +33,22 @@ Datalink::Datalink(Fact *parent)
 {
     setIcon("swap-vertical");
 
-    QSettings *settings = AppSettings::settings();
-
-    f_readonly = new AppSettingFact(settings,
-                                    this,
-                                    "readonly",
-                                    tr("Read only"),
-                                    tr("Block all uplink data"),
-                                    Bool,
-                                    false);
-    f_readonly->setIcon("airplane-off");
+    f_readonly = new Fact(this,
+                          "readonly",
+                          tr("Read only"),
+                          tr("Block all uplink data"),
+                          Bool | PersistentValue,
+                          "airplane-off");
     connect(f_readonly, &Fact::valueChanged, this, &Datalink::readonlyChanged);
     readonlyChanged();
 
-    f_hbeat = new AppSettingFact(settings,
-                                 this,
-                                 "hbeat",
-                                 tr("Send heartbeat"),
-                                 tr("Vehicle datalink available status"),
-                                 Bool,
-                                 true);
-    f_hbeat->setIcon("heart-circle-outline");
+    f_hbeat = new Fact(this,
+                       "hbeat",
+                       tr("Send heartbeat"),
+                       tr("Vehicle datalink available status"),
+                       Bool | PersistentValue,
+                       "heart-circle-outline");
+    f_hbeat->setDefaultValue(true);
 
     QString sect;
     sect = tr("Connections");
@@ -67,8 +61,6 @@ Datalink::Datalink(Fact *parent)
     f_ports->setSection(sect);
     f_stats = new DatalinkStats(this);
     f_stats->setSection(sect);
-
-    AppSettingFact::loadSettings(this);
 
     //heartbeat timer
     connect(f_hbeat, &Fact::valueChanged, this, &Datalink::hbeatChanged);

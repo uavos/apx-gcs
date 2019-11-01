@@ -23,11 +23,10 @@
 #ifndef AppWindow_H
 #define AppWindow_H
 #include "AppPlugins.h"
-#include "AppSettings.h"
 #include <Fact/Fact.h>
 #include <QWindow>
 //=============================================================================
-class AppWindow : public AppSettingFact
+class AppWindow : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(bool showLauncher READ showLauncher CONSTANT)

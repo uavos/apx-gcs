@@ -24,7 +24,6 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
-#include <App/AppSettings.h>
 //=============================================================================
 Updater::Updater(Fact *parent)
     : Fact(parent,
@@ -33,14 +32,12 @@ Updater::Updater(Fact *parent)
            tr("Update application"),
            Group)
 {
-    f_auto = new AppSettingFact(AppSettings::settings(),
-                                this,
-                                "auto",
-                                tr("Auto"),
-                                tr("Automatically check for updates"),
-                                Bool,
-                                true);
-    f_auto->load();
+    f_auto = new Fact(this,
+                      "auto",
+                      tr("Auto"),
+                      tr("Automatically check for updates"),
+                      Bool | PersistentValue);
+    f_auto->setDefaultValue(true);
 
     f_check = new Fact(this, "update", tr("Check for updates"), title(), Action | Apply, "update");
     connect(f_check, &Fact::triggered, this, &Updater::check);

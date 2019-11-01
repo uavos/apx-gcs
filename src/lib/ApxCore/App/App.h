@@ -34,6 +34,7 @@
 #include "AppNotify.h"
 #include "AppNotifyListModel.h"
 #include "AppPlugins.h"
+#include "AppPrefs.h"
 #include "AppRoot.h"
 #include "AppSettings.h"
 //=============================================================================
@@ -47,6 +48,10 @@ class App : public AppBase
     Q_PROPERTY(AppLog *appLog READ appLog CONSTANT)
     Q_PROPERTY(AppNotify *appNotify READ appNotify CONSTANT)
     Q_PROPERTY(AppNotifyListModel *notifyModel READ notifyModel CONSTANT)
+
+    Q_PROPERTY(AppPrefs *prefs READ prefs CONSTANT)
+
+    Q_PROPERTY(QString lang READ lang CONSTANT)
 
 public:
     explicit App(int &argc, char **argv, const QString &name, const QUrl &url);
@@ -74,12 +79,8 @@ public:
 
     QStringList languages() const { return m_languages; }
 
-    QSettings *prefs() const;
-
 private:
     static App *_instance;
-
-    QSettings *m_prefs;
 
     QStringList oPlugins;
     QString oQml;
@@ -134,6 +135,10 @@ public:
     AppNotify *appNotify() const;
     AppNotifyListModel *notifyModel() const;
 
+    AppPrefs *prefs() const;
+
+    QString lang() const;
+
 protected:
     AppEngine *m_engine;
     QQuickWindow *m_window;
@@ -141,6 +146,8 @@ protected:
     AppNotify *m_appNotify;
     AppNotifyListModel *m_notifyModel;
     AppLog *m_appLog;
+    AppPrefs *m_prefs;
+    QString m_lang;
 signals:
     void windowChanged();
     void scaleChanged();

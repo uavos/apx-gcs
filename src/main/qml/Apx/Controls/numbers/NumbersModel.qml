@@ -29,7 +29,7 @@ ObjectModel {
 
     function loadSettings()
     {
-        var f=apx.settings.loadFile("numbers.json")
+        var f=application.prefs.loadFile("numbers.json")
         var json=f?JSON.parse(f):{}
         var list=defaults
         while(json){

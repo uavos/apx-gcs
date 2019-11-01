@@ -21,33 +21,25 @@
  *
  */
 #include "MapPrefs.h"
-#include <App/App.h>
-#include <Mission/VehicleMission.h>
-#include <Vehicles/Vehicles.h>
 //=============================================================================
 MapPrefs::MapPrefs(Fact *parent)
     : Fact(parent, "prefs", tr("Preferences"), tr("Map view settings"), Action | IconOnly, "wrench")
 {
-    QSettings *settings = AppSettings::settings();
-    f_provider = new AppSettingFact(settings,
-                                    this,
-                                    "provider",
-                                    tr("Tiles provider"),
-                                    tr("Name of map plugin"),
-                                    Text,
-                                    "uavos");
-    f_provider->setIcon("earth-box");
+    f_provider = new Fact(this,
+                          "provider",
+                          tr("Tiles provider"),
+                          tr("Name of map plugin"),
+                          Text | PersistentValue,
+                          "earth-box");
+    f_provider->setDefaultValue("uavos");
     f_provider->setEnumStrings(QStringList() << "uavos"
                                              << "osm");
-    f_provider->load();
 
-    f_type = new AppSettingFact(settings,
-                                this,
-                                "maptype",
-                                tr("Map type"),
-                                tr("Active map type"),
-                                Text);
-    f_type->setIcon("terrain");
-    f_type->load();
+    f_type = new Fact(this,
+                      "maptype",
+                      tr("Map type"),
+                      tr("Active map type"),
+                      Text | PersistentValue,
+                      "terrain");
 }
 //=============================================================================

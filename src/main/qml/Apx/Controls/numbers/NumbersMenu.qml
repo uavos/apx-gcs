@@ -35,7 +35,7 @@ Fact {
     function loadSettings()
     {
         var sets=[]
-        var f=apx.settings.loadFile("numbers.json")
+        var f=application.prefs.loadFile("numbers.json")
         var json=f?JSON.parse(f):{}
         var set={}
         var currentSetIdx=-1
@@ -72,7 +72,7 @@ Fact {
 
     function saveSettings()
     {
-        var fjson=apx.settings.loadFile("numbers.json")
+        var fjson=application.prefs.loadFile("numbers.json")
         var json=fjson?JSON.parse(fjson):{}
         if(!json.active)json.active={}
         json.active[settingsName]=0
@@ -85,7 +85,7 @@ Fact {
             if(setFact.active)
                 json.active[settingsName]=i
         }
-        apx.settings.saveFile("numbers.json",JSON.stringify(json,' ',2))
+        application.prefs.saveFile("numbers.json",JSON.stringify(json,' ',2))
         accepted()
         close()
     }
