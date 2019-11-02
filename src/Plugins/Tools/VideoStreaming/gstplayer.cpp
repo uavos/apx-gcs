@@ -8,6 +8,8 @@
 #include <QVideoSurfaceFormat>
 #include <QtQml>
 
+#include "QmlOverlayMain.h"
+
 using namespace std::placeholders;
 
 GstPlayer::GstPlayer(Fact *parent)
@@ -101,12 +103,15 @@ GstPlayer::GstPlayer(Fact *parent)
     m_reconnectTimer.setInterval(RECONNECT_TIMEOUT);
     m_reconnectTimer.setSingleShot(true);
 
-    m_videoThread.setOverlayCallback(std::bind(&Overlay::drawOverlay, f_overlay, _1));
+    //m_videoThread.setOverlayCallback(std::bind(&Overlay::drawOverlay, f_overlay, _1));
+
+    QmlOverlayMain *qmlOverlay = new QmlOverlayMain(this);
+    m_videoThread.setOverlayCallback(std::bind(&QmlOverlayMain::cb_drawOverlay, qmlOverlay, _1));
 
     loadQml(QString("qrc:/%1/VideoPlugin.qml").arg(PLUGIN_NAME));
 
-    connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
-    connect(f_lowLatency, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
+    //connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
+    //connect(f_lowLatency, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
     onSourceTypeChanged();
 }
 

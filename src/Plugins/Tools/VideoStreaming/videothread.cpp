@@ -6,6 +6,8 @@
 #include <gst/app/gstappsink.h>
 #include <QPainter>
 
+#include "QmlOverlay.h"
+
 using namespace std::placeholders;
 
 VideoThread::VideoThread()
@@ -139,6 +141,9 @@ static GstPadProbeReturn draw_overlay(GstPad *pad, GstPadProbeInfo *info, Stream
 
 void VideoThread::run()
 {
+    //    QmlOverlay *qmlOverlay = new QmlOverlay;
+    //    setOverlayCallback(std::bind(&QmlOverlay::drawOverlay, qmlOverlay, _1));
+
     auto context = std::make_unique<StreamContext>();
     context->reencoding = m_reencoding;
 

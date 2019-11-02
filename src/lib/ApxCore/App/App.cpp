@@ -284,7 +284,7 @@ void App::updateSurfaceFormat()
     }
 
     //qDebug()<<fmt;
-    m_window->setFormat(fmt);
+    //m_window->setFormat(fmt);
 }
 //=============================================================================
 void App::appStateChanged(Qt::ApplicationState state)

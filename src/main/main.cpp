@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_Use96Dpi);
 
     //performance graphics
-    QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    //QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
     //QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 

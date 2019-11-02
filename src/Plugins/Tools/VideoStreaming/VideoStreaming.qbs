@@ -24,6 +24,11 @@ ApxApp.ApxPlugin {
         "overlay.h",
         "videothread.cpp",
         "videothread.h",
+
+        "QmlRenderer.cpp", "QmlRenderer.h",
+        "QmlAnimationDriver.cpp", "QmlAnimationDriver.h",
+        "QmlOverlay.cpp", "QmlOverlay.h",
+        "QmlOverlayMain.cpp", "QmlOverlayMain.h",
     ]
 
     Depends { name: "qmlqrc" }
