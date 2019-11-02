@@ -14,6 +14,15 @@ RowLayout {
         //implicitWidth: height
     }
 
+    //widgets
+    WidgetsListView {
+        id: widgetsView
+        Layout.fillHeight: true
+    }
+    function addWidget(plugin, index){widgetsView.add(plugin,index)}
+
+
+
 
     //tools list from plugins
     DelegateModel {
@@ -46,12 +55,15 @@ RowLayout {
         orientation: ListView.Horizontal
         model: toolsModel
     }
+
+    //tools menu
     CleanButton {
         Layout.fillHeight: true
         iconName: apx.tools.icon
         toolTip: apx.tools.title
         onTriggered: apx.tools.trigger()
     }
+    //windows menu
     CleanButton {
         Layout.fillHeight: true
         iconName: apx.windows.icon

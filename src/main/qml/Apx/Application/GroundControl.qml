@@ -19,8 +19,8 @@ Item {
 
     enum Layout {
         Instrument,
-        Background,
         Main,
+        MainWidget,
         Notifications
     }
     function add(item, layout, index)

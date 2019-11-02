@@ -1,4 +1,4 @@
-﻿import QtQuick 2.0
+import QtQuick 2.0
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
@@ -11,17 +11,18 @@ import OverlayAim 1.0
 import OverlayVars 1.0
 import OverlayGimbal 1.0
 
+import Apx.Application 1.0
+
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
-Rectangle {
-    id: videoItem
+Control {
+    id: control
 
     Component.onCompleted: {
-        application.registerUiComponent(videoItem, "video")
+        application.registerUiComponent(control, "video")
+        //ui.main.add(control, GroundControl.Layout.Main, 1)
     }
-
-    color: "black"
 
     readonly property var plugin: apx.tools.videostreaming
     readonly property var overlay: plugin?plugin.tune.overlay:undefined
@@ -66,65 +67,68 @@ Rectangle {
         }
     }
 
-    Button {
-        id: connectButton
-        visible: !running
-        anchors.centerIn: parent
-        text: qsTr("connect")
-        scale: ui.scale
-        onClicked: plugin.tune.running.value = true
-    }
-    BusyIndicator {
-        visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
-        anchors.centerIn: parent
-        running: true
-    }
+    contentItem: Item {
 
-    ColumnLayout {
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 3
-        spacing: 5
-
-        CleanButton {
-            visible: running
-            iconName: "record-rec"
-            iconColor: recording ? Material.color(Material.DeepOrange) : Material.primaryTextColor
-            onTriggered: plugin.tune.record.value =! plugin.tune.record.value
+        Button {
+            id: connectButton
+            visible: !running
+            anchors.centerIn: parent
+            text: qsTr("connect")
+            scale: ui.scale
+            onClicked: plugin.tune.running.value = true
         }
-        CleanButton {
-            visible: running
-            iconName: "image"
-            onTriggered: plugin.snapshot()
-        }
-        CleanButton {
-            visible: running
-            iconName: "cast-off"
-            onTriggered: plugin.tune.running.value=false
+        BusyIndicator {
+            visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
+            anchors.centerIn: parent
+            running: true
         }
 
-        Item {
-            height: 16
-            width: height
-        }
+        ColumnLayout {
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.margins: 3
+            spacing: 5
 
-        CleanButton {
-            iconName: "tune"
-            onTriggered: {
-                plugin.tune.trigger()
+            CleanButton {
+                visible: running
+                iconName: "record-rec"
+                iconColor: recording ? Material.color(Material.DeepOrange) : Material.primaryTextColor
+                onTriggered: plugin.tune.record.value =! plugin.tune.record.value
             }
-        }
-
-        /*CleanButton {
-            id: resizeButton
-            iconName: checked ? "fullscreen-exit" : "fullscreen"
-            checkable: true
-            onCheckedChanged: {
-                if(checked)
-                    plugin.state = "big"
-                else
-                    plugin.state = "small"
+            CleanButton {
+                visible: running
+                iconName: "image"
+                onTriggered: plugin.snapshot()
             }
-        }*/
+            CleanButton {
+                visible: running
+                iconName: "cast-off"
+                onTriggered: plugin.tune.running.value=false
+            }
+
+            Item {
+                height: 16
+                width: height
+            }
+
+            CleanButton {
+                iconName: "tune"
+                onTriggered: {
+                    plugin.tune.trigger()
+                }
+            }
+
+            /*CleanButton {
+                id: resizeButton
+                iconName: checked ? "fullscreen-exit" : "fullscreen"
+                checkable: true
+                onCheckedChanged: {
+                    if(checked)
+                        plugin.state = "big"
+                    else
+                        plugin.state = "small"
+                }
+            }*/
+        }
     }
 }

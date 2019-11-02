@@ -25,8 +25,8 @@ MapView {
 
     Component.onCompleted: {
         application.registerUiComponent(map,"map")
-        ui.main.add(control, GroundControl.Layout.Background)
-        ui.main.add(main, GroundControl.Layout.Main)
+        ui.main.add(control, GroundControl.Layout.Main)
+        //ui.main.add(main, GroundControl.Layout.Main)
     }
     onMapBackgroundItemLoaded: {
         application.registerUiComponent(item,"mapbase")
@@ -44,8 +44,9 @@ MapView {
     }*/
 
 
-    Item {
+    contentItem: Item {
         id: main
+        //anchors.fill: parent
         RowLayout {
             id: toolBar
             z: 100

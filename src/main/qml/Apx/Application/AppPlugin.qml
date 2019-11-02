@@ -31,6 +31,7 @@ Loader {
     Connections {
         target: application
         enabled: uiComponent
+        onAboutToQuit: plugin.active=false
         onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
     }
     //onLoaded: console.log(plugin)

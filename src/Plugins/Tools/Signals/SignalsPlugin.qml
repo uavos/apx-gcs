@@ -15,6 +15,6 @@ AppPlugin {
     sourceComponent: Signals { }
     uiComponent: "main"
     onConfigure: {
-        ui.main.add(plugin, GroundControl.Layout.Instrument)
+        ui.main.add(plugin, GroundControl.Layout.MainWidget)
     }
 }
