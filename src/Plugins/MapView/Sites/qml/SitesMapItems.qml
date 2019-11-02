@@ -38,7 +38,7 @@ MapItemGroup {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: map.height*0.15
-        visible: text
+        visible: text && ui.missionPlanner.showNavigation
         font.pixelSize: 24
         font.bold: true
         color: "#fff"

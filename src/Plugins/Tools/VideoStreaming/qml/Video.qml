@@ -21,7 +21,7 @@ Control {
 
     Component.onCompleted: {
         application.registerUiComponent(control, "video")
-        //ui.main.add(control, GroundControl.Layout.Main, 1)
+        //ui.main.add(control, GroundControl.Layout.Main, 0)
     }
 
     readonly property var plugin: apx.tools.videostreaming
@@ -30,44 +30,51 @@ Control {
     readonly property bool recording: plugin?plugin.tune.record.value:false
     readonly property var scale: overlay?overlay.scale:0.1
 
-    VideoOutput {
-        id: videoOutput
-        anchors.fill: parent
-        source: plugin
+    contentItem: Rectangle {
 
-        OverlayAim {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-            type: plugin.tune.overlay.aim.value
-            scale: overlay.scale.value
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            width: videoOutput.contentRect.width
-            height: videoOutput.contentRect.height
-        }
-        OverlayVars {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-            topLeftVars: overlay.top_left_vars.value
-            topCenterVars: overlay.top_center_vars.value
-            topRightVars: overlay.top_right_vars.value
-            scale: overlay.scale.value
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            width: videoOutput.contentRect.width
-            height: videoOutput.contentRect.height
-        }
-        OverlayGimbal {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTED && overlay.show_gimbal.value === true
-            yawVar: overlay.gimbal_yaw_var.value
-            pitchVar: overlay.gimbal_pitch_var.value
-            scale: overlay.scale.value
-            x: videoOutput.contentRect.x
-            y: videoOutput.contentRect.y
-            width: videoOutput.contentRect.width
-            height: videoOutput.contentRect.height
-        }
-    }
+        implicitWidth: 400
+        implicitHeight: implicitWidth*3/4
 
-    contentItem: Item {
+        border.width: 0
+        color: "#000"
+        radius: 5
+
+        VideoOutput {
+            id: videoOutput
+            anchors.fill: parent
+            source: plugin
+
+            OverlayAim {
+                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+                type: plugin.tune.overlay.aim.value
+                scale: overlay.scale.value
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                width: videoOutput.contentRect.width
+                height: videoOutput.contentRect.height
+            }
+            OverlayVars {
+                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
+                topLeftVars: overlay.top_left_vars.value
+                topCenterVars: overlay.top_center_vars.value
+                topRightVars: overlay.top_right_vars.value
+                scale: overlay.scale.value
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                width: videoOutput.contentRect.width
+                height: videoOutput.contentRect.height
+            }
+            OverlayGimbal {
+                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED && overlay.show_gimbal.value === true
+                yawVar: overlay.gimbal_yaw_var.value
+                pitchVar: overlay.gimbal_pitch_var.value
+                scale: overlay.scale.value
+                x: videoOutput.contentRect.x
+                y: videoOutput.contentRect.y
+                width: videoOutput.contentRect.width
+                height: videoOutput.contentRect.height
+            }
+        }
 
         Button {
             id: connectButton

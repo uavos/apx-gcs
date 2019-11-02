@@ -12,7 +12,7 @@ Control {
     id: control
 
     property bool showVehicles: true
-    property bool showMission: true
+    property bool showMission: showVehicles
     property bool showNavigation: showVehicles
 
     property bool showWind: showNavigation

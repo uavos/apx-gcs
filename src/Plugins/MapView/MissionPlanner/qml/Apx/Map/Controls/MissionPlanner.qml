@@ -8,7 +8,7 @@ import Apx.Common 1.0
 import Apx.Controls 1.0
 
 MapView {
-    id: control
+    id: missionPlanner
 
     readonly property real margins: 10
 
@@ -25,13 +25,18 @@ MapView {
 
     Component.onCompleted: {
         application.registerUiComponent(map,"map")
-        ui.main.add(control, GroundControl.Layout.Main)
+        application.registerUiComponent(missionPlanner,"missionPlanner")
+        //ui.main.add(control, GroundControl.Layout.Main, 1)
         //ui.main.add(main, GroundControl.Layout.Main)
     }
     onMapBackgroundItemLoaded: {
         application.registerUiComponent(item,"mapbase")
     }
 
+    implicitWidth: 400
+    implicitHeight: 400
+
+    showNavigation: plugin.state=="maximized"
 
     //Controls
     /*Item {
@@ -46,6 +51,7 @@ MapView {
 
     contentItem: Item {
         id: main
+        visible: showNavigation
         //anchors.fill: parent
         RowLayout {
             id: toolBar
