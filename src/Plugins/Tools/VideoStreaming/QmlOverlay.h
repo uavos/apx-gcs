@@ -3,27 +3,51 @@
 
 #include <QImage>
 #include <QtCore>
+#include <QtQuick>
 
-class QmlRenderer;
-class QmlOverlay : public QThread
+class QmlOverlay : public QObject
 {
     Q_OBJECT
 public:
-    QmlOverlay(QObject *parent = nullptr);
+    explicit QmlOverlay(QObject *parent = nullptr);
+    ~QmlOverlay();
 
-    void drawOverlay(QImage &image);
-
-    void run() override;
-
-private:
-    QImage overlay;
-    QmlRenderer *renderer;
-
-private slots:
-    void imageRendered(const QImage &image);
+    void cb_drawOverlay(QImage &image);
 
 signals:
-    void frameUpdated();
+    void imageRendered(const QImage &image);
+    void renderRequest();
+    void resizeRequest(QSize size);
+
+private slots:
+
+    void sceneChanged();
+    void resizeRootItem(QSize size);
+
+    bool loadQml(const QString &qmlFile);
+
+public slots:
+    void renderNext();
+
+private:
+    QOpenGLContext *m_context;
+    QOffscreenSurface *m_offscreenSurface;
+    QQuickRenderControl *m_renderControl;
+    QQuickWindow *m_quickWindow;
+    QQmlEngine *m_qmlEngine;
+    QQmlComponent *m_qmlComponent;
+    QQuickItem *m_rootItem;
+    QOpenGLFramebufferObject *m_fbo;
+    qreal m_dpr;
+
+    bool m_needPolishAndSync;
+
+    QImage overlay;
+
+    void loadQmlFile(const QString &qmlFile, const QSize &size, qreal devicePixelRatio = 1.0);
+
+    void createFbo(const QSize &size);
+    void destroyFbo();
 };
 
 #endif

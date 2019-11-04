@@ -8,7 +8,7 @@
 #include <QVideoSurfaceFormat>
 #include <QtQml>
 
-#include "QmlOverlayMain.h"
+#include "QmlOverlay.h"
 
 using namespace std::placeholders;
 
@@ -105,8 +105,8 @@ GstPlayer::GstPlayer(Fact *parent)
 
     //m_videoThread.setOverlayCallback(std::bind(&Overlay::drawOverlay, f_overlay, _1));
 
-    QmlOverlayMain *qmlOverlay = new QmlOverlayMain(this);
-    m_videoThread.setOverlayCallback(std::bind(&QmlOverlayMain::cb_drawOverlay, qmlOverlay, _1));
+    QmlOverlay *qmlOverlay = new QmlOverlay(this);
+    m_videoThread.setOverlayCallback(std::bind(&QmlOverlay::cb_drawOverlay, qmlOverlay, _1));
 
     loadQml(QString("qrc:/%1/VideoPlugin.qml").arg(PLUGIN_NAME));
 
