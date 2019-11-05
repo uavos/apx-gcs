@@ -49,7 +49,7 @@ Fact {
             var setIdx=json.active[settingsName]
             if(setIdx>=0 && setIdx<sets.length)
                 currentSetIdx=setIdx
-            else if(v.length>0)
+            else if(sets.length>0)
                 currentSetIdx=0
         }
         //defaults

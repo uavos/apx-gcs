@@ -4,11 +4,11 @@ import Apx.Common 1.0
 import Apx.Application 1.0
 
 AppPlugin {
-    id: plugin
+    id: pluginLoader
     sourceComponent: Video { }
     uiComponent: "main"
     onConfigure: {
-        ui.main.add(plugin, GroundControl.Layout.MainWidget, 1)
-        ui.main.add(plugin, GroundControl.Layout.Main, 1)
+        ui.main.add(pluginLoader, GroundControl.Layout.MainWidget, 1)
+        ui.main.add(pluginLoader, GroundControl.Layout.Main, 1)
     }
 }

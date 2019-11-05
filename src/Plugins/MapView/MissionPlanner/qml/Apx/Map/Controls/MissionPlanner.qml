@@ -36,7 +36,7 @@ MapView {
     implicitWidth: 400
     implicitHeight: 400
 
-    showNavigation: plugin.state=="maximized"
+    showNavigation: !pluginMinimized
 
     //Controls
     /*Item {

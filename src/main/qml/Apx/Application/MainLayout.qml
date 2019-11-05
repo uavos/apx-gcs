@@ -58,8 +58,16 @@ Item {
         //mainPlugins.push(plugin)
         minimizeMainPlugin(plugin)
         maximizeMainPlugin(mainPlugins[0])
-        plugin.loaded.connect(function(){updatePluginPadding(plugin)})
+        plugin.loaded.connect(function(){
+            if(!updatePluginPadding)
+                return
+            updatePluginPadding(plugin)
+        })
         plugin.visibleChanged.connect(function(){
+            if(!minimizeMainPlugin)
+                return
+            if(!maximizeMainPlugin)
+                return
             if(plugin.visible===false){
                 minimizeMainPlugin(plugin)
                 if(plugin===mainPlugin){
@@ -70,6 +78,8 @@ Item {
             }
         })
         plugin.loaded.connect(function(){
+            if(!maximizeButtonC)
+                return
             maximizeButtonC.createObject(plugin.item,{"plugin": plugin})
         })
 

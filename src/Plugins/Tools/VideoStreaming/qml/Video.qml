@@ -74,16 +74,14 @@ Control {
                 width: videoOutput.contentRect.width
                 height: videoOutput.contentRect.height
             }
+
+            Overlay {
+                anchors.fill: parent
+                visible: !pluginMinimized
+                interactive: true
+            }
         }
 
-        Button {
-            id: connectButton
-            visible: !running
-            anchors.centerIn: parent
-            text: qsTr("connect")
-            scale: ui.scale
-            onClicked: plugin.tune.running.value = true
-        }
         BusyIndicator {
             visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
             anchors.centerIn: parent
@@ -108,9 +106,10 @@ Control {
                 onTriggered: plugin.snapshot()
             }
             CleanButton {
-                visible: running
-                iconName: "cast-off"
-                onTriggered: plugin.tune.running.value=false
+                //visible: running
+                toolTip: plugin.tune.running.descr
+                iconName: running?"cast-off":"cast"
+                onTriggered: plugin.tune.running.value=!plugin.tune.running.value
             }
 
             Item {

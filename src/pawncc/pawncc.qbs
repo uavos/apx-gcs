@@ -9,7 +9,6 @@ ApxApp.ApxProduct {
         condition: qbs.targetOS.contains("linux")
         cpp.dynamicLibraries: "m"
         cpp.defines: outer.concat(["HAVE_ENDIAN_H"])
-
         qbs.architectures: [ "x86" ]
         multiplexByQbsProperties: ["architectures"]
     }
@@ -21,6 +20,15 @@ ApxApp.ApxProduct {
     cpp.defines: [
         "PAWN_CELL_SIZE=32",
         "FLOATPOINT",
+//        "HAVE_UNISTD_H",
+//        "HAVE_INTTYPES_H",
+//        "HAVE_STDINT_H",
+//        "HAVE_ALLOCA_H",
+//        "HAVE_ENDIAN_H",
+//        "HAVE_STRLCPY",
+//        "HAVE_STRLCAT",
+        "LINUX",
+//        "ENABLE_BINRELOC",
     ]
 
     cpp.cFlags: base.concat([
@@ -35,13 +43,16 @@ ApxApp.ApxProduct {
 
 
     cpp.includePaths: [
-        "compiler",
-        "linux",
+        pawnccBase+"/"+"compiler",
+        pawnccBase+"/"+"linux",
+        pawnccBase+"/",
     ]
+
+    property string pawnccBase: "macos"
 
     Group {
         name: "compiler"
-        prefix: name+"/"
+        prefix: pawnccBase+"/"+name+"/"
         files: [
             "sc.h",
             "sc1.c",
@@ -64,7 +75,7 @@ ApxApp.ApxProduct {
 
     Group {
         name: "linux"
-        prefix: name+"/"
+        prefix: pawnccBase+"/"+name+"/"
         files: [
             "binreloc.c",
             "getch.c",
@@ -73,9 +84,11 @@ ApxApp.ApxProduct {
 
     Group {
         name: "amx"
-        prefix: name+"/"
+        prefix: pawnccBase+"/"+name+"/"
         files: [
             "keeloq.c",
         ]
     }
+
+
 }

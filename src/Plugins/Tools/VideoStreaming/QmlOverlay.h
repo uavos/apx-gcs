@@ -14,6 +14,8 @@ public:
 
     void cb_drawOverlay(QImage &image);
 
+    QImage overlay();
+
 signals:
     void imageRendered(const QImage &image);
     void renderRequest();
@@ -42,7 +44,8 @@ private:
 
     bool m_needPolishAndSync;
 
-    QImage overlay;
+    QMutex mutex;
+    QImage cb_overlay;
 
     void loadQmlFile(const QString &qmlFile, const QSize &size, qreal devicePixelRatio = 1.0);
 

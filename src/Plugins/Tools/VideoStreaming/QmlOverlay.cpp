@@ -42,11 +42,14 @@ QmlOverlay::QmlOverlay(QObject *parent)
     m_renderControl->initialize(m_context);
     m_context->doneCurrent();
 
-    QString sourceFile = QString("qrc:/%1/Overlay.qml").arg(PLUGIN_NAME);
-    loadQmlFile(sourceFile, QSize(100, 100));
+    loadQmlFile(QString("qrc:/%1/Overlay.qml").arg(PLUGIN_NAME), QSize(100, 100));
 
-    connect(this, &QmlOverlay::renderRequest, this, &QmlOverlay::renderNext);
-    connect(this, &QmlOverlay::resizeRequest, this, &QmlOverlay::resizeRootItem);
+    connect(this, &QmlOverlay::renderRequest, this, &QmlOverlay::renderNext, Qt::QueuedConnection);
+    connect(this,
+            &QmlOverlay::resizeRequest,
+            this,
+            &QmlOverlay::resizeRootItem,
+            Qt::QueuedConnection);
 }
 
 QmlOverlay::~QmlOverlay()
@@ -134,18 +137,24 @@ void QmlOverlay::sceneChanged()
 
 void QmlOverlay::cb_drawOverlay(QImage &image)
 {
-    if (image.size() != overlay.size()) {
+    mutex.lock();
+    QSize size = cb_overlay.size();
+    mutex.unlock();
+
+    if (image.size() != size) {
         emit resizeRequest(image.size());
         return;
     }
     //qDebug() << image;
     QPainter painter(&image);
-    painter.save();
-    painter.setPen(Qt::red);
-    painter.drawLine(0, 0, 100, 100);
-    painter.drawImage(QPoint(0, 0), overlay);
+    //    painter.save();
+    //    painter.setPen(Qt::red);
+    //    painter.drawLine(0, 0, 100, 100);
+    mutex.lock();
+    painter.drawImage(QPoint(0, 0), cb_overlay);
+    mutex.unlock();
 
-    painter.restore();
+    //    painter.restore();
     emit renderRequest();
 }
 
@@ -179,19 +188,27 @@ void QmlOverlay::renderNext()
     m_renderControl->render();
 
     m_context->functions()->glFlush();
-    overlay = m_fbo->toImage();
+    mutex.lock();
+    cb_overlay = m_fbo->toImage();
+    mutex.unlock();
 
     m_context->doneCurrent();
 }
 
 void QmlOverlay::resizeRootItem(QSize size)
 {
-    if (!m_rootItem)
-        return;
-    if (m_rootItem->size().toSize() == size)
-        return;
-    m_rootItem->setWidth(size.width());
-    m_rootItem->setHeight(size.height());
-    m_quickWindow->setGeometry(0, 0, size.width(), size.height());
+    if (m_rootItem) {
+        if (m_rootItem->size().toSize() == size)
+            return;
+        m_rootItem->setWidth(size.width());
+        m_rootItem->setHeight(size.height());
+        m_quickWindow->setGeometry(0, 0, size.width(), size.height());
+    }
     emit renderRequest();
+}
+
+QImage QmlOverlay::overlay()
+{
+    QMutexLocker lock(&mutex);
+    return cb_overlay;
 }

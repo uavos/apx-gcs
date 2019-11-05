@@ -14,6 +14,11 @@ Loader {
     property string descr: fact?fact.descr:""
     property string icon: fact?fact.icon:""
 
+    //forward reference to adjust view states of widget, i.e. "maximized", "minimized"
+    readonly property string pluginState: state
+    readonly property bool pluginMinimized: pluginState=="minimized"
+
+
     visible: true
 
     active: false

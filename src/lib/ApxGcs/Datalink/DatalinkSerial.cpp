@@ -109,7 +109,7 @@ void DatalinkSerial::openNext()
         //try to open valid spi port
         //qDebug("Trying to open %s (%s)",spi.portName().toUtf8().data(),spi.systemLocation().toUtf8().data());
         if (!openPort(spi, m_baud)) {
-            apxMsgW() << tr("Serial port open failed") << QString("(%s)").arg(spi.portName());
+            apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(spi.portName());
             break;
         }
         info = spi;
