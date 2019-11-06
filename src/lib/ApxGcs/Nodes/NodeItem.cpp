@@ -894,7 +894,11 @@ void NodeItem::nstatReceived(const DictNode::Stats &nstat)
     if (nodes->vehicle == Vehicles::instance()->current()) {
         apxMsg() << QString("#[%1]%2").arg(title()).arg(snode);
         if (nstat.dump.count('\0') != nstat.dump.size()) {
-            apxMsg() << QString("#%1").arg(QString(nstat.dump.toHex().toUpper()));
+            QString s(nstat.dump.toHex().toUpper());
+            for (int i = 2; i < s.size(); i += 3) {
+                s.insert(i, ' ');
+            }
+            apxMsg() << QString("#%1").arg(s);
         }
     }
     setDescr(snode);
