@@ -86,6 +86,9 @@ Button {
 
     function fontSize(v){return Math.max(7,v)}
 
+
+    property bool showTitle: control.title
+
     contentItem: Item {
         implicitWidth: rowItem.implicitWidth
         height: bodyHeight
@@ -119,7 +122,7 @@ Button {
             //Title
             Loader {
                 id: titleItem
-                active: control.title
+                active: control.showTitle
                 //asynchronous: true
                 Layout.maximumHeight: bodyHeight+control.padding
                 Layout.fillWidth: active
@@ -162,6 +165,7 @@ Button {
             }
             //stretch space
             Item {
+                visible: control.showIcon||control.showTitle
                 Layout.fillHeight: showContents
                 Layout.fillWidth: showContents
             }

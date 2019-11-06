@@ -44,12 +44,24 @@ QmlOverlay::QmlOverlay(QObject *parent)
 
     loadQmlFile(QString("qrc:/%1/Overlay.qml").arg(PLUGIN_NAME), QSize(100, 100));
 
-    connect(this, &QmlOverlay::renderRequest, this, &QmlOverlay::renderNext, Qt::QueuedConnection);
     connect(this,
             &QmlOverlay::resizeRequest,
             this,
             &QmlOverlay::resizeRootItem,
             Qt::QueuedConnection);
+
+    timer.setSingleShot(true);
+    timer.setInterval(20);
+    connect(&timer, &QTimer::timeout, this, &QmlOverlay::renderNext);
+    connect(
+        this,
+        &QmlOverlay::renderRequest,
+        &timer,
+        [this]() {
+            if (!timer.isActive())
+                timer.start();
+        },
+        Qt::QueuedConnection);
 }
 
 QmlOverlay::~QmlOverlay()
@@ -169,6 +181,7 @@ void QmlOverlay::renderNext()
 
     QSize size = m_rootItem->size().toSize();
     if (m_fbo->size() != size) {
+        //qDebug() << size;
         if (!m_context->makeCurrent(m_offscreenSurface))
             return;
         destroyFbo();
@@ -182,6 +195,7 @@ void QmlOverlay::renderNext()
 
     if (m_needPolishAndSync) {
         m_needPolishAndSync = false;
+        //qDebug() << m_renderControl;
         m_renderControl->polishItems();
         m_renderControl->sync();
     }

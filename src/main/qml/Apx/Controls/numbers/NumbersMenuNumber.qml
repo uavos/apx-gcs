@@ -67,9 +67,10 @@ Fact {
         descr: qsTr("Fact value")
         flags: Fact.Mandala
         onValueChanged: {
-            if(!text)return
-            mBind.setValue(text)
+            var v=text?text:status
+            mBind.setValue(v)
             value=""
+            status=""
         }
     }
     Fact {

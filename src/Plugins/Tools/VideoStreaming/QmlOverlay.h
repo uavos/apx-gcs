@@ -47,6 +47,8 @@ private:
     QMutex mutex;
     QImage cb_overlay;
 
+    QTimer timer;
+
     void loadQmlFile(const QString &qmlFile, const QSize &size, qreal devicePixelRatio = 1.0);
 
     void createFbo(const QSize &size);

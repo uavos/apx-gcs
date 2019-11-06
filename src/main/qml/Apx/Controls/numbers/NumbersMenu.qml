@@ -6,6 +6,7 @@ Fact {
     id: setsFact
     property var defaults
     property string settingsName
+    property bool destroyOnClose: true
 
     name: settingsName
     flags: (Fact.Group | Fact.DragChildren)
@@ -19,14 +20,22 @@ Fact {
 
     function open() {
         //ensure mandala linked to vehicle
-        var p=parent
-        parentFact=apx.vehicles.local
-        parent=p
+        if(!parentFact){
+            var p=parent
+            parentFact=apx.vehicles.local
+            parent=p
+        }
         loadSettings()
     }
 
     function close()
     {
+        if(!destroyOnClose){
+            setsFact.removeAll()
+            loadSettings()
+            menuBack()
+            return
+        }
         setsFact.removeAll()
         menuBack()
         parentFact=null

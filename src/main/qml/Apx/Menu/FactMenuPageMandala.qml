@@ -16,7 +16,16 @@ FactMenuPageList {
 
     model: mandala.model
 
-    //currentIndex: fact
+    function setValue(v)
+    {
+        parentFact.setValue(v)
+        if(v && !parentFact.text){
+            //no mandala - save text name only
+            parentFact.status=v
+            parentFact.valueChanged()
+        }
+    }
+
     delegate: FactButton {
         fact: modelData
         showEditor: false
@@ -24,7 +33,7 @@ FactMenuPageList {
         height: visible?MenuStyle.itemSize:0
         width: listView.width
         onTriggered: {
-            parentFact.setValue(modelData.title)
+            control.setValue(modelData.title)
             factMenu.back()
         }
         visible: fact && fact.visible && (control.filter=="" || fact.title.toLowerCase().includes(control.filter.toLowerCase()))
@@ -37,7 +46,7 @@ FactMenuPageList {
             title: qsTr("Remove")
             flags: (Fact.Action | Fact.Remove)
             onTriggered: {
-                control.parentFact.value=""
+                control.setValue("")
                 factMenu.back()
             }
         }
@@ -60,7 +69,7 @@ FactMenuPageList {
             var f=mandala.findChild(text,false)
             //console.log(f)
             if(f){
-                parentFact.setValue(f.title)
+                control.setValue(f.title)
                 factMenu.back()
             }
         }

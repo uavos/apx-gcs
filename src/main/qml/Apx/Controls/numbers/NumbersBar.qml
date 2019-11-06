@@ -10,12 +10,15 @@ import Apx.Common 1.0
 
 Flow {
     id: control
-    spacing: 8
+    spacing: itemSize*0.2
     clip: true
 
     property bool showEditButton: true
     property alias settingsName: numbersModel.settingsName
     property alias defaults: numbersModel.defaults
+    property alias model: numbersModel
+
+    property int itemSize: 28*ui.scale
 
 
     Loader {
@@ -38,7 +41,7 @@ Flow {
 
     NumbersModel {
         id: numbersModel
-        itemHeight: 28*ui.scale
+        itemHeight: itemSize
         light: true
     }
 }

@@ -30,6 +30,7 @@ public:
     Fact *f_record;
     Fact *f_reencoding;
     Fact *f_lowLatency;
+    Fact *f_viewMode;
     Overlay *f_overlay;
 
     Fact *f_sourceType;

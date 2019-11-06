@@ -90,6 +90,14 @@ GstPlayer::GstPlayer(Fact *parent)
                             "speedometer");
     f_lowLatency->setDefaultValue(true);
 
+    f_viewMode = new Fact(f_tune,
+                          "view_mode",
+                          tr("Fit to view"),
+                          tr("Scale video to fit view"),
+                          Bool | PersistentValue,
+                          "fit-to-page-outline");
+    f_viewMode->setDefaultValue(true);
+
     f_overlay = new Overlay(f_tune);
     f_overlay->setIcon("image-plus");
 

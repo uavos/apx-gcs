@@ -15,6 +15,7 @@ CleanButton {
 
     showText: true
     showDescr: false
+    showIcon: false
 
     toolTip: descr
     enabled: false

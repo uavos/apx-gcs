@@ -61,6 +61,7 @@ public:
     Q_INVOKABLE static double lonFromString(QString s);
     Q_INVOKABLE static QString distanceToString(uint v, bool units = true);
     Q_INVOKABLE static QString timeToString(quint64 v, bool seconds = false);
+    Q_INVOKABLE static QString dateToString(quint64 v);
     Q_INVOKABLE static QString timemsToString(quint64 v);
     Q_INVOKABLE static quint64 timeFromString(QString s);
 

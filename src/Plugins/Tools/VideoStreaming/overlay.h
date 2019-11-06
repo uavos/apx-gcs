@@ -143,6 +143,9 @@ private slots:
     void onAimChanged();
     void onScaleChanged();
     void onGimbalVarsChanged();
+
+signals:
+    void updateModels();
 };
 
 #endif // OVERLAY_H

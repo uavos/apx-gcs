@@ -214,6 +214,11 @@ QString AppRoot::timeToString(quint64 v, bool seconds)
         return QString("%1").arg(QTime(0, 0, 0).addSecs(v).toString(sf));
     return QString("%1d%2").arg(d).arg(QTime(0, 0, 0).addSecs(v).toString(sf));
 }
+QString AppRoot::dateToString(quint64 v)
+{
+    QDateTime d = QDateTime::fromSecsSinceEpoch(v);
+    return d.toString("dd/MM/yy hh:mm:ss t");
+}
 QString AppRoot::timemsToString(quint64 v)
 {
     qint64 ts = v / 1000;

@@ -12,14 +12,18 @@ Rectangle {
     implicitWidth: layout.implicitWidth
     implicitHeight: 200
 
-    readonly property int margins: 3
-    readonly property real itemHeight: 20*ui.scale
+    property int margins: 3
+
+    property real itemSize: 20*ui.scale
+    property bool showEditButton: true
 
     property alias settingsName: numbersModel.settingsName
+    property alias defaults: numbersModel.defaults
+    property alias model: numbersModel
 
     NumbersModel {
         id: numbersModel
-        itemHeight: control.itemHeight
+        itemHeight: control.itemSize
         fixedWidth: true
         defaults: [
             {"bind":"user1","prec":"2","title":"u1"},
@@ -43,13 +47,16 @@ Rectangle {
             model: numbersModel
             snapMode: ListView.SnapToItem
             ScrollBar.vertical: ScrollBar { width: 6 }
-            footer: NumbersItem {
-                title: " +"
-                height: control.itemHeight
-                minimumWidth: height
-                enabled: true
-                toolTip: qsTr("Edit display values")
-                onTriggered: numbersModel.edit()
+            footer: Loader{
+                active: showEditButton
+                sourceComponent: NumbersItem {
+                    title: " +"
+                    height: control.itemSize
+                    minimumWidth: height
+                    enabled: true
+                    toolTip: qsTr("Edit display values")
+                    onTriggered: numbersModel.edit()
+                }
             }
             /*onCountChanged: {
                 numbersModel.minimumWidth=0
@@ -67,7 +74,7 @@ Rectangle {
                     if(w>m.implicitWidth)continue
                     w=m.implicitWidth
                 }
-                //implicitWidth=Math.max(control.itemHeight*3,w)
+                //implicitWidth=Math.max(control.itemSize*3,w)
             }*/
         }
     }

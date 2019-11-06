@@ -1,17 +1,11 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.2
-import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
-import QtQuick.Window 2.12
-import QtMultimedia 5.7
+import QtMultimedia 5.13
+
 import GstPlayer 1.0
 
 import Apx.Common 1.0
-import OverlayAim 1.0
-import OverlayVars 1.0
-import OverlayGimbal 1.0
-
-import Apx.Application 1.0
 
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
@@ -30,6 +24,8 @@ Control {
     readonly property bool recording: plugin?plugin.tune.record.value:false
     readonly property var scale: overlay?overlay.scale:0.1
 
+    readonly property bool viewMode: plugin?plugin.tune.view_mode.value:false
+
     contentItem: Rectangle {
 
         implicitWidth: 400
@@ -43,8 +39,10 @@ Control {
             id: videoOutput
             anchors.fill: parent
             source: plugin
+            flushMode: VideoOutput.EmptyFrame
+            fillMode: control.viewMode?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
 
-            OverlayAim {
+            /*OverlayAim {
                 visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
                 type: plugin.tune.overlay.aim.value
                 scale: overlay.scale.value
@@ -73,12 +71,13 @@ Control {
                 y: videoOutput.contentRect.y
                 width: videoOutput.contentRect.width
                 height: videoOutput.contentRect.height
-            }
+            }*/
 
             Overlay {
                 anchors.fill: parent
                 visible: !pluginMinimized
                 interactive: true
+                frameRect: videoOutput.contentRect
             }
         }
 
@@ -106,7 +105,6 @@ Control {
                 onTriggered: plugin.snapshot()
             }
             CleanButton {
-                //visible: running
                 toolTip: plugin.tune.running.descr
                 iconName: running?"cast-off":"cast"
                 onTriggered: plugin.tune.running.value=!plugin.tune.running.value
