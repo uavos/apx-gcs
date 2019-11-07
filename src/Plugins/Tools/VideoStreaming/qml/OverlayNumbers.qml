@@ -23,7 +23,7 @@ Item {
             var overlay=overlays[i]
             var c=numbersMenuC.createObject(control,{"overlay": overlay})
             c.parentFact=apx.tools.videostreaming.tune.overlay
-            apx.tools.videostreaming.tune.overlay.updateModels.connect(overlay.model.loadSettings)
+            apx.tools.videostreaming.overlayNumbersChanged.connect(overlay.model.loadSettings)
         }
     }
     Component {
@@ -33,7 +33,7 @@ Item {
             defaults: overlay.defaults
             settingsName: overlay.settingsName
             destroyOnClose: false
-            onAccepted: apx.tools.videostreaming.tune.overlay.updateModels()
+            onAccepted: apx.tools.videostreaming.overlayNumbersChanged()
         }
     }
 
@@ -61,6 +61,7 @@ Item {
         margins: 0
         showEditButton: false
         itemSize: numberItemSize
+        //model.minimumWidth: 500
         color: "#00000000"
         settingsName: "video"
         defaults: [
@@ -75,7 +76,7 @@ Item {
         onLoadingFinished: {
             for(var i in overlays){
                 var overlay=overlays[i]
-                apx.tools.videostreaming.tune.overlay.updateModels.connect(overlay.model.loadSettings)
+                apx.tools.videostreaming.overlayNumbersChanged.connect(overlay.model.loadSettings)
             }
         }
     }

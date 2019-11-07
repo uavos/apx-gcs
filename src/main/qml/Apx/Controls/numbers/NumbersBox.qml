@@ -9,7 +9,7 @@ Rectangle {
     id: control
     border.width: 0
     color: "#000"
-    implicitWidth: layout.implicitWidth
+    implicitWidth: list.implicitWidth+margins*2
     implicitHeight: 200
 
     property int margins: 3
@@ -34,48 +34,26 @@ Rectangle {
         ]
     }
 
-    ColumnLayout{
-        id: layout
-        height: control.height
-        ListView {
-            id: list
-            Layout.margins: control.margins
-            Layout.fillHeight: true
-            implicitWidth: numbersModel.minimumWidth
-            clip: true
-            spacing: 0
-            model: numbersModel
-            snapMode: ListView.SnapToItem
-            ScrollBar.vertical: ScrollBar { width: 6 }
-            footer: Loader{
-                active: showEditButton
-                sourceComponent: NumbersItem {
-                    title: " +"
-                    height: control.itemSize
-                    minimumWidth: height
-                    enabled: true
-                    toolTip: qsTr("Edit display values")
-                    onTriggered: numbersModel.edit()
-                }
+    ListView {
+        id: list
+        anchors.fill: parent
+        anchors.margins: control.margins
+        implicitWidth: contentItem.childrenRect.width //numbersModel.minimumWidth
+        clip: true
+        spacing: 0
+        model: numbersModel
+        snapMode: ListView.SnapToItem
+        ScrollBar.vertical: ScrollBar { width: 6 }
+        footer: Loader{
+            active: showEditButton
+            sourceComponent: NumbersItem {
+                title: " +"
+                height: control.itemSize
+                minimumWidth: height
+                enabled: true
+                toolTip: qsTr("Edit display values")
+                onTriggered: numbersModel.edit()
             }
-            /*onCountChanged: {
-                numbersModel.minimumWidth=0
-                updateWidth(0)
-                numbersModel.minimumWidth=Qt.binding(function(){return layout.implicitWidth-control.margins*2})
-            }
-
-            function updateWidth(w)
-            {
-                if(typeof(w)=='undefined')w=implicitWidth
-                for(var i=0;i<count;++i){
-                    var m=model.get(i)
-                   // m.implicitWidthChanged.disconnect(updateWidth)
-                   // m.implicitWidthChanged.connect(updateWidth)
-                    if(w>m.implicitWidth)continue
-                    w=m.implicitWidth
-                }
-                //implicitWidth=Math.max(control.itemSize*3,w)
-            }*/
         }
     }
 }

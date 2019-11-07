@@ -221,8 +221,12 @@ void QmlOverlay::resizeRootItem(QSize size)
     emit renderRequest();
 }
 
-QImage QmlOverlay::overlay()
+QImage QmlOverlay::getSnapshotOverlay(const QSize &size)
 {
-    QMutexLocker lock(&mutex);
-    return cb_overlay;
+    resizeRootItem(size);
+    renderNext();
+    mutex.lock();
+    QImage image = cb_overlay;
+    mutex.unlock();
+    return image;
 }

@@ -20,8 +20,6 @@ ApxApp.ApxPlugin {
         "StreamingPlugin.h",
         "gstplayer.cpp",
         "gstplayer.h",
-        "overlay.cpp",
-        "overlay.h",
         "videothread.cpp",
         "videothread.h",
         "QmlOverlay.cpp", "QmlOverlay.h",

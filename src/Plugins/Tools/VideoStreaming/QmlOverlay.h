@@ -14,7 +14,7 @@ public:
 
     void cb_drawOverlay(QImage &image);
 
-    QImage overlay();
+    QImage getSnapshotOverlay(const QSize &size);
 
 signals:
     void imageRendered(const QImage &image);

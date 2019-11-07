@@ -1,8 +1,9 @@
 ﻿#ifndef GSTPLAYER_H
 #define GSTPLAYER_H
 
-#include "overlay.h"
+#include "QmlOverlay.h"
 #include "videothread.h"
+
 #include <Fact/Fact.h>
 #include <QAbstractVideoSurface>
 #include <QtCore>
@@ -31,7 +32,7 @@ public:
     Fact *f_reencoding;
     Fact *f_lowLatency;
     Fact *f_viewMode;
-    Overlay *f_overlay;
+    Fact *f_overlay;
 
     Fact *f_sourceType;
 
@@ -57,6 +58,8 @@ private:
     ConnectionState m_connectionState = STATE_UNCONNECTED;
     QTimer m_reconnectTimer;
 
+    QmlOverlay *overlay;
+
     void setConnectionState(ConnectionState cs);
 
     void play();
@@ -78,6 +81,8 @@ private slots:
 
 signals:
     void connectionStateChanged();
+
+    void overlayNumbersChanged();
 };
 
 #endif //GSTPLAYER_H

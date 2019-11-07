@@ -6,8 +6,6 @@ import QtGraphicalEffects 1.0
 import Apx.Common 1.0
 import Apx.Controls 1.0
 
-import GstPlayer 1.0
-
 Item {
     id: control
 
@@ -16,7 +14,7 @@ Item {
     property var frameRect
 
     property var plugin: apx.tools.videostreaming
-    readonly property bool alive: interactive?plugin.connectionState === GstPlayer.STATE_CONNECTED:true
+    property bool alive: true
 
     opacity: 0.7
 
@@ -29,27 +27,45 @@ Item {
     }
 
 
-    Text {
-        color: "#60FFFFFF"
+    Loader {
+        active: !alive
         anchors.centerIn: parent
-        text: qsTr("no video").toUpperCase()
-        visible: !alive
-        font.pixelSize: 48
-        font.family: font_narrow
-        font.bold: true
+        sourceComponent: Text {
+            color: "#60FFFFFF"
+            text: qsTr("no video").toUpperCase()
+            font.pixelSize: 48
+            font.family: font_narrow
+            font.bold: true
+        }
     }
 
     OverlayNumbers {
+        id: numbers
         anchors.fill: interactive?(plugin.tune.view_mode.value?control:videoFrame):control
         interactive: control.interactive
+
+        Loader {
+            active: true
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.topMargin: numbers.overlayItemSize*1.1
+            width: Math.min(80, parent.height/5)
+            sourceComponent: OverlayGimbal {
+                yaw: m[plugin.tune.overlay.gimbal_yaw_var.value].value
+                pitch: m[plugin.tune.overlay.gimbal_pitch_var.value].value
+            }
+        }
     }
 
-    OverlayAim {
+    Loader {
+        active: alive
         anchors.centerIn: videoFrame
-        size: Math.min(100, parent.height/10)
-        visible: alive
-        type: plugin?plugin.tune.overlay.aim.value:0
+        sourceComponent: OverlayAim {
+            size: Math.min(100, parent.height/10)
+            type: plugin?plugin.tune.overlay.aim.value:0
+        }
     }
+
 
     Connections {
         enabled: !interactive

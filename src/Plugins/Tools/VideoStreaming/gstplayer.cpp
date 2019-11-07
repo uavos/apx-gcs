@@ -8,8 +8,6 @@
 #include <QVideoSurfaceFormat>
 #include <QtQml>
 
-#include "QmlOverlay.h"
-
 using namespace std::placeholders;
 
 GstPlayer::GstPlayer(Fact *parent)
@@ -98,8 +96,32 @@ GstPlayer::GstPlayer(Fact *parent)
                           "fit-to-page-outline");
     f_viewMode->setDefaultValue(true);
 
-    f_overlay = new Overlay(f_tune);
-    f_overlay->setIcon("image-plus");
+    f_overlay = new Fact(f_tune,
+                         "overlay",
+                         tr("Overlay"),
+                         tr("Show additional info on video"),
+                         Group | Bool | PersistentValue,
+                         "image-plus");
+    f_overlay->setDefaultValue(true);
+
+    Fact *f;
+
+    f = new Fact(f_overlay, "aim", tr("Aim"), "", Enum | PersistentValue, "crosshairs");
+    f->setEnumStrings({"none", "crosshair", "rectangle"});
+
+    f = new Fact(f_overlay,
+                 "gimbal_yaw_var",
+                 tr("Gimbal yaw"),
+                 tr("Gimbal yaw position variable"),
+                 Text | PersistentValue);
+    f->setDefaultValue("cam_yaw");
+
+    f = new Fact(f_overlay,
+                 "gimbal_pitch_var",
+                 tr("Gimbal pitch"),
+                 tr("Gimbal pitch position variable"),
+                 Text | PersistentValue);
+    f->setDefaultValue("cam_pitch");
 
     connect(&m_videoThread, &VideoThread::frameReceived, this, &GstPlayer::onFrameReceived);
     connect(&m_videoThread, &VideoThread::errorOccured, this, &GstPlayer::onErrorOccured);
@@ -111,15 +133,11 @@ GstPlayer::GstPlayer(Fact *parent)
     m_reconnectTimer.setInterval(RECONNECT_TIMEOUT);
     m_reconnectTimer.setSingleShot(true);
 
-    //m_videoThread.setOverlayCallback(std::bind(&Overlay::drawOverlay, f_overlay, _1));
-
-    QmlOverlay *qmlOverlay = new QmlOverlay(this);
-    m_videoThread.setOverlayCallback(std::bind(&QmlOverlay::cb_drawOverlay, qmlOverlay, _1));
+    overlay = new QmlOverlay(this);
+    m_videoThread.setOverlayCallback(std::bind(&QmlOverlay::cb_drawOverlay, overlay, _1));
 
     loadQml(QString("qrc:/%1/VideoPlugin.qml").arg(PLUGIN_NAME));
 
-    //connect(f_reencoding, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
-    //connect(f_lowLatency, &Fact::valueChanged, this, &GstPlayer::stopAndPlay);
     onSourceTypeChanged();
 }
 
@@ -137,7 +155,11 @@ GstPlayer::ConnectionState GstPlayer::getConnectionState() const
 void GstPlayer::snapshot() const
 {
     QImage image = m_lastFrame.copy();
-    f_overlay->drawOverlay(image);
+    QImage img = overlay->getSnapshotOverlay(image.size());
+    if (!img.isNull()) {
+        QPainter painter(&image);
+        painter.drawImage(QPoint(0, 0), img);
+    }
 
     if (!image.save(getMediaFileName(mtImage)))
         onErrorOccured("Can't save snapshot");
