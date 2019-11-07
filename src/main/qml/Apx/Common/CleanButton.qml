@@ -22,7 +22,8 @@ Button {
 
     property int progress: -1
 
-    property bool showIcon: true
+    property bool showIcon: iconName
+    property bool showTitle: title
     property bool showText: false
     property bool showDescr: true
 
@@ -85,9 +86,6 @@ Button {
     property real descrSize: 0.35
 
     function fontSize(v){return Math.max(7,v)}
-
-
-    property bool showTitle: control.title
 
     contentItem: Item {
         implicitWidth: rowItem.implicitWidth
@@ -167,7 +165,7 @@ Button {
             Item {
                 visible: control.showIcon||control.showTitle
                 Layout.fillHeight: showContents
-                Layout.fillWidth: showContents
+                Layout.fillWidth: showContents && visible
             }
             //tools
             RowLayout {

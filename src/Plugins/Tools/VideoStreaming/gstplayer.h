@@ -13,6 +13,7 @@ class GstPlayer : public Fact
     Q_OBJECT
     Q_PROPERTY(QAbstractVideoSurface *videoSurface MEMBER m_videoSurface)
     Q_PROPERTY(ConnectionState connectionState READ getConnectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(quint64 frameCnt READ frameCnt NOTIFY frameCntChanged)
 
 public:
     static const int THREAD_STOP_TIMEOUT = 500;
@@ -46,6 +47,8 @@ public:
     Fact *f_webcamInput;
 
     ConnectionState getConnectionState() const;
+    quint64 frameCnt() const;
+    void setFrameCnt(quint64 v);
 
     Q_INVOKABLE void snapshot() const;
 
@@ -57,6 +60,7 @@ private:
     QImage m_lastFrame;
     ConnectionState m_connectionState = STATE_UNCONNECTED;
     QTimer m_reconnectTimer;
+    quint64 m_frameCnt;
 
     QmlOverlay *overlay;
 
@@ -81,8 +85,9 @@ private slots:
 
 signals:
     void connectionStateChanged();
+    void frameCntChanged();
 
-    void overlayNumbersChanged();
+    void overlayNumbersChanged(); //fwd from qml only
 };
 
 #endif //GSTPLAYER_H

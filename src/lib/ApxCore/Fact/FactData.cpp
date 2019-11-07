@@ -111,121 +111,120 @@ bool FactData::updateValue(const QVariant &v)
     QVariant vx = v;
     int ev = enumValue(v);
     bool ok = false;
-    if (treeType() != Group) {
-        switch (dataType()) {
-        case Enum:
-            //qDebug()<<"set"<<path()<<vx<<"->"<<ev;
-            if (ev < 0) {
-                if (m_enumStrings.size() == 2) {
-                    //try boolean strings
-                    QString s = v.toString();
-                    if (s == "true" || s == "on" || s == "yes")
-                        ev = enumValue(1);
-                    else if (s == "false" || s == "off" || s == "no")
-                        ev = enumValue(0);
-                    if (ev < 0) {
-                        if (v_prev.isNull())
-                            ev = 0;
-                        else
-                            return false;
-                    }
-                } else if (v_prev.isNull())
-                    ev = 0;
-                else
-                    return false;
-            }
-            vx = ev;
-            break;
-        case Bool:
-            if (ev < 0) {
-                QString s = v.toString().toLower();
-                vx = ((s == "true" || s == "1" || s == "on" || s == "yes") || v.toUInt() > 0)
-                         ? true
-                         : false;
-            } else
-                vx = ev;
-            break;
-        case Text:
-            if (ev >= 0)
-                vx = enumText(ev);
-            break;
-        case Int:
-            if (ev >= 0)
-                vx = ev;
-            else if (m_enumStrings.size() > 1)
+    //if (treeType() != Group) {
+    switch (dataType()) {
+    case Enum:
+        //qDebug()<<"set"<<path()<<vx<<"->"<<ev;
+        if (ev < 0) {
+            if (m_enumStrings.size() == 2) {
+                //try boolean strings
+                QString s = v.toString();
+                if (s == "true" || s == "on" || s == "yes")
+                    ev = enumValue(1);
+                else if (s == "false" || s == "off" || s == "no")
+                    ev = enumValue(0);
+                if (ev < 0) {
+                    if (v_prev.isNull())
+                        ev = 0;
+                    else
+                        return false;
+                }
+            } else if (v_prev.isNull())
+                ev = 0;
+            else
                 return false;
-            else if (!vtype(v, QMetaType::Int)) {
-                QString s = v.toString();
-                int i = 0;
-                if (units() == "time" && s.contains(':')) {
-                    i = AppRoot::timeFromString(s);
-                    ok = true;
-                }
-                if (ok == false && units() == "hex") {
-                    i = s.toInt(&ok, 16);
-                }
-                if (!ok) {
-                    i = s.toInt(&ok);
-                    if (!ok)
-                        i = round(s.toDouble(&ok));
-                    if (!ok)
-                        i = s.toInt(&ok, 16);
-                }
-                if (!ok)
-                    return false;
-                if ((!m_min.isNull()) && i < m_min.toInt())
-                    i = m_min.toInt();
-                if ((!m_max.isNull()) && i > m_max.toInt())
-                    i = m_max.toInt();
-                vx = i;
-            } else {
-                int i = v.toInt();
-                if ((!m_min.isNull()) && i < m_min.toInt())
-                    i = m_min.toInt();
-                if ((!m_max.isNull()) && i > m_max.toInt())
-                    i = m_max.toInt();
-                vx = i;
-            }
-            break;
-        case Float:
-            if (!vtype(v, QMetaType::Double)) {
-                QString s = v.toString();
-                if (units() == "lat") {
-                    vx = AppRoot::latFromString(s);
-                } else if (units() == "lon") {
-                    vx = AppRoot::lonFromString(s);
-                } else {
-                    double d = s.toDouble(&ok);
-                    if (!ok) {
-                        //try boolean
-                        if (s == "true" || s == "on" || s == "yes")
-                            d = 1;
-                        else if (s == "false" || s == "off" || s == "no")
-                            d = 0;
-                        else
-                            return false;
-                    }
-                    if ((!m_min.isNull()) && d < m_min.toInt())
-                        d = m_min.toInt();
-                    if ((!m_max.isNull()) && d > m_max.toInt())
-                        d = m_max.toInt();
-                    vx = d;
-                }
-            } else
-                vx = v.toDouble();
-            break;
-        case Mandala:
-            vx = stringToMandala(v.toString());
-            break;
-        case Script:
-            vx = v.toString();
-            break;
-        default:
-            if (ev >= 0)
-                vx = ev;
-            break;
         }
+        vx = ev;
+        break;
+    case Bool:
+        if (ev < 0) {
+            QString s = v.toString().toLower();
+            vx = ((s == "true" || s == "1" || s == "on" || s == "yes") || v.toUInt() > 0) ? true
+                                                                                          : false;
+        } else
+            vx = ev;
+        break;
+    case Text:
+        if (ev >= 0)
+            vx = enumText(ev);
+        break;
+    case Int:
+        if (ev >= 0)
+            vx = ev;
+        else if (m_enumStrings.size() > 1)
+            return false;
+        else if (!vtype(v, QMetaType::Int)) {
+            QString s = v.toString();
+            int i = 0;
+            if (units() == "time" && s.contains(':')) {
+                i = AppRoot::timeFromString(s);
+                ok = true;
+            }
+            if (ok == false && units() == "hex") {
+                i = s.toInt(&ok, 16);
+            }
+            if (!ok) {
+                i = s.toInt(&ok);
+                if (!ok)
+                    i = round(s.toDouble(&ok));
+                if (!ok)
+                    i = s.toInt(&ok, 16);
+            }
+            if (!ok)
+                return false;
+            if ((!m_min.isNull()) && i < m_min.toInt())
+                i = m_min.toInt();
+            if ((!m_max.isNull()) && i > m_max.toInt())
+                i = m_max.toInt();
+            vx = i;
+        } else {
+            int i = v.toInt();
+            if ((!m_min.isNull()) && i < m_min.toInt())
+                i = m_min.toInt();
+            if ((!m_max.isNull()) && i > m_max.toInt())
+                i = m_max.toInt();
+            vx = i;
+        }
+        break;
+    case Float:
+        if (!vtype(v, QMetaType::Double)) {
+            QString s = v.toString();
+            if (units() == "lat") {
+                vx = AppRoot::latFromString(s);
+            } else if (units() == "lon") {
+                vx = AppRoot::lonFromString(s);
+            } else {
+                double d = s.toDouble(&ok);
+                if (!ok) {
+                    //try boolean
+                    if (s == "true" || s == "on" || s == "yes")
+                        d = 1;
+                    else if (s == "false" || s == "off" || s == "no")
+                        d = 0;
+                    else
+                        return false;
+                }
+                if ((!m_min.isNull()) && d < m_min.toInt())
+                    d = m_min.toInt();
+                if ((!m_max.isNull()) && d > m_max.toInt())
+                    d = m_max.toInt();
+                vx = d;
+            }
+        } else
+            vx = v.toDouble();
+        break;
+    case Mandala:
+        vx = stringToMandala(v.toString());
+        break;
+    case Script:
+        vx = v.toString();
+        break;
+    default:
+        if (ev >= 0)
+            vx = ev;
+        break;
     }
+    //}
     if (v_prev == vx)
         return false;
     if (dataType() == Float || dataType() == Text) {

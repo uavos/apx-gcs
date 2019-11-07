@@ -43,6 +43,7 @@ Item {
         id: numbers
         anchors.fill: interactive?(plugin.tune.view_mode.value?control:videoFrame):control
         interactive: control.interactive
+        alive: control.alive
 
         Loader {
             active: true
@@ -50,10 +51,7 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: numbers.overlayItemSize*1.1
             width: Math.min(80, parent.height/5)
-            sourceComponent: OverlayGimbal {
-                yaw: m[plugin.tune.overlay.gimbal_yaw_var.value].value
-                pitch: m[plugin.tune.overlay.gimbal_pitch_var.value].value
-            }
+            sourceComponent: OverlayGimbal { }
         }
     }
 
@@ -61,8 +59,8 @@ Item {
         active: alive
         anchors.centerIn: videoFrame
         sourceComponent: OverlayAim {
-            size: Math.min(100, parent.height/10)
-            type: plugin?plugin.tune.overlay.aim.value:0
+            size: Math.min(100, control.height/10)
+            type: plugin.tune.overlay.aim.value
         }
     }
 

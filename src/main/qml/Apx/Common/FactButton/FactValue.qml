@@ -70,11 +70,13 @@ CleanButton {
     contents: [
         Label {
             text: control.valueText
+            Layout.fillWidth: !(showTitle||showIcon)
             Layout.maximumHeight: bodyHeight-Layout.topMargin
             Layout.topMargin: font.pixelSize*0.05+1
             font.family: font_narrow
             font.pixelSize: fontSize(bodyHeight*valueSize-1)
             verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
             color: valueColor
         }
     ]

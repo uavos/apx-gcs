@@ -17,6 +17,7 @@ GstPlayer::GstPlayer(Fact *parent)
            tr("Camera link and streaming"),
            Group,
            "video")
+    , m_frameCnt(0)
 {
     if (!AppDirs::images().exists())
         AppDirs::images().mkpath(AppDirs::images().absolutePath());
@@ -75,7 +76,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
     f_reencoding = new Fact(f_tune,
                             "reencoding",
-                            tr("Reencoding"),
+                            tr("Record overlay"),
                             tr("Video reencoding"),
                             Bool | PersistentValue,
                             "film");
@@ -96,18 +97,18 @@ GstPlayer::GstPlayer(Fact *parent)
                           "fit-to-page-outline");
     f_viewMode->setDefaultValue(true);
 
+    // overlay
     f_overlay = new Fact(f_tune,
                          "overlay",
                          tr("Overlay"),
                          tr("Show additional info on video"),
-                         Group | Bool | PersistentValue,
+                         Group,
                          "image-plus");
-    f_overlay->setDefaultValue(true);
-
     Fact *f;
 
     f = new Fact(f_overlay, "aim", tr("Aim"), "", Enum | PersistentValue, "crosshairs");
     f->setEnumStrings({"none", "crosshair", "rectangle"});
+    f->setDefaultValue("rectangle");
 
     f = new Fact(f_overlay,
                  "gimbal_yaw_var",
@@ -192,6 +193,7 @@ void GstPlayer::setConnectionState(GstPlayer::ConnectionState cs)
 
 void GstPlayer::play()
 {
+    setFrameCnt(0);
     setConnectionState(STATE_CONNECTING);
     QString uri = inputToUri();
     m_videoThread.setUri(uri);
@@ -289,6 +291,7 @@ void GstPlayer::onFrameReceived(const QImage &image)
     if (getConnectionState() == STATE_CONNECTING)
         setConnectionState(STATE_CONNECTED);
 
+    setFrameCnt(frameCnt() + 1);
     m_lastFrame = image;
     if (m_videoSurface) {
         if (image.size() != m_videoSurface->surfaceFormat().frameSize())
@@ -356,4 +359,16 @@ void GstPlayer::onReconnectTimerTimeout()
     onErrorOccured("Connection timeout");
     stop();
     play();
+}
+
+quint64 GstPlayer::frameCnt() const
+{
+    return m_frameCnt;
+}
+void GstPlayer::setFrameCnt(quint64 v)
+{
+    if (m_frameCnt == v)
+        return;
+    m_frameCnt = v;
+    emit frameCntChanged();
 }

@@ -4,21 +4,29 @@ import QtQuick.Layouts 1.12
 ColumnLayout {
     id: control
 
-    property real pitch: m.roll.value
-    property real yaw: m.yaw.value
+    property var m_pitch: m[plugin.tune.overlay.gimbal_pitch_var.value]
+    property var m_yaw: m[plugin.tune.overlay.gimbal_yaw_var.value]
 
-    spacing: 5
+    spacing: width/20
 
-    OverlayGimbalAxis {
+    Loader {
         Layout.fillWidth: true
-        value: pitch
-        type: OverlayGimbalAxis.AxisType.Down
+        active: m_pitch?true:false
+        visible: active
+        sourceComponent: OverlayGimbalAxis {
+            value: m_pitch.value
+            type: OverlayGimbalAxis.AxisType.Down
+        }
     }
 
-    OverlayGimbalAxis {
+    Loader {
         Layout.fillWidth: true
-        value: yaw
-        type: OverlayGimbalAxis.AxisType.Full
+        active: m_yaw?true:false
+        visible: active
+        sourceComponent: OverlayGimbalAxis {
+            value: m_yaw.value
+            type: OverlayGimbalAxis.AxisType.Full
+        }
     }
 
 }

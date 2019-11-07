@@ -11,6 +11,7 @@ Item {
     id: control
 
     property bool interactive: false
+    property bool alive: true
 
     property int numberItemSize: Math.min(22,Math.max(12,height/15))
     property int overlayItemSize: numberItemSize
@@ -22,8 +23,8 @@ Item {
         for(var i in overlays){
             var overlay=overlays[i]
             var c=numbersMenuC.createObject(control,{"overlay": overlay})
-            c.parentFact=apx.tools.videostreaming.tune.overlay
-            apx.tools.videostreaming.overlayNumbersChanged.connect(overlay.model.loadSettings)
+            c.parentFact=plugin.tune.overlay
+            plugin.overlayNumbersChanged.connect(overlay.model.loadSettings)
         }
     }
     Component {
@@ -33,7 +34,7 @@ Item {
             defaults: overlay.defaults
             settingsName: overlay.settingsName
             destroyOnClose: false
-            onAccepted: apx.tools.videostreaming.overlayNumbersChanged()
+            onAccepted: plugin.overlayNumbersChanged()
         }
     }
 
@@ -74,9 +75,10 @@ Item {
         enabled: !interactive
         target: application
         onLoadingFinished: {
+            //plugin is available
             for(var i in overlays){
                 var overlay=overlays[i]
-                apx.tools.videostreaming.overlayNumbersChanged.connect(overlay.model.loadSettings)
+                plugin.overlayNumbersChanged.connect(overlay.model.loadSettings)
             }
         }
     }
@@ -116,6 +118,27 @@ Item {
         }
     }
 
+    //frame cnt
+    FactValue {
+        id: frameCntItem
+        anchors.left: timeItem.right
+        anchors.top: timeItem.top
+        anchors.leftMargin: overlayItemSize/2
+        height: overlayItemSize
+        showTitle: false
+        readonly property int v: plugin.frameCnt
+        value: ("0"+v).slice(-2)
+        visible: alive && v>0
+        onValueChanged: frameTimeout.restart()
+        warning: visible && !frameTimeout.running
+        Timer {
+            id: frameTimeout
+            interval: 1000
+            repeat: false
+        }
+    }
+
+    //cam mode
     FactValue {
         anchors.right: parent.right
         anchors.top: parent.top
