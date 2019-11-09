@@ -16,12 +16,12 @@ Item {
     property var plugin: apx.tools.videostreaming
     property bool alive: true
 
-    opacity: 0.7
+    opacity: ui.effects?0.7:1
 
     Item {
         id: videoFrame
-        x: frameRect?frameRect.x:0
-        y: frameRect?frameRect.y:0
+        x: (frameRect?frameRect.x:0)-control.x
+        y: (frameRect?frameRect.y:0)-control.y
         width: frameRect?frameRect.width:parent.width
         height: frameRect?frameRect.height:parent.height
     }
@@ -29,7 +29,7 @@ Item {
 
     Loader {
         active: !alive
-        anchors.centerIn: parent
+        anchors.centerIn: videoFrame
         sourceComponent: Text {
             color: "#60FFFFFF"
             text: qsTr("no video").toUpperCase()
@@ -41,7 +41,7 @@ Item {
 
     OverlayNumbers {
         id: numbers
-        anchors.fill: interactive?(plugin.tune.view_mode.value?control:videoFrame):control
+        anchors.fill: interactive?(plugin.tune.view_mode.value>0?control:videoFrame):control
         interactive: control.interactive
         alive: control.alive
 

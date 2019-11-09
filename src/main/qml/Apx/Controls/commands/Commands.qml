@@ -42,8 +42,9 @@ Rectangle {
                 fact: vehicle
                 iconName: fact.icon
                 toolTip: apx.vehicles.title
-                showText: true
-                text: vehicle.title
+                showTitle: false
+                valueScale: 0.6
+                value: vehicle.title
                 active: false
                 warning: vehicle.streamType<=0
                 enabled: true
@@ -53,7 +54,10 @@ Rectangle {
                 defaultHeight: buttonHeight
                 ui_scale: 1
                 fact: vehicle.nodes
-                title: fact.nodesCount
+                showTitle: false
+                showIcon: true
+                valueScale: 0.6
+                value: fact.nodesCount
                 iconName: fact.icon
                 warning: fact.nodesCount<=0
                 active: fact.modified || fact.progress>=0 || (!fact.dataValid)
@@ -64,7 +68,10 @@ Rectangle {
                 defaultHeight: buttonHeight
                 ui_scale: 1
                 fact: vehicle.mission
-                title: fact.missionSize
+                showTitle: false
+                showIcon: true
+                valueScale: 0.6
+                value: fact.missionSize
                 iconName: fact.icon
                 warning: fact.missionSize<=0
                 active: fact.modified || fact.progress>=0

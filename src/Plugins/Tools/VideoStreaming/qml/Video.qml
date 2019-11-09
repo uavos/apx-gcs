@@ -14,9 +14,11 @@ import Apx.Common 1.0
 Control {
     id: control
 
+    implicitWidth: 400
+    implicitHeight: implicitWidth*3/4
+
     Component.onCompleted: {
         application.registerUiComponent(control, "video")
-        //ui.main.add(control, GroundControl.Layout.Main, 0)
     }
 
     readonly property var plugin: apx.tools.videostreaming
@@ -25,76 +27,45 @@ Control {
     readonly property bool recording: plugin?plugin.tune.record.value:false
     readonly property var scale: overlay?overlay.scale:0.1
 
-    readonly property bool viewMode: plugin?plugin.tune.view_mode.value:false
+    readonly property int viewMode: plugin?plugin.tune.view_mode.value:false
+    readonly property bool viewFull: viewMode>1
 
-    contentItem: Rectangle {
 
-        implicitWidth: 400
-        implicitHeight: implicitWidth*3/4
-
+    background: Rectangle {
         border.width: 0
         color: "#000"
-        radius: 5
-
         VideoOutput {
             id: videoOutput
             anchors.fill: parent
+            anchors.leftMargin: viewFull?0:control.leftPadding
+            anchors.rightMargin: viewFull?0:control.rightPadding
+            anchors.topMargin: viewFull?0:control.topPadding
+            anchors.bottomMargin: viewFull?0:control.bottomPadding
             source: plugin
             flushMode: VideoOutput.EmptyFrame
-            fillMode: control.viewMode?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
-
-            /*OverlayAim {
-                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-                type: plugin.tune.overlay.aim.value
-                scale: overlay.scale.value
-                x: videoOutput.contentRect.x
-                y: videoOutput.contentRect.y
-                width: videoOutput.contentRect.width
-                height: videoOutput.contentRect.height
-            }
-            OverlayVars {
-                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED
-                topLeftVars: overlay.top_left_vars.value
-                topCenterVars: overlay.top_center_vars.value
-                topRightVars: overlay.top_right_vars.value
-                scale: overlay.scale.value
-                x: videoOutput.contentRect.x
-                y: videoOutput.contentRect.y
-                width: videoOutput.contentRect.width
-                height: videoOutput.contentRect.height
-            }
-            OverlayGimbal {
-                visible: plugin.connectionState === GstPlayer.STATE_CONNECTED && overlay.show_gimbal.value === true
-                yawVar: overlay.gimbal_yaw_var.value
-                pitchVar: overlay.gimbal_pitch_var.value
-                scale: overlay.scale.value
-                x: videoOutput.contentRect.x
-                y: videoOutput.contentRect.y
-                width: videoOutput.contentRect.width
-                height: videoOutput.contentRect.height
-            }*/
-
+            fillMode: viewMode>0?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
             Overlay {
                 anchors.fill: parent
+                anchors.topMargin: viewFull?control.topPadding:0
                 visible: !pluginMinimized
                 interactive: true
                 frameRect: videoOutput.contentRect
                 alive: plugin.connectionState === GstPlayer.STATE_CONNECTED
             }
         }
-
-        BusyIndicator {
-            visible: plugin.connectionState === GstPlayer.STATE_CONNECTING
+        Loader {
             anchors.centerIn: parent
-            running: true
+            active: plugin.connectionState === GstPlayer.STATE_CONNECTING
+            sourceComponent: BusyIndicator { }
         }
+    }
 
+    contentItem: Item {
         ColumnLayout {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             anchors.margins: 3
             spacing: 5
-
             CleanButton {
                 visible: running
                 iconName: "record-rec"
@@ -123,18 +94,6 @@ Control {
                     plugin.tune.trigger()
                 }
             }
-
-            /*CleanButton {
-                id: resizeButton
-                iconName: checked ? "fullscreen-exit" : "fullscreen"
-                checkable: true
-                onCheckedChanged: {
-                    if(checked)
-                        plugin.state = "big"
-                    else
-                        plugin.state = "small"
-                }
-            }*/
         }
     }
 }

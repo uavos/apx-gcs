@@ -93,9 +93,10 @@ GstPlayer::GstPlayer(Fact *parent)
                           "view_mode",
                           tr("Fit to view"),
                           tr("Scale video to fit view"),
-                          Bool | PersistentValue,
+                          Enum | PersistentValue,
                           "fit-to-page-outline");
-    f_viewMode->setDefaultValue(true);
+    f_viewMode->setEnumStrings({"Fit", "Scale", "Full"});
+    f_viewMode->setDefaultValue("Scale");
 
     // overlay
     f_overlay = new Fact(f_tune,

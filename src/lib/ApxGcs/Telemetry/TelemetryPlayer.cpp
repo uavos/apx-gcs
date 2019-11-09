@@ -336,13 +336,25 @@ void TelemetryPlayer::next()
                     updCnt++;
                 QString s = f->title();
                 if (!(s.startsWith("rc_") || s.startsWith("camcmd_"))) {
-                    apxMsg() << QString("[replay]%1: %2 = %3").arg(">").arg(s).arg(f->text());
+                    vehicle->message(QString("%1: %2 = %3").arg(">").arg(s).arg(f->text()),
+                                     AppNotify::Important);
+                    //apxMsg() << QString("[replay]%1: %2 = %3").arg(">").arg(s).arg(f->text());
                 }
             } else if (type == 2 || type == 3) {
                 const QString &evt = r.at(n.indexOf("name")).toString();
                 const QString &uid = r.at(n.indexOf("uid")).toString();
                 if (evt == "msg") {
-                    apxMsg() << QString("<[replay]%1").arg(sv);
+                    QString s = sv;
+                    QString sub;
+                    if (s.startsWith('[')) {
+                        s.remove(0, 1);
+                        sub = s.left(s.indexOf(']'));
+                        s.remove(0, sub.size() + 1);
+                    }
+                    vehicle->message(QString("<: %1").arg(s),
+                                     AppNotify::FromVehicle | AppNotify::Important,
+                                     sub);
+                    //apxMsg() << QString("<[replay]%1").arg(sv);
                     App::sound(sv);
                 } else {
                     if (evt == "mission") {
@@ -361,10 +373,14 @@ void TelemetryPlayer::next()
                         qDebug() << evt << sv;
                         continue;
                     }
-                    QString s = QString("[replay]%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
+                    AppNotify::NotifyFlags flags = AppNotify::Important;
+                    if (type != 3)
+                        flags |= AppNotify::FromVehicle;
+                    QString s = QString("%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
                     if (!sv.isEmpty())
                         s.append(QString(" (%1)").arg(sv));
-                    apxMsg() << s;
+                    vehicle->message(s, flags);
+                    //apxMsg() << s;
                 }
             }
         }
