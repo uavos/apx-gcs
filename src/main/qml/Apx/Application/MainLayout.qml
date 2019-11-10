@@ -1,6 +1,7 @@
 ﻿import QtQuick 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.13
 
 import Apx.Common 1.0
 import Apx.Controls 1.0
@@ -31,16 +32,19 @@ Item {
     property var mainPlugins: ([])
     property var mainPlugin
 
+    ListModel {
+        id: pluginsModel
+    }
+    property var plugins: []
+
     function add(plugin, layout, index)
     {
         switch(layout){
         case GroundControl.Layout.Main:
-            addMainPlugin(plugin, index)
-            return true
-        case GroundControl.Layout.MainWidget:
-            plugin.parent=widgets
-            plugin.Layout.alignment=(Qt.AlignRight | Qt.AlignBottom)
-            taskbar.addWidget(plugin)
+            addPluginFrame(plugin, index)
+            if(plugin.state!=="maximized"){
+                taskbar.addWidgetControl(plugin)
+            }
             return true
         case GroundControl.Layout.Notifications:
             plugin.parent=notifications
@@ -49,69 +53,45 @@ Item {
         return false
     }
 
-    function addMainPlugin(plugin, index)
-    {
-        if(!(plugin instanceof Loader)){
-            console.error("Plugin must inherit Loader")
-        }
-        mainPlugins.splice(index, 0, plugin)
-        //mainPlugins.push(plugin)
-        minimizeMainPlugin(plugin)
-        maximizeMainPlugin(mainPlugins[0])
-        plugin.loaded.connect(function(){
-            if(!updatePluginPadding)
-                return
-            updatePluginPadding(plugin)
-        })
-        plugin.visibleChanged.connect(function(){
-            if(!minimizeMainPlugin)
-                return
-            if(!maximizeMainPlugin)
-                return
-            if(plugin.visible===false){
-                minimizeMainPlugin(plugin)
-                if(plugin===mainPlugin){
-                    maximizeMainPlugin(mainPlugins[0])
-                }
-            } else {
-                minimizeMainPlugin(plugin)
-            }
-        })
-        plugin.loaded.connect(function(){
-            if(!maximizeButtonC)
-                return
-            maximizeButtonC.createObject(plugin.item,{"plugin": plugin})
-        })
-
-    }
-    function maximizeMainPlugin(plugin)
+    function maximizePlugin(plugin)
     {
         if(mainPlugin){
             if(mainPlugin===plugin)
                 return
-            minimizeMainPlugin(mainPlugin)
+            mainPlugin.state="minimized"
         }
         mainPlugin=plugin
-        //return
-        plugin.state="maximized"
         plugin.z=-1
         plugin.parent=control
         plugin.anchors.fill=control
         updatePluginPadding(plugin)
     }
-    function minimizeMainPlugin(plugin)
+    function minimizePlugin(plugin)
     {
-        plugin.state="minimized"
+        if(plugin.state){
+            for(var i=0;i<(pluginsModel.count-1);++i){
+                var p=plugins[pluginsModel.get(i).idx]
+                if(p!==plugin)continue
+                pluginsModel.move(i,pluginsModel.count-1,1)
+                break
+            }
+        }
         plugin.z=0
-        plugin.anchors.fill=null
-        plugin.parent=widgets
-        plugin.Layout.alignment=(Qt.AlignRight | Qt.AlignBottom)
         updatePluginPadding(plugin)
+    }
+    function updatePluginState(plugin)
+    {
+        if(plugin.state==="maximized"){
+            maximizePlugin(plugin)
+        }else{
+            minimizePlugin(plugin)
+        }
     }
     function updatePluginPadding(plugin)
     {
         var item = plugin.item
-        if(!item)return
+        if(!item) return
+        if(typeof(item.leftPadding)=="undefined") return
         if(plugin.state==="maximized"){
             item.leftPadding=Qt.binding(function(){return main.x})
             item.rightPadding=Qt.binding(function(){return (control.width-main.width-main.x)})
@@ -122,20 +102,28 @@ Item {
             item.rightPadding=0
             item.topPadding=0
             item.bottomPadding=0
-            item.implicitWidth=300
-            item.implicitHeight=item.implicitWidth*3/4
         }
     }
-    Component {
-        id: maximizeButtonC
-        CleanButton {
-            property var plugin
-            visible: plugin.state!=="maximized"
-            iconName: "fullscreen"
-            toolTip: qsTr("Maximize view")
-            onTriggered: maximizeMainPlugin(plugin)
-        }
+
+    function addPluginFrame(plugin, index)
+    {
+        plugins.push(plugin)
+        var p = {}
+        for(var i in plugin) p[i]=plugin[i]
+        p.idx = plugins.length-1
+        if(index<pluginsModel.count) pluginsModel.insert(index, p)
+        else pluginsModel.append(p)
+
+        plugin.loaded.connect(function(){ updatePluginPadding(plugin) })
+        plugin.stateChanged.connect(function(){ updatePluginState(plugin) })
+        plugin.activeChanged.connect(function(){
+            if(plugin.active)return
+            minimizePlugin(plugin)
+        })
+
+        updatePluginState(plugin)
     }
+
 
     RowLayout {
         id: top
@@ -164,7 +152,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: margins
-        anchors.rightMargin: widgets.implicitWidth+margins
+        anchors.rightMargin: widgets.implicitWidth+margins*2
         anchors.bottomMargin: margins
         anchors.topMargin: vehicles.implicitHeight+margins
     }
@@ -174,13 +162,23 @@ Item {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.rightMargin: margins
+        anchors.leftMargin: margins
         anchors.bottomMargin: margins
         spacing: margins
         anchors.topMargin: taskbar.height+margins
         Item {
             Layout.fillHeight: true
         }
-        clip: true
+        Repeater {
+            model: pluginsModel
+            delegate: MainPluginFrame {
+                Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                plugin: plugins[idx]
+                //onMaximize: maximizePlugin(plugin)
+                //onMinimize: minimizePlugin(plugin)
+            }
+        }
+        //clip: true
     }
 
     ColumnLayout {

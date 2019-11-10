@@ -56,7 +56,7 @@ Item {
         visible: false
         contextType: "2d"
         onPaint: {
-            var ctx = context
+            var ctx = getContext("2d")
             ctx.reset()
             ctx.beginPath()
             ctx.strokeStyle = Qt.rgba(1, 1, 1, 1)

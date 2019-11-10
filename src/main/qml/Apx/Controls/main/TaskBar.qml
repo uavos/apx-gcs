@@ -19,7 +19,7 @@ RowLayout {
         id: widgetsView
         Layout.fillHeight: true
     }
-    function addWidget(plugin, index){widgetsView.add(plugin,index)}
+    function addWidgetControl(plugin, index){widgetsView.add(plugin,index)}
 
 
 

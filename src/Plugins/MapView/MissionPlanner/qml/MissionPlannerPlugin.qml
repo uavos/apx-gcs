@@ -7,10 +7,10 @@ AppPlugin {
     id: plugin
     sourceComponent: MissionPlanner { }
 
-    unloadOnHide: false
+    state: "maximized"
 
     uiComponent: "main"
     onConfigure: {
-        ui.main.add(plugin, GroundControl.Layout.Main, 0)
+        ui.main.add(plugin, GroundControl.Layout.Main, 100)
     }
 }

@@ -21,9 +21,9 @@ ListView {
         text: plugin.title
         toolTip: plugin.descr
         iconName: plugin.icon
-        highlighted: plugin.visible
+        highlighted: plugin.active
         onTriggered: {
-            plugin.visible=!plugin.visible
+            plugin.active=!plugin.active
             settings.setValue(plugin.title,plugin.visible)
         }
     }
@@ -50,6 +50,6 @@ ListView {
         for(var i in plugin) p[i]=plugin[i]
         p.idx = plugins.length-1
         pluginsModel.insert(index, p)
-        plugin.visible=false //settings.value(plugin.title,false)===true
+        plugin.active=false //settings.value(plugin.title,false)===true
     }
 }

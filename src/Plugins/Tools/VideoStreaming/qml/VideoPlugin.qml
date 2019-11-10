@@ -7,8 +7,8 @@ AppPlugin {
     id: pluginLoader
     sourceComponent: Video { }
     uiComponent: "main"
+    state: "minimized"
     onConfigure: {
-        ui.main.add(pluginLoader, GroundControl.Layout.MainWidget, 1)
-        ui.main.add(pluginLoader, GroundControl.Layout.Main, 1)
+        ui.main.add(pluginLoader, GroundControl.Layout.Main, 100)
     }
 }

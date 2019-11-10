@@ -96,7 +96,7 @@ GstPlayer::GstPlayer(Fact *parent)
                           Enum | PersistentValue,
                           "fit-to-page-outline");
     f_viewMode->setEnumStrings({"Fit", "Scale", "Full"});
-    f_viewMode->setDefaultValue("Scale");
+    f_viewMode->setDefaultValue("Full");
 
     // overlay
     f_overlay = new Fact(f_tune,

@@ -30,7 +30,7 @@ Loader {
 
     function activate(object)
     {
-        active=unloadOnHide?Qt.binding(function(){return visible}):true
+        active=true //unloadOnHide?Qt.binding(function(){return visible}):true
         configure()
     }
     Connections {
@@ -39,6 +39,8 @@ Loader {
         onAboutToQuit: {
             plugin.visible=false
             plugin.active=false
+            plugin.sourceComponent=null
+            plugin.uiComponent=""
         }
         onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
     }

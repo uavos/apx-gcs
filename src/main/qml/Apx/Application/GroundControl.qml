@@ -20,7 +20,6 @@ Item {
     enum Layout {
         Instrument,
         Main,
-        MainWidget,
         Notifications
     }
     function add(item, layout, index)

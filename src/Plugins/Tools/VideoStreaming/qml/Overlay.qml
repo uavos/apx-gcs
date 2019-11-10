@@ -42,6 +42,7 @@ Item {
     OverlayNumbers {
         id: numbers
         anchors.fill: interactive?(plugin.tune.view_mode.value>0?control:videoFrame):control
+        anchors.margins: 10
         interactive: control.interactive
         alive: control.alive
 

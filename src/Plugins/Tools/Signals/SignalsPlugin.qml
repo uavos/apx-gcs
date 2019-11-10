@@ -10,11 +10,9 @@ AppPlugin {
     descr: qsTr("Realtime chart")
     icon: "poll"
 
-    //unloadOnHide: false
-
     sourceComponent: Signals { }
     uiComponent: "main"
     onConfigure: {
-        ui.main.add(plugin, GroundControl.Layout.MainWidget)
+        ui.main.add(plugin, GroundControl.Layout.Main)
     }
 }
