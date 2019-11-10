@@ -84,59 +84,89 @@ Item {
     }
 
 
-    FactValue {
-        id: timeItem
+    RowLayout {
+        id: timeLayout
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.margins: control.margins
+        spacing: overlayItemSize/2
         height: overlayItemSize
-        fact: m.gps_time
-        title: gps?"GPS":"LOCAL"
-        value: apx.dateToString(time)
-        property bool gps: false
-        property int time: gps?gpsTime:localTime
+        FactValue {
+            id: timeItem
+            Layout.fillHeight: true
+            fact: m.gps_time
+            title: gps?"GPS":"LOCAL"
+            value: apx.dateToString(time)
+            property bool gps: false
+            property int time: gps?gpsTime:localTime
 
-        property int gpsTime: fact.value
-        property int localTime: 0
-        Timer {
-            running: !timeItem.gps
-            interval: 500
-            repeat: true
-            onTriggered: {
-                var date = new Date;
-                timeItem.localTime=date.getTime()/1000
+            property int gpsTime: fact.value
+            property int localTime: 0
+            Timer {
+                running: !timeItem.gps
+                interval: 500
+                repeat: true
+                onTriggered: {
+                    var date = new Date;
+                    timeItem.localTime=date.getTime()/1000
+                }
+            }
+            onGpsTimeChanged: {
+                gpsTimeout.restart()
+                timeItem.gps=gpsTime>0
+            }
+            Timer {
+                id: gpsTimeout
+                interval: 5000
+                onTriggered: timeItem.gps=false
             }
         }
-        onGpsTimeChanged: {
-            gpsTimeout.restart()
-            timeItem.gps=gpsTime>0
-        }
-        Timer {
-            id: gpsTimeout
-            interval: 5000
-            onTriggered: timeItem.gps=false
+
+        //frame cnt
+        FactValue {
+            id: frameCntItem
+            Layout.fillHeight: true
+            showTitle: false
+            readonly property int v: plugin.frameCnt
+            value: ("0"+v).slice(-2)
+            visible: alive && v>0
+            onValueChanged: frameTimeout.restart()
+            warning: visible && !frameTimeout.running
+            Timer {
+                id: frameTimeout
+                interval: 1000
+                repeat: false
+            }
         }
     }
 
-    //frame cnt
+    //cam track pos
     FactValue {
-        id: frameCntItem
-        anchors.left: timeItem.right
-        anchors.top: timeItem.top
-        anchors.leftMargin: overlayItemSize/2
+        id: tposItem
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: timeLayout.bottom
+        anchors.margins: control.margins
         height: overlayItemSize
         showTitle: false
-        readonly property int v: plugin.frameCnt
-        value: ("0"+v).slice(-2)
-        visible: alive && v>0
-        onValueChanged: frameTimeout.restart()
-        warning: visible && !frameTimeout.running
+        property real lat: m.cam_lat.value
+        property real lon: m.cam_lon.value
+        property real hmsl: m.cam_hmsl.value
+        visible: lat!=0 && lon!=0 && (tposTimeout.running||active)
+        value: apx.latToString(lat)+" "+apx.lonToString(lon)+(hmsl!=0?" "+apx.distanceToString(hmsl, false):"")
+
+        onLatChanged: tposTimeout.restart()
+        onLonChanged: tposTimeout.restart()
+        onHmslChanged: tposTimeout.restart()
         Timer {
-            id: frameTimeout
-            interval: 1000
+            id: tposTimeout
+            interval: 10000
             repeat: false
         }
+        enabled: interactive
+        onTriggered: active=!active
     }
+
+
 
     //cam mode
     FactValue {
