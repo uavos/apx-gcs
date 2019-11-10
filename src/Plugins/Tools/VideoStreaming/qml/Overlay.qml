@@ -56,12 +56,21 @@ Item {
         }
     }
 
+    property int aimSize: Math.min(100, control.height/10)
     Loader {
         active: alive
         anchors.centerIn: videoFrame
         sourceComponent: OverlayAim {
-            size: Math.min(100, control.height/10)
+            size: aimSize
             type: plugin.tune.overlay.aim.value
+        }
+    }
+
+    Loader {
+        active: interactive && numbers.ctrEnable
+        anchors.fill: videoFrame
+        sourceComponent: CamControls {
+            size: aimSize
         }
     }
 

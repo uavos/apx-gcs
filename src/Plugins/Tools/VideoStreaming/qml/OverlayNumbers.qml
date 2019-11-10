@@ -13,6 +13,8 @@ Item {
     property bool interactive: false
     property bool alive: true
 
+    property alias ctrEnable: ctrEnable.active
+
     property int numberItemSize: Math.min(22,Math.max(12,height/15))
     property int overlayItemSize: numberItemSize
 
@@ -179,7 +181,7 @@ Item {
         valueText: fact.text
     }
 
-
+    //bottom cam opts and values
     RowLayout {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
@@ -187,6 +189,17 @@ Item {
         anchors.margins: control.margins
         height: overlayItemSize
         spacing: 3
+
+        FactValue {
+            id: ctrEnable
+            Layout.fillHeight: true
+            showTitle: false
+            value: qsTr("CTR")
+            toolTip: qsTr("Enable controls")
+            visible: interactive
+            enabled: true
+            onTriggered: active=!active
+        }
 
         FactValue {
             Layout.fillHeight: true

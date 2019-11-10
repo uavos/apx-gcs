@@ -29,8 +29,6 @@ Item {
 
 
 
-    property var mainPlugins: ([])
-    property var mainPlugin
 
     ListModel {
         id: pluginsModel
@@ -53,14 +51,29 @@ Item {
         return false
     }
 
+    property var mainPlugin
+
     function maximizePlugin(plugin)
     {
+        if(!plugin){
+            //ensure at least one plugin maximized
+            if(mainPlugin) return
+            for(var i=0;i<pluginsModel.count;++i){
+                var p=plugins[pluginsModel.get(i).idx]
+                if(!p.active)continue
+                if(!p.state)continue
+                maximizePlugin(p)
+                break
+            }
+            return
+        }
         if(mainPlugin){
             if(mainPlugin===plugin)
                 return
             mainPlugin.state="minimized"
         }
         mainPlugin=plugin
+        if(plugin.state) plugin.state="maximized"
         plugin.z=-1
         plugin.parent=control
         plugin.anchors.fill=control
@@ -68,6 +81,9 @@ Item {
     }
     function minimizePlugin(plugin)
     {
+        if(plugin!==mainPlugin) return
+        mainPlugin=null
+
         if(plugin.state){
             for(var i=0;i<(pluginsModel.count-1);++i){
                 var p=plugins[pluginsModel.get(i).idx]
@@ -76,6 +92,7 @@ Item {
                 break
             }
         }
+        if(plugin.state) plugin.state="minimized"
         plugin.z=0
         updatePluginPadding(plugin)
     }
@@ -119,8 +136,8 @@ Item {
         plugin.activeChanged.connect(function(){
             if(plugin.active)return
             minimizePlugin(plugin)
+            maximizePlugin()
         })
-
         updatePluginState(plugin)
     }
 

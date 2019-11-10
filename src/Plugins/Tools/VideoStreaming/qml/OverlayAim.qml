@@ -30,14 +30,14 @@ Item {
                     anchors.centerIn: parent
                     width: parent.width
                     height: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
                     anchors.centerIn: parent
                     width: control.w
                     height: parent.height
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
             }
@@ -51,7 +51,7 @@ Item {
                     anchors.top: parent.top
                     width: parent.width/4
                     height: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -59,7 +59,7 @@ Item {
                     anchors.top: parent.top
                     height: parent.height/4
                     width: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -67,7 +67,7 @@ Item {
                     anchors.top: parent.top
                     width: parent.width/4
                     height: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -75,7 +75,7 @@ Item {
                     anchors.top: parent.top
                     height: parent.height/4
                     width: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -83,7 +83,7 @@ Item {
                     anchors.bottom: parent.bottom
                     width: parent.width/4
                     height: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -91,7 +91,7 @@ Item {
                     anchors.bottom: parent.bottom
                     height: parent.height/4
                     width: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -99,7 +99,7 @@ Item {
                     anchors.bottom: parent.bottom
                     width: parent.width/4
                     height: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
                 Rectangle {
@@ -107,7 +107,7 @@ Item {
                     anchors.bottom: parent.bottom
                     height: parent.height/4
                     width: control.w
-                    border.color: "#00000000"
+                    border.width: 0
                     color: "#fff"
                 }
             }
