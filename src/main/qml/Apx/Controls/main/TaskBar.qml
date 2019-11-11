@@ -107,6 +107,7 @@ RowLayout {
         Layout.rightMargin: height*0.3
     }
     Loader {
+        Layout.fillHeight: true
         active: Qt.platform.os === "linux"
         visible: active
         sourceComponent: Component {
