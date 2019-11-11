@@ -177,6 +177,7 @@ GstPlayer::GstPlayer(Fact *parent)
 
     // controls menu
     f_tools = new Fact(f_tune, "tools", tr("Tools"), tr("Camera tools"), Action, "camera-plus");
+    new Fact(f_tools, "power_payload");
     new Fact(f_tools, "cam_mode");
     new Fact(f_tools, "cam_ch");
     new Fact(f_tools, "cam_zoom");

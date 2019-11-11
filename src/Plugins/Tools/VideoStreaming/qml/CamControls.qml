@@ -11,7 +11,7 @@ Item {
 
     property int size: 100
     property int w: 32
-    property int ctrSize: Math.min(control.width,control.height)/2
+    property int ctrSize: Math.min(control.width,control.height)/1.5
 
     property var f_cmdX: m[plugin.tune.controls.control_x.text]
     property var f_cmdY: m[plugin.tune.controls.control_y.text]
@@ -41,7 +41,7 @@ Item {
         height: control.size
         width: height
         border.width: 1
-        border.color: "#0f0"
+        border.color: alive?"#0f0":"#888"
         color: "#00000000"
     }
 
@@ -51,7 +51,7 @@ Item {
         height: control.ctrSize
         width: height
         border.width: 1
-        border.color: "#0f0"
+        border.color: "#a0ffffff"
         color: "#00000000"
         visible: mouseArea.dragging || pinchArea.active
     }

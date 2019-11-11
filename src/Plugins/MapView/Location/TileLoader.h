@@ -40,6 +40,8 @@ public:
 
     static TileLoader *instance() { return _instance; }
 
+    Fact *f_offline;
+
     enum MapID {
         GoogleHybrid,
         GoogleSatellite,

@@ -32,6 +32,8 @@ Control {
     readonly property int viewMode: plugin?plugin.tune.view_mode.value:false
     readonly property bool viewFull: viewMode>1
 
+    readonly property bool alive: plugin.connectionState === GstPlayer.STATE_CONNECTED
+
 
     background: Rectangle {
         border.width: 0
@@ -47,12 +49,14 @@ Control {
             flushMode: VideoOutput.EmptyFrame
             fillMode: viewMode>0?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
             Overlay {
+                id: overlay
                 anchors.fill: parent
                 anchors.topMargin: viewFull?control.topPadding:0
-                visible: !pluginMinimized
+                showNumbers: !pluginMinimized
+                showAim: !pluginMinimized
                 interactive: true
                 frameRect: videoOutput.contentRect
-                alive: plugin.connectionState === GstPlayer.STATE_CONNECTED
+                alive: control.alive
             }
         }
         Loader {

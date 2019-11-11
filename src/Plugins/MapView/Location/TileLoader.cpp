@@ -33,11 +33,22 @@
 //=============================================================================
 TileLoader *TileLoader::_instance = nullptr;
 TileLoader::TileLoader(Fact *parent)
-    : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Tile loader"), tr("Map tiles loader service"))
+    : Fact(parent,
+           QString(PLUGIN_NAME).toLower(),
+           tr("Tile loader"),
+           tr("Map tiles loader service"),
+           Group,
+           "earth")
 {
     _instance = this;
 
-    setIcon("earth");
+    f_offline = new Fact(this,
+                         "offline",
+                         tr("Offline mode"),
+                         tr("Disable tiles download"),
+                         Bool | PersistentValue,
+                         "wifi-off");
+
     db = new MapsDB(this, QLatin1String("LocationPluginDbSession"));
 
     connect(db, &MapsDB::tileLoaded, this, &TileLoader::tileLoaded);
@@ -111,6 +122,9 @@ void TileLoader::download(quint64 uid)
 {
     //qDebug()<<"download"<<uid;
     if (downloads.contains(uid))
+        return;
+
+    if (f_offline->value().toBool())
         return;
 
     //download

@@ -15,6 +15,7 @@ RowLayout {
         text: apx.latToString(c.latitude)+" "+apx.lonToString(c.longitude)
     }
 
+    //tiles downloader
     BusyIndicator {
         id: busy
         property var fact: apx.tools?apx.tools.location:null
@@ -40,6 +41,19 @@ RowLayout {
                 busy.fact.abort();
             }
         }
+    }
+
+    FactValue {
+        implicitHeight: 20
+        fact: apx.tools?apx.tools.location.offline:null
+        showTitle: false
+        showIcon: false
+        value: (active?qsTr("offline"):qsTr("online")).toUpperCase()
+        active: fact.value
+        enabled: true
+        onTriggered: fact.value=!fact.value
+        visible: active
+        onActiveChanged: visible=true
     }
 
     // map scale and distance measure

@@ -16,7 +16,14 @@ Item {
     property var plugin: apx.tools.videostreaming
     property bool alive: true
 
+    property bool showNumbers: true
+    property bool showAim: true
+
     opacity: ui.effects?0.7:1
+    MouseArea {
+        anchors.fill: parent
+        onClicked: control.forceActiveFocus()
+    }
 
     Item {
         id: videoFrame
@@ -27,7 +34,7 @@ Item {
     }
 
 
-    Loader {
+    /*Loader {
         active: !alive
         anchors.centerIn: videoFrame
         anchors.verticalCenterOffset: -parent.height/6
@@ -38,7 +45,17 @@ Item {
             font.family: font_narrow
             font.bold: true
         }
+    }*/
+    Loader {
+        active: !alive
+        anchors.centerIn: videoFrame
+        sourceComponent: MaterialIcon {
+            color: "#60FFFFFF"
+            name: "video-off-outline"
+            size: 64
+        }
     }
+
 
     OverlayNumbers {
         id: numbers
@@ -46,9 +63,10 @@ Item {
         anchors.margins: 10
         interactive: control.interactive
         alive: control.alive
+        visible: showNumbers
 
         Loader {
-            active: true
+            active: visible
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.topMargin: numbers.overlayItemSize*1.1
@@ -57,9 +75,9 @@ Item {
         }
     }
 
-    property int aimSize: Math.min(100, control.height/10)
+    property int aimSize: Math.max(60,Math.min(100, control.height/10))
     Loader {
-        active: alive
+        active: alive && showAim
         anchors.centerIn: videoFrame
         sourceComponent: OverlayAim {
             size: aimSize
