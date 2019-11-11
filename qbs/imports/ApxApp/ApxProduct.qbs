@@ -29,7 +29,6 @@ Product {
 
     //INSTALL package
     Group {
-        //condition: install
         fileTagsFilter: bundle.isBundle?[ "bundle.content" ]:product.type
         qbs.install: product.install
         qbs.installDir: product.targetInstallDir
