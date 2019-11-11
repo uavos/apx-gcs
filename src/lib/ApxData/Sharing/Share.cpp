@@ -51,7 +51,7 @@ Share::Share(Fact *parent,
                         tr("Save data to file"),
                         CloseOnTrigger,
                         "export");
-    connect(f_export, &Fact::triggered, this, &Share::exportTriggered);
+    connect(f_export, &Fact::triggered, this, &Share::exportTriggered, Qt::QueuedConnection);
 
     f_import = new Fact(this,
                         "imp",
@@ -59,7 +59,7 @@ Share::Share(Fact *parent,
                         tr("Load data from file"),
                         CloseOnTrigger,
                         "import");
-    connect(f_import, &Fact::triggered, this, &Share::importTriggered);
+    connect(f_import, &Fact::triggered, this, &Share::importTriggered, Qt::QueuedConnection);
 
     connect(App::instance(), &App::loadingFinished, this, [this]() {
         QTimer::singleShot(1000, this, &Share::syncTemplates);
