@@ -265,10 +265,13 @@ int MissionsXmlImport::readOldFormat(const QDomNode &dom,
             if (values.contains("agl"))
                 item.details["altitude"] = values.value("agl");
             QVariantMap a = readInfo(e, "actions");
+            qDebug() << a;
             QStringList st;
             foreach (QString key, a.keys()) {
-                int v = a.value(key).toInt();
-                if (v == 0)
+                QString v = a.value(key).toString();
+                if (v.isEmpty())
+                    continue;
+                if (v.toDouble() == 0.0)
                     continue;
                 key = key.toLower();
                 if (key == "turnR")
