@@ -581,42 +581,13 @@ void FactData::setDefaultValue(const QVariant &v)
 //=============================================================================
 QString FactData::mandalaToString(quint16 mid) const
 {
-    //if (bindedFactData)
-    //    return bindedFactData->mandalaToString(mid);
-    QString s;
-    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
-        const FactData *f = static_cast<const FactData *>(i);
-        s = f->mandalaToString(mid);
-        if (!s.isEmpty())
-            break;
-    }
-    return s;
+    Q_UNUSED(mid)
+    return QString();
 }
 quint16 FactData::stringToMandala(const QString &s) const
 {
-    //if (bindedFactData)
-    //    return bindedFactData->stringToMandala(s);
-    quint16 mid = 0;
-    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
-        const FactData *f = static_cast<const FactData *>(i);
-        mid = f->stringToMandala(s);
-        if (mid)
-            break;
-    }
-    return mid;
-}
-const QStringList *FactData::mandalaNames() const
-{
-    //if (bindedFactData)
-    //    return bindedFactData->mandalaNames();
-    const QStringList *st = nullptr;
-    for (const FactBase *i = parentFact(); i; i = i->parentFact()) {
-        const FactData *f = static_cast<const FactData *>(i);
-        st = f->mandalaNames();
-        if (st)
-            break;
-    }
-    return st;
+    Q_UNUSED(s)
+    return 0;
 }
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
@@ -766,18 +737,20 @@ void FactData::loadPresistentValue()
 }
 void FactData::savePresistentValue()
 {
-    const QString s = toText(m_value);
-    const bool rm = m_value == defaultValue() || (s == toText(defaultValue()));
+    QString s = toText(m_value);
+    if (dataType() == Mandala && s.isEmpty())
+        s = "disabled";
+    const bool rm = m_value == defaultValue() || s == defaultValue() || s == toText(defaultValue());
     if (m_options & SystemSettings) {
         if (rm)
             QSettings().remove(path());
         else
             QSettings().setValue(path(), s);
     } else {
-        QVariant v;
-        if (!rm)
-            v = s;
-        AppPrefs::instance()->saveValue(name(), v, prefsGroup());
+        if (rm)
+            AppPrefs::instance()->removeValue(name(), prefsGroup());
+        else
+            AppPrefs::instance()->saveValue(name(), s, prefsGroup());
     }
 }
 QString FactData::prefsGroup() const

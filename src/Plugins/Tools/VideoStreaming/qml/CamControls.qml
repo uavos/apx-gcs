@@ -13,12 +13,17 @@ Item {
     property int w: 32
     property int ctrSize: Math.min(control.width,control.height)/2
 
-    property var f_cmdX: m.camcmd_yaw
-    property var f_cmdY: m.camcmd_pitch
+    property var f_cmdX: m[plugin.tune.controls.control_x.text]
+    property var f_cmdY: m[plugin.tune.controls.control_y.text]
     property var f_zoom: m.cam_zoom
 
-    property real spanX: 180
-    property real spanY: 90
+    property real spanX: plugin.tune.controls.control_sx.value
+    property real spanY: plugin.tune.controls.control_sy.value*(rev_y?1:-1)
+
+    property bool rev_zoom: plugin.tune.controls.rev_zoom.value
+    property bool rev_y: plugin.tune.controls.rev_y.value
+
+    property bool dragEnabled: (f_cmdX?true:false)||(f_cmdY?true:false)
 
     function setValue(fact, v=0, span=0)
     {
@@ -56,8 +61,8 @@ Item {
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: cX
         anchors.verticalCenterOffset: cY
-        readonly property real cX: f_cmdX.value*(rectActive.width/2)/spanX
-        readonly property real cY: f_cmdY.value*(rectActive.height/2)/spanY
+        readonly property real cX: f_cmdX?f_cmdX.value*(rectActive.width/2)/spanX:0
+        readonly property real cY: f_cmdY?f_cmdY.value*(rectActive.height/2)/spanY:0
         height: control.w
         width: height
         radius: height/2
@@ -73,7 +78,7 @@ Item {
         anchors.fill: rect
         hoverEnabled: true
         onPressed: {
-            dragging=true
+            dragging=dragEnabled
             p=Qt.point(mouse.x,mouse.y)
         }
         onReleased: {
@@ -84,11 +89,12 @@ Item {
         onMouseXChanged: setValue(f_cmdX, (mouseX-p.x)/(rectActive.width/2), spanX)
         onMouseYChanged: setValue(f_cmdY, (mouseY-p.y)/(rectActive.height/2), spanY)
         onWheel: {
-            if(!f_zoom)return
+            if(!f_zoom) return
             var d=wheel.angleDelta.y
             var v=Math.max(0.001,Math.abs(d*0.01/100))
-            if(d<0)zoomSet=Math.max(0,zoomSet-v)
-            else if(d>0)zoomSet=Math.min(1,zoomSet+v)
+            if(rev_zoom) d=-d
+            if(d<0) zoomSet=Math.max(0,zoomSet-v)
+            else if(d>0) zoomSet=Math.min(1,zoomSet+v)
             zoomTimer.start()
         }
     }

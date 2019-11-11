@@ -14,6 +14,8 @@ import Apx.Common 1.0
 Control {
     id: control
 
+    focus: true
+
     implicitWidth: 400
     implicitHeight: implicitWidth*3/4
 

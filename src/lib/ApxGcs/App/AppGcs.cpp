@@ -41,6 +41,13 @@ void AppGcs::loadServices()
     new Database(f_apx);
     Vehicles *vehicles = new Vehicles(f_apx, protocol->vehicles);
 
+    //default mandala support
+    Fact::MandalaMap *m = new Fact::MandalaMap;
+    for (auto f : vehicles->f_local->f_mandala->allFacts) {
+        m->insert(f->id(), f);
+    }
+    f_apx->setMandalaMap(m);
+
     //datalink
     f_datalink = new Datalink(f_apx);
     QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ApxProtocol::unpack);

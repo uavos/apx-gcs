@@ -75,7 +75,6 @@ public:
     // returns the first nonzero data found
     virtual QString mandalaToString(quint16 mid) const;
     virtual quint16 stringToMandala(const QString &s) const;
-    virtual const QStringList *mandalaNames() const;
 
 private:
     FactData *child(int n) const { return qobject_cast<FactData *>(FactBase::child(n)); }

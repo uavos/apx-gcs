@@ -96,11 +96,20 @@ void AppPrefs::saveValue(const QString &name, const QVariant &v, const QString &
         }
         sx->endArray();
     } else {
-        if (v.isNull())
-            sx->remove(name);
-        else
-            sx->setValue(name, v);
+        sx->setValue(name, v);
     }
+    while (grp--)
+        sx->endGroup();
+}
+void AppPrefs::removeValue(const QString &name, const QString &path)
+{
+    QSettings *sx = m_settings;
+    int grp = 0;
+    foreach (const QString &s, path.split('/', QString::SkipEmptyParts)) {
+        sx->beginGroup(s);
+        grp++;
+    }
+    sx->remove(name);
     while (grp--)
         sx->endGroup();
 }

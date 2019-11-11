@@ -45,9 +45,13 @@ public:
     Q_INVOKABLE void saveValue(const QString &name,
                                const QVariant &v,
                                const QString &path = QStringLiteral("qml"));
+
+    Q_INVOKABLE void removeValue(const QString &name, const QString &path = QStringLiteral("qml"));
+
     Q_INVOKABLE QVariant loadValue(const QString &name,
                                    const QString &path = QStringLiteral("qml"),
                                    const QVariant &defaultValue = QVariant());
+
     Q_INVOKABLE QStringList allKeys(const QString &path);
 
 private:

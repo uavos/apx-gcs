@@ -141,6 +141,18 @@ public:
     //forward to app instance with fact opts
     Q_INVOKABLE QObject *loadQml(const QString &qmlFile);
 
+    //Mandala support
+    typedef QMap<quint16, Fact *> MandalaMap;
+
+    QString mandalaToString(quint16 mid) const override;
+    quint16 stringToMandala(const QString &s) const override;
+    QStringList mandalaNames() const;
+    void setMandalaMap(MandalaMap *v);
+
+protected:
+    MandalaMap *mandala() const;
+    MandalaMap *m_mandala;
+
 private:
     QString pTitle() const;
 

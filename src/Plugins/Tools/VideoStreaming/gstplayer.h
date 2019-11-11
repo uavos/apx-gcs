@@ -8,6 +8,7 @@
 #include <QAbstractVideoSurface>
 #include <QtCore>
 
+class Vehicle;
 class GstPlayer : public Fact
 {
     Q_OBJECT
@@ -34,6 +35,8 @@ public:
     Fact *f_lowLatency;
     Fact *f_viewMode;
     Fact *f_overlay;
+    Fact *f_controls;
+    Fact *f_tools;
 
     Fact *f_sourceType;
 
@@ -82,6 +85,8 @@ private slots:
     void onSourceTypeChanged();
     void onErrorOccured(const QString &error) const;
     void onReconnectTimerTimeout();
+
+    void vehicleSelected(Vehicle *vehicle);
 
 signals:
     void connectionStateChanged();

@@ -35,6 +35,7 @@ Fact::Fact(QObject *parent,
            Flags flags,
            const QString &icon)
     : FactData(parent, name, title, descr, flags)
+    , m_mandala(nullptr)
     , m_model(nullptr)
     , m_actionsModel(nullptr)
     , m_enabled(true)
@@ -528,6 +529,62 @@ void Fact::valuesFromJson(const QJsonObject &jso)
         }
         f->setValue(v.toVariant());
     }
+}
+//=============================================================================
+Fact::MandalaMap *Fact::mandala() const
+{
+    for (const Fact *f = this; f; f = f->parentFact()) {
+        if (f->m_mandala)
+            return f->m_mandala;
+    }
+    return nullptr;
+}
+QString Fact::mandalaToString(quint16 mid) const
+{
+    MandalaMap *m = mandala();
+    if (!m)
+        return QString();
+    Fact *f = m->value(mid);
+    return f ? f->title() : QString();
+}
+quint16 Fact::stringToMandala(const QString &s) const
+{
+    if (s.isEmpty() || s == "0")
+        return 0;
+    MandalaMap *m = mandala();
+    if (!m)
+        return 0;
+
+    //try int
+    bool ok = false;
+    uint i = s.toUInt(&ok);
+    if (ok && i < 0xFFFF) {
+        quint16 mid = static_cast<quint16>(i);
+        Fact *f = m->value(mid);
+        if (f)
+            return mid;
+    }
+    //try text
+    for (auto mid : m->keys()) {
+        if (m->value(mid)->title() != s)
+            continue;
+        return mid;
+    }
+    return 0;
+}
+QStringList Fact::mandalaNames() const
+{
+    QStringList st;
+    MandalaMap *m = mandala();
+    if (!m)
+        return st;
+    for (auto f : m->values())
+        st << f->title();
+    return st;
+}
+void Fact::setMandalaMap(MandalaMap *v)
+{
+    m_mandala = v;
 }
 //=============================================================================
 //=============================================================================

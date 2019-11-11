@@ -1,6 +1,9 @@
 ﻿#include "gstplayer.h"
 
-#include "Vehicles/Vehicle.h"
+#include <Vehicles/Vehicle.h>
+#include <Vehicles/VehicleMandala.h>
+#include <Vehicles/Vehicles.h>
+
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
@@ -115,15 +118,89 @@ GstPlayer::GstPlayer(Fact *parent)
                  "gimbal_yaw_var",
                  tr("Gimbal yaw"),
                  tr("Gimbal yaw position variable"),
-                 Text | PersistentValue);
+                 Mandala | PersistentValue);
     f->setDefaultValue("cam_yaw");
 
     f = new Fact(f_overlay,
                  "gimbal_pitch_var",
                  tr("Gimbal pitch"),
                  tr("Gimbal pitch position variable"),
-                 Text | PersistentValue);
+                 Mandala | PersistentValue);
     f->setDefaultValue("cam_pitch");
+
+    // controls
+    f_controls = new Fact(f_tune,
+                          "controls",
+                          tr("Controls"),
+                          tr("Enable cam controls"),
+                          Group | Bool | PersistentValue,
+                          "camera-control");
+    f_controls->setDefaultValue("true");
+
+    f = new Fact(f_controls,
+                 "control_x",
+                 tr("Control X"),
+                 tr("Horizontal axis control variable"),
+                 Mandala | PersistentValue);
+    f->setDefaultValue("camcmd_yaw");
+    f = new Fact(f_controls,
+                 "control_sx",
+                 tr("Span X"),
+                 tr("Horizontal axis span"),
+                 Int | PersistentValue);
+    f->setDefaultValue(180);
+
+    f = new Fact(f_controls,
+                 "control_y",
+                 tr("Control Y"),
+                 tr("Vertical axis control variable"),
+                 Mandala | PersistentValue);
+    f->setDefaultValue("camcmd_pitch");
+    f = new Fact(f_controls,
+                 "control_sy",
+                 tr("Span Y"),
+                 tr("Vertical axis span"),
+                 Int | PersistentValue);
+    f->setDefaultValue(90);
+
+    f = new Fact(f_controls,
+                 "rev_y",
+                 tr("Reverse Y"),
+                 tr("Invert vertical control"),
+                 Bool | PersistentValue);
+
+    f = new Fact(f_controls,
+                 "rev_zoom",
+                 tr("Reverse zoom"),
+                 tr("Invert zoom by mouse wheel"),
+                 Bool | PersistentValue);
+
+    // controls menu
+    f_tools = new Fact(f_tune, "tools", tr("Tools"), tr("Camera tools"), Action, "camera-plus");
+    new Fact(f_tools, "cam_mode");
+    new Fact(f_tools, "cam_ch");
+    new Fact(f_tools, "cam_zoom");
+    new Fact(f_tools, "cam_focus");
+    new Fact(f_tools, "cambias_roll");
+    new Fact(f_tools, "cambias_pitch");
+    new Fact(f_tools, "cambias_yaw");
+    new Fact(f_tools, "cam_opt_PF");
+    new Fact(f_tools, "cam_opt_NIR");
+    new Fact(f_tools, "cam_opt_DSP");
+    new Fact(f_tools, "cam_opt_FMI");
+    new Fact(f_tools, "cam_opt_FM");
+    new Fact(f_tools, "cam_opt_laser");
+    new Fact(f_tools, "cam_src");
+    new Fact(f_tools, "cams");
+    new Fact(f_tools, "cam_ctrb_shtr");
+    new Fact(f_tools, "cam_ctrb_arm");
+    new Fact(f_tools, "cam_ctrb_rec");
+    new Fact(f_tools, "cam_ctrb_zin");
+    new Fact(f_tools, "cam_ctrb_zout");
+    new Fact(f_tools, "cam_ctrb_aux");
+    new Fact(f_tools, "cam_tperiod");
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &GstPlayer::vehicleSelected);
+    vehicleSelected(Vehicles::instance()->current());
 
     connect(&m_videoThread, &VideoThread::frameReceived, this, &GstPlayer::onFrameReceived);
     connect(&m_videoThread, &VideoThread::errorOccured, this, &GstPlayer::onErrorOccured);
@@ -147,6 +224,15 @@ GstPlayer::~GstPlayer()
 {
     if (m_videoThread.isRunning())
         stop();
+}
+
+void GstPlayer::vehicleSelected(Vehicle *vehicle)
+{
+    VehicleMandala *m = vehicle->f_mandala;
+    for (int i = 0; i < f_tools->size(); ++i) {
+        Fact *f = f_tools->child(i);
+        f->bind(m->child(f->name()));
+    }
 }
 
 GstPlayer::ConnectionState GstPlayer::getConnectionState() const

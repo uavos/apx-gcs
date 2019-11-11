@@ -123,11 +123,6 @@ public:
 
     Q_INVOKABLE QGeoRectangle geoPathRect() const;
 
-    //Mandala support
-    QString mandalaToString(quint16 mid) const override;
-    quint16 stringToMandala(const QString &s) const override;
-    const QStringList *mandalaNames() const override;
-
 private:
     QTimer dlinkReqTimer;
     QTimer onlineTimer;

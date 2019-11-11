@@ -42,7 +42,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
                                     const QStyleOptionViewItem &option,
                                     const QModelIndex &index) const
 {
-    Q_UNUSED(option);
+    Q_UNUSED(option)
     Fact *f = index.data(Fact::ModelDataRole).value<Fact *>();
     if (!f)
         return QItemDelegate::createEditor(parent, option, index);
@@ -108,7 +108,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             QComboBox *cb = new QComboBox(parent);
             cb->setFrame(false);
             cb->setEditable(true);
-            cb->addItems(*(f->mandalaNames()));
+            cb->addItems(f->mandalaNames());
             cb->view()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
             e = cb;
         } break;
@@ -118,7 +118,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
                 new FactDelegateScript(f, parent->parentWidget());
             });
             return btn;
-        } break;
+        }
         }
     }
     if (!e)

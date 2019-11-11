@@ -73,6 +73,10 @@ Vehicle::Vehicle(Vehicles *vehicles,
     f_warnings = new VehicleWarnings(this);
     f_telemetry = new Telemetry(this);
 
+    m_mandala = new MandalaMap;
+    for (auto f : f_mandala->allFacts) {
+        m_mandala->insert(f->id(), f);
+    }
     //f_recorder=new Recorder(this);
 
     //Mandala facts binfing
@@ -572,35 +576,6 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
     }
 }
 //=============================================================================
-//=============================================================================
-QString Vehicle::mandalaToString(quint16 mid) const
-{
-    VehicleMandalaFact *mf = f_mandala->factById(mid);
-    return mf ? mf->title() : QString();
-}
-quint16 Vehicle::stringToMandala(const QString &s) const
-{
-    if ((!s.isEmpty()) && s != "0") {
-        VehicleMandalaFact *mf;
-        //try int
-        bool ok = false;
-        uint i = s.toUInt(&ok);
-        if (ok && i < 0xFFFF) {
-            mf = f_mandala->factById(static_cast<quint16>(i));
-            if (mf)
-                return mf->id();
-        }
-        //try text
-        mf = f_mandala->factByName(s);
-        if (mf)
-            return mf->id();
-    }
-    return 0;
-}
-const QStringList *Vehicle::mandalaNames() const
-{
-    return &f_mandala->names;
-}
 //=============================================================================
 void Vehicle::updateDatalinkVars(quint16 id, double)
 {

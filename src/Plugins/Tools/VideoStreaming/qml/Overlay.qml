@@ -30,6 +30,7 @@ Item {
     Loader {
         active: !alive
         anchors.centerIn: videoFrame
+        anchors.verticalCenterOffset: -parent.height/6
         sourceComponent: Text {
             color: "#60FFFFFF"
             text: qsTr("no video").toUpperCase()
@@ -67,7 +68,7 @@ Item {
     }
 
     Loader {
-        active: interactive && numbers.ctrEnable
+        active: interactive && plugin.tune.controls.value
         anchors.fill: videoFrame
         sourceComponent: CamControls {
             size: aimSize

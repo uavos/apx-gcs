@@ -13,8 +13,6 @@ Item {
     property bool interactive: false
     property bool alive: true
 
-    property alias ctrEnable: ctrEnable.active
-
     property int numberItemSize: Math.min(22,Math.max(12,height/15))
     property int overlayItemSize: numberItemSize
 
@@ -122,6 +120,8 @@ Item {
                 interval: 5000
                 onTriggered: timeItem.gps=false
             }
+            enabled: interactive
+            onTriggered: plugin.tune.tools.trigger()
         }
 
         //frame cnt
@@ -179,6 +179,42 @@ Item {
         fact: m.cam_mode
         showTitle: false
         valueText: fact.text
+        enabled: interactive
+        onTriggered: popupC.createObject(this)
+        Component{
+            id: popupC
+            Popup {
+                id: popup
+                width: 150
+                height: contentItem.implicitHeight
+                topMargin: 6
+                bottomMargin: 6
+                padding: 0
+                margins: 0
+                x: parent.width
+
+                Component.onCompleted: open()
+                onClosed: destroy()
+
+                contentItem: ListView {
+                    id: listView
+                    implicitHeight: contentHeight
+                    implicitWidth: contentWidth
+                    model: m.cam_mode.enumStrings
+                    highlightMoveDuration: 0
+                    delegate: ItemDelegate {
+                        text: modelData
+                        width: Math.max(listView.width,implicitWidth)
+                        highlighted: text===m.cam_mode.text
+                        onClicked: {
+                            popup.close()
+                            m.cam_mode.value=text
+                        }
+                    }
+                    ScrollIndicator.vertical: ScrollIndicator { }
+                }
+            }
+        }
     }
 
     //bottom cam opts and values
@@ -191,14 +227,16 @@ Item {
         spacing: 3
 
         FactValue {
-            id: ctrEnable
             Layout.fillHeight: true
             showTitle: false
+            property var f: plugin.tune.controls
             value: qsTr("CTR")
-            toolTip: qsTr("Enable controls")
+            toolTip: f.descr
             visible: interactive
             enabled: true
-            onTriggered: active=!active
+            active: f.value
+            onTriggered: f.value=!f.value
+
         }
 
         FactValue {
