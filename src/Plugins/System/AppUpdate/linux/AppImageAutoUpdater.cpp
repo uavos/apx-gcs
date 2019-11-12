@@ -225,7 +225,7 @@ void AppImageAutoUpdater::requestReleaseNotes()
             }
             m_releaseNotes = reply2->readAll();
             emit releaseNotesChanged();
-            qDebug() << m_releaseNotes;
+            //qDebug() << m_releaseNotes;
         });
     });
 }

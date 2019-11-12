@@ -85,13 +85,13 @@ Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
             clip: true
+            visible: text && root.state === AppImageAutoUpdater.UpdateAvailable
             TextArea {
                 id: edit
                 width: flick.width
                 wrapMode: Text.WordWrap
                 readOnly: true
                 text: updater.releaseNotes
-                visible: text && root.state === AppImageAutoUpdater.UpdateAvailable
             }
         }
         /*WebView {
