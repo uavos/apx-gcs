@@ -120,16 +120,19 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
         destinationDirectory.removeRecursively();
     }*/
 
-    originDirectory.mkpath(destinationDir);
+    destinationDirectory.mkpath(".");
 
     foreach (QString directoryName, originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         QString destinationPath = destinationDir + "/" + directoryName;
-        originDirectory.mkpath(destinationPath);
+        //destinationDirectory.mkpath(directoryName);
         copyPath(sourceDir + "/" + directoryName, destinationPath);
     }
 
     foreach (QString fileName, originDirectory.entryList(QDir::Files)) {
-        QFile::copy(sourceDir + "/" + fileName, destinationDir + "/" + fileName);
+        QFileInfo fi(destinationDir + "/" + fileName);
+        if (fi.exists())
+            QFile::remove(fi.absoluteFilePath());
+        QFile::copy(sourceDir + "/" + fileName, fi.absoluteFilePath());
     }
 
     /*! Possible race-condition mitigation? */

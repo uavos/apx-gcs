@@ -21,6 +21,7 @@
  *
  */
 #include "AppBase.h"
+#include "AppDirs.h"
 #include "AppLog.h"
 
 #include <version.h>
@@ -85,10 +86,10 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     m_time = GIT_TIME;
     m_year = GIT_YEAR;
 
-    //identity
+    // identity
     m_hostname = QSysInfo::machineHostName();
 
-    //machine ID
+    // machine ID
     QByteArray uid = QSysInfo::machineUniqueId();
     if (uid.isEmpty()) {
         uid = getCpuId();
@@ -97,7 +98,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     //m_machineUID=uid.toHex().toUpper();
     m_machineUID = QCryptographicHash::hash(uid, QCryptographicHash::Sha1).toHex().toUpper();
 
-    //guess user name
+    // guess user name
     QString sname = "user";
     foreach (QString s, QProcess::systemEnvironment()) {
         if (!s.startsWith("USER"))
@@ -110,7 +111,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     }
     m_username = sname;
 
-    //check dry run
+    // check dry run
     QSettings sx;
     QString lastVer = sx.value("version").toString();
     m_dryRun = lastVer != version();
@@ -121,19 +122,63 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         });
     }
 
-    //check last segfault
+    // check last segfault
     if (m_dryRun) {
         m_segfault = false;
     } else {
         m_segfault = sx.value("segfault").toString() != version();
         if (m_segfault) {
-            apxConsole() << tr("Application didn't exit properly");
+            apxConsoleW() << tr("Application didn't exit properly");
         }
     }
     sx.remove("segfault");
     connect(this, &QCoreApplication::aboutToQuit, this, []() {
         QSettings().setValue("segfault", version());
     });
+
+    // check installation
+    m_installed = false;
+    QStringList destPaths(QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
+    QStringList appPaths;
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appPaths << appDir.absolutePath();
+#if defined Q_OS_LINUX
+    const QString appImage(qEnvironmentVariable("APPIMAGE"));
+    if (!appImage.isEmpty() && QFile::exists(appImage)) {
+        m_bundlePath = appImage;
+        appPaths << appImage;
+    }
+    const QString destApp(QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))
+                              .absoluteFilePath("Applications"));
+    destPaths << destApp;
+    m_installDir = destApp;
+#elif defined Q_OS_MACOS
+    m_installDir = "/Applications";
+    QDir bundleDir(appDir);
+    bundleDir.cdUp();
+    bundleDir.cdUp();
+    if (bundleDir.dirName().endsWith(".app"))
+        m_bundlePath = bundleDir.absolutePath();
+#endif
+
+    qDebug() << appPaths;
+    qDebug() << destPaths;
+    qDebug() << bundlePath();
+    qDebug() << installDir();
+    for (auto p : destPaths) {
+        if (m_installed)
+            break;
+        for (auto a : appPaths) {
+            if (!a.startsWith(p))
+                continue;
+            m_installed = true;
+            break;
+        }
+    }
+
+    if (!m_installed) {
+        apxConsoleW() << tr("Application is not installed");
+    }
 }
 //=============================================================================
 QString AppBase::aboutString()
@@ -197,5 +242,72 @@ QString AppBase::compilerString()
 #else
     return QLatin1String("<unknown compiler>");
 #endif
+}
+//=============================================================================
+bool AppBase::install()
+{
+    if (installed()) {
+        apxMsgW() << tr("Already installed");
+        return false;
+    }
+    if (installDir().isEmpty()) {
+        apxMsgW() << tr("Installation path is missing");
+        return false;
+    }
+    if (!QFile::exists(bundlePath())) {
+        apxMsgW() << tr("Bundle not exist").append(':') << bundlePath();
+        return false;
+    }
+    apxMsg() << tr("Installing application").append("...");
+    bool rv = false;
+
+#if defined Q_OS_LINUX
+    QFileInfo fiBundle(bundlePath());
+    QString bundleFileName(fiBundle.fileName());
+    QString bundleBaseName(fiBundle.baseName());
+    QString bundleExt(fiBundle.suffix());
+    if (bundleBaseName.contains('-')) {
+        bundleBaseName = bundleBaseName.left(bundleBaseName.indexOf('-'));
+        bundleFileName = bundleBaseName + "." + bundleExt;
+    }
+    QDir(installDir()).mkpath(".");
+    QFileInfo fiBundleDest(QDir(installDir()).absoluteFilePath(bundleFileName));
+    qDebug() << "cp" << fiBundleDest.absoluteFilePath();
+    int execrv = QProcess::execute("cp",
+                                   QStringList()
+                                       << "-af" << bundlePath() << fiBundleDest.absoluteFilePath());
+    rv = execrv == 0;
+    if (rv) {
+        //copy desktop files
+        for (auto fi : QDir(AppDirs::res().absoluteFilePath("../applications"))
+                           .entryInfoList(QStringList() << "*.desktop")) {
+            QFileInfo fiDest(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation))
+                    .absoluteFilePath(fi.fileName()));
+            qDebug() << "cp desktop" << fiDest.absoluteFilePath();
+            if (fiDest.exists())
+                QFile::remove(fiDest.absoluteFilePath());
+            QDir(fiDest.absolutePath()).mkpath(".");
+            QFile::copy(fi.absoluteFilePath(), fiDest.absoluteFilePath());
+        }
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("../icons"),
+                          QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+                              + "/icons");
+        //restart
+        QProcess::startDetached(fiBundleDest.absoluteFilePath());
+        exit();
+    }
+
+#elif defined Q_OS_MACOS
+
+    apxMsgW() << tr("Manually move application to '%1' folder").arg(installDir());
+
+#endif
+    if (rv) {
+        apxMsg() << tr("Application successfully installed");
+    } else {
+        apxMsgW() << tr("Application is not installed");
+    }
+    return rv;
 }
 //=============================================================================

@@ -59,6 +59,12 @@ AppMenu::AppMenu(Fact *parent)
     f->setOpt("role", QAction::PreferencesRole);
     connect(f, &Fact::triggered, AppRoot::instance(), &Fact::trigger);
 
+    if (!App::installed()) {
+        f = new Fact(app, "install", tr("Install application"), "", NoFlags, "package-variant");
+        f->setOpt("role", QAction::ApplicationSpecificRole);
+        connect(f, &Fact::triggered, App::instance(), &App::install);
+    }
+
     file = new Fact(this, "file", tr("File"), "", Group, "file");
     f = new Fact(file, "telemetry");
     f->setOpt("shortcut", QKeySequence::Open);

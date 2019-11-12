@@ -22,6 +22,7 @@ Product {
             "src/main/qml/Apx/Application/GroundControl.qml",
             "src/main/qml/Apx/Application/InstrumentsLayout.qml",
             "src/main/qml/Apx/Application/MainLayout.qml",
+            "src/main/qml/Apx/Application/MainPluginFrame.qml",
         ]
     }
 

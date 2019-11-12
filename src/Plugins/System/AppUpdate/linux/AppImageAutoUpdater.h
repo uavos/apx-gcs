@@ -11,6 +11,7 @@ class AppImageAutoUpdater : public Fact
     Q_PROPERTY(State state READ getState NOTIFY stateChanged)
     Q_PROPERTY(int updateProgress READ getUpdateProgress NOTIFY updateProgressChanged)
     Q_PROPERTY(QString statusMessage READ getStatusMessage NOTIFY statusMessageChanged)
+
 public:
     enum State { CheckForUpdates, Updating, UpdateAvailable, NoUpdates };
     Q_ENUM(State)
@@ -23,6 +24,8 @@ public:
     QString getStatusMessage() const;
     Q_INVOKABLE void start(bool keepOldVersion);
     Q_INVOKABLE void stop();
+
+    bool checkInstalled();
 
 private:
     State m_state = NoUpdates;

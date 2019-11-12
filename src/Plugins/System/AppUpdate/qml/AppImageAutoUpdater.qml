@@ -3,6 +3,8 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import AppImageAutoUpdater 1.0
 
+import Apx.Common 1.0
+
 Pane {
     id: root
     anchors.fill: parent
@@ -10,6 +12,9 @@ Pane {
     implicitHeight: 400
     property var updater: apx.settings.application.appupdate.appimage_updater
     property var state: updater.state
+
+    readonly property bool installed: application.installed()
+
     onStateChanged: {
         if(state === AppImageAutoUpdater.CheckForUpdates)
         {
@@ -65,22 +70,31 @@ Pane {
             visible: root.state === AppImageAutoUpdater.Updating
         }
 
-        Switch {
-            id: keepOldVersionSwitch
-            Layout.fillHeight: false
-            Layout.fillWidth: true
-            text: qsTr("Keep current version")
-            checked: false
-            visible: root.state === AppImageAutoUpdater.UpdateAvailable
-        }
-
         Item {
             Layout.fillHeight: true
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            visible: !installed
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Qt.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr("Application is not installed")
+            }
+            FactButton {
+                Layout.alignment: Qt.AlignHCenter
+                fact: apx.sysmenu.app.install
+                toolTip: application.installDir()
+            }
         }
 
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: false
+            visible: installed
             Button {
                 text: qsTr("Don't ask me again")
                 visible: root.state === AppImageAutoUpdater.UpdateAvailable
@@ -96,7 +110,7 @@ Pane {
             Button {
                 text: qsTr("Update!")
                 visible: root.state === AppImageAutoUpdater.UpdateAvailable
-                onClicked: updater.start(keepOldVersionSwitch.checked)
+                onClicked: updater.start()
             }
             Button {
                 text: qsTr("Cancel")

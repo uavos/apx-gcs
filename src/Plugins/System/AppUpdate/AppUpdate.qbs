@@ -14,7 +14,10 @@ Project {
             ]
         }
 
-        Depends { name: "qmlqrc" }
+        Depends {
+            condition: qbs.targetOS.contains("linux")
+            name: "qmlqrc"
+        }
 
         files: [
             "UpdaterPlugin.h",

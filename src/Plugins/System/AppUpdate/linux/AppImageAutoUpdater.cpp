@@ -1,5 +1,6 @@
 #include "AppImageAutoUpdater.h"
 
+#include "App/App.h"
 #include "App/AppDirs.h"
 #include "App/AppLog.h"
 #include <QMessageBox>
@@ -8,13 +9,24 @@
 AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent)
     : Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
 {
+    //setup qml
     qmlRegisterType<AppImageAutoUpdater>("AppImageAutoUpdater", 1, 0, "AppImageAutoUpdater");
     setQmlPage(QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
     setVisible(false);
 }
 
+bool AppImageAutoUpdater::checkInstalled()
+{
+    if (App::installed())
+        return true;
+    apxMsgW() << tr("Application must be installed for updates to work");
+    trigger();
+    return false;
+}
+
 void AppImageAutoUpdater::checkForUpdates()
 {
+    checkInstalled();
     setState(CheckForUpdates);
     trigger();
     checkForUpdatesInBackground();
@@ -22,6 +34,7 @@ void AppImageAutoUpdater::checkForUpdates()
 
 void AppImageAutoUpdater::checkForUpdatesInBackground()
 {
+    checkInstalled();
     auto updater = createUpdater(qgetenv("APPIMAGE"), false);
     if (updater) {
         auto t = std::thread([this, updater]() {
@@ -59,6 +72,7 @@ QString AppImageAutoUpdater::getStatusMessage() const
 
 void AppImageAutoUpdater::start(bool keepOldVersion)
 {
+    checkInstalled();
     auto updater = createUpdater(qgetenv("APPIMAGE"), keepOldVersion);
     if (updater) {
         setUpdateProgress(0);

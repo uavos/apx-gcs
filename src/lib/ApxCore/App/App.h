@@ -148,6 +148,7 @@ protected:
     AppLog *m_appLog;
     AppPrefs *m_prefs;
     QString m_lang;
+
 signals:
     void windowChanged();
     void scaleChanged();

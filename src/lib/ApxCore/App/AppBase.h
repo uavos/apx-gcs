@@ -48,6 +48,11 @@ public:
     Q_INVOKABLE static bool dryRun() { return _instance->m_dryRun; }
     Q_INVOKABLE static bool segfault() { return _instance->m_segfault; }
 
+    Q_INVOKABLE static bool installed() { return _instance->m_installed; }
+    Q_INVOKABLE static QString installDir() { return _instance->m_installDir; }
+    Q_INVOKABLE static QString bundlePath() { return _instance->m_bundlePath; }
+    Q_INVOKABLE static bool install();
+
 private:
     static AppBase *_instance;
 
@@ -62,6 +67,10 @@ private:
     QString m_machineUID;
     QString m_hostname;
     QString m_username;
+
+    bool m_installed;
+    QString m_installDir;
+    QString m_bundlePath;
 };
 //=============================================================================
 #endif

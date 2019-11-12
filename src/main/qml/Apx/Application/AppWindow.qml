@@ -17,7 +17,9 @@ ApplicationWindow {
     minimumWidth: Screen.width/4
     minimumHeight: Screen.height/4
 
-    title: Qt.application.name+" ("+Qt.application.version+")"
+    title: Qt.application.name
+           + " ("+Qt.application.version+")"
+           + (application.installed()?"":(" - "+qsTr("not installed").toUpperCase()))
 
     flags: Qt.Window
            //|Qt.CustomizeWindowHint
