@@ -75,19 +75,32 @@ Item {
         id: mouseArea
         property bool dragging: false
         property point p
+        property real pTime
         anchors.fill: rect
-        hoverEnabled: true
+        //hoverEnabled: true
         onPressed: {
-            dragging=dragEnabled
+            //console.log("PRESS")
+            pTime=new Date().getTime()
             p=Qt.point(mouse.x,mouse.y)
         }
         onReleased: {
+            //console.log("RELEASE")
             dragging=false
             setValue(f_cmdX)
             setValue(f_cmdY)
         }
-        onMouseXChanged: setValue(f_cmdX, (mouseX-p.x)/(rectActive.width/2), spanX)
-        onMouseYChanged: setValue(f_cmdY, (mouseY-p.y)/(rectActive.height/2), spanY)
+        onMouseXChanged: {
+            if(!dragEnabled)return
+            if(!pressed)return
+            if(!dragging) dragging=mouseX!==p.x
+            setValue(f_cmdX, (mouseX-p.x)/(rectActive.width/2), spanX)
+        }
+        onMouseYChanged: {
+            if(!dragEnabled)return
+            if(!pressed)return
+            if(!dragging) dragging=mouseY!==p.y
+            setValue(f_cmdY, (mouseY-p.y)/(rectActive.height/2), spanY)
+        }
         onWheel: {
             if(!f_zoom) return
             var d=wheel.angleDelta.y
@@ -97,6 +110,11 @@ Item {
             else if(d>0) zoomSet=Math.min(1,zoomSet+v)
             zoomTimer.start()
         }
+        /*onClicked: {
+            var dt=new Date().getTime()-pTime
+            if(dt>200)return
+            //console.log("CLICK"+dt)
+        }*/
     }
     PinchArea {
         id: pinchArea
