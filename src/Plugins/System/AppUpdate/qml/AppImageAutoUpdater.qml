@@ -70,9 +70,43 @@ Pane {
             visible: root.state === AppImageAutoUpdater.Updating
         }
 
-        Item {
-            Layout.fillHeight: true
+        Label {
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+            horizontalAlignment: Qt.AlignHCenter
+            wrapMode: Text.WordWrap
+            property string sver: updater.latestVersion
+            text: qsTr("Latest version")+": "+sver
+            visible: sver && root.state === AppImageAutoUpdater.UpdateAvailable
         }
+
+        ScrollView {
+            id: flick
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            clip: true
+            TextArea {
+                id: edit
+                width: flick.width
+                wrapMode: Text.WordWrap
+                readOnly: true
+                text: updater.releaseNotes
+                visible: text && root.state === AppImageAutoUpdater.UpdateAvailable
+            }
+        }
+        /*WebView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            property string ver: updater.latestVersion
+            onVerChanged: {
+                if(!ver)return
+                url="https://uavos.github.io/apx-releases/notes/release-"+ver+".html"
+            }
+        }*/
+
+        /*Item {
+            Layout.fillHeight: true
+        }*/
 
         ColumnLayout {
             Layout.fillWidth: true

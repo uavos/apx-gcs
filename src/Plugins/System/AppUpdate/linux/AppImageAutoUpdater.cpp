@@ -9,6 +9,17 @@
 AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent)
     : Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
 {
+    net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+    connect(
+        this,
+        &AppImageAutoUpdater::stateChanged,
+        this,
+        [this]() {
+            if (getState() == UpdateAvailable)
+                requestReleaseNotes();
+        },
+        Qt::QueuedConnection);
+
     //setup qml
     qmlRegisterType<AppImageAutoUpdater>("AppImageAutoUpdater", 1, 0, "AppImageAutoUpdater");
     setQmlPage(QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
@@ -166,4 +177,55 @@ std::shared_ptr<appimage::update::Updater> AppImageAutoUpdater::createUpdater(co
         apxMsgW() << tr("Can't create AppImage updater instance: ") << e.what();
     }
     return std::shared_ptr<appimage::update::Updater>();
+}
+
+QNetworkReply *AppImageAutoUpdater::request(QUrl url)
+{
+    QNetworkRequest *request = new QNetworkRequest(url);
+
+    QSslConfiguration ssl = request->sslConfiguration();
+    ssl.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request->setSslConfiguration(ssl);
+
+    request->setRawHeader("Accept", "*/*");
+    request->setRawHeader("User-Agent",
+                          QString("%1 (v%2)")
+                              .arg(QCoreApplication::applicationName())
+                              .arg(App::version())
+                              .toUtf8());
+
+    return net.get(*request);
+}
+void AppImageAutoUpdater::requestReleaseNotes()
+{
+    QUrl url("https://api.github.com/repos/uavos/apx-releases/releases/latest");
+    QNetworkReply *reply = request(url);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        if (reply->error()) {
+            qWarning() << reply->errorString();
+            return;
+        }
+        QJsonDocument json(QJsonDocument::fromJson(reply->readAll()));
+        QString sver = json["tag_name"].toString();
+        qDebug() << "latest version:" << sver;
+        if (sver.isEmpty())
+            return;
+        m_latestVersion = sver;
+        emit latestVersionChanged();
+
+        QUrl url(QString("https://uavos.github.io/apx-releases/notes/release-%1.md").arg(sver));
+        QNetworkReply *reply2 = request(url);
+        connect(reply2, &QNetworkReply::finished, this, [this, reply2]() {
+            reply2->deleteLater();
+            if (reply2->error()) {
+                qWarning() << reply2->errorString();
+                return;
+            }
+            m_releaseNotes = reply2->readAll();
+            emit releaseNotesChanged();
+            qDebug() << m_releaseNotes;
+        });
+    });
 }
