@@ -292,6 +292,22 @@ bool AppBase::install()
                 QFile::remove(fiDest.absoluteFilePath());
             QDir(fiDest.absolutePath()).mkpath(".");
             QFile::copy(fi.absoluteFilePath(), fiDest.absoluteFilePath());
+
+            //fix Exec path
+            QSettings *sx = new QSettings(fiDest.absoluteFilePath(), QSettings::IniFormat);
+            sx->beginGroup("Desktop Entry");
+            sx->setValue("Exec", fiBundleDest.absoluteFilePath());
+            sx->sync();
+            delete sx;
+            QFile f(fiDest.absoluteFilePath());
+            f.open(QIODevice::Text | QIODevice::ReadOnly);
+            QString data = f.readAll();
+            f.close();
+            data.replace("%20", " ");
+            f.open(QFile::WriteOnly | QFile::Truncate);
+            QTextStream out(&f);
+            out << data;
+            f.close();
         }
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("../icons"),
                           QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)

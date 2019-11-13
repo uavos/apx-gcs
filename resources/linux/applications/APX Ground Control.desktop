@@ -2,7 +2,7 @@
 Type=Application
 Name=APX Ground Control
 Comment=UAVOS APX Ground Control Software
-Exec=~/Applications/APX_Ground_Control.AppImage
+Exec=gcs
 GenericName=GCS
 Icon=uavos-gcs
 MimeType=
