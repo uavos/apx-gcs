@@ -85,7 +85,8 @@ Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
             clip: true
-            visible: text && root.state === AppImageAutoUpdater.UpdateAvailable
+            visible: edit.text && root.state === AppImageAutoUpdater.UpdateAvailable
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
             TextArea {
                 id: edit
                 width: flick.width
@@ -104,9 +105,9 @@ Pane {
             }
         }*/
 
-        /*Item {
+        Item {
             Layout.fillHeight: true
-        }*/
+        }
 
         ColumnLayout {
             Layout.fillWidth: true
