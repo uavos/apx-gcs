@@ -161,18 +161,21 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         m_bundlePath = bundleDir.absolutePath();
 #endif
 
-    qDebug() << appPaths;
-    qDebug() << destPaths;
-    qDebug() << bundlePath();
-    qDebug() << installDir();
-    for (auto p : destPaths) {
-        if (m_installed)
-            break;
-        for (auto a : appPaths) {
-            if (!a.startsWith(p))
-                continue;
-            m_installed = true;
-            break;
+    //    qDebug() << appPaths;
+    //    qDebug() << destPaths;
+    //    qDebug() << bundlePath();
+    //    qDebug() << installDir();
+    QString bundleName = QFileInfo(m_bundlePath).completeBaseName();
+    if (!(bundleName.contains('-') || bundleName.contains('.'))) {
+        for (auto p : destPaths) {
+            if (m_installed)
+                break;
+            for (auto a : appPaths) {
+                if (!a.startsWith(p))
+                    continue;
+                m_installed = true;
+                break;
+            }
         }
     }
 
