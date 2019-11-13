@@ -142,6 +142,12 @@ void Telemetry::recordLoaded()
             if (f)
                 f->trigger();
         }
+        f = f_events->child("nodes");
+        if (f && f->size() > 0) {
+            f = f->child(f->size() - 1);
+            if (f)
+                f->trigger();
+        }
     }
 }
 //=============================================================================
