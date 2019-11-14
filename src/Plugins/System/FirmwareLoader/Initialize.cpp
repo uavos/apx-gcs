@@ -90,15 +90,20 @@ void Initialize::updateHwEnums()
         return;
     QStringList st;
     FactBase *f_n = firmware->f_releases->f_current->child(f_node->text());
-    if (!f_n) {
-        if (firmware->f_releases->f_dev)
-            f_n = firmware->f_releases->f_dev->child(f_node->text());
-        if (!f_n)
-            return;
+    if (f_n) {
+        for (int i = 0; i < f_n->size(); ++i) {
+            st.append(f_n->child(i)->name());
+        }
     }
-    for (int i = 0; i < f_n->size(); ++i) {
-        st.append(f_n->child(i)->name());
+    if (firmware->f_releases->f_dev) {
+        f_n = firmware->f_releases->f_dev->child(f_node->text());
+        if (f_n) {
+            for (int i = 0; i < f_n->size(); ++i) {
+                st.append(f_n->child(i)->name());
+            }
+        }
     }
+
     f_hw->setEnumStrings(st);
     f_start->setEnabled(!firmware->f_stop->enabled());
 }
