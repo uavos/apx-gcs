@@ -153,13 +153,11 @@ void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
         if (!f_hw)
             f_hw = new Fact(f_ng, st.at(1).toLower(), st.at(1), "", Group);
 
-        bool bLoader = st.contains("loader");
-
         Fact *f = new Fact(f_hw,
                            fi.completeBaseName().toLower(),
                            QString("%1: %2").arg(f_ng->title()).arg(f_hw->title()),
                            fi.completeBaseName());
-        f->setStatus(bLoader ? "LOADER" : "FIRMWARE");
+        f->setStatus("APXFW");
     }
 }
 //=============================================================================

@@ -88,10 +88,10 @@ function raisePopup(popup)
     for(var p of menuPopups){
         if(p === popup)continue
         p.menuEnabled=false
-        if(z <= p.z)
-            z = p.z+1
+        while(z <= p.z)
+            p.z-=0.01
     }
-    popup.z = z
+    //popup.z = z
     popup.menuEnabled=true
     //console.log(z)
 }
