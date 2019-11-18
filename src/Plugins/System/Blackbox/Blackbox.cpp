@@ -38,13 +38,15 @@ Blackbox::Blackbox(Fact *parent)
            Group,
            "dropbox")
 {
-    connect(Vehicles::instance(), &Vehicles::nodeAvailable, this, &Blackbox::nodeAvailable);
+    connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Blackbox::nodeNotify);
 
     f_import = new BlackboxFile(this);
 }
 //=============================================================================
-void Blackbox::nodeAvailable(NodeItem *node)
+void Blackbox::nodeNotify(NodeItem *node)
 {
+    if (!node->dataValid())
+        return;
     // check if already known
     for (int i = 0; i < size(); ++i) {
         Fact *f = child(i);

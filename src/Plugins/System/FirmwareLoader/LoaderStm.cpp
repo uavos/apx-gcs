@@ -154,10 +154,12 @@ void LoaderStm::next()
     // erase chip
     case 30:
         if (startAddr != 0x08000000) {
-            apxMsg() << tr("Chip erase skipped");
+            /*apxMsg() << tr("Chip erase skipped");
             stage = 50;
             timer.start(0);
-            return;
+            return;*/
+            apxMsg() << tr("Offset").append(':')
+                     << QString("0x%1").arg(static_cast<qulonglong>(startAddr), 8, 16, QChar('0'));
         }
         apxMsg() << tr("Erasing chip").append("...");
         write(cmd_erase, rx_ack);

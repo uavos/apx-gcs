@@ -63,7 +63,7 @@ ColumnLayout {
 
         delegate: Loader{
             asynchronous: true
-            active: modelData && modelData.visible
+            active: modelData?modelData.visible:false
             visible: active
             width: control.width
             height: active?MenuStyle.itemSize:0

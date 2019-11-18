@@ -83,9 +83,7 @@ Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
 
     updateStatus();
 
-    connect(Vehicles::instance(), &Vehicles::nodeUpgradable, this, [this](NodeItem *node) {
-        notify(node->title(), node->status(), node->sn(), node->hardware(), node->version());
-    });
+    connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Firmware::nodeNotify);
     connect(Vehicles::instance(), &Vehicles::nodeUpgradeFW, this, [this](NodeItem *node) {
         requestUpgrade(node->title(),
                        node->descr(),
@@ -147,8 +145,9 @@ void Firmware::requestUpgrade(const QString &nodeName,
     QueueItem *f = queued(f_available, sn, Any);
     if (f)
         f->remove();
-    if ((!queued(f_queue, sn, type))
-        && (!(f_loader->active() && f_loader->sn == sn && f_loader->type == type))) {
+    f = queued(f_queue, sn, type);
+    if (f) {
+    } else if ((!(f_loader->active() && f_loader->sn == sn && f_loader->type == type))) {
         new QueueItem(f_queue, nodeName, nodeDescr, sn, hw, ver, type);
         queueCnt++;
     }
@@ -166,27 +165,32 @@ void Firmware::requestInitialization(const QString &nodeName,
     requestUpgrade(nodeName, portName, "any", hw, f_releases->releaseVersion(), type);
 }
 //=============================================================================
-void Firmware::notify(const QString &nodeName,
-                      const QString &nodeDescr,
-                      const QString &sn,
-                      const QString &hw,
-                      const QString &ver)
+void Firmware::nodeNotify(NodeItem *node)
 {
-    if (queued(f_queue, sn, Any))
+    if (!node->fwSupport())
         return;
-    if (f_loader->active() && f_loader->sn == sn)
+
+    if (queued(f_queue, node->sn(), Any))
         return;
-    if (!queued(f_available, sn, Any)) {
-        new QueueItem(f_available, nodeName, nodeDescr, sn, hw, ver, Any);
+    if (f_loader->active() && f_loader->sn == node->sn())
+        return;
+    if (!queued(f_available, node->sn(), Any)) {
+        new QueueItem(f_available,
+                      node->title(),
+                      node->status(),
+                      node->sn(),
+                      node->hardware(),
+                      node->version(),
+                      Any);
         return;
     }
-    if (nodeDescr.isEmpty())
+    if (node->status().isEmpty())
         return;
     for (int i = 0; i < f_available->size(); ++i) {
         QueueItem *f = static_cast<QueueItem *>(f_available->child(i));
-        if (f->sn != sn)
+        if (f->sn != node->sn())
             continue;
-        f->nodeDescr = nodeDescr;
+        f->nodeDescr = node->status();
         f->updateDescr();
     }
 }

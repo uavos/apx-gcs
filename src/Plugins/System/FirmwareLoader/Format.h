@@ -20,18 +20,27 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "FirmwareTools.h"
-#include "Firmware.h"
-#include "Releases.h"
-#include <App/App.h>
-#include <App/AppLog.h>
+#ifndef Format_H
+#define Format_H
 //=============================================================================
-FirmwareTools::FirmwareTools(Firmware *firmware)
-    : Fact(firmware, "tools", tr("Tools"), tr("Maintenance tools"), Action | IconOnly)
+#include "FirmwareSelect.h"
+#include <Nodes/NodeItem.h>
+//=============================================================================
+class Format : public FirmwareSelect
 {
-    setIcon("wrench");
+    Q_OBJECT
 
-    f_initialize = new Initialize(firmware, this);
-    f_format = new Format(firmware, this);
-}
+public:
+    explicit Format(Firmware *firmware, Fact *parent);
+
+    Fact *f_dev;
+
+private:
+    QStringList snList;
+
+private slots:
+    void nodeNotify(NodeItem *node);
+    void startTriggered();
+};
 //=============================================================================
+#endif

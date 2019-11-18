@@ -36,7 +36,7 @@ public:
     Fact *f_import;
 
 private slots:
-    void nodeAvailable(NodeItem *node);
+    void nodeNotify(NodeItem *node);
 };
 //=============================================================================
 #endif

@@ -23,31 +23,23 @@
 #ifndef Initialize_H
 #define Initialize_H
 //=============================================================================
-#include "Firmware.h"
+#include "FirmwareSelect.h"
 #include <QSerialPort>
 //=============================================================================
-class Initialize : public Fact
+class Initialize : public FirmwareSelect
 {
     Q_OBJECT
 
 public:
     explicit Initialize(Firmware *firmware, Fact *parent);
 
-    Fact *f_node;
-    Fact *f_hw;
-    Fact *f_fw;
     Fact *f_port;
     Fact *f_continuous;
 
-    Fact *f_start;
-
 private:
-    Firmware *firmware;
     QSerialPort *dev;
 
 private slots:
-    void updateNodeEnums();
-    void updateHwEnums();
     void updatePortEnums();
 
     void startTriggered();

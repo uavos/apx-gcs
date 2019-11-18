@@ -20,18 +20,34 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "FirmwareTools.h"
+#ifndef FirmwareSelect_H
+#define FirmwareSelect_H
+//=============================================================================
 #include "Firmware.h"
-#include "Releases.h"
-#include <App/App.h>
-#include <App/AppLog.h>
 //=============================================================================
-FirmwareTools::FirmwareTools(Firmware *firmware)
-    : Fact(firmware, "tools", tr("Tools"), tr("Maintenance tools"), Action | IconOnly)
+class FirmwareSelect : public Fact
 {
-    setIcon("wrench");
+    Q_OBJECT
 
-    f_initialize = new Initialize(firmware, this);
-    f_format = new Format(firmware, this);
-}
+public:
+    explicit FirmwareSelect(Firmware *firmware,
+                            Fact *parent,
+                            const QString &name,
+                            const QString &title,
+                            const QString &descr);
+
+    Fact *f_node;
+    Fact *f_hw;
+    Fact *f_fw;
+
+    Fact *f_start;
+
+protected:
+    Firmware *m_firmware;
+
+private slots:
+    void updateNodeEnums();
+    void updateHwEnums();
+};
 //=============================================================================
+#endif

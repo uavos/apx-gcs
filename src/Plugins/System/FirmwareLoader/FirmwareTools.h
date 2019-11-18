@@ -24,6 +24,7 @@
 #define FirmwareTools_H
 //=============================================================================
 #include "Firmware.h"
+#include "Format.h"
 #include "Initialize.h"
 #include <Fact/Fact.h>
 //=============================================================================
@@ -35,6 +36,7 @@ public:
     explicit FirmwareTools(Firmware *firmware);
 
     Initialize *f_initialize;
+    Format *f_format;
 };
 //=============================================================================
 #endif

@@ -27,8 +27,10 @@ Project {
             "Loader.cpp", "Loader.h",
             "Releases.cpp", "Releases.h",
             "FirmwareTools.cpp", "FirmwareTools.h",
+            "FirmwareSelect.cpp", "FirmwareSelect.h",
             "Initialize.cpp", "Initialize.h",
             "LoaderStm.cpp", "LoaderStm.h",
+            "Format.cpp", "Format.h",
         ]
 
         ApxApp.ApxResource {

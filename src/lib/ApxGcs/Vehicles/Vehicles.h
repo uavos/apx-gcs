@@ -79,12 +79,11 @@ signals:
     void currentSerialDataReceived(uint portNo, QByteArray ba);
 
     //forward signals for plugins
-    void nodeUpgradable(NodeItem *node);
     void nodeUpgradeFW(NodeItem *node);
     void nodeUpgradeLD(NodeItem *node);
     void nodeUpgradeMHX(NodeItem *node);
 
-    void nodeAvailable(NodeItem *node);
+    void nodeNotify(NodeItem *node); //node is available and info updated
 
     //---------------------------------------
     // PROPERTIES

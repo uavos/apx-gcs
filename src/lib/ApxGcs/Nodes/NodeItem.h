@@ -101,7 +101,7 @@ private slots:
 
     void updateReconf();
 
-    void notifyUpdater();
+    void nodeNotify();
 
     void updateArrayRowDescr(Fact *fRow);
 

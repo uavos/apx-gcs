@@ -68,8 +68,8 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     connect(this, &NodeItem::offlineChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::fwUpdatingChanged, this, &NodeItem::updateDescr);
 
-    connect(this, &NodeItem::versionChanged, this, &NodeItem::notifyUpdater);
-    connect(this, &NodeItem::statusChanged, this, &NodeItem::notifyUpdater);
+    connect(this, &NodeItem::versionChanged, this, &NodeItem::nodeNotify);
+    connect(this, &NodeItem::statusChanged, this, &NodeItem::nodeNotify);
 
     //validity
     connect(this, &NodeItem::dictValidChanged, this, &NodeItem::validateDict);
@@ -179,9 +179,7 @@ void NodeItem::validateData()
         setNconfID(0);
         nodes->storage->saveNodeConfig(this);
     }
-    if (!offline()) {
-        Vehicles::instance()->nodeAvailable(this);
-    }
+    nodeNotify();
     //qDebug()<<"Node dataValid"<<path();
 }
 void NodeItem::validateInfo()
@@ -253,13 +251,13 @@ void NodeItem::updateDescr()
     setDescr(st.join(' '));
 }
 //=============================================================================
-void NodeItem::notifyUpdater()
+void NodeItem::nodeNotify()
 {
-    if (!protocol)
+    if (offline())
         return;
-    if (m_version != App::version() && fwSupport()) {
-        Vehicles::instance()->nodeUpgradable(this);
-    }
+    //if (m_version != App::version() && fwSupport()) {
+    Vehicles::instance()->nodeNotify(this);
+    //}
 }
 //=============================================================================
 void NodeItem::upload()
@@ -735,7 +733,7 @@ void NodeItem::infoReceived(const DictNode::Info &info)
     setVersion(info.version);
     setHardware(info.hardware);
     setReconf(info.reconf);
-    setFwSupport(info.fwSupport);
+    setFwSupport(info.fwSupport || info.fwUpdating);
     setFwUpdating(info.fwUpdating);
     setAddressing(info.addressing);
     setRebooting(info.rebooting);
@@ -743,6 +741,7 @@ void NodeItem::infoReceived(const DictNode::Info &info)
     setFailure(false);
     setInfoValid(true);
 
+    nodeNotify();
     /*if(fwUpdating()){
     //setUpgrading(true);
     //setProgress(-1);

@@ -29,6 +29,7 @@ class Loader;
 class QueueItem;
 class Releases;
 class FirmwareTools;
+class NodeItem;
 //=============================================================================
 class Firmware : public Fact
 {
@@ -66,12 +67,6 @@ public:
                                            const QString &portName,
                                            Firmware::UpgradeType type);
 
-    void notify(const QString &nodeName,
-                const QString &nodeDescr,
-                const QString &sn,
-                const QString &hw,
-                const QString &ver);
-
 private:
     static Firmware *_instance;
     ProtocolServiceFirmware *protocol;
@@ -81,6 +76,8 @@ private:
     int queueCnt;
 
 private slots:
+    void nodeNotify(NodeItem *node);
+
     void updateStatus();
     void updateProgress();
 

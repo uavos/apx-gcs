@@ -56,9 +56,10 @@ void QueueItem::updateDescr()
     if (!nodeDescr.isEmpty())
         s.append(QString(" (%2)").arg(nodeDescr));
     setTitle(s);
-    setDescr(QString("%1 %2 %3")
-                 .arg(QMetaEnum::fromType<Firmware::UpgradeType>().valueToKey(type))
-                 .arg(hw)
-                 .arg(ver));
+    QStringList st;
+    st << QMetaEnum::fromType<Firmware::UpgradeType>().valueToKey(type);
+    st << hw;
+    st << ver;
+    setDescr(st.join(' '));
 }
 //=============================================================================

@@ -94,7 +94,9 @@ void Loader::start(QueueItem *item, Releases *releases)
     //QTimer::singleShot(500,this,&Loader::next);
     fileData.clear();
     startAddr = 0;
-    if (!releases->loadFirmware(nodeName, hw, type, &fileData, &startAddr)) {
+    QString f_fw = nodeName;
+    QString f_hw = hw;
+    if (!releases->loadFirmware(f_fw, f_hw, type, &fileData, &startAddr)) {
         finish(false);
         return;
     }
