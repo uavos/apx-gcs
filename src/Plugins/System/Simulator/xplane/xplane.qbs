@@ -29,7 +29,7 @@ ApxApp.ApxProduct {
     }
     Group {
         name: "Modules"
-        files: _modules.files
+        files: _modules.contents.files
     }
 
 

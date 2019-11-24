@@ -24,15 +24,15 @@ ApxApp.ApxLibrary {
     }
     Group {
         name: "Modules"
-        files: _modules.files
+        files: _modules.contents.files
     }
 
 
     cpp.includePaths: _modules.searchPaths
 
-    cpp.defines: _modules.defines
-    .concat([
+    cpp.defines: [
     "MANDALA_VMVARS",
-    ])
+    ]
+    .concat(_modules.contents.defines)
 
 }
