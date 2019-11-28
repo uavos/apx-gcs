@@ -24,7 +24,7 @@ ApxApp.ApxLibrary {
     }
 
     Depends { name: "cpp" }
-    Depends { name: "sdk" }
+    Depends { name: "sdk"; submodules: [ "libs", "headers" ] }
 
     cpp.includePaths: [
         sourceDirectory,

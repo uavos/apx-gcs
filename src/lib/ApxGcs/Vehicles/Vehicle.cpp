@@ -27,14 +27,11 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
+#include <Dictionary/MandalaIndex.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
 
-namespace mandala {
-#include <Mandala/MandalaConstants.h>
-#include <Mandala/MandalaIndexes.h>
-}; // namespace mandala
 //=============================================================================
 Vehicle::Vehicle(Vehicles *vehicles,
                  QString callsign,

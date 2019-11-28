@@ -24,7 +24,7 @@
 
 namespace mandala {
 
-#include <Mandala/MandalaConstants.h>
-#include <Mandala/MandalaIndexes.h>
+#include <MandalaCore/MandalaConstants.h>
+#include <MandalaCore/MandalaIndexes.h>
 
 } // namespace mandala

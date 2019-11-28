@@ -60,7 +60,7 @@ Product {
                 }
                 //app metadata section
                 appdata.app = {} //product.app
-                appdata.app.arch = project.arch
+                appdata.app.arch = project.target_arch
                 appdata.app.version = product.app.version
                 appdata.app.name = product.app.app_display_name
                 appdata.app.app_id = product.app.app_id

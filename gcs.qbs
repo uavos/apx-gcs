@@ -9,7 +9,7 @@ Project {
 
     property path resorcesDir: FileInfo.joinPaths(sourceDirectory, "resources")
 
-    property string arch: "x86_64"
+    property string target_arch: "x86_64"
 
     references: [
         "src/lib/lib.qbs",

@@ -26,7 +26,7 @@
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusNodeConf.h>
 
-#include <Math/crc.h>
+#include <Calc/crc.h>
 //=============================================================================
 ProtocolServiceNode::ProtocolServiceNode(ProtocolService *service, const QString &sn)
     : ProtocolBase(service)

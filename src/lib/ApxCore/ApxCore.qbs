@@ -27,7 +27,7 @@ ApxApp.ApxLibrary {
     }
 
     Depends { name: "cpp" }
-    Depends { name: "sdk" }
+    Depends { name: "sdk"; submodules: [ "libs", "headers" ] }
 
     cpp.defines: base.concat([
         'RELATIVE_PLUGIN_PATH="' + FileInfo.relativePath('/' + app.app_bin_path, '/' + app.app_plugin_path) + '"',

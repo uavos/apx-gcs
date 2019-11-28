@@ -97,5 +97,5 @@ Product {
     }
     archiver.type: "tar"
     archiver.workingDirectory: destinationDirectory + "/sdk"
-    archiver.archiveBaseName: "APX_SDK-"+git.probe.version+"-"+qbs.targetPlatform+"-"+project.arch
+    archiver.archiveBaseName: "APX_SDK-"+git.probe.version+"-"+qbs.targetPlatform+"-"+project.target_arch
 }
