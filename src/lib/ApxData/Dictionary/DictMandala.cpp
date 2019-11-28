@@ -214,7 +214,7 @@ QString DictMandala::hash()
 #define MIDX(...) h.addData(#__VA_ARGS__);
 #define MVAR(...) h.addData(#__VA_ARGS__);
 #define MBIT(...) h.addData(#__VA_ARGS__);
-#include <MandalaCore/MandalaTemplate.h>
+#include <Mandala/MandalaTemplate.h>
 
     return h.result().toHex().toUpper();
 }

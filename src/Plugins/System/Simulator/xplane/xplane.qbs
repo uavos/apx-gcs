@@ -13,7 +13,6 @@ Project {
         name: project.name+".libs"
         names: [
             "Xbus",
-            "MandalaCore",
             "Mandala",
             "TcpLink",
             "Calc",

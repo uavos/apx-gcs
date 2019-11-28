@@ -7,7 +7,6 @@ Project {
 
     property stringList names: [
         "Xbus",
-        "MandalaCore",
         "Mandala",
         "Calc",
         "common",
