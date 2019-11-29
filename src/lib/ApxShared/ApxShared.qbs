@@ -9,7 +9,6 @@ Project {
         "Xbus",
         "Mandala",
         "Calc",
-        "common",
     ]
 
     ApxApp.ApxLibrary {

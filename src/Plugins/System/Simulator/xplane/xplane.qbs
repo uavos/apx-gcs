@@ -16,7 +16,6 @@ Project {
             "Mandala",
             "TcpLink",
             "Calc",
-            "common",
         ]
         qbs.architectures: _xplane_plugin.qbs.architectures
     }
