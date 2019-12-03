@@ -26,7 +26,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <Calc/crc.h>
+#include <crc/crc.h>
 //=============================================================================
 DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
                                      QTcpSocket *socket,

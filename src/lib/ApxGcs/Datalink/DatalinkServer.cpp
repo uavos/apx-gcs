@@ -28,7 +28,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <common/ApxTcpPorts.h>
+#include <tcp_ports.h>
 //=============================================================================
 DatalinkServer::DatalinkServer(Datalink *datalink)
     : Fact(datalink,

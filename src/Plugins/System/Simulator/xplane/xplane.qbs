@@ -21,9 +21,8 @@ ApxApp.ApxProduct {
         name: "apx_libs"
         submodules: [
             "Xbus",
+            "Xbus__tcp",
             "Mandala",
-            "TcpLink",
-            "Calc",
         ]
     }
 

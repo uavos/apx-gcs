@@ -14,7 +14,7 @@ FactMenuPageList {
 
     property var parentFact: fact
 
-    property bool filterEnabled: (fact && fact.filter)?true:false
+    property bool filterEnabled: (fact)?true:false
 
     model: fact.dbModel
     delegate: Loader{

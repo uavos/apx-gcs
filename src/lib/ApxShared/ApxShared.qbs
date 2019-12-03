@@ -7,8 +7,10 @@ ApxApp.ApxLibrary {
 
     property stringList names: [
         "Xbus",
+        "Xbus.uart",
         "Mandala",
-        "Calc",
+        "crc",
+        "common",
     ]
 
     Export {
@@ -19,7 +21,10 @@ ApxApp.ApxLibrary {
     Depends { name: "cpp" }
     Depends { name: "sdk"; submodules: [ "libs", "headers" ] }
 
-    Depends { name: "apx_libs"; submodules: names }
+    readonly property stringList mnames: names.map(function(s){
+        return s.replace(/\./g,"__")
+    })
+    Depends { name: "apx_libs"; submodules: mnames }
     /*Rule {
         inputsFromDependencies: ["sdk.headers"]
         multiplex: false

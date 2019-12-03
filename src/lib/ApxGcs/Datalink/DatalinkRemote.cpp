@@ -27,7 +27,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <common/ApxTcpPorts.h>
+#include <tcp_ports.h>
 //=============================================================================
 DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     : DatalinkTcpSocket(parent,

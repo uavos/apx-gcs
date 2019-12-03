@@ -24,7 +24,7 @@
 #define BlackboxReader_H
 //=============================================================================
 #include <Fact/Fact.h>
-#include <common/Escaped.h>
+#include <Xbus/uart/Escaped.h>
 class Vehicle;
 class ProtocolVehicle;
 //=============================================================================

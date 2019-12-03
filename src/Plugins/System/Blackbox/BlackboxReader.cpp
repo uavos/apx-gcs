@@ -30,7 +30,7 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-#include <common/Escaped.h>
+#include <Xbus/uart/Escaped.h>
 //=============================================================================
 BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     : Fact(parent, "reader")

@@ -23,7 +23,7 @@
 #ifndef DatalinkSerial_H
 #define DatalinkSerial_H
 #include "DatalinkConnection.h"
-#include <common/Escaped.h>
+#include <Xbus/uart/Escaped.h>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QtCore>

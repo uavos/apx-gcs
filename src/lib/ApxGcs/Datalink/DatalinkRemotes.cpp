@@ -26,7 +26,7 @@
 
 #include <App/AppLog.h>
 
-#include <common/ApxTcpPorts.h>
+#include <tcp_ports.h>
 //=============================================================================
 DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     : Fact(datalink,

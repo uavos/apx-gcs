@@ -14,8 +14,8 @@
 #include <Xbus/XbusNodeConf.h>
 #include <Xbus/XbusPacket.h>
 
-#include <TcpLink/tcp_server.h>
-#include <common/ApxTcpPorts.h>
+#include <Xbus/tcp/tcp_server.h>
+#include <tcp_ports.h>
 //==============================================================================
 //#define UDP_HOST_UAV            "127.0.0.1"      //machine where 'shiva' runs
 static _tcp_server server;
