@@ -36,7 +36,7 @@ FactData::FactData(
     , m_title()
     , m_descr()
 {
-    connect(this, &FactData::enumStringsChanged, this, &FactData::textChanged);
+    connect(this, &FactData::enumStringsChanged, this, &FactData::textChanged, Qt::QueuedConnection);
 
     connect(this, &FactData::dataTypeChanged, this, &FactData::defaults);
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);

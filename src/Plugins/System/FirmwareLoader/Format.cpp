@@ -64,6 +64,7 @@ void Format::nodeNotify(NodeItem *node)
     QStringList st = f_dev->enumStrings();
 
     int idx = snList.indexOf(node->sn());
+    int v_s = f_dev->value().toInt();
     if (idx < 0) {
         snList << node->sn();
         st << sTitle;
@@ -71,6 +72,7 @@ void Format::nodeNotify(NodeItem *node)
         st.replace(idx, sTitle);
     }
     f_dev->setEnumStrings(st);
+    f_dev->setValue(v_s);
     f_start->setEnabled(true);
 }
 //=============================================================================

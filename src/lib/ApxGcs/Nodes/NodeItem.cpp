@@ -68,6 +68,8 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     connect(this, &NodeItem::offlineChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::fwUpdatingChanged, this, &NodeItem::updateDescr);
 
+    connect(this, &NodeItem::titleChanged, this, &NodeItem::nodeNotify);
+    connect(this, &NodeItem::hardwareChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::versionChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::statusChanged, this, &NodeItem::nodeNotify);
 
@@ -88,6 +90,9 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
 
     //protocol
     setProtocol(protocol);
+
+    setFwSupport(!sn.startsWith("FF"));
+    nodeNotify();
 
     emit requestInfo();
 }
@@ -187,8 +192,10 @@ void NodeItem::validateInfo()
     if (!infoValid())
         return;
     groupNodes();
-    if (upgrading())
+    if (upgrading()) {
+        //setDictValid(true);
         return;
+    }
     if (protocol) {
         nodes->storage->saveNodeInfo(this);
         nodes->storage->saveNodeUser(this);

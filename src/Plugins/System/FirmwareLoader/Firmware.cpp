@@ -169,6 +169,8 @@ void Firmware::nodeNotify(NodeItem *node)
 {
     if (!node->fwSupport())
         return;
+    if (!node->infoValid())
+        return;
 
     if (queued(f_queue, node->sn(), Any))
         return;

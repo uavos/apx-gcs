@@ -28,7 +28,7 @@ ComboBox {
     contentItem.implicitWidth: contentItem.contentWidth+indicator.width/2 //+editor.height/2
 
     model: fact.enumStrings
-    //currentIndex: editor.find(fact.text)
+
     Component.onCompleted: updateIndex()
     onActivated: {
         fact.setValue(textAt(index))
@@ -36,6 +36,8 @@ ComboBox {
     }
     property string value: fact.text
     onValueChanged: updateIndex()
+    onModelChanged: updateIndex()
+
     Connections {
         target: listView
         onMovementStarted: {
@@ -47,8 +49,9 @@ ComboBox {
     function updateIndex()
     {
         //currentIndex=find(value)
-        currentIndex=fact.enumStrings.indexOf(value)
+        editor.currentIndex=fact.enumStrings.indexOf(editor.value)
         //console.log(currentIndex,value,count,find(value))
     }
+
     //BoundingRect {}
 }

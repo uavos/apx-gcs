@@ -70,6 +70,7 @@ void FirmwareSelect::updateNodeEnums()
         }
     }
     st.removeDuplicates();
+    st.sort();
     f_node->setEnumStrings(st);
     updateHwEnums();
 }
@@ -93,7 +94,8 @@ void FirmwareSelect::updateHwEnums()
             }
         }
     }
-
+    st.removeDuplicates();
+    st.sort();
     f_hw->setEnumStrings(st);
     f_start->setEnabled(!m_firmware->f_stop->enabled());
 }

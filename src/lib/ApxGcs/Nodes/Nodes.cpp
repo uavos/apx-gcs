@@ -192,8 +192,19 @@ void Nodes::syncFinished()
     while (1) {
         int cnt = nodesCount();
         if (cnt > 0) {
-            if (!(dataValid() && dictValid()))
-                break;
+            if (!(dataValid() && dictValid())) {
+                bool fwupd = false;
+                foreach (NodeItem *node, nodes()) {
+                    if (!node->fwUpdating())
+                        continue;
+                    fwupd = true;
+                    break;
+                }
+                if (!fwupd)
+                    break;
+                //qDebug() << dataValid() << dictValid();
+                //break;
+            }
             vehicle->protocol->service->setActive(false);
             //exclude reconf nodes
             foreach (NodeItem *node, nodes()) {
@@ -236,6 +247,7 @@ void Nodes::syncFinished()
 }
 void Nodes::sync()
 {
+    //qDebug() << syncActive;
     if (!vehicle->protocol)
         return;
     if (vehicle->isTemporary())
@@ -286,7 +298,7 @@ void Nodes::syncLater(int timeout, bool enforce)
     if (syncTimer.isActive() && timeout > syncTimer.interval())
         timeout = syncTimer.interval();
     syncTimer.start(timeout);
-    //qDebug()<<timeout<<vehicle->callsign();
+    //qDebug() << timeout << vehicle->callsign();
 }
 //=============================================================================
 //=============================================================================
