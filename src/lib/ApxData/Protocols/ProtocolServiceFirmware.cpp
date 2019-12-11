@@ -70,6 +70,7 @@ void ProtocolServiceFirmware::upgradeFirmware(QString sn, QByteArray data, quint
     emit started(sn);
     ncmd = xbus::node::apc_loader;
     reqLoaderRetry = 50;
+    writeRetry = 5;
     requestLoaderReboot();
 }
 //=============================================================================
@@ -89,6 +90,7 @@ void ProtocolServiceFirmware::upgradeLoader(QString sn, QByteArray data, quint32
     service->nodeUpgrading(sn);
     emit started(sn);
     ncmd = xbus::node::apc_loader;
+    writeRetry = 5;
     requestLoaderInit();
 }
 //=============================================================================
@@ -124,6 +126,13 @@ void ProtocolServiceFirmware::finish(bool success)
 void ProtocolServiceFirmware::error()
 {
     finish(false);
+}
+void ProtocolServiceFirmware::restart()
+{
+    if (writeRetry <= 0)
+        return;
+    writeRetry--;
+    requestFileWrite();
 }
 //=============================================================================
 //=============================================================================
@@ -332,14 +341,14 @@ bool ProtocolServiceFirmware::requestWrite(void)
     //qDebug()<<QString("%1").arg(static_cast<qulonglong>(hdr.start_address),8,16,QChar('0')).toUpper()<<hdr.data_size;
     reqWrite = ldr_req(xbus::node::ldc_write, ba.append(blockData), 5000, 3);
     connect(reqWrite, &ProtocolServiceRequest::retrying, this, &ProtocolServiceFirmware::retrying);
-    connect(reqWrite, &ProtocolServiceRequest::timeout, this, &ProtocolServiceFirmware::error);
+    connect(reqWrite, &ProtocolServiceRequest::timeout, this, &ProtocolServiceFirmware::restart);
     setProgress(dataAddr * 100 / dataSize);
     setStatus(QString("%1kB/%2kB").arg(dataAddr / 1024).arg(dataSize / 1024.0, 0, 'f', 1));
     return true;
 }
 void ProtocolServiceFirmware::writeReply(QByteArray data)
 {
-    //qDebug()<<node->info.name<<data.size();
+    //qDebug() << data.size();
     xbus::node::file::file_data_hdr_t hdr;
     XbusStreamReader stream(reinterpret_cast<const uint8_t *>(data.data()),
                             static_cast<uint16_t>(data.size()));

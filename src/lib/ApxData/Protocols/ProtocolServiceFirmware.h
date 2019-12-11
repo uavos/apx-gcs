@@ -50,6 +50,7 @@ private:
     quint8 dataCRC;
 
     int reqLoaderRetry;
+    int writeRetry;
 
     quint16 ncmd;
     ProtocolServiceRequest *request(quint16 cmd, const QByteArray &data, int timeout_ms, int retry);
@@ -73,6 +74,8 @@ private slots:
     bool requestWrite(void); //true if not done
 
     void error();
+
+    void restart();
 
     //export signals and slots
 public slots:
