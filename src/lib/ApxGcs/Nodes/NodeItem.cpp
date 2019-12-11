@@ -767,6 +767,10 @@ void NodeItem::dictInfoReceived(const DictNode::DictInfo &conf)
         clear();
         conf_hash = conf.chash;
     }
+    if (conf.paramsCount == 0) {
+        setDictValid(true);
+        setDataValid(true);
+    }
     //nodes->vehicle->dbSaveVehicleNodes();
     if (!dictValid()) {
         if (nodes->skipCache.contains(sn())) {
