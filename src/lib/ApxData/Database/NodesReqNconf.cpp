@@ -125,7 +125,7 @@ bool DBReqNodesSaveNconf::run(QSqlQuery &query)
     //grab title from node's comment
     QString title = values.value("name").toString();
     if (title.isEmpty())
-        title = values.value("comment").toString();
+        title = values.value("comment", values.value("node_label")).toString();
     title = title.simplified().trimmed();
 
     //find existing config

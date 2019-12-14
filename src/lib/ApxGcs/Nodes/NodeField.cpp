@@ -112,7 +112,7 @@ NodeField::NodeField(NodeItem *node,
         node->allFields.append(this);
 
         //check if comment field and bind to node value
-        if (name == "comment" || (name == "name" && id == 0)) {
+        if (name == "comment" || name == "node_label" || (name == "name" && id == 0)) {
             connect(this, &NodeField::textChanged, node, [=]() {
                 node->setStatus(text().trimmed());
             });

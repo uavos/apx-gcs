@@ -369,7 +369,7 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
     NodeField *f = allFieldsByName.value(name);
     if (!f)
         return false;
-    if (name == "comment" && value.isEmpty() && (!f->text().isEmpty()))
+    if ((name == "comment" || name == "node_label") && value.isEmpty() && (!f->text().isEmpty()))
         return true;
     f->fromString(value);
     return true;
