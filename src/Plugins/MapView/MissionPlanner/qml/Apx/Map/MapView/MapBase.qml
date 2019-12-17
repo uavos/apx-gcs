@@ -134,7 +134,6 @@ Map {
     center: defaultCoordinate
 
     gesture.acceptedGestures: MapGestureArea.PanGesture | MapGestureArea.FlickGesture | MapGestureArea.PinchGesture | MapGestureArea.RotationGesture | MapGestureArea.TiltGesture
-    gesture.flickDeceleration: 30
     gesture.enabled: true
 
     focus: true
