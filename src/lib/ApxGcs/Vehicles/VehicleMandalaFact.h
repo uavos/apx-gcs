@@ -49,7 +49,7 @@ public:
 private:
     VehicleMandala *vehicleMandala;
     quint16 m_id;
-    QTime sendTime;
+    QElapsedTimer sendTime;
     QTimer sendTimer;
 
 signals:

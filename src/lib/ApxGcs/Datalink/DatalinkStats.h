@@ -62,7 +62,7 @@ private:
     uint dataCntT;
     double dataRate;
 
-    QTime time;
+    QElapsedTimer time;
     QTimer updateTimer;
 
     QString dataToString(uint v);

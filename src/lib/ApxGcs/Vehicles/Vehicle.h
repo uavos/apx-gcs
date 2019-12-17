@@ -126,9 +126,9 @@ public:
 private:
     QTimer dlinkReqTimer;
     QTimer onlineTimer;
-    QTime telemetryTime;
-    QTime xpdrTime;
-    QTime replayTime;
+    QElapsedTimer telemetryTime;
+    QElapsedTimer xpdrTime;
+    QElapsedTimer replayTime;
 
     QTimer updateInfoTimer;
 

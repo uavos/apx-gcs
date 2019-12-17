@@ -132,29 +132,29 @@ void AppRoot::updateProgress(Fact *fact)
 //=============================================================================
 QString AppRoot::latToString(double v)
 {
-    double lat = std::abs(v);
-    double lat_m = 60 * (lat - std::floor(lat)), lat_s = 60 * (lat_m - std::floor(lat_m)),
-           lat_ss = 100 * (lat_s - std::floor(lat_s));
-    return QString().sprintf("%c %02g%c%02g'%02g.%02g\"",
-                             (v >= 0) ? 'N' : 'S',
-                             std::floor(lat),
-                             176,
-                             std::floor(lat_m),
-                             std::floor(lat_s),
-                             std::floor(lat_ss));
+    double a = std::abs(v);
+    double a_m = 60 * (a - std::floor(a)), a_s = 60 * (a_m - std::floor(a_m)),
+           a_ss = 100 * (a_s - std::floor(a_s));
+    return QString("%1 %2%3%4'%5.%6\"")
+        .arg((v >= 0) ? 'N' : 'S') //
+        .arg(static_cast<quint16>(std::floor(a)), 2, 10, QChar('0'))
+        .arg(QChar(176))
+        .arg(static_cast<quint16>(std::floor(a_m)), 2, 10, QChar('0'))
+        .arg(static_cast<quint16>(std::floor(a_s)), 2, 10, QChar('0'))
+        .arg(static_cast<quint16>(std::floor(a_ss)), 2, 10, QChar('0'));
 }
 QString AppRoot::lonToString(double v)
 {
-    double lat = std::abs(v);
-    double lat_m = 60 * (lat - std::floor(lat)), lat_s = 60 * (lat_m - std::floor(lat_m)),
-           lat_ss = 100 * (lat_s - std::floor(lat_s));
-    return QString().sprintf("%c %02g%c%02g'%02g.%02g\"",
-                             (v >= 0) ? 'E' : 'W',
-                             std::floor(lat),
-                             176,
-                             std::floor(lat_m),
-                             std::floor(lat_s),
-                             std::floor(lat_ss));
+    double a = std::abs(v);
+    double a_m = 60 * (a - std::floor(a)), a_s = 60 * (a_m - std::floor(a_m)),
+           a_ss = 100 * (a_s - std::floor(a_s));
+    return QString("%1 %2%3%4'%5.%6\"")
+        .arg((v >= 0) ? 'E' : 'W') //
+        .arg(static_cast<quint16>(std::floor(a)), 2, 10, QChar('0'))
+        .arg(QChar(176))
+        .arg(static_cast<quint16>(std::floor(a_m)), 2, 10, QChar('0'))
+        .arg(static_cast<quint16>(std::floor(a_s)), 2, 10, QChar('0'))
+        .arg(static_cast<quint16>(std::floor(a_ss)), 2, 10, QChar('0'));
 }
 double AppRoot::latFromString(QString s)
 {
@@ -198,7 +198,7 @@ QString AppRoot::distanceToString(uint v, bool units)
     else if (v >= 1000)
         s = QString("%1").arg(v / 1000.0, 0, 'f', 1);
     else {
-        s = QString("%1").arg((uint) v);
+        s = QString("%1").arg(static_cast<ulong>(v));
         su = "m";
     }
     if (units)
@@ -208,20 +208,21 @@ QString AppRoot::distanceToString(uint v, bool units)
 QString AppRoot::timeToString(quint64 v, bool seconds)
 {
     //if(v==0)return "--:--";
-    qint64 d = (qint64) v / (24 * 60 * 60);
+    qint64 d = v / (24 * 60 * 60);
     const char *sf = seconds ? "hh:mm:ss" : "hh:mm";
+    const int i = static_cast<int>(v);
     if (d <= 0)
-        return QString("%1").arg(QTime(0, 0, 0).addSecs(v).toString(sf));
-    return QString("%1d%2").arg(d).arg(QTime(0, 0, 0).addSecs(v).toString(sf));
+        return QString("%1").arg(QTime(0, 0, 0).addSecs(i).toString(sf));
+    return QString("%1d%2").arg(d).arg(QTime(0, 0, 0).addSecs(i).toString(sf));
 }
 QString AppRoot::dateToString(quint64 v)
 {
-    QDateTime d = QDateTime::fromSecsSinceEpoch(v);
+    QDateTime d = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(v));
     return d.toString("dd/MM/yy hh:mm:ss t");
 }
 QString AppRoot::timemsToString(quint64 v)
 {
-    qint64 ts = v / 1000;
+    quint64 ts = v / 1000;
     QString s;
     if (ts == 0)
         s = timeToString(1, false) + ":00";
@@ -240,7 +241,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += std::floor(dv * (double) (24 * 60 * 60));
+            t += static_cast<quint64>(std::floor(dv * (24.0 * 60.0 * 60.0)));
     }
     if (s.contains('h')) {
         QString ds = s.left(s.indexOf('h')).trimmed();
@@ -248,7 +249,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += std::floor(dv * (double) (60 * 60));
+            t += static_cast<quint64>(std::floor(dv * (60.0 * 60.0)));
     }
     if (s.contains('m')) {
         QString ds = s.left(s.indexOf('m')).trimmed();
@@ -256,7 +257,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += std::floor(dv * (double) (60));
+            t += static_cast<quint64>(std::floor(dv * (60.0)));
     }
     if (s.contains('s')) {
         QString ds = s.left(s.indexOf('s')).trimmed();
@@ -264,7 +265,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += std::floor(dv);
+            t += static_cast<quint64>(std::floor(dv));
         s.clear();
     }
     if (s.contains(':')) {
@@ -273,19 +274,19 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = ds.toDouble(&ok);
         if (ok && dv > 0)
-            t += std::floor(dv * (double) (60 * 60));
+            t += static_cast<quint64>(std::floor(dv * (60.0 * 60.0)));
         if (s.contains(':')) {
             QString ds = s.left(s.indexOf(':')).trimmed();
             s = s.remove(0, s.indexOf(':') + 1).trimmed();
             bool ok = false;
             double dv = ds.toDouble(&ok);
             if (ok && dv > 0)
-                t += std::floor(dv * (double) (60));
+                t += static_cast<quint64>(std::floor(dv * (60.0)));
         } else {
             bool ok = false;
             double dv = s.toDouble(&ok);
             if (ok && dv > 0)
-                t += std::floor(dv * (double) (60));
+                t += static_cast<quint64>(std::floor(dv * (60.0)));
             s.clear();
         }
     }
@@ -293,7 +294,7 @@ quint64 AppRoot::timeFromString(QString s)
         bool ok = false;
         double dv = s.toDouble(&ok);
         if (ok && dv > 0)
-            t += std::floor(dv);
+            t += static_cast<quint64>(std::floor(dv));
     }
     return t;
 }
@@ -302,13 +303,13 @@ QString AppRoot::capacityToString(quint64 v)
 {
     QString s, su;
     if (v >= (1024 * 1024 * 1024)) {
-        s = QString("%1").arg(v / (double) (1024 * 1024 * 1024), 0, 'f', 2);
+        s = QString("%1").arg(v / (1024.0 * 1024.0 * 1024.0), 0, 'f', 2);
         su = "GB";
     } else if (v >= (1024 * 1024)) {
-        s = QString("%1").arg(v / (double) (1024 * 1024), 0, 'f', 1);
+        s = QString("%1").arg(v / (1024.0 * 1024.0), 0, 'f', 1);
         su = "MB";
     } else {
-        s = QString("%1").arg(v / (double) (1024), 0, 'f', 0);
+        s = QString("%1").arg(v / (1024.0), 0, 'f', 0);
         su = "kB";
     }
     s.append(su);
@@ -355,7 +356,7 @@ QPointF AppRoot::rotate(const QPointF &p, double a)
 QPointF AppRoot::seriesBounds(const QVariantList &series)
 {
     //qDebug()<<v;
-    double min, max;
+    double min = 0, max = 0;
     for (int i = 0; i < series.size(); ++i) {
         double v = series.at(i).toDouble();
         if (i == 0) {

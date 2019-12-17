@@ -73,7 +73,7 @@ bool DBReqTelemetryFindCache::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqTelemetryMakeCache::run(QSqlQuery &query)
 {
-    QTime t0;
+    QElapsedTimer t0;
     t0.start();
 
     QList<quint64> rmList;
@@ -205,7 +205,7 @@ bool DBReqTelemetryMakeCache::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqTelemetryMakeStats::run(QSqlQuery &query)
 {
-    QTime t0;
+    QElapsedTimer t0;
     t0.start();
     query.prepare("SELECT * FROM TelemetryStats WHERE telemetryID=?");
     query.addBindValue(telemetryID);

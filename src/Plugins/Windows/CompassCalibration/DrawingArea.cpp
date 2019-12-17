@@ -1,6 +1,6 @@
-﻿#include <Fact/Fact.h>
-#include "DrawingArea.h"
+﻿#include "DrawingArea.h"
 #include <App/AppRoot.h>
+#include <Fact/Fact.h>
 
 DrawingArea::DrawingArea()
     : QWidget()
@@ -64,7 +64,7 @@ void DrawingArea::addData(double x, double y)
         xMax = (x > xMax) ? x : xMax;
         yMax = (y > yMax) ? y : yMax;
         cVectorList.append(cVector);
-    };
+    }
     this->update();
 }
 void DrawingArea::resizeArea(int width, int height)
@@ -193,14 +193,16 @@ void DrawingArea::DrawData()
     pen.setColor(Qt::blue);
     pen.setWidth(1);
     painter->setPen(pen);
-    painter->drawEllipse(DPoint(dx, -dy), (int) (MaxRadius * dScale), (int) (MaxRadius * dScale));
+    painter->drawEllipse(DPoint(dx, -dy),
+                         static_cast<int>(MaxRadius * dScale),
+                         static_cast<int>(MaxRadius * dScale));
 
     pen.setColor(Qt::gray);
     pen.setWidth(1);
     painter->setPen(pen);
     painter->drawEllipse(DPoint(dx, -dy),
-                         (int) (MaxRadius * dScale * kxR),
-                         (int) (MaxRadius * dScale * kyR));
+                         static_cast<int>(MaxRadius * dScale * kxR),
+                         static_cast<int>(MaxRadius * dScale * kyR));
 
     pen.setColor(Qt::red);
     pen.setWidth(7);
@@ -228,40 +230,42 @@ void DrawingArea::DrawData()
     pen.setColor(Qt::yellow);
     pen.setWidth(2);
     painter->setPen(pen);
-    painter->drawText(QPointF(10, 10), QString("b") + sAxis[0] + QString().sprintf(" = %.3f", dx));
-    painter->drawText(QPointF(10, 20), QString("b") + sAxis[1] + QString().sprintf(" = %.3f", dy));
+    painter->drawText(QPointF(10, 10), QString("b%1 = %2").arg(sAxis[0]).arg(dx, 0, 'f', 3));
+    painter->drawText(QPointF(10, 20), QString("b%1 = %2").arg(sAxis[1]).arg(dy, 0, 'f', 3));
 
     painter->drawText(QPointF(dOffset + 20, 10),
-                      QString("s") + sAxis[0] + QString().sprintf(" = %.2f", 1.0 / kxR));
+                      QString("s%1 = %2").arg(sAxis[0]).arg(1.0 / kxR, 0, 'f', 2));
     painter->drawText(QPointF(dOffset + 20, 20),
-                      QString("s") + sAxis[1] + QString().sprintf(" = %.2f", 1.0 / kyR));
+                      QString("s%1 = %2").arg(sAxis[1]).arg(1.0 / kyR, 0, 'f', 2));
 
     pen.setColor(Qt::lightGray);
     pen.setWidth(2);
     painter->setPen(pen);
-    painter->drawText(QPointF(10, 30), QString().sprintf("r: %.2f", MaxRadius));
+    painter->drawText(QPointF(10, 30), QString("r: %1").arg(MaxRadius, 0, 'f', 2));
 
     pen.setColor(Qt::cyan);
     pen.setWidth(2);
     painter->setPen(pen);
-    painter->drawText(QPointF(10, 40), QString().sprintf("a: %.0f%c", bearingDegrees, 176));
+    painter->drawText(QPointF(10, 40),
+                      QString("a: %1%2").arg(bearingDegrees, 0, 'f', 0).arg(QChar(176)));
 
     pen.setColor(QColor(255, 100, 100));
     pen.setWidth(2);
     painter->setPen(pen);
 
-    painter->drawText(QPointF(10, 50), QString().sprintf("b: %.0f%c", bearingDegrees2, 176));
+    painter->drawText(QPointF(10, 50),
+                      QString("b: %1%2").arg(bearingDegrees2, 0, 'f', 0).arg(QChar(176)));
 
     // ERROR - COlor changing
-    double maxError = 10;
-    int errcolor = (std::abs(angError) * 255.0) / maxError;
+    int maxError = 10;
+    int errcolor = (static_cast<int>(std::abs(angError)) * 255) / maxError;
 
     errcolor = (errcolor > 230) ? 230 : errcolor;
     pen.setColor(QColor(errcolor, 120 - errcolor / 2, 255 - errcolor));
     pen.setWidth(2);
     painter->setPen(pen);
     painter->drawText(QPointF(10, 60),
-                      QString().sprintf("e: %.0f%c", AppRoot::angle(angError), 176));
+                      QString("e: %1%2").arg(AppRoot::angle(angError), 0, 'f', 0).arg(QChar(176)));
 }
 void DrawingArea::paintEvent(QPaintEvent *p)
 {

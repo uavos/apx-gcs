@@ -57,7 +57,7 @@ private:
     //timestamp
     VehicleMandalaValue<uint> v_dl_timestamp;
     uint dl_timestamp_s, dl_timestamp_t0;
-    QTime uplinkTime;
+    QElapsedTimer uplinkTime;
 
     quint64 timestamp;
     quint64 getDataTimestamp();

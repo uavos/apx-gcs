@@ -61,7 +61,7 @@ private:
         rx_info_data,
     };
     RxStage rx_stage;
-    QTime time;
+    QElapsedTimer time;
 
     quint8 cmd_erase;
     int writeCnt;

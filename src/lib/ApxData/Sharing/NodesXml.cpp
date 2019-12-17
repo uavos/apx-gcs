@@ -55,7 +55,7 @@ bool NodesXmlExport::run(QSqlQuery &query)
             req.data.at(i).value("dictInfo").value<QVariantMap>().value("sn").toString());
         if (!reqUser.run(query))
             return false;
-        req.data[i]["userInfo"] = qVariantFromValue(reqUser.info);
+        req.data[i]["userInfo"] = QVariant::fromValue(reqUser.info);
     }
 
     return ShareXmlExport::run(query);
@@ -180,13 +180,13 @@ bool NodesXmlImport::read(const QDomNode &dom)
         const QString sn = e.attribute("sn");
         dictInfo["sn"] = sn;
         dictInfo["name"] = e.attribute("name");
-        nodesItem.insert("dictInfo", qVariantFromValue(dictInfo));
+        nodesItem.insert("dictInfo", QVariant::fromValue(dictInfo));
 
         QVariantMap nconfInfo = readInfo(e, "config");
-        nodesItem.insert("nconfInfo", qVariantFromValue(nconfInfo));
+        nodesItem.insert("nconfInfo", QVariant::fromValue(nconfInfo));
 
         QVariantMap userInfo = readInfo(e, "user");
-        nodesItem.insert("userInfo", qVariantFromValue(userInfo));
+        nodesItem.insert("userInfo", QVariant::fromValue(userInfo));
 
         DictNode::Dict dict;
         QVariantMap values;
@@ -261,8 +261,8 @@ bool NodesXmlImport::read(const QDomNode &dom)
         }
         dict.fieldsValid = true;
         dict.commandsValid = true;
-        nodesItem.insert("dict", qVariantFromValue(dict));
-        nodesItem.insert("values", qVariantFromValue(values));
+        nodesItem.insert("dict", QVariant::fromValue(dict));
+        nodesItem.insert("values", QVariant::fromValue(values));
         nodes.append(nodesItem);
     }
     return true;
@@ -396,7 +396,7 @@ bool NodesXmlImport::readOldFormat(const QDomNode &dom, int fmt)
             dictDate = defaultTime;
         dictInfo["time"] = dictDate;
 
-        nodesItem.insert("dictInfo", qVariantFromValue(dictInfo));
+        nodesItem.insert("dictInfo", QVariant::fromValue(dictInfo));
 
         DictNode::Dict dict;
         QVariantMap values;
@@ -502,8 +502,8 @@ bool NodesXmlImport::readOldFormat(const QDomNode &dom, int fmt)
         }
         dict.fieldsValid = true;
         dict.commandsValid = true;
-        nodesItem.insert("dict", qVariantFromValue(dict));
-        nodesItem.insert("values", qVariantFromValue(values));
+        nodesItem.insert("dict", QVariant::fromValue(dict));
+        nodesItem.insert("values", QVariant::fromValue(values));
         nodes.append(nodesItem);
         //ident callsign from modem sn
         if (vuid.isEmpty() && (nodeName == "mhx" || nodeName == "modem")) {

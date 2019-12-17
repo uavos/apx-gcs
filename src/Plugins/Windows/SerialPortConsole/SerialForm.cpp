@@ -25,7 +25,7 @@ SerialForm::SerialForm(QWidget *parent)
     connect(ui->eTxText, SIGNAL(returnPressed()), this, SLOT(btnSend()));
 
     //restoreGeometry(QSettings().value(objectName()).toByteArray());
-    ui->ePortID->setValue(QSettings().value(objectName() + "_port").toUInt());
+    ui->ePortID->setValue(QSettings().value(objectName() + "_port").toInt());
 
     ui->eForward->setText(QSettings().value(objectName() + "_fwdDev").toString());
 
@@ -82,7 +82,7 @@ void SerialForm::btnSend()
                 if (si.size())
                     ba.append(si);
             } else
-                ba.append((char) si.toInt());
+                ba.append(static_cast<char>(si.toInt()));
         }
         break;
     }
@@ -92,12 +92,12 @@ void SerialForm::btnSend()
         ba.append('\r');
     if (ui->cbLF->isChecked())
         ba.append('\n');
-    Vehicles::instance()->current()->sendSerial(ui->ePortID->value(), ba);
+    Vehicles::instance()->current()->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
 }
 //==============================================================================
 void SerialForm::serialData(uint portNo, QByteArray ba)
 {
-    if ((int) portNo != ui->ePortID->value())
+    if (static_cast<int>(portNo) != ui->ePortID->value())
         return;
 
     //dump log
@@ -164,7 +164,7 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
         break;
     case 1: //HEX
         for (int i = 0; i < ba.size(); i++)
-            s += QString().sprintf("%.2X ", (unsigned char) ba.at(i));
+            s += QString("%1 ").arg(static_cast<uint>(ba.at(i)), 2, 16, QChar('0'));
         s = s.trimmed();
 
         if (dumpFile.isOpen()) {

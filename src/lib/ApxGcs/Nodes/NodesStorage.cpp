@@ -458,7 +458,7 @@ int NodesStorage::importConfigs(QList<QVariantMap> data)
             rcnt++;
             continue;
         }
-        ignoredNconfs.append(qVariantFromValue(info));
+        ignoredNconfs.append(QVariant::fromValue(info));
     }
     for (int i = 0; i < ignoredNconfs.size(); ++i) {
         const QVariantMap &info = ignoredNconfs.at(i).value<QVariantMap>();

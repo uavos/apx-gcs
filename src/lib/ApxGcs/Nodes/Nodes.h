@@ -89,7 +89,7 @@ private:
     bool syncActive;
     bool syncUpdate;
     bool syncUpload;
-    QTime syncTime;
+    QElapsedTimer syncTime;
 
 private slots:
     void updateStatus();

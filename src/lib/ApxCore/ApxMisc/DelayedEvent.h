@@ -34,7 +34,7 @@ public:
     bool forceTimeout;
 
 private:
-    QTime time;
+    QElapsedTimer time;
 
 public slots:
     void schedule();

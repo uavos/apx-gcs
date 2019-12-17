@@ -51,7 +51,7 @@ private:
     QList<ProtocolServiceRequest *> pool;
     QTimer timer;
     quint32 activeCount;
-    QTime reqTime;
+    QElapsedTimer reqTime;
     QTimer finishedTimer;
 
     static QStringList upgradingNodes;

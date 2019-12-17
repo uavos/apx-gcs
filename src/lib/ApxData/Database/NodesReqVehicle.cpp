@@ -287,8 +287,8 @@ bool DBReqNodesLoadConfig::run(QSqlQuery &query)
             //connect(req,&DBReqLoadNodeDict::dictLoaded,this,&DBReqNodesLoadConfig::dictLoaded);
             bool ok = req->run(query);
             if (ok) {
-                dataItem.insert("dictInfo", qVariantFromValue(req->info));
-                dataItem.insert("dict", qVariantFromValue(req->dict));
+                dataItem.insert("dictInfo", QVariant::fromValue(req->info));
+                dataItem.insert("dict", QVariant::fromValue(req->dict));
             }
             delete req;
             if (!ok)
@@ -300,8 +300,8 @@ bool DBReqNodesLoadConfig::run(QSqlQuery &query)
             //connect(req,&DBReqNodesLoadNconf::configLoaded,this,&DBReqNodesLoadConfig::configLoaded);
             bool ok = req->run(query);
             if (ok) {
-                dataItem.insert("nconfInfo", qVariantFromValue(req->info));
-                dataItem.insert("values", qVariantFromValue(req->values));
+                dataItem.insert("nconfInfo", QVariant::fromValue(req->info));
+                dataItem.insert("values", QVariant::fromValue(req->values));
                 dataItem.insert("nconfID", p.second);
             }
             delete req;

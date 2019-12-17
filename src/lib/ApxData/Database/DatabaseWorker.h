@@ -56,7 +56,7 @@ private:
     //info
     int rcnt;
     std::atomic_int m_rate;
-    QTime infoUpdateTime;
+    QElapsedTimer infoUpdateTime;
     bool infoUpdate(bool force);
     void enqueue(DatabaseRequest *req);
     void eraseRequests(int count);

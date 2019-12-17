@@ -155,7 +155,7 @@ void ProtocolService::doNextRequest()
             timer.start();
         return;
     }
-    if (reqTime.isNull())
+    if (!reqTime.isValid())
         reqTime.start();
     if ((!active()) && (reqTime.elapsed() < 5000)) {
         if (!timer.isActive())

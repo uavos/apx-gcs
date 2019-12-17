@@ -307,7 +307,7 @@ bool DBReqMakeIndex::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqVacuum::run(QSqlQuery &query)
 {
-    QTime t0;
+    QElapsedTimer t0;
     t0.start();
     apxMsg() << tr("Optimizing") << name + "...";
     if (!db->commit(query))
@@ -321,7 +321,7 @@ bool DBReqVacuum::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqAnalyze::run(QSqlQuery &query)
 {
-    QTime t0;
+    QElapsedTimer t0;
     t0.start();
     apxMsg() << tr("Analyzing") << name + "...";
     if (!db->commit(query))

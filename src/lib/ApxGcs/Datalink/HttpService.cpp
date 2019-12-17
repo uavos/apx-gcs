@@ -507,15 +507,13 @@ QString HttpService::reply_chase()
     //xml.writeTextElement("gx:duration","5.0");
     xml.writeStartElement("Camera");
     xml.writeAttribute("id", "camChase");
-    xml.writeTextElement("longitude", QString().sprintf("%.6f", (double) c_gps_lon));
-    xml.writeTextElement("latitude", QString().sprintf("%.6f", (double) c_gps_lat));
-    xml.writeTextElement("altitude", QString().sprintf("%.1f", (double) c_gps_hmsl));
+    xml.writeTextElement("longitude", QString("%1").arg(c_gps_lon, 0, 'f', 6));
+    xml.writeTextElement("latitude", QString("%1").arg(c_gps_lat, 0, 'f', 6));
+    xml.writeTextElement("altitude", QString("%1").arg(c_gps_hmsl, 0, 'f'));
     xml.writeTextElement("heading",
-                         QString().sprintf("%.0f",
-                                           (double) c_course < 0 ? (double) c_course + 360.0
-                                                                 : (double) c_course));
-    xml.writeTextElement("tilt", QString().sprintf("%.0f", (double) c_pitch + 90.0));
-    xml.writeTextElement("roll", QString().sprintf("%.0f", -(double) c_roll));
+                         QString("%1").arg(c_course < 0 ? c_course + 360.0 : c_course, 0, 'f'));
+    xml.writeTextElement("tilt", QString("%1").arg(c_pitch + 90.0));
+    xml.writeTextElement("roll", QString("%1").arg(-c_roll));
     xml.writeTextElement("altitudeMode", "absolute");
     xml.writeEndElement(); //Camera
     //xml.writeEndElement();//FlyTo
@@ -552,15 +550,13 @@ QString HttpService::reply_chase_upd()
     xml.writeTextElement("gx:duration", "2.0");
     xml.writeStartElement("Camera");
     xml.writeAttribute("id", "camChase");
-    xml.writeTextElement("longitude", QString().sprintf("%.6f", (double) c_gps_lon));
-    xml.writeTextElement("latitude", QString().sprintf("%.6f", (double) c_gps_lat));
-    xml.writeTextElement("altitude", QString().sprintf("%.1f", (double) c_gps_hmsl));
+    xml.writeTextElement("longitude", QString("%1").arg(c_gps_lon, 0, 'f', 6));
+    xml.writeTextElement("latitude", QString("%1").arg(c_gps_lat, 0, 'f', 6));
+    xml.writeTextElement("altitude", QString("%1").arg(c_gps_hmsl, 0, 'f'));
     xml.writeTextElement("heading",
-                         QString().sprintf("%.0f",
-                                           (double) c_course < 0 ? (double) c_course + 360.0
-                                                                 : (double) c_course));
-    xml.writeTextElement("tilt", QString().sprintf("%.0f", (double) c_pitch + 90.0));
-    xml.writeTextElement("roll", QString().sprintf("%.0f", -(double) c_roll));
+                         QString("%1").arg(c_course < 0 ? c_course + 360.0 : c_course, 0, 'f'));
+    xml.writeTextElement("tilt", QString("%1").arg(c_pitch + 90.0, 0, 'f', 6));
+    xml.writeTextElement("roll", QString("%1").arg(-c_roll, 0, 'f', 6));
     xml.writeTextElement("altitudeMode", "absolute");
     xml.writeEndElement(); //Camera
     xml.writeEndElement(); //FlyTo

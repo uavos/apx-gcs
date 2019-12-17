@@ -40,7 +40,7 @@ private:
     Datalink *datalink;
     int retry;
 
-    QTime time;
+    QElapsedTimer time;
     QTimer updateStatsTimer;
     QTimer reconnectTimer;
 
