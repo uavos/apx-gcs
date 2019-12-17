@@ -192,7 +192,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 &ProtocolTelemetry::serialDataReceived,
                 this,
                 [this](uint portNo, QByteArray data) {
-                    emit recordSerialData(portNo, data, false);
+                    emit recordSerialData(static_cast<quint8>(portNo), data, false);
                 });
         //connect(this,&Vehicle::recordNodes,this,&Vehicle::dbSaveConfigDataBackup);
 
@@ -328,18 +328,16 @@ void Vehicle::updateGeoPath()
         return;
     if (c.longitude() == 0.0)
         return;
-    qint64 dist = 0;
     if (!m_geoPath.isEmpty()) {
         QGeoCoordinate c0(m_geoPath.path().last());
         /*if (c0.latitude() == c.latitude())
             return;
         if (c0.longitude() == c.longitude())
             return;*/
-        qint64 d = c0.distanceTo(c);
-        dist = d;
-        setTotalDistance(totalDistance() + static_cast<quint64>(dist));
+        quint64 d = static_cast<quint64>(c0.distanceTo(c));
         if (d < 10)
             return;
+        setTotalDistance(totalDistance() + static_cast<quint64>(d));
     }
 
     m_geoPath.addCoordinate(c);
@@ -702,7 +700,7 @@ void Vehicle::setGeoPath(const QGeoPath &v)
             dist += c.distanceTo(p);
         c = p;
     }
-    setTotalDistance(dist);
+    setTotalDistance(static_cast<quint64>(dist));
 }
 quint64 Vehicle::totalDistance() const
 {
