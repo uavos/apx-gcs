@@ -58,7 +58,7 @@ void AppPlugins::load(const QStringList &names)
     if (!userp.exists())
         userp.mkpath(".");
     QStringList stRep, stRepQml;
-    foreach (QString fileName, userp.entryList(filters, QDir::Files)) {
+    foreach (QString fileName, userp.entryList(filters, QDir::Files | QDir::Dirs)) {
         if (fileName.startsWith('-'))
             continue;
         QString pname = QString(fileName);
@@ -141,8 +141,19 @@ void AppPlugins::load(const QStringList &names)
             libFiles.append(s);
         }
     }
-    libFiles.sort();
-    qmlFiles.sort();
+    //sort by name
+    std::sort(libFiles.begin(), libFiles.end(), [](QString a, QString b) {
+        return QFileInfo(a).baseName().localeAwareCompare(QFileInfo(b).baseName()) < 0;
+    });
+
+    std::sort(qmlFiles.begin(), qmlFiles.end(), [](QString a, QString b) {
+        return QFileInfo(a).baseName().localeAwareCompare(QFileInfo(b).baseName()) < 0;
+    });
+
+    //remove duplicates (system but keep user)
+    fixDuplicates(libFiles, userp.absolutePath());
+    fixDuplicates(qmlFiles, userp.absolutePath());
+
     loadFiles(libFiles);
     loadFiles(qmlFiles);
 
@@ -155,6 +166,26 @@ void AppPlugins::load(const QStringList &names)
     }
 
     emit loaded();
+}
+//=============================================================================
+void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath) const
+{
+    foreach (QString p, list) {
+        if (!p.startsWith(userPluginsPath))
+            continue;
+        //p is user plugin
+        QString pn = QFileInfo(p).baseName();
+        foreach (QString ps, list) {
+            if (ps.startsWith(userPluginsPath))
+                continue;
+            //ps is system plugin
+            QString psn = QFileInfo(ps).baseName();
+            if (psn == pn) {
+                list.removeAll(ps);
+                apxConsole() << tr("User plugin override").append(":") << psn;
+            }
+        }
+    }
 }
 //=============================================================================
 void AppPlugins::loadFiles(const QStringList &fileNames)

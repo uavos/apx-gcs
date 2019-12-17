@@ -44,6 +44,8 @@ public:
 private:
     void loadFiles(const QStringList &fileNames);
 
+    void fixDuplicates(QStringList &list, const QString &userPluginsPath) const;
+
 signals:
     void loaded();
 
