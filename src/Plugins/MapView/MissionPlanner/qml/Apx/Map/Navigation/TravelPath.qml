@@ -6,7 +6,7 @@ import Apx.Map.Common 1.0
 
 MapPolyline {
     opacity: ui.effects?0.8:1
-    line.width: replay?4:2
+    line.width: replay?1.5:1.5
     line.color: replay
                 ? Style.cBlue
                 : vehicle.telemetry.active
