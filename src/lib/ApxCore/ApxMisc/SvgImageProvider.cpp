@@ -45,12 +45,12 @@ SvgImageProvider::~SvgImageProvider()
 QSvgRenderer *SvgImageProvider::loadRenderer(const QString &svgFile)
 {
     if (svgFile.isNull())
-        return 0;
+        return nullptr;
     QString s = svgFile.trimmed();
     while (s.contains("//"))
         s.replace("//", "/");
     if (s.size() < 5)
-        return 0;
+        return nullptr;
 
     QSvgRenderer *renderer = m_renderers.value(s);
 
@@ -75,7 +75,7 @@ QSvgRenderer *SvgImageProvider::loadRenderer(const QString &svgFile)
         if (!renderer->isValid()) {
             apxConsoleW() << "Failed to load svg file:" << svgFile << fn;
             delete renderer;
-            return 0;
+            return nullptr;
         }
 
         m_renderers.insert(s, renderer);
@@ -160,11 +160,6 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     }
     if (element.isEmpty()) {
         renderer->deleteLater(); //don't cache
-                                 /*if(!color.isEmpty()){
-      renderer=new QSvgRenderer(this);
-      renderer->deleteLater();
-      renderer->load(SvgIcon::svgData(m_basePath+"/"+svgFile,color));
-    }*/
     }
 
     qreal xScale = 1.0;
@@ -180,7 +175,7 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
           rsz.scale(rsz/2,Qt::KeepAspectRatio);*/
             sz = 2048;
             if (rsz.width() > sz || rsz.height() > sz)
-                rsz.scale(QSize(sz, sz), Qt::KeepAspectRatio);
+                rsz.scale(QSizeF(sz, sz).toSize(), Qt::KeepAspectRatio);
             QRectF elementBounds = renderer->boundsOnElement(element);
             xScale = qreal(rsz.width()) / elementBounds.width();
             yScale = qreal(rsz.height()) / elementBounds.height();
@@ -229,7 +224,9 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
                                  | QPainter::SmoothPixmapTransform);
 
                 p.translate(-x + border, -y + border);
-                renderer->render(&p, element, QRectF(0, 0, elementWidth, elementHeigh));
+                QRectF rElement(0, 0, elementBounds.width(), elementBounds.height());
+                p.scale(w / rElement.width(), h / rElement.height());
+                renderer->render(&p, element, rElement);
             }
         }
         if (size) {
@@ -237,8 +234,8 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
         }
         //if(img.size().isNull()) return QImage(1,1,QImage::Format_ARGB32_Premultiplied);
 
-        //img.save("/tmp/img/"+element+parameters+".png");
-        //qDebug()<<img.size();
+        //img.save("/tmp/img/" + element + params.join('.') + ".png");
+        //qDebug() << img.size();
         return img;
     }
 
