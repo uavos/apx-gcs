@@ -550,7 +550,7 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
 
     if (fType != AppNotify::Error && fType != AppNotify::Warning) {
         AppNotify::NotifyFlags t = fType;
-        if (msg.contains("error", Qt::CaseInsensitive))
+        if (msg.contains("err", Qt::CaseInsensitive))
             t = AppNotify::Error;
         else if (msg.contains("fail", Qt::CaseInsensitive))
             t = AppNotify::Error;

@@ -338,11 +338,14 @@ bool ProtocolServiceFirmware::requestWrite(void)
     hdr.write(&stream);
 
     //make request
-    //qDebug()<<QString("%1").arg(static_cast<qulonglong>(hdr.start_address),8,16,QChar('0')).toUpper()<<hdr.data_size;
+    /*qDebug() << QString("%1")
+                    .arg(static_cast<qulonglong>(hdr.start_address), 8, 16, QChar('0'))
+                    .toUpper()
+             << hdr.data_size;*/
     reqWrite = ldr_req(xbus::node::ldc_write, ba.append(blockData), 5000, 3);
     connect(reqWrite, &ProtocolServiceRequest::retrying, this, &ProtocolServiceFirmware::retrying);
     connect(reqWrite, &ProtocolServiceRequest::timeout, this, &ProtocolServiceFirmware::restart);
-    setProgress(dataAddr * 100 / dataSize);
+    setProgress(static_cast<int>(dataAddr * 100 / dataSize));
     setStatus(QString("%1kB/%2kB").arg(dataAddr / 1024).arg(dataSize / 1024.0, 0, 'f', 1));
     return true;
 }

@@ -273,7 +273,7 @@ bool ProtocolService::checkUpgrading()
 {
     if (upgradingNodes.isEmpty())
         return false;
-    apxMsgW() << tr("Firmware upgrading in progress").append("...");
+    //apxMsgW() << tr("Firmware upgrading in progress").append("...");
     return true;
 }
 //=============================================================================
