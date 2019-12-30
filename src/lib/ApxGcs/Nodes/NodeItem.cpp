@@ -725,7 +725,7 @@ void NodeItem::messageReceived(const QString &msg)
 {
     message(msg);
     if ((reconf() || fwUpdating() || allFields.isEmpty()) && (!modified())) {
-        if (msg.startsWith(QString("%1 initialized").arg(title()))) {
+        if (msg.contains(title()) && msg.contains("init")) {
             nodes->syncLater(1000);
         }
     }
