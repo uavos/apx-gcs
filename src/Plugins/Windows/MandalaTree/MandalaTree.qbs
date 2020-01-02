@@ -1,0 +1,23 @@
+import ApxApp
+
+ApxApp.ApxPlugin {
+
+    condition: !qbs.buildVariant.contains("release")
+
+    Depends {
+        name: "Qt";
+        submodules: [
+            "core",
+        ]
+    }
+
+
+    files: [
+        "MandalaTreePlugin.h",
+        "MandalaTree.cpp", "MandalaTree.h",
+    ]
+
+
+    Depends { name: "apx_libs"; submodules: "Mandala__tree" }
+
+}

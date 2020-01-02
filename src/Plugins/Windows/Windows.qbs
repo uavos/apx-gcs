@@ -10,6 +10,7 @@ Project {
         "TreeFacts",
         "TreeJS",
         "VehicleConfiguration",
+        "MandalaTree",
     ]
 
     references: {
