@@ -34,6 +34,7 @@ Project {
                     p=FileInfo.cleanPath(FileInfo.joinPaths(p, "/**/*"))
                     v.push(p)
                 }
+                v.push(FileInfo.cleanPath(FileInfo.joinPaths(sourceDirectory, "../lib/**/*.qbs")))
                 return v
             }
         }

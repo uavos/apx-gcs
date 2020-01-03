@@ -23,6 +23,8 @@
 #include "MandalaTree.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
+#include <MandalaDict.h>
+#include <MandalaMeta.h>
 //=============================================================================
 MandalaTree::MandalaTree(Fact *parent)
     : Fact(parent,
@@ -31,5 +33,33 @@ MandalaTree::MandalaTree(Fact *parent)
            tr("Vehicle data tree"),
            Group,
            "hexagon-multiple")
-{}
-//=============================================================================
+{
+    qDebug() << mandala::meta::sns::nav::ins::gyro::title;
+
+    /*mandala::data m;
+    qDebug() << m.sns.title;
+
+    m.sns.nav.ins.mag.y.setValue(0.123f);
+    qDebug() << m.sns.nav.ins.mag.y;
+    //m.sns.nav.ins.mag.z = 0.123f;
+    qDebug() << m.sns.nav.ins.mag.z;
+    qDebug() << m.sns.nav.ins.mag.z.uid;*/
+
+    static mandala::Text<mandala::meta::sns::nav::ins::acc::y> txt;
+    qDebug() << txt.title();
+
+    class mandala::meta::sns::nav::ins::mag::y hy;
+    qDebug() << hy.title << hy;
+    hy.setValue(0.551f);
+    qDebug() << hy.title << hy;
+
+    mandala::value<mandala::meta::sns::nav::ins::mag::y> v_hy;
+    qDebug() << v_hy.title << v_hy;
+    v_hy.setValue(0.101f);
+    qDebug() << v_hy.title << v_hy;
+
+    size_t sz = sizeof(mandala::dict);
+    size_t sz1 = sizeof(*mandala::dict);
+    qDebug() << sz << sz1 << sz / sz1;
+}
+//============================================================================
