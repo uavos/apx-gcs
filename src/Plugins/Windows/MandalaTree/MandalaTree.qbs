@@ -8,6 +8,7 @@ ApxApp.ApxPlugin {
         name: "Qt";
         submodules: [
             "core",
+            "widgets",
         ]
     }
 

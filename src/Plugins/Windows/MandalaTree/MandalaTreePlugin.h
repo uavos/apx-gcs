@@ -38,7 +38,9 @@ class SystreePlugin : public PluginInterface
 public:
     QObject *createControl()
     {
-        return new FactTreeWidget(new MandalaTree(AppRoot::instance()), true, false);
+        FactTreeWidget *w = new FactTreeWidget(new MandalaTree(AppRoot::instance()), true, false);
+        w->tree->expandToDepth(2);
+        return w;
     }
     int flags() { return Widget | Restore | Launcher; }
     QString title() { return tr("Mandala tree"); }
