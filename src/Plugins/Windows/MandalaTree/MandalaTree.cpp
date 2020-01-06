@@ -70,6 +70,15 @@ MandalaTree::MandalaTree(Fact *parent)
         qDebug() << "StaticValue:" << s_hy2.data().meta.title << s_hy2.data();
     }
 
+    {
+        mandala::Value<mandala::sns::nav::ins::mag::y> v;
+        v.set(0.101f);
+        qDebug() << "Pack:" << v.meta.title << v;
+        QByteArray ba(100, '\0');
+        ba.resize(v.pack(ba.data()));
+        qDebug() << "Pack:" << ba.toHex().toUpper();
+    }
+
     size_t sz = sizeof(mandala::meta);
     size_t sz1 = sizeof(*mandala::meta);
     qDebug() << sz << sz1 << sz / sz1;
