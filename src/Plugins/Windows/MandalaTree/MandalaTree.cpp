@@ -75,8 +75,11 @@ MandalaTree::MandalaTree(Fact *parent)
         v.set(0.101f);
         qDebug() << "Pack:" << v.meta.title << v;
         QByteArray ba(100, '\0');
-        ba.resize(v.pack(ba.data()));
-        qDebug() << "Pack:" << ba.toHex().toUpper();
+        size_t sz = v.pack(ba.data());
+        ba.resize(sz);
+        qDebug() << "Pack:" << sz << ba.toHex().toUpper();
+        sz = v.unpack(ba.data());
+        qDebug() << "Unpack:" << sz << v.meta.title << v;
     }
 
     size_t sz = sizeof(mandala::meta);
