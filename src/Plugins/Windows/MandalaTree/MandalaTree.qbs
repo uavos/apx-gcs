@@ -16,6 +16,7 @@ ApxApp.ApxPlugin {
     files: [
         "MandalaTreePlugin.h",
         "MandalaTree.cpp", "MandalaTree.h",
+        "MandalaTreeFact.cpp", "MandalaTreeFact.h",
     ]
 
 

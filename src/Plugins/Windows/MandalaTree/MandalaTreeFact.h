@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -20,32 +20,41 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MandalaTreePlugin_H
-#define MandalaTreePlugin_H
-
-#include <App/AppRoot.h>
-#include <App/PluginInterface.h>
-#include <TreeModel/FactTreeView.h>
-#include <QtCore>
-
-#include "MandalaTree.h"
+#ifndef MandalaTreeFact_H
+#define MandalaTreeFact_H
 //=============================================================================
-class SystreePlugin : public PluginInterface
+#include <Fact/Fact.h>
+#include <Mandala/tree/MandalaMetaBase.h>
+#include <QtCore>
+//=============================================================================
+class MandalaTreeFact : public Fact
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
-    Q_INTERFACES(PluginInterface)
 public:
-    QObject *createControl()
-    {
-        FactTreeWidget *w = new FactTreeWidget(new MandalaTree(AppRoot::instance()), true, false);
-        w->tree->expandToDepth(1);
-        return w;
-    }
-    int flags() { return Widget | Restore | Launcher; }
-    QString title() { return tr("Mandala tree"); }
-    QString descr() { return tr("Mandala tree view"); }
-    QString icon() { return "hexagon-multiple"; }
+    explicit MandalaTreeFact(Fact *parent, const mandala::meta_t &meta);
+
+    bool setValue(const QVariant &v); //override
+    bool setValueLocal(const QVariant &v);
+
+    Q_INVOKABLE quint16 id();
+    Q_INVOKABLE void request();
+    Q_INVOKABLE void send();
+
+private:
+    const mandala::meta_t &m_meta;
+    QElapsedTimer sendTime;
+    QTimer sendTimer;
+
+protected:
+    //Fact override
+    virtual QVariant data(int col, int role) const;
+
+private slots:
+    void updateStatus();
+
+signals:
+    void sendValueUpdate(quint16 id, double v);
+    void sendValueRequest(quint16 id);
 };
 //=============================================================================
 #endif

@@ -21,6 +21,7 @@
  *
  */
 #include "MandalaTree.h"
+#include "MandalaTreeFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
 #include <Mandala/tree/MandalaValue.h>
@@ -47,7 +48,7 @@ MandalaTree::MandalaTree(Fact *parent)
     /*static mandala::Text<mandala::sns::nav::ins::acc::y> txt;
     qDebug() << txt.title();*/
 
-    struct mandala::sns::nav::ins::mag::y hy;
+    /*struct mandala::sns::nav::ins::mag::y hy;
     qDebug() << hy.meta.title << hy;
     hy.set(0.551f);
     qDebug() << hy.meta.title << hy;
@@ -71,8 +72,8 @@ MandalaTree::MandalaTree(Fact *parent)
     }
 
     {
-        mandala::Value<mandala::sns::nav::ins::mag::y> v;
-        v.set(0.101f);
+        mandala::Value<mandala::sns::nav::ins::gyro::temp> v;
+        v.set(-5.101f);
         qDebug() << "Pack:" << v.meta.title << v;
         QByteArray ba(100, '\0');
         size_t sz = v.pack(ba.data());
@@ -80,7 +81,13 @@ MandalaTree::MandalaTree(Fact *parent)
         qDebug() << "Pack:" << sz << ba.toHex().toUpper();
         sz = v.unpack(ba.data());
         qDebug() << "Unpack:" << sz << v.meta.title << v;
-    }
+        ba.resize(100);
+        sz = v.copy_to(ba.data());
+        ba.resize(sz);
+        qDebug() << "Copy:" << sz << ba.toHex().toUpper();
+        sz = v.copy_from(ba.data());
+        qDebug() << "Copy:" << sz << v.meta.title << v;
+    }*/
 
     size_t sz = sizeof(mandala::meta);
     size_t sz1 = sizeof(*mandala::meta);
@@ -95,15 +102,15 @@ MandalaTree::MandalaTree(Fact *parent)
             for (; level > d.level; --level)
                 group = group->parentFact();
             level = d.level + 1;
-            group = new Fact(group, d.name, d.name, d.title);
-            group->setValue(QString::number(d.uid, 16));
+            group = new MandalaTreeFact(group, d);
+            //group->setValue(QString::number(d.uid, 16));
             continue;
         }
-        Fact *f = new Fact(group, d.name, d.name, d.title);
+        MandalaTreeFact *f = new MandalaTreeFact(group, d);
         QString alias(d.alias);
-        if (!alias.isEmpty())
-            f->setValue(alias);
-        f->setValue(QString::number(d.uid, 16));
+        //if (!alias.isEmpty())
+        //    f->setValue(alias);
+        //f->setValue(QString::number(d.uid, 16));
     }
 }
 //============================================================================
