@@ -25,13 +25,16 @@
 //=============================================================================
 #include <Fact/Fact.h>
 #include <Mandala/tree/MandalaMetaBase.h>
+#include <Mandala/tree/MandalaStream.h>
 #include <QtCore>
-//=============================================================================
+
+class MandalaTree;
+
 class MandalaTreeFact : public Fact
 {
     Q_OBJECT
 public:
-    explicit MandalaTreeFact(Fact *parent, const mandala::meta_t &meta);
+    explicit MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta);
 
     bool setValue(const QVariant &v); //override
     bool setValueLocal(const QVariant &v);
@@ -40,10 +43,59 @@ public:
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
 
+    size_t pack(void *buf) const;
+    size_t unpack(const void *buf);
+
 private:
+    MandalaTree *m_tree;
     const mandala::meta_t &m_meta;
     QElapsedTimer sendTime;
     QTimer sendTimer;
+
+    class stream_base_t
+    {
+    public:
+        virtual size_t pack(void *buf, const QVariant &v) const = 0;
+        virtual size_t unpack(const void *buf, QVariant &v) = 0;
+        virtual size_t psize() const = 0;
+    };
+
+    template<mandala::sfmt_id_t _sfmt, typename _DataType>
+    class stream_t : public stream_base_t
+    {
+    protected:
+        size_t pack(void *buf, const QVariant &v) const override
+        {
+            return mandala::stream::pack<_sfmt, _DataType>(buf, v.value<_DataType>());
+        }
+        size_t unpack(const void *buf, QVariant &v) override
+        {
+            _DataType d;
+            size_t sz = mandala::stream::unpack<_sfmt, _DataType>(buf, d);
+            if (sz > 0)
+                v = QVariant::fromValue(d);
+            return sz;
+        }
+        size_t psize() const override { return mandala::stream::psize<_sfmt>(); }
+    };
+
+    stream_base_t *m_stream{nullptr};
+    stream_base_t *get_stream() const;
+
+    template<mandala::sfmt_id_t _sfmt>
+    stream_base_t *get_stream(mandala::type_id_t type) const
+    {
+        switch (type) {
+        case mandala::type_float:
+            return new stream_t<_sfmt, mandala::float_t>();
+        case mandala::type_uint:
+            return new stream_t<_sfmt, mandala::uint_t>();
+        case mandala::type_byte:
+            return new stream_t<mandala::sfmt_u1, mandala::byte_t>();
+        case mandala::type_enum:
+            return new stream_t<mandala::sfmt_u1, mandala::enum_t>();
+        }
+    }
 
 protected:
     //Fact override

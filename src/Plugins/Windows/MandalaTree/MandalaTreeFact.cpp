@@ -21,11 +21,13 @@
  *
  */
 #include "MandalaTreeFact.h"
+#include "MandalaTree.h"
 #include <MandalaMeta.h>
 #include <QColor>
 
-MandalaTreeFact::MandalaTreeFact(Fact *parent, const mandala::meta_t &meta)
+MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
     : Fact(parent, meta.name, meta.name, meta.title, meta.group ? Group : NoFlags)
+    , m_tree(tree)
     , m_meta(meta)
 {
     if (meta.group) {
@@ -66,6 +68,7 @@ MandalaTreeFact::MandalaTreeFact(Fact *parent, const mandala::meta_t &meta)
         if (!units().isEmpty()) {
             setDescr(QString("%1 [%2]").arg(descr()).arg(units()));
         }
+        m_stream = get_stream();
 
         setValueLocal(v);
         sendTime.start();
@@ -95,6 +98,17 @@ MandalaTreeFact::MandalaTreeFact(Fact *parent, const mandala::meta_t &meta)
                 qWarning() << path() << "uint sfmt";
             }
             break;
+        }
+
+        {
+            QByteArray ba(100, '\0');
+            size_t sz = pack(ba.data());
+            ba.resize(sz);
+            //qDebug() << path() << ba.toHex().toUpper();
+            setDescr(QString("%1 (%2): %3")
+                         .arg(QString(ba.toHex().toUpper()))
+                         .arg(m_stream->psize())
+                         .arg(descr()));
         }
     }
     setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
@@ -155,6 +169,10 @@ QVariant MandalaTreeFact::data(int col, int role) const
             }
         }
         break;
+    case Qt::BackgroundRole:
+        if (m_meta.level > 0)
+            break;
+        return QColor(Qt::darkCyan).darker(300);
     }
     return Fact::data(col, role);
 }
@@ -163,4 +181,50 @@ void MandalaTreeFact::updateStatus()
 {
     int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
     setStatus(QString("[%1/%2]").arg(size()).arg(capacity));
+}
+
+MandalaTreeFact::stream_base_t *MandalaTreeFact::get_stream() const
+{
+    switch (m_meta.sfmt) {
+    case mandala::sfmt_u4:
+        return get_stream<mandala::sfmt_u4>(m_meta.type_id);
+    case mandala::sfmt_u2:
+        return get_stream<mandala::sfmt_u2>(m_meta.type_id);
+    case mandala::sfmt_u1:
+        return get_stream<mandala::sfmt_u1>(m_meta.type_id);
+    case mandala::sfmt_f4:
+        return get_stream<mandala::sfmt_f4>(m_meta.type_id);
+    case mandala::sfmt_f2:
+        return get_stream<mandala::sfmt_f2>(m_meta.type_id);
+    case mandala::sfmt_f1:
+        return get_stream<mandala::sfmt_f1>(m_meta.type_id);
+    case mandala::sfmt_f1div10:
+        return get_stream<mandala::sfmt_f1div10>(m_meta.type_id);
+    case mandala::sfmt_f1mul10:
+        return get_stream<mandala::sfmt_f1mul10>(m_meta.type_id);
+    case mandala::sfmt_f1mul100:
+        return get_stream<mandala::sfmt_f1mul100>(m_meta.type_id);
+    case mandala::sfmt_f1s:
+        return get_stream<mandala::sfmt_f1s>(m_meta.type_id);
+    case mandala::sfmt_f1smul100:
+        return get_stream<mandala::sfmt_f1smul100>(m_meta.type_id);
+    }
+}
+
+size_t MandalaTreeFact::pack(void *buf) const
+{
+    if (!m_stream)
+        return 0;
+    return m_stream->pack(buf, value());
+}
+
+size_t MandalaTreeFact::unpack(const void *buf)
+{
+    if (!m_stream)
+        return 0;
+    QVariant v;
+    size_t sz = m_stream->unpack(buf, v);
+    if (sz > 0)
+        setValueLocal(v);
+    return sz;
 }

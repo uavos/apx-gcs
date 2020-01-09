@@ -91,7 +91,7 @@ MandalaTree::MandalaTree(Fact *parent)
 
     size_t sz = sizeof(mandala::meta);
     size_t sz1 = sizeof(*mandala::meta);
-    qDebug() << sz << sz1 << sz / sz1;
+    qDebug() << sz1 << sz << "bytes" << sz / sz1 << "items";
 
     Fact *group = this;
     uint8_t level = 0;
@@ -102,15 +102,18 @@ MandalaTree::MandalaTree(Fact *parent)
             for (; level > d.level; --level)
                 group = group->parentFact();
             level = d.level + 1;
-            group = new MandalaTreeFact(group, d);
+            group = new MandalaTreeFact(this, group, d);
             //group->setValue(QString::number(d.uid, 16));
             continue;
         }
-        MandalaTreeFact *f = new MandalaTreeFact(group, d);
+        MandalaTreeFact *f = new MandalaTreeFact(this, group, d);
         QString alias(d.alias);
         //if (!alias.isEmpty())
         //    f->setValue(alias);
         //f->setValue(QString::number(d.uid, 16));
     }
+
+    //fact tests
+    {}
 }
 //============================================================================
