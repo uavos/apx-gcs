@@ -72,6 +72,30 @@ MandalaTreeFact::MandalaTreeFact(Fact *parent, const mandala::meta_t &meta)
         sendTimer.setInterval(100);
         sendTimer.setSingleShot(true);
         connect(&sendTimer, &QTimer::timeout, this, &MandalaTreeFact::send);
+
+        //integrity tests
+        switch (meta.type_id) {
+        case mandala::type_enum:
+            if (meta.sfmt < mandala::sfmt_f4) {
+                qWarning() << path() << "enum sfmt";
+            }
+            break;
+        case mandala::type_byte:
+            if (meta.sfmt < mandala::sfmt_f4) {
+                qWarning() << path() << "byte sfmt";
+            }
+            break;
+        case mandala::type_float:
+            if (meta.sfmt < mandala::sfmt_f4) {
+                qWarning() << path() << "float sfmt";
+            }
+            break;
+        case mandala::type_uint:
+            if (meta.sfmt >= mandala::sfmt_f4) {
+                qWarning() << path() << "uint sfmt";
+            }
+            break;
+        }
     }
     setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
 }
