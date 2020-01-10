@@ -148,44 +148,46 @@ bool FactData::updateValue(const QVariant &v)
         if (ev >= 0)
             vx = enumText(ev);
         break;
-    case Int:
-        if (ev >= 0)
+    case Int: {
+        long long i = 0;
+        if (ev >= 0) {
             vx = ev;
-        else if (m_enumStrings.size() > 1)
+            break;
+        } else if (m_enumStrings.size() > 1)
             return false;
         else if (!vtype(v, QMetaType::Int)) {
             QString s = v.toString();
-            int i = 0;
             if (units() == "time" && s.contains(':')) {
                 i = AppRoot::timeFromString(s);
                 ok = true;
             }
             if (ok == false && units() == "hex") {
-                i = s.toInt(&ok, 16);
+                i = s.toLongLong(&ok, 16);
             }
             if (!ok) {
-                i = s.toInt(&ok);
+                i = s.toLongLong(&ok);
                 if (!ok)
                     i = round(s.toDouble(&ok));
                 if (!ok)
-                    i = s.toInt(&ok, 16);
+                    i = s.toLongLong(&ok, 16);
             }
             if (!ok)
                 return false;
-            if ((!m_min.isNull()) && i < m_min.toInt())
-                i = m_min.toInt();
-            if ((!m_max.isNull()) && i > m_max.toInt())
-                i = m_max.toInt();
-            vx = i;
         } else {
-            int i = v.toInt();
-            if ((!m_min.isNull()) && i < m_min.toInt())
-                i = m_min.toInt();
-            if ((!m_max.isNull()) && i > m_max.toInt())
-                i = m_max.toInt();
-            vx = i;
+            i = v.toLongLong();
         }
-        break;
+        if (!m_min.isNull()) {
+            long long m = m_min.toLongLong();
+            if (i < m)
+                i = m;
+        }
+        if (!m_max.isNull()) {
+            long long m = m_max.toLongLong();
+            if (i > m)
+                i = m;
+        }
+        vx = QVariant::fromValue(i);
+    } break;
     case Float:
         if (!vtype(v, QMetaType::Double)) {
             QString s = v.toString();
@@ -204,10 +206,10 @@ bool FactData::updateValue(const QVariant &v)
                     else
                         return false;
                 }
-                if ((!m_min.isNull()) && d < m_min.toInt())
-                    d = m_min.toInt();
-                if ((!m_max.isNull()) && d > m_max.toInt())
-                    d = m_max.toInt();
+                if ((!m_min.isNull()) && d < m_min.toDouble())
+                    d = m_min.toDouble();
+                if ((!m_max.isNull()) && d > m_max.toDouble())
+                    d = m_max.toDouble();
                 vx = d;
             }
         } else
@@ -309,7 +311,7 @@ QString FactData::toText(const QVariant &v) const
         if (units() == "time") {
             return AppRoot::timeToString(v.toUInt(), true);
         }
-        return QString::number(v.toInt());
+        return QString::number(v.toString().toLongLong());
     }
     if (dataType() == Bool) {
         return QVariant(v.toBool()).toString();
@@ -444,7 +446,7 @@ void FactData::setMin(const QVariant &v)
     emit minChanged();
     if (v.isNull())
         return;
-    if (value() < m_min)
+    if (value().toDouble() < m_min.toDouble())
         setValue(m_min);
 }
 QVariant FactData::max(void) const
@@ -465,7 +467,7 @@ void FactData::setMax(const QVariant &v)
     emit maxChanged();
     if (v.isNull())
         return;
-    if (value() > m_max)
+    if (value().toDouble() > m_max.toDouble())
         setValue(m_max);
 }
 QString FactData::title(void) const

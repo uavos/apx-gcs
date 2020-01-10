@@ -80,22 +80,32 @@ private:
     };
 
     stream_base_t *m_stream{nullptr};
-    stream_base_t *get_stream() const;
+    stream_base_t *get_stream();
 
     template<mandala::sfmt_id_t _sfmt>
-    stream_base_t *get_stream(mandala::type_id_t type) const
+    stream_base_t *get_stream(mandala::type_id_t type)
     {
         switch (type) {
         case mandala::type_float:
+            type_text = "float";
             return new stream_t<_sfmt, mandala::float_t>();
-        case mandala::type_uint:
-            return new stream_t<_sfmt, mandala::uint_t>();
+        case mandala::type_dword:
+            type_text = "dword";
+            return new stream_t<_sfmt, mandala::dword_t>();
+        case mandala::type_word:
+            type_text = "word";
+            return new stream_t<_sfmt, mandala::word_t>();
         case mandala::type_byte:
+            type_text = "byte";
             return new stream_t<mandala::sfmt_u1, mandala::byte_t>();
         case mandala::type_enum:
+            type_text = "enum";
             return new stream_t<mandala::sfmt_u1, mandala::enum_t>();
         }
     }
+
+    QString sfmt_text;
+    QString type_text;
 
 protected:
     //Fact override
@@ -103,6 +113,7 @@ protected:
 
 private slots:
     void updateStatus();
+    void updateDescr();
 
 signals:
     void sendValueUpdate(quint16 id, double v);

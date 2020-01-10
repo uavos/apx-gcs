@@ -26,7 +26,7 @@
 #include <QColor>
 
 MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
-    : Fact(parent, meta.name, meta.name, meta.title, meta.group ? Group : NoFlags)
+    : Fact(parent, meta.name, meta.title, meta.title, meta.group ? Group : NoFlags)
     , m_tree(tree)
     , m_meta(meta)
 {
@@ -45,18 +45,25 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
         case mandala::type_float:
             setDataType(Float);
             v = static_cast<double>(0.0);
+            //setPrecision(meta.prec);
             break;
-        case mandala::type_uint:
+        case mandala::type_dword:
             setDataType(Int);
-            setMin(0x00000000);
-            setMax(0xFFFFFFFF);
-            v = static_cast<int>(0);
+            setMin(0);
+            setMax(QVariant::fromValue(0xFFFFFFFFll));
+            v = QVariant::fromValue(0);
+            break;
+        case mandala::type_word:
+            setDataType(Int);
+            setMin(0);
+            setMax(QVariant::fromValue(0xFFFFu));
+            v = QVariant::fromValue(0);
             break;
         case mandala::type_byte:
             setDataType(Int);
-            setMin(0x00);
-            setMax(0xFF);
-            v = static_cast<int>(0);
+            setMin(0);
+            setMax(255);
+            v = QVariant::fromValue(0);
             break;
         case mandala::type_enum:
             setDataType(Enum);
@@ -76,8 +83,10 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
         sendTimer.setSingleShot(true);
         connect(&sendTimer, &QTimer::timeout, this, &MandalaTreeFact::send);
 
+        connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
+
         //integrity tests
-        switch (meta.type_id) {
+        /* switch (meta.type_id) {
         case mandala::type_enum:
             if (meta.sfmt < mandala::sfmt_f4) {
                 qWarning() << path() << "enum sfmt";
@@ -98,20 +107,10 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
                 qWarning() << path() << "uint sfmt";
             }
             break;
-        }
-
-        {
-            QByteArray ba(100, '\0');
-            size_t sz = pack(ba.data());
-            ba.resize(sz);
-            //qDebug() << path() << ba.toHex().toUpper();
-            setDescr(QString("%1 (%2): %3")
-                         .arg(QString(ba.toHex().toUpper()))
-                         .arg(m_stream->psize())
-                         .arg(descr()));
-        }
+        }*/
     }
     setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
+    updateDescr();
 }
 
 bool MandalaTreeFact::setValue(const QVariant &v)
@@ -151,6 +150,10 @@ void MandalaTreeFact::send()
 QVariant MandalaTreeFact::data(int col, int role) const
 {
     switch (role) {
+    case Qt::DisplayRole:
+        if (col != FACT_MODEL_COLUMN_NAME)
+            break;
+        return name();
     case Qt::ForegroundRole:
         if (col != FACT_MODEL_COLUMN_NAME)
             break;
@@ -183,32 +186,80 @@ void MandalaTreeFact::updateStatus()
     setStatus(QString("[%1/%2]").arg(size()).arg(capacity));
 }
 
-MandalaTreeFact::stream_base_t *MandalaTreeFact::get_stream() const
+void MandalaTreeFact::updateDescr()
 {
-    switch (m_meta.sfmt) {
+    QString s = m_meta.title;
+    QString sdescr = m_meta.descr;
+    if (!sdescr.isEmpty()) {
+        s = QString("%1 - %2").arg(s).arg(sdescr);
+    }
+    if (!units().isEmpty()) {
+        s = QString("%1 [%2]").arg(s).arg(units());
+    }
+    if (m_stream) {
+        QByteArray ba(100, '\0');
+        size_t sz = pack(ba.data());
+        ba.resize(sz);
+        //qDebug() << path() << ba.toHex().toUpper();
+        s = QString("(%2) %1: %3").arg(QString(ba.toHex().toUpper())).arg(m_stream->psize()).arg(s);
+    }
+    //s = QString("%1: %2").arg(m_meta.uid, 4, 16, QChar('0')).arg(s);
+
+    QString alias = m_meta.alias;
+    if (!alias.isEmpty()) {
+        s = QString("[%1] %2").arg(alias).arg(s);
+    }
+
+    s = QString("[%1] %2").arg(sfmt_text).arg(s);
+    s = QString("[%1] %2").arg(type_text).arg(s);
+
+    setDescr(s);
+}
+
+MandalaTreeFact::stream_base_t *MandalaTreeFact::get_stream()
+{
+    /*switch (m_meta.sfmt) {
     case mandala::sfmt_u4:
+        sfmt_text = "u4";
         return get_stream<mandala::sfmt_u4>(m_meta.type_id);
     case mandala::sfmt_u2:
+        sfmt_text = "u2";
         return get_stream<mandala::sfmt_u2>(m_meta.type_id);
     case mandala::sfmt_u1:
+        sfmt_text = "u1";
         return get_stream<mandala::sfmt_u1>(m_meta.type_id);
     case mandala::sfmt_f4:
+        sfmt_text = "f4";
         return get_stream<mandala::sfmt_f4>(m_meta.type_id);
     case mandala::sfmt_f2:
+        sfmt_text = "f2";
         return get_stream<mandala::sfmt_f2>(m_meta.type_id);
     case mandala::sfmt_f1:
+        sfmt_text = "f1";
         return get_stream<mandala::sfmt_f1>(m_meta.type_id);
-    case mandala::sfmt_f1div10:
-        return get_stream<mandala::sfmt_f1div10>(m_meta.type_id);
-    case mandala::sfmt_f1mul10:
-        return get_stream<mandala::sfmt_f1mul10>(m_meta.type_id);
-    case mandala::sfmt_f1mul100:
-        return get_stream<mandala::sfmt_f1mul100>(m_meta.type_id);
-    case mandala::sfmt_f1s:
-        return get_stream<mandala::sfmt_f1s>(m_meta.type_id);
-    case mandala::sfmt_f1smul100:
-        return get_stream<mandala::sfmt_f1smul100>(m_meta.type_id);
-    }
+    case mandala::sfmt_f1_10:
+        sfmt_text = "f1/10";
+        return get_stream<mandala::sfmt_f1_10>(m_meta.type_id);
+    case mandala::sfmt_f1_01:
+        sfmt_text = "f1*10";
+        return get_stream<mandala::sfmt_f1_01>(m_meta.type_id);
+    case mandala::sfmt_f1_001:
+        sfmt_text = "f1*100";
+        return get_stream<mandala::sfmt_f1_001>(m_meta.type_id);
+    case mandala::sfmt_f1_s:
+        sfmt_text = "f1s";
+        return get_stream<mandala::sfmt_f1_s>(m_meta.type_id);
+    case mandala::sfmt_f1_s10:
+        sfmt_text = "f1s/10";
+        return get_stream<mandala::sfmt_f1_s10>(m_meta.type_id);
+    case mandala::sfmt_f1_s01:
+        sfmt_text = "f1s*10";
+        return get_stream<mandala::sfmt_f1_s01>(m_meta.type_id);
+    case mandala::sfmt_f1_s001:
+        sfmt_text = "f1s*100";
+        return get_stream<mandala::sfmt_f1_s001>(m_meta.type_id);
+    }*/
+    return nullptr;
 }
 
 size_t MandalaTreeFact::pack(void *buf) const

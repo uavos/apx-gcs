@@ -137,8 +137,12 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
         QSpinBox *sb = static_cast<QSpinBox *>(e);
         if (!f->min().isNull())
             sb->setMinimum(f->min().toInt());
-        if (!f->max().isNull())
-            sb->setMaximum(f->max().toInt());
+        if (!f->max().isNull()) {
+            long long m = f->max().toLongLong();
+            int mi = static_cast<int>(m);
+            if (static_cast<long long>(mi) == m)
+                sb->setMaximum(mi);
+        }
         if (!su.isEmpty()) {
             if (su == "hex") {
                 sb->setDisplayIntegerBase(16);
