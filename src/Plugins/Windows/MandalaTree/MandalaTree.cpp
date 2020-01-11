@@ -24,6 +24,7 @@
 #include "MandalaTreeFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
+#include <Mandala/backport/MandalaBackport.h>
 #include <Mandala/tree/MandalaValue.h>
 //=============================================================================
 MandalaTree::MandalaTree(Fact *parent)

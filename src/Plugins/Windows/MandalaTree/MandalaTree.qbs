@@ -20,6 +20,12 @@ ApxApp.ApxPlugin {
     ]
 
 
-    Depends { name: "apx_libs"; submodules: "Mandala__tree" }
+    Depends {
+        name: "apx_libs"
+        submodules: [
+            "Mandala__tree",
+            "Mandala__backport",
+        ]
+    }
 
 }
