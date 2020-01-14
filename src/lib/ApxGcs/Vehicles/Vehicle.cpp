@@ -137,6 +137,8 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 this,
                 &Vehicle::updateGeoPath,
                 Qt::QueuedConnection);
+
+        connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
     }
     if (!isTemporary()) {
         Fact *f = new Fact(f_telemetry,
@@ -422,6 +424,14 @@ void Vehicle::setStreamService()
     onlineTimer.start();
 }
 //=============================================================================
+void Vehicle::jsexecData(QByteArray data)
+{
+    if (data.size() < 3) {
+        qDebug() << "Empty jsexec data received";
+        return;
+    }
+    App::instance()->engine()->jsexec(data);
+}
 //=============================================================================
 //=============================================================================
 void Vehicle::vmexec(QString func)

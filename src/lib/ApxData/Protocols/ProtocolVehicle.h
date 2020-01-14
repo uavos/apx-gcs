@@ -63,6 +63,7 @@ signals:
     void dlinkData(quint16 id, QByteArray data);
     void downstreamData(QByteArray data);
     void serialData(QByteArray data);
+    void jsexecData(QByteArray data);
     void missionData(QByteArray data);
     void serviceData(QString sn, quint16 cmd, QByteArray data);
 };

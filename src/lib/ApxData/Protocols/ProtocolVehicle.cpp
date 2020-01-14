@@ -77,6 +77,10 @@ bool ProtocolVehicle::unpack(QByteArray packet)
     case mandala::idx_mission:
         emit missionData(payload);
         break;
+    case mandala::idx_jsexec:
+        emit jsexecData(payload);
+        break;
+
     case mandala::idx_service: {
         if (stream.tail() < sizeof(xbus::node::guid_t))
             return false;
