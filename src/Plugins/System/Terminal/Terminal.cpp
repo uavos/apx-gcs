@@ -98,11 +98,11 @@ QString Terminal::historyNext(const QString &cmd)
     if (_replacedHistory.isEmpty()) {
         if (_historyIndex > 0)
             _historyIndex--;
-        return _history[_historyIndex].trimmed();
+        return _history.value(_historyIndex).trimmed();
     }
     while (_historyIndex > 0) {
         _historyIndex--;
-        QString s = _history[_historyIndex].trimmed();
+        QString s = _history.value(_historyIndex).trimmed();
         if (s.startsWith(_replacedHistory))
             return s;
     }
