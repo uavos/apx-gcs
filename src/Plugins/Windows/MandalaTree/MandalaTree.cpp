@@ -115,6 +115,6 @@ MandalaTree::MandalaTree(Fact *parent)
     }
 
     //fact tests
-    {}
+    mandala::backport::MandalaBackport backport;
 }
 //============================================================================

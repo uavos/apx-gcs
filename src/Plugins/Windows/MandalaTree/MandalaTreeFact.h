@@ -110,6 +110,7 @@ private:
 protected:
     //Fact override
     virtual QVariant data(int col, int role) const;
+    virtual bool showThis(QRegExp re) const; //filter helper
 
 private slots:
     void updateStatus();

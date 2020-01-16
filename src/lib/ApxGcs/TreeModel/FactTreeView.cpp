@@ -84,13 +84,12 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 //=============================================================================
 bool FactProxyModel::showThis(const QModelIndex index) const
 {
-    QModelIndex useIndex = sourceModel()->index(index.row(), 0, index.parent());
-    if (sourceModel()->data(useIndex, Qt::DisplayRole).toString().contains(filterRegExp()))
+    if (showThisItem(index))
         return true;
     //look for matching parents
     QModelIndex parentIndex = sourceModel()->parent(index);
     while (parentIndex.isValid()) {
-        if (sourceModel()->data(parentIndex, Qt::DisplayRole).toString().contains(filterRegExp()))
+        if (showThisItem(parentIndex))
             return true;
         parentIndex = sourceModel()->parent(parentIndex);
     }
@@ -102,6 +101,13 @@ bool FactProxyModel::showThis(const QModelIndex index) const
         if (showThis(childIndex))
             return true;
     }
+    return false;
+}
+bool FactProxyModel::showThisItem(const QModelIndex index) const
+{
+    Fact *f = sourceModel()->data(index, Fact::ModelDataRole).value<Fact *>();
+    if (f)
+        return f->showThis(filterRegExp());
     return false;
 }
 //=============================================================================
@@ -181,6 +187,7 @@ void FactTreeWidget::filterChanged()
     QRegExp regExp(s, Qt::CaseSensitive, QRegExp::WildcardUnix);
     //QModelIndex rootIndex=tree->rootIndex();
     proxy->setFilterRegExp(regExp);
+    proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     tree->setRootIndex(proxy->mapFromSource(model->factIndex(proxy->rootFact())));
     updateActions();
     if (s.size()) {

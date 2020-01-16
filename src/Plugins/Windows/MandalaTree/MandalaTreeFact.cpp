@@ -22,6 +22,7 @@
  */
 #include "MandalaTreeFact.h"
 #include "MandalaTree.h"
+#include <App/AppLog.h>
 #include <MandalaMeta.h>
 #include <QColor>
 
@@ -30,6 +31,8 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
     , m_tree(tree)
     , m_meta(meta)
 {
+    if (meta.level > 2)
+        setOption(FilterSearchAll);
     if (meta.group) {
         updateStatus();
         connect(this, &Fact::sizeChanged, this, &MandalaTreeFact::updateStatus);
@@ -85,6 +88,8 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
 
         connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
 
+        if (units().isEmpty())
+            apxMsgW() << "units" << path();
         //integrity tests
         /* switch (meta.type_id) {
         case mandala::type_enum:
@@ -178,6 +183,15 @@ QVariant MandalaTreeFact::data(int col, int role) const
         return QColor(Qt::darkCyan).darker(300);
     }
     return Fact::data(col, role);
+}
+
+bool MandalaTreeFact::showThis(QRegExp re) const
+{
+    if (Fact::showThis(re))
+        return true;
+    if (path(m_meta.level).contains(re))
+        return true;
+    return false;
 }
 
 void MandalaTreeFact::updateStatus()

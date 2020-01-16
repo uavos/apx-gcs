@@ -51,6 +51,7 @@ protected:
 private:
     QPointer<Fact> m_rootFact;
     bool showThis(const QModelIndex index) const;
+    bool showThisItem(const QModelIndex index) const;
 };
 //=============================================================================
 class FactTreeWidget : public QWidget

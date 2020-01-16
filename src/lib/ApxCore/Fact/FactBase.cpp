@@ -231,9 +231,9 @@ QStringList FactBase::pathStringList(int maxLevel) const
     }
     return st;
 }
-QString FactBase::path(const QChar pathDelimiter) const
+QString FactBase::path(int maxLevel, const QChar pathDelimiter) const
 {
-    return pathStringList().join(pathDelimiter);
+    return pathStringList(maxLevel).join(pathDelimiter);
 }
 QList<FactBase *> FactBase::pathList() const
 {

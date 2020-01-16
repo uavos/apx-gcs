@@ -78,6 +78,7 @@ public:
     QVariant userData;
 
     virtual bool lessThan(Fact *rightFact) const; //sorting helper
+    virtual bool showThis(QRegExp re) const;      //filter helper
 
     //data model
     enum {

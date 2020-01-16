@@ -59,6 +59,7 @@ public:
         DragChildren = 1 << 9,     //child items are draggable to change order
         PersistentValue = 1 << 10, //save and restore value in QSettings
         SystemSettings = 1 << 11,  //use default QSettings to store value
+        FilterSearchAll = 1 << 12, //search name/title/descr by filters
 
         //data types [dataType]
         DataMask = 0x00FF0000,
@@ -96,7 +97,7 @@ public:
     Q_INVOKABLE FactBase *child(const QString &name,
                                 Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
 
-    Q_INVOKABLE QString path(const QChar pathDelimiter = QChar('.')) const;
+    Q_INVOKABLE QString path(int maxLevel = -1, const QChar pathDelimiter = QChar('.')) const;
     Q_INVOKABLE QStringList pathStringList(int maxLevel = -1) const;
 
     QList<FactBase *> pathList() const;

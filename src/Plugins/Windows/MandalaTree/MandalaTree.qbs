@@ -28,4 +28,6 @@ ApxApp.ApxPlugin {
         ]
     }
 
+    Depends { name: "ApxData" }
+
 }

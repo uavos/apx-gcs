@@ -387,6 +387,18 @@ bool Fact::lessThan(Fact *rightFact) const
     //no sorting by default
     return num() < rightFact->num();
 }
+bool Fact::showThis(QRegExp re) const
+{
+    if (name().contains(re))
+        return true;
+    if (!(options() & FilterSearchAll))
+        return false;
+    if (title().contains(re))
+        return true;
+    if (descr().contains(re))
+        return true;
+    return false;
+}
 //=============================================================================
 void Fact::trigger(QVariantMap opts)
 {
