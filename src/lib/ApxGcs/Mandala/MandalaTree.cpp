@@ -85,9 +85,9 @@ MandalaTree::MandalaTree(Fact *parent)
         qDebug() << "Copy:" << sz << v.meta.title << v;
     }*/
 
-    size_t sz = sizeof(mandala::meta);
-    size_t sz1 = sizeof(*mandala::meta);
-    qDebug() << sz1 << sz << "bytes" << sz / sz1 << "items";
+    //size_t sz = sizeof(mandala::meta);
+    //size_t sz1 = sizeof(*mandala::meta);
+    //qDebug() << sz1 << sz << "bytes" << sz / sz1 << "items";
 
     Fact *group = this;
     uint8_t level = 0;

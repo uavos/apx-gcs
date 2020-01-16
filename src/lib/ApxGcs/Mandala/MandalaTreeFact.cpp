@@ -136,18 +136,18 @@ bool MandalaTreeFact::setValueLocal(const QVariant &v)
     return Fact::setValue(v);
 }
 
-quint16 MandalaTreeFact::id()
+mandala::uid_t MandalaTreeFact::uid()
 {
     return m_meta.uid;
 }
 void MandalaTreeFact::request()
 {
-    emit sendValueRequest(id());
+    emit sendValueRequest(uid());
 }
 void MandalaTreeFact::send()
 {
     sendTime.start();
-    emit sendValueUpdate(id(), value().toDouble());
+    emit sendValueUpdate(uid(), value().toDouble());
 }
 
 QVariant MandalaTreeFact::data(int col, int role) const
@@ -214,16 +214,15 @@ void MandalaTreeFact::updateDescr()
         ba.resize(sz);
         //qDebug() << path() << ba.toHex().toUpper();
         s = QString("(%2) %1: %3").arg(QString(ba.toHex().toUpper())).arg(m_stream->psize()).arg(s);
+        s = QString("[%1] %2").arg(m_stream->type_text).arg(s);
+        s = QString("[%1] %2").arg(m_stream->sfmt_text).arg(s);
     }
     //s = QString("%1: %2").arg(m_meta.uid, 4, 16, QChar('0')).arg(s);
-
-    s = QString("[%1] %2").arg(sfmt_text).arg(s);
-    s = QString("[%1] %2").arg(type_text).arg(s);
 
     setDescr(s);
 }
 
-MandalaTreeFact::stream_base_t *MandalaTreeFact::get_stream()
+MandalaTreeStream *MandalaTreeFact::get_stream()
 {
     /*switch (m_meta.sfmt) {
     case mandala::sfmt_u4:

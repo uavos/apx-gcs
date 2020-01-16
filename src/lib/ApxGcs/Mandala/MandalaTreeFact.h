@@ -28,6 +28,8 @@
 #include <Mandala/MandalaStream.h>
 #include <QtCore>
 
+#include "MandalaTreeStream.h"
+
 class MandalaTree;
 
 class MandalaTreeFact : public Fact
@@ -39,7 +41,7 @@ public:
     bool setValue(const QVariant &v); //override
     bool setValueLocal(const QVariant &v);
 
-    Q_INVOKABLE quint16 id();
+    Q_INVOKABLE mandala::uid_t uid();
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
 
@@ -49,63 +51,12 @@ public:
 private:
     MandalaTree *m_tree;
     const mandala::meta_t &m_meta;
+
     QElapsedTimer sendTime;
     QTimer sendTimer;
 
-    class stream_base_t
-    {
-    public:
-        virtual size_t pack(void *buf, const QVariant &v) const = 0;
-        virtual size_t unpack(const void *buf, QVariant &v) = 0;
-        virtual size_t psize() const = 0;
-    };
-
-    template<mandala::sfmt_id_t _sfmt, typename _DataType>
-    class stream_t : public stream_base_t
-    {
-    protected:
-        size_t pack(void *buf, const QVariant &v) const override
-        {
-            return mandala::stream::pack<_sfmt, _DataType>(buf, v.value<_DataType>());
-        }
-        size_t unpack(const void *buf, QVariant &v) override
-        {
-            _DataType d;
-            size_t sz = mandala::stream::unpack<_sfmt, _DataType>(buf, d);
-            if (sz > 0)
-                v = QVariant::fromValue(d);
-            return sz;
-        }
-        size_t psize() const override { return mandala::stream::psize<_sfmt>(); }
-    };
-
-    stream_base_t *m_stream{nullptr};
-    stream_base_t *get_stream();
-
-    template<mandala::sfmt_id_t _sfmt>
-    stream_base_t *get_stream(mandala::type_id_t type)
-    {
-        switch (type) {
-        case mandala::type_float:
-            type_text = "float";
-            return new stream_t<_sfmt, mandala::float_t>();
-        case mandala::type_dword:
-            type_text = "dword";
-            return new stream_t<_sfmt, mandala::dword_t>();
-        case mandala::type_word:
-            type_text = "word";
-            return new stream_t<_sfmt, mandala::word_t>();
-        case mandala::type_byte:
-            type_text = "byte";
-            return new stream_t<mandala::sfmt_u1, mandala::byte_t>();
-        case mandala::type_enum:
-            type_text = "enum";
-            return new stream_t<mandala::sfmt_u1, mandala::enum_t>();
-        }
-    }
-
-    QString sfmt_text;
-    QString type_text;
+    MandalaTreeStream *m_stream{nullptr};
+    MandalaTreeStream *get_stream();
 
 protected:
     //Fact override

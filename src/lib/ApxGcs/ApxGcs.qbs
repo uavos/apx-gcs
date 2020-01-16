@@ -73,6 +73,7 @@ ApxApp.ApxLibrary {
         files: [
             "MandalaTree.cpp", "MandalaTree.h",
             "MandalaTreeFact.cpp", "MandalaTreeFact.h",
+            "MandalaTreeStream.h",
         ]
     }
 
