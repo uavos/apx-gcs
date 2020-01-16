@@ -23,7 +23,7 @@
 #include "MandalaTreeFact.h"
 #include "MandalaTree.h"
 #include <App/AppLog.h>
-#include <MandalaMeta.h>
+#include <Mandala/MandalaMeta.h>
 #include <QColor>
 
 MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
@@ -88,8 +88,6 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
 
         connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
 
-        if (units().isEmpty())
-            apxMsgW() << "units" << path();
         //integrity tests
         /* switch (meta.type_id) {
         case mandala::type_enum:
@@ -218,11 +216,6 @@ void MandalaTreeFact::updateDescr()
         s = QString("(%2) %1: %3").arg(QString(ba.toHex().toUpper())).arg(m_stream->psize()).arg(s);
     }
     //s = QString("%1: %2").arg(m_meta.uid, 4, 16, QChar('0')).arg(s);
-
-    QString alias = m_meta.alias;
-    if (!alias.isEmpty()) {
-        s = QString("[%1] %2").arg(alias).arg(s);
-    }
 
     s = QString("[%1] %2").arg(sfmt_text).arg(s);
     s = QString("[%1] %2").arg(type_text).arg(s);

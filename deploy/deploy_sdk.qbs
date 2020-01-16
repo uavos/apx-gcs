@@ -57,7 +57,7 @@ Product {
                 }
                 else
                 {
-                    console.warn("Can't define sdk path for file" + input.fileName)
+                    throw("Can't define sdk path for file" + input.fileName)
                     return ""
                 }
             }

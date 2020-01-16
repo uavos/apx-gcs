@@ -67,6 +67,16 @@ ApxApp.ApxLibrary {
 
 
     Group {
+        name: "Mandala"
+        prefix: name+"/"
+        condition: !qbs.buildVariant.contains("release")
+        files: [
+            "MandalaTree.cpp", "MandalaTree.h",
+            "MandalaTreeFact.cpp", "MandalaTreeFact.h",
+        ]
+    }
+
+    Group {
         name: "Vehicles"
         prefix: name+"/"
         files: [

@@ -5,14 +5,22 @@ import ApxApp
 
 ApxApp.ApxLibrary {
 
-    property stringList names: [
-        "Xbus",
-        "Xbus.uart",
-        "Xbus.tcp",
-        "Mandala",
-        "crc",
-        "common",
-    ]
+    property stringList names: {
+        var list = [
+            "Xbus",
+            "Xbus.uart",
+            "Xbus.tcp",
+            "Mandala.flat",
+            "crc",
+            "common",
+        ]
+        if(!qbs.buildVariant.contains("release")){
+            list.push("Mandala")
+            list.push("Mandala.backport")
+        }
+
+        return list
+    }
 
     Export {
         Depends { name: "cpp" }

@@ -26,8 +26,8 @@
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
 
-#include <Protocols/ApxProtocol.h>
 #include <Protocols/ProtocolServiceFirmware.h>
+#include <Protocols/ProtocolVehicles.h>
 
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicles.h>

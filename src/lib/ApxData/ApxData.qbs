@@ -46,7 +46,6 @@ ApxApp.ApxLibrary {
         name: "Protocols"
         prefix: name+"/"
         files: [
-            "ApxProtocol.cpp", "ApxProtocol.h",
             "ProtocolBase.cpp", "ProtocolBase.h",
             "ProtocolVehicles.cpp", "ProtocolVehicles.h",
             "ProtocolVehicle.cpp", "ProtocolVehicle.h",

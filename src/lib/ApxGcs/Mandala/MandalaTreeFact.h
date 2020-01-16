@@ -24,8 +24,8 @@
 #define MandalaTreeFact_H
 //=============================================================================
 #include <Fact/Fact.h>
-#include <Mandala/tree/MandalaMetaBase.h>
-#include <Mandala/tree/MandalaStream.h>
+#include <Mandala/MandalaMetaBase.h>
+#include <Mandala/MandalaStream.h>
 #include <QtCore>
 
 class MandalaTree;

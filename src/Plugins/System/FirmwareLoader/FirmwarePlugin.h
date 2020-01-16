@@ -36,7 +36,7 @@ public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override
     {
-        return new Firmware(nullptr, AppGcs::instance()->protocol->vehicles->firmware);
+        return new Firmware(nullptr, AppGcs::instance()->protocol->firmware);
     }
 };
 //=============================================================================

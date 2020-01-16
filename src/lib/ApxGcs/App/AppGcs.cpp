@@ -36,10 +36,10 @@ void AppGcs::loadServices()
 {
     App::loadServices();
 
-    protocol = new ApxProtocol(f_apx);
+    protocol = new ProtocolVehicles(f_apx);
 
     new Database(f_apx);
-    Vehicles *vehicles = new Vehicles(f_apx, protocol->vehicles);
+    Vehicles *vehicles = new Vehicles(f_apx, protocol);
 
     //default mandala support
     Fact::MandalaMap *m = new Fact::MandalaMap;
@@ -50,12 +50,9 @@ void AppGcs::loadServices()
 
     //datalink
     f_datalink = new Datalink(f_apx);
-    QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ApxProtocol::unpack);
-    QObject::connect(protocol, &ApxProtocol::sendUplink, f_datalink, &Datalink::sendPacket);
-    QObject::connect(f_datalink,
-                     &Datalink::heartbeat,
-                     protocol->vehicles,
-                     &ProtocolVehicles::sendHeartbeat);
+    QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ProtocolVehicles::unpack);
+    QObject::connect(protocol, &ProtocolVehicles::sendUplink, f_datalink, &Datalink::sendPacket);
+    QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolVehicles::sendHeartbeat);
 
     vehicles->move(f_apx->size());
 

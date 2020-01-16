@@ -24,16 +24,11 @@
 #include "MandalaTreeFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
+#include <Mandala/MandalaValue.h>
 #include <Mandala/backport/MandalaBackport.h>
-#include <Mandala/tree/MandalaValue.h>
 //=============================================================================
 MandalaTree::MandalaTree(Fact *parent)
-    : Fact(parent,
-           QString(PLUGIN_NAME).toLower(),
-           "Mandala",
-           tr("Vehicle data tree"),
-           Group,
-           "hexagon-multiple")
+    : Fact(parent, "mandala", "Mandala", tr("Vehicle data tree"), Group, "hexagon-multiple")
 {
     //qDebug() << mandala::sns::nav::ins::gyro::title;
 
@@ -104,14 +99,9 @@ MandalaTree::MandalaTree(Fact *parent)
                 group = group->parentFact();
             level = d.level + 1;
             group = new MandalaTreeFact(this, group, d);
-            //group->setValue(QString::number(d.uid, 16));
             continue;
         }
-        MandalaTreeFact *f = new MandalaTreeFact(this, group, d);
-        QString alias(d.alias);
-        //if (!alias.isEmpty())
-        //    f->setValue(alias);
-        //f->setValue(QString::number(d.uid, 16));
+        new MandalaTreeFact(this, group, d);
     }
 
     //fact tests

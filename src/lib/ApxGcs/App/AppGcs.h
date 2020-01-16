@@ -33,7 +33,7 @@
 #include <Database/Database.h>
 #include <Datalink/Datalink.h>
 
-#include <Protocols/ApxProtocol.h>
+#include <Protocols/ProtocolVehicles.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 class AppGcs : public App
@@ -53,7 +53,7 @@ public:
     };
     Q_ENUM(FileType)
 
-    ApxProtocol *protocol;
+    ProtocolVehicles *protocol;
     Datalink *f_datalink;
     AppMenu *f_menu;
 

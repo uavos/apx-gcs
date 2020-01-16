@@ -28,7 +28,7 @@
 #include <TreeModel/FactTreeView.h>
 #include <QtCore>
 
-#include "MandalaTree.h"
+#include <Mandala/MandalaTree.h>
 //=============================================================================
 class SystreePlugin : public PluginInterface
 {

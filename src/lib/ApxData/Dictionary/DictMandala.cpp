@@ -22,7 +22,7 @@
  */
 #include "DictMandala.h"
 
-#include <Mandala/Mandala.h>
+#include <Mandala/flat/Mandala.h>
 //=============================================================================
 DictMandala::DictMandala(QObject *parent)
     : QObject(parent)
@@ -214,7 +214,7 @@ QString DictMandala::hash()
 #define MIDX(...) h.addData(#__VA_ARGS__);
 #define MVAR(...) h.addData(#__VA_ARGS__);
 #define MBIT(...) h.addData(#__VA_ARGS__);
-#include <Mandala/MandalaTemplate.h>
+#include <Mandala/flat/MandalaTemplate.h>
 
     return h.result().toHex().toUpper();
 }
