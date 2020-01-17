@@ -92,7 +92,6 @@ public slots:
 
 protected:
     QVariant backup_value;
-    bool backup_set;
     QPointer<FactData> bindedFactData;
 
     bool vtype(const QVariant &v, QMetaType::Type t) const;
@@ -119,7 +118,7 @@ public:
     Q_INVOKABLE virtual bool setValue(const QVariant &v);
 
     bool modified() const;
-    virtual void setModified(const bool &v, const bool &recursive = false);
+    void setModified(const bool &v, const bool &recursive = false);
 
     int precision(void) const;
     void setPrecision(const int &v);

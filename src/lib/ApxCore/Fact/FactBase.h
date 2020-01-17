@@ -25,7 +25,7 @@
 //=============================================================================
 #include <QtCore>
 //=============================================================================
-class FactBase : public QObject
+class FactBase : public QObject, public QList<FactBase *>
 {
     Q_OBJECT
 
@@ -50,7 +50,7 @@ public:
         Action = 3, // action to be triggered and shown as button
 
         //appearance options [options]
-        OptsMask = 0x0000FFF0,
+        OptsMask = 0x000FFFF0,
         Section = 1 << 4,          //flat model shows fact as section not folder
         CloseOnTrigger = 1 << 5,   //close menu request on trigger
         IconOnly = 1 << 6,         //show only icon button (for actions)
@@ -60,25 +60,28 @@ public:
         PersistentValue = 1 << 10, //save and restore value in QSettings
         SystemSettings = 1 << 11,  //use default QSettings to store value
         FilterSearchAll = 1 << 12, //search name/title/descr by filters
+        FilterExclude = 1 << 13,   //exclude from search by filters
+        ModifiedTrack = 1 << 14,   //Track modified status
+        ModifiedGroup = 1 << 15,   //Track children's modified status
 
         //data types [dataType]
-        DataMask = 0x00FF0000,
-        Const = 1 << 16,
-        Text = 2 << 16,
-        Float = 3 << 16,
-        Int = 4 << 16,
-        Bool = 5 << 16,
-        Enum = 6 << 16, // value=value of enumStrings (set by text or index or enumValues)
+        DataMask = 0x0FF00000,
+        Const = 1 << 20,
+        Text = 2 << 20,
+        Float = 3 << 20,
+        Int = 4 << 20,
+        Bool = 5 << 20,
+        Enum = 6 << 20, // value=text of enumStrings (set by text or index or enumValues)
 
         //complex data types
-        Mandala = 10 << 16, // Mandala ID
-        Script = 11 << 16,  // script editor
-        Key = 12 << 16,     // keyboard shortcut
+        Mandala = 10 << 20, // Mandala ID
+        Script = 11 << 20,  // script editor
+        Key = 12 << 20,     // keyboard shortcut
 
         //actions data types
-        Apply = 20 << 16,  // green apply button
-        Remove = 21 << 16, // red trash button
-        Stop = 22 << 16,   //red stop button
+        Apply = 20 << 20,  // green apply button
+        Remove = 21 << 20, // red trash button
+        Stop = 22 << 20,   // red stop button
     };
     Q_DECLARE_FLAGS(Flags, Flag)
     Q_FLAG(Flags)

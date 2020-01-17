@@ -28,7 +28,6 @@
 FactData::FactData(
     QObject *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
     : FactBase(parent, name, flags)
-    , backup_set(false)
     , bindedFactData(nullptr)
     , m_dataType(NoFlags)
     , m_modified(false)
@@ -87,7 +86,7 @@ bool FactData::setValue(const QVariant &v)
     if (!updateValue(v))
         return false;
 
-    if (backup_set)
+    if (options() & ModifiedTrack)
         setModified(backup_value != m_value);
 
     if (m_options & PersistentValue)
@@ -374,7 +373,7 @@ bool FactData::isZero() const
         return true;
     /*if(dataType()==EnumData){
     return m_value.toInt()==0 && (s=="off"||s=="default"||s=="auto"||s==QVariant::fromValue(false).toString());
-  }*/
+    }*/
     if (s == "0")
         return true;
     if (dataType() == Float)
@@ -409,6 +408,38 @@ void FactData::setModified(const bool &v, const bool &recursive)
     m_modified = v;
     //qDebug() << path();
     emit modifiedChanged();
+
+    //check to sync parents
+    FactBase *ps = parentFact();
+    for (FactBase *p = ps; p; p = p->parentFact()) {
+        if (p->options() & ModifiedGroup) {
+            if (v) {
+                //set all parents to modified=true
+                for (FactBase *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
+                    static_cast<FactData *>(i)->setModified(true);
+                }
+                continue;
+            }
+            //refresh modified status of all parent items
+            bool mod = false;
+            for (FactBase *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
+                //check for modified children
+                for (int j = 0; j < i->size(); ++j) {
+                    FactBase *f = i->child(j);
+                    if (!f)
+                        break;
+                    if (static_cast<FactData *>(f)->modified()) {
+                        mod = true;
+                        break;
+                    }
+                }
+                if (mod)
+                    break;
+                //parent with unmodified children
+                static_cast<FactData *>(i)->setModified(false);
+            }
+        }
+    }
 }
 int FactData::precision(void) const
 {
@@ -628,7 +659,7 @@ void FactData::backup()
     if (treeType() == Group)
         return;
     backup_value = m_value;
-    backup_set = true;
+    setOption(ModifiedTrack);
     setModified(false);
 }
 void FactData::restore()

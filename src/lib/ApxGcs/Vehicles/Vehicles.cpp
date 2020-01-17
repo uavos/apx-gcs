@@ -77,18 +77,20 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     //JS register mandala
     App *app = App::instance();
     App::jsync(this);
-    foreach (QString key, f_local->f_mandala->constants.keys())
+
+    foreach (QString key, f_local->f_mandala->constants.keys()) {
         app->engine()->globalObject().setProperty(key,
                                                   app->engine()->toScriptValue(
                                                       f_local->f_mandala->constants.value(key)));
-    foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts) {
+    }
+    /*foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts) {
         app->jsexec(QString("this.__defineGetter__('%1', function(){ return "
                             "apx.vehicles.current.mandala.%1.value; });")
                         .arg(f->name()));
         app->jsexec(QString("this.__defineSetter__('%1', function(v){ "
                             "apx.vehicles.current.mandala.%1.value=v; });")
                         .arg(f->name()));
-    }
+    }*/
 
     //Database register fields
     DatabaseRequest::Records recFields;
@@ -175,6 +177,12 @@ void Vehicles::selectVehicle(Vehicle *v)
 
     //update JSengine
     App::instance()->engine()->rootContext()->setContextProperty("m", v->f_mandala);
+    App::instance()->engine()->rootContext()->setContextProperty("mandala", v->f_mandalatree);
+
+    for (auto i : *v->f_mandalatree) {
+        QJSValue obj = App::instance()->engine()->newQObject(i);
+        App::instance()->engine()->globalObject().setProperty(i->name(), obj);
+    }
 
     //current vehicle signals wrappers
     foreach (QMetaObject::Connection c, currentVehicleConnections)

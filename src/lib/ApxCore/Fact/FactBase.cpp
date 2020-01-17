@@ -38,16 +38,6 @@ FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
 FactBase::~FactBase()
 {
     setParentFact(nullptr);
-
-    /*for (int i = 0; i < m_children.size(); ++i) {
-        FactBase *f = child(i);
-        if (!f)
-            continue;
-        disconnect(this, nullptr, f, nullptr);
-        //f->setParentFact(nullptr);
-        f->deleteLater();
-    }
-    m_children.clear();*/
 }
 //=============================================================================
 QList<FactBase *> FactBase::actions() const
@@ -65,10 +55,10 @@ void FactBase::addChild(FactBase *item)
         }
         return;
     }
-    if (m_children.contains(item))
+    if (contains(item))
         return;
-    emit itemToBeInserted(m_children.size(), item);
-    m_children.append(item);
+    emit itemToBeInserted(count(), item);
+    append(item);
     updateChildrenNums();
     updateSize();
     emit itemInserted(item);
@@ -80,31 +70,31 @@ void FactBase::removeChild(FactBase *item)
         m_actions.removeAll(item);
         emit actionsUpdated();
     }
-    i = m_children.indexOf(item);
+    i = indexOf(item);
     if (i < 0)
         return;
     emit itemToBeRemoved(i, item);
-    m_children.removeAt(i);
+    removeAt(i);
     updateChildrenNums();
     updateSize();
     emit itemRemoved(item);
 }
 void FactBase::removeAll()
 {
-    if (m_children.size() <= 0)
+    if (count() <= 0)
         return;
-    for (int i = 0; i < m_children.size(); i++) {
+    for (int i = 0; i < count(); i++) {
         FactBase *item = child(i);
         disconnect(this, nullptr, item, nullptr);
         item->removeAll();
     }
     //qDebug()<<"removeAll"<<this;
-    while (m_children.size() > 0) {
-        FactBase *item = child(m_children.size() - 1);
+    while (count() > 0) {
+        FactBase *item = child(count() - 1);
         disconnect(this, nullptr, item, nullptr);
-        emit itemToBeRemoved(m_children.size() - 1, item);
-        m_children.takeLast();
-        m_size = m_children.size();
+        emit itemToBeRemoved(count() - 1, item);
+        takeLast();
+        m_size = count();
         item->removed();
         emit itemRemoved(item);
         item->deleteLater();
@@ -114,26 +104,26 @@ void FactBase::removeAll()
 }
 void FactBase::moveChild(FactBase *item, int n, bool safeMode)
 {
-    int i = m_children.indexOf(item);
+    int i = indexOf(item);
     if (i < 0 || i == n)
         return;
     if (safeMode) {
         emit itemToBeRemoved(i, item);
-        m_children.removeAt(i);
+        removeAt(i);
         emit itemRemoved(item);
         emit itemToBeInserted(n, item);
-        m_children.insert(n, item);
+        insert(n, item);
         emit itemInserted(item);
         updateChildrenNums();
     } else {
         if (n > i)
             n++;
         emit itemToBeMoved(i, n, item);
-        m_children.removeAt(i);
-        m_children.insert(n, item);
+        removeAt(i);
+        insert(n, item);
         emit itemMoved(item);
     }
-    for (int i = 0; i < m_children.size(); ++i)
+    for (int i = 0; i < count(); ++i)
         child(i)->updateNum();
 }
 //=============================================================================
@@ -196,12 +186,12 @@ int FactBase::num() const
 //=============================================================================
 FactBase *FactBase::child(int n) const
 {
-    return qobject_cast<FactBase *>(m_children.value(n, nullptr));
+    return qobject_cast<FactBase *>(value(n, nullptr));
 }
 //=============================================================================
 int FactBase::indexOfChild(FactBase *item) const
 {
-    return m_children.indexOf(item);
+    return indexOf(item);
 }
 int FactBase::indexInParent() const
 {
@@ -210,7 +200,7 @@ int FactBase::indexInParent() const
 //=============================================================================
 FactBase *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
 {
-    for (int i = 0; i < m_children.size(); ++i) {
+    for (int i = 0; i < count(); ++i) {
         FactBase *item = child(i);
         if (item
             && (item->objectName().compare(name, cs) == 0 || item->name().compare(name, cs) == 0))
@@ -259,7 +249,7 @@ void FactBase::updateNum()
 }
 void FactBase::updateSize()
 {
-    int v = m_children.size();
+    int v = count();
     if (m_size == v)
         return;
     m_size = v;
@@ -267,7 +257,7 @@ void FactBase::updateSize()
 }
 void FactBase::updateChildrenNums()
 {
-    for (int i = 0; i < m_children.size(); ++i)
+    for (int i = 0; i < count(); ++i)
         child(i)->updateNum();
 }
 //=============================================================================
@@ -352,7 +342,7 @@ void FactBase::setParentFact(FactBase *v)
 }
 void FactBase::updatePath()
 {
-    for (auto f : m_children) {
+    for (auto f : *this) {
         f->updatePath();
     }
     emit pathChanged();

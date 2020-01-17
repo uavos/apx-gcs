@@ -29,6 +29,7 @@
 #include <QtCore>
 
 #include <Mandala/MandalaTree.h>
+#include <Vehicles/Vehicles.h>
 //=============================================================================
 class SystreePlugin : public PluginInterface
 {
@@ -38,8 +39,11 @@ class SystreePlugin : public PluginInterface
 public:
     QObject *createControl()
     {
-        FactTreeWidget *w = new FactTreeWidget(new MandalaTree(AppRoot::instance()), true, false);
-        w->tree->expandToDepth(1);
+        //FactTreeWidget *w = new FactTreeWidget(new MandalaTree(AppRoot::instance()), true, false);
+        FactTreeWidget *w = new FactTreeWidget(Vehicles::instance()->f_local->f_mandalatree,
+                                               true,
+                                               false);
+        w->tree->expandToDepth(0);
         return w;
     }
     int flags() { return Widget | Restore | Launcher; }

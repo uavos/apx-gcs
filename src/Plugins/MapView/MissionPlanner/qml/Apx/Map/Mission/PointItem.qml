@@ -7,6 +7,10 @@ import Apx.Map.Common 1.0
 
 MissionObject {
     id: pointItem
+
+    readonly property int m_piidx: mandala.est.wpt.piidx.value
+
+
     color: Style.cPoint
     textColor: "white"
     fact: modelData
@@ -22,7 +26,7 @@ MissionObject {
     property bool f_ccw: fact?fact.radius.value<0:false
     property int num: fact?fact.num:0
 
-    property bool current: m.piidx.value === num
+    property bool current: m_piidx === num
 
     function updateRadiusPoint(coord)
     {

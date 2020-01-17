@@ -54,7 +54,7 @@ Item {
             anchors.bottomMargin: parent.height*0.2
             width: parent.width*0.05
             height: width
-            value: m.windHdg.value-m.yaw.value
+            value: m_whdg-m.yaw.value
         }
 
         ILS {

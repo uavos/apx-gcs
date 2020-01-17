@@ -10,6 +10,8 @@ import Apx.Controls 1.0
 MapView {
     id: missionPlanner
 
+    readonly property real m_wspd: mandala.est.calc.wspd.value
+
     readonly property real margins: 10
 
     //initial animation
@@ -86,7 +88,7 @@ MapView {
             anchors.bottomMargin: status.implicitHeight+margins
             Loader {
                 id: wind
-                active: m.windSpd.value>0
+                active: m_wspd>0
                 asynchronous: true
                 sourceComponent: Component { Wind { } }
                 visible: wind.status===Loader.Ready

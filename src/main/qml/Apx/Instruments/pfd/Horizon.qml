@@ -10,6 +10,9 @@ Item {
     id: horizon
     anchors.fill: parent
     anchors.centerIn: parent
+
+    readonly property real m_roll: mandala.est.att.roll.value
+
     property bool showHeading: true
     property double margin_left
     property double margin_right
@@ -31,7 +34,7 @@ Item {
     Item{
         id: horizon_bg
         anchors.fill: parent
-        rotation: apx.angle(-m.roll.value)
+        rotation: apx.angle(-m_roll)
         Behavior on rotation { enabled: ui.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }
 
         PfdImage {

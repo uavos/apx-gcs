@@ -29,7 +29,7 @@
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 Nodes::Nodes(Vehicle *parent)
-    : NodeItemBase(parent, "nodes", "Nodes", Group | FlatModel)
+    : NodeItemBase(parent, "nodes", "Nodes", Group | FlatModel | ModifiedGroup)
     , vehicle(parent)
     , syncCount(0)
     , syncActive(false)

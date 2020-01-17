@@ -81,8 +81,8 @@ Control {
                 Component.onCompleted: {
                     var vtypes=[]
                     for(var i in mapBase.supportedMapTypes){
-                        var m=mapBase.supportedMapTypes[i]
-                        vtypes.push(m.description)
+                        var mt=mapBase.supportedMapTypes[i]
+                        vtypes.push(mt.description)
                     }
                     mapPlugin.prefs.maptype.enumStrings=vtypes
                     //mapPlugin.prefs.maptype.value=activeMapType.description
@@ -91,9 +91,9 @@ Control {
                 activeMapType: {
                     var v = mapTypeName
                     for(var i in mapBase.supportedMapTypes){
-                        var m=mapBase.supportedMapTypes[i]
-                        if(m.description !== v) continue
-                        return m
+                        var mt=mapBase.supportedMapTypes[i]
+                        if(mt.description !== v) continue
+                        return mt
                     }
                     return mapBase.supportedMapTypes[0]
                 }

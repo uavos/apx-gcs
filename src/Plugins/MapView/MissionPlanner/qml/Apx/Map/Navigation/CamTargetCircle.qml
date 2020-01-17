@@ -8,13 +8,13 @@ MapItemGroup {
     visible: valid
 
     //Fact bindings
-    property real lat: m.gps_lat.value
-    property real lon: m.gps_lon.value
-    property real hmsl: m.gps_hmsl.value
-    property real home_hmsl: m.home_hmsl.value
+    property real lat: mandala.est.pos.lat.value
+    property real lon: mandala.est.pos.lon.value
+    property real hmsl: mandala.est.pos.hmsl.value
+    property real home_hmsl: mandala.est.ref.hmsl.value
 
-    property real yaw: m.yaw.value
-    property real power_payload: m.power_payload.value
+    property real yaw: mandala.est.att.yaw.value
+    property real power_payload: mandala.ctr.pwr.payload.value
 
     property real cam_roll: m.cam_roll.value
     property real cam_pitch: m.cam_pitch.value

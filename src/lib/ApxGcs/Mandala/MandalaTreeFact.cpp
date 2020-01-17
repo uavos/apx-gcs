@@ -24,6 +24,7 @@
 #include "MandalaTree.h"
 #include <App/AppLog.h>
 #include <Mandala/MandalaMeta.h>
+#include <Mandala/MandalaStream.h>
 #include <QColor>
 
 MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
@@ -33,9 +34,17 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
 {
     if (meta.level > 2)
         setOption(FilterSearchAll);
+    if (isSystem()) {
+        setOption(FilterExclude);
+    }
     if (meta.group) {
         updateStatus();
         connect(this, &Fact::sizeChanged, this, &MandalaTreeFact::updateStatus);
+        if (meta.level == 0) {
+            setOption(FlatModel);
+        } else if (meta.level == 1) {
+            setOption(Section);
+        }
     } else {
         QString sdescr = meta.descr;
         if (!sdescr.isEmpty()) {
@@ -48,7 +57,7 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
         case mandala::type_float:
             setDataType(Float);
             v = static_cast<double>(0.0);
-            //setPrecision(meta.prec);
+            setPrecision(getPrecision());
             break;
         case mandala::type_dword:
             setDataType(Int);
@@ -72,21 +81,24 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
             setDataType(Enum);
             v = static_cast<int>(0);
             setEnumStrings(units().split(','));
-            setUnits("enum");
+            setUnits("");
             break;
         }
         if (!units().isEmpty()) {
             setDescr(QString("%1 [%2]").arg(descr()).arg(units()));
         }
-        m_stream = get_stream();
 
         setValueLocal(v);
-        sendTime.start();
-        sendTimer.setInterval(100);
-        sendTimer.setSingleShot(true);
-        connect(&sendTimer, &QTimer::timeout, this, &MandalaTreeFact::send);
 
-        connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
+        if (!isSystem()) {
+            m_stream = MandalaTreeStream::get_stream();
+            setOpt("color", getColor());
+            sendTime.start();
+            sendTimer.setInterval(100);
+            sendTimer.setSingleShot(true);
+            connect(&sendTimer, &QTimer::timeout, this, &MandalaTreeFact::send);
+            connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
+        }
 
         //integrity tests
         /* switch (meta.type_id) {
@@ -136,7 +148,7 @@ bool MandalaTreeFact::setValueLocal(const QVariant &v)
     return Fact::setValue(v);
 }
 
-mandala::uid_t MandalaTreeFact::uid()
+mandala::uid_t MandalaTreeFact::uid() const
 {
     return m_meta.uid;
 }
@@ -157,28 +169,16 @@ QVariant MandalaTreeFact::data(int col, int role) const
         if (col != FACT_MODEL_COLUMN_NAME)
             break;
         return name();
-    case Qt::ForegroundRole:
-        if (col != FACT_MODEL_COLUMN_NAME)
-            break;
-        if (m_meta.group) {
-            switch (m_meta.level) {
-            case 0:
-                return QColor(Qt::white);
-            case 1:
-                return QColor(Qt::blue).lighter(180);
-            case 2:
-                return QColor(Qt::yellow).lighter(180);
-            case 3:
-                return QColor(Qt::red).lighter(180);
-            case 4:
-                return QColor(Qt::red).lighter(180);
-            }
-        }
-        break;
     case Qt::BackgroundRole:
-        if (m_meta.level > 0)
-            break;
-        return QColor(Qt::darkCyan).darker(300);
+        if (m_meta.level == 0)
+            return QColor(Qt::darkCyan).darker(300);
+        if (m_meta.level == 2 && isSystem())
+            return QColor(Qt::darkRed).darker(300);
+
+        /*if (col == FACT_MODEL_COLUMN_DESCR && opts().contains("color")) {
+            return opts().value("color").value<QColor>();
+        }*/
+        break;
     }
     return Fact::data(col, role);
 }
@@ -187,6 +187,10 @@ bool MandalaTreeFact::showThis(QRegExp re) const
 {
     if (Fact::showThis(re))
         return true;
+    if (options() & FilterExclude)
+        return false;
+    if (!(options() & FilterSearchAll))
+        return false;
     if (path(m_meta.level).contains(re))
         return true;
     return false;
@@ -194,6 +198,8 @@ bool MandalaTreeFact::showThis(QRegExp re) const
 
 void MandalaTreeFact::updateStatus()
 {
+    if (m_meta.level < 2)
+        return;
     int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
     setStatus(QString("[%1/%2]").arg(size()).arg(capacity));
 }
@@ -218,54 +224,11 @@ void MandalaTreeFact::updateDescr()
         s = QString("[%1] %2").arg(m_stream->sfmt_text).arg(s);
     }
     //s = QString("%1: %2").arg(m_meta.uid, 4, 16, QChar('0')).arg(s);
+    if (precision() >= 0) {
+        s = QString("[%1] %2").arg(precision()).arg(s);
+    }
 
     setDescr(s);
-}
-
-MandalaTreeStream *MandalaTreeFact::get_stream()
-{
-    /*switch (m_meta.sfmt) {
-    case mandala::sfmt_u4:
-        sfmt_text = "u4";
-        return get_stream<mandala::sfmt_u4>(m_meta.type_id);
-    case mandala::sfmt_u2:
-        sfmt_text = "u2";
-        return get_stream<mandala::sfmt_u2>(m_meta.type_id);
-    case mandala::sfmt_u1:
-        sfmt_text = "u1";
-        return get_stream<mandala::sfmt_u1>(m_meta.type_id);
-    case mandala::sfmt_f4:
-        sfmt_text = "f4";
-        return get_stream<mandala::sfmt_f4>(m_meta.type_id);
-    case mandala::sfmt_f2:
-        sfmt_text = "f2";
-        return get_stream<mandala::sfmt_f2>(m_meta.type_id);
-    case mandala::sfmt_f1:
-        sfmt_text = "f1";
-        return get_stream<mandala::sfmt_f1>(m_meta.type_id);
-    case mandala::sfmt_f1_10:
-        sfmt_text = "f1/10";
-        return get_stream<mandala::sfmt_f1_10>(m_meta.type_id);
-    case mandala::sfmt_f1_01:
-        sfmt_text = "f1*10";
-        return get_stream<mandala::sfmt_f1_01>(m_meta.type_id);
-    case mandala::sfmt_f1_001:
-        sfmt_text = "f1*100";
-        return get_stream<mandala::sfmt_f1_001>(m_meta.type_id);
-    case mandala::sfmt_f1_s:
-        sfmt_text = "f1s";
-        return get_stream<mandala::sfmt_f1_s>(m_meta.type_id);
-    case mandala::sfmt_f1_s10:
-        sfmt_text = "f1s/10";
-        return get_stream<mandala::sfmt_f1_s10>(m_meta.type_id);
-    case mandala::sfmt_f1_s01:
-        sfmt_text = "f1s*10";
-        return get_stream<mandala::sfmt_f1_s01>(m_meta.type_id);
-    case mandala::sfmt_f1_s001:
-        sfmt_text = "f1s*100";
-        return get_stream<mandala::sfmt_f1_s001>(m_meta.type_id);
-    }*/
-    return nullptr;
 }
 
 size_t MandalaTreeFact::pack(void *buf) const
@@ -284,4 +247,194 @@ size_t MandalaTreeFact::unpack(const void *buf)
     if (sz > 0)
         setValueLocal(v);
     return sz;
+}
+
+Fact *MandalaTreeFact::classFact() const
+{
+    int level = m_meta.level;
+    if (level >= 1)
+        level--;
+    const Fact *f = this;
+    for (int i = 0; i < level; ++i) {
+        f = f->parentFact();
+    }
+    return const_cast<Fact *>(f);
+}
+
+QString MandalaTreeFact::mpath() const
+{
+    int level = m_meta.level;
+    if (level >= 1)
+        level--;
+    return path(level);
+}
+
+int MandalaTreeFact::getPrecision()
+{
+    if (name().contains("lat") || name().contains("lon"))
+        return 8;
+    const QString &u = units().toLower();
+    if (!u.isEmpty()) {
+        if (u == "u")
+            return 3;
+        if (u == "su")
+            return 3;
+        if (u == "deg")
+            return 2;
+        if (u == "deg/s")
+            return 2;
+        if (u == "m")
+            return 2;
+        if (u == "m/s")
+            return 2;
+        if (u == "m/s2")
+            return 2;
+        if (u == "v")
+            return 2;
+        if (u == "a")
+            return 3;
+        if (u == "c")
+            return 1;
+        if (u == "1/min")
+            return 0;
+        if (u == "kpa")
+            return 1;
+        if (u == "bar")
+            return 1;
+        if (u == "l/d")
+            return 2;
+        if (u == "l/h")
+            return 2;
+        if (u == "l")
+            return 2;
+        if (u == "a/h")
+            return 2;
+        if (u == "pa")
+            return 1;
+        if (u == "n")
+            return 1;
+        if (u == "nm")
+            return 1;
+        if (u == "k")
+            return 2;
+        qWarning() << "default units precision:" << u << path();
+    }
+    return 6;
+}
+
+QColor MandalaTreeFact::getColor()
+{
+    QString sclass = classFact()->name();
+    QString sub = parentFact()->name();
+    QString sn = name();
+    bool isEnum = !enumStrings().isEmpty();
+
+    int vectidx = -1;
+    int vectfactor = -1;
+    QList<QStringList> vlist;
+    vlist << (QStringList() << "roll"
+                            << "pitch"
+                            << "yaw");
+    vlist << (QStringList() << "x"
+                            << "y"
+                            << "z");
+    vlist << (QStringList() << "p"
+                            << "q"
+                            << "r");
+    vlist << (QStringList() << "n"
+                            << "e"
+                            << "d");
+    vlist << (QStringList() << "vn"
+                            << "ve"
+                            << "vd");
+    vlist << (QStringList() << "lat"
+                            << "lon"
+                            << "hmsl");
+
+    for (auto st : vlist) {
+        vectfactor++;
+        for (int i = 0; i < 3; ++i) {
+            if (sn == st.at(i) || (sn.contains('_') && sn.endsWith(st.at(i)))) {
+                vectidx = i;
+                break;
+            }
+        }
+        if (vectidx >= 0)
+            break;
+    }
+
+    QColor c(Qt::cyan);
+    if (sclass == "ctr") {
+        if (sn.contains("ail"))
+            c = QColor(Qt::red).lighter();
+        else if (sn.contains("elv"))
+            c = QColor(Qt::green).lighter();
+        else if (sn.contains("thr"))
+            c = QColor(Qt::blue).lighter();
+        else if (sn.contains("rud"))
+            c = QColor(Qt::yellow).lighter();
+        else if (sn.contains("col"))
+            c = QColor(Qt::darkCyan);
+        else if (isEnum)
+            c = Qt::magenta;
+        else
+            c = QColor(Qt::magenta).darker();
+    } else if (sub == "rc") {
+        if (sn.contains("roll"))
+            c = QColor(Qt::darkRed);
+        else if (sn.contains("pitch"))
+            c = QColor(Qt::darkGreen);
+        else if (sn.contains("throttle"))
+            c = QColor(Qt::darkBlue);
+        else if (sn.contains("yaw"))
+            c = QColor(Qt::darkYellow);
+        else
+            c = QColor(Qt::magenta).lighter();
+    } else if (sub == "usr") {
+        if (sn.endsWith("1"))
+            c = QColor(Qt::red).lighter();
+        else if (sn.endsWith("2"))
+            c = QColor(Qt::green).lighter();
+        else if (sn.endsWith("3"))
+            c = QColor(Qt::blue).lighter();
+        else if (sn.endsWith("4"))
+            c = QColor(Qt::yellow).lighter();
+        else if (sn.endsWith("5"))
+            c = QColor(Qt::cyan).lighter();
+        else if (sn.endsWith("6"))
+            c = QColor(Qt::magenta).lighter();
+        else
+            c = QColor(Qt::cyan).lighter();
+    } else if (sn.startsWith("altitude"))
+        c = QColor(Qt::red).lighter(170);
+    else if (sn.startsWith("vspeed"))
+        c = QColor(Qt::green).lighter(170);
+    else if (sn.startsWith("airspeed"))
+        c = QColor(Qt::blue).lighter(170);
+    else if (isEnum)
+        c = QColor(Qt::blue).lighter();
+    else if (vectidx >= 0) {
+        if (vectidx == 0)
+            c = Qt::red;
+        else if (vectidx == 1)
+            c = Qt::green;
+        else if (vectidx == 2)
+            c = Qt::yellow;
+        if (vectfactor > 0)
+            c = c.lighter(100 + vectfactor * 10);
+        if (sclass == "cmd")
+            c = c.lighter();
+    }
+    return c;
+}
+
+QString MandalaTreeFact::alias() const
+{
+    return m_alias;
+}
+
+bool MandalaTreeFact::isSystem() const
+{
+    return m_meta.uid
+           >= (mandala::uid_base + (3 << mandala::uid_shift[0]) | (1 << mandala::uid_shift[1]));
 }

@@ -37,9 +37,6 @@ public:
                           const QString &descr,
                           Fact::Flags flags);
 
-    //Fact override
-    void setModified(const bool &v, const bool &recursive = false);
-
 protected:
     void hashData(QCryptographicHash *h) const;
 };

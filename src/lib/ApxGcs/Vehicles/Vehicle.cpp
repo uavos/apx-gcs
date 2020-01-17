@@ -65,6 +65,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
     });
 
     f_mandala = new VehicleMandala(this);
+    f_mandalatree = new MandalaTree(this);
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);

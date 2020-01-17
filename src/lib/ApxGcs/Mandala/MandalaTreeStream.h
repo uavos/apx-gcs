@@ -38,6 +38,52 @@ public:
     virtual size_t psize() const = 0;
     QString type_text;
     QString sfmt_text;
+
+    static MandalaTreeStream *get_stream()
+    {
+        /*switch (m_meta.sfmt) {
+        case mandala::sfmt_u4:
+            sfmt_text = "u4";
+            return get_stream<mandala::sfmt_u4>(m_meta.type_id);
+        case mandala::sfmt_u2:
+            sfmt_text = "u2";
+            return get_stream<mandala::sfmt_u2>(m_meta.type_id);
+        case mandala::sfmt_u1:
+            sfmt_text = "u1";
+            return get_stream<mandala::sfmt_u1>(m_meta.type_id);
+        case mandala::sfmt_f4:
+            sfmt_text = "f4";
+            return get_stream<mandala::sfmt_f4>(m_meta.type_id);
+        case mandala::sfmt_f2:
+            sfmt_text = "f2";
+            return get_stream<mandala::sfmt_f2>(m_meta.type_id);
+        case mandala::sfmt_f1:
+            sfmt_text = "f1";
+            return get_stream<mandala::sfmt_f1>(m_meta.type_id);
+        case mandala::sfmt_f1_10:
+            sfmt_text = "f1/10";
+            return get_stream<mandala::sfmt_f1_10>(m_meta.type_id);
+        case mandala::sfmt_f1_01:
+            sfmt_text = "f1*10";
+            return get_stream<mandala::sfmt_f1_01>(m_meta.type_id);
+        case mandala::sfmt_f1_001:
+            sfmt_text = "f1*100";
+            return get_stream<mandala::sfmt_f1_001>(m_meta.type_id);
+        case mandala::sfmt_f1_s:
+            sfmt_text = "f1s";
+            return get_stream<mandala::sfmt_f1_s>(m_meta.type_id);
+        case mandala::sfmt_f1_s10:
+            sfmt_text = "f1s/10";
+            return get_stream<mandala::sfmt_f1_s10>(m_meta.type_id);
+        case mandala::sfmt_f1_s01:
+            sfmt_text = "f1s*10";
+            return get_stream<mandala::sfmt_f1_s01>(m_meta.type_id);
+        case mandala::sfmt_f1_s001:
+            sfmt_text = "f1s*100";
+            return get_stream<mandala::sfmt_f1_s001>(m_meta.type_id);
+        }*/
+        return nullptr;
+    }
 };
 
 template<mandala::sfmt_id_t _sfmt, typename _DataType>

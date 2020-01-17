@@ -166,37 +166,6 @@ void NodeField::updateStatus()
     }
 }
 //=============================================================================
-void NodeField::setModified(const bool &v, const bool &recursive)
-{
-    if (m_modified == v)
-        return;
-    FactData::setModified(v, recursive);
-    const Vehicle *vehicle = findParent<Vehicle *>();
-    if (v) {
-        //qDebug()<<"mod"<<path();
-        //set all parents to modified=true
-        for (Fact *i = parentFact(); i != vehicle; i = i->parentFact()) {
-            if (i)
-                i->setModified(v);
-            else
-                break;
-        }
-        return;
-    }
-    //refresh modified status of all parent items
-    for (Fact *i = parentFact(); i && i != vehicle; i = i->parentFact()) {
-        for (int j = 0; j < i->size(); ++j) {
-            Fact *f = i->child(j);
-            if (f) {
-                if (f->modified())
-                    return;
-            } else
-                break;
-        }
-        i->setModified(v);
-    }
-}
-//=============================================================================
 bool NodeField::setValue(const QVariant &v)
 {
     if (size() > 0) {

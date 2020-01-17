@@ -41,7 +41,7 @@
 #include <QQmlEngine>
 //=============================================================================
 VehicleMission::VehicleMission(Vehicle *parent)
-    : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group, "ship-wheel")
+    : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group | ModifiedGroup, "ship-wheel")
     , vehicle(parent)
     , blockSizeUpdate(false)
     , m_startHeading(0)

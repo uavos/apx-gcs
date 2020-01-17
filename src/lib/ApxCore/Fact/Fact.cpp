@@ -128,8 +128,6 @@ QVariant Fact::data(int col, int role) const
                 return QColor(Qt::green).lighter();
             if (isZero())
                 return QColor(Qt::gray);
-            //if(treeItemType()==Fact::FactItem) return QColor(Qt::white);
-            //return QColor(Qt::green).lighter(195);
             return QColor(Qt::white); //QVariant();
         }
         if (col == Fact::FACT_MODEL_COLUMN_VALUE) {
@@ -141,8 +139,6 @@ QVariant Fact::data(int col, int role) const
                 return QColor(Qt::yellow);
             if (isZero())
                 return QColor(Qt::gray);
-            //if(ftype==ft_string) return QVariant();
-            //if(ftype==ft_varmsk) return QColor(Qt::cyan);
             return QColor(Qt::cyan).lighter(180);
         }
         return QColor(Qt::darkCyan);
@@ -154,9 +150,6 @@ QVariant Fact::data(int col, int role) const
             return QVariant();
         if (treeType() && col == Fact::FACT_MODEL_COLUMN_NAME)
             font.setBold(true);
-        //if(ftype>=ft_regPID) return QFont("Monospace",-1,column==tc_field?QFont::Bold:QFont::Normal);
-        //if(col==FACT_MODEL_COLUMN_NAME) return QFont("Monospace",-1,QFont::Normal,isModified());
-        //if(ftype==ft_string) return QFont("",-1,QFont::Normal,true);
         return font;
     }
     case Qt::ToolTipRole:
@@ -255,8 +248,6 @@ void Fact::hashData(QCryptographicHash *h) const
     //h->addData(name().toUtf8());
     h->addData(title().toUtf8());
     h->addData(descr().toUtf8());
-    //h->addData(section().toUtf8());
-    //h->addData(QString::number(num()).toUtf8());
     h->addData(QString::number(precision()).toUtf8());
     h->addData(min().toString().toUtf8());
     h->addData(max().toString().toUtf8());
@@ -389,6 +380,8 @@ bool Fact::lessThan(Fact *rightFact) const
 }
 bool Fact::showThis(QRegExp re) const
 {
+    if (options() & FilterExclude)
+        return false;
     if (name().contains(re))
         return true;
     if (!(options() & FilterSearchAll))

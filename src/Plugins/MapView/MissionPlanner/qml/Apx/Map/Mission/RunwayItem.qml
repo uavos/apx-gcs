@@ -9,6 +9,12 @@ import APX.Mission 1.0 as APX
 
 MissionObject {
     id: runwayItem
+
+    readonly property int m_rwidx: mandala.est.wpt.rwidx.value
+    readonly property int m_mode: mandala.cmd.ctr.mode.value
+    readonly property real m_radius: mandala.est.ctr.radius.value
+    readonly property real m_delta: mandala.est.ctr.delta.value
+
     color: Style.cRunway
     textColor: "white"
     title: (f_approach>0?"":"H")+(num+1)
@@ -26,10 +32,8 @@ MissionObject {
     property var appPointCoordinate: fact && fact.appPoint?fact.appPoint:coordinate
     property int num: fact?fact.num:0
 
-    property bool f_current: m.rwidx.value === num
-    property bool f_landing: m.mode.value === mode_LANDING && f_current
-    property real f_turnR: m.turnR.value
-    property real f_delta: m.delta.value
+    property bool is_current: m_rwidx === num
+    property bool is_landing: m_mode === mode_LANDING && is_current
 
     function updateEndPoint(coord)
     {
@@ -52,7 +56,7 @@ MissionObject {
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
-                    color: f_current?Style.cBlue:Style.cNormal
+                    color: is_current?Style.cBlue:Style.cNormal
                     text: rwName
                 }
             }
@@ -74,13 +78,13 @@ MissionObject {
 
     //Runway Map Items
     property Item appPoint
-    property color cRwBG: f_landing?"blue":Style.cBlue
+    property color cRwBG: is_landing?"blue":Style.cBlue
     property bool showDetailsRw: runwayItem.visible && detailsLevel>15
     property bool showDetailsApp: runwayItem.visible && detailsLevel>10
-    property real appOpacity: ui.effects?(f_landing?1:0.6):1
+    property real appOpacity: ui.effects?(is_landing?1:0.6):1
 
     property bool appHover: hover||appPoint.hover||dragging||appPoint.dragging
-    property bool appCircleActive: f_landing||appHover
+    property bool appCircleActive: is_landing||appHover
     property bool appCircleVisible: runwayItem.visible && showDetailsApp && (f_approach>0||appHover)
     property int appCircleLineWidth: Math.max(1,(appCircleActive?2:1)*ui.scale)
     property real appCircleOpacity: ui.effects?(appCircleActive?0.8:0.6):1
@@ -88,7 +92,7 @@ MissionObject {
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===APX.Runway.Left?-90:90))
     property real appCircleRadiusDefault: f_approach/2
-    property real appCircleRadius: Math.max(100,f_landing?Math.abs(f_turnR):appCircleRadiusDefault)
+    property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
 
 
     Component.onCompleted: {
@@ -102,7 +106,7 @@ MissionObject {
         c.line.width=Math.max(1,10*ui.scale)
         c.line.color=Qt.binding(function(){return cRwBG})
         c.opacity=ui.effects?0.9:1
-        c.visible=Qt.binding(function(){return f_current && runwayItem.visible})
+        c.visible=Qt.binding(function(){return is_current && runwayItem.visible})
 
         c=createMapComponent(pathC)
         c.z=+11
@@ -187,7 +191,7 @@ MissionObject {
                         sourceComponent: Component {
                             MapText {
                                 textColor: "white"
-                                color: f_current?Style.cBlue:Style.cNormal
+                                color: is_current?Style.cBlue:Style.cNormal
                                 text: runwayItem.rwName + " ("+Math.floor(apx.angle360(f_heading)).toFixed()+")"
                             }
                         }
@@ -222,9 +226,9 @@ MissionObject {
         id: deltaC
         MapPolygon {
             id: delta
-            visible: runwayItem.visible && f_landing && v!=0
+            visible: runwayItem.visible && is_landing && v!=0
 
-            property int v: isFinite(f_delta)?f_delta:0
+            property int v: isFinite(m_delta)?m_delta:0
             Behavior on v { enabled: ui.smooth; NumberAnimation {duration: 100; } }
 
             property var p1: runwayItem.coordinate.atDistanceAndAzimuth(25,f_heading-90)

@@ -4,18 +4,15 @@ import "."
 
 Item {
     id: wind_window
-    property double value: m.windHdg.value
-    property double anumation_duration: 1000
+    readonly property real m_wspd: mandala.est.calc.wspd.value
+    readonly property real m_whdg: mandala.est.calc.whdg.value
+
+    property real value: m_whdg
+
+    property real anumation_duration: 1000
     property bool simplified: false
 
-    visible: m.windSpd.value>0.5
-    //width: simplified?simple_rect.width:height
-
-    /*Rectangle { //debug
-        color: "#5000ff00"
-        border.width: 0
-        anchors.fill: parent
-    }*/
+    visible: m_wspd>0.5
 
     PfdImage {
         id: wind_arrow
@@ -37,27 +34,10 @@ Item {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: -wind_arrow.height*0.7
             rotation: -parent.rotation
-            text: m.windSpd.value.toFixed(m.windSpd.value>=10?0:1)
+            text: m_wspd.toFixed(m_wspd>=10?0:1)
             color: "white"
             font.family: font_narrow
             font.pixelSize: parent.height*0.5
         }
     }
-    /*Rectangle {
-        id: simple_rect
-        color: "#80000000"
-        border.width: 0
-        visible: simplified
-        anchors.fill: parent
-        anchors.rightMargin: wind_arrow.anchors.rightMargin
-        Text {
-            id: simple_text
-            anchors.left: parent.right
-            text: m.windSpd.value.toFixed(m.windSpd.value>=10?0:1)
-            color: "white"
-            font.family: font_narrow
-            font.pixelSize: wind_window.height
-        }
-    }*/
-
 }

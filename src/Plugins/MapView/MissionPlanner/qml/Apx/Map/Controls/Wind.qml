@@ -5,15 +5,14 @@ import Apx.Common 1.0
 Item {
     id: control
 
+    readonly property real m_wspd: mandala.est.calc.wspd.value
+    readonly property real m_whdg: mandala.est.calc.whdg.value
+
     implicitWidth: 100
     implicitHeight: implicitWidth
 
     readonly property int spacing: 0
     readonly property int fontSize: 28*ui.scale
-
-    //Fact bindings
-    readonly property real f_windSpd: m.windSpd.value
-    readonly property real f_windHdg: m.windHdg.value
 
     //internal
     readonly property int arrowSize: height-textItem.height-spacing
@@ -38,7 +37,7 @@ Item {
         color: "#fff"
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
-        text: f_windSpd.toFixed(1)
+        text: m_wspd.toFixed(1)
         font.family: font_narrow
         font.pixelSize: fontSize
         font.bold: true
@@ -60,7 +59,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         rotation: v-map.bearing
-        property real v: f_windHdg
+        property real v: m_whdg
         Behavior on v { enabled: ui.smooth && control.smoothMove; RotationAnimation {duration: 1000; direction: RotationAnimation.Shortest; } }
     }
 }

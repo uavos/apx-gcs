@@ -20,17 +20,20 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MandalaTree_H
-#define MandalaTree_H
-//=============================================================================
+#pragma once
+
+#include "MandalaTreeFact.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
 class MandalaTree : public Fact
 {
     Q_OBJECT
 
 public:
     explicit MandalaTree(Fact *parent = nullptr);
+
+    MandalaTreeFact *fact(mandala::uid_t uid) const;
+
+private:
+    QMap<mandala::uid_t, MandalaTreeFact *> uid_map;
 };
-//=============================================================================
-#endif

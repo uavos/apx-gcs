@@ -30,26 +30,6 @@ MissionField::MissionField(
     connect(this, &Fact::removed, this, [=]() { setModified(false); });
 }
 //=============================================================================
-//=============================================================================
-void MissionField::setModified(const bool &v, const bool &recursive)
-{
-    if (m_modified == v)
-        return;
-    FactData::setModified(v, recursive);
-    const Vehicle *vehicle = findParent<Vehicle *>();
-    if (v) {
-        //qDebug()<<"mod"<<path();
-        //set all parents to modified=true
-        for (Fact *i = parentFact(); i != vehicle; i = i->parentFact()) {
-            if (i)
-                i->setModified(v);
-            else
-                break;
-        }
-        return;
-    }
-}
-//=============================================================================
 void MissionField::hashData(QCryptographicHash *h) const
 {
     h->addData(text().toUtf8());

@@ -2,7 +2,21 @@ import QtQuick 2.2
 import "../common"
 
 ControlArea {
-    mvar: m.rc_throttle   //ControlArea
+
+    readonly property var f_vspeed: mandala.est.air.vspeed
+    readonly property real m_vspeed: f_vspeed.value
+
+    readonly property var f_cmd_vspeed: mandala.cmd.reg.vspeed
+    readonly property real m_cmd_vspeed: f_cmd_vspeed.value
+
+    readonly property var f_vd: mandala.est.pos.vd
+    readonly property real m_vd: f_vd.value
+
+    readonly property var f_venergy: mandala.est.calc.venergy
+    readonly property real m_venergy: f_venergy.value
+
+
+    mvar: mandala.cmd.rc.throttle   //ControlArea
     //speed: 0.8
 
     //instrument item
@@ -45,10 +59,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_arrow.width
             origin.y: vsi_arrow.height/2
-            angle: get_deg(m.vspeed.value)
+            angle: get_deg(m_vspeed)
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: m.vspeed.descr}
+        ToolTipArea {text: f_vspeed.descr}
     }
 
     PfdImage {
@@ -62,10 +76,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_gps.width
             origin.y: vsi_gps.height/2
-            angle: get_deg(-m.gps_Vdown.value)
+            angle: get_deg(-m_vd)
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: m.gps_Vdown.descr}
+        ToolTipArea {text: f_vd.descr}
     }
 
     PfdImage {
@@ -79,10 +93,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_triangle.width
             origin.y: vsi_triangle.height/2
-            angle: get_deg(m.venergy.value)
+            angle: get_deg(m_venergy)
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: m.venergy.descr}
+        ToolTipArea {text: f_venergy.descr}
     }
 
     PfdImage {
@@ -97,16 +111,16 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_waypoint.width
             origin.y: vsi_waypoint.height/2
-            angle: get_deg(m.cmd_vspeed.value)
+            angle: get_deg(m_cmd_vspeed)
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: m.cmd_vspeed.descr}
+        ToolTipArea {text: f_cmd_vspeed.descr}
     }
 
     Text {
         id: vsi_text_low
-        visible: m.vspeed.value<-0.5
-        text: m.vspeed.value.toFixed(1)
+        visible: m_vspeed<-0.5
+        text: m_vspeed.toFixed(1)
         color: "white"
         anchors.horizontalCenter: vsi_scale.right
         anchors.horizontalCenterOffset: -vsi_scale.width*0.1
@@ -119,8 +133,8 @@ ControlArea {
     }
 
     Text {
-        visible: m.vspeed.value>0.5
-        text: "+"+m.vspeed.value.toFixed(1)
+        visible: m_vspeed>0.5
+        text: "+"+m_vspeed.toFixed(1)
         color: "white"
         anchors.horizontalCenter: vsi_scale.right
         anchors.bottom: vsi_scale.top

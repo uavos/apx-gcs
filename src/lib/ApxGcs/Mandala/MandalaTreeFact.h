@@ -20,33 +20,38 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MandalaTreeFact_H
-#define MandalaTreeFact_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <Mandala/MandalaMetaBase.h>
-#include <Mandala/MandalaStream.h>
 #include <QtCore>
 
 #include "MandalaTreeStream.h"
 
 class MandalaTree;
+class MandalaTreeStream;
 
 class MandalaTreeFact : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(QString alias READ alias CONSTANT)
+    Q_PROPERTY(bool isSystem READ isSystem CONSTANT)
+
 public:
     explicit MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta);
 
     bool setValue(const QVariant &v); //override
     bool setValueLocal(const QVariant &v);
 
-    Q_INVOKABLE mandala::uid_t uid();
+    Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
 
     size_t pack(void *buf) const;
     size_t unpack(const void *buf);
+
+    Fact *classFact() const;
+    QString mpath() const;
 
 private:
     MandalaTree *m_tree;
@@ -56,7 +61,9 @@ private:
     QTimer sendTimer;
 
     MandalaTreeStream *m_stream{nullptr};
-    MandalaTreeStream *get_stream();
+
+    int getPrecision();
+    QColor getColor();
 
 protected:
     //Fact override
@@ -70,6 +77,14 @@ private slots:
 signals:
     void sendValueUpdate(quint16 id, double v);
     void sendValueRequest(quint16 id);
+
+    //---------------------------------------
+    // PROPERTIES
+public:
+    QString alias() const;
+    bool isSystem() const;
+
+protected:
+    QString m_alias;
+signals:
 };
-//=============================================================================
-#endif

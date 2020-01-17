@@ -50,7 +50,6 @@ public:
 
     //Fact override
     bool setValue(const QVariant &v) override;
-    void setModified(const bool &v, const bool &recursive = false) override;
 
     QVariant uploadableValue(void) const;
 

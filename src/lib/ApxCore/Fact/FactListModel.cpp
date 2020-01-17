@@ -127,9 +127,24 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
         connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
     }
     if (sect && fact == this->fact) {
-        std::stable_sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
-            return a->section().localeAwareCompare(b->section()) < 0;
-        });
+        //check for gaps in sections to sort
+        QString s = "@/./";
+        QStringList slist;
+        for (auto i : *list) {
+            const QString &si = i->section();
+            if (s == si)
+                continue;
+            s = si;
+            if (!slist.contains(s)) {
+                slist.append(s);
+                continue;
+            }
+            //gap found
+            std::stable_sort(list->begin(), list->end(), [](Fact *a, Fact *b) {
+                return a->section().localeAwareCompare(b->section()) < 0;
+            });
+            break;
+        }
     }
 }
 //=============================================================================

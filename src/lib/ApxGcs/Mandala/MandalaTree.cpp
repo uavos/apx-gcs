@@ -26,9 +26,9 @@
 #include <App/AppRoot.h>
 #include <Mandala/MandalaValue.h>
 #include <Mandala/backport/MandalaBackport.h>
-//=============================================================================
+
 MandalaTree::MandalaTree(Fact *parent)
-    : Fact(parent, "mandala", "Mandala", tr("Vehicle data tree"), Group, "hexagon-multiple")
+    : Fact(parent, "mandalatree", "Mandala tree", tr("Vehicle data tree"), Group, "hexagon-multiple")
 {
     //qDebug() << mandala::sns::nav::ins::gyro::title;
 
@@ -91,20 +91,40 @@ MandalaTree::MandalaTree(Fact *parent)
 
     Fact *group = this;
     uint8_t level = 0;
+    QString sect;
     for (size_t i = 0; i < (sizeof(mandala::meta) / sizeof(*mandala::meta)); ++i) {
         const mandala::meta_t &d = mandala::meta[i];
         if (d.group) {
             //move group to upper level
             for (; level > d.level; --level)
-                group = group->parentFact();
+                if (level != 2)
+                    group = group->parentFact();
             level = d.level + 1;
+            if (d.level == 1) {
+                sect = d.title;
+                continue;
+            }
             group = new MandalaTreeFact(this, group, d);
+            if (d.level == 2)
+                group->setSection(sect);
             continue;
         }
-        new MandalaTreeFact(this, group, d);
+        MandalaTreeFact *f = new MandalaTreeFact(this, group, d);
+        uid_map.insert(f->uid(), f);
     }
 
     //fact tests
     mandala::backport::MandalaBackport backport;
+
+    //apxMsg() << findChild("sns.tcas.vel")->title();
+    //apxMsg() << fact(mandala::sns::nav::air::aoa::meta.uid)->title();
 }
-//============================================================================
+
+MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const
+{
+    MandalaTreeFact *f = uid_map.value(uid);
+    if (f)
+        return f;
+    apxMsgW() << "Mandala uid not found:" << uid;
+    return nullptr;
+}
