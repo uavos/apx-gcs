@@ -38,44 +38,30 @@ Joysticks::Joysticks(Fact *parent)
            QString(PLUGIN_NAME).toLower(),
            tr("Joystick"),
            tr("Hardware input devices"),
-           Group | Bool | FlatModel)
+           Group | FlatModel)
 {
     f_enabled = new Fact(this,
-                         "enabled",
+                         "enable",
                          tr("Enable"),
                          tr("Joysticks enable"),
                          Bool | PersistentValue);
     f_enabled->setDefaultValue(true);
-    connect(f_enabled, &Fact::valueChanged, this, [this]() { setValue(f_enabled->value()); });
-    setValue(f_enabled->value());
-    connect(this, &Fact::valueChanged, f_enabled, [this]() { f_enabled->setValue(value()); });
-    connect(f_enabled, &Fact::valueChanged, this, &Joysticks::enabledChanged);
 
     f_list = new Fact(this, "list", tr("Controllers"), "", Section);
     connect(f_list, &Fact::sizeChanged, this, &Joysticks::updateStatus);
-
-    if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
-        qDebug() << "Cannot initialize SDL:" << SDL_GetError();
-        return;
-    }
 
     saveEvent.setInterval(1000);
     connect(&saveEvent, &DelayedEvent::triggered, this, &Joysticks::saveConfigs);
 
     loadConfigs();
 
-    scan();
     timer.setInterval(50);
     //connect(&timer,&QTimer::timeout,this,&Joysticks::update);
     //timer.start();
+    connect(&watcher, &QFutureWatcher<int>::finished, this, &Joysticks::watcherFinished);
 
-    connect(&watcher, &QFutureWatcher<int>::finished, this, [this]() {
-        if (watcher.result() == 1)
-            update();
-        waitEvent();
-        //qDebug()<<watcher.result();
-    });
-    waitEvent();
+    connect(f_enabled, &Fact::valueChanged, this, &Joysticks::updateEnabled);
+    updateEnabled();
 }
 //=============================================================================
 void Joysticks::updateStatus()
@@ -88,7 +74,36 @@ void Joysticks::updateStatus()
         if (j->value().toBool())
             cnt++;
     }
-    setStatus(QString("%1/%2").arg(acnt).arg(cnt));
+    setValue(QString("%1/%2").arg(acnt).arg(cnt));
+}
+void Joysticks::updateEnabled()
+{
+    if (f_enabled->value().toBool()) {
+        qDebug() << "SDL init...";
+        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+            qDebug() << "Cannot initialize SDL:" << SDL_GetError();
+            return;
+        }
+        scan();
+        waitEvent();
+    } else {
+        for (auto f : *f_list) {
+            f->remove();
+            delete f;
+        }
+        //f_list->removeAll();
+        SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+        qDebug() << "Joysticks disabled";
+    }
+}
+void Joysticks::watcherFinished()
+{
+    if (!f_enabled->value().toBool())
+        return;
+    if (watcher.result() == 1)
+        update();
+    waitEvent();
+    //qDebug()<<watcher.result();
 }
 //=============================================================================
 void Joysticks::update()

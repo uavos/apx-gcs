@@ -11,7 +11,7 @@ MissionObject {
     id: runwayItem
 
     readonly property int m_rwidx: mandala.est.wpt.rwidx.value
-    readonly property int m_mode: mandala.cmd.ctr.mode.value
+    readonly property bool m_mode: mandala.cmd.op.mode.value
     readonly property real m_radius: mandala.est.ctr.radius.value
     readonly property real m_delta: mandala.est.ctr.delta.value
 
@@ -33,7 +33,7 @@ MissionObject {
     property int num: fact?fact.num:0
 
     property bool is_current: m_rwidx === num
-    property bool is_landing: m_mode === mode_LANDING && is_current
+    property bool is_landing: m_mode === op_mode_LANDING && is_current
 
     function updateEndPoint(coord)
     {

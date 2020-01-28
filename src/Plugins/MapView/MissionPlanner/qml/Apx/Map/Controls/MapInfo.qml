@@ -19,7 +19,7 @@ RowLayout {
     BusyIndicator {
         id: busy
         property var fact: apx.tools?apx.tools.location:null
-        property string text: fact?fact.status:""
+        property string text: fact?fact.text:""
         property int progress: fact?fact.progress:-1
 
         padding: 1

@@ -52,7 +52,6 @@ MissionGroup::MissionGroup(VehicleMission *parent,
     f_clear->setEnabled(false);
     connect(f_clear, &Fact::triggered, this, &MissionGroup::clearGroup);
 
-    //status
     connect(this, &Fact::sizeChanged, this, &MissionGroup::updateStatus);
 
     //time & distance
@@ -78,9 +77,9 @@ void MissionGroup::updateStatus()
 {
     int sz = size();
     if (sz > 0)
-        setStatus(QString("[%1]").arg(sz));
+        setValue(QString("[%1]").arg(sz));
     else
-        setStatus(QString());
+        setValue(QVariant());
     f_clear->setEnabled(sz > 0);
 }
 //=============================================================================

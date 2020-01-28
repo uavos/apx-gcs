@@ -8,7 +8,7 @@ MissionObject {
     id: taxiwayItem
 
     readonly property int m_twidx: mandala.est.wpt.twidx.value
-    readonly property int m_mode: mandala.cmd.ctr.mode.value
+    readonly property int m_mode: mandala.cmd.op.mode.value
 
     color: Style.cTaxiway
     textColor: "white"
@@ -22,7 +22,7 @@ MissionObject {
     //Fact bindings
     property real f_distance: fact?fact.distance:0
     property bool f_current: (m_twidx+1) === num
-    property bool f_taxi: m_mode === mode_TAXI
+    property bool f_taxi: m_mode === op_mode_TAXI
     property var path: fact?fact.geoPath:0
     property real f_course: fact?fact.course:0
     property bool f_first: num === 0

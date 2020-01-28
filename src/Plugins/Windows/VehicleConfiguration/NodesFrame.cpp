@@ -200,7 +200,7 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
             for (int i = 0; i < cnt; ++i) {
                 QVariantMap modelData = dbq->dbModel()->get(i);
                 QString s = modelData.value("title").toString();
-                QString s2 = modelData.value("status").toString();
+                QString s2 = modelData.value("value").toString();
                 if (!s2.isEmpty())
                     s.append(QString(" (%1)").arg(s2));
 

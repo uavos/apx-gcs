@@ -65,6 +65,7 @@ DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
     connect(socket, &QTcpSocket::stateChanged, this, &DatalinkTcpSocket::socketStateChanged);
 
     if (_serverClient) {
+        setUrl(socket->peerAddress().toString());
         setStatus("Waiting request");
         connect(socket, &QTcpSocket::readyRead, this, &DatalinkTcpSocket::readyReadHeader);
     } else {
@@ -318,7 +319,7 @@ bool DatalinkTcpSocket::checkServerRequestHeader()
           else apxMsgW("%s",tr("External client controls disabled").toUtf8().data());
         }*/
                 apxMsg() << QString("#%1: %2").arg(tr("client")).arg(sname);
-                setTitle(sname);
+                setUrl(sname);
                 return true;
             }
             //generic request

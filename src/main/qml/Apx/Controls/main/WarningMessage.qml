@@ -29,7 +29,7 @@ CleanButton {
                 target: control
                 highlighted: false
                 iconName: "alert-circle-outline"
-                title: fact.status
+                title: fact.text
                 descr: ""
                 toolTip: ""
                 opacity: 1

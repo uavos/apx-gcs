@@ -35,18 +35,23 @@ DatalinkConnection::DatalinkConnection(Fact *parent,
                                        quint16 rxNetwork,
                                        quint16 txNetwork)
     : Fact(parent, name, title, descr, Bool)
-    , _allowed(true)
+    , m_activated(false)
     , m_rxNetwork(rxNetwork)
     , m_txNetwork(txNetwork)
     , m_blockControls(false)
     , m_blockService(false)
 {
-    connect(this, &Fact::valueChanged, this, [this]() { _allowed = value().toBool(); });
+    connect(this, &Fact::valueChanged, this, [this]() { setActivated(value().toBool()); });
+    connect(this, &DatalinkConnection::activatedChanged, this, [this]() { setValue(activated()); });
 
     connect(this, &DatalinkConnection::rxNetworkChanged, this, &DatalinkConnection::updateDescr);
     connect(this, &DatalinkConnection::txNetworkChanged, this, &DatalinkConnection::updateDescr);
     connect(this, &DatalinkConnection::blockControlsChanged, this, &DatalinkConnection::updateDescr);
     updateDescr();
+
+    connect(this, &DatalinkConnection::urlChanged, this, &DatalinkConnection::updateTitle);
+    connect(this, &DatalinkConnection::statusChanged, this, &DatalinkConnection::updateTitle);
+    setUrl(title);
 }
 //=============================================================================
 void DatalinkConnection::updateDescr()
@@ -69,10 +74,20 @@ void DatalinkConnection::updateDescr()
         s.append(" NOCTR");
     setDescr(s);
 }
+void DatalinkConnection::updateTitle()
+{
+    QString s = url();
+    const QString &sx = status();
+    if (s.isEmpty())
+        s = sx;
+    else if (!sx.isEmpty())
+        s = QString("%1 [%2]").arg(s).arg(sx);
+    setTitle(s);
+}
 //=============================================================================
 void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
 {
-    if (!(_allowed && active()))
+    if (!(activated() && active()))
         return;
     if (!(m_txNetwork & network))
         return;
@@ -84,7 +99,7 @@ void DatalinkConnection::readDataAvailable()
     QByteArray packet = read();
     if (packet.isEmpty())
         return;
-    if (!(_allowed && active()))
+    if (!(activated() && active()))
         return;
     bool ctr = isControlPacket(packet);
     if (m_blockControls && ctr)
@@ -96,7 +111,7 @@ void DatalinkConnection::readDataAvailable()
 }
 void DatalinkConnection::opened()
 {
-    if (!value().toBool()) {
+    if (!activated()) {
         QTimer::singleShot(0, this, &DatalinkConnection::close);
         return;
     }
@@ -146,6 +161,39 @@ void DatalinkConnection::write(const QByteArray &packet)
 }
 //=============================================================================
 //=============================================================================
+QString DatalinkConnection::url() const
+{
+    return m_url;
+}
+void DatalinkConnection::setUrl(const QString &v)
+{
+    if (m_url == v)
+        return;
+    m_url = v;
+    emit urlChanged();
+}
+QString DatalinkConnection::status() const
+{
+    return m_status;
+}
+void DatalinkConnection::setStatus(const QString &v)
+{
+    if (m_status == v)
+        return;
+    m_status = v;
+    emit statusChanged();
+}
+bool DatalinkConnection::activated() const
+{
+    return m_activated;
+}
+void DatalinkConnection::setActivated(const bool &v)
+{
+    if (m_activated == v)
+        return;
+    m_activated = v;
+    emit activatedChanged();
+}
 quint16 DatalinkConnection::txNetwork() const
 {
     return m_txNetwork;

@@ -40,12 +40,14 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
     , m_baud(baud)
     , lock(nullptr)
 {
+    setUrl(m_devName);
+
     dev = new QSerialPort(this);
     connect(dev, &QSerialPort::errorOccurred, this, &DatalinkSerial::serialPortError);
     connect(dev, &QSerialPort::readyRead, this, &DatalinkSerial::readDataAvailable);
 
-    connect(this, &Fact::valueChanged, this, [this]() {
-        if (value().toBool()) {
+    connect(this, &DatalinkConnection::activatedChanged, this, [this]() {
+        if (activated()) {
             open();
         } else {
             close();
@@ -63,6 +65,13 @@ void DatalinkSerial::setDevName(QString v)
     if (m_devName == v)
         return;
     m_devName = v;
+
+    setUrl(v);
+
+    if (dev->isOpen()) {
+        closePort();
+    }
+    openNext();
 }
 void DatalinkSerial::setBaud(uint v)
 {
@@ -77,8 +86,10 @@ void DatalinkSerial::openNext()
         closePort();
         return;
     }
-    if (!value().toBool())
+    if (!activated())
         return;
+
+    setStatus(tr("Searching"));
 
     while (1) {
         QSerialPortInfo spi;
@@ -114,7 +125,9 @@ void DatalinkSerial::openNext()
         }
         info = spi;
         openPorts.append(info.portName());
-        setTitle(info.portName());
+        if (m_devName != info.portName())
+            setUrl(QString("%1:%2").arg(m_devName).arg(info.portName()));
+        setStatus(tr("Connected"));
         apxMsg() << tr("Serial port connected").append(":") << info.portName();
         opened();
         return;
@@ -125,6 +138,8 @@ void DatalinkSerial::openNext()
 //=============================================================================
 bool DatalinkSerial::openPort(const QSerialPortInfo &spi, uint baud)
 {
+    setStatus(tr("Connecting"));
+
     dev->setPort(spi);
     dev->setBaudRate(9600);
     if (!dev->open(QIODevice::ReadWrite))
@@ -159,6 +174,8 @@ void DatalinkSerial::closePort()
         dev->close();
     openPorts.removeAll(info.portName());
     closed();
+    setStatus("");
+    setUrl(m_devName);
     //if(openTimer && openTimer->isActive())openTimer->stop();
 }
 //=============================================================================

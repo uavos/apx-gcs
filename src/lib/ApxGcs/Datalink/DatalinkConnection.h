@@ -29,6 +29,12 @@
 class DatalinkConnection : public Fact
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
+
+    Q_PROPERTY(bool activated READ activated WRITE setActivated NOTIFY activatedChanged)
+
     Q_PROPERTY(quint16 rxNetwork READ rxNetwork WRITE setRxNetwork NOTIFY rxNetworkChanged)
     Q_PROPERTY(quint16 txNetwork READ txNetwork WRITE setTxNetwork NOTIFY txNetworkChanged)
 
@@ -45,8 +51,6 @@ public:
                                 quint16 txNetwork);
 
 protected:
-    bool _allowed;
-
     virtual QByteArray read();
     virtual void write(const QByteArray &packet);
 
@@ -55,6 +59,7 @@ private:
 
 protected slots:
     void updateDescr();
+    void updateTitle();
 
     void readDataAvailable();
     void opened();
@@ -73,6 +78,14 @@ public slots:
     //-----------------------------------------
     //PROPERTIES
 public:
+    QString url() const;
+    void setUrl(const QString &v);
+    QString status() const;
+    void setStatus(const QString &v);
+
+    bool activated() const;
+    void setActivated(const bool &v);
+
     quint16 rxNetwork() const;
     void setRxNetwork(const quint16 &v);
     quint16 txNetwork() const;
@@ -84,12 +97,21 @@ public:
     void setBlockService(const bool &v);
 
 private:
+    QString m_url;
+    QString m_status;
+    bool m_activated;
+
     quint16 m_rxNetwork;
     quint16 m_txNetwork;
 
     bool m_blockControls;
     bool m_blockService;
 signals:
+    void urlChanged();
+    void statusChanged();
+
+    void activatedChanged();
+
     void rxNetworkChanged();
     void txNetworkChanged();
 

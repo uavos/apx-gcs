@@ -71,7 +71,7 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     connect(this, &NodeItem::titleChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::versionChanged, this, &NodeItem::nodeNotify);
-    connect(this, &NodeItem::statusChanged, this, &NodeItem::nodeNotify);
+    connect(this, &NodeItem::valueChanged, this, &NodeItem::nodeNotify);
 
     //validity
     connect(this, &NodeItem::dictValidChanged, this, &NodeItem::validateDict);
@@ -344,8 +344,8 @@ int NodeItem::loadConfigValues(QVariantMap values)
     }
     //report
     QString sname = title();
-    if (!status().isEmpty())
-        sname.append(QString("-%1").arg(status()));
+    if (!value().toString().isEmpty())
+        sname.append(QString("-%1").arg(value().toString()));
     int cnt = missingValues.size();
     if (cnt > 0) {
         QString s = QString("%1: %2").arg(sname).arg(cnt);
@@ -468,10 +468,10 @@ void NodeItem::groupArrays(NodesBase *group)
     group->bind(action);
     group->setModel(action->model());
 
-    connect(group->child(0), &Fact::statusChanged, group, [group]() {
-        group->setStatus(group->child(0)->status());
+    connect(group->child(0), &Fact::valueChanged, group, [group]() {
+        group->setValue(group->child(0)->value());
     });
-    group->setStatus(group->child(0)->status());
+    group->setValue(group->child(0)->value());
 
     //hide group members
     for (int i = 0; i < group->size(); ++i) {
@@ -490,7 +490,7 @@ void NodeItem::groupArrays(NodesBase *group)
         connect(group, &Fact::modifiedChanged, fRow, [fRow, group]() {
             fRow->setModified(group->modified());
         });
-        connect(fi, &Fact::textChanged, fRow, [fRow, fi]() { fRow->setStatus(fi->text()); });
+        connect(fi, &Fact::valueChanged, fRow, [fRow, fi]() { fRow->setValue(fi->value()); });
         connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
 
         Fact *f_ch = nullptr;
@@ -530,7 +530,7 @@ void NodeItem::groupArrays(NodesBase *group)
 void NodeItem::updateArrayRowDescr(Fact *fRow)
 {
     QStringList st;
-    if (!fRow->status().isEmpty()) {
+    if (!fRow->value().toString().isEmpty()) {
         for (int i = 0; i < fRow->size(); ++i) {
             st.append(fRow->child(i)->text());
         }
@@ -611,7 +611,7 @@ void NodeItem::groupNodes(void)
         sdescr.append("(" + gHW.join(',') + ")");
     if (!sdescr.isEmpty())
         group->setDescr(sdescr.join(' '));
-    group->setStatus(QString("[%1]").arg(group->size()));
+    group->setValue(QString("[%1]").arg(group->size()));
     //group->updateDictValid();
     //group->updateDataValid();
 }

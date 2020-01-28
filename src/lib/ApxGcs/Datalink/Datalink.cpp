@@ -101,7 +101,7 @@ void Datalink::updateStatus()
 {
     int cnt = connections.size();
     if (cnt <= 0) {
-        setStatus("");
+        setValue(QVariant());
     } else {
         int acnt = 0;
         for (int i = 0; i < cnt; ++i) {
@@ -114,7 +114,7 @@ void Datalink::updateStatus()
             if (c->active())
                 acnt++;
         }
-        setStatus(QString("%1/%2").arg(acnt).arg(cnt));
+        setValue(QString("%1/%2").arg(acnt).arg(cnt));
         setActive(acnt > 0);
     }
 }

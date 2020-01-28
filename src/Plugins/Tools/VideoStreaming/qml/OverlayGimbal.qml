@@ -4,8 +4,8 @@ import QtQuick.Layouts 1.12
 ColumnLayout {
     id: control
 
-    property var m_pitch: m[plugin.tune.overlay.gimbal_pitch_var.text]
-    property var m_yaw: m[plugin.tune.overlay.gimbal_yaw_var.text]
+    property var m_pitch: mandala.findChild(plugin.tune.overlay.gimbal_pitch_var.text)
+    property var m_yaw: mandala.findChild(plugin.tune.overlay.gimbal_yaw_var.text)
 
     spacing: width/20
 

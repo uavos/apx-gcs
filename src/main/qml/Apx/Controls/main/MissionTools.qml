@@ -34,7 +34,7 @@ RowLayout {
                 Layout.fillHeight: true
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: missionButton.fontSize(missionButton.bodyHeight/2.3)
-                text: (mission.status)
+                text: (mission.text)
                       +"\n"+(mission.empty?"":mission.waypoints.descr)
             }
         ]

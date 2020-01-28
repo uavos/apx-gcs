@@ -21,7 +21,7 @@ FactMenuPageList {
         parentFact.setValue(v)
         if(v && !parentFact.text){
             //no mandala - save text name only
-            parentFact.status=v
+            parentFact.statusText=v
             parentFact.valueChanged()
         }
     }

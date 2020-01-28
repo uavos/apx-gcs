@@ -147,12 +147,12 @@ Qt::ItemFlags FactTreeModel::flags(const QModelIndex &index) const
     if (index.column() != Fact::FACT_MODEL_COLUMN_VALUE)
         return fx;
     if (f->treeType() == Fact::Group && f->size() > 1 && f->child(0)->treeType() == Fact::Group
-        && f->status().startsWith('[') && f->status().endsWith(']'))
+        && f->value().toString().startsWith('[') && f->value().toString().endsWith(']'))
         return fx | Qt::ItemIsEditable; //array editor
 
     if (f->treeType())
         return fx;
-    if (f->dataType() && f->dataType() != Fact::Const) {
+    if (f->dataType() && f->dataType() != Fact::Count) {
         fx |= Qt::ItemIsEditable;
     }
     return fx;
@@ -183,7 +183,6 @@ void FactTreeModel::checkConnections(Fact *fact) const
         connect(fact, &Fact::itemMoved, this, &FactTreeModel::itemMoved);
 
         connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged);
-        connect(fact, &Fact::statusChanged, this, &FactTreeModel::textChanged);
         connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged);
         connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged);
         connect(fact, &Fact::enabledChanged, this, &FactTreeModel::enabledChanged);

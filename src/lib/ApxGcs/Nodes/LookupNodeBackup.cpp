@@ -53,7 +53,7 @@ bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
     QString version = item->value("version").toString();
     QString title = item->value("title").toString();
     item->insert("title", time);
-    item->insert("status", title);
+    item->insert("value", title);
     item->insert("descr",
                  version == node->version()
                      ? tr("Current release")

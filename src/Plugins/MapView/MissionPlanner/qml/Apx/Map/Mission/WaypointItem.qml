@@ -24,7 +24,7 @@ MissionObject {
     property real f_totalDistance: fact?fact.totalDistance:0
     property int f_time: fact?fact.time:0
     property int f_totalTime: fact?fact.totalTime:0
-    property string actionsText: fact?fact.actions.status:""
+    property string actionsText: fact?fact.actions.text:""
     property real f_course: fact?fact.course:0
     property bool f_first: num === 0
     property bool f_warning: fact?fact.warning:false

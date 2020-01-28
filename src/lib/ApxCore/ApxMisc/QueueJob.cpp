@@ -27,7 +27,7 @@ QueueJob::QueueJob(Fact *parent,
                    const QString &title,
                    const QString &descr,
                    QueueWorker *worker)
-    : Fact(parent, name, title, descr, Group | Const)
+    : Fact(parent, name, title, descr, Group | Count)
     , worker(worker)
 {
     worker->setParent(this);

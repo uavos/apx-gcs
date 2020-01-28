@@ -241,7 +241,7 @@ void VehicleMission::updateStatus()
         s = QString("(%1)").arg(tr("No title"));
     if (sz > 0)
         s.append(QString(" [%1]").arg(sz));
-    setStatus(s.simplified());
+    setValue(s.simplified());
 }
 //=============================================================================
 void VehicleMission::updateStartPath()

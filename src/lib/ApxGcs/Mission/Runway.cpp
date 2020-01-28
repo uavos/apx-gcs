@@ -27,7 +27,7 @@
 #include <App/App.h>
 //=============================================================================
 Runway::Runway(MissionGroup *parent)
-    : MissionItem(parent, "r#", "", tr("Runway"))
+    : MissionItem(parent, "r#", "", "")
 {
     f_type = new MissionField(this, "type", tr("Type"), tr("Landing pattern type"), Enum);
     f_type->setEnumStrings(QMetaEnum::fromType<RunwayType>());
@@ -103,7 +103,7 @@ Runway::Runway(MissionGroup *parent)
 //=============================================================================
 void Runway::updateTitle()
 {
-    setStatus(
+    setValue(
         f_type->text().left(1).toUpper()
         + QString("%1").arg((int) AppRoot::angle360(round(AppRoot::angle360(heading()) / 10.0) * 10)
                                 / 10,
@@ -112,7 +112,7 @@ void Runway::updateTitle()
                             QLatin1Char('0')));
     QStringList st;
     st.append(QString::number(num() + 1));
-    st.append(status());
+    st.append(value().toString());
     st.append(AppRoot::distanceToString(f_approach->value().toInt()));
     if (!f_hmsl->isZero())
         st.append("MSL" + f_hmsl->text());

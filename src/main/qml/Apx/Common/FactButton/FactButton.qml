@@ -31,7 +31,6 @@ CleanButton {
     progress: fact?fact.progress:-1
 
     property string value: fact?fact.text:""
-    property string status: fact?fact.status:""
     property bool active: fact?fact.active:false
     property bool modified: fact?fact.modified:false
 
@@ -53,8 +52,9 @@ CleanButton {
     showText: true
     textAlignment: Text.AlignLeft
 
+    readonly property bool opt_highlight: fact && (fact.options&Fact.HighlightActive)
 
-    highlighted: activeFocus || selected
+    highlighted: activeFocus || selected || (active && opt_highlight)
 
     titleColor: modified?Material.color(Material.Yellow):active?"#A5D6A7":Material.primaryTextColor
 
@@ -68,9 +68,9 @@ CleanButton {
                                   )
     property bool isMandala: dataType===Fact.Mandala
     property bool isScript: dataType===Fact.Script
-    property bool hasValue: dataType && (!isScript)
+    property bool hasValue: dataType || value
 
-    property bool showEditor: hasValue && showText
+    property bool showEditor: hasValue && showText && (!isScript)
     property bool showValue: hasValue && showText
     property bool showNext: expandable
 
@@ -122,13 +122,6 @@ CleanButton {
     property real nextSize: 0.7
 
     contents: [
-        //status
-        Label {
-            text: factButton.status
-            font.family: font_fixed
-            font.pixelSize: fontSize(bodyHeight*statusSize)
-            color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
-        },
         //value
         Loader {
             active: showValue && (!editorItem.active)

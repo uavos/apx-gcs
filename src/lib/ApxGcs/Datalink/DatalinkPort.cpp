@@ -144,29 +144,27 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         switch (f_type->value().toInt()) {
         case SERIAL:
             f_connection = new DatalinkSerial(this, f_url->text(), f_baud->value().toUInt());
+            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSerial *>(f_connection)->setDevName(f_url->text());
+            });
             break;
         case TCP:
             f_connection = new DatalinkRemote(this, datalink, f_url->text());
+            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkRemote *>(f_connection)->setRemoteUrl(f_url->text());
+            });
             break;
         }
         if (f_connection) {
-            f_connection->setDataType(NoFlags);
             f_connection->setEnabled(false);
             connect(this, &Fact::valueChanged, f_connection, [this]() {
-                f_connection->setValue(value());
+                f_connection->setActivated(value().toBool());
             });
-            connect(f_connection, &Fact::statusChanged, this, [this]() {
-                setStatus(f_connection->status());
-            });
-            connect(f_connection, &Fact::valueChanged, this, [this]() {
-                setValue(f_connection->value());
+            connect(f_connection, &DatalinkConnection::activatedChanged, this, [this]() {
+                setValue(f_connection->activated());
             });
             connect(f_connection, &Fact::activeChanged, this, [this]() {
                 setActive(f_connection->active());
-            });
-            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
-                if (qobject_cast<DatalinkRemote *>(f_connection))
-                    qobject_cast<DatalinkRemote *>(f_connection)->setUrl(f_url->text());
             });
             connect(f_routing, &Fact::valueChanged, this, &DatalinkPort::updateConnectionNetwork);
             updateConnectionNetwork();
@@ -178,12 +176,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
 
         //enable switch
         connect(f_enable, &Fact::valueChanged, this, [this]() { setValue(f_enable->value()); });
-
-        connect(this, &Fact::valueChanged, this, [this]() {
-            f_enable->setValue(value());
-            if (f_connection)
-                f_connection->setValue(value());
-        });
+        connect(this, &Fact::valueChanged, this, [this]() { f_enable->setValue(value()); });
         setValue(f_enable->value());
     }
 
@@ -236,13 +229,18 @@ void DatalinkPort::updateStatus()
 
     if (_new)
         return;
-    QString s = f_comment->text();
-    if (s.isEmpty())
-        s = f_url->text();
-    setTitle(QString("%1: %2").arg(f_type->text()).arg(s));
+    QStringList st;
+    if (!f_comment->text().isEmpty())
+        st << f_comment->text();
+
     if (f_connection) {
-        setDescr(QString("%1 (%2)").arg(f_connection->title()).arg(f_routing->value().toString()));
+        st << f_connection->title();
+        setDescr(f_connection->descr());
+    } else {
+        st << f_url->text();
+        setDescr(f_routing->value().toString());
     }
+    setTitle(st.join(": "));
 }
 //=============================================================================
 void DatalinkPort::updateRoutingValue()

@@ -96,7 +96,7 @@ void Area::updateDescr()
         sts.append("T");
     }
     setDescr(st.join(' '));
-    setStatus(sts);
+    setValue(sts);
 }
 //=============================================================================
 QGeoRectangle Area::boundingGeoRectangle() const

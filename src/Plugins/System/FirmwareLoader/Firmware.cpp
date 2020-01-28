@@ -50,14 +50,14 @@ Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
 
     f_releases = new Releases(this);
 
-    f_queue = new Fact(this, "queue", tr("Queue"), tr("Nodes to upgrade"), Section | Const);
+    f_queue = new Fact(this, "queue", tr("Queue"), tr("Nodes to upgrade"), Section | Count);
     f_queue->setIcon("playlist-play");
 
     f_available = new Fact(this,
                            "available",
                            tr("Available"),
                            tr("Upgradable nodes"),
-                           Section | Const);
+                           Section | Count);
     f_available->setIcon("star-circle");
 
     f_upgrade = new Fact(this,
@@ -120,10 +120,10 @@ void Firmware::updateStatus()
     f_stop->setEnabled(act);
     f_upgrade->setEnabled(f_available->size() > 0);
     if (act) {
-        setStatus(QString("%1/%2").arg(queueCnt - f_queue->size()).arg(queueCnt));
+        setValue(QString("%1/%2").arg(queueCnt - f_queue->size()).arg(queueCnt));
     } else {
         queueCnt = 0;
-        setStatus("");
+        setValue("");
     }
 }
 void Firmware::updateProgress()
@@ -179,20 +179,20 @@ void Firmware::nodeNotify(NodeItem *node)
     if (!queued(f_available, node->sn(), Any)) {
         new QueueItem(f_available,
                       node->title(),
-                      node->status(),
+                      node->value().toString(),
                       node->sn(),
                       node->hardware(),
                       node->version(),
                       Any);
         return;
     }
-    if (node->status().isEmpty())
+    if (node->value().toString().isEmpty())
         return;
     for (int i = 0; i < f_available->size(); ++i) {
         QueueItem *f = static_cast<QueueItem *>(f_available->child(i));
         if (f->sn != node->sn())
             continue;
-        f->nodeDescr = node->status();
+        f->nodeDescr = node->value().toString();
         f->updateDescr();
     }
 }

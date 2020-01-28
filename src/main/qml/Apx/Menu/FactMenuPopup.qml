@@ -71,7 +71,7 @@ Popup {
 
         onFactButtonTriggered: {
             if(!fact || (fact.options & Fact.CloseOnTrigger))
-                popup.close()
+                back()
             else popup.raise()
         }
         Connections {

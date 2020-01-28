@@ -4,6 +4,12 @@ import "."
 
 Item {
     id: hdg_window
+
+    readonly property int m_mode: mandala.cmd.op.mode.value
+    readonly property int m_mtype: mandala.est.ctr.mtype.value
+
+
+
     //instrument item
     property double animation_duration: 500
     anchors.left: parent.left
@@ -123,10 +129,10 @@ Item {
         PfdImage {
             id: hdg_rw_bug
             visible:
-                m.mode.value===mode_LANDING ||
-                m.mode.value===mode_TAKEOFF ||
-                m.mode.value===mode_TAXI ||
-                (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
+                m_mode===op_mode_LANDING ||
+                m_mode===op_mode_TAKEOFF ||
+                m_mode===op_mode_TAXI ||
+                (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
             elementName: "hdg-rw-bug"
             property double value: apx.angle(m.tgHDG.value-m.yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
@@ -267,11 +273,11 @@ Item {
     }
 
     property bool isShiftControl:
-        m.mode.value===mode_LANDING ||
-        m.mode.value===mode_TAKEOFF ||
-        m.mode.value===mode_TAXI ||
-        (m.mode.value===mode_WPT && m.mtype.value===mtype_line) ||
-        m.mode.value===mode_STBY
+        m_mode===op_mode_LANDING ||
+        m_mode===op_mode_TAKEOFF ||
+        m_mode===op_mode_TAXI ||
+        (m_mode===op_mode_WPT && m.mtype.value===mtype_line) ||
+        m_mode===op_mode_STBY
 
     MouseArea {
         anchors.fill: parent

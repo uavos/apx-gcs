@@ -136,7 +136,7 @@ void DatabaseSession::updateInfo()
             size.append(" | ");
         size.append(QString("%1 qps").arg(rate));
     }
-    setStatus(size);
+    setValue(size);
     if (rate > 0 || qsz != infoQueueSize)
         evtUpdateInfo.schedule();
     infoQueueSize = qsz;

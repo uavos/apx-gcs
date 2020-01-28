@@ -44,7 +44,7 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent)
     qimp->setIcon("import");
     qimp->setSection(sect);
     connect(qimp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
-    connect(qimp, &Fact::statusChanged, this, &TelemetryShare::updateStatus);
+    connect(qimp, &Fact::valueChanged, this, &TelemetryShare::updateStatus);
 
     connect(qimp, &QueueJob::finished, this, [this](Fact *, QVariantMap result) {
         if (result.value("key").toULongLong()) {
@@ -124,7 +124,7 @@ void TelemetryShare::updateProgress()
 }
 void TelemetryShare::updateStatus()
 {
-    setStatus(qimp->status());
+    setValue(qimp->value());
 }
 void TelemetryShare::updateDescr()
 {
@@ -136,6 +136,6 @@ void TelemetryShare::updateDescr()
     if (s.isEmpty())
         setDescr(descr_s);
     else
-        setDescr(s.append(QString("... %1").arg(status())));
+        setDescr(s.append(QString("... %1").arg(value().toString())));
 }
 //=============================================================================

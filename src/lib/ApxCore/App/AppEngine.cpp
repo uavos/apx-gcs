@@ -33,6 +33,8 @@ AppEngine::AppEngine(QObject *parent)
     addImportPath(AppDirs::userPlugins().absolutePath());
     addImportPath("qrc:/");
 
+    connect(this, &QQmlEngine::warnings, this, &AppEngine::warnings);
+
     // QML types register
     qmlRegisterType<FactQml>("APX.Facts", 1, 0, "Fact");
     qmlRegisterUncreatableType<FactListModel>("APX.Facts",
@@ -294,5 +296,12 @@ QObject *AppEngine::loadQml(const QString &qmlFile, const QVariantMap &opts)
         return nullptr;
     }
     return obj;
+}
+//=============================================================================
+void AppEngine::warnings(const QList<QQmlError> &warnings)
+{
+    for (auto w : warnings) {
+        apxMsgW() << w;
+    }
 }
 //=============================================================================

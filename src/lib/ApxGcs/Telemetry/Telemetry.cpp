@@ -53,7 +53,7 @@ Telemetry::Telemetry(Vehicle *parent)
         f_lookup->f_prev->createAction(this);
         f_lookup->f_next->createAction(this);
         f_reader = new TelemetryReader(f_lookup, this);
-        connect(f_reader, &Fact::statusChanged, this, &Telemetry::updateStatus);
+        connect(f_reader, &Fact::valueChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);
         connect(f_reader,
                 &TelemetryReader::recordFactTriggered,
@@ -63,7 +63,7 @@ Telemetry::Telemetry(Vehicle *parent)
         connect(f_reader, &TelemetryReader::dataAvailable, this, &Telemetry::recordLoaded);
 
         f_player = new TelemetryPlayer(this, this);
-        connect(f_player, &Fact::statusChanged, this, &Telemetry::updateStatus);
+        connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         connect(f_player, &Fact::activeChanged, this, [=]() { setActive(f_player->active()); });
 
         f_share = new TelemetryShare(this, this);
@@ -76,10 +76,10 @@ Telemetry::Telemetry(Vehicle *parent)
 
     } else {
         f_recorder = new TelemetryRecorder(vehicle, this);
-        connect(f_recorder, &Fact::valueChanged, this, [=]() {
-            setActive(f_recorder->value().toBool());
+        connect(f_recorder, &TelemetryRecorder::recordingChanged, this, [this]() {
+            setActive(f_recorder->recording());
         });
-        connect(f_recorder, &Fact::statusChanged, this, &Telemetry::updateStatus);
+        connect(f_recorder, &Fact::valueChanged, this, &Telemetry::updateStatus);
     }
     descr_s = descr();
     updateStatus();
@@ -88,9 +88,10 @@ Telemetry::Telemetry(Vehicle *parent)
 void Telemetry::updateStatus()
 {
     if (f_recorder)
-        setStatus(f_recorder->status());
+        setValue(f_recorder->value());
     if (f_reader)
-        setStatus(QString("%1/%2").arg(f_player->status()).arg(f_reader->status()));
+        setValue(
+            QString("%1/%2").arg(f_player->value().toString()).arg(f_reader->value().toString()));
 }
 void Telemetry::updateProgress()
 {

@@ -47,7 +47,7 @@ void AppRoot::sound(const QString &v)
 void AppRoot::createTools()
 {
     //plugins management facts
-    f_tools = new Fact(this, "tools", tr("Tools"), tr("Application tools"), Group | Const);
+    f_tools = new Fact(this, "tools", tr("Tools"), tr("Application tools"), Group | Count);
     f_tools->setIcon("dialpad");
     f_tools->setVisible(false);
 
@@ -55,11 +55,11 @@ void AppRoot::createTools()
                           "controls",
                           tr("Controls"),
                           tr("Instruments and controls"),
-                          Group | Const);
+                          Group | Count);
     f_controls->setIcon("animation");
     f_controls->setVisible(false);
 
-    f_windows = new Fact(this, "windows", tr("Windows"), tr("Application windows"), Group | Const);
+    f_windows = new Fact(this, "windows", tr("Windows"), tr("Application windows"), Group | Count);
     f_windows->setIcon("monitor");
     f_windows->setVisible(false);
 
@@ -69,7 +69,7 @@ void AppRoot::createTools()
                                  "plugins",
                                  tr("Plugins"),
                                  tr("Application PligIns"),
-                                 Group | Const);
+                                 Group | Count);
     App::jsync(f_settings);
 }
 //=============================================================================

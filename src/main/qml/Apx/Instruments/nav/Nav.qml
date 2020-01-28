@@ -7,6 +7,11 @@ import "../common"
 
 Rectangle {
     id: comm
+
+    readonly property int m_mode: mandala.cmd.op.mode.value
+    readonly property int m_mtype: mandala.est.ctr.mtype.value
+
+
     color: "black"
     property double itemWidth: height*5
     //anchors.fill: parent
@@ -14,10 +19,10 @@ Rectangle {
     anchors.topMargin: 3
 
     property bool isLanding:
-        m.mode.value===mode_LANDING ||
-        m.mode.value===mode_TAKEOFF ||
-        m.mode.value===mode_TAXI ||
-        (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
+        m_mode===op_mode_LANDING ||
+        m_mode===op_mode_TAKEOFF ||
+        m_mode===op_mode_TAXI ||
+        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
 
     //warnings and errors bottom panel
     Text {
@@ -111,7 +116,7 @@ Rectangle {
         }
         CommNum {
             id: dh_text
-            property double v: (m.mode.value===mode_TAXI)?m.delta.value:m.dHome.value
+            property double v: (m_mode===op_mode_TAXI)?m.delta.value:m.dHome.value
             height: parent.height
             label: qsTr("DH")
             value: v>=1000?(v/1000).toFixed(1)+"km":v.toFixed()
@@ -139,7 +144,7 @@ Rectangle {
         }
         CommNum {
             id: wpt_text
-            visible: ui.test || m.mode.value===mode_WPT
+            visible: ui.test || m_mode===op_mode_WPT
             height: parent.height
             label: qsTr("WPT")
             valueColor: "cyan"
@@ -149,7 +154,7 @@ Rectangle {
 
         CommNum {
             id: poi_text
-            visible: ui.test || (m.mode.value===mode_STBY && m.loops.value>0)
+            visible: ui.test || (m_mode===op_mode_STBY && m.loops.value>0)
             height: parent.height
             label: qsTr("LPS")
             valueColor: "cyan"
@@ -168,7 +173,7 @@ Rectangle {
         }
         CommNum {
             id: turnR_text
-            visible: ui.test || m.mode.value===mode_STBY || m.mode.value===mode_LANDING
+            visible: ui.test || m_mode===op_mode_STBY || m_mode===op_mode_LANDING
             property double v: m.turnR.value
             height: parent.height
             label: qsTr("R")

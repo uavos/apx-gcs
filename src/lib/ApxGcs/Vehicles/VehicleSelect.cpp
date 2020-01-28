@@ -53,10 +53,14 @@ void VehicleSelect::addVehicle(Vehicle *vehicle)
 
     connect(f, &Fact::triggered, this, &VehicleSelect::_factTriggered);
 
-    connect(vehicle, &Vehicle::visibleChanged, this, [=]() { f->setVisible(vehicle->visible()); });
-    connect(vehicle, &Vehicle::activeChanged, this, [=]() { f->setActive(vehicle->active()); });
-    connect(vehicle, &Fact::statusChanged, this, [=]() { f->setStatus(vehicle->status()); });
-    connect(vehicle, &Fact::iconChanged, this, [=]() { f->setIcon(vehicle->icon()); });
+    connect(vehicle, &Vehicle::visibleChanged, this, [f, vehicle]() {
+        f->setVisible(vehicle->visible());
+    });
+    connect(vehicle, &Vehicle::activeChanged, this, [f, vehicle]() {
+        f->setActive(vehicle->active());
+    });
+    connect(vehicle, &Fact::valueChanged, this, [f, vehicle]() { f->setValue(vehicle->value()); });
+    connect(vehicle, &Fact::iconChanged, this, [f, vehicle]() { f->setIcon(vehicle->icon()); });
 
     setEnabled(true);
 }
@@ -73,7 +77,7 @@ void VehicleSelect::_vehicleRemoved(Vehicle *vehicle)
 //=============================================================================
 void VehicleSelect::_vehicleSelected(Vehicle *vehicle)
 {
-    setStatus(vehicle->title());
+    setValue(vehicle->title());
 }
 //=============================================================================
 //=============================================================================

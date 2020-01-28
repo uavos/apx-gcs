@@ -29,7 +29,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
            "warnings",
            tr("Warnings"),
            tr("Malfunctions and warnings list"),
-           Group | Const | FlatModel,
+           Group | Count | FlatModel,
            "alert")
     , showNum(0)
 {
@@ -69,7 +69,7 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
             fact = nullptr;
     }
     if (!fact) {
-        fact = new Fact(this, "item#", msg, "", Const);
+        fact = new Fact(this, "item#", msg, "");
         fact->move(0);
         if (size() > 100)
             child(size() - 1)->remove();
@@ -77,13 +77,13 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
         fact->userData = kind;
         switch (kind) {
         case INFO:
-            fact->setStatus(tr("Information"));
+            fact->setIcon("information");
             break;
         case WARNING:
-            fact->setStatus(tr("Warning"));
+            fact->setIcon("alert-circle");
             break;
         case ERROR:
-            fact->setStatus(tr("Error"));
+            fact->setIcon("alert-octagon");
             break;
         }
         fact->setDescr(QDateTime::currentDateTime().toString());

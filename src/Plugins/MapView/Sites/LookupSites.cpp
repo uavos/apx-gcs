@@ -57,7 +57,7 @@ bool LookupSites::fixItemDataThr(QVariantMap *item)
         dist = rc.distanceTo(c);
         if (dist > rd)
             return false;
-        item->insert("status", AppRoot::distanceToString(dist));
+        item->insert("value", AppRoot::distanceToString(dist));
     }
     return true;
 }

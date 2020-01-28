@@ -23,6 +23,7 @@
 #include "NodeField.h"
 #include "NodeItem.h"
 #include "Nodes.h"
+#include <App/AppRoot.h>
 #include <Pawn/PawnCompiler.h>
 #include <Protocols/ProtocolServiceNode.h>
 #include <Vehicles/Vehicles.h>
@@ -114,7 +115,7 @@ NodeField::NodeField(NodeItem *node,
         //check if comment field and bind to node value
         if (name == "comment" || name == "node_label" || (name == "name" && id == 0)) {
             connect(this, &NodeField::textChanged, node, [=]() {
-                node->setStatus(text().trimmed());
+                node->setValue(text().trimmed());
             });
         }
     } else {
@@ -129,13 +130,14 @@ NodeField::NodeField(NodeItem *node,
 //=============================================================================
 void NodeField::updateStatus()
 {
+    QString s;
     if (dtype == DictNode::Vector) {
         QStringList st;
         for (int i = 0; i < size(); ++i) {
             NodeField *f = child<NodeField>(i);
             st.append(f->text());
         }
-        setStatus(QString("(%1)").arg(st.join(',')));
+        s = QString("(%1)").arg(st.join(','));
     } else if (dtype == DictNode::Array) {
         int acnt = 0;
         for (int i = 0; i < size(); ++i) {
@@ -150,42 +152,42 @@ void NodeField::updateStatus()
             acnt++;
         }
         if (acnt > 0)
-            setStatus(QString("[%1/%2]").arg(acnt).arg(size()));
+            s = QString("[%1/%2]").arg(acnt).arg(size());
         else
-            setStatus(QString("[%1]").arg(size()));
+            s = QString("[%1]").arg(size());
     } else if (dtype == DictNode::Script) {
         if (pawncc->error())
-            setStatus("<" + tr("error") + ">");
+            s = "<" + tr("error") + ">";
         else if (value().toString().isEmpty())
-            setStatus("<" + tr("empty") + ">");
+            s = "<" + tr("empty") + ">";
         else
-            setStatus(QString("~%1 Kb").arg((text().size() + pawncc->outData().size()) / 1024.0,
-                                            0,
-                                            'f',
-                                            1));
+            s = QString("~%1").arg(
+                AppRoot::capacityToString(text().size() + pawncc->outData().size()));
     }
+    Fact::setValue(s);
 }
 //=============================================================================
 bool NodeField::setValue(const QVariant &v)
 {
-    if (size() > 0) {
-        //expanded field
+    if (vtype(v, QMetaType::QVariantList)) {
         const QVariantList &values = v.value<QVariantList>();
-        if (values.size() != size())
-            return false;
-        bool rv = false;
-        for (int i = 0; i < size(); ++i) {
-            Fact *f = child(i);
-            rv |= f->setValue(values.at(i));
+        if (size() > 0) {
+            //expanded field
+            if (values.size() != size())
+                return false;
+            bool rv = false;
+            for (int i = 0; i < size(); ++i) {
+                Fact *f = child(i);
+                rv |= f->setValue(values.at(i));
+            }
+            return rv;
         }
-        return rv;
-    }
-    if (dtype == DictNode::Script && vtype(v, QMetaType::QVariantList)) {
-        QVariantList pkg = v.value<QVariantList>();
-        QString src = pkg.value(0).toString();
-        scriptCodeSave = pkg.value(1).toByteArray();
-        //qDebug()<<scriptCodeSave.size();
-        return Fact::setValue(src);
+        if (dtype == DictNode::Script) {
+            QString src = values.value(0).toString();
+            scriptCodeSave = values.value(1).toByteArray();
+            //qDebug()<<scriptCodeSave.size();
+            return Fact::setValue(src);
+        }
     }
     return Fact::setValue(v);
 }
@@ -193,18 +195,18 @@ QVariant NodeField::uploadableValue(void) const
 {
     if (size() > 0) {
         //expanded field
-        QVariantList values;
+        QVariantList list;
         for (int i = 0; i < size(); ++i) {
             Fact *f = child(i);
-            values.append(f->value());
+            list.append(f->value());
         }
-        return values;
+        return list;
     }
     if (dtype == DictNode::Script) {
-        QVariantList pkg;
+        QVariantList list;
         if (!pawncc->outData().isEmpty())
-            pkg << value() << pawncc->outData();
-        return pkg;
+            list << value() << pawncc->outData();
+        return list;
     }
     return value();
 }
@@ -222,11 +224,11 @@ void NodeField::fromString(const QString &s)
     if (dtype == DictNode::Script && (!s.isEmpty())) {
         QByteArray ba = qUncompress(QByteArray::fromHex(s.toUtf8()));
         if (!ba.isEmpty()) {
-            setValue(QString(ba));
+            Fact::setValue(QString(ba));
             return;
         }
     }
-    setValue(s);
+    Fact::setValue(s);
 }
 //=============================================================================
 //=============================================================================

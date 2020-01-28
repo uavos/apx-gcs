@@ -55,7 +55,7 @@ bool LookupConfigs::fixItemDataThr(QVariantMap *item)
     QString title = item->value("title").toString();
     QString notes = item->value("notes").toString();
     item->insert("title", time);
-    item->insert("status", title);
+    item->insert("value", title);
     item->insert("descr", callsign + (notes.isEmpty() ? "" : QString(" - %1").arg(notes)));
     return true;
 }

@@ -20,7 +20,7 @@ KmlOverlay::KmlOverlay(Fact *parent)
     f_open = new Fact(this, "open", tr("Open..."), tr("Open KML file"));
     f_open->setIcon("import");
 
-    f_visible = new Fact(this, "visible", tr("Show overlay"), "", Fact::Bool);
+    f_visible = new Fact(this, "show", tr("Show overlay"), "", Fact::Bool);
     f_visible->setIcon("check");
     f_visible->setValue(true);
 

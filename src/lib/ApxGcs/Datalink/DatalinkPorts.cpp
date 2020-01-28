@@ -38,7 +38,7 @@ DatalinkPorts::DatalinkPorts(Datalink *datalink)
     f_add = new DatalinkPort(this, datalink);
     f_add->setIcon("plus-circle");
 
-    f_list = new Fact(this, "list", tr("Ports"), tr("Configured ports"), Section | Const);
+    f_list = new Fact(this, "list", tr("Ports"), tr("Configured ports"), Section | Count);
     connect(f_list, &Fact::sizeChanged, this, &DatalinkPorts::updateStatus);
 
     load();
@@ -50,7 +50,7 @@ void DatalinkPorts::updateStatus()
 {
     int cnt = f_list->size();
     if (cnt <= 0) {
-        setStatus("");
+        setValue("");
         setActive(false);
     } else {
         int ecnt = 0, acnt = 0;
@@ -61,7 +61,7 @@ void DatalinkPorts::updateStatus()
             if (f->active())
                 acnt++;
         }
-        setStatus(QString("%1/%2/%3").arg(acnt).arg(ecnt).arg(cnt));
+        setValue(QString("%1/%2/%3").arg(acnt).arg(ecnt).arg(cnt));
         setActive(acnt > 0);
     }
 }

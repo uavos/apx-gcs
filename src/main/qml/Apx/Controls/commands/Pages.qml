@@ -6,6 +6,10 @@ import QtQuick.Controls.Material 2.2
 import Apx.Common 1.0
 
 RowLayout {
+
+    readonly property var f_mode: mandala.cmd.op.mode
+
+
     property int buttonHeight: root.buttonHeight*0.9
 
     SwipeView {
@@ -54,7 +58,7 @@ RowLayout {
         }
     }
 
-    property string mode: m.mode.text
+    property string mode: f_mode.text
     onModeChanged: {
         for(var i=0;i<pagesModel.count;++i){
             if(pagesModel.get(i).mode.indexOf(mode)<0) continue

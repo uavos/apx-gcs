@@ -165,7 +165,7 @@ void NodesStorage::saveNodeConfig(NodeItem *node)
         NodeField *f = node->allFieldsByName.value(s);
         values.insert(s, f->toString());
     }
-    qDebug() << "save node config" << node->title() << node->status();
+    qDebug() << "save node config" << node->title() << node->value().toString();
     loading = false;
     DBReqNodesSaveNconf *req = new DBReqNodesSaveNconf(node->dictInfo, values, 0);
     connect(req, &DBReqNodesSaveNconf::nconfFound, node, &NodeItem::setNconfID, Qt::QueuedConnection);
@@ -386,7 +386,7 @@ int NodesStorage::importConfigs(QList<QVariantMap> data)
         if (!node) {
             if (comment.size()) {
                 foreach (NodeItem *i, nodes->nodes())
-                    if (i->title() == node_name && i->status() == comment) {
+                    if (i->title() == node_name && i->value().toString() == comment) {
                         if (nmap.contains(i) && nmap.value(i) <= priority)
                             continue;
                         node = i;
@@ -401,7 +401,7 @@ int NodesStorage::importConfigs(QList<QVariantMap> data)
         if (!node) {
             if (node_name != "servo") {
                 foreach (NodeItem *i, nodes->nodes())
-                    if (i->title() == node_name && i->status().isEmpty()) {
+                    if (i->title() == node_name && i->value().toString().isEmpty()) {
                         if (nmap.contains(i) && nmap.value(i) <= priority)
                             continue;
                         node = i;

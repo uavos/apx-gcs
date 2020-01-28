@@ -62,9 +62,6 @@ Fact::Fact(QObject *parent,
     connect(this, &Fact::optionsChanged, this, &Fact::updateDefaultIcon);
     updateDefaultIcon();
 
-    //number of children in status
-    connect(this, &Fact::sizeChanged, this, &Fact::statusChanged);
-
     if (m_name.contains('#')) {
         connect(this, &Fact::numChanged, this, &Fact::nameChanged);
     }
@@ -177,12 +174,12 @@ QVariant Fact::data(int col, int role) const
     case Fact::FACT_MODEL_COLUMN_NAME:
         return title();
     case Fact::FACT_MODEL_COLUMN_VALUE: {
-        if (dataType() == Script)
-            return status();
+        //if (dataType() == Script)
+        //    return statusText();
         const QString s = text();
         if (s.isEmpty()) {
-            if (!status().isEmpty())
-                return status();
+            //if (!statusText().isEmpty())
+            //    return statusText();
             if (treeType() == Group) {
                 //if(isZero())return tr("default");
                 return QVariant();
@@ -448,7 +445,6 @@ void Fact::bind(FactData *fact)
     m_bind = qobject_cast<Fact *>(fact);
     if (bind()) {
         //connect(m_bind, &Fact::actionsModelChanged, this, &Fact::actionsModelChanged);
-        connect(m_bind, &Fact::statusChanged, this, &Fact::statusChanged);
         connect(m_bind, &Fact::activeChanged, this, &Fact::activeChanged);
         connect(m_bind, &Fact::progressChanged, this, &Fact::progressChanged);
         connect(m_bind, &Fact::enabledChanged, this, &Fact::enabledChanged);
@@ -457,7 +453,6 @@ void Fact::bind(FactData *fact)
     }
     if (rebind) {
         //emit actionsModelChanged();
-        emit statusChanged();
         emit activeChanged();
         emit progressChanged();
         emit enabledChanged();
@@ -503,7 +498,7 @@ QJsonObject Fact::valuesToJson(bool array) const
             v = QJsonValue::fromVariant(f->value());
         else
             v = f->text();
-        bool noData = f->dataType() == NoFlags || f->dataType() == Const;
+        bool noData = f->dataType() == NoFlags || f->dataType() == Count;
         if (f->size() > 0) {
             QJsonObject vo = f->valuesToJson(false);
             if (!noData) {
@@ -745,27 +740,6 @@ void Fact::setSection(const QString &v)
         return;
     m_section = s;
     emit sectionChanged();
-}
-QString Fact::status() const
-{
-    if (bind())
-        return bind()->status();
-    if (treeType() == Group && dataType() == Const && m_status.isEmpty()) {
-        return size() > 0 ? QString::number(size()) : QString();
-    }
-    return m_status;
-}
-void Fact::setStatus(const QString &v)
-{
-    if (bind()) {
-        bind()->setStatus(v);
-        return;
-    }
-    QString s = v.trimmed();
-    if (m_status == s)
-        return;
-    m_status = s;
-    emit statusChanged();
 }
 bool Fact::active() const
 {

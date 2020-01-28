@@ -95,8 +95,8 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
       }break;*/
         case Fact::NoFlags: {
             if (f->treeType() == Fact::Group && f->size() > 1
-                && f->child(0)->treeType() == Fact::Group && f->status().startsWith('[')
-                && f->status().endsWith(']')) {
+                && f->child(0)->treeType() == Fact::Group && f->value().toString().startsWith('[')
+                && f->value().toString().endsWith(']')) {
                 QPushButton *btn = createButton(parent);
                 connect(btn, &QPushButton::clicked, this, [=]() {
                     new FactDelegateArray(f, parent->parentWidget());

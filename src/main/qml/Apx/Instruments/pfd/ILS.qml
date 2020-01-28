@@ -3,13 +3,18 @@ import "../common"
 
 Item {
     id: ils_window
+
+    readonly property int m_mode: mandala.cmd.op.mode.value
+    readonly property int m_mtype: mandala.est.ctr.mtype.value
+
+
     property double anumation_duration: 1000
 
     property bool isRW: ui.test ||
-        m.mode.value===mode_LANDING ||
-        m.mode.value===mode_TAKEOFF ||
-        m.mode.value===mode_TAXI ||
-        (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
+        m_mode===op_mode_LANDING ||
+        m_mode===op_mode_TAKEOFF ||
+        m_mode===op_mode_TAXI ||
+        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
 
     property double sz: (width>height?height:width)*0.6
 
@@ -20,7 +25,7 @@ Item {
     }*/
     PfdImage {
         id: ils_bar_vertical
-        visible: ui.test || m.mode.value===mode_LANDING
+        visible: ui.test || m_mode===op_mode_LANDING
         elementName: "ils-bar-vertical"
         fillMode: Image.PreserveAspectFit
         anchors.left: parent.left

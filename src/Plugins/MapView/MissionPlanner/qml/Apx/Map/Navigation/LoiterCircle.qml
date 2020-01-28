@@ -10,12 +10,12 @@ MapCircle {
     border.width: 2
 
     //Fact bindings
-    property real cmd_east: m.cmd_east.value
-    property real cmd_north: m.cmd_north.value
-    property real home_lat: m.home_lat.value
-    property real home_lon: m.home_lon.value
-    property real turnR: m.turnR.value
-    property real mode: m.mode.value
+    property real cmd_east: mandala.cmd.pos.e.value
+    property real cmd_north: mandala.cmd.pos.n.value
+    property real home_lat: mandala.est.ref.lat.value
+    property real home_lon: mandala.est.ref.lon.value
+    property real turnR: mandala.est.ctr.radius.value
+    property int mode: mandala.cmd.op.mode.value
 
     //calc coordinate
     property variant homeCoord: QtPositioning.coordinate(home_lat,home_lon)
@@ -24,7 +24,7 @@ MapCircle {
 
     center: homeCoord.atDistanceAndAzimuth(distance,azimuth)
     radius: Math.abs(turnR)
-    visible: mode===mode_STBY
+    visible: mode===op_mode_STBY
 
     Behavior on radius { enabled: ui.smooth; NumberAnimation {duration: 100;} }
 }

@@ -26,7 +26,7 @@
 #include <App/App.h>
 //=============================================================================
 Waypoint::Waypoint(MissionGroup *parent)
-    : MissionItem(parent, "w#", "", tr("Waypoint"))
+    : MissionItem(parent, "w#", "", "")
     , icourse(0)
     , m_reachable(false)
     , m_warning(false)
@@ -53,7 +53,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateTitle);
     updateTitle();
 
-    connect(f_actions, &Fact::statusChanged, this, &Waypoint::updateDescr);
+    connect(f_actions, &Fact::valueChanged, this, &Waypoint::updateDescr);
     updateDescr();
 
     App::jsync(this);
@@ -69,7 +69,7 @@ void Waypoint::updateTitle()
 }
 void Waypoint::updateDescr()
 {
-    setDescr(f_actions->status());
+    setDescr(f_actions->value().toString());
 }
 //=============================================================================
 QGeoPath Waypoint::getPath()

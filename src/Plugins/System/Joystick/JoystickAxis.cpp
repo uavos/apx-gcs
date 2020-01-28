@@ -39,10 +39,18 @@ JoystickAxis::JoystickAxis(Fact *parent)
     f_hyst = new Fact(this, "hyst", tr("Hysterezis"), tr("Filter zero position"), Float);
     f_hyst->setMin(0.0);
     f_hyst->setMax(0.8);
-    connect(f_hyst, &Fact::valueChanged, this, [this]() {
-        setDescr(QString("%1: %2").arg(f_hyst->name()).arg(f_hyst->text()));
-        _hyst = f_hyst->value().toDouble();
-    });
+    connect(f_hyst, &Fact::valueChanged, this, [this]() { _hyst = f_hyst->value().toDouble(); });
+    connect(f_hyst, &Fact::valueChanged, this, &JoystickAxis::updateDescr);
+}
+//=============================================================================
+void JoystickAxis::updateDescr()
+{
+    QStringList st;
+    if (f_hyst->value().toDouble() != 0.0)
+        st << QString("%1: %2").arg(f_hyst->name()).arg(f_hyst->text());
+    if (_value != 0.0)
+        st << QString("value: %1").arg(QString::number(_value, 'f', 2));
+    setDescr(st.join(' '));
 }
 //=============================================================================
 void JoystickAxis::update(qreal v)
@@ -59,7 +67,9 @@ void JoystickAxis::update(qreal v)
         return;
 
     _value = v;
-    setStatus(QString::number(v, 'f', 2).append(" > "));
+    setActive(v != 0.0);
+    updateDescr();
+    //setStatusText(QString::number(v, 'f', 2).append(" > "));
     QString s = text().simplified();
     if (s.isEmpty())
         return;

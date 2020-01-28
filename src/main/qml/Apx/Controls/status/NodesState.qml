@@ -29,8 +29,8 @@ Rectangle {
             implicitWidth: itemWidth
             implicitHeight: itemHeight
             fact: modelData
-            descr: fact?fact.status+"\n"+fact.descr:""
-            value: fact?fact.status:"" //.startsWith('[')?fact.size:""
+            descr: fact?fact.text+"\n"+fact.descr:""
+            value: fact?fact.text:"" //.startsWith('[')?fact.size:""
             valueScale: 0.7
             valueColor: titleColor
             enabled: true
@@ -52,7 +52,7 @@ Rectangle {
             implicitWidth: itemWidth
             implicitHeight: itemHeight
             fact: apx.vehicles.current.nodes
-            value: fact.status
+            value: fact.text
             valueScale: 0.7
             enabled: true
             onTriggered: {

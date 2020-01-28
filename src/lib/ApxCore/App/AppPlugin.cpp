@@ -260,7 +260,7 @@ bool AppPlugin::checkLib(const QString &fname)
         m_errorString = proc.readAllStandardError();
         apxMsgW() << "Error loading plugin:" << name;
         apxMsgW() << m_errorString;
-        f_enabled->setStatus(tr("error").toUpper());
+        f_enabled->setTitle(QString("%1 (%2)").arg(f_enabled->title()).arg(tr("error").toUpper()));
         return false;
     }
     spt.setValue(sptKey, name);

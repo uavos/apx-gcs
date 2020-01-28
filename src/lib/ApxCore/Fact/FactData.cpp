@@ -35,11 +35,13 @@ FactData::FactData(
     , m_title()
     , m_descr()
 {
+    connect(this, &FactData::valueChanged, this, &FactData::textChanged);
+    connect(this, &FactData::precisionChanged, this, &FactData::textChanged);
+
     connect(this, &FactData::enumStringsChanged, this, &FactData::textChanged, Qt::QueuedConnection);
 
     connect(this, &FactData::dataTypeChanged, this, &FactData::defaults);
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);
-    connect(this, &FactData::dataTypeChanged, this, &FactData::textChanged);
 
     connect(this, &FactData::optionsChanged, this, &FactData::getPresistentValue);
     connect(this, &FactData::pathChanged, this, &FactData::getPresistentValue);
@@ -68,6 +70,13 @@ void FactData::setDataType(FactBase::Flag v)
     if (m_dataType == v)
         return;
     m_dataType = v;
+
+    if (v == Count) {
+        connect(this, &FactBase::sizeChanged, this, &FactData::valueChanged);
+    } else {
+        disconnect(this, &FactBase::sizeChanged, this, &FactData::valueChanged);
+    }
+
     emit dataTypeChanged();
 }
 //=============================================================================
@@ -75,6 +84,9 @@ QVariant FactData::value(void) const
 {
     if (bindedFactData)
         return bindedFactData->value();
+    if (dataType() == Count && m_value.isNull()) {
+        return size() > 0 ? QString::number(size()) : QString();
+    }
     return m_value;
 }
 //=============================================================================
@@ -93,7 +105,6 @@ bool FactData::setValue(const QVariant &v)
         savePresistentValue();
 
     emit valueChanged();
-    emit textChanged();
     return true;
 }
 bool FactData::updateValue(const QVariant &v)
@@ -457,7 +468,6 @@ void FactData::setPrecision(const int &v)
         return;
     m_precision = v;
     emit precisionChanged();
-    emit textChanged();
 }
 QVariant FactData::min(void) const
 {
@@ -718,7 +728,6 @@ void FactData::bind(FactData *fact)
     bindedFactData = fact;
     if (bindedFactData) {
         connect(fact, &FactData::valueChanged, this, &FactData::valueChanged);
-        connect(fact, &FactData::textChanged, this, &FactData::textChanged);
         connect(fact, &FactData::enumStringsChanged, this, &FactData::enumStringsChanged);
         connect(fact, &FactData::dataTypeChanged, this, &FactData::dataTypeChanged);
         connect(fact, &FactData::modifiedChanged, this, &FactData::modifiedChanged);
@@ -734,7 +743,6 @@ void FactData::bind(FactData *fact)
     }
     if (rebind) {
         emit valueChanged();
-        emit textChanged();
         emit enumStringsChanged();
         emit dataTypeChanged();
         emit modifiedChanged();
@@ -766,7 +774,6 @@ void FactData::loadPresistentValue()
     if (!updateValue(v))
         return;
     emit valueChanged();
-    emit textChanged();
 }
 void FactData::savePresistentValue()
 {

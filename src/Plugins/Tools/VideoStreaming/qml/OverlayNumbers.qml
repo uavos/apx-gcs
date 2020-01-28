@@ -10,6 +10,21 @@ import APX.Facts 1.0
 Item {
     id: control
 
+    readonly property var f_time: mandala.est.sys.time
+    readonly property var f_gimbal_mode: mandala.cmd.gimbal.mode
+    readonly property var f_zoom: mandala.cmd.cam.zoom
+    readonly property var f_focus: mandala.cmd.cam.focus
+    readonly property var f_ch: mandala.cmd.cam.ch
+    readonly property var f_PF: mandala.cmd.cam.pf
+    readonly property var f_NIR: mandala.cmd.cam.nir
+    readonly property var f_FM: mandala.cmd.cam.fm
+    readonly property var f_FT: mandala.cmd.cam.ft
+    readonly property var f_RNG: mandala.cmd.cam.range
+
+    readonly property real m_lat: mandala.est.cam.lat.value
+    readonly property real m_lon: mandala.est.cam.lon.value
+    readonly property real m_hmsl: mandala.est.cam.hmsl.value
+
     property bool interactive: false
     property bool alive: true
 
@@ -94,7 +109,7 @@ Item {
         FactValue {
             id: timeItem
             Layout.fillHeight: true
-            fact: m.gps_time
+            fact: f_time
             title: gps?"GPS":"LOCAL"
             value: apx.dateToString(time)
             property bool gps: false
@@ -150,9 +165,9 @@ Item {
         anchors.margins: control.margins
         height: overlayItemSize
         showTitle: false
-        property real lat: m.cam_lat.value
-        property real lon: m.cam_lon.value
-        property real hmsl: m.cam_hmsl.value
+        property real lat: m_lat
+        property real lon: m_lon
+        property real hmsl: m_hmsl
         visible: lat!=0 && lon!=0 && (tposTimeout.running||active)
         value: apx.latToString(lat)+" "+apx.lonToString(lon)+(hmsl!=0?" "+apx.distanceToString(hmsl, false):"")
 
@@ -176,7 +191,7 @@ Item {
         anchors.top: parent.top
         anchors.margins: control.margins
         height: overlayItemSize
-        fact: m.cam_mode
+        fact: f_gimbal_mode
         showTitle: false
         valueText: fact.text
         enabled: interactive
@@ -200,15 +215,15 @@ Item {
                     id: listView
                     implicitHeight: contentHeight
                     implicitWidth: contentWidth
-                    model: m.cam_mode.enumStrings
+                    model: f_gimbal_mode.enumStrings
                     highlightMoveDuration: 0
                     delegate: ItemDelegate {
                         text: modelData
                         width: Math.max(listView.width,implicitWidth)
-                        highlighted: text===m.cam_mode.text
+                        highlighted: text===f_gimbal_mode.text
                         onClicked: {
                             popup.close()
-                            m.cam_mode.value=text
+                            f_gimbal_mode.value=text
                         }
                     }
                     ScrollIndicator.vertical: ScrollIndicator { }
@@ -241,7 +256,7 @@ Item {
 
         FactValue {
             Layout.fillHeight: true
-            fact: m.cam_zoom
+            fact: f_zoom
             title: "zoom"
             valueText: (fact.value*100).toFixed()
             visible: value>0
@@ -250,7 +265,7 @@ Item {
         }
         FactValue {
             Layout.fillHeight: true
-            fact: m.cam_focus
+            fact: f_focus
             title: "focus"
             valueText: (fact.value*100).toFixed()
             visible: value>0
@@ -259,7 +274,7 @@ Item {
         }
         FactValue {
             Layout.fillHeight: true
-            fact: m.cam_ch
+            fact: f_ch
             title: "ch"
             visible: value>0
             onValueChanged: if(value>0)visible=true
@@ -269,19 +284,18 @@ Item {
 
         Repeater {
             model: [
-                m.cam_opt_PF,
-                m.cam_opt_NIR,
-                m.cam_opt_DSP,
-                m.cam_opt_FMI,
-                m.cam_opt_FM,
-                m.cam_opt_laser,
+                f_PF,
+                f_NIR,
+                f_FM,
+                f_FT,
+                f_RNG,
             ]
             delegate: FactValue {
                 Layout.fillHeight: true
                 fact: modelData
                 showTitle: false
                 value: fact.value
-                valueText: fact.title.slice(fact.title.lastIndexOf("_")+1)
+                valueText: fact.name //.slice(fact.title.lastIndexOf("_")+1)
                 visible: value
                 onValueChanged: if(value)visible=true
                 enabled: interactive

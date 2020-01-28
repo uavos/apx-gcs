@@ -57,7 +57,7 @@ void Format::nodeNotify(NodeItem *node)
     QStringList n;
     n << node->title();
     n << node->descr();
-    n << node->status();
+    n << node->value().toString();
     n.removeAll("");
     QString sTitle = n.join(' ');
 

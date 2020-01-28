@@ -27,7 +27,7 @@
 #include <QGeoCircle>
 //=============================================================================
 Poi::Poi(MissionGroup *parent)
-    : MissionItem(parent, "p#", "", tr("Point of interest"))
+    : MissionItem(parent, "p#", "", "")
 {
     f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
     f_hmsl->setUnits("m");
@@ -96,7 +96,7 @@ void Poi::updateDescr()
         sts.append("T");
     }
     setDescr(st.join(' '));
-    setStatus(sts);
+    setValue(sts);
 }
 //=============================================================================
 QGeoRectangle Poi::boundingGeoRectangle() const

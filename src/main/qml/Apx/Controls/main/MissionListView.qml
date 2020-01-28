@@ -45,8 +45,16 @@ ColumnLayout {
                 nextSize: 1
 
                 fact: modelData
-                toolTip: fact?fact.status:""
-                status: ""
+                toolTip: fact?fact.descr:""
+                value: ""
+                descr: {
+                    if(!fact)return ""
+                    return fact.descr.split(',').map(function(s){
+                        var i=s.indexOf('=')
+                        if(i<0)return s
+                        return s.slice(0,Math.min(3,i)).toUpperCase()
+                    }).join(' ')
+                }
                 showNext: (fact && fact.selected)?true:false
                 active: false
 

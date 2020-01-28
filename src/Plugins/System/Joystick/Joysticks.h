@@ -65,6 +65,8 @@ private:
 
 private slots:
     void updateStatus();
+    void updateEnabled();
+    void watcherFinished();
 
     void update();
     void scan();

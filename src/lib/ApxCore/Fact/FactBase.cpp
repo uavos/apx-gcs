@@ -57,6 +57,9 @@ void FactBase::addChild(FactBase *item)
     }
     if (contains(item))
         return;
+    if (property(item->name().toUtf8()).isValid()) {
+        qWarning() << "Property override:" << path() << item->name();
+    }
     emit itemToBeInserted(count(), item);
     append(item);
     updateChildrenNums();

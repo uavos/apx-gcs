@@ -82,7 +82,7 @@ TileLoader::~TileLoader()
 void TileLoader::updateStatus()
 {
     int cnt = requestCount();
-    setStatus(cnt > 0 ? QString::number(cnt) : "");
+    setValue(cnt > 0 ? QString::number(cnt) : "");
     setProgress(cnt > 0 ? 0 : -1);
 }
 //=============================================================================

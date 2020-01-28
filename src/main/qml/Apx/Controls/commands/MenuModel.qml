@@ -4,35 +4,42 @@ import APX.Facts 1.0
 
 Fact {
     Fact {
-        title: qsTr("Controls")
+        title: mandala.ctr.title
         icon: "dip-switch"
-        Fact { title: qsTr("Parking brake"); bind: m.ctr_brake; flags: Fact.Bool; }
-        Fact { title: qsTr("Flaps"); bind: m.ctr_flaps; flags: Fact.Bool; }
-        Fact { title: qsTr("Interceptors"); bind: m.ctr_airbrk; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.str.brake; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.wing.flaps; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.wing.airbrk; flags: Fact.Bool; }
         Fact {
-            title: qsTr("Lights")
-            Fact { title: qsTr("Navigation"); bind: m.sw_lights; flags: Fact.Bool; }
-            Fact { title: qsTr("Taxi"); bind: m.sw_taxi; flags: Fact.Bool; }
+            title: mandala.ctr.light.title
+            Fact { bind: mandala.ctr.light.nav; flags: Fact.Bool; }
+            Fact { bind: mandala.ctr.light.taxi; flags: Fact.Bool; }
+            Fact { bind: mandala.ctr.light.strobe; flags: Fact.Bool; }
+            Fact { bind: mandala.ctr.light.beacon; flags: Fact.Bool; }
+            Fact { bind: mandala.ctr.light.landing; flags: Fact.Bool; }
         }
     }
     Fact {
-        title: qsTr("Engine")
+        title: mandala.ctr.eng.title
         icon: "engine"
-        Fact { title: qsTr("Mixture"); bind: m.ctr_mixture; flags: Fact.Bool; }
-        Fact { title: qsTr("Ignition"); bind: m.power_ignition; flags: Fact.Bool; }
-        Fact { title: qsTr("Cut throttle"); bind: m.cmode_thrcut; flags: Fact.Bool; }
-        Fact { title: qsTr("Override throttle"); bind: m.cmode_throvr; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.eng.choke; flags: Fact.Bool; }
+        Fact { bind: mandala.cmd.opt.thrcut; flags: Fact.Bool; }
+        Fact { bind: mandala.cmd.opt.throvr; flags: Fact.Bool; }
         Fact { enabled: false }
-        Fact { title: qsTr("Start engine"); bind: m.ctrb_starter; flags: Fact.Bool; active: m.sw_starter.value; }
+        Fact { bind: mandala.ctr.pwr.ignition; flags: Fact.Bool; }
+        Fact { bind: mandala.sns.btn.starter; flags: Fact.Bool; active: mandala.ctr.sw.starter.value; }
     }
     Fact {
-        title: qsTr("Power")
+        title: mandala.ctr.pwr.title
         icon: "power-standby"
-        Fact { title: qsTr("Payload"); bind: m.power_payload; flags: Fact.Bool; }
-        Fact { title: qsTr("XPDR"); bind: m.power_xpdr; flags: Fact.Bool; }
-        Fact { title: qsTr("AGL"); bind: m.power_agl; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.payload; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.xpdr; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.agl; flags: Fact.Bool; }
         Fact { enabled: false }
-        Fact { title: qsTr("Servo"); bind: m.power_servo; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.servo; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.satcom; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.rfamp; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.ice; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.pwr.las; flags: Fact.Bool; }
     }
     Fact {
         title: qsTr("Service")
@@ -44,13 +51,13 @@ Fact {
             Fact { enabled: false }
             Fact { title: qsTr("Reset AHRS filter"); descr: "ahrs()"; onTriggered: application.jsexec(descr); }
             Fact { enabled: false }
-            Fact { title: m.cmode_ahrs.descr; bind: m.cmode_ahrs; flags: Fact.Bool; }
+            Fact { bind: mandala.cmd.opt.ahrs }
         }
     }
     Fact {
         title: qsTr("Emergency")
         icon: "alert-box"
-        Fact { title: qsTr("ERS"); bind: m.ctrb_ers; flags: Fact.Bool; }
-        Fact { title: qsTr("Release"); bind: m.ctrb_rel; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.ers.launch; flags: Fact.Bool; }
+        Fact { bind: mandala.ctr.ers.rel; flags: Fact.Bool; }
     }
 }

@@ -100,7 +100,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &Fact::numChanged, this, &MissionItem::updateTitle);
     updateTitle();
 
-    //status totals
+    //totals
     connect(this, &MissionItem::timeChanged, group, &MissionGroup::updateTime);
     connect(this, &MissionItem::distanceChanged, group, &MissionGroup::updateDistance);
 
@@ -131,12 +131,12 @@ void MissionItem::updateStatus()
     uint d = totalDistance();
     uint t = totalTime();
     if ((d | t) == 0)
-        setStatus(QString());
+        setValue(QVariant());
     else {
         QStringList st;
         st.append(AppRoot::distanceToString(d));
         st.append(AppRoot::timeToString(t, false));
-        setStatus(st.join(' '));
+        setValue(st.join(' '));
     }
 }
 //=============================================================================

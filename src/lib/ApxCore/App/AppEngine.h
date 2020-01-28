@@ -57,6 +57,9 @@ protected:
 private:
     void jsRegisterFunctions();
     void jsSetProperty(QJSValue parent, const QString &name, QJSValue v);
+
+private slots:
+    void warnings(const QList<QQmlError> &warnings);
 };
 //=============================================================================
 #endif

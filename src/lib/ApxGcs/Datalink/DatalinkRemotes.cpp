@@ -64,7 +64,7 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     f_connect = new Fact(f_add, "connect", tr("Connect"), "", Action | Apply | CloseOnTrigger);
     connect(f_connect, &Fact::triggered, this, &DatalinkRemotes::connectTriggered);
 
-    f_servers = new Fact(this, "servers", tr("Servers"), tr("Found servers"), Section | Const);
+    f_servers = new Fact(this, "servers", tr("Servers"), tr("Found servers"), Section | Count);
     connect(f_servers, &Fact::sizeChanged, this, &DatalinkRemotes::updateStatus);
 
     f_alloff = new Fact(this,
@@ -167,9 +167,9 @@ void DatalinkRemotes::updateStatus()
     setActive(cnt > 0);
 
     if (f_servers->size() > 0)
-        setStatus(QString("%1/%2").arg(cnt).arg(f_servers->size()));
+        setValue(QString("%1/%2").arg(cnt).arg(f_servers->size()));
     else
-        setStatus(QString());
+        setValue(QVariant());
 }
 //=============================================================================
 void DatalinkRemotes::connectTriggered()

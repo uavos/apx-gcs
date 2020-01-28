@@ -15,15 +15,15 @@ MapCircle {
     property color cLoosing: "#A0FF0000"
 
     //Fact bindings
-    property real lat: m.gps_lat.value
-    property real lon: m.gps_lon.value
-    property real altitude: m.altitude.value
-    property real ldratio: m.ldratio.value
-    property real windHdg: m.windHdg.value
-    property real windSpd: m.windSpd.value
-    property real airspeed: m.airspeed.value
-    property real cas2tas: m.cas2tas.value
-    property real venergy: m.venergy.value
+    property real lat: mandala.est.pos.lat.value
+    property real lon: mandala.est.pos.lon.value
+    property real altitude: mandala.est.air.altitude.value
+    property real ldratio: mandala.est.calc.ld.value
+    property real windHdg: mandala.est.calc.whdg.value
+    property real windSpd: mandala.est.calc.wspd.value
+    property real airspeed: mandala.est.air.airspeed.value
+    property real cas2tas: mandala.est.calc.ktas.value
+    property real venergy: mandala.est.calc.venergy.value
 
     //calculate Energy Circle
     property int range: altitude*ldratio

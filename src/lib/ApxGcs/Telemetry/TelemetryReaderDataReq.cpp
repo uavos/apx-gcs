@@ -58,7 +58,7 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
                         "events",
                         tr("Events"),
                         tr("Recorded events data"),
-                        Fact::Group | Fact::Const);
+                        Fact::Group | Fact::Count);
     f_events->moveToThread(nullptr);
 
     for (int i = 0; i < records.values.size(); ++i) {
@@ -201,13 +201,13 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
 {
     Fact *g = f_events->child(name);
     if (!g)
-        g = new Fact(f_events, name, "", "", Fact::Group | Fact::Const);
+        g = new Fact(f_events, name, "", "", Fact::Group | Fact::Count);
 
     Fact *f = nullptr;
     if (name == "uplink") {
         f = g->child(value);
         if (!f) {
-            f = new Fact(g, value, "", "", Fact::Const);
+            f = new Fact(g, value, "", "");
             //qDebug() << name << value;
             f->setValue(1);
         } else {
@@ -216,7 +216,7 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
     } else if (name == "serial") {
         f = g->child(uid);
         if (!f) {
-            f = new Fact(g, uid, "", "", Fact::Const);
+            f = new Fact(g, uid, "", "");
             //qDebug() << name << value;
             f->setValue(1);
         } else {
@@ -238,7 +238,7 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
         }
         f = new Fact(g, name + "#", title, descr);
         QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
-        f->setStatus(stime);
+        f->setValue(stime);
     }
 
     if (!f)

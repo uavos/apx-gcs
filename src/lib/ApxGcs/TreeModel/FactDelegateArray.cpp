@@ -241,9 +241,7 @@ QVariant FactDelegateArrayModel::headerData(int section, Qt::Orientation orienta
     if (role == Qt::DisplayRole) {
         QString s = f->title();
         if (bNodesGroup)
-            return f->status().isEmpty()
-                       ? s
-                       : f->status(); //QString("%1 (%2)").arg(s).arg(f->status());
+            return f->value().toString().isEmpty() ? s : f->value().toString();
         return s.contains('_') ? s.mid(s.lastIndexOf('_') + 1) : s;
     }
     if (role == Qt::ToolTipRole)

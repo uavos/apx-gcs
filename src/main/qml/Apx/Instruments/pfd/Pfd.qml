@@ -9,6 +9,11 @@ import "../common"
 
 Item {
     id: pfd
+
+    readonly property var f_mode: mandala.cmd.op.mode
+    readonly property int m_mode: f_mode.value
+
+
     //anchors.fill: parent
     clip: true
 
@@ -74,12 +79,12 @@ Item {
             anchors.left: parent.horizontalCenter
             anchors.right: right_window.left
             anchors.topMargin: pfdScene.flagHeight*1.5
-            text: m.mode.text
+            text: f_mode.text
             font.pixelSize: pfdScene.txtHeight
             horizontalAlignment: Text.AlignHCenter
             //verticalAlignment: Text.AlignVCenter
             font.family: font_narrow
-            ToolTipArea { text: m.mode.descr }
+            ToolTipArea { text: f_mode.descr }
         }
 
 
@@ -413,7 +418,7 @@ Item {
                 toolTip: m.stab.descr
             }
             Flag {
-                show: m.mode.value<mode_UAV && m.error_gyro.value > 0
+                show: m_mode<op_mode_UAV && m.error_gyro.value > 0
                 blinking: true
                 height: pfdScene.flagHeight
                 flagColor: "red"

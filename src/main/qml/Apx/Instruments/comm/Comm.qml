@@ -34,10 +34,10 @@ Rectangle {
             value: apx.vehicles.current.telemetry.active
             toolTip: qsTr("Enable recording")
             MouseArea {
-                enabled: apx.vehicles.current.telemetry.recorder.value?true:false
+                enabled: apx.vehicles.current.telemetry.recorder?true:false
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: apx.vehicles.current.telemetry.recorder.value=!apx.vehicles.current.telemetry.recorder.value
+                onClicked: apx.vehicles.current.telemetry.recorder.recording=!apx.vehicles.current.telemetry.recorder.recording
             }
         }
 
@@ -47,7 +47,7 @@ Rectangle {
             anchors.bottom: parent.bottom
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
-            text: apx.vehicles.current.telemetry.status
+            text: apx.vehicles.current.telemetry.text
             font.pixelSize: parent.height   //*0.99
             font.family: font_narrow
             color: apx.vehicles.current.telemetry.active?"#5f5":"gray"

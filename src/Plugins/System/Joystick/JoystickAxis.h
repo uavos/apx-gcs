@@ -42,6 +42,9 @@ public:
 private:
     qreal _value;
     qreal _hyst;
+
+private slots:
+    void updateDescr();
 };
 //=============================================================================
 #endif

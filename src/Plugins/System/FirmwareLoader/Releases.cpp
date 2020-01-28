@@ -26,7 +26,7 @@
 #include <JlCompress.h>
 //=============================================================================
 Releases::Releases(Fact *parent)
-    : Fact(parent, "releases", tr("Releases"), tr("Available firmware packages"), Group | Const)
+    : Fact(parent, "releases", tr("Releases"), tr("Available firmware packages"), Group | Count)
     , f_current(nullptr)
     , f_dev(nullptr)
     , reply(nullptr)
@@ -126,12 +126,12 @@ void Releases::makeReleaseFact(const QDir &dir)
         f_sync->setEnabled(false);
     }
     f_current->setTitle(dir.dirName());
-    f_current->setStatus(QString::number(dir.entryList().size()));
+    f_current->setValue(QString::number(dir.entryList().size()));
     makeReleaseFactDo(f_current, dir);
 
     if (!f_dev && !devDir().entryList().isEmpty()) {
         f_dev = new Fact(this, "dev", "Development", "", Group);
-        f_dev->setStatus(QString::number(devDir().entryList().size()));
+        f_dev->setValue(QString::number(devDir().entryList().size()));
         makeReleaseFactDo(f_dev, devDir());
     }
 }
@@ -157,7 +157,7 @@ void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
                            fi.completeBaseName().toLower(),
                            QString("%1: %2").arg(f_ng->title()).arg(f_hw->title()),
                            fi.completeBaseName());
-        f->setStatus("APXFW");
+        f->setValue("APXFW");
     }
 }
 //=============================================================================
@@ -688,7 +688,7 @@ bool Releases::loadFileMHX(QString ver, QByteArray *data)
     }
     if (fileName.isEmpty())
         return false;
-    setStatus(tr("Loading file") + "...");
+    setValue(tr("Loading file") + "...");
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly)) {
         qWarning("%s",

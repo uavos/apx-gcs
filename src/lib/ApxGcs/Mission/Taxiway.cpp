@@ -25,7 +25,7 @@
 #include <App/App.h>
 //=============================================================================
 Taxiway::Taxiway(MissionGroup *parent)
-    : MissionItem(parent, "t#", "", tr("Taxiway"))
+    : MissionItem(parent, "t#", "", "")
 {
     //title
     connect(this, &Taxiway::distanceChanged, this, &Taxiway::updateTitle);

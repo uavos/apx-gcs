@@ -25,7 +25,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property real f_course: vm.course.value
     property real f_windHdg: vm.windHdg.value
     property real f_windSpd: vm.windSpd.value
-    property bool f_LDTO: vm.mode.value === mode_LANDING || vm.mode.value === mode_TAKEOFF
+    property bool f_LDTO: vm.mode.value === op_mode_LANDING || vm.mode.value === op_mode_TAKEOFF
 
     visible: vehicle.visible
 

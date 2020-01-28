@@ -10,12 +10,12 @@ MapCircle {
     radius: 50
 
     //Fact bindings
-    property real lat: m.gps_lat.value
-    property real lon: m.gps_lon.value
-    property real gSpeed: m.gSpeed.value
-    property real course: m.course.value
-    property real altitude: m.altitude.value
-    property real gps_Vdown: m.gps_Vdown.value
+    property real lat: mandala.est.pos.lat.value
+    property real lon: mandala.est.pos.lon.value
+    property real altitude: mandala.est.air.altitude.value
+    property real gSpeed: mandala.est.calc.speed.value
+    property real course: mandala.est.calc.course.value
+    property real gps_Vdown: mandala.est.rel.vd.value
 
     //calculate Energy Circle based on Ground Speed and descending rate
     property bool gPerfOk: gSpeed>0.5 && gps_Vdown>0.5

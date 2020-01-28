@@ -81,6 +81,15 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
         new Fact(f_hats, QString("hat%1_d").arg(i), QString::number(i + 1) + "_DOWN", "", Text);
         new Fact(f_hats, QString("hat%1_l").arg(i), QString::number(i + 1) + "_LEFT", "", Text);
     }
+    for (auto f : *f_buttons) {
+        static_cast<Fact *>(f)->setOption(HighlightActive);
+    }
+    for (auto f : *f_hats) {
+        static_cast<Fact *>(f)->setOption(HighlightActive);
+    }
+    for (auto f : *f_axes) {
+        static_cast<Fact *>(f)->setOption(HighlightActive);
+    }
 
     devName = SDL_JoystickName(dev);
     setTitle(devName);
@@ -131,7 +140,6 @@ void Joystick::updateDevice(bool connected)
             }
             instanceID = SDL_JoystickInstanceID(dev);
         }
-        setStatus(tr("Connected"));
         if (value().toBool())
             setActive(true);
     } else {
@@ -140,7 +148,6 @@ void Joystick::updateDevice(bool connected)
         }
         dev = nullptr;
         device_index = -1;
-        setStatus("");
         setActive(false);
     }
 }
@@ -155,7 +162,7 @@ void Joystick::updateButton(int i, bool v)
     Fact *f = f_buttons->child(i);
     if (!f)
         return;
-    f->setStatus(v ? tr("Pressed").toUpper().append(" > ") : "");
+    f->setActive(v);
     if (!v)
         return;
     QString s = f->text().simplified();
@@ -172,7 +179,7 @@ void Joystick::updateHat(int i, quint8 v)
         Fact *f = f_hats->child(i * 4 + j);
         if (!f)
             continue;
-        f->setStatus(b ? tr("Pressed").toUpper().append(" > ") : "");
+        f->setActive(b);
         if (!b)
             continue;
         QString s = f->text().simplified();

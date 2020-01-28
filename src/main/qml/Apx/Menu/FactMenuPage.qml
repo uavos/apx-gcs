@@ -18,7 +18,7 @@ ColumnLayout {
 
     property string pageTitle: fact.title
     property string pageDescr: fact.descr
-    property string pageStatus: fact.status
+    property string pageStatus: fact.text
 
     Component.onCompleted: {
         pageLoader.source=pageSource()

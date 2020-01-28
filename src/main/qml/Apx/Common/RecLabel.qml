@@ -30,7 +30,7 @@ Item {
         font.pixelSize: Math.max(8,control.height)
         verticalAlignment: Text.AlignVCenter
         color: ((!replay) && active && fact.time>=(4*60*60))?"#FF9800":"#fff"
-        text: fact.status
+        text: fact.text
     }
     Rectangle {
         anchors.fill: control;
@@ -46,7 +46,7 @@ Item {
         enabled: fact.enabled && (!replay)
         hoverEnabled: enabled
         cursorShape: enabled?Qt.PointingHandCursor:Qt.ArrowCursor
-        onClicked: fact.recorder.value=!fact.recorder.value
+        onClicked: fact.recorder.recording=!fact.recorder.recording
         ToolTip {
             delay: 1500
             timeout: 5000

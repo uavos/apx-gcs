@@ -45,7 +45,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     share = telemetry->f_share;
 
     connect(lookup, &LookupTelemetry::recordIdChanged, this, &TelemetryFrame::resetPlot);
-    connect(lookup, &LookupTelemetry::statusChanged, this, &TelemetryFrame::updateStats);
+    connect(lookup, &LookupTelemetry::valueChanged, this, &TelemetryFrame::updateStats);
 
     connect(reader, &TelemetryReader::statsAvailable, this, &TelemetryFrame::updateStats);
     connect(reader, &TelemetryReader::dataAvailable, this, &TelemetryFrame::updateData);
@@ -214,7 +214,7 @@ void TelemetryFrame::updateStats()
 {
     //update title
     QString s = reader->title();
-    s.append(QString(" (%1)").arg(reader->status()));
+    s.append(QString(" (%1)").arg(reader->value().toString()));
     if (!reader->descr().isEmpty())
         s.append(" | ").append(reader->descr());
     quint64 recSize = reader->totalSize();
@@ -233,7 +233,7 @@ void TelemetryFrame::updateStats()
     recStats = st.join(" | ");
     //set label
     lbTitle->setText(QString("%1    \t%2%3")
-                         .arg(lookup->status())
+                         .arg(lookup->value().toString())
                          .arg(s)
                          .arg(recStats.isEmpty() ? recStats : recStats.prepend("\n\t")));
     lbTitle->adjustSize();

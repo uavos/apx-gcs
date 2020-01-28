@@ -7,7 +7,7 @@ import Apx.Common 1.0
 Item {
     id: control
 
-    property real value: m.roll.value
+    property real value: mandala.est.att.roll.value //default sample
 
     property int w: Math.max(2,width*0.08)
 

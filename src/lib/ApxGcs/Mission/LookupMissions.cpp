@@ -77,10 +77,10 @@ bool LookupMissions::fixItemDataThr(QVariantMap *item)
         sdescr.append(QString(" (%1)").arg(AppRoot::distanceToString(reqPoint.distanceTo(p))));
     }
     item->insert("descr", sdescr);
-    QString status = QString("%1").arg(
+    QString value = QString("%1").arg(
         AppRoot::distanceToString(item->value("distance").toULongLong()));
-    status.append(" ").append(cnt);
-    item->insert("status", status);
+    value.append(" ").append(cnt);
+    item->insert("value", value);
     return true;
 }
 //=============================================================================

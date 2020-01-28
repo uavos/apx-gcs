@@ -9,6 +9,10 @@ import Apx.Menu 1.0
 
 Rectangle {
     id: root
+
+    readonly property var f_mode: mandala.cmd.op.mode
+
+
     border.width: 0
     color: "#000"
     implicitWidth: 400
@@ -84,38 +88,38 @@ Rectangle {
             clip: true
             Layout.fillWidth: true
             Layout.preferredHeight: buttonHeight
-            property string mode: m.mode.text
+            property string mode: f_mode.text
             onModeChanged: {
                 var modes
                 var body
-                switch(m.mode.value){
-                default: modes=m.mode.enumStrings; break;
-                case mode_EMG:
+                switch(f_mode.value){
+                default: modes=f_mode.enumStrings; break;
+                case op_mode_EMG:
                     modes=["RPV","TAXI"]
                     body="EMG"
                     break
-                case mode_RPV:
+                case op_mode_RPV:
                     modes=["UAV","WPT"]
                     break
-                case mode_UAV:
+                case op_mode_UAV:
                     modes=["WPT","LANDING"]
                     break
-                case mode_WPT:
+                case op_mode_WPT:
                     modes=["STBY","LANDING"]
                     break
-                case mode_HOME:
+                case op_mode_HOME:
                     modes=["WPT","LANDING"]
                     break
-                case mode_STBY:
+                case op_mode_STBY:
                     modes=["WPT","LANDING"]
                     break
-                case mode_TAXI:
+                case op_mode_TAXI:
                     modes=["TAKEOFF","EMG"]
                     break
-                case mode_TAKEOFF:
+                case op_mode_TAKEOFF:
                     modes=["WPT","STBY"]
                     break
-                case mode_LANDING:
+                case op_mode_LANDING:
                     modes=["WPT","STBY"]
                     break
                 }

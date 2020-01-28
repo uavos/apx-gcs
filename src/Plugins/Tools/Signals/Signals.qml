@@ -41,43 +41,43 @@ Rectangle {
             Layout.maximumHeight: 22*ui.scale
             SignalButton {
                 text: "R"
-                values: [ m.cmd_roll, m.roll ]
+                values: [ mandala.cmd.reg.roll, mandala.est.att.roll ]
             }
             SignalButton {
                 text: "P"
-                values: [ m.cmd_pitch, m.pitch ]
+                values: [ mandala.cmd.reg.pitch, mandala.est.att.pitch ]
             }
             SignalButton {
                 text: "Y"
-                values: [ m.cmd_course, m.cmd_yaw, m.yaw ]
+                values: [ mandala.cmd.reg.course, mandala.cmd.reg.yaw, mandala.est.att.yaw ]
             }
             SignalButton {
                 text: "Axy"
-                values: [ m.Ax, m.Ay ]
+                values: [ mandala.est.rel.ax, mandala.est.rel.ay ]
             }
             SignalButton {
                 text: "Az"
-                values: [ m.Az ]
+                values: [ mandala.est.rel.az ]
             }
             SignalButton {
                 text: "G"
-                values: [ m.p, m.q, m.r ]
+                values: [ mandala.est.att.p, mandala.est.att.q, mandala.est.att.r ]
             }
             SignalButton {
                 text: "M"
-                values: [ m.Hx, m.Hy, m.Hz ]
+                values: [ mandala.sns.mag.x, mandala.sns.mag.y, mandala.sns.mag.z, mandala.est.calc.mag ]
             }
             SignalButton {
                 text: "Pt"
-                values: [ m.altitude, m.vspeed, m.airspeed ]
+                values: [ mandala.est.air.altitude, mandala.est.air.vspeed, mandala.est.air.airspeed ]
             }
             SignalButton {
                 text: "Ctr"
-                values: [ m.ctr_ailerons, m.ctr_elevator, m.ctr_throttle, m.ctr_rudder, m.ctr_collective, m.rc_roll, m.rc_pitch, m.rc_throttle, m.rc_yaw ]
+                values: [ mandala.ctr.stab.ail, mandala.ctr.stab.elv, mandala.ctr.eng.thr, mandala.ctr.stab.rud, mandala.ctr.stab.col, mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.throttle, mandala.cmd.rc.yaw ]
             }
             SignalButton {
                 text: "Usr"
-                values: [ m.user1, m.user2, m.user3, m.user4, m.user5, m.user6 ]
+                values: [ mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6 ]
             }
 
             CleanButton {

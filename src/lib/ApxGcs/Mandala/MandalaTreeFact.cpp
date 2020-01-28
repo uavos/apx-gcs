@@ -32,6 +32,9 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
     , m_tree(tree)
     , m_meta(meta)
 {
+    if (name().toLower() != name()) {
+        apxMsgW() << "uppercase:" << name();
+    }
     if (meta.level > 2)
         setOption(FilterSearchAll);
     if (isSystem()) {
@@ -44,6 +47,12 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
             setOption(FlatModel);
         } else if (meta.level == 1) {
             setOption(Section);
+        } else if (meta.level == 2) {
+            connect(this,
+                    &Fact::sectionChanged,
+                    static_cast<MandalaTreeFact *>(parent),
+                    &MandalaTreeFact::updateStatus);
+            connect(this, &Fact::sectionChanged, this, &MandalaTreeFact::updateDescr);
         }
     } else {
         QString sdescr = meta.descr;
@@ -77,12 +86,25 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
             setMax(255);
             v = QVariant::fromValue(0);
             break;
-        case mandala::type_enum:
+        case mandala::type_enum: {
             setDataType(Enum);
             v = static_cast<int>(0);
-            setEnumStrings(units().split(','));
+            QStringList st = units().split(',');
             setUnits("");
-            break;
+            setEnumStrings(st);
+            for (int i = 0; i < st.size(); ++i) {
+                const QString &s
+                    = QString("%1_%2_%3").arg(parentFact()->name()).arg(name()).arg(st.at(i));
+                //const QString &s = QString("%1_%2").arg(name()).arg(st.at(i));
+                if (!tree->constants.contains(s)) {
+                    tree->constants.insert(s, i);
+                    continue;
+                }
+                if (tree->constants.value(s) == i)
+                    continue;
+                apxMsgW() << "enum:" << s << mpath();
+            }
+        } break;
         }
         if (!units().isEmpty()) {
             setDescr(QString("%1 [%2]").arg(descr()).arg(units()));
@@ -124,7 +146,7 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
             break;
         }*/
     }
-    setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
+    //setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
     updateDescr();
 }
 
@@ -198,10 +220,30 @@ bool MandalaTreeFact::showThis(QRegExp re) const
 
 void MandalaTreeFact::updateStatus()
 {
-    if (m_meta.level < 2)
+    if (m_meta.level == 0) {
+        QStringList slist;
+        QList<int> vlist;
+        for (auto i : *this) {
+            const QString &s = static_cast<Fact *>(i)->section();
+            if (!slist.contains(s))
+                slist.append(s);
+            if (vlist.size() < slist.size())
+                vlist.append(0);
+            int idx = slist.indexOf(s);
+            vlist[idx] = vlist.at(idx) + 1;
+        }
+        QStringList st;
+        for (auto n : vlist)
+            st.append(QString::number(n));
+        int capacity = 1 << mandala::uid_bits[m_meta.level + 2];
+        setValue(QString("[%1/%2]").arg(st.join('/')).arg(capacity));
         return;
-    int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
-    setStatus(QString("[%1/%2]").arg(size()).arg(capacity));
+    }
+    if (m_meta.level == 2) {
+        int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
+        setValue(QString("[%1/%2]").arg(size()).arg(capacity));
+        return;
+    }
 }
 
 void MandalaTreeFact::updateDescr()
@@ -213,6 +255,9 @@ void MandalaTreeFact::updateDescr()
     }
     if (!units().isEmpty()) {
         s = QString("%1 [%2]").arg(s).arg(units());
+    }
+    if (!section().isEmpty()) {
+        s = QString("%1: %2").arg(section().left(3).toLower()).arg(s);
     }
     if (m_stream) {
         QByteArray ba(100, '\0');
@@ -272,23 +317,23 @@ QString MandalaTreeFact::mpath() const
 int MandalaTreeFact::getPrecision()
 {
     if (name().contains("lat") || name().contains("lon"))
-        return 8;
+        return 6;
     const QString &u = units().toLower();
     if (!u.isEmpty()) {
         if (u == "u")
-            return 3;
+            return 2;
         if (u == "su")
-            return 3;
+            return 2;
         if (u == "deg")
-            return 2;
+            return 1;
         if (u == "deg/s")
-            return 2;
+            return 1;
         if (u == "m")
             return 2;
         if (u == "m/s")
-            return 2;
+            return 1;
         if (u == "m/s2")
-            return 2;
+            return 1;
         if (u == "v")
             return 2;
         if (u == "a")
@@ -426,11 +471,6 @@ QColor MandalaTreeFact::getColor()
             c = c.lighter();
     }
     return c;
-}
-
-QString MandalaTreeFact::alias() const
-{
-    return m_alias;
 }
 
 bool MandalaTreeFact::isSystem() const

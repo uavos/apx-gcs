@@ -6,20 +6,31 @@ import QtQml.Models 2.12
 import Apx.Common 1.0
 
 RowLayout {
+
+    readonly property var f_mode: mandala.cmd.op.mode
+    readonly property var f_stage: mandala.cmd.op.stage
+    readonly property var f_action: mandala.cmd.op.action
+    readonly property var f_adj: mandala.cmd.op.adj
+
+    readonly property var f_flaps: mandala.ctr.wing.flaps
+    readonly property var f_brake: mandala.ctr.str.brake
+    readonly property var f_thr: mandala.cmd.rc.throttle
+
+
     //spacing: buttonHeight/4
     ColumnLayout {
         Layout.fillHeight: true
         Layout.alignment: Qt.AlignTop|Qt.AlignLeft
         spacing: 3
-        CtrNum { title: "THR"; fact: m.rc_throttle; min: 0; max: 100; mult: 100; stepSize: 1; }
-        CtrNum { title: "FLP"; fact: m.ctr_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
-        CtrNum { title: "ADJ"; fact: m.rwAdj; }
+        CtrNum { title: "THR"; fact: f_thr; min: 0; max: 100; mult: 100; stepSize: 1; }
+        CtrNum { title: "FLP"; fact: f_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
+        CtrNum { title: "ADJ"; fact: f_adj; }
     }
     CtrFlow {
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.alignment: Qt.AlignTop
-        key: m.mode.text
+        key: f_mode.text
         controls: {
             "TAXI": [btnCANCEL,btnATAXI,btnBRK_TAXI],
             "TAKEOFF": [btnCANCEL,btnNEXT,btnBRK],
@@ -33,13 +44,13 @@ RowLayout {
 
     Component {
         id: btnFLP
-        CtrButton { title: "FLAPS"; fact: m.ctr_flaps; }
+        CtrButton { title: "FLAPS"; fact: f_flaps; }
     }
     Component {
         id: btnBRK_TAXI
         CtrButton {
             title: "BRAKE"
-            fact: m.ctr_brake
+            fact: f_brake
             color: (v>0 && v<1)?Qt.darker(Material.color(Material.Orange),1.5):v==0?Material.color(Material.Red):undefined
             width: height*3
         }
@@ -48,16 +59,16 @@ RowLayout {
         id: btnBRK
         CtrButton {
             title: "BRAKE"
-            fact: m.ctr_brake
+            fact: f_brake
             width: height*3
         }
     }
     Component {
         id: btnATAXI
         CtrButton {
-            fact: m.stage
-            title: v<=1?"AUTO":"STOP"
-            value: v+1
+            fact: f_action
+            title: f_stage.value<=1?"AUTO":"STOP"
+            value: op_action_next
             width: height*4
             highlighted: v>1
             resetValue: 100
@@ -66,9 +77,9 @@ RowLayout {
     Component {
         id: btnNEXT
         CtrButton {
-            fact: m.stage
+            fact: f_action
             title: "NEXT"
-            value: v+1
+            value: op_action_next
             width: height*4
             highlighted: false
         }
@@ -76,9 +87,9 @@ RowLayout {
     Component {
         id: btnINC
         CtrButton {
-            fact: m.midx
+            fact: f_action
             title: "NEXT"
-            value: midx_inc
+            value: op_action_inc
             width: height*4
             highlighted: false
         }
@@ -86,9 +97,9 @@ RowLayout {
     Component {
         id: btnDEC
         CtrButton {
-            fact: m.midx
+            fact: f_action
             title: "PREV"
-            value: midx_dec
+            value: op_action_dec
             width: height*4
             highlighted: false
         }
@@ -96,9 +107,9 @@ RowLayout {
     Component {
         id: btnCANCEL
         CtrButton {
-            fact: m.stage
+            fact: f_action
             title: "CANCEL"
-            value: 100
+            value: op_action_cancel
             width: height*4
             highlighted: false
         }
@@ -106,9 +117,9 @@ RowLayout {
     Component {
         id: btnRESET
         CtrButton {
-            fact: m.stage
+            fact: f_action
             title: "RESET"
-            value: 100
+            value: op_action_cancel
             width: height*4
             highlighted: false
         }

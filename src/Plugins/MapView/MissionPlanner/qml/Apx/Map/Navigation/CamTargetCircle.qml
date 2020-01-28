@@ -14,14 +14,14 @@ MapItemGroup {
     property real home_hmsl: mandala.est.ref.hmsl.value
 
     property real yaw: mandala.est.att.yaw.value
-    property real power_payload: mandala.ctr.pwr.payload.value
+    property bool power_payload: mandala.ctr.pwr.payload.value === pwr_payload_on
 
-    property real cam_roll: m.cam_roll.value
-    property real cam_pitch: m.cam_pitch.value
-    property real cam_yaw: m.cam_yaw.value
+    property real cam_roll: mandala.est.cam.roll.value
+    property real cam_pitch: mandala.est.cam.pitch.value
+    property real cam_yaw: mandala.est.cam.yaw.value
 
     //calculate
-    property bool valid: power_payload>0
+    property bool valid: power_payload
                          && camAlt>0
                          && (cam_roll!==0 || cam_pitch!==0 || cam_yaw!==0)
 

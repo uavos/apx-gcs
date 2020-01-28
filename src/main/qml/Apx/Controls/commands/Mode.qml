@@ -8,6 +8,8 @@ import Apx.Common 1.0
 ListView {
     id: listView
 
+    readonly property var f_mode: mandala.cmd.op.mode
+
     implicitHeight: 32
 
     property var modes: []
@@ -17,13 +19,13 @@ ListView {
     model: modes
     delegate: CleanButton {
         text: modelData
-        toolTip: m.mode.descr+": "+modelData
+        toolTip: f_mode.descr+": "+modelData
         showText: true
         defaultHeight: listView.height
         ui_scale: 1
         titleSize: 0.5
         onTriggered: {
-            m.mode.value=modelData
+            f_mode.value=modelData
         }
         iconName: listView.modeIcon(modelData)
     }
@@ -31,10 +33,10 @@ ListView {
     header: CleanButton {
         defaultHeight: listView.height
         ui_scale: 1
-        text: m.mode.text
-        property int v: m.mode.value
-        property bool warning: v==mode_EMG || v==mode_RPV || v==mode_HOME || v==mode_TAXI
-        property bool active: v==mode_LANDING || v==mode_TAKEOFF
+        text: f_mode.text
+        property int v: f_mode.value
+        property bool warning: v==op_mode_EMG || v==op_mode_RPV || v==op_mode_HOME || v==op_mode_TAXI
+        property bool active: v==op_mode_LANDING || v==op_mode_TAKEOFF
         color: "#000"
         titleColor: warning?Material.color(Material.Yellow):active?Material.color(Material.Blue):Qt.darker(Material.primaryTextColor,1.5)
         onTriggered: {
@@ -78,15 +80,15 @@ ListView {
                 id: listView
                 implicitHeight: contentHeight
                 implicitWidth: contentWidth
-                model: m.mode.enumStrings
+                model: f_mode.enumStrings
                 highlightMoveDuration: 0
                 delegate: ItemDelegate {
                     text: modelData
                     width: Math.max(listView.width,implicitWidth)
-                    highlighted: text===m.mode.text
+                    highlighted: text===f_mode.text
                     onClicked: {
                         popup.close()
-                        m.mode.value=text
+                        f_mode.value=text
                     }
                 }
                 ScrollIndicator.vertical: ScrollIndicator { }

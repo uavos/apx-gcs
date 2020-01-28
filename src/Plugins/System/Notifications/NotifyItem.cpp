@@ -23,7 +23,7 @@
 #include "NotifyItem.h"
 //=============================================================================
 NotifyItem::NotifyItem(Fact *fact, Fact *parent)
-    : Fact(parent, QString("notify_%1").arg(fact->name()), "", "", Const)
+    : Fact(parent, QString("notify_%1").arg(fact->name()), "", "")
     , m_fact(fact)
 {
     setIcon(fact->icon());

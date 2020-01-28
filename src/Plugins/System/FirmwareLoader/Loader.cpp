@@ -42,7 +42,7 @@ Loader::Loader(Fact *parent, ProtocolServiceFirmware *protocol)
     setIcon("autorenew");
 
     connect(protocol, &ProtocolServiceFirmware::statusChanged, this, [this]() {
-        setStatus(this->protocol->status());
+        setValue(this->protocol->status());
     });
     connect(protocol, &ProtocolServiceFirmware::progressChanged, this, [this]() {
         setProgress(this->protocol->progress());
@@ -77,7 +77,7 @@ void Loader::start(QueueItem *item, Releases *releases)
     //retry=0;
     setActive(true);
     setProgress(0);
-    setStatus("");
+    setValue("");
     setEnabled(true);
 
     QString relVer = releases->releaseVersion();
@@ -123,8 +123,8 @@ void Loader::finish(bool success)
 {
     setActive(false);
     setProgress(-1);
-    setTitle(status());
-    setStatus("");
+    setTitle(value().toString());
+    setValue("");
     setDescr("");
     setEnabled(false);
     emit finished(success);

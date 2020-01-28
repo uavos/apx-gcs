@@ -38,7 +38,7 @@ BlackboxItem::BlackboxItem(Fact *parent,
 {
     f_callsign = new Fact(this, "callsign", tr("Callsign"), tr("Vehicle identity"), Text);
 
-    f_stats = new Fact(this, "stats", "", "", Const);
+    f_stats = new Fact(this, "stats", "", "");
     connect(f_stats, &Fact::triggered, this, &BlackboxItem::getStats);
 
     //actions
@@ -69,7 +69,7 @@ void BlackboxItem::updateActions()
 void BlackboxItem::updateStats()
 {
     f_stats->setTitle(totalSize ? title().append(": ").append(parentFact()->title()) : tr("Empty"));
-    f_stats->setStatus(QString("%1 MB").arg(totalSize / 1024.0 / 1024.0, 0, 'f', 2));
+    f_stats->setValue(QString("%1 MB").arg(totalSize / 1024.0 / 1024.0, 0, 'f', 2));
 }
 //=============================================================================
 void BlackboxItem::getStats()

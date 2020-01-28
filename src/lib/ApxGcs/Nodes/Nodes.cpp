@@ -163,7 +163,7 @@ void Nodes::removeNode(const QString &sn)
 //=============================================================================
 void Nodes::updateStatus()
 {
-    setStatus(nodesCount() > 0 ? QString::number(nodesCount()) : "");
+    setValue(nodesCount() > 0 ? QString::number(nodesCount()) : "");
 }
 void Nodes::updateActions()
 {

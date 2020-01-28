@@ -34,6 +34,8 @@ public:
 
     MandalaTreeFact *fact(mandala::uid_t uid) const;
 
+    QHash<QString, QVariant> constants; // <name,value> enums in form varname_ENUM
+
 private:
     QMap<mandala::uid_t, MandalaTreeFact *> uid_map;
 };

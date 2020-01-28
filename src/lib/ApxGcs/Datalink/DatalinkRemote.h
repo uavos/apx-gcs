@@ -33,7 +33,7 @@ class DatalinkRemote : public DatalinkTcpSocket
 public:
     explicit DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url);
 
-    void setUrl(QUrl url);
+    void setRemoteUrl(QUrl url);
     static QUrl fixUrl(QUrl url);
 
 private:

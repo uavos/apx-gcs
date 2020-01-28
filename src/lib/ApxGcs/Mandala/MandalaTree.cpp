@@ -104,13 +104,20 @@ MandalaTree::MandalaTree(Fact *parent)
                 sect = d.title;
                 continue;
             }
+            if (group->child(d.name)) {
+                apxMsgW() << "dup group:" << group->child(d.name)->path(1);
+            }
             group = new MandalaTreeFact(this, group, d);
             if (d.level == 2)
                 group->setSection(sect);
             continue;
         }
+        if (group->child(d.name)) {
+            apxMsgW() << "dup fact:" << group->child(d.name)->path(2);
+        }
         MandalaTreeFact *f = new MandalaTreeFact(this, group, d);
         uid_map.insert(f->uid(), f);
+        //static_cast<MandalaTreeFact *>(group->parentFact())->updateStatus();
     }
 
     //fact tests

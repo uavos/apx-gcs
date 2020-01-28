@@ -35,7 +35,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
            "server",
            tr("Server"),
            tr("Remote clients connections"),
-           Group | Bool | FlatModel,
+           Group | FlatModel,
            "lan-connect")
     , datalink(datalink)
     , announceString(QString("%1@server.gcs.uavos.com").arg(App::username()).toUtf8())
@@ -47,9 +47,6 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
                         Bool | PersistentValue,
                         "access-point-network");
     f_listen->setDefaultValue(true);
-    connect(f_listen, &Fact::valueChanged, this, [this]() { setValue(f_listen->value()); });
-    setValue(f_listen->value());
-    connect(this, &Fact::valueChanged, this, [this]() { f_listen->setValue(value()); });
 
     f_extctr = new Fact(this,
                         "extctr",
@@ -69,7 +66,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     f_extsrv->setDefaultValue(true);
     connect(f_extsrv, &Fact::valueChanged, this, &DatalinkServer::updateClientsNetworkMode);
 
-    f_clients = new Fact(this, "clients", tr("Clients"), tr("Connected clients"), Section | Const);
+    f_clients = new Fact(this, "clients", tr("Clients"), tr("Connected clients"), Section | Count);
     connect(f_clients, &Fact::sizeChanged, this, &DatalinkServer::updateStatus);
 
     f_alloff = new Fact(this,
@@ -100,7 +97,7 @@ void DatalinkServer::updateStatus()
 {
     int cnt = f_clients->size();
     f_alloff->setEnabled(cnt > 0);
-    setStatus(cnt > 0 ? QString::number(cnt) : "");
+    setValue(cnt > 0 ? QString::number(cnt) : "");
 }
 //=============================================================================
 void DatalinkServer::serverActiveChanged()
@@ -156,7 +153,7 @@ void DatalinkServer::newConnection()
 {
     while (tcpServer->hasPendingConnections()) {
         QTcpSocket *socket = tcpServer->nextPendingConnection();
-        if (!f_listen->value().toBool()) {
+        if (!(active() && f_listen->value().toBool())) {
             socket->disconnectFromHost();
             continue;
         }
@@ -174,7 +171,7 @@ void DatalinkServer::newConnection()
         connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
         connect(c, &DatalinkTcpSocket::httpRequest, http, &HttpService::httpRequest);
         datalink->addConnection(c);
-        c->setValue(true);
+        c->setActivated(true);
     }
 }
 //=============================================================================

@@ -53,7 +53,7 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     f_reload->setEnabled(false);
     connect(f_reload, &Fact::triggered, this, &TelemetryReader::reloadTriggered);
 
-    //status
+    //info
     connect(lookup, &LookupTelemetry::recordInfoChanged, this, &TelemetryReader::updateRecordInfo);
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
 
@@ -76,9 +76,8 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
 //==============================================================================
 void TelemetryReader::updateStatus()
 {
-    QStringList st;
-    st << AppRoot::timeToString(totalTime() / 1000, true);
-    setStatus(st.join('/'));
+    const QString &s = AppRoot::timeToString(totalTime() / 1000, true);
+    setValue(s);
 }
 //==============================================================================
 void TelemetryReader::loadCurrent()

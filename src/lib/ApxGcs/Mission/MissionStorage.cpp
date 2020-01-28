@@ -56,7 +56,7 @@ void MissionStorage::saveMission()
         title.remove(s, Qt::CaseInsensitive);
     }
     if (mission->f_runways->size() > 0) {
-        QString s = mission->f_runways->child(0)->status();
+        QString s = mission->f_runways->child(0)->text();
         details.insert("runway", s);
         title.remove(s, Qt::CaseInsensitive);
     }

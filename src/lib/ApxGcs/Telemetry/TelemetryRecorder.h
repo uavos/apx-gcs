@@ -32,6 +32,8 @@ class Recorder;
 class TelemetryRecorder : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(bool recording READ recording WRITE setRecording NOTIFY recordingChanged)
+
 public:
     explicit TelemetryRecorder(Vehicle *vehicle, Fact *parent);
 
@@ -39,6 +41,8 @@ public:
 
 private:
     Vehicle *vehicle;
+
+    Fact *f_enable;
 
     //database
     bool dbCheckRecord();
@@ -102,6 +106,7 @@ public slots:
     //PROPERTIES
 public:
     bool recording() const;
+    void setRecording(bool v);
 
     Q_PROPERTY(quint64 time READ time NOTIFY timeChanged)
     quint64 time() const;
@@ -111,6 +116,8 @@ private:
     void setTime(quint64 v, bool forceUpdate = false);
 signals:
     void timeChanged();
+    void recordingChanged();
+
 public slots:
     void reset(void);
 };

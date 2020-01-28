@@ -57,16 +57,16 @@ DatalinkStatsCounter::DatalinkStatsCounter(DatalinkStats *parent,
     , dataCntT(0)
     , dataRate(0)
 {
-    f_cnt = new Fact(this, "cnt", tr("Packets counter"), "", Const);
+    f_cnt = new Fact(this, "cnt", tr("Packets counter"), "");
     f_cnt->setSection(title);
     f_cnt->setValue(0);
-    f_rate = new Fact(this, "rate", tr("Packets rate"), "", Const);
+    f_rate = new Fact(this, "rate", tr("Packets rate"), "");
     f_rate->setSection(title);
     f_rate->setValue(0);
-    f_datacnt = new Fact(this, "datacnt", tr("Data counter"), "", Const);
+    f_datacnt = new Fact(this, "datacnt", tr("Data counter"), "");
     f_datacnt->setSection(title);
     f_datacnt->setValue(0);
-    f_datarate = new Fact(this, "datarate", tr("Data rate"), "", Const);
+    f_datarate = new Fact(this, "datarate", tr("Data rate"), "");
     f_datarate->setSection(title);
     f_datarate->setValue(0);
 

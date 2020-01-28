@@ -77,7 +77,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                         "delete");
     connect(f_remove, &Fact::triggered, this, &LookupTelemetry::dbRemove);
 
-    //status
+    //totals
     connect(this, &LookupTelemetry::recordsCountChanged, this, &LookupTelemetry::updateStatus);
     connect(this, &LookupTelemetry::recordNumChanged, this, &LookupTelemetry::updateStatus);
 
@@ -118,7 +118,7 @@ void LookupTelemetry::updateActions()
 }
 void LookupTelemetry::updateStatus()
 {
-    setStatus(QString("%1/%2").arg(recordNum()).arg(recordsCount()));
+    setValue(QString("%1/%2").arg(recordNum()).arg(recordsCount()));
 }
 //==============================================================================
 void LookupTelemetry::loadItem(QVariantMap modelData)
@@ -155,15 +155,15 @@ bool LookupTelemetry::fixItemDataThr(QVariantMap *item)
         descr << comment;
     if (!notes.isEmpty())
         descr << notes;
-    QStringList status;
+    QStringList value;
     if (!callsign.isEmpty())
-        status << callsign;
+        value << callsign;
     if (!total.isEmpty())
-        status << total;
+        value << total;
 
     item->insert("title", time);
-    item->insert("status", status.join(' '));
     item->insert("descr", descr.join(" - "));
+    item->insert("value", value.join(' '));
     //active current
     item->insert("active", item->value("key").toULongLong() == recordId());
     return true;

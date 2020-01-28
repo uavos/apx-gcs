@@ -51,27 +51,33 @@ public:
 
         //appearance options [options]
         OptsMask = 0x000FFFF0,
-        Section = 1 << 4,          //flat model shows fact as section not folder
-        CloseOnTrigger = 1 << 5,   //close menu request on trigger
-        IconOnly = 1 << 6,         //show only icon button (for actions)
-        ShowDisabled = 1 << 7,     //action visible when disabled (for actions)
-        FlatModel = 1 << 8,        //child items shown expanded as sections
-        DragChildren = 1 << 9,     //child items are draggable to change order
+        Section = 1 << 4,        //flat model shows fact as section not folder
+        CloseOnTrigger = 1 << 5, //close menu request on trigger
+        IconOnly = 1 << 6,       //show only icon button (for actions)
+        ShowDisabled = 1 << 7,   //action visible when disabled (for actions)
+
+        FlatModel = 1 << 8,    //child items shown expanded as sections
+        DragChildren = 1 << 9, //child items are draggable to change order
+
         PersistentValue = 1 << 10, //save and restore value in QSettings
         SystemSettings = 1 << 11,  //use default QSettings to store value
+
         FilterSearchAll = 1 << 12, //search name/title/descr by filters
         FilterExclude = 1 << 13,   //exclude from search by filters
-        ModifiedTrack = 1 << 14,   //Track modified status
-        ModifiedGroup = 1 << 15,   //Track children's modified status
+
+        ModifiedTrack = 1 << 14, //Track modified status
+        ModifiedGroup = 1 << 15, //Track children's modified status
+
+        HighlightActive = 1 << 16, //Show highlighted when active
 
         //data types [dataType]
         DataMask = 0x0FF00000,
-        Const = 1 << 20,
-        Text = 2 << 20,
-        Float = 3 << 20,
-        Int = 4 << 20,
-        Bool = 5 << 20,
-        Enum = 6 << 20, // value=text of enumStrings (set by text or index or enumValues)
+        Text = 1 << 20,
+        Float = 2 << 20,
+        Int = 3 << 20,
+        Bool = 4 << 20,
+        Enum = 5 << 20,  // value=text of enumStrings (set by text or index or enumValues)
+        Count = 6 << 20, // value=size - number of child items
 
         //complex data types
         Mandala = 10 << 20, // Mandala ID

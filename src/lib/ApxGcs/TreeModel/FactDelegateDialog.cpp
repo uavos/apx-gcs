@@ -61,7 +61,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
     NodeItem *node = fact->findParent<NodeItem *>();
     if (node) {
         setWindowTitle(
-            QString("%1-%2: %3").arg(node->title()).arg(node->status()).arg(windowTitle()));
+            QString("%1-%2: %3").arg(node->title()).arg(node->value().toString()).arg(windowTitle()));
     }
 
     aUndo = new QAction(MaterialIcon("undo"), tr("Revert"), this);

@@ -32,7 +32,7 @@
 #include <Nodes/Nodes.h>
 //=============================================================================
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
-    : Fact(parent, "recorder", tr("Record"), tr("Enable telemetry recording"), Bool)
+    : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , vehicle(vehicle)
     , v_dl_timestamp("dl_timestamp", vehicle)
     , dl_timestamp_s(0)
@@ -41,7 +41,13 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     , m_time(0)
 {
     setIcon("record-rec");
-    setValue(false);
+
+    f_enable = new Fact(parent,
+                        "enable",
+                        tr("Record telemetry"),
+                        tr("Enable telemetry recording"),
+                        Bool);
+    connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::recordingChanged);
 
     //vehicle forwarded recording signals
     connect(vehicle, &Vehicle::recordDownlink, this, &TelemetryRecorder::recordDownlink);
@@ -84,7 +90,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     // auto recorder
     flightState_s = Vehicle::FS_UNKNOWN;
     recStopTimer.setSingleShot(true);
-    connect(&recStopTimer, &QTimer::timeout, this, [=]() { setValue(false); });
+    connect(&recStopTimer, &QTimer::timeout, this, [this]() { setRecording(false); });
 
     //invalidate record ID after trash empty
     connect(Database::instance()->telemetry,
@@ -97,7 +103,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
 //=============================================================================
 void TelemetryRecorder::updateStatus()
 {
-    setStatus(AppRoot::timeToString(time(), true));
+    setValue(AppRoot::timeToString(time(), true));
 }
 void TelemetryRecorder::restartRecording()
 {
@@ -368,7 +374,7 @@ bool TelemetryRecorder::checkAutoRecord(void)
         // start or restart when starts flying
         if (fs == Vehicle::FS_TAKEOFF) {
             reset(); //restart
-            setValue(true);
+            setRecording(true);
         }
     }
     return recording();
@@ -376,7 +382,11 @@ bool TelemetryRecorder::checkAutoRecord(void)
 //=============================================================================
 bool TelemetryRecorder::recording() const
 {
-    return value().toBool();
+    return f_enable->value().toBool();
+}
+void TelemetryRecorder::setRecording(bool v)
+{
+    f_enable->setValue(v);
 }
 void TelemetryRecorder::reset(void)
 {

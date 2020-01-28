@@ -29,7 +29,7 @@ FactMenuPageList {
                 property var d: modelData
                 title: d.title?d.title:qsTr("No title")
                 descr: d.descr?d.descr:""
-                status: d.status?d.status:""
+                value: d.value?d.value:""
                 active: d.active?d.active:false
                 showEditor: false
                 onTriggered: {

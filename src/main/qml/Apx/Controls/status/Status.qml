@@ -6,6 +6,23 @@ import QtQuick.Controls.Material 2.12
 import Apx.Common 1.0
 
 Rectangle {
+
+    readonly property int m_mode: mandala.cmd.op.mode.value
+    readonly property int m_mtype: mandala.est.ctr.mtype.value
+    readonly property real m_adj: mandala.cmd.op.adj.value
+    readonly property int m_agl_status: mandala.est.agl.status.value
+
+    readonly property var f_hmsl: mandala.est.pos.hmsl
+    readonly property var f_wpt_dist: mandala.est.wpt.dist
+    readonly property var f_eta: mandala.est.wpt.eta
+    readonly property var f_energy: mandala.est.sys.energy
+    readonly property var f_wpidx: mandala.est.wpt.wpidx
+    readonly property var f_loops: mandala.est.ctr.loops
+    readonly property var f_tdist: mandala.est.ctr.tdist
+    readonly property var f_radius: mandala.est.ctr.radius
+    readonly property var f_agl: mandala.est.agl.altitude
+
+
     border.width: 0
     color: "#000"
     implicitWidth: itemHeight*4
@@ -15,10 +32,10 @@ Rectangle {
     readonly property real itemHeight: height/15//*ui.scale
 
     property bool isLanding:
-        m.mode.value===mode_LANDING ||
-        m.mode.value===mode_TAKEOFF ||
-        m.mode.value===mode_TAXI ||
-        (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
+        m_mode===op_mode_LANDING ||
+        m_mode===op_mode_TAKEOFF ||
+        m_mode===op_mode_TAXI ||
+        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
 
     ProgressBar {
         anchors.left: parent.left
@@ -54,14 +71,14 @@ Rectangle {
 
             Loader {
                 asynchronous: true
-                active: apx.datalink.server.status
+                active: apx.datalink.server.text
                 visible: active
                 sourceComponent: Component {
                     FactValue {
                         title: qsTr("RC")
                         fact: apx.datalink.server
                         active: false
-                        value: fact.status
+                        value: fact.text
                         valueScale: 0.8
                         valueColor: fact.extctr.value?Material.color(Material.LightGreen):Material.color(Material.Red)
                         enabled: true
@@ -73,14 +90,14 @@ Rectangle {
 
             Loader {
                 asynchronous: true
-                active: apx.datalink.hosts.status
+                active: apx.datalink.hosts.text
                 visible: active
                 sourceComponent: Component {
                     FactValue {
                         title: qsTr("RS")
                         fact: apx.datalink.hosts
                         active: false
-                        value: fact.status
+                        value: fact.text
                         valueScale: 0.8
                         valueColor: apx.datalink.server.extctr.value?Material.color(Material.LightGreen):Material.color(Material.LightRed)
                         enabled: true
@@ -112,8 +129,8 @@ Rectangle {
 
             FactValue {
                 title: qsTr("H")
-                fact: m.gps_hmsl
-                property double v: m.gps_hmsl.value*(3.281/100)
+                fact: f_hmsl
+                property real v: fact.value*(3.281/100)
                 value: "FL"+v.toFixed()
                 visible: ui.test || v>0
                 valueScale: 0.8
@@ -123,17 +140,17 @@ Rectangle {
             }
             FactValue {
                 title: qsTr("DME")
-                fact: m.dWPT
-                property double v: m.dWPT.value
+                fact: f_wpt_dist
+                property real v: fact.value
                 value: v>=1000?(v/1000).toFixed(1):v.toFixed()
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
                 title: qsTr("ETA")
-                fact: m.ETA
+                fact: f_eta
                 property int v: fact.value
-                property double valid: v>0
+                property real valid: v>0
                 property int tsec: ("0"+Math.floor(v%60)).slice(-2)
                 property int tmin: ("0"+Math.floor(v/60)%60).slice(-2)
                 property int thrs: Math.floor(v/60/60)
@@ -145,9 +162,9 @@ Rectangle {
             }
             FactValue {
                 title: qsTr("FL")
-                fact: m.fuel
+                fact: f_energy
                 value: fact.value.toFixed(1)
-                visible: ui.test || value>0
+                visible: ui.test || fact.value>0
                 valueScale: 0.8
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
@@ -160,42 +177,42 @@ Rectangle {
 
             FactValue {
                 title: qsTr("WPT")
-                fact: m.wpidx
+                fact: f_wpidx
                 value: fact.value+1
-                visible: ui.test || (m.mode.value===mode_WPT || m.mode.value===mode_STBY)
+                visible: ui.test || (m_mode===op_mode_WPT || m_mode===op_mode_STBY)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
                 title: qsTr("LPS")
-                fact: m.loops
-                visible: ui.test || (m.mode.value===mode_STBY && m.loops.value>0)
+                fact: f_loops
+                visible: ui.test || (m_mode===op_mode_STBY && fact.value>0)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
                 title: qsTr("RD")
-                fact: m.rwDelta
+                fact: f_tdist
                 visible: ui.test || isLanding
-                property double v: fact.value
-                value: (Math.abs(v)<1?0:v.toFixed())+(m.rwAdj.value>0?"+"+m.rwAdj.value.toFixed():m.rwAdj.value<0?"-"+(-m.rwAdj.value).toFixed():"")
+                property real v: fact.value
+                value: (Math.abs(v)<1?0:v.toFixed())+(m_adj>0?"+"+m_adj.toFixed():m_adj<0?"-"+(-m_adj).toFixed():"")
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
                 title: qsTr("LR")
-                fact: m.turnR
-                visible: ui.test || m.mode.value===mode_STBY || m.mode.value===mode_LANDING
-                property double v: fact.value
+                fact: f_radius
+                visible: ui.test || m_mode===op_mode_STBY || m_mode===op_mode_LANDING
+                property real v: fact.value
                 value: v>=1000?(v/1000).toFixed(1):v.toFixed()
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
                 title: qsTr("AGL")
-                fact: m.agl
+                fact: f_agl
                 value: fact.value.toFixed(1)
-                visible: ui.test || (m.status_agl.value>0)
+                visible: ui.test || (m_agl_status>0)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }

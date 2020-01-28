@@ -96,15 +96,14 @@ void WaypointActions::hashData(QCryptographicHash *h) const
 void WaypointActions::updateActionsValue()
 {
     QStringList st;
-    for (int i = 0; i < size(); ++i) {
+    /*for (int i = 0; i < size(); ++i) {
         Fact *f = child(i);
         if (f->isZero())
             continue;
         st.append(f->title());
     }
-    setStatus(st.join(','));
-
-    st.clear();
+    setStatusText(st.join(','));
+    st.clear();*/
     for (int i = 0; i < this->size(); ++i) {
         Fact *f = this->child(i);
         if (f->isZero())

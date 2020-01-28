@@ -4,15 +4,19 @@ import "../common"
 import "."
 
 Item {
+
+    readonly property int m_mode: mandala.cmd.op.mode.value
+
+
     implicitWidth: 400
     implicitHeight: 400
 
     property double animation_duration: 100
     property bool isLanding:
-        m.mode.value===mode_LANDING ||
-        m.mode.value===mode_TAKEOFF ||
-        m.mode.value===mode_TAXI ||
-        (m.mode.value===mode_WPT && m.mtype.value===mtype_line)
+        m_mode===op_mode_LANDING ||
+        m_mode===op_mode_TAKEOFF ||
+        m_mode===op_mode_TAXI ||
+        (m_mode===op_mode_WPT && m.mtype.value===mtype_line)
 
     Rectangle {
         id: hdg
@@ -253,7 +257,7 @@ Item {
 
             NumberHdg {
                 id: dh_text
-                property double v: (m.mode.value===mode_TAXI)?m.delta.value:m.dHome.value
+                property double v: (m_mode===op_mode_TAXI)?m.delta.value:m.dHome.value
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: hdg.txtHeight
@@ -306,7 +310,7 @@ Item {
 
                 NumberHdg {
                     id: wpt_text
-                    visible: ui.test || m.mode.value===mode_WPT
+                    visible: ui.test || m_mode===op_mode_WPT
                     smooth: ui.antialiasing
                     height: hdg.txtHeight
                     mfield: m.wpidx
@@ -317,7 +321,7 @@ Item {
 
                 NumberHdg {
                     id: poi_text
-                    visible: ui.test || (m.mode.value===mode_STBY && m.loops.value>0)
+                    visible: ui.test || (m_mode===op_mode_STBY && m.loops.value>0)
                     smooth: ui.antialiasing
                     height: hdg.txtHeight
                     mfield: m.loops

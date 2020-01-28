@@ -103,7 +103,7 @@ void TelemetryPlayer::updateActions()
 //==============================================================================
 void TelemetryPlayer::updateStatus()
 {
-    setStatus(AppRoot::timeToString(f_time->value().toULongLong() / 1000, true));
+    setValue(AppRoot::timeToString(f_time->value().toULongLong() / 1000, true));
 }
 //==============================================================================
 void TelemetryPlayer::reset()

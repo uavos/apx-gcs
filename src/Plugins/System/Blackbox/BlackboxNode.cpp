@@ -119,9 +119,9 @@ void BlackboxNode::request(quint32 blk)
     blk -= req_begin;
     quint32 sz = req_end - req_begin;
     setProgress(static_cast<int>(blk * 100 / sz));
-    f_stats->setStatus(QString("%1/%2 MB")
-                           .arg(blk * (block_size / 1024.0 / 1024.0), 0, 'f', 2)
-                           .arg(sz * (block_size / 1024.0 / 1024.0), 0, 'f', 2));
+    f_stats->setValue(QString("%1/%2 MB")
+                          .arg(blk * (block_size / 1024.0 / 1024.0), 0, 'f', 2)
+                          .arg(sz * (block_size / 1024.0 / 1024.0), 0, 'f', 2));
 }
 void BlackboxNode::getStats()
 {

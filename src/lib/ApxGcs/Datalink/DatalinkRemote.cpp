@@ -37,13 +37,13 @@ DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     , datalink(datalink)
     , retry(0)
 {
-    setUrl(url);
+    setRemoteUrl(url);
 
     updateStatsTimer.setSingleShot(true);
     connect(&updateStatsTimer, &QTimer::timeout, this, &DatalinkRemote::updateStats);
 
-    connect(this, &Fact::valueChanged, this, [this]() {
-        if (value().toBool()) {
+    connect(this, &DatalinkConnection::activatedChanged, this, [this]() {
+        if (activated()) {
             retry = 0;
             open();
         } else {
@@ -60,15 +60,15 @@ DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     updateStats();
 }
 //=============================================================================
-void DatalinkRemote::setUrl(QUrl url)
+void DatalinkRemote::setRemoteUrl(QUrl url)
 {
     //qDebug()<<url<<url.isValid()<<url.toString();
     url = fixUrl(url);
     //qDebug()<<url.scheme()<<url.host()<<url.port()<<url.authority()<<url.isValid();
     if (url.scheme() == "tcp" && url.port() == TCP_PORT_SERVER)
-        setTitle(QString("%1@%2").arg(url.userInfo()).arg(url.host()));
+        setUrl(QString("%1@%2").arg(url.userInfo()).arg(url.host()));
     else
-        setTitle(url.toString());
+        setUrl(url.toString());
     hostAddress = QHostAddress(url.host());
     hostPort = static_cast<quint16>(url.port());
 }
@@ -108,7 +108,7 @@ void DatalinkRemote::updateTimeout()
 //=============================================================================
 void DatalinkRemote::reconnect()
 {
-    if (value().toBool()) {
+    if (activated()) {
         setStatus(QString("%1 %2").arg(tr("Retry")).arg(retry));
         reconnectTimer.start(1000 + (retry > 100 ? 100 : retry) * 200);
     } else {
@@ -128,7 +128,7 @@ void DatalinkRemote::open()
             continue;
         if (!c->hostAddress.isEqual(hostAddress))
             continue;
-        setValue(false);
+        setActivated(false);
         apxMsgW() << tr("Connection exists");
         return;
     }

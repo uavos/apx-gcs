@@ -8,8 +8,8 @@ MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
 
     //Fact bindings
-    property real home_lat: m.home_lat.value
-    property real home_lon: m.home_lon.value
+    property real home_lat: mandala.est.ref.lat.value
+    property real home_lon: mandala.est.ref.lon.value
 
 
     coordinate: QtPositioning.coordinate(home_lat,home_lon)

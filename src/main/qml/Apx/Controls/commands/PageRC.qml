@@ -9,13 +9,13 @@ Page {
         height: parent.height
         spacing: 2
         model: ObjectModel {
-            CtrSlider { title: "AIL"; fact: m.rc_roll; width: listView.width }
-            CtrSlider { title: "ELV"; fact: m.rc_pitch; width: listView.width }
-            CtrSlider { title: "THR"; fact: m.rc_throttle; from: 0; width: listView.width }
-            CtrSlider { title: "YAW"; fact: m.rc_yaw; width: listView.width }
-            CtrSlider { title: "FLP"; fact: m.ctr_flaps; from: 0; stepSize: 0.1; width: listView.width }
-            CtrSlider { title: "BRK"; fact: m.ctr_brake; from: 0; stepSize: 0.1; width: listView.width }
-            CtrSlider { title: "ABR"; fact: m.ctr_airbrk; from: 0; stepSize: 0.1; width: listView.width }
+            CtrSlider { title: "R"; fact: mandala.cmd.rc.roll; width: listView.width }
+            CtrSlider { title: "P"; fact: mandala.cmd.rc.pitch; width: listView.width }
+            CtrSlider { title: "T"; fact: mandala.cmd.rc.throttle; from: 0; width: listView.width }
+            CtrSlider { title: "Y"; fact: mandala.cmd.rc.yaw; width: listView.width }
+            CtrSlider { title: "FLP"; fact: mandala.ctr.wing.flaps; from: 0; stepSize: 0.1; width: listView.width }
+            CtrSlider { title: "ABR"; fact: mandala.ctr.wing.airbrk; from: 0; stepSize: 0.1; width: listView.width }
+            CtrSlider { title: "BRK"; fact: mandala.ctr.str.brake; from: 0; stepSize: 0.1; width: listView.width }
         }
     }
 }

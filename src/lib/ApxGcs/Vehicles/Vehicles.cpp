@@ -54,7 +54,7 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     f_select->setSection(title());
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);
 
-    f_list = new Fact(this, "list", tr("Vehicles"), tr("Identified vehicles"), Group | Const);
+    f_list = new Fact(this, "list", tr("Vehicles"), tr("Identified vehicles"), Group | Count);
     f_list->setIcon("airplane");
 
     f_local = new Vehicle(this,
@@ -91,6 +91,15 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                             "apx.vehicles.current.mandala.%1.value=v; });")
                         .arg(f->name()));
     }*/
+
+    //register mandala constants for QML and JS
+    for (auto s : f_local->f_mandalatree->constants.keys()) {
+        const QVariant &v = f_local->f_mandalatree->constants.value(s);
+        //JSEngine layer
+        App::instance()->engine()->globalObject().setProperty(s, app->engine()->toScriptValue(v));
+        //QmlEngine layer
+        App::instance()->engine()->rootContext()->setContextProperty(s, v);
+    }
 
     //Database register fields
     DatabaseRequest::Records recFields;
@@ -180,8 +189,17 @@ void Vehicles::selectVehicle(Vehicle *v)
     App::instance()->engine()->rootContext()->setContextProperty("mandala", v->f_mandalatree);
 
     for (auto i : *v->f_mandalatree) {
-        QJSValue obj = App::instance()->engine()->newQObject(i);
+        Fact *f = static_cast<Fact *>(i);
+        QJSValue obj = f->opts().value("object").value<QJSValue>();
+        if (!obj.isObject()) {
+            //apxMsgW() << "new";
+            obj = App::instance()->engine()->newQObject(i);
+            f->setOpt("object", QVariant::fromValue(obj));
+        }
+        //JSEngine layer
         App::instance()->engine()->globalObject().setProperty(i->name(), obj);
+        //QmlEngine layer
+        App::instance()->engine()->rootContext()->setContextProperty(i->name(), i);
     }
 
     //current vehicle signals wrappers

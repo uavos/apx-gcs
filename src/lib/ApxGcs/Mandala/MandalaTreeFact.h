@@ -34,8 +34,6 @@ class MandalaTreeStream;
 class MandalaTreeFact : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(QString alias READ alias CONSTANT)
-    Q_PROPERTY(bool isSystem READ isSystem CONSTANT)
 
 public:
     explicit MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta);
@@ -70,7 +68,7 @@ protected:
     virtual QVariant data(int col, int role) const;
     virtual bool showThis(QRegExp re) const; //filter helper
 
-private slots:
+protected slots:
     void updateStatus();
     void updateDescr();
 
@@ -81,10 +79,8 @@ signals:
     //---------------------------------------
     // PROPERTIES
 public:
-    QString alias() const;
     bool isSystem() const;
 
 protected:
-    QString m_alias;
 signals:
 };

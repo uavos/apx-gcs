@@ -72,7 +72,7 @@ uint BlackboxReader::esc_read(uint8_t *buf, uint sz)
 void BlackboxReader::escError(void)
 {
     qWarning() << "stream read error";
-    if (vehicle->f_telemetry->f_recorder->value().toBool())
+    if (vehicle->f_telemetry->f_recorder->recording())
         apxMsgW() << tr("Blackbox stream corrupted") << dataCnt;
 }
 //=============================================================================
@@ -90,7 +90,7 @@ void BlackboxReader::processData(QByteArray data)
             QByteArray packet = QByteArray(reinterpret_cast<const char *>(esc_rx),
                                            static_cast<int>(cnt));
 
-            vehicle->f_telemetry->f_recorder->setValue(true);
+            vehicle->f_telemetry->f_recorder->setRecording(true);
             protocol->unpack(packet);
         }
     }

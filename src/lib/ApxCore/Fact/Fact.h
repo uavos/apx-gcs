@@ -40,7 +40,6 @@ class Fact : public FactData
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
 
     Q_PROPERTY(QString section READ section WRITE setSection NOTIFY sectionChanged)
-    Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(int progress READ progress WRITE setProgress NOTIFY progressChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
@@ -191,9 +190,6 @@ public:
     QString section() const;
     void setSection(const QString &v);
 
-    QString status() const;
-    void setStatus(const QString &v);
-
     bool active() const;
     void setActive(const bool v);
 
@@ -221,7 +217,7 @@ protected:
     bool m_enabled;
     bool m_visible;
     QString m_section;
-    QString m_status;
+    QString m_statusText;
     bool m_active;
     int m_progress;
     QString m_icon;
@@ -240,7 +236,6 @@ signals:
     void visibleChanged();
 
     void sectionChanged();
-    void statusChanged();
     void activeChanged();
     void progressChanged();
     void busyChanged();

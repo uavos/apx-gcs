@@ -9,9 +9,9 @@ MapIcon {
     name: "blur"
 
     //Fact bindings
-    property real lat: m.cam_lat.value
-    property real lon: m.cam_lon.value
-    property real hmsl: m.cam_hmsl.value
+    property real lat: mandala.est.cam.lat.value
+    property real lon: mandala.est.cam.lon.value
+    property real hmsl: mandala.est.cam.hmsl.value
 
     coordinate: QtPositioning.coordinate(lat,lon,hmsl)
 }

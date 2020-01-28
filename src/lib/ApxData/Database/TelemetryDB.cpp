@@ -256,7 +256,7 @@ void TelemetryDB::getStats()
         &DBReqTelemetryStats::totals,
         this,
         [this](quint64 total, quint64 trash) {
-            f_stats->setStatus(
+            f_stats->setValue(
                 QString("%1 %2, %3 %4").arg(total).arg(tr("total")).arg(trash).arg(tr("trash")));
         },
         Qt::QueuedConnection);

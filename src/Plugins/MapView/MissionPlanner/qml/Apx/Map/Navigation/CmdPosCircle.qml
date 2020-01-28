@@ -10,13 +10,13 @@ MapCircle {
     border.width: 1
 
     //Fact bindings
-    property real cmd_east: m.cmd_east.value
-    property real cmd_north: m.cmd_north.value
-    property real home_lat: m.home_lat.value
-    property real home_lon: m.home_lon.value
+    property real cmd_east: mandala.cmd.pos.e.value
+    property real cmd_north: mandala.cmd.pos.n.value
+    property real home_lat: mandala.est.ref.lat.value
+    property real home_lon: mandala.est.ref.lon.value
 
-    property real turnR: m.turnR.value
-    property bool landing: m.mode.value === mode_LANDING
+    property real turnR: mandala.est.ctr.radius.value
+    property bool landing: mandala.cmd.op.mode.value === op_mode_LANDING
 
     //calc coordinate
     property variant homeCoord: QtPositioning.coordinate(home_lat,home_lon)

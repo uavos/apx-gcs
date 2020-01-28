@@ -265,8 +265,8 @@ void Vehicle::updateTitle()
 }
 void Vehicle::updateStatus()
 {
-    setStatus(streamTypeText());
-    f_mandala->setStatus(status());
+    setValue(streamTypeText());
+    f_mandala->setValue(value());
 }
 void Vehicle::updateInfo()
 {
@@ -514,7 +514,7 @@ QString Vehicle::confTitle() const
     QString anyName;
     foreach (NodeItem *node, f_nodes->nodes()) {
         QString name = node->title();
-        QString s = node->status().trimmed();
+        QString s = node->value().toString().trimmed();
         if (anyName.isEmpty())
             anyName = name;
         if (s.isEmpty())
