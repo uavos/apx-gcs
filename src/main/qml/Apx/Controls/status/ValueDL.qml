@@ -22,7 +22,9 @@ FactValue {
 
     enabled: true
     onClicked: apx.datalink.trigger()
-    onPressAndHold: m.errcnt=0
+    onPressAndHold: apx.vehicles.current.errcnt=0
+
+    readonly property int errcnt: apx.vehicles.current.errcnt
 
     readonly property color cGreen: light?Material.color(Material.Yellow):Material.color(Material.LightGreen)
     readonly property color cRed: light?Material.color(Material.Yellow):Material.color(Material.DeepOrange)
@@ -46,9 +48,9 @@ FactValue {
             font.family: font_narrow
             font.pixelSize: fontSize(bodyHeight*valueSize)
             verticalAlignment: Text.AlignVCenter
-            property int value: m.errcnt%10
+            property int value: errcnt%10
             text: value+" "
-            color: m.errcnt>1?(errTimer.running?cRed:cYellow):cGrey
+            color: errcnt>1?(errTimer.running?cRed:cYellow):cGrey
             Behavior on color { enabled: ui.smooth; ColorAnimation {duration: 250} }
             Timer {
                 id: errTimer

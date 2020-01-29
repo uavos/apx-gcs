@@ -69,6 +69,8 @@ class Vehicle : public Fact
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
     Q_PROPERTY(quint64 totalDistance READ totalDistance NOTIFY totalDistanceChanged)
 
+    Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
+
 public:
     enum VehicleClass {
         //must match the IDENT::_vclass type
@@ -241,6 +243,9 @@ public:
     quint64 totalDistance() const;
     void setTotalDistance(quint64 v);
 
+    uint errcnt(void) const;
+    bool setErrcnt(const uint &v);
+
 protected:
     StreamType m_streamType;
     quint16 m_squawk;
@@ -252,6 +257,7 @@ protected:
     FlightState m_flightState;
     QGeoPath m_geoPath;
     quint64 m_totalDistance;
+    uint m_errcnt;
 
 signals:
     void streamTypeChanged();
@@ -264,6 +270,7 @@ signals:
     void flightStateChanged();
     void geoPathChanged();
     void totalDistanceChanged();
+    void errcntChanged();
 };
 //=============================================================================
 #endif

@@ -16,7 +16,7 @@ ControlArea {
     readonly property real m_venergy: f_venergy.value
 
 
-    mvar: mandala.cmd.rc.throttle   //ControlArea
+    mvar: mandala.cmd.rc.thr   //ControlArea
     //speed: 0.8
 
     //instrument item

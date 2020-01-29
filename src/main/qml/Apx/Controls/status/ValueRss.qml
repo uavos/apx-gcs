@@ -6,11 +6,18 @@ import Apx.Common 1.0
 FactValue {
     id: rssControl
     title: qsTr("RSS")
-    descr: m.RSS.descr+"\n"+gcs_m.gcu_RSS.descr
 
-    property var gcs_m: apx.vehicles.local.mandala
-    property real value1: Math.min(1,m.RSS.value)
-    property real value2: Math.min(1,gcs_m.gcu_RSS.value)
+    readonly property var f_rss: mandala.sns.com.rss
+    readonly property real m_rss: f_rss.value
+
+    readonly property var f_gcs_rss: apx.vehicles.local.mandalatree.sns.com.rss
+    readonly property real m_gcs_rss: f_gcs_rss.value
+
+
+    descr: f_rss.descr+ "\n" + qsTr("Onboard") + "/" + qsTr("Ground")
+
+    property real value1: Math.min(1,m_rss)
+    property real value2: Math.min(1,m_gcs_rss)
 
     property color barColorBG: "#555"
 

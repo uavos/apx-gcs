@@ -11,7 +11,22 @@ Item {
     anchors.fill: parent
     anchors.centerIn: parent
 
+
     readonly property real m_roll: mandala.est.att.roll.value
+    readonly property real m_pitch: mandala.est.att.pitch.value
+
+    readonly property real m_cmd_roll: mandala.cmd.reg.roll.value
+    readonly property real m_cmd_pitch: mandala.cmd.reg.pitch.value
+
+    readonly property var f_rc_roll: mandala.cmd.rc.roll
+    readonly property var f_rc_pitch: mandala.cmd.rc.pitch
+
+    readonly property real m_ail: mandala.ctr.stab.ail.value
+    readonly property real m_elv: mandala.ctr.stab.elv.value
+
+    readonly property real m_slip: mandala.est.air.slip.value
+
+
 
     property bool showHeading: true
     property double margin_left
@@ -45,7 +60,7 @@ Item {
             fillMode: Image.PreserveAspectFit
             width: diagonal*sf
             height: width
-            property double value: m.pitch.value
+            property double value: m_pitch
             anchors.centerIn: parent
             anchors.verticalCenterOffset: value*pitchDeg2img
             Behavior on value { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration } }
@@ -122,7 +137,7 @@ Item {
             id: sideslip_moving_image
             elementName: "sideslip-moving"
             //smooth: ui.antialiasing
-            rotation: -m.slip.value
+            rotation: -m_slip
             fillMode: Image.PreserveAspectFit
             width: roll_scale_image.width
             height: roll_scale_image.height
@@ -134,14 +149,14 @@ Item {
 
         Rectangle {
             id: rc_ptr
-            property bool active: m.rc_roll.value!==0 || m.rc_pitch.value!==0
+            property bool active: f_rc_roll.value!==0 || f_rc_pitch.value!==0
             width: rc_ctr.ptr_size+5
             height: width
             radius: width*0.5
             color: "#80101010"
             visible: active
-            x: (m.rc_roll.value+1)/2*rc_ctr.width-width/2
-            y: rc_ctr.anchors.topMargin+(m.rc_pitch.value+1)/2*rc_ctr.height-height/2
+            x: (f_rc_roll.value+1)/2*rc_ctr.width-width/2
+            y: rc_ctr.anchors.topMargin+(f_rc_pitch.value+1)/2*rc_ctr.height-height/2
             Behavior on x { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration*0.8} }
             Behavior on y { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration*0.8} }
 
@@ -152,10 +167,8 @@ Item {
             anchors.topMargin: showHeading?heading_window.height:0
             anchors.bottomMargin: anchors.topMargin
             anchors.fill: parent
-            //anchors.verticalCenterOffset: -anchors.topMargin
-            //anchors.centerIn: parent
-            mvarX: m.rc_roll
-            mvarY: m.rc_pitch
+            mvarX: f_rc_roll
+            mvarY: f_rc_pitch
         }
 
     }
@@ -169,8 +182,7 @@ Item {
         height: fd_roll.height*0.25
         color: "#990099"
         anchors.centerIn: parent
-        //anchors.horizontalCenterOffset: apx.limit(fd_roll.pos+(m.ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
-        anchors.horizontalCenterOffset: apx.limit((m.ctr_ailerons.value*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
+        anchors.horizontalCenterOffset: apx.limit((m_ail*fd_roll.height*0.5),-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
@@ -180,8 +192,7 @@ Item {
         height: fd_pitch.height*0.7
         color: "#990099"
         anchors.centerIn: parent
-        //anchors.verticalCenterOffset: apx.limit(fd_pitch.pos-(m.ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
-        anchors.verticalCenterOffset: apx.limit(-(m.ctr_elevator.value*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
+        anchors.verticalCenterOffset: apx.limit(-(m_elv*fd_pitch.width*0.5),-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
     }
     Rectangle {
@@ -191,7 +202,7 @@ Item {
         width: apx.limit(diagonal*0.006,2,8)
         height: parent.width*0.2
         color: "magenta"
-        property double pos: -(m.roll.value-m.cmd_roll.value)*rollDeg2img
+        property double pos: -(m_roll-m_cmd_roll)*rollDeg2img
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: apx.limit(pos,-parent.width*0.2,parent.width*0.2)
         Behavior on anchors.horizontalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
@@ -203,35 +214,11 @@ Item {
         height: apx.limit(diagonal*0.006,2,8)
         width: parent.width*0.2
         color: "magenta"
-        property double pos: (m.pitch.value-m.cmd_pitch.value)*pitchDeg2img
+        property double pos: (m_pitch-m_cmd_pitch)*pitchDeg2img
         anchors.centerIn: parent
         anchors.verticalCenterOffset: apx.limit(pos,-parent.height*0.4,parent.height*0.4)
         Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
     }
-
-    /*PfdImage {
-        id: fd_pitch_image
-        elementName: "fd-pitch"
-        smooth: ui.antialiasing
-        fillMode: Image.PreserveAspectFit
-        width: parent.width*0.2
-        height: width
-        anchors.centerIn: parent
-        anchors.verticalCenterOffset: apx.limit((m.pitch.value-m.cmd_pitch.value)*pitchDeg2img,-parent.height*0.4,parent.height*0.4)
-        Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
-    }
-
-    PfdImage {
-        id: fd_roll_image
-        elementName: "fd-roll"
-        smooth: ui.antialiasing
-        fillMode: Image.PreserveAspectFit
-        width: fd_pitch_image.height
-        height: fd_pitch_image.width
-        anchors.centerIn: parent
-        anchors.horizontalCenterOffset: apx.limit(-(m.roll.value-m.cmd_roll.value)*rollDeg2img,-parent.width*0.2,parent.width*0.2)
-        Behavior on anchors.horizontalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
-    }*/
 
     //Center sign
     PfdImage {

@@ -724,4 +724,16 @@ void Vehicle::setTotalDistance(quint64 v)
     m_totalDistance = v;
     emit totalDistanceChanged();
 }
+uint Vehicle::errcnt(void) const
+{
+    return m_errcnt;
+}
+bool Vehicle::setErrcnt(const uint &v)
+{
+    if (m_errcnt == v)
+        return false;
+    m_errcnt = v;
+    emit errcntChanged();
+    return true;
+}
 //=============================================================================

@@ -14,7 +14,7 @@ RowLayout {
 
     readonly property var f_flaps: mandala.ctr.wing.flaps
     readonly property var f_brake: mandala.ctr.str.brake
-    readonly property var f_thr: mandala.cmd.rc.throttle
+    readonly property var f_thr: mandala.cmd.rc.thr
 
 
     //spacing: buttonHeight/4

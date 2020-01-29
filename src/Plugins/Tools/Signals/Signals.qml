@@ -73,7 +73,7 @@ Rectangle {
             }
             SignalButton {
                 text: "Ctr"
-                values: [ mandala.ctr.stab.ail, mandala.ctr.stab.elv, mandala.ctr.eng.thr, mandala.ctr.stab.rud, mandala.ctr.stab.col, mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.throttle, mandala.cmd.rc.yaw ]
+                values: [ mandala.ctr.stab.ail, mandala.ctr.stab.elv, mandala.ctr.eng.thr, mandala.ctr.stab.rud, mandala.ctr.stab.col, mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw ]
             }
             SignalButton {
                 text: "Usr"

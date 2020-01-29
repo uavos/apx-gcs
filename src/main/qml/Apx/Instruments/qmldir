@@ -1,7 +1,6 @@
 module Apx.Instruments
 
 Pfd     1.0 pfd/Pfd.qml
-Efis    1.0 pfd/Efis.qml
 
 Hdg     1.0 hdg/Hdg.qml
 

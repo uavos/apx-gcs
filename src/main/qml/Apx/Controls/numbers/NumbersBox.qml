@@ -30,7 +30,7 @@ Rectangle {
             {"bind":"user2","prec":"2","title":"u2"},
             {"bind":"user3","prec":"2","title":"u3"},
             {"bind":"user4","prec":"2","title":"u4"},
-            {"bind":"(Math.abs(m.rc_roll.value)+Math.abs(m.rc_pitch.value))/2","title":"RC","prec":"2","warn":"value>0.2","alarm":"value>0.5"},
+            {"bind":"(Math.abs(cmd.rc.roll.value)+Math.abs(cmd.rc.pitch.value))/2","title":"RC","prec":"2","warn":"value>0.2","alarm":"value>0.5"},
         ]
     }
 

@@ -8,6 +8,14 @@ Item {
     readonly property int m_mode: mandala.cmd.op.mode.value
     readonly property int m_mtype: mandala.est.ctr.mtype.value
 
+    readonly property var f_yaw: mandala.est.att.yaw
+    readonly property var f_course: mandala.est.calc.course
+    readonly property var f_cmd_course: mandala.cmd.reg.course
+    readonly property var f_thdg: mandala.est.ctr.thdg
+    readonly property var f_adj: mandala.cmd.op.adj
+
+    readonly property var f_nomag: mandala.cmd.opt.nomag
+    readonly property var f_rud: mandala.ctr.stab.rud
 
 
     //instrument item
@@ -20,14 +28,8 @@ Item {
     height: width*0.09
     property double bottomHeight: height*0.4
     clip: true
-    property double value: apx.angle(m.yaw.value)
+    property double value: apx.angle(f_yaw.value)
     Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
-
-    /*Rectangle {
-        color: "#40000000"
-        border.width: 0
-        anchors.fill: parent
-    }*/
 
     property double num2scaleWidth: svgRenderer.elementBounds(pfdImageUrl, "hdg-scale").width * strip_scale /90
     property double strip_scale: width/svgRenderer.elementBounds(pfdImageUrl, "hdg-scale").width
@@ -97,7 +99,7 @@ Item {
         PfdImage {
             id: hdg_crs_bug
             elementName: "hdg-crs-bug"
-            property double value: apx.angle(m.course.value-m.yaw.value)
+            property double value: apx.angle(f_course.value-f_yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             //smooth: ui.antialiasing
             border: 1
@@ -107,13 +109,13 @@ Item {
             anchors.horizontalCenterOffset: apx.limit(apx.angle(value),-valueShiftMax,valueShiftMax)*num2scaleWidth
             height: bottomHeight
             width: elementBounds.width*height/elementBounds.height
-            ToolTipArea { text: m.course.descr }
+            ToolTipArea { text: f_course.descr }
         }
         //cmd course bug arrow
         PfdImage {
             id: hdg_cmd_bug
             elementName: "hdg-cmd-bug"
-            property double value: apx.angle(m.cmd_course.value-m.yaw.value)
+            property double value: apx.angle(f_cmd_course.value-f_yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             //smooth: ui.antialiasing
             border: 1
@@ -123,7 +125,7 @@ Item {
             anchors.horizontalCenterOffset: apx.limit(apx.angle(value),-valueShiftMax,valueShiftMax)*num2scaleWidth
             height: bottomHeight
             width: elementBounds.width*height/elementBounds.height
-            ToolTipArea { text: m.cmd_course.descr }
+            ToolTipArea { text: f_cmd_course.descr }
         }
         //rw hdg bug arrow
         PfdImage {
@@ -134,7 +136,7 @@ Item {
                 m_mode===op_mode_TAXI ||
                 (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
             elementName: "hdg-rw-bug"
-            property double value: apx.angle(m.tgHDG.value-m.yaw.value)
+            property double value: apx.angle(f_thdg.value-f_yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             //smooth: ui.antialiasing
             border: 1
@@ -144,7 +146,7 @@ Item {
             anchors.horizontalCenterOffset: apx.limit(apx.angle(value),-valueShiftMax,valueShiftMax)*num2scaleWidth
             height: bottomHeight
             width: elementBounds.width*height/elementBounds.height
-            ToolTipArea { text: m.tgHDG.descr }
+            ToolTipArea { text: f_thdg.descr }
         }
         //center number box
         PfdImage {
@@ -166,7 +168,7 @@ Item {
                 anchors.rightMargin: anchors.leftMargin
                 anchors.topMargin: anchors.leftMargin+1
                 anchors.bottomMargin: parent.height*0.4
-                visible: m.cmode_nomag.value
+                visible: f_nomag.value
             }
             Text {
                 id: hdg_text
@@ -179,10 +181,10 @@ Item {
                 font.pixelSize: parent.height*0.75
                 font.family: font_mono
                 font.bold: true
-                color: m.cmode_nomag.value?"yellow":"white"
+                color: f_nomag.value?"yellow":"white"
 
             }
-            ToolTipArea { text: m.yaw.descr }
+            ToolTipArea { text: f_yaw.descr }
         }
     }
 
@@ -201,7 +203,7 @@ Item {
         Item {
             id: turn_calc
             visible: false
-            property double value: m.yaw.value
+            property double value: f_yaw.value
             property double derivative: 0
             property double time_s: 0
             property double value_s: 0
@@ -243,7 +245,7 @@ Item {
             width: -hdg_turnrate.valueW
         }
         //steering yaw control
-        property double valueR: apx.limit(m.ctr_rudder.value*hdg_turnrate.maxW,-hdg_turnrate.maxW,hdg_turnrate.maxW)
+        property double valueR: apx.limit(f_rud.value*hdg_turnrate.maxW,-hdg_turnrate.maxW,hdg_turnrate.maxW)
         Behavior on valueR { enabled: ui.smooth; PropertyAnimation {duration: 100; } }
         Rectangle {
             anchors.top: parent.top
@@ -276,7 +278,7 @@ Item {
         m_mode===op_mode_LANDING ||
         m_mode===op_mode_TAKEOFF ||
         m_mode===op_mode_TAXI ||
-        (m_mode===op_mode_WPT && m.mtype.value===mtype_line) ||
+        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line) ||
         m_mode===op_mode_STBY
 
     MouseArea {
@@ -284,8 +286,8 @@ Item {
         anchors.rightMargin: parent.width/2
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            if(isShiftControl) m.rwAdj.setValue(m.rwAdj.value-1)
-            else m.cmd_course.setValue(apx.angle(m.cmd_course.value-15))
+            if(isShiftControl) f_adj.setValue(f_adj.value-1)
+            else f_cmd_course.setValue(apx.angle(f_cmd_course.value-15))
         }
     }
     MouseArea {
@@ -293,8 +295,8 @@ Item {
         anchors.leftMargin: parent.width/2
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            if(isShiftControl) m.rwAdj.setValue(m.rwAdj.value+1)
-            else m.cmd_course.setValue(apx.angle(m.cmd_course.value+15))
+            if(isShiftControl) f_adj.setValue(f_adj.value+1)
+            else f_cmd_course.setValue(apx.angle(f_cmd_course.value+15))
         }
     }
 }
