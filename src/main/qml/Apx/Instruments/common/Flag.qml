@@ -13,12 +13,13 @@ Rectangle {
 
     property bool blink: true
 
-    color: inverted?"black":((ui.test||show)&&blink)?flagColor:"transparent" //flagColor //(show&&blink)?flagColor:"transparent"
+    readonly property bool showed: ui.test||show
+
+    color: inverted?"black":(showed && blink)?flagColor:"transparent"
     width: height/0.35
     onBlinkingChanged: blink=true
 
-    opacity: ((ui.test||show)&&blink)?1:0
-    //visible: ((ui.test||show)&&blink)?1:0
+    opacity: (showed && blink)?1:0
 
     SequentialAnimation on show {
         running: blinking
@@ -40,13 +41,6 @@ Rectangle {
         color: inverted?flagColor:"black"
         font.bold: inverted
     }
-    /*MouseArea {
-        anchors.fill: parent
-        enabled: control?true:false
-        onClicked: {
-            control.setValue(!control.value)
-        }
-    }*/
     ToolTipArea {
         enabled: flag.show
         text: flag.toolTip

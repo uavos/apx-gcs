@@ -4,17 +4,17 @@ import "."
 Item {
     id: numValue
     property variant mfield
-    property double precision: 0
+    property real precision: 0
 
     property string label: mfield?mfield.name:""
-    property double value: mfield?mfield.value:0
+    property real value: mfield?mfield.value:0
     property string text: value.toFixed(precision)
     property string toolTip: mfield?mfield.descr:""
     property string labelColor: "cyan"
     property string valueColor: (warning&&(!alarm))?"yellow":"white"
 
-    property double labelScale: 0.6
-    property double labelMargin: 0
+    property real labelScale: 0.6
+    property real labelMargin: 0
     property string labelFont: "Monospace"
     property string valueFont: font_narrow
 
@@ -23,7 +23,7 @@ Item {
 
     property bool warning: false
     property bool alarm: false
-    property double diff: 0
+    property real diff: 0
 
 
     //mandala alarms
@@ -51,7 +51,7 @@ Item {
 
 
     //diff monitor
-    property double value_s: value
+    property real value_s: value
     onValueChanged: {
         diff=value_s===0?0:Math.abs(value-value_s);
         value_s=value;
