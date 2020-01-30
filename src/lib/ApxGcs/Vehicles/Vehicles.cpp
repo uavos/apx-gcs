@@ -102,7 +102,7 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     }
 
     //Database register fields
-    DatabaseRequest::Records recFields;
+    /*DatabaseRequest::Records recFields;
     recFields.names << "name"
                     << "title"
                     << "descr"
@@ -115,7 +115,22 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                                 << f->name() << f->title() << f->descr() << f->units()
                                 << f->enumStrings().join(',') << QVariant() << f->id());
     }
-    (new DBReqTelemetryUpdateFields(recFields))->exec();
+    (new DBReqTelemetryUpdateFields(recFields))->exec();*/
+    DatabaseRequest::Records recMandala;
+    recMandala.names << "id"
+                     << "name"
+                     << "title"
+                     << "descr"
+                     << "units"
+                     << "alias";
+    foreach (MandalaTreeFact *f, f_local->f_mandalatree->uid_map.values()) {
+        QVariantList v;
+        v << f->uid() << f->mpath() << f->title() << f->descr();
+        v << (f->enumStrings().isEmpty() ? f->units() : f->enumStrings().join(','));
+        v << f->alias();
+        recMandala.values.append(v);
+    }
+    (new DBReqTelemetryUpdateMandala(recMandala))->exec();
 
     selectVehicle(f_local);
 

@@ -48,6 +48,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
                         tr("Enable telemetry recording"),
                         Bool);
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::recordingChanged);
+    connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
 
     //vehicle forwarded recording signals
     connect(vehicle, &Vehicle::recordDownlink, this, &TelemetryRecorder::recordDownlink);
@@ -75,8 +76,6 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
                 this,
                 &TelemetryRecorder::recordMissionUplink);
     });
-
-    connect(this, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
 
     connect(this, &TelemetryRecorder::timeChanged, this, &TelemetryRecorder::updateStatus);
 

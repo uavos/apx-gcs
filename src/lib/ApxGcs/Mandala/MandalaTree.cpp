@@ -117,7 +117,16 @@ MandalaTree::MandalaTree(Fact *parent)
         }
         MandalaTreeFact *f = new MandalaTreeFact(this, group, d);
         uid_map.insert(f->uid(), f);
-        //static_cast<MandalaTreeFact *>(group->parentFact())->updateStatus();
+        //find aliases
+        for (auto i : mandala::backport::items) {
+            if (d.uid != i.meta.uid)
+                continue;
+            if (i.meta.uid == mandala::backport::meta_void.uid)
+                continue;
+            f->addAlias(i.alias);
+            f->setDescr(QString("{%1} %2").arg(i.alias).arg(f->descr()));
+            break;
+        }
     }
 
     //fact tests

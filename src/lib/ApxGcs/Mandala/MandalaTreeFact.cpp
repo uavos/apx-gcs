@@ -150,6 +150,16 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
     updateDescr();
 }
 
+void MandalaTreeFact::addAlias(const QString &a)
+{
+    m_alias.append(a);
+}
+
+QString MandalaTreeFact::alias() const
+{
+    return m_alias;
+}
+
 bool MandalaTreeFact::setValue(const QVariant &v)
 {
     //always send uplink

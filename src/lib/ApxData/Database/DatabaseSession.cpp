@@ -59,7 +59,7 @@ DatabaseSession::DatabaseSession(QObject *parent,
         QSqlDatabase::removeDatabase(sessionName);
     } else {
         QSqlQuery query(sql);
-        query.exec("PRAGMA foreign_keys = on;");
+        query.exec("PRAGMA foreign_keys = ON;");
         query.exec("PRAGMA page_size = 4096;");
         query.exec("PRAGMA cache_size = 16384;");
         query.exec("PRAGMA synchronous = OFF;");
@@ -199,10 +199,20 @@ bool DatabaseSession::rollback(QSqlQuery &query)
     return rv;
 }
 //=============================================================================
+void DatabaseSession::disable()
+{
+    QReadLocker locker(&m_workerLock);
+    setEnabled(false);
+}
+void DatabaseSession::enable()
+{
+    QReadLocker locker(&m_workerLock);
+    setEnabled(true);
+}
 void DatabaseSession::request(DatabaseRequest *req)
 {
     QReadLocker locker(&m_workerLock);
-    if (!sql.isOpen() || !m_worker)
+    if (!sql.isOpen() || !m_worker || !enabled())
         return;
     m_worker->request(req);
 }

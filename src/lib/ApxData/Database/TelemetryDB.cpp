@@ -105,9 +105,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
                                      << "name TEXT"
                                      << "title TEXT"
                                      << "descr TEXT"
-                                     << "units TEXT"
-                                     << "opts TEXT"
-                                     << "sect TEXT");
+                                     << "units TEXT");
 
     //---------------------------------
     // data
@@ -335,6 +333,112 @@ bool DBReqTelemetryUpdateFields::run(QSqlQuery &query)
             return false;
     }
     static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
+    return true;
+}
+//=============================================================================
+bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
+{
+    const QStringList &n = records.names;
+    int i_name = n.indexOf("name");
+    int i_alias = n.indexOf("alias");
+
+    TelemetryDB::TelemetryFieldsMap fmap;
+
+    //load existing fields
+    query.prepare("SELECT * FROM TelemetryFields");
+    if (!query.exec())
+        return false;
+    Records db_records = queryRecords(query);
+    const QStringList &rn = db_records.names;
+    int i_r_name = rn.indexOf("name");
+
+    bool mod = false;
+    for (auto const &f : records.values) {
+        QString f_name = f.at(i_name).toString();
+        QString f_alias = f.at(i_alias).toString();
+
+        quint64 key = 0;
+        bool upd = false;
+        for (auto const &r : db_records.values) {
+            const QString &name = r.at(i_r_name).toString();
+            if (name == f_name || name == f_alias) {
+                key = r.at(0).toULongLong();
+                fmap.insert(key, f_name);
+                //check entire row match
+                for (int i = 1; i < r.size(); ++i) {
+                    if (r.at(i).toString() == f.value(n.indexOf(rn.at(i))).toString()) {
+                        continue;
+                    }
+                    //qWarning() << r.at(i) << f.value(n.indexOf(rn.at(i)));
+                    upd = true; //record update needed
+                    break;
+                }
+                break; //exsisting record found
+            }
+        }
+        if (key && !upd)
+            continue;
+        if (!mod) {
+            if (!db->transaction(query))
+                return false;
+            mod = true;
+        }
+        if (!key) {
+            apxConsole() << "new telemetry field:" << f_name;
+            query.prepare("INSERT INTO TelemetryFields(name) VALUES(?)");
+            query.addBindValue(f_name);
+            if (!query.exec())
+                return false;
+            key = query.lastInsertId().toULongLong();
+            fmap.insert(key, f_name);
+        } else {
+            apxConsole() << "update telemetry field:" << f_name;
+        }
+        //update existing record
+        QStringList nlist = rn;
+        nlist.removeAt(0); //skip key
+        QString qs = QString("UPDATE TelemetryFields SET %1=? WHERE key=?").arg(nlist.join("=?,"));
+        query.prepare(qs);
+        for (auto s : nlist) {
+            query.addBindValue(f.value(n.indexOf(s)));
+        }
+        query.addBindValue(key);
+        if (!query.exec())
+            return false;
+    }
+    if (mod) {
+        if (!db->commit(query))
+            return false;
+        apxMsgW() << tr("Telemetry DB updated");
+    }
+
+    //check for deprecated records
+    QList<quint64> rmlist;
+    for (auto const &r : db_records.values) {
+        quint64 key = r.at(0).toULongLong();
+        if (fmap.contains(key))
+            continue;
+        apxConsole() << "remove telemetry field:" << r.at(i_r_name).toString();
+        rmlist.append(key);
+    }
+    if (!rmlist.isEmpty()) {
+        db->disable();
+        emit progress(0);
+        apxMsgW() << tr("Telemetry DB maintenance in progress...");
+        QStringList st;
+        for (auto k : rmlist)
+            st << QString::number(k);
+        if (!query.exec("PRAGMA foreign_keys = OFF"))
+            return false;
+        query.prepare(QString("DELETE FROM TelemetryFields WHERE key IN (%1)").arg(st.join(',')));
+        //query.addBindValue(st.join(','));
+        if (!query.exec())
+            return false;
+        emit progress(-1);
+        apxMsgW() << tr("Telemetry DB ready");
+        db->enable();
+    }
+
     return true;
 }
 //=============================================================================

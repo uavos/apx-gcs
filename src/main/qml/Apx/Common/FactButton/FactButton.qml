@@ -52,7 +52,7 @@ CleanButton {
     showText: true
     textAlignment: Text.AlignLeft
 
-    readonly property bool opt_highlight: fact && (fact.options&Fact.HighlightActive)
+    readonly property bool opt_highlight: fact?fact.options&Fact.HighlightActive:true
 
     highlighted: activeFocus || selected || (active && opt_highlight)
 

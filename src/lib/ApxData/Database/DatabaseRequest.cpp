@@ -160,8 +160,8 @@ bool DatabaseRequest::recordUpdateQuery(QSqlQuery &query,
     QString s = QString("UPDATE %1 SET %2=? %3").arg(table).arg(values.keys().join("=?,")).arg(tail);
     //qDebug()<<s;
     query.prepare(s);
-    foreach (QString key, values.keys()) {
-        query.addBindValue(values.value(key));
+    for (auto v : values.values()) {
+        query.addBindValue(v);
     }
     return true;
 }
@@ -223,8 +223,8 @@ QStringList DatabaseRequest::fieldNames(QSqlQuery &query) const
 QVariantList DatabaseRequest::values(QSqlQuery &query, const QStringList &names) const
 {
     QVariantList v;
-    for (int i = 0; i < names.size(); ++i) {
-        v.append(query.value(i));
+    for (auto const &n : names) {
+        v.append(query.value(n));
     }
     return v;
 }

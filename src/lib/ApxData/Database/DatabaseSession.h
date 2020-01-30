@@ -47,6 +47,9 @@ public:
     QString sessionName;
     bool inTransaction;
 
+    void disable();
+    void enable();
+
     void request(DatabaseRequest *req);
 
     bool transaction(QSqlQuery &query);

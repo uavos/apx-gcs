@@ -51,9 +51,13 @@ public:
     Fact *classFact() const;
     QString mpath() const;
 
+    void addAlias(const QString &a);
+    QString alias() const;
+
 private:
     MandalaTree *m_tree;
     const mandala::meta_t &m_meta;
+    QString m_alias;
 
     QElapsedTimer sendTime;
     QTimer sendTimer;

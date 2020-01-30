@@ -90,6 +90,24 @@ signals:
     void countLoaded(quint64 count, QStringList titles);
 };
 //=============================================================================
+class DBReqTelemetryUpdateMandala : public DBReqTelemetry
+{
+    Q_OBJECT
+public:
+    explicit DBReqTelemetryUpdateMandala(Records records)
+        : DBReqTelemetry()
+        , records(records)
+    {}
+
+private:
+    Records records;
+
+protected:
+    bool run(QSqlQuery &query);
+signals:
+    void progress(int v);
+};
+//=============================================================================
 class DBReqTelemetryEmptyTrash : public DBReqTelemetry
 {
     Q_OBJECT
