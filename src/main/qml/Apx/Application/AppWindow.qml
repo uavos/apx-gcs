@@ -47,10 +47,16 @@ ApplicationWindow {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.bottom
                         color: "#888"
+                        text: apx.value?apx.text:msg
+                        property string msg
                         Connections {
                             target: application.appLog
-                            onConsoleMessage: loadingText.text=msg
+                            onConsoleMessage: loadingText.msg=msg
                         }
+                    }
+                    BusyIndicator {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: loadingText.bottom
                     }
                 }
             }

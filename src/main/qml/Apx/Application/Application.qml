@@ -43,7 +43,7 @@ AppWindow {
     Connections {
         target: application
         onLoadingFinished: {
-            loaderMain.active=true
+            loaderMain.active=Qt.binding(function(){return !apx.value})
         }
         onAbout: {
             var c=c_about.createObject(application.window)

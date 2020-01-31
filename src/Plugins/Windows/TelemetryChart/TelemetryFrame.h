@@ -46,7 +46,7 @@ private:
     TelemetryPlayer *player;
     TelemetryShare *share;
 
-    QHash<QwtPlotCurve *, Fact *> plotMap;
+    QStringList ctr_fields;
 
     QToolBar *toolBar;
     QVBoxLayout *vlayout;
@@ -79,10 +79,6 @@ private:
     QTimer plotCursorUpdateTimer;
 
     QDockWidget *parentW;
-
-    void export_csv(QString fileName);
-    void export_fdr(QString fileName);
-    void export_kml(QString fileName);
 private slots:
     void updateStats();
     void updateData();
@@ -91,7 +87,6 @@ private slots:
 
     void resetPlot();
 
-    void aFilter_triggered(void);
     void eNotes_returnPressed(void);
 
     void aReplay_triggered(void);

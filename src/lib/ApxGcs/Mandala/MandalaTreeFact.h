@@ -53,6 +53,7 @@ public:
 
     void addAlias(const QString &a);
     QString alias() const;
+    mandala::uid_t offset() const;
 
 private:
     MandalaTree *m_tree;

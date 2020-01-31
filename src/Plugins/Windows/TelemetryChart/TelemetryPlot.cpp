@@ -173,7 +173,12 @@ void TelemetryPlot::resetData()
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
-        curve->setSamples(QVector<QPointF>());
+        if (curve == calc) {
+            curve->setSamples(QVector<QPointF>());
+            continue;
+        }
+        curve->detach();
+        delete curve;
     }
     if (calc)
         showCurve(itemToInfo(calc), false);
@@ -183,16 +188,18 @@ void TelemetryPlot::resetData()
 //=============================================================================
 void TelemetryPlot::restoreSettings()
 {
-    if (!QSettings().contains("plots"))
-        QSettings().setValue("plots",
-                             QStringList() << "pitch"
-                                           << "cmd_airspeed"
-                                           << "cmd_roll"
-                                           << "cmd_pitch"
-                                           << "altitude"
-                                           << "cmd_altitude"
-                                           << "roll"
-                                           << "airspeed");
+    if (!QSettings().contains("plots")) {
+        QStringList st;
+        st << "est.att.roll"
+           << "cmd.reg.roll"
+           << "est.att.pitch"
+           << "cmd.reg.pitch";
+        st << "est.air.altitude";
+        st << "est.air.airspeed"
+           << "cmd.reg.airspeed";
+        st << "est.air.vspeed";
+        QSettings().setValue("plots", st);
+    }
     QStringList sps = QSettings().value("plots").toStringList();
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
@@ -294,7 +301,7 @@ void TelemetryPlot::refreshCalculated()
 {
     bool ok;
     if (expCalc.isEmpty())
-        expCalc = "altitude+down";
+        expCalc = "est.att.yaw-est.calc.course";
     QString exp = QInputDialog::getText(nullptr,
                                         tr("Calculated field"),
                                         tr("JavaScript expression:"),
@@ -358,7 +365,23 @@ void TelemetryPlot::refreshCalculated()
             const QPointF &p = points->sample(didx);
             if (p.x() != t)
                 continue;
-            engine.globalObject().setProperty(fnames.at(i), p.y());
+            QString s = fnames.at(i);
+            QJSValue obj = engine.globalObject();
+            while (1) {
+                int i = s.indexOf('.');
+                if (i < 0) {
+                    obj.setProperty(s, p.y());
+                    break;
+                }
+                const QString &ps = s.left(i);
+                QJSValue v = obj.property(ps);
+                if (!v.isObject()) {
+                    v = engine.newObject();
+                    obj.setProperty(ps, v);
+                }
+                obj = v;
+                s.remove(0, i + 1);
+            }
             fpidx[i] = didx + 1;
             cnt++;
         }
@@ -563,7 +586,6 @@ double PlotPicker::sampleValue(const QwtPlotCurve *curve, double t) const
         } else
             return p.y();
     }
-    return 0;
 }
 //=============================================================================
 void LegendItem::paintEvent(QPaintEvent *e)
@@ -621,7 +643,7 @@ void PlotMagnifier::rescale(double factor)
                 center = mwPos.x();
             // use the mouse as the center when we can,
             // if its -1, then its a keyboard event. use the window center.
-            if (center == -1)
+            if (center == -1.0)
                 center = min_pixel + (max_pixel - min_pixel) / 2;
             // convert back to real values
             min_value = mapper.invTransform(center - (center - min_pixel) * factor);
@@ -643,7 +665,7 @@ PlotLegend::PlotLegend(QWidget *parent)
 //=============================================================================
 QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
 {
-    Q_UNUSED(data);
+    Q_UNUSED(data)
     QwtLegendLabel *w = new LegendItem();
     w->setItemMode(defaultItemMode());
     w->setSpacing(3);

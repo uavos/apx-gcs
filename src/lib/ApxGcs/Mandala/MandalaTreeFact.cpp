@@ -184,6 +184,10 @@ mandala::uid_t MandalaTreeFact::uid() const
 {
     return m_meta.uid;
 }
+mandala::uid_t MandalaTreeFact::offset() const
+{
+    return m_meta.uid - mandala::uid_base;
+}
 void MandalaTreeFact::request()
 {
     emit sendValueRequest(uid());
@@ -409,7 +413,7 @@ QColor MandalaTreeFact::getColor()
     for (auto st : vlist) {
         vectfactor++;
         for (int i = 0; i < 3; ++i) {
-            if (sn == st.at(i) || (sn.contains('_') && sn.endsWith(st.at(i)))) {
+            if (sn == st.at(i) || (sn.endsWith(st.at(i)))) {
                 vectidx = i;
                 break;
             }

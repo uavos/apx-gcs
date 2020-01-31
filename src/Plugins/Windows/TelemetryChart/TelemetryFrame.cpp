@@ -28,6 +28,7 @@
 #include <Telemetry/LookupTelemetry.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
+#include <QColor>
 #include <QtGui>
 #include <QtNetwork>
 //=============================================================================
@@ -171,29 +172,16 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     connect(&plotCursorUpdateTimer, &QTimer::timeout, this, &TelemetryFrame::updatePlotPlayerTime);
 
     connect(player->f_time, &Fact::valueChanged, this, &TelemetryFrame::playerTimeChanged);
-    //connect(player,&Fact::activeChanged,this,&TelemetryFrame::playerStateChanged);
 
-    //create plot fields
-    foreach (VehicleMandalaFact *f, Vehicles::instance()->f_replay->f_mandala->allFacts) {
-        //fill params
-        QString sn = f->name();
-        Qt::PenStyle style = Qt::SolidLine;
-        if (sn.contains("cmd_"))
-            style = Qt::DotLine;
-        else if (sn.contains("gps_"))
-            style = Qt::DashLine;
-        else if (sn.contains("rc_"))
-            style = Qt::DotLine;
-        QColor c(f->opts().value("color", QColor(Qt::white)).value<QColor>());
-        QwtPlotCurve *cv = plot->addCurve(sn, f->descr(), f->units(), QPen(c, 0, style));
-        plotMap.insert(cv, f);
-    }
     plot->calc = plot->addCurve("calculated",
-                                tr("Calculated user variable"),
+                                tr("Calculated JS script value"),
                                 "",
                                 QColor(Qt::yellow).lighter());
-    plot->restoreSettings();
-    connect(plot, &TelemetryPlot::itemVisibleChanged, this, [=]() { plot->saveSettings(); });
+
+    connect(plot, &TelemetryPlot::itemVisibleChanged, this, [this](QwtPlotItem *item) {
+        if (item != plot->calc)
+            plot->saveSettings();
+    });
 
     //update css styles
     foreach (QAction *a, toolBar->actions()) {
@@ -261,24 +249,60 @@ void TelemetryFrame::updateStatus()
 //=============================================================================
 void TelemetryFrame::updateData()
 {
-    //map facts by fieldNames to fid
-    QHash<Fact *, quint64> fidMap;
-    foreach (quint64 fid, reader->fieldNames.keys()) {
-        const QString &s = reader->fieldNames.value(fid);
-        Fact *f = Vehicles::instance()->f_replay->f_mandala->factByName(s);
-        if (!f)
-            continue;
-        fidMap.insert(f, fid);
-    }
-    //load data to plot
-    foreach (QwtPlotCurve *c, plotMap.keys()) {
-        quint64 fid = fidMap.value(plotMap.value(c), 0);
-        if (!fid)
-            continue;
-        QVector<QPointF> *d = reader->fieldData.value(fid);
+    //create curves
+    QHash<quint64, MandalaTreeFact *> fidmap;
+    for (auto fid : reader->fieldNames.keys()) {
+        const QVector<QPointF> *d = reader->fieldData.value(fid);
         if (!d)
             continue;
-        c->setSamples(*d);
+        //check if all zero
+        int zcnt = 0;
+        for (auto const &p : *d) {
+            if (p.y() != 0.0)
+                break;
+            zcnt++;
+        }
+        if (d->size() == zcnt)
+            continue;
+
+        const QString &s = reader->fieldNames.value(fid);
+        MandalaTreeFact *f = qobject_cast<MandalaTreeFact *>(
+            Vehicles::instance()->f_replay->f_mandalatree->findChild(s));
+        if (!f)
+            continue;
+        fidmap.insert(fid, f);
+    }
+    QList<quint64> fidlist = fidmap.keys();
+    std::sort(fidlist.begin(), fidlist.end(), [fidmap](quint64 v1, quint64 v2) {
+        return fidmap.value(v1)->uid() < fidmap.value(v2)->uid();
+    });
+
+    ctr_fields.clear();
+    QHash<quint64, QwtPlotCurve *> cmap;
+    for (auto fid : fidlist) {
+        //map a fact
+        const QString &s = reader->fieldNames.value(fid);
+        const Fact *f = fidmap.value(fid);
+        //fill params
+        Qt::PenStyle style = Qt::SolidLine;
+        if (s.startsWith("cmd."))
+            style = Qt::DotLine;
+        else if (s.contains(".gps.") || s.contains(".pos."))
+            style = Qt::DashLine;
+        else if (s.contains(".rc."))
+            style = Qt::DotLine;
+        QColor c(f->opts().value("color", QColor(Qt::white)).value<QColor>());
+        QwtPlotCurve *cv = plot->addCurve(s, f->descr(), f->units(), QPen(c, 0, style));
+        cmap.insert(fid, cv);
+        if (s.startsWith("ctr."))
+            ctr_fields.append(s);
+    }
+
+    plot->restoreSettings();
+
+    //load data to plot
+    for (auto fid : cmap.keys()) {
+        cmap.value(fid)->setSamples(*reader->fieldData.value(fid));
     }
     //load events
     for (TelemetryReader::events_t::iterator e = reader->events.begin(); e != reader->events.end();
@@ -311,19 +335,6 @@ void TelemetryFrame::resetPlot()
     if (aShowEvents->isChecked())
         aShowEvents->trigger();
     plot->resetData();
-}
-//=============================================================================
-void TelemetryFrame::aFilter_triggered(void)
-{
-    /*if(aFilter->isChecked()){
-    aFilter->setChecked(!reader->f_filter->text().isEmpty());
-    //rescan();
-    bool ok;
-    QString item=QInputDialog::getItem(nullptr,aFilter->toolTip(),aFilter->text(),reader->f_filter->enumStrings(),0,false,&ok);
-    if(!ok) return;
-    reader->f_filter->setValue(item);
-  }else reader->f_filter->setValue("");
-  aFilter->setChecked(!reader->f_filter->text().isEmpty());*/
 }
 //=============================================================================
 void TelemetryFrame::eNotes_returnPressed(void)
@@ -361,37 +372,34 @@ void TelemetryFrame::avCLR_triggered(void)
 void TelemetryFrame::avSTD_triggered(void)
 {
     QStringList st;
-    st << "roll"
-       << "cmd_roll"
-       << "pitch"
-       << "cmd_pitch";
-    st << "altitude"; //<<"cmd_altitude";
-    st << "airspeed"
-       << "cmd_airspeed";
-    st << "vspeed";
+    st << "est.att.roll"
+       << "cmd.reg.roll"
+       << "est.att.pitch"
+       << "cmd.reg.pitch";
+    st << "est.air.altitude";
+    st << "est.air.airspeed"
+       << "cmd.reg.airspeed";
+    st << "est.air.vspeed";
     plot->showCurves(true, st, true);
 }
 void TelemetryFrame::avIMU_triggered(void)
 {
     QStringList st;
-    st << "Ax"
-       << "Ay"
-       << "Az";
-    st << "p"
-       << "q"
-       << "r";
-    st << "Hx"
-       << "Hy"
-       << "Hz";
+    st << "est.rel.ax"
+       << "est.rel.ay"
+       << "est.rel.az";
+    st << "est.att.p"
+       << "est.att.q"
+       << "est.att.r";
+    st << "sns.mag.x"
+       << "sns.mag.y"
+       << "sns.mag.z";
+    st << "est.calc.mag";
     plot->showCurves(true, st, true);
 }
 void TelemetryFrame::avCTR_triggered(void)
 {
-    QStringList st;
-    foreach (QString vn, Vehicles::instance()->f_local->f_mandala->names)
-        if (vn.startsWith("ctr"))
-            st.append(vn);
-    plot->showCurves(true, st, true);
+    plot->showCurves(true, ctr_fields, true);
 }
 //=============================================================================
 //=============================================================================
@@ -437,136 +445,4 @@ void TelemetryFrame::updatePlotPlayerTime()
     plot->setTimeCursor(t, reader->totalSize() < 3000000);
     lbPlayerTime->setText(AppRoot::timemsToString(t));
 }
-//=============================================================================
-
-//=============================================================================
-//=============================================================================
-//=============================================================================
-void TelemetryFrame::export_csv(QString fileName)
-{
-    Q_UNUSED(fileName)
-    /*QFile file(fileName);
-  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    QMessageBox::warning(this, QApplication::applicationName(),QString(tr("Cannot write file")+" %1:\n%2.").arg(fileName).arg(file.errorString()));
-    return;
-  }
-  QTextStream out(&file);
-  //write file header..
-  out << "time,"+QStringList(Vehicles::instance()->f_local->f_mandala->names).join(",")+QString("\n");
-
-  uint cnt=0,i=0;
-  foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
-    if(((cnt++)&0x00FF)==0){
-      QCoreApplication::processEvents();
-      progress.setValue(time);
-    }
-    if(progress.wasCanceled()) {
-      out.flush();
-      file.close();
-      file.remove();
-      return;
-    }
-    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->f_local->f_recorder->file.data.at(i++);
-    QStringList slist;
-    slist.append(QString::number(time));
-    foreach(double v,vlist){
-      QString s=QString("%1").arg(v,0,'f',10);
-      while(s.at(s.size()-1)=='0'){ //remove trailing zeros
-        s.remove(s.size()-1,1);
-        if(s.at(s.size()-1)!='.')continue;
-        s.remove(s.size()-1,1);
-        break;
-      }
-      slist.append(s);
-    }
-    out << slist.join(",")+QString("\n");
-  }
-  out.flush();
-  file.close();*/
-}
-//------------------------------------------------------------------------
-void TelemetryFrame::export_fdr(QString fileName)
-{
-    Q_UNUSED(fileName)
-    /*QFile file(fileName);
-  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    QMessageBox::warning(this, QApplication::applicationName(),QString(tr("Cannot write file")+" %1:\n%2.").arg(fileName).arg(file.errorString()));
-    return;
-  }
-  QTextStream out(&file);
-  out << "A\n1\n\n";
-  out << "ACFT,"    << "Aircraft/General Aviation/Cirrus TheJet/c4.acf"  << "\n";
-  out << "TAIL,"    << "UAVOS.COM" << "\n";
-  QDateTime t=QFileInfo(fileName).lastModified();
-  t.setTime(QTime(12,0));
-  out << "TIME,"    << t.toString("hh:mm:ss") << "\n";
-  out << "DATE,"    << t.toString("dd/MM/yy") << "\n";
-  out << "PRES,"    << "29.92" << "\n";
-  out << "TEMP,"    << "65" << "\n";
-  out << "WIND,"    << "230,17" << "\n";
-
-  out << "\n\n";
-  //export data...
-  //read config
-  QSettings st(AppDirs::res().filePath("preferences/xplane-fdr.conf"),QSettings::IniFormat);
-  uint colCount=st.value("columns").toUInt();
-  st.beginGroup("columns");
-  QMap<int,QString> map;
-  foreach(QString vname,st.childKeys()){
-    if(Vehicles::instance()->f_local->f_mandala->names.contains(vname))
-      map[st.value(vname).toUInt()]=vname;
-  }
-  st.endGroup();
-
-  QProgressDialog progress(tr("Exporting telemetry file..."),tr("Abort"), 0, Vehicles::instance()->f_local->f_recorder->file.time.last());
-  progress.setWindowModality(Qt::WindowModal);
-
-  uint cnt=0,i=0;
-  foreach(uint time,Vehicles::instance()->f_local->f_recorder->file.time){
-    if(((cnt++)&0x00FF)==0){
-      QCoreApplication::processEvents();
-      progress.setValue(time);
-    }
-    if(progress.wasCanceled()) {
-      out.flush();
-      file.close();
-      file.remove();
-      return;
-    }
-
-    const VehicleRecorder::ListDouble &vlist=Vehicles::instance()->f_local->f_recorder->file.data.at(i++);
-    out << "DATA,";
-    for (uint iv=0;iv<colCount;iv++) {
-      if(map.contains(iv)){
-        out << QString::number(vlist.at(Vehicles::instance()->f_local->f_mandala->names.indexOf(map.value(iv))),'f',8);
-      }else{
-        out << QString::number(0);
-      }
-      out << ",";
-    }
-    out << "\n";
-  }
-  out.flush();
-  file.close();*/
-}
-//------------------------------------------------------------------------
-void TelemetryFrame::export_kml(QString fileName)
-{
-    Q_UNUSED(fileName)
-    /*QFile f(fileName);
-  if (!f.open(QFile::WriteOnly | QFile::Text)) {
-    QMessageBox::warning(this, QApplication::applicationName(),QString(tr("Cannot write file")+" %1:\n%2.").arg(fileName).arg(f.errorString()));
-    return;
-  }
-  QNetworkAccessManager network;
-  uint port = QSettings().value("httpServerPort").toUInt();
-  QNetworkReply *reply = network.get(QNetworkRequest(QUrl(QString("http://127.0.0.1:%1/kml/telemetry")
-                                   .arg(port))));
-  reply->waitForReadyRead(10000);
-  f.write(reply->readAll());
-  f.flush();
-  f.close();
-  delete reply;*/
-}
-//=============================================================================
 //=============================================================================

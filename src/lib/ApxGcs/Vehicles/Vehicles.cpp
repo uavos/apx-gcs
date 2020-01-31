@@ -124,13 +124,26 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                      << "units"
                      << "alias";
     foreach (MandalaTreeFact *f, f_local->f_mandalatree->uid_map.values()) {
+        if (f->isSystem())
+            continue;
         QVariantList v;
-        v << f->uid() << f->mpath() << f->title() << f->descr();
+        v << f->offset() << f->mpath() << f->title() << f->descr();
         v << (f->enumStrings().isEmpty() ? f->units() : f->enumStrings().join(','));
         v << f->alias();
         recMandala.values.append(v);
     }
-    (new DBReqTelemetryUpdateMandala(recMandala))->exec();
+    DBReqTelemetryUpdateMandala *req = new DBReqTelemetryUpdateMandala(recMandala);
+    connect(
+        req,
+        &DBReqTelemetryUpdateMandala::progress,
+        this,
+        [](int v) {
+            AppRoot::instance()->setValue(
+                v < 0 ? QVariant()
+                      : tr("Telemetry DB maintenance - stand by").toUpper().append("..."));
+        },
+        Qt::QueuedConnection);
+    req->exec();
 
     selectVehicle(f_local);
 

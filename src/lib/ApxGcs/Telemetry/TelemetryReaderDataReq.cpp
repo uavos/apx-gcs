@@ -205,18 +205,18 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
 
     Fact *f = nullptr;
     if (name == "uplink") {
-        f = g->child(value);
+        f = g->childByTitle(value);
         if (!f) {
-            f = new Fact(g, value, "", "");
+            f = new Fact(g, value, value, "");
             //qDebug() << name << value;
             f->setValue(1);
         } else {
             f->setValue(f->value().toInt() + 1);
         }
     } else if (name == "serial") {
-        f = g->child(uid);
+        f = g->childByTitle(uid);
         if (!f) {
-            f = new Fact(g, uid, "", "");
+            f = new Fact(g, uid, uid, "");
             //qDebug() << name << value;
             f->setValue(1);
         } else {

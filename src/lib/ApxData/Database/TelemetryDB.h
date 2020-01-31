@@ -51,8 +51,6 @@ private:
     QList<quint64> m_invalidCacheList;
     quint64 latestInvalidCacheID;
 
-    bool checkActive();
-
 public slots:
     void emptyTrash();
     void emptyCache();

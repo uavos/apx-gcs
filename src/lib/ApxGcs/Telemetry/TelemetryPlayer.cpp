@@ -163,7 +163,7 @@ void TelemetryPlayer::play()
     if (factsMap.isEmpty()) {
         TelemetryDB::TelemetryFieldsMap map = Database::instance()->telemetry->fieldsMap();
         foreach (quint64 key, map.keys()) {
-            Fact *f = vehicle->f_mandala->child(map.value(key));
+            Fact *f = vehicle->f_mandalatree->findChild(map.value(key));
             if (f)
                 factsMap.insert(key, f);
         }

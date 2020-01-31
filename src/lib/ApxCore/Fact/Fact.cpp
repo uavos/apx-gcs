@@ -699,6 +699,11 @@ void Fact::updateParentEnabled()
     m_parentEnabled = v;
     if (pv != enabled())
         emit enabledChanged();
+
+    //update children
+    for (int i = 0; i < size(); ++i) {
+        child(i)->updateParentEnabled();
+    }
 }
 bool Fact::visible() const
 {
