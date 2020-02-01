@@ -144,3 +144,12 @@ MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const
     apxMsgW() << "Mandala uid not found:" << uid;
     return nullptr;
 }
+
+MandalaTreeFact *MandalaTree::fact(const QString &mpath) const
+{
+    MandalaTreeFact *f = static_cast<MandalaTreeFact *>(findChild(mpath));
+    if (!f) {
+        apxMsgW() << "Mandala fact not found:" << mpath;
+    }
+    return f;
+}

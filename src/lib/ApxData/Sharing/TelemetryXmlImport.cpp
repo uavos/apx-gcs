@@ -80,7 +80,7 @@ quint64 TelemetryXmlImport::read(QString fileName)
     file.seek(0);
     quint64 key = dbReadSharedHashId(sharedHash);
     if (key) {
-        apxMsg() << tr("Data exists").append("...");
+        apxMsgW() << tr("Data exists").append("...");
         return key;
     }
     //check format
@@ -136,7 +136,7 @@ quint64 TelemetryXmlImport::read(QXmlStreamReader &xml)
         if (!sharedHashExplicit.isEmpty()) {
             quint64 key = dbReadSharedHashId(sharedHashExplicit);
             if (key) {
-                apxMsg() << tr("Data exists").append("...");
+                apxMsgW() << tr("Data exists").append("...");
                 return key;
             }
         }
@@ -158,6 +158,7 @@ quint64 TelemetryXmlImport::read(QXmlStreamReader &xml)
 
         TelemetryDB *db = Database::instance()->telemetry;
         TelemetryDB::TelemetryFieldsMap fieldsMap = db->fieldsMap();
+        TelemetryDB::TelemetryFieldsAliases fieldsAliases = db->fieldsAliases();
 
         //construct fieldID map
         QList<quint64> recFieldsMap;
@@ -165,11 +166,15 @@ quint64 TelemetryXmlImport::read(QXmlStreamReader &xml)
             recFieldsMap.append(0);
         for (int i = 0; i < fields.size(); ++i) {
             const QString &s = fields.at(i);
-            if (!fieldsMap.values().contains(s)) {
-                qWarning() << "ignored field" << s;
+            if (fieldsMap.values().contains(s)) {
+                recFieldsMap[i] = fieldsMap.key(s);
                 continue;
             }
-            recFieldsMap[i] = fieldsMap.key(s);
+            if (fieldsAliases.contains(s)) {
+                recFieldsMap[i] = fieldsMap.key(fieldsAliases.value(s));
+                continue;
+            }
+            qWarning() << "ignored field" << s;
         }
 
         //read <data>
@@ -223,6 +228,8 @@ quint64 TelemetryXmlImport::read(QXmlStreamReader &xml)
             if (tag == "U") {
                 QString name = xml.attributes().value("name").toString();
                 quint64 fieldID = fieldsMap.key(name);
+                if (!fieldID && fieldsAliases.contains(name))
+                    fieldID = fieldsMap.key(fieldsAliases.value(name));
                 if (fieldID) {
                     dbSaveData(t, fieldID, xml.readElementText().toDouble(), true);
                 } else {
@@ -335,6 +342,7 @@ quint64 TelemetryXmlImport::readOldFormat(QXmlStreamReader &xml)
         //collect available DB fields
         TelemetryDB *db = Database::instance()->telemetry;
         TelemetryDB::TelemetryFieldsMap fieldsMap = db->fieldsMap();
+        TelemetryDB::TelemetryFieldsAliases fieldsAliases = db->fieldsAliases();
 
         if (isInterruptionRequested())
             break;
@@ -359,13 +367,13 @@ quint64 TelemetryXmlImport::readOldFormat(QXmlStreamReader &xml)
                             recFieldsMap.append(0);
                         for (int i = 0; i < st.size(); ++i) {
                             const QString &s = st.at(i);
-                            if (!fieldsMap.values().contains(s)) {
+                            if (s == "dl_timestamp")
+                                dl_timestamp_idx = i;
+                            if (!fieldsAliases.contains(s)) {
                                 qWarning() << "ignored field" << s;
                                 continue;
                             }
-                            recFieldsMap[i] = fieldsMap.key(s);
-                            if (s == "dl_timestamp")
-                                dl_timestamp_idx = i;
+                            recFieldsMap[i] = fieldsMap.key(fieldsAliases.value(s));
                         }
                     } else
                         xml.skipCurrentElement();
@@ -418,7 +426,7 @@ quint64 TelemetryXmlImport::readOldFormat(QXmlStreamReader &xml)
                 } else if (xml.attributes().hasAttribute("f")) {
                     //var update downlink/uplink
                     const QString &fname = xml.attributes().value("f").toString();
-                    quint64 fieldID = fieldsMap.key(fname);
+                    quint64 fieldID = fieldsMap.key(fieldsAliases.value(fname));
                     if (fname == "xpdr") {
                         dbSaveEvent(time_ms, "xpdr", xml.readElementText(), "", false);
                         //db->writeEvent(time_ms,"xpdr","raw",false,QByteArray::fromHex(xml.readElementText().toUtf8()));

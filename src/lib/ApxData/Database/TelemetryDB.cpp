@@ -186,6 +186,16 @@ void TelemetryDB::setFieldsMap(const TelemetryFieldsMap &v)
     QMutexLocker lock(&pMutex);
     m_fieldsMap = v;
 }
+TelemetryDB::TelemetryFieldsAliases TelemetryDB::fieldsAliases()
+{
+    QMutexLocker lock(&pMutex);
+    return m_fieldsAliases;
+}
+void TelemetryDB::setFieldsAliases(const TelemetryFieldsAliases &v)
+{
+    QMutexLocker lock(&pMutex);
+    m_fieldsAliases = v;
+}
 void TelemetryDB::markCacheInvalid(quint64 telemetryID)
 {
     if (latestInvalidCacheID == telemetryID)
@@ -268,61 +278,6 @@ bool DBReqTelemetry::run(QSqlQuery &query)
 }
 //=============================================================================
 //=============================================================================
-bool DBReqTelemetryUpdateFields::run(QSqlQuery &query)
-{
-    const QStringList &n = records.names;
-    QStringList fnames;
-    for (int i = 0; i < records.values.size(); ++i) {
-        const QVariantList &r = records.values.at(i);
-        QString s = r.at(n.indexOf("name")).toString();
-        fnames.append(s);
-    }
-    TelemetryDB::TelemetryFieldsMap fmap;
-    //check existing fields
-    query.prepare("SELECT * FROM TelemetryFields");
-    if (!query.exec())
-        return false;
-    while (query.next()) {
-        QString s = query.value(2).toString();
-        if (!fnames.contains(s)) {
-            apxConsoleW() << "deprecated field telemetry DB" << s;
-            continue;
-        }
-        fnames.removeOne(s);
-        fmap.insert(query.value(0).toULongLong(), s);
-    }
-    //insert missing
-    foreach (QString s, fnames) {
-        query.prepare("INSERT INTO TelemetryFields(name) VALUES(?)");
-        query.addBindValue(s);
-        if (!query.exec())
-            return false;
-        fmap.insert(query.lastInsertId().toULongLong(), s);
-        apxConsole() << "add field telemetry DB" << s;
-    }
-    //update info
-    for (int i = 0; i < records.values.size(); ++i) {
-        const QVariantList &r = records.values.at(i);
-        QString s = r.at(n.indexOf("name")).toString();
-        quint64 fieldID = fmap.key(s);
-        query.prepare("UPDATE TelemetryFields"
-                      " SET name=?, title=?, descr=?, units=?, opts=?, sect=?, id=?"
-                      " WHERE key=?");
-        query.addBindValue(s);
-        query.addBindValue(r.at(n.indexOf("title")));
-        query.addBindValue(r.at(n.indexOf("descr")));
-        query.addBindValue(r.at(n.indexOf("units")));
-        query.addBindValue(r.at(n.indexOf("opts")));
-        query.addBindValue(r.at(n.indexOf("sect")));
-        query.addBindValue(r.at(n.indexOf("id")));
-        query.addBindValue(fieldID);
-        if (!query.exec())
-            return false;
-    }
-    static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
-    return true;
-}
-//=============================================================================
 bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 {
     connect(
@@ -337,6 +292,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     int i_alias = n.indexOf("alias");
 
     TelemetryDB::TelemetryFieldsMap fmap;
+    TelemetryDB::TelemetryFieldsAliases faliases;
 
     //load existing fields
     query.prepare("SELECT * FROM TelemetryFields");
@@ -358,6 +314,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
             if (name == f_name || name == f_alias) {
                 key = r.at(0).toULongLong();
                 fmap.insert(key, f_name);
+                faliases.insert(f_alias, f_name);
                 //check entire row match
                 for (int i = 1; i < r.size(); ++i) {
                     if (r.at(i).toString() == f.value(n.indexOf(rn.at(i))).toString()) {
@@ -385,12 +342,17 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
                 return false;
             key = query.lastInsertId().toULongLong();
             fmap.insert(key, f_name);
+            faliases.insert(f_alias, f_name);
         } else {
             apxConsole() << "update telemetry field:" << f_name;
         }
         //update existing record
         QStringList nlist = rn;
         nlist.removeAt(0); //skip key
+        if (nlist.isEmpty()) {
+            nlist = n;
+            nlist.removeOne("alias");
+        }
         QString qs = QString("UPDATE TelemetryFields SET %1=? WHERE key=?").arg(nlist.join("=?,"));
         query.prepare(qs);
         for (auto s : nlist) {
@@ -443,6 +405,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     }
 
     static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
+    static_cast<TelemetryDB *>(db)->setFieldsAliases(faliases);
 
     return true;
 }

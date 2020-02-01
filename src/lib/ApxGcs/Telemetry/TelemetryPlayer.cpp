@@ -329,18 +329,21 @@ void TelemetryPlayer::next()
                 quint64 fieldID = r.at(n.indexOf("name")).toULongLong();
                 if (!fieldID)
                     continue;
-                Fact *f = factsMap.value(fieldID);
+                MandalaTreeFact *f = static_cast<MandalaTreeFact *>(factsMap.value(fieldID));
                 if (!f)
                     continue;
                 if (f->setValue(sv))
                     updCnt++;
-                QString s = f->title();
-                if (!(s.startsWith("rc_") || s.startsWith("camcmd_"))) {
-                    vehicle->message(QString("%1: %2 = %3").arg(">").arg(s).arg(f->text()),
-                                     AppNotify::Important);
-                    //apxMsg() << QString("[replay]%1: %2 = %3").arg(">").arg(s).arg(f->text());
-                }
-            } else if (type == 2 || type == 3) {
+                const QString &s = f->mpath();
+                if (s.startsWith("cmd.rc."))
+                    continue;
+                if (s.startsWith("cmd.gimbal."))
+                    continue;
+                vehicle->message(QString("%1: %2 = %3").arg(">").arg(f->title()).arg(f->text()),
+                                 AppNotify::Important);
+                continue;
+            }
+            if (type == 2 || type == 3) {
                 const QString &evt = r.at(n.indexOf("name")).toString();
                 const QString &uid = r.at(n.indexOf("uid")).toString();
                 if (evt == "msg") {
@@ -354,34 +357,33 @@ void TelemetryPlayer::next()
                     vehicle->message(QString("<: %1").arg(s),
                                      AppNotify::FromVehicle | AppNotify::Important,
                                      sub);
-                    //apxMsg() << QString("<[replay]%1").arg(sv);
                     App::sound(sv);
-                } else {
-                    if (evt == "mission") {
-                        //emit discardRequests();
-                        vehicle->f_mission->storage->loadMission(uid);
-                    } else if (evt == "nodes") {
-                        //emit discardRequests();
-                        vehicle->f_nodes->storage->loadConfiguration(uid);
-                    } else if (evt == "conf") {
-                        vehicle->f_nodes->loadConfValue(uid, sv);
-                        QString fn = sv.left(sv.indexOf('='));
-                        if (sv.size() > (fn.size() + 32) || sv.contains('\n')) {
-                            sv = fn + "=<data>";
-                        }
-                    } else if (evt == "serial") {
-                        qDebug() << evt << sv;
-                        continue;
-                    }
-                    AppNotify::NotifyFlags flags = AppNotify::Important;
-                    if (type != 3)
-                        flags |= AppNotify::FromVehicle;
-                    QString s = QString("%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
-                    if (!sv.isEmpty())
-                        s.append(QString(" (%1)").arg(sv));
-                    vehicle->message(s, flags);
-                    //apxMsg() << s;
+                    continue;
                 }
+                if (evt == "mission") {
+                    //emit discardRequests();
+                    vehicle->f_mission->storage->loadMission(uid);
+                } else if (evt == "nodes") {
+                    //emit discardRequests();
+                    vehicle->f_nodes->storage->loadConfiguration(uid);
+                } else if (evt == "conf") {
+                    vehicle->f_nodes->loadConfValue(uid, sv);
+                    QString fn = sv.left(sv.indexOf('='));
+                    if (sv.size() > (fn.size() + 32) || sv.contains('\n')) {
+                        sv = fn + "=<data>";
+                    }
+                } else if (evt == "serial") {
+                    qDebug() << evt << sv;
+                    continue;
+                }
+                AppNotify::NotifyFlags flags = AppNotify::Important;
+                if (type != 3)
+                    flags |= AppNotify::FromVehicle;
+                QString s = QString("%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
+                if (!sv.isEmpty())
+                    s.append(QString(" (%1)").arg(sv));
+                vehicle->message(s, flags);
+                continue;
             }
         }
 

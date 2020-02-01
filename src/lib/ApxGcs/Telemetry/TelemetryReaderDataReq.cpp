@@ -37,9 +37,9 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
     int iUid = records.names.indexOf("uid");
 
     QGeoPath path;
-    quint64 fidLat = fieldNames.key("gps_lat");
-    quint64 fidLon = fieldNames.key("gps_lon");
-    quint64 fidHmsl = fieldNames.key("gps_hmsl");
+    quint64 fidLat = fieldNames.key("est.pos.lat");
+    quint64 fidLon = fieldNames.key("est.pos.lon");
+    quint64 fidHmsl = fieldNames.key("est.pos.hmsl");
     QVector<QPointF> *vLat = nullptr;
     QVector<QPointF> *vLon = nullptr;
     QVector<QPointF> *vHmsl = nullptr;

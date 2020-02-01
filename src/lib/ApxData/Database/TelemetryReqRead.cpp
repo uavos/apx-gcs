@@ -547,7 +547,7 @@ bool DBReqTelemetryReadSharedHashId::run(QSqlQuery &query)
         return false;
     if (!query.next())
         return true;
-    telemetryID = query.value(0).toULongLong();
+    telemetryID = query.value("telemetryID").toULongLong();
     emit foundID(telemetryID);
     return true;
 }

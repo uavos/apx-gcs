@@ -136,16 +136,16 @@ private:
 
     QTimer updateInfoTimer;
 
-    VehicleMandalaFact *f_gps_lat;
-    VehicleMandalaFact *f_gps_lon;
-    VehicleMandalaFact *f_gps_hmsl;
-    VehicleMandalaFact *f_home_lat;
-    VehicleMandalaFact *f_home_lon;
-    VehicleMandalaFact *f_home_hmsl;
+    MandalaTreeFact *f_lat;
+    MandalaTreeFact *f_lon;
+    MandalaTreeFact *f_hmsl;
+    MandalaTreeFact *f_ref_lat;
+    MandalaTreeFact *f_ref_lon;
+    MandalaTreeFact *f_ref_hmsl;
 
-    VehicleMandalaFact *f_gps_Vdown;
-    VehicleMandalaFact *f_mode;
-    VehicleMandalaFact *f_stage;
+    MandalaTreeFact *f_vd;
+    MandalaTreeFact *f_mode;
+    MandalaTreeFact *f_stage;
 
     void setReplay(bool v);
 

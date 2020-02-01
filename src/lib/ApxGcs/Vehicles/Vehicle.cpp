@@ -78,24 +78,24 @@ Vehicle::Vehicle(Vehicles *vehicles,
     //f_recorder=new Recorder(this);
 
     //Mandala facts binfing
-    f_gps_lat = f_mandala->factByName("gps_lat");
-    f_gps_lon = f_mandala->factByName("gps_lon");
-    f_gps_hmsl = f_mandala->factByName("gps_hmsl");
-    f_home_lat = f_mandala->factByName("home_lat");
-    f_home_lon = f_mandala->factByName("home_lon");
-    f_home_hmsl = f_mandala->factByName("home_hmsl");
-    f_gps_Vdown = f_mandala->factByName("gps_Vdown");
-    f_mode = f_mandala->factByName("mode");
-    f_stage = f_mandala->factByName("stage");
+    f_lat = f_mandalatree->fact("est.pos.lat");
+    f_lon = f_mandalatree->fact("est.pos.lon");
+    f_hmsl = f_mandalatree->fact("est.pos.hmsl");
+    f_ref_lat = f_mandalatree->fact("est.ref.lat");
+    f_ref_lon = f_mandalatree->fact("est.ref.lon");
+    f_ref_hmsl = f_mandalatree->fact("est.ref.hmsl");
+    f_vd = f_mandalatree->fact("est.pos.vd");
+    f_mode = f_mandalatree->fact("cmd.op.mode");
+    f_stage = f_mandalatree->fact("cmd.op.stage");
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);
     connect(&updateInfoTimer, &QTimer::timeout, this, &Vehicle::updateInfo);
 
-    connect(f_gps_lat, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateCoordinate);
-    connect(f_gps_lon, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateCoordinate);
-    connect(f_gps_hmsl, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
-    connect(f_gps_Vdown, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_lat, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateCoordinate);
+    connect(f_lon, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateCoordinate);
+    connect(f_hmsl, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_vd, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
 
@@ -274,14 +274,14 @@ void Vehicle::updateInfo()
     //st<<callsign();
     if (vehicleClass() != GCU) {
         QString s;
-        int alt = f_gps_hmsl->value().toInt();
+        int alt = f_hmsl->value().toInt();
         if (std::abs(alt) >= 50)
             alt = (alt / 10) * 10;
         else if (alt < 1)
             alt = 0;
         s = QString("MSL%1").arg(alt);
 
-        int vs = -f_gps_Vdown->value().toInt();
+        int vs = -f_vd->value().toInt();
         if (vs > 1)
             s.append(QString("+%1").arg(vs));
         else if (vs < -1)
@@ -308,9 +308,9 @@ void Vehicle::updateInfoReq()
 }
 void Vehicle::updateCoordinate()
 {
-    setCoordinate(QGeoCoordinate(f_gps_lat->value().toDouble(),
-                                 f_gps_lon->value().toDouble(),
-                                 f_gps_hmsl->value().toDouble()));
+    setCoordinate(QGeoCoordinate(f_lat->value().toDouble(),
+                                 f_lon->value().toDouble(),
+                                 f_hmsl->value().toDouble()));
 }
 void Vehicle::updateFlightState()
 {
@@ -452,7 +452,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    const QGeoCoordinate h(f_home_lat->value().toDouble(), f_home_lon->value().toDouble());
+    const QGeoCoordinate h(f_ref_lat->value().toDouble(), f_ref_lon->value().toDouble());
     qreal azimuth_r = qDegreesToRadians(h.azimuthTo(c));
     qreal distance = h.distanceTo(c);
     qreal n = std::cos(azimuth_r) * distance;
@@ -465,7 +465,7 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    double hmsl = f_home_hmsl->value().toDouble();
+    double hmsl = f_ref_hmsl->value().toDouble();
     protocol->telemetry->sendVectorValue(f_mandala->factByName("cam_lat")->id(),
                                          c.latitude(),
                                          c.longitude(),
@@ -477,8 +477,8 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    double hmsl = f_home_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(f_home_lat->id(), c.latitude(), c.longitude(), hmsl);
+    double hmsl = f_ref_hmsl->value().toDouble();
+    protocol->telemetry->sendVectorValue(f_ref_lat->uid(), c.latitude(), c.longitude(), hmsl);
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
@@ -486,8 +486,8 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    double hmsl = f_gps_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(f_gps_lat->id(), c.latitude(), c.longitude(), hmsl);
+    double hmsl = f_hmsl->value().toDouble();
+    protocol->telemetry->sendVectorValue(f_lat->uid(), c.latitude(), c.longitude(), hmsl);
 }
 //=============================================================================
 void Vehicle::resetGeoPath()

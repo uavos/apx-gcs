@@ -33,8 +33,12 @@ public:
     explicit TelemetryDB(QObject *parent, QString sessionName);
 
     typedef QMap<quint64, QString> TelemetryFieldsMap;
+    typedef QMap<QString, QString> TelemetryFieldsAliases;
+
     TelemetryFieldsMap fieldsMap();
     void setFieldsMap(const TelemetryFieldsMap &v);
+    TelemetryFieldsAliases fieldsAliases();
+    void setFieldsAliases(const TelemetryFieldsAliases &v);
 
     void markCacheInvalid(quint64 telemetryID);
     QList<quint64> invalidCacheList();
@@ -47,7 +51,10 @@ public:
 
 private:
     QMutex pMutex; //property access mutex
+
     TelemetryFieldsMap m_fieldsMap;
+    TelemetryFieldsAliases m_fieldsAliases;
+
     QList<quint64> m_invalidCacheList;
     quint64 latestInvalidCacheID;
 
@@ -68,24 +75,6 @@ public:
 
 protected:
     virtual bool run(QSqlQuery &query);
-};
-//=============================================================================
-class DBReqTelemetryUpdateFields : public DBReqTelemetry
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetryUpdateFields(Records records)
-        : DBReqTelemetry()
-        , records(records)
-    {}
-
-private:
-    Records records;
-
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void countLoaded(quint64 count, QStringList titles);
 };
 //=============================================================================
 class DBReqTelemetryUpdateMandala : public DBReqTelemetry

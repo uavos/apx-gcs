@@ -15,17 +15,20 @@ MapQuickItem {  //to be used inside MapComponent only
     property APX.Vehicle vehicle: modelData
 
     //Fact bindings
-    property var vm: vehicle.mandala
-    property real f_roll: vm.roll.value
-    property real f_pitch: vm.pitch.value
-    property real f_yaw: vm.yaw.value
-    property real f_altitude: vm.altitude.value
+    property var vm: vehicle.mandalatree
+    property real f_roll: vm.est.att.roll.value
+    property real f_pitch: vm.est.att.pitch.value
+    property real f_yaw: vm.est.att.yaw.value
+    property real f_altitude: vm.est.air.altitude.value
+    property real f_cmd_course: vm.cmd.reg.course.value
+    property real f_course: vm.est.calc.course.value
+    property real f_windHdg: vm.est.calc.whdg.value
+    property real f_windSpd: vm.est.calc.wspd.value
+    property int f_mode: vm.cmd.op.mode.value
+
+    property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF
+
     property bool active: vehicle.active
-    property real f_cmd_course: vm.cmd_course.value
-    property real f_course: vm.course.value
-    property real f_windHdg: vm.windHdg.value
-    property real f_windSpd: vm.windSpd.value
-    property bool f_LDTO: vm.mode.value === op_mode_LANDING || vm.mode.value === op_mode_TAKEOFF
 
     visible: vehicle.visible
 
