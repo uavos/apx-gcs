@@ -307,15 +307,19 @@ static double cint(double x)
 }
 QString FactData::toText(const QVariant &v) const
 {
-    if ((dataType() != Group) && (!m_enumStrings.isEmpty())) {
+    Flag t = dataType();
+    if (t == Script) {
+        return v.toString();
+    }
+    if ((t != Group) && (!m_enumStrings.isEmpty())) {
         int ev = enumValue(v);
         //qDebug()<<"text"<<v<<ev;
         if (ev >= 0 && ev < m_enumStrings.size())
             return enumText(ev);
-        if (dataType() == Enum)
+        if (t == Enum)
             return v.toString();
     }
-    if (dataType() == Int) {
+    if (t == Int) {
         if (units() == "hex")
             return QString::number(v.toUInt(), 16).toUpper();
         if (units() == "time") {
@@ -323,13 +327,13 @@ QString FactData::toText(const QVariant &v) const
         }
         return QString::number(v.toString().toLongLong());
     }
-    if (dataType() == Bool) {
+    if (t == Bool) {
         return QVariant(v.toBool()).toString();
     }
-    if (dataType() == Mandala) {
+    if (t == Mandala) {
         return mandalaToString(v.toUInt());
     }
-    if (dataType() == Float) {
+    if (t == Float) {
         if (units() == "lat") {
             return AppRoot::latToString(v.toDouble());
         }
@@ -375,23 +379,20 @@ bool FactData::isZero() const
         }
         return true;
     }
-    if (dataType() == Text)
-        return text().isEmpty();
-    if (dataType() == Script)
-        return value().toString().isEmpty();
+    Flag t = dataType();
+    const QVariant &v = value();
+    if (v.isNull())
+        return true;
+    if (t == Text || t == Script)
+        return v.toString().isEmpty();
+    if (t == Float)
+        return v.toDouble() == 0.0;
     const QString &s = text().trimmed();
     if (s.isEmpty())
         return true;
-    /*if(dataType()==EnumData){
-    return m_value.toInt()==0 && (s=="off"||s=="default"||s=="auto"||s==QVariant::fromValue(false).toString());
-    }*/
     if (s == "0")
         return true;
-    if (dataType() == Float)
-        return m_value.toDouble() == 0.0;
-    if (m_value.toInt() == 0)
-        return true;
-    if (m_value.isNull())
+    if (v.toInt() == 0)
         return true;
     return false;
 }

@@ -5,8 +5,8 @@ ControlArea {
 
 
     readonly property var f_airspeed: mandala.est.air.airspeed
-    readonly property var f_cmd_airspeed: mandala.cmd.reg.airspeed
-    readonly property var f_speed: mandala.est.calc.speed
+    readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
+    readonly property var f_speed: mandala.est.pos.speed
 
 
     mvar: f_cmd_airspeed   //ControlArea

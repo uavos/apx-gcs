@@ -10,9 +10,9 @@ Item {
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property real m_yaw: f_yaw.value
-    readonly property var f_course: mandala.est.calc.course
+    readonly property var f_course: mandala.est.pos.course
     readonly property real m_course: f_course.value
-    readonly property var f_cmd_course: mandala.cmd.reg.course
+    readonly property var f_cmd_course: mandala.cmd.pos.course
     readonly property real m_cmd_course: f_cmd_course.value
 
     readonly property var f_thdg: mandala.est.ctr.thdg
@@ -32,7 +32,7 @@ Item {
     readonly property var f_lat: mandala.est.pos.lat
     readonly property var f_lon: mandala.est.pos.lon
 
-    readonly property var f_speed: mandala.est.calc.speed
+    readonly property var f_speed: mandala.est.pos.speed
     readonly property var f_loops: mandala.est.ctr.loops
 
     readonly property var f_eta: mandala.est.wpt.eta

@@ -71,12 +71,6 @@ Vehicle::Vehicle(Vehicles *vehicles,
     f_warnings = new VehicleWarnings(this);
     f_telemetry = new Telemetry(this);
 
-    m_mandala = new MandalaMap;
-    for (auto f : f_mandala->allFacts) {
-        m_mandala->insert(f->id(), f);
-    }
-    //f_recorder=new Recorder(this);
-
     //Mandala facts binfing
     f_lat = f_mandalatree->fact("est.pos.lat");
     f_lon = f_mandalatree->fact("est.pos.lon");

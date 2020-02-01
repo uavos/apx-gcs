@@ -299,18 +299,21 @@ quint64 AppRoot::timeFromString(QString s)
     return t;
 }
 //=============================================================================
-QString AppRoot::capacityToString(quint64 v)
+QString AppRoot::capacityToString(quint64 v, int prec)
 {
     QString s, su;
     if (v >= (1024 * 1024 * 1024)) {
-        s = QString("%1").arg(v / (1024.0 * 1024.0 * 1024.0), 0, 'f', 2);
+        s = QString("%1").arg(v / (1024.0 * 1024.0 * 1024.0), 0, 'f', prec > 2 ? prec : 2);
         su = "GB";
     } else if (v >= (1024 * 1024)) {
-        s = QString("%1").arg(v / (1024.0 * 1024.0), 0, 'f', 1);
+        s = QString("%1").arg(v / (1024.0 * 1024.0), 0, 'f', prec > 1 ? prec : 1);
         su = "MB";
-    } else {
-        s = QString("%1").arg(v / (1024.0), 0, 'f', 0);
+    } else if (v >= (1024)) {
+        s = QString("%1").arg(v / (1024.0), 0, 'f', prec > 0 ? prec : 0);
         su = "kB";
+    } else {
+        s = QString("%1").arg(static_cast<quint32>(v));
+        su = "B";
     }
     s.append(su);
     return s;

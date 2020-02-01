@@ -56,14 +56,6 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     //layout->setSpacing(0);
 
     editor = new SourceEdit(w);
-    Vehicle *vehicle = fact->findParent<Vehicle *>();
-    if (vehicle) {
-        QStringList st;
-        foreach (QString s, vehicle->f_mandala->names)
-            st.append("f_" + s);
-        st.append(vehicle->f_mandala->constants.keys());
-        editor->addKeywords(st);
-    }
     splitter->addWidget(editor);
 
     logList = new QListWidget(w);
@@ -75,6 +67,8 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     pawncc = new PawnCompiler(fact);
     connect(pawncc, &PawnCompiler::compiled, this, &FactDelegateScript::updateLog);
     pawncc->compile();
+
+    editor->addKeywords(pawncc->constants.keys());
 
     editor->setPlainText(fact->value().toString());
     connect(fact, &Fact::valueChanged, this, [=]() {

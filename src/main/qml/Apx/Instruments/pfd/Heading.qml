@@ -9,8 +9,8 @@ Item {
     readonly property int m_mtype: mandala.est.ctr.mtype.value
 
     readonly property var f_yaw: mandala.est.att.yaw
-    readonly property var f_course: mandala.est.calc.course
-    readonly property var f_cmd_course: mandala.cmd.reg.course
+    readonly property var f_course: mandala.est.pos.course
+    readonly property var f_cmd_course: mandala.cmd.pos.course
     readonly property var f_thdg: mandala.est.ctr.thdg
     readonly property var f_adj: mandala.cmd.op.adj
 

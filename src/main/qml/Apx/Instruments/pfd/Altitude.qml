@@ -7,7 +7,7 @@ import "../common"
 ControlArea {
 
     readonly property var f_altitude: mandala.est.air.altitude
-    readonly property var f_cmd_altitude: mandala.cmd.reg.altitude
+    readonly property var f_cmd_altitude: mandala.cmd.air.altitude
 
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_ref_hmsl: mandala.est.ref.hmsl

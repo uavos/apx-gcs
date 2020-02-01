@@ -82,7 +82,6 @@ NodeField::NodeField(NodeItem *node,
             break;
         pawncc = new PawnCompiler(this);
         connect(this, &Fact::valueChanged, pawncc, &PawnCompiler::compile);
-        connect(pawncc, &PawnCompiler::compiled, this, &NodeField::updateStatus);
         connect(
             pawncc,
             &PawnCompiler::compiled,
@@ -92,6 +91,7 @@ NodeField::NodeField(NodeItem *node,
                     && scriptCodeSave != pawncc->outData()) {
                     setModified(true);
                 }
+                emit textChanged();
             },
             Qt::QueuedConnection);
         break;
@@ -130,15 +130,16 @@ NodeField::NodeField(NodeItem *node,
 //=============================================================================
 void NodeField::updateStatus()
 {
-    QString s;
-    if (dtype == DictNode::Vector) {
+    switch (dtype) {
+    case DictNode::Vector: {
         QStringList st;
         for (int i = 0; i < size(); ++i) {
             NodeField *f = child<NodeField>(i);
             st.append(f->text());
         }
-        s = QString("(%1)").arg(st.join(','));
-    } else if (dtype == DictNode::Array) {
+        Fact::setValue(QString("(%1)").arg(st.join(',')));
+    } break;
+    case DictNode::Array: {
         int acnt = 0;
         for (int i = 0; i < size(); ++i) {
             NodeField *f = child<NodeField>(i);
@@ -152,19 +153,11 @@ void NodeField::updateStatus()
             acnt++;
         }
         if (acnt > 0)
-            s = QString("[%1/%2]").arg(acnt).arg(size());
+            Fact::setValue(QString("[%1/%2]").arg(acnt).arg(size()));
         else
-            s = QString("[%1]").arg(size());
-    } else if (dtype == DictNode::Script) {
-        if (pawncc->error())
-            s = "<" + tr("error") + ">";
-        else if (value().toString().isEmpty())
-            s = "<" + tr("empty") + ">";
-        else
-            s = QString("~%1").arg(
-                AppRoot::capacityToString(text().size() + pawncc->outData().size()));
+            Fact::setValue(QString("[%1]").arg(size()));
+    } break;
     }
-    Fact::setValue(s);
 }
 //=============================================================================
 bool NodeField::setValue(const QVariant &v)
@@ -209,6 +202,22 @@ QVariant NodeField::uploadableValue(void) const
         return list;
     }
     return value();
+}
+//=============================================================================
+QVariant NodeField::data(int col, int role) const
+{
+    if (dtype == DictNode::Script) {
+        if (role == Qt::DisplayRole && role != Qt::EditRole && col == FACT_MODEL_COLUMN_VALUE) {
+            if (pawncc->error())
+                return "<" + tr("error") + ">";
+            else if (text().isEmpty())
+                return "<" + tr("empty") + ">";
+            else
+                return QString("~%1").arg(
+                    AppRoot::capacityToString(text().size() + pawncc->outData().size(), 2));
+        }
+    }
+    return NodesBase::data(col, role);
 }
 //=============================================================================
 QString NodeField::toString() const

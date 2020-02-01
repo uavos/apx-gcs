@@ -78,20 +78,6 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     App *app = App::instance();
     App::jsync(this);
 
-    foreach (QString key, f_local->f_mandala->constants.keys()) {
-        app->engine()->globalObject().setProperty(key,
-                                                  app->engine()->toScriptValue(
-                                                      f_local->f_mandala->constants.value(key)));
-    }
-    /*foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts) {
-        app->jsexec(QString("this.__defineGetter__('%1', function(){ return "
-                            "apx.vehicles.current.mandala.%1.value; });")
-                        .arg(f->name()));
-        app->jsexec(QString("this.__defineSetter__('%1', function(v){ "
-                            "apx.vehicles.current.mandala.%1.value=v; });")
-                        .arg(f->name()));
-    }*/
-
     //register mandala constants for QML and JS
     for (auto s : f_local->f_mandalatree->constants.keys()) {
         const QVariant &v = f_local->f_mandalatree->constants.value(s);
@@ -102,20 +88,6 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     }
 
     //Database register fields
-    /*DatabaseRequest::Records recFields;
-    recFields.names << "name"
-                    << "title"
-                    << "descr"
-                    << "units"
-                    << "opts"
-                    << "sect"
-                    << "id";
-    foreach (VehicleMandalaFact *f, f_local->f_mandala->allFacts) {
-        recFields.values.append(QVariantList()
-                                << f->name() << f->title() << f->descr() << f->units()
-                                << f->enumStrings().join(',') << QVariant() << f->id());
-    }
-    (new DBReqTelemetryUpdateFields(recFields))->exec();*/
     DatabaseRequest::Records recMandala;
     recMandala.names << "id"
                      << "name"

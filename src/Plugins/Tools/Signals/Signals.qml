@@ -41,15 +41,15 @@ Rectangle {
             Layout.maximumHeight: 22*ui.scale
             SignalButton {
                 text: "R"
-                values: [ mandala.cmd.reg.roll, mandala.est.att.roll ]
+                values: [ mandala.cmd.att.roll, mandala.est.att.roll ]
             }
             SignalButton {
                 text: "P"
-                values: [ mandala.cmd.reg.pitch, mandala.est.att.pitch ]
+                values: [ mandala.cmd.att.pitch, mandala.est.att.pitch ]
             }
             SignalButton {
                 text: "Y"
-                values: [ mandala.cmd.reg.course, mandala.cmd.reg.yaw, mandala.est.att.yaw ]
+                values: [ mandala.cmd.pos.course, mandala.cmd.att.yaw, mandala.est.att.yaw ]
             }
             SignalButton {
                 text: "Axy"
@@ -65,7 +65,7 @@ Rectangle {
             }
             SignalButton {
                 text: "M"
-                values: [ mandala.sns.mag.x, mandala.sns.mag.y, mandala.sns.mag.z, mandala.est.calc.mag ]
+                values: [ mandala.sns.mag.x, mandala.sns.mag.y, mandala.sns.mag.z, mandala.est.aux.mag ]
             }
             SignalButton {
                 text: "Pt"

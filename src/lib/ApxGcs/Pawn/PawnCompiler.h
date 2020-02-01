@@ -37,6 +37,8 @@ public:
 
     const QByteArray &outData() const; //binary compiled data
 
+    QMap<QString, QString> constants;
+
 private:
     Fact *fact;
 

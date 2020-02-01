@@ -49,7 +49,8 @@ public:
     QStringList groups;
 
     //Fact override
-    bool setValue(const QVariant &v) override;
+    virtual QVariant data(int col, int role) const override;
+    virtual bool setValue(const QVariant &v) override;
 
     QVariant uploadableValue(void) const;
 

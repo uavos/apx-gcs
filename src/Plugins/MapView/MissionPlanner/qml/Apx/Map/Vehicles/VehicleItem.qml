@@ -20,10 +20,10 @@ MapQuickItem {  //to be used inside MapComponent only
     property real f_pitch: vm.est.att.pitch.value
     property real f_yaw: vm.est.att.yaw.value
     property real f_altitude: vm.est.air.altitude.value
-    property real f_cmd_course: vm.cmd.reg.course.value
-    property real f_course: vm.est.calc.course.value
-    property real f_windHdg: vm.est.calc.whdg.value
-    property real f_windSpd: vm.est.calc.wspd.value
+    property real f_cmd_course: vm.cmd.pos.course.value
+    property real f_course: vm.est.pos.course.value
+    property real f_windHdg: vm.est.aux.whdg.value
+    property real f_windSpd: vm.est.aux.wspd.value
     property int f_mode: vm.cmd.op.mode.value
 
     property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF

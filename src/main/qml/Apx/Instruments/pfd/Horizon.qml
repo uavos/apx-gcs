@@ -15,8 +15,8 @@ Item {
     readonly property real m_roll: mandala.est.att.roll.value
     readonly property real m_pitch: mandala.est.att.pitch.value
 
-    readonly property real m_cmd_roll: mandala.cmd.reg.roll.value
-    readonly property real m_cmd_pitch: mandala.cmd.reg.pitch.value
+    readonly property real m_cmd_roll: mandala.cmd.att.roll.value
+    readonly property real m_cmd_pitch: mandala.cmd.att.pitch.value
 
     readonly property var f_rc_roll: mandala.cmd.rc.roll
     readonly property var f_rc_pitch: mandala.cmd.rc.pitch

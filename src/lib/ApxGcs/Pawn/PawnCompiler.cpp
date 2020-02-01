@@ -60,12 +60,21 @@ bool PawnCompiler::compile()
     args << "-v2";
     args << "-r";
     //fill mandala constants
-    Vehicle *vehicle = fact->findParent<Vehicle *>();
-    if (vehicle) {
-        foreach (VehicleMandalaFact *f, vehicle->f_mandala->allFacts)
-            args << "f_" + f->name() + "=" + QString::number(f->id());
-        foreach (QString name, vehicle->f_mandala->constants.keys())
-            args << name + "=" + vehicle->f_mandala->constants.value(name).toString();
+    if (constants.isEmpty()) {
+        Vehicle *vehicle = fact->findParent<Vehicle *>();
+        if (vehicle) {
+            for (auto f : vehicle->f_mandalatree->uid_map.values()) {
+                QString s = f->mpath().replace('.', '_');
+                constants.insert(s, QString::number(f->uid()));
+            }
+            for (auto s : vehicle->f_mandalatree->constants.keys()) {
+                constants.insert(s, vehicle->f_mandalatree->constants.value(s).toString());
+            }
+        }
+    }
+
+    for (auto s : constants.keys()) {
+        args << s + "=" + constants.value(s);
     }
     args << "-i" + AppDirs::res().absoluteFilePath("scripts/pawn/include");
     args << "-i" + AppDirs::scripts().absoluteFilePath("pawn");

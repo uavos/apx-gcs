@@ -38,10 +38,16 @@ SourceEdit::SourceEdit(QWidget *parent)
     f.setKerning(false);
     setFont(f);
     document()->setDefaultFont(f);
+    m_font = f;
     setWordWrapMode(QTextOption::NoWrap);
     //setAcceptRichText(false);
     highlighter = new Highlighter(document());
     document()->setIndentWidth(2);
+}
+QFont SourceEdit::m_font;
+QFont SourceEdit::getFont()
+{
+    return m_font;
 }
 //=============================================================================
 void SourceEdit::addKeywords(const QStringList &words)
@@ -141,7 +147,7 @@ void SourceEdit::cleanText()
 Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
-    defaultCharFormat.setFont(document()->defaultFont());
+    defaultCharFormat.setFont(SourceEdit::getFont());
     commentStartExpression = QRegExp("/\\*");
     commentEndExpression = QRegExp("\\*/");
     QStringList keywords = QStringList() << "new"
@@ -247,7 +253,7 @@ Highlighter::HighlightingRule Highlighter::addRule(const QString &pattern,
     QTextCharFormat charFormat;
     //QColor color(colorName);
     //QFont f(document()->defaultFont());
-    charFormat.setFont(document()->defaultFont());
+    charFormat.setFont(SourceEdit::getFont());
     charFormat.setFontFixedPitch(true);
     charFormat.setForeground(color.lighter(150));
     if (style.contains("bold", Qt::CaseInsensitive)) //f.setBold(true);

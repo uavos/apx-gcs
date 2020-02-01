@@ -33,8 +33,11 @@ public:
     explicit SourceEdit(QWidget *parent);
     void addKeywords(const QStringList &words);
 
+    static QFont getFont();
+
 private:
     Highlighter *highlighter;
+    static QFont m_font;
 
 protected:
     void keyPressEvent(QKeyEvent *event);

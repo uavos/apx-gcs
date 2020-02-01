@@ -18,12 +18,12 @@ MapCircle {
     property real lat: mandala.est.pos.lat.value
     property real lon: mandala.est.pos.lon.value
     property real altitude: mandala.est.air.altitude.value
-    property real ldratio: mandala.est.calc.ld.value
-    property real windHdg: mandala.est.calc.whdg.value
-    property real windSpd: mandala.est.calc.wspd.value
+    property real ldratio: mandala.est.tecs.ld.value
+    property real windHdg: mandala.est.aux.whdg.value
+    property real windSpd: mandala.est.aux.wspd.value
     property real airspeed: mandala.est.air.airspeed.value
-    property real cas2tas: mandala.est.calc.ktas.value
-    property real venergy: mandala.est.calc.venergy.value
+    property real cas2tas: mandala.est.tecs.ktas.value
+    property real venergy: mandala.est.tecs.vse.value
 
     //calculate Energy Circle
     property int range: altitude*ldratio

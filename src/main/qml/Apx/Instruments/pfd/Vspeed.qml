@@ -6,13 +6,13 @@ ControlArea {
     readonly property var f_vspeed: mandala.est.air.vspeed
     readonly property real m_vspeed: f_vspeed.value
 
-    readonly property var f_cmd_vspeed: mandala.cmd.reg.vspeed
+    readonly property var f_cmd_vspeed: mandala.cmd.air.vspeed
     readonly property real m_cmd_vspeed: f_cmd_vspeed.value
 
     readonly property var f_vd: mandala.est.pos.vd
     readonly property real m_vd: f_vd.value
 
-    readonly property var f_venergy: mandala.est.calc.venergy
+    readonly property var f_venergy: mandala.est.tecs.vse
     readonly property real m_venergy: f_venergy.value
 
 

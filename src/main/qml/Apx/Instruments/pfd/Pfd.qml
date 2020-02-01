@@ -12,16 +12,16 @@ Item {
     readonly property var f_mode: mandala.cmd.op.mode
 
     readonly property var f_yaw: mandala.est.att.yaw
-    readonly property var f_cmd_airspeed: mandala.cmd.reg.airspeed
-    readonly property var f_cmd_altitude: mandala.cmd.reg.altitude
+    readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
+    readonly property var f_cmd_altitude: mandala.cmd.air.altitude
 
     readonly property var f_ref_status: mandala.est.ref.status
 
     readonly property var f_gps_su: mandala.sns.gps.su
     readonly property var f_gps_sv: mandala.sns.gps.sv
-    readonly property var f_ktas: mandala.est.calc.ktas
-    readonly property var f_ld: mandala.est.calc.ld
-    readonly property var f_stab: mandala.est.calc.stab
+    readonly property var f_ktas: mandala.est.tecs.ktas
+    readonly property var f_ld: mandala.est.tecs.ld
+    readonly property var f_stab: mandala.est.tecs.stab
 
     readonly property var f_thrcut: mandala.cmd.opt.thrcut
     readonly property var f_throvr: mandala.cmd.opt.throvr

@@ -13,8 +13,8 @@ MapCircle {
     property real lat: mandala.est.pos.lat.value
     property real lon: mandala.est.pos.lon.value
     property real altitude: mandala.est.air.altitude.value
-    property real gSpeed: mandala.est.calc.speed.value
-    property real course: mandala.est.calc.course.value
+    property real gSpeed: mandala.est.pos.speed.value
+    property real course: mandala.est.pos.course.value
     property real gps_Vdown: mandala.est.rel.vd.value
 
     //calculate Energy Circle based on Ground Speed and descending rate

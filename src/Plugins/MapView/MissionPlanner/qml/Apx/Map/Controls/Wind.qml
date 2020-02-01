@@ -5,8 +5,8 @@ import Apx.Common 1.0
 Item {
     id: control
 
-    readonly property real m_wspd: mandala.est.calc.wspd.value
-    readonly property real m_whdg: mandala.est.calc.whdg.value
+    readonly property real m_wspd: mandala.est.aux.wspd.value
+    readonly property real m_whdg: mandala.est.aux.whdg.value
 
     implicitWidth: 100
     implicitHeight: implicitWidth
