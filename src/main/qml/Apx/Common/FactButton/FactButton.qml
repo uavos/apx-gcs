@@ -30,6 +30,22 @@ CleanButton {
 
     progress: fact?fact.progress:-1
 
+    toolTip: {
+        var list = []
+        list.push(title)
+        list.push(descr)
+        if(fact){
+            list.push(fact.mpath?fact.mpath():fact.path())
+            if(fact.units)list.push("units: "+fact.units)
+            if(fact.section)list.push("section: "+fact.section)
+            if(fact.enumStrings.length>0)list.push("enum: "+fact.enumStrings.join(","))
+            for(var i in fact.opts)
+                list.push(i+": "+fact.opts[i])
+        }
+        return list.join("\n")
+    }
+
+
     property string value: fact?fact.text:""
     property bool active: fact?fact.active:false
     property bool modified: fact?fact.modified:false

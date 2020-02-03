@@ -28,9 +28,20 @@
 #include <Mandala/backport/MandalaBackport.h>
 
 MandalaTree::MandalaTree(Fact *parent)
-    : Fact(parent, "mandalatree", "Mandala tree", tr("Vehicle data tree"), Group, "hexagon-multiple")
+    : Fact(parent,
+           "mandalatree",
+           "Mandala tree",
+           tr("Vehicle data tree"),
+           Group | FilterModel,
+           "hexagon-multiple")
 {
     //qDebug() << mandala::sns::nav::ins::gyro::title;
+
+    qmlRegisterUncreatableType<MandalaTreeFact>("APX.Facts",
+                                                1,
+                                                0,
+                                                "MandalaTreeFact",
+                                                "Reference only");
 
     /*mandala::data m;
     qDebug() << m.sns.title;
@@ -147,7 +158,18 @@ MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const
 
 MandalaTreeFact *MandalaTree::fact(const QString &mpath) const
 {
-    MandalaTreeFact *f = static_cast<MandalaTreeFact *>(findChild(mpath));
+    MandalaTreeFact *f = nullptr;
+    if (mpath.contains('.')) {
+        f = static_cast<MandalaTreeFact *>(findChild(mpath));
+    } else {
+        for (auto i : uid_map) {
+            if (i->alias() != mpath)
+                continue;
+            f = i;
+            qDebug() << "Fact by alias:" << mpath;
+            break;
+        }
+    }
     if (!f) {
         apxMsgW() << "Mandala fact not found:" << mpath;
     }

@@ -48,12 +48,12 @@ public:
     size_t pack(void *buf) const;
     size_t unpack(const void *buf);
 
-    Fact *classFact() const;
-    QString mpath() const;
+    Q_INVOKABLE Fact *classFact() const;
+    Q_INVOKABLE QString mpath() const;
 
     void addAlias(const QString &a);
-    QString alias() const;
-    mandala::uid_t offset() const;
+    Q_INVOKABLE QString alias() const;
+    Q_INVOKABLE mandala::uid_t offset() const;
 
 private:
     MandalaTree *m_tree;

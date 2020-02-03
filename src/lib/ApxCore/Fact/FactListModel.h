@@ -31,6 +31,7 @@ class FactListModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
 
 public:
     explicit FactListModel(Fact *fact);
@@ -42,6 +43,7 @@ public:
 public slots:
     void sync();
     void scheduleSync();
+    void resetFilter();
 
 private:
     QTimer *syncTimer;
@@ -50,7 +52,7 @@ protected:
     Fact *fact;
     ItemsList _items;
 
-    virtual void populate(ItemsList *list, Fact *fact);
+    virtual void populate(ItemsList *list, Fact *f);
     void connectFact(Fact *fact);
 
     virtual void syncModel(const ItemsList &list);
@@ -67,9 +69,14 @@ public:
     //PROPERTIES
 public:
     int count() const;
+    QString filter() const;
+    void setFilter(QString v);
 
+private:
+    QString m_filter;
 signals:
     void countChanged();
+    void filterChanged();
     void layoutChanged();
 };
 //=============================================================================

@@ -51,6 +51,8 @@ class Fact : public FactData
     Q_PROPERTY(QString qmlPage READ qmlPage WRITE setQmlPage NOTIFY qmlPageChanged)
     Q_PROPERTY(QVariantMap opts READ opts WRITE setOpts NOTIFY optsChanged)
 
+    Q_PROPERTY(int scnt READ scnt WRITE setScnt NOTIFY scntChanged)
+
 public:
     explicit Fact(QObject *parent = nullptr,
                   const QString &name = QString(),
@@ -149,6 +151,8 @@ public:
     QStringList mandalaNames() const;
     void setMandalaMap(MandalaMap *v);
 
+    virtual bool setValue(const QVariant &v) override;
+
 protected:
     MandalaMap *mandala() const;
     MandalaMap *m_mandala;
@@ -210,6 +214,9 @@ public:
     void setOpts(const QVariantMap &v);
     void setOpt(const QString &name, const QVariant &v);
 
+    int scnt() const;
+    void setScnt(const int v);
+
 protected:
     FactListModel *m_model;
     FactListModelActions *m_actionsModel;
@@ -226,6 +233,8 @@ protected:
 
     QString m_qmlPage;
     QVariantMap m_opts;
+
+    int m_scnt;
 
 signals:
     void flagsChanged();
@@ -246,6 +255,8 @@ signals:
 
     void qmlPageChanged();
     void optsChanged();
+
+    void scntChanged();
 
     //tree properties propagate
 private:

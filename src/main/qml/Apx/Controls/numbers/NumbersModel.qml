@@ -64,9 +64,15 @@ ObjectModel {
             s+="light: "+light+";"
             if(n.warn)s+="warning: "+n.warn+";"
             if(n.alarm)s+="error: "+n.alarm+";"
-            if(apx.vehicles.current.mandala.child(n.bind)){
-                s+="fact: m."+n.bind+";"
+
+            var f=null
+            if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
+                f=apx.vehicles.current.mandalatree.fact(n.bind)
+            if(f){
+                s+="fact: "+f.mpath()+";"
                 s+="value: fact?fact.value:''"+";"
+                if(!n.prec)
+                    s+="valueText: fact?fact.text:''"+";"
             }else{
                 s+="value: "+n.bind+";"
             }

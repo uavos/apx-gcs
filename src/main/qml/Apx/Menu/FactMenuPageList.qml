@@ -32,6 +32,11 @@ ColumnLayout {
                                 -(listView.footerItem?listView.footerItem.implicitHeight:0)
                                 -32
 
+
+    //filter support
+    property bool filterModel: fact.options & Fact.FilterModel
+    signal filterAccepted(var text)
+
     //facts
     ListView {
         id: listView
@@ -95,18 +100,34 @@ ColumnLayout {
             text: section
         }
 
-        /*headerPositioning: ListView.OverlayHeader
-        header: Text {
+        //filter
+        header: Loader {
+            active: filterModel
+            z: 100
             width: listView.width
-            height: visible?implicitHeight:0
-            verticalAlignment: Text.AlignTop
-            horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: MenuStyle.itemSize*0.33
-            font.family: font_condenced
-            color: MenuStyle.cTextDisabled
-            visible: listView.descr && showTitle
-            text: visible?listView.descr:""
-        }*/
+            sourceComponent: Component {
+                TextField {
+                    id: filterItem
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: MenuStyle.titleFontSize
+                    placeholderText: qsTr("Search")+"..."
+                    selectByMouse: true
+                    text: listView.model.filter
+                    background: Rectangle{
+                        border.width: 0
+                        color: Material.background
+                    }
+                    onTextChanged: listView.model.filter=text.trim()
+                    onAccepted: control.filterAccepted(listView.model.filter)
+                    Connections {
+                        target: listView
+                        onCountChanged: filterItem.forceActiveFocus()
+                    }
+                    Component.onCompleted: forceActiveFocus()
+                }
+            }
+        }
+
 
         //scroll
         ScrollBar.vertical: ScrollBar {

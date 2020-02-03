@@ -32,8 +32,8 @@ class MandalaTree : public Fact
 public:
     explicit MandalaTree(Fact *parent = nullptr);
 
-    MandalaTreeFact *fact(mandala::uid_t uid) const;
-    MandalaTreeFact *fact(const QString &mpath) const;
+    Q_INVOKABLE MandalaTreeFact *fact(mandala::uid_t uid) const;
+    Q_INVOKABLE MandalaTreeFact *fact(const QString &mpath) const;
 
     QHash<QString, QVariant> constants; // <name,value> enums in form varname_ENUM
     QMap<mandala::uid_t, MandalaTreeFact *> uid_map;

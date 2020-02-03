@@ -47,6 +47,7 @@ void FactListModel::connectFact(Fact *fact)
     connect(fact, &Fact::itemRemoved, this, &FactListModel::scheduleSync);
     connect(fact, &Fact::itemMoved, this, &FactListModel::scheduleSync);
     connect(fact, &Fact::optionsChanged, this, &FactListModel::scheduleSync);
+    connect(fact, &Fact::triggered, this, &FactListModel::resetFilter);
 }
 //=============================================================================int FactListModel::rowCount(const QModelIndex & parent) const
 int FactListModel::rowCount(const QModelIndex &parent) const
@@ -94,17 +95,40 @@ int FactListModel::count() const
 {
     return rowCount();
 }
-//=============================================================================
-void FactListModel::populate(ItemsList *list, Fact *fact)
+QString FactListModel::filter() const
 {
+    return m_filter;
+}
+void FactListModel::setFilter(QString v)
+{
+    v = v.trimmed();
+    if (m_filter == v)
+        return;
+    m_filter = v;
+    emit filterChanged();
+    syncTimer->start();
+}
+void FactListModel::resetFilter()
+{
+    setFilter(QString());
+}
+//=============================================================================
+void FactListModel::populate(ItemsList *list, Fact *f)
+{
+    bool flt = (this->fact->options() & Fact::FilterModel) && !filter().isEmpty();
     bool sect = false;
-    for (int i = 0; i < fact->size(); ++i) {
-        Fact *item = fact->child(i);
+    for (int i = 0; i < f->size(); ++i) {
+        Fact *item = f->child(i);
         if (!item)
+            continue;
+        if (flt && item->treeType() != Fact::Group
+            && !item->showThis(QRegExp(filter(), Qt::CaseInsensitive)))
             continue;
         if (!sect && !item->section().isEmpty())
             sect = true;
-        if (fact->options() & Fact::FlatModel && (item->options() & Fact::Section)) {
+        connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
+
+        if ((f->options() & Fact::FlatModel) && (item->options() & Fact::Section)) {
             connect(item,
                     &Fact::itemInserted,
                     this,
@@ -122,11 +146,15 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
                     &FactListModel::scheduleSync,
                     Qt::UniqueConnection);
             populate(list, item);
-        } else
+            continue;
+        }
+        if (flt && item->treeType() == Fact::Group) {
+            populate(list, item);
+        } else {
             list->append(item);
-        connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
+        }
     }
-    if (sect && fact == this->fact) {
+    if (sect && f == this->fact) {
         //check for gaps in sections to sort
         QString s = "@/./";
         QStringList slist;
@@ -150,10 +178,12 @@ void FactListModel::populate(ItemsList *list, Fact *fact)
 //=============================================================================
 void FactListModel::scheduleSync()
 {
+    resetFilter();
     syncTimer->start();
 }
 void FactListModel::sync()
 {
+    syncTimer->stop();
     ItemsList list;
     populate(&list, fact);
     syncModel(list);

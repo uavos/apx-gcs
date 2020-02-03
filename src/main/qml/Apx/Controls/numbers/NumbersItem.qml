@@ -9,6 +9,8 @@ FactValue {
     alerts: true
     normalColor: light?"#555":normalColor
 
+    title: fact?fact.name:""
+
     //ensure width only grows
     Component.onCompleted: {
         implicitWidth=height

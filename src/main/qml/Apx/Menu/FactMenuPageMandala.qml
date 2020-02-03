@@ -10,10 +10,14 @@ import APX.Facts 1.0
 
 FactMenuPageList {
     id: control
-    property var mandala: apx.vehicles.local.mandala
     property var parentFact: fact
-    property string filter: ""
 
+    property var mandala: apx.vehicles.current.mandalatree
+
+
+    Component.onCompleted: mandala.model.resetFilter()
+
+    filterModel: true
     model: mandala.model
 
     function setValue(v)
@@ -32,11 +36,12 @@ FactMenuPageList {
         selected: fact.title===parentFact.text
         height: visible?MenuStyle.itemSize:0
         width: listView.width
-        onTriggered: {
+        noFactTrigger: true
+        /*onTriggered: {
             control.setValue(modelData.title)
-            factMenu.back()
-        }
-        visible: fact && fact.visible && (control.filter=="" || fact.title.toLowerCase().includes(control.filter.toLowerCase()))
+            back()
+        }*/
+        //visible: fact && fact.visible && (control.filter=="" || fact.title.toLowerCase().includes(control.filter.toLowerCase()))
     }
 
     Fact {
@@ -53,28 +58,7 @@ FactMenuPageList {
     }
     actionsModel: actionsFact.actionsModel
 
-    //filter
-    header: TextField {
-        z: 100
-        width: listView.width
-        verticalAlignment: Text.AlignVCenter
-        font.pixelSize: MenuStyle.titleFontSize
-        placeholderText: qsTr("Search")+"..."
-        background: Rectangle{
-            border.width: 0
-            color: Material.background
-        }
-        onTextChanged: control.filter=text.trim()
-        onAccepted: {
-            var f=mandala.findChild(text,false)
-            //console.log(f)
-            if(f){
-                control.setValue(f.title)
-                factMenu.back()
-            }
-        }
-    }
-    Timer {
+    /*Timer {
         id: posTimer
         interval: 100
         onTriggered: updateIndex()
@@ -90,5 +74,5 @@ FactMenuPageList {
             listView.positionViewAtIndex(i,ListView.Center)
             break
         }
-    }
+    }*/
 }

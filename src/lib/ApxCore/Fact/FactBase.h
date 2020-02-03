@@ -62,13 +62,14 @@ public:
         PersistentValue = 1 << 10, //save and restore value in QSettings
         SystemSettings = 1 << 11,  //use default QSettings to store value
 
-        FilterSearchAll = 1 << 12, //search name/title/descr by filters
-        FilterExclude = 1 << 13,   //exclude from search by filters
+        FilterModel = 1 << 12,     //show search filter
+        FilterSearchAll = 1 << 13, //search name/title/descr by filters
+        FilterExclude = 1 << 14,   //exclude from search by filters
 
-        ModifiedTrack = 1 << 14, //Track modified status
-        ModifiedGroup = 1 << 15, //Track children's modified status
+        ModifiedTrack = 1 << 15, //Track modified status
+        ModifiedGroup = 1 << 16, //Track children's modified status
 
-        HighlightActive = 1 << 16, //Show highlighted when active
+        HighlightActive = 1 << 17, //Show highlighted when active
 
         //data types [dataType]
         DataMask = 0x0FF00000,

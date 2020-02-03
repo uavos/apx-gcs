@@ -44,6 +44,7 @@ Fact::Fact(QObject *parent,
     , m_progress(-1)
     , m_icon(icon)
     , m_bind(nullptr)
+    , m_scnt(0)
     , m_parentEnabled(true)
     , m_parentVisible(true)
 {
@@ -255,6 +256,12 @@ void Fact::hashData(QCryptographicHash *h) const
 
     h->addData(text().toUtf8());
     h->addData(userData.toString().toUtf8());
+}
+//=============================================================================
+bool Fact::setValue(const QVariant &v)
+{
+    setScnt(scnt() + 1);
+    return FactData::setValue(v);
 }
 //=============================================================================
 bool Fact::hasParent(Fact *parent) const
@@ -854,6 +861,17 @@ void Fact::setOpt(const QString &name, const QVariant &v)
         m_opts.insert(name, v);
     }
     emit optsChanged();
+}
+int Fact::scnt() const
+{
+    return m_scnt;
+}
+void Fact::setScnt(const int v)
+{
+    if (m_scnt == v)
+        return;
+    m_scnt = v;
+    emit scntChanged();
 }
 //=============================================================================
 //=============================================================================

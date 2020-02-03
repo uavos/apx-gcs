@@ -37,11 +37,7 @@ AppEngine::AppEngine(QObject *parent)
 
     // QML types register
     qmlRegisterType<FactQml>("APX.Facts", 1, 0, "Fact");
-    qmlRegisterUncreatableType<FactListModel>("APX.Facts",
-                                              1,
-                                              0,
-                                              "FactListModelActions",
-                                              "Reference only");
+    qmlRegisterUncreatableType<FactListModel>("APX.Facts", 1, 0, "FactListModel", "Reference only");
     qmlRegisterUncreatableType<FactListModelActions>("APX.Facts",
                                                      1,
                                                      0,

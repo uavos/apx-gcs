@@ -39,11 +39,14 @@ class SystreePlugin : public PluginInterface
 public:
     QObject *createControl()
     {
-        //FactTreeWidget *w = new FactTreeWidget(new MandalaTree(AppRoot::instance()), true, false);
-        FactTreeWidget *w = new FactTreeWidget(Vehicles::instance()->f_local->f_mandalatree,
+        FactTreeWidget *w = new FactTreeWidget(Vehicles::instance()->current()->f_mandalatree,
                                                true,
                                                false);
         w->tree->expandToDepth(0);
+        connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [w](Vehicle *v) {
+            w->setRoot(v->f_mandalatree);
+            w->tree->expandToDepth(0);
+        });
         return w;
     }
     int flags() { return Widget | Restore | Launcher; }

@@ -28,7 +28,7 @@
 #include <QColor>
 
 MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
-    : Fact(parent, meta.name, meta.title, meta.title, meta.group ? Group : NoFlags)
+    : Fact(parent, meta.name, meta.title, meta.title, meta.group ? Group | FilterModel : NoFlags)
     , m_tree(tree)
     , m_meta(meta)
 {
@@ -43,11 +43,7 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
     if (meta.group) {
         updateStatus();
         connect(this, &Fact::sizeChanged, this, &MandalaTreeFact::updateStatus);
-        if (meta.level == 0) {
-            setOption(FlatModel);
-        } else if (meta.level == 1) {
-            setOption(Section);
-        } else if (meta.level == 2) {
+        if (meta.level == 2) {
             connect(this,
                     &Fact::sectionChanged,
                     static_cast<MandalaTreeFact *>(parent),
@@ -227,7 +223,9 @@ bool MandalaTreeFact::showThis(QRegExp re) const
         return false;
     if (!(options() & FilterSearchAll))
         return false;
-    if (path(m_meta.level).contains(re))
+    if (alias().contains(re))
+        return true;
+    if (mpath().contains(re))
         return true;
     return false;
 }
