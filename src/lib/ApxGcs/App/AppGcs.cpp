@@ -26,8 +26,8 @@
 #include <QFileDialog>
 //=============================================================================
 AppGcs *AppGcs::_instance = nullptr;
-AppGcs::AppGcs(int &argc, char **argv, const QString &name, const QUrl &url)
-    : App(argc, argv, name, url)
+AppGcs::AppGcs(int &argc, char **argv, const QString &name, const QUrl &_url)
+    : App(argc, argv, name, _url)
 {
     _instance = this;
 }
@@ -40,13 +40,6 @@ void AppGcs::loadServices()
 
     new Database(f_apx);
     Vehicles *vehicles = new Vehicles(f_apx, protocol);
-
-    //default mandala support
-    Fact::MandalaMap *m = new Fact::MandalaMap;
-    for (auto f : vehicles->f_local->f_mandala->allFacts) {
-        m->insert(f->id(), f);
-    }
-    f_apx->setMandalaMap(m);
 
     //datalink
     f_datalink = new Datalink(f_apx);

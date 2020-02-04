@@ -37,4 +37,9 @@ public:
 
     QHash<QString, QVariant> constants; // <name,value> enums in form varname_ENUM
     QMap<mandala::uid_t, MandalaTreeFact *> uid_map;
+
+protected:
+    // Fact override
+    virtual QString mandalaToString(quint16 uid) const override;
+    virtual quint16 stringToMandala(const QString &s) const override;
 };

@@ -331,7 +331,7 @@ QString FactData::toText(const QVariant &v) const
         return QVariant(v.toBool()).toString();
     }
     if (t == Mandala) {
-        return mandalaToString(v.toUInt());
+        return mandalaToString(static_cast<quint16>(v.toUInt()));
     }
     if (t == Float) {
         if (units() == "lat") {
@@ -623,9 +623,9 @@ void FactData::setDefaultValue(const QVariant &v)
     emit defaultValueChanged();
 }
 //=============================================================================
-QString FactData::mandalaToString(quint16 mid) const
+QString FactData::mandalaToString(quint16 uid) const
 {
-    Q_UNUSED(mid)
+    Q_UNUSED(uid)
     return QString();
 }
 quint16 FactData::stringToMandala(const QString &s) const

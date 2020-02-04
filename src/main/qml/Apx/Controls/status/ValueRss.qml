@@ -10,7 +10,7 @@ FactValue {
     readonly property var f_rss: mandala.sns.com.rss
     readonly property real m_rss: f_rss.value
 
-    readonly property var f_gcs_rss: apx.vehicles.local.mandalatree.sns.com.rss
+    readonly property var f_gcs_rss: apx.vehicles.local.mandala.sns.com.rss
     readonly property real m_gcs_rss: f_gcs_rss.value
 
 

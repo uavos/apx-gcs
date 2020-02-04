@@ -24,8 +24,6 @@
 #define Fact_H
 //=============================================================================
 #include "FactData.h"
-#include "FactListModel.h"
-#include "FactListModelActions.h"
 //=============================================================================
 class Fact : public FactData
 {
@@ -33,8 +31,8 @@ class Fact : public FactData
 
     Q_PROPERTY(FactBase::Flags flags READ flags WRITE setFlags NOTIFY flagsChanged)
 
-    Q_PROPERTY(FactListModel *model READ model NOTIFY modelChanged)
-    Q_PROPERTY(FactListModelActions *actionsModel READ actionsModel NOTIFY actionsModelChanged)
+    Q_PROPERTY(QAbstractListModel *model READ model NOTIFY modelChanged)
+    Q_PROPERTY(QAbstractListModel *actionsModel READ actionsModel NOTIFY actionsModelChanged)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
@@ -77,6 +75,8 @@ public:
     Q_INVOKABLE virtual QJsonObject valuesToJson(bool array = false) const;
 
     QVariant userData;
+
+    virtual bool setValue(const QVariant &v) override; //collect stats
 
     virtual bool lessThan(Fact *rightFact) const; //sorting helper
     virtual bool showThis(QRegExp re) const;      //filter helper
@@ -144,18 +144,13 @@ public:
     Q_INVOKABLE QObject *loadQml(const QString &qmlFile);
 
     //Mandala support
-    typedef QMap<quint16, Fact *> MandalaMap;
+    Fact *mandala() const;
+    void setMandala(Fact *v);
+    virtual QString mandalaToString(quint16 uid) const override;
+    virtual quint16 stringToMandala(const QString &s) const override;
 
-    QString mandalaToString(quint16 mid) const override;
-    quint16 stringToMandala(const QString &s) const override;
-    QStringList mandalaNames() const;
-    void setMandalaMap(MandalaMap *v);
-
-    virtual bool setValue(const QVariant &v) override;
-
-protected:
-    MandalaMap *mandala() const;
-    MandalaMap *m_mandala;
+private:
+    Fact *m_mandala;
 
 private:
     QString pTitle() const;
@@ -179,11 +174,11 @@ public:
     FactBase::Flags flags() const;
     void setFlags(FactBase::Flags v);
 
-    FactListModel *model();
-    void setModel(FactListModel *v);
+    QAbstractListModel *model();
+    void setModel(QAbstractListModel *v);
 
-    FactListModelActions *actionsModel();
-    void setActionsModel(FactListModelActions *v);
+    QAbstractListModel *actionsModel();
+    void setActionsModel(QAbstractListModel *v);
 
     bool enabled() const;
     void setEnabled(const bool v);
@@ -218,8 +213,8 @@ public:
     void setScnt(const int v);
 
 protected:
-    FactListModel *m_model;
-    FactListModelActions *m_actionsModel;
+    QAbstractListModel *m_model;
+    QAbstractListModel *m_actionsModel;
 
     bool m_enabled;
     bool m_visible;

@@ -152,7 +152,7 @@ void MissionGroup::setTime(uint v)
     m_time = v;
     emit timeChanged();
 }
-FactListModel *MissionGroup::mapModel() const
+QAbstractListModel *MissionGroup::mapModel() const
 {
     return m_mapModel;
 }

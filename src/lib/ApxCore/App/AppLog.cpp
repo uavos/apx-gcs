@@ -125,6 +125,7 @@ void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QS
     if (display(context)) {
         switch (type) {
         default:
+            emit infoMessage(message);
             break;
         case QtInfoMsg:
             emit infoMessage(message);

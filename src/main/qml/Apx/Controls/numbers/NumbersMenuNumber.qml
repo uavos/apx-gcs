@@ -24,7 +24,7 @@ Fact {
     {
         for(var i=0;i<size;++i){
             var f=child(i)
-            var v=data[f.name]
+            var v=data[settingName(f)]
             f.value=v
         }
     }
@@ -36,9 +36,17 @@ Fact {
             var f=child(i)
             var s=f.text.trim()
             if(s === "") continue
-            data[f.name]=s
+            data[settingName(f)]=s
         }
         return data
+    }
+
+    function settingName(f)
+    {
+        var n=f.name
+        if(n.includes("_"))
+            return n.slice(0,n.indexOf("_"))
+        return n
     }
 
     function updateTitle()
@@ -53,6 +61,7 @@ Fact {
         var descrList=[]
         for(var i=0;i<size;++i){
             var f = child(i)
+            if(!f.name) continue
             if(f.name === "title") continue
             if(f.text === "") continue
             descrList.push(f.name.toUpperCase()+": "+f.text)
@@ -67,13 +76,15 @@ Fact {
         descr: qsTr("Fact value")
         flags: Fact.Mandala
         onValueChanged: {
-            mBind.setValue(text)
-            value=""
+            if(value){
+                mBind.setValue(text)
+            }
+            value=null
         }
     }
     Fact {
         id: mBind
-        name: "bind"
+        name: "bind_num"
         title: qsTr("Expression")
         descr: "Math.atan(est.att.pitch.value/est.att.roll.value)"
         flags: Fact.Text
@@ -81,7 +92,7 @@ Fact {
     }
     Fact {
         id: mTitle
-        name: "title"
+        name: "title_num"
         title: qsTr("Title")
         descr: qsTr("Label text")
         flags: Fact.Text

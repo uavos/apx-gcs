@@ -34,7 +34,7 @@ class MissionGroup : public Fact
     Q_OBJECT
     Q_PROPERTY(uint distance READ distance NOTIFY distanceChanged)
     Q_PROPERTY(uint time READ time NOTIFY timeChanged)
-    Q_PROPERTY(FactListModel *mapModel READ mapModel CONSTANT)
+    Q_PROPERTY(QAbstractListModel *mapModel READ mapModel CONSTANT)
 
 public:
     explicit MissionGroup(VehicleMission *parent,
@@ -86,12 +86,12 @@ public:
     uint time() const; //estimated total travel time [sec]
     void setTime(uint v);
 
-    FactListModel *mapModel() const;
+    QAbstractListModel *mapModel() const;
 
 protected:
     uint m_distance;
     uint m_time;
-    FactListModel *m_mapModel;
+    QAbstractListModel *m_mapModel;
 
 signals:
     void distanceChanged();

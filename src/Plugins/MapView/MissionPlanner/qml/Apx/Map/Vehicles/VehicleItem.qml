@@ -15,7 +15,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property APX.Vehicle vehicle: modelData
 
     //Fact bindings
-    property var vm: vehicle.mandalatree
+    property var vm: vehicle.mandala
     property real f_roll: vm.est.att.roll.value
     property real f_pitch: vm.est.att.pitch.value
     property real f_yaw: vm.est.att.yaw.value

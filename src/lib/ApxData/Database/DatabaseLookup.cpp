@@ -29,7 +29,7 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
                                const QString &descr,
                                DatabaseSession *db,
                                Flags flags)
-    : Fact(parent, name, title, descr, flags, "database-search")
+    : Fact(parent, name, title, descr, flags | FilterModel, "database-search")
     , db(db)
     , m_filterEnabled(true)
 {

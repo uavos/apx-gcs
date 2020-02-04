@@ -119,14 +119,14 @@ GstPlayer::GstPlayer(Fact *parent)
                  tr("Gimbal yaw"),
                  tr("Gimbal yaw position variable"),
                  Mandala | PersistentValue);
-    f->setDefaultValue("cam_yaw");
+    f->setDefaultValue("est.cam.yaw");
 
     f = new Fact(f_overlay,
                  "gimbal_pitch_var",
                  tr("Gimbal pitch"),
                  tr("Gimbal pitch position variable"),
                  Mandala | PersistentValue);
-    f->setDefaultValue("cam_pitch");
+    f->setDefaultValue("est.cam.pitch");
 
     // controls
     f_controls = new Fact(f_tune,
@@ -142,7 +142,7 @@ GstPlayer::GstPlayer(Fact *parent)
                  tr("Control X"),
                  tr("Horizontal axis control variable"),
                  Mandala | PersistentValue);
-    f->setDefaultValue("camcmd_yaw");
+    f->setDefaultValue("cmd.gimbal.yaw");
     f = new Fact(f_controls,
                  "control_sx",
                  tr("Span X"),
@@ -155,7 +155,7 @@ GstPlayer::GstPlayer(Fact *parent)
                  tr("Control Y"),
                  tr("Vertical axis control variable"),
                  Mandala | PersistentValue);
-    f->setDefaultValue("camcmd_pitch");
+    f->setDefaultValue("cmd.gimbal.pitch");
     f = new Fact(f_controls,
                  "control_sy",
                  tr("Span Y"),
@@ -177,29 +177,28 @@ GstPlayer::GstPlayer(Fact *parent)
 
     // controls menu
     f_tools = new Fact(f_tune, "tools", tr("Tools"), tr("Camera tools"), Action, "camera-plus");
-    new Fact(f_tools, "power_payload");
-    new Fact(f_tools, "cam_mode");
-    new Fact(f_tools, "cam_ch");
-    new Fact(f_tools, "cam_zoom");
-    new Fact(f_tools, "cam_focus");
-    new Fact(f_tools, "cambias_roll");
-    new Fact(f_tools, "cambias_pitch");
-    new Fact(f_tools, "cambias_yaw");
-    new Fact(f_tools, "cam_opt_PF");
-    new Fact(f_tools, "cam_opt_NIR");
-    new Fact(f_tools, "cam_opt_DSP");
-    new Fact(f_tools, "cam_opt_FMI");
-    new Fact(f_tools, "cam_opt_FM");
-    new Fact(f_tools, "cam_opt_laser");
-    new Fact(f_tools, "cam_src");
-    new Fact(f_tools, "cams");
-    new Fact(f_tools, "cam_ctrb_shtr");
-    new Fact(f_tools, "cam_ctrb_arm");
-    new Fact(f_tools, "cam_ctrb_rec");
-    new Fact(f_tools, "cam_ctrb_zin");
-    new Fact(f_tools, "cam_ctrb_zout");
-    new Fact(f_tools, "cam_ctrb_aux");
-    new Fact(f_tools, "cam_tperiod");
+    new Fact(f_tools, "ctr.pwr.payload");
+    new Fact(f_tools, "cmd.gimbal.mode");
+    new Fact(f_tools, "cmd.gimbal.broll");
+    new Fact(f_tools, "cmd.gimbal.bpitch");
+    new Fact(f_tools, "cmd.gimbal.byaw");
+    new Fact(f_tools, "cmd.cam.ch");
+    new Fact(f_tools, "cmd.cam.zoom");
+    new Fact(f_tools, "cmd.cam.focus");
+    new Fact(f_tools, "cmd.cam.pf");
+    new Fact(f_tools, "cmd.cam.nir");
+    new Fact(f_tools, "cmd.cam.fm");
+    new Fact(f_tools, "cmd.cam.ft");
+    new Fact(f_tools, "cmd.cam.range");
+    new Fact(f_tools, "cmd.cam.shot");
+    new Fact(f_tools, "cmd.cam.dshot");
+    new Fact(f_tools, "cmd.cam.tshot");
+    new Fact(f_tools, "ctr.cam.rec");
+    new Fact(f_tools, "ctr.cam.shot");
+    new Fact(f_tools, "ctr.cam.arm");
+    new Fact(f_tools, "ctr.cam.zin");
+    new Fact(f_tools, "ctr.cam.zout");
+    new Fact(f_tools, "ctr.cam.aux");
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &GstPlayer::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
 
@@ -229,10 +228,10 @@ GstPlayer::~GstPlayer()
 
 void GstPlayer::vehicleSelected(Vehicle *vehicle)
 {
-    VehicleMandala *m = vehicle->f_mandala;
+    MandalaTree *m = vehicle->f_mandalatree;
     for (int i = 0; i < f_tools->size(); ++i) {
         Fact *f = f_tools->child(i);
-        f->bind(m->child(f->name()));
+        f->bind(m->fact(f->name().replace('_', '.')));
     }
 }
 

@@ -64,6 +64,7 @@ CleanButton {
     property bool signaled: false
 
     property bool noFactTrigger: false
+    property bool noEdit: false
 
     showText: true
     textAlignment: Text.AlignLeft
@@ -86,7 +87,7 @@ CleanButton {
     property bool isScript: dataType===Fact.Script
     property bool hasValue: dataType || value
 
-    property bool showEditor: hasValue && showText && (!isScript)
+    property bool showEditor: (!noEdit) && hasValue && showText && (!isScript)
     property bool showValue: hasValue && showText
     property bool showNext: expandable
 

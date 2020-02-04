@@ -71,14 +71,9 @@ ColumnLayout {
             var s=fact.qmlPage
             if(s.indexOf(":")>=0){
                 return s
-            }else{
-                return "../"+s
             }
-        }else if(fact.dataType===Fact.Mandala){
-            pageTitle+=": "+qsTr("select")
-            return "FactMenuPageMandala.qml"
-        }else{
-            return "FactMenuPageList.qml"
+            return "../"+s
         }
+        return "FactMenuPageList.qml"
     }
 }

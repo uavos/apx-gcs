@@ -73,18 +73,17 @@ public:
     // to collect dict ids from vehicle mandala
     // default impl searches for parent facts and
     // returns the first nonzero data found
-    virtual QString mandalaToString(quint16 mid) const;
+public:
+    virtual QString mandalaToString(quint16 uid) const;
     virtual quint16 stringToMandala(const QString &s) const;
 
+    //type cast
 private:
     FactData *child(int n) const { return qobject_cast<FactData *>(FactBase::child(n)); }
     FactData *child(const QString &name) const
     {
         return qobject_cast<FactData *>(FactBase::child(name));
     }
-
-signals:
-    //void childValueChanged(void);
 
 public slots:
     virtual void backup();

@@ -67,9 +67,9 @@ ObjectModel {
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
-                f=apx.vehicles.current.mandalatree.fact(n.bind)
+                f=apx.vehicles.current.mandala.fact(n.bind)
             if(f){
-                s+="fact: "+f.mpath()+";"
+                s+="fact: mandala."+f.mpath()+";"
                 s+="value: fact?fact.value:''"+";"
                 if(!n.prec)
                     s+="valueText: fact?fact.text:''"+";"

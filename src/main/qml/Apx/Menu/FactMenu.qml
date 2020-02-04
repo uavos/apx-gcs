@@ -6,6 +6,8 @@ import QtQuick.Layouts 1.3
 import Apx.Common 1.0
 import Apx.Menu 1.0
 
+import APX.Facts 1.0
+
 import "."
 
 StackView {
@@ -43,9 +45,36 @@ StackView {
     property bool showBtnBack: depth>1
 
 
+    //mandala select support
+    property var mandalaFact: null
+    onFactButtonTriggered: {
+        if(fact.dataType===Fact.Mandala){
+            mandalaFact=fact
+            currentItem.pageTitle = mandalaFact.title+": "+qsTr("select")
+        }else if(mandalaFact && fact.treeType===Fact.NoFlags){
+            mandalaFact.value=fact.mpath()
+            while(mandalaFact)back()
+        }
+    }
+    onFactChanged: {
+        if(mandalaFact){
+            if(mandalaFact===fact || mandalaFact.parentFact===fact){
+                mandalaFact=null
+            }
+        }
+    }
+    function mandalaFactReset()
+    {
+        mandalaFact.value=null;
+        while(mandalaFact)back()
+    }
+
+    //menu.js helpers
     function showFact(f)
     {
-        var c=pageDelegate.createObject(this, {"fact": f})
+        var opts={}
+        opts.fact=f
+        var c=pageDelegate.createObject(this, opts)
         fact=f
         push(c)
         forceActiveFocus()
@@ -63,7 +92,7 @@ StackView {
         //console.log("back")
         if(depth==1)stackEmpty()
         if(depth>1)pop();
-        fact=currentItem.fact
+        fact=Qt.binding(function(){return currentItem.fact})
     }
     Connections {
         target: factMenu.fact

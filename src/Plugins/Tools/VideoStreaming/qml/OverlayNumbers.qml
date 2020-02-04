@@ -81,8 +81,8 @@ Item {
         color: "#00000000"
         settingsName: "video"
         defaults: [
-            {"bind": "gps_hmsl", "title": "MSL", "prec": "0"},
-            {"bind": "altitude", "title": "ALT", "prec": "0"},
+            {"bind": "est.pos.hmsl", "title": "MSL", "prec": "0"},
+            {"bind": "est.air.altitude", "title": "ALT", "prec": "0"},
         ]
     }
 

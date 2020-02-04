@@ -75,6 +75,7 @@ ColumnLayout {
             sourceComponent: Component {
                 FactButton {
                     fact: modelData;
+                    noEdit: mandalaFact?true:false
                     height: MenuStyle.itemSize
                     onTriggered: {
                         listView.currentIndex=index
@@ -83,7 +84,7 @@ ColumnLayout {
                 }
             }
             onLoaded: {
-                if(index==0) item.focusRequested()
+                if(index==0 && !filterModel) item.focusRequested()
             }
         }
 
@@ -106,24 +107,40 @@ ColumnLayout {
             z: 100
             width: listView.width
             sourceComponent: Component {
-                TextField {
-                    id: filterItem
-                    verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: MenuStyle.titleFontSize
-                    placeholderText: qsTr("Search")+"..."
-                    selectByMouse: true
-                    text: listView.model.filter
-                    background: Rectangle{
-                        border.width: 0
-                        color: Material.background
+                RowLayout {
+                    TextField {
+                        id: filterItem
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: MenuStyle.titleFontSize
+                        placeholderText: qsTr("Search")+"..."
+                        selectByMouse: true
+                        text: listView.model.filter
+                        background: Rectangle{
+                            border.width: 0
+                            color: Material.background
+                        }
+                        onTextChanged: listView.model.filter=text.trim()
+                        onAccepted: control.filterAccepted(listView.model.filter)
+                        Connections {
+                            target: listView
+                            onCountChanged: filterItem.forceActiveFocus()
+                        }
+                        Component.onCompleted: {
+                            forceActiveFocus()
+                            listView.model.resetFilter()
+                        }
                     }
-                    onTextChanged: listView.model.filter=text.trim()
-                    onAccepted: control.filterAccepted(listView.model.filter)
-                    Connections {
-                        target: listView
-                        onCountChanged: filterItem.forceActiveFocus()
+                    Loader {
+                        active: mandalaFact && mandalaFact.value>0
+                        sourceComponent: CleanButton {
+                            title: qsTr("Remove")
+                            iconName: "delete"
+                            color: MenuStyle.cActionRemove
+                            onTriggered: mandalaFactReset()
+                        }
                     }
-                    Component.onCompleted: forceActiveFocus()
                 }
             }
         }

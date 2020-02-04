@@ -21,6 +21,8 @@
  *
  */
 #include "Fact.h"
+#include "FactListModel.h"
+#include "FactListModelActions.h"
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppNotify.h>
@@ -425,7 +427,7 @@ Fact *Fact::menu()
     if (treeType() == Root)
         return this;
     if (dataType() == Mandala)
-        return this;
+        return mandala();
 
     if (treeType() == Group)
         return bind() ? bind()->menu() : this;
@@ -538,7 +540,7 @@ void Fact::valuesFromJson(const QJsonObject &jso)
     }
 }
 //=============================================================================
-Fact::MandalaMap *Fact::mandala() const
+Fact *Fact::mandala() const
 {
     for (const Fact *f = this; f; f = f->parentFact()) {
         if (f->m_mandala)
@@ -546,52 +548,19 @@ Fact::MandalaMap *Fact::mandala() const
     }
     return nullptr;
 }
-QString Fact::mandalaToString(quint16 mid) const
+void Fact::setMandala(Fact *v)
 {
-    MandalaMap *m = mandala();
-    if (!m)
-        return QString();
-    Fact *f = m->value(mid);
-    return f ? f->title() : QString();
+    m_mandala = v;
+}
+QString Fact::mandalaToString(quint16 uid) const
+{
+    Fact *m = mandala();
+    return m ? m->mandalaToString(uid) : QString();
 }
 quint16 Fact::stringToMandala(const QString &s) const
 {
-    if (s.isEmpty() || s == "0")
-        return 0;
-    MandalaMap *m = mandala();
-    if (!m)
-        return 0;
-
-    //try int
-    bool ok = false;
-    uint i = s.toUInt(&ok);
-    if (ok && i < 0xFFFF) {
-        quint16 mid = static_cast<quint16>(i);
-        Fact *f = m->value(mid);
-        if (f)
-            return mid;
-    }
-    //try text
-    for (auto mid : m->keys()) {
-        if (m->value(mid)->title() != s)
-            continue;
-        return mid;
-    }
-    return 0;
-}
-QStringList Fact::mandalaNames() const
-{
-    QStringList st;
-    MandalaMap *m = mandala();
-    if (!m)
-        return st;
-    for (auto f : m->values())
-        st << f->title();
-    return st;
-}
-void Fact::setMandalaMap(MandalaMap *v)
-{
-    m_mandala = v;
+    Fact *m = mandala();
+    return m ? m->stringToMandala(s) : 0;
 }
 //=============================================================================
 //=============================================================================
@@ -627,7 +596,7 @@ void Fact::setFlags(FactBase::Flags v)
     setDataType(static_cast<Flag>(static_cast<int>(v & DataMask)));
     setOptions(v & OptsMask);
 }
-FactListModel *Fact::model()
+QAbstractListModel *Fact::model()
 {
     /*if (!m_model && size() <= 0 && bind()) {
         return bind()->model();
@@ -635,8 +604,9 @@ FactListModel *Fact::model()
     bool bEmpty = size() <= 0 && treeType() != Group;
     if (!m_model) {
         if (!bEmpty) {
-            m_model = new FactListModel(this);
-            m_model->sync();
+            FactListModel *m = new FactListModel(this);
+            m_model = m;
+            m->sync();
         }
     } else if (bEmpty) {
         m_model->deleteLater();
@@ -644,14 +614,14 @@ FactListModel *Fact::model()
     }
     return m_model;
 }
-void Fact::setModel(FactListModel *v)
+void Fact::setModel(QAbstractListModel *v)
 {
     if (m_model)
         m_model->deleteLater();
     m_model = v;
     emit modelChanged();
 }
-FactListModelActions *Fact::actionsModel()
+QAbstractListModel *Fact::actionsModel()
 {
     bool bEmpty = actions().isEmpty();
     if (!m_actionsModel) {
@@ -663,7 +633,7 @@ FactListModelActions *Fact::actionsModel()
     }
     return m_actionsModel;
 }
-void Fact::setActionsModel(FactListModelActions *v)
+void Fact::setActionsModel(QAbstractListModel *v)
 {
     if (m_actionsModel)
         m_actionsModel->deleteLater();

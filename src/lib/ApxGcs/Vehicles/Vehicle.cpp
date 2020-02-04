@@ -52,7 +52,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
     , m_totalDistance(0)
 {
     setSection(vehicles->title());
-    setIcon(vclass == LOCAL ? "chip" : vclass == REPLAY ? "play-circle" : "drone");
+    setIcon(isLocal() ? "chip" : isReplay() ? "play-circle" : "drone");
 
     connect(this, &Vehicle::callsignChanged, this, &Vehicle::updateTitle);
     connect(this, &Vehicle::streamTypeChanged, this, &Vehicle::updateStatus);
@@ -70,6 +70,11 @@ Vehicle::Vehicle(Vehicles *vehicles,
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
     f_telemetry = new Telemetry(this);
+
+    setMandala(f_mandalatree);
+    if (isLocal()) {
+        AppRoot::instance()->setMandala(mandala());
+    }
 
     //Mandala facts binfing
     f_lat = f_mandalatree->fact("est.pos.lat");

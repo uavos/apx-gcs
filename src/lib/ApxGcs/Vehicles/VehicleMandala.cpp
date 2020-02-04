@@ -27,7 +27,7 @@
 #include <QColor>
 //=============================================================================
 VehicleMandala::VehicleMandala(Vehicle *parent)
-    : Fact(parent, "mandala", "Mandala", tr("Vehicle data tree"), Group, "hexagon-multiple")
+    : Fact(parent, "mandala_flat", "Mandala", tr("Vehicle data tree"), Group, "hexagon-multiple")
     , vehicle(parent)
     , m_errcnt(0)
 {

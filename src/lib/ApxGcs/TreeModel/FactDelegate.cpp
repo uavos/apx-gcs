@@ -108,7 +108,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             QComboBox *cb = new QComboBox(parent);
             cb->setFrame(false);
             cb->setEditable(true);
-            cb->addItems(f->mandalaNames());
+            //cb->addItems(f->mandalaNames());
             cb->view()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
             e = cb;
         } break;

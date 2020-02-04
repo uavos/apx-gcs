@@ -29,7 +29,7 @@
 
 MandalaTree::MandalaTree(Fact *parent)
     : Fact(parent,
-           "mandalatree",
+           "mandala",
            "Mandala tree",
            tr("Vehicle data tree"),
            Group | FilterModel,
@@ -174,4 +174,27 @@ MandalaTreeFact *MandalaTree::fact(const QString &mpath) const
         apxMsgW() << "Mandala fact not found:" << mpath;
     }
     return f;
+}
+
+QString MandalaTree::mandalaToString(quint16 uid) const
+{
+    MandalaTreeFact *f = uid_map.value(uid);
+    return f ? f->mpath() : QString();
+}
+quint16 MandalaTree::stringToMandala(const QString &s) const
+{
+    if (s.isEmpty() || s == "0")
+        return 0;
+    //try int
+    bool ok = false;
+    uint i = s.toUInt(&ok);
+    if (ok && i < 0xFFFF) {
+        quint16 uid = static_cast<quint16>(i);
+        MandalaTreeFact *f = fact(uid);
+        if (f)
+            return f->uid();
+    }
+    //try text
+    MandalaTreeFact *f = fact(s);
+    return f ? f->uid() : 0;
 }

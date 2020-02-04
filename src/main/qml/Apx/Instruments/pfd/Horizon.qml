@@ -21,8 +21,8 @@ Item {
     readonly property var f_rc_roll: mandala.cmd.rc.roll
     readonly property var f_rc_pitch: mandala.cmd.rc.pitch
 
-    readonly property real m_ail: mandala.ctr.stab.ail.value
-    readonly property real m_elv: mandala.ctr.stab.elv.value
+    readonly property real m_ail: mandala.ctr.att.ail.value
+    readonly property real m_elv: mandala.ctr.att.elv.value
 
     readonly property real m_slip: mandala.est.air.slip.value
 

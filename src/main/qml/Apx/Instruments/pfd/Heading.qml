@@ -15,7 +15,7 @@ Item {
     readonly property var f_adj: mandala.cmd.op.adj
 
     readonly property var f_nomag: mandala.cmd.opt.nomag
-    readonly property var f_rud: mandala.ctr.stab.rud
+    readonly property var f_rud: mandala.ctr.att.rud
 
 
     //instrument item

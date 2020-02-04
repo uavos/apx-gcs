@@ -26,6 +26,7 @@
 #include <App/AppGcs.h>
 #include <App/AppRoot.h>
 #include <ApxMisc/QActionFact.h>
+#include <Fact/FactListModel.h>
 
 #include <Nodes/Nodes.h>
 #include <Nodes/NodesShare.h>
@@ -103,7 +104,7 @@ AppMenu::AppMenu(Fact *parent)
     windows->bind(AppRoot::instance()->f_windows);
 
     help = new Fact(this, "help", tr("Help"), "", Group, "help");
-    f = new Fact(help, "mandala", tr("Mandala Report"), "", NoFlags, "format-list-bulleted");
+    f = new Fact(help, "mrep", tr("Mandala Report"), "", NoFlags, "format-list-bulleted");
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("http://127.0.0.1:9080/mandala?descr"));
     });
@@ -163,11 +164,11 @@ void AppMenu::createMenuBar()
         QMenu *menu = menuBar->addMenu(g->title());
         f->setOpt("qmenu", QVariant::fromValue(menu));
         updateMenu(f);
-        FactListModel *model = f->model();
+        QAbstractListModel *model = f->model();
         if (model) {
             connect(
                 model,
-                &FactListModel::layoutChanged,
+                &QAbstractListModel::layoutChanged,
                 this,
                 [this, f]() { updateMenu(f); },
                 Qt::QueuedConnection);
@@ -182,7 +183,7 @@ void AppMenu::updateMenu(Fact *fact)
 
     menu->clear();
 
-    FactListModel *model = fact->model();
+    FactListModel *model = qobject_cast<FactListModel *>(fact->model());
     if (!model)
         return;
     model->sync();

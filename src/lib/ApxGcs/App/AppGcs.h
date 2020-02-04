@@ -42,7 +42,7 @@ class AppGcs : public App
     Q_ENUMS(FileType)
 
 public:
-    explicit AppGcs(int &argc, char **argv, const QString &name, const QUrl &url);
+    explicit AppGcs(int &argc, char **argv, const QString &name, const QUrl &_url);
     static AppGcs *instance() { return _instance; }
 
     enum FileType {

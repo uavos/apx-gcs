@@ -108,6 +108,7 @@ public:
                                 Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
 
     Q_INVOKABLE QString path(int maxLevel = -1, const QChar pathDelimiter = QChar('.')) const;
+    Q_INVOKABLE QString path(const FactBase *root) const;
     Q_INVOKABLE QStringList pathStringList(int maxLevel = -1) const;
 
     QList<FactBase *> pathList() const;

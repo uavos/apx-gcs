@@ -24,6 +24,8 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <ApxMisc/FactQml.h>
+#include <Fact/FactListModel.h>
+#include <Fact/FactListModelActions.h>
 //=============================================================================
 AppEngine::AppEngine(QObject *parent)
     : QQmlApplicationEngine(parent)
@@ -106,6 +108,16 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 
     jsSetProperty(parent, fact->name(), js_fact);
 
+    /*if (fact->treeType() == Fact::NoFlags) {
+        QString s = fact->path();
+        //protect write
+        s = (QString("Object.defineProperty(this.%1,'%2',{set:function(v){%1.%2.value=v}})")
+                 .arg(s.left(s.lastIndexOf('.')))
+                 .arg(fact->name()));
+        qDebug() << s;
+        jsexec(s);
+    }*/
+
     //sync children
     for (int i = 0; i < fact->size(); ++i)
         jsSync(fact->child(i), js_fact);
@@ -166,10 +178,10 @@ void AppEngine::jsRegisterFunctions()
     jsRegister("help()", QObject::tr("print commands help"), "application.engine.help();");
     jsRegister("req(n)",
                QObject::tr("request var n from UAV"),
-               "apx.vehicles.current.mandala[n].request();");
+               "apx.vehicles.current.mandala.fact(n).request();");
     jsRegister("send(n)",
                QObject::tr("send var n to UAV"),
-               "apx.vehicles.current.mandala[n].send();");
+               "apx.vehicles.current.mandala.fact(n).send();");
     jsRegister("nodes()", QObject::tr("rescan bus nodes"), "apx.vehicles.current.nodes.request();");
     jsRegister("nstat()",
                QObject::tr("print nodes status"),

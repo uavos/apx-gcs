@@ -25,6 +25,7 @@
 //=============================================================================
 #include "Vehicle.h"
 #include "VehicleSelect.h"
+#include <App/AppEngine.h>
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolVehicles.h>
 class NodeItem;
@@ -55,6 +56,8 @@ private:
     static Vehicles *_instance;
 
     QList<QMetaObject::Connection> currentVehicleConnections;
+
+    void jsSyncMandala(Fact *fact, QJSValue parent);
 
 public slots:
     void selectVehicle(Vehicle *v);
