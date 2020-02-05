@@ -29,6 +29,7 @@ class DatabaseLookupModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
 
 public:
     explicit DatabaseLookupModel(QObject *parent = nullptr);
@@ -60,6 +61,7 @@ public:
 
 public slots:
     void syncItems(ItemsList list);
+    void resetFilter();
 
 signals:
     void itemEdited(int i, QVariantMap v);
@@ -70,8 +72,14 @@ signals:
     //PROPERTIES
 public:
     int count() const;
+    QString filter() const;
+    void setFilter(QString v);
+
+private:
+    QString m_filter;
 signals:
     void countChanged();
+    void filterChanged();
 };
 //=============================================================================
 #endif

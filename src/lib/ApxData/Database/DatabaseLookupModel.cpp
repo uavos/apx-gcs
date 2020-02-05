@@ -76,6 +76,22 @@ int DatabaseLookupModel::count() const
 {
     return rowCount();
 }
+QString DatabaseLookupModel::filter() const
+{
+    return m_filter;
+}
+void DatabaseLookupModel::setFilter(QString v)
+{
+    v = v.trimmed();
+    if (m_filter == v)
+        return;
+    m_filter = v;
+    emit filterChanged();
+}
+void DatabaseLookupModel::resetFilter()
+{
+    setFilter(QString());
+}
 //=============================================================================
 void DatabaseLookupModel::syncItems(ItemsList list)
 {

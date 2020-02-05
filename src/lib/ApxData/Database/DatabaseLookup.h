@@ -31,10 +31,6 @@
 class DatabaseLookup : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(DatabaseLookupModel *dbModel READ dbModel CONSTANT)
-    Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
-    Q_PROPERTY(
-        bool filterEnabled READ filterEnabled WRITE setFilterEnabled NOTIFY filterEnabledChanged)
 
 public:
     explicit DatabaseLookup(Fact *parent,
@@ -48,10 +44,14 @@ public:
                            const QVariantList &bindValues = QVariantList());
     Q_INVOKABLE void query(DatabaseRequest *req);
 
+    DatabaseLookupModel *dbModel() const;
+
 protected:
     DatabaseSession *db;
     DatabaseRequest::Records records;
     DatabaseLookupModel::ItemsList recordsItems;
+
+    QString filter() const;
 
     virtual bool fixItemDataThr(QVariantMap *item);
 
@@ -74,23 +74,6 @@ signals:
 
     //internal loading
     void _itemsLoaded(DatabaseLookupModel::ItemsList list);
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    DatabaseLookupModel *dbModel() const;
-    QString filter() const;
-    void setFilter(const QString &v);
-    bool filterEnabled() const;
-    void setFilterEnabled(const bool &v);
-
-private:
-    DatabaseLookupModel *m_dbModel;
-    QString m_filter;
-    bool m_filterEnabled;
-signals:
-    void filterChanged();
-    void filterEnabledChanged();
 };
 //=============================================================================
 #endif

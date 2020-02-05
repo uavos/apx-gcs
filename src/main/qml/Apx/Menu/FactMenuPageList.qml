@@ -60,7 +60,6 @@ ColumnLayout {
                 positionViewAtIndex(currentIndex,ListView.Center)
             }
         }
-        headerPositioning: ListView.OverlayHeader
 
         //resize to contents
         onCountChanged: updateHeight()
@@ -102,6 +101,7 @@ ColumnLayout {
         }
 
         //filter
+        headerPositioning: ListView.OverlayHeader
         header: Loader {
             active: filterModel
             z: 100

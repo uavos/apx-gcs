@@ -14,9 +14,6 @@ FactMenuPageList {
 
     property var parentFact: fact
 
-    property bool filterEnabled: (fact)?true:false
-
-    model: fact.dbModel
     delegate: Loader{
         asynchronous: true
         active: true
@@ -35,45 +32,7 @@ FactMenuPageList {
                 onTriggered: {
                     parentFact.triggerItem(modelData)
                 }
-
             }
         }
-    }
-
-    //filter
-    header: TextField {
-        id: filterText
-        z: 100
-        enabled: filterEnabled
-        visible: enabled
-        width: listView.width
-        height: filterEnabled?implicitHeight:0
-        verticalAlignment: Text.AlignVCenter
-        font.pixelSize: MenuStyle.titleFontSize
-        placeholderText: qsTr("Search")+"..."
-        background: Rectangle{
-            border.width: 0
-            color: Material.background
-        }
-        text: filterEnabled?fact.filter:""
-        onTextEdited: fact.filter=text
-        Connections {
-            //prefent focus change on model updates
-            target: listView
-            enabled: control.filterEnabled
-            onCountChanged: filterText.forceActiveFocus()
-        }
-    }
-
-
-    Timer {
-        //initial focus
-        interval: 500
-        running: true
-        onTriggered: headerItem.forceActiveFocus()
-    }
-    Component.onCompleted: {
-        fact.filter=""
-        headerItem.forceActiveFocus()
     }
 }

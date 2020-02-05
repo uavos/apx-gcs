@@ -35,7 +35,7 @@ LookupSites::LookupSites(Sites *sites)
                      Database::instance()->missions)
     , sites(sites)
 {
-    setFilterEnabled(false);
+    setOption(FilterModel, false);
 
     dbModel()->qmlMapSafe = true;
     dbModel()->ordered = false;

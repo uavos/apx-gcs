@@ -29,7 +29,7 @@ MapObject {
             var d=modelData
             d.lat=coordinate.latitude
             d.lon=coordinate.longitude
-            sites.lookup.dbModel.set(index,d)
+            sites.lookup.model.set(index,d)
         }
     }
     draggable: selected

@@ -31,18 +31,18 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
                                Flags flags)
     : Fact(parent, name, title, descr, flags | FilterModel, "database-search")
     , db(db)
-    , m_filterEnabled(true)
 {
     setQmlPage("Menu/FactMenuPageLookupDB.qml");
 
-    m_dbModel = new DatabaseLookupModel(this);
+    setModel(new DatabaseLookupModel(this));
+
     connect(this,
             &DatabaseLookup::_itemsLoaded,
             this,
             &DatabaseLookup::loadRecordsItems,
             Qt::QueuedConnection);
 
-    connect(this, &DatabaseLookup::filterChanged, this, &DatabaseLookup::defaultLookup);
+    connect(dbModel(), &DatabaseLookupModel::filterChanged, this, &DatabaseLookup::defaultLookup);
     connect(db,
             &DatabaseSession::modified,
             this,
@@ -62,6 +62,15 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
     modelSyncTimer.setSingleShot(true);
     modelSyncTimer.setInterval(500);
     connect(&modelSyncTimer, &QTimer::timeout, this, &DatabaseLookup::loadItems);
+}
+//=============================================================================
+QString DatabaseLookup::filter() const
+{
+    return static_cast<DatabaseLookupModel *>(m_model)->filter();
+}
+DatabaseLookupModel *DatabaseLookup::dbModel() const
+{
+    return static_cast<DatabaseLookupModel *>(m_model);
 }
 //=============================================================================
 void DatabaseLookup::query(const QString &queryString, const QVariantList &bindValues)
@@ -121,7 +130,7 @@ void DatabaseLookup::loadRecordsItems(DatabaseLookupModel::ItemsList list)
 }
 void DatabaseLookup::loadItems()
 {
-    dbModel()->syncItems(recordsItems);
+    static_cast<DatabaseLookupModel *>(model())->syncItems(recordsItems);
 }
 //=============================================================================
 void DatabaseLookup::triggerItem(QVariantMap modelData)
@@ -130,32 +139,4 @@ void DatabaseLookup::triggerItem(QVariantMap modelData)
 }
 //=============================================================================
 void DatabaseLookup::defaultLookup() {}
-//=============================================================================
-//=============================================================================
-DatabaseLookupModel *DatabaseLookup::dbModel() const
-{
-    return m_dbModel;
-}
-QString DatabaseLookup::filter() const
-{
-    return m_filter;
-}
-void DatabaseLookup::setFilter(const QString &v)
-{
-    if (m_filter == v)
-        return;
-    m_filter = v;
-    emit filterChanged();
-}
-bool DatabaseLookup::filterEnabled() const
-{
-    return m_filterEnabled;
-}
-void DatabaseLookup::setFilterEnabled(const bool &v)
-{
-    if (m_filterEnabled == v)
-        return;
-    m_filterEnabled = v;
-    emit filterEnabledChanged();
-}
 //=============================================================================

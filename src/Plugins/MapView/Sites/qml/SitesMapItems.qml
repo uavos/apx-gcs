@@ -14,7 +14,7 @@ MapItemGroup {
 
     MapItemView {
         id: sitesView
-        model: places.showPlaces?sites.lookup.dbModel:0
+        model: places.showPlaces?sites.lookup.model:0
         delegate: SiteItem { }
     }
 

@@ -608,7 +608,7 @@ QAbstractListModel *Fact::model()
             m_model = m;
             m->sync();
         }
-    } else if (bEmpty) {
+    } else if (bEmpty && qobject_cast<FactListModel *>(m_model)) {
         m_model->deleteLater();
         m_model = nullptr;
     }
