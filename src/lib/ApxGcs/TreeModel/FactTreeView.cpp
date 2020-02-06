@@ -170,7 +170,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     //model
     proxy = new FactProxyModel(this);
     tree->setModel(proxy);
-    model = new FactTreeModel(fact);
+    model = new FactTreeModel(fact, this);
     proxy->setRootFact(fact);
     proxy->setSourceModel(model);
 

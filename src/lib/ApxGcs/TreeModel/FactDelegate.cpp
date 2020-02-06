@@ -22,6 +22,7 @@
  */
 #include "FactDelegate.h"
 #include "FactDelegateArray.h"
+#include "FactDelegateMandala.h"
 #include "FactDelegateScript.h"
 #include "FactTreeModel.h"
 #include <QtWidgets>
@@ -88,33 +89,27 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             le->setFrame(false);
             e = le;
         } break;
-        /*case Fact::ActionData:{
-        QPushButton *btn=createButton(parent);
-        connect(btn,&QPushButton::clicked,f,&Fact::trigger);
-        return btn;
-      }break;*/
         case Fact::NoFlags: {
             if (f->treeType() == Fact::Group && f->size() > 1
                 && f->child(0)->treeType() == Fact::Group && f->value().toString().startsWith('[')
                 && f->value().toString().endsWith(']')) {
                 QPushButton *btn = createButton(parent);
-                connect(btn, &QPushButton::clicked, this, [=]() {
+                connect(btn, &QPushButton::clicked, this, [f, parent]() {
                     new FactDelegateArray(f, parent->parentWidget());
                 });
                 return btn;
             }
         } break;
         case Fact::Mandala: {
-            QComboBox *cb = new QComboBox(parent);
-            cb->setFrame(false);
-            cb->setEditable(true);
-            //cb->addItems(f->mandalaNames());
-            cb->view()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
-            e = cb;
-        } break;
+            QPushButton *btn = createButton(parent);
+            connect(btn, &QPushButton::clicked, this, [f, btn]() {
+                new FactDelegateMandala(f, btn);
+            });
+            return btn;
+        }
         case Fact::Script: {
             QPushButton *btn = createButton(parent);
-            connect(btn, &QPushButton::clicked, this, [=]() {
+            connect(btn, &QPushButton::clicked, this, [f, parent]() {
                 new FactDelegateScript(f, parent->parentWidget());
             });
             return btn;
@@ -187,6 +182,12 @@ void FactDelegate::setEditorData(QWidget *editor, const QModelIndex &index) cons
         te->setTime(t);
         return;
     }
+    /*if (qobject_cast<FactDelegateMandala *>(editor)) {
+        FactDelegateMandala *e = static_cast<FactDelegateMandala *>(editor);
+        e->setCurrentText(index.data(Qt::EditRole).toString());
+        return;
+    }
+    qDebug() << index.data(Qt::EditRole);*/
     QItemDelegate::setEditorData(editor, index);
 }
 void FactDelegate::setModelData(QWidget *editor,

@@ -30,9 +30,9 @@
 MandalaTree::MandalaTree(Fact *parent)
     : Fact(parent,
            "mandala",
-           "Mandala tree",
+           "Mandala",
            tr("Vehicle data tree"),
-           Group | FilterModel,
+           Group | FilterModel | ModifiedGroup,
            "hexagon-multiple")
 {
     //qDebug() << mandala::sns::nav::ins::gyro::title;
@@ -135,13 +135,12 @@ MandalaTree::MandalaTree(Fact *parent)
             if (i.meta.uid == mandala::backport::meta_void.uid)
                 continue;
             f->addAlias(i.alias);
-            f->setDescr(QString("{%1} %2").arg(i.alias).arg(f->descr()));
             break;
         }
     }
 
     //fact tests
-    mandala::backport::MandalaBackport backport;
+    //mandala::backport::MandalaBackport backport;
 
     //apxMsg() << findChild("sns.tcas.vel")->title();
     //apxMsg() << fact(mandala::sns::nav::air::aoa::meta.uid)->title();
@@ -149,6 +148,8 @@ MandalaTree::MandalaTree(Fact *parent)
 
 MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const
 {
+    if (!uid)
+        return nullptr;
     MandalaTreeFact *f = uid_map.value(uid);
     if (f)
         return f;
@@ -159,6 +160,8 @@ MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const
 MandalaTreeFact *MandalaTree::fact(const QString &mpath) const
 {
     MandalaTreeFact *f = nullptr;
+    if (mpath.isEmpty())
+        return f;
     if (mpath.contains('.')) {
         f = static_cast<MandalaTreeFact *>(findChild(mpath));
     } else {

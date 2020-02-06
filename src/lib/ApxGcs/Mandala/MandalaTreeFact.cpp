@@ -28,7 +28,7 @@
 #include <QColor>
 
 MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
-    : Fact(parent, meta.name, meta.title, meta.title, meta.group ? Group | FilterModel : NoFlags)
+    : Fact(parent, meta.name, meta.title, "", meta.group ? Group | FilterModel : ModifiedTrack)
     , m_tree(tree)
     , m_meta(meta)
 {
@@ -40,53 +40,40 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
     if (isSystem()) {
         setOption(FilterExclude);
     }
+
+    setDescr(mpath());
+
     if (meta.group) {
-        updateStatus();
-        connect(this, &Fact::sizeChanged, this, &MandalaTreeFact::updateStatus);
+        connect(this, &Fact::sizeChanged, this, &Fact::textChanged);
         if (meta.level == 2) {
-            connect(this,
-                    &Fact::sectionChanged,
-                    static_cast<MandalaTreeFact *>(parent),
-                    &MandalaTreeFact::updateStatus);
-            connect(this, &Fact::sectionChanged, this, &MandalaTreeFact::updateDescr);
+            connect(this, &Fact::sectionChanged, parent, &Fact::textChanged);
         }
     } else {
-        QString sdescr = meta.descr;
-        if (!sdescr.isEmpty()) {
-            setDescr(QString("%1 - %2").arg(descr()).arg(sdescr));
-        }
-
         setUnits(meta.units);
-        QVariant v;
         switch (meta.type_id) {
         case mandala::type_float:
             setDataType(Float);
-            v = static_cast<double>(0.0);
             setPrecision(getPrecision());
             break;
         case mandala::type_dword:
             setDataType(Int);
             setMin(0);
             setMax(QVariant::fromValue(0xFFFFFFFFll));
-            v = QVariant::fromValue(0);
             break;
         case mandala::type_word:
             setDataType(Int);
             setMin(0);
             setMax(QVariant::fromValue(0xFFFFu));
-            v = QVariant::fromValue(0);
             break;
         case mandala::type_byte:
             setDataType(Int);
             setMin(0);
             setMax(255);
-            v = QVariant::fromValue(0);
             break;
         case mandala::type_enum: {
             setDataType(Enum);
-            v = static_cast<int>(0);
             QStringList st = units().split(',');
-            setUnits("");
+            setUnits(QString());
             setEnumStrings(st);
             for (int i = 0; i < st.size(); ++i) {
                 const QString &s
@@ -102,11 +89,6 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
             }
         } break;
         }
-        if (!units().isEmpty()) {
-            setDescr(QString("%1 [%2]").arg(descr()).arg(units()));
-        }
-
-        setValueLocal(v);
 
         if (!isSystem()) {
             m_stream = MandalaTreeStream::get_stream();
@@ -115,8 +97,10 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
             sendTimer.setInterval(100);
             sendTimer.setSingleShot(true);
             connect(&sendTimer, &QTimer::timeout, this, &MandalaTreeFact::send);
-            connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
+            //connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
         }
+
+        connect(this, &Fact::triggered, this, [this]() { setModified(false); });
 
         //integrity tests
         /* switch (meta.type_id) {
@@ -143,7 +127,7 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
         }*/
     }
     //setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
-    updateDescr();
+    //updateDescr();
 }
 
 void MandalaTreeFact::addAlias(const QString &a)
@@ -198,9 +182,43 @@ QVariant MandalaTreeFact::data(int col, int role) const
 {
     switch (role) {
     case Qt::DisplayRole:
-        if (col != FACT_MODEL_COLUMN_NAME)
-            break;
-        return name();
+        if (col == FACT_MODEL_COLUMN_NAME)
+            return name();
+        if (col == FACT_MODEL_COLUMN_DESCR) {
+            QString s = descr();
+            if (!alias().isEmpty())
+                s += QString(" {%1}").arg(alias());
+            if (!m_meta.descr[0])
+                s += QString(" %1").arg(m_meta.descr);
+            return s;
+        }
+        if (col == FACT_MODEL_COLUMN_VALUE) {
+            if (!m_meta.group)
+                break;
+            if (m_meta.level == 0) {
+                QStringList slist;
+                QList<int> vlist;
+                for (auto i : *this) {
+                    const QString &s = static_cast<Fact *>(i)->section();
+                    if (!slist.contains(s))
+                        slist.append(s);
+                    if (vlist.size() < slist.size())
+                        vlist.append(0);
+                    int idx = slist.indexOf(s);
+                    vlist[idx] = vlist.at(idx) + 1;
+                }
+                QStringList st;
+                for (auto n : vlist)
+                    st.append(QString::number(n));
+                int capacity = 1 << mandala::uid_bits[m_meta.level + 2];
+                return QString("[%1/%2]").arg(st.join('/')).arg(capacity);
+            }
+            if (m_meta.level == 2) {
+                int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
+                return QString("[%1/%2]").arg(size()).arg(capacity);
+            }
+        }
+        break;
     case Qt::BackgroundRole:
         if (m_meta.level == 0)
             return QColor(Qt::darkCyan).darker(300);
@@ -227,65 +245,9 @@ bool MandalaTreeFact::showThis(QRegExp re) const
         return true;
     if (mpath().contains(re))
         return true;
+    if (m_meta.descr[0] && QString(m_meta.descr).contains(re))
+        return true;
     return false;
-}
-
-void MandalaTreeFact::updateStatus()
-{
-    if (m_meta.level == 0) {
-        QStringList slist;
-        QList<int> vlist;
-        for (auto i : *this) {
-            const QString &s = static_cast<Fact *>(i)->section();
-            if (!slist.contains(s))
-                slist.append(s);
-            if (vlist.size() < slist.size())
-                vlist.append(0);
-            int idx = slist.indexOf(s);
-            vlist[idx] = vlist.at(idx) + 1;
-        }
-        QStringList st;
-        for (auto n : vlist)
-            st.append(QString::number(n));
-        int capacity = 1 << mandala::uid_bits[m_meta.level + 2];
-        setValue(QString("[%1/%2]").arg(st.join('/')).arg(capacity));
-        return;
-    }
-    if (m_meta.level == 2) {
-        int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
-        setValue(QString("[%1/%2]").arg(size()).arg(capacity));
-        return;
-    }
-}
-
-void MandalaTreeFact::updateDescr()
-{
-    QString s = m_meta.title;
-    QString sdescr = m_meta.descr;
-    if (!sdescr.isEmpty()) {
-        s = QString("%1 - %2").arg(s).arg(sdescr);
-    }
-    if (!units().isEmpty()) {
-        s = QString("%1 [%2]").arg(s).arg(units());
-    }
-    if (!section().isEmpty()) {
-        s = QString("%1: %2").arg(section().left(3).toLower()).arg(s);
-    }
-    if (m_stream) {
-        QByteArray ba(100, '\0');
-        size_t sz = pack(ba.data());
-        ba.resize(sz);
-        //qDebug() << path() << ba.toHex().toUpper();
-        s = QString("(%2) %1: %3").arg(QString(ba.toHex().toUpper())).arg(m_stream->psize()).arg(s);
-        s = QString("[%1] %2").arg(m_stream->type_text).arg(s);
-        s = QString("[%1] %2").arg(m_stream->sfmt_text).arg(s);
-    }
-    //s = QString("%1: %2").arg(m_meta.uid, 4, 16, QChar('0')).arg(s);
-    if (precision() >= 0) {
-        s = QString("[%1] %2").arg(precision()).arg(s);
-    }
-
-    setDescr(s);
 }
 
 size_t MandalaTreeFact::pack(void *buf) const
@@ -462,11 +424,11 @@ QColor MandalaTreeFact::getColor()
             c = QColor(Qt::magenta).lighter();
         else
             c = QColor(Qt::cyan).lighter();
-    } else if (sn.startsWith("altitude"))
+    } else if (sn.contains("altitude"))
         c = QColor(Qt::red).lighter(170);
-    else if (sn.startsWith("vspeed"))
+    else if (sn.contains("vspeed"))
         c = QColor(Qt::green).lighter(170);
-    else if (sn.startsWith("airspeed"))
+    else if (sn.contains("airspeed"))
         c = QColor(Qt::blue).lighter(170);
     else if (isEnum)
         c = QColor(Qt::blue).lighter();

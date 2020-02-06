@@ -226,7 +226,8 @@ bool FactData::updateValue(const QVariant &v)
             vx = v.toDouble();
         break;
     case Mandala:
-        vx = stringToMandala(v.toString());
+        if (quint16 uid = stringToMandala(v.toString().trimmed()))
+            vx = uid;
         break;
     case Script:
         vx = v.toString();

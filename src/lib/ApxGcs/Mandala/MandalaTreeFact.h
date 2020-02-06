@@ -74,8 +74,6 @@ protected:
     virtual bool showThis(QRegExp re) const; //filter helper
 
 protected slots:
-    void updateStatus();
-    void updateDescr();
 
 signals:
     void sendValueUpdate(quint16 id, double v);

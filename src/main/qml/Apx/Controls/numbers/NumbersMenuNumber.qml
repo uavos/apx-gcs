@@ -86,7 +86,7 @@ Fact {
         id: mBind
         name: "bind_num"
         title: qsTr("Expression")
-        descr: "Math.atan(est.att.pitch.value/est.att.roll.value)"
+        descr: "Math.atan(est.att.pitch/est.att.roll)"
         flags: Fact.Text
         onValueChanged: updateDescr()
     }
@@ -121,7 +121,7 @@ Fact {
     Fact {
         name: "act"
         title: qsTr("Action")
-        descr: "cmd.op.action.value=op_action_cancel"
+        descr: "cmd.op.action=op_action_cancel"
         flags: Fact.Text
         onValueChanged: updateDescr()
     }

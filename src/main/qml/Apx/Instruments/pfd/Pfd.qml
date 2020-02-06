@@ -59,7 +59,7 @@ Item {
 
     readonly property var f_ctr_hover: mandala.est.ctr.hover
     readonly property var f_rc_ovr: mandala.cmd.rc.ovr
-    readonly property var f_starter: mandala.ctr.sw.starter
+    readonly property var f_starter: mandala.ctr.eng.starter
 
 
     clip: true

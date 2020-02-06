@@ -30,7 +30,7 @@ class FactTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    explicit FactTreeModel(Fact *root);
+    explicit FactTreeModel(Fact *root, QObject *parent);
 
     Fact *fact(const QModelIndex &index) const;
     QModelIndex factIndex(FactBase *item, int column = 0) const;
@@ -40,20 +40,22 @@ public:
 
     QList<Fact *> expandedFacts;
 
-    QHash<int, QByteArray> roleNames() const;
+    QHash<int, QByteArray> roleNames() const override;
 
 protected:
     Fact *root;
 
     //override
-    QVariant data(const QModelIndex &index, int role) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &index) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    virtual QVariant data(const QModelIndex &index, int role) const override;
+    virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant headerData(int section,
+                        Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
 private:
     QTimer updateTimer;

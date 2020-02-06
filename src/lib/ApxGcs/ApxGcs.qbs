@@ -55,6 +55,7 @@ ApxApp.ApxLibrary {
         prefix: name+"/"
         files: [
             "FactDelegate.cpp", "FactDelegate.h",
+            "FactDelegateMandala.cpp", "FactDelegateMandala.h",
             "FactDelegateArray.cpp", "FactDelegateArray.h",
             "FactDelegateDialog.cpp", "FactDelegateDialog.h",
             "FactDelegateScript.cpp", "FactDelegateScript.h",

@@ -490,7 +490,7 @@ void NodeItem::groupArrays(NodesBase *group)
         connect(group, &Fact::modifiedChanged, fRow, [fRow, group]() {
             fRow->setModified(group->modified());
         });
-        connect(fi, &Fact::valueChanged, fRow, [fRow, fi]() { fRow->setValue(fi->value()); });
+        connect(fi, &Fact::textChanged, fRow, [fRow, fi]() { fRow->setValue(fi->text()); });
         connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
 
         Fact *f_ch = nullptr;
@@ -530,7 +530,7 @@ void NodeItem::groupArrays(NodesBase *group)
 void NodeItem::updateArrayRowDescr(Fact *fRow)
 {
     QStringList st;
-    if (!fRow->value().toString().isEmpty()) {
+    if (!fRow->text().isEmpty()) {
         for (int i = 0; i < fRow->size(); ++i) {
             st.append(fRow->child(i)->text());
         }

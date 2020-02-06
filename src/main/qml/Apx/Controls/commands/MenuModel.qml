@@ -26,7 +26,7 @@ Fact {
         Fact { bind: mandala.cmd.opt.throvr; flags: Fact.Bool; }
         Fact { enabled: false }
         Fact { bind: mandala.ctr.pwr.ignition; flags: Fact.Bool; }
-        Fact { bind: mandala.sns.btn.starter; flags: Fact.Bool; active: mandala.ctr.sw.starter.value; }
+        Fact { bind: mandala.sns.btn.starter; flags: Fact.Bool; active: mandala.ctr.eng.starter.value; }
     }
     Fact {
         title: mandala.ctr.pwr.title

@@ -24,8 +24,8 @@
 #include <Fact/Fact.h>
 #include <QDomDocument>
 //=============================================================================
-FactTreeModel::FactTreeModel(Fact *root)
-    : QAbstractItemModel(root)
+FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
+    : QAbstractItemModel(parent)
     , root(root)
 {
     updateTimer.setSingleShot(true);

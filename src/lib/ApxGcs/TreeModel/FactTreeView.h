@@ -34,6 +34,8 @@ class FactTreeView : public QTreeView
     Q_OBJECT
 public:
     FactTreeView(QWidget *parent = 0);
+
+    QSize sizeHint() const override { return viewportSizeHint(); }
 };
 //=============================================================================
 class FactProxyModel : public QSortFilterProxyModel

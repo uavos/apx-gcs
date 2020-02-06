@@ -51,6 +51,7 @@ StackView {
         if(fact.dataType===Fact.Mandala){
             mandalaFact=fact
             currentItem.pageTitle = mandalaFact.title+": "+qsTr("select")
+            currentItem.pageStatus = mandalaFact.text
         }else if(mandalaFact && fact.treeType===Fact.NoFlags){
             mandalaFact.value=fact.mpath()
             while(mandalaFact)back()
