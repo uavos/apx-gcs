@@ -1,7 +1,6 @@
 ﻿#include "gstplayer.h"
 
 #include <Vehicles/Vehicle.h>
-#include <Vehicles/VehicleMandala.h>
 #include <Vehicles/Vehicles.h>
 
 #include <App/App.h>
@@ -190,7 +189,7 @@ GstPlayer::GstPlayer(Fact *parent)
     new Fact(f_tools, "cmd.cam.fm");
     new Fact(f_tools, "cmd.cam.ft");
     new Fact(f_tools, "cmd.cam.range");
-    new Fact(f_tools, "cmd.cam.shot");
+    new Fact(f_tools, "cmd.cam.mode");
     new Fact(f_tools, "cmd.cam.dshot");
     new Fact(f_tools, "cmd.cam.tshot");
     new Fact(f_tools, "ctr.cam.rec");
@@ -228,7 +227,7 @@ GstPlayer::~GstPlayer()
 
 void GstPlayer::vehicleSelected(Vehicle *vehicle)
 {
-    MandalaTree *m = vehicle->f_mandalatree;
+    MandalaTree *m = vehicle->f_mandala;
     for (int i = 0; i < f_tools->size(); ++i) {
         Fact *f = f_tools->child(i);
         f->bind(m->fact(f->name().replace('_', '.')));

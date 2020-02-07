@@ -38,7 +38,6 @@ ApxApp.ApxLibrary {
             "DictMandala.cpp", "DictMandala.h",
             "DictNode.cpp", "DictNode.h",
             "DictMission.cpp", "DictMission.h",
-            "MandalaIndex.h",
         ]
     }
 

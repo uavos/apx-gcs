@@ -83,9 +83,6 @@ ApxApp.ApxLibrary {
         prefix: name+"/"
         files: [
             "Vehicle.cpp", "Vehicle.h",
-            "VehicleMandala.cpp", "VehicleMandala.h",
-            "VehicleMandalaFact.cpp", "VehicleMandalaFact.h",
-            "VehicleMandalaValue.h",
             "VehicleSelect.cpp", "VehicleSelect.h",
             "VehicleWarnings.cpp", "VehicleWarnings.h",
             "Vehicles.cpp", "Vehicles.h",

@@ -168,7 +168,7 @@ bool FactData::updateValue(const QVariant &v)
         else if (!vtype(v, QMetaType::Int)) {
             QString s = v.toString();
             if (units() == "time" && s.contains(':')) {
-                i = AppRoot::timeFromString(s);
+                i = static_cast<long long>(AppRoot::timeFromString(s));
                 ok = true;
             }
             if (ok == false && units() == "hex") {
@@ -177,7 +177,7 @@ bool FactData::updateValue(const QVariant &v)
             if (!ok) {
                 i = s.toLongLong(&ok);
                 if (!ok)
-                    i = round(s.toDouble(&ok));
+                    i = static_cast<long long>(round(s.toDouble(&ok)));
                 if (!ok)
                     i = s.toLongLong(&ok, 16);
             }
@@ -265,7 +265,7 @@ int FactData::enumValue(const QVariant &v) const
     if (vtype(v, QMetaType::Int))
         idx = v.toInt();
     else if (vtype(v, QMetaType::UInt))
-        idx = v.toUInt();
+        idx = v.toInt();
     else
         idx = m_enumStrings.indexOf(s);
     if (idx >= 0 && idx < m_enumStrings.size()) {

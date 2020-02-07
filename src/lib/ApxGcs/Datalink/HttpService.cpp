@@ -27,13 +27,19 @@
 //=============================================================================
 HttpService::HttpService(QObject *parent)
     : QObject(parent)
-    , c_gps_lat("gps_lat")
-    , c_gps_lon("gps_lon")
-    , c_gps_hmsl("gps_hmsl")
-    , c_course("course")
-    , c_roll("roll")
-    , c_pitch("pitch")
-{}
+{
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &HttpService::vehicleSelected);
+    vehicleSelected(Vehicles::instance()->current());
+}
+void HttpService::vehicleSelected(Vehicle *vehicle)
+{
+    c_gps_lat = vehicle->f_mandala->fact(mandala::est::nav::pos::lat::meta.uid);
+    c_gps_lon = vehicle->f_mandala->fact(mandala::est::nav::pos::lon::meta.uid);
+    c_gps_hmsl = vehicle->f_mandala->fact(mandala::est::nav::pos::hmsl::meta.uid);
+    c_course = vehicle->f_mandala->fact(mandala::est::nav::pos::course::meta.uid);
+    c_roll = vehicle->f_mandala->fact(mandala::est::nav::att::roll::meta.uid);
+    c_pitch = vehicle->f_mandala->fact(mandala::est::nav::att::pitch::meta.uid);
+}
 //=============================================================================
 void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)
 {
@@ -103,57 +109,39 @@ QString HttpService::reply_mandala(const QString &req)
     //xml.writeTextElement("version",FactSystem::version());
     //------------------------------
     bool doDescr = false;
-    QStringList sv = req.split('&', QString::SkipEmptyParts);
-    if (sv.isEmpty())
-        sv = Vehicles::instance()->current()->f_mandala->names;
-    else {
-        QStringList st;
-        foreach (QString s, sv) {
-            if (s.startsWith("descr")) {
-                doDescr = true;
-                s = "";
-            } else if (s.contains('=')) {
-                QString sname = s.left(s.indexOf('='));
-                if (sname == "scr") {
-                    App::instance()->jsexec(s.mid(sname.size() + 1));
-                    s = "";
-                } else {
-                    App::instance()->jsexec(
-                        s); //QString("set('%1',%2)").arg(sname).arg(s.mid(sname.size()+1)));
-                    s = sname;
-                }
+    QStringList rlist = req.trimmed().split('&', QString::SkipEmptyParts);
+    MandalaTree *mandala = Vehicles::instance()->current()->f_mandala;
+    QList<MandalaTreeFact *> facts;
+    for (auto const &s : rlist) {
+        MandalaTreeFact *f = nullptr;
+        if (s.startsWith("descr")) {
+            doDescr = true;
+        } else if (s.contains('=')) {
+            QString sname = s.left(s.indexOf('='));
+            if (sname == "scr") {
+                App::instance()->jsexec(s.mid(sname.size() + 1));
+            } else {
+                App::instance()->jsexec(s);
+                f = mandala->fact(sname);
             }
-            if (s.size())
-                st.append(s);
-        }
-        if (st.size())
-            sv = st;
-        else
-            sv = Vehicles::instance()->current()->f_mandala->names;
+        } else
+            f = mandala->fact(s);
+        if (f)
+            facts.append(f);
     }
+    if (facts.isEmpty())
+        facts = mandala->uid_map.values();
     //mandala->currents
-    foreach (QString vname, sv) {
-        QString s = QString("%1").arg(
-            Vehicles::instance()->current()->f_mandala->valueByName(vname).toDouble(), 0, 'f', 10);
-        while (s.at(s.size() - 1) == '0') { //remove trailing zeros
-            s.remove(s.size() - 1, 1);
-            if (s.at(s.size() - 1) != '.')
-                continue;
-            s.remove(s.size() - 1, 1);
-            break;
-        }
+    for (auto f : facts) {
         if (doDescr) {
-            xml.writeStartElement(vname);
-            xml.writeAttribute(
-                "descr", Vehicles::instance()->current()->f_mandala->factByName(vname)->descr());
-            uint idx = Vehicles::instance()->current()->f_mandala->factByName(vname)->id();
-            xml.writeAttribute("id", QString::number(idx & 0xFF));
-            xml.writeAttribute("id_hex", QString::number(idx & 0xFF, 16).toUpper());
-            xml.writeAttribute("id_fact", QString::number(idx, 16).toUpper());
-            xml.writeCharacters(s);
+            xml.writeStartElement(f->mpath());
+            xml.writeAttribute("descr", f->title());
+            xml.writeAttribute("uid", QString::number(f->uid()));
+            xml.writeAttribute("uid_hex", QString::number(f->uid(), 16).toUpper());
+            xml.writeCharacters(f->text());
             xml.writeEndElement();
         } else {
-            xml.writeTextElement(vname, s);
+            xml.writeTextElement(f->mpath(), f->text());
         }
     }
     //------------------------------
@@ -505,15 +493,16 @@ QString HttpService::reply_chase()
     //xml.writeStartElement("gx:FlyTo");
     //xml.writeTextElement("gx:flyToMode","smooth");
     //xml.writeTextElement("gx:duration","5.0");
+
     xml.writeStartElement("Camera");
     xml.writeAttribute("id", "camChase");
-    xml.writeTextElement("longitude", QString("%1").arg(c_gps_lon, 0, 'f', 6));
-    xml.writeTextElement("latitude", QString("%1").arg(c_gps_lat, 0, 'f', 6));
-    xml.writeTextElement("altitude", QString("%1").arg(c_gps_hmsl, 0, 'f'));
+    xml.writeTextElement("longitude", c_gps_lon->text());
+    xml.writeTextElement("latitude", c_gps_lat->text());
+    xml.writeTextElement("altitude", c_gps_hmsl->text());
     xml.writeTextElement("heading",
-                         QString("%1").arg(c_course < 0 ? c_course + 360.0 : c_course, 0, 'f'));
-    xml.writeTextElement("tilt", QString("%1").arg(c_pitch + 90.0));
-    xml.writeTextElement("roll", QString("%1").arg(-c_roll));
+                         QString("%1").arg(AppRoot::angle360(c_course->value().toDouble()), 0, 'f'));
+    xml.writeTextElement("tilt", QString("%1").arg(c_pitch->value().toDouble() + 90.0));
+    xml.writeTextElement("roll", QString("%1").arg(-c_roll->value().toDouble()));
     xml.writeTextElement("altitudeMode", "absolute");
     xml.writeEndElement(); //Camera
     //xml.writeEndElement();//FlyTo
@@ -550,13 +539,13 @@ QString HttpService::reply_chase_upd()
     xml.writeTextElement("gx:duration", "2.0");
     xml.writeStartElement("Camera");
     xml.writeAttribute("id", "camChase");
-    xml.writeTextElement("longitude", QString("%1").arg(c_gps_lon, 0, 'f', 6));
-    xml.writeTextElement("latitude", QString("%1").arg(c_gps_lat, 0, 'f', 6));
-    xml.writeTextElement("altitude", QString("%1").arg(c_gps_hmsl, 0, 'f'));
+    xml.writeTextElement("longitude", c_gps_lon->text());
+    xml.writeTextElement("latitude", c_gps_lat->text());
+    xml.writeTextElement("altitude", c_gps_hmsl->text());
     xml.writeTextElement("heading",
-                         QString("%1").arg(c_course < 0 ? c_course + 360.0 : c_course, 0, 'f'));
-    xml.writeTextElement("tilt", QString("%1").arg(c_pitch + 90.0, 0, 'f', 6));
-    xml.writeTextElement("roll", QString("%1").arg(-c_roll, 0, 'f', 6));
+                         QString("%1").arg(AppRoot::angle360(c_course->value().toDouble()), 0, 'f'));
+    xml.writeTextElement("tilt", QString("%1").arg(c_pitch->value().toDouble() + 90.0));
+    xml.writeTextElement("roll", QString("%1").arg(-c_roll->value().toDouble()));
     xml.writeTextElement("altitudeMode", "absolute");
     xml.writeEndElement(); //Camera
     xml.writeEndElement(); //FlyTo

@@ -34,7 +34,6 @@
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , vehicle(vehicle)
-    , v_dl_timestamp("dl_timestamp", vehicle)
     , dl_timestamp_s(0)
     , dl_timestamp_t0(0)
     , m_currentTimestamp(0)
@@ -177,9 +176,10 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
 quint64 TelemetryRecorder::getDataTimestamp()
 {
     //snap to dl_timestamp
+    quint64 vts = vehicle->f_mandala->timestamp();
     if (!dl_timestamp_t0)
-        dl_timestamp_t0 = v_dl_timestamp;
-    uint t = v_dl_timestamp - dl_timestamp_t0;
+        dl_timestamp_t0 = vts;
+    quint64 t = vts - dl_timestamp_t0;
 
     if (dl_timestamp_s != t) {
         dl_timestamp_s = t;
@@ -198,7 +198,7 @@ void TelemetryRecorder::updateFactsMap()
         return;
     TelemetryDB::TelemetryFieldsMap map = Database::instance()->telemetry->fieldsMap();
     foreach (quint64 key, map.keys()) {
-        Fact *f = vehicle->f_mandala->child(map.value(key));
+        Fact *f = vehicle->f_mandala->fact(map.value(key));
         if (f)
             factsMap.insert(key, f);
     }

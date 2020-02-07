@@ -55,9 +55,7 @@ public:
 private:
     static Vehicles *_instance;
 
-    QList<QMetaObject::Connection> currentVehicleConnections;
-
-    void jsSyncMandala(Fact *fact, QJSValue parent);
+    void jsSyncMandalaAccess(Fact *fact, QJSValue parent);
 
 public slots:
     void selectVehicle(Vehicle *v);
@@ -76,12 +74,8 @@ private slots:
 
 public slots:
 
-    //current vehicle signals wrappers
-signals:
-    void currentDownstreamDataReceived();
-    void currentSerialDataReceived(uint portNo, QByteArray ba);
-
     //forward signals for plugins
+signals:
     void nodeUpgradeFW(NodeItem *node);
     void nodeUpgradeLD(NodeItem *node);
     void nodeUpgradeMHX(NodeItem *node);

@@ -546,7 +546,7 @@ Fact *Fact::mandala() const
         if (f->m_mandala)
             return f->m_mandala;
     }
-    return nullptr;
+    return AppRoot::instance()->mandala();
 }
 void Fact::setMandala(Fact *v)
 {

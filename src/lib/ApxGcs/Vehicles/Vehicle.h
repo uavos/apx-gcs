@@ -34,8 +34,6 @@
 
 #include <Xbus/XbusVehicle.h>
 
-#include "VehicleMandala.h"
-
 class Vehicles;
 class Nodes;
 class VehicleMission;
@@ -98,8 +96,7 @@ public:
 
     ~Vehicle() override;
 
-    VehicleMandala *f_mandala;
-    MandalaTree *f_mandalatree;
+    MandalaTree *f_mandala;
     Nodes *f_nodes;
     VehicleMission *f_mission;
     Telemetry *f_telemetry;
@@ -136,16 +133,16 @@ private:
 
     QTimer updateInfoTimer;
 
-    MandalaTreeFact *f_lat;
-    MandalaTreeFact *f_lon;
-    MandalaTreeFact *f_hmsl;
-    MandalaTreeFact *f_ref_lat;
-    MandalaTreeFact *f_ref_lon;
-    MandalaTreeFact *f_ref_hmsl;
+    Fact *f_lat;
+    Fact *f_lon;
+    Fact *f_hmsl;
+    Fact *f_ref_lat;
+    Fact *f_ref_lon;
+    Fact *f_ref_hmsl;
 
-    MandalaTreeFact *f_vd;
-    MandalaTreeFact *f_mode;
-    MandalaTreeFact *f_stage;
+    Fact *f_vd;
+    Fact *f_mode;
+    Fact *f_stage;
 
     void setReplay(bool v);
 
@@ -175,9 +172,10 @@ signals:
     void selected();
 
     //forward from protocols
-    void downstreamDataReceived(); //used by widgets like signals
+    void telemetryDataReceived(); //used by widgets like signals
     void valueDataReceived();
-    void serialDataReceived(uint portNo, QByteArray data); //for serial port
+    void serialRxDataReceived(quint16 portNo, QByteArray data);
+    void serialTxDataReceived(quint16 portNo, QByteArray data);
 
 signals:
     //forward for recorder

@@ -43,9 +43,8 @@ private:
     void syncValues();
 
 private slots:
-    void dlinkData(quint16 id, QByteArray data);
-    void downstreamData(QByteArray data);
-    void serialData(QByteArray data);
+    void receivedData(quint16 id, QByteArray data);
+    void telemetryData(QByteArray data);
 
     QByteArray getPacket(quint16 pid, QByteArray payload);
     void sendUplinkValue(quint16 id, QByteArray data);
@@ -57,10 +56,9 @@ public slots:
     void sendValueRequest(quint16 id);
 
 signals:
-    void downstreamDataReceived();
+    void telemetryDataReceived();
     void valueDataReceived();
     void mandalaValueReceived(quint16 id, double v);
-    void serialDataReceived(quint16 portNo, QByteArray data);
 };
 //=============================================================================
 #endif

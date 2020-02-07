@@ -22,7 +22,8 @@
  */
 #include "ProtocolVehicle.h"
 
-#include <Dictionary/MandalaIndex.h>
+#include <Mandala/MandalaMetaTree.h>
+
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusPacket.h>
 //=============================================================================
@@ -52,6 +53,7 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
 //=============================================================================
 bool ProtocolVehicle::unpack(QByteArray packet)
 {
+    //packet might be unwrapped from <cmd::vehicle::xxx>
     uint16_t psize = static_cast<uint16_t>(packet.size());
     uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
 
@@ -66,22 +68,33 @@ bool ProtocolVehicle::unpack(QByteArray packet)
 
     switch (pid) {
     default:
-        emit dlinkData(pid, payload);
+        emit receivedData(pid, payload);
         break;
-    case mandala::idx_downstream:
-        emit downstreamData(payload);
+    case mandala::cmd::env::telemetry::data::meta.uid:
+        emit telemetryData(payload);
         break;
-    case mandala::idx_data:
-        emit serialData(payload);
+    case mandala::cmd::env::vcp::rx::meta.uid:
+        if (payload.size() < 2) {
+            qWarning() << "Empty serial RX data received";
+            break;
+        }
+        emit serialRxData(static_cast<quint8>(payload.at(0)), payload.right(payload.size() - 1));
         break;
-    case mandala::idx_mission:
+    case mandala::cmd::env::vcp::tx::meta.uid:
+        if (payload.size() < 2) {
+            qWarning() << "Empty serial TX data received";
+            break;
+        }
+        emit serialTxData(static_cast<quint8>(payload.at(0)), payload.right(payload.size() - 1));
+        break;
+    case mandala::cmd::env::mission::data::meta.uid:
         emit missionData(payload);
         break;
-    case mandala::idx_jsexec:
+    case mandala::cmd::env::script::jsexec::meta.uid:
         emit jsexecData(payload);
         break;
 
-    case mandala::idx_service: {
+    case mandala::uid_nmt: {
         if (stream.tail() < sizeof(xbus::node::guid_t))
             return false;
         xbus::node::guid_t guid = stream.read<xbus::node::guid_t>();
@@ -103,7 +116,7 @@ bool ProtocolVehicle::unpack(QByteArray packet)
     return true;
 }
 //=============================================================================
-void ProtocolVehicle::sendRequest(quint8 pid, QByteArray payload)
+void ProtocolVehicle::sendRequest(quint16 pid, QByteArray payload)
 {
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(pid);
@@ -112,20 +125,21 @@ void ProtocolVehicle::sendRequest(quint8 pid, QByteArray payload)
 //=============================================================================
 void ProtocolVehicle::vmexec(QString func)
 {
-    emit sendRequest(mandala::idx_vmexec, func.toUtf8());
+    emit sendRequest(mandala::cmd::env::script::vmexec::meta.uid, func.toUtf8());
 }
 void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
 {
-    emit sendRequest(mandala::idx_data, QByteArray().append(static_cast<char>(portID)).append(data));
+    emit sendRequest(mandala::cmd::env::vcp::tx::meta.uid,
+                     QByteArray().append(static_cast<char>(portID)).append(data));
 }
 void ProtocolVehicle::sendMissionRequest(QByteArray data)
 {
-    emit sendRequest(mandala::idx_mission, data);
+    emit sendRequest(mandala::cmd::env::mission::data::meta.uid, data);
 }
 void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray payload)
 {
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
-    stream.write<xbus::pid_t>(mandala::idx_service);
+    stream.write<xbus::pid_t>(mandala::uid_nmt);
     xbus::node::guid_t guid;
     if (sn.isEmpty()) {
         std::fill(guid.begin(), guid.end(), 0);

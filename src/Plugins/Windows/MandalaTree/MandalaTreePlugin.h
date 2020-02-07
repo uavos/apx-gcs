@@ -39,12 +39,12 @@ class SystreePlugin : public PluginInterface
 public:
     QObject *createControl()
     {
-        FactTreeWidget *w = new FactTreeWidget(Vehicles::instance()->current()->f_mandalatree,
+        FactTreeWidget *w = new FactTreeWidget(Vehicles::instance()->current()->f_mandala,
                                                true,
                                                false);
         w->tree->expandToDepth(0);
         connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [w](Vehicle *v) {
-            w->setRoot(v->f_mandalatree);
+            w->setRoot(v->f_mandala);
             w->tree->expandToDepth(0);
         });
         return w;

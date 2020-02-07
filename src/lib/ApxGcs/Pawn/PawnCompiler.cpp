@@ -63,12 +63,12 @@ bool PawnCompiler::compile()
     if (constants.isEmpty()) {
         Vehicle *vehicle = fact->findParent<Vehicle *>();
         if (vehicle) {
-            for (auto f : vehicle->f_mandalatree->uid_map.values()) {
+            for (auto f : vehicle->f_mandala->uid_map.values()) {
                 QString s = f->mpath().replace('.', '_');
                 constants.insert(s, QString::number(f->uid()));
             }
-            for (auto s : vehicle->f_mandalatree->constants.keys()) {
-                constants.insert(s, vehicle->f_mandalatree->constants.value(s).toString());
+            for (auto s : vehicle->f_mandala->constants.keys()) {
+                constants.insert(s, vehicle->f_mandala->constants.value(s).toString());
             }
         }
     }

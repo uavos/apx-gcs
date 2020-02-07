@@ -24,7 +24,8 @@
 #include "Datalink.h"
 #include <App/AppLog.h>
 
-#include <Dictionary/MandalaIndex.h>
+#include <Mandala/MandalaMetaTree.h>
+
 #include <Xbus/XbusPacket.h>
 #include <Xbus/XbusVehicle.h>
 //=============================================================================
@@ -130,15 +131,17 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
     if (stream.tail() < sizeof(xbus::pid_t))
         return true;
     xbus::pid_t pid = stream.read<xbus::pid_t>();
-    if (pid == mandala::idx_service || pid == mandala::idx_xpdr || pid == mandala::idx_ident)
-        return false;
 
-    if (pid != mandala::idx_dlink)
-        return true;
+    static constexpr const mandala::uid_t allowed[] = {
+        mandala::uid_nmt,
+        mandala::cmd::env::vehicle::ident::meta.uid,
+        mandala::cmd::env::vehicle::xpdr::meta.uid,
+    };
+    for (auto i : allowed)
+        if (pid == i)
+            return false;
 
-    stream.read<xbus::vehicle::squawk_t>();
-    pid = stream.read<xbus::pid_t>();
-    return pid != mandala::idx_service;
+    return true;
 }
 //=============================================================================
 void DatalinkConnection::open()

@@ -29,10 +29,8 @@ SerialForm::SerialForm(QWidget *parent)
 
     ui->eForward->setText(QSettings().value(objectName() + "_fwdDev").toString());
 
-    connect(Vehicles::instance(),
-            &Vehicles::currentSerialDataReceived,
-            this,
-            &SerialForm::serialData);
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &SerialForm::vehicleSelected);
+    vehicleSelected(Vehicles::instance()->current());
 }
 //==============================================================================
 SerialForm::~SerialForm()
@@ -53,6 +51,13 @@ void SerialForm::closeEvent(QCloseEvent *event)
     emit finished();
 }
 //=============================================================================
+void SerialForm::vehicleSelected(Vehicle *vehicle)
+{
+    for (auto c : clist)
+        disconnect(c);
+    clist.append(connect(vehicle, &Vehicle::serialRxDataReceived, this, &SerialForm::serialData));
+    clist.append(connect(vehicle, &Vehicle::serialTxDataReceived, this, &SerialForm::serialData));
+}
 //==============================================================================
 void SerialForm::btnReset()
 {

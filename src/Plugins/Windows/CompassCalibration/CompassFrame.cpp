@@ -26,9 +26,6 @@
 //==============================================================================
 CompassFrame::CompassFrame(QWidget *parent)
     : QWidget(parent)
-    , c_Hx("Hx")
-    , c_Hy("Hy")
-    , c_Hz("Hz")
 {
     if (this->objectName().isEmpty())
         this->setObjectName("compassFrame");
@@ -76,10 +73,8 @@ CompassFrame::CompassFrame(QWidget *parent)
 
     checkBoxTrace.setChecked(true);
 
-    connect(Vehicles::instance(),
-            &Vehicles::currentDownstreamDataReceived,
-            this,
-            &CompassFrame::dataReceived);
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &CompassFrame::vehicleSelected);
+    vehicleSelected(Vehicles::instance()->current());
 }
 void CompassFrame::closeEvent(QCloseEvent *event)
 {
@@ -87,12 +82,23 @@ void CompassFrame::closeEvent(QCloseEvent *event)
     disconnect(this);
     emit closed();
 }
+void CompassFrame::vehicleSelected(Vehicle *vehicle)
+{
+    for (auto c : clist)
+        disconnect(c);
+    clist.append(
+        connect(vehicle, &Vehicle::telemetryDataReceived, this, &CompassFrame::dataReceived));
+
+    c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::meta.uid);
+    c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::meta.uid);
+    c_Hz = vehicle->f_mandala->fact(mandala::sns::nav::mag::z::meta.uid);
+}
 //=============================================================================
 void CompassFrame::dataReceived()
 {
-    dArea[0]->addData(c_Hx, c_Hy);
-    dArea[1]->addData(c_Hx, c_Hz);
-    dArea[2]->addData(c_Hz, c_Hy);
+    dArea[0]->addData(c_Hx->value().toDouble(), c_Hy->value().toDouble());
+    dArea[1]->addData(c_Hx->value().toDouble(), c_Hz->value().toDouble());
+    dArea[2]->addData(c_Hz->value().toDouble(), c_Hy->value().toDouble());
     lbInfo.setText(QString("bias {%1, %2, %3}\tscale {%4, %5, %6}")
                        .arg(dArea[0]->bX, 0, 'f', 2)
                        .arg(dArea[0]->bY, 0, 'f', 2)

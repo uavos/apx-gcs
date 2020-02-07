@@ -14,10 +14,8 @@ ServosForm::ServosForm(QWidget *parent)
     connect(ui->btnMove, SIGNAL(pressed()), this, SLOT(btnMove()));
     connect(ui->btnSetAdr, SIGNAL(pressed()), this, SLOT(btnSetAdr()));
 
-    connect(Vehicles::instance(),
-            &Vehicles::currentSerialDataReceived,
-            this,
-            &ServosForm::serialData);
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &ServosForm::vehicleSelected);
+    vehicleSelected(Vehicles::instance()->current());
 }
 //=============================================================================
 ServosForm::~ServosForm()
@@ -31,6 +29,12 @@ void ServosForm::closeEvent(QCloseEvent *event)
     emit finished();
 }
 //=============================================================================
+void ServosForm::vehicleSelected(Vehicle *vehicle)
+{
+    for (auto c : clist)
+        disconnect(c);
+    clist.append(connect(vehicle, &Vehicle::serialRxDataReceived, this, &ServosForm::serialData));
+}
 //==============================================================================
 void ServosForm::btnFind()
 {
@@ -63,7 +67,7 @@ void ServosForm::btnSetAdr()
     apxMsg() << tr("Address set");
 }
 //==============================================================================
-void ServosForm::serialData(uint portNo, QByteArray ba)
+void ServosForm::serialData(quint16 portNo, QByteArray ba)
 {
     if ((int) portNo != ui->ePortID->value())
         return;

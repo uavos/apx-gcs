@@ -45,7 +45,7 @@ public:
 private:
     QByteArray txbuf;
 
-    void sendRequest(quint8 pid, QByteArray payload);
+    void sendRequest(quint16 pid, QByteArray payload);
 
 public slots:
     bool unpack(QByteArray packet);
@@ -60,9 +60,13 @@ signals:
     void identUpdated();
 
     //unpacked data for child protocols
-    void dlinkData(quint16 id, QByteArray data);
-    void downstreamData(QByteArray data);
-    void serialData(QByteArray data);
+    void receivedData(quint16 id, QByteArray data);
+
+    void telemetryData(QByteArray data);
+
+    void serialRxData(quint16 portNo, QByteArray data);
+    void serialTxData(quint16 portNo, QByteArray data);
+
     void jsexecData(QByteArray data);
     void missionData(QByteArray data);
     void serviceData(QString sn, quint16 cmd, QByteArray data);

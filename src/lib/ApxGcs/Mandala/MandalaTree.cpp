@@ -34,9 +34,11 @@ MandalaTree::MandalaTree(Fact *parent)
            tr("Vehicle data tree"),
            Group | FilterModel | ModifiedGroup,
            "hexagon-multiple")
+    , m_timestamp(0)
 {
     //qDebug() << mandala::sns::nav::ins::gyro::title;
 
+    setMandala(this);
     qmlRegisterUncreatableType<MandalaTreeFact>("APX.Facts",
                                                 1,
                                                 0,
@@ -144,6 +146,11 @@ MandalaTree::MandalaTree(Fact *parent)
 
     //apxMsg() << findChild("sns.tcas.vel")->title();
     //apxMsg() << fact(mandala::sns::nav::air::aoa::meta.uid)->title();
+}
+
+quint64 MandalaTree::timestamp() const
+{
+    return m_timestamp;
 }
 
 MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const

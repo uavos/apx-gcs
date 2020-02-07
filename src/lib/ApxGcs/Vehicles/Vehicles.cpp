@@ -21,8 +21,6 @@
  *
  */
 #include "Vehicles.h"
-#include "VehicleMandala.h"
-#include "VehicleMandalaFact.h"
 #include "VehicleSelect.h"
 #include "VehicleWarnings.h"
 #include <App/App.h>
@@ -79,14 +77,14 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     App::jsync(this);
 
     //register mandala constants for QML and JS
-    for (auto s : f_local->f_mandalatree->constants.keys()) {
-        const QVariant &v = f_local->f_mandalatree->constants.value(s);
+    for (auto s : f_local->f_mandala->constants.keys()) {
+        const QVariant &v = f_local->f_mandala->constants.value(s);
         //JSEngine layer
         App::instance()->engine()->globalObject().setProperty(s, app->engine()->toScriptValue(v));
         //QmlEngine layer
         App::instance()->engine()->rootContext()->setContextProperty(s, v);
     }
-    jsSyncMandala(f_local->f_mandalatree, App::instance()->engine()->globalObject());
+    jsSyncMandalaAccess(f_local->f_mandala, App::instance()->engine()->globalObject());
 
     //Database register fields
     DatabaseRequest::Records recMandala;
@@ -96,7 +94,7 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                      << "descr"
                      << "units"
                      << "alias";
-    foreach (MandalaTreeFact *f, f_local->f_mandalatree->uid_map.values()) {
+    foreach (MandalaTreeFact *f, f_local->f_mandala->uid_map.values()) {
         if (f->isSystem())
             continue;
         QVariantList v;
@@ -187,19 +185,8 @@ void Vehicles::selectVehicle(Vehicle *v)
 
     //update JSengine
     AppEngine *e = App::instance()->engine();
-    e->globalObject().setProperty("mandala", e->newQObject(v->f_mandalatree));
-    e->rootContext()->setContextProperty("mandala", v->f_mandalatree);
-
-    //current vehicle signals wrappers
-    foreach (QMetaObject::Connection c, currentVehicleConnections)
-        disconnect(c);
-    currentVehicleConnections.clear();
-    currentVehicleConnections.append(connect(v,
-                                             &Vehicle::downstreamDataReceived,
-                                             this,
-                                             &Vehicles::currentDownstreamDataReceived));
-    currentVehicleConnections.append(
-        connect(v, &Vehicle::serialDataReceived, this, &Vehicles::currentSerialDataReceived));
+    e->globalObject().setProperty("mandala", e->newQObject(v->f_mandala));
+    e->rootContext()->setContextProperty("mandala", v->f_mandala);
 
     emit currentChanged();
     emit vehicleSelected(v);
@@ -236,7 +223,7 @@ void Vehicles::selectNext()
     selectVehicle(qobject_cast<Vehicle *>(f_list->child(i)));
 }
 //=============================================================================
-void Vehicles::jsSyncMandala(Fact *fact, QJSValue parent)
+void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
 {
     // direct access to fact values from JS context
     // pure JS objects and data
@@ -253,7 +240,7 @@ void Vehicles::jsSyncMandala(Fact *fact, QJSValue parent)
             parent.setProperty(fact->name(), v);
         }
         for (auto f : *fact) {
-            jsSyncMandala(static_cast<Fact *>(f), v);
+            jsSyncMandalaAccess(static_cast<Fact *>(f), v);
         }
         return;
     }

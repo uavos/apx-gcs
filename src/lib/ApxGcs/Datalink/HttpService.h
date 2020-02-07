@@ -22,7 +22,7 @@
  */
 #ifndef HTTPSERVICE_H
 #define HTTPSERVICE_H
-#include <Vehicles/VehicleMandalaValue.h>
+#include <Vehicles/Vehicle.h>
 #include <QtCore>
 //=============================================================================
 class HttpService : public QObject
@@ -43,12 +43,14 @@ private:
     QString reply_chase();
     QString reply_chase_upd();
 
-    CurrentVehicleMandalaValue<double> c_gps_lat;
-    CurrentVehicleMandalaValue<double> c_gps_lon;
-    CurrentVehicleMandalaValue<double> c_gps_hmsl;
-    CurrentVehicleMandalaValue<double> c_course;
-    CurrentVehicleMandalaValue<double> c_roll;
-    CurrentVehicleMandalaValue<double> c_pitch;
+    Fact *c_gps_lat;
+    Fact *c_gps_lon;
+    Fact *c_gps_hmsl;
+    Fact *c_course;
+    Fact *c_roll;
+    Fact *c_pitch;
+private slots:
+    void vehicleSelected(Vehicle *vehicle);
 
 public slots:
     void httpRequest(QTextStream &stream, QString req, bool *ok);

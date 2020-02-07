@@ -76,7 +76,6 @@ QGeoPath Waypoint::getPath()
 {
     QGeoPath p;
 
-    //VehicleMandala *vm=group->mission->vehicle->f_mandala;
     double spd = 0; //QMandala::instance()->current->apcfg.value("spd_cruise").toDouble();
     /*if(f_speed->value().toUInt()>0)
     spd=f_speed->value().toUInt();*/

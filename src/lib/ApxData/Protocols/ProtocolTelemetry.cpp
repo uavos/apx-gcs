@@ -24,17 +24,14 @@
 #include "ProtocolVehicle.h"
 
 #include <Xbus/XbusPacket.h>
-
-#include <Dictionary/MandalaIndex.h>
 //=============================================================================
 ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle)
     , vehicle(vehicle)
 {
     connect(this, &ProtocolTelemetry::sendUplink, vehicle, &ProtocolVehicle::sendUplink);
-    connect(vehicle, &ProtocolVehicle::downstreamData, this, &ProtocolTelemetry::downstreamData);
-    connect(vehicle, &ProtocolVehicle::dlinkData, this, &ProtocolTelemetry::dlinkData);
-    connect(vehicle, &ProtocolVehicle::serialData, this, &ProtocolTelemetry::serialData);
+    connect(vehicle, &ProtocolVehicle::telemetryData, this, &ProtocolTelemetry::telemetryData);
+    connect(vehicle, &ProtocolVehicle::receivedData, this, &ProtocolTelemetry::receivedData);
 
     //create values cache
     mandala = new DictMandala(this);
@@ -68,7 +65,7 @@ QByteArray ProtocolTelemetry::getPacket(quint16 pid, QByteArray payload)
 }
 void ProtocolTelemetry::sendUplinkValue(quint16 id, QByteArray data)
 {
-    emit sendUplink(getPacket(mandala::idx_uplink, getPacket(id, data)));
+    emit sendUplink(getPacket(id, data));
 }
 void ProtocolTelemetry::sendValue(quint16 id, double v)
 {
@@ -77,11 +74,7 @@ void ProtocolTelemetry::sendValue(quint16 id, double v)
     const DictMandala::Entry &i = mandala->items.value(mandala->idPos.value(id));
     if (!i.id)
         return;
-    if (i.send_set) {
-        sendUplinkValue(mandala::idx_set, mandala->packSetValue(i, v));
-    } else {
-        sendUplinkValue(i.id, mandala->packValue(i, v));
-    }
+    sendUplinkValue(i.id, mandala->packValue(i, v));
     //qDebug()<<"sendValue"<<id<<v<<mandala->packValue(i,v).toHex();
 }
 void ProtocolTelemetry::sendVectorValue(quint16 id, double v1, double v2, double v3)
@@ -105,7 +98,7 @@ void ProtocolTelemetry::sendValueRequest(quint16 id)
 }
 //=============================================================================
 //=============================================================================
-void ProtocolTelemetry::dlinkData(quint16 id, QByteArray data)
+void ProtocolTelemetry::receivedData(quint16 id, QByteArray data)
 {
     if (!mandala->unpackValue(id, data)) {
         //qDebug() << "unpack failed" << id << data.size();
@@ -115,23 +108,14 @@ void ProtocolTelemetry::dlinkData(quint16 id, QByteArray data)
     emit valueDataReceived();
 }
 //=============================================================================
-void ProtocolTelemetry::downstreamData(QByteArray data)
+void ProtocolTelemetry::telemetryData(QByteArray data)
 {
+    //telemetry packed stream
     if (data.size() < 4)
         return;
     if (!mandala->unpackStream(data))
         return;
     syncValues();
-    emit downstreamDataReceived();
+    emit telemetryDataReceived();
 }
-//=============================================================================
-void ProtocolTelemetry::serialData(QByteArray data)
-{
-    if (data.size() < 2) {
-        qDebug() << "Empty serial data received";
-        return;
-    }
-    emit serialDataReceived(static_cast<quint8>(data.at(0)), data.right(data.size() - 1));
-}
-//=============================================================================
 //=============================================================================

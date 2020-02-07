@@ -21,13 +21,12 @@
  *
  */
 #include "Vehicle.h"
-#include "VehicleMandala.h"
 #include "VehicleWarnings.h"
 #include "Vehicles.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Dictionary/MandalaIndex.h>
+
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
@@ -64,42 +63,41 @@ Vehicle::Vehicle(Vehicles *vehicles,
         f_select->setEnabled(v != this);
     });
 
-    f_mandala = new VehicleMandala(this);
-    f_mandalatree = new MandalaTree(this);
+    f_mandala = new MandalaTree(this);
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
     f_telemetry = new Telemetry(this);
 
-    setMandala(f_mandalatree);
+    setMandala(f_mandala);
     if (isLocal()) {
         AppRoot::instance()->setMandala(mandala());
     }
 
     //Mandala facts binfing
-    f_lat = f_mandalatree->fact("est.pos.lat");
-    f_lon = f_mandalatree->fact("est.pos.lon");
-    f_hmsl = f_mandalatree->fact("est.pos.hmsl");
-    f_ref_lat = f_mandalatree->fact("est.ref.lat");
-    f_ref_lon = f_mandalatree->fact("est.ref.lon");
-    f_ref_hmsl = f_mandalatree->fact("est.ref.hmsl");
-    f_vd = f_mandalatree->fact("est.pos.vd");
-    f_mode = f_mandalatree->fact("cmd.op.mode");
-    f_stage = f_mandalatree->fact("cmd.op.stage");
+    f_lat = f_mandala->fact(mandala::est::nav::pos::lat::meta.uid);
+    f_lon = f_mandala->fact(mandala::est::nav::pos::lon::meta.uid);
+    f_hmsl = f_mandala->fact(mandala::est::nav::pos::hmsl::meta.uid);
+    f_ref_lat = f_mandala->fact(mandala::est::nav::ref::lat::meta.uid);
+    f_ref_lon = f_mandala->fact(mandala::est::nav::ref::lon::meta.uid);
+    f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::meta.uid);
+    f_vd = f_mandala->fact(mandala::est::nav::pos::vd::meta.uid);
+    f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::meta.uid);
+    f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::meta.uid);
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);
     connect(&updateInfoTimer, &QTimer::timeout, this, &Vehicle::updateInfo);
 
-    connect(f_lat, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateCoordinate);
-    connect(f_lon, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateCoordinate);
-    connect(f_hmsl, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
-    connect(f_vd, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
-    connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
-    connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_lat, &Fact::valueChanged, this, &Vehicle::updateCoordinate);
+    connect(f_lon, &Fact::valueChanged, this, &Vehicle::updateCoordinate);
+    connect(f_hmsl, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_vd, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_mode, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
 
-    connect(f_mode, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlightState);
-    connect(f_stage, &VehicleMandalaFact::valueChanged, this, &Vehicle::updateFlightState);
+    connect(f_mode, &Fact::valueChanged, this, &Vehicle::updateFlightState);
+    connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateFlightState);
 
     if (!isTemporary()) {
         connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
@@ -163,17 +161,15 @@ Vehicle::Vehicle(Vehicles *vehicles,
         //status and stream type
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::setStreamXpdr);
         connect(protocol->telemetry,
-                &ProtocolTelemetry::downstreamDataReceived,
+                &ProtocolTelemetry::telemetryDataReceived,
                 this,
                 &Vehicle::setStreamTelemetry);
         connect(protocol->telemetry,
                 &ProtocolTelemetry::valueDataReceived,
                 this,
                 &Vehicle::setStreamData);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::serialDataReceived,
-                this,
-                &Vehicle::setStreamData);
+        connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::setStreamData);
+        connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::setStreamData);
 
         connect(protocol->telemetry,
                 &ProtocolTelemetry::mandalaValueReceived,
@@ -183,19 +179,19 @@ Vehicle::Vehicle(Vehicles *vehicles,
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
         connect(protocol->telemetry,
-                &ProtocolTelemetry::downstreamDataReceived,
+                &ProtocolTelemetry::telemetryDataReceived,
                 this,
                 &Vehicle::recordDownlink);
         connect(protocol->telemetry,
                 &ProtocolTelemetry::valueDataReceived,
                 this,
                 &Vehicle::recordDownlink);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::serialDataReceived,
-                this,
-                [this](uint portNo, QByteArray data) {
-                    emit recordSerialData(static_cast<quint8>(portNo), data, false);
-                });
+        connect(protocol, &ProtocolVehicle::serialRxData, this, [this](uint portNo, QByteArray data) {
+            emit recordSerialData(static_cast<quint8>(portNo), data, false);
+        });
+        connect(protocol, &ProtocolVehicle::serialTxData, this, [this](uint portNo, QByteArray data) {
+            emit recordSerialData(static_cast<quint8>(portNo), data, true);
+        });
         //connect(this,&Vehicle::recordNodes,this,&Vehicle::dbSaveConfigDataBackup);
 
         //ident update
@@ -210,17 +206,15 @@ Vehicle::Vehicle(Vehicles *vehicles,
 
         //forward signals
         connect(protocol->telemetry,
-                &ProtocolTelemetry::downstreamDataReceived,
+                &ProtocolTelemetry::telemetryDataReceived,
                 this,
-                &Vehicle::downstreamDataReceived);
+                &Vehicle::telemetryDataReceived);
         connect(protocol->telemetry,
                 &ProtocolTelemetry::valueDataReceived,
                 this,
                 &Vehicle::valueDataReceived);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::serialDataReceived,
-                this,
-                &Vehicle::serialDataReceived);
+        connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::serialRxDataReceived);
+        connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::serialTxDataReceived);
     }
 
     //register JS new vehicles instantly
@@ -313,9 +307,10 @@ void Vehicle::updateCoordinate()
 }
 void Vehicle::updateFlightState()
 {
-    if ((f_mode->value().toUInt() == mandala::mode_LANDING) && (f_stage->value().toUInt() >= 250)) {
+    if ((f_mode->value().toUInt() == mandala::op_mode_LANDING)
+        && (f_stage->value().toUInt() >= 250)) {
         setFlightState(FS_LANDED);
-    } else if ((f_mode->value().toUInt() == mandala::mode_TAKEOFF)
+    } else if ((f_mode->value().toUInt() == mandala::op_mode_TAKEOFF)
                && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
     } else
@@ -456,7 +451,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
     qreal distance = h.distanceTo(c);
     qreal n = std::cos(azimuth_r) * distance;
     qreal e = std::sin(azimuth_r) * distance;
-    protocol->telemetry->sendPointValue(f_mandala->factByName("cmd_north")->id(), n, e);
+    protocol->telemetry->sendPointValue(mandala::cmd::nav::pos::n::meta.uid, n, e);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
@@ -465,7 +460,7 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
     if (!c.isValid())
         return;
     double hmsl = f_ref_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(f_mandala->factByName("cam_lat")->id(),
+    protocol->telemetry->sendVectorValue(mandala::cmd::nav::gimbal::lat::meta.uid,
                                          c.latitude(),
                                          c.longitude(),
                                          hmsl);
@@ -477,7 +472,10 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
     if (!c.isValid())
         return;
     double hmsl = f_ref_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(f_ref_lat->uid(), c.latitude(), c.longitude(), hmsl);
+    protocol->telemetry->sendVectorValue(mandala::est::nav::ref::lat::meta.uid,
+                                         c.latitude(),
+                                         c.longitude(),
+                                         hmsl);
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
@@ -486,7 +484,10 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
     if (!c.isValid())
         return;
     double hmsl = f_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(f_lat->uid(), c.latitude(), c.longitude(), hmsl);
+    protocol->telemetry->sendVectorValue(mandala::sns::nav::gps::lat::meta.uid,
+                                         c.latitude(),
+                                         c.longitude(),
+                                         hmsl);
 }
 //=============================================================================
 void Vehicle::resetGeoPath()
@@ -584,7 +585,7 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
 //=============================================================================
 void Vehicle::updateDatalinkVars(quint16 id, double)
 {
-    switch (id) {
+    /*switch (id) {
     default:
         return;
     case mandala::idx_gcu_RSS:
@@ -598,7 +599,7 @@ void Vehicle::updateDatalinkVars(quint16 id, double)
     Fact *fsrc = f_mandala->factById(id);
     if (!fsrc)
         return;
-    fdest->setValue(fsrc->value());
+    fdest->setValue(fsrc->value());*/
 }
 //=============================================================================
 //=============================================================================

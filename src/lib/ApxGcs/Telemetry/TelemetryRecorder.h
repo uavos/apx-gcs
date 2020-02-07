@@ -24,7 +24,6 @@
 #define TelemetryRecorder_H
 #include <Database/TelemetryReqWrite.h>
 #include <Fact/Fact.h>
-#include <Vehicles/VehicleMandalaValue.h>
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
 class Recorder;
@@ -59,8 +58,7 @@ private:
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp
-    VehicleMandalaValue<uint> v_dl_timestamp;
-    uint dl_timestamp_s, dl_timestamp_t0;
+    quint64 dl_timestamp_s, dl_timestamp_t0;
     QElapsedTimer uplinkTime;
 
     quint64 timestamp;

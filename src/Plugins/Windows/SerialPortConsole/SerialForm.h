@@ -9,6 +9,7 @@ namespace Ui {
 class SerialForm;
 }
 
+class Vehicle;
 class SerialForm : public QWidget
 {
     Q_OBJECT
@@ -27,7 +28,11 @@ private:
 
     QFile dumpFile;
 
+    QList<QMetaObject::Connection> clist;
+
 private slots:
+    void vehicleSelected(Vehicle *vehicle);
+
     void btnReset();
     void btnSend();
     void btnForward();

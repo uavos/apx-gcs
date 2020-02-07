@@ -32,7 +32,8 @@ FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
 
     treeView->setAlternatingRowColors(true);
     treeView->setRootIsDecorated(false);
-    treeView->setEditTriggers(treeView->editTriggers() | QAbstractItemView::SelectedClicked);
+    treeView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    //treeView->setEditTriggers(treeView->editTriggers() | QAbstractItemView::SelectedClicked);
     treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     treeView->header()->setMinimumSectionSize(50);
     treeView->setAutoFillBackground(false);

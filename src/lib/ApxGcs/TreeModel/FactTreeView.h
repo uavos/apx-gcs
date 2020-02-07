@@ -33,7 +33,7 @@ class FactTreeView : public QTreeView
 {
     Q_OBJECT
 public:
-    FactTreeView(QWidget *parent = 0);
+    FactTreeView(QWidget *parent = nullptr);
 
     QSize sizeHint() const override { return viewportSizeHint(); }
 };
@@ -47,8 +47,11 @@ public:
     Fact *rootFact() const;
 
 protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const Q_DECL_OVERRIDE;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
+
+    virtual bool showThisFact(Fact *f) const;
+    virtual bool lessThan(Fact *left, Fact *right) const;
 
 private:
     QPointer<Fact> m_rootFact;
@@ -60,7 +63,7 @@ class FactTreeWidget : public QWidget
 {
     Q_OBJECT
 public:
-    FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation, QWidget *parent = 0);
+    FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation, QWidget *parent = nullptr);
 
     FactTreeView *tree;
     FactProxyModel *proxy;

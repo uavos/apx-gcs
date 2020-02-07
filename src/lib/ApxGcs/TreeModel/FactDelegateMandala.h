@@ -20,12 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactDelegateMandala_H
-#define FactDelegateMandala_H
+#pragma once
+
 #include "FactDelegate.h"
 #include "FactTreeModel.h"
 #include "FactTreeView.h"
-//=============================================================================
+
 class FactDelegateMandalaModel : public FactTreeModel
 {
     Q_OBJECT
@@ -37,7 +37,7 @@ protected:
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &index, int role) const override;
 };
-//=============================================================================
+
 class FactDelegateMandala : public QWidget
 {
     Q_OBJECT
@@ -57,5 +57,3 @@ private slots:
     void updateFilter();
     void finished();
 };
-//=============================================================================
-#endif

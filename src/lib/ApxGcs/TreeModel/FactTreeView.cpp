@@ -89,8 +89,9 @@ bool FactProxyModel::showThis(const QModelIndex index) const
     //look for matching parents
     QModelIndex parentIndex = sourceModel()->parent(index);
     while (parentIndex.isValid()) {
-        if (showThisItem(parentIndex))
+        if (showThisItem(parentIndex)) {
             return true;
+        }
         parentIndex = sourceModel()->parent(parentIndex);
     }
     //look for matching childs
@@ -107,8 +108,12 @@ bool FactProxyModel::showThisItem(const QModelIndex index) const
 {
     Fact *f = sourceModel()->data(index, Fact::ModelDataRole).value<Fact *>();
     if (f)
-        return f->showThis(filterRegExp());
+        return showThisFact(f);
     return false;
+}
+bool FactProxyModel::showThisFact(Fact *f) const
+{
+    return f->showThis(filterRegExp());
 }
 //=============================================================================
 bool FactProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
@@ -121,7 +126,11 @@ bool FactProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right)
     Fact *item_right = right.data(Fact::ModelDataRole).value<Fact *>();
     if (!(item_left && item_right))
         return QSortFilterProxyModel::lessThan(left, right);
-    return item_left->lessThan(item_right);
+    return lessThan(item_left, item_right);
+}
+bool FactProxyModel::lessThan(Fact *left, Fact *right) const
+{
+    return left->lessThan(right);
 }
 //=============================================================================
 //=============================================================================

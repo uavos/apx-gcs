@@ -24,7 +24,7 @@
 #define COMPASSFRAME_H
 //==============================================================================
 #include "DrawingArea.h"
-#include <Vehicles/VehicleMandalaValue.h>
+#include <Vehicles/Vehicles.h>
 #include <QWidget>
 //==============================================================================
 class CompassFrame : public QWidget
@@ -37,9 +37,9 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
-    CurrentVehicleMandalaValue<double> c_Hx;
-    CurrentVehicleMandalaValue<double> c_Hy;
-    CurrentVehicleMandalaValue<double> c_Hz;
+    Fact *c_Hx;
+    Fact *c_Hy;
+    Fact *c_Hz;
 
     QToolBar *toolBar;
     QCheckBox checkBoxTrace;
@@ -57,11 +57,17 @@ private:
     QHBoxLayout *hbLayoutBottom;
 
     uint tcounter;
+
+    QList<QMetaObject::Connection> clist;
+
 private slots:
+    void vehicleSelected(Vehicle *vehicle);
+
     void dataReceived();
     void action_toggled(bool);
     void oncheckBoxTraceChange(int);
     void onbuttonClearPressed();
+
 signals:
     void closed();
 };

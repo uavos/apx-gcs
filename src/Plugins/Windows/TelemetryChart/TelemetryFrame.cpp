@@ -267,7 +267,7 @@ void TelemetryFrame::updateData()
 
         const QString &s = reader->fieldNames.value(fid);
         MandalaTreeFact *f = qobject_cast<MandalaTreeFact *>(
-            Vehicles::instance()->f_replay->f_mandalatree->findChild(s));
+            Vehicles::instance()->f_replay->f_mandala->findChild(s));
         if (!f)
             continue;
         fidmap.insert(fid, f);
