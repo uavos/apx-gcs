@@ -225,7 +225,7 @@ bool FactData::updateValue(const QVariant &v)
         } else
             vx = v.toDouble();
         break;
-    case Mandala:
+    case MandalaID:
         if (quint16 uid = stringToMandala(v.toString().trimmed()))
             vx = uid;
         break;
@@ -331,7 +331,7 @@ QString FactData::toText(const QVariant &v) const
     if (t == Bool) {
         return QVariant(v.toBool()).toString();
     }
-    if (t == Mandala) {
+    if (t == MandalaID) {
         return mandalaToString(static_cast<quint16>(v.toUInt()));
     }
     if (t == Float) {
@@ -712,7 +712,7 @@ void FactData::defaults()
         case Enum:
             m_value = 0;
             break;
-        case Mandala:
+        case MandalaID:
             m_value = 0;
             break;
         default:
@@ -780,7 +780,7 @@ void FactData::loadPresistentValue()
 void FactData::savePresistentValue()
 {
     QString s = toText(m_value);
-    if (dataType() == Mandala && s.isEmpty())
+    if (dataType() == MandalaID && s.isEmpty())
         s = "disabled";
     const bool rm = m_value == defaultValue() || s == defaultValue() || s == toText(defaultValue());
     if (m_options & SystemSettings) {

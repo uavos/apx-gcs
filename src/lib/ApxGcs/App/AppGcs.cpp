@@ -43,8 +43,13 @@ void AppGcs::loadServices()
 
     //datalink
     f_datalink = new Datalink(f_apx);
-    QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ProtocolVehicles::unpack);
-    QObject::connect(protocol, &ProtocolVehicles::sendUplink, f_datalink, &Datalink::sendPacket);
+
+    QObject::connect(f_datalink,
+                     &Datalink::packetReceived,
+                     protocol,
+                     &ProtocolVehicles::downlinkData);
+    QObject::connect(protocol, &ProtocolVehicles::uplinkData, f_datalink, &Datalink::sendPacket);
+
     QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolVehicles::sendHeartbeat);
 
     vehicles->move(f_apx->size());

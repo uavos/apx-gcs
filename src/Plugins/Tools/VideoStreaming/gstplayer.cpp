@@ -117,14 +117,14 @@ GstPlayer::GstPlayer(Fact *parent)
                  "gimbal_yaw_var",
                  tr("Gimbal yaw"),
                  tr("Gimbal yaw position variable"),
-                 Mandala | PersistentValue);
+                 MandalaID | PersistentValue);
     f->setDefaultValue("est.cam.yaw");
 
     f = new Fact(f_overlay,
                  "gimbal_pitch_var",
                  tr("Gimbal pitch"),
                  tr("Gimbal pitch position variable"),
-                 Mandala | PersistentValue);
+                 MandalaID | PersistentValue);
     f->setDefaultValue("est.cam.pitch");
 
     // controls
@@ -140,7 +140,7 @@ GstPlayer::GstPlayer(Fact *parent)
                  "control_x",
                  tr("Control X"),
                  tr("Horizontal axis control variable"),
-                 Mandala | PersistentValue);
+                 MandalaID | PersistentValue);
     f->setDefaultValue("cmd.gimbal.yaw");
     f = new Fact(f_controls,
                  "control_sx",
@@ -153,7 +153,7 @@ GstPlayer::GstPlayer(Fact *parent)
                  "control_y",
                  tr("Control Y"),
                  tr("Vertical axis control variable"),
-                 Mandala | PersistentValue);
+                 MandalaID | PersistentValue);
     f->setDefaultValue("cmd.gimbal.pitch");
     f = new Fact(f_controls,
                  "control_sy",
@@ -227,7 +227,7 @@ GstPlayer::~GstPlayer()
 
 void GstPlayer::vehicleSelected(Vehicle *vehicle)
 {
-    MandalaTree *m = vehicle->f_mandala;
+    Mandala *m = vehicle->f_mandala;
     for (int i = 0; i < f_tools->size(); ++i) {
         Fact *f = f_tools->child(i);
         f->bind(m->fact(f->name().replace('_', '.')));

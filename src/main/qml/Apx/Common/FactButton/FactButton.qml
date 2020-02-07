@@ -83,7 +83,7 @@ CleanButton {
                                   || qmlPage
                                   || isMandala
                                   )
-    property bool isMandala: dataType===Fact.Mandala
+    property bool isMandala: dataType===Fact.MandalaID
     property bool isScript: dataType===Fact.Script
     property bool hasValue: dataType || value
 

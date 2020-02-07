@@ -21,9 +21,11 @@
  *
  */
 #include "ProtocolBase.h"
-//=============================================================================
+#include "ProtocolConverter.h"
+
 ProtocolBase::ProtocolBase(QObject *parent)
     : QObject(parent)
+    , m_converter(nullptr)
     , m_progress(-1)
 {
     reqTimer.setInterval(500);
@@ -31,16 +33,42 @@ ProtocolBase::ProtocolBase(QObject *parent)
         if (reqList.isEmpty())
             reqTimer.stop();
         else
-            emit sendUplink(reqList.takeFirst());
+            send(reqList.takeFirst());
     });
 }
-//=============================================================================
-bool ProtocolBase::unpack(QByteArray packet)
+
+void ProtocolBase::setConverter(ProtocolConverter *c)
+{
+    if (m_converter) {
+        disconnect(m_converter, nullptr, this, nullptr);
+    }
+    m_converter = c;
+    if (m_converter) {
+        connect(m_converter, &ProtocolConverter::convertUplink, this, &ProtocolBase::uplinkData);
+        connect(m_converter, &ProtocolConverter::downlink, this, &ProtocolBase::unpack);
+    }
+}
+
+void ProtocolBase::downlinkData(QByteArray packet)
+{
+    if (m_converter)
+        m_converter->convertDownlink(packet);
+    else
+        unpack(packet);
+}
+void ProtocolBase::send(QByteArray packet)
+{
+    if (m_converter)
+        m_converter->convertUplink(packet);
+    else
+        emit uplinkData(packet);
+}
+
+void ProtocolBase::unpack(const QByteArray packet)
 {
     Q_UNUSED(packet)
-    return true;
 }
-//=============================================================================
+
 void ProtocolBase::scheduleRequest(QByteArray packet)
 {
     if (!reqList.contains(packet)) {
@@ -48,8 +76,7 @@ void ProtocolBase::scheduleRequest(QByteArray packet)
         reqTimer.start();
     }
 }
-//=============================================================================
-//=============================================================================
+
 int ProtocolBase::progress() const
 {
     return m_progress;
@@ -72,4 +99,3 @@ void ProtocolBase::setStatus(const QString &v)
     m_status = v;
     emit statusChanged();
 }
-//=============================================================================

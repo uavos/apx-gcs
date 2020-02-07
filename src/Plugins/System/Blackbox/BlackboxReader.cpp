@@ -91,7 +91,7 @@ void BlackboxReader::processData(QByteArray data)
                                            static_cast<int>(cnt));
 
             vehicle->f_telemetry->f_recorder->setRecording(true);
-            protocol->unpack(packet);
+            protocol->downlinkData(packet);
         }
     }
 }

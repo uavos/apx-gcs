@@ -20,14 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "MandalaTree.h"
+#include "Mandala.h"
 #include "MandalaFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
 #include <Mandala/MandalaValue.h>
 #include <Mandala/backport/MandalaBackport.h>
 
-MandalaTree::MandalaTree(Fact *parent)
+Mandala::Mandala(Fact *parent)
     : Fact(parent,
            "mandala",
            "Mandala",
@@ -144,12 +144,12 @@ MandalaTree::MandalaTree(Fact *parent)
     //apxMsg() << fact(mandala::sns::nav::air::aoa::meta.uid)->title();
 }
 
-quint64 MandalaTree::timestamp() const
+quint64 Mandala::timestamp() const
 {
     return m_timestamp;
 }
 
-MandalaFact *MandalaTree::fact(mandala::uid_t uid) const
+MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
     if (!uid)
         return nullptr;
@@ -160,7 +160,7 @@ MandalaFact *MandalaTree::fact(mandala::uid_t uid) const
     return nullptr;
 }
 
-MandalaFact *MandalaTree::fact(const QString &mpath) const
+MandalaFact *Mandala::fact(const QString &mpath) const
 {
     MandalaFact *f = nullptr;
     if (mpath.isEmpty())
@@ -182,12 +182,12 @@ MandalaFact *MandalaTree::fact(const QString &mpath) const
     return f;
 }
 
-QString MandalaTree::mandalaToString(quint16 uid) const
+QString Mandala::mandalaToString(quint16 uid) const
 {
     MandalaFact *f = uid_map.value(uid);
     return f ? f->mpath() : QString();
 }
-quint16 MandalaTree::stringToMandala(const QString &s) const
+quint16 Mandala::stringToMandala(const QString &s) const
 {
     if (s.isEmpty() || s == "0")
         return 0;

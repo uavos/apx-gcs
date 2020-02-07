@@ -60,8 +60,9 @@ private:
     void identRequest(quint16 squawk);
     void identAssign(quint16 squawk, const ProtocolVehicles::IdentData &ident);
 
+    void unpack(const QByteArray packet) override;
+
 public slots:
-    bool unpack(QByteArray packet);
     void vehicleSendUplink(quint16 squawk, QByteArray payload);
     void sendHeartbeat();
 

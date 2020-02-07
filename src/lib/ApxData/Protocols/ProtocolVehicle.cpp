@@ -37,12 +37,12 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
 {
     if (vehicles) {
         if (squawk) {
-            connect(this, &ProtocolVehicle::sendUplink, this, [this, vehicles](QByteArray packet) {
+            connect(this, &ProtocolVehicle::uplinkData, this, [this, vehicles](QByteArray packet) {
                 vehicles->vehicleSendUplink(this->squawk, packet);
             });
         } else {
             //local
-            connect(this, &ProtocolVehicle::sendUplink, vehicles, &ProtocolVehicles::sendUplink);
+            connect(this, &ProtocolVehicle::uplinkData, vehicles, &ProtocolVehicles::uplinkData);
         }
     }
 
@@ -50,15 +50,17 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
     service = new ProtocolService(this);
 }
 //=============================================================================
-bool ProtocolVehicle::unpack(QByteArray packet)
+void ProtocolVehicle::unpack(const QByteArray packet)
 {
     //packet might be unwrapped from <cmd::vehicle::xxx>
     uint16_t psize = static_cast<uint16_t>(packet.size());
-    uint8_t *pdata = reinterpret_cast<uint8_t *>(packet.data());
+    const uint8_t *pdata = reinterpret_cast<const uint8_t *>(packet.data());
 
     XbusStreamReader stream(pdata, psize);
-    if (stream.tail() < sizeof(xbus::pid_t))
-        return false;
+    if (stream.tail() < sizeof(xbus::pid_t)) {
+        qWarning() << "packet" << packet.toHex().toUpper();
+        return;
+    }
 
     xbus::pid_t pid = stream.read<xbus::pid_t>();
     QByteArray payload(packet.mid(stream.position()));
@@ -95,31 +97,31 @@ bool ProtocolVehicle::unpack(QByteArray packet)
 
     case mandala::uid_nmt: {
         if (stream.tail() < sizeof(xbus::node::guid_t))
-            return false;
+            return;
         xbus::node::guid_t guid = stream.read<xbus::node::guid_t>();
 
         xbus::node::cmd_t cmd;
-        if (stream.tail() < sizeof(xbus::node::cmd_t))
+        if (stream.tail() < sizeof(xbus::node::cmd_t)) {
             cmd = xbus::node::apc_search;
-        else
+            stream.reset(stream.position() + stream.tail());
+        } else
             cmd = stream.read<xbus::node::cmd_t>();
 
         QString sn(
             QByteArray(reinterpret_cast<const char *>(guid.data()), guid.size()).toHex().toUpper());
-        //qDebug() << "idx_service" << sn;
+        //qDebug() << "nmt" << sn;
         if (!(sn.isEmpty() || sn.count('0') == sn.size())) {
             emit serviceData(sn, cmd, packet.mid(stream.position()));
         }
     } break;
     }
-    return true;
 }
 //=============================================================================
 void ProtocolVehicle::sendRequest(quint16 pid, QByteArray payload)
 {
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(pid);
-    emit sendUplink(txbuf.left(stream.position()).append(payload));
+    send(txbuf.left(stream.position()).append(payload));
 }
 //=============================================================================
 void ProtocolVehicle::vmexec(QString func)
@@ -149,6 +151,6 @@ void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray pay
     stream.write(guid);
     stream.write<xbus::node::cmd_t>(cmd);
 
-    emit sendUplink(txbuf.left(stream.position()).append(payload));
+    send(txbuf.left(stream.position()).append(payload));
 }
 //=============================================================================

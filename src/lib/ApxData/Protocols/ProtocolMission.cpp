@@ -31,7 +31,7 @@
 ProtocolMission::ProtocolMission(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle)
 {
-    connect(this, &ProtocolMission::sendUplink, vehicle, &ProtocolVehicle::sendMissionRequest);
+    connect(this, &ProtocolMission::uplinkData, vehicle, &ProtocolVehicle::sendMissionRequest);
     connect(vehicle, &ProtocolVehicle::missionData, this, &ProtocolMission::missionData);
 }
 //=============================================================================
@@ -209,7 +209,7 @@ void ProtocolMission::missionData(QByteArray data)
 //=============================================================================
 void ProtocolMission::downloadMission()
 {
-    emit sendUplink(QByteArray());
+    send(QByteArray());
 }
 //=============================================================================
 //=============================================================================
@@ -360,7 +360,7 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
     hdr.option = 0;
     hdr.write(&stream);
     data.resize(stream.position());
-    emit sendUplink(data);
+    send(data);
 }
 //=============================================================================
 //=============================================================================

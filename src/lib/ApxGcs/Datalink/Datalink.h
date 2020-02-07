@@ -29,7 +29,7 @@
 #include "DatalinkServer.h"
 #include "DatalinkStats.h"
 #include <Fact/Fact.h>
-#include <QtCore>
+#include <Protocols/ProtocolConverter.h>
 //=============================================================================
 class Datalink : public Fact
 {
@@ -82,16 +82,12 @@ private slots:
 private slots:
     void connectionPacketReceived(QByteArray packet, quint16 network);
 
-    //counters
-signals:
-    void transmittedDataEvent(uint size);
-    void receivedDataEvent(uint size);
-
     //external connections
 public slots:
     void sendPacket(QByteArray packet);
 signals:
     void packetReceived(QByteArray packet);
+    void packetTransmitted(QByteArray packet);
     void httpRequest(QTextStream &stream, QString req, bool *ok);
     void heartbeat();
 

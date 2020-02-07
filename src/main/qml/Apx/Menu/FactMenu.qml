@@ -48,7 +48,7 @@ StackView {
     //mandala select support
     property var mandalaFact: null
     onFactButtonTriggered: {
-        if(fact.dataType===Fact.Mandala){
+        if(fact.dataType===Fact.MandalaID){
             mandalaFact=fact
             currentItem.pageTitle = mandalaFact.title+": "+qsTr("select")
             currentItem.pageStatus = mandalaFact.text

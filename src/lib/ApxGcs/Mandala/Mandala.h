@@ -26,12 +26,12 @@
 #include <Fact/Fact.h>
 #include <Mandala/MandalaMetaTree.h>
 
-class MandalaTree : public Fact
+class Mandala : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit MandalaTree(Fact *parent = nullptr);
+    explicit Mandala(Fact *parent = nullptr);
 
     Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
     Q_INVOKABLE MandalaFact *fact(const QString &mpath) const;

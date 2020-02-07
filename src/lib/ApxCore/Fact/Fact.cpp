@@ -426,7 +426,7 @@ Fact *Fact::menu()
         return this;
     if (treeType() == Root)
         return this;
-    if (dataType() == Mandala)
+    if (dataType() == MandalaID)
         return mandala();
 
     if (treeType() == Group)

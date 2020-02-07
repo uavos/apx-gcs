@@ -44,9 +44,9 @@ private:
     QByteArray txbuf;
 
     void sendRequest(quint16 pid, QByteArray payload);
+    void unpack(const QByteArray packet) override;
 
 public slots:
-    bool unpack(QByteArray packet);
 
     void vmexec(QString func);
     void sendSerial(quint8 portID, QByteArray data);

@@ -34,7 +34,7 @@ ProtocolService::ProtocolService(ProtocolVehicle *vehicle)
     , activeCount(0)
     , m_active(false)
 {
-    connect(this, &ProtocolService::sendUplink, vehicle, &ProtocolVehicle::sendUplink);
+    connect(this, &ProtocolService::uplinkData, vehicle, &ProtocolVehicle::send);
     connect(this,
             &ProtocolService::sendServiceRequest,
             vehicle,

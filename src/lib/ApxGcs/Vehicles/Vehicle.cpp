@@ -63,7 +63,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
         f_select->setEnabled(v != this);
     });
 
-    f_mandala = new MandalaTree(this);
+    f_mandala = new Mandala(this);
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
@@ -143,12 +143,12 @@ Vehicle::Vehicle(Vehicles *vehicles,
                 dlinkReqTimer.start();
                 connect(&dlinkReqTimer, &QTimer::timeout, this, [=]() {
                     if (active())
-                        protocol->sendUplink(QByteArray()); //request telemetry
+                        protocol->send(QByteArray()); //request telemetry
                 });
             }
 
             //mandala update signals
-            connect(f_mandala, &MandalaTree::sendUplink, protocol, &ProtocolVehicle::sendUplink);
+            connect(f_mandala, &Mandala::sendUplink, protocol, &ProtocolVehicle::send);
         }
 
         Fact *f = new Fact(f_telemetry,

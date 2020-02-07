@@ -110,7 +110,7 @@ QString HttpService::reply_mandala(const QString &req)
     //------------------------------
     bool doDescr = false;
     QStringList rlist = req.trimmed().split('&', QString::SkipEmptyParts);
-    MandalaTree *mandala = Vehicles::instance()->current()->f_mandala;
+    Mandala *mandala = Vehicles::instance()->current()->f_mandala;
     QList<MandalaFact *> facts;
     for (auto const &s : rlist) {
         MandalaFact *f = nullptr;

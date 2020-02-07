@@ -162,8 +162,8 @@ void Datalink::connectionPacketReceived(QByteArray packet, quint16 network)
 
         c->sendPacket(packet, network);
     }
+
     emit packetReceived(packet);
-    emit receivedDataEvent(packet.size());
 }
 void Datalink::sendPacket(QByteArray packet)
 {
@@ -172,13 +172,14 @@ void Datalink::sendPacket(QByteArray packet)
         return;
     if (packet.isEmpty())
         return;
+
     for (int i = 0; i < connections.size(); ++i) {
         DatalinkConnection *c = connections.at(i);
         if (!c)
             continue;
         c->sendPacket(packet, LOCAL);
     }
-    emit transmittedDataEvent(packet.size());
+    emit packetTransmitted(packet);
 }
 //=============================================================================
 //=============================================================================

@@ -22,7 +22,7 @@
  */
 #include "FactDelegateMandala.h"
 #include "FactTreeView.h"
-#include <Mandala/MandalaTree.h>
+#include <Mandala/Mandala.h>
 
 FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
     : QWidget(parent)
@@ -73,7 +73,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
     });
 
     //find and select current item
-    MandalaFact *mf = qobject_cast<MandalaTree *>(fact->mandala())->fact(fact->text());
+    MandalaFact *mf = qobject_cast<Mandala *>(fact->mandala())->fact(fact->text());
     if (mf) {
         QVariant v = QVariant::fromValue(mf);
         QModelIndexList mlist = proxy->match(proxy->index(0, 0),

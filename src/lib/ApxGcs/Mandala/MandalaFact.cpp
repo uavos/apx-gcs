@@ -21,13 +21,13 @@
  *
  */
 #include "MandalaFact.h"
-#include "MandalaTree.h"
+#include "Mandala.h"
 #include <App/AppLog.h>
 #include <Mandala/MandalaMeta.h>
 #include <Xbus/XbusPacket.h>
 #include <QColor>
 
-MandalaFact::MandalaFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
+MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &meta)
     : Fact(parent, meta.name, meta.title, "", meta.group ? Group | FilterModel : ModifiedTrack)
     , MandalaFactStream(meta.type_id)
     , m_tree(tree)
@@ -97,7 +97,7 @@ MandalaFact::MandalaFact(MandalaTree *tree, Fact *parent, const mandala::meta_t 
             sendTimer.setInterval(100);
             sendTimer.setSingleShot(true);
             connect(&sendTimer, &QTimer::timeout, this, &MandalaFact::send);
-            connect(this, &MandalaFact::sendUplink, tree, &MandalaTree::sendUplink);
+            connect(this, &MandalaFact::sendUplink, tree, &Mandala::sendUplink);
         }
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
     }
@@ -117,7 +117,7 @@ bool MandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
     bool rv = Fact::setValue(v);
-    qDebug() << name() << text() << rv;
+    //qDebug() << name() << text() << rv;
     if (sendTimer.isActive())
         return rv;
     if (sendTime.elapsed() >= sendTimer.interval())

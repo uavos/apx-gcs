@@ -23,46 +23,17 @@
 #pragma once
 
 #include <QtCore>
-class ProtocolConverter;
 
-class ProtocolBase : public QObject
+class ProtocolConverter : public QObject
 {
     Q_OBJECT
 public:
-    ProtocolBase(QObject *parent = nullptr);
+    ProtocolConverter(QObject *parent = nullptr);
 
-    virtual void setConverter(ProtocolConverter *c);
-
-private:
-    QTimer reqTimer;
-    QList<QByteArray> reqList;
-    ProtocolConverter *m_converter;
-
-protected:
-    void scheduleRequest(QByteArray packet);
-
-protected slots:
-    virtual void unpack(const QByteArray packet);
-
-public slots:
-    void downlinkData(QByteArray packet); //connect rx
-
-    void send(QByteArray packet); //call to send data to tx
+    virtual void convertDownlink(const QByteArray &packet);
+    virtual void convertUplink(const QByteArray &packet);
 
 signals:
-    void uplinkData(QByteArray packet); //connect tx
-
-    //properties
-public:
-    int progress() const;
-    void setProgress(int v);
-    QString status() const;
-    void setStatus(const QString &v);
-
-private:
-    int m_progress;
-    QString m_status;
-signals:
-    void progressChanged();
-    void statusChanged();
+    void downlink(QByteArray packet);
+    void uplink(QByteArray packet);
 };

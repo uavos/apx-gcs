@@ -73,7 +73,7 @@ NodeField::NodeField(NodeItem *node,
         setDataType(Text);
         break;
     case DictNode::MandalaID:
-        setDataType(Mandala);
+        setDataType(MandalaID);
         setEnumStrings(QStringList());
         break;
     case DictNode::Script:

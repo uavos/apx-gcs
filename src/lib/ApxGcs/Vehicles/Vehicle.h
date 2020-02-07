@@ -29,7 +29,7 @@
 
 #include <App/AppNotify.h>
 #include <Fact/Fact.h>
-#include <Mandala/MandalaTree.h>
+#include <Mandala/Mandala.h>
 #include <Protocols/ProtocolVehicle.h>
 
 #include <Xbus/XbusVehicle.h>
@@ -96,7 +96,7 @@ public:
 
     ~Vehicle() override;
 
-    MandalaTree *f_mandala;
+    Mandala *f_mandala;
     Nodes *f_nodes;
     VehicleMission *f_mission;
     Telemetry *f_telemetry;

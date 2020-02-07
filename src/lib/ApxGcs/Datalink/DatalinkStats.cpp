@@ -34,14 +34,19 @@ DatalinkStats::DatalinkStats(Datalink *parent)
     f_datalink = parent;
 
     f_uplink = new DatalinkStatsCounter(this, "uplink", tr("Uplink"), "");
-    connect(f_datalink, &Datalink::transmittedDataEvent, f_uplink, &DatalinkStatsCounter::countData);
-
     f_dnlink = new DatalinkStatsCounter(this, "dnlink", tr("Downlink"), "");
-    connect(f_datalink, &Datalink::receivedDataEvent, f_dnlink, &DatalinkStatsCounter::countData);
-
     f_total = new DatalinkStatsCounter(this, "total", tr("Total"), "");
-    connect(f_datalink, &Datalink::transmittedDataEvent, f_total, &DatalinkStatsCounter::countData);
-    connect(f_datalink, &Datalink::receivedDataEvent, f_total, &DatalinkStatsCounter::countData);
+
+    connect(f_datalink, &Datalink::packetReceived, f_dnlink, [this](QByteArray packet) {
+        uint sz = static_cast<uint>(packet.size());
+        f_dnlink->countData(sz);
+        f_total->countData(sz);
+    });
+    connect(f_datalink, &Datalink::packetTransmitted, f_dnlink, [this](QByteArray packet) {
+        uint sz = static_cast<uint>(packet.size());
+        f_uplink->countData(sz);
+        f_total->countData(sz);
+    });
 }
 //=============================================================================
 //=============================================================================

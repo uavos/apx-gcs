@@ -100,7 +100,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
                 return btn;
             }
         } break;
-        case Fact::Mandala: {
+        case Fact::MandalaID: {
             QPushButton *btn = createButton(parent);
             connect(btn, &QPushButton::clicked, this, [f, btn]() {
                 new FactDelegateMandala(f, btn);

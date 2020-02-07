@@ -28,14 +28,14 @@
 
 #include <Fact/Fact.h>
 
-class MandalaTree;
+class Mandala;
 
 class MandalaFact : public Fact, public MandalaFactStream
 {
     Q_OBJECT
 
 public:
-    explicit MandalaFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta);
+    explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &meta);
 
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
@@ -61,7 +61,7 @@ public:
     Q_INVOKABLE mandala::uid_t offset() const;
 
 private:
-    MandalaTree *m_tree;
+    Mandala *m_tree;
     const mandala::meta_t &m_meta;
     QString m_alias;
 
