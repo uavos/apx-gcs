@@ -46,7 +46,6 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
         }
     }
 
-    telemetry = new ProtocolTelemetry(this);
     mission = new ProtocolMission(this);
     service = new ProtocolService(this);
 }

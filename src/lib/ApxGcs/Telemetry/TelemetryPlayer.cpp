@@ -329,7 +329,7 @@ void TelemetryPlayer::next()
                 quint64 fieldID = r.at(n.indexOf("name")).toULongLong();
                 if (!fieldID)
                     continue;
-                MandalaTreeFact *f = static_cast<MandalaTreeFact *>(factsMap.value(fieldID));
+                MandalaFact *f = static_cast<MandalaFact *>(factsMap.value(fieldID));
                 if (!f)
                     continue;
                 if (f->setValue(sv))

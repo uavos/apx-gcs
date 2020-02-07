@@ -250,7 +250,7 @@ void TelemetryFrame::updateStatus()
 void TelemetryFrame::updateData()
 {
     //create curves
-    QHash<quint64, MandalaTreeFact *> fidmap;
+    QHash<quint64, MandalaFact *> fidmap;
     for (auto fid : reader->fieldNames.keys()) {
         const QVector<QPointF> *d = reader->fieldData.value(fid);
         if (!d)
@@ -266,7 +266,7 @@ void TelemetryFrame::updateData()
             continue;
 
         const QString &s = reader->fieldNames.value(fid);
-        MandalaTreeFact *f = qobject_cast<MandalaTreeFact *>(
+        MandalaFact *f = qobject_cast<MandalaFact *>(
             Vehicles::instance()->f_replay->f_mandala->findChild(s));
         if (!f)
             continue;

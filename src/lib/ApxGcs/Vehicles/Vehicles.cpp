@@ -94,7 +94,7 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                      << "descr"
                      << "units"
                      << "alias";
-    foreach (MandalaTreeFact *f, f_local->f_mandala->uid_map.values()) {
+    foreach (MandalaFact *f, f_local->f_mandala->uid_map.values()) {
         if (f->isSystem())
             continue;
         QVariantList v;
@@ -229,7 +229,7 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
     // pure JS objects and data
 
     AppEngine *e = App::instance()->engine();
-    MandalaTreeFact *m = qobject_cast<MandalaTreeFact *>(fact);
+    MandalaFact *m = qobject_cast<MandalaFact *>(fact);
 
     if (fact->treeType() == Group) {
         QJSValue v;

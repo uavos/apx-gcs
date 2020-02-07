@@ -35,7 +35,6 @@ ApxApp.ApxLibrary {
         name: "Dictionary"
         prefix: name+"/"
         files: [
-            "DictMandala.cpp", "DictMandala.h",
             "DictNode.cpp", "DictNode.h",
             "DictMission.cpp", "DictMission.h",
         ]
@@ -48,7 +47,6 @@ ApxApp.ApxLibrary {
             "ProtocolBase.cpp", "ProtocolBase.h",
             "ProtocolVehicles.cpp", "ProtocolVehicles.h",
             "ProtocolVehicle.cpp", "ProtocolVehicle.h",
-            "ProtocolTelemetry.cpp", "ProtocolTelemetry.h",
             "ProtocolMission.cpp", "ProtocolMission.h",
             "ProtocolService.cpp", "ProtocolService.h",
             "ProtocolServiceRequest.cpp", "ProtocolServiceRequest.h",

@@ -73,7 +73,8 @@ ApxApp.ApxLibrary {
         condition: !qbs.buildVariant.contains("release")
         files: [
             "MandalaTree.cpp", "MandalaTree.h",
-            "MandalaTreeFact.cpp", "MandalaTreeFact.h",
+            "MandalaFact.cpp", "MandalaFact.h",
+            "MandalaFactStream.cpp", "MandalaFactStream.h",
             "MandalaTreeStream.h",
         ]
     }

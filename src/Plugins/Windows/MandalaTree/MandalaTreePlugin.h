@@ -50,7 +50,7 @@ public:
         return w;
     }
     int flags() { return Widget | Restore | Launcher; }
-    QString title() { return tr("Mandala tree"); }
+    QString title() { return tr("Mandala"); }
     QString descr() { return tr("Mandala tree view"); }
     QString icon() { return "hexagon-multiple"; }
 };

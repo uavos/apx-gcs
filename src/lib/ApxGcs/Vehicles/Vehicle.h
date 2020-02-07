@@ -136,13 +136,24 @@ private:
     Fact *f_lat;
     Fact *f_lon;
     Fact *f_hmsl;
-    Fact *f_ref_lat;
-    Fact *f_ref_lon;
-    Fact *f_ref_hmsl;
+
+    MandalaFact *f_ref_lat;
+    MandalaFact *f_ref_lon;
+    MandalaFact *f_ref_hmsl;
 
     Fact *f_vd;
     Fact *f_mode;
     Fact *f_stage;
+
+    MandalaFact *f_cmd_n;
+    MandalaFact *f_cmd_e;
+    MandalaFact *f_cmd_gimbal_lat;
+    MandalaFact *f_cmd_gimbal_lon;
+    MandalaFact *f_cmd_gimbal_hmsl;
+
+    MandalaFact *f_gps_lat;
+    MandalaFact *f_gps_lon;
+    MandalaFact *f_gps_hmsl;
 
     void setReplay(bool v);
 
@@ -164,7 +175,7 @@ private slots:
     void setStreamData();
     void setStreamService();
 
-    void updateDatalinkVars(quint16 id, double);
+    void updateDatalinkVars(quint16 id, QByteArray);
 
     void jsexecData(QByteArray data);
 

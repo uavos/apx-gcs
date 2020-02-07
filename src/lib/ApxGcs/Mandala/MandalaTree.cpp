@@ -21,7 +21,7 @@
  *
  */
 #include "MandalaTree.h"
-#include "MandalaTreeFact.h"
+#include "MandalaFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
 #include <Mandala/MandalaValue.h>
@@ -39,11 +39,7 @@ MandalaTree::MandalaTree(Fact *parent)
     //qDebug() << mandala::sns::nav::ins::gyro::title;
 
     setMandala(this);
-    qmlRegisterUncreatableType<MandalaTreeFact>("APX.Facts",
-                                                1,
-                                                0,
-                                                "MandalaTreeFact",
-                                                "Reference only");
+    qmlRegisterUncreatableType<MandalaFact>("APX.Facts", 1, 0, "MandalaFact", "Reference only");
 
     /*mandala::data m;
     qDebug() << m.sns.title;
@@ -120,7 +116,7 @@ MandalaTree::MandalaTree(Fact *parent)
             if (group->child(d.name)) {
                 apxMsgW() << "dup group:" << group->child(d.name)->path(1);
             }
-            group = new MandalaTreeFact(this, group, d);
+            group = new MandalaFact(this, group, d);
             if (d.level == 2)
                 group->setSection(sect);
             continue;
@@ -128,7 +124,7 @@ MandalaTree::MandalaTree(Fact *parent)
         if (group->child(d.name)) {
             apxMsgW() << "dup fact:" << group->child(d.name)->path(2);
         }
-        MandalaTreeFact *f = new MandalaTreeFact(this, group, d);
+        MandalaFact *f = new MandalaFact(this, group, d);
         uid_map.insert(f->uid(), f);
         //find aliases
         for (auto i : mandala::backport::items) {
@@ -153,24 +149,24 @@ quint64 MandalaTree::timestamp() const
     return m_timestamp;
 }
 
-MandalaTreeFact *MandalaTree::fact(mandala::uid_t uid) const
+MandalaFact *MandalaTree::fact(mandala::uid_t uid) const
 {
     if (!uid)
         return nullptr;
-    MandalaTreeFact *f = uid_map.value(uid);
+    MandalaFact *f = uid_map.value(uid);
     if (f)
         return f;
     apxMsgW() << "Mandala uid not found:" << uid;
     return nullptr;
 }
 
-MandalaTreeFact *MandalaTree::fact(const QString &mpath) const
+MandalaFact *MandalaTree::fact(const QString &mpath) const
 {
-    MandalaTreeFact *f = nullptr;
+    MandalaFact *f = nullptr;
     if (mpath.isEmpty())
         return f;
     if (mpath.contains('.')) {
-        f = static_cast<MandalaTreeFact *>(findChild(mpath));
+        f = static_cast<MandalaFact *>(findChild(mpath));
     } else {
         for (auto i : uid_map) {
             if (i->alias() != mpath)
@@ -188,7 +184,7 @@ MandalaTreeFact *MandalaTree::fact(const QString &mpath) const
 
 QString MandalaTree::mandalaToString(quint16 uid) const
 {
-    MandalaTreeFact *f = uid_map.value(uid);
+    MandalaFact *f = uid_map.value(uid);
     return f ? f->mpath() : QString();
 }
 quint16 MandalaTree::stringToMandala(const QString &s) const
@@ -200,11 +196,11 @@ quint16 MandalaTree::stringToMandala(const QString &s) const
     uint i = s.toUInt(&ok);
     if (ok && i < 0xFFFF) {
         quint16 uid = static_cast<quint16>(i);
-        MandalaTreeFact *f = fact(uid);
+        MandalaFact *f = fact(uid);
         if (f)
             return f->uid();
     }
     //try text
-    MandalaTreeFact *f = fact(s);
+    MandalaFact *f = fact(s);
     return f ? f->uid() : 0;
 }

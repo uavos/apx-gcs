@@ -84,6 +84,16 @@ Vehicle::Vehicle(Vehicles *vehicles,
     f_vd = f_mandala->fact(mandala::est::nav::pos::vd::meta.uid);
     f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::meta.uid);
     f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::meta.uid);
+    f_cmd_n = f_mandala->fact(mandala::cmd::nav::pos::n::meta.uid);
+    f_cmd_e = f_mandala->fact(mandala::cmd::nav::pos::e::meta.uid);
+
+    f_cmd_gimbal_lat = f_mandala->fact(mandala::cmd::nav::gimbal::lat::meta.uid);
+    f_cmd_gimbal_lon = f_mandala->fact(mandala::cmd::nav::gimbal::lon::meta.uid);
+    f_cmd_gimbal_hmsl = f_mandala->fact(mandala::cmd::nav::gimbal::hmsl::meta.uid);
+
+    f_gps_lat = f_mandala->fact(mandala::sns::nav::gps::lat::meta.uid);
+    f_gps_lon = f_mandala->fact(mandala::sns::nav::gps::lon::meta.uid);
+    f_gps_hmsl = f_mandala->fact(mandala::sns::nav::gps::hmsl::meta.uid);
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);
@@ -118,27 +128,29 @@ Vehicle::Vehicle(Vehicles *vehicles,
         onlineTimer.setInterval(7000);
         connect(&onlineTimer, &QTimer::timeout, this, [=]() { setStreamType(OFFLINE); });
 
-        //downlink request timer
-        if (!(isLocal() || isReplay())) {
-            dlinkReqTimer.setInterval(1000);
-            dlinkReqTimer.start();
-            connect(&dlinkReqTimer, &QTimer::timeout, this, [=]() {
-                if (active())
-                    protocol->sendUplink(QByteArray()); //request telemetry
-            });
+        if (protocol && !isReplay()) {
+            connect(this,
+                    &Vehicle::coordinateChanged,
+                    this,
+                    &Vehicle::updateGeoPath,
+                    Qt::QueuedConnection);
+
+            connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
+
+            //downlink request timer
+            if (!isLocal()) {
+                dlinkReqTimer.setInterval(1000);
+                dlinkReqTimer.start();
+                connect(&dlinkReqTimer, &QTimer::timeout, this, [=]() {
+                    if (active())
+                        protocol->sendUplink(QByteArray()); //request telemetry
+                });
+            }
+
+            //mandala update signals
+            connect(f_mandala, &MandalaTree::sendUplink, protocol, &ProtocolVehicle::sendUplink);
         }
-    }
 
-    if (protocol && !isTemporary() && !isReplay()) {
-        connect(this,
-                &Vehicle::coordinateChanged,
-                this,
-                &Vehicle::updateGeoPath,
-                Qt::QueuedConnection);
-
-        connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
-    }
-    if (!isTemporary()) {
         Fact *f = new Fact(f_telemetry,
                            "rpath",
                            tr("Reset Path"),
@@ -160,32 +172,17 @@ Vehicle::Vehicle(Vehicles *vehicles,
         connect(protocol, &QObject::destroyed, this, [this]() { this->protocol = nullptr; });
         //status and stream type
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::setStreamXpdr);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryDataReceived,
-                this,
-                &Vehicle::setStreamTelemetry);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::valueDataReceived,
-                this,
-                &Vehicle::setStreamData);
+        connect(protocol, &ProtocolVehicle::telemetryData, this, &Vehicle::setStreamTelemetry);
+        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::setStreamData);
         connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::setStreamData);
         connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::setStreamData);
 
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::mandalaValueReceived,
-                this,
-                &Vehicle::updateDatalinkVars);
+        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryDataReceived,
-                this,
-                &Vehicle::recordDownlink);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::valueDataReceived,
-                this,
-                &Vehicle::recordDownlink);
+        connect(protocol, &ProtocolVehicle::telemetryData, this, &Vehicle::recordDownlink);
+        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::recordDownlink);
         connect(protocol, &ProtocolVehicle::serialRxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, false);
         });
@@ -205,14 +202,8 @@ Vehicle::Vehicle(Vehicles *vehicles,
         });
 
         //forward signals
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryDataReceived,
-                this,
-                &Vehicle::telemetryDataReceived);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::valueDataReceived,
-                this,
-                &Vehicle::valueDataReceived);
+        connect(protocol, &ProtocolVehicle::telemetryData, this, &Vehicle::telemetryDataReceived);
+        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::valueDataReceived);
         connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::serialRxDataReceived);
         connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::serialTxDataReceived);
     }
@@ -449,9 +440,10 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
     const QGeoCoordinate h(f_ref_lat->value().toDouble(), f_ref_lon->value().toDouble());
     qreal azimuth_r = qDegreesToRadians(h.azimuthTo(c));
     qreal distance = h.distanceTo(c);
-    qreal n = std::cos(azimuth_r) * distance;
-    qreal e = std::sin(azimuth_r) * distance;
-    protocol->telemetry->sendPointValue(mandala::cmd::nav::pos::n::meta.uid, n, e);
+    QVariantList vlist;
+    vlist << std::cos(azimuth_r) * distance;
+    vlist << std::sin(azimuth_r) * distance;
+    f_cmd_n->setValues(vlist);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
@@ -459,11 +451,11 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    double hmsl = f_ref_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(mandala::cmd::nav::gimbal::lat::meta.uid,
-                                         c.latitude(),
-                                         c.longitude(),
-                                         hmsl);
+    QVariantList vlist;
+    vlist << c.latitude();
+    vlist << c.longitude();
+    vlist << f_ref_hmsl->value();
+    f_cmd_gimbal_lat->setValues(vlist);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
@@ -471,11 +463,11 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    double hmsl = f_ref_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(mandala::est::nav::ref::lat::meta.uid,
-                                         c.latitude(),
-                                         c.longitude(),
-                                         hmsl);
+    QVariantList vlist;
+    vlist << c.latitude();
+    vlist << c.longitude();
+    vlist << f_ref_hmsl->value();
+    f_ref_lat->setValues(vlist);
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
@@ -483,11 +475,11 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    double hmsl = f_hmsl->value().toDouble();
-    protocol->telemetry->sendVectorValue(mandala::sns::nav::gps::lat::meta.uid,
-                                         c.latitude(),
-                                         c.longitude(),
-                                         hmsl);
+    QVariantList vlist;
+    vlist << c.latitude();
+    vlist << c.longitude();
+    vlist << f_hmsl->value();
+    f_gps_lat->setValues(vlist);
 }
 //=============================================================================
 void Vehicle::resetGeoPath()
@@ -583,7 +575,7 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
 }
 //=============================================================================
 //=============================================================================
-void Vehicle::updateDatalinkVars(quint16 id, double)
+void Vehicle::updateDatalinkVars(quint16 id, QByteArray)
 {
     /*switch (id) {
     default:

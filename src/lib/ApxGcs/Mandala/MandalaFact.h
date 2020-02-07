@@ -22,31 +22,36 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <Mandala/MandalaMetaBase.h>
-#include <QtCore>
+#include "MandalaFactStream.h"
 
-#include "MandalaTreeStream.h"
+#include <Mandala/MandalaMetaBase.h>
+
+#include <Fact/Fact.h>
 
 class MandalaTree;
-class MandalaTreeStream;
 
-class MandalaTreeFact : public Fact
+class MandalaFact : public Fact, public MandalaFactStream
 {
     Q_OBJECT
 
 public:
-    explicit MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta);
+    explicit MandalaFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta);
 
-    bool setValue(const QVariant &v); //override
+    // send value to uplink when set
+    bool setValue(const QVariant &v) override;
+
+    // set value locally and do not send uplink
     bool setValueLocal(const QVariant &v);
+
+    // set values array and send uplink batch update (f.ex. vecors)
+    bool setValues(const QVariantList &vlist);
+
+    // pack value as mandala::type_t raw binary arary
+    QByteArray pack() const;
 
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
-
-    size_t pack(void *buf) const;
-    size_t unpack(const void *buf);
 
     Q_INVOKABLE Fact *classFact() const;
     Q_INVOKABLE QString mpath() const;
@@ -63,27 +68,25 @@ private:
     QElapsedTimer sendTime;
     QTimer sendTimer;
 
-    MandalaTreeStream *m_stream{nullptr};
-
     int getPrecision();
     QColor getColor();
 
+    void sendPacket(const QByteArray data);
+
 protected:
     //Fact override
-    virtual QVariant data(int col, int role) const;
-    virtual bool showThis(QRegExp re) const; //filter helper
+    virtual QVariant data(int col, int role) const override;
+    virtual bool showThis(QRegExp re) const override; //filter helper
 
-protected slots:
+    //stream
+    void setValueFromStream(const QVariant &v) override;
+    QVariant getValueForStream() const override;
 
 signals:
-    void sendValueUpdate(quint16 id, double v);
-    void sendValueRequest(quint16 id);
+    void sendUplink(QByteArray data); //forwarded to tree
 
     //---------------------------------------
     // PROPERTIES
 public:
     bool isSystem() const;
-
-protected:
-signals:
 };

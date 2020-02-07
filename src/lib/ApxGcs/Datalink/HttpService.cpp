@@ -111,9 +111,9 @@ QString HttpService::reply_mandala(const QString &req)
     bool doDescr = false;
     QStringList rlist = req.trimmed().split('&', QString::SkipEmptyParts);
     MandalaTree *mandala = Vehicles::instance()->current()->f_mandala;
-    QList<MandalaTreeFact *> facts;
+    QList<MandalaFact *> facts;
     for (auto const &s : rlist) {
-        MandalaTreeFact *f = nullptr;
+        MandalaFact *f = nullptr;
         if (s.startsWith("descr")) {
             doDescr = true;
         } else if (s.contains('=')) {

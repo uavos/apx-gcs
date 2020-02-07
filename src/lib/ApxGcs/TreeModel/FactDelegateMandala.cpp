@@ -43,6 +43,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
     eFilter = new QLineEdit(this);
     eFilter->setFrame(false);
     eFilter->setClearButtonEnabled(true);
+    eFilter->setPlaceholderText(tr("Search").append("..."));
 
     vlayout->addWidget(eFilter);
     vlayout->addWidget(tree);
@@ -61,8 +62,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
 
     connect(tree, &FactTreeView::activated, this, [this](const QModelIndex &index) {
         QModelIndex idx = proxy->mapToSource(index);
-        MandalaTreeFact *f = qobject_cast<MandalaTreeFact *>(
-            idx.data(Fact::ModelDataRole).value<Fact *>());
+        MandalaFact *f = qobject_cast<MandalaFact *>(idx.data(Fact::ModelDataRole).value<Fact *>());
         if (!f)
             return;
         if (!f->dataType())
@@ -73,7 +73,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
     });
 
     //find and select current item
-    MandalaTreeFact *mf = qobject_cast<MandalaTree *>(fact->mandala())->fact(fact->text());
+    MandalaFact *mf = qobject_cast<MandalaTree *>(fact->mandala())->fact(fact->text());
     if (mf) {
         QVariant v = QVariant::fromValue(mf);
         QModelIndexList mlist = proxy->match(proxy->index(0, 0),
@@ -125,8 +125,7 @@ void FactDelegateMandala::finished()
         if (sel.isEmpty())
             break;
         QModelIndex idx = proxy->mapToSource(sel.first());
-        MandalaTreeFact *f = qobject_cast<MandalaTreeFact *>(
-            idx.data(Fact::ModelDataRole).value<Fact *>());
+        MandalaFact *f = qobject_cast<MandalaFact *>(idx.data(Fact::ModelDataRole).value<Fact *>());
         if (!f)
             break;
         if (!f->dataType())
@@ -165,13 +164,17 @@ QVariant FactDelegateMandalaModel::data(const QModelIndex &index, int role) cons
     if (!f)
         return QVariant();
     if (role == Qt::DisplayRole) {
-        if (index.column() == Fact::FACT_MODEL_COLUMN_NAME)
+        switch (index.column()) {
+        case Fact::FACT_MODEL_COLUMN_NAME:
             return f->title();
-
-        if (f->dataType() && index.column() == Fact::FACT_MODEL_COLUMN_DESCR) {
-            MandalaTreeFact *m = qobject_cast<MandalaTreeFact *>(f);
-            if (m)
+        case Fact::FACT_MODEL_COLUMN_VALUE:
+            if (f->treeType() != Fact::Group)
+                break;
+            return QVariant();
+        case Fact::FACT_MODEL_COLUMN_DESCR:
+            if (MandalaFact *m = qobject_cast<MandalaFact *>(f))
                 return m->mpath();
+            break;
         }
     }
     return FactTreeModel::data(index, role);

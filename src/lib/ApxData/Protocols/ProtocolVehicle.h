@@ -25,7 +25,6 @@
 #include "ProtocolBase.h"
 #include "ProtocolMission.h"
 #include "ProtocolService.h"
-#include "ProtocolTelemetry.h"
 #include "ProtocolVehicles.h"
 #include <QtCore>
 //=============================================================================
@@ -38,7 +37,6 @@ public:
     quint16 squawk;
     ProtocolVehicles::IdentData ident;
 
-    ProtocolTelemetry *telemetry;
     ProtocolMission *mission;
     ProtocolService *service;
 
@@ -59,9 +57,7 @@ signals:
     void xpdrData(const ProtocolVehicles::XpdrData &xpdr);
     void identUpdated();
 
-    //unpacked data for child protocols
-    void receivedData(quint16 id, QByteArray data);
-
+    //known received data
     void telemetryData(QByteArray data);
 
     void serialRxData(quint16 portNo, QByteArray data);
@@ -70,6 +66,9 @@ signals:
     void jsexecData(QByteArray data);
     void missionData(QByteArray data);
     void serviceData(QString sn, quint16 cmd, QByteArray data);
+
+    //data with other id (i.e. mandala data)
+    void receivedData(quint16 id, QByteArray data);
 };
 //=============================================================================
 #endif

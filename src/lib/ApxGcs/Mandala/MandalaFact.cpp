@@ -20,15 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "MandalaTreeFact.h"
+#include "MandalaFact.h"
 #include "MandalaTree.h"
 #include <App/AppLog.h>
 #include <Mandala/MandalaMeta.h>
-#include <Mandala/MandalaStream.h>
+#include <Xbus/XbusPacket.h>
 #include <QColor>
 
-MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
+MandalaFact::MandalaFact(MandalaTree *tree, Fact *parent, const mandala::meta_t &meta)
     : Fact(parent, meta.name, meta.title, "", meta.group ? Group | FilterModel : ModifiedTrack)
+    , MandalaFactStream(meta.type_id)
     , m_tree(tree)
     , m_meta(meta)
 {
@@ -91,60 +92,32 @@ MandalaTreeFact::MandalaTreeFact(MandalaTree *tree, Fact *parent, const mandala:
         }
 
         if (!isSystem()) {
-            m_stream = MandalaTreeStream::get_stream();
             setOpt("color", getColor());
             sendTime.start();
             sendTimer.setInterval(100);
             sendTimer.setSingleShot(true);
-            connect(&sendTimer, &QTimer::timeout, this, &MandalaTreeFact::send);
-            //connect(this, &Fact::valueChanged, this, &MandalaTreeFact::updateDescr);
+            connect(&sendTimer, &QTimer::timeout, this, &MandalaFact::send);
+            connect(this, &MandalaFact::sendUplink, tree, &MandalaTree::sendUplink);
         }
-
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
-
-        //integrity tests
-        /* switch (meta.type_id) {
-        case mandala::type_enum:
-            if (meta.sfmt < mandala::sfmt_f4) {
-                qWarning() << path() << "enum sfmt";
-            }
-            break;
-        case mandala::type_byte:
-            if (meta.sfmt < mandala::sfmt_f4) {
-                qWarning() << path() << "byte sfmt";
-            }
-            break;
-        case mandala::type_float:
-            if (meta.sfmt < mandala::sfmt_f4) {
-                qWarning() << path() << "float sfmt";
-            }
-            break;
-        case mandala::type_uint:
-            if (meta.sfmt >= mandala::sfmt_f4) {
-                qWarning() << path() << "uint sfmt";
-            }
-            break;
-        }*/
     }
-    //setDescr(QString("%1: %2").arg(meta.uid, 4, 16, QChar('0')).arg(descr()));
-    //updateDescr();
 }
 
-void MandalaTreeFact::addAlias(const QString &a)
+void MandalaFact::addAlias(const QString &a)
 {
-    m_alias.append(a);
+    m_alias = a;
 }
 
-QString MandalaTreeFact::alias() const
+QString MandalaFact::alias() const
 {
     return m_alias;
 }
 
-bool MandalaTreeFact::setValue(const QVariant &v)
+bool MandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
     bool rv = Fact::setValue(v);
-    //qDebug()<<name()<<text();
+    qDebug() << name() << text() << rv;
     if (sendTimer.isActive())
         return rv;
     if (sendTime.elapsed() >= sendTimer.interval())
@@ -154,38 +127,85 @@ bool MandalaTreeFact::setValue(const QVariant &v)
     return rv;
 }
 
-bool MandalaTreeFact::setValueLocal(const QVariant &v)
+bool MandalaFact::setValueLocal(const QVariant &v)
 {
     //don't send uplink
     return Fact::setValue(v);
 }
 
-mandala::uid_t MandalaTreeFact::uid() const
+void MandalaFact::setValueFromStream(const QVariant &v)
+{
+    qDebug() << v;
+    setValueLocal(v);
+}
+QVariant MandalaFact::getValueForStream() const
+{
+    return value();
+}
+
+QByteArray MandalaFact::pack() const
+{
+    QByteArray data(32, '\0');
+    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(data.data()));
+    *this >> stream;
+    data.resize(stream.position());
+    return data;
+}
+
+bool MandalaFact::setValues(const QVariantList &vlist)
+{
+    if (!dataType())
+        return false;
+    MandalaFact *f = this;
+    bool rv = false;
+    QByteArray data;
+    for (auto const &v : vlist) {
+        if (!f)
+            return false;
+        if (f->setValueLocal(v))
+            rv = true;
+        data.append(f->pack());
+        f = m_tree->fact(f->uid() + 1);
+    }
+    sendPacket(data);
+    return rv;
+}
+
+void MandalaFact::sendPacket(const QByteArray data)
+{
+    QByteArray packet(sizeof(xbus::pid_t), '\0');
+    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(packet.data()));
+    stream.write<xbus::pid_t>(uid());
+    packet.append(data);
+    sendTime.start();
+    emit sendUplink(packet);
+}
+
+mandala::uid_t MandalaFact::uid() const
 {
     return m_meta.uid;
 }
-mandala::uid_t MandalaTreeFact::offset() const
+mandala::uid_t MandalaFact::offset() const
 {
     return m_meta.uid - mandala::uid_base;
 }
-void MandalaTreeFact::request()
+void MandalaFact::request()
 {
-    emit sendValueRequest(uid());
+    sendPacket(QByteArray());
 }
-void MandalaTreeFact::send()
+void MandalaFact::send()
 {
-    sendTime.start();
-    emit sendValueUpdate(uid(), value().toDouble());
+    sendPacket(pack());
 }
 
-QVariant MandalaTreeFact::data(int col, int role) const
+QVariant MandalaFact::data(int col, int role) const
 {
     switch (role) {
     case Qt::DisplayRole:
         if (col == FACT_MODEL_COLUMN_NAME)
             return name();
         if (col == FACT_MODEL_COLUMN_DESCR) {
-            QString s = descr();
+            QString s = title();
             if (!alias().isEmpty())
                 s += QString(" {%1}").arg(alias());
             if (!m_meta.descr[0])
@@ -233,7 +253,7 @@ QVariant MandalaTreeFact::data(int col, int role) const
     return Fact::data(col, role);
 }
 
-bool MandalaTreeFact::showThis(QRegExp re) const
+bool MandalaFact::showThis(QRegExp re) const
 {
     if (Fact::showThis(re))
         return true;
@@ -250,25 +270,7 @@ bool MandalaTreeFact::showThis(QRegExp re) const
     return false;
 }
 
-size_t MandalaTreeFact::pack(void *buf) const
-{
-    if (!m_stream)
-        return 0;
-    return m_stream->pack(buf, value());
-}
-
-size_t MandalaTreeFact::unpack(const void *buf)
-{
-    if (!m_stream)
-        return 0;
-    QVariant v;
-    size_t sz = m_stream->unpack(buf, v);
-    if (sz > 0)
-        setValueLocal(v);
-    return sz;
-}
-
-Fact *MandalaTreeFact::classFact() const
+Fact *MandalaFact::classFact() const
 {
     int level = m_meta.level;
     if (level >= 1)
@@ -280,7 +282,7 @@ Fact *MandalaTreeFact::classFact() const
     return const_cast<Fact *>(f);
 }
 
-QString MandalaTreeFact::mpath() const
+QString MandalaFact::mpath() const
 {
     int level = m_meta.level;
     if (level >= 1)
@@ -288,7 +290,7 @@ QString MandalaTreeFact::mpath() const
     return path(level);
 }
 
-int MandalaTreeFact::getPrecision()
+int MandalaFact::getPrecision()
 {
     if (name().contains("lat") || name().contains("lon"))
         return 6;
@@ -341,7 +343,7 @@ int MandalaTreeFact::getPrecision()
     return 6;
 }
 
-QColor MandalaTreeFact::getColor()
+QColor MandalaFact::getColor()
 {
     QString sclass = classFact()->name();
     QString sub = parentFact()->name();
@@ -447,7 +449,7 @@ QColor MandalaTreeFact::getColor()
     return c;
 }
 
-bool MandalaTreeFact::isSystem() const
+bool MandalaFact::isSystem() const
 {
     return m_meta.uid
            >= (mandala::uid_base + (3 << mandala::uid_shift[0]) | (1 << mandala::uid_shift[1]));

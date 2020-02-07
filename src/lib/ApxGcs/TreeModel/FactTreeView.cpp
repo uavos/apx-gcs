@@ -149,6 +149,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     eFilter->setFrame(false);
     eFilter->setClearButtonEnabled(true);
     eFilter->setVisible(false);
+    eFilter->setPlaceholderText(tr("Search").append("..."));
 
     toolBar = new QToolBar(this);
     //toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);

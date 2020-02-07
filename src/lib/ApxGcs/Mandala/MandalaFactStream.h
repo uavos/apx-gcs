@@ -22,33 +22,34 @@
  */
 #pragma once
 
-#include "MandalaFact.h"
 #include <Fact/Fact.h>
-#include <Mandala/MandalaMetaTree.h>
+#include <Mandala/MandalaMetaBase.h>
 
-class MandalaTree : public Fact
+#include <Xbus/XbusStreamReader.h>
+#include <Xbus/XbusStreamWriter.h>
+
+class MandalaFactStreamBase
 {
-    Q_OBJECT
-
 public:
-    explicit MandalaTree(Fact *parent = nullptr);
+    virtual ~MandalaFactStreamBase() {}
+    virtual MandalaFactStreamBase &operator<<(XbusStreamReader &stream) = 0;
+    virtual const MandalaFactStreamBase &operator>>(XbusStreamWriter &stream) const = 0;
 
-    Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
-    Q_INVOKABLE MandalaFact *fact(const QString &mpath) const;
+    virtual void setValueFromStream(const QVariant &);
+    virtual QVariant getValueForStream() const;
+};
 
-    QHash<QString, QVariant> constants; // <name,value> enums in form varname_ENUM
-    QMap<mandala::uid_t, MandalaFact *> uid_map;
+class MandalaFactStream : public MandalaFactStreamBase
+{
+public:
+    explicit MandalaFactStream(const mandala::type_id_t &type_id);
+    virtual ~MandalaFactStream() override;
 
-    quint64 timestamp() const;
+    MandalaFactStreamBase *get_stream(const mandala::type_id_t &type_id);
 
-protected:
-    // Fact override
-    virtual QString mandalaToString(quint16 uid) const override;
-    virtual quint16 stringToMandala(const QString &s) const override;
+    MandalaFactStream &operator<<(XbusStreamReader &stream) override;
+    const MandalaFactStream &operator>>(XbusStreamWriter &stream) const override;
 
 private:
-    quint64 m_timestamp;
-
-signals:
-    void sendUplink(QByteArray data); //forwarded to vehicle
+    MandalaFactStreamBase *m_stream;
 };

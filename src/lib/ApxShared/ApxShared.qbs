@@ -10,7 +10,6 @@ ApxApp.ApxLibrary {
             "Xbus",
             "Xbus.uart",
             "Xbus.tcp",
-            "Mandala.flat",
             "crc",
             "common",
         ]
