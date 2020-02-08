@@ -28,7 +28,7 @@
 
 #include <Xbus/XbusPacket.h>
 #include <Xbus/XbusVehicle.h>
-//=============================================================================
+
 ProtocolVehicles::ProtocolVehicles(QObject *parent)
     : ProtocolBase(parent)
     , txbuf(xbus::size_packet_max, '\0')
@@ -38,13 +38,24 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     local = new ProtocolVehicle(0, ident, this);
     firmware = new ProtocolServiceFirmware(local->service);
 }
-//=============================================================================
+
+void ProtocolVehicles::setConverter(ProtocolConverter *c)
+{
+    ProtocolBase::setConverter(c);
+
+    //set for undelying vehicles
+    /*local->setConverter(c);
+    for (auto p : squawkMap) {
+        p->setConverter(c);
+    }*/
+}
+
 void ProtocolVehicles::unpack(const QByteArray packet)
 {
     if (packet.size() > xbus::size_packet_max)
         return;
 
-    qDebug() << "rx" << packet.toHex().toUpper();
+    //qDebug() << "rx" << packet.toHex().toUpper();
 
     uint16_t psize = static_cast<uint16_t>(packet.size());
     const uint8_t *pdata = reinterpret_cast<const uint8_t *>(packet.data());
@@ -59,8 +70,8 @@ void ProtocolVehicles::unpack(const QByteArray packet)
 
     switch (pid) {
     default:
-        if (pid < mandala::uid_base || pid > mandala::uid_nmt) {
-            qWarning() << "pid" << pid << packet.toHex().toUpper();
+        if (pid < mandala::uid_base || pid > mandala::uid_max) {
+            qWarning() << "wrong pid" << pid << packet.toHex().toUpper();
             break;
         }
         local->downlinkData(packet);
@@ -163,14 +174,14 @@ void ProtocolVehicles::unpack(const QByteArray packet)
     } break;
     }
 }
-//=============================================================================
+
 ProtocolVehicle *ProtocolVehicles::addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident)
 {
     qDebug() << "new vehicle protocol";
     ProtocolVehicle *v = new ProtocolVehicle(squawk, ident, this);
     return v;
 }
-//=============================================================================
+
 void ProtocolVehicles::identRequest(quint16 squawk)
 {
     //qDebug() << "scheduled ident req";
@@ -179,7 +190,7 @@ void ProtocolVehicles::identRequest(quint16 squawk)
     stream.write<xbus::vehicle::squawk_t>(squawk);
     scheduleRequest(txbuf.left(stream.position()));
 }
-//=============================================================================
+
 void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 {
     qDebug() << "assign" << squawk << ident.callsign << ident.uid << ident.vclass;
@@ -229,19 +240,19 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
     //send new ident
     send(txbuf.left(stream.position()));
 }
-//=============================================================================
+
 void ProtocolVehicles::vehicleSendUplink(quint16 squawk, QByteArray payload)
 {
+    qDebug() << payload.toHex();
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::meta.uid);
     stream.write<xbus::vehicle::squawk_t>(squawk);
     send(txbuf.left(stream.position()).append(payload));
 }
-//=============================================================================
+
 void ProtocolVehicles::sendHeartbeat()
 {
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::meta.uid);
     send(txbuf.left(stream.position()));
 }
-//=============================================================================

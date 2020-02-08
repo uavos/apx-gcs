@@ -36,9 +36,9 @@ public:
 private:
     QTimer reqTimer;
     QList<QByteArray> reqList;
-    ProtocolConverter *m_converter;
 
 protected:
+    ProtocolConverter *m_converter;
     void scheduleRequest(QByteArray packet);
 
 protected slots:

@@ -44,7 +44,7 @@ void ProtocolBase::setConverter(ProtocolConverter *c)
     }
     m_converter = c;
     if (m_converter) {
-        connect(m_converter, &ProtocolConverter::convertUplink, this, &ProtocolBase::uplinkData);
+        connect(m_converter, &ProtocolConverter::uplink, this, &ProtocolBase::uplinkData);
         connect(m_converter, &ProtocolConverter::downlink, this, &ProtocolBase::unpack);
     }
 }

@@ -20,13 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ProtocolVehicles_H
-#define ProtocolVehicles_H
+#pragma once
+
 #include "ProtocolBase.h"
 #include "ProtocolServiceFirmware.h"
 #include <QtCore>
 class ProtocolVehicle;
-//=============================================================================
+
 class ProtocolVehicles : public ProtocolBase
 {
     Q_OBJECT
@@ -52,6 +52,8 @@ public:
     ProtocolVehicle *local;
     ProtocolServiceFirmware *firmware;
 
+    void setConverter(ProtocolConverter *c) override;
+
 private:
     QMap<quint16, ProtocolVehicle *> squawkMap;
     QByteArray txbuf;
@@ -70,5 +72,3 @@ signals:
     void vehicleIdentified(ProtocolVehicle *protocol);
     void identAssigned(ProtocolVehicle *v, const IdentData &ident);
 };
-//=============================================================================
-#endif

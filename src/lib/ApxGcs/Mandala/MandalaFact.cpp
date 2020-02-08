@@ -52,6 +52,9 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &met
     } else {
         setUnits(meta.units);
         switch (meta.type_id) {
+        case mandala::type_void:
+            apxMsgW() << "void:" << mpath();
+            break;
         case mandala::type_float:
             setDataType(Float);
             setPrecision(getPrecision());

@@ -22,18 +22,20 @@
  */
 #pragma once
 
+#include "ProtocolBackport.h"
+#include <App/AppSettings.h>
+#include <App/PluginInterface.h>
 #include <QtCore>
 
-class ProtocolConverter : public QObject
+class ProtocolBackportPlugin : public PluginInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    explicit ProtocolConverter(QObject *parent = nullptr);
-
-    virtual void convertDownlink(const QByteArray &packet);
-    virtual void convertUplink(const QByteArray &packet);
-
-signals:
-    void downlink(QByteArray packet);
-    void uplink(QByteArray packet);
+    int flags() override { return Feature | System; }
+    QObject *createControl() override
+    {
+        return new ProtocolBackport(AppSettings::instance()->f_application);
+    }
 };

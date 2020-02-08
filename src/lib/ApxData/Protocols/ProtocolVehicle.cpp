@@ -95,7 +95,7 @@ void ProtocolVehicle::unpack(const QByteArray packet)
         emit jsexecData(payload);
         break;
 
-    case mandala::uid_nmt: {
+    case mandala::cmd::env::nmt::meta.uid: {
         if (stream.tail() < sizeof(xbus::node::guid_t))
             return;
         xbus::node::guid_t guid = stream.read<xbus::node::guid_t>();
@@ -139,8 +139,9 @@ void ProtocolVehicle::sendMissionRequest(QByteArray data)
 }
 void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray payload)
 {
+    qDebug() << payload.toHex();
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
-    stream.write<xbus::pid_t>(mandala::uid_nmt);
+    stream.write<xbus::pid_t>(mandala::cmd::env::nmt::meta.uid);
     xbus::node::guid_t guid;
     if (sn.isEmpty()) {
         std::fill(guid.begin(), guid.end(), 0);

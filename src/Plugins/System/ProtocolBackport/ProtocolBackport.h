@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -22,18 +22,20 @@
  */
 #pragma once
 
-#include <QtCore>
+#include <Fact/Fact.h>
 
-class ProtocolConverter : public QObject
+class ProtocolV9;
+
+class ProtocolBackport : public Fact
 {
     Q_OBJECT
 public:
-    explicit ProtocolConverter(QObject *parent = nullptr);
+    explicit ProtocolBackport(Fact *parent = nullptr);
+    ~ProtocolBackport() override;
 
-    virtual void convertDownlink(const QByteArray &packet);
-    virtual void convertUplink(const QByteArray &packet);
-
-signals:
-    void downlink(QByteArray packet);
-    void uplink(QByteArray packet);
+private:
+    ProtocolV9 *m_converter;
+public slots:
+    void install();
+    void uninstall();
 };

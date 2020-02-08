@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -22,18 +22,27 @@
  */
 #pragma once
 
-#include <QtCore>
+#include <Protocols/ProtocolConverter.h>
 
-class ProtocolConverter : public QObject
+#include <Xbus/XbusStreamReader.h>
+#include <Xbus/XbusStreamWriter.h>
+
+class ProtocolV9 : public ProtocolConverter
 {
     Q_OBJECT
 public:
-    explicit ProtocolConverter(QObject *parent = nullptr);
+    explicit ProtocolV9(QObject *parent = nullptr);
 
-    virtual void convertDownlink(const QByteArray &packet);
-    virtual void convertUplink(const QByteArray &packet);
+private:
+    QByteArray out;
+    XbusStreamWriter stream;
 
-signals:
-    void downlink(QByteArray packet);
-    void uplink(QByteArray packet);
+    void parseDownlink(XbusStreamReader &is);
+    void parseUplink(XbusStreamReader &is);
+
+    void copy(const XbusStreamReader &is);
+
+protected:
+    void convertDownlink(const QByteArray &packet) override;
+    void convertUplink(const QByteArray &packet) override;
 };
