@@ -115,7 +115,7 @@ void ProtocolV9::parseDownlink(XbusStreamReader &is)
 
     switch (pid) {
     default:
-        qWarning() << "pid" << pid;
+        qWarning() << "pid" << pid << is.position();
         return;
     case mandala::backport::idx_service:
         stream.write<xbus::pid_t>(mandala::cmd::env::nmt::meta.uid);
