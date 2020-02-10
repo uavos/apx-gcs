@@ -37,10 +37,10 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     : NodeItemData(parent, sn)
     , lastSeenTime(0)
     , nconfID(0)
-    , status_field(nullptr)
     , nodes(parent)
     , group(nullptr)
     , protocol(nullptr)
+    , status_field(nullptr)
     , m_infoValid(false)
 {
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");

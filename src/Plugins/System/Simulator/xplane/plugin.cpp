@@ -9,7 +9,7 @@
 //---------------
 #include <version.h>
 
-#include <Mandala/flat/Mandala.h>
+#include <Mandala/flat/MandalaFlat.h>
 
 #include <Xbus/XbusNodeConf.h>
 #include <Xbus/XbusPacket.h>

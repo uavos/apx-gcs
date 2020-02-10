@@ -48,7 +48,7 @@ ProtocolV9::ProtocolV9(QObject *parent)
         uplinkIdMap.insert(i.meta.uid, id_v9);
         if (i.id_msb == 0)
             id++;
-        qDebug() << id_v9 << i.meta.path;
+        //qDebug() << id_v9 << i.meta.path;
     }
 }
 

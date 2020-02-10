@@ -52,12 +52,15 @@ MandalaFactStream::MandalaFactStream(const mandala::type_id_t &type_id)
 {}
 MandalaFactStream::~MandalaFactStream()
 {
-    delete m_stream;
+    if (m_stream)
+        delete m_stream;
 }
 
 MandalaFactStreamBase *MandalaFactStream::get_stream(const mandala::type_id_t &type_id)
 {
     switch (type_id) {
+    case mandala::type_void:
+        return nullptr;
     case mandala::type_float:
         return new MandalaFactStreamT<mandala::float_t>(this);
     case mandala::type_dword:

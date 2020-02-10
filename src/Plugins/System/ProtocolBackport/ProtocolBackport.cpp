@@ -40,7 +40,7 @@ ProtocolBackport::ProtocolBackport(Fact *parent)
         else
             uninstall();
     });
-    setValue(true);
+    //setValue(true);
 }
 
 ProtocolBackport::~ProtocolBackport()
