@@ -477,7 +477,7 @@ void VideoThread::setupEnvironment()
 
 std::shared_ptr<GstCaps> VideoThread::getCapsForAppSink()
 {
-    auto caps = gst_caps_from_string("video/x-raw,format=RGBx,pixel-aspect-ratio=1/1");
+    auto caps = gst_caps_from_string("video/x-raw,format=RGBx");
     return std::shared_ptr<GstCaps>(caps, &gst_caps_unref);
 }
 
