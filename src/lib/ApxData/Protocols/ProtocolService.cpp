@@ -229,7 +229,7 @@ void ProtocolService::removeNode(QString sn)
 //=============================================================================
 void ProtocolService::serviceData(QString sn, quint16 cmd, QByteArray data)
 {
-    //qDebug()<<"service"<<sn<<cmd<<data.size();
+    //qDebug() << "service" << sn << cmd << data.size();
     if (cmd == xbus::node::apc_loader) {
         if (data.isEmpty())
             return;

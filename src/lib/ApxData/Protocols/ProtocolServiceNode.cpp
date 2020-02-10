@@ -21,7 +21,10 @@
  *
  */
 #include "ProtocolServiceNode.h"
+#include "ProtocolConverter.h"
 #include "ProtocolService.h"
+#include "ProtocolVehicle.h"
+#include "ProtocolVehicles.h"
 
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusNodeConf.h>
@@ -633,9 +636,16 @@ void ProtocolServiceNode::unpackValue(DictNode::Field &f,
         stream->read(a);
         v = QVariant::fromValue(QString(QByteArray(a.data(), a.size())));
     } break;
-    case DictNode::MandalaID:
-        v = QVariant::fromValue(stream->read<xbus::node::conf::ft_varmsk_t, int>());
-        break;
+    case DictNode::MandalaID: {
+        quint16 id = stream->read<xbus::node::conf::ft_varmsk_t>();
+        if (id && service->vehicle->vehicles->converter()) {
+            if (!service->vehicle->vehicles->converter()->convertDownlinkId(&id)) {
+                qWarning() << "unknown downlink id" << id;
+                id = 0;
+            }
+        }
+        v = QVariant::fromValue(id);
+    } break;
     case DictNode::Option:
         v = QVariant::fromValue(stream->read<xbus::node::conf::ft_option_t, int>());
         break;
@@ -703,9 +713,16 @@ QByteArray ProtocolServiceNode::packValue(DictNode::Field f, const QVariant &v) 
         a[a.size() - 1] = 0;
         stream << a;
     } break;
-    case DictNode::MandalaID:
-        stream.write<xbus::node::conf::ft_varmsk_t, uint>(v.toUInt());
-        break;
+    case DictNode::MandalaID: {
+        quint16 id = static_cast<quint16>(v.toUInt());
+        if (id && service->vehicle->vehicles->converter()) {
+            if (!service->vehicle->vehicles->converter()->convertUplinkId(&id)) {
+                qWarning() << "unknown uplink id" << id;
+                id = 0;
+            }
+        }
+        stream.write<xbus::node::conf::ft_varmsk_t>(id);
+    } break;
     case DictNode::Option:
         stream.write<xbus::node::conf::ft_option_t, uint>(v.toUInt());
         break;

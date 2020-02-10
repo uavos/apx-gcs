@@ -37,6 +37,7 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     : NodeItemData(parent, sn)
     , lastSeenTime(0)
     , nconfID(0)
+    , status_field(nullptr)
     , nodes(parent)
     , group(nullptr)
     , protocol(nullptr)
@@ -67,6 +68,7 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol)
     connect(this, &NodeItem::upgradingChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::offlineChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::fwUpdatingChanged, this, &NodeItem::updateDescr);
+    connect(this, &NodeItem::reconfChanged, this, &NodeItem::updateStatus);
 
     connect(this, &NodeItem::titleChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::nodeNotify);
@@ -227,6 +229,7 @@ void NodeItem::setNconfID(quint64 nconfID)
 //=============================================================================
 void NodeItem::clear()
 {
+    status_field = nullptr;
     tools->clearCommands();
     allFields.clear();
     allFieldsByName.clear();
@@ -256,6 +259,16 @@ void NodeItem::updateDescr()
         st.append("LOADER");
     //st.append(sn());
     setDescr(st.join(' '));
+}
+void NodeItem::updateStatus()
+{
+    if (reconf()) {
+        setValue(tr("no config").toUpper());
+        return;
+    }
+    if (status_field) {
+        setValue(status_field->text().trimmed());
+    }
 }
 //=============================================================================
 void NodeItem::nodeNotify()
@@ -749,6 +762,7 @@ void NodeItem::infoReceived(const DictNode::Info &info)
     setInfoValid(true);
 
     nodeNotify();
+
     /*if(fwUpdating()){
     //setUpgrading(true);
     //setProgress(-1);
@@ -798,8 +812,17 @@ void NodeItem::dictReceived(const DictNode::Dict &dict)
     foreach (const DictNode::Command &c, dict.commands) {
         tools->addCommand(c.name, c.descr, "", c.cmd);
     }
-    for (int i = 0; i < dict.fields.size(); ++i) {
-        dictCreateField(dict.fields.at(i), nullptr);
+    for (auto const &d : dict.fields) {
+        NodeField *f = dictCreateField(d, nullptr);
+
+        //check if comment field and bind to node value
+        if (!status_field) {
+            const QString &s = d.name;
+            if (s == "comment" || s == "node_label" || (s == "name" && d.id == 0)) {
+                status_field = f;
+                connect(f, &NodeField::textChanged, this, &NodeItem::updateStatus);
+            }
+        }
     }
     setDictValid(true);
     requestFieldValues();

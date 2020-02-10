@@ -48,6 +48,10 @@ void ProtocolBase::setConverter(ProtocolConverter *c)
         connect(m_converter, &ProtocolConverter::downlink, this, &ProtocolBase::unpack);
     }
 }
+ProtocolConverter *ProtocolBase::converter() const
+{
+    return m_converter;
+}
 
 void ProtocolBase::downlinkData(QByteArray packet)
 {

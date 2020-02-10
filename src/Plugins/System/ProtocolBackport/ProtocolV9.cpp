@@ -39,7 +39,18 @@ ProtocolV9::ProtocolV9(QObject *parent)
     : ProtocolConverter(parent)
     , out(xbus::size_packet_max, '\0')
     , stream(reinterpret_cast<uint8_t *>(out.data()))
-{}
+{
+    //id maps
+    quint16 id = mandala::backport::uid_base;
+    for (auto const &i : mandala::backport::items) {
+        quint16 id_v9 = static_cast<quint16>(i.id_msb << 8) | id;
+        downlinkIdMap.insert(id_v9, i.meta.uid);
+        uplinkIdMap.insert(i.meta.uid, id_v9);
+        if (i.id_msb == 0)
+            id++;
+        qDebug() << id_v9 << i.meta.path;
+    }
+}
 
 void ProtocolV9::convertDownlink(const QByteArray &packet)
 {
@@ -52,7 +63,7 @@ void ProtocolV9::convertDownlink(const QByteArray &packet)
     if (!stream.position())
         return;
     const QByteArray &ba = out.left(stream.position());
-    qDebug() << "rx" << ba.toHex().toUpper();
+    //qDebug() << "rx" << ba.toHex().toUpper();
     emit downlink(ba);
 }
 
@@ -67,7 +78,7 @@ void ProtocolV9::convertUplink(const QByteArray &packet)
     if (!stream.position())
         return;
     const QByteArray &ba = out.left(stream.position());
-    qDebug() << "tx" << ba.toHex().toUpper();
+    //qDebug() << "tx" << ba.toHex().toUpper();
     emit uplink(ba);
 }
 
@@ -78,6 +89,21 @@ void ProtocolV9::copy(const XbusStreamReader &is)
         return;
     memcpy(stream.data(), is.data(), sz);
     stream.reset(stream.position() + sz);
+}
+
+bool ProtocolV9::convertDownlinkId(quint16 *id)
+{
+    if (!downlinkIdMap.contains(*id))
+        return false;
+    *id = downlinkIdMap.value(*id);
+    return true;
+}
+bool ProtocolV9::convertUplinkId(quint16 *id)
+{
+    if (!uplinkIdMap.contains(*id))
+        return false;
+    *id = uplinkIdMap.value(*id);
+    return true;
 }
 
 void ProtocolV9::parseDownlink(XbusStreamReader &is)

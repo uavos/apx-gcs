@@ -33,16 +33,17 @@ ProtocolVehicle::ProtocolVehicle(quint16 squawk,
     : ProtocolBase(vehicles)
     , squawk(squawk)
     , ident(ident)
+    , vehicles(vehicles)
     , txbuf(xbus::size_packet_max, '\0')
 {
     if (vehicles) {
         if (squawk) {
-            connect(this, &ProtocolVehicle::uplinkData, this, [this, vehicles](QByteArray packet) {
-                vehicles->vehicleSendUplink(this->squawk, packet);
+            connect(this, &ProtocolVehicle::uplinkData, this, [this](QByteArray packet) {
+                this->vehicles->vehicleSendUplink(this->squawk, packet);
             });
         } else {
             //local
-            connect(this, &ProtocolVehicle::uplinkData, vehicles, &ProtocolVehicles::uplinkData);
+            connect(this, &ProtocolVehicle::uplinkData, vehicles, &ProtocolVehicles::send);
         }
     }
 
@@ -139,7 +140,7 @@ void ProtocolVehicle::sendMissionRequest(QByteArray data)
 }
 void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray payload)
 {
-    qDebug() << payload.toHex();
+    //qDebug() << cmd << sn << this << payload.toHex();
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(mandala::cmd::env::nmt::meta.uid);
     xbus::node::guid_t guid;

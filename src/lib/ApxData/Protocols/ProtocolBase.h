@@ -32,6 +32,7 @@ public:
     ProtocolBase(QObject *parent = nullptr);
 
     virtual void setConverter(ProtocolConverter *c);
+    ProtocolConverter *converter() const;
 
 private:
     QTimer reqTimer;

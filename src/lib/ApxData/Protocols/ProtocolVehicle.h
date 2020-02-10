@@ -37,6 +37,7 @@ public:
     quint16 squawk;
     ProtocolVehicles::IdentData ident;
 
+    ProtocolVehicles *vehicles;
     ProtocolMission *mission;
     ProtocolService *service;
 

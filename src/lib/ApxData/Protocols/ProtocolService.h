@@ -46,8 +46,9 @@ public:
     void nodeUpgradingFinished(const QString &sn);
     bool checkUpgrading();
 
-private:
     ProtocolVehicle *vehicle;
+
+private:
     QList<ProtocolServiceRequest *> pool;
     QTimer timer;
     quint32 activeCount;

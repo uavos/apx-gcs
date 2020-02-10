@@ -93,6 +93,8 @@ private:
 
     NodeItem *subNode() const;
 
+    NodeField *status_field;
+
 private slots:
 
     void validateDict();
@@ -108,6 +110,7 @@ private slots:
 public slots:
     void upload();
     void updateDescr();
+    void updateStatus();
 
     void upgradeFirmware();
     void upgradeLoader();

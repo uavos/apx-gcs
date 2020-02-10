@@ -33,6 +33,9 @@ public:
     virtual void convertDownlink(const QByteArray &packet);
     virtual void convertUplink(const QByteArray &packet);
 
+    virtual bool convertDownlinkId(quint16 *id);
+    virtual bool convertUplinkId(quint16 *id);
+
 signals:
     void downlink(QByteArray packet);
     void uplink(QByteArray packet);

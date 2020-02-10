@@ -37,6 +37,9 @@ private:
     QByteArray out;
     XbusStreamWriter stream;
 
+    QMap<quint16, quint16> downlinkIdMap;
+    QMap<quint16, quint16> uplinkIdMap;
+
     void parseDownlink(XbusStreamReader &is);
     void parseUplink(XbusStreamReader &is);
 
@@ -45,4 +48,7 @@ private:
 protected:
     void convertDownlink(const QByteArray &packet) override;
     void convertUplink(const QByteArray &packet) override;
+
+    bool convertDownlinkId(quint16 *id) override;
+    bool convertUplinkId(quint16 *id) override;
 };

@@ -243,7 +243,7 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
 
 void ProtocolVehicles::vehicleSendUplink(quint16 squawk, QByteArray payload)
 {
-    qDebug() << payload.toHex();
+    //qDebug() << payload.toHex();
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::meta.uid);
     stream.write<xbus::vehicle::squawk_t>(squawk);

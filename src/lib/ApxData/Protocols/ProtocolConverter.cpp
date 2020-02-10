@@ -35,3 +35,14 @@ void ProtocolConverter::convertUplink(const QByteArray &packet)
 {
     emit uplink(packet);
 }
+
+bool ProtocolConverter::convertDownlinkId(quint16 *id)
+{
+    Q_UNUSED(id)
+    return true;
+}
+bool ProtocolConverter::convertUplinkId(quint16 *id)
+{
+    Q_UNUSED(id)
+    return true;
+}

@@ -20,7 +20,7 @@ ApxApp.ApxPlugin {
 
 
     property stringList names: [
-        "Mandala.flat",
+        //"Mandala.flat",
     ]
 
     readonly property stringList mnames: names.map(function(s){
