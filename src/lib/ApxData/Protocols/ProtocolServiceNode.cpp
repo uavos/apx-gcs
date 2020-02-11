@@ -152,9 +152,9 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         dIdent.read(&stream);
 
         //populate info
-        d.info.name = QString(QByteArray(dIdent.name.data(), dIdent.name.size()));
-        d.info.version = QString(QByteArray(dIdent.version.data(), dIdent.version.size()));
-        d.info.hardware = QString(QByteArray(dIdent.hardware.data(), dIdent.hardware.size()));
+        d.info.name = QString(QByteArray(dIdent.name, sizeof(dIdent.name)));
+        d.info.version = QString(QByteArray(dIdent.version, sizeof(dIdent.version)));
+        d.info.hardware = QString(QByteArray(dIdent.hardware, sizeof(dIdent.hardware)));
         d.info.reconf = dIdent.flags.bits.conf_reset;
         d.info.fwSupport = dIdent.flags.bits.loader_support;
         d.info.fwUpdating = dIdent.flags.bits.in_loader;
@@ -205,7 +205,7 @@ void ProtocolServiceNode::serviceData(quint16 cmd, QByteArray data)
         nstat.canAdr = dStatus.can_adr;
         nstat.canErr = dStatus.can_err;
         nstat.cpuLoad = dStatus.load * 100u / 255u;
-        nstat.dump = QByteArray(reinterpret_cast<char *>(dStatus.dump.data()), dStatus.dump.size());
+        nstat.dump = QByteArray(reinterpret_cast<char *>(dStatus.dump), sizeof(dStatus.dump));
         nstatReceived(nstat);
         acknowledgeRequest(cmd);
     } break;
@@ -628,13 +628,13 @@ void ProtocolServiceNode::unpackValue(DictNode::Field &f,
         break;
     case DictNode::String: {
         xbus::node::conf::ft_string_t a;
-        stream->read(a);
-        v = QVariant::fromValue(QString(QByteArray(a.data(), a.size())));
+        stream->read(a, sizeof(a));
+        v = QVariant::fromValue(QString(QByteArray(a, sizeof(a))));
     } break;
     case DictNode::StringL: {
         xbus::node::conf::ft_lstr_t a;
-        stream->read(a);
-        v = QVariant::fromValue(QString(QByteArray(a.data(), a.size())));
+        stream->read(a, sizeof(a));
+        v = QVariant::fromValue(QString(QByteArray(a, sizeof(a))));
     } break;
     case DictNode::MandalaID: {
         quint16 id = stream->read<xbus::node::conf::ft_varmsk_t>();
@@ -700,18 +700,24 @@ QByteArray ProtocolServiceNode::packValue(DictNode::Field f, const QVariant &v) 
     case DictNode::String: {
         xbus::node::conf::ft_string_t a;
         QByteArray src(v.toString().toUtf8());
-        a.fill(0);
-        std::copy(src.constBegin(), src.constEnd(), a.begin());
-        a[a.size() - 1] = 0;
-        stream << a;
+        memset(a, 0, sizeof(a));
+        size_t sz = static_cast<size_t>(src.size());
+        if (sz > sizeof(a))
+            sz = sizeof(a);
+        memcpy(a, src.data(), sz);
+        a[sizeof(a) - 1] = 0;
+        stream.write(a, sizeof(a));
     } break;
     case DictNode::StringL: {
         xbus::node::conf::ft_lstr_t a;
         QByteArray src(v.toString().toUtf8());
-        a.fill(0);
-        std::copy(src.constBegin(), src.constEnd(), a.begin());
-        a[a.size() - 1] = 0;
-        stream << a;
+        memset(a, 0, sizeof(a));
+        size_t sz = static_cast<size_t>(src.size());
+        if (sz > sizeof(a))
+            sz = sizeof(a);
+        memcpy(a, src.data(), sz);
+        a[sizeof(a) - 1] = 0;
+        stream.write(a, sizeof(a));
     } break;
     case DictNode::MandalaID: {
         quint16 id = static_cast<quint16>(v.toUInt());

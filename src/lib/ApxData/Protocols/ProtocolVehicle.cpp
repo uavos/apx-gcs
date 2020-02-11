@@ -99,7 +99,9 @@ void ProtocolVehicle::unpack(const QByteArray packet)
     case mandala::cmd::env::nmt::meta.uid: {
         if (stream.tail() < sizeof(xbus::node::guid_t))
             return;
-        xbus::node::guid_t guid = stream.read<xbus::node::guid_t>();
+        xbus::node::guid_t guid;
+        memset(guid, 0, sizeof(guid));
+        stream.read(guid, sizeof(guid));
 
         xbus::node::cmd_t cmd;
         if (stream.tail() < sizeof(xbus::node::cmd_t)) {
@@ -108,8 +110,7 @@ void ProtocolVehicle::unpack(const QByteArray packet)
         } else
             cmd = stream.read<xbus::node::cmd_t>();
 
-        QString sn(
-            QByteArray(reinterpret_cast<const char *>(guid.data()), guid.size()).toHex().toUpper());
+        QString sn(QByteArray(reinterpret_cast<const char *>(guid), sizeof(guid)).toHex().toUpper());
         //qDebug() << "nmt" << sn;
         if (!(sn.isEmpty() || sn.count('0') == sn.size())) {
             emit serviceData(sn, cmd, packet.mid(stream.position()));
@@ -144,13 +145,17 @@ void ProtocolVehicle::sendServiceRequest(QString sn, quint16 cmd, QByteArray pay
     XbusStreamWriter stream(reinterpret_cast<uint8_t *>(txbuf.data()));
     stream.write<xbus::pid_t>(mandala::cmd::env::nmt::meta.uid);
     xbus::node::guid_t guid;
-    if (sn.isEmpty()) {
-        std::fill(guid.begin(), guid.end(), 0);
-    } else {
+    memset(guid, 0, sizeof(guid));
+    if (!sn.isEmpty()) {
         QByteArray src(QByteArray::fromHex(sn.toUtf8()));
-        std::copy(src.begin(), src.end(), guid.begin());
+        size_t sz = static_cast<size_t>(src.size());
+        if (sz > sizeof(guid)) {
+            sz = sizeof(guid);
+            qWarning() << "guid size:" << sz;
+        }
+        memcpy(guid, src.data(), sz);
     }
-    stream.write(guid);
+    stream.write(guid, sizeof(guid));
     stream.write<xbus::node::cmd_t>(cmd);
 
     send(txbuf.left(stream.position()).append(payload));

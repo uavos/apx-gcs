@@ -49,12 +49,12 @@ static struct
 } ref;
 //==============================================================================
 #define PWM_CNT 10
-static std::array<xbus::node::conf::ft_lstr_t, PWM_CNT> xpl; //var names per PWM channel
+static xbus::node::conf::ft_lstr_t xpl[PWM_CNT]; //var names per PWM channel
 static bool xpl_is_array[PWM_CNT];
 static uint xpl_array_idx[PWM_CNT];
 static XPLMDataRef xpl_ref[PWM_CNT];
 static XPLMDataTypeID xpl_type[PWM_CNT];
-static std::array<float, PWM_CNT> pwm_ch; //received pwm_ch values
+static float pwm_ch[PWM_CNT]; //received pwm_ch values
 //==============================================================================
 void sendvar(uint16_t idx)
 {
@@ -252,16 +252,16 @@ float flightLoopCallback(float inElapsedSinceLastCall,
             memset(&xpl_ref, 0, sizeof(xpl_ref));
             memset(&xpl_is_array, 0, sizeof(xpl_is_array));
             memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
-            stream.read(xpl);
+            stream.read(xpl, sizeof(xpl));
             for (uint i = 0; i < PWM_CNT; ++i) {
                 xbus::node::conf::ft_lstr_t &s = xpl[i];
                 if (s[0] == 0)
                     continue;
-                auto it1 = std::find(s.begin(), s.end(), '[');
-                if (it1 != s.end()) {
+                char *it1 = strchr(s, '[');
+                if (it1) {
                     *it1++ = 0;
-                    auto it2 = std::find(it1, s.end(), ']');
-                    if (it2 == s.end())
+                    char *it2 = strchr(it1, ']');
+                    if (!it2)
                         continue;
                     if (*(it2 + 1) != 0)
                         continue;
@@ -273,18 +273,18 @@ float flightLoopCallback(float inElapsedSinceLastCall,
                     xpl_array_idx[i] = aidx;
                     xpl_is_array[i] = true;
                 }
-                XPLMDataRef ref = XPLMFindDataRef(s.data());
+                XPLMDataRef ref = XPLMFindDataRef(s);
                 if (!ref)
                     continue;
-                xpl_type[i] = XPLMGetDataRefTypes(s.data());
+                xpl_type[i] = XPLMGetDataRefTypes(s);
                 xpl_ref[i] = ref;
-                printf("DataRef: %s\n", s.data());
+                printf("DataRef: %s\n", s);
             }
             break;
         case 1: //PWM outputs
             if (rcnt)
                 break; //repeated packet, skip
-            stream.read(pwm_ch);
+            stream.read(pwm_ch, sizeof(pwm_ch));
             for (uint i = 0; i < PWM_CNT; i++) {
                 if (!xpl_ref[i])
                     continue;

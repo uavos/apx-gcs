@@ -97,7 +97,7 @@ void ProtocolMission::missionData(QByteArray data)
             case xbus::mission::Action::mo_scr: {
                 xbus::mission::ActionScr e;
                 e.read(&stream);
-                a["script"] = QString(QByteArray(e.scr.data(), e.scr.size()));
+                a["script"] = QString(QByteArray(e.scr, sizeof(e.scr)));
                 break;
             }
             case xbus::mission::Action::mo_loiter: {
@@ -280,9 +280,9 @@ void ProtocolMission::missionDataUpload(DictMission::Mission d)
             ahdr.write(&stream);
             xbus::mission::ActionScr a;
             QByteArray src(amap.value("script").toUtf8());
-            a.scr.fill(0);
-            std::copy(src.begin(), src.end(), a.scr.begin());
-            a.scr[a.scr.size() - 1] = 0;
+            memset(a.scr, 0, sizeof(a.scr));
+            memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
+            a.scr[sizeof(a.scr) - 1] = 0;
             a.write(&stream);
         }
         if (!amap.value("loiter").isEmpty()) {
