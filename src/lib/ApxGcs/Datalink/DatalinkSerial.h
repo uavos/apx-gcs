@@ -20,15 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef DatalinkSerial_H
-#define DatalinkSerial_H
+#pragma once
+
 #include "DatalinkConnection.h"
-#include <Xbus/uart/Escaped.h>
+
+#include <Xbus/XbusPacket.h>
+#include <Xbus/uart/EscReader.h>
+#include <Xbus/uart/EscWriter.h>
+
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QtCore>
-//=============================================================================
-class DatalinkSerial : public DatalinkConnection, public Escaped
+
+class DatalinkSerial : public DatalinkConnection
 {
     Q_OBJECT
 public:
@@ -55,23 +59,20 @@ private:
     QTimer openTimer;
     int scanIdx;
 
+    EscWriter<xbus::size_packet_max * 8> esc_writer;
+    EscReader<xbus::size_packet_max * 8> esc_reader;
+
     QByteArray txdata;
+    QByteArray rxdata;
 
 protected:
     //DatalinkConnection overrided
-    void open();
-    void close();
-    QByteArray read();
-    void write(const QByteArray &packet);
-
-    //esc
-    uint esc_read(uint8_t *buf, uint sz);
-    bool esc_write_byte(const uint8_t v);
-    void escWriteDone(void);
+    void open() override;
+    void close() override;
+    QByteArray read() override;
+    void write(const QByteArray &packet) override;
 
 private slots:
     void openNext();
     void serialPortError(QSerialPort::SerialPortError error);
 };
-//=============================================================================
-#endif

@@ -24,11 +24,11 @@
 #define BlackboxReader_H
 //=============================================================================
 #include <Fact/Fact.h>
-#include <Xbus/uart/Escaped.h>
+#include <Xbus/uart/EscReader.h>
 class Vehicle;
 class ProtocolVehicle;
 //=============================================================================
-class BlackboxReader : public Fact, public Escaped
+class BlackboxReader : public Fact
 {
     Q_OBJECT
 
@@ -42,10 +42,7 @@ private:
     Vehicle *vehicle;
     quint32 dataCnt;
 
-    //esc reader
-    QByteArray esc_input;
-    uint esc_read(uint8_t *buf, uint sz) override;
-    void escError(void) override;
+    EscReader<1024 * 8> esc_reader;
 };
 //=============================================================================
 #endif

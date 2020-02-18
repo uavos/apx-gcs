@@ -25,9 +25,9 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-//-----------------------------------------------------------------------------
+
 QStringList DatalinkSerial::openPorts;
-//=============================================================================
+
 DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
     : DatalinkConnection(parent,
                          "serial#",
@@ -35,10 +35,11 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
                          "",
                          Datalink::CLIENTS | Datalink::LOCAL,
                          Datalink::CLIENTS | Datalink::LOCAL)
-    , Escaped()
     , m_devName(devName)
     , m_baud(baud)
     , lock(nullptr)
+    , txdata(xbus::size_packet_max * 2, '\0')
+    , rxdata(xbus::size_packet_max, '\0')
 {
     setUrl(m_devName);
 
@@ -59,7 +60,7 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
     openTimer.setInterval(800);
     connect(&openTimer, &QTimer::timeout, this, &DatalinkSerial::openNext);
 }
-//=============================================================================
+
 void DatalinkSerial::setDevName(QString v)
 {
     if (m_devName == v)
@@ -79,7 +80,7 @@ void DatalinkSerial::setBaud(uint v)
         return;
     m_baud = v;
 }
-//=============================================================================
+
 void DatalinkSerial::openNext()
 {
     if (dev->isOpen()) {
@@ -135,7 +136,7 @@ void DatalinkSerial::openNext()
     //continue to watch for ports to be available
     openTimer.start();
 }
-//=============================================================================
+
 bool DatalinkSerial::openPort(const QSerialPortInfo &spi, uint baud)
 {
     setStatus(tr("Connecting"));
@@ -178,7 +179,7 @@ void DatalinkSerial::closePort()
     setUrl(m_devName);
     //if(openTimer && openTimer->isActive())openTimer->stop();
 }
-//=============================================================================
+
 bool DatalinkSerial::isAvailable(const QSerialPortInfo &spi)
 {
     if (spi.isNull())
@@ -196,7 +197,6 @@ bool DatalinkSerial::isAvailable(const QSerialPortInfo &spi)
     tlock.unlock();
     return true;
 }
-//=============================================================================
 void DatalinkSerial::serialPortError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::NoError)
@@ -209,7 +209,7 @@ void DatalinkSerial::serialPortError(QSerialPort::SerialPortError error)
     }
     openTimer.start();
 }
-//=============================================================================
+
 void DatalinkSerial::open()
 {
     //qDebug()<<active();
@@ -223,55 +223,48 @@ void DatalinkSerial::close()
     }
     closePort();
 }
-//=============================================================================
-QByteArray DatalinkSerial::read()
-{
-    QByteArray packet;
-    if (!dev->isOpen())
-        return packet;
-    uint cnt = readEscaped();
-    if (cnt > 0) {
-        packet = QByteArray(reinterpret_cast<const char *>(esc_rx), static_cast<int>(cnt));
-    }
-    if (dev->isOpen() && dev->bytesAvailable() > 0) {
-        QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
-    }
-    return packet;
-}
-//=============================================================================
+
 void DatalinkSerial::write(const QByteArray &packet)
 {
     if (!dev->isOpen())
         return;
-    writeEscaped(reinterpret_cast<const uint8_t *>(packet.data()), static_cast<uint>(packet.size()));
-}
-//=============================================================================
-//=============================================================================
-uint DatalinkSerial::esc_read(uint8_t *buf, uint sz)
-{
-    if (!dev->isOpen())
-        return 0;
-    qint64 cnt = dev->read(reinterpret_cast<char *>(buf), sz);
-    //int cnt=::read(fd,buf,sz);
-    if (cnt >= 0)
-        return static_cast<uint>(cnt);
-    //read error
-    serialPortError(QSerialPort::ReadError);
-    return 0;
-}
-bool DatalinkSerial::esc_write_byte(const uint8_t v)
-{
-    txdata.append(static_cast<char>(v));
-    return true;
-}
-void DatalinkSerial::escWriteDone(void)
-{
-    if (txdata.isEmpty())
-        return;
-    if (dev->isOpen()) {
-        if (dev->write(txdata) <= 0)
-            serialPortError(QSerialPort::WriteError);
+    if (!esc_writer.encode(packet.data(), static_cast<size_t>(packet.size()))) {
+        apxConsoleW() << "esc tx overflow:" << packet.size() << esc_writer.size();
     }
-    txdata.clear();
+    while (1) {
+        size_t cnt = esc_writer.read(txdata.data(), static_cast<size_t>(txdata.size()));
+        if (!cnt)
+            break;
+        if (dev->write(txdata.left(static_cast<int>(cnt))) <= 0) {
+            serialPortError(QSerialPort::WriteError);
+            esc_writer.reset();
+            break;
+        }
+    }
 }
-//=============================================================================
+
+QByteArray DatalinkSerial::read()
+{
+    qint64 cnt = 0;
+    if (dev->isOpen())
+        cnt = dev->read(reinterpret_cast<char *>(rxdata.data()), rxdata.size());
+    if (cnt < 0) {
+        serialPortError(QSerialPort::ReadError);
+    }
+    if (cnt > 0) {
+        //qDebug() << cnt << rxdata.size();
+        if (!esc_reader.decode(rxdata.data(), static_cast<size_t>(cnt))) {
+            apxConsoleW() << "esc rx overflow:" << cnt << esc_reader.size();
+        }
+    }
+    QByteArray packet;
+    if (esc_reader.size() > 0) {
+        packet.resize(static_cast<int>(esc_reader.size()));
+        size_t cnt = esc_reader.read_packet(packet.data(), esc_reader.size());
+        packet.resize(static_cast<int>(cnt));
+    }
+    if (esc_reader.size() > 0 || (dev->isOpen() && dev->bytesAvailable() > 0)) {
+        QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
+    }
+    return packet;
+}

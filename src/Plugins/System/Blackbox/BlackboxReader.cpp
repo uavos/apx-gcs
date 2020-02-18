@@ -29,12 +29,9 @@
 #include <Telemetry/TelemetryRecorder.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
-
-#include <Xbus/uart/Escaped.h>
 //=============================================================================
 BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     : Fact(parent, "reader")
-    , Escaped()
     , protocol(nullptr)
     , vehicle(nullptr)
     , dataCnt(0)
@@ -57,25 +54,6 @@ BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     bind(vehicle);
 }
 //=============================================================================
-uint BlackboxReader::esc_read(uint8_t *buf, uint sz)
-{
-    if (esc_input.isEmpty())
-        return 0;
-    uint cnt = static_cast<uint>(esc_input.size());
-    if (cnt > sz)
-        cnt = sz;
-    memcpy(buf, esc_input.data(), cnt);
-    esc_input.remove(0, static_cast<int>(cnt));
-    dataCnt += cnt;
-    return cnt;
-}
-void BlackboxReader::escError(void)
-{
-    qWarning() << "stream read error";
-    if (vehicle->f_telemetry->f_recorder->recording())
-        apxMsgW() << tr("Blackbox stream corrupted") << dataCnt;
-}
-//=============================================================================
 void BlackboxReader::processData(QByteArray data)
 {
     //qDebug() << data.toHex().toUpper();
@@ -83,16 +61,14 @@ void BlackboxReader::processData(QByteArray data)
         //qDebug() << data.toHex().toUpper();
     } else
         qDebug() << "erased" << req_blk;*/
-    esc_input.append(data);
-    uint cnt;
-    while (!esc_input.isEmpty()) {
-        while ((cnt = readEscaped()) > 0) {
-            QByteArray packet = QByteArray(reinterpret_cast<const char *>(esc_rx),
-                                           static_cast<int>(cnt));
-
-            vehicle->f_telemetry->f_recorder->setRecording(true);
-            protocol->downlinkData(packet);
-        }
+    esc_reader.decode(data.data(), static_cast<size_t>(data.size()));
+    QByteArray packet(static_cast<int>(esc_reader.size()), '\0');
+    while (esc_reader.size() > 0) {
+        size_t cnt = esc_reader.read_packet(packet.data(), static_cast<size_t>(packet.size()));
+        if (!cnt)
+            break;
+        vehicle->f_telemetry->f_recorder->setRecording(true);
+        protocol->downlinkData(packet.left(static_cast<int>(cnt)));
     }
 }
 //=============================================================================
