@@ -26,6 +26,12 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
+#include <Xbus/uart/EscDecoder.h>
+#include <Xbus/uart/EscEncoder.h>
+
+#include <Xbus/uart/CobsDecoder.h>
+#include <Xbus/uart/CobsEncoder.h>
+
 QStringList DatalinkSerial::openPorts;
 
 DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
@@ -38,6 +44,8 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
     , m_devName(devName)
     , m_baud(baud)
     , lock(nullptr)
+    , encoder(nullptr)
+    , decoder(nullptr)
     , txdata(xbus::size_packet_max * 2, '\0')
     , rxdata(xbus::size_packet_max, '\0')
 {
@@ -79,6 +87,31 @@ void DatalinkSerial::setBaud(uint v)
     if (m_baud == v)
         return;
     m_baud = v;
+}
+
+void DatalinkSerial::setCodec(CodecType v)
+{
+    if (encoder) {
+        delete encoder;
+        encoder = nullptr;
+    }
+    if (decoder) {
+        delete decoder;
+        decoder = nullptr;
+    }
+    constexpr const size_t buf_size = xbus::size_packet_max * 8;
+    switch (v) {
+    default:
+        break;
+    case COBS:
+        encoder = new CobsEncoder<buf_size>();
+        decoder = new CobsDecoder<buf_size>();
+        break;
+    case ESC:
+        encoder = new EscEncoder<buf_size>();
+        decoder = new EscDecoder<buf_size>();
+        break;
+    }
 }
 
 void DatalinkSerial::openNext()
@@ -226,18 +259,25 @@ void DatalinkSerial::close()
 
 void DatalinkSerial::write(const QByteArray &packet)
 {
-    if (!dev->isOpen())
+    if (!dev->isOpen()) {
+        if (encoder)
+            encoder->reset();
         return;
-    if (!esc_writer.encode(packet.data(), static_cast<size_t>(packet.size()))) {
-        apxConsoleW() << "esc tx overflow:" << packet.size() << esc_writer.size();
+    }
+    if (!encoder) {
+        qWarning() << "not supported";
+        return;
+    }
+    if (!encoder->encode(packet.data(), static_cast<size_t>(packet.size()))) {
+        apxConsoleW() << "esc tx overflow:" << packet.size() << encoder->size();
     }
     while (1) {
-        size_t cnt = esc_writer.read(txdata.data(), static_cast<size_t>(txdata.size()));
+        size_t cnt = encoder->read_encoded(txdata.data(), static_cast<size_t>(txdata.size()));
         if (!cnt)
             break;
         if (dev->write(txdata.left(static_cast<int>(cnt))) <= 0) {
             serialPortError(QSerialPort::WriteError);
-            esc_writer.reset();
+            encoder->reset();
             break;
         }
     }
@@ -245,25 +285,33 @@ void DatalinkSerial::write(const QByteArray &packet)
 
 QByteArray DatalinkSerial::read()
 {
-    qint64 cnt = 0;
-    if (dev->isOpen())
-        cnt = dev->read(reinterpret_cast<char *>(rxdata.data()), rxdata.size());
+    if (!dev->isOpen()) {
+        if (decoder)
+            decoder->reset();
+        return QByteArray();
+    }
+    qint64 cnt = dev->read(reinterpret_cast<char *>(rxdata.data()), rxdata.size());
     if (cnt < 0) {
         serialPortError(QSerialPort::ReadError);
     }
+    if (!decoder) {
+        qWarning() << "not supported";
+        return QByteArray();
+    }
     if (cnt > 0) {
-        //qDebug() << cnt << rxdata.size();
-        if (!esc_reader.decode(rxdata.data(), static_cast<size_t>(cnt))) {
-            apxConsoleW() << "esc rx overflow:" << cnt << esc_reader.size();
+        //qDebug() << cnt << rxdata.toHex().toUpper();
+        if (!decoder->decode(rxdata.data(), static_cast<size_t>(cnt))) {
+            apxConsoleW() << "esc rx overflow:" << cnt << decoder->size();
         }
     }
     QByteArray packet;
-    if (esc_reader.size() > 0) {
-        packet.resize(static_cast<int>(esc_reader.size()));
-        size_t cnt = esc_reader.read_packet(packet.data(), esc_reader.size());
+    if (decoder->size() > 0) {
+        packet.resize(static_cast<int>(decoder->size()));
+        size_t cnt = decoder->read_decoded(packet.data(), decoder->size());
         packet.resize(static_cast<int>(cnt));
+        //test(packet);
     }
-    if (esc_reader.size() > 0 || (dev->isOpen() && dev->bytesAvailable() > 0)) {
+    if (decoder->size() > 0 || (dev->isOpen() && dev->bytesAvailable() > 0)) {
         QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
     }
     return packet;

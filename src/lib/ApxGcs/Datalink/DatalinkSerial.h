@@ -25,8 +25,8 @@
 #include "DatalinkConnection.h"
 
 #include <Xbus/XbusPacket.h>
-#include <Xbus/uart/EscReader.h>
-#include <Xbus/uart/EscWriter.h>
+
+#include <Xbus/uart/SerialCodec.h>
 
 #include <QSerialPort>
 #include <QSerialPortInfo>
@@ -35,11 +35,17 @@
 class DatalinkSerial : public DatalinkConnection
 {
     Q_OBJECT
+    Q_ENUMS(CodecType)
+
 public:
     explicit DatalinkSerial(Fact *parent, QString devName, uint baud);
 
+    enum CodecType { COBS, ESC, RAW };
+    Q_ENUM(CodecType)
+
     void setDevName(QString v);
     void setBaud(uint v);
+    void setCodec(CodecType v);
 
 private:
     QString m_devName;
@@ -59,8 +65,8 @@ private:
     QTimer openTimer;
     int scanIdx;
 
-    EscWriter<xbus::size_packet_max * 8> esc_writer;
-    EscReader<xbus::size_packet_max * 8> esc_reader;
+    SerialEncoder *encoder;
+    SerialDecoder *decoder;
 
     QByteArray txdata;
     QByteArray rxdata;

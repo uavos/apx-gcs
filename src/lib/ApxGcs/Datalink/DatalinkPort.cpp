@@ -63,6 +63,9 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
                                          << "230400"
                                          << "115200");
 
+    f_codec = new Fact(this, "codec", tr("Codec"), tr("Packet framing"), Enum);
+    f_codec->setEnumStrings(QMetaEnum::fromType<DatalinkSerial::CodecType>());
+
     //network routing
     f_routing = new Fact(this,
                          "routing",
@@ -147,6 +150,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)->setDevName(f_url->text());
             });
+            connect(f_codec, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSerial *>(f_connection)
+                    ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
+            });
+            qobject_cast<DatalinkSerial *>(f_connection)
+                ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
             break;
         case TCP:
             f_connection = new DatalinkRemote(this, datalink, f_url->text());
@@ -226,6 +235,7 @@ void DatalinkPort::updateStatus()
     int type = f_type->value().toInt();
     bool bSerial = type == SERIAL;
     f_baud->setVisible(bSerial);
+    f_codec->setVisible(bSerial);
 
     if (_new)
         return;

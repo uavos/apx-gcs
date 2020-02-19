@@ -47,6 +47,7 @@ public:
     Fact *f_type;
     Fact *f_url;
     Fact *f_baud;
+    Fact *f_codec;
 
     Fact *f_routing;
     QList<Fact *> f_rx;

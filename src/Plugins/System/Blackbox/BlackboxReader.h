@@ -24,7 +24,7 @@
 #define BlackboxReader_H
 //=============================================================================
 #include <Fact/Fact.h>
-#include <Xbus/uart/EscReader.h>
+#include <Xbus/uart/EscDecoder.h>
 class Vehicle;
 class ProtocolVehicle;
 //=============================================================================
@@ -42,7 +42,7 @@ private:
     Vehicle *vehicle;
     quint32 dataCnt;
 
-    EscReader<1024 * 8> esc_reader;
+    EscDecoder<1024 * 8> esc_reader;
 };
 //=============================================================================
 #endif
