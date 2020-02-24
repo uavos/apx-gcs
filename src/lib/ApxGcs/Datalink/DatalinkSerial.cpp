@@ -275,6 +275,7 @@ void DatalinkSerial::write(const QByteArray &packet)
         size_t cnt = encoder->read_encoded(txdata.data(), static_cast<size_t>(txdata.size()));
         if (!cnt)
             break;
+        //qDebug() << txdata.left(static_cast<int>(cnt)).toHex().toUpper();
         if (dev->write(txdata.left(static_cast<int>(cnt))) <= 0) {
             serialPortError(QSerialPort::WriteError);
             encoder->reset();
