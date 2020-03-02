@@ -61,7 +61,14 @@ void BlackboxReader::processData(QByteArray data)
         //qDebug() << data.toHex().toUpper();
     } else
         qDebug() << "erased" << req_blk;*/
-    esc_reader.decode(data.data(), static_cast<size_t>(data.size()));
+    SerialDecoder::ErrorType rv = esc_reader.decode(data.data(), static_cast<size_t>(data.size()));
+    switch (rv) {
+    case SerialDecoder::DataAccepted:
+    case SerialDecoder::DataDropped:
+        break;
+    default:
+        apxConsoleW() << "SerialDecoder rx ovf:" << data.size() << esc_reader.size();
+    }
     QByteArray packet(static_cast<int>(esc_reader.size()), '\0');
     while (esc_reader.size() > 0) {
         size_t cnt = esc_reader.read_packet(packet.data(), static_cast<size_t>(packet.size()));

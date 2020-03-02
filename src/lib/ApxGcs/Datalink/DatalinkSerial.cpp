@@ -301,8 +301,13 @@ QByteArray DatalinkSerial::read()
     }
     if (cnt > 0) {
         //qDebug() << cnt << rxdata.toHex().toUpper();
-        if (!decoder->decode(rxdata.data(), static_cast<size_t>(cnt))) {
-            apxConsoleW() << "esc rx overflow:" << cnt << decoder->size();
+        SerialDecoder::ErrorType rv = decoder->decode(rxdata.data(), static_cast<size_t>(cnt));
+        switch (rv) {
+        case SerialDecoder::DataAccepted:
+        case SerialDecoder::DataDropped:
+            break;
+        default:
+            apxConsoleW() << "SerialDecoder rx ovf:" << cnt << decoder->size();
         }
     }
     QByteArray packet;
