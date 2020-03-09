@@ -25,7 +25,7 @@
 #include "Nodes.h"
 #include <App/AppRoot.h>
 #include <Pawn/PawnCompiler.h>
-#include <Protocols/ProtocolServiceNode.h>
+#include <Protocols/ProtocolNode.h>
 #include <Vehicles/Vehicles.h>
 //=============================================================================
 NodeField::NodeField(NodeItem *node,

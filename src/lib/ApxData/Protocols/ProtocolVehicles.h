@@ -25,13 +25,17 @@
 #include "ProtocolBase.h"
 #include "ProtocolServiceFirmware.h"
 #include <QtCore>
+
 class ProtocolVehicle;
+class ProtocolConverter;
 
 class ProtocolVehicles : public ProtocolBase
 {
     Q_OBJECT
 public:
     ProtocolVehicles(QObject *parent = nullptr);
+
+    friend class ProtocolVehicle;
 
     struct XpdrData
     {
@@ -50,25 +54,42 @@ public:
     };
 
     ProtocolVehicle *local;
-    ProtocolServiceFirmware *firmware;
+    //ProtocolServiceFirmware *firmware;
 
-    void setConverter(ProtocolConverter *c) override;
+    void setConverter(ProtocolConverter *c);
+    ProtocolConverter *converter() const;
 
 private:
+    ProtocolConverter *m_converter{nullptr};
+
+    QTimer reqTimer;
+    QList<QByteArray> reqList;
+
     QMap<quint16, ProtocolVehicle *> squawkMap;
-    QByteArray txbuf;
+
+    uint8_t txbuf[xbus::size_packet_max];
+    ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
+
+    void send(quint16 squawk, QByteArray packet);
 
     ProtocolVehicle *addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident);
     void identRequest(quint16 squawk);
     void identAssign(quint16 squawk, const ProtocolVehicles::IdentData &ident);
 
-    void unpack(const QByteArray packet) override;
+private slots:
+    void process_downlink(const QByteArray packet);
+    void process_uplink(const QByteArray packet); //call to send data to tx
 
 public slots:
-    void vehicleSendUplink(quint16 squawk, QByteArray payload);
     void sendHeartbeat();
 
 signals:
     void vehicleIdentified(ProtocolVehicle *protocol);
     void identAssigned(ProtocolVehicle *v, const IdentData &ident);
+
+    // data comm
+public slots:
+    void downlink(const QByteArray packet); //connect rx
+signals:
+    void uplink(const QByteArray packet); //connect tx
 };

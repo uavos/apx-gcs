@@ -24,7 +24,7 @@
 #include "Mandala.h"
 #include <App/AppLog.h>
 #include <Mandala/MandalaMeta.h>
-#include <Xbus/XbusPacket.h>
+#include <Protocols/ProtocolStream.h>
 #include <QColor>
 
 MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &meta)
@@ -148,11 +148,10 @@ QVariant MandalaFact::getValueForStream() const
 
 QByteArray MandalaFact::pack() const
 {
-    QByteArray data(32, '\0');
-    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(data.data()));
+    uint8_t buf[32];
+    ProtocolStreamWriter stream(buf, sizeof(buf));
     *this >> stream;
-    data.resize(stream.position());
-    return data;
+    return stream.toByteArray();
 }
 
 bool MandalaFact::setValues(const QVariantList &vlist)
@@ -176,12 +175,11 @@ bool MandalaFact::setValues(const QVariantList &vlist)
 
 void MandalaFact::sendPacket(const QByteArray data)
 {
-    QByteArray packet(sizeof(xbus::pid_t), '\0');
-    XbusStreamWriter stream(reinterpret_cast<uint8_t *>(packet.data()));
+    uint8_t buf[32];
+    ProtocolStreamWriter stream(buf, sizeof(buf));
     stream.write<xbus::pid_t>(uid());
-    packet.append(data);
     sendTime.start();
-    emit sendUplink(packet);
+    emit sendUplink(stream.toByteArray().append(data));
 }
 
 mandala::uid_t MandalaFact::uid() const

@@ -410,12 +410,8 @@ void Vehicle::setStreamService()
     onlineTimer.start();
 }
 //=============================================================================
-void Vehicle::jsexecData(QByteArray data)
+void Vehicle::jsexecData(QString data)
 {
-    if (data.size() < 3) {
-        qDebug() << "Empty jsexec data received";
-        return;
-    }
     App::instance()->engine()->jsexec(data);
 }
 //=============================================================================

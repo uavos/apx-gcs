@@ -20,20 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Nodes_H
-#define Nodes_H
-//=============================================================================
-#include "LookupConfigs.h"
+#pragma once
+
 #include "NodeItem.h"
-#include "NodesShare.h"
-#include "NodesStorage.h"
+
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolService.h>
-#include <QDomDocument>
-#include <QtCore>
+#include <Protocols/ProtocolNodes.h>
+
 class Vehicle;
 typedef QList<NodeItem *> NodesList;
-//=============================================================================
+
 class Nodes : public NodeItemBase
 {
     Q_OBJECT
@@ -46,71 +42,68 @@ public:
     Vehicle *vehicle;
 
     Fact *f_upload;
-    Fact *f_request;
+    Fact *f_search;
     Fact *f_stop;
     Fact *f_reload;
     Fact *f_clear;
-    Fact *f_nstat;
+    Fact *f_status;
 
-    LookupConfigs *f_lookup;
+    //LookupConfigs *f_lookup;
+    //NodesStorage *storage;
+    //NodesShare *f_share;
+    //Fact *f_save;
 
-    NodesStorage *storage;
-    NodesShare *f_share;
+    NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
+    QList<NodeItem *> nodes() { return m_sn_map.values(); }
 
-    Fact *f_save;
-
-    NodeItem *node(const QString &sn) { return snMap.value(sn, nullptr); }
-    QList<NodeItem *> nodes() { return snMap.values(); }
-
-    NodeItem *appendNode(const QString &sn, ProtocolServiceNode *protocol);
+    NodeItem *addNode(const QString &sn, ProtocolNode *protocol);
     void removeNode(const QString &sn);
 
-    void syncLater(int timeout = 2000, bool enforce = true);
+    void syncLater(int timeout = 2000);
+
     void loadConfValue(const QString &sn, QString s);
-
-    void uploadedSync();
-    void nconfSavedSync();
-
-    QDateTime syncTimestamp;
-
-    QList<NodeItemBase *> nGroups;
-    QList<QString> skipCache;
 
 protected:
     //override
     virtual QVariant data(int col, int role) const;
 
 private:
-    QMap<QString, NodeItem *> snMap;
+    ProtocolNodes *m_protocol{nullptr};
+
+    QMap<QString, NodeItem *> m_sn_map;
+    QList<NodeItemBase *> m_groups;
 
     //sync
-    QTimer syncTimer;
-    int syncCount;
-    bool syncActive;
-    bool syncUpdate;
-    bool syncUpload;
-    QElapsedTimer syncTime;
+    QDateTime m_syncTimestamp;
+    QTimer m_syncTimer;
+    QElapsedTimer m_syncRequestTime;
+    int m_syncCount{0};
 
 private slots:
     void updateStatus();
     void updateActions();
-    void syncFinished();
+
     void sync();
 
-    //upgrade
-    void upgradeStarted(QString sn);
-    void upgradeFinished(QString sn, bool success);
-
-public slots:
-    void request();
+    void status();
+    void search();
     void clear();
     void reload();
     void upload();
     void stop();
 
-    void nstat();
-    void rebootAll();
+    void protocolFinished();
 
+    //upgrade
+    void upgradeStarted(QString sn);
+    void upgradeFinished(QString sn, bool success);
+
+signals:
+    void syncDone();
+
+public slots:
+
+    void rebootAll();
     void save();
     void clearCache();
 
@@ -120,10 +113,8 @@ public:
     int nodesCount() const;
 
 protected:
-    int m_nodesCount;
+    int m_nodesCount{0};
 
 signals:
     void nodesCountChanged();
 };
-//=============================================================================
-#endif

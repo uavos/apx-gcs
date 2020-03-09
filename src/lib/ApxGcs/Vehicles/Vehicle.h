@@ -177,7 +177,7 @@ private slots:
 
     void updateDatalinkVars(quint16 id, QByteArray);
 
-    void jsexecData(QByteArray data);
+    void jsexecData(QString data);
 
 signals:
     void selected();

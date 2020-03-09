@@ -204,3 +204,14 @@ quint16 Mandala::stringToMandala(const QString &s) const
     MandalaFact *f = fact(s);
     return f ? f->uid() : 0;
 }
+
+const mandala::meta_t &Mandala::meta(mandala::uid_t uid)
+{
+    for (auto const &d : mandala::meta) {
+        if (d.group)
+            continue;
+        if (d.uid == uid)
+            return d;
+    }
+    return mandala::cmd::env::nmt::meta;
+}

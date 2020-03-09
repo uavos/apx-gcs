@@ -68,17 +68,6 @@ ApxApp.ApxLibrary {
 
 
     Group {
-        name: "Mandala"
-        prefix: name+"/"
-        condition: !qbs.buildVariant.contains("release")
-        files: [
-            "Mandala.cpp", "Mandala.h",
-            "MandalaFact.cpp", "MandalaFact.h",
-            "MandalaFactStream.cpp", "MandalaFactStream.h",
-        ]
-    }
-
-    Group {
         name: "Vehicles"
         prefix: name+"/"
         files: [
@@ -107,18 +96,18 @@ ApxApp.ApxLibrary {
         name: "Nodes"
         prefix: name+"/"
         files: [
-            "NodesBase.cpp", "NodesBase.h",
-            "NodeField.cpp", "NodeField.h",
-            "NodeItem.cpp", "NodeItem.h",
-            "NodeItemBase.cpp", "NodeItemBase.h",
-            "NodeItemData.cpp", "NodeItemData.h",
-            "NodesStorage.cpp", "NodesStorage.h",
-            "NodeTools.cpp", "NodeTools.h",
-            "NodeToolsGroup.cpp", "NodeToolsGroup.h",
-            "LookupNodeBackup.cpp", "LookupNodeBackup.h",
-            "LookupConfigs.cpp", "LookupConfigs.h",
             "Nodes.cpp", "Nodes.h",
-            "NodesShare.cpp", "NodesShare.h",
+            "NodeItem.cpp", "NodeItem.h",
+            "NodeField.cpp", "NodeField.h",
+            "NodesBase.cpp", "NodesBase.h",
+            "NodeItemBase.cpp", "NodeItemBase.h",
+            //"NodeItemData.cpp", "NodeItemData.h",
+            //"NodesStorage.cpp", "NodesStorage.h",
+            //"NodeTools.cpp", "NodeTools.h",
+            //"NodeToolsGroup.cpp", "NodeToolsGroup.h",
+            //"LookupNodeBackup.cpp", "LookupNodeBackup.h",
+            //"LookupConfigs.cpp", "LookupConfigs.h",
+            //"NodesShare.cpp", "NodesShare.h",
         ]
     }
 

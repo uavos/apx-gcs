@@ -32,6 +32,16 @@ ApxApp.ApxLibrary {
 
 
     Group {
+        name: "Mandala"
+        prefix: name+"/"
+        files: [
+            "Mandala.cpp", "Mandala.h",
+            "MandalaFact.cpp", "MandalaFact.h",
+            "MandalaFactStream.cpp", "MandalaFactStream.h",
+        ]
+    }
+
+    Group {
         name: "Dictionary"
         prefix: name+"/"
         files: [
@@ -45,15 +55,17 @@ ApxApp.ApxLibrary {
         prefix: name+"/"
         files: [
             "ProtocolBase.cpp", "ProtocolBase.h",
+            "ProtocolStream.h",
             "ProtocolConverter.cpp", "ProtocolConverter.h",
             "ProtocolVehicles.cpp", "ProtocolVehicles.h",
             "ProtocolVehicle.cpp", "ProtocolVehicle.h",
-            "ProtocolMission.cpp", "ProtocolMission.h",
-            "ProtocolService.cpp", "ProtocolService.h",
-            "ProtocolServiceRequest.cpp", "ProtocolServiceRequest.h",
-            "ProtocolServiceNode.cpp", "ProtocolServiceNode.h",
-            "ProtocolServiceFile.cpp", "ProtocolServiceFile.h",
-            "ProtocolServiceFirmware.cpp", "ProtocolServiceFirmware.h",
+            "ProtocolNodes.cpp", "ProtocolNodes.h",
+            "ProtocolNode.cpp", "ProtocolNode.h",
+            "ProtocolNodeRequest.cpp", "ProtocolNodeRequest.h",
+
+            //"ProtocolMission.cpp", "ProtocolMission.h",
+            //"ProtocolServiceFile.cpp", "ProtocolServiceFile.h",
+            //"ProtocolServiceFirmware.cpp", "ProtocolServiceFirmware.h",
         ]
     }
 

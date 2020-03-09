@@ -20,56 +20,50 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ProtocolVehicle_H
-#define ProtocolVehicle_H
+#pragma once
+
 #include "ProtocolBase.h"
-#include "ProtocolMission.h"
-#include "ProtocolService.h"
+#include "ProtocolNodes.h"
 #include "ProtocolVehicles.h"
+
 #include <QtCore>
-//=============================================================================
+
 class ProtocolVehicle : public ProtocolBase
 {
     Q_OBJECT
 public:
     ProtocolVehicle(quint16 squawk, ProtocolVehicles::IdentData ident, ProtocolVehicles *vehicles);
 
+    void downlink(ProtocolStreamReader &stream);
+
     quint16 squawk;
     ProtocolVehicles::IdentData ident;
 
     ProtocolVehicles *vehicles;
-    ProtocolMission *mission;
-    ProtocolService *service;
+    ProtocolNodes *nodes;
 
 private:
-    QByteArray txbuf;
-
-    void sendRequest(quint16 pid, QByteArray payload);
-    void unpack(const QByteArray packet) override;
+    uint8_t txbuf[xbus::size_packet_max];
+    ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
 
 public slots:
-
+    void send(const QByteArray packet);
     void vmexec(QString func);
     void sendSerial(quint8 portID, QByteArray data);
-    void sendMissionRequest(QByteArray data = QByteArray());
-    void sendServiceRequest(QString sn, quint16 cmd, QByteArray payload);
 
 signals:
     void xpdrData(const ProtocolVehicles::XpdrData &xpdr);
     void identUpdated();
 
     //known received data
-    void telemetryData(QByteArray data);
+    void telemetryData(ProtocolStreamReader &stream);
 
     void serialRxData(quint16 portNo, QByteArray data);
     void serialTxData(quint16 portNo, QByteArray data);
 
-    void jsexecData(QByteArray data);
+    void jsexecData(QString script);
     void missionData(QByteArray data);
-    void serviceData(QString sn, quint16 cmd, QByteArray data);
 
     //data with other id (i.e. mandala data)
-    void receivedData(quint16 id, QByteArray data);
+    void receivedData(xbus::pid_t pid, ProtocolStreamReader &stream);
 };
-//=============================================================================
-#endif

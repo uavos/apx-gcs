@@ -32,14 +32,7 @@ class NodeItemData : public NodeItemBase
 
     Q_PROPERTY(QString sn READ sn CONSTANT)
 
-    //flags
-    Q_PROPERTY(bool reconf READ reconf WRITE setReconf NOTIFY reconfChanged)
-    Q_PROPERTY(bool fwSupport READ fwSupport WRITE setFwSupport NOTIFY fwSupportChanged)
-    Q_PROPERTY(bool fwUpdating READ fwUpdating WRITE setFwUpdating NOTIFY fwUpdatingChanged)
-    Q_PROPERTY(bool addressing READ addressing WRITE setAddressing NOTIFY addressingChanged)
-    Q_PROPERTY(bool rebooting READ rebooting WRITE setRebooting NOTIFY rebootingChanged)
-    Q_PROPERTY(bool busy READ reconf WRITE setBusy NOTIFY busyChanged)
-    Q_PROPERTY(bool failure READ failure WRITE setFailure NOTIFY failureChanged)
+    Q_PROPERTY(IdentFlags identFlags READ identFlags WRITE setIdentFlags NOTIFY identFlagsChanged)
 
     //nstat
     Q_PROPERTY(qreal vbat READ vbat WRITE setVbat NOTIFY vbatChanged)
@@ -52,30 +45,31 @@ class NodeItemData : public NodeItemBase
 
 public:
     explicit NodeItemData(Fact *parent, QString sn);
+
+    enum IdentFlag { // map to xbus::node::ident::flags
+        DICT,
+        RECONF,
+        LOADER,
+        REBOOT,
+    };
+    Q_DECLARE_FLAGS(IdentFlags, IdentFlag)
+    Q_FLAG(IdentFlags)
+    Q_ENUM(IdentFlag)
+
     //---------------------------------------
     // PROPERTIES
 public:
     QString sn() const;
 
-    bool reconf() const;
-    void setReconf(const bool &v);
-    bool fwSupport() const;
-    void setFwSupport(const bool &v);
-    bool fwUpdating() const;
-    void setFwUpdating(const bool &v);
-    bool addressing() const;
-    void setAddressing(const bool &v);
-    bool rebooting() const;
-    void setRebooting(const bool &v);
-    bool busy() const;
-    void setBusy(const bool &v);
-    bool failure() const;
-    void setFailure(const bool &v);
+    IdentFlags identFlags() const;
+    void setIdentFlags(IdentFlags v);
+    bool identFlag(IdentFlag v);
 
     qreal vbat() const;
     void setVbat(const qreal &v);
     qreal ibat() const;
     void setIbat(const qreal &v);
+
     quint8 errCnt() const;
     void setErrCnt(const quint8 &v);
     quint8 canRxc() const;
@@ -84,19 +78,14 @@ public:
     void setCanAdr(const quint8 &v);
     quint8 canErr() const;
     void setCanErr(const quint8 &v);
+
     quint8 cpuLoad() const;
     void setCpuLoad(const quint8 &v);
 
 protected:
     QString m_sn;
 
-    bool m_reconf;
-    bool m_fwSupport;
-    bool m_fwUpdating;
-    bool m_addressing;
-    bool m_rebooting;
-    bool m_busy;
-    bool m_failure;
+    IdentFlags m_identFlags;
 
     qreal m_vbat;
     qreal m_ibat;
@@ -107,13 +96,7 @@ protected:
     quint8 m_cpuLoad;
 
 signals:
-    void reconfChanged();
-    void fwSupportChanged();
-    void fwUpdatingChanged();
-    void addressingChanged();
-    void rebootingChanged();
-    void busyChanged();
-    void failureChanged();
+    void identFlagsChanged();
 
     void vbatChanged();
     void ibatChanged();

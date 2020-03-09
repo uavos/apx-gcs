@@ -21,65 +21,11 @@
  *
  */
 #include "ProtocolBase.h"
-#include "ProtocolConverter.h"
 
 ProtocolBase::ProtocolBase(QObject *parent)
     : QObject(parent)
-    , m_converter(nullptr)
     , m_progress(-1)
-{
-    reqTimer.setInterval(500);
-    connect(&reqTimer, &QTimer::timeout, this, [=]() {
-        if (reqList.isEmpty())
-            reqTimer.stop();
-        else
-            send(reqList.takeFirst());
-    });
-}
-
-void ProtocolBase::setConverter(ProtocolConverter *c)
-{
-    if (m_converter) {
-        disconnect(m_converter, nullptr, this, nullptr);
-    }
-    m_converter = c;
-    if (m_converter) {
-        connect(m_converter, &ProtocolConverter::uplink, this, &ProtocolBase::uplinkData);
-        connect(m_converter, &ProtocolConverter::downlink, this, &ProtocolBase::unpack);
-    }
-}
-ProtocolConverter *ProtocolBase::converter() const
-{
-    return m_converter;
-}
-
-void ProtocolBase::downlinkData(QByteArray packet)
-{
-    if (m_converter)
-        m_converter->convertDownlink(packet);
-    else
-        unpack(packet);
-}
-void ProtocolBase::send(QByteArray packet)
-{
-    if (m_converter)
-        m_converter->convertUplink(packet);
-    else
-        emit uplinkData(packet);
-}
-
-void ProtocolBase::unpack(const QByteArray packet)
-{
-    Q_UNUSED(packet)
-}
-
-void ProtocolBase::scheduleRequest(QByteArray packet)
-{
-    if (!reqList.contains(packet)) {
-        reqList.append(packet);
-        reqTimer.start();
-    }
-}
+{}
 
 int ProtocolBase::progress() const
 {

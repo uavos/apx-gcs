@@ -24,7 +24,7 @@
 #include "Datalink.h"
 #include <App/AppLog.h>
 
-#include <Mandala/MandalaMetaTree.h>
+#include <Mandala/Mandala.h>
 
 #include <Xbus/XbusPacket.h>
 #include <Xbus/XbusVehicle.h>

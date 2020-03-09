@@ -20,61 +20,51 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeItem_H
-#define NodeItem_H
-//=============================================================================
+#pragma once
+
 #include "NodeField.h"
-#include "NodeItemData.h"
+#include "NodeItemBase.h"
 #include "NodeTools.h"
-#include <Protocols/ProtocolServiceNode.h>
-#include <QDomDocument>
+
+#include <Protocols/ProtocolNode.h>
+
 #include <QtCore>
-#include <QtSql>
+
 class Nodes;
-//=============================================================================
-class NodeItem : public NodeItemData
+
+class NodeItem : public NodeItemBase
 {
     Q_OBJECT
+    Q_PROPERTY(QString sn READ sn CONSTANT)
 
     Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
     Q_PROPERTY(QString hardware READ hardware WRITE setHardware NOTIFY hardwareChanged)
 
-    Q_PROPERTY(bool infoValid READ infoValid WRITE setInfoValid NOTIFY infoValidChanged)
+    Q_PROPERTY(bool identValid READ identValid WRITE setIdentValid NOTIFY identValidChanged)
     Q_PROPERTY(bool offline READ offline NOTIFY offlineChanged)
 
 public:
-    explicit NodeItem(Nodes *parent, QString sn, ProtocolServiceNode *protocol);
+    explicit NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol);
 
-    QString conf_hash;
-    qint64 lastSeenTime;
-
-    //db sync
-    QVariantMap dictInfo;
-    quint64 nconfID;
+    const xbus::node::ident::ident_s &ident() const;
 
     QList<NodeField *> allFields;
     QMap<QString, NodeField *> allFieldsByName;
 
-    //override
-    QVariant data(int col, int role) const;
-    void hashData(QCryptographicHash *h) const;
-
     void clear();
 
     Nodes *nodes;
-    NodeItemBase *group;
-
     NodeTools *tools;
 
     void execCommand(quint16 cmd, const QString &name, const QString &descr);
 
-    void setProtocol(ProtocolServiceNode *protocol);
+    void setProtocol(ProtocolNode *protocol);
 
     int loadConfigValues(QVariantMap values);
     bool loadConfigValue(const QString &name, const QString &value);
 
 protected:
-    QStringList sortNames;
+    static QStringList sortNames;
 
     void groupFields(void);
     void groupNodes(void);
@@ -83,94 +73,73 @@ protected:
     void saveTelemetryUploadEvent();
     void saveTelemetryConf(NodeField *f);
 
-    QTimer nstatTimer;
+    QTimer statusTimer;
+
+    //override
+    QVariant data(int col, int role) const;
+    void hashData(QCryptographicHash *h) const;
 
 private:
-    ProtocolServiceNode *protocol;
+    xbus::node::ident::ident_s m_ident;
 
-    NodeField *dictCreateField(const DictNode::Field &f, NodeField *parentField);
-    void requestFieldValues();
+    ProtocolNode *m_protocol{nullptr};
 
-    NodeItem *subNode() const;
+    qint64 m_lastSeenTime{0};
 
-    NodeField *status_field;
+    NodeField *m_status_field{nullptr};
+    NodeItemBase *m_group{nullptr};
 
 private slots:
 
     void validateDict();
     void validateData();
-    void validateInfo();
-
-    void updateReconf();
 
     void nodeNotify();
 
-    void updateArrayRowDescr(Fact *fRow);
-
 public slots:
     void upload();
+
     void updateDescr();
     void updateStatus();
 
-    void upgradeFirmware();
-    void upgradeLoader();
-    void upgradeRadio();
-
-    //db sync
-    void setDictInfo(QVariantMap dictInfo);
-    void setNconfID(quint64 nconfID);
-
-    void message(QString msg);
+signals:
+    void identUpdated();
 
     //protocols:
-public slots:
-    void dictReceived(const DictNode::Dict &dict);
-
 private slots:
-    void messageReceived(const QString &msg);
-    void infoReceived(const DictNode::Info &info);
-    void dictInfoReceived(const DictNode::DictInfo &conf);
-    void valuesReceived(quint16 id, const QVariantList &values);
-    void valueModifiedExternally(quint16 id);
-    void valueUploaded(quint16 id);
-    void valuesSaved();
-    void nstatReceived(const DictNode::Stats &nstat);
+    void identReceived(const xbus::node::ident::ident_s &ident);
+    void dictReceived(const ProtocolNode::Dictionary &dict);
+    void confReceived(const QVariantList &values);
+
+    void messageReceived(xbus::node::msg::type_t type, QString msg);
 
 signals:
-    void requestInfo();
+    void requestIdent();
     void requestDict();
-    void requestValues(quint16 id);
-    void uploadValue(quint16 id, const QVariant &v);
-    void saveValues();
-    void requestNstat();
-    void requestUser(quint16 id, QByteArray data, int timeout_ms);
-
-    //protocol forward for user commands (i.e. blackbox read)
-    void acknowledgeRequest(quint16 cmd, QByteArray data = QByteArray());
-    void serviceDataReceived(quint16 cmd, QByteArray data);
-    void requestTimeout(quint16 cmd, QByteArray data);
+    void requestConf();
+    void requestStatus();
 
     //---------------------------------------
     // PROPERTIES
 public:
+    QString sn() const;
     QString version() const;
     void setVersion(const QString &v);
     QString hardware() const;
     void setHardware(const QString &v);
-    bool infoValid() const;
-    void setInfoValid(const bool &v);
+    bool identValid() const;
+    void setIdentValid(const bool &v);
     bool offline() const;
 
 protected:
+    QString m_sn;
     QString m_version;
     QString m_hardware;
-    bool m_infoValid;
+    bool m_identValid{false};
 
 signals:
     void versionChanged();
     void hardwareChanged();
-    void infoValidChanged();
+    void identValidChanged();
     void offlineChanged();
 };
-//=============================================================================
-#endif

@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
+ *
+ * This file is part of the UAV Open System Project
+ *  http://www.uavos.com/
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+ * Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#pragma once
+
+#include <QtCore>
+
+#include <Xbus/XbusStreamReader.h>
+#include <Xbus/XbusStreamWriter.h>
+
+#include <Xbus/XbusPacket.h>
+
+class ProtocolStreamReader : public XbusStreamReader
+{
+public:
+    ProtocolStreamReader(const QByteArray &packet)
+        : XbusStreamReader(reinterpret_cast<const uint8_t *>(packet.data()),
+                           static_cast<size_t>(packet.size()))
+    {}
+
+    inline QString dump() { return toByteArray().toHex().toUpper(); }
+
+    inline QByteArray toByteArray(size_t spos, size_t sz) const
+    {
+        if ((spos + sz) >= size())
+            return QByteArray();
+        return QByteArray::fromRawData(reinterpret_cast<const char *>(buffer() + spos),
+                                       static_cast<int>(sz));
+    }
+
+    inline QByteArray toByteArray() const { return toByteArray(0, pos()); }
+
+    inline QByteArray payload() const { return toByteArray(pos(), available()); }
+};
+
+class ProtocolStreamWriter : public XbusStreamWriter
+{
+public:
+    explicit ProtocolStreamWriter(void *p, size_t size)
+        : XbusStreamWriter(p, size)
+    {}
+
+    inline QString dump(size_t spos = 0) { return toByteArray(spos).toHex().toUpper(); }
+
+    inline QByteArray toByteArray(size_t spos = 0) const
+    {
+        if (spos >= size())
+            return QByteArray();
+        return QByteArray::fromRawData(reinterpret_cast<const char *>(buffer() + spos),
+                                       static_cast<int>(pos() - spos));
+    }
+
+    inline size_t append(const QByteArray &ba)
+    {
+        return XbusStreamWriter::write(ba.data(), static_cast<size_t>(ba.size()));
+    }
+};

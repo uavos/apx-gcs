@@ -41,6 +41,8 @@ public:
 
     quint64 timestamp() const;
 
+    static const mandala::meta_t &meta(mandala::uid_t uid);
+
 protected:
     // Fact override
     virtual QString mandalaToString(quint16 uid) const override;

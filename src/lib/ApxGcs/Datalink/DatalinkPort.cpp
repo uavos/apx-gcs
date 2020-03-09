@@ -186,7 +186,10 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         //enable switch
         connect(f_enable, &Fact::valueChanged, this, [this]() { setValue(f_enable->value()); });
         connect(this, &Fact::valueChanged, this, [this]() { f_enable->setValue(value()); });
-        setValue(f_enable->value());
+
+        connect(App::instance(), &App::loadingFinished, this, [this]() {
+            setValue(f_enable->value());
+        });
     }
 
     for (int i = 0; i < size(); ++i) {

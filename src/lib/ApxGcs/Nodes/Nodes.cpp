@@ -27,15 +27,11 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 Nodes::Nodes(Vehicle *parent)
     : NodeItemBase(parent, "nodes", "Nodes", Group | FlatModel | ModifiedGroup)
     , vehicle(parent)
-    , syncCount(0)
-    , syncActive(false)
-    , syncUpdate(false)
-    , syncUpload(false)
-    , m_nodesCount(0)
+    , m_protocol(vehicle->protocol ? vehicle->protocol->nodes : nullptr)
 {
     setIcon("puzzle");
     setDescr(tr("Vehicle components"));
@@ -48,9 +44,9 @@ Nodes::Nodes(Vehicle *parent)
                         "upload");
     connect(f_upload, &Fact::triggered, this, &Nodes::upload);
 
-    f_request
-        = new Fact(this, "request", tr("Request"), tr("Download from vehicle"), Action, "download");
-    connect(f_request, &Fact::triggered, this, &Nodes::request);
+    f_search
+        = new Fact(this, "search", tr("Search"), tr("Download from vehicle"), Action, "download");
+    connect(f_search, &Fact::triggered, this, &Nodes::search);
 
     f_reload = new Fact(this, "reload", tr("Reload"), tr("Clear and download all"), Action, "reload");
     connect(f_reload, &Fact::triggered, this, &Nodes::reload);
@@ -66,23 +62,19 @@ Nodes::Nodes(Vehicle *parent)
                        "notification-clear-all");
     connect(f_clear, &Fact::triggered, this, &Nodes::clear);
 
-    f_nstat = new Fact(this,
-                       "nstat",
-                       tr("Stats"),
-                       tr("Request diagnostics"),
-                       Action,
-                       "chart-bar-stacked");
-    connect(f_nstat, &Fact::triggered, this, &Nodes::nstat);
+    f_status
+        = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
+    connect(f_status, &Fact::triggered, this, &Nodes::status);
 
     //storage actions
-    storage = new NodesStorage(this);
+    /*storage = new NodesStorage(this);
 
     f_lookup = new LookupConfigs(this, this);
 
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
 
-    f_share = new NodesShare(this, this);
+    f_share = new NodesShare(this, this);*/
 
     foreach (FactBase *a, actions()) {
         a->setOption(IconOnly);
@@ -98,43 +90,45 @@ Nodes::Nodes(Vehicle *parent)
     connect(this, &Nodes::nodesCountChanged, this, &Nodes::updateStatus);
     updateStatus();
 
-    syncTimer.setSingleShot(true);
-    connect(&syncTimer, &QTimer::timeout, this, &Nodes::sync);
+    m_syncTimer.setSingleShot(true);
+    connect(&m_syncTimer, &QTimer::timeout, this, &Nodes::sync);
 
     //protocols
-    if (vehicle->protocol) {
-        ProtocolService *service = vehicle->protocol->service;
-        connect(service, &ProtocolService::nodeFound, this, &Nodes::appendNode);
-        connect(service, &ProtocolService::finished, this, &Nodes::syncFinished);
+    if (m_protocol) {
+        connect(m_protocol, &ProtocolNodes::nodeFound, this, &Nodes::addNode);
+        connect(m_protocol, &ProtocolNodes::finished, this, &Nodes::protocolFinished);
+
+        connect(this, &Fact::activeChanged, m_protocol, [this]() {
+            m_protocol->setActive(active());
+        });
 
         if (!vehicle->isLocal()) {
-            vehicle->protocol->service->requestNodes();
+            m_protocol->requestSearch();
         }
 
-        ProtocolServiceFirmware *fw = Vehicles::instance()->protocol->firmware;
+        /*ProtocolServiceFirmware *fw = Vehicles::instance()->protocol->firmware;
         connect(fw, &ProtocolServiceFirmware::started, this, &Nodes::upgradeStarted);
-        connect(fw, &ProtocolServiceFirmware::finished, this, &Nodes::upgradeFinished);
+        connect(fw, &ProtocolServiceFirmware::finished, this, &Nodes::upgradeFinished);*/
     }
 
-    connect(this, &Fact::triggered, this, &Nodes::request);
+    connect(this, &Fact::triggered, this, &Nodes::search);
 
     App::jsync(this);
 }
-//=============================================================================
+
 int Nodes::nodesCount() const
 {
     return m_nodesCount;
 }
-//=============================================================================
+
 QVariant Nodes::data(int col, int role) const
 {
     if (size() <= 0)
         return Fact::data(col, role);
     return NodesBase::data(col, role);
 }
-//=============================================================================
-//=============================================================================
-NodeItem *Nodes::appendNode(const QString &sn, ProtocolServiceNode *protocol)
+
+NodeItem *Nodes::addNode(const QString &sn, ProtocolNode *protocol)
 {
     NodeItem *node = this->node(sn);
     if (node) {
@@ -143,287 +137,167 @@ NodeItem *Nodes::appendNode(const QString &sn, ProtocolServiceNode *protocol)
         return node;
     }
     node = new NodeItem(this, sn, protocol);
-    snMap.insert(sn, node);
+    m_sn_map.insert(sn, node);
     m_nodesCount++;
     emit nodesCountChanged();
     return node;
 }
 void Nodes::removeNode(const QString &sn)
 {
-    if (vehicle->protocol)
-        vehicle->protocol->service->removeNode(sn);
-    NodeItem *node = snMap.value(sn);
+    if (m_protocol)
+        m_protocol->removeNode(sn);
+    NodeItem *node = this->node(sn);
     if (!node)
         return;
     node->remove();
-    snMap.remove(sn);
+    m_sn_map.remove(sn);
     m_nodesCount--;
     emit nodesCountChanged();
 }
-//=============================================================================
+
 void Nodes::updateStatus()
 {
     setValue(nodesCount() > 0 ? QString::number(nodesCount()) : "");
 }
 void Nodes::updateActions()
 {
-    bool enb = vehicle->protocol;
+    bool enb = m_protocol;
     bool busy = progress() >= 0;
     bool upgrading = false; //model->isUpgrading();
     bool bModAll = modified();
     bool bEmpty = nodesCount() <= 0;
-    f_request->setEnabled(enb);
+    f_search->setEnabled(enb);
     f_upload->setEnabled(enb && bModAll && (!(busy)));
     f_stop->setEnabled(enb && (busy || upgrading));
     f_reload->setEnabled(enb && (!(upgrading || bEmpty)));
     f_clear->setEnabled((!bEmpty) && (!(upgrading || busy)));
-    f_nstat->setEnabled(enb && (!bEmpty) && (!(upgrading || busy)));
+    f_status->setEnabled(enb && (!bEmpty) && (!(upgrading || busy)));
 }
-//=============================================================================
-void Nodes::syncFinished()
+
+void Nodes::protocolFinished()
 {
-    //qDebug()<<vehicle->callsign();
-    /*if (vehicle->isLocal()) {
-        if (!(dataValid() && dictValid()))
-            return;
-        vehicle->protocol->service->setActive(false);
-        return;
-    }*/
-    while (1) {
-        int cnt = nodesCount();
-        if (cnt > 0) {
-            if (!(dataValid() && dictValid())) {
-                bool fwupd = false;
-                foreach (NodeItem *node, nodes()) {
-                    if (!node->fwUpdating())
-                        continue;
-                    fwupd = true;
-                    break;
-                }
-                if (!fwupd)
-                    break;
-                //qDebug() << dataValid() << dictValid();
-                //break;
-            }
-            vehicle->protocol->service->setActive(false);
-            //exclude reconf nodes
-            foreach (NodeItem *node, nodes()) {
-                if (node->reconf())
-                    cnt--;
-            }
-            bool bCntChanged = syncCount != cnt;
-            syncCount = cnt;
-            if (bCntChanged) {
-                qDebug() << "sync" << vehicle->callsign()
-                         << QString("%1 sec").arg(syncTime.elapsed() / 1000.0, 0, 'f', 1);
-                break;
-            }
-            //all good
-            if (!syncUpdate) {
-                syncUpdate = true;
-                syncUpload = false;
-                syncTimestamp = QDateTime::currentDateTimeUtc();
-                qDebug() << "save vehicle config on sync done";
-                storage->saveConfiguration();
-                skipCache.clear();
-                //apxMsg() << QString("[%1]").arg(vehicle->callsign())
-                //         << tr("Configuration syncronized");
-                //qDebug()<<"synced"<<vehicle->callsign()<<QString("%1 sec").arg(syncTime.elapsed()/1000.0,0,'f',1);
-                syncLater(5000, false);
-            } else if (syncUpload) {
-                syncUpload = false;
-                syncTimestamp = QDateTime::currentDateTimeUtc();
-                qDebug() << "save vehicle config on upload";
-                storage->saveConfiguration();
-            }
-        }
-        return;
-    }
-    syncUpdate = false;
     if (vehicle->isLocal())
         return;
+
+    int cnt = nodesCount();
+    if (cnt <= 0)
+        return;
+
+    do {
+        if (!(dictValid() && dataValid()))
+            break;
+        // exclude reconf nodes
+        foreach (NodeItem *node, nodes()) {
+            if (node->ident().flags.bits.reconf)
+                cnt--;
+        }
+        bool bCntChanged = m_syncCount != cnt;
+        m_syncCount = cnt;
+        if (bCntChanged) {
+            qDebug() << "sync" << vehicle->callsign()
+                     << QString("%1 sec").arg(m_syncRequestTime.elapsed() / 1000.0, 0, 'f', 1);
+            break;
+        }
+
+        // all valid and in sync
+        qDebug() << "sync done";
+        m_syncTimestamp = QDateTime::currentDateTimeUtc();
+        setActive(false);
+        emit syncDone();
+        return;
+    } while (0);
+
     //schedule re-sync
-    syncLater(syncActive ? 100 : 1000, syncActive);
+    syncLater(active() ? 100 : 1000);
 }
 void Nodes::sync()
 {
     //qDebug() << syncActive;
-    if (!vehicle->protocol)
+    if (!m_protocol)
         return;
     if (vehicle->isTemporary())
         return;
-    syncTime.start();
-    if (syncActive) {
-        vehicle->protocol->service->setActive(true);
-    }
-    vehicle->protocol->service->requestNodes();
+    m_syncRequestTime.start();
+    m_protocol->requestSearch();
 }
-void Nodes::uploadedSync()
+
+void Nodes::syncLater(int timeout)
 {
-    if (!vehicle->protocol)
-        return;
-    if (vehicle->isReplay())
-        return;
-    if (!modified()) {
-        syncUpdate = false;
-        syncUpload = true;
-        syncLater(0);
-    }
-}
-void Nodes::nconfSavedSync()
-{
-    if (!(dictValid() && dataValid()))
-        return;
-    //save vehicle config when all nodes done
-    if ((vehicle->protocol && vehicle->protocol->service->active()) || syncUpload
-        || nodesCount() <= 0)
-        return;
-    foreach (NodeItem *node, snMap.values()) {
-        if (node->nconfID == 0)
-            return;
-    }
-    //all nodes saved configs and not requesting or uploading
-    //happens when user save offline nodes
-    /*if ((!vehicle->protocol) || vehicle->isReplay()) {
-        if (!modified())
-            return;
-    }*/
-    qDebug() << "save vehicle config as all nodes in sync";
-    storage->saveConfiguration(true);
-}
-//=============================================================================
-void Nodes::syncLater(int timeout, bool enforce)
-{
-    syncActive = enforce;
-    if (syncTimer.isActive() && timeout > syncTimer.interval())
-        timeout = syncTimer.interval();
-    syncTimer.start(timeout);
+    if (m_syncTimer.isActive() && timeout > m_syncTimer.interval())
+        timeout = m_syncTimer.interval();
+    m_syncTimer.start(timeout);
     //qDebug() << timeout << vehicle->callsign();
 }
-//=============================================================================
-//=============================================================================
-void Nodes::upgradeStarted(QString sn)
+
+void Nodes::search()
 {
-    NodeItem *node = this->node(sn);
-    if (!node)
+    if (!m_protocol)
         return;
-    node->setUpgrading(true);
-    node->clear();
-    ProtocolServiceFirmware *fw = Vehicles::instance()->protocol->firmware;
-    connect(fw, &ProtocolServiceFirmware::progressChanged, node, [node, fw]() {
-        node->setProgress(fw->progress());
-    });
-    connect(fw, &ProtocolServiceFirmware::statusChanged, node, [node, fw]() {
-        node->setDescr(fw->status());
-    });
-    connect(f_stop, &Fact::triggered, fw, &ProtocolServiceFirmware::stop);
-}
-void Nodes::upgradeFinished(QString sn, bool success)
-{
-    Q_UNUSED(success)
-    NodeItem *node = this->node(sn);
-    if (!node)
-        return;
-    ProtocolServiceFirmware *fw = Vehicles::instance()->protocol->firmware;
-    disconnect(fw, nullptr, node, nullptr);
-    disconnect(f_stop, nullptr, fw, nullptr);
-    node->setUpgrading(false);
-    node->updateDescr();
-    syncLater(5000);
-}
-//=============================================================================
-//=============================================================================
-void Nodes::request()
-{
-    if (!vehicle->protocol)
-        return;
-    syncActive = true;
+    setActive(true);
     sync();
 }
 void Nodes::stop()
 {
-    if (!vehicle->protocol)
+    if (!m_protocol)
         return;
-    vehicle->protocol->service->setActive(false);
-    vehicle->protocol->service->stop();
-    syncActive = false;
+    setActive(false);
+    m_protocol->stop();
 }
-//=============================================================================
+
 void Nodes::clear()
 {
     if (upgrading())
         return;
-    snMap.clear();
-    nGroups.clear();
+    m_sn_map.clear();
+    m_groups.clear();
     removeAll();
-    if (vehicle->protocol)
-        vehicle->protocol->service->clearNodes();
-    syncCount = 0;
+    if (m_protocol)
+        m_protocol->clearNodes();
+    m_syncCount = 0;
     m_nodesCount = 0;
     emit nodesCountChanged();
     setModified(false);
-    //updateProgress();
-    //App::jsync(this);
 }
-//=============================================================================
+
 void Nodes::reload()
 {
     clear();
-    request();
+    search();
 }
-//=============================================================================
+
 void Nodes::upload()
 {
     if (!(dictValid() && dataValid()))
         return;
     if (!modified())
         return;
-    foreach (NodeItem *node, snMap.values()) {
-        node->upload();
+    for (auto i : m_sn_map) {
+        i->upload();
     }
 }
-//=============================================================================
+
 void Nodes::save()
 {
     if (!(dictValid() && dataValid()))
         return;
-    if (!modified())
-        return;
-    foreach (NodeItem *node, snMap.values()) {
-        if (!node->modified())
+    for (auto i : m_sn_map) {
+        if (!i->modified())
             continue;
-        storage->saveNodeConfig(node);
+        //storage->saveNodeConfig(node);
     }
 }
-//=============================================================================
-void Nodes::nstat()
-{
-    foreach (NodeItem *node, snMap.values()) {
-        node->requestNstat();
-    }
-}
-//=============================================================================
+
 void Nodes::rebootAll()
 {
-    if (!vehicle->protocol)
+    if (!m_protocol)
         return;
     apxMsg() << tr("Vehicle system reset");
-    vehicle->protocol->service->rebootAll();
+    m_protocol->requestRebootAll();
 }
-//=============================================================================
-void Nodes::clearCache()
-{
-    skipCache.clear();
-    foreach (QString sn, snMap.keys()) {
-        skipCache.append(sn);
-    }
-    apxMsg() << tr("Cache invalidated");
-}
-//=============================================================================
-//=============================================================================
+
 void Nodes::loadConfValue(const QString &sn, QString s)
 {
-    NodeItem *node = snMap.value(sn);
+    NodeItem *node = this->node(sn);
     if (!node) {
         qWarning() << "missing node" << sn;
         return;
@@ -440,4 +314,3 @@ void Nodes::loadConfValue(const QString &sn, QString s)
         return;
     node->loadConfigValue(spath, sv);
 }
-//=============================================================================

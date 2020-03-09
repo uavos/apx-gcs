@@ -23,6 +23,9 @@
 #pragma once
 
 #include <QtCore>
+
+#include "ProtocolStream.h"
+
 class ProtocolConverter;
 
 class ProtocolBase : public QObject
@@ -31,28 +34,7 @@ class ProtocolBase : public QObject
 public:
     ProtocolBase(QObject *parent = nullptr);
 
-    virtual void setConverter(ProtocolConverter *c);
-    ProtocolConverter *converter() const;
-
-private:
-    QTimer reqTimer;
-    QList<QByteArray> reqList;
-
 protected:
-    ProtocolConverter *m_converter;
-    void scheduleRequest(QByteArray packet);
-
-protected slots:
-    virtual void unpack(const QByteArray packet);
-
-public slots:
-    void downlinkData(QByteArray packet); //connect rx
-
-    void send(QByteArray packet); //call to send data to tx
-
-signals:
-    void uplinkData(QByteArray packet); //connect tx
-
     //properties
 public:
     int progress() const;

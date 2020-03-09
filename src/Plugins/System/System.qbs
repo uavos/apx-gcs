@@ -6,13 +6,13 @@ Project {
         "AppUpdate",
         "FirmwareLoader",
         "Joystick",
-        "Notifications",
-        "Simulator",
+        //"Notifications",
+        //"Simulator",
         "Sounds",
         "Terminal",
-        "Blackbox",
+        //"Blackbox",
         "Shortcuts",
-        "ProtocolBackport",
+        //"ProtocolBackport",
     ]
 
     references: {

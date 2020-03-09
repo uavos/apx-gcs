@@ -48,82 +48,21 @@ QString NodeItemData::sn() const
 {
     return m_sn;
 }
-bool NodeItemData::reconf() const
+
+NodeItemData::IdentFlags NodeItemData::identFlags(void) const
 {
-    return m_reconf;
+    return m_identFlags;
 }
-void NodeItemData::setReconf(const bool &v)
+void NodeItemData::setIdentFlags(NodeItemData::IdentFlags v)
 {
-    if (m_reconf == v)
+    if (m_identFlags == v)
         return;
-    m_reconf = v;
-    emit reconfChanged();
+    m_identFlags = v;
+    emit identFlagsChanged();
 }
-bool NodeItemData::fwSupport() const
+bool NodeItemData::identFlag(IdentFlag v)
 {
-    return m_fwSupport;
-}
-void NodeItemData::setFwSupport(const bool &v)
-{
-    if (m_fwSupport == v)
-        return;
-    m_fwSupport = v;
-    emit fwSupportChanged();
-}
-bool NodeItemData::fwUpdating() const
-{
-    return m_fwUpdating;
-}
-void NodeItemData::setFwUpdating(const bool &v)
-{
-    if (m_fwUpdating == v)
-        return;
-    m_fwUpdating = v;
-    emit fwUpdatingChanged();
-}
-bool NodeItemData::addressing() const
-{
-    return m_addressing;
-}
-void NodeItemData::setAddressing(const bool &v)
-{
-    if (m_addressing == v)
-        return;
-    m_addressing = v;
-    emit addressingChanged();
-}
-bool NodeItemData::rebooting() const
-{
-    return m_rebooting;
-}
-void NodeItemData::setRebooting(const bool &v)
-{
-    if (m_rebooting == v)
-        return;
-    m_rebooting = v;
-    emit rebootingChanged();
-}
-bool NodeItemData::busy() const
-{
-    return m_busy;
-}
-void NodeItemData::setBusy(const bool &v)
-{
-    if (m_busy == v)
-        return;
-    m_busy = v;
-    emit busyChanged();
-}
-bool NodeItemData::failure() const
-{
-    return m_failure;
-}
-void NodeItemData::setFailure(const bool &v)
-{
-    if (m_failure == v)
-        return;
-    m_failure = v;
-    emit failureChanged();
+    return identFlags() & v;
 }
 
 qreal NodeItemData::vbat() const

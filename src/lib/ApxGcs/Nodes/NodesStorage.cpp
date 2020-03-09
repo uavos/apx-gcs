@@ -336,7 +336,7 @@ void NodesStorage::newNodeDict(QVariantMap info, DictNode::Dict dict)
         qWarning() << "node exists but dict changed" << n->title();
         n->clear();
     } else {
-        n = nodes->appendNode(sn, nullptr);
+        n = nodes->addNode(sn, nullptr);
     }
     n->setTitle(info.value("name").toString());
     n->setVersion(info.value("version").toString());
