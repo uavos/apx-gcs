@@ -141,7 +141,7 @@ Mandala::Mandala(Fact *parent)
     //mandala::backport::MandalaBackport backport;
 
     //apxMsg() << findChild("sns.tcas.vel")->title();
-    //apxMsg() << fact(mandala::sns::nav::air::aoa::meta.uid)->title();
+    //apxMsg() << fact(mandala::sns::nav::air::aoa::uid)->title();
 }
 
 quint64 Mandala::timestamp() const

@@ -89,9 +89,9 @@ void CompassFrame::vehicleSelected(Vehicle *vehicle)
     clist.append(
         connect(vehicle, &Vehicle::telemetryDataReceived, this, &CompassFrame::dataReceived));
 
-    c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::meta.uid);
-    c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::meta.uid);
-    c_Hz = vehicle->f_mandala->fact(mandala::sns::nav::mag::z::meta.uid);
+    c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::uid);
+    c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::uid);
+    c_Hz = vehicle->f_mandala->fact(mandala::sns::nav::mag::z::uid);
 }
 //=============================================================================
 void CompassFrame::dataReceived()

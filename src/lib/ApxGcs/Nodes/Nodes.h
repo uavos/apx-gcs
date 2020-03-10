@@ -97,8 +97,6 @@ signals:
     void syncDone();
 
 public slots:
-
-    void rebootAll();
     void save();
 
     //---------------------------------------

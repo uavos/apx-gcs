@@ -37,10 +37,15 @@ class ProtocolNode : public ProtocolBase
 public:
     explicit ProtocolNode(ProtocolNodes *nodes, const QString &sn);
 
-    //service protocol and requests management
+    // called by nodes
     void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);
 
+    ProtocolNodeRequest *request(xbus::pid_t pid, int timeout_ms = 0, int retry_cnt = 0);
+
     const xbus::node::ident::ident_s &ident() const;
+    QString name() const;
+    QString version() const;
+    QString hardware() const;
 
     struct field_s : public xbus::node::dict::field_s
     {
@@ -55,15 +60,15 @@ private:
     ProtocolNodes *nodes;
 
     xbus::node::ident::ident_s m_ident;
-    bool ident_valid{false};
-
-    ProtocolNodeRequest *make_request(xbus::pid_t pid, int timeout_ms = 0, int retry_cnt = 0);
+    QString m_name;
+    QString m_version;
+    QString m_hardware;
 
     //export signals and slots
 signals:
     void requestTimeout(quint16 cmd, QByteArray data);
 
-    void identReceived(xbus::node::ident::ident_s ident);
+    void identReceived();
     void dictReceived(const ProtocolNode::Dictionary &dict);
     void confReceived(const QVariantList &values);
 

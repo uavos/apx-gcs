@@ -52,7 +52,8 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
-    //qDebug() << ident.callsign << pid;
+    qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
+    //qDebug() << ident.callsign << QString::number(pid, 16);
 
     if (mandala::cmd::env::nmt::match(pid)) {
         nodes->downlink(pid, stream);
@@ -63,10 +64,10 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     default:
         emit receivedData(pid, &stream);
         break;
-    case mandala::cmd::env::telemetry::data::meta.uid:
+    case mandala::cmd::env::telemetry::data::uid:
         emit telemetryData(&stream);
         break;
-    case mandala::cmd::env::vcp::rx::meta.uid:
+    case mandala::cmd::env::vcp::rx::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
             emit serialRxData(port_id, stream.payload());
@@ -74,7 +75,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
             qWarning() << "Empty serial RX data received";
         }
         break;
-    case mandala::cmd::env::vcp::tx::meta.uid:
+    case mandala::cmd::env::vcp::tx::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
             emit serialTxData(port_id, stream.payload());
@@ -82,9 +83,9 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
             qWarning() << "Empty serial TX data received";
         }
         break;
-    case mandala::cmd::env::mission::data::meta.uid:
+    case mandala::cmd::env::mission::data::uid:
         break;
-    case mandala::cmd::env::script::jsexec::meta.uid:
+    case mandala::cmd::env::script::jsexec::uid:
         if (stream.available() > 2) {
             QString script = stream.payload().trimmed();
             if (!script.isEmpty()) {
@@ -109,7 +110,7 @@ void ProtocolVehicle::vmexec(QString func)
     if (func.isEmpty())
         return;
     ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::script::vmexec::meta.uid);
+    ostream.write<xbus::pid_t>(mandala::cmd::env::script::vmexec::uid);
     ostream.append(func.toUtf8());
     send(ostream.toByteArray());
 }
@@ -118,7 +119,7 @@ void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
     if (data.isEmpty())
         return;
     ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::vcp::tx::meta.uid);
+    ostream.write<xbus::pid_t>(mandala::cmd::env::vcp::tx::uid);
     ostream.write<uint8_t>(portID);
     ostream.append(data);
     send(ostream.toByteArray());

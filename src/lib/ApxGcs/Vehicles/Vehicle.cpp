@@ -76,25 +76,25 @@ Vehicle::Vehicle(Vehicles *vehicles,
     }
 
     //Mandala facts binfing
-    f_lat = f_mandala->fact(mandala::est::nav::pos::lat::meta.uid);
-    f_lon = f_mandala->fact(mandala::est::nav::pos::lon::meta.uid);
-    f_hmsl = f_mandala->fact(mandala::est::nav::pos::hmsl::meta.uid);
-    f_ref_lat = f_mandala->fact(mandala::est::nav::ref::lat::meta.uid);
-    f_ref_lon = f_mandala->fact(mandala::est::nav::ref::lon::meta.uid);
-    f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::meta.uid);
-    f_vd = f_mandala->fact(mandala::est::nav::pos::vd::meta.uid);
-    f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::meta.uid);
-    f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::meta.uid);
-    f_cmd_n = f_mandala->fact(mandala::cmd::nav::pos::n::meta.uid);
-    f_cmd_e = f_mandala->fact(mandala::cmd::nav::pos::e::meta.uid);
+    f_lat = f_mandala->fact(mandala::est::nav::pos::lat::uid);
+    f_lon = f_mandala->fact(mandala::est::nav::pos::lon::uid);
+    f_hmsl = f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
+    f_ref_lat = f_mandala->fact(mandala::est::nav::ref::lat::uid);
+    f_ref_lon = f_mandala->fact(mandala::est::nav::ref::lon::uid);
+    f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    f_vd = f_mandala->fact(mandala::est::nav::pos::vd::uid);
+    f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::uid);
+    f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::uid);
+    f_cmd_n = f_mandala->fact(mandala::cmd::nav::pos::n::uid);
+    f_cmd_e = f_mandala->fact(mandala::cmd::nav::pos::e::uid);
 
-    f_cmd_gimbal_lat = f_mandala->fact(mandala::cmd::nav::gimbal::lat::meta.uid);
-    f_cmd_gimbal_lon = f_mandala->fact(mandala::cmd::nav::gimbal::lon::meta.uid);
-    f_cmd_gimbal_hmsl = f_mandala->fact(mandala::cmd::nav::gimbal::hmsl::meta.uid);
+    f_cmd_gimbal_lat = f_mandala->fact(mandala::cmd::nav::gimbal::lat::uid);
+    f_cmd_gimbal_lon = f_mandala->fact(mandala::cmd::nav::gimbal::lon::uid);
+    f_cmd_gimbal_hmsl = f_mandala->fact(mandala::cmd::nav::gimbal::hmsl::uid);
 
-    f_gps_lat = f_mandala->fact(mandala::sns::nav::gps::lat::meta.uid);
-    f_gps_lon = f_mandala->fact(mandala::sns::nav::gps::lon::meta.uid);
-    f_gps_hmsl = f_mandala->fact(mandala::sns::nav::gps::hmsl::meta.uid);
+    f_gps_lat = f_mandala->fact(mandala::sns::nav::gps::lat::uid);
+    f_gps_lon = f_mandala->fact(mandala::sns::nav::gps::lon::uid);
+    f_gps_hmsl = f_mandala->fact(mandala::sns::nav::gps::hmsl::uid);
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);

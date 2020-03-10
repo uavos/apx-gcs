@@ -133,9 +133,9 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
     xbus::pid_t pid = stream.read<xbus::pid_t>();
 
     static constexpr const mandala::uid_t allowed[] = {
-        mandala::cmd::env::nmt::meta.uid,
-        mandala::cmd::env::vehicle::ident::meta.uid,
-        mandala::cmd::env::vehicle::xpdr::meta.uid,
+        mandala::cmd::env::nmt::uid,
+        mandala::cmd::env::vehicle::ident::uid,
+        mandala::cmd::env::vehicle::xpdr::uid,
     };
     for (auto i : allowed)
         if (pid == i)

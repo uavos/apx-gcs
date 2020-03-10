@@ -46,8 +46,6 @@ class NodeItem : public NodeItemBase
 public:
     explicit NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol);
 
-    const xbus::node::ident::ident_s &ident() const;
-
     QList<NodeField *> allFields;
     QMap<QString, NodeField *> allFieldsByName;
 
@@ -92,12 +90,9 @@ public slots:
     void upload();
     void clear();
 
-signals:
-    void identUpdated();
-
     //protocols:
 private slots:
-    void identReceived(const xbus::node::ident::ident_s &ident);
+    void identReceived();
     void dictReceived(const ProtocolNode::Dictionary &dict);
     void confReceived(const QVariantList &values);
 
@@ -117,6 +112,10 @@ public:
     void setVersion(const QString &v);
     QString hardware() const;
     void setHardware(const QString &v);
+
+    const xbus::node::ident::ident_s &ident() const;
+    void setIdent(const xbus::node::ident::ident_s &v);
+
     bool identValid() const;
     void setIdentValid(const bool &v);
     bool offline() const;
@@ -130,6 +129,7 @@ protected:
 signals:
     void versionChanged();
     void hardwareChanged();
+    void identChanged();
     void identValidChanged();
     void offlineChanged();
 };

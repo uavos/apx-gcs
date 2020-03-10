@@ -40,18 +40,18 @@ ProtocolNodeRequest::ProtocolNodeRequest(
 {
     //repare stream
     write<xbus::pid_t>(pid);
-    xbus::node::guid_t guid;
-    memset(guid, 0, sizeof(guid));
     if (!sn.isEmpty()) {
         QByteArray src(QByteArray::fromHex(sn.toUtf8()));
         size_t sz = static_cast<size_t>(src.size());
-        if (sz > sizeof(guid)) {
-            sz = sizeof(guid);
+        if (sz > sizeof(xbus::node::guid_t)) {
+            sz = sizeof(xbus::node::guid_t);
             qWarning() << "guid size:" << sz;
         }
+        xbus::node::guid_t guid;
+        memset(guid, 0, sizeof(guid));
         memcpy(guid, src.data(), sz);
+        write(guid, sizeof(guid));
     }
-    write(guid, sizeof(guid));
     stream_pos_s = pos();
 
     connect(&timer, &QTimer::timeout, this, &ProtocolNodeRequest::triggerTimeout);
@@ -84,6 +84,11 @@ bool ProtocolNodeRequest::equals(xbus::node::crc_t crc)
         _crc_valid = true;
     }
     return _crc == crc;
+}
+
+void ProtocolNodeRequest::schedule()
+{
+    nodes->schedule(this);
 }
 
 void ProtocolNodeRequest::trigger()
@@ -121,7 +126,7 @@ void ProtocolNodeRequest::triggerTimeout()
     if (retry_cnt > 0) {
         apxConsoleW() << tr("Service timeout")
                       << QString("(%1): %2 %3")
-                             .arg(node ? node->ident().name : "?")
+                             .arg(node ? node->name() : "?")
                              .arg(Mandala::meta(pid).name)
                              .arg(dump(stream_pos_s));
         emit timeout();

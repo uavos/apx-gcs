@@ -34,6 +34,7 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     : ProtocolBase(parent)
 {
     xbus::vehicle::ident_s ident;
+    memset(&ident, 0, sizeof(ident));
     ident.vclass = 0;
     local = new ProtocolVehicle(0, ident, this);
     //firmware = new ProtocolServiceFirmware(local->service);
@@ -79,6 +80,7 @@ void ProtocolVehicles::process_uplink(const QByteArray packet)
         m_converter->convertUplink(packet);
     else
         emit uplink(packet);
+    //qDebug() << packet.toHex().toUpper();
 }
 
 void ProtocolVehicles::process_downlink(const QByteArray packet)
@@ -95,13 +97,14 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
     }
 
     xbus::pid_t pid = stream.read<xbus::pid_t>();
+    //qDebug() << "rx" << QString::number(pid, 16) << packet.toHex().toUpper();
 
     switch (pid) {
     default:
         stream.reset();
         local->downlink(stream);
         break;
-    case mandala::cmd::env::vehicle::xpdr::meta.uid: { //transponder from UAV received
+    case mandala::cmd::env::vehicle::xpdr::uid: { //transponder from UAV received
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         if (xbus::vehicle::xpdr_s::psize() != stream.available())
             break;
@@ -118,7 +121,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
 
         v->xpdrData(xpdr);
     } break;
-    case mandala::cmd::env::vehicle::ident::meta.uid: {
+    case mandala::cmd::env::vehicle::ident::uid: {
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         qDebug() << "ident received" << squawk;
         if (xbus::vehicle::ident_s::psize() != stream.available())
@@ -169,7 +172,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
             squawkMap.insert(squawk, v);
         }
     } break;
-    case mandala::cmd::env::vehicle::downlink::meta.uid: {
+    case mandala::cmd::env::vehicle::downlink::uid: {
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         if (stream.available() == 0)
             break;
@@ -198,7 +201,7 @@ void ProtocolVehicles::identRequest(xbus::vehicle::squawk_t squawk)
 {
     //qDebug() << "scheduled ident req";
     ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::meta.uid);
+    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
     // schedule
     if (!reqList.contains(ostream.toByteArray())) {
@@ -230,7 +233,7 @@ void ProtocolVehicles::identAssign(xbus::vehicle::squawk_t squawk,
     }
 
     ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::meta.uid);
+    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
 
     xbus::vehicle::ident_s dIdent;
@@ -258,9 +261,10 @@ void ProtocolVehicles::send(xbus::vehicle::squawk_t squawk, QByteArray packet)
     if (!squawk) {
         //local vehicle
         process_uplink(packet);
+        return;
     }
     ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::meta.uid);
+    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
     ostream.append(packet);
     process_uplink(ostream.toByteArray());
@@ -269,6 +273,6 @@ void ProtocolVehicles::send(xbus::vehicle::squawk_t squawk, QByteArray packet)
 void ProtocolVehicles::sendHeartbeat()
 {
     ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::meta.uid);
+    ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::uid);
     process_uplink(ostream.toByteArray());
 }

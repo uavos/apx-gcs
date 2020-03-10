@@ -54,14 +54,16 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol)
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::upgradingChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::offlineChanged, this, &NodeItem::updateDescr);
-    connect(this, &NodeItem::identUpdated, this, &NodeItem::updateDescr);
+    connect(this, &NodeItem::identChanged, this, &NodeItem::updateDescr);
 
+    connect(this, &NodeItem::identChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::titleChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::versionChanged, this, &NodeItem::nodeNotify);
     connect(this, &NodeItem::valueChanged, this, &NodeItem::nodeNotify);
 
     //validity
+    connect(this, &NodeItem::identChanged, this, &NodeItem::clear);
     connect(this, &NodeItem::dictValidChanged, this, &NodeItem::validateDict);
     connect(this, &NodeItem::dataValidChanged, this, &NodeItem::validateData);
 
@@ -114,12 +116,6 @@ void NodeItem::setProtocol(ProtocolNode *protocol)
     setDictValid(false);
     setIdentValid(false);
     emit offlineChanged();
-    emit requestIdent();
-}
-
-const xbus::node::ident::ident_s &NodeItem::ident() const
-{
-    return m_ident;
 }
 
 void NodeItem::validateDict()
@@ -169,8 +165,8 @@ void NodeItem::updateDescr()
         st.append(m_version);
     if (offline())
         st.append(tr("offline"));
-    if (m_ident.flags.bits.loader)
-        st.append("LOADER");
+    //if (m_ident.flags.bits.loader)
+    //    st.append("LOADER");
     //st.append(sn());
     setDescr(st.join(' '));
 }
@@ -289,6 +285,17 @@ void NodeItem::setHardware(const QString &v)
     m_hardware = v;
     emit hardwareChanged();
 }
+const xbus::node::ident::ident_s &NodeItem::ident() const
+{
+    return m_ident;
+}
+void NodeItem::setIdent(const xbus::node::ident::ident_s &v)
+{
+    if (memcmp(&m_ident, &v, sizeof(m_ident)) == 0)
+        return;
+    m_ident = v;
+    emit identChanged();
+}
 bool NodeItem::identValid() const
 {
     return m_identValid;
@@ -309,28 +316,33 @@ bool NodeItem::offline() const
 // Protocols connection
 //=============================================================================
 
-void NodeItem::identReceived(const xbus::node::ident::ident_s &ident)
+void NodeItem::identReceived()
 {
-    //qDebug()<<"ok";
+    //qDebug() << "ok";
     m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    m_ident = ident;
 
-    setName(QString(QByteArray(ident.name, sizeof(ident.name))));
+    setName(m_protocol->name());
     setTitle(name());
-    setVersion(QString(QByteArray(ident.version, sizeof(ident.version))));
-    setHardware(QString(QByteArray(ident.hardware, sizeof(ident.hardware))));
+    setVersion(m_protocol->version());
+    setHardware(m_protocol->hardware());
+
+    setIdent(m_protocol->ident());
+    qDebug() << "files:" << m_ident.flags.bits.files;
+
     setIdentValid(true);
 
-    //groupNodes();
-
-    if (upgrading()) {
-        //setDictValid(true);
+    if (upgrading() || m_ident.flags.bits.files == 0) {
+        // node in some service mode
+        setDictValid(true);
         return;
     }
-    if (!offline()) {
-        //nodes->storage->saveNodeInfo(this);
-        //nodes->storage->saveNodeUser(this);
-    }
+    if (offline())
+        return;
+
+    //nodes->storage->saveNodeInfo(this);
+    //nodes->storage->saveNodeUser(this);
+
+    // node has dict
 
     nodeNotify();
 }
@@ -339,4 +351,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dictionary &dict) {}
 
 void NodeItem::confReceived(const QVariantList &values) {}
 
-void NodeItem::messageReceived(xbus::node::msg::type_t type, QString msg) {}
+void NodeItem::messageReceived(xbus::node::msg::type_t type, QString msg)
+{
+    AppNotify::instance()->report(msg, AppNotify::FromVehicle | AppNotify::Important);
+}

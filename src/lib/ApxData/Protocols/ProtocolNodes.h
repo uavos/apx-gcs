@@ -36,7 +36,10 @@ public:
 
     friend class ProtocolNodeRequest;
 
-    void schedule(ProtocolNodeRequest *request);
+    ProtocolNodeRequest *request(xbus::pid_t pid,
+                                 const QString &sn,
+                                 int timeout_ms = 0,
+                                 int retry_cnt = 0);
 
     ProtocolNode *getNode(QString sn, bool createNew = true);
 
@@ -55,6 +58,7 @@ private:
     QElapsedTimer reqTime;
     QTimer finishedTimer;
     bool remove(ProtocolNodeRequest *request);
+    void schedule(ProtocolNodeRequest *request);
 
     QHash<QString, ProtocolNode *> nodes;
 
@@ -78,7 +82,6 @@ signals:
 public slots:
     //nodes dict sync
     void requestSearch();
-    void requestRebootAll();
 
     void clearNodes();
     void removeNode(QString sn);

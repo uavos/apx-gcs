@@ -43,44 +43,66 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
         if (!this->nodes->active())
             setProgress(-1);
     });
+
+    requestIdent();
 }
 
 void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
 {
     //filter requests
-    if (stream.available() == 0 && pid != mandala::cmd::env::nmt::search::meta.uid)
+    if (stream.available() == 0 && pid != mandala::cmd::env::nmt::search::uid)
         return;
+
+    //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
 
     switch (pid) {
     default:
         //qDebug() << cmd << data.size();
         return;
 
-    case mandala::cmd::env::nmt::search::meta.uid: { //response to search
+    case mandala::cmd::env::nmt::search::uid: { //response to search
         //qDebug() << "apc_search" << sn;
         requestIdent();
     } break;
 
         // node ident
-    case mandala::cmd::env::nmt::ident::meta.uid: {
+    case mandala::cmd::env::nmt::ident::uid: {
         //qDebug() << "ident" << sn;
-        if (stream.available() != xbus::node::ident::ident_s::psize())
+        if (stream.available()
+            <= (xbus::node::ident::ident_s::psize() + xbus::node::ident::strings_count * 2)) {
+            qWarning() << "size" << stream.available() << xbus::node::ident::ident_s::psize();
             break;
-
+        }
         nodes->acknowledgeRequest(stream);
         m_ident.read(&stream);
-        ident_valid = true;
+        if (xbus::node::ident::strings_count != 3)
+            break;
+        // format ok
+        const char *s;
+        s = stream.read_string(32);
+        if (!s)
+            break;
+        m_name = QString(s).trimmed();
+        s = stream.read_string(32);
+        if (!s)
+            break;
+        m_version = QString(s).trimmed();
+        s = stream.read_string(32);
+        if (!s)
+            break;
+        m_hardware = QString(s).trimmed();
+        emit identReceived();
     } break;
 
         // request acknowledge
-    case mandala::cmd::env::nmt::ack::meta.uid: {
+    case mandala::cmd::env::nmt::ack::uid: {
         if (stream.available() != sizeof(xbus::node::crc_t))
             break;
         nodes->acknowledgeRequest(stream.read<xbus::node::crc_t>());
     } break;
 
         // message from vehicle
-    case mandala::cmd::env::nmt::msg::meta.uid: {
+    case mandala::cmd::env::nmt::msg::uid: {
         if (stream.available() < (sizeof(xbus::node::msg::type_t) + 1))
             break;
         xbus::node::msg::type_t t;
@@ -96,19 +118,31 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
     }
 }
 
-ProtocolNodeRequest *ProtocolNode::make_request(xbus::pid_t pid, int timeout_ms, int retry_cnt)
+ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, int timeout_ms, int retry_cnt)
 {
-    return new ProtocolNodeRequest(nodes, sn, pid, timeout_ms, retry_cnt);
+    return nodes->request(pid, sn, timeout_ms, retry_cnt);
 }
 
 const xbus::node::ident::ident_s &ProtocolNode::ident() const
 {
     return m_ident;
 }
+QString ProtocolNode::name() const
+{
+    return m_name;
+}
+QString ProtocolNode::version() const
+{
+    return m_version;
+}
+QString ProtocolNode::hardware() const
+{
+    return m_hardware;
+}
 
 void ProtocolNode::requestIdent()
 {
-    nodes->schedule(make_request(mandala::cmd::env::nmt::ident::meta.uid));
+    request(mandala::cmd::env::nmt::ident::uid)->schedule();
 }
 void ProtocolNode::requestDict()
 {
@@ -120,5 +154,5 @@ void ProtocolNode::requestConf()
 }
 void ProtocolNode::requestStatus()
 {
-    nodes->schedule(make_request(mandala::cmd::env::nmt::status::meta.uid));
+    request(mandala::cmd::env::nmt::status::uid)->schedule();
 }

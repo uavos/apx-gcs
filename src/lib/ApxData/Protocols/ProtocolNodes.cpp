@@ -59,6 +59,14 @@ void ProtocolNodes::checkFinished()
     emit finished();
 }
 
+ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
+                                            const QString &sn,
+                                            int timeout_ms,
+                                            int retry_cnt)
+{
+    return new ProtocolNodeRequest(this, sn, pid, timeout_ms, retry_cnt);
+}
+
 void ProtocolNodes::schedule(ProtocolNodeRequest *request)
 {
     finishedTimer.stop();
@@ -70,8 +78,6 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
         remove(r);
     }
 
-    connect(request, &ProtocolNodeRequest::finished, this, &ProtocolNodes::requestFinished);
-
     int ins = pool.size();
     for (int i = 0; i < pool.size(); i++) {
         if (pool.at(i)->lessThan(request))
@@ -80,6 +86,7 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
         break;
     }
     pool.insert(ins, request);
+    connect(request, &ProtocolNodeRequest::finished, this, &ProtocolNodes::requestFinished);
 
     if (activeCount == 0 || (!timer.isActive()))
         emit next();
@@ -205,6 +212,7 @@ void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
     stream.read(sn_ba.data(), sizeof(xbus::node::guid_t));
     QString sn(sn_ba.toHex().toUpper());
 
+    //qDebug() << QString::number(pid, 16) << sn;
     //qDebug() << "nmt" << sn;
 
     // filter broadcast requests
@@ -227,12 +235,7 @@ void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
 
 void ProtocolNodes::requestSearch()
 {
-    schedule(new ProtocolNodeRequest(this, QString(), mandala::cmd::env::nmt::search::meta.uid));
-}
-
-void ProtocolNodes::requestRebootAll()
-{
-    schedule(new ProtocolNodeRequest(this, QString(), mandala::cmd::env::nmt::reboot::meta.uid));
+    request(mandala::cmd::env::nmt::search::uid, QString())->schedule();
 }
 
 bool ProtocolNodes::active() const

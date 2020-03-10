@@ -33,12 +33,12 @@ HttpService::HttpService(QObject *parent)
 }
 void HttpService::vehicleSelected(Vehicle *vehicle)
 {
-    c_gps_lat = vehicle->f_mandala->fact(mandala::est::nav::pos::lat::meta.uid);
-    c_gps_lon = vehicle->f_mandala->fact(mandala::est::nav::pos::lon::meta.uid);
-    c_gps_hmsl = vehicle->f_mandala->fact(mandala::est::nav::pos::hmsl::meta.uid);
-    c_course = vehicle->f_mandala->fact(mandala::est::nav::pos::course::meta.uid);
-    c_roll = vehicle->f_mandala->fact(mandala::est::nav::att::roll::meta.uid);
-    c_pitch = vehicle->f_mandala->fact(mandala::est::nav::att::pitch::meta.uid);
+    c_gps_lat = vehicle->f_mandala->fact(mandala::est::nav::pos::lat::uid);
+    c_gps_lon = vehicle->f_mandala->fact(mandala::est::nav::pos::lon::uid);
+    c_gps_hmsl = vehicle->f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
+    c_course = vehicle->f_mandala->fact(mandala::est::nav::pos::course::uid);
+    c_roll = vehicle->f_mandala->fact(mandala::est::nav::att::roll::uid);
+    c_pitch = vehicle->f_mandala->fact(mandala::est::nav::att::pitch::uid);
 }
 //=============================================================================
 void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)

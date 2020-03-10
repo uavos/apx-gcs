@@ -46,6 +46,8 @@ public:
     bool acknowledge(xbus::node::crc_t crc);
     void finish(bool acknowledged = false);
 
+    void schedule();
+
     static xbus::node::crc_t get_crc(const void *data, size_t sz);
 
     bool active{false};

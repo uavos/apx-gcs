@@ -287,14 +287,6 @@ void Nodes::save()
     }
 }
 
-void Nodes::rebootAll()
-{
-    if (!m_protocol)
-        return;
-    apxMsg() << tr("Vehicle system reset");
-    m_protocol->requestRebootAll();
-}
-
 void Nodes::loadConfValue(const QString &sn, QString s)
 {
     NodeItem *node = this->node(sn);
