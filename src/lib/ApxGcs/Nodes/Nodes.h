@@ -85,7 +85,6 @@ private slots:
 
     void sync();
 
-    void status();
     void search();
     void clear();
     void reload();
@@ -94,10 +93,6 @@ private slots:
 
     void protocolFinished();
 
-    //upgrade
-    void upgradeStarted(QString sn);
-    void upgradeFinished(QString sn, bool success);
-
 signals:
     void syncDone();
 
@@ -105,7 +100,6 @@ public slots:
 
     void rebootAll();
     void save();
-    void clearCache();
 
     //---------------------------------------
     // PROPERTIES

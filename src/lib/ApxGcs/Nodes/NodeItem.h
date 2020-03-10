@@ -51,28 +51,17 @@ public:
     QList<NodeField *> allFields;
     QMap<QString, NodeField *> allFieldsByName;
 
-    void clear();
-
     Nodes *nodes;
-    NodeTools *tools;
+    //NodeTools *tools;
 
     void execCommand(quint16 cmd, const QString &name, const QString &descr);
 
     void setProtocol(ProtocolNode *protocol);
 
-    int loadConfigValues(QVariantMap values);
-    bool loadConfigValue(const QString &name, const QString &value);
+    //int loadConfigValues(QVariantMap values);
+    //bool loadConfigValue(const QString &name, const QString &value);
 
 protected:
-    static QStringList sortNames;
-
-    void groupFields(void);
-    void groupNodes(void);
-    void groupArrays(NodesBase *group);
-
-    void saveTelemetryUploadEvent();
-    void saveTelemetryConf(NodeField *f);
-
     QTimer statusTimer;
 
     //override
@@ -94,13 +83,14 @@ private slots:
     void validateDict();
     void validateData();
 
+    void updateDescr();
+    void updateStatus();
+
     void nodeNotify();
 
 public slots:
     void upload();
-
-    void updateDescr();
-    void updateStatus();
+    void clear();
 
 signals:
     void identUpdated();

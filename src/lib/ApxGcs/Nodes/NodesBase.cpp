@@ -22,23 +22,15 @@
  */
 #include "NodesBase.h"
 #include "Nodes.h"
-//=============================================================================
+
 NodesBase::NodesBase(
     Fact *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
     : Fact(parent, name, title, descr, flags)
-    , m_dataValid(false)
 {
-    //parent forward check
-    connect(this, &NodesBase::dataValidChanged, this, &NodesBase::updateDataValid);
-    updateDataValid();
-
-    //force update modelViews
-    connect(this, &NodesBase::dataValidChanged, this, &Fact::enabledChanged);
-
     connect(this, &Fact::parentFactChanged, this, &NodesBase::addActions);
     addActions();
 }
-//=============================================================================
+
 void NodesBase::addActions()
 {
     if (!parentFact())
@@ -59,54 +51,3 @@ void NodesBase::addActions()
     Fact *f = new Fact(this, nodes->f_upload->name(), "", "", Action);
     f->bind(nodes->f_upload);
 }
-//=============================================================================
-QVariant NodesBase::data(int col, int role) const
-{
-    switch (role) {
-    case Qt::ForegroundRole:
-        if (!dataValid())
-            return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
-        break;
-    case Qt::BackgroundRole:
-        if (!dataValid())
-            return QVariant();
-        break;
-    }
-    return Fact::data(col, role);
-}
-//=============================================================================
-void NodesBase::updateDataValid()
-{
-    NodesBase *p = qobject_cast<NodesBase *>(parentFact());
-    if (!p)
-        return;
-    bool ok = true;
-    for (int i = 0; i < p->size(); ++i) {
-        const NodesBase *item = static_cast<NodesBase *>(p->child(i));
-        if (item->dataValid())
-            continue;
-        ok = false;
-        break;
-    }
-    p->setDataValid(ok, false);
-}
-//=============================================================================
-//=============================================================================
-bool NodesBase::dataValid() const
-{
-    return m_dataValid;
-}
-void NodesBase::setDataValid(const bool &v, bool recursive)
-{
-    if (recursive) {
-        for (int i = 0; i < size(); ++i) {
-            static_cast<NodesBase *>(child(i))->setDataValid(v);
-        }
-    }
-    if (m_dataValid == v)
-        return;
-    m_dataValid = v;
-    emit dataValidChanged();
-}
-//=============================================================================
-//=============================================================================

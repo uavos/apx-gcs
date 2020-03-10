@@ -20,16 +20,18 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeItemBase_H
-#define NodeItemBase_H
-//=============================================================================
+#pragma once
+
 #include "NodesBase.h"
 #include <QtCore>
-//=============================================================================
+
 class NodeItemBase : public NodesBase
 {
     Q_OBJECT
+
     Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
+    Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
+
     Q_PROPERTY(bool upgrading READ upgrading WRITE setUpgrading NOTIFY upgradingChanged)
 
 public:
@@ -43,11 +45,14 @@ public:
     bool lessThan(Fact *rightFact) const;
 
 private:
-    static QStringList sortNames;
-    int progress_s;
+    static QStringList g_sortNames;
+    int m_progress_s{0};
+
+    QList<const NodeItemBase *> groupNodesList() const;
 
 public slots:
     void updateDictValid();
+    void updateDataValid();
     void updateUpgrading();
     void updateProgress();
 
@@ -56,16 +61,20 @@ public slots:
 public:
     bool dictValid() const;
     void setDictValid(const bool &v);
+
+    bool dataValid() const;
+    void setDataValid(const bool &v);
+
     bool upgrading() const;
     void setUpgrading(const bool &v);
 
 protected:
-    bool m_dictValid;
-    bool m_upgrading;
+    bool m_dictValid{false};
+    bool m_dataValid{false};
+    bool m_upgrading{false};
 
 signals:
     void dictValidChanged();
+    void dataValidChanged();
     void upgradingChanged();
 };
-//=============================================================================
-#endif

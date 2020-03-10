@@ -27,8 +27,8 @@
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusPacket.h>
 
-ProtocolVehicle::ProtocolVehicle(quint16 squawk,
-                                 ProtocolVehicles::IdentData ident,
+ProtocolVehicle::ProtocolVehicle(xbus::vehicle::squawk_t squawk,
+                                 const xbus::vehicle::ident_s &ident,
                                  ProtocolVehicles *vehicles)
     : ProtocolBase(vehicles)
     , squawk(squawk)
@@ -61,10 +61,10 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
 
     switch (pid) {
     default:
-        emit receivedData(pid, stream);
+        emit receivedData(pid, &stream);
         break;
     case mandala::cmd::env::telemetry::data::meta.uid:
-        emit telemetryData(stream);
+        emit telemetryData(&stream);
         break;
     case mandala::cmd::env::vcp::rx::meta.uid:
         if (stream.available() > 1) {

@@ -33,8 +33,6 @@
 #include <QFontDatabase>
 #include <QQmlEngine>
 
-QStringList NodeItem::sortNames = {"shiva", "nav", "ifc", "cas", "gps", "dlink", "servo"};
-
 NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol)
     : NodeItemBase(parent, "node#", "", Group)
     , nodes(parent)
@@ -50,7 +48,7 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol)
 
     memset(&m_ident, 0, sizeof(m_ident));
 
-    tools = new NodeTools(this, Action);
+    //tools = new NodeTools(this, Action);
 
     connect(this, &NodeItem::versionChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::updateDescr);
@@ -82,14 +80,14 @@ NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol)
 
 void NodeItem::setProtocol(ProtocolNode *protocol)
 {
-    if (this->protocol == protocol)
+    if (m_protocol == protocol)
         return;
-    if (this->protocol) {
-        disconnect(this->protocol);
+    if (m_protocol) {
+        disconnect(m_protocol);
     }
-    this->protocol = protocol;
+    m_protocol = protocol;
     connect(protocol, &QObject::destroyed, this, [this]() {
-        this->protocol = nullptr;
+        m_protocol = nullptr;
         nodes->removeNode(sn());
     });
 
@@ -119,32 +117,6 @@ void NodeItem::setProtocol(ProtocolNode *protocol)
     emit requestIdent();
 }
 
-void NodeItem::identReceived(const xbus::node::ident::ident_s &ident)
-{
-    //qDebug()<<"ok";
-    lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    this->ident = ident;
-
-    setName(QString(QByteArray(ident.name, sizeof(ident.name))));
-    setTitle(name());
-    setVersion(QString(QByteArray(ident.version, sizeof(ident.version))));
-    setHardware(QString(QByteArray(ident.hardware, sizeof(ident.hardware))));
-    setIdentValid(true);
-
-    groupNodes();
-
-    if (upgrading()) {
-        //setDictValid(true);
-        return;
-    }
-    if (!offline()) {
-        nodes->storage->saveNodeInfo(this);
-        nodes->storage->saveNodeUser(this);
-    }
-
-    nodeNotify();
-}
-
 const xbus::node::ident::ident_s &NodeItem::ident() const
 {
     return m_ident;
@@ -154,7 +126,7 @@ void NodeItem::validateDict()
 {
     if (!dictValid())
         return;
-    groupFields();
+    //groupFields();
     //qDebug()<path();
 
     //fields map
@@ -164,7 +136,7 @@ void NodeItem::validateDict()
         bool bComplex = f->size() > 0;
         if (bComplex) {
             for (int i2 = 0; i2 < f->size(); ++i2) {
-                NodeField *f2 = f->child<NodeField>(i2);
+                NodeField *f2 = static_cast<NodeField *>(f->child(i2));
                 allFieldsByName.insert(f2->name(), f2);
             }
         } else
@@ -177,45 +149,16 @@ void NodeItem::validateData()
         return;
     if (offline())
         return;
-    if (ident.flags.bits.reconf) {
-        nodes->storage->restoreNodeConfig(this);
+    if (m_ident.flags.bits.reconf) {
+        //nodes->storage->restoreNodeConfig(this);
     } else {
-        setNconfID(0);
-        nodes->storage->saveNodeConfig(this);
+        //setNconfID(0);
+        //nodes->storage->saveNodeConfig(this);
     }
     nodeNotify();
     //qDebug()<<"Node dataValid"<<path();
 }
 
-void NodeItem::setDictInfo(QVariantMap dictInfo)
-{
-    this->dictInfo = dictInfo;
-    //qDebug()<<dictInfo;//.keys();
-}
-void NodeItem::setNconfID(quint64 nconfID)
-{
-    this->nconfID = nconfID;
-    if (nconfID == 0)
-        return;
-    //qDebug() << nconfID;
-    if (nodes->storage->loading)
-        return;
-    nodes->nconfSavedSync();
-}
-//=============================================================================
-//=============================================================================
-void NodeItem::clear()
-{
-    status_field = nullptr;
-    tools->clearCommands();
-    allFields.clear();
-    allFieldsByName.clear();
-    removeAll();
-    setDictValid(false);
-    setDataValid(false);
-    setModified(false);
-}
-//=============================================================================
 void NodeItem::updateDescr()
 {
     statusTimer.stop();
@@ -226,381 +169,100 @@ void NodeItem::updateDescr()
         st.append(m_version);
     if (offline())
         st.append(tr("offline"));
-    if (ident.flags.bits.loader)
+    if (m_ident.flags.bits.loader)
         st.append("LOADER");
     //st.append(sn());
     setDescr(st.join(' '));
 }
 void NodeItem::updateStatus()
 {
-    if (ident.flags.bits.reconf) {
+    if (m_ident.flags.bits.reconf) {
         setValue(tr("no config").toUpper());
         return;
     }
-    if (status_field) {
-        setValue(status_field->text().trimmed());
+    if (m_status_field) {
+        setValue(m_status_field->text().trimmed());
     }
 }
-//=============================================================================
+
 void NodeItem::nodeNotify()
 {
     if (offline())
         return;
-    //if (m_version != App::version() && fwSupport()) {
     Vehicles::instance()->nodeNotify(this);
-    //}
 }
-//=============================================================================
+
+void NodeItem::clear()
+{
+    m_status_field = nullptr;
+    //tools->clearCommands();
+    allFields.clear();
+    allFieldsByName.clear();
+    removeAll();
+    setDictValid(false);
+    setDataValid(false);
+    setModified(false);
+}
+
 void NodeItem::upload()
 {
     if (!(dictValid() && dataValid()))
         return;
     if (!modified())
         return;
-    saveTelemetryUploadEvent();
+    //saveTelemetryUploadEvent();
     int cnt = 0;
-    foreach (NodeField *f, allFields) {
+    /*foreach (NodeField *f, allFields) {
         if (!f->modified())
             continue;
         emit uploadValue(f->id, f->uploadableValue());
         cnt++;
     }
     if (cnt > 0)
-        emit saveValues();
+        emit saveValues();*/
 }
-//=============================================================================
-void NodeItem::upgradeFirmware()
-{
-    if (!protocol)
-        return;
-    Vehicles::instance()->nodeUpgradeFW(this);
-}
-void NodeItem::upgradeLoader()
-{
-    if (!protocol)
-        return;
-    Vehicles::instance()->nodeUpgradeLD(this);
-}
-void NodeItem::upgradeRadio()
-{
-    if (!protocol)
-        return;
-    Vehicles::instance()->nodeUpgradeMHX(this);
-}
-//=============================================================================
-//=============================================================================
-void NodeItem::saveTelemetryUploadEvent()
-{
-    foreach (NodeField *f, allFields) {
-        if (!f->modified())
-            continue;
-        if (f->size()) {
-            for (int i = 0; i < f->size(); ++i) {
-                NodeField *fx = f->child<NodeField>(i);
-                if (!fx->modified())
-                    continue;
-                saveTelemetryConf(fx);
-            }
-        } else {
-            saveTelemetryConf(f);
-        }
-    }
-}
-void NodeItem::saveTelemetryConf(NodeField *f)
-{
-    nodes->vehicle->recordConfigUpdate(title(), f->name(), f->toString(), sn());
-}
-//=============================================================================
-int NodeItem::loadConfigValues(QVariantMap values)
-{
-    QStringList ignoredValues = values.keys();
-    QStringList missingValues;
-    int rcnt = 0;
-    foreach (const QString &fieldName, allFieldsByName.keys()) {
-        if (!values.contains(fieldName)) {
-            missingValues.append(fieldName);
-            continue;
-        }
-        if (loadConfigValue(fieldName, values.value(fieldName).toString())) {
-            ignoredValues.removeOne(fieldName);
-            rcnt++;
-        }
-    }
-    //report
-    QString sname = title();
-    if (!value().toString().isEmpty())
-        sname.append(QString("-%1").arg(value().toString()));
-    int cnt = missingValues.size();
-    if (cnt > 0) {
-        QString s = QString("%1: %2").arg(sname).arg(cnt);
-        if (cnt < 5)
-            s.append(QString(" (%1)").arg(missingValues.join(',')));
-        nodes->vehicle->message(tr("Missing values").append(": ").append(s), AppNotify::Warning);
-        qWarning() << missingValues;
-    }
-    cnt = ignoredValues.size();
-    if (cnt > 0) {
-        QString s = QString("%1: %2").arg(sname).arg(cnt);
-        if (cnt < 5)
-            s.append(QString(" (%1)").arg(ignoredValues.join(',')));
-        nodes->vehicle->message(tr("Ignored values").append(": ").append(s), AppNotify::Warning);
-        qWarning() << ignoredValues;
-    }
-    return rcnt;
-}
-bool NodeItem::loadConfigValue(const QString &name, const QString &value)
-{
-    NodeField *f = allFieldsByName.value(name);
-    if (!f)
-        return false;
-    if ((name == "comment" || name == "node_label") && value.isEmpty() && (!f->text().isEmpty()))
-        return true;
-    f->fromString(value);
-    return true;
-}
-//=============================================================================
-//=============================================================================
-void NodeItem::message(QString msg)
-{
-    if (nodes->vehicle->isTemporary())
-        return;
 
-    QStringList st = msg.trimmed().split('\n', QString::SkipEmptyParts);
-    for (auto s : st) {
-        s = s.trimmed();
-        if (s.isEmpty())
-            continue;
-        App::sound(s);
-        nodes->vehicle->message(qApp->translate("msg", s.toUtf8().data()),
-                                AppNotify::FromVehicle | AppNotify::Important,
-                                title());
-
-        //record
-        QString nodeName = QString("%1/%2").arg(nodes->vehicle->callsign()).arg(title());
-        nodes->vehicle->recordNodeMessage(nodeName, s, sn());
-    }
-}
-//=============================================================================
-void NodeItem::groupFields(void)
+QVariant NodeItem::data(int col, int role) const
 {
-    //qDebug()<<"groupFields ----------- "<<allFields.size()<<conf_hash;
-    for (auto f : allFields) {
-        //grouping
-        Fact *groupItem = nullptr;
-        Fact *groupParent = this;
-        foreach (QString group, f->groups) {
-            groupItem = nullptr;
-            QString gname = group.toLower();
-            for (int i = 0; i < groupParent->size(); ++i) {
-                Fact *f = groupParent->child(i);
-                if (!(f->treeType() == Group && f->title().toLower() == gname))
-                    continue;
-                groupItem = f;
-                break;
-            }
-            if (!groupItem) {
-                groupItem = new NodesBase(groupParent, gname, group, "", Group);
-                //qDebug()<<"GRP NEW"<<gname;
-            }
-            groupParent = groupItem;
-            f->setParentFact(groupItem);
-            f->setSection("");
-        }
-        if (!f->parentFact())
-            f->setParentFact(this);
-    }
-    //hide grouped arrays (gpio, controls etc)
-    QSet<NodesBase *> groups;
-    for (auto f : allFields) {
-        NodesBase *groupItem = qobject_cast<NodesBase *>(f->parentFact());
-        if (!groupItem || groupItem == this)
-            continue;
-        //continue;
-        if (groupItem && groupItem->size() >= 2) {
-            //check if group members are arrays
-            bool bArray = false;
-            uint cnt = 0;
-            for (int i = 0; i < groupItem->size(); ++i) {
-                NodeField *f = groupItem->child<NodeField>(i);
-                if (!f) {
-                    //qDebug() << groupItem->path() << i << groupItem->child(i);
-                    continue;
-                }
-                bArray = false;
-                if (cnt < 2 && f->dtype != DictNode::Array)
-                    break;
-                //if(cnt<2 && f->size()<=1)break;
-                //if (f->size() < 1)break;
-                cnt++;
-                bArray = true;
-            }
-            if (bArray)
-                groups.insert(groupItem);
-        }
-    }
-    for (auto group : groups) {
-        //qDebug() << group->path();
-        groupArrays(group);
-    }
-}
-//=============================================================================
-void NodeItem::groupArrays(NodesBase *group)
-{
-    //create action with underlaying table structure to edit arrays rows
-
-    Fact *action = new Fact(group, group->name(), group->title(), group->descr(), Action);
-    group->bind(action);
-    group->setModel(action->model());
-
-    connect(group->child(0), &Fact::valueChanged, group, [group]() {
-        group->setValue(group->child(0)->value());
-    });
-    group->setValue(group->child(0)->value());
-
-    //hide group members
-    for (int i = 0; i < group->size(); ++i) {
-        NodeField *f = group->child<NodeField>(i);
-        if (!f)
-            continue;
-        f->setVisible(false);
-    }
-
-    Fact *f1 = group->child(0);
-    int colCnt = group->size();
-    for (int row = 0; row < f1->size(); ++row) {
-        Fact *fi = f1->child(row);
-        Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Fact::Group);
-        //fRow->setActionsModel(group->actionsModel());
-        connect(group, &Fact::modifiedChanged, fRow, [fRow, group]() {
-            fRow->setModified(group->modified());
-        });
-        connect(fi, &Fact::textChanged, fRow, [fRow, fi]() { fRow->setValue(fi->text()); });
-        connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
-
-        Fact *f_ch = nullptr;
-        for (int i = 0; i < colCnt; ++i) {
-            Fact *fArray = group->child(i);
-            if (!fArray)
-                continue;
-            Fact *fp;
-            bool bChParam = false;
-            if (f_ch && fArray->name().startsWith("ctr_ch_")) {
-                fp = fArray->child(f_ch->value().toInt());
-                bChParam = true;
-            } else {
-                fp = fArray->child(row);
-            }
-            if (!fp)
-                continue;
-            Fact *f = new Fact(fRow,
-                               fArray->name(),
-                               fArray->title(),
-                               fArray->descr(),
-                               fp->treeType() | fp->dataType());
-            f->bind(fp);
-            connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
-            if (bChParam) {
-                connect(f_ch, &Fact::valueChanged, f, [f, fArray, f_ch]() {
-                    f->bind(fArray->child(f_ch->value().toInt()));
-                });
-            }
-
-            if (f->name() == "ctr_ch") {
-                f_ch = f;
-            }
-        }
-    }
-}
-void NodeItem::updateArrayRowDescr(Fact *fRow)
-{
-    QStringList st;
-    if (!fRow->text().isEmpty()) {
-        for (int i = 0; i < fRow->size(); ++i) {
-            st.append(fRow->child(i)->text());
-        }
-    }
-    fRow->setDescr(st.join(", "));
-}
-//=============================================================================
-void NodeItem::groupNodes(void)
-{
-    //check node grouping
-    if (group)
-        return;
-    NodeItemBase *ngroup = nullptr;
-    //find same names with same parent
-    QList<NodeItem *> nlist;
-    QString stitle = title();
-    if (stitle.endsWith(".shiva"))
-        stitle.remove(0, stitle.lastIndexOf('.') + 1);
-    QString gname = stitle;
-    QStringList names;
-    names.append(stitle);
-    if (stitle == "bldc") {
-        gname = "servo";
-        names.append(gname);
-    }
-    foreach (NodeItem *i, nodes->nodes()) {
-        QString s = i->title();
-        if (s.endsWith(".shiva"))
-            s.remove(0, s.lastIndexOf('.') + 1);
-        if (names.contains(s))
-            nlist.append(i);
-    }
-    foreach (NodeItemBase *g, nodes->nGroups) {
-        if (g->size() > 0 && g->title() == gname.toUpper()) {
-            ngroup = g;
+    if (dictValid() && dataValid() && (!upgrading())) {
+        switch (role) {
+        case Qt::ForegroundRole:
+            //if(isUpgrading())return QColor(Qt::white);
+            //return col==FACT_MODEL_COLUMN_NAME?QColor(Qt::darkYellow):QColor(Qt::darkGray);
+            //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
+            //nstats
+            //return statsWarn?QColor(Qt::yellow):QColor(Qt::green);
             break;
+        case Qt::BackgroundRole:
+            //if(isUpgrading())return QColor(0x20,0x00,0x00);
+            //if(isUpgradePending())return QColor(0x40,0x00,0x00);
+            if (m_ident.flags.bits.reconf)
+                return QColor(Qt::darkGray).darker(200);
+            return QColor(0x20, 0x40, 0x60);
         }
     }
-
-    if (ngroup == nullptr && nlist.size() < 2) {
-        //nodes->f_list->addChild(this);
-        return;
+    if (role == Qt::FontRole && col == Fact::FACT_MODEL_COLUMN_DESCR) {
+#ifdef Q_OS_MAC
+        return QFont("Menlo");
+#else
+        return QFont("FreeMono");
+#endif
     }
-    //qDebug()<<"-append-";
-
-    if (ngroup)
-        group = ngroup;
-    else {
-        group = new NodeItemBase(nodes, gname, gname.toUpper(), Section);
-        group->setSection(section());
-        nodes->nGroups.append(group);
-        //qDebug()<<"grp: "<<gname;
-    }
-
-    foreach (NodeItem *i, nlist) {
-        if (i->parentFact() == group)
-            continue;
-        i->setParentFact(group);
-        i->group = group;
-        i->setName(i->name()); //update unique name
-        i->setSection(group->title());
-        //qDebug()<<gname<<"<<"<<i->name;
-        //if(node->name.contains("shiva")) qDebug()<<node->name<<nlist.size()<<(group?group->name:"");
-    }
-    //update group descr
-    QStringList gNames, gHW;
-    for (int i = 0; i < group->size(); ++i) {
-        NodeItem *n = group->child<NodeItem>(i);
-        if (!gNames.contains(n->title()))
-            gNames.append(n->title());
-        if (!gHW.contains(n->hardware()))
-            gHW.append(n->hardware());
-    }
-    QStringList sdescr;
-    if (!gNames.isEmpty())
-        sdescr.append(gNames.join(','));
-    if (!gHW.isEmpty())
-        sdescr.append("(" + gHW.join(',') + ")");
-    if (!sdescr.isEmpty())
-        group->setDescr(sdescr.join(' '));
-    group->setValue(QString("[%1]").arg(group->size()));
-    //group->updateDictValid();
-    //group->updateDataValid();
+    return NodeItemBase::data(col, role);
 }
+
+void NodeItem::hashData(QCryptographicHash *h) const
+{
+    Fact::hashData(h);
+    h->addData(version().toUtf8());
+    h->addData(hardware().toUtf8());
+    h->addData(QString::number(m_ident.hash).toUtf8());
+}
+
 //=============================================================================
+// Properties
 //=============================================================================
+
 QString NodeItem::sn() const
 {
     return m_sn;
@@ -640,256 +302,41 @@ void NodeItem::setIdentValid(const bool &v)
 }
 bool NodeItem::offline() const
 {
-    return !protocol;
+    return !m_protocol;
 }
-//=============================================================================
-//=============================================================================
-QVariant NodeItem::data(int col, int role) const
-{
-    if (dictValid() && dataValid() && (!upgrading())) {
-        switch (role) {
-        case Qt::ForegroundRole:
-            //if(isUpgrading())return QColor(Qt::white);
-            //return col==FACT_MODEL_COLUMN_NAME?QColor(Qt::darkYellow):QColor(Qt::darkGray);
-            //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
-            //nstats
-            //return statsWarn?QColor(Qt::yellow):QColor(Qt::green);
-            break;
-        case Qt::BackgroundRole:
-            //if(isUpgrading())return QColor(0x20,0x00,0x00);
-            //if(isUpgradePending())return QColor(0x40,0x00,0x00);
-            if (ident.flags.bits.reconf)
-                return QColor(Qt::darkGray).darker(200);
-            return QColor(0x20, 0x40, 0x60);
-        }
-    }
-    if (role == Qt::FontRole && col == Fact::FACT_MODEL_COLUMN_DESCR) {
-#ifdef Q_OS_MAC
-        return QFont("Menlo");
-#else
-        return QFont("FreeMono");
-#endif
-    }
-    return NodeItemBase::data(col, role);
-}
-//=============================================================================
-void NodeItem::hashData(QCryptographicHash *h) const
-{
-    Fact::hashData(h);
-    h->addData(version().toUtf8());
-    h->addData(hardware().toUtf8());
-    h->addData(conf_hash.toUtf8());
-}
-//=============================================================================
-NodeItem *NodeItem::subNode() const
-{
-    foreach (NodeItem *i, nodes->nodes()) {
-        if (i->title().startsWith(title().append('.')))
-            return i;
-    }
-    return nullptr;
-}
-//=============================================================================
-//=============================================================================
-void NodeItem::execCommand(quint16 cmd, const QString &name, const QString &descr)
-{
-    nodes->vehicle->message(descr + "...", AppNotify::Important, title());
-    emit requestUser(cmd, QByteArray(), 1000);
-    if (name.startsWith("conf") || name.contains("reconf")) {
-        setDataValid(false);
-        //invalidate subnode (.shiva)
-        NodeItem *n = subNode();
-        if (n)
-            n->setDataValid(false);
-        nodes->syncLater();
-    }
-}
-//=============================================================================
+
 //=============================================================================
 // Protocols connection
 //=============================================================================
-void NodeItem::messageReceived(xbus::node::msg::type_t type, QString msg)
-{
-    message(msg);
 
-    if (modified())
-        return;
-
-    if (!(ident.flags.bits.reconf || ident.flags.bits.loader || allFields.isEmpty()))
-        return;
-
-    if (msg.contains(title()) && msg.contains("init")) {
-        nodes->syncLater(1000);
-    }
-}
-//=============================================================================
-void NodeItem::dictInfoReceived(const DictNode::DictInfo &conf)
+void NodeItem::identReceived(const xbus::node::ident::ident_s &ident)
 {
     //qDebug()<<"ok";
-    updateDescr(); //reset nstat view
-    //updateProgress();
-    if (upgrading())
-        return;
-    if (conf.paramsCount != allFields.size() || conf.chash != conf_hash) {
-        clear();
-        conf_hash = conf.chash;
-    }
-    if (conf.paramsCount == 0) {
-        setDictValid(true);
-        setDataValid(true);
-    }
-    //nodes->vehicle->dbSaveVehicleNodes();
-    if (!dictValid()) {
-        if (nodes->skipCache.contains(sn())) {
-            emit requestDict();
-        } else {
-            nodes->storage->loadDictCache(this);
-        }
-        return;
-    }
-    if (!dataValid()) {
-        requestFieldValues();
-    }
-}
-void NodeItem::dictReceived(const DictNode::Dict &dict)
-{
-    //qDebug()<<"dictReceived"<<name()<<dict.fields.size();
-    if (dictValid()) {
-        qDebug() << "NodeItem::dictReceived"
-                 << "dictValid" << name() << dict.fields.size();
-        requestFieldValues();
-        return;
-    }
-    clear();
-    conf_hash = dict.chash;
-    foreach (const DictNode::Command &c, dict.commands) {
-        tools->addCommand(c.name, c.descr, "", c.cmd);
-    }
-    for (auto const &d : dict.fields) {
-        NodeField *f = dictCreateField(d, nullptr);
+    m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    m_ident = ident;
 
-        //check if comment field and bind to node value
-        if (!status_field) {
-            const QString &s = d.name;
-            if (s == "comment" || s == "node_label" || (s == "name" && d.id == 0)) {
-                status_field = f;
-                connect(f, &NodeField::textChanged, this, &NodeItem::updateStatus);
-            }
-        }
-    }
-    setDictValid(true);
-    requestFieldValues();
-    //App::jsync(this);
+    setName(QString(QByteArray(ident.name, sizeof(ident.name))));
+    setTitle(name());
+    setVersion(QString(QByteArray(ident.version, sizeof(ident.version))));
+    setHardware(QString(QByteArray(ident.hardware, sizeof(ident.hardware))));
+    setIdentValid(true);
 
-    nodes->skipCache.removeAll(sn());
-    if (dictInfo.value("hash").toString().isEmpty()) {
-        nodes->storage->saveDictCache(this, dict);
-    }
-    //provide cached dict to protocol
-    if (lastSeenTime <= 0)
+    //groupNodes();
+
+    if (upgrading()) {
+        //setDictValid(true);
         return;
-    qDebug() << title() << (dict.cached ? "cached" : "synced");
-    if (protocol)
-        protocol->loadCachedDict(dict);
-}
-NodeField *NodeItem::dictCreateField(const DictNode::Field &f, NodeField *parentField)
-{
-    NodeField *nf = new NodeField(
-        this, f.id, f.type, f.name, f.title, f.descr, f.units, f.opts, f.groups, parentField);
-    foreach (const DictNode::Field &fs, f.subFields) {
-        dictCreateField(fs, nf);
     }
-    return nf;
-}
-//=============================================================================
-void NodeItem::requestFieldValues()
-{
-    if (dataValid())
-        return;
-    for (int i = 0; i < allFields.size(); ++i) {
-        NodeField *f = allFields.at(i);
-        if (f->dataValid())
-            continue;
-        emit requestValues(f->id);
-        break;
+    if (!offline()) {
+        //nodes->storage->saveNodeInfo(this);
+        //nodes->storage->saveNodeUser(this);
     }
+
+    nodeNotify();
 }
-void NodeItem::valuesReceived(quint16 id, const QVariantList &values)
-{
-    //qDebug()<<"valuesReceived"<<name()<<id<<values.size();
-    for (int i = 0; i < values.size(); ++i) {
-        NodeField *field = allFields.value(id, nullptr);
-        if (!field)
-            return;
-        QVariant v = values.at(i);
-        if (v.isValid()) {
-            field->setValue(v);
-            field->setDataValid(true);
-        }
-        id++;
-    }
-    requestFieldValues();
-}
-void NodeItem::valueModifiedExternally(quint16 id)
-{
-    NodeField *field = allFields.value(id, nullptr);
-    if (!field)
-        return;
-    message(QString("%1: %2=%3").arg(tr("Field modified")).arg(field->title()).arg(field->text()));
-}
-void NodeItem::valueUploaded(quint16 id)
-{
-    //qDebug()<<"NodeItem::valueUploaded"<<id;
-    NodeField *field = allFields.value(id, nullptr);
-    if (!field)
-        return;
-    field->backup();
-}
-void NodeItem::valuesSaved()
-{
-    //qDebug()<<"NodeItem::valuesSaved";
-    if (reconf()) {
-        nodes->syncLater(3000);
-    } else {
-        setNconfID(0);
-        nodes->storage->saveNodeConfig(this);
-        nodes->uploadedSync();
-    }
-}
-//=============================================================================
-void NodeItem::nstatReceived(const DictNode::Stats &nstat)
-{
-    setVbat(nstat.vbat);
-    setIbat(nstat.ibat);
-    setErrCnt(nstat.errCnt);
-    setCanRxc(nstat.canRxc);
-    setCanAdr(nstat.canAdr);
-    setCanErr(nstat.canErr);
-    setCpuLoad(nstat.cpuLoad);
-    //print report
-    QString snode;
-    snode = QString("%1:%2 E:%3 C:%4 %5%")
-                .arg(canAdr(), 2, 16, QChar('0'))
-                .arg(canRxc(), 2, 16, QChar('0'))
-                .arg(errCnt(), 2, 16, QChar('0'))
-                .arg(canErr(), 2, 16, QChar('0'))
-                .arg(cpuLoad())
-                .toUpper();
-    if (vbat() > 0)
-        snode += QString("\t%1V %2mA").arg(vbat(), 0, 'f', 1).arg(static_cast<int>(ibat() * 1000.0));
-    if (nodes->vehicle == Vehicles::instance()->current()) {
-        apxMsg() << QString("#[%1]%2").arg(title()).arg(snode);
-        if (nstat.dump.count('\0') != nstat.dump.size()) {
-            QString s(nstat.dump.toHex().toUpper());
-            for (int i = 2; i < s.size(); i += 3) {
-                s.insert(i, ' ');
-            }
-            apxMsg() << QString("#%1").arg(s);
-        }
-    }
-    setDescr(snode);
-    setActive(true);
-    statusTimer.start();
-}
-//=============================================================================
-//=============================================================================
+
+void NodeItem::dictReceived(const ProtocolNode::Dictionary &dict) {}
+
+void NodeItem::confReceived(const QVariantList &values) {}
+
+void NodeItem::messageReceived(xbus::node::msg::type_t type, QString msg) {}

@@ -32,12 +32,14 @@ class ProtocolVehicle : public ProtocolBase
 {
     Q_OBJECT
 public:
-    ProtocolVehicle(quint16 squawk, ProtocolVehicles::IdentData ident, ProtocolVehicles *vehicles);
+    ProtocolVehicle(xbus::vehicle::squawk_t squawk,
+                    const xbus::vehicle::ident_s &ident,
+                    ProtocolVehicles *vehicles);
 
     void downlink(ProtocolStreamReader &stream);
 
-    quint16 squawk;
-    ProtocolVehicles::IdentData ident;
+    xbus::vehicle::squawk_t squawk;
+    xbus::vehicle::ident_s ident;
 
     ProtocolVehicles *vehicles;
     ProtocolNodes *nodes;
@@ -52,11 +54,11 @@ public slots:
     void sendSerial(quint8 portID, QByteArray data);
 
 signals:
-    void xpdrData(const ProtocolVehicles::XpdrData &xpdr);
+    void xpdrData(const xbus::vehicle::xpdr_s &xpdr);
     void identUpdated();
 
     //known received data
-    void telemetryData(ProtocolStreamReader &stream);
+    void telemetryData(ProtocolStreamReader *stream);
 
     void serialRxData(quint16 portNo, QByteArray data);
     void serialTxData(quint16 portNo, QByteArray data);
@@ -65,5 +67,5 @@ signals:
     void missionData(QByteArray data);
 
     //data with other id (i.e. mandala data)
-    void receivedData(xbus::pid_t pid, ProtocolStreamReader &stream);
+    void receivedData(xbus::pid_t pid, ProtocolStreamReader *stream);
 };

@@ -70,7 +70,7 @@ signals:
     //data connection
 private slots:
     void vehicleIdentified(ProtocolVehicle *protocol);
-    void identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentData &ident);
+    void identAssigned(ProtocolVehicle *v, const xbus::vehicle::ident_s &ident);
 
 public slots:
 

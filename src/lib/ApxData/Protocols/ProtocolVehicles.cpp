@@ -33,7 +33,7 @@
 ProtocolVehicles::ProtocolVehicles(QObject *parent)
     : ProtocolBase(parent)
 {
-    IdentData ident;
+    xbus::vehicle::ident_s ident;
     ident.vclass = 0;
     local = new ProtocolVehicle(0, ident, this);
     //firmware = new ProtocolServiceFirmware(local->service);
@@ -116,14 +116,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         xbus::vehicle::xpdr_s xpdr;
         xpdr.read(&stream);
 
-        XpdrData d;
-        d.lat = static_cast<double>(xpdr.lat);
-        d.lon = static_cast<double>(xpdr.lon);
-        d.alt = static_cast<double>(xpdr.alt);
-        d.gSpeed = static_cast<double>(xpdr.speed);
-        d.course = static_cast<double>(xpdr.course);
-        d.mode = xpdr.mode;
-        v->xpdrData(d);
+        v->xpdrData(xpdr);
     } break;
     case mandala::cmd::env::vehicle::ident::meta.uid: {
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
@@ -134,22 +127,15 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         xbus::vehicle::ident_s ident;
         ident.read(&stream);
 
-        IdentData d;
-        d.callsign = QString(QByteArray(ident.callsign, sizeof(ident.callsign))).trimmed();
-        d.uid = QByteArray(reinterpret_cast<const char *>(ident.vuid), sizeof(ident.vuid))
-                    .toHex()
-                    .toUpper();
-        d.vclass = ident.vclass;
-        //emit identData(ident->squawk,d);
-        if ((!squawk) || d.callsign.isEmpty()) {
+        if ((!squawk) || ident.callsign[0] == 0) {
             //received zero SQUAWK
-            identAssign(squawk, d);
+            identAssign(squawk, ident);
             break;
         }
         //find uav in list by uid
         ProtocolVehicle *v = nullptr;
-        foreach (ProtocolVehicle *i, squawkMap.values()) {
-            if (i->ident.uid == d.uid) {
+        for (auto i : squawkMap) {
+            if (i->ident.vuid == ident.vuid) {
                 v = i;
                 break;
             }
@@ -157,26 +143,26 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         if (v) {
             qDebug() << "vehicle protocol exists";
             //update from ident
-            if (v->squawk != squawk || memcmp(&(v->ident), &d, sizeof(d)) != 0) {
+            if (v->squawk != squawk || memcmp(&(v->ident), &ident, sizeof(ident)) != 0) {
                 squawkMap.remove(v->squawk);
                 squawkMap.remove(squawkMap.key(v));
                 squawkMap.insert(squawk, v);
                 v->squawk = squawk;
-                v->ident = d;
+                v->ident = ident;
                 qDebug() << "vehicle ident updated";
                 v->identUpdated();
             }
         } else {
             //new Vehicle found
-            v = addVehicle(squawk, d);
+            v = addVehicle(squawk, ident);
             emit vehicleIdentified(v);
         }
         //check squawk with uid
         if (squawkMap.contains(squawk)) {
-            if (squawkMap.value(squawk) != v && d.uid != v->ident.uid) {
+            if (squawkMap.value(squawk) != v && ident.vuid != v->ident.vuid) {
                 //duplicate squawk came with this ident
-                emit identAssigned(v, d);
-                identAssign(squawk, d);
+                emit identAssigned(v, ident);
+                identAssign(squawk, ident);
                 break;
             }
         } else {
@@ -200,14 +186,15 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
     }
 }
 
-ProtocolVehicle *ProtocolVehicles::addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident)
+ProtocolVehicle *ProtocolVehicles::addVehicle(xbus::vehicle::squawk_t squawk,
+                                              const xbus::vehicle::ident_s &ident)
 {
     qDebug() << "new vehicle protocol";
     ProtocolVehicle *v = new ProtocolVehicle(squawk, ident, this);
     return v;
 }
 
-void ProtocolVehicles::identRequest(quint16 squawk)
+void ProtocolVehicles::identRequest(xbus::vehicle::squawk_t squawk)
 {
     //qDebug() << "scheduled ident req";
     ostream.reset();
@@ -220,14 +207,17 @@ void ProtocolVehicles::identRequest(quint16 squawk)
     }
 }
 
-void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
+void ProtocolVehicles::identAssign(xbus::vehicle::squawk_t squawk,
+                                   const xbus::vehicle::ident_s &ident)
 {
-    qDebug() << "assign" << squawk << ident.callsign << ident.uid << ident.vclass;
+    qDebug() << "assign" << squawk << ident.callsign << ident.vclass;
 
     //generate squawk
-    quint16 tcnt = 32767;
+    xbus::vehicle::squawk_t tcnt = 32767;
     do {
-        squawk = (static_cast<quint16>(QRandomGenerator::global()->generate()) + tcnt) ^ squawk;
+        squawk = (static_cast<xbus::vehicle::squawk_t>(QRandomGenerator::global()->generate())
+                  + tcnt)
+                 ^ squawk;
         if (squawk < 100 || squawk > 0xff00)
             continue;
         if (squawkMap.contains(squawk))
@@ -254,12 +244,7 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
     memset(dIdent.callsign, 0, sizeof(dIdent.callsign));
     memcpy(dIdent.callsign, s.toUtf8().data(), static_cast<uint>(s.size()));
 
-    QByteArray buid = QByteArray::fromHex(ident.uid.toUtf8());
-    if (buid.size() != sizeof(dIdent.vuid)) {
-        qWarning() << "wrong vehicle UID" << ident.uid;
-        return;
-    }
-    memcpy(dIdent.vuid, buid.data(), sizeof(dIdent.vuid));
+    memcpy(dIdent.vuid, ident.vuid, sizeof(ident.vuid));
 
     dIdent.vclass = ident.vclass;
     dIdent.write(&ostream);
@@ -267,7 +252,7 @@ void ProtocolVehicles::identAssign(quint16 squawk, const IdentData &ident)
     process_uplink(ostream.toByteArray());
 }
 
-void ProtocolVehicles::send(quint16 squawk, QByteArray packet)
+void ProtocolVehicles::send(xbus::vehicle::squawk_t squawk, QByteArray packet)
 {
     //qDebug() << payload.toHex();
     if (!squawk) {

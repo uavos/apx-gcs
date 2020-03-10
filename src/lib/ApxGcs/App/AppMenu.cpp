@@ -71,7 +71,7 @@ AppMenu::AppMenu(Fact *parent)
     f->setOpt("shortcut", QKeySequence::Open);
     f->bind(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
     f = new Fact(file, "nodes");
-    f->bind(Vehicles::instance()->f_replay->f_nodes->f_share->f_import);
+    // FIXME: f->bind(Vehicles::instance()->f_replay->f_nodes->f_share->f_import);
     f = new Fact(file, "datalink");
     f->bind(AppGcs::instance()->f_datalink);
     f->setSection(tr("Communication"));

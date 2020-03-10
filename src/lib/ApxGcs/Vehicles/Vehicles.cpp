@@ -126,10 +126,16 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
 //=============================================================================
 Vehicle *Vehicles::createVehicle(ProtocolVehicle *protocol)
 {
+    const xbus::vehicle::ident_s &ident = protocol->ident;
+    QString callsign = QString(QByteArray(ident.callsign, sizeof(ident.callsign))).trimmed();
+    QString uid = QByteArray(reinterpret_cast<const char *>(ident.vuid), sizeof(ident.vuid))
+                      .toHex()
+                      .toUpper();
+
     Vehicle *v = new Vehicle(this,
-                             protocol->ident.callsign,
+                             callsign,
                              protocol->squawk,
-                             protocol->ident.uid,
+                             uid,
                              static_cast<Vehicle::VehicleClass>(protocol->ident.vclass),
                              protocol);
 
@@ -156,7 +162,7 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
         break;
     }
 }
-void Vehicles::identAssigned(ProtocolVehicle *v, const ProtocolVehicles::IdentData &ident)
+void Vehicles::identAssigned(ProtocolVehicle *v, const xbus::vehicle::ident_s &ident)
 {
     QString msg = QString("%1 %2 (%3)")
                       .arg(tr("Assigning squawk to"))

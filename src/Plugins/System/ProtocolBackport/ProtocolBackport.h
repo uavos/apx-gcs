@@ -34,7 +34,7 @@ public:
     ~ProtocolBackport() override;
 
 private:
-    ProtocolV9 *m_converter;
+    ProtocolV9 *m_converter{nullptr};
 public slots:
     void install();
     void uninstall();

@@ -20,17 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesBase_H
-#define NodesBase_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class NodesBase : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
-
 public:
     explicit NodesBase(Fact *parent,
                        const QString &name,
@@ -41,25 +38,4 @@ public:
     void addActions();
 
     Fact *f_revert;
-
-protected:
-    //override
-    virtual QVariant data(int col, int role) const;
-
-public slots:
-    void updateDataValid();
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    bool dataValid() const;
-    void setDataValid(const bool &v, bool recursive = true);
-
-protected:
-    bool m_dataValid;
-
-signals:
-    void dataValidChanged();
 };
-//=============================================================================
-#endif

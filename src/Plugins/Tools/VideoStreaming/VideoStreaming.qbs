@@ -16,6 +16,8 @@ ApxApp.ApxPlugin {
         ]
     }
 
+    Depends { name: "ApxData" }
+
     files: [
         "StreamingPlugin.h",
         "gstplayer.cpp",

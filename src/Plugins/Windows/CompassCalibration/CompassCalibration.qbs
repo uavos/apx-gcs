@@ -10,6 +10,8 @@ ApxApp.ApxPlugin {
         ] }
 
 
+    Depends { name: "ApxData" }
+
     files: [
         "CompassPlugin.h",
         "CompassFrame.cpp", "CompassFrame.h",

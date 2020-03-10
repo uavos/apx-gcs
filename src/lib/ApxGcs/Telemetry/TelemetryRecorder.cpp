@@ -57,10 +57,10 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(vehicle, &Vehicle::recordSerialData, this, &TelemetryRecorder::recordSerialData);
 
     //write config on each update
-    connect(this->vehicle->f_nodes->storage,
+    /* FIXME: connect(this->vehicle->f_nodes->storage,
             &NodesStorage::configInfoUpdated,
             this,
-            &TelemetryRecorder::recordConfig);
+            &TelemetryRecorder::recordConfig);*/
 
     //write mission on each upload or download
     connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
@@ -331,7 +331,7 @@ void TelemetryRecorder::recordMission(bool uplink)
 }
 void TelemetryRecorder::recordConfig()
 {
-    const QVariantMap &info = vehicle->f_nodes->storage->configInfo;
+    /* FIXME: const QVariantMap &info = vehicle->f_nodes->storage->configInfo;
     QString hash = info.value("hash").toString();
     if (hash.isEmpty())
         return;
@@ -351,7 +351,7 @@ void TelemetryRecorder::recordConfig()
             DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(recTelemetryID, info);
             req->exec();
         }
-    }
+    }*/
 }
 //=============================================================================
 //=============================================================================

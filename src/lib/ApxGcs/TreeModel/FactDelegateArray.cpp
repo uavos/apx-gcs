@@ -66,7 +66,7 @@ FactDelegateArrayModel::FactDelegateArrayModel(Fact *group, QObject *parent)
                     //complex node field
                     //int cidx=0;
                     for (int j = 0; j < f->size(); ++j) {
-                        NodeField *nfi = f->child<NodeField>(j);
+                        NodeField *nfi = static_cast<NodeField *>(f->child(j));
                         QString sf;
                         //if(f->array()>1)sf=QString("%1/%2").arg(s).arg(QString::number(cidx++));
                         //else

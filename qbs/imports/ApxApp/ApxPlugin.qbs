@@ -27,6 +27,7 @@ ApxProduct {
     targetInstallDir: app.app_plugin_path
 
     Depends { name: "ApxCore" }
+    Depends { name: "ApxData" }
     Depends { name: "ApxGcs" }
 
     Depends { name: "bundle" }

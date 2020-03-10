@@ -32,7 +32,6 @@ ProtocolBackport::ProtocolBackport(Fact *parent)
            tr("Protocol backport"),
            tr("Compatible to v10.2 and below"),
            Bool)
-    , m_converter(nullptr)
 {
     connect(this, &Fact::valueChanged, this, [this]() {
         if (value().toBool())
@@ -40,7 +39,7 @@ ProtocolBackport::ProtocolBackport(Fact *parent)
         else
             uninstall();
     });
-    setValue(true);
+    //setValue(true);
 }
 
 ProtocolBackport::~ProtocolBackport()

@@ -27,6 +27,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
+#include <Database/NodesReqVehicle.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
@@ -177,7 +178,7 @@ Vehicle::Vehicle(Vehicles *vehicles,
         connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::setStreamData);
         connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::setStreamData);
 
-        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
+        //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
@@ -189,7 +190,6 @@ Vehicle::Vehicle(Vehicles *vehicles,
         connect(protocol, &ProtocolVehicle::serialTxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, true);
         });
-        //connect(this,&Vehicle::recordNodes,this,&Vehicle::dbSaveConfigDataBackup);
 
         //ident update
         connect(protocol, &ProtocolVehicle::identUpdated, this, [this, protocol]() {

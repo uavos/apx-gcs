@@ -64,7 +64,7 @@ Nodes::Nodes(Vehicle *parent)
 
     f_status
         = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
-    connect(f_status, &Fact::triggered, this, &Nodes::status);
+    //connect(f_status, &Fact::triggered, this, &Nodes::status);
 
     //storage actions
     /*storage = new NodesStorage(this);
@@ -312,5 +312,5 @@ void Nodes::loadConfValue(const QString &sn, QString s)
         spath.remove(0, node->title().size() + 1);
     if (spath.isEmpty())
         return;
-    node->loadConfigValue(spath, sv);
+    //FIXME: node->loadConfigValue(spath, sv);
 }

@@ -24,6 +24,9 @@
 
 #include "ProtocolBase.h"
 #include "ProtocolServiceFirmware.h"
+
+#include <Xbus/XbusVehicle.h>
+
 #include <QtCore>
 
 class ProtocolVehicle;
@@ -37,22 +40,6 @@ public:
 
     friend class ProtocolVehicle;
 
-    struct XpdrData
-    {
-        double lat;
-        double lon;
-        double alt;
-        double gSpeed;
-        double course;
-        quint8 mode;
-    };
-    struct IdentData
-    {
-        QString callsign;
-        QString uid;
-        uint8_t vclass;
-    };
-
     ProtocolVehicle *local;
     //ProtocolServiceFirmware *firmware;
 
@@ -65,16 +52,16 @@ private:
     QTimer reqTimer;
     QList<QByteArray> reqList;
 
-    QMap<quint16, ProtocolVehicle *> squawkMap;
+    QMap<xbus::vehicle::squawk_t, ProtocolVehicle *> squawkMap;
 
     uint8_t txbuf[xbus::size_packet_max];
     ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
 
-    void send(quint16 squawk, QByteArray packet);
+    void send(xbus::vehicle::squawk_t squawk, QByteArray packet);
 
-    ProtocolVehicle *addVehicle(quint16 squawk, ProtocolVehicles::IdentData ident);
-    void identRequest(quint16 squawk);
-    void identAssign(quint16 squawk, const ProtocolVehicles::IdentData &ident);
+    ProtocolVehicle *addVehicle(xbus::vehicle::squawk_t squawk, const xbus::vehicle::ident_s &ident);
+    void identRequest(xbus::vehicle::squawk_t squawk);
+    void identAssign(xbus::vehicle::squawk_t squawk, const xbus::vehicle::ident_s &ident);
 
 private slots:
     void process_downlink(const QByteArray packet);
@@ -85,7 +72,7 @@ public slots:
 
 signals:
     void vehicleIdentified(ProtocolVehicle *protocol);
-    void identAssigned(ProtocolVehicle *v, const IdentData &ident);
+    void identAssigned(ProtocolVehicle *v, const xbus::vehicle::ident_s &ident);
 
     // data comm
 public slots:

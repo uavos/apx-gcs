@@ -23,19 +23,24 @@
 #include "NodeItemBase.h"
 #include "NodeItem.h"
 #include "Nodes.h"
-//=============================================================================
+
+QStringList NodeItemBase::g_sortNames = {"shiva", "nav", "ifc", "cas", "gps", "dlink", "servo"};
+
 NodeItemBase::NodeItemBase(Fact *parent,
                            const QString &name,
                            const QString &title,
                            Fact::Flags flags)
     : NodesBase(parent, name, title, "", flags)
-    , progress_s(0)
-    , m_dictValid(false)
-    , m_upgrading(false)
 {
     //parent forward check
     connect(this, &NodeItemBase::dictValidChanged, this, &NodeItemBase::updateDictValid);
     updateDictValid();
+    connect(this, &NodeItemBase::dataValidChanged, this, &NodeItemBase::updateDataValid);
+    updateDataValid();
+
+    //force update modelViews
+    connect(this, &NodeItemBase::dictValidChanged, this, &Fact::enabledChanged);
+    connect(this, &NodeItemBase::dataValidChanged, this, &Fact::enabledChanged);
 
     connect(this, &NodeItemBase::upgradingChanged, this, &NodeItemBase::updateUpgrading);
 
@@ -45,16 +50,7 @@ NodeItemBase::NodeItemBase(Fact *parent,
     connect(this, &NodeItemBase::dictValidChanged, this, &Fact::enabledChanged);
     connect(this, &NodeItemBase::upgradingChanged, this, &Fact::enabledChanged);
 }
-QStringList NodeItemBase::sortNames = QStringList() << "shiva"
-                                                    << "nav"
-                                                    << "cas"
-                                                    << "gps"
-                                                    << "ifc"
-                                                    << "swc"
-                                                    << "mhx"
-                                                    << "servo"
-                                                    << "bldc";
-//=============================================================================
+
 QVariant NodeItemBase::data(int col, int role) const
 {
     switch (role) {
@@ -69,6 +65,8 @@ QVariant NodeItemBase::data(int col, int role) const
             return QColor(255, 200, 200);
         if (!dictValid())
             return QColor(255, 200, 200);
+        if (!dataValid())
+            return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
         break;
     case Qt::BackgroundRole:
         if (dictValid() && dataValid()) {
@@ -78,11 +76,13 @@ QVariant NodeItemBase::data(int col, int role) const
             return QColor(64, 0, 0);
         if (!dictValid())
             return QVariant();
+        if (!dataValid())
+            return QVariant();
         break;
     }
     return NodesBase::data(col, role);
 }
-//=============================================================================
+
 bool NodeItemBase::lessThan(Fact *rightFact) const
 {
     //try to sort by sortNames
@@ -92,15 +92,15 @@ bool NodeItemBase::lessThan(Fact *rightFact) const
     QString sright = rightFact->title().toLower();
     if (sright.contains('.'))
         sright = sright.remove(0, sright.indexOf('.') + 1).trimmed();
-    if (sortNames.contains(sleft)) {
-        if (sortNames.contains(sright)) {
-            int ileft = sortNames.indexOf(sleft);
-            int iright = sortNames.indexOf(sright);
+    if (g_sortNames.contains(sleft)) {
+        if (g_sortNames.contains(sright)) {
+            int ileft = g_sortNames.indexOf(sleft);
+            int iright = g_sortNames.indexOf(sright);
             if (ileft != iright)
                 return ileft < iright;
         } else
             return true;
-    } else if (sortNames.contains(sright))
+    } else if (g_sortNames.contains(sright))
         return false;
 
     //compare names
@@ -120,82 +120,101 @@ bool NodeItemBase::lessThan(Fact *rightFact) const
         return Fact::lessThan(rightFact);
     return ncmp < 0;
 }
-//=============================================================================
-//=============================================================================
+
+QList<const NodeItemBase *> NodeItemBase::groupNodesList() const
+{
+    QList<const NodeItemBase *> list;
+    NodeItemBase *p = qobject_cast<NodeItemBase *>(parentFact());
+    if (!p)
+        return list;
+    for (int i = 0; i < p->size(); ++i) {
+        const NodeItemBase *item = qobject_cast<NodeItemBase *>(p->child(i));
+        if (item)
+            list.append(item);
+    }
+    return list;
+}
+
 void NodeItemBase::updateDictValid()
 {
     if (!dictValid())
-        setDataValid(false, false);
-    NodeItemBase *p = qobject_cast<NodeItemBase *>(parentFact());
-    if (!p)
+        setDataValid(false);
+    //update node group
+    QList<const NodeItemBase *> list = groupNodesList();
+    if (list.isEmpty())
         return;
     bool ok = true;
-    for (int i = 0; i < p->size(); ++i) {
-        const NodeItemBase *item = static_cast<NodeItemBase *>(p->child(i));
-        if (item->dictValid())
+    for (auto i : list) {
+        if (i->dictValid())
             continue;
         ok = false;
         break;
     }
-    p->setDictValid(ok);
+    qobject_cast<NodeItemBase *>(parentFact())->setDictValid(ok);
     //qDebug()<<ok<<p->name()<<name();
 }
-//=============================================================================
+void NodeItemBase::updateDataValid()
+{
+    QList<const NodeItemBase *> list = groupNodesList();
+    if (list.isEmpty())
+        return;
+    //update node group
+    bool ok = true;
+    for (auto i : list) {
+        if (i->dataValid())
+            continue;
+        ok = false;
+        break;
+    }
+    qobject_cast<NodeItemBase *>(parentFact())->setDataValid(ok);
+}
+
 void NodeItemBase::updateUpgrading()
 {
-    /*if(upgrading()){
-    setProgress(0);
-  }else{
-    setProgress(-1);
-  }*/
-    NodeItemBase *p = qobject_cast<NodeItemBase *>(parentFact());
-    if (!p)
+    QList<const NodeItemBase *> list = groupNodesList();
+    if (list.isEmpty())
         return;
-    //if(qobject_cast<Nodes*>(p))return;
-    //set parent upgrading if any of its child is upgrading
+    //update node group
     bool ok = false;
-    for (int i = 0; i < p->size(); ++i) {
-        const NodeItemBase *item = static_cast<NodeItemBase *>(p->child(i));
-        if (!item->upgrading())
+    for (auto i : list) {
+        if (!i->upgrading())
             continue;
         ok = true;
         break;
     }
-    p->setUpgrading(ok);
+    qobject_cast<NodeItemBase *>(parentFact())->setUpgrading(ok);
 }
-//=============================================================================
+
 void NodeItemBase::updateProgress()
 {
-    NodeItemBase *p = qobject_cast<NodeItemBase *>(parentFact());
-    if (!p)
+    QList<const NodeItemBase *> list = groupNodesList();
+    if (list.isEmpty())
         return;
     int ncnt = 0, v = 0;
-    for (int i = 0; i < p->size(); ++i) {
-        const NodeItemBase *item = static_cast<NodeItemBase *>(p->child(i));
-        int np = item->progress();
+    for (auto i : list) {
+        int np = i->progress();
         if (np < 0)
             continue;
         ncnt++;
         v += np;
     }
+    NodeItemBase *p = qobject_cast<NodeItemBase *>(parentFact());
     if (ncnt > 0) {
-        if (p->progress_s < ncnt) {
-            p->progress_s = ncnt;
+        if (p->m_progress_s < ncnt) {
+            p->m_progress_s = ncnt;
             //qDebug()<<"progressCnt"<<p->progress_s<<ncnt<<p->name()<<name();
-        } else if (ncnt < p->progress_s) {
-            v += (p->progress_s - ncnt) * 100;
-            ncnt = p->progress_s;
+        } else if (ncnt < p->m_progress_s) {
+            v += (p->m_progress_s - ncnt) * 100;
+            ncnt = p->m_progress_s;
         }
         p->setProgress(v / ncnt);
     } else {
-        p->progress_s = 0;
+        p->m_progress_s = 0;
         p->setProgress(-1);
         //qDebug()<<"progressCnt"<<p->progress_s;
     }
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 bool NodeItemBase::dictValid() const
 {
     return m_dictValid;
@@ -206,6 +225,17 @@ void NodeItemBase::setDictValid(const bool &v)
         return;
     m_dictValid = v;
     emit dictValidChanged();
+}
+bool NodeItemBase::dataValid() const
+{
+    return m_dataValid;
+}
+void NodeItemBase::setDataValid(const bool &v)
+{
+    if (m_dataValid == v)
+        return;
+    m_dataValid = v;
+    emit dataValidChanged();
 }
 bool NodeItemBase::upgrading() const
 {
@@ -218,5 +248,3 @@ void NodeItemBase::setUpgrading(const bool &v)
     m_upgrading = v;
     emit upgradingChanged();
 }
-//=============================================================================
-//=============================================================================

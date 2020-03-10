@@ -24,8 +24,10 @@
 #define VehicleMission_H
 //=============================================================================
 #include "MissionGroup.h"
+#include <Dictionary/DictMission.h>
 #include <Fact/Fact.h>
 #include <Vehicles/Vehicles.h>
+
 #include <QGeoCoordinate>
 #include <QGeoRectangle>
 #include <QtCore>

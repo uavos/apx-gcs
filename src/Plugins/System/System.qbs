@@ -4,7 +4,7 @@ Project {
 
     property var plugins: [
         "AppUpdate",
-        "FirmwareLoader",
+        //"FirmwareLoader",
         "Joystick",
         //"Notifications",
         //"Simulator",

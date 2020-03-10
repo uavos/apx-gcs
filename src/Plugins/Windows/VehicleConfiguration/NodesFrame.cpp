@@ -60,12 +60,13 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(a);
     // toolBar->widgetForAction(a)->setObjectName("greenAction");
 
-    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_request));
+    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_search));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_reload));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_stop));
-    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_nstat));
+    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
+    /* FIXME:
     QAction *aLookup = new QActionFact(vehicle->f_nodes->f_lookup);
     toolBar->addAction(aLookup);
 
@@ -73,6 +74,10 @@ void NodesFrame::vehicleSelected(Vehicle *v)
 
     QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
     toolBar->addAction(aShare);
+
+    connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
+*/
 
     aUndo = toolBar->addAction(MaterialIcon("undo"),
                                tr("Revert"),
@@ -84,12 +89,10 @@ void NodesFrame::vehicleSelected(Vehicle *v)
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
         connect(a, &QAction::triggered, [this]() { treeWidget->tree->setFocus(); });
     }
-    connect(vehicle->f_nodes->f_request, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    connect(vehicle->f_nodes->f_search, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_reload, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
-    connect(vehicle->f_nodes->f_nstat, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    connect(vehicle->f_nodes->f_status, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_clear, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
-    connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
-    connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
     updateActions();
 }
@@ -130,6 +133,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     }
 
     //node tools
+    /* FIXME:
     for (auto node : nlist) {
         QString sect;
         for (int i = 0; i < node->tools->size(); ++i) {
@@ -142,7 +146,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
             }
             addNodeTools(&m, f, node->title());
         }
-    }
+    }*/
     if (nlist.size() > 1)
         updateMenuTitles(&m);
 
