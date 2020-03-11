@@ -34,8 +34,8 @@
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     : ProtocolBase(nodes)
-    , sn(sn)
     , nodes(nodes)
+    , sn(sn)
 {
     memset(&m_ident, 0, sizeof(m_ident));
 
@@ -68,15 +68,13 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         // node ident
     case mandala::cmd::env::nmt::ident::uid: {
         //qDebug() << "ident" << sn;
-        if (stream.available()
-            <= (xbus::node::ident::ident_s::psize() + xbus::node::ident::strings_count * 2)) {
+        if (stream.available() <= (xbus::node::ident::ident_s::psize() + 3 * 2)) {
             qWarning() << "size" << stream.available() << xbus::node::ident::ident_s::psize();
             break;
         }
         nodes->acknowledgeRequest(stream);
-        m_ident.read(&stream);
-        if (xbus::node::ident::strings_count != 3)
-            break;
+        xbus::node::ident::ident_s ident;
+        ident.read(&stream);
         // format ok
         const char *s;
         s = stream.read_string(32);
@@ -91,6 +89,27 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         if (!s)
             break;
         m_hardware = QString(s).trimmed();
+        QStringList fnames;
+        for (size_t cnt = ident.flags.bits.files; cnt > 0; --cnt) {
+            s = stream.read_string(32);
+            if (!s)
+                break;
+            QString sf = QString(s).trimmed();
+            if (sf.isEmpty())
+                break;
+            fnames.append(sf);
+        }
+        if (stream.available() > 0)
+            break;
+        if (fnames.size() != ident.flags.bits.files)
+            break;
+
+        fnames.sort();
+        if (memcmp(&m_ident, &ident, sizeof(ident)) != 0 || fnames != m_files.keys()) {
+            m_ident = ident;
+            updateFiles(fnames);
+            emit identChanged();
+        }
         emit identReceived();
     } break;
 
@@ -100,6 +119,37 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
             break;
         nodes->acknowledgeRequest(stream.read<xbus::node::crc_t>());
     } break;
+    case mandala::cmd::env::nmt::nack::uid: {
+        if (stream.available() <= sizeof(xbus::node::crc_t))
+            break;
+        xbus::node::crc_t crc;
+        stream >> crc;
+        if (stream.available() != sizeof(uint16_t))
+            break;
+        uint16_t ms;
+        stream >> ms;
+        nodes->extendRequest(crc, ms);
+    } break;
+
+        // file operations
+    case mandala::cmd::env::nmt::file::uid: {
+        if (stream.available() <= sizeof(xbus::node::file::op_e))
+            break;
+        xbus::node::file::op_e op;
+        stream >> op;
+
+        if (!(op & xbus::node::file::reply_op_mask))
+            break;
+        op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
+
+        const char *s = stream.read_string(16);
+        if (!s)
+            break;
+        ProtocolNodeFile *f = file(s);
+        if (!f)
+            break;
+        f->downlink(op, stream);
+    } break;
 
         // message from vehicle
     case mandala::cmd::env::nmt::msg::uid: {
@@ -107,14 +157,23 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
             break;
         xbus::node::msg::type_t t;
         stream >> t;
-        QByteArray s_ba(static_cast<int>(stream.available()), '\0');
-        stream.read(s_ba.data(), stream.available());
-
-        QString s(s_ba.trimmed());
-        if (s.isEmpty())
+        const char *s = stream.read_string(stream.available());
+        QString msg(QString(s).trimmed());
+        if (msg.isEmpty())
             break;
-        emit messageReceived(t, s);
+        emit messageReceived(t, msg);
     } break;
+    }
+}
+
+void ProtocolNode::updateFiles(QStringList fnames)
+{
+    qDebug() << "files:" << m_ident.flags.bits.files << fnames;
+    qDeleteAll(m_files.values());
+    m_files.clear();
+    for (auto i : fnames) {
+        ProtocolNodeFile *file = new ProtocolNodeFile(this, i);
+        m_files.insert(i, file);
     }
 }
 
@@ -138,6 +197,10 @@ QString ProtocolNode::version() const
 QString ProtocolNode::hardware() const
 {
     return m_hardware;
+}
+ProtocolNodeFile *ProtocolNode::file(const QString &name) const
+{
+    return m_files.value(name, nullptr);
 }
 
 void ProtocolNode::requestIdent()

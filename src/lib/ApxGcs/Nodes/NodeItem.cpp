@@ -327,7 +327,6 @@ void NodeItem::identReceived()
     setHardware(m_protocol->hardware());
 
     setIdent(m_protocol->ident());
-    qDebug() << "files:" << m_ident.flags.bits.files;
 
     setIdentValid(true);
 

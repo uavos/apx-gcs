@@ -23,6 +23,7 @@
 #pragma once
 
 #include "ProtocolBase.h"
+#include "ProtocolNodeFile.h"
 #include "ProtocolNodeRequest.h"
 
 #include <QtCore>
@@ -47,6 +48,8 @@ public:
     QString version() const;
     QString hardware() const;
 
+    ProtocolNodeFile *file(const QString &name) const;
+
     struct field_s : public xbus::node::dict::field_s
     {
         QString name;
@@ -56,19 +59,24 @@ public:
     typedef QList<field_s> Dictionary;
 
 private:
-    QString sn;
     ProtocolNodes *nodes;
+    QString sn;
 
     xbus::node::ident::ident_s m_ident;
     QString m_name;
     QString m_version;
     QString m_hardware;
 
+    QMap<QString, ProtocolNodeFile *> m_files;
+    void updateFiles(QStringList fnames);
+
     //export signals and slots
 signals:
     void requestTimeout(quint16 cmd, QByteArray data);
 
     void identReceived();
+    void identChanged();
+
     void dictReceived(const ProtocolNode::Dictionary &dict);
     void confReceived(const QVariantList &values);
 

@@ -23,7 +23,6 @@
 #ifndef FirmwarePlugin_H
 #define FirmwarePlugin_H
 #include "Firmware.h"
-#include <App/AppGcs.h>
 #include <App/PluginInterface.h>
 #include <QtCore>
 //=============================================================================
@@ -34,10 +33,7 @@ class FirmwarePlugin : public PluginInterface
     Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | Tool; }
-    QObject *createControl() override
-    {
-        return new Firmware(nullptr, AppGcs::instance()->protocol->firmware);
-    }
+    QObject *createControl() override { return new Firmware(nullptr); }
 };
 //=============================================================================
 #endif // FirmwarePlugin_H

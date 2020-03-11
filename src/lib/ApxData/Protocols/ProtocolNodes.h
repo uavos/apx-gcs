@@ -45,6 +45,7 @@ public:
 
     ProtocolNodeRequest *acknowledgeRequest(xbus::node::crc_t crc);
     ProtocolNodeRequest *acknowledgeRequest(ProtocolStreamReader &stream);
+    ProtocolNodeRequest *extendRequest(xbus::node::crc_t crc, int timeout_ms);
 
     // called by vehicle
     void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);

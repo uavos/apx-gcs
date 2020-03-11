@@ -96,14 +96,27 @@ ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(xbus::node::crc_t crc)
 {
     ProtocolNodeRequest *r = nullptr;
     for (auto i : pool) {
-        if (i->acknowledge(crc))
+        if (i->equals(crc)) {
+            i->acknowledge();
             r = i;
+        }
     }
     return r;
 }
 ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(ProtocolStreamReader &stream)
 {
     return acknowledgeRequest(ProtocolNodeRequest::get_crc(stream.buffer(), stream.pos()));
+}
+ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, int timeout_ms)
+{
+    ProtocolNodeRequest *r = nullptr;
+    for (auto i : pool) {
+        if (i->equals(crc)) {
+            i->extend(timeout_ms);
+            r = i;
+        }
+    }
+    return r;
 }
 
 void ProtocolNodes::stop()

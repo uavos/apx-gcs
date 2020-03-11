@@ -20,34 +20,35 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Loader_H
-#define Loader_H
-//=============================================================================
+#pragma once
+
 #include "QueueItem.h"
-class Releases;
-class LoaderStm;
-//=============================================================================
+
+class ProtocolNodeFile;
+
 class Loader : public QueueItem
 {
     Q_OBJECT
 
 public:
-    explicit Loader(Fact *parent, ProtocolServiceFirmware *protocol);
+    explicit Loader(Fact *parent);
 
     void start(QueueItem *item, Releases *releases);
     void finish(bool success);
 
 private:
-    ProtocolServiceFirmware *protocol;
-    Releases *releases;
+    ProtocolNodeFile *file_p{nullptr};
 
     //files
     QByteArray fileData;
     quint32 startAddr;
 
+    bool upgradeFirmware(QString node_sn, QByteArray data, quint32 offset);
+    bool upgradeLoader(QString node_sn, QByteArray data, quint32 offset);
+
+    ProtocolNodeFile *lock_file(const QString &node_sn, const QString &fname);
+
 signals:
     void finished(bool success);
     void stop();
 };
-//=============================================================================
-#endif

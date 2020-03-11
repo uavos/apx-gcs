@@ -26,39 +26,24 @@
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
 
-#include <Protocols/ProtocolServiceFirmware.h>
-#include <Protocols/ProtocolVehicles.h>
+#include <Protocols/ProtocolNode.h>
+#include <Protocols/ProtocolNodeFile.h>
+#include <Protocols/ProtocolNodes.h>
 
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicles.h>
 
 #include "LoaderStm.h"
 #include "Releases.h"
-//=============================================================================
-Loader::Loader(Fact *parent, ProtocolServiceFirmware *protocol)
+
+Loader::Loader(Fact *parent)
     : QueueItem(parent, "loader")
-    , protocol(protocol)
 {
     setIcon("autorenew");
-
-    connect(protocol, &ProtocolServiceFirmware::statusChanged, this, [this]() {
-        setValue(this->protocol->status());
-    });
-    connect(protocol, &ProtocolServiceFirmware::progressChanged, this, [this]() {
-        setProgress(this->protocol->progress());
-    });
-
-    connect(protocol, &ProtocolServiceFirmware::finished, this, [this](QString, bool success) {
-        finish(success);
-    });
-
-    connect(this, &Loader::stop, protocol, &ProtocolServiceFirmware::stop);
-
     setTitle("*");
     setEnabled(false);
 }
-//=============================================================================
-//=============================================================================
+
 void Loader::start(QueueItem *item, Releases *releases)
 {
     if (active()) {
@@ -103,22 +88,25 @@ void Loader::start(QueueItem *item, Releases *releases)
     switch (type) {
     default:
         apxMsgW() << "Unsupported upgrade type" << type;
-        finish(false);
         break;
     case Firmware::FW:
-        protocol->upgradeFirmware(sn, fileData, startAddr);
-        break;
+        if (!upgradeFirmware(sn, fileData, startAddr))
+            break;
+        return;
     case Firmware::LD:
-        protocol->upgradeLoader(sn, fileData, startAddr);
-        break;
+        if (!upgradeLoader(sn, fileData, startAddr))
+            break;
+        return;
     case Firmware::STM_LD:
     case Firmware::STM_FW: {
         QStringList opts = nodeDescr.split(',');
         new LoaderStm(this, fileData, startAddr, opts.at(0), QVariant(opts.at(1)).toBool());
-    } break;
     }
+        return;
+    }
+    finish(false);
 }
-//=============================================================================
+
 void Loader::finish(bool success)
 {
     setActive(false);
@@ -129,6 +117,51 @@ void Loader::finish(bool success)
     setEnabled(false);
     emit finished(success);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
+ProtocolNodeFile *Loader::lock_file(const QString &node_sn, const QString &fname)
+{
+    ProtocolNodes *nodes = AppGcs::instance()->protocol->local->nodes;
+    ProtocolNode *node = nodes->getNode(node_sn, false);
+    if (!node) {
+        apxMsgW() << "missing node";
+        return nullptr;
+    }
+    ProtocolNodeFile *file = node->file(fname);
+    if (!file) {
+        apxMsgW() << "missing node";
+        return nullptr;
+    }
+
+    if (file_p) {
+        disconnect(file_p, nullptr, this, nullptr);
+    }
+    file_p = file;
+
+    connect(file_p, &ProtocolNodeFile::uploaded, this, [this]() { finish(true); });
+    connect(file_p, &ProtocolNodeFile::error, this, [this]() { finish(false); });
+    connect(file_p, &ProtocolNodeFile::statusChanged, this, [this]() {
+        setValue(file_p->status());
+    });
+    connect(file_p, &ProtocolNodeFile::progressChanged, this, [this]() {
+        setProgress(file_p->progress());
+    });
+    connect(this, &Loader::stop, file_p, &ProtocolNodeFile::stop);
+
+    return file;
+}
+
+bool Loader::upgradeFirmware(QString node_sn, QByteArray data, quint32 offset)
+{
+    return false;
+}
+
+bool Loader::upgradeLoader(QString node_sn, QByteArray data, quint32 offset)
+{
+    ProtocolNodeFile *file = lock_file(node_sn, "ldr");
+    if (!file)
+        return false;
+
+    file->upload(data, offset);
+
+    return false;
+}

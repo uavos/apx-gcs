@@ -24,7 +24,6 @@
 #define Firmware_H
 //=============================================================================
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolServiceFirmware.h>
 class Loader;
 class QueueItem;
 class Releases;
@@ -37,7 +36,7 @@ class Firmware : public Fact
     Q_ENUMS(UpgradeType)
 
 public:
-    explicit Firmware(Fact *parent, ProtocolServiceFirmware *protocol);
+    explicit Firmware(Fact *parent);
     static Firmware *instance() { return _instance; }
 
     Fact *f_upgrade;
@@ -69,7 +68,6 @@ public:
 
 private:
     static Firmware *_instance;
-    ProtocolServiceFirmware *protocol;
 
     QueueItem *queued(Fact *list, const QString &sn, UpgradeType type);
 

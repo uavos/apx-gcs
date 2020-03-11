@@ -41,9 +41,11 @@ public:
                                  int retry_cnt = 0);
 
     bool equals(const ProtocolNodeRequest *other);
+    bool equals(xbus::node::crc_t crc);
     bool lessThan(const ProtocolNodeRequest *other);
 
-    bool acknowledge(xbus::node::crc_t crc);
+    void acknowledge();
+    void extend(int ms);
     void finish(bool acknowledged = false);
 
     void schedule();
@@ -66,7 +68,6 @@ private:
 
     int retry{0};
 
-    bool equals(xbus::node::crc_t crc);
     xbus::node::crc_t _crc;
     bool _crc_valid{false};
 

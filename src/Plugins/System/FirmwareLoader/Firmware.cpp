@@ -34,18 +34,17 @@
 APX_LOGGING_CATEGORY(FirmwareLog, "core.Firmware")
 //=============================================================================
 Firmware *Firmware::_instance = nullptr;
-Firmware::Firmware(Fact *parent, ProtocolServiceFirmware *protocol)
+Firmware::Firmware(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
            tr("Firmware"),
            tr("Firmware updates"),
            Group | FlatModel,
            "update")
-    , protocol(protocol)
 {
     _instance = this;
 
-    f_loader = new Loader(this, protocol);
+    f_loader = new Loader(this);
     connect(f_loader, &Loader::finished, this, &Firmware::loaderFinished);
 
     f_releases = new Releases(this);
@@ -167,9 +166,7 @@ void Firmware::requestInitialization(const QString &nodeName,
 //=============================================================================
 void Firmware::nodeNotify(NodeItem *node)
 {
-    if (!node->fwSupport())
-        return;
-    if (!node->infoValid())
+    if (!node->identValid())
         return;
 
     if (queued(f_queue, node->sn(), Any))

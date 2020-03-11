@@ -70,12 +70,17 @@ bool ProtocolNodeRequest::lessThan(const ProtocolNodeRequest *other)
 {
     return QString::compare(toByteArray().toHex(), other->toByteArray().toHex()) < 0;
 }
-bool ProtocolNodeRequest::acknowledge(xbus::node::crc_t crc)
+void ProtocolNodeRequest::acknowledge()
 {
-    if (!equals(crc))
-        return false;
     finish(true);
-    return true;
+}
+void ProtocolNodeRequest::extend(int ms)
+{
+    if (timeout_ms < ms)
+        timeout_ms = ms;
+    if (active && timeout_ms > 0) {
+        timer.start(timeout_ms);
+    }
 }
 bool ProtocolNodeRequest::equals(xbus::node::crc_t crc)
 {
@@ -96,7 +101,7 @@ void ProtocolNodeRequest::trigger()
     active = true;
     //qDebug()<<cmd<<sn<<data.size()<<data.toHex().toUpper();
     nodes->sendRequest(this);
-    if (timeout_ms) {
+    if (timeout_ms > 0) {
         timer.start(timeout_ms);
     } else {
         finish();

@@ -1,0 +1,326 @@
+/*
+ * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
+ *
+ * This file is part of the UAV Open System Project
+ *  http://www.uavos.com/
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+ * Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ProtocolNodeFile.h"
+#include "ProtocolNode.h"
+#include "ProtocolNodes.h"
+
+#include <crc/crc.h>
+
+#include <App/AppLog.h>
+#include <Mandala/Mandala.h>
+
+ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
+    : ProtocolBase(node)
+    , node(node)
+    , m_name(name)
+{
+    memset(&_info, 0, sizeof(_info));
+}
+
+void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset)
+{
+    reset();
+    _op_data = data;
+    _op_offset = offset;
+    _op_size = static_cast<xbus::node::file::size_t>(data.size());
+    _op_tcnt = 0;
+    setStatus(tr("Uploading"));
+    request(xbus::node::file::wopen)->schedule();
+}
+void ProtocolNodeFile::write_next()
+{
+    if (_op_tcnt == _op_size) {
+        //all data written
+        qDebug() << "done";
+        emit uploaded();
+        stop();
+        return;
+    }
+    size_t sz = 256;
+    if (sz > _op_size)
+        sz = _op_size;
+
+    off_t offset = _op_offset - _info.offset;
+    qDebug() << offset << sz;
+
+    updateProgress();
+
+    const void *src = _op_data.mid(offset, sz).data();
+
+    _op_hash = CRC_32_APX(src, sz, _op_hash);
+    ProtocolNodeRequest *req = request(xbus::node::file::write);
+    req->write<xbus::node::file::offset_t>(_op_offset);
+    req->write(src, sz);
+    req->schedule();
+}
+bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
+{
+    if (stream.available() < sizeof(xbus::node::file::offset_t))
+        return false;
+    xbus::node::file::offset_t offset;
+    stream >> offset;
+    if (offset != _op_offset) {
+        qWarning() << "offset: " << offset << _op_offset;
+        return false;
+    }
+
+    if (stream.available() < sizeof(xbus::node::file::size_t))
+        return false;
+    xbus::node::file::size_t size;
+    stream >> size;
+    if (size == 0) {
+        qWarning() << "size: " << size;
+        return false;
+    }
+
+    if (stream.available() < sizeof(xbus::node::file::hash_t))
+        return false;
+    xbus::node::file::hash_t hash;
+    stream >> hash;
+    if (hash != _op_hash) {
+        qWarning() << "hash: " << hash << _op_hash;
+        return false;
+    }
+
+    if (stream.available() > 0)
+        return false;
+
+    ack_req();
+
+    _op_offset += size;
+    _op_tcnt += size;
+    if (_op_tcnt > _op_size)
+        return false;
+
+    write_next();
+    return true;
+}
+
+void ProtocolNodeFile::download()
+{
+    reset();
+    _op_offset = 0;
+    _op_size = 0;
+    _op_tcnt = 0;
+    setStatus(tr("Downloading"));
+    request(xbus::node::file::ropen)->schedule();
+}
+void ProtocolNodeFile::read_next()
+{
+    if (_op_tcnt == _op_size) {
+        //all data written
+        qDebug() << "done";
+        emit downloaded(_op_data);
+        stop();
+        return;
+    }
+
+    updateProgress();
+
+    ProtocolNodeRequest *req = request(xbus::node::file::read);
+    req->write<xbus::node::file::offset_t>(_op_offset);
+    req->schedule();
+}
+bool ProtocolNodeFile::resp_read(ProtocolStreamReader &stream)
+{
+    if (stream.available() <= sizeof(xbus::node::file::offset_t))
+        return false;
+    xbus::node::file::offset_t offset;
+    stream >> offset;
+    if (offset != _op_offset) { //just skip non-sequental
+        qWarning() << offset << _op_offset;
+        return true;
+    }
+
+    ack_req();
+
+    size_t size = stream.available();
+    _op_offset += size;
+    _op_tcnt += size;
+    if (_op_tcnt > _op_size)
+        return false;
+
+    _op_data.append(stream.payload());
+    read_next();
+    return true;
+}
+
+void ProtocolNodeFile::stop()
+{
+    reset();
+    emit finished();
+}
+
+void ProtocolNodeFile::updateProgress()
+{
+    size_t v = _op_size > 0 ? _op_tcnt * 100 / _op_size : 0;
+    setProgress(static_cast<int>(v));
+}
+
+void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader &stream)
+{
+    qDebug() << name() << op << stream.available();
+
+    switch (op) {
+    default:
+        break;
+    case xbus::node::file::info:
+        if (!check_info(stream))
+            break;
+        ack_req();
+        return;
+
+    case xbus::node::file::ropen:
+        if (!check_info(stream))
+            break;
+        if (!(_info.flags.bits.readable && _info.flags.bits.oread))
+            break;
+        if (!check_op(op))
+            break;
+        ack_req();
+        _op_size = _info.size;
+        if (_op_offset == 0)
+            _op_offset = _info.offset;
+        if (_op_tcnt == 0) {
+            _op_hash = 0;
+            read_next();
+        }
+        return;
+    case xbus::node::file::wopen:
+        if (!check_info(stream))
+            break;
+        if (!(_info.flags.bits.writable && _info.flags.bits.owrite))
+            break;
+        if (!check_op(op))
+            break;
+        ack_req();
+        if (_op_tcnt == 0) {
+            _op_hash = 0;
+            write_next();
+        }
+        return;
+    case xbus::node::file::close:
+        if (!check_info(stream))
+            break;
+        if (!check_op(op))
+            break;
+        reset();
+        //reply_info(op);
+        return;
+    case xbus::node::file::read:
+        if (!_info.flags.bits.oread)
+            break;
+        if (!check_op(op))
+            break;
+        if (!resp_read(stream))
+            break;
+        return;
+    case xbus::node::file::write:
+        if (!_info.flags.bits.owrite)
+            break;
+        if (!check_op(op))
+            break;
+        if (!resp_write(stream))
+            break;
+        return;
+    }
+    // error
+    emit error();
+    reset();
+    //reply_info(xbus::node::file::abort);
+}
+
+ProtocolNodeRequest *ProtocolNodeFile::request(xbus::node::file::op_e op,
+                                               int timeout_ms,
+                                               int retry_cnt)
+{
+    ProtocolNodeRequest *req = node->request(mandala::cmd::env::nmt::file::uid,
+                                             timeout_ms,
+                                             retry_cnt);
+    *req << op;
+    req->write_string(name().toUtf8());
+    _op = op;
+    _req = req;
+    connect(req, &ProtocolNodeRequest::finished, this, [this]() { _req = nullptr; });
+    return req;
+}
+
+void ProtocolNodeFile::reset()
+{
+    qDebug() << _op;
+    _op = xbus::node::file::idle;
+
+    _op_data.clear();
+
+    setStatus(QString());
+    setProgress(-1);
+    ack_req();
+}
+
+bool ProtocolNodeFile::check_info(ProtocolStreamReader &stream)
+{
+    if (stream.available() != xbus::node::file::info_s::psize())
+        return false;
+    xbus::node::file::info_s info;
+    info.read(&stream);
+    bool chg = true;
+    do {
+        if (info.size != _info.size)
+            break;
+        if (info.time != _info.time)
+            break;
+        if (info.hash != _info.hash)
+            break;
+        if (info.offset != _info.offset)
+            break;
+        if (info.flags.bits.readable != _info.flags.bits.readable)
+            break;
+        if (info.flags.bits.writable != _info.flags.bits.writable)
+            break;
+        chg = false;
+    } while (0);
+    _info = info;
+    if (chg) {
+        qDebug() << "info update";
+        //reset();
+    }
+    return true;
+}
+
+bool ProtocolNodeFile::check_op(xbus::node::file::op_e op)
+{
+    if (_op != op) {
+        qWarning() << _op << op;
+        return false;
+    }
+
+    return true;
+}
+
+void ProtocolNodeFile::ack_req()
+{
+    if (!_req)
+        return;
+    _req->acknowledge();
+    _req = nullptr;
+}

@@ -44,16 +44,13 @@ Format::Format(Firmware *firmware, Fact *parent)
     connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Format::nodeNotify);
 
     Nodes *nodes = Vehicles::instance()->f_local->f_nodes;
-    connect(this, &Fact::triggered, nodes, &Nodes::request);
+    connect(this, &Fact::triggered, nodes->f_search, &Fact::trigger);
 
     f_start->setEnabled(false);
 }
 //=============================================================================
 void Format::nodeNotify(NodeItem *node)
 {
-    if (!node->fwSupport())
-        return;
-
     QStringList n;
     n << node->title();
     n << node->descr();
