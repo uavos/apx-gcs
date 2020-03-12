@@ -32,30 +32,46 @@ class ProtocolVehicle : public ProtocolBase
 {
     Q_OBJECT
 public:
-    ProtocolVehicle(xbus::vehicle::squawk_t squawk,
+    ProtocolVehicle(ProtocolVehicles *vehicles,
+                    xbus::vehicle::squawk_t squawk,
                     const xbus::vehicle::ident_s &ident,
-                    ProtocolVehicles *vehicles);
+                    const QString &callsign);
 
     void downlink(ProtocolStreamReader &stream);
 
-    xbus::vehicle::squawk_t squawk;
-    xbus::vehicle::ident_s ident;
+    xbus::vehicle::squawk_t squawk() const;
+    const xbus::vehicle::ident_s &ident() const;
 
-    ProtocolVehicles *vehicles;
+    void updateIdent(const xbus::vehicle::squawk_t &squawk,
+                     const xbus::vehicle::ident_s &ident,
+                     const QString &name);
+
+    bool match(const xbus::vehicle::squawk_t &squawk) const;
+    bool match(const xbus::vehicle::uid_t &uid) const;
+    bool match(const xbus::vehicle::ident_s &ident) const;
+
     ProtocolNodes *nodes;
 
 private:
+    ProtocolVehicles *vehicles;
+
+    xbus::vehicle::squawk_t m_squawk;
+    xbus::vehicle::ident_s m_ident;
+
     uint8_t txbuf[xbus::size_packet_max];
     ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
 
 public slots:
+    void requestTelemetry();
+
     void send(const QByteArray packet);
     void vmexec(QString func);
     void sendSerial(quint8 portID, QByteArray data);
 
 signals:
-    void xpdrData(const xbus::vehicle::xpdr_s &xpdr);
     void identUpdated();
+
+    void xpdrData(const xbus::vehicle::xpdr_s &xpdr);
 
     //known received data
     void telemetryData(ProtocolStreamReader *stream);

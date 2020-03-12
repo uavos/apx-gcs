@@ -25,14 +25,12 @@
 #include "Loader.h"
 #include "QueueItem.h"
 #include "Releases.h"
+
+#include <App/AppGcs.h>
 #include <App/AppLog.h>
 
-#include <App/App.h>
-#include <Nodes/NodeItem.h>
-#include <Vehicles/Vehicles.h>
-//=============================================================================
 APX_LOGGING_CATEGORY(FirmwareLog, "core.Firmware")
-//=============================================================================
+
 Firmware *Firmware::_instance = nullptr;
 Firmware::Firmware(Fact *parent)
     : Fact(parent,
@@ -82,7 +80,10 @@ Firmware::Firmware(Fact *parent)
 
     updateStatus();
 
-    connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Firmware::nodeNotify);
+    ProtocolNodes *nodes = AppGcs::instance()->protocol->local->nodes;
+    connect(nodes, &ProtocolNodes::nodeFound, this, &Firmware::nodeUpdate);
+
+    /*connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Firmware::nodeNotify);
     connect(Vehicles::instance(), &Vehicles::nodeUpgradeFW, this, [this](NodeItem *node) {
         requestUpgrade(node->title(),
                        node->descr(),
@@ -106,11 +107,11 @@ Firmware::Firmware(Fact *parent)
                        node->hardware(),
                        node->version(),
                        Firmware::MHX);
-    });
+    });*/
 
     //App::jsync(this);
 }
-//=============================================================================
+
 void Firmware::updateStatus()
 {
     bool act = active();
@@ -133,7 +134,36 @@ void Firmware::updateProgress()
     }
     setProgress((queueCnt - f_queue->size() - 1) * 100 / queueCnt + f_loader->progress() / queueCnt);
 }
-//=============================================================================
+
+void Firmware::nodeUpdate(ProtocolNode *protocol)
+{
+    connect(protocol, &ProtocolNode::nodeUpdate, this, &Firmware::nodeUpdate, Qt::UniqueConnection);
+
+    if (!protocol->identValid())
+        return;
+
+    QString sn = protocol->sn();
+
+    if (queued(f_queue, sn))
+        return;
+    if (f_loader->active() && f_loader->match(sn))
+        return;
+    if (queued(f_available, sn))
+        return;
+
+    new QueueItem(f_available, protocol);
+}
+
+QueueItem *Firmware::queued(Fact *list, const QString &sn)
+{
+    for (auto i : *list) {
+        QueueItem *f = static_cast<QueueItem *>(i);
+        if (f->match(sn))
+            return f;
+    }
+    return nullptr;
+}
+
 void Firmware::requestUpgrade(const QString &nodeName,
                               const QString &nodeDescr,
                               const QString &sn,
@@ -163,51 +193,7 @@ void Firmware::requestInitialization(const QString &nodeName,
 {
     requestUpgrade(nodeName, portName, "any", hw, f_releases->releaseVersion(), type);
 }
-//=============================================================================
-void Firmware::nodeNotify(NodeItem *node)
-{
-    if (!node->identValid())
-        return;
 
-    if (queued(f_queue, node->sn(), Any))
-        return;
-    if (f_loader->active() && f_loader->sn == node->sn())
-        return;
-    if (!queued(f_available, node->sn(), Any)) {
-        new QueueItem(f_available,
-                      node->title(),
-                      node->value().toString(),
-                      node->sn(),
-                      node->hardware(),
-                      node->version(),
-                      Any);
-        return;
-    }
-    if (node->value().toString().isEmpty())
-        return;
-    for (int i = 0; i < f_available->size(); ++i) {
-        QueueItem *f = static_cast<QueueItem *>(f_available->child(i));
-        if (f->sn != node->sn())
-            continue;
-        f->nodeDescr = node->value().toString();
-        f->updateDescr();
-    }
-}
-//=============================================================================
-QueueItem *Firmware::queued(Fact *list, const QString &sn, UpgradeType type)
-{
-    for (int i = 0; i < list->size(); ++i) {
-        QueueItem *f = static_cast<QueueItem *>(list->child(i));
-        if (f->sn != sn)
-            continue;
-        if (type != Any && f->type != type)
-            continue;
-        return f;
-    }
-    return nullptr;
-}
-//=============================================================================
-//=============================================================================
 void Firmware::next()
 {
     if (f_queue->size() <= 0) {
@@ -247,7 +233,7 @@ void Firmware::next()
     f_loader->start(item, f_releases);
     item->remove();
 }
-//=============================================================================
+
 void Firmware::loaderFinished(bool success)
 {
     emit upgradeFinished(f_loader->sn, f_loader->type);
@@ -255,11 +241,9 @@ void Firmware::loaderFinished(bool success)
         f_queue->removeAll();
     QTimer::singleShot(1, this, &Firmware::next);
 }
-//=============================================================================
+
 void Firmware::stop()
 {
     f_queue->removeAll();
     f_loader->stop();
 }
-//=============================================================================
-//=============================================================================

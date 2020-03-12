@@ -38,8 +38,8 @@ public:
 
     ProtocolNodeRequest *request(xbus::pid_t pid,
                                  const QString &sn,
-                                 int timeout_ms = 0,
-                                 int retry_cnt = 0);
+                                 int timeout_ms,
+                                 int retry_cnt = -1);
 
     ProtocolNode *getNode(QString sn, bool createNew = true);
 
@@ -77,7 +77,7 @@ public slots:
 signals:
     void next();
     void stopRequested();
-    void finished();
+    void dataExchangeFinished();
 
     //export signals and slots
 public slots:
@@ -85,19 +85,8 @@ public slots:
     void requestSearch();
 
     void clearNodes();
-    void removeNode(QString sn);
 
 signals:
-    void nodeFound(QString sn, ProtocolNode *protocol);
+    void nodeFound(ProtocolNode *protocol);
     void requestTimeout(ProtocolNodeRequest *request, ProtocolNode *node);
-
-    //properties
-public:
-    bool active() const;
-    void setActive(bool v);
-
-private:
-    int m_active;
-signals:
-    void activeChanged();
 };

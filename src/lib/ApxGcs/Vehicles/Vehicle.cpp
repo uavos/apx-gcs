@@ -32,40 +32,19 @@
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
 
-//=============================================================================
-Vehicle::Vehicle(Vehicles *vehicles,
-                 QString callsign,
-                 quint16 squawk,
-                 QString uid,
-                 VehicleClass vclass,
-                 ProtocolVehicle *protocol)
-    : Fact(vclass >= LOCAL ? vehicles : vehicles->f_list, callsign.toLower(), callsign, "", Group)
-    , uid(uid)
-    , dbKey(0)
-    , protocol(protocol)
-    , m_streamType(OFFLINE)
-    , m_squawk(squawk)
-    , m_callsign(callsign)
-    , m_vehicleClass(vclass)
-    , m_follow(false)
-    , m_flightState(FS_UNKNOWN)
-    , m_totalDistance(0)
+Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
+    : ProtocolViewBase(vehicles, protocol)
 {
     setSection(vehicles->title());
-    setIcon(isLocal() ? "chip" : isReplay() ? "play-circle" : "drone");
-
-    connect(this, &Vehicle::callsignChanged, this, &Vehicle::updateTitle);
-    connect(this, &Vehicle::streamTypeChanged, this, &Vehicle::updateStatus);
 
     f_select
         = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
-    connect(f_select, &Fact::triggered, this, [=]() { vehicles->selectVehicle(this); });
-    connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
-        f_select->setEnabled(v != this);
-    });
+    connect(f_select, &Fact::triggered, this, [this, vehicles]() { vehicles->selectVehicle(this); });
+
+    connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
 
     f_mandala = new Mandala(this);
-    f_nodes = new Nodes(this);
+    f_nodes = new Nodes(this, protocol->nodes);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
     f_telemetry = new Telemetry(this);
@@ -110,73 +89,38 @@ Vehicle::Vehicle(Vehicles *vehicles,
     connect(f_mode, &Fact::valueChanged, this, &Vehicle::updateFlightState);
     connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateFlightState);
 
-    if (!isTemporary()) {
-        connect(vehicles, &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
-            setActive(v == this);
-            if (active() && (!(isLocal() || isReplay())))
-                dlinkReqTimer.start();
-            else
-                dlinkReqTimer.stop();
-        });
+    connect(this, &Vehicle::streamTypeChanged, this, &Vehicle::updateStatus);
 
-        connect(this, &Fact::activeChanged, this, [this]() {
-            if (active())
-                emit selected();
-            setFollow(false);
-        });
+    onlineTimer.setSingleShot(true);
+    onlineTimer.setInterval(7000);
+    connect(&onlineTimer, &QTimer::timeout, this, [this]() { setStreamType(OFFLINE); });
 
-        onlineTimer.setSingleShot(true);
-        onlineTimer.setInterval(7000);
-        connect(&onlineTimer, &QTimer::timeout, this, [=]() { setStreamType(OFFLINE); });
-
-        if (protocol && !isReplay()) {
-            connect(this,
-                    &Vehicle::coordinateChanged,
-                    this,
-                    &Vehicle::updateGeoPath,
-                    Qt::QueuedConnection);
-
-            connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
-
-            //downlink request timer
-            if (!isLocal()) {
-                dlinkReqTimer.setInterval(1000);
-                dlinkReqTimer.start();
-                connect(&dlinkReqTimer, &QTimer::timeout, this, [=]() {
-                    if (active())
-                        protocol->send(QByteArray()); //request telemetry
-                });
-            }
-
-            //mandala update signals
-            connect(f_mandala, &Mandala::sendUplink, protocol, &ProtocolVehicle::send);
-        }
-
-        Fact *f = new Fact(f_telemetry,
-                           "rpath",
-                           tr("Reset Path"),
-                           tr("Clear travelled path"),
-                           Action,
-                           "history");
-        connect(f, &Fact::triggered, this, &Vehicle::resetGeoPath);
-        connect(this, &Vehicle::geoPathChanged, f, [this, f]() {
-            f->setEnabled(!geoPath().isEmpty());
-        });
-        f->setEnabled(false);
+    //downlink request timer
+    if (!(isLocal() || isReplay())) {
+        telemetryReqTimer.setInterval(1000);
+        connect(&telemetryReqTimer, &QTimer::timeout, protocol, &ProtocolVehicle::requestTelemetry);
     }
 
-    updateStatus();
-    updateInfo();
+    if (!isReplay()) {
+        connect(this,
+                &Vehicle::coordinateChanged,
+                this,
+                &Vehicle::updateGeoPath,
+                Qt::QueuedConnection);
 
-    //connect protocols
-    if (protocol) {
-        connect(protocol, &QObject::destroyed, this, [this]() { this->protocol = nullptr; });
+        //mandala update signals
+        connect(f_mandala, &Mandala::sendUplink, protocol, &ProtocolVehicle::send);
+
         //status and stream type
+        connect(protocol, &ProtocolVehicle::identUpdated, this, &Vehicle::squawkChanged);
+
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::setStreamXpdr);
         connect(protocol, &ProtocolVehicle::telemetryData, this, &Vehicle::setStreamTelemetry);
         connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::setStreamData);
         connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::setStreamData);
         connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::setStreamData);
+
+        connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
 
         //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 
@@ -190,23 +134,20 @@ Vehicle::Vehicle(Vehicles *vehicles,
         connect(protocol, &ProtocolVehicle::serialTxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, true);
         });
-
-        //ident update
-        connect(protocol, &ProtocolVehicle::identUpdated, this, [this, protocol]() {
-            setSquawk(protocol->squawk);
-            setCallsign(protocol->ident.callsign);
-            setVehicleClass(static_cast<Vehicle::VehicleClass>(protocol->ident.vclass));
-            apxMsg() << tr("Vehicle IDENT updated").append(":") << vehicleClassText()
-                     << "'" + this->callsign() + "'"
-                     << "(" + squawkText() + ")";
-        });
-
-        //forward signals
-        connect(protocol, &ProtocolVehicle::telemetryData, this, &Vehicle::telemetryDataReceived);
-        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::valueDataReceived);
-        connect(protocol, &ProtocolVehicle::serialRxData, this, &Vehicle::serialRxDataReceived);
-        connect(protocol, &ProtocolVehicle::serialTxData, this, &Vehicle::serialTxDataReceived);
     }
+
+    Fact *f = new Fact(f_telemetry,
+                       "rpath",
+                       tr("Reset Path"),
+                       tr("Clear travelled path"),
+                       Action,
+                       "history");
+    connect(f, &Fact::triggered, this, &Vehicle::resetGeoPath);
+    connect(this, &Vehicle::geoPathChanged, f, [this, f]() { f->setEnabled(!geoPath().isEmpty()); });
+    f->setEnabled(false);
+
+    updateStatus();
+    updateInfo();
 
     //register JS new vehicles instantly
     connect(this, &Vehicle::nameChanged, this, [=]() { App::jsync(this); });
@@ -216,8 +157,23 @@ Vehicle::~Vehicle()
 {
     qDebug() << "vehicle removed";
 }
-//=============================================================================
-//=============================================================================
+
+void Vehicle::updateActive()
+{
+    bool v = active();
+    f_select->setEnabled(!v);
+
+    if (v)
+        telemetryReqTimer.start();
+    else
+        telemetryReqTimer.stop();
+
+    if (active())
+        emit selected();
+
+    setFollow(false);
+}
+
 void Vehicle::dbSaveVehicleInfo()
 {
     if (isReplay())
@@ -225,8 +181,7 @@ void Vehicle::dbSaveVehicleInfo()
     QVariantMap info;
     info.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
     info.insert("uid", uid);
-    info.insert("callsign", callsign());
-    info.insert("class", vehicleClassText());
+    info.insert("callsign", title());
     info.insert("squawk", squawkText());
     DBReqSaveVehicleInfo *req = new DBReqSaveVehicleInfo(info);
     connect(req,
@@ -240,13 +195,7 @@ void Vehicle::dbSetVehicleKey(quint64 key)
 {
     dbKey = key;
 }
-//=============================================================================
-//=============================================================================
-void Vehicle::updateTitle()
-{
-    setName(callsign());
-    setTitle(callsign());
-}
+
 void Vehicle::updateStatus()
 {
     setValue(streamTypeText());
@@ -256,7 +205,7 @@ void Vehicle::updateInfo()
 {
     QStringList st;
     //st<<callsign();
-    if (vehicleClass() != GCU) {
+    if (!isReplay()) {
         QString s;
         int alt = f_hmsl->value().toInt();
         if (std::abs(alt) >= 50)
@@ -338,15 +287,11 @@ void Vehicle::updateGeoPath()
 //=============================================================================
 bool Vehicle::isLocal() const
 {
-    return vehicleClass() == LOCAL;
+    return protocol()->squawk() == 0 && protocol()->ident().flags.bits.gcs == 0;
 }
 bool Vehicle::isReplay() const
 {
-    return !protocol; // vehicleClass()==REPLAY;
-}
-bool Vehicle::isTemporary() const
-{
-    return vehicleClass() == TEMPORARY;
+    return protocol()->enabled() == false;
 }
 void Vehicle::setReplay(bool v)
 {
@@ -366,10 +311,6 @@ QGeoRectangle Vehicle::geoPathRect() const
 QString Vehicle::streamTypeText() const
 {
     return QMetaEnum::fromType<StreamType>().valueToKey(streamType());
-}
-QString Vehicle::vehicleClassText() const
-{
-    return QMetaEnum::fromType<VehicleClass>().valueToKey(vehicleClass());
 }
 QString Vehicle::squawkText() const
 {
@@ -418,18 +359,16 @@ void Vehicle::jsexecData(QString data)
 //=============================================================================
 void Vehicle::vmexec(QString func)
 {
-    if (protocol)
-        protocol->vmexec(func);
+    protocol()->vmexec(func);
 }
 void Vehicle::sendSerial(quint8 portID, QByteArray data)
 {
-    if (protocol)
-        protocol->sendSerial(portID, data);
+    protocol()->sendSerial(portID, data);
 }
 //=============================================================================
 void Vehicle::flyHere(const QGeoCoordinate &c)
 {
-    if (!protocol)
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
@@ -443,7 +382,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
-    if (!protocol)
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
@@ -455,7 +394,7 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
-    if (!protocol)
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
@@ -467,7 +406,7 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
-    if (!protocol)
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
@@ -493,9 +432,9 @@ QString Vehicle::fileTitle() const
 }
 QString Vehicle::confTitle() const
 {
-    if (!(f_nodes->nodesCount() > 0 && f_nodes->dictValid() && f_nodes->dataValid())) {
+    if (f_nodes->nodesCount() <= 0)
         return QString();
-    }
+
     QMap<QString, QString> byName;
     QString shiva;
     QString longest;
@@ -537,13 +476,12 @@ QString Vehicle::confTitle() const
 //=============================================================================
 void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsystem)
 {
-    if (isTemporary())
-        return;
+    // FIXME: if (isTemporary()) return;
 
     if (subsystem.isEmpty())
-        subsystem = callsign();
+        subsystem = title();
     else
-        subsystem = QString("%1/%2").arg(callsign()).arg(subsystem);
+        subsystem = QString("%1/%2").arg(title()).arg(subsystem);
 
     AppNotify::NotifyFlags fType = flags & AppNotify::NotifyTypeMask;
 
@@ -573,7 +511,8 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
 //=============================================================================
 void Vehicle::updateDatalinkVars(quint16 id, QByteArray)
 {
-    /*switch (id) {
+    /*FIXME:
+    switch (id) {
     default:
         return;
     case mandala::idx_gcu_RSS:
@@ -604,44 +543,7 @@ void Vehicle::setStreamType(const StreamType v)
 }
 quint16 Vehicle::squawk(void) const
 {
-    return m_squawk;
-}
-void Vehicle::setSquawk(const quint16 v)
-{
-    if (m_squawk == v)
-        return;
-    m_squawk = v;
-    emit squawkChanged();
-}
-QString Vehicle::callsign(void) const
-{
-    return m_callsign;
-}
-void Vehicle::setCallsign(const QString &v)
-{
-    if (m_callsign == v)
-        return;
-    m_callsign = v;
-    emit callsignChanged();
-}
-Vehicle::VehicleClass Vehicle::vehicleClass(void) const
-{
-    return m_vehicleClass;
-}
-void Vehicle::setVehicleClass(const VehicleClass v)
-{
-    if (m_vehicleClass == v)
-        return;
-    m_vehicleClass = v;
-    emit vehicleClassChanged();
-}
-void Vehicle::setVehicleClass(const QString &v)
-{
-    bool ok = false;
-    int i = QMetaEnum::fromType<VehicleClass>().keyToValue(v.toUtf8(), &ok);
-    if (!ok)
-        return;
-    setVehicleClass(static_cast<VehicleClass>(i));
+    return protocol()->squawk();
 }
 QString Vehicle::info(void) const
 {
@@ -724,4 +626,3 @@ bool Vehicle::setErrcnt(const uint &v)
     emit errcntChanged();
     return true;
 }
-//=============================================================================

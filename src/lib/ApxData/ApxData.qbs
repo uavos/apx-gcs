@@ -55,6 +55,7 @@ ApxApp.ApxLibrary {
         prefix: name+"/"
         files: [
             "ProtocolBase.cpp", "ProtocolBase.h",
+            "ProtocolViewBase.cpp", "ProtocolViewBase.h",
             "ProtocolStream.h",
             "ProtocolConverter.cpp", "ProtocolConverter.h",
             "ProtocolVehicles.cpp", "ProtocolVehicles.h",

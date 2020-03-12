@@ -9,17 +9,9 @@ MapItemGroup {
         map.addMapItemGroup(group)
     }
 
-    VehicleItem {
-        vehicle: apx.vehicles.local
-    }
-
-    VehicleItem {
-        vehicle: apx.vehicles.replay
-    }
-
     MapItemView {
         id: vehicles
-        model: apx.vehicles.list.model
+        model: apx.vehicles.model
         delegate: VehicleItem { }
     }
 }

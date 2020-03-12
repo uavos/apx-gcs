@@ -41,7 +41,7 @@ Format::Format(Firmware *firmware, Fact *parent)
 
     connect(f_start, &Fact::triggered, this, &Format::startTriggered);
 
-    connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Format::nodeNotify);
+    //connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Format::nodeNotify);
 
     Nodes *nodes = Vehicles::instance()->f_local->f_nodes;
     connect(this, &Fact::triggered, nodes->f_search, &Fact::trigger);

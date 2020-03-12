@@ -23,18 +23,24 @@
 #include "Vehicles.h"
 #include "VehicleSelect.h"
 #include "VehicleWarnings.h"
+
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <Database/TelemetryDB.h>
 #include <QQmlEngine>
-//=============================================================================
+
 APX_LOGGING_CATEGORY(VehiclesLog, "core.vehicles")
 Vehicles *Vehicles::_instance = nullptr;
+
 Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
-    : Fact(parent, "vehicles", tr("Vehicles"), tr("Discovered vehicles"), Section)
-    , protocol(protocol)
+    : ProtocolViewBase(parent, protocol)
 {
     _instance = this;
+
+    setName("vehicles");
+    setTitle(tr("Vehicles"));
+    setDescr(tr("Discovered vehicles"));
+    setOption(Section);
 
     qmlRegisterUncreatableType<Vehicles>("APX.Vehicles", 1, 0, "Vehicles", "Reference only");
     qmlRegisterUncreatableType<Vehicle>("APX.Vehicles", 1, 0, "Vehicle", "Reference only");
@@ -49,27 +55,13 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                                  tr("Select vehicle"),
                                  tr("Change the active vehicle"));
     f_select->setIcon("select");
-    f_select->setSection(title());
+    f_select->setTreeType(Action);
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);
 
-    f_list = new Fact(this, "list", tr("Vehicles"), tr("Identified vehicles"), Group | Count);
-    f_list->setIcon("airplane");
-
-    f_local = new Vehicle(this,
-                          "LOCAL",
-                          0,
-                          QByteArray().append((char) 0).append((char) 0),
-                          Vehicle::LOCAL,
-                          protocol->local);
-
-    f_replay = new Vehicle(this,
-                           "REPLAY",
-                           0,
-                           QByteArray().append((char) 0).append((char) 1),
-                           Vehicle::REPLAY,
-                           nullptr);
-
+    f_local = new Vehicle(this, protocol->local);
     f_select->addVehicle(f_local);
+
+    f_replay = new Vehicle(this, protocol->replay);
     f_select->addVehicle(f_replay);
 
     //JS register mandala
@@ -123,71 +115,48 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     //connect protocols
     connect(protocol, &ProtocolVehicles::vehicleIdentified, this, &Vehicles::vehicleIdentified);
 }
-//=============================================================================
-Vehicle *Vehicles::createVehicle(ProtocolVehicle *protocol)
-{
-    const xbus::vehicle::ident_s &ident = protocol->ident;
-    QString callsign = QString(QByteArray(ident.callsign, sizeof(ident.callsign))).trimmed();
-    QString uid = QByteArray(reinterpret_cast<const char *>(ident.vuid), sizeof(ident.vuid))
-                      .toHex()
-                      .toUpper();
 
-    Vehicle *v = new Vehicle(this,
-                             callsign,
-                             protocol->squawk,
-                             uid,
-                             static_cast<Vehicle::VehicleClass>(protocol->ident.vclass),
-                             protocol);
-
-    emit vehicleRegistered(v);
-    return v;
-}
-//=============================================================================
 void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
 {
-    Vehicle *v = createVehicle(protocol);
+    Vehicle *v = new Vehicle(this, protocol);
 
-    QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->vehicleClassText());
-    msg.append(QString(" '%1'").arg(v->callsign()));
+    emit vehicleRegistered(v);
+
+    QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->title());
     if (v->squawk() > 0)
         msg.append(QString(" (%1)").arg(v->squawkText()));
     v->message(msg, AppNotify::Important);
 
     v->dbSaveVehicleInfo();
 
-    while (f_list->size() > 0) {
+    /* FIXME: select identified vehicle
+     while (f_list->size() > 0) {
         if (m_current->vehicleClass() == Vehicle::UAV)
             break;
         selectVehicle(v);
         break;
-    }
+    }*/
 }
-void Vehicles::identAssigned(ProtocolVehicle *v, const xbus::vehicle::ident_s &ident)
-{
-    QString msg = QString("%1 %2 (%3)")
-                      .arg(tr("Assigning squawk to"))
-                      .arg(ident.callsign)
-                      .arg(QString::number(v->squawk, 16).toUpper());
-    AppNotify::instance()->report(msg, AppNotify::FromApp | AppNotify::Warning);
-}
-//=============================================================================
+
 void Vehicles::selectVehicle(Vehicle *v)
 {
+    if (!v)
+        return;
+
+    if (m_current) {
+        m_current->setActive(false);
+    }
+
     v->setActive(true); //ensure is active
 
     if (m_current == v)
         return;
-    if (!v)
-        return;
-    //v->f_recorder->recordEvent("info",QString("%1: %2 '%3' (%4)").arg("Vehicle selected").arg(v->f_vclass->text()).arg(v->f_callsign->text()).arg(v->f_squawk->text()));
+    m_current = v;
 
-    QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->vehicleClassText());
-    if (!(v->isReplay() || v->isLocal()))
-        msg.append(QString(" '%1'").arg(v->callsign()));
+    QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->title());
     if (v->squawk() > 0)
         msg.append(QString(" (%1)").arg(v->squawkText()));
     v->message(msg, AppNotify::Important);
-    m_current = v;
 
     //update JSengine
     AppEngine *e = App::instance()->engine();
@@ -197,38 +166,39 @@ void Vehicles::selectVehicle(Vehicle *v)
     emit currentChanged();
     emit vehicleSelected(v);
 }
-//=============================================================================
+
 Vehicle *Vehicles::current(void) const
 {
     return m_current;
 }
-//=============================================================================
-//=============================================================================
+
 void Vehicles::selectPrev()
 {
-    int i = f_list->indexOfChild(m_current);
-    if (i < 0)
-        i = 0;
-    else if (i == 0)
-        i = f_list->size() - 1;
-    else if (i >= (f_list->size() - 1))
-        i = 0;
+    int i = indexOfChild(m_current);
+    if (i < list_padding)
+        i = list_padding;
+    else if (i == list_padding)
+        i = size() - 1;
+    else if (i >= (size() - 1))
+        i = list_padding;
     else
         i--;
-    selectVehicle(qobject_cast<Vehicle *>(f_list->child(i)));
+
+    selectVehicle(qobject_cast<Vehicle *>(child(i)));
 }
 void Vehicles::selectNext()
 {
-    int i = f_list->indexOfChild(m_current);
-    if (i < 0)
-        i = 0;
-    else if (i >= (f_list->size() - 1))
-        i = 0;
+    int i = indexOfChild(m_current);
+    if (i < list_padding)
+        i = list_padding;
+    else if (i >= (size() - 1))
+        i = list_padding;
     else
         i++;
-    selectVehicle(qobject_cast<Vehicle *>(f_list->child(i)));
+
+    selectVehicle(qobject_cast<Vehicle *>(child(i)));
 }
-//=============================================================================
+
 void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
 {
     // direct access to fact values from JS context
@@ -259,4 +229,3 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
             .arg(fact->name());
     e->evaluate(s);
 }
-//=============================================================================

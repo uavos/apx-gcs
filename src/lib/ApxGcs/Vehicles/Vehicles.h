@@ -20,17 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Vehicles_H
-#define Vehicles_H
-//=============================================================================
+#pragma once
+
 #include "Vehicle.h"
 #include "VehicleSelect.h"
+
 #include <App/AppEngine.h>
-#include <Fact/Fact.h>
+
 #include <Protocols/ProtocolVehicles.h>
-class NodeItem;
-//=============================================================================
-class Vehicles : public Fact
+#include <Protocols/ProtocolViewBase.h>
+
+class Vehicles : public ProtocolViewBase<ProtocolVehicles>
 {
     Q_OBJECT
 
@@ -41,16 +41,11 @@ public:
 
     static Vehicles *instance() { return _instance; }
 
-    Fact *f_list;
-
+    static constexpr const int list_padding = 2;
     Vehicle *f_local;
     Vehicle *f_replay;
 
     VehicleSelect *f_select;
-
-    ProtocolVehicles *protocol;
-
-    Vehicle *createVehicle(ProtocolVehicle *protocol);
 
 private:
     static Vehicles *_instance;
@@ -70,17 +65,6 @@ signals:
     //data connection
 private slots:
     void vehicleIdentified(ProtocolVehicle *protocol);
-    void identAssigned(ProtocolVehicle *v, const xbus::vehicle::ident_s &ident);
-
-public slots:
-
-    //forward signals for plugins
-signals:
-    void nodeUpgradeFW(NodeItem *node);
-    void nodeUpgradeLD(NodeItem *node);
-    void nodeUpgradeMHX(NodeItem *node);
-
-    void nodeNotify(NodeItem *node); //node is available and info updated
 
     //---------------------------------------
     // PROPERTIES
@@ -88,10 +72,8 @@ public:
     Vehicle *current(void) const;
 
 protected:
-    Vehicle *m_current;
+    QPointer<Vehicle> m_current;
 
 signals:
     void currentChanged();
 };
-//=============================================================================
-#endif

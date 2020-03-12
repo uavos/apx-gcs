@@ -387,7 +387,7 @@ void TelemetryPlayer::next()
 
         //update states
         if (updCnt) {
-            vehicle->telemetryDataReceived();
+            // FIXME: vehicle->protocol()->telemetryDataReceived();
             //qDebug()<<updCnt<<tNext;
         }
         if (_time != t) {

@@ -41,7 +41,7 @@ QString MissionShare::defaultExportFileName() const
     QString fname = mission->site().replace(" ", "");
     if (!fname.isEmpty())
         fname.append("-");
-    fname.append(mission->vehicle->callsign());
+    fname.append(mission->vehicle->title());
     QString subj = mission->f_title->text().simplified();
     if (!subj.isEmpty())
         fname.append(QString("-%1").arg(subj));

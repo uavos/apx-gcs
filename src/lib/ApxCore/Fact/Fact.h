@@ -152,6 +152,9 @@ public:
 private:
     Fact *m_mandala;
 
+    void trackProgress();
+    int m_progress_s{0};
+
 private:
     QString pTitle() const;
 

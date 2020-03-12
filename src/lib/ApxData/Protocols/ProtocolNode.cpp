@@ -33,10 +33,12 @@
 #include <crc/crc.h>
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
-    : ProtocolBase(nodes)
+    : ProtocolBase(nodes, "node#")
     , nodes(nodes)
-    , sn(sn)
+    , m_sn(sn)
 {
+    setIcon("sitemap");
+
     memset(&m_ident, 0, sizeof(m_ident));
 
     connect(nodes, &ProtocolNodes::activeChanged, this, [this]() {
@@ -80,15 +82,15 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         s = stream.read_string(32);
         if (!s)
             break;
-        m_name = QString(s).trimmed();
+        QString sname = QString(s).trimmed();
         s = stream.read_string(32);
         if (!s)
             break;
-        m_version = QString(s).trimmed();
+        QString sversion = QString(s).trimmed();
         s = stream.read_string(32);
         if (!s)
             break;
-        m_hardware = QString(s).trimmed();
+        QString shardware = QString(s).trimmed();
         QStringList fnames;
         for (size_t cnt = ident.flags.bits.files; cnt > 0; --cnt) {
             s = stream.read_string(32);
@@ -104,13 +106,27 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         if (fnames.size() != ident.flags.bits.files)
             break;
 
+        setName(sname.toLower());
+        setTitle(sname);
+
+        if (m_version != sversion) {
+            m_version = sversion;
+            emit versionChanged();
+        }
+        if (m_hardware != shardware) {
+            m_hardware = shardware;
+            emit hardwareChanged();
+        }
+
         fnames.sort();
         if (memcmp(&m_ident, &ident, sizeof(ident)) != 0 || fnames != m_files.keys()) {
+            m_identValid = true;
             m_ident = ident;
             updateFiles(fnames);
             emit identChanged();
         }
         emit identReceived();
+        emit nodeUpdate(this);
     } break;
 
         // request acknowledge
@@ -179,16 +195,20 @@ void ProtocolNode::updateFiles(QStringList fnames)
 
 ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, int timeout_ms, int retry_cnt)
 {
-    return nodes->request(pid, sn, timeout_ms, retry_cnt);
+    return nodes->request(pid, m_sn, timeout_ms, retry_cnt);
 }
 
+QString ProtocolNode::sn() const
+{
+    return m_sn;
+}
 const xbus::node::ident::ident_s &ProtocolNode::ident() const
 {
     return m_ident;
 }
-QString ProtocolNode::name() const
+bool ProtocolNode::identValid() const
 {
-    return m_name;
+    return m_identValid;
 }
 QString ProtocolNode::version() const
 {
@@ -201,6 +221,19 @@ QString ProtocolNode::hardware() const
 ProtocolNodeFile *ProtocolNode::file(const QString &name) const
 {
     return m_files.value(name, nullptr);
+}
+
+void ProtocolNode::requestReboot()
+{
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid);
+    req->write<xbus::node::reboot::type_e>(xbus::node::reboot::firmware);
+    req->schedule();
+}
+void ProtocolNode::requestRebootLoader()
+{
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid, 0);
+    req->write<xbus::node::reboot::type_e>(xbus::node::reboot::loader);
+    req->schedule();
 }
 
 void ProtocolNode::requestIdent()

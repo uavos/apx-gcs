@@ -27,15 +27,56 @@
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusPacket.h>
 
-ProtocolVehicle::ProtocolVehicle(xbus::vehicle::squawk_t squawk,
+ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
+                                 xbus::vehicle::squawk_t squawk,
                                  const xbus::vehicle::ident_s &ident,
-                                 ProtocolVehicles *vehicles)
-    : ProtocolBase(vehicles)
-    , squawk(squawk)
-    , ident(ident)
+                                 const QString &callsign)
+    : ProtocolBase(vehicles, callsign)
     , vehicles(vehicles)
 {
+    setIcon(squawk ? "drone" : "chip");
+    setDataType(Count);
+
     nodes = new ProtocolNodes(this);
+
+    updateIdent(squawk, ident, callsign);
+}
+
+xbus::vehicle::squawk_t ProtocolVehicle::squawk() const
+{
+    return m_squawk;
+}
+const xbus::vehicle::ident_s &ProtocolVehicle::ident() const
+{
+    return m_ident;
+}
+void ProtocolVehicle::updateIdent(const xbus::vehicle::squawk_t &squawk,
+                                  const xbus::vehicle::ident_s &ident,
+                                  const QString &callsign)
+{
+    m_squawk = squawk;
+    m_ident = ident;
+
+    setName(callsign.toLower());
+    setTitle(callsign);
+
+    bool replay = squawk == 0 && ident.flags.bits.gcs == 1;
+    setEnabled(!replay);
+
+    emit identUpdated();
+}
+
+bool ProtocolVehicle::match(const xbus::vehicle::squawk_t &squawk) const
+{
+    return squawk == m_squawk;
+}
+bool ProtocolVehicle::match(const xbus::vehicle::uid_t &uid) const
+{
+    return memcmp(uid, m_ident.uid, sizeof(xbus::vehicle::uid_t)) == 0;
+}
+bool ProtocolVehicle::match(const xbus::vehicle::ident_s &ident) const
+{
+    return memcmp(&ident, &m_ident, sizeof(xbus::vehicle::ident_s)) == 0;
 }
 
 void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
@@ -101,9 +142,10 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
 void ProtocolVehicle::send(const QByteArray packet)
 {
     if (vehicles)
-        vehicles->send(this->squawk, packet);
+        vehicles->send(m_squawk, packet);
 }
 
+void ProtocolVehicle::requestTelemetry() {}
 void ProtocolVehicle::vmexec(QString func)
 {
     func = func.simplified().trimmed();

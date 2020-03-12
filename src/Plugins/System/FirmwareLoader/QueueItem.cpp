@@ -21,38 +21,35 @@
  *
  */
 #include "QueueItem.h"
-//=============================================================================
-QueueItem::QueueItem(Fact *parent,
-                     const QString &nodeName,
-                     const QString &nodeDescr,
-                     const QString &sn,
-                     const QString &hw,
-                     const QString &ver,
-                     Firmware::UpgradeType type)
-    : Fact(parent, QString("fw_%1").arg(sn), "", "")
-    , nodeName(nodeName)
-    , nodeDescr(nodeDescr)
-    , sn(sn)
-    , hw(hw)
-    , ver(ver)
-    , type(type)
+
+#include <App/AppGcs.h>
+
+QueueItem::QueueItem(Fact *parent, ProtocolNode *protocol)
+    : Fact(parent, QString("fw_%1").arg(protocol->sn()), "", "")
 {
-    if (type == Firmware::LD)
+    m_protocol = new ProtocolNode(AppGcs::instance()->protocol->local->nodes, protocol->sn());
+    m_protocol->setParent(this);
+
+    /*if (type == Firmware::LD)
         setIcon("alert-circle");
     else
-        setIcon("chip");
+        setIcon("chip");*/
 
     updateDescr();
 }
-//=============================================================================
-QueueItem::QueueItem(Fact *parent, const QString &name)
-    : Fact(parent, name, "", "")
-    , type(Firmware::Any)
-{}
-//=============================================================================
+
+bool QueueItem::match(const QString &sn) const
+{
+    return m_protocol->sn() == sn;
+}
+QueueItem::UpgradeType QueueItem::type() const
+{
+    return m_type;
+}
+
 void QueueItem::updateDescr()
 {
-    QString s = nodeName.toUpper();
+    /*QString s = nodeName.toUpper();
     if (!nodeDescr.isEmpty())
         s.append(QString(" (%2)").arg(nodeDescr));
     setTitle(s);
@@ -60,6 +57,5 @@ void QueueItem::updateDescr()
     st << QMetaEnum::fromType<Firmware::UpgradeType>().valueToKey(type);
     st << hw;
     st << ver;
-    setDescr(st.join(' '));
+    setDescr(st.join(' '));*/
 }
-//=============================================================================

@@ -167,9 +167,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
 
     //protocols
-    if (vehicle->protocol) {
-        // FIXME:
-        /*connect(vehicle->protocol->mission,
+    // FIXME:
+    /*connect(vehicle->protocol->mission,
                 &ProtocolMission::missionDataReceived,
                 this,
                 &VehicleMission::missionDataReceived);
@@ -189,7 +188,6 @@ VehicleMission::VehicleMission(Vehicle *parent)
         if (!vehicle->isLocal()) {
             QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
         }*/
-    }
 
     //reset and update
     clearMission();

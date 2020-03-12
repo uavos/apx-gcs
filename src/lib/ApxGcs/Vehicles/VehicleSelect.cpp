@@ -23,7 +23,7 @@
 #include "VehicleSelect.h"
 #include "Vehicle.h"
 #include "Vehicles.h"
-//=============================================================================
+
 VehicleSelect::VehicleSelect(Fact *parent,
                              const QString &name,
                              const QString &title,
@@ -32,18 +32,11 @@ VehicleSelect::VehicleSelect(Fact *parent,
     , vehicles(Vehicles::instance())
 {
     setEnabled(false);
-    connect(vehicles, &Vehicles::vehicleRegistered, this, &VehicleSelect::_vehicleRegistered);
+    connect(vehicles, &Vehicles::vehicleRegistered, this, &VehicleSelect::addVehicle);
     connect(vehicles, &Vehicles::vehicleRemoved, this, &VehicleSelect::_vehicleRemoved);
     connect(vehicles, &Vehicles::vehicleSelected, this, &VehicleSelect::_vehicleSelected);
 }
-//=============================================================================
-void VehicleSelect::_vehicleRegistered(Vehicle *vehicle)
-{
-    if (size() <= 0) {
-        addVehicle(vehicles->f_local);
-    }
-    addVehicle(vehicle);
-}
+
 void VehicleSelect::addVehicle(Vehicle *vehicle)
 {
     Fact *f = new Fact(this, vehicle->name(), vehicle->title(), vehicle->descr());
@@ -64,7 +57,7 @@ void VehicleSelect::addVehicle(Vehicle *vehicle)
 
     setEnabled(true);
 }
-//=============================================================================
+
 void VehicleSelect::_vehicleRemoved(Vehicle *vehicle)
 {
     Fact *f = map.value(vehicle);
@@ -74,17 +67,15 @@ void VehicleSelect::_vehicleRemoved(Vehicle *vehicle)
     f->remove();
     setEnabled(size() > 0);
 }
-//=============================================================================
+
 void VehicleSelect::_vehicleSelected(Vehicle *vehicle)
 {
     setValue(vehicle->title());
 }
-//=============================================================================
-//=============================================================================
+
 void VehicleSelect::_factTriggered()
 {
     Vehicle *v = map.key(qobject_cast<Fact *>(sender()));
     if (v)
         emit vehicleSelected(v);
 }
-//=============================================================================

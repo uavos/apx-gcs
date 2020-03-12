@@ -41,7 +41,7 @@ public:
     friend class ProtocolVehicle;
 
     ProtocolVehicle *local;
-    //ProtocolServiceFirmware *firmware;
+    ProtocolVehicle *replay;
 
     void setConverter(ProtocolConverter *c);
     ProtocolConverter *converter() const;
@@ -59,9 +59,11 @@ private:
 
     void send(xbus::vehicle::squawk_t squawk, QByteArray packet);
 
-    ProtocolVehicle *addVehicle(xbus::vehicle::squawk_t squawk, const xbus::vehicle::ident_s &ident);
+    ProtocolVehicle *addVehicle(xbus::vehicle::squawk_t squawk,
+                                const xbus::vehicle::ident_s &ident,
+                                const QString &callsign);
     void identRequest(xbus::vehicle::squawk_t squawk);
-    void identAssign(xbus::vehicle::squawk_t squawk, const xbus::vehicle::ident_s &ident);
+    void identAssign(const xbus::vehicle::ident_s &ident, const QString &callsign);
 
 private slots:
     void process_downlink(const QByteArray packet);
@@ -72,7 +74,6 @@ public slots:
 
 signals:
     void vehicleIdentified(ProtocolVehicle *protocol);
-    void identAssigned(ProtocolVehicle *v, const xbus::vehicle::ident_s &ident);
 
     // data comm
 public slots:

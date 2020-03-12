@@ -129,7 +129,7 @@ bool TelemetryRecorder::dbCheckRecord()
             confTitle = title;
         DBReqTelemetryNewRecord *req
             = new DBReqTelemetryNewRecord(vehicle->uid,
-                                          vehicle->callsign(),
+                                          vehicle->title(),
                                           confTitle,
                                           recording(),
                                           QDateTime::currentDateTime().toMSecsSinceEpoch());

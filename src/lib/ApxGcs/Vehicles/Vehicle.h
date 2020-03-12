@@ -20,9 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Vehicle_H
-#define Vehicle_H
-//=============================================================================
+#pragma once
+
 #include <QGeoCoordinate>
 #include <QGeoPath>
 #include <QGeoRectangle>
@@ -30,28 +29,23 @@
 #include <App/AppNotify.h>
 #include <Fact/Fact.h>
 #include <Mandala/Mandala.h>
-#include <Protocols/ProtocolVehicle.h>
 
-#include <Xbus/XbusVehicle.h>
+#include <Protocols/ProtocolVehicle.h>
+#include <Protocols/ProtocolViewBase.h>
 
 class Vehicles;
 class Nodes;
 class VehicleMission;
 class VehicleWarnings;
 class Telemetry;
-//=============================================================================
-class Vehicle : public Fact
+
+class Vehicle : public ProtocolViewBase<ProtocolVehicle>
 {
     Q_OBJECT
-    Q_ENUMS(VehicleClass)
     Q_ENUMS(StreamType)
     Q_ENUMS(FlightState)
 
-    Q_PROPERTY(QString callsign READ callsign NOTIFY callsignChanged)
     Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
-
-    Q_PROPERTY(VehicleClass vehicleClass READ vehicleClass NOTIFY vehicleClassChanged)
-    Q_PROPERTY(QString vehicleClassText READ vehicleClassText NOTIFY vehicleClassChanged)
 
     Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
     Q_PROPERTY(QString streamTypeText READ streamTypeText NOTIFY streamTypeChanged)
@@ -70,29 +64,13 @@ class Vehicle : public Fact
     Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
 
 public:
-    enum VehicleClass {
-        //must match the IDENT::_vclass type
-        VEHICLE_CLASS_LIST,
-
-        //internal use
-        LOCAL = 100,
-        REPLAY,
-        TEMPORARY, //blackbox
-    };
-    Q_ENUM(VehicleClass)
-
     enum StreamType { OFFLINE = 0, SERVICE, DATA, XPDR, TELEMETRY };
     Q_ENUM(StreamType)
 
     enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
     Q_ENUM(FlightState)
 
-    explicit Vehicle(Vehicles *vehicles,
-                     QString callsign,
-                     quint16 squawk,
-                     QString uid,
-                     VehicleClass vclass,
-                     ProtocolVehicle *protocol);
+    explicit Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol);
 
     ~Vehicle() override;
 
@@ -106,11 +84,8 @@ public:
 
     QString uid;
 
-    quint64 dbKey; //from db
+    quint64 dbKey{0}; //from db
 
-    ProtocolVehicle *protocol;
-
-    QString vehicleClassText() const;
     QString streamTypeText() const;
     QString squawkText() const;
     QString squawkText(quint16 v) const;
@@ -120,12 +95,11 @@ public:
 
     Q_INVOKABLE bool isLocal() const;
     Q_INVOKABLE bool isReplay() const;
-    Q_INVOKABLE bool isTemporary() const;
 
     Q_INVOKABLE QGeoRectangle geoPathRect() const;
 
 private:
-    QTimer dlinkReqTimer;
+    QTimer telemetryReqTimer;
     QTimer onlineTimer;
     QElapsedTimer telemetryTime;
     QElapsedTimer xpdrTime;
@@ -158,7 +132,6 @@ private:
     void setReplay(bool v);
 
 private slots:
-    void updateTitle();
     void updateStatus();
     void updateInfo();
     void updateInfoReq();
@@ -175,18 +148,14 @@ private slots:
     void setStreamData();
     void setStreamService();
 
+    void updateActive();
+
     void updateDatalinkVars(quint16 id, QByteArray);
 
     void jsexecData(QString data);
 
 signals:
     void selected();
-
-    //forward from protocols
-    void telemetryDataReceived(); //used by widgets like signals
-    void valueDataReceived();
-    void serialRxDataReceived(quint16 portNo, QByteArray data);
-    void serialTxDataReceived(quint16 portNo, QByteArray data);
 
 signals:
     //forward for recorder
@@ -222,18 +191,10 @@ public slots:
     //---------------------------------------
     // PROPERTIES
 public:
+    quint16 squawk(void) const;
+
     StreamType streamType(void) const;
     void setStreamType(const StreamType v);
-
-    quint16 squawk(void) const;
-    void setSquawk(const quint16 v);
-
-    QString callsign(void) const;
-    void setCallsign(const QString &v);
-
-    VehicleClass vehicleClass(void) const;
-    void setVehicleClass(const VehicleClass v);
-    void setVehicleClass(const QString &v);
 
     QString info(void) const override;
 
@@ -256,23 +217,19 @@ public:
     bool setErrcnt(const uint &v);
 
 protected:
-    StreamType m_streamType;
-    quint16 m_squawk;
-    QString m_callsign;
+    StreamType m_streamType{OFFLINE};
     QString m_info;
-    VehicleClass m_vehicleClass;
-    bool m_follow;
+
+    bool m_follow{false};
     QGeoCoordinate m_coordinate;
-    FlightState m_flightState;
+    FlightState m_flightState{FS_UNKNOWN};
     QGeoPath m_geoPath;
-    quint64 m_totalDistance;
-    uint m_errcnt;
+    quint64 m_totalDistance{0};
+    uint m_errcnt{0};
 
 signals:
     void streamTypeChanged();
     void squawkChanged();
-    void callsignChanged();
-    void vehicleClassChanged();
     void infoChanged();
     void followChanged();
     void coordinateChanged();
@@ -281,5 +238,3 @@ signals:
     void totalDistanceChanged();
     void errcntChanged();
 };
-//=============================================================================
-#endif

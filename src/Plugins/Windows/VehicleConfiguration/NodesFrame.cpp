@@ -116,7 +116,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     if (vehicle->f_nodes->nodesCount() <= 0)
         return;
     //scan selected items
-    NodesList nlist = selectedItems<NodeItem>();
+    QList<NodeItem *> nlist = selectedItems<NodeItem>();
     QMenu m(treeWidget);
 
     //editor actions
@@ -162,8 +162,9 @@ void NodesFrame::aUndo_triggered(void)
         if (f->modified())
             f->f_revert->trigger();
     }
-    if (list.isEmpty())
-        vehicle->f_nodes->f_revert->trigger();
+    //FIXME:
+    //if (list.isEmpty())
+    //    vehicle->f_nodes->f_revert->trigger();
 }
 //=============================================================================
 void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)

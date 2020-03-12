@@ -31,11 +31,22 @@
 #include <crc/crc.h>
 
 ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
-    : ProtocolBase(vehicle)
+    : ProtocolBase(vehicle, "nodes")
     , vehicle(vehicle)
     , activeCount(0)
-    , m_active(false)
 {
+    setIcon("puzzle");
+    setDataType(Count);
+
+    connect(vehicle, &Fact::enabledChanged, this, [this]() {
+        setEnabled(this->vehicle->enabled());
+    });
+
+    connect(this, &Fact::activeChanged, this, [this]() {
+        if (!active())
+            stop();
+    });
+
     connect(this, &ProtocolNodes::next, this, &ProtocolNodes::doNextRequest, Qt::QueuedConnection);
 
     //timer.setSingleShot(true);
@@ -56,7 +67,7 @@ void ProtocolNodes::checkFinished()
     if (!active()) {
         activeCount = 0;
     }
-    emit finished();
+    emit dataExchangeFinished();
 }
 
 ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
@@ -69,6 +80,11 @@ ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
 
 void ProtocolNodes::schedule(ProtocolNodeRequest *request)
 {
+    if (!enabled()) {
+        request->deleteLater();
+        return;
+    }
+
     finishedTimer.stop();
 
     // find and abort existing
@@ -159,7 +175,7 @@ void ProtocolNodes::doNextRequest()
         if (r->active)
             continue;
 
-        if (active() || vehicle->squawk) {
+        if (active() || vehicle->squawk()) {
             activeCount++;
             r->trigger();
         } else {
@@ -198,7 +214,7 @@ ProtocolNode *ProtocolNodes::getNode(QString sn, bool createNew)
     ProtocolNode *node = new ProtocolNode(this, sn);
     connect(node, &QObject::destroyed, this, [this, sn]() { nodes.remove(sn); });
     nodes.insert(sn, node);
-    emit nodeFound(sn, node);
+    emit nodeFound(node);
     return node;
 }
 
@@ -208,16 +224,12 @@ void ProtocolNodes::clearNodes()
     qDeleteAll(nodes.values());
     nodes.clear();
 }
-void ProtocolNodes::removeNode(QString sn)
-{
-    if (!nodes.contains(sn))
-        return;
-    nodes.value(sn)->deleteLater();
-    nodes.remove(sn);
-}
 
 void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
 {
+    if (!enabled())
+        return;
+
     if (stream.available() < sizeof(xbus::node::guid_t))
         return;
 
@@ -243,23 +255,12 @@ void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
 
 void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
 {
+    if (!enabled())
+        return;
     vehicle->send(request->toByteArray());
 }
 
 void ProtocolNodes::requestSearch()
 {
-    request(mandala::cmd::env::nmt::search::uid, QString())->schedule();
-}
-
-bool ProtocolNodes::active() const
-{
-    return m_active;
-}
-void ProtocolNodes::setActive(bool v)
-{
-    if (m_active == v)
-        return;
-    m_active = v;
-    emit activeChanged();
-    qDebug() << v;
+    request(mandala::cmd::env::nmt::search::uid, QString(), 0)->schedule();
 }

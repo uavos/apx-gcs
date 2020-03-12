@@ -39,13 +39,10 @@ public:
     // called by nodes
     void downlink(xbus::node::file::op_e op, ProtocolStreamReader &stream);
 
-    ProtocolNodeRequest *request(xbus::node::file::op_e op, int timeout_ms = 500, int retry_cnt = 3);
-
-    inline QString name() const { return m_name; }
+    ProtocolNodeRequest *request(xbus::node::file::op_e op);
 
 private:
     ProtocolNode *node;
-    QString m_name;
 
     xbus::node::file::info_s _info;
     xbus::node::file::op_e _op{xbus::node::file::idle};

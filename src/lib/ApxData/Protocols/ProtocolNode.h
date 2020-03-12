@@ -41,10 +41,12 @@ public:
     // called by nodes
     void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);
 
-    ProtocolNodeRequest *request(xbus::pid_t pid, int timeout_ms = 0, int retry_cnt = 0);
+    ProtocolNodeRequest *request(xbus::pid_t pid, int timeout_ms = 500, int retry_cnt = -1);
 
+    QString sn() const;
     const xbus::node::ident::ident_s &ident() const;
-    QString name() const;
+    bool identValid() const;
+
     QString version() const;
     QString hardware() const;
 
@@ -60,10 +62,11 @@ public:
 
 private:
     ProtocolNodes *nodes;
-    QString sn;
+    QString m_sn;
 
     xbus::node::ident::ident_s m_ident;
-    QString m_name;
+    bool m_identValid{false};
+
     QString m_version;
     QString m_hardware;
 
@@ -72,10 +75,14 @@ private:
 
     //export signals and slots
 signals:
+    void nodeUpdate(ProtocolNode *protocol);
+
     void requestTimeout(quint16 cmd, QByteArray data);
 
     void identReceived();
     void identChanged();
+    void versionChanged();
+    void hardwareChanged();
 
     void dictReceived(const ProtocolNode::Dictionary &dict);
     void confReceived(const QVariantList &values);
@@ -83,6 +90,9 @@ signals:
     void messageReceived(xbus::node::msg::type_t type, QString msg);
 
 public slots:
+    void requestReboot();
+    void requestRebootLoader();
+
     void requestIdent();
     void requestDict();
     void requestConf();

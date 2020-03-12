@@ -34,7 +34,7 @@ Item {
 
 
     //internal
-    property string callsign: vehicle.callsign
+    property string callsign: vehicle.title
 
 
     property int paddingRight: dotSize+3

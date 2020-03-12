@@ -129,7 +129,7 @@ CleanButton {
             sdescr=msg.slice(i+1).trim()
             stitle=msg.slice(0,i).trim()
         }
-        stitle = apx.vehicles.current.callsign+": "+stitle
+        stitle = apx.vehicles.current.title+": "+stitle
         model.add(msg, {"title": stitle, "descr": sdescr, "icon": sicon})
     }
 

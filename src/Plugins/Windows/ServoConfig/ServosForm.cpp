@@ -33,7 +33,8 @@ void ServosForm::vehicleSelected(Vehicle *vehicle)
 {
     for (auto c : clist)
         disconnect(c);
-    clist.append(connect(vehicle, &Vehicle::serialRxDataReceived, this, &ServosForm::serialData));
+    ProtocolVehicle *protocol = vehicle->protocol();
+    clist.append(connect(protocol, &ProtocolVehicle::serialRxData, this, &ServosForm::serialData));
 }
 //==============================================================================
 void ServosForm::btnFind()

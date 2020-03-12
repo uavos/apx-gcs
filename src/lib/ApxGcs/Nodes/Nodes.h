@@ -24,20 +24,19 @@
 
 #include "NodeItem.h"
 
-#include <Fact/Fact.h>
 #include <Protocols/ProtocolNodes.h>
+#include <Protocols/ProtocolViewBase.h>
 
 class Vehicle;
-typedef QList<NodeItem *> NodesList;
 
-class Nodes : public NodeItemBase
+class Nodes : public ProtocolViewBase<ProtocolNodes>
 {
     Q_OBJECT
 
     Q_PROPERTY(int nodesCount READ nodesCount NOTIFY nodesCountChanged)
 
 public:
-    explicit Nodes(Vehicle *parent);
+    explicit Nodes(Vehicle *vehicle, ProtocolNodes *protocol);
 
     Vehicle *vehicle;
 
@@ -56,20 +55,13 @@ public:
     NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
     QList<NodeItem *> nodes() { return m_sn_map.values(); }
 
-    NodeItem *addNode(const QString &sn, ProtocolNode *protocol);
-    void removeNode(const QString &sn);
+    NodeItem *add(ProtocolNode *protocol);
 
     void syncLater(int timeout = 2000);
 
     void loadConfValue(const QString &sn, QString s);
 
-protected:
-    //override
-    virtual QVariant data(int col, int role) const;
-
 private:
-    ProtocolNodes *m_protocol{nullptr};
-
     QMap<QString, NodeItem *> m_sn_map;
     QList<NodeItemBase *> m_groups;
 
@@ -78,6 +70,8 @@ private:
     QTimer m_syncTimer;
     QElapsedTimer m_syncRequestTime;
     int m_syncCount{0};
+
+    bool check_valid() const;
 
 private slots:
     void updateStatus();
@@ -91,7 +85,8 @@ private slots:
     void upload();
     void stop();
 
-    void protocolFinished();
+    void dataExchangeFinished();
+    void nodeFound(ProtocolNode *protocol);
 
 signals:
     void syncDone();
@@ -105,8 +100,6 @@ public:
     int nodesCount() const;
 
 protected:
-    int m_nodesCount{0};
-
 signals:
     void nodesCountChanged();
 };

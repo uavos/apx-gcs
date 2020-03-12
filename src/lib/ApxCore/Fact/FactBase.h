@@ -69,7 +69,9 @@ public:
         ModifiedTrack = 1 << 15, //Track modified status
         ModifiedGroup = 1 << 16, //Track children's modified status
 
-        HighlightActive = 1 << 17, //Show highlighted when active
+        ProgressTrack = 1 << 17, //Track children's progress
+
+        HighlightActive = 1 << 18, //Show highlighted when active
 
         //data types [dataType]
         DataMask = 0x0FF00000,

@@ -33,89 +33,50 @@
 #include <QFontDatabase>
 #include <QQmlEngine>
 
-NodeItem::NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol)
-    : NodeItemBase(parent, "node#", "", Group)
-    , nodes(parent)
-    , m_sn(sn)
+NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
+    : ProtocolViewBase(parent, protocol)
 {
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
-
-    setIcon("sitemap");
-    connect(this, &Fact::titleChanged, this, [=]() {
-        if (title().endsWith("shiva"))
-            setIcon("airplane");
-    });
-
-    memset(&m_ident, 0, sizeof(m_ident));
 
     //tools = new NodeTools(this, Action);
 
     connect(this, &NodeItem::versionChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::hardwareChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::upgradingChanged, this, &NodeItem::updateDescr);
-    connect(this, &NodeItem::offlineChanged, this, &NodeItem::updateDescr);
     connect(this, &NodeItem::identChanged, this, &NodeItem::updateDescr);
-
-    connect(this, &NodeItem::identChanged, this, &NodeItem::nodeNotify);
-    connect(this, &NodeItem::titleChanged, this, &NodeItem::nodeNotify);
-    connect(this, &NodeItem::hardwareChanged, this, &NodeItem::nodeNotify);
-    connect(this, &NodeItem::versionChanged, this, &NodeItem::nodeNotify);
-    connect(this, &NodeItem::valueChanged, this, &NodeItem::nodeNotify);
 
     //validity
     connect(this, &NodeItem::identChanged, this, &NodeItem::clear);
     connect(this, &NodeItem::dictValidChanged, this, &NodeItem::validateDict);
     connect(this, &NodeItem::dataValidChanged, this, &NodeItem::validateData);
 
-    statusTimer.setSingleShot(true);
-    statusTimer.setInterval(10000);
-    connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
-
-    /*if (protocol) {
-        nodes->storage->loadNodeInfo(this);
-    }*/
-
     //protocol
-    setProtocol(protocol);
-    nodeNotify();
-}
+    connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
 
-void NodeItem::setProtocol(ProtocolNode *protocol)
-{
-    if (m_protocol == protocol)
-        return;
-    if (m_protocol) {
-        disconnect(m_protocol);
-    }
-    m_protocol = protocol;
-    connect(protocol, &QObject::destroyed, this, [this]() {
-        m_protocol = nullptr;
-        nodes->removeNode(sn());
-    });
+    connect(protocol, &ProtocolNode::enabledChanged, this, &NodeItem::updateDescr);
 
     // responses mapping
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
-
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
 
-    connect(protocol, &ProtocolNode::progressChanged, this, [this, protocol]() {
-        setProgress(protocol->progress());
-    });
-
     // requests mapping
-    if (!nodes->vehicle->isTemporary()) {
-        connect(this, &NodeItem::requestIdent, protocol, &ProtocolNode::requestIdent);
-        connect(this, &NodeItem::requestDict, protocol, &ProtocolNode::requestDict);
-        connect(this, &NodeItem::requestConf, protocol, &ProtocolNode::requestConf);
-        connect(this, &NodeItem::requestStatus, protocol, &ProtocolNode::requestStatus);
-    }
+    connect(this, &NodeItem::requestIdent, protocol, &ProtocolNode::requestIdent);
+    connect(this, &NodeItem::requestDict, protocol, &ProtocolNode::requestDict);
+    connect(this, &NodeItem::requestConf, protocol, &ProtocolNode::requestConf);
+    connect(this, &NodeItem::requestStatus, protocol, &ProtocolNode::requestStatus);
 
-    setDataValid(false);
-    setDictValid(false);
-    setIdentValid(false);
-    emit offlineChanged();
+    // props forward
+    connect(protocol, &ProtocolNode::identChanged, this, &NodeItem::identChanged);
+    connect(protocol, &ProtocolNode::versionChanged, this, &NodeItem::versionChanged);
+    connect(protocol, &ProtocolNode::hardwareChanged, this, &NodeItem::hardwareChanged);
+
+    //FIXME: nodes->storage->loadNodeInfo(this);
+
+    statusTimer.setSingleShot(true);
+    statusTimer.setInterval(10000);
+    connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
 }
 
 void NodeItem::validateDict()
@@ -143,15 +104,14 @@ void NodeItem::validateData()
 {
     if (!dataValid())
         return;
-    if (offline())
+    if (!protocol()->enabled())
         return;
-    if (m_ident.flags.bits.reconf) {
+    if (ident().flags.bits.reconf) {
         //nodes->storage->restoreNodeConfig(this);
     } else {
         //setNconfID(0);
         //nodes->storage->saveNodeConfig(this);
     }
-    nodeNotify();
     //qDebug()<<"Node dataValid"<<path();
 }
 
@@ -160,32 +120,25 @@ void NodeItem::updateDescr()
     statusTimer.stop();
     setActive(false);
     QStringList st;
-    st.append(m_hardware);
-    if (m_version != App::version())
-        st.append(m_version);
-    if (offline())
+    st.append(hardware());
+    if (version() != App::version())
+        st.append(version());
+    if (!protocol()->enabled())
         st.append(tr("offline"));
-    //if (m_ident.flags.bits.loader)
-    //    st.append("LOADER");
+    if (ident().flags.bits.files == 1 && protocol()->file("fw"))
+        st.append("LOADER");
     //st.append(sn());
     setDescr(st.join(' '));
 }
 void NodeItem::updateStatus()
 {
-    if (m_ident.flags.bits.reconf) {
+    if (ident().flags.bits.reconf) {
         setValue(tr("no config").toUpper());
         return;
     }
     if (m_status_field) {
         setValue(m_status_field->text().trimmed());
     }
-}
-
-void NodeItem::nodeNotify()
-{
-    if (offline())
-        return;
-    Vehicles::instance()->nodeNotify(this);
 }
 
 void NodeItem::clear()
@@ -232,7 +185,7 @@ QVariant NodeItem::data(int col, int role) const
         case Qt::BackgroundRole:
             //if(isUpgrading())return QColor(0x20,0x00,0x00);
             //if(isUpgradePending())return QColor(0x40,0x00,0x00);
-            if (m_ident.flags.bits.reconf)
+            if (ident().flags.bits.reconf)
                 return QColor(Qt::darkGray).darker(200);
             return QColor(0x20, 0x40, 0x60);
         }
@@ -244,7 +197,7 @@ QVariant NodeItem::data(int col, int role) const
         return QFont("FreeMono");
 #endif
     }
-    return NodeItemBase::data(col, role);
+    return ProtocolViewBase::data(col, role);
 }
 
 void NodeItem::hashData(QCryptographicHash *h) const
@@ -252,7 +205,7 @@ void NodeItem::hashData(QCryptographicHash *h) const
     Fact::hashData(h);
     h->addData(version().toUtf8());
     h->addData(hardware().toUtf8());
-    h->addData(QString::number(m_ident.hash).toUtf8());
+    h->addData(QString::number(ident().hash).toUtf8());
 }
 
 //=============================================================================
@@ -261,40 +214,19 @@ void NodeItem::hashData(QCryptographicHash *h) const
 
 QString NodeItem::sn() const
 {
-    return m_sn;
+    return protocol()->sn();
 }
 QString NodeItem::version() const
 {
-    return m_version;
-}
-void NodeItem::setVersion(const QString &v)
-{
-    if (m_version == v)
-        return;
-    m_version = v;
-    emit versionChanged();
+    return protocol()->version();
 }
 QString NodeItem::hardware() const
 {
-    return m_hardware;
-}
-void NodeItem::setHardware(const QString &v)
-{
-    if (m_hardware == v)
-        return;
-    m_hardware = v;
-    emit hardwareChanged();
+    return protocol()->hardware();
 }
 const xbus::node::ident::ident_s &NodeItem::ident() const
 {
-    return m_ident;
-}
-void NodeItem::setIdent(const xbus::node::ident::ident_s &v)
-{
-    if (memcmp(&m_ident, &v, sizeof(m_ident)) == 0)
-        return;
-    m_ident = v;
-    emit identChanged();
+    return protocol()->ident();
 }
 bool NodeItem::identValid() const
 {
@@ -307,9 +239,38 @@ void NodeItem::setIdentValid(const bool &v)
     m_identValid = v;
     emit identValidChanged();
 }
-bool NodeItem::offline() const
+bool NodeItem::dictValid() const
 {
-    return !m_protocol;
+    return m_dictValid;
+}
+void NodeItem::setDictValid(const bool &v)
+{
+    if (m_dictValid == v)
+        return;
+    m_dictValid = v;
+    emit dictValidChanged();
+}
+bool NodeItem::dataValid() const
+{
+    return m_dataValid;
+}
+void NodeItem::setDataValid(const bool &v)
+{
+    if (m_dataValid == v)
+        return;
+    m_dataValid = v;
+    emit dataValidChanged();
+}
+bool NodeItem::upgrading() const
+{
+    return m_upgrading;
+}
+void NodeItem::setUpgrading(const bool &v)
+{
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
 }
 
 //=============================================================================
@@ -321,29 +282,20 @@ void NodeItem::identReceived()
     //qDebug() << "ok";
     m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
-    setName(m_protocol->name());
-    setTitle(name());
-    setVersion(m_protocol->version());
-    setHardware(m_protocol->hardware());
-
-    setIdent(m_protocol->ident());
-
     setIdentValid(true);
 
-    if (upgrading() || m_ident.flags.bits.files == 0) {
+    if (upgrading() || ident().flags.bits.files == 0) {
         // node in some service mode
         setDictValid(true);
         return;
     }
-    if (offline())
+    if (!protocol()->enabled())
         return;
 
     //nodes->storage->saveNodeInfo(this);
     //nodes->storage->saveNodeUser(this);
 
     // node has dict
-
-    nodeNotify();
 }
 
 void NodeItem::dictReceived(const ProtocolNode::Dictionary &dict) {}

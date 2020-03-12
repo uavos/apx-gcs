@@ -46,7 +46,6 @@ public:
 
 private:
     static QStringList g_sortNames;
-    int m_progress_s{0};
 
     QList<const NodeItemBase *> groupNodesList() const;
 
@@ -54,7 +53,6 @@ public slots:
     void updateDictValid();
     void updateDataValid();
     void updateUpgrading();
-    void updateProgress();
 
     //---------------------------------------
     // PROPERTIES

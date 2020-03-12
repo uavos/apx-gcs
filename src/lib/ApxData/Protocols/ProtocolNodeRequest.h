@@ -34,11 +34,8 @@ class ProtocolNodeRequest : public QObject, public ProtocolStreamWriter
 {
     Q_OBJECT
 public:
-    explicit ProtocolNodeRequest(ProtocolNodes *nodes,
-                                 const QString &sn,
-                                 xbus::pid_t pid,
-                                 int timeout_ms = 0,
-                                 int retry_cnt = 0);
+    explicit ProtocolNodeRequest(
+        ProtocolNodes *nodes, const QString &sn, xbus::pid_t pid, int timeout_ms, int retry_cnt);
 
     bool equals(const ProtocolNodeRequest *other);
     bool equals(xbus::node::crc_t crc);

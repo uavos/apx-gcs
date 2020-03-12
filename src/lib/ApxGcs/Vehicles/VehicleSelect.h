@@ -20,14 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef VehicleSelect_H
-#define VehicleSelect_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
+
 class Vehicles;
 class Vehicle;
-//=============================================================================
+
 class VehicleSelect : public Fact
 {
     Q_OBJECT
@@ -38,21 +38,19 @@ public:
                            const QString &title,
                            const QString &descr);
 
-    void addVehicle(Vehicle *vehicle);
-
 private:
     Vehicles *vehicles;
     QHash<Vehicle *, Fact *> map;
 
 private slots:
-    void _vehicleRegistered(Vehicle *vehicle);
+
     void _vehicleRemoved(Vehicle *vehicle);
     void _vehicleSelected(Vehicle *vehicle);
 
     void _factTriggered();
+public slots:
+    void addVehicle(Vehicle *vehicle);
 
 signals:
     void vehicleSelected(Vehicle *vehicle);
 };
-//=============================================================================
-#endif

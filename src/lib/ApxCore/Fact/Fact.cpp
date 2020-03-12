@@ -754,6 +754,7 @@ void Fact::setProgress(const int v)
     }
     if (m_progress == v)
         return;
+
     int vp = m_progress;
     m_progress = v;
     emit progressChanged();
@@ -764,7 +765,39 @@ void Fact::setProgress(const int v)
             AppNotify::instance()->report(this);
         }
     }
+
+    // check parent with ProgressTrack
+    if (parentFact() && parentFact()->options() & ProgressTrack) {
+        parentFact()->trackProgress();
+    }
 }
+void Fact::trackProgress()
+{
+    int ncnt = 0, v = 0;
+    for (auto const i : *this) {
+        const Fact *f = static_cast<Fact *>(i);
+        int np = f->progress();
+        if (np < 0)
+            continue;
+        ncnt++;
+        v += np;
+    }
+    if (ncnt > 0) {
+        if (m_progress_s < ncnt) {
+            m_progress_s = ncnt;
+            //qDebug()<<"progressCnt"<<p->progress_s<<ncnt<<p->name()<<name();
+        } else if (ncnt < m_progress_s) {
+            v += (m_progress_s - ncnt) * 100;
+            ncnt = m_progress_s;
+        }
+        setProgress(v / ncnt);
+    } else {
+        m_progress_s = 0;
+        setProgress(-1);
+        //qDebug()<<"progressCnt"<<p->progress_s;
+    }
+}
+
 bool Fact::busy() const
 {
     return progress() >= 0;

@@ -30,21 +30,21 @@
 #include <Mandala/Mandala.h>
 
 ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
-    : ProtocolBase(node)
+    : ProtocolBase(node, name)
     , node(node)
-    , m_name(name)
 {
+    setIcon("paperclip");
     memset(&_info, 0, sizeof(_info));
 }
 
 void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset)
 {
     reset();
-    _op_data = data;
+    _op_data.swap(data);
     _op_offset = offset;
-    _op_size = static_cast<xbus::node::file::size_t>(data.size());
+    _op_size = static_cast<xbus::node::file::size_t>(_op_data.size());
     _op_tcnt = 0;
-    setStatus(tr("Uploading"));
+    setValue(tr("Uploading"));
     request(xbus::node::file::wopen)->schedule();
 }
 void ProtocolNodeFile::write_next()
@@ -56,22 +56,25 @@ void ProtocolNodeFile::write_next()
         stop();
         return;
     }
+    size_t tail = _op_size - _op_tcnt;
     size_t sz = 256;
-    if (sz > _op_size)
-        sz = _op_size;
-
-    off_t offset = _op_offset - _info.offset;
-    qDebug() << offset << sz;
+    if (sz > tail)
+        sz = tail;
 
     updateProgress();
 
-    const void *src = _op_data.mid(offset, sz).data();
+    const QByteArray &ba = _op_data.mid(static_cast<int>(_op_tcnt), static_cast<int>(sz));
+    if (static_cast<int>(sz) != ba.size()) {
+        qWarning() << "block: " << sz << ba.size();
+        stop();
+    }
 
-    _op_hash = CRC_32_APX(src, sz, _op_hash);
     ProtocolNodeRequest *req = request(xbus::node::file::write);
     req->write<xbus::node::file::offset_t>(_op_offset);
-    req->write(src, sz);
+    sz = req->write(ba.data(), sz);
     req->schedule();
+    _op_hash = CRC_32_APX(ba.data(), sz, _op_hash);
+    qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16); // << req->dump();
 }
 bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
 {
@@ -98,7 +101,7 @@ bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
     xbus::node::file::hash_t hash;
     stream >> hash;
     if (hash != _op_hash) {
-        qWarning() << "hash: " << hash << _op_hash;
+        qWarning() << "hash: " << QString::number(hash, 16) << QString::number(_op_hash, 16);
         return false;
     }
 
@@ -122,7 +125,7 @@ void ProtocolNodeFile::download()
     _op_offset = 0;
     _op_size = 0;
     _op_tcnt = 0;
-    setStatus(tr("Downloading"));
+    setValue(tr("Downloading"));
     request(xbus::node::file::ropen)->schedule();
 }
 void ProtocolNodeFile::read_next()
@@ -250,13 +253,9 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
     //reply_info(xbus::node::file::abort);
 }
 
-ProtocolNodeRequest *ProtocolNodeFile::request(xbus::node::file::op_e op,
-                                               int timeout_ms,
-                                               int retry_cnt)
+ProtocolNodeRequest *ProtocolNodeFile::request(xbus::node::file::op_e op)
 {
-    ProtocolNodeRequest *req = node->request(mandala::cmd::env::nmt::file::uid,
-                                             timeout_ms,
-                                             retry_cnt);
+    ProtocolNodeRequest *req = node->request(mandala::cmd::env::nmt::file::uid);
     *req << op;
     req->write_string(name().toUtf8());
     _op = op;
@@ -272,7 +271,7 @@ void ProtocolNodeFile::reset()
 
     _op_data.clear();
 
-    setStatus(QString());
+    setValue(QVariant());
     setProgress(-1);
     ack_req();
 }

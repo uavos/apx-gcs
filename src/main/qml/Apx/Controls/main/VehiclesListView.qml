@@ -13,7 +13,7 @@ Item {
     Layout.minimumWidth: height*2
     ListView {
         id: vehiclesList
-        model: apx.vehicles.list.model
+        model: apx.vehicles.model
         implicitHeight: contentItem.childrenRect.height
         implicitWidth: Math.min(contentItem.childrenRect.width,parent.width)
         orientation: ListView.Horizontal
@@ -29,25 +29,6 @@ Item {
 
         spacing: 10*ui.scale
         clip: true
-
-        header: RowLayout {
-            //width: hdr.width+10
-            //height: hdr.height
-            spacing: vehiclesList.spacing
-            VehicleButton {
-                enabled: true
-                vehicle: apx.vehicles.local
-                menuFact: apx
-
-            }
-            VehicleButton {
-                enabled: true
-                vehicle: apx.vehicles.replay
-                menuFact: vehicle
-
-            }
-            Item { Layout.fillHeight: true  }
-        }
 
         Component {
             id: vehicleInfoDelegate

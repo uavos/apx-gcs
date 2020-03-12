@@ -24,28 +24,13 @@
 
 #include <QtCore>
 
+#include <Fact/Fact.h>
+
 #include "ProtocolStream.h"
 
-class ProtocolConverter;
-
-class ProtocolBase : public QObject
+class ProtocolBase : public Fact
 {
     Q_OBJECT
 public:
-    ProtocolBase(QObject *parent = nullptr);
-
-protected:
-    //properties
-public:
-    int progress() const;
-    void setProgress(int v);
-    QString status() const;
-    void setStatus(const QString &v);
-
-private:
-    int m_progress;
-    QString m_status;
-signals:
-    void progressChanged();
-    void statusChanged();
+    explicit ProtocolBase(QObject *parent, const QString &name);
 };

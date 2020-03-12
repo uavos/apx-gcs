@@ -22,30 +22,6 @@
  */
 #include "ProtocolBase.h"
 
-ProtocolBase::ProtocolBase(QObject *parent)
-    : QObject(parent)
-    , m_progress(-1)
+ProtocolBase::ProtocolBase(QObject *parent, const QString &name)
+    : Fact(parent, name.toLower(), name, "", ProgressTrack)
 {}
-
-int ProtocolBase::progress() const
-{
-    return m_progress;
-}
-void ProtocolBase::setProgress(int v)
-{
-    if (m_progress == v)
-        return;
-    m_progress = v;
-    emit progressChanged();
-}
-QString ProtocolBase::status() const
-{
-    return m_status;
-}
-void ProtocolBase::setStatus(const QString &v)
-{
-    if (m_status == v)
-        return;
-    m_status = v;
-    emit statusChanged();
-}

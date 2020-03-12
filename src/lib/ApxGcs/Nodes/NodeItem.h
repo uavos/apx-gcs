@@ -27,34 +27,35 @@
 #include "NodeTools.h"
 
 #include <Protocols/ProtocolNode.h>
+#include <Protocols/ProtocolViewBase.h>
 
 #include <QtCore>
 
 class Nodes;
 
-class NodeItem : public NodeItemBase
+class NodeItem : public ProtocolViewBase<ProtocolNode>
 {
     Q_OBJECT
     Q_PROPERTY(QString sn READ sn CONSTANT)
 
-    Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
-    Q_PROPERTY(QString hardware READ hardware WRITE setHardware NOTIFY hardwareChanged)
+    Q_PROPERTY(QString version READ version NOTIFY versionChanged)
+    Q_PROPERTY(QString hardware READ hardware NOTIFY hardwareChanged)
 
     Q_PROPERTY(bool identValid READ identValid WRITE setIdentValid NOTIFY identValidChanged)
-    Q_PROPERTY(bool offline READ offline NOTIFY offlineChanged)
+    Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
+    Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
+
+    Q_PROPERTY(bool upgrading READ upgrading WRITE setUpgrading NOTIFY upgradingChanged)
 
 public:
-    explicit NodeItem(Nodes *parent, QString sn, ProtocolNode *protocol);
+    explicit NodeItem(Fact *parent, ProtocolNode *protocol);
 
     QList<NodeField *> allFields;
     QMap<QString, NodeField *> allFieldsByName;
 
-    Nodes *nodes;
     //NodeTools *tools;
 
     void execCommand(quint16 cmd, const QString &name, const QString &descr);
-
-    void setProtocol(ProtocolNode *protocol);
 
     //int loadConfigValues(QVariantMap values);
     //bool loadConfigValue(const QString &name, const QString &value);
@@ -67,10 +68,6 @@ protected:
     void hashData(QCryptographicHash *h) const;
 
 private:
-    xbus::node::ident::ident_s m_ident;
-
-    ProtocolNode *m_protocol{nullptr};
-
     qint64 m_lastSeenTime{0};
 
     NodeField *m_status_field{nullptr};
@@ -83,8 +80,6 @@ private slots:
 
     void updateDescr();
     void updateStatus();
-
-    void nodeNotify();
 
 public slots:
     void upload();
@@ -109,27 +104,36 @@ signals:
 public:
     QString sn() const;
     QString version() const;
-    void setVersion(const QString &v);
     QString hardware() const;
-    void setHardware(const QString &v);
 
     const xbus::node::ident::ident_s &ident() const;
-    void setIdent(const xbus::node::ident::ident_s &v);
 
     bool identValid() const;
     void setIdentValid(const bool &v);
-    bool offline() const;
+
+    bool dictValid() const;
+    void setDictValid(const bool &v);
+
+    bool dataValid() const;
+    void setDataValid(const bool &v);
+
+    bool upgrading() const;
+    void setUpgrading(const bool &v);
 
 protected:
-    QString m_sn;
-    QString m_version;
-    QString m_hardware;
     bool m_identValid{false};
+    bool m_dictValid{false};
+    bool m_dataValid{false};
+    bool m_upgrading{false};
 
 signals:
+    void identChanged();
     void versionChanged();
     void hardwareChanged();
-    void identChanged();
+
     void identValidChanged();
-    void offlineChanged();
+    void dictValidChanged();
+    void dataValidChanged();
+
+    void upgradingChanged();
 };

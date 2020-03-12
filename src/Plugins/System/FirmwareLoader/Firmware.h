@@ -20,20 +20,18 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Firmware_H
-#define Firmware_H
-//=============================================================================
+#pragma once
+
+#include "QueueItem.h"
 #include <Fact/Fact.h>
+
 class Loader;
-class QueueItem;
 class Releases;
 class FirmwareTools;
-class NodeItem;
-//=============================================================================
+
 class Firmware : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(UpgradeType)
 
 public:
     explicit Firmware(Fact *parent);
@@ -51,9 +49,6 @@ public:
 
     FirmwareTools *f_tools;
 
-    enum UpgradeType { Any, LD, FW, MHX, STM_LD, STM_FW };
-    Q_ENUM(UpgradeType)
-
     Q_INVOKABLE void requestUpgrade(const QString &nodeName,
                                     const QString &nodeDescr,
                                     const QString &sn,
@@ -69,12 +64,12 @@ public:
 private:
     static Firmware *_instance;
 
-    QueueItem *queued(Fact *list, const QString &sn, UpgradeType type);
+    QueueItem *queued(Fact *list, const QString &sn);
 
     int queueCnt;
 
 private slots:
-    void nodeNotify(NodeItem *node);
+    void nodeUpdate(ProtocolNode *protocol);
 
     void updateStatus();
     void updateProgress();
@@ -89,5 +84,3 @@ signals:
     void upgradeStarted(QString sn, UpgradeType type);
     void upgradeFinished(QString sn, UpgradeType type);
 };
-//=============================================================================
-#endif

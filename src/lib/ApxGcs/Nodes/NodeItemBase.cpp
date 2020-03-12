@@ -44,8 +44,6 @@ NodeItemBase::NodeItemBase(Fact *parent,
 
     connect(this, &NodeItemBase::upgradingChanged, this, &NodeItemBase::updateUpgrading);
 
-    connect(this, &Fact::progressChanged, this, &NodeItemBase::updateProgress);
-
     //force update modelViews
     connect(this, &NodeItemBase::dictValidChanged, this, &Fact::enabledChanged);
     connect(this, &NodeItemBase::upgradingChanged, this, &Fact::enabledChanged);
@@ -183,36 +181,6 @@ void NodeItemBase::updateUpgrading()
         break;
     }
     qobject_cast<NodeItemBase *>(parentFact())->setUpgrading(ok);
-}
-
-void NodeItemBase::updateProgress()
-{
-    QList<const NodeItemBase *> list = groupNodesList();
-    if (list.isEmpty())
-        return;
-    int ncnt = 0, v = 0;
-    for (auto i : list) {
-        int np = i->progress();
-        if (np < 0)
-            continue;
-        ncnt++;
-        v += np;
-    }
-    NodeItemBase *p = qobject_cast<NodeItemBase *>(parentFact());
-    if (ncnt > 0) {
-        if (p->m_progress_s < ncnt) {
-            p->m_progress_s = ncnt;
-            //qDebug()<<"progressCnt"<<p->progress_s<<ncnt<<p->name()<<name();
-        } else if (ncnt < p->m_progress_s) {
-            v += (p->m_progress_s - ncnt) * 100;
-            ncnt = p->m_progress_s;
-        }
-        p->setProgress(v / ncnt);
-    } else {
-        p->m_progress_s = 0;
-        p->setProgress(-1);
-        //qDebug()<<"progressCnt"<<p->progress_s;
-    }
 }
 
 bool NodeItemBase::dictValid() const

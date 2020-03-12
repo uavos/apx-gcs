@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2011 Aliaksei Stratsilatau <sa@uavos.com>
  *
  * This file is part of the UAV Open System Project
@@ -22,26 +22,40 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <Protocols/ProtocolNode.h>
+#include <QtCore>
 
-class QueueItem : public Fact
+#include <Fact/Fact.h>
+
+class ProtocolViewBaseImpl : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(UpgradeType)
+    Q_PROPERTY(Fact *protocol READ protocol_fact NOTIFY protocolChanged)
 
 public:
-    explicit QueueItem(Fact *parent, ProtocolNode *protocol);
+    explicit ProtocolViewBaseImpl(QObject *parent, Fact *protocol);
 
-    enum UpgradeType { Any, LD, FW, MHX, STM_LD, STM_FW };
-    Q_ENUM(UpgradeType)
-
-    bool match(const QString &sn) const;
-    UpgradeType type() const;
+    Fact *protocol_fact() const;
 
 private:
-    ProtocolNode *m_protocol;
-    UpgradeType m_type{Any};
+    Fact *m_protocol{nullptr};
+    void setProtocol(Fact *protocol);
 
-    void updateDescr();
+private slots:
+    void updateName();
+    void updateTitle();
+    void updateProgress();
+
+signals:
+    void protocolChanged();
+};
+
+template<class _T>
+class ProtocolViewBase : public ProtocolViewBaseImpl
+{
+public:
+    explicit ProtocolViewBase(QObject *parent, _T *protocol)
+        : ProtocolViewBaseImpl(parent, protocol)
+    {}
+
+    _T *protocol() const { return qobject_cast<_T *>(protocol_fact()); }
 };
