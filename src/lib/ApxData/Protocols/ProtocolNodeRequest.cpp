@@ -104,13 +104,13 @@ void ProtocolNodeRequest::trigger()
     if (timeout_ms > 0) {
         timer.start(timeout_ms);
     } else {
-        finish();
+        timer.start(50);
     }
 }
 
 void ProtocolNodeRequest::finish(bool acknowledged)
 {
-    //qDebug()<<cmd<<sn<<data.size();//<<t.elapsed();//data.toHex().toUpper();
+    //qDebug() << dump();
     this->acknowledged = acknowledged;
     timer.stop();
     emit finished(this);
@@ -120,9 +120,14 @@ void ProtocolNodeRequest::finish(bool acknowledged)
 void ProtocolNodeRequest::triggerTimeout()
 {
     timer.stop();
+    if (timeout_ms <= 0) {
+        finish();
+        return;
+    }
     //request timeout
     if (retry < retry_cnt) {
         retry++;
+        qDebug() << retry;
         emit retrying(retry, retry_cnt);
         trigger();
         return;

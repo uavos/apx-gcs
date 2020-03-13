@@ -21,29 +21,30 @@
  *
  */
 #include "LoaderStm.h"
-#include "Loader.h"
+#include "QueueItem.h"
+
 #include <App/App.h>
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
 #include <QSerialPortInfo>
-//=============================================================================
+
 #define SLDR_ACK 0x79
 #define SLDR_NACK 0x1F
-//==============================================================================
-LoaderStm::LoaderStm(Loader *loader,
+
+LoaderStm::LoaderStm(QueueItem *item,
                      const QByteArray &fileData,
                      quint32 startAddr,
                      const QString &portName,
                      bool continuous)
-    : QObject(loader)
-    , loader(loader)
+    : QObject(item)
+    , item(item)
     , fileData(fileData)
     , startAddr(startAddr)
     , portName(portName)
     , continuous(continuous)
 {
     AppGcs::instance()->f_datalink->f_ports->blockSerialPorts();
-    connect(loader, &Loader::stop, this, &LoaderStm::stop);
+    //connect(item, &QueueItem::stop, this, &LoaderStm::stop);
 
     dev = new QSerialPort(QSerialPortInfo(portName), this);
     connect(dev, &QSerialPort::readyRead, this, &LoaderStm::readData);
@@ -60,21 +61,20 @@ LoaderStm::~LoaderStm()
 {
     dev->close();
     AppGcs::instance()->f_datalink->f_ports->unblockSerialPorts();
-    loader->finish(success);
+    item->finish(success);
     if (success) {
         apxMsg() << tr("Firmware uploaded");
     } else {
         apxMsgW() << tr("Firmware upload error");
     }
 }
-//=============================================================================
+
 void LoaderStm::stop()
 {
     timer.stop();
     deleteLater();
 }
-//=============================================================================
-//=============================================================================
+
 void LoaderStm::next()
 {
     switch (stage) {
@@ -108,7 +108,7 @@ void LoaderStm::next()
     // port opened
     case 10: //init loader
         apxMsg() << tr("Initializing").append("...");
-        loader->setProgress(0);
+        item->setProgress(0);
         write(QByteArray(1, 0x7F), rx_loader, 100);
         retry = 0;
         stage++;
@@ -219,7 +219,7 @@ void LoaderStm::next()
                 ba.append(static_cast<char>(0xFF));
             ba.prepend(ba.size() - 1);
             write(crc(ba), rx_ack);
-            loader->setProgress(100 * writeCnt / fileData.size());
+            item->setProgress(100 * writeCnt / fileData.size());
             stage++;
             return;
         }
@@ -285,8 +285,7 @@ void LoaderStm::next()
     qDebug() << stage << rx_stage << time.elapsed();
     deleteLater();
 }
-//=============================================================================
-//=============================================================================
+
 void LoaderStm::readData()
 {
     rxData.append(dev->readAll());
@@ -351,7 +350,7 @@ void LoaderStm::readData()
     }
     rxData.clear();
 }
-//=============================================================================
+
 void LoaderStm::write(const QByteArray &data, RxStage rx_stage, int timeout)
 {
     time.start();
@@ -368,7 +367,7 @@ void LoaderStm::write(quint8 cmd, RxStage rx_stage, int timeout)
     ba.append(static_cast<char>(~cmd));
     write(ba, rx_stage, timeout);
 }
-//=============================================================================
+
 QByteArray LoaderStm::crc(QByteArray data) const
 {
     quint8 crc = 0;
@@ -378,4 +377,3 @@ QByteArray LoaderStm::crc(QByteArray data) const
     data.append(static_cast<char>(crc));
     return data;
 }
-//=============================================================================

@@ -33,7 +33,6 @@
 ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle, "nodes")
     , vehicle(vehicle)
-    , activeCount(0)
 {
     setIcon("puzzle");
     setDataType(Count);
@@ -42,40 +41,31 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
         setEnabled(this->vehicle->enabled());
     });
 
-    connect(this, &Fact::activeChanged, this, [this]() {
-        if (!active())
-            stop();
-    });
+    connect(this, &Fact::activeChanged, this, &ProtocolNodes::updateActive);
 
-    connect(this, &ProtocolNodes::next, this, &ProtocolNodes::doNextRequest, Qt::QueuedConnection);
-
-    //timer.setSingleShot(true);
-    timer.setInterval(100);
-    connect(&timer, &QTimer::timeout, this, &ProtocolNodes::next);
+    reqTime.start();
+    reqTimer.setSingleShot(true);
+    connect(&reqTimer, &QTimer::timeout, this, &ProtocolNodes::next);
 
     finishedTimer.setSingleShot(true);
     finishedTimer.setInterval(100);
-    connect(&finishedTimer, &QTimer::timeout, this, &ProtocolNodes::checkFinished);
+    connect(&finishedTimer, &QTimer::timeout, this, &ProtocolNodes::queueEmpty);
 }
 
-void ProtocolNodes::checkFinished()
+void ProtocolNodes::updateActive()
 {
-    //if(active() && pool.isEmpty())setActive(false);
-    foreach (ProtocolNode *node, nodes.values()) {
-        node->setProgress(-1);
-    }
+    qDebug() << active();
+
     if (!active()) {
-        activeCount = 0;
+        stop();
+        return;
     }
-    emit dataExchangeFinished();
-}
+    if (progress() < 0)
+        setProgress(0);
 
-ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
-                                            const QString &sn,
-                                            int timeout_ms,
-                                            int retry_cnt)
-{
-    return new ProtocolNodeRequest(this, sn, pid, timeout_ms, retry_cnt);
+    if (reqTimer.isActive()) {
+        reqTimer.start(0);
+    }
 }
 
 void ProtocolNodes::schedule(ProtocolNodeRequest *request)
@@ -88,30 +78,65 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
     finishedTimer.stop();
 
     // find and abort existing
-    foreach (auto const r, pool) {
+    foreach (auto const r, _queue) {
         if (!r->equals(request))
             continue;
         remove(r);
     }
 
-    int ins = pool.size();
-    for (int i = 0; i < pool.size(); i++) {
-        if (pool.at(i)->lessThan(request))
+    int ins = _queue.size();
+    for (int i = 0; i < _queue.size(); i++) {
+        if (_queue.at(i)->lessThan(request))
             continue;
         ins = i;
         break;
     }
-    pool.insert(ins, request);
+    _queue.insert(ins, request);
     connect(request, &ProtocolNodeRequest::finished, this, &ProtocolNodes::requestFinished);
 
-    if (activeCount == 0 || (!timer.isActive()))
-        emit next();
+    if (_queue.size() == 1)
+        next();
+}
+void ProtocolNodes::next()
+{
+    if (_queue.isEmpty()) {
+        reqTimer.stop();
+        finishedTimer.start();
+        return;
+    }
+    finishedTimer.stop();
+
+    ProtocolNodeRequest *req = _queue.first();
+    if (req->active)
+        return;
+
+    if (!active()) {
+        // background sync
+        if (vehicle->squawk() == 0) {
+            req->finish();
+            return;
+        }
+        qint64 t = reqTime.elapsed();
+        if (t < 3120) {
+            reqTimer.start(3120 - static_cast<int>(t));
+            return;
+        }
+    }
+    req->trigger();
+}
+
+ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
+                                            const QString &sn,
+                                            int timeout_ms,
+                                            int retry_cnt)
+{
+    return new ProtocolNodeRequest(this, sn, pid, timeout_ms, retry_cnt);
 }
 
 ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(xbus::node::crc_t crc)
 {
     ProtocolNodeRequest *r = nullptr;
-    for (auto i : pool) {
+    for (auto i : _queue) {
         if (i->equals(crc)) {
             i->acknowledge();
             r = i;
@@ -126,7 +151,7 @@ ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(ProtocolStreamReader &str
 ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, int timeout_ms)
 {
     ProtocolNodeRequest *r = nullptr;
-    for (auto i : pool) {
+    for (auto i : _queue) {
         if (i->equals(crc)) {
             i->extend(timeout_ms);
             r = i;
@@ -137,92 +162,54 @@ ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, int tim
 
 void ProtocolNodes::stop()
 {
-    //qDebug()<<active()<<pool.size();
+    //qDebug() << active() << _queue.size();
     emit stopRequested();
-    reset();
-}
-void ProtocolNodes::reset()
-{
-    timer.stop();
-    qDeleteAll(pool);
-    pool.clear();
-    activeCount = 0;
-    finishedTimer.start();
-}
-
-void ProtocolNodes::doNextRequest()
-{
-    if (pool.isEmpty()) {
+    int cnt = _queue.size();
+    reqTimer.stop();
+    qDeleteAll(_queue);
+    _queue.clear();
+    setProgress(-1);
+    if (cnt > 0)
         finishedTimer.start();
-        return;
-    }
-    finishedTimer.stop();
-    if (activeCount >= (active() ? 1 : 1)) {
-        //qDebug()<<activeCount;
-        if (!timer.isActive())
-            timer.start();
-        return;
-    }
-    if (!reqTime.isValid())
-        reqTime.start();
-    if ((!active()) && (reqTime.elapsed() < 5000)) {
-        if (!timer.isActive())
-            timer.start();
-        return;
-    }
-
-    foreach (auto const r, pool) {
-        if (r->active)
-            continue;
-
-        if (active() || vehicle->squawk()) {
-            activeCount++;
-            r->trigger();
-        } else {
-            //don't sync in background for local vehicles
-            r->finish(); //drop request
-        }
-        reqTime.start();
-        timer.start(); //to continue trigger
-        return;
-    }
 }
 
 void ProtocolNodes::requestFinished(ProtocolNodeRequest *request)
 {
-    //qDebug()<<request->cmd<<request->data.toHex().toUpper();
+    //qDebug() << request->dump();
     if (remove(request))
-        emit next();
+        next();
 }
 bool ProtocolNodes::remove(ProtocolNodeRequest *request)
 {
-    bool rv = pool.removeAll(request) > 0;
+    //qDebug() << request->dump();
     request->deleteLater();
-    if (rv && request->active && activeCount)
-        activeCount--;
-    return rv;
+    return _queue.removeAll(request) > 0;
 }
 
 ProtocolNode *ProtocolNodes::getNode(QString sn, bool createNew)
 {
     if (sn.isEmpty() || sn.count('0') == sn.size())
         return nullptr;
-    if (nodes.contains(sn))
-        return nodes.value(sn);
+    ProtocolNode *node = _nodes.value(sn, nullptr);
+    if (node)
+        return node;
     if (!createNew)
         return nullptr;
-    ProtocolNode *node = new ProtocolNode(this, sn);
-    connect(node, &QObject::destroyed, this, [this, sn]() { nodes.remove(sn); });
-    nodes.insert(sn, node);
-    emit nodeFound(node);
+    node = new ProtocolNode(this, sn);
+    _nodes.insert(sn, node);
+    emit nodeUpdate(node);
     return node;
 }
 
-void ProtocolNodes::clearNodes()
+void ProtocolNodes::clear()
 {
+    if (active()) {
+        apxMsgW() << tr("Operation in progress");
+        return;
+    }
     stop();
-    qDeleteAll(nodes.values());
-    nodes.clear();
+    qDeleteAll(_nodes.values());
+    _nodes.clear();
 }
 
 void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
@@ -245,7 +232,6 @@ void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         return;
 
     //qDebug() << "service" << sn << cmd << data.size();
-    reqTime.start();
     ProtocolNode *node = getNode(sn);
     if (!node)
         return;
@@ -257,6 +243,7 @@ void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
 {
     if (!enabled())
         return;
+    reqTime.start();
     vehicle->send(request->toByteArray());
 }
 

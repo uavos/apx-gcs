@@ -24,7 +24,6 @@ Project {
             "FirmwarePlugin.h",
             "Firmware.cpp", "Firmware.h",
             "QueueItem.cpp", "QueueItem.h",
-            "Loader.cpp", "Loader.h",
             "Releases.cpp", "Releases.h",
             "FirmwareTools.cpp", "FirmwareTools.h",
             "FirmwareSelect.cpp", "FirmwareSelect.h",

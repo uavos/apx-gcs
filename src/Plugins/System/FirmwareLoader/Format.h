@@ -20,12 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Format_H
-#define Format_H
-//=============================================================================
+#pragma once
+
 #include "FirmwareSelect.h"
-#include <Nodes/NodeItem.h>
-//=============================================================================
+
 class Format : public FirmwareSelect
 {
     Q_OBJECT
@@ -39,8 +37,6 @@ private:
     QStringList snList;
 
 private slots:
-    void nodeNotify(NodeItem *node);
+    void nodeUpdate(ProtocolNode *protocol);
     void startTriggered();
 };
-//=============================================================================
-#endif

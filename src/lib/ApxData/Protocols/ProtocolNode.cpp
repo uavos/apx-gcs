@@ -33,7 +33,7 @@
 #include <crc/crc.h>
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
-    : ProtocolBase(nodes, "node#")
+    : ProtocolBase(nodes, "node")
     , nodes(nodes)
     , m_sn(sn)
 {
@@ -126,7 +126,7 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
             emit identChanged();
         }
         emit identReceived();
-        emit nodeUpdate(this);
+        nodes->nodeUpdate(this);
     } break;
 
         // request acknowledge
@@ -190,6 +190,10 @@ void ProtocolNode::updateFiles(QStringList fnames)
     for (auto i : fnames) {
         ProtocolNodeFile *file = new ProtocolNodeFile(this, i);
         m_files.insert(i, file);
+        connect(nodes, &ProtocolNodes::stopRequested, file, &ProtocolNodeFile::stop);
+    }
+    if (nodes->active() && file("fw")) {
+        emit loaderAvailable();
     }
 }
 
@@ -225,15 +229,45 @@ ProtocolNodeFile *ProtocolNode::file(const QString &name) const
 
 void ProtocolNode::requestReboot()
 {
+    nodes->stop();
+    nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid);
     req->write<xbus::node::reboot::type_e>(xbus::node::reboot::firmware);
     req->schedule();
 }
 void ProtocolNode::requestRebootLoader()
 {
+    resetIdent();
+    nodes->stop();
+    nodes->setActive(true);
+    timeReqLoader.start();
+    requestRebootLoaderNext();
+}
+void ProtocolNode::requestRebootLoaderNext()
+{
+    qDebug() << "ldr";
+    if (timeReqLoader.elapsed() > 10000) {
+        nodes->setActive(false);
+        return;
+    }
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid, 0);
     req->write<xbus::node::reboot::type_e>(xbus::node::reboot::loader);
+    connect(req, &ProtocolNodeRequest::finished, this, [this]() {
+        ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::ident::uid, 0);
+        connect(req, &ProtocolNodeRequest::finished, this, [this]() {
+            if (!file("fw") && nodes->active())
+                requestRebootLoaderNext();
+        });
+        req->schedule();
+    });
     req->schedule();
+}
+void ProtocolNode::resetIdent()
+{
+    memset(&m_ident, 0, sizeof(m_ident));
+    m_identValid = false;
+    updateFiles(QStringList());
+    emit identChanged();
 }
 
 void ProtocolNode::requestIdent()

@@ -73,10 +73,12 @@ private:
     QMap<QString, ProtocolNodeFile *> m_files;
     void updateFiles(QStringList fnames);
 
+    QElapsedTimer timeReqLoader;
+private slots:
+    void requestRebootLoaderNext();
+
     //export signals and slots
 signals:
-    void nodeUpdate(ProtocolNode *protocol);
-
     void requestTimeout(quint16 cmd, QByteArray data);
 
     void identReceived();
@@ -89,7 +91,11 @@ signals:
 
     void messageReceived(xbus::node::msg::type_t type, QString msg);
 
+    void loaderAvailable();
+
 public slots:
+    void resetIdent();
+
     void requestReboot();
     void requestRebootLoader();
 

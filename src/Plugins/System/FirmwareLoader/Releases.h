@@ -20,15 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Releases_H
-#define Releases_H
-//=============================================================================
+#pragma once
+
 #include "Firmware.h"
+#include "QueueItem.h"
 #include <Fact/Fact.h>
+
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-//=============================================================================
+
 class Releases : public Fact
 {
     Q_OBJECT
@@ -40,11 +41,8 @@ public:
     Fact *f_current;
     Fact *f_dev;
 
-    bool loadFirmware(QString nodeName,
-                      QString hw,
-                      Firmware::UpgradeType type,
-                      QByteArray *data,
-                      quint32 *startAddr);
+    bool loadFirmware(
+        QString nodeName, QString hw, QString type, QByteArray *data, quint32 *startAddr);
 
     QString releaseVersion() const;
 
@@ -88,5 +86,3 @@ private slots:
     void responseDownload();
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 };
-//=============================================================================
-#endif

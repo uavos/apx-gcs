@@ -47,7 +47,7 @@ private:
     xbus::node::file::info_s _info;
     xbus::node::file::op_e _op{xbus::node::file::idle};
 
-    ProtocolNodeRequest *_req{nullptr};
+    QPointer<ProtocolNodeRequest> _req{nullptr};
     QByteArray _op_data;
     xbus::node::file::offset_t _op_offset{0};
     xbus::node::file::size_t _op_size{0};
@@ -67,13 +67,15 @@ private:
     void updateProgress();
 
 public slots:
+    void stop();
     void upload(QByteArray data, xbus::node::file::offset_t offset);
     void download();
-    void stop();
 
 signals:
     void finished();
     void error();
+    void interrupted();
+
     void uploaded();
     void downloaded(QByteArray data);
 };

@@ -20,14 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FirmwareTools_H
-#define FirmwareTools_H
-//=============================================================================
+#pragma once
+
 #include "Firmware.h"
 #include "Format.h"
 #include "Initialize.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
 class FirmwareTools : public Fact
 {
     Q_OBJECT
@@ -38,5 +37,3 @@ public:
     Initialize *f_initialize;
     Format *f_format;
 };
-//=============================================================================
-#endif

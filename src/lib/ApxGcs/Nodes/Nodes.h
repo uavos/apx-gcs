@@ -86,7 +86,7 @@ private slots:
     void stop();
 
     void dataExchangeFinished();
-    void nodeFound(ProtocolNode *protocol);
+    void nodeUpdate(ProtocolNode *protocol);
 
 signals:
     void syncDone();

@@ -137,8 +137,12 @@ void AppWindow::applicationStateChanged(Qt::ApplicationState state)
     //qDebug() << state << w;
     if (!w)
         return;
+    QWindow *app_w = App::instance()->window();
+    if (!app_w)
+        return;
+
     if (state == Qt::ApplicationActive) {
-        if (!(w->isFullScreen() || App::instance()->window()->visibility() == QWindow::FullScreen)) {
+        if (!(w->isFullScreen() || app_w->visibility() == QWindow::FullScreen)) {
             w->raise();
         }
     }

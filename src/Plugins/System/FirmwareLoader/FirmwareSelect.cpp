@@ -23,7 +23,7 @@
 #include "FirmwareSelect.h"
 #include "Firmware.h"
 #include "Releases.h"
-//=============================================================================
+
 FirmwareSelect::FirmwareSelect(Firmware *firmware,
                                Fact *parent,
                                const QString &name,
@@ -55,7 +55,7 @@ FirmwareSelect::FirmwareSelect(Firmware *firmware,
     connect(this, &Fact::triggered, this, &FirmwareSelect::updateNodeEnums);
     updateNodeEnums();
 }
-//=============================================================================
+
 void FirmwareSelect::updateNodeEnums()
 {
     if (!m_firmware->f_releases->f_current)
@@ -74,7 +74,7 @@ void FirmwareSelect::updateNodeEnums()
     f_node->setEnumStrings(st);
     updateHwEnums();
 }
-//=============================================================================
+
 void FirmwareSelect::updateHwEnums()
 {
     if (!m_firmware->f_releases->f_current)
@@ -99,4 +99,3 @@ void FirmwareSelect::updateHwEnums()
     f_hw->setEnumStrings(st);
     f_start->setEnabled(!m_firmware->f_stop->enabled());
 }
-//=============================================================================

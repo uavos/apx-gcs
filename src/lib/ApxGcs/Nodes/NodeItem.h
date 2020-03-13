@@ -102,12 +102,13 @@ signals:
     //---------------------------------------
     // PROPERTIES
 public:
+    // forward from protocol
     QString sn() const;
     QString version() const;
     QString hardware() const;
-
     const xbus::node::ident::ident_s &ident() const;
 
+    // additional props
     bool identValid() const;
     void setIdentValid(const bool &v);
 

@@ -22,26 +22,39 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
 #include <Protocols/ProtocolNode.h>
+#include <Protocols/ProtocolViewBase.h>
 
-class QueueItem : public Fact
+class Releases;
+
+class QueueItem : public ProtocolViewBase<ProtocolNode>
 {
     Q_OBJECT
-    Q_ENUMS(UpgradeType)
 
 public:
-    explicit QueueItem(Fact *parent, ProtocolNode *protocol);
-
-    enum UpgradeType { Any, LD, FW, MHX, STM_LD, STM_FW };
-    Q_ENUM(UpgradeType)
+    explicit QueueItem(Fact *parent, ProtocolNode *protocol, QString type);
 
     bool match(const QString &sn) const;
-    UpgradeType type() const;
+    QString type() const;
+    void setType(QString v);
+
+    void start(Releases *releases);
+    void finish(bool success);
 
 private:
-    ProtocolNode *m_protocol;
-    UpgradeType m_type{Any};
+    QString m_type;
 
-    void updateDescr();
+    QByteArray _data;
+    quint32 _offset;
+
+    ProtocolNodeFile *file_p{nullptr};
+    ProtocolNodeFile *file(const QString &fname);
+
+private slots:
+    void upload(QByteArray data, quint32 offset);
+
+    void loaderAvailable();
+
+signals:
+    void finished(QueueItem *item, bool success);
 };

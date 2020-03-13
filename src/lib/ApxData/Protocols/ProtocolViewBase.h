@@ -38,6 +38,8 @@ public:
 
 private:
     Fact *m_protocol{nullptr};
+
+protected:
     void setProtocol(Fact *protocol);
 
 private slots:

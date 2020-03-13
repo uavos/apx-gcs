@@ -105,8 +105,9 @@ void AppRoot::addControlPlugin(AppPlugin *plugin)
 //=============================================================================
 void AppRoot::updateProgress(Fact *fact)
 {
-    if (!progressList.contains(fact)) {
+    if (fact && !progressList.contains(fact)) {
         progressList.append(fact);
+        connect(fact, &QObject::destroyed, this, [this]() { updateProgress(nullptr); });
     }
     int total = 0;
     int cnt = 0;

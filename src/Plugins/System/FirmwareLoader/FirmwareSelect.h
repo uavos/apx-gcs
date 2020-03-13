@@ -20,11 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FirmwareSelect_H
-#define FirmwareSelect_H
-//=============================================================================
+#pragma once
+
 #include "Firmware.h"
-//=============================================================================
+
 class FirmwareSelect : public Fact
 {
     Q_OBJECT
@@ -49,5 +48,3 @@ private slots:
     void updateNodeEnums();
     void updateHwEnums();
 };
-//=============================================================================
-#endif

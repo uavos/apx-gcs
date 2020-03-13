@@ -20,12 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FirmwarePlugin_H
-#define FirmwarePlugin_H
+#pragma once
+
 #include "Firmware.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class FirmwarePlugin : public PluginInterface
 {
     Q_OBJECT
@@ -35,5 +35,3 @@ public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override { return new Firmware(nullptr); }
 };
-//=============================================================================
-#endif // FirmwarePlugin_H

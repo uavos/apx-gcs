@@ -34,6 +34,7 @@ class ProtocolNodes : public ProtocolBase
 public:
     explicit ProtocolNodes(ProtocolVehicle *vehicle);
 
+    friend class ProtocolNode;
     friend class ProtocolNodeRequest;
 
     ProtocolNodeRequest *request(xbus::pid_t pid,
@@ -53,40 +54,36 @@ public:
 private:
     ProtocolVehicle *vehicle;
 
-    QList<ProtocolNodeRequest *> pool;
-    QTimer timer;
-    quint32 activeCount;
+    // nodes
+    QHash<QString, ProtocolNode *> _nodes;
+
+    // requests queue
+    QList<ProtocolNodeRequest *> _queue;
     QElapsedTimer reqTime;
     QTimer finishedTimer;
+    QTimer reqTimer;
     bool remove(ProtocolNodeRequest *request);
     void schedule(ProtocolNodeRequest *request);
 
-    QHash<QString, ProtocolNode *> nodes;
-
-    void reset();
-
 private slots:
-    void doNextRequest();
-    void sendRequest(ProtocolNodeRequest *request);
-    void requestFinished(ProtocolNodeRequest *request);
-    void checkFinished();
-
-public slots:
+    void next();
     void stop();
 
+    void updateActive();
+    void sendRequest(ProtocolNodeRequest *request);
+    void requestFinished(ProtocolNodeRequest *request);
+
 signals:
-    void next();
     void stopRequested();
-    void dataExchangeFinished();
+    void queueEmpty();
 
     //export signals and slots
 public slots:
     //nodes dict sync
     void requestSearch();
-
-    void clearNodes();
+    void clear();
 
 signals:
-    void nodeFound(ProtocolNode *protocol);
+    void nodeUpdate(ProtocolNode *protocol);
     void requestTimeout(ProtocolNodeRequest *request, ProtocolNode *node);
 };

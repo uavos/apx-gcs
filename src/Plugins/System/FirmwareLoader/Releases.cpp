@@ -21,10 +21,12 @@
  *
  */
 #include "Releases.h"
+
 #include <App/App.h>
 #include <App/AppDirs.h>
+
 #include <JlCompress.h>
-//=============================================================================
+
 Releases::Releases(Fact *parent)
     : Fact(parent, "releases", tr("Releases"), tr("Available firmware packages"), Group | Count)
     , f_current(nullptr)
@@ -41,7 +43,7 @@ Releases::Releases(Fact *parent)
     net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     QTimer::singleShot(2300, this, &Releases::sync);
 }
-//=============================================================================
+
 void Releases::abort()
 {
     if (!reply)
@@ -50,7 +52,7 @@ void Releases::abort()
     reply = nullptr;
     setProgress(-1);
 }
-//=============================================================================
+
 void Releases::sync()
 {
     m_releaseFile.clear();
@@ -72,7 +74,7 @@ void Releases::sync()
         return;
     requestRelease(QString("tags/%1").arg(App::version()));
 }
-//=============================================================================
+
 bool Releases::extractRelease(const QString &fname)
 {
     QDir dir = releaseDir();
@@ -93,7 +95,7 @@ bool Releases::extractRelease(const QString &fname)
     apxMsg() << title().append(':') << tr("Firmware available");
     return true;
 }
-//=============================================================================
+
 QDir Releases::releaseDir() const
 {
     return QDir(AppDirs::firmware().absoluteFilePath(
@@ -104,7 +106,7 @@ QDir Releases::devDir() const
 {
     return QDir(AppDirs::firmware().absoluteFilePath("development"), "*.apxfw");
 }
-//=============================================================================
+
 QString Releases::releaseVersion() const
 {
     QString s = App::version();
@@ -117,7 +119,7 @@ QString Releases::releaseVersion() const
     }
     return s;
 }
-//=============================================================================
+
 void Releases::makeReleaseFact(const QDir &dir)
 {
     if (!f_current) {
@@ -160,7 +162,7 @@ void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
         f->setValue("APXFW");
     }
 }
-//=============================================================================
+
 void Releases::clean()
 {
     QDir dir = releaseDir();
@@ -194,8 +196,7 @@ void Releases::clean()
         qDebug() << "removed" << fi.absoluteFilePath();
     }
 }
-//=============================================================================
-//=============================================================================
+
 QNetworkReply *Releases::request(const QString &r)
 {
     return request(
@@ -219,7 +220,7 @@ QNetworkReply *Releases::request(const QUrl &url)
     QNetworkReply *reply = net.get(*request);
     return reply;
 }
-//=============================================================================
+
 QNetworkReply *Releases::checkReply(QObject *sender)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender);
@@ -249,8 +250,7 @@ bool Releases::isFirmwarePackageFile(const QString &s, const QString &ver)
         return false;
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 void Releases::requestRelease(QString req)
 {
     abort();
@@ -311,7 +311,7 @@ void Releases::responseRelease()
     apxMsgW() << title().append(':') << tr("Firmware not available");
     qWarning() << json;
 }
-//=============================================================================
+
 void Releases::requestDownload(QUrl url)
 {
     apxMsg() << title().append(':') << tr("Downloading firmware").append("...");
@@ -366,9 +366,7 @@ void Releases::responseDownload()
         m_releaseFile.clear();
     }
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 QString Releases::getApxfwFileName(QString nodeName, QString hw)
 {
     //map deprecated hardware
@@ -449,11 +447,14 @@ QString Releases::getApxfwFileName(QString nodeName, QString hw)
     }
     return fileName;
 }
-//=============================================================================
+
 bool Releases::loadFirmware(
-    QString nodeName, QString hw, Firmware::UpgradeType type, QByteArray *data, quint32 *startAddr)
+    QString nodeName, QString hw, QString type, QByteArray *data, quint32 *startAddr)
 {
     QString fileName = getApxfwFileName(nodeName, hw);
+
+    if (fileName.isEmpty())
+        return false;
 
     //load fw
     qDebug() << fileName;
@@ -461,18 +462,14 @@ bool Releases::loadFirmware(
     if (fileName.endsWith(".hex", Qt::CaseInsensitive)) {
         rv = loadHexFile(fileName, data, startAddr);
     } else {
-        rv = loadApfwFile(fileName,
-                          (type == Firmware::LD || type == Firmware::STM_LD) ? "loader" : "firmware",
-                          data,
-                          startAddr);
+        rv = loadApfwFile(fileName, type, data, startAddr);
     }
     if (!rv) {
         apxMsgW() << tr("Can't load firmware file");
     }
     return rv;
 }
-//=============================================================================
-//=============================================================================
+
 bool Releases::loadHexFile(QString fileName, QByteArray *data, quint32 *startAddr)
 {
     QFile file(fileName);
@@ -560,9 +557,12 @@ bool Releases::loadHexFile(QString fileName, QByteArray *data, quint32 *startAdd
     qDebug() << "File: " << ba.size();
     return ba.size() > 0;
 }
-//=============================================================================
+
 bool Releases::loadApfwFile(QString fileName, QString section, QByteArray *data, quint32 *startAddr)
 {
+    if (fileName.isEmpty())
+        return false;
+
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         qWarning("%s",
@@ -626,13 +626,13 @@ bool Releases::loadApfwFile(QString fileName, QString section, QByteArray *data,
     apxMsgW() << tr("Error parsing firmware file") << QString("(%1)").arg(errString);
     return false;
 }
-//=============================================================================
+
 bool Releases::loadFileMHX(QString ver, QByteArray *data)
 {
     bool bErr = true;
     //parse version
     QString mname;
-    uint iver;
+    uint iver = 0;
     while (1) {
         if (!ver.contains('_'))
             break;
@@ -640,7 +640,7 @@ bool Releases::loadFileMHX(QString ver, QByteArray *data)
         QString s = ver.mid(ver.indexOf('_') + 1);
         if (s.startsWith('v', Qt::CaseInsensitive))
             s.remove(0, 1);
-        iver = s.toFloat() * 1000;
+        iver = s.toFloat() * 1000.0;
         if (iver < 1000 || mname.size() < 4)
             break;
         qDebug("MHX radio: %s (ver %u)", mname.toUpper().toUtf8().data(), iver);
@@ -704,4 +704,3 @@ bool Releases::loadFileMHX(QString ver, QByteArray *data)
     //qDebug()<<fileData.size();
     return true;
 }
-//=============================================================================

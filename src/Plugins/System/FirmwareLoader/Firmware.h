@@ -25,7 +25,6 @@
 #include "QueueItem.h"
 #include <Fact/Fact.h>
 
-class Loader;
 class Releases;
 class FirmwareTools;
 
@@ -42,45 +41,29 @@ public:
 
     Releases *f_releases;
 
-    Loader *f_loader;
-
     Fact *f_queue;
     Fact *f_available;
 
     FirmwareTools *f_tools;
 
-    Q_INVOKABLE void requestUpgrade(const QString &nodeName,
-                                    const QString &nodeDescr,
-                                    const QString &sn,
-                                    const QString &hw,
-                                    const QString &ver,
-                                    UpgradeType type);
+    static ProtocolNodes *nodes_protocol();
 
-    Q_INVOKABLE void requestInitialization(const QString &nodeName,
-                                           const QString &hw,
-                                           const QString &portName,
-                                           Firmware::UpgradeType type);
+    Q_INVOKABLE void requestUpgrade(ProtocolNode *protocol, QString type);
 
 private:
     static Firmware *_instance;
 
     QueueItem *queued(Fact *list, const QString &sn);
 
-    int queueCnt;
-
 private slots:
     void nodeUpdate(ProtocolNode *protocol);
 
     void updateStatus();
-    void updateProgress();
 
     void next();
-    void loaderFinished(bool success);
-
-public slots:
-    void stop();
+    void loaderFinished(QueueItem *item, bool success);
 
 signals:
-    void upgradeStarted(QString sn, UpgradeType type);
-    void upgradeFinished(QString sn, UpgradeType type);
+    void upgradeStarted(QString sn, QString type);
+    void upgradeFinished(QString sn, QString type);
 };

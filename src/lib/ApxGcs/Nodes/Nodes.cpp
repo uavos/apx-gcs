@@ -34,7 +34,7 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 {
     setTitle(tr("Nodes"));
     setDescr(tr("Vehicle components"));
-    setOptions(FlatModel | ModifiedGroup);
+    setOptions(FlatModel | ModifiedGroup | ProgressTrack);
 
     f_upload = new Fact(this,
                         "upload",
@@ -83,8 +83,8 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 
     connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
     connect(this, &Fact::progressChanged, this, &Nodes::updateActions);
-
     connect(this, &Nodes::nodesCountChanged, this, &Nodes::updateActions);
+    connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
     updateActions();
 
     connect(this, &Nodes::nodesCountChanged, this, &Nodes::updateStatus);
@@ -94,13 +94,18 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     connect(&m_syncTimer, &QTimer::timeout, this, &Nodes::sync);
 
     //protocols
-    connect(protocol, &ProtocolNodes::nodeFound, this, &Nodes::nodeFound);
-    connect(protocol, &ProtocolNodes::dataExchangeFinished, this, &Nodes::dataExchangeFinished);
+    connect(protocol, &ProtocolNodes::nodeUpdate, this, &Nodes::nodeUpdate);
+    connect(protocol, &ProtocolNodes::queueEmpty, this, &Nodes::dataExchangeFinished);
 
+    // bind active property
     connect(this, &Fact::activeChanged, protocol, [this]() {
         this->protocol()->setActive(active());
     });
+    connect(protocol, &ProtocolNodes::activeChanged, this, [this]() {
+        setActive(this->protocol()->active());
+    });
 
+    // initial request
     if (!(vehicle->isLocal() || vehicle->isReplay())) {
         protocol->requestSearch();
     }
@@ -130,7 +135,7 @@ int Nodes::nodesCount() const
     return m_sn_map.size();
 }
 
-void Nodes::nodeFound(ProtocolNode *protocol)
+void Nodes::nodeUpdate(ProtocolNode *protocol)
 {
     add(protocol);
 }
@@ -142,6 +147,7 @@ NodeItem *Nodes::add(ProtocolNode *protocol)
 
     node = new NodeItem(this, protocol);
     m_sn_map.insert(protocol->sn(), node);
+
     emit nodesCountChanged();
     return node;
 }
@@ -167,8 +173,6 @@ void Nodes::updateActions()
 
 void Nodes::dataExchangeFinished()
 {
-    if (vehicle->isLocal())
-        return;
     if (vehicle->isReplay())
         return;
 
@@ -195,7 +199,7 @@ void Nodes::dataExchangeFinished()
         // all valid and in sync
         qDebug() << "sync done";
         m_syncTimestamp = QDateTime::currentDateTimeUtc();
-        setActive(false);
+        stop();
         emit syncDone();
         return;
     } while (0);
@@ -232,10 +236,12 @@ void Nodes::stop()
 
 void Nodes::clear()
 {
+    if (protocol()->active())
+        return;
     m_sn_map.clear();
     m_groups.clear();
     removeAll();
-    protocol()->clearNodes();
+    protocol()->clear();
     m_syncCount = 0;
     emit nodesCountChanged();
     setModified(false);

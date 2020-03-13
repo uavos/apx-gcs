@@ -52,6 +52,7 @@ void ProtocolNodeFile::write_next()
     if (_op_tcnt == _op_size) {
         //all data written
         qDebug() << "done";
+        reset();
         emit uploaded();
         stop();
         return;
@@ -72,9 +73,9 @@ void ProtocolNodeFile::write_next()
     ProtocolNodeRequest *req = request(xbus::node::file::write);
     req->write<xbus::node::file::offset_t>(_op_offset);
     sz = req->write(ba.data(), sz);
-    req->schedule();
     _op_hash = CRC_32_APX(ba.data(), sz, _op_hash);
-    qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16); // << req->dump();
+    req->schedule();
+    //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
 }
 bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
 {
@@ -83,8 +84,9 @@ bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
     xbus::node::file::offset_t offset;
     stream >> offset;
     if (offset != _op_offset) {
-        qWarning() << "offset: " << offset << _op_offset;
-        return false;
+        qWarning() << "offset: " << QString::number(offset, 16) << QString::number(_op_offset, 16);
+        // response offset mismatch - don't interrupt
+        return true;
     }
 
     if (stream.available() < sizeof(xbus::node::file::size_t))
@@ -108,6 +110,7 @@ bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
     if (stream.available() > 0)
         return false;
 
+    //qDebug() << _req;
     ack_req();
 
     _op_offset += size;
@@ -170,8 +173,13 @@ bool ProtocolNodeFile::resp_read(ProtocolStreamReader &stream)
 
 void ProtocolNodeFile::stop()
 {
+    if (_op != xbus::node::file::idle) {
+        qWarning() << "interrupted:" << name() << _op;
+        emit interrupted();
+        emit finished();
+        return;
+    }
     reset();
-    emit finished();
 }
 
 void ProtocolNodeFile::updateProgress()
@@ -182,7 +190,7 @@ void ProtocolNodeFile::updateProgress()
 
 void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader &stream)
 {
-    qDebug() << name() << op << stream.available();
+    //qDebug() << name() << op << stream.available();
 
     switch (op) {
     default:
@@ -260,13 +268,12 @@ ProtocolNodeRequest *ProtocolNodeFile::request(xbus::node::file::op_e op)
     req->write_string(name().toUtf8());
     _op = op;
     _req = req;
-    connect(req, &ProtocolNodeRequest::finished, this, [this]() { _req = nullptr; });
     return req;
 }
 
 void ProtocolNodeFile::reset()
 {
-    qDebug() << _op;
+    //qDebug() << _op;
     _op = xbus::node::file::idle;
 
     _op_data.clear();

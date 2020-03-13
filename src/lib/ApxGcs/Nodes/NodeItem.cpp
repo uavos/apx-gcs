@@ -36,6 +36,7 @@
 NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     : ProtocolViewBase(parent, protocol)
 {
+    setOptions(ProgressTrack);
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
     //tools = new NodeTools(this, Action);
@@ -173,29 +174,43 @@ void NodeItem::upload()
 
 QVariant NodeItem::data(int col, int role) const
 {
-    if (dictValid() && dataValid() && (!upgrading())) {
-        switch (role) {
-        case Qt::ForegroundRole:
-            //if(isUpgrading())return QColor(Qt::white);
-            //return col==FACT_MODEL_COLUMN_NAME?QColor(Qt::darkYellow):QColor(Qt::darkGray);
-            //if(!statsShowTimer.isActive()) return isUpgradable()?QColor(Qt::red).lighter():Qt::darkGray;
-            //nstats
-            //return statsWarn?QColor(Qt::yellow):QColor(Qt::green);
-            break;
-        case Qt::BackgroundRole:
-            //if(isUpgrading())return QColor(0x20,0x00,0x00);
-            //if(isUpgradePending())return QColor(0x40,0x00,0x00);
-            if (ident().flags.bits.reconf)
-                return QColor(Qt::darkGray).darker(200);
-            return QColor(0x20, 0x40, 0x60);
+    switch (role) {
+    case Qt::ForegroundRole:
+        if (dictValid() && dataValid()) {
+            if (col == FACT_MODEL_COLUMN_DESCR)
+                return QColor(Qt::darkGray);
+            if (col == FACT_MODEL_COLUMN_VALUE)
+                return QColor(Qt::yellow).lighter(180);
         }
-    }
-    if (role == Qt::FontRole && col == Fact::FACT_MODEL_COLUMN_DESCR) {
+        if (upgrading())
+            return QColor(255, 200, 200);
+        if (!dictValid())
+            return QColor(255, 200, 200);
+        if (!dataValid())
+            return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
+        break;
+    case Qt::BackgroundRole:
+        if (dictValid() && dataValid()) {
+            return QColor(0x10, 0x20, 0x30);
+        }
+        if (upgrading())
+            return QColor(64, 0, 0);
+        if (!dictValid())
+            return QVariant();
+        if (!dataValid())
+            return QVariant();
+        if (ident().flags.bits.reconf)
+            return QColor(Qt::darkGray).darker(200);
+        return QColor(0x20, 0x40, 0x60);
+    case Qt::FontRole:
+        if (col == Fact::FACT_MODEL_COLUMN_DESCR) {
 #ifdef Q_OS_MAC
-        return QFont("Menlo");
+            return QFont("Menlo");
 #else
-        return QFont("FreeMono");
+            return QFont("FreeMono");
 #endif
+        }
+        break;
     }
     return ProtocolViewBase::data(col, role);
 }
@@ -296,6 +311,8 @@ void NodeItem::identReceived()
     //nodes->storage->saveNodeUser(this);
 
     // node has dict
+    setDictValid(true);
+    setDataValid(true);
 }
 
 void NodeItem::dictReceived(const ProtocolNode::Dictionary &dict) {}

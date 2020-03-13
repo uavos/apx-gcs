@@ -27,7 +27,7 @@
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 Format::Format(Firmware *firmware, Fact *parent)
     : FirmwareSelect(firmware,
                      parent,
@@ -41,29 +41,28 @@ Format::Format(Firmware *firmware, Fact *parent)
 
     connect(f_start, &Fact::triggered, this, &Format::startTriggered);
 
-    //connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Format::nodeNotify);
+    connect(firmware->nodes_protocol(), &ProtocolNodes::nodeUpdate, this, &Format::nodeUpdate);
 
-    Nodes *nodes = Vehicles::instance()->f_local->f_nodes;
-    connect(this, &Fact::triggered, nodes->f_search, &Fact::trigger);
+    connect(this, &Fact::triggered, firmware->nodes_protocol(), &ProtocolNodes::requestSearch);
 
     f_start->setEnabled(false);
 }
-//=============================================================================
-void Format::nodeNotify(NodeItem *node)
+
+void Format::nodeUpdate(ProtocolNode *protocol)
 {
     QStringList n;
-    n << node->title();
-    n << node->descr();
-    n << node->value().toString();
+    n << protocol->title();
+    n << protocol->descr();
+    n << protocol->value().toString();
     n.removeAll("");
     QString sTitle = n.join(' ');
 
     QStringList st = f_dev->enumStrings();
 
-    int idx = snList.indexOf(node->sn());
+    int idx = snList.indexOf(protocol->sn());
     int v_s = f_dev->value().toInt();
     if (idx < 0) {
-        snList << node->sn();
+        snList << protocol->sn();
         st << sTitle;
     } else {
         st.replace(idx, sTitle);
@@ -72,26 +71,20 @@ void Format::nodeNotify(NodeItem *node)
     f_dev->setValue(v_s);
     f_start->setEnabled(true);
 }
-//=============================================================================
-//=============================================================================
+
 void Format::startTriggered()
 {
-    Firmware::UpgradeType type;
-    if (f_fw->value().toInt() == 0)
-        type = Firmware::LD;
-    else
-        type = Firmware::FW;
-
-    QString nodeName = f_node->text();
-    QString nodeDescr = f_dev->text();
     QString sn = snList.value(f_dev->value().toInt());
-    QString hw = f_hw->text();
+    QString type;
+    if (f_fw->value().toInt() == 0)
+        type = "ldr";
+    else
+        type = "fw";
 
     if (sn.isEmpty())
         return;
-    //apxMsgW() << tr("Using custom firmware file").append(':') << s;
 
-    m_firmware->requestUpgrade(nodeName, nodeDescr, sn, hw, "any", type);
+    ProtocolNode *node = m_firmware->nodes_protocol()->getNode(sn, true);
+
+    m_firmware->requestUpgrade(node, type);
 }
-//=============================================================================
-//=============================================================================

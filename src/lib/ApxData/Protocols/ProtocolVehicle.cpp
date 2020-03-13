@@ -35,7 +35,6 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     , vehicles(vehicles)
 {
     setIcon(squawk ? "drone" : "chip");
-    setDataType(Count);
 
     nodes = new ProtocolNodes(this);
 
@@ -93,7 +92,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
-    qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
+    //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
     //qDebug() << ident.callsign << QString::number(pid, 16);
 
     if (mandala::cmd::env::nmt::match(pid)) {

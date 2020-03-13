@@ -20,19 +20,19 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef LoaderStm_H
-#define LoaderStm_H
-//=============================================================================
+#pragma once
+
 #include <QSerialPort>
 #include <QtCore>
-class Loader;
-//=============================================================================
+
+class QueueItem;
+
 class LoaderStm : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit LoaderStm(Loader *loader,
+    explicit LoaderStm(QueueItem *item,
                        const QByteArray &fileData,
                        quint32 startAddr,
                        const QString &portName,
@@ -40,7 +40,7 @@ public:
     ~LoaderStm();
 
 private:
-    Loader *loader;
+    QueueItem *item;
     QByteArray fileData;
     quint32 startAddr;
     QString portName;
@@ -78,5 +78,3 @@ private slots:
 public slots:
     void stop();
 };
-//=============================================================================
-#endif

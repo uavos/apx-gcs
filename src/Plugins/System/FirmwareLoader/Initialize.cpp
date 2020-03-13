@@ -80,15 +80,15 @@ void Initialize::updatePortEnums()
 //=============================================================================
 void Initialize::startTriggered()
 {
-    Firmware::UpgradeType type;
+    /*QueueItem::UpgradeType type;
     if (f_fw->value().toInt() == 0)
-        type = Firmware::STM_LD;
+        type = QueueItem::STM_LD;
     else
-        type = Firmware::STM_FW;
+        type = QueueItem::STM_FW;
     QStringList opts;
     opts << f_port->text();
-    opts << f_continuous->text();
-    m_firmware->requestInitialization(f_node->text(), f_hw->text(), opts.join(','), type);
+    opts << f_continuous->text();*/
+    //FIXME: m_firmware->requestInitialization(f_node->text(), f_hw->text(), opts.join(','), type);
 }
 //=============================================================================
 //=============================================================================
