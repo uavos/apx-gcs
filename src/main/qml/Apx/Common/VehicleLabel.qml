@@ -22,15 +22,15 @@ Item {
     property color colorBG: {
         var c="#555"
         if(bGCU) c="#3779C5"
-        if(vehicle.streamType===Vehicle.TELEMETRY)c="#377964"
-        if(vehicle.streamType===Vehicle.XPDR)c="#376479"
+        if(vehicle.protocol.streamType===Vehicle.TELEMETRY)c="#377964"
+        if(vehicle.protocol.streamType===Vehicle.XPDR)c="#376479"
         if(!vehicle.active)c=Qt.darker(c,1.9)
         return c
     }
 
     //Fact bindings
-    property bool bGCU: vehicle.vehicleClass===Vehicle.GCU
-    property bool bLOCAL: vehicle.vehicleClass===Vehicle.LOCAL
+    readonly property bool bGCU: vehicle.isGroundControl
+    readonly property bool bLOCAL: vehicle.isLocal
 
 
     //internal

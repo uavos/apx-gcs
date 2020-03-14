@@ -46,7 +46,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     Nodes *fNodes = v->f_nodes;
     treeWidget->setRoot(fNodes);
     lbUavName->setText(v->title());
-    lbUavName->setToolTip(QString("squawk: %1").arg(v->squawk(), 4, 16, QChar('0')).toUpper());
+    lbUavName->setToolTip(QString("squawk: %1").arg(v->protocol()->squawkText()));
 
     connect(vehicle->f_nodes, &Nodes::modifiedChanged, this, &NodesFrame::updateActions);
 
@@ -113,19 +113,17 @@ void NodesFrame::updateActions(void)
 //=============================================================================
 void NodesFrame::treeContextMenu(const QPoint &pos)
 {
-    if (vehicle->f_nodes->nodesCount() <= 0)
-        return;
     //scan selected items
     QList<NodeItem *> nlist = selectedItems<NodeItem>();
     QMenu m(treeWidget);
 
     //editor actions
     QAction *a_revert = nullptr;
-    foreach (NodesBase *f, selectedItems<NodesBase>()) {
-        if (!f->modified())
+    for (auto i : selectedItems<NodesBase>()) {
+        if (!i->modified())
             continue;
         if (!a_revert) {
-            a_revert = new QActionFact(f->f_revert);
+            a_revert = new QActionFact(i->f_revert);
             a_revert->setParent(&m);
             m.addAction(a_revert);
             m.addSeparator();

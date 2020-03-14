@@ -127,9 +127,9 @@ public:
     void setMax(const QVariant &v);
 
     QString title(void) const;
-    void setTitle(const QString &v);
+    virtual void setTitle(const QString &v);
     QString descr(void) const;
-    void setDescr(const QString &v);
+    virtual void setDescr(const QString &v);
 
     QString text() const;
 

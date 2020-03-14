@@ -68,6 +68,8 @@ bool ProtocolNodeRequest::equals(const ProtocolNodeRequest *other)
 }
 bool ProtocolNodeRequest::lessThan(const ProtocolNodeRequest *other)
 {
+    if (active)
+        return true;
     return QString::compare(toByteArray().toHex(), other->toByteArray().toHex()) < 0;
 }
 void ProtocolNodeRequest::acknowledge()
@@ -76,10 +78,10 @@ void ProtocolNodeRequest::acknowledge()
 }
 void ProtocolNodeRequest::extend(int ms)
 {
-    if (timeout_ms < ms)
-        timeout_ms = ms;
+    if (timeout_ms > ms)
+        ms = timeout_ms;
     if (active && timeout_ms > 0) {
-        timer.start(timeout_ms);
+        timer.start(ms);
     }
 }
 bool ProtocolNodeRequest::equals(xbus::node::crc_t crc)
@@ -114,7 +116,6 @@ void ProtocolNodeRequest::finish(bool acknowledged)
     this->acknowledged = acknowledged;
     timer.stop();
     emit finished(this);
-    active = false;
 }
 
 void ProtocolNodeRequest::triggerTimeout()
@@ -132,7 +133,6 @@ void ProtocolNodeRequest::triggerTimeout()
         trigger();
         return;
     }
-    active = false;
     if (retry_cnt > 0) {
         apxConsoleW() << tr("Service timeout")
                       << QString("(%1): %2 %3")

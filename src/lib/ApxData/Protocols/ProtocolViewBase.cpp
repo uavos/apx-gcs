@@ -45,10 +45,14 @@ void ProtocolViewBaseImpl::setProtocol(Fact *protocol)
 
         connect(protocol, &Fact::nameChanged, this, &ProtocolViewBaseImpl::updateName);
         connect(protocol, &Fact::titleChanged, this, &ProtocolViewBaseImpl::updateTitle);
+        connect(protocol, &Fact::descrChanged, this, &ProtocolViewBaseImpl::updateDescr);
+        connect(protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
         connect(protocol, &Fact::progressChanged, this, &ProtocolViewBaseImpl::updateProgress);
 
         updateName();
         updateTitle();
+        updateDescr();
+        updateValue();
         updateProgress();
 
         if (icon().isEmpty())
@@ -69,9 +73,36 @@ void ProtocolViewBaseImpl::updateName()
 }
 void ProtocolViewBaseImpl::updateTitle()
 {
-    setTitle(m_protocol->title());
+    Fact::setTitle(m_protocol->title());
+}
+void ProtocolViewBaseImpl::updateDescr()
+{
+    Fact::setDescr(m_protocol->descr());
+}
+void ProtocolViewBaseImpl::updateValue()
+{
+    Fact::setValue(m_protocol->value());
 }
 void ProtocolViewBaseImpl::updateProgress()
 {
     setProgress(m_protocol->progress());
+}
+
+void ProtocolViewBaseImpl::setTitle(const QString &v)
+{
+    if (m_protocol)
+        disconnect(m_protocol, &Fact::titleChanged, this, &ProtocolViewBaseImpl::updateTitle);
+    Fact::setTitle(v);
+}
+void ProtocolViewBaseImpl::setDescr(const QString &v)
+{
+    if (m_protocol)
+        disconnect(m_protocol, &Fact::descrChanged, this, &ProtocolViewBaseImpl::updateDescr);
+    Fact::setDescr(v);
+}
+bool ProtocolViewBaseImpl::setValue(const QVariant &v)
+{
+    if (m_protocol)
+        disconnect(m_protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
+    return Fact::setValue(v);
 }

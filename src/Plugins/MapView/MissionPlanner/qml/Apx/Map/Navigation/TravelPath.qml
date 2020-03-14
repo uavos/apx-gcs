@@ -15,7 +15,7 @@ MapPolyline {
 
     property var vehicle: apx.vehicles.current
 
-    property bool replay: vehicle.isReplay()
+    property bool replay: vehicle.isReplay
 
     onVehicleChanged: updatePath()
 

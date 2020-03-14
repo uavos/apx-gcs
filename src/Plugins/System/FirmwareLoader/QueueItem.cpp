@@ -50,7 +50,40 @@ void QueueItem::setType(QString v)
     m_type = v;
 }
 
-void QueueItem::start(Releases *releases)
+void QueueItem::start()
+{
+    qDebug() << title();
+
+    // always refresh ident
+    Firmware::nodes_protocol()->clear_requests();
+    protocol()->setIdentValid(false);
+
+    if (type() == "fw") {
+        _clist.append(connect(protocol(), &ProtocolNode::loaderAvailable, this, &QueueItem::upload));
+        protocol()->requestRebootLoader();
+        return;
+    }
+
+    _clist.append(connect(protocol(),
+                          &ProtocolNode::filesAvailable,
+                          this,
+                          &QueueItem::upload,
+                          Qt::UniqueConnection));
+    connect(Firmware::instance(),
+            &Fact::activeChanged,
+            this,
+            &QueueItem::cleanUploadConnections,
+            Qt::UniqueConnection);
+    protocol()->requestIdent();
+}
+void QueueItem::cleanUploadConnections()
+{
+    for (auto c : _clist)
+        disconnect(c);
+    _clist.clear();
+}
+
+bool QueueItem::loadFirmware()
 {
     QString fw = title();
     QString sn = protocol()->sn();
@@ -59,6 +92,7 @@ void QueueItem::start(Releases *releases)
 
     QString stype = type().toUpper();
 
+    Releases *releases = Firmware::instance()->f_releases;
     QString relVer = releases->releaseVersion();
     if (ver != relVer) {
         ver = QString("%1->%2").arg(ver).arg(relVer);
@@ -77,34 +111,24 @@ void QueueItem::start(Releases *releases)
     else if (type() == "ldr")
         rel_type = "loader";
 
-    if (!releases->loadFirmware(fw, hw, rel_type, &_data, &_offset)) {
+    return releases->loadFirmware(fw, hw, rel_type, &_data, &_offset);
+}
+
+void QueueItem::upload()
+{
+    cleanUploadConnections();
+    Firmware::nodes_protocol()->clear_requests();
+
+    if (!loadFirmware()) {
         finish(false);
         return;
     }
-
-    if (type() == "fw") {
-        connect(protocol(), &ProtocolNode::loaderAvailable, this, &QueueItem::loaderAvailable);
-        protocol()->requestRebootLoader();
-        return;
-    }
-
-    upload(_data, _offset);
-}
-
-void QueueItem::loaderAvailable()
-{
-    qDebug() << _data.size();
-    upload(_data, _offset);
-}
-
-void QueueItem::upload(QByteArray data, quint32 offset)
-{
     ProtocolNodeFile *f = file(type());
     if (!f) {
         finish(false);
         return;
     }
-    f->upload(data, offset);
+    f->upload(_data, _offset);
 }
 
 void QueueItem::finish(bool success)
@@ -126,7 +150,9 @@ ProtocolNodeFile *QueueItem::file(const QString &fname)
 {
     ProtocolNodeFile *file = protocol()->file(fname);
     if (!file) {
-        apxMsgW() << "missing file" << fname;
+        AppNotify::instance()
+            ->report(QString("%1: %2/%3").arg(tr("Node file is unavailable")).arg(title()).arg(fname),
+                     AppNotify::FromApp | AppNotify::Error);
         return nullptr;
     }
 

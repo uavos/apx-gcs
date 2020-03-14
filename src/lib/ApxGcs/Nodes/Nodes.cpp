@@ -32,8 +32,6 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     : ProtocolViewBase(vehicle, protocol)
     , vehicle(vehicle)
 {
-    setTitle(tr("Nodes"));
-    setDescr(tr("Vehicle components"));
     setOptions(FlatModel | ModifiedGroup | ProgressTrack);
 
     f_upload = new Fact(this,
@@ -83,18 +81,15 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 
     connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
     connect(this, &Fact::progressChanged, this, &Nodes::updateActions);
-    connect(this, &Nodes::nodesCountChanged, this, &Nodes::updateActions);
+    connect(protocol, &Nodes::sizeChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
     updateActions();
-
-    connect(this, &Nodes::nodesCountChanged, this, &Nodes::updateStatus);
-    updateStatus();
 
     m_syncTimer.setSingleShot(true);
     connect(&m_syncTimer, &QTimer::timeout, this, &Nodes::sync);
 
     //protocols
-    connect(protocol, &ProtocolNodes::nodeUpdate, this, &Nodes::nodeUpdate);
+    connect(protocol, &ProtocolNodes::nodeNotify, this, &Nodes::nodeNotify);
     connect(protocol, &ProtocolNodes::queueEmpty, this, &Nodes::dataExchangeFinished);
 
     // bind active property
@@ -122,20 +117,13 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 bool Nodes::check_valid() const
 {
     for (auto const i : m_sn_map) {
-        if (!i->dictValid())
-            return false;
-        if (!i->dataValid())
+        if (!i->protocol()->dataValid())
             return false;
     }
     return true;
 }
 
-int Nodes::nodesCount() const
-{
-    return m_sn_map.size();
-}
-
-void Nodes::nodeUpdate(ProtocolNode *protocol)
+void Nodes::nodeNotify(ProtocolNode *protocol)
 {
     add(protocol);
 }
@@ -148,21 +136,16 @@ NodeItem *Nodes::add(ProtocolNode *protocol)
     node = new NodeItem(this, protocol);
     m_sn_map.insert(protocol->sn(), node);
 
-    emit nodesCountChanged();
     return node;
 }
 
-void Nodes::updateStatus()
-{
-    setValue(nodesCount() > 0 ? QString::number(nodesCount()) : "");
-}
 void Nodes::updateActions()
 {
     bool enb = protocol()->enabled();
     bool busy = progress() >= 0;
     bool upgrading = false; //model->isUpgrading();
     bool bModAll = modified();
-    bool bEmpty = nodesCount() <= 0;
+    bool bEmpty = protocol()->size() <= 0;
     f_search->setEnabled(enb);
     f_upload->setEnabled(enb && bModAll && (!(busy)));
     f_stop->setEnabled(enb && (busy || upgrading));
@@ -176,7 +159,7 @@ void Nodes::dataExchangeFinished()
     if (vehicle->isReplay())
         return;
 
-    int cnt = nodesCount();
+    int cnt = nodes().size();
     if (cnt <= 0)
         return;
 
@@ -184,8 +167,8 @@ void Nodes::dataExchangeFinished()
         if (!check_valid())
             break;
         // exclude reconf nodes
-        foreach (NodeItem *node, nodes()) {
-            if (node->ident().flags.bits.reconf)
+        for (auto i : nodes()) {
+            if (i->protocol()->ident().flags.bits.reconf)
                 cnt--;
         }
         bool bCntChanged = m_syncCount != cnt;
@@ -219,7 +202,7 @@ void Nodes::syncLater(int timeout)
     if (m_syncTimer.isActive() && timeout > m_syncTimer.interval())
         timeout = m_syncTimer.interval();
     m_syncTimer.start(timeout);
-    //qDebug() << timeout << vehicle->callsign();
+    qDebug() << timeout << vehicle->title();
 }
 
 void Nodes::search()
@@ -243,7 +226,6 @@ void Nodes::clear()
     removeAll();
     protocol()->clear();
     m_syncCount = 0;
-    emit nodesCountChanged();
     setModified(false);
 }
 

@@ -123,8 +123,8 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
     emit vehicleRegistered(v);
 
     QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->title());
-    if (v->squawk() > 0)
-        msg.append(QString(" (%1)").arg(v->squawkText()));
+    if (protocol->squawk() > 0)
+        msg.append(QString(" (%1)").arg(protocol->squawkText()));
     v->message(msg, AppNotify::Important);
 
     v->dbSaveVehicleInfo();
@@ -154,8 +154,8 @@ void Vehicles::selectVehicle(Vehicle *v)
     m_current = v;
 
     QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->title());
-    if (v->squawk() > 0)
-        msg.append(QString(" (%1)").arg(v->squawkText()));
+    if (v->protocol()->squawk() > 0)
+        msg.append(QString(" (%1)").arg(v->protocol()->squawkText()));
     v->message(msg, AppNotify::Important);
 
     //update JSengine

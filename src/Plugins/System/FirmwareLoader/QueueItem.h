@@ -38,7 +38,6 @@ public:
     QString type() const;
     void setType(QString v);
 
-    void start(Releases *releases);
     void finish(bool success);
 
 private:
@@ -50,10 +49,17 @@ private:
     ProtocolNodeFile *file_p{nullptr};
     ProtocolNodeFile *file(const QString &fname);
 
-private slots:
-    void upload(QByteArray data, quint32 offset);
+    bool loadFirmware();
 
-    void loaderAvailable();
+    QList<QMetaObject::Connection> _clist;
+
+private slots:
+    void cleanUploadConnections();
+
+    void upload();
+
+public slots:
+    void start();
 
 signals:
     void finished(QueueItem *item, bool success);

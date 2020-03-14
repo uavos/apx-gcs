@@ -10,10 +10,10 @@ Item {
     id: control
     implicitWidth: textItem.implicitWidth+5+5
 
-    property var fact: apx.vehicles.current.telemetry
-    property alias color: textItem.color
-    property bool active: fact.active
-    property bool replay: apx.vehicles.current.vehicleClass===Vehicle.REPLAY
+    readonly property var fact: apx.vehicles.current.telemetry
+    readonly property alias color: textItem.color
+    readonly property bool active: fact.active
+    readonly property bool replay: apx.vehicles.current.isReplay
 
     property bool hovered: mouseArea.containsMouse
 

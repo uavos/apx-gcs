@@ -31,15 +31,29 @@
 class ProtocolVehicle : public ProtocolBase
 {
     Q_OBJECT
+    Q_ENUMS(StreamType)
+    Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
+    Q_PROPERTY(QString squawkText READ squawkText NOTIFY squawkChanged)
+
+    Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
+    Q_PROPERTY(QString streamTypeText READ streamTypeText NOTIFY streamTypeChanged)
+
+    Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
+
 public:
     ProtocolVehicle(ProtocolVehicles *vehicles,
                     xbus::vehicle::squawk_t squawk,
                     const xbus::vehicle::ident_s &ident,
                     const QString &callsign);
 
+    friend class ProtocolVehicles;
+
+    enum StreamType { OFFLINE = 0, NMT, DATA, XPDR, TELEMETRY };
+    Q_ENUM(StreamType)
+
+    // called by vehicles
     void downlink(ProtocolStreamReader &stream);
 
-    xbus::vehicle::squawk_t squawk() const;
     const xbus::vehicle::ident_s &ident() const;
 
     void updateIdent(const xbus::vehicle::squawk_t &squawk,
@@ -55,13 +69,21 @@ public:
 private:
     ProtocolVehicles *vehicles;
 
-    xbus::vehicle::squawk_t m_squawk;
     xbus::vehicle::ident_s m_ident;
 
     uint8_t txbuf[xbus::size_packet_max];
     ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
 
+    QTimer onlineTimer;
+    QElapsedTimer time_telemetry;
+    QElapsedTimer time_xpdr;
+
+private slots:
+    void updateStreamType(StreamType type);
+
 public slots:
+    void inc_errcnt();
+
     void requestTelemetry();
 
     void send(const QByteArray packet);
@@ -69,7 +91,7 @@ public slots:
     void sendSerial(quint8 portID, QByteArray data);
 
 signals:
-    void identUpdated();
+    void identChanged();
 
     void xpdrData(const xbus::vehicle::xpdr_s &xpdr);
 
@@ -84,4 +106,26 @@ signals:
 
     //data with other id (i.e. mandala data)
     void receivedData(xbus::pid_t pid, ProtocolStreamReader *stream);
+
+    //---------------------------------------
+    // PROPERTIES
+public:
+    xbus::vehicle::squawk_t squawk() const;
+    QString squawkText() const;
+
+    StreamType streamType(void) const;
+    QString streamTypeText() const;
+
+    uint errcnt(void) const;
+    void setErrcnt(const uint &v);
+
+protected:
+    xbus::vehicle::squawk_t m_squawk{0};
+    StreamType m_streamType{OFFLINE};
+    uint m_errcnt{0};
+
+signals:
+    void squawkChanged();
+    void streamTypeChanged();
+    void errcntChanged();
 };

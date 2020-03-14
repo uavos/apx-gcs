@@ -37,6 +37,7 @@ private:
     QStringList snList;
 
 private slots:
-    void nodeUpdate(ProtocolNode *protocol);
+    void nodeNotify(ProtocolNode *protocol);
+
     void startTriggered();
 };

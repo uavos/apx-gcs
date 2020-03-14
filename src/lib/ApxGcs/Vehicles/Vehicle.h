@@ -42,13 +42,11 @@ class Telemetry;
 class Vehicle : public ProtocolViewBase<ProtocolVehicle>
 {
     Q_OBJECT
-    Q_ENUMS(StreamType)
     Q_ENUMS(FlightState)
 
-    Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
-
-    Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
-    Q_PROPERTY(QString streamTypeText READ streamTypeText NOTIFY streamTypeChanged)
+    Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
+    Q_PROPERTY(bool isReplay READ isReplay CONSTANT)
+    Q_PROPERTY(bool isGroundControl READ isGroundControl NOTIFY identChanged)
 
     Q_PROPERTY(QString info READ info NOTIFY infoChanged)
 
@@ -61,15 +59,7 @@ class Vehicle : public ProtocolViewBase<ProtocolVehicle>
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
     Q_PROPERTY(quint64 totalDistance READ totalDistance NOTIFY totalDistanceChanged)
 
-    Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
-
 public:
-    enum StreamType { OFFLINE = 0, SERVICE, DATA, XPDR, TELEMETRY };
-    Q_ENUM(StreamType)
-
-    enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
-    Q_ENUM(FlightState)
-
     explicit Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol);
 
     ~Vehicle() override;
@@ -86,24 +76,20 @@ public:
 
     quint64 dbKey{0}; //from db
 
-    QString streamTypeText() const;
-    QString squawkText() const;
-    QString squawkText(quint16 v) const;
-
     QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
     QString confTitle() const;
 
-    Q_INVOKABLE bool isLocal() const;
-    Q_INVOKABLE bool isReplay() const;
+    bool isLocal() const;
+    bool isReplay() const;
+    bool isGroundControl() const;
 
     Q_INVOKABLE QGeoRectangle geoPathRect() const;
 
+    enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
+    Q_ENUM(FlightState)
+
 private:
     QTimer telemetryReqTimer;
-    QTimer onlineTimer;
-    QElapsedTimer telemetryTime;
-    QElapsedTimer xpdrTime;
-    QElapsedTimer replayTime;
 
     QTimer updateInfoTimer;
 
@@ -132,7 +118,6 @@ private:
     void setReplay(bool v);
 
 private slots:
-    void updateStatus();
     void updateInfo();
     void updateInfoReq();
     void updateCoordinate();
@@ -142,12 +127,6 @@ private slots:
     void dbSetVehicleKey(quint64 key);
 
 private slots:
-    //protocols connection
-    void setStreamXpdr();
-    void setStreamTelemetry();
-    void setStreamData();
-    void setStreamService();
-
     void updateActive();
 
     void updateDatalinkVars(quint16 id, QByteArray);
@@ -161,6 +140,7 @@ signals:
     //forward for recorder
     void recordDownlink();
     void recordUplink(Fact *f);
+
     //events
     void recordNodeMessage(QString nodeName, QString text, QString sn);
     void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
@@ -191,11 +171,6 @@ public slots:
     //---------------------------------------
     // PROPERTIES
 public:
-    quint16 squawk(void) const;
-
-    StreamType streamType(void) const;
-    void setStreamType(const StreamType v);
-
     QString info(void) const override;
 
     bool follow(void) const;
@@ -213,11 +188,7 @@ public:
     quint64 totalDistance() const;
     void setTotalDistance(quint64 v);
 
-    uint errcnt(void) const;
-    bool setErrcnt(const uint &v);
-
 protected:
-    StreamType m_streamType{OFFLINE};
     QString m_info;
 
     bool m_follow{false};
@@ -225,16 +196,13 @@ protected:
     FlightState m_flightState{FS_UNKNOWN};
     QGeoPath m_geoPath;
     quint64 m_totalDistance{0};
-    uint m_errcnt{0};
 
 signals:
-    void streamTypeChanged();
-    void squawkChanged();
+    void identChanged();
     void infoChanged();
     void followChanged();
     void coordinateChanged();
     void flightStateChanged();
     void geoPathChanged();
     void totalDistanceChanged();
-    void errcntChanged();
 };

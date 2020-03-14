@@ -24,7 +24,7 @@ FactValue {
     onClicked: apx.datalink.trigger()
     onPressAndHold: apx.vehicles.current.errcnt=0
 
-    readonly property int errcnt: apx.vehicles.current.errcnt
+    readonly property int errcnt: apx.vehicles.current.protocol.errcnt
 
     readonly property color cGreen: light?Material.color(Material.Yellow):Material.color(Material.LightGreen)
     readonly property color cRed: light?Material.color(Material.Yellow):Material.color(Material.DeepOrange)
@@ -40,7 +40,7 @@ FactValue {
             font.pixelSize: fontSize(bodyHeight*valueSize)
             verticalAlignment: Text.AlignVCenter
             text: "0%1".arg(apx.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
-            color: apx.datalink.online?(apx.vehicles.current.streamType===Vehicle.TELEMETRY?cGreen:cCyan):cRed
+            color: apx.datalink.online?(apx.vehicles.current.protocol.streamType===Vehicle.TELEMETRY?cGreen:cCyan):cRed
         },
         Text {
             Layout.maximumHeight: bodyHeight-Layout.topMargin

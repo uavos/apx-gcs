@@ -36,7 +36,7 @@ public:
     explicit Firmware(Fact *parent);
     static Firmware *instance() { return _instance; }
 
-    Fact *f_upgrade;
+    Fact *f_start;
     Fact *f_stop;
 
     Releases *f_releases;
@@ -56,7 +56,7 @@ private:
     QueueItem *queued(Fact *list, const QString &sn);
 
 private slots:
-    void nodeUpdate(ProtocolNode *protocol);
+    void nodeNotify(ProtocolNode *protocol);
 
     void updateStatus();
 

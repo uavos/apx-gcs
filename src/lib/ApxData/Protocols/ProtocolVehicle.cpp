@@ -39,12 +39,18 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     nodes = new ProtocolNodes(this);
 
     updateIdent(squawk, ident, callsign);
+
+    // stream type and status
+    setValue(streamTypeText());
+    onlineTimer.setSingleShot(true);
+    onlineTimer.setInterval(7000);
+    connect(&onlineTimer, &QTimer::timeout, this, [this]() { updateStreamType(OFFLINE); });
+
+    time_telemetry.start();
+    time_xpdr.start();
+    connect(this, &ProtocolVehicle::xpdrData, this, [this]() { updateStreamType(XPDR); });
 }
 
-xbus::vehicle::squawk_t ProtocolVehicle::squawk() const
-{
-    return m_squawk;
-}
 const xbus::vehicle::ident_s &ProtocolVehicle::ident() const
 {
     return m_ident;
@@ -53,16 +59,21 @@ void ProtocolVehicle::updateIdent(const xbus::vehicle::squawk_t &squawk,
                                   const xbus::vehicle::ident_s &ident,
                                   const QString &callsign)
 {
-    m_squawk = squawk;
-    m_ident = ident;
+    if (m_squawk != squawk) {
+        m_squawk = squawk;
+        emit squawkChanged();
+    }
+
+    if (memcmp(&m_ident, &ident, sizeof(ident)) != 0) {
+        m_ident = ident;
+        emit identChanged();
+    }
 
     setName(callsign.toLower());
     setTitle(callsign);
 
     bool replay = squawk == 0 && ident.flags.bits.gcs == 1;
     setEnabled(!replay);
-
-    emit identUpdated();
 }
 
 bool ProtocolVehicle::match(const xbus::vehicle::squawk_t &squawk) const
@@ -76,6 +87,31 @@ bool ProtocolVehicle::match(const xbus::vehicle::uid_t &uid) const
 bool ProtocolVehicle::match(const xbus::vehicle::ident_s &ident) const
 {
     return memcmp(&ident, &m_ident, sizeof(xbus::vehicle::ident_s)) == 0;
+}
+
+void ProtocolVehicle::updateStreamType(StreamType type)
+{
+    if (type != OFFLINE) {
+        onlineTimer.start();
+
+        switch (type) {
+        default:
+            break;
+        case TELEMETRY:
+            time_telemetry.start();
+            break;
+        case NMT:
+        case DATA:
+            if (time_telemetry.elapsed() < 2000 || time_xpdr.elapsed() < 3000)
+                return;
+            break;
+        }
+    }
+    if (m_streamType != type) {
+        m_streamType = type;
+        setValue(streamTypeText());
+        emit streamTypeChanged();
+    }
 }
 
 void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
@@ -92,50 +128,57 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
-    //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
-    //qDebug() << ident.callsign << QString::number(pid, 16);
+    qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
 
     if (mandala::cmd::env::nmt::match(pid)) {
+        updateStreamType(NMT);
         nodes->downlink(pid, stream);
         return;
     }
 
     switch (pid) {
     default:
+        updateStreamType(DATA);
         emit receivedData(pid, &stream);
-        break;
+        return;
     case mandala::cmd::env::telemetry::data::uid:
+        updateStreamType(TELEMETRY);
         emit telemetryData(&stream);
-        break;
+        return;
     case mandala::cmd::env::vcp::rx::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
+            updateStreamType(DATA);
             emit serialRxData(port_id, stream.payload());
-        } else {
-            qWarning() << "Empty serial RX data received";
+            return;
         }
+        qWarning() << "Empty serial RX data received";
         break;
     case mandala::cmd::env::vcp::tx::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
+            updateStreamType(DATA);
             emit serialTxData(port_id, stream.payload());
-        } else {
-            qWarning() << "Empty serial TX data received";
+            return;
         }
+        qWarning() << "Empty serial TX data received";
         break;
     case mandala::cmd::env::mission::data::uid:
+        updateStreamType(DATA);
         break;
     case mandala::cmd::env::script::jsexec::uid:
         if (stream.available() > 2) {
             QString script = stream.payload().trimmed();
             if (!script.isEmpty()) {
+                updateStreamType(DATA);
                 emit jsexecData(script);
-                break;
+                return;
             }
         }
         qWarning() << "Empty jsexec data received" << stream.dump();
         break;
     }
+    inc_errcnt();
 }
 
 void ProtocolVehicle::send(const QByteArray packet)
@@ -164,4 +207,41 @@ void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
     ostream.write<uint8_t>(portID);
     ostream.append(data);
     send(ostream.toByteArray());
+}
+
+//---------------------------------------
+// PROPERTIES
+//---------------------------------------
+
+xbus::vehicle::squawk_t ProtocolVehicle::squawk() const
+{
+    return m_squawk;
+}
+QString ProtocolVehicle::squawkText() const
+{
+    return QString("%1").arg(squawk(), 4, 16, QChar('0')).toUpper();
+}
+ProtocolVehicle::StreamType ProtocolVehicle::streamType(void) const
+{
+    return m_streamType;
+}
+QString ProtocolVehicle::streamTypeText() const
+{
+    return QMetaEnum::fromType<StreamType>().valueToKey(streamType());
+}
+uint ProtocolVehicle::errcnt(void) const
+{
+    return m_errcnt;
+}
+void ProtocolVehicle::setErrcnt(const uint &v)
+{
+    if (m_errcnt == v)
+        return;
+    m_errcnt = v;
+    emit errcntChanged();
+}
+void ProtocolVehicle::inc_errcnt()
+{
+    m_errcnt++;
+    emit errcntChanged();
 }

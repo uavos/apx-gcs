@@ -12,28 +12,28 @@ import APX.Vehicles 1.0 as APX
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
 
-    property APX.Vehicle vehicle: modelData
+    readonly property APX.Vehicle vehicle: modelData
 
     //Fact bindings
-    property var vm: vehicle.mandala
-    property real f_roll: vm.est.att.roll.value
-    property real f_pitch: vm.est.att.pitch.value
-    property real f_yaw: vm.est.att.yaw.value
-    property real f_altitude: vm.est.air.altitude.value
-    property real f_cmd_course: vm.cmd.pos.course.value
-    property real f_course: vm.est.pos.course.value
-    property real f_windHdg: vm.est.aux.whdg.value
-    property real f_windSpd: vm.est.aux.wspd.value
-    property int f_mode: vm.cmd.op.mode.value
+    readonly property var vm: vehicle.mandala
+    readonly property real f_roll: vm.est.att.roll.value
+    readonly property real f_pitch: vm.est.att.pitch.value
+    readonly property real f_yaw: vm.est.att.yaw.value
+    readonly property real f_altitude: vm.est.air.altitude.value
+    readonly property real f_cmd_course: vm.cmd.pos.course.value
+    readonly property real f_course: vm.est.pos.course.value
+    readonly property real f_windHdg: vm.est.aux.whdg.value
+    readonly property real f_windSpd: vm.est.aux.wspd.value
+    readonly property int f_mode: vm.cmd.op.mode.value
 
-    property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF
+    readonly property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF
 
-    property bool active: vehicle.active
+    readonly property bool active: vehicle.active
 
     visible: vehicle.visible
 
-    property bool bGCU: vehicle.vehicleClass===APX.Vehicle.GCU
-    property bool bLOCAL: vehicle.vehicleClass===APX.Vehicle.LOCAL
+    readonly property bool bGCU: vehicle.isGroundControl
+    readonly property bool bLOCAL: vehicle.isLocal
 
     Connections {
         target: vehicle

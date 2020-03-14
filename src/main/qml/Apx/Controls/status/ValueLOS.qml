@@ -18,7 +18,7 @@ FactValue {
     property double v: Math.sqrt(Math.pow(m_dist,2) + Math.pow(m_hmsl-m_ref_hmsl,2))
     value: v>=1000?(v/1000).toFixed(1):v.toFixed()
 
-    property int err: apx.vehicles.current.errcnt
+    property int err: apx.vehicles.current.protocol.errcnt
     Timer {
         id: errTimer
         interval: 5000

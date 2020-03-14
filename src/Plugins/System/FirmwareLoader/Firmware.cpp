@@ -57,12 +57,12 @@ Firmware::Firmware(Fact *parent)
                            Section | Count);
     f_available->setIcon("star-circle");
 
-    f_upgrade = new Fact(this,
-                         "upgrade",
-                         tr("Upgrade"),
-                         tr("Auto upgrade all nodes"),
-                         Action,
-                         "auto-upload");
+    f_start = new Fact(this,
+                       "start",
+                       tr("Upgrade"),
+                       tr("Auto upgrade all nodes"),
+                       Action,
+                       "auto-upload");
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
     connect(f_stop, &Fact::triggered, nodes_protocol(), []() {
@@ -85,38 +85,9 @@ Firmware::Firmware(Fact *parent)
     connect(f_queue, &Fact::sizeChanged, this, &Firmware::updateStatus);
     connect(f_available, &Fact::sizeChanged, this, &Firmware::updateStatus);
     connect(this, &Fact::activeChanged, this, &Firmware::updateStatus);
-
     updateStatus();
 
-    connect(nodes_protocol(), &ProtocolNodes::nodeUpdate, this, &Firmware::nodeUpdate);
-
-    /*connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Firmware::nodeNotify);
-    connect(Vehicles::instance(), &Vehicles::nodeUpgradeFW, this, [this](NodeItem *node) {
-        requestUpgrade(node->title(),
-                       node->descr(),
-                       node->sn(),
-                       node->hardware(),
-                       node->version(),
-                       Firmware::FW);
-    });
-    connect(Vehicles::instance(), &Vehicles::nodeUpgradeLD, this, [this](NodeItem *node) {
-        requestUpgrade(node->title(),
-                       node->descr(),
-                       node->sn(),
-                       node->hardware(),
-                       node->version(),
-                       Firmware::LD);
-    });
-    connect(Vehicles::instance(), &Vehicles::nodeUpgradeMHX, this, [this](NodeItem *node) {
-        requestUpgrade(node->title(),
-                       node->descr(),
-                       node->sn(),
-                       node->hardware(),
-                       node->version(),
-                       Firmware::MHX);
-    });*/
-
-    //App::jsync(this);
+    connect(nodes_protocol(), &ProtocolNodes::nodeNotify, this, &Firmware::nodeNotify);
 }
 
 ProtocolNodes *Firmware::nodes_protocol()
@@ -124,7 +95,7 @@ ProtocolNodes *Firmware::nodes_protocol()
     return AppGcs::instance()->protocol->local->nodes;
 }
 
-void Firmware::nodeUpdate(ProtocolNode *protocol)
+void Firmware::nodeNotify(ProtocolNode *protocol)
 {
     if (!protocol->identValid())
         return;
@@ -146,7 +117,7 @@ void Firmware::updateStatus()
 
     //actions
     f_stop->setEnabled(act);
-    f_upgrade->setEnabled(f_available->size() > 0);
+    f_start->setEnabled(!act && f_available->size() > 0);
     if (act) {
         setValue(QString("[%1]").arg(f_queue->size()));
     } else {
@@ -224,7 +195,7 @@ void Firmware::next()
     connect(item, &QueueItem::finished, this, &Firmware::loaderFinished);
 
     item->move(0);
-    item->start(f_releases);
+    item->start();
 }
 
 void Firmware::loaderFinished(QueueItem *item, bool success)

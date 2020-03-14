@@ -112,7 +112,7 @@ bool NodeItemBase::lessThan(Fact *rightFact) const
         const NodeItem *lnode = qobject_cast<const NodeItem *>(this);
         const NodeItem *rnode = qobject_cast<const NodeItem *>(rightFact);
         if (lnode && rnode)
-            ncmp = QString::localeAwareCompare(lnode->sn(), rnode->sn());
+            ncmp = QString::localeAwareCompare(lnode->protocol()->sn(), rnode->protocol()->sn());
     }
     if (ncmp == 0)
         return Fact::lessThan(rightFact);

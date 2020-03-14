@@ -36,16 +36,6 @@ class Nodes;
 class NodeItem : public ProtocolViewBase<ProtocolNode>
 {
     Q_OBJECT
-    Q_PROPERTY(QString sn READ sn CONSTANT)
-
-    Q_PROPERTY(QString version READ version NOTIFY versionChanged)
-    Q_PROPERTY(QString hardware READ hardware NOTIFY hardwareChanged)
-
-    Q_PROPERTY(bool identValid READ identValid WRITE setIdentValid NOTIFY identValidChanged)
-    Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
-    Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
-
-    Q_PROPERTY(bool upgrading READ upgrading WRITE setUpgrading NOTIFY upgradingChanged)
 
 public:
     explicit NodeItem(Fact *parent, ProtocolNode *protocol);
@@ -92,49 +82,4 @@ private slots:
     void confReceived(const QVariantList &values);
 
     void messageReceived(xbus::node::msg::type_t type, QString msg);
-
-signals:
-    void requestIdent();
-    void requestDict();
-    void requestConf();
-    void requestStatus();
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    // forward from protocol
-    QString sn() const;
-    QString version() const;
-    QString hardware() const;
-    const xbus::node::ident::ident_s &ident() const;
-
-    // additional props
-    bool identValid() const;
-    void setIdentValid(const bool &v);
-
-    bool dictValid() const;
-    void setDictValid(const bool &v);
-
-    bool dataValid() const;
-    void setDataValid(const bool &v);
-
-    bool upgrading() const;
-    void setUpgrading(const bool &v);
-
-protected:
-    bool m_identValid{false};
-    bool m_dictValid{false};
-    bool m_dataValid{false};
-    bool m_upgrading{false};
-
-signals:
-    void identChanged();
-    void versionChanged();
-    void hardwareChanged();
-
-    void identValidChanged();
-    void dictValidChanged();
-    void dataValidChanged();
-
-    void upgradingChanged();
 };

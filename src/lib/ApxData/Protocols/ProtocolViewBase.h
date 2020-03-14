@@ -38,13 +38,18 @@ public:
 
 private:
     Fact *m_protocol{nullptr};
+    void setProtocol(Fact *protocol);
 
 protected:
-    void setProtocol(Fact *protocol);
+    virtual void setTitle(const QString &v);
+    virtual void setDescr(const QString &v);
+    virtual bool setValue(const QVariant &v);
 
 private slots:
     void updateName();
     void updateTitle();
+    void updateDescr();
+    void updateValue();
     void updateProgress();
 
 signals:

@@ -34,6 +34,7 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     : ProtocolBase(parent, "protocols")
 {
     setTitle(tr("Protocols"));
+    setDescr(tr("Data exchange interfaces"));
     setIcon("contain");
     setDataType(Count);
 

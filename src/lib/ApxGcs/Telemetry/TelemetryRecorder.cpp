@@ -184,7 +184,7 @@ quint64 TelemetryRecorder::getDataTimestamp()
     if (dl_timestamp_s != t) {
         dl_timestamp_s = t;
         uplinkTime.start();
-    } else if (vehicle->streamType() != Vehicle::TELEMETRY)
+    } else if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
         t += static_cast<uint>(uplinkTime.elapsed());
     setTime(t / 1000);
     m_currentTimestamp = t;
@@ -359,7 +359,7 @@ void TelemetryRecorder::recordConfig()
 //=============================================================================
 bool TelemetryRecorder::checkAutoRecord(void)
 {
-    if (vehicle->streamType() != Vehicle::TELEMETRY)
+    if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
         return recording();
 
     Vehicle::FlightState fs = vehicle->flightState();

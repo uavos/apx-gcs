@@ -33,8 +33,6 @@ class Nodes : public ProtocolViewBase<ProtocolNodes>
 {
     Q_OBJECT
 
-    Q_PROPERTY(int nodesCount READ nodesCount NOTIFY nodesCountChanged)
-
 public:
     explicit Nodes(Vehicle *vehicle, ProtocolNodes *protocol);
 
@@ -74,7 +72,6 @@ private:
     bool check_valid() const;
 
 private slots:
-    void updateStatus();
     void updateActions();
 
     void sync();
@@ -86,20 +83,11 @@ private slots:
     void stop();
 
     void dataExchangeFinished();
-    void nodeUpdate(ProtocolNode *protocol);
+    void nodeNotify(ProtocolNode *protocol);
 
 signals:
     void syncDone();
 
 public slots:
     void save();
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    int nodesCount() const;
-
-protected:
-signals:
-    void nodesCountChanged();
 };

@@ -35,6 +35,19 @@ class ProtocolNodes;
 class ProtocolNode : public ProtocolBase
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString sn READ sn CONSTANT)
+
+    Q_PROPERTY(QString version READ version NOTIFY versionChanged)
+    Q_PROPERTY(QString hardware READ hardware NOTIFY hardwareChanged)
+    Q_PROPERTY(QStringList files READ files NOTIFY filesChanged)
+
+    Q_PROPERTY(bool identValid READ identValid WRITE setIdentValid NOTIFY identValidChanged)
+    Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
+    Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
+
+    Q_PROPERTY(bool upgrading READ upgrading WRITE setUpgrading NOTIFY upgradingChanged)
+
 public:
     explicit ProtocolNode(ProtocolNodes *nodes, const QString &sn);
 
@@ -43,14 +56,7 @@ public:
 
     ProtocolNodeRequest *request(xbus::pid_t pid, int timeout_ms = 500, int retry_cnt = -1);
 
-    QString sn() const;
-    const xbus::node::ident::ident_s &ident() const;
-    bool identValid() const;
-
-    QString version() const;
-    QString hardware() const;
-
-    ProtocolNodeFile *file(const QString &name) const;
+    ProtocolNodeFile *file(const QString &fname);
 
     struct field_s : public xbus::node::dict::field_s
     {
@@ -62,40 +68,30 @@ public:
 
 private:
     ProtocolNodes *nodes;
-    QString m_sn;
 
-    xbus::node::ident::ident_s m_ident;
-    bool m_identValid{false};
-
-    QString m_version;
-    QString m_hardware;
-
-    QMap<QString, ProtocolNodeFile *> m_files;
-    void updateFiles(QStringList fnames);
+    QMap<QString, ProtocolNodeFile *> _files_map;
 
     QElapsedTimer timeReqLoader;
 private slots:
     void requestRebootLoaderNext();
+
+    void resetFilesMap();
+    void updateDescr();
 
     //export signals and slots
 signals:
     void requestTimeout(quint16 cmd, QByteArray data);
 
     void identReceived();
-    void identChanged();
-    void versionChanged();
-    void hardwareChanged();
-
     void dictReceived(const ProtocolNode::Dictionary &dict);
     void confReceived(const QVariantList &values);
 
     void messageReceived(xbus::node::msg::type_t type, QString msg);
 
     void loaderAvailable();
+    void filesAvailable();
 
 public slots:
-    void resetIdent();
-
     void requestReboot();
     void requestRebootLoader();
 
@@ -103,4 +99,57 @@ public slots:
     void requestDict();
     void requestConf();
     void requestStatus();
+
+    //---------------------------------------
+    // PROPERTIES
+public:
+    const xbus::node::ident::ident_s &ident() const;
+    bool setIdent(const xbus::node::ident::ident_s &ident);
+
+    QString sn() const;
+
+    QString version() const;
+    void setVersion(const QString &v);
+    QString hardware() const;
+    void setHardware(const QString &v);
+    QStringList files() const;
+    void setFiles(const QStringList &v);
+
+    // additional props
+    bool identValid() const;
+    void setIdentValid(const bool &v);
+
+    bool dictValid() const;
+    void setDictValid(const bool &v);
+
+    bool dataValid() const;
+    void setDataValid(const bool &v);
+
+    bool upgrading() const;
+    void setUpgrading(const bool &v);
+
+protected:
+    xbus::node::ident::ident_s m_ident;
+
+    QString m_sn;
+    QString m_version;
+    QString m_hardware;
+    QStringList m_files;
+
+    bool m_identValid{false};
+    bool m_dictValid{false};
+    bool m_dataValid{false};
+    bool m_upgrading{false};
+
+signals:
+    void identChanged();
+    void versionChanged();
+    void hardwareChanged();
+    void filesChanged();
+
+    void identValidChanged();
+    void dictValidChanged();
+    void dataValidChanged();
+
+    void upgradingChanged();
 };

@@ -44,7 +44,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: ui.effects?((apx.datalink.valid && !(apx.vehicles.current.streamType===Vehicle.XPDR||apx.vehicles.current.streamType===Vehicle.TELEMETRY))?0.7:1):1
+    opacity: ui.effects?((apx.datalink.valid && !(apx.vehicles.current.protocol.streamType===Vehicle.XPDR||apx.vehicles.current.protocol.streamType===Vehicle.TELEMETRY))?0.7:1):1
 
     Item{
         id: horizon_bg

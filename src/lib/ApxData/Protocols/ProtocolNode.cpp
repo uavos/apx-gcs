@@ -25,6 +25,7 @@
 #include "ProtocolVehicle.h"
 #include "ProtocolVehicles.h"
 
+#include <App/App.h>
 #include <Mandala/Mandala.h>
 
 #include <Xbus/XbusNode.h>
@@ -46,7 +47,47 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
             setProgress(-1);
     });
 
+    connect(this,
+            &ProtocolNode::hardwareChanged,
+            this,
+            &ProtocolNode::updateDescr,
+            Qt::QueuedConnection);
+    connect(this,
+            &ProtocolNode::versionChanged,
+            this,
+            &ProtocolNode::updateDescr,
+            Qt::QueuedConnection);
+    connect(this,
+            &ProtocolNode::enabledChanged,
+            this,
+            &ProtocolNode::updateDescr,
+            Qt::QueuedConnection);
+    connect(this,
+            &ProtocolNode::identChanged,
+            this,
+            &ProtocolNode::updateDescr,
+            Qt::QueuedConnection);
+    connect(this,
+            &ProtocolNode::filesChanged,
+            this,
+            &ProtocolNode::updateDescr,
+            Qt::QueuedConnection);
+
     requestIdent();
+}
+
+void ProtocolNode::updateDescr()
+{
+    QStringList st;
+    st.append(hardware());
+    if (version() != App::version())
+        st.append(version());
+    if (!enabled())
+        st.append(tr("offline"));
+    if (ident().flags.bits.files == 1 && file("fw"))
+        st.append("LOADER");
+    //st.append(sn());
+    setDescr(st.join(' '));
 }
 
 void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
@@ -77,20 +118,23 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         nodes->acknowledgeRequest(stream);
         xbus::node::ident::ident_s ident;
         ident.read(&stream);
-        // format ok
+
         const char *s;
         s = stream.read_string(32);
         if (!s)
             break;
         QString sname = QString(s).trimmed();
+
         s = stream.read_string(32);
         if (!s)
             break;
         QString sversion = QString(s).trimmed();
+
         s = stream.read_string(32);
         if (!s)
             break;
         QString shardware = QString(s).trimmed();
+
         QStringList fnames;
         for (size_t cnt = ident.flags.bits.files; cnt > 0; --cnt) {
             s = stream.read_string(32);
@@ -105,28 +149,19 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
             break;
         if (fnames.size() != ident.flags.bits.files)
             break;
+        fnames.sort();
 
         setName(sname.toLower());
         setTitle(sname);
+        setVersion(sversion);
+        setHardware(shardware);
 
-        if (m_version != sversion) {
-            m_version = sversion;
-            emit versionChanged();
-        }
-        if (m_hardware != shardware) {
-            m_hardware = shardware;
-            emit hardwareChanged();
-        }
-
-        fnames.sort();
-        if (memcmp(&m_ident, &ident, sizeof(ident)) != 0 || fnames != m_files.keys()) {
-            m_identValid = true;
-            m_ident = ident;
-            updateFiles(fnames);
-            emit identChanged();
+        if (setIdent(ident) || fnames != files()) {
+            resetFilesMap();
+            setFiles(fnames);
         }
         emit identReceived();
-        nodes->nodeUpdate(this);
+        nodes->nodeNotify(this);
     } break;
 
         // request acknowledge
@@ -182,19 +217,22 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
     }
 }
 
-void ProtocolNode::updateFiles(QStringList fnames)
+void ProtocolNode::resetFilesMap()
 {
-    qDebug() << "files:" << m_ident.flags.bits.files << fnames;
-    qDeleteAll(m_files.values());
-    m_files.clear();
-    for (auto i : fnames) {
-        ProtocolNodeFile *file = new ProtocolNodeFile(this, i);
-        m_files.insert(i, file);
-        connect(nodes, &ProtocolNodes::stopRequested, file, &ProtocolNodeFile::stop);
-    }
-    if (nodes->active() && file("fw")) {
-        emit loaderAvailable();
-    }
+    qDeleteAll(_files_map.values());
+    _files_map.clear();
+}
+ProtocolNodeFile *ProtocolNode::file(const QString &fname)
+{
+    if (!files().contains(fname))
+        return nullptr;
+    ProtocolNodeFile *f = _files_map.value(fname, nullptr);
+    if (f)
+        return f;
+    f = new ProtocolNodeFile(this, fname);
+    _files_map.insert(fname, f);
+    connect(nodes, &ProtocolNodes::stopRequested, f, &ProtocolNodeFile::stop);
+    return f;
 }
 
 ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, int timeout_ms, int retry_cnt)
@@ -202,34 +240,9 @@ ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, int timeout_ms, int 
     return nodes->request(pid, m_sn, timeout_ms, retry_cnt);
 }
 
-QString ProtocolNode::sn() const
-{
-    return m_sn;
-}
-const xbus::node::ident::ident_s &ProtocolNode::ident() const
-{
-    return m_ident;
-}
-bool ProtocolNode::identValid() const
-{
-    return m_identValid;
-}
-QString ProtocolNode::version() const
-{
-    return m_version;
-}
-QString ProtocolNode::hardware() const
-{
-    return m_hardware;
-}
-ProtocolNodeFile *ProtocolNode::file(const QString &name) const
-{
-    return m_files.value(name, nullptr);
-}
-
 void ProtocolNode::requestReboot()
 {
-    nodes->stop();
+    nodes->clear_requests();
     nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid);
     req->write<xbus::node::reboot::type_e>(xbus::node::reboot::firmware);
@@ -237,8 +250,8 @@ void ProtocolNode::requestReboot()
 }
 void ProtocolNode::requestRebootLoader()
 {
-    resetIdent();
-    nodes->stop();
+    setIdentValid(false);
+    nodes->clear_requests();
     nodes->setActive(true);
     timeReqLoader.start();
     requestRebootLoaderNext();
@@ -250,6 +263,7 @@ void ProtocolNode::requestRebootLoaderNext()
         nodes->setActive(false);
         return;
     }
+    nodes->clear_requests();
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid, 0);
     req->write<xbus::node::reboot::type_e>(xbus::node::reboot::loader);
     connect(req, &ProtocolNodeRequest::finished, this, [this]() {
@@ -261,13 +275,6 @@ void ProtocolNode::requestRebootLoaderNext()
         req->schedule();
     });
     req->schedule();
-}
-void ProtocolNode::resetIdent()
-{
-    memset(&m_ident, 0, sizeof(m_ident));
-    m_identValid = false;
-    updateFiles(QStringList());
-    emit identChanged();
 }
 
 void ProtocolNode::requestIdent()
@@ -285,4 +292,124 @@ void ProtocolNode::requestConf()
 void ProtocolNode::requestStatus()
 {
     request(mandala::cmd::env::nmt::status::uid)->schedule();
+}
+
+//---------------------------------------
+// PROPERTIES
+//---------------------------------------
+
+const xbus::node::ident::ident_s &ProtocolNode::ident() const
+{
+    return m_ident;
+}
+bool ProtocolNode::setIdent(const xbus::node::ident::ident_s &ident)
+{
+    if (memcmp(&m_ident, &ident, sizeof(ident)) == 0)
+        return false;
+    m_ident = ident;
+    setIdentValid(true);
+    emit identChanged();
+    return true;
+}
+QString ProtocolNode::sn() const
+{
+    return m_sn;
+}
+QString ProtocolNode::version() const
+{
+    return m_version;
+}
+void ProtocolNode::setVersion(const QString &v)
+{
+    if (m_version == v)
+        return;
+    m_version = v;
+    emit versionChanged();
+}
+QString ProtocolNode::hardware() const
+{
+    return m_hardware;
+}
+void ProtocolNode::setHardware(const QString &v)
+{
+    if (m_hardware == v)
+        return;
+    m_hardware = v;
+    emit hardwareChanged();
+}
+QStringList ProtocolNode::files() const
+{
+    return m_files;
+}
+void ProtocolNode::setFiles(const QStringList &v)
+{
+    if (m_files == v)
+        return;
+    m_files = v;
+    emit filesChanged();
+
+    if (!m_files.isEmpty())
+        emit filesAvailable();
+    if (nodes->active() && m_files.contains("fw")) {
+        emit loaderAvailable();
+    }
+}
+bool ProtocolNode::identValid() const
+{
+    return m_identValid;
+}
+void ProtocolNode::setIdentValid(const bool &v)
+{
+    if (m_identValid == v)
+        return;
+    m_identValid = v;
+    if (!v) {
+        setDictValid(false);
+        setDataValid(false);
+        resetFilesMap();
+        setFiles(QStringList());
+        memset(&m_ident, 0, sizeof(m_ident));
+        emit identChanged();
+    }
+    emit identValidChanged();
+}
+bool ProtocolNode::dictValid() const
+{
+    return m_dictValid;
+}
+void ProtocolNode::setDictValid(const bool &v)
+{
+    if (m_dictValid == v)
+        return;
+    if (v && !identValid())
+        return;
+    if (!v) {
+        setDataValid(false);
+    }
+    m_dictValid = v;
+    emit dictValidChanged();
+}
+bool ProtocolNode::dataValid() const
+{
+    return m_dataValid;
+}
+void ProtocolNode::setDataValid(const bool &v)
+{
+    if (m_dataValid == v)
+        return;
+    if (v && !dictValid())
+        return;
+    m_dataValid = v;
+    emit dataValidChanged();
+}
+bool ProtocolNode::upgrading() const
+{
+    return m_upgrading;
+}
+void ProtocolNode::setUpgrading(const bool &v)
+{
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
 }

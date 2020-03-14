@@ -50,11 +50,7 @@ void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset
 void ProtocolNodeFile::write_next()
 {
     if (_op_tcnt == _op_size) {
-        //all data written
-        qDebug() << "done";
-        reset();
-        emit uploaded();
-        stop();
+        request(xbus::node::file::close)->schedule();
         return;
     }
     size_t tail = _op_size - _op_tcnt;
@@ -190,7 +186,7 @@ void ProtocolNodeFile::updateProgress()
 
 void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader &stream)
 {
-    //qDebug() << name() << op << stream.available();
+    qDebug() << name() << op << stream.available();
 
     switch (op) {
     default:
@@ -235,7 +231,14 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
             break;
         if (!check_op(op))
             break;
+
+        if (_op_tcnt == _op_size) {
+            qDebug() << "transfer complete";
+            if (_info.flags.bits.owrite)
+                emit uploaded();
+        }
         reset();
+        stop();
         //reply_info(op);
         return;
     case xbus::node::file::read:
@@ -268,6 +271,7 @@ ProtocolNodeRequest *ProtocolNodeFile::request(xbus::node::file::op_e op)
     req->write_string(name().toUtf8());
     _op = op;
     _req = req;
+    //qDebug() << op << req->dump();
     return req;
 }
 
@@ -319,7 +323,6 @@ bool ProtocolNodeFile::check_op(xbus::node::file::op_e op)
         qWarning() << _op << op;
         return false;
     }
-
     return true;
 }
 

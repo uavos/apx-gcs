@@ -62,16 +62,17 @@ private:
     QElapsedTimer reqTime;
     QTimer finishedTimer;
     QTimer reqTimer;
-    bool remove(ProtocolNodeRequest *request);
+    QTimer wdTimer;
     void schedule(ProtocolNodeRequest *request);
 
 private slots:
     void next();
-    void stop();
+
+    void check_queue();
+    void check_finished();
 
     void updateActive();
     void sendRequest(ProtocolNodeRequest *request);
-    void requestFinished(ProtocolNodeRequest *request);
 
 signals:
     void stopRequested();
@@ -82,8 +83,9 @@ public slots:
     //nodes dict sync
     void requestSearch();
     void clear();
+    void clear_requests();
 
 signals:
-    void nodeUpdate(ProtocolNode *protocol);
+    void nodeNotify(ProtocolNode *protocol);
     void requestTimeout(ProtocolNodeRequest *request, ProtocolNode *node);
 };

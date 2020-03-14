@@ -34,6 +34,8 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle, "nodes")
     , vehicle(vehicle)
 {
+    setTitle(tr("Nodes"));
+    setDescr(tr("Vehicle components"));
     setIcon("puzzle");
     setDataType(Count);
 
@@ -49,7 +51,10 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
 
     finishedTimer.setSingleShot(true);
     finishedTimer.setInterval(100);
-    connect(&finishedTimer, &QTimer::timeout, this, &ProtocolNodes::queueEmpty);
+    connect(&finishedTimer, &QTimer::timeout, this, &ProtocolNodes::check_finished);
+
+    wdTimer.setInterval(500);
+    connect(&wdTimer, &QTimer::timeout, this, &ProtocolNodes::next);
 }
 
 void ProtocolNodes::updateActive()
@@ -57,9 +62,13 @@ void ProtocolNodes::updateActive()
     qDebug() << active();
 
     if (!active()) {
-        stop();
+        setProgress(-1);
+        wdTimer.stop();
+        clear_requests();
         return;
     }
+    wdTimer.start();
+
     if (progress() < 0)
         setProgress(0);
 
@@ -70,6 +79,8 @@ void ProtocolNodes::updateActive()
 
 void ProtocolNodes::schedule(ProtocolNodeRequest *request)
 {
+    check_queue();
+
     if (!enabled()) {
         request->deleteLater();
         return;
@@ -81,7 +92,8 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
     foreach (auto const r, _queue) {
         if (!r->equals(request))
             continue;
-        remove(r);
+        _queue.removeAll(r);
+        r->deleteLater();
     }
 
     int ins = _queue.size();
@@ -92,19 +104,15 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
         break;
     }
     _queue.insert(ins, request);
-    connect(request, &ProtocolNodeRequest::finished, this, &ProtocolNodes::requestFinished);
 
-    if (_queue.size() == 1)
-        next();
+    next();
 }
 void ProtocolNodes::next()
 {
-    if (_queue.isEmpty()) {
-        reqTimer.stop();
-        finishedTimer.start();
+    check_queue();
+
+    if (_queue.isEmpty())
         return;
-    }
-    finishedTimer.stop();
 
     ProtocolNodeRequest *req = _queue.first();
     if (req->active)
@@ -124,13 +132,41 @@ void ProtocolNodes::next()
     }
     req->trigger();
 }
+void ProtocolNodes::check_queue()
+{
+    qDebug() << _queue.size();
+    if (_queue.isEmpty()) {
+        reqTimer.stop();
+        if (!finishedTimer.isActive())
+            finishedTimer.start();
+        return;
+    }
+    finishedTimer.stop();
+}
+void ProtocolNodes::check_finished()
+{
+    if (_queue.isEmpty()) {
+        emit queueEmpty();
+    } else {
+        next();
+    }
+}
 
 ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
                                             const QString &sn,
                                             int timeout_ms,
                                             int retry_cnt)
 {
-    return new ProtocolNodeRequest(this, sn, pid, timeout_ms, retry_cnt);
+    ProtocolNodeRequest *req = new ProtocolNodeRequest(this, sn, pid, timeout_ms, retry_cnt);
+    connect(req, &QObject::destroyed, this, [this, req]() {
+        _queue.removeAll(req);
+        next();
+    });
+    connect(req, &ProtocolNodeRequest::finished, req, [this](ProtocolNodeRequest *r) {
+        _queue.removeAll(r);
+        r->deleteLater();
+    });
+    return req;
 }
 
 ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(xbus::node::crc_t crc)
@@ -160,30 +196,22 @@ ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, int tim
     return r;
 }
 
-void ProtocolNodes::stop()
+void ProtocolNodes::clear_requests()
 {
     //qDebug() << active() << _queue.size();
     emit stopRequested();
+
     int cnt = _queue.size();
     reqTimer.stop();
-    qDeleteAll(_queue);
+
+    for (auto i : _queue) {
+        if (i)
+            i->deleteLater();
+    }
     _queue.clear();
-    setProgress(-1);
+
     if (cnt > 0)
         finishedTimer.start();
-}
-
-void ProtocolNodes::requestFinished(ProtocolNodeRequest *request)
-{
-    //qDebug() << request->dump();
-    if (remove(request))
-        next();
-}
-bool ProtocolNodes::remove(ProtocolNodeRequest *request)
-{
-    //qDebug() << request->dump();
-    request->deleteLater();
-    return _queue.removeAll(request) > 0;
 }
 
 ProtocolNode *ProtocolNodes::getNode(QString sn, bool createNew)
@@ -197,7 +225,7 @@ ProtocolNode *ProtocolNodes::getNode(QString sn, bool createNew)
         return nullptr;
     node = new ProtocolNode(this, sn);
     _nodes.insert(sn, node);
-    emit nodeUpdate(node);
+    emit nodeNotify(node);
     return node;
 }
 
@@ -207,7 +235,7 @@ void ProtocolNodes::clear()
         apxMsgW() << tr("Operation in progress");
         return;
     }
-    stop();
+    clear_requests();
     qDeleteAll(_nodes.values());
     _nodes.clear();
 }

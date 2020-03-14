@@ -41,14 +41,14 @@ Format::Format(Firmware *firmware, Fact *parent)
 
     connect(f_start, &Fact::triggered, this, &Format::startTriggered);
 
-    connect(firmware->nodes_protocol(), &ProtocolNodes::nodeUpdate, this, &Format::nodeUpdate);
+    connect(firmware->nodes_protocol(), &ProtocolNodes::nodeNotify, this, &Format::nodeNotify);
 
     connect(this, &Fact::triggered, firmware->nodes_protocol(), &ProtocolNodes::requestSearch);
 
     f_start->setEnabled(false);
 }
 
-void Format::nodeUpdate(ProtocolNode *protocol)
+void Format::nodeNotify(ProtocolNode *protocol)
 {
     QStringList n;
     n << protocol->title();
@@ -84,7 +84,6 @@ void Format::startTriggered()
     if (sn.isEmpty())
         return;
 
-    ProtocolNode *node = m_firmware->nodes_protocol()->getNode(sn, true);
-
+    ProtocolNode *node = Firmware::nodes_protocol()->getNode(sn, true);
     m_firmware->requestUpgrade(node, type);
 }

@@ -467,7 +467,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
-            visible: !apx.vehicles.current.isReplay() && !apx.datalink.online
+            visible: !apx.vehicles.current.isReplay && !apx.datalink.online
             font.pixelSize: apx.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -480,8 +480,8 @@ Item {
             anchors.bottom: parent.verticalCenter
             anchors.left: left_window.right
             anchors.right: right_window.left
-            text: apx.vehicles.current.streamType===Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
-            visible: !apx.vehicles.current.isReplay() && apx.datalink.valid && (apx.vehicles.current.streamType!==Vehicle.TELEMETRY)
+            text: apx.vehicles.current.protocol.streamType===Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
+            visible: !apx.vehicles.current.isReplay && apx.datalink.valid && (apx.vehicles.current.protocol.streamType!==Vehicle.TELEMETRY)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
