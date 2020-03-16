@@ -36,7 +36,6 @@
 #include "Waypoint.h"
 
 #include <App/App.h>
-#include <Protocols/ProtocolMission.h>
 #include <Vehicles/Vehicles.h>
 #include <QQmlEngine>
 //=============================================================================

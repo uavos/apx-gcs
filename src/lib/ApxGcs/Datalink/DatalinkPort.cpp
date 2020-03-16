@@ -172,9 +172,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             connect(f_connection, &DatalinkConnection::activatedChanged, this, [this]() {
                 setValue(f_connection->activated());
             });
-            connect(f_connection, &Fact::activeChanged, this, [this]() {
-                setActive(f_connection->active());
-            });
+            bind(f_connection, "active");
             connect(f_routing, &Fact::valueChanged, this, &DatalinkPort::updateConnectionNetwork);
             updateConnectionNetwork();
 
@@ -184,8 +182,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         }
 
         //enable switch
-        connect(f_enable, &Fact::valueChanged, this, [this]() { setValue(f_enable->value()); });
-        connect(this, &Fact::valueChanged, this, [this]() { f_enable->setValue(value()); });
+        bind(f_enable, "value");
 
         connect(App::instance(), &App::loadingFinished, this, [this]() {
             setValue(f_enable->value());

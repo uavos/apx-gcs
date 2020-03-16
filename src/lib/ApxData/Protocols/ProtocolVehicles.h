@@ -23,7 +23,6 @@
 #pragma once
 
 #include "ProtocolBase.h"
-#include "ProtocolServiceFirmware.h"
 
 #include <Xbus/XbusVehicle.h>
 

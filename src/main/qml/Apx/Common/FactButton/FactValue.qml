@@ -89,7 +89,7 @@ CleanButton {
         return s.join(" ")
     }
 
-    property bool doAlerts: alerts && (apx.datalink.valid || apx.vehicles.current.isReplay)
+    property bool doAlerts: alerts && (apx.datalink.valid || apx.vehicles.current.protocol.isReplay)
 
     property var cv
 

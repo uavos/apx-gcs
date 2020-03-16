@@ -41,8 +41,6 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
     connect(f_select, &Fact::triggered, this, [this, vehicles]() { vehicles->selectVehicle(this); });
 
-    connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
-
     f_mandala = new Mandala(this);
     f_nodes = new Nodes(this, protocol->nodes);
     f_mission = new VehicleMission(this);
@@ -50,7 +48,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     f_telemetry = new Telemetry(this);
 
     setMandala(f_mandala);
-    if (isLocal()) {
+    if (protocol->isLocal()) {
         AppRoot::instance()->setMandala(mandala());
     }
 
@@ -89,13 +87,9 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     connect(f_mode, &Fact::valueChanged, this, &Vehicle::updateFlightState);
     connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateFlightState);
 
-    //downlink request timer
-    if (!(isLocal() || isReplay())) {
-        telemetryReqTimer.setInterval(1000);
-        connect(&telemetryReqTimer, &QTimer::timeout, protocol, &ProtocolVehicle::requestTelemetry);
-    }
+    connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
 
-    if (!isReplay()) {
+    if (!protocol->isReplay()) {
         connect(this,
                 &Vehicle::coordinateChanged,
                 this,
@@ -105,7 +99,6 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         //mandala update signals
         connect(f_mandala, &Mandala::sendUplink, protocol, &ProtocolVehicle::send);
 
-        connect(protocol, &ProtocolVehicle::identChanged, this, &Vehicle::identChanged);
         connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
 
         //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
@@ -145,23 +138,15 @@ Vehicle::~Vehicle()
 
 void Vehicle::updateActive()
 {
-    bool v = active();
-    f_select->setEnabled(!v);
-
-    if (v)
-        telemetryReqTimer.start();
-    else
-        telemetryReqTimer.stop();
-
+    f_select->setEnabled(!active());
     if (active())
         emit selected();
-
     setFollow(false);
 }
 
 void Vehicle::dbSaveVehicleInfo()
 {
-    if (isReplay())
+    if (protocol()->isReplay())
         return;
     QVariantMap info;
     info.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
@@ -185,7 +170,7 @@ void Vehicle::updateInfo()
 {
     QStringList st;
     //st<<callsign();
-    if (!isReplay()) {
+    if (!protocol()->isReplay()) {
         QString s;
         int alt = f_hmsl->value().toInt();
         if (std::abs(alt) >= 50)
@@ -265,20 +250,6 @@ void Vehicle::updateGeoPath()
     }
 }
 
-bool Vehicle::isLocal() const
-{
-    return protocol()->enabled() && protocol()->squawk() == 0
-           && protocol()->ident().flags.bits.gcs == 0;
-}
-bool Vehicle::isReplay() const
-{
-    return protocol()->enabled() == false;
-}
-bool Vehicle::isGroundControl() const
-{
-    return protocol()->enabled() && protocol()->squawk() && protocol()->ident().flags.bits.gcs;
-}
-
 QGeoRectangle Vehicle::geoPathRect() const
 {
     return geoPath().boundingGeoRectangle();
@@ -299,7 +270,7 @@ void Vehicle::sendSerial(quint8 portID, QByteArray data)
 
 void Vehicle::flyHere(const QGeoCoordinate &c)
 {
-    if (isReplay())
+    if (protocol()->isReplay())
         return;
     if (!c.isValid())
         return;
@@ -313,7 +284,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
-    if (isReplay())
+    if (protocol()->isReplay())
         return;
     if (!c.isValid())
         return;
@@ -325,7 +296,7 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
-    if (isReplay())
+    if (protocol()->isReplay())
         return;
     if (!c.isValid())
         return;
@@ -337,7 +308,7 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
-    if (isReplay())
+    if (protocol()->isReplay())
         return;
     if (!c.isValid())
         return;

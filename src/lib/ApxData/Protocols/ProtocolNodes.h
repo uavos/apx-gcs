@@ -31,25 +31,29 @@ class ProtocolVehicle;
 class ProtocolNodes : public ProtocolBase
 {
     Q_OBJECT
+
+    Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
+
+    Q_PROPERTY(bool upgrading READ upgrading WRITE setUpgrading NOTIFY upgradingChanged)
+
 public:
     explicit ProtocolNodes(ProtocolVehicle *vehicle);
 
     friend class ProtocolNode;
     friend class ProtocolNodeRequest;
 
-    ProtocolNodeRequest *request(xbus::pid_t pid,
-                                 const QString &sn,
-                                 int timeout_ms,
-                                 int retry_cnt = -1);
+    ProtocolNodeRequest *request(xbus::pid_t pid, const QString &sn, size_t retry_cnt);
 
     ProtocolNode *getNode(QString sn, bool createNew = true);
 
     ProtocolNodeRequest *acknowledgeRequest(xbus::node::crc_t crc);
     ProtocolNodeRequest *acknowledgeRequest(ProtocolStreamReader &stream);
-    ProtocolNodeRequest *extendRequest(xbus::node::crc_t crc, int timeout_ms);
+    ProtocolNodeRequest *extendRequest(xbus::node::crc_t crc, size_t timeout_ms);
 
     // called by vehicle
     void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);
+
+    void syncLater(int time_ms, bool force_active);
 
 private:
     ProtocolVehicle *vehicle;
@@ -65,6 +69,12 @@ private:
     QTimer wdTimer;
     void schedule(ProtocolNodeRequest *request);
 
+    // sync management
+    QTimer syncTimer;
+    QElapsedTimer syncRequestTime;
+    bool syncActive;
+    int syncCount{0};
+
 private slots:
     void next();
 
@@ -74,9 +84,9 @@ private slots:
     void updateActive();
     void sendRequest(ProtocolNodeRequest *request);
 
-signals:
-    void stopRequested();
-    void queueEmpty();
+    void syncTimeout();
+
+    void updateValid();
 
     //export signals and slots
 public slots:
@@ -88,4 +98,22 @@ public slots:
 signals:
     void nodeNotify(ProtocolNode *protocol);
     void requestTimeout(ProtocolNodeRequest *request, ProtocolNode *node);
+    void syncDone();
+
+    //---------------------------------------
+    // PROPERTIES
+public:
+    bool valid() const;
+    void setValid(const bool &v);
+
+    bool upgrading() const;
+    void setUpgrading(const bool &v);
+
+protected:
+    bool m_valid{false};
+    bool m_upgrading{false};
+
+signals:
+    void validChanged();
+    void upgradingChanged();
 };

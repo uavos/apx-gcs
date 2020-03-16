@@ -32,16 +32,19 @@ CleanButton {
 
     toolTip: {
         var list = []
-        list.push(title)
-        list.push(descr)
-        if(fact){
-            list.push(fact.mpath?fact.mpath():fact.path())
-            if(fact.units)list.push("units: "+fact.units)
-            if(fact.section)list.push("section: "+fact.section)
-            if(fact.enumStrings.length>0)list.push("enum: "+fact.enumStrings.join(","))
-            for(var i in fact.opts)
-                list.push(i+": "+fact.opts[i])
+        if(!fact){
+            list.push(title)
+            list.push(descr)
+            return list.join("\n")
         }
+        list = fact.info().split("\n")
+
+        if(fact.section)
+            list.push("section: "+fact.section)
+
+        for(var i in fact.opts)
+            list.push(i+": "+fact.opts[i])
+
         return list.join("\n")
     }
 

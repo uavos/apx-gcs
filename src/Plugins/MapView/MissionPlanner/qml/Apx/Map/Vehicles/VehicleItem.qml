@@ -32,8 +32,8 @@ MapQuickItem {  //to be used inside MapComponent only
 
     visible: vehicle.visible
 
-    readonly property bool bGCU: vehicle.isGroundControl
-    readonly property bool bLOCAL: vehicle.isLocal
+    readonly property bool bGCU: vehicle.protocol.isGroundControl
+    readonly property bool bLOCAL: vehicle.protocol.isLocal
 
     Connections {
         target: vehicle

@@ -31,10 +31,15 @@ QueueItem::QueueItem(Fact *parent, ProtocolNode *protocol, QString type)
     : ProtocolViewBase(parent, protocol)
     , m_type(type)
 {
+    setTreeType(NoFlags);
     /*if (type == Firmware::LD)
         setIcon("alert-circle");
     else
         setIcon("chip");*/
+
+    connect(this, &Fact::valueChanged, protocol, [this, protocol]() {
+        protocol->setValue(value());
+    });
 }
 
 bool QueueItem::match(const QString &sn) const
@@ -54,6 +59,10 @@ void QueueItem::start()
 {
     qDebug() << title();
 
+    Firmware::nodes_protocol()->setUpgrading(true);
+
+    setValue(tr("Initializing update").append("..."));
+
     // always refresh ident
     Firmware::nodes_protocol()->clear_requests();
     protocol()->setIdentValid(false);
@@ -69,7 +78,7 @@ void QueueItem::start()
                           this,
                           &QueueItem::upload,
                           Qt::UniqueConnection));
-    connect(Firmware::instance(),
+    connect(Firmware::nodes_protocol(),
             &Fact::activeChanged,
             this,
             &QueueItem::cleanUploadConnections,
@@ -142,7 +151,6 @@ void QueueItem::finish(bool success)
     }
 
     //qDebug() << success;
-    setValue("");
     emit finished(this, success);
 }
 

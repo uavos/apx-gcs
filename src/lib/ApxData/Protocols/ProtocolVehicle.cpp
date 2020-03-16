@@ -49,6 +49,13 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     time_telemetry.start();
     time_xpdr.start();
     connect(this, &ProtocolVehicle::xpdrData, this, [this]() { updateStreamType(XPDR); });
+
+    //downlink request timer
+    if (isIdentified()) {
+        telemetryReqTimer.setInterval(1000);
+        connect(&telemetryReqTimer, &QTimer::timeout, this, &ProtocolVehicle::requestTelemetry);
+        connect(this, &Fact::activeChanged, this, &ProtocolVehicle::updateActive);
+    }
 }
 
 const xbus::vehicle::ident_s &ProtocolVehicle::ident() const
@@ -72,8 +79,7 @@ void ProtocolVehicle::updateIdent(const xbus::vehicle::squawk_t &squawk,
     setName(callsign.toLower());
     setTitle(callsign);
 
-    bool replay = squawk == 0 && ident.flags.bits.gcs == 1;
-    setEnabled(!replay);
+    setEnabled(!isReplay());
 }
 
 bool ProtocolVehicle::match(const xbus::vehicle::squawk_t &squawk) const
@@ -112,6 +118,13 @@ void ProtocolVehicle::updateStreamType(StreamType type)
         setValue(streamTypeText());
         emit streamTypeChanged();
     }
+}
+void ProtocolVehicle::updateActive()
+{
+    if (active() && isIdentified())
+        telemetryReqTimer.start();
+    else
+        telemetryReqTimer.stop();
 }
 
 void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
@@ -244,4 +257,21 @@ void ProtocolVehicle::inc_errcnt()
 {
     m_errcnt++;
     emit errcntChanged();
+}
+
+bool ProtocolVehicle::isLocal() const
+{
+    return squawk() == 0 && ident().flags.bits.gcs == 0;
+}
+bool ProtocolVehicle::isReplay() const
+{
+    return squawk() == 0 && ident().flags.bits.gcs == 1;
+}
+bool ProtocolVehicle::isIdentified() const
+{
+    return !(isLocal() || isReplay());
+}
+bool ProtocolVehicle::isGroundControl() const
+{
+    return isIdentified() && ident().flags.bits.gcs == 1;
 }

@@ -72,6 +72,8 @@ void ProtocolNodeFile::write_next()
     _op_hash = CRC_32_APX(ba.data(), sz, _op_hash);
     req->schedule();
     //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
+
+    setValue(QString("%1kB/%2kB").arg(_op_tcnt / 1024).arg(_op_size / 1024.0, 0, 'f', 1));
 }
 bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
 {
@@ -129,6 +131,8 @@ void ProtocolNodeFile::download()
 }
 void ProtocolNodeFile::read_next()
 {
+    setValue(QString("%1kB/%2kB").arg(_op_tcnt / 1024).arg(_op_size / 1024.0, 0, 'f', 1));
+
     if (_op_tcnt == _op_size) {
         //all data written
         qDebug() << "done";
@@ -171,6 +175,7 @@ void ProtocolNodeFile::stop()
 {
     if (_op != xbus::node::file::idle) {
         qWarning() << "interrupted:" << name() << _op;
+        reset();
         emit interrupted();
         emit finished();
         return;

@@ -85,6 +85,7 @@ ApxApp.ApxLibrary {
         files: [
             "QueueJob.cpp", "QueueJob.h",
             "QueueWorker.cpp", "QueueWorker.h",
+            "SignalForwarder.h",
             "DelayedEvent.cpp", "DelayedEvent.h",
             "FactValue.h",
             "SvgImageProvider.cpp", "SvgImageProvider.h",

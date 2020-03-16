@@ -30,13 +30,13 @@
 #include <App/AppLog.h>
 
 ProtocolNodeRequest::ProtocolNodeRequest(
-    ProtocolNodes *nodes, const QString &sn, xbus::pid_t pid, int timeout_ms, int retry_cnt)
+    ProtocolNodes *nodes, const QString &sn, xbus::pid_t pid, size_t retry_cnt, size_t timeout_ms)
     : QObject(nodes)
     , ProtocolStreamWriter(packet_buf, sizeof(packet_buf))
     , nodes(nodes)
     , node(nodes->getNode(sn, false))
-    , timeout_ms(timeout_ms)
-    , retry_cnt(retry_cnt < 0 ? (timeout_ms > 0 ? 4 : 0) : retry_cnt)
+    , retry_cnt(retry_cnt)
+    , timeout_ms(timeout_ms > 0 ? timeout_ms : 500)
 {
     //repare stream
     write<xbus::pid_t>(pid);
@@ -76,12 +76,12 @@ void ProtocolNodeRequest::acknowledge()
 {
     finish(true);
 }
-void ProtocolNodeRequest::extend(int ms)
+void ProtocolNodeRequest::extend(size_t ms)
 {
     if (timeout_ms > ms)
         ms = timeout_ms;
     if (active && timeout_ms > 0) {
-        timer.start(ms);
+        timer.start(static_cast<int>(ms));
     }
 }
 bool ProtocolNodeRequest::equals(xbus::node::crc_t crc)
@@ -103,11 +103,7 @@ void ProtocolNodeRequest::trigger()
     active = true;
     //qDebug()<<cmd<<sn<<data.size()<<data.toHex().toUpper();
     nodes->sendRequest(this);
-    if (timeout_ms > 0) {
-        timer.start(timeout_ms);
-    } else {
-        timer.start(50);
-    }
+    timer.start(static_cast<int>(timeout_ms));
 }
 
 void ProtocolNodeRequest::finish(bool acknowledged)
@@ -121,7 +117,7 @@ void ProtocolNodeRequest::finish(bool acknowledged)
 void ProtocolNodeRequest::triggerTimeout()
 {
     timer.stop();
-    if (timeout_ms <= 0) {
+    if (retry_cnt == 0) {
         finish();
         return;
     }

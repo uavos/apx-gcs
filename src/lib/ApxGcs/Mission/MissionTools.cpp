@@ -72,7 +72,7 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
 
     VehicleSelect *fvs = new VehicleSelect(this, "copy", tr("Copy"), tr("Copy to vehicle"));
-    if (!mission->vehicle->isLocal())
+    if (!mission->vehicle->protocol()->isLocal())
         fvs->addVehicle(Vehicles::instance()->f_local);
     f_copy = fvs;
     f_copy->setIcon("content-copy");

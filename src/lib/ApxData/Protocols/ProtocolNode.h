@@ -44,9 +44,7 @@ class ProtocolNode : public ProtocolBase
 
     Q_PROPERTY(bool identValid READ identValid WRITE setIdentValid NOTIFY identValidChanged)
     Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
-    Q_PROPERTY(bool dataValid READ dataValid WRITE setDataValid NOTIFY dataValidChanged)
-
-    Q_PROPERTY(bool upgrading READ upgrading WRITE setUpgrading NOTIFY upgradingChanged)
+    Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
 
 public:
     explicit ProtocolNode(ProtocolNodes *nodes, const QString &sn);
@@ -54,7 +52,7 @@ public:
     // called by nodes
     void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);
 
-    ProtocolNodeRequest *request(xbus::pid_t pid, int timeout_ms = 500, int retry_cnt = -1);
+    ProtocolNodeRequest *request(xbus::pid_t pid, size_t retry_cnt = 3);
 
     ProtocolNodeFile *file(const QString &fname);
 
@@ -65,6 +63,10 @@ public:
         QStringList units;
     };
     typedef QList<field_s> Dictionary;
+
+protected:
+    QString info() const override;
+    void hashData(QCryptographicHash *h) const override;
 
 private:
     ProtocolNodes *nodes;
@@ -122,11 +124,8 @@ public:
     bool dictValid() const;
     void setDictValid(const bool &v);
 
-    bool dataValid() const;
-    void setDataValid(const bool &v);
-
-    bool upgrading() const;
-    void setUpgrading(const bool &v);
+    bool valid() const;
+    void setValid(const bool &v);
 
 protected:
     xbus::node::ident::ident_s m_ident;
@@ -138,8 +137,7 @@ protected:
 
     bool m_identValid{false};
     bool m_dictValid{false};
-    bool m_dataValid{false};
-    bool m_upgrading{false};
+    bool m_valid{false};
 
 signals:
     void identChanged();
@@ -149,7 +147,5 @@ signals:
 
     void identValidChanged();
     void dictValidChanged();
-    void dataValidChanged();
-
-    void upgradingChanged();
+    void validChanged();
 };

@@ -50,7 +50,7 @@ void MissionStorage::saveMission()
     //collect details
     QVariantMap details;
     QString title = mission->f_title->text().simplified();
-    if (!(mission->vehicle->isLocal() || mission->vehicle->isReplay())) {
+    if (mission->vehicle->protocol()->isIdentified()) {
         QString s = mission->vehicle->title();
         details.insert("callsign", s);
         title.remove(s, Qt::CaseInsensitive);

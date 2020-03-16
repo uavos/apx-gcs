@@ -22,7 +22,6 @@
  */
 #include "ProtocolVehicles.h"
 #include "ProtocolConverter.h"
-#include "ProtocolServiceFirmware.h"
 #include "ProtocolVehicle.h"
 
 #include <Mandala/Mandala.h>

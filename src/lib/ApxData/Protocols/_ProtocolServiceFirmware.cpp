@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ProtocolServiceFirmware.h"
 #include "ProtocolService.h"
+#include "ProtocolServiceFirmware.h"
 #include "ProtocolServiceNode.h"
 #include "ProtocolServiceRequest.h"
 

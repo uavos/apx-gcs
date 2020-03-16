@@ -53,9 +53,7 @@ public:
 protected:
     QTimer statusTimer;
 
-    //override
-    QVariant data(int col, int role) const;
-    void hashData(QCryptographicHash *h) const;
+    QVariant data(int col, int role) const override;
 
 private:
     qint64 m_lastSeenTime{0};

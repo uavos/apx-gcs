@@ -80,28 +80,17 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     }
 
     connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
-    connect(this, &Fact::progressChanged, this, &Nodes::updateActions);
-    connect(protocol, &Nodes::sizeChanged, this, &Nodes::updateActions);
+    connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
+    connect(protocol, &ProtocolNodes::upgradingChanged, this, &Nodes::updateActions);
+    connect(protocol, &ProtocolNodes::sizeChanged, this, &Nodes::updateActions);
     updateActions();
 
-    m_syncTimer.setSingleShot(true);
-    connect(&m_syncTimer, &QTimer::timeout, this, &Nodes::sync);
-
-    //protocols
     connect(protocol, &ProtocolNodes::nodeNotify, this, &Nodes::nodeNotify);
-    connect(protocol, &ProtocolNodes::queueEmpty, this, &Nodes::dataExchangeFinished);
-
-    // bind active property
-    connect(this, &Fact::activeChanged, protocol, [this]() {
-        this->protocol()->setActive(active());
-    });
-    connect(protocol, &ProtocolNodes::activeChanged, this, [this]() {
-        setActive(this->protocol()->active());
-    });
+    connect(protocol, &ProtocolNodes::syncDone, this, &Nodes::syncDone);
 
     // initial request
-    if (!(vehicle->isLocal() || vehicle->isReplay())) {
+    if (vehicle->protocol()->isIdentified()) {
         protocol->requestSearch();
     }
 
@@ -112,15 +101,6 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     connect(this, &Fact::triggered, this, &Nodes::search);
 
     App::jsync(this);
-}
-
-bool Nodes::check_valid() const
-{
-    for (auto const i : m_sn_map) {
-        if (!i->protocol()->dataValid())
-            return false;
-    }
-    return true;
 }
 
 void Nodes::nodeNotify(ProtocolNode *protocol)
@@ -138,71 +118,24 @@ NodeItem *Nodes::add(ProtocolNode *protocol)
 
     return node;
 }
+void Nodes::syncDone()
+{
+    m_syncTimestamp = QDateTime::currentDateTimeUtc();
+}
 
 void Nodes::updateActions()
 {
     bool enb = protocol()->enabled();
-    bool busy = progress() >= 0;
-    bool upgrading = false; //model->isUpgrading();
-    bool bModAll = modified();
+    bool busy = protocol()->active();
+    bool upgrading = protocol()->upgrading();
     bool bEmpty = protocol()->size() <= 0;
+    bool bModAll = modified();
     f_search->setEnabled(enb);
     f_upload->setEnabled(enb && bModAll && (!(busy)));
     f_stop->setEnabled(enb && (busy || upgrading));
-    f_reload->setEnabled(enb && (!(upgrading || bEmpty)));
+    f_reload->setEnabled(enb && (!(upgrading)));
     f_clear->setEnabled((!bEmpty) && (!(upgrading || busy)));
     f_status->setEnabled(enb && (!bEmpty) && (!(upgrading || busy)));
-}
-
-void Nodes::dataExchangeFinished()
-{
-    if (vehicle->isReplay())
-        return;
-
-    int cnt = nodes().size();
-    if (cnt <= 0)
-        return;
-
-    do {
-        if (!check_valid())
-            break;
-        // exclude reconf nodes
-        for (auto i : nodes()) {
-            if (i->protocol()->ident().flags.bits.reconf)
-                cnt--;
-        }
-        bool bCntChanged = m_syncCount != cnt;
-        m_syncCount = cnt;
-        if (bCntChanged) {
-            qDebug() << "sync" << vehicle->title()
-                     << QString("%1 sec").arg(m_syncRequestTime.elapsed() / 1000.0, 0, 'f', 1);
-            break;
-        }
-
-        // all valid and in sync
-        qDebug() << "sync done";
-        m_syncTimestamp = QDateTime::currentDateTimeUtc();
-        stop();
-        emit syncDone();
-        return;
-    } while (0);
-
-    //schedule re-sync
-    syncLater(active() ? 100 : 1000);
-}
-void Nodes::sync()
-{
-    //qDebug() << syncActive;
-    m_syncRequestTime.start();
-    protocol()->requestSearch();
-}
-
-void Nodes::syncLater(int timeout)
-{
-    if (m_syncTimer.isActive() && timeout > m_syncTimer.interval())
-        timeout = m_syncTimer.interval();
-    m_syncTimer.start(timeout);
-    qDebug() << timeout << vehicle->title();
 }
 
 void Nodes::search()
@@ -210,22 +143,24 @@ void Nodes::search()
     if (!protocol()->enabled())
         return;
     setActive(true);
-    sync();
+    protocol()->requestSearch();
 }
 void Nodes::stop()
 {
+    qDebug() << sender();
     setActive(false);
 }
 
 void Nodes::clear()
 {
-    if (protocol()->active())
+    if (protocol()->upgrading()) {
+        apxMsgW() << tr("Upgrading in progress");
         return;
+    }
     m_sn_map.clear();
     m_groups.clear();
     removeAll();
     protocol()->clear();
-    m_syncCount = 0;
     setModified(false);
 }
 
@@ -239,7 +174,7 @@ void Nodes::upload()
 {
     if (!protocol()->enabled())
         return;
-    if (!check_valid())
+    if (!protocol()->valid())
         return;
     if (!modified())
         return;
@@ -252,7 +187,7 @@ void Nodes::save()
 {
     if (!protocol()->enabled())
         return;
-    if (!check_valid())
+    if (!protocol()->valid())
         return;
     for (auto i : m_sn_map) {
         if (!i->modified())

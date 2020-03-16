@@ -39,7 +39,9 @@ NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     setOptions(ProgressTrack);
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
-    //tools = new NodeTools(this, Action);
+    setValue(QVariant()); //unbind from protocol
+
+    //FIXME: tools = new NodeTools(this, Action);
 
     //protocol
     connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
@@ -47,9 +49,10 @@ NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     // validity
     connect(protocol, &ProtocolNode::identChanged, this, &NodeItem::clear);
     connect(protocol, &ProtocolNode::dictValidChanged, this, &NodeItem::validateDict);
-    connect(protocol, &ProtocolNode::dataValidChanged, this, &NodeItem::validateData);
+    connect(protocol, &ProtocolNode::validChanged, this, &NodeItem::validateData);
 
     connect(protocol, &ProtocolNode::descrChanged, this, &NodeItem::updateDescr);
+    connect(protocol, &ProtocolNode::valueChanged, this, &NodeItem::updateDescr);
 
     // responses mapping
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
@@ -87,7 +90,7 @@ void NodeItem::validateDict()
 }
 void NodeItem::validateData()
 {
-    if (!protocol()->dataValid())
+    if (!protocol()->valid())
         return;
     if (!protocol()->enabled())
         return;
@@ -103,8 +106,11 @@ void NodeItem::validateData()
 void NodeItem::updateDescr()
 {
     statusTimer.stop();
-    setActive(false);
-    setDescr(protocol()->descr());
+    setActive(false); // set by status
+    QString s = protocol()->text();
+    if (s.isEmpty())
+        s = protocol()->descr();
+    setDescr(s);
 }
 void NodeItem::updateStatus()
 {
@@ -129,7 +135,7 @@ void NodeItem::clear()
 
 void NodeItem::upload()
 {
-    if (!protocol()->dataValid())
+    if (!protocol()->valid())
         return;
     if (!modified())
         return;
@@ -149,28 +155,24 @@ QVariant NodeItem::data(int col, int role) const
 {
     switch (role) {
     case Qt::ForegroundRole:
-        if (protocol()->dataValid()) {
+        if (protocol()->valid()) {
             if (col == FACT_MODEL_COLUMN_DESCR)
                 return QColor(Qt::darkGray);
             if (col == FACT_MODEL_COLUMN_VALUE)
                 return QColor(Qt::yellow).lighter(180);
         }
-        if (protocol()->upgrading())
-            return QColor(255, 200, 200);
         if (!protocol()->dictValid())
             return QColor(255, 200, 200);
-        if (!protocol()->dataValid())
+        if (!protocol()->valid())
             return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
         break;
     case Qt::BackgroundRole:
-        if (protocol()->dataValid()) {
+        if (protocol()->valid()) {
             return QColor(0x10, 0x20, 0x30);
         }
-        if (protocol()->upgrading())
-            return QColor(64, 0, 0);
         if (!protocol()->dictValid())
             return QVariant();
-        if (!protocol()->dataValid())
+        if (!protocol()->valid())
             return QVariant();
         if (protocol()->ident().flags.bits.reconf)
             return QColor(Qt::darkGray).darker(200);
@@ -185,15 +187,7 @@ QVariant NodeItem::data(int col, int role) const
         }
         break;
     }
-    return ProtocolViewBase::data(col, role);
-}
-
-void NodeItem::hashData(QCryptographicHash *h) const
-{
-    Fact::hashData(h);
-    h->addData(protocol()->version().toUtf8());
-    h->addData(protocol()->hardware().toUtf8());
-    h->addData(QString::number(protocol()->ident().hash).toUtf8());
+    return Fact::data(col, role);
 }
 
 //=============================================================================
@@ -205,7 +199,7 @@ void NodeItem::identReceived()
     m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
     protocol()->setDictValid(true);
-    protocol()->setDataValid(true);
+    protocol()->setValid(true);
 }
 
 void NodeItem::dictReceived(const ProtocolNode::Dictionary &dict) {}

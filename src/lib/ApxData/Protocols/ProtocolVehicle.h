@@ -40,6 +40,11 @@ class ProtocolVehicle : public ProtocolBase
 
     Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
 
+    Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
+    Q_PROPERTY(bool isReplay READ isReplay CONSTANT)
+    Q_PROPERTY(bool isIdentified READ isIdentified CONSTANT)
+    Q_PROPERTY(bool isGroundControl READ isGroundControl NOTIFY identChanged)
+
 public:
     ProtocolVehicle(ProtocolVehicles *vehicles,
                     xbus::vehicle::squawk_t squawk,
@@ -78,8 +83,11 @@ private:
     QElapsedTimer time_telemetry;
     QElapsedTimer time_xpdr;
 
+    QTimer telemetryReqTimer;
+
 private slots:
     void updateStreamType(StreamType type);
+    void updateActive();
 
 public slots:
     void inc_errcnt();
@@ -118,6 +126,11 @@ public:
 
     uint errcnt(void) const;
     void setErrcnt(const uint &v);
+
+    bool isLocal() const;
+    bool isReplay() const;
+    bool isIdentified() const;
+    bool isGroundControl() const;
 
 protected:
     xbus::vehicle::squawk_t m_squawk{0};

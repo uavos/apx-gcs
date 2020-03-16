@@ -45,7 +45,7 @@ Telemetry::Telemetry(Vehicle *parent)
     , f_reader(nullptr)
     , f_share(nullptr)
 {
-    if (vehicle->isReplay()) {
+    if (vehicle->protocol()->isReplay()) {
         setOpt("pos", QPointF(1, 1));
 
         f_lookup = new LookupTelemetry(this);
@@ -64,7 +64,7 @@ Telemetry::Telemetry(Vehicle *parent)
 
         f_player = new TelemetryPlayer(this, this);
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
-        connect(f_player, &Fact::activeChanged, this, [=]() { setActive(f_player->active()); });
+        bind(f_player, "active", true);
 
         f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {

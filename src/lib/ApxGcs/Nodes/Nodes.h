@@ -55,26 +55,15 @@ public:
 
     NodeItem *add(ProtocolNode *protocol);
 
-    void syncLater(int timeout = 2000);
-
     void loadConfValue(const QString &sn, QString s);
 
 private:
     QMap<QString, NodeItem *> m_sn_map;
     QList<NodeItemBase *> m_groups;
-
-    //sync
     QDateTime m_syncTimestamp;
-    QTimer m_syncTimer;
-    QElapsedTimer m_syncRequestTime;
-    int m_syncCount{0};
-
-    bool check_valid() const;
 
 private slots:
     void updateActions();
-
-    void sync();
 
     void search();
     void clear();
@@ -82,10 +71,7 @@ private slots:
     void upload();
     void stop();
 
-    void dataExchangeFinished();
     void nodeNotify(ProtocolNode *protocol);
-
-signals:
     void syncDone();
 
 public slots:

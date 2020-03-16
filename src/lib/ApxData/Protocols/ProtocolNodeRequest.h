@@ -34,15 +34,18 @@ class ProtocolNodeRequest : public QObject, public ProtocolStreamWriter
 {
     Q_OBJECT
 public:
-    explicit ProtocolNodeRequest(
-        ProtocolNodes *nodes, const QString &sn, xbus::pid_t pid, int timeout_ms, int retry_cnt);
+    explicit ProtocolNodeRequest(ProtocolNodes *nodes,
+                                 const QString &sn,
+                                 xbus::pid_t pid,
+                                 size_t retry_cnt,
+                                 size_t timeout_ms = 0);
 
     bool equals(const ProtocolNodeRequest *other);
     bool equals(xbus::node::crc_t crc);
     bool lessThan(const ProtocolNodeRequest *other);
 
     void acknowledge();
-    void extend(int ms);
+    void extend(size_t ms);
     void finish(bool acknowledged = false);
 
     void schedule();
@@ -56,14 +59,14 @@ private:
     ProtocolNodes *nodes;
     ProtocolNode *node;
     xbus::pid_t pid;
-    int timeout_ms;
-    int retry_cnt;
+    size_t retry_cnt;
+    size_t timeout_ms;
 
     uint8_t packet_buf[xbus::size_packet_max];
 
     QTimer timer;
 
-    int retry{0};
+    size_t retry{0};
 
     xbus::node::crc_t _crc;
     bool _crc_valid{false};
@@ -78,6 +81,6 @@ public slots:
 
 signals:
     void finished(ProtocolNodeRequest *request);
-    void retrying(int retry, int cnt);
+    void retrying(size_t retry, size_t cnt);
     void timeout();
 };

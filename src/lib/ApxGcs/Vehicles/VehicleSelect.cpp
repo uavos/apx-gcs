@@ -41,19 +41,13 @@ void VehicleSelect::addVehicle(Vehicle *vehicle)
 {
     Fact *f = new Fact(this, vehicle->name(), vehicle->title(), vehicle->descr());
     map.insert(vehicle, f);
-    f->setIcon(vehicle->icon());
-    f->setVisible(vehicle->visible());
 
     connect(f, &Fact::triggered, this, &VehicleSelect::_factTriggered);
 
-    connect(vehicle, &Vehicle::visibleChanged, this, [f, vehicle]() {
-        f->setVisible(vehicle->visible());
-    });
-    connect(vehicle, &Vehicle::activeChanged, this, [f, vehicle]() {
-        f->setActive(vehicle->active());
-    });
-    connect(vehicle, &Fact::valueChanged, this, [f, vehicle]() { f->setValue(vehicle->value()); });
-    connect(vehicle, &Fact::iconChanged, this, [f, vehicle]() { f->setIcon(vehicle->icon()); });
+    f->bind(vehicle, "visible", true);
+    f->bind(vehicle, "active", true);
+    f->bind(vehicle, "value", true);
+    f->bind(vehicle, "icon", true);
 
     setEnabled(true);
 }

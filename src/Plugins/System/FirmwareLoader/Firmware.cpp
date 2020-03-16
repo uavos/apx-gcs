@@ -66,17 +66,14 @@ Firmware::Firmware(Fact *parent)
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
     connect(f_stop, &Fact::triggered, nodes_protocol(), []() {
-        Firmware::nodes_protocol()->setActive(false);
+        nodes_protocol()->setActive(false);
     });
 
-    // bind active property
-    connect(this, &Fact::activeChanged, nodes_protocol(), [this]() {
-        nodes_protocol()->setActive(active());
-    });
-    connect(nodes_protocol(), &ProtocolNodes::activeChanged, this, [this]() {
-        setActive(nodes_protocol()->active());
-        if (!active())
+    connect(nodes_protocol(), &Firmware::activeChanged, this, [this]() {
+        if (!nodes_protocol()->active()) {
+            setActive(false);
             f_queue->removeAll();
+        }
     });
 
     //tools actions
@@ -161,6 +158,7 @@ void Firmware::next()
         return;
     }
     setActive(true);
+    nodes_protocol()->setActive(true);
     //find next node in queue
     QueueItem *item = nullptr;
     //loaders first
@@ -204,7 +202,7 @@ void Firmware::loaderFinished(QueueItem *item, bool success)
     if (success) {
         item->remove();
     } else {
-        setActive(false);
+        nodes_protocol()->setActive(false);
     }
-    QTimer::singleShot(0, this, &Firmware::next);
+    QTimer::singleShot(100, this, &Firmware::next);
 }

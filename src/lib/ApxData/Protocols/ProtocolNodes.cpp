@@ -55,6 +55,15 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
 
     wdTimer.setInterval(500);
     connect(&wdTimer, &QTimer::timeout, this, &ProtocolNodes::next);
+
+    syncTimer.setSingleShot(true);
+    connect(&syncTimer, &QTimer::timeout, this, &ProtocolNodes::syncTimeout);
+
+    connect(this, &ProtocolNodes::upgradingChanged, this, [this]() {
+        setValue(upgrading() ? tr("Upgrading") : QVariant());
+        if (!upgrading())
+            syncLater(5000, true);
+    });
 }
 
 void ProtocolNodes::updateActive()
@@ -62,6 +71,7 @@ void ProtocolNodes::updateActive()
     qDebug() << active();
 
     if (!active()) {
+        setUpgrading(false);
         setProgress(-1);
         wdTimer.stop();
         clear_requests();
@@ -134,7 +144,7 @@ void ProtocolNodes::next()
 }
 void ProtocolNodes::check_queue()
 {
-    qDebug() << _queue.size();
+    //qDebug() << _queue.size();
     if (_queue.isEmpty()) {
         reqTimer.stop();
         if (!finishedTimer.isActive())
@@ -145,19 +155,62 @@ void ProtocolNodes::check_queue()
 }
 void ProtocolNodes::check_finished()
 {
-    if (_queue.isEmpty()) {
-        emit queueEmpty();
-    } else {
+    if (!_queue.isEmpty()) {
         next();
+        return;
     }
+    int cnt = _nodes.size();
+    if (cnt <= 0)
+        return;
+
+    do {
+        if (!valid())
+            break;
+        // exclude reconf nodes
+        for (auto i : _nodes) {
+            if (i->ident().flags.bits.reconf)
+                cnt--;
+        }
+        bool bCntChanged = syncCount != cnt;
+        syncCount = cnt;
+        if (bCntChanged) {
+            qDebug() << "sync" << vehicle->title()
+                     << QString("%1 sec").arg(syncRequestTime.elapsed() / 1000.0, 0, 'f', 1);
+            break;
+        }
+
+        // all valid and in sync
+        qDebug() << "sync done";
+        if (!(syncActive && syncTimer.isActive()))
+            setActive(false);
+        emit syncDone();
+        return;
+    } while (0);
+
+    //schedule re-sync
+    syncLater(active() ? 100 : 1000, active());
+}
+void ProtocolNodes::syncLater(int time_ms, bool force_active)
+{
+    if (force_active)
+        syncActive = true;
+    if (syncTimer.isActive() && time_ms > syncTimer.interval())
+        time_ms = syncTimer.interval();
+    syncTimer.start(time_ms);
+    qDebug() << time_ms << vehicle->title();
+}
+void ProtocolNodes::syncTimeout()
+{
+    if (syncActive) {
+        syncActive = false;
+        setActive(true);
+    }
+    requestSearch();
 }
 
-ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid,
-                                            const QString &sn,
-                                            int timeout_ms,
-                                            int retry_cnt)
+ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid, const QString &sn, size_t retry_cnt)
 {
-    ProtocolNodeRequest *req = new ProtocolNodeRequest(this, sn, pid, timeout_ms, retry_cnt);
+    ProtocolNodeRequest *req = new ProtocolNodeRequest(this, sn, pid, retry_cnt);
     connect(req, &QObject::destroyed, this, [this, req]() {
         _queue.removeAll(req);
         next();
@@ -184,7 +237,7 @@ ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(ProtocolStreamReader &str
 {
     return acknowledgeRequest(ProtocolNodeRequest::get_crc(stream.buffer(), stream.pos()));
 }
-ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, int timeout_ms)
+ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, size_t timeout_ms)
 {
     ProtocolNodeRequest *r = nullptr;
     for (auto i : _queue) {
@@ -199,7 +252,6 @@ ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, int tim
 void ProtocolNodes::clear_requests()
 {
     //qDebug() << active() << _queue.size();
-    emit stopRequested();
 
     int cnt = _queue.size();
     reqTimer.stop();
@@ -225,19 +277,19 @@ ProtocolNode *ProtocolNodes::getNode(QString sn, bool createNew)
         return nullptr;
     node = new ProtocolNode(this, sn);
     _nodes.insert(sn, node);
+    connect(node, &ProtocolNode::validChanged, this, &ProtocolNodes::updateValid);
     emit nodeNotify(node);
     return node;
 }
 
 void ProtocolNodes::clear()
 {
-    if (active()) {
-        apxMsgW() << tr("Operation in progress");
-        return;
-    }
     clear_requests();
     qDeleteAll(_nodes.values());
     _nodes.clear();
+    syncCount = 0;
+    syncTimer.stop();
+    setValid(false);
 }
 
 void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
@@ -277,5 +329,50 @@ void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
 
 void ProtocolNodes::requestSearch()
 {
-    request(mandala::cmd::env::nmt::search::uid, QString(), 0)->schedule();
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::search::uid, QString(), 0);
+    req->schedule();
+    req->finish();
+    finishedTimer.start(2500);
+}
+
+//---------------------------------------
+// PROPERTIES
+//---------------------------------------
+
+bool ProtocolNodes::valid() const
+{
+    return m_valid;
+}
+void ProtocolNodes::setValid(const bool &v)
+{
+    if (m_valid == v)
+        return;
+    m_valid = v;
+    emit validChanged();
+}
+void ProtocolNodes::updateValid()
+{
+    if (_nodes.isEmpty()) {
+        setValid(false);
+        return;
+    }
+
+    for (auto const i : _nodes) {
+        if (i->valid())
+            continue;
+        setValid(false);
+        return;
+    }
+    setValid(true);
+}
+bool ProtocolNodes::upgrading() const
+{
+    return m_upgrading;
+}
+void ProtocolNodes::setUpgrading(const bool &v)
+{
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
 }

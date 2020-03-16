@@ -23,13 +23,16 @@
 #include "Fact.h"
 #include "FactListModel.h"
 #include "FactListModelActions.h"
+
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppNotify.h>
+#include <ApxMisc/SignalForwarder.h>
+
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>
-//=============================================================================
+
 Fact::Fact(QObject *parent,
            const QString &name,
            const QString &title,
@@ -62,8 +65,8 @@ Fact::Fact(QObject *parent,
     connect(this, &Fact::parentFactChanged, this, &Fact::updateParentVisible);
     updateParentVisible();
 
-    connect(this, &Fact::optionsChanged, this, &Fact::updateDefaultIcon);
-    updateDefaultIcon();
+    connect(this, &Fact::optionsChanged, this, &Fact::onOptionsChanged);
+    onOptionsChanged();
 
     if (m_name.contains('#')) {
         connect(this, &Fact::numChanged, this, &Fact::nameChanged);
@@ -87,8 +90,14 @@ Fact::Fact(QObject *parent,
     }*/
 }
 //=============================================================================
-void Fact::updateDefaultIcon()
+void Fact::onOptionsChanged()
 {
+    if (options() & ProgressTrack) {
+        connect(this, &Fact::sizeChanged, this, &Fact::trackProgress, Qt::UniqueConnection);
+    } else {
+        disconnect(this, &Fact::sizeChanged, this, &Fact::trackProgress);
+    }
+    // icon
     if (!icon().isEmpty())
         return;
     switch (dataType()) {
@@ -469,6 +478,36 @@ void Fact::bind(FactData *fact)
         emit qmlPageChanged();
     }
 }
+
+void Fact::bind(Fact *src, QString propertyName, bool oneway)
+{
+    int pidx_dst = metaObject()->indexOfProperty(propertyName.toLatin1());
+    if (pidx_dst < 0) {
+        apxMsgW() << "misisng property:" << path() << propertyName << oneway;
+        return;
+    }
+
+    int pidx_src = src->metaObject()->indexOfProperty(propertyName.toLatin1());
+    if (pidx_src < 0) {
+        apxMsgW() << "misisng property:" << src->path() << propertyName << oneway;
+        return;
+    }
+    QMetaProperty prop_src = src->metaObject()->property(pidx_src);
+    QMetaProperty prop_dst = metaObject()->property(pidx_dst);
+
+    SignalForwarder *sf = new SignalForwarder(this);
+    connect(src, prop_src.notifySignal().methodSignature().prepend('2'), sf, SIGNAL(forward()));
+    connect(sf, &SignalForwarder::forward, this, [this, src, prop_src, prop_dst]() {
+        prop_dst.write(this, prop_src.read(src));
+        //prop_dst.notifySignal().invoke(this);
+    });
+    prop_dst.write(this, prop_src.read(src));
+
+    if (oneway)
+        return;
+
+    src->bind(this, propertyName, true);
+}
 //=============================================================================
 Fact *Fact::createAction(Fact *parent)
 {
@@ -774,13 +813,15 @@ void Fact::setProgress(const int v)
 void Fact::trackProgress()
 {
     int ncnt = 0, v = 0;
-    for (auto const i : *this) {
-        const Fact *f = static_cast<Fact *>(i);
-        int np = f->progress();
-        if (np < 0)
-            continue;
-        ncnt++;
-        v += np;
+    if (options() & ProgressTrack) {
+        for (auto const i : *this) {
+            const Fact *f = static_cast<Fact *>(i);
+            int np = f->progress();
+            if (np < 0)
+                continue;
+            ncnt++;
+            v += np;
+        }
     }
     if (ncnt > 0) {
         if (m_progress_s < ncnt) {

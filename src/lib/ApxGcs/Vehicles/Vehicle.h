@@ -44,10 +44,6 @@ class Vehicle : public ProtocolViewBase<ProtocolVehicle>
     Q_OBJECT
     Q_ENUMS(FlightState)
 
-    Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
-    Q_PROPERTY(bool isReplay READ isReplay CONSTANT)
-    Q_PROPERTY(bool isGroundControl READ isGroundControl NOTIFY identChanged)
-
     Q_PROPERTY(QString info READ info NOTIFY infoChanged)
 
     Q_PROPERTY(bool follow READ follow WRITE setFollow NOTIFY followChanged)
@@ -79,18 +75,12 @@ public:
     QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
     QString confTitle() const;
 
-    bool isLocal() const;
-    bool isReplay() const;
-    bool isGroundControl() const;
-
     Q_INVOKABLE QGeoRectangle geoPathRect() const;
 
     enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
     Q_ENUM(FlightState)
 
 private:
-    QTimer telemetryReqTimer;
-
     QTimer updateInfoTimer;
 
     Fact *f_lat;
@@ -114,8 +104,6 @@ private:
     MandalaFact *f_gps_lat;
     MandalaFact *f_gps_lon;
     MandalaFact *f_gps_hmsl;
-
-    void setReplay(bool v);
 
 private slots:
     void updateInfo();
@@ -198,7 +186,6 @@ protected:
     quint64 m_totalDistance{0};
 
 signals:
-    void identChanged();
     void infoChanged();
     void followChanged();
     void coordinateChanged();

@@ -20,11 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Fact_H
-#define Fact_H
-//=============================================================================
+#pragma once
+
 #include "FactData.h"
-//=============================================================================
+
+class Fact;
+
+typedef QList<Fact *> FactList;
+
 class Fact : public FactData
 {
     Q_OBJECT
@@ -133,6 +136,7 @@ public:
     virtual void hashData(QCryptographicHash *h) const;
 
     Q_INVOKABLE void bind(FactData *fact) override;
+    Q_INVOKABLE void bind(Fact *src, QString propertyName, bool oneway = false);
 
     //create action fact that opens this fact, or binded to this action
     Q_INVOKABLE Fact *createAction(Fact *parent);
@@ -152,16 +156,15 @@ public:
 private:
     Fact *m_mandala;
 
-    void trackProgress();
     int m_progress_s{0};
 
 private:
     QString pTitle() const;
 
-    void updateDefaultIcon();
-
 private slots:
     void updateModels();
+    void onOptionsChanged();
+    void trackProgress();
 
 public slots:
     //trigger fact from UI (f.ex. to display menu)
@@ -263,7 +266,3 @@ private:
     bool m_parentVisible;
     void updateParentVisible();
 };
-//=============================================================================
-typedef QList<Fact *> FactList;
-//=============================================================================
-#endif

@@ -42,9 +42,11 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
 
     memset(&m_ident, 0, sizeof(m_ident));
 
-    connect(nodes, &ProtocolNodes::activeChanged, this, [this]() {
-        if (!this->nodes->active())
+    connect(nodes, &ProtocolNodes::activeChanged, this, [this, nodes]() {
+        if (!nodes->active()) {
             setProgress(-1);
+            setValue(QVariant());
+        }
     });
 
     connect(this,
@@ -88,6 +90,22 @@ void ProtocolNode::updateDescr()
         st.append("LOADER");
     //st.append(sn());
     setDescr(st.join(' '));
+}
+QString ProtocolNode::info() const
+{
+    QStringList st;
+    st.append(QString("sn: %1").arg(sn()));
+    st.append(QString("files: %1").arg(files().join(',')));
+    st.append(QString("version: %1").arg(version()));
+    st.append(QString("hardware: %1").arg(hardware()));
+    return ProtocolBase::info().append("\n").append(st.join('\n'));
+}
+void ProtocolNode::hashData(QCryptographicHash *h) const
+{
+    ProtocolBase::hashData(h);
+    h->addData(version().toUtf8());
+    h->addData(hardware().toUtf8());
+    h->addData(QString::number(ident().hash).toUtf8());
 }
 
 void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
@@ -231,13 +249,13 @@ ProtocolNodeFile *ProtocolNode::file(const QString &fname)
         return f;
     f = new ProtocolNodeFile(this, fname);
     _files_map.insert(fname, f);
-    connect(nodes, &ProtocolNodes::stopRequested, f, &ProtocolNodeFile::stop);
+    connect(nodes, &Fact::activeChanged, f, [f]() { f->stop(); });
     return f;
 }
 
-ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, int timeout_ms, int retry_cnt)
+ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, size_t retry_cnt)
 {
-    return nodes->request(pid, m_sn, timeout_ms, retry_cnt);
+    return nodes->request(pid, m_sn, retry_cnt);
 }
 
 void ProtocolNode::requestReboot()
@@ -253,6 +271,7 @@ void ProtocolNode::requestRebootLoader()
     setIdentValid(false);
     nodes->clear_requests();
     nodes->setActive(true);
+    setProgress(0);
     timeReqLoader.start();
     requestRebootLoaderNext();
 }
@@ -260,20 +279,30 @@ void ProtocolNode::requestRebootLoaderNext()
 {
     qDebug() << "ldr";
     if (timeReqLoader.elapsed() > 10000) {
+        qWarning() << "timeout";
         nodes->setActive(false);
         return;
     }
-    nodes->clear_requests();
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid, 0);
     req->write<xbus::node::reboot::type_e>(xbus::node::reboot::loader);
-    connect(req, &ProtocolNodeRequest::finished, this, [this]() {
-        ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::ident::uid, 0);
-        connect(req, &ProtocolNodeRequest::finished, this, [this]() {
-            if (!file("fw") && nodes->active())
-                requestRebootLoaderNext();
-        });
-        req->schedule();
-    });
+    connect(
+        req,
+        &ProtocolNodeRequest::finished,
+        this,
+        [this]() {
+            ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::ident::uid, 0);
+            connect(
+                req,
+                &ProtocolNodeRequest::finished,
+                this,
+                [this]() {
+                    if (!file("fw") && nodes->active())
+                        requestRebootLoaderNext();
+                },
+                Qt::QueuedConnection);
+            req->schedule();
+        },
+        Qt::QueuedConnection);
     req->schedule();
 }
 
@@ -365,7 +394,7 @@ void ProtocolNode::setIdentValid(const bool &v)
     m_identValid = v;
     if (!v) {
         setDictValid(false);
-        setDataValid(false);
+        setValid(false);
         resetFilesMap();
         setFiles(QStringList());
         memset(&m_ident, 0, sizeof(m_ident));
@@ -384,32 +413,21 @@ void ProtocolNode::setDictValid(const bool &v)
     if (v && !identValid())
         return;
     if (!v) {
-        setDataValid(false);
+        setValid(false);
     }
     m_dictValid = v;
     emit dictValidChanged();
 }
-bool ProtocolNode::dataValid() const
+bool ProtocolNode::valid() const
 {
-    return m_dataValid;
+    return m_valid;
 }
-void ProtocolNode::setDataValid(const bool &v)
+void ProtocolNode::setValid(const bool &v)
 {
-    if (m_dataValid == v)
+    if (m_valid == v)
         return;
     if (v && !dictValid())
         return;
-    m_dataValid = v;
-    emit dataValidChanged();
-}
-bool ProtocolNode::upgrading() const
-{
-    return m_upgrading;
-}
-void ProtocolNode::setUpgrading(const bool &v)
-{
-    if (m_upgrading == v)
-        return;
-    m_upgrading = v;
-    emit upgradingChanged();
+    m_valid = v;
+    emit validChanged();
 }

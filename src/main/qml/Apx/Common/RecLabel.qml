@@ -13,7 +13,7 @@ Item {
     readonly property var fact: apx.vehicles.current.telemetry
     readonly property alias color: textItem.color
     readonly property bool active: fact.active
-    readonly property bool replay: apx.vehicles.current.isReplay
+    readonly property bool replay: apx.vehicles.current.protocol.isReplay
 
     property bool hovered: mouseArea.containsMouse
 

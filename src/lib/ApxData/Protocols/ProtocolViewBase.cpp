@@ -49,6 +49,8 @@ void ProtocolViewBaseImpl::setProtocol(Fact *protocol)
         connect(protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
         connect(protocol, &Fact::progressChanged, this, &ProtocolViewBaseImpl::updateProgress);
 
+        bind(protocol, "active");
+
         updateName();
         updateTitle();
         updateDescr();
@@ -105,4 +107,19 @@ bool ProtocolViewBaseImpl::setValue(const QVariant &v)
     if (m_protocol)
         disconnect(m_protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
     return Fact::setValue(v);
+}
+
+QString ProtocolViewBaseImpl::info() const
+{
+    if (m_protocol)
+        return m_protocol->info();
+    else
+        return Fact::info();
+}
+void ProtocolViewBaseImpl::hashData(QCryptographicHash *h) const
+{
+    if (m_protocol)
+        m_protocol->hashData(h);
+    else
+        Fact::hashData(h);
 }

@@ -75,7 +75,7 @@ RowLayout {
     Loader {
         Layout.fillHeight: true
         asynchronous: true
-        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (apx.vehicles.current.isLocal || apx.tools.simulator.stop.enabled)
+        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (apx.vehicles.current.protocol.isLocal || apx.tools.simulator.stop.enabled)
         sourceComponent: Component {
             CleanButton {
                 iconName: apx.tools.simulator.icon
@@ -95,7 +95,7 @@ RowLayout {
 
     Loader {
         Layout.alignment: Qt.AlignRight|Qt.AlignTop
-        active: apx.vehicles.current.isReplay
+        active: apx.vehicles.current.protocol.isReplay
         visible: active
         sourceComponent: Component { TelemetryReader { } }
     }
