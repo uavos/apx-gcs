@@ -198,6 +198,7 @@ void NodeItem::identReceived()
 {
     m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
+    protocol()->requestDict();
     protocol()->setDictValid(true);
     protocol()->setValid(true);
 }

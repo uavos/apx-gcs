@@ -80,6 +80,8 @@ private slots:
     void resetFilesMap();
     void updateDescr();
 
+    void dictData(QByteArray data);
+
     //export signals and slots
 signals:
     void requestTimeout(quint16 cmd, QByteArray data);

@@ -272,8 +272,6 @@ void ProtocolVehicles::identAssign(const xbus::vehicle::ident_s &ident, const QS
     ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
 
-    size_t pos_s = ostream.pos();
-
     //unique squawk assigned, update callsign
     QString s = callsign;
     if (s.isEmpty())

@@ -53,6 +53,21 @@ public:
 
     inline QByteArray payload() const { return toByteArray(pos(), available()); }
 
+    QStringList read_strings(size_t cnt, size_t max_sz = 64)
+    {
+        QStringList st;
+        for (size_t i = 0; cnt == 0 || i < cnt; ++i) {
+            const char *s;
+            s = read_string(max_sz);
+            if (!s)
+                break;
+            st.append(QString(s).trimmed());
+        }
+        if (cnt > 0 && st.size() != static_cast<int>(cnt))
+            st.clear();
+        return st;
+    }
+
 private:
     const QByteArray &m_packet;
 };

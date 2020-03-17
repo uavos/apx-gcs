@@ -138,36 +138,26 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         xbus::node::ident::ident_s ident;
         ident.read(&stream);
 
-        const char *s;
-        s = stream.read_string(32);
-        if (!s)
+        QStringList st = stream.read_strings(3);
+        if (st.isEmpty())
             break;
-        QString sname = QString(s).trimmed();
+        QString sname = st.at(0);
+        QString sversion = st.at(1);
+        QString shardware = st.at(2);
 
-        s = stream.read_string(32);
-        if (!s)
+        QStringList fnames = stream.read_strings(ident.flags.bits.files);
+        for (auto i : fnames) {
+            if (!i.isEmpty())
+                continue;
+            fnames.clear();
             break;
-        QString sversion = QString(s).trimmed();
-
-        s = stream.read_string(32);
-        if (!s)
-            break;
-        QString shardware = QString(s).trimmed();
-
-        QStringList fnames;
-        for (size_t cnt = ident.flags.bits.files; cnt > 0; --cnt) {
-            s = stream.read_string(32);
-            if (!s)
-                break;
-            QString sf = QString(s).trimmed();
-            if (sf.isEmpty())
-                break;
-            fnames.append(sf);
         }
+        if (fnames.isEmpty())
+            break;
+
         if (stream.available() > 0)
             break;
-        if (fnames.size() != ident.flags.bits.files)
-            break;
+
         fnames.sort();
 
         setName(sname.toLower());
@@ -313,7 +303,13 @@ void ProtocolNode::requestIdent()
 }
 void ProtocolNode::requestDict()
 {
-    qDebug() << "file download";
+    ProtocolNodeFile *f = file("dict");
+    if (!f) {
+        qWarning() << "Dict unavailable";
+        return;
+    }
+    connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::dictData);
+    f->download();
 }
 void ProtocolNode::requestConf()
 {
@@ -322,6 +318,37 @@ void ProtocolNode::requestConf()
 void ProtocolNode::requestStatus()
 {
     request(mandala::cmd::env::nmt::status::uid)->schedule();
+}
+
+void ProtocolNode::dictData(QByteArray data)
+{
+    qDebug() << data.toHex().toUpper();
+    ProtocolStreamReader stream(data);
+    while (stream.available() > 4) {
+        uint8_t type, array, group;
+        stream >> type;
+        array = type >> 4;
+        type &= 0x0F;
+        stream >> group;
+
+        if (type == xbus::node::dict::group) {
+            QStringList st = stream.read_strings(2);
+            if (st.isEmpty())
+                break;
+            qDebug() << "group" << group << st;
+            continue;
+        }
+        QStringList st = stream.read_strings(3);
+        if (st.isEmpty())
+            break;
+        qDebug() << "field" << type << array << group << st;
+    }
+
+    if (stream.available() > 0) {
+        apxMsgW() << "dict error";
+        return;
+    }
+    qDebug() << "dict ok";
 }
 
 //---------------------------------------
