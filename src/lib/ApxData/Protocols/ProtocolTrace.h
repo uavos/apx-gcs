@@ -24,22 +24,54 @@
 
 #include <QtCore>
 
-#include <Fact/Fact.h>
+class ProtocolBase;
 
-#include "ProtocolStream.h"
-#include "ProtocolTrace.h"
+class ProtocolTraceItem
+{
+    Q_GADGET
 
-class ProtocolBase : public Fact
+public:
+    enum TraceType {
+        PACKET = 0,
+        ERROR,
+        PID,
+        DATA,
+        SQUAWK,
+        NMT,
+        GUID,
+    };
+    Q_ENUM(TraceType)
+
+    TraceType m_type;
+    QString m_text;
+
+    Q_PROPERTY(TraceType type MEMBER m_type CONSTANT)
+    Q_PROPERTY(QString text MEMBER m_text CONSTANT)
+};
+
+class ProtocolTrace : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit ProtocolBase(QObject *parent, const QString &name);
+    explicit ProtocolTrace(QObject *parent);
 
-    void trace(bool uplink, const QByteArray &data);
+    friend class ProtocolBase;
 
-    void trace_downlink(ProtocolTraceItem::TraceType type, const QString &text);
-    void trace_downlink(const QByteArray &data);
+    static void trace(bool uplink, ProtocolTraceItem::TraceType type, const QString &text);
 
-    void trace_uplink(ProtocolTraceItem::TraceType type, const QString &text);
-    void trace_uplink_packet(const QByteArray &data);
+private:
+    static ProtocolTrace *_instance;
+    QVariantList m_packet;
+    bool m_uplink{false};
+
+    void _trace(bool uplink, ProtocolTraceItem::TraceType type, const QString &text);
+    void flush();
+
+    QTimer flushTimer;
+
+signals:
+    void packet(bool uplink, QVariantList packet);
 };
+
+Q_DECLARE_METATYPE(ProtocolTraceItem)

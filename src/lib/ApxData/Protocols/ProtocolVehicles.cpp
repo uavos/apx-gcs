@@ -37,6 +37,8 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     setIcon("contain");
     setDataType(Count);
 
+    m_trace = new ProtocolTrace(this);
+
     //create base vehicles
     xbus::vehicle::ident_s ident;
     memset(&ident, 0, sizeof(ident));
@@ -82,6 +84,8 @@ void ProtocolVehicles::downlink(const QByteArray packet)
 }
 void ProtocolVehicles::process_uplink(const QByteArray packet)
 {
+    trace_uplink_packet(packet);
+
     if (m_converter)
         m_converter->convertUplink(packet);
     else
@@ -97,6 +101,9 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
     //qDebug() << "rx" << packet.toHex().toUpper();
 
     ProtocolStreamReader stream(packet);
+
+    trace_downlink(ProtocolTraceItem::PACKET, QString::number(stream.available()));
+
     if (stream.available() < sizeof(xbus::pid_t)) {
         qWarning() << "packet" << packet.toHex().toUpper();
         return;
@@ -112,12 +119,16 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         break;
 
     case mandala::cmd::env::vehicle::xpdr::uid: { //transponder from UAV received
+        trace_downlink(ProtocolTraceItem::PID, "xpdr");
+
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
             break;
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
 
         if (stream.available() != xbus::vehicle::xpdr_s::psize())
             break;
+
+        trace_downlink(stream.payload());
 
         ProtocolVehicle *v = squawkMap.value(squawk);
         if (!v) {
@@ -133,12 +144,17 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
     } break;
 
     case mandala::cmd::env::vehicle::ident::uid: {
+        trace_downlink(ProtocolTraceItem::PID, "ident");
+
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
             break;
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
+        trace_downlink(ProtocolTraceItem::SQUAWK, QString::number(squawk, 16));
 
         if (stream.available() <= xbus::vehicle::ident_s::psize())
             break;
+
+        trace_downlink(stream.payload());
 
         xbus::vehicle::ident_s ident;
         ident.read(&stream);
@@ -188,9 +204,12 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         }
     } break;
     case mandala::cmd::env::vehicle::downlink::uid: {
+        trace_downlink(ProtocolTraceItem::PID, "downlink");
+
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         if (stream.available() == 0)
             break;
+        trace_downlink(ProtocolTraceItem::SQUAWK, QString::number(squawk, 16));
 
         if (!squawk)
             break; //broadcast?
@@ -219,6 +238,7 @@ void ProtocolVehicles::identRequest(xbus::vehicle::squawk_t squawk)
     ostream.reset();
     ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
+
     // schedule
     if (!reqList.contains(ostream.toByteArray())) {
         reqList.append(ostream.toByteArray());
@@ -252,6 +272,8 @@ void ProtocolVehicles::identAssign(const xbus::vehicle::ident_s &ident, const QS
     ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
 
+    size_t pos_s = ostream.pos();
+
     //unique squawk assigned, update callsign
     QString s = callsign;
     if (s.isEmpty())
@@ -274,6 +296,7 @@ void ProtocolVehicles::send(xbus::vehicle::squawk_t squawk, QByteArray packet)
     ostream.write<xbus::pid_t>(mandala::cmd::env::vehicle::uplink::uid);
     ostream.write<xbus::vehicle::squawk_t>(squawk);
     ostream.append(packet);
+
     process_uplink(ostream.toByteArray());
 }
 

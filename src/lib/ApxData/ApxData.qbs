@@ -57,6 +57,7 @@ ApxApp.ApxLibrary {
             "ProtocolBase.cpp", "ProtocolBase.h",
             "ProtocolViewBase.cpp", "ProtocolViewBase.h",
             "ProtocolStream.h",
+            "ProtocolTrace.cpp", "ProtocolTrace.h",
             "ProtocolConverter.cpp", "ProtocolConverter.h",
             "ProtocolVehicles.cpp", "ProtocolVehicles.h",
             "ProtocolVehicle.cpp", "ProtocolVehicle.h",

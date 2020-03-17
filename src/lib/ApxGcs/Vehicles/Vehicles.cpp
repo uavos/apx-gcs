@@ -50,6 +50,12 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                                                 "VehicleWarnings",
                                                 "Reference only");
 
+    qmlRegisterUncreatableType<ProtocolTraceItem>("APX.Protocols",
+                                                  1,
+                                                  0,
+                                                  "Protocols",
+                                                  "Reference only");
+
     f_select = new VehicleSelect(this,
                                  "select",
                                  tr("Select vehicle"),

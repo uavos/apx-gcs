@@ -115,6 +115,7 @@ void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
         return;
 
     //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
+    trace_downlink(stream.payload());
 
     switch (pid) {
     default:

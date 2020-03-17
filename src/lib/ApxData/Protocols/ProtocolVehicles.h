@@ -23,6 +23,7 @@
 #pragma once
 
 #include "ProtocolBase.h"
+#include "ProtocolTrace.h"
 
 #include <Xbus/XbusVehicle.h>
 
@@ -34,6 +35,8 @@ class ProtocolConverter;
 class ProtocolVehicles : public ProtocolBase
 {
     Q_OBJECT
+    Q_PROPERTY(ProtocolTrace *trace MEMBER m_trace CONSTANT)
+
 public:
     ProtocolVehicles(QObject *parent = nullptr);
 
@@ -47,6 +50,7 @@ public:
 
 private:
     ProtocolConverter *m_converter{nullptr};
+    ProtocolTrace *m_trace;
 
     QTimer reqTimer;
     QList<QByteArray> reqList;

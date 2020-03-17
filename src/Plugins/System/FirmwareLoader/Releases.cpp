@@ -69,9 +69,35 @@ void Releases::sync()
         apxMsgW() << tr("Can't remove directory") << dir.absolutePath();
         return;
     }
+    if (!f_dev && !devDir().entryList().isEmpty()) {
+        f_dev = new Fact(this, "dev", "Development", "", Group);
+        f_dev->setValue(QString::number(devDir().entryList().size()));
+        makeReleaseFactDo(f_dev, devDir());
+    }
+
     //find release archive
     if (extractRelease(QString("%1-%2.zip").arg(m_packagePrefix).arg(App::version())))
         return;
+
+    QDateTime t = QDateTime::currentDateTimeUtc();
+    QDateTime t0 = QSettings().value(QString("%1_%2").arg(name()).arg(App::version())).toDateTime();
+    qint64 tm = 8 * 60 * 60;
+    qint64 tp = t0.secsTo(t);
+    if (t0.isValid() && tp < tm) {
+        apxMsgW() << QString("Firmware download in %1")
+                         .arg(AppRoot::timeToString(static_cast<quint64>(tm - tp), true));
+
+        QString s
+            = QSettings().value(QString("%1_%2_latest").arg(name()).arg(App::version())).toString();
+        if (!s.isEmpty()) {
+            m_releaseFile = s;
+            if (!extractRelease(s)) {
+                m_releaseFile.clear();
+            }
+        }
+        return;
+    }
+
     requestRelease(QString("tags/%1").arg(App::version()));
 }
 
@@ -93,6 +119,8 @@ bool Releases::extractRelease(const QString &fname)
     dir.refresh();
     makeReleaseFact(dir);
     apxMsg() << title().append(':') << tr("Firmware available");
+
+    QSettings().setValue(QString("%1_%2_latest").arg(name()).arg(App::version()), fname);
     return true;
 }
 
@@ -130,12 +158,6 @@ void Releases::makeReleaseFact(const QDir &dir)
     f_current->setTitle(dir.dirName());
     f_current->setValue(QString::number(dir.entryList().size()));
     makeReleaseFactDo(f_current, dir);
-
-    if (!f_dev && !devDir().entryList().isEmpty()) {
-        f_dev = new Fact(this, "dev", "Development", "", Group);
-        f_dev->setValue(QString::number(devDir().entryList().size()));
-        makeReleaseFactDo(f_dev, devDir());
-    }
 }
 void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
 {
@@ -274,6 +296,8 @@ void Releases::responseRelease()
         QString msg = json["message"].toString();
         apxMsgW() << title().append(':') << msg;
         if (msg.toLower() == "not found") {
+            QDateTime t = QDateTime::currentDateTimeUtc();
+            QSettings().setValue(QString("%1_%2").arg(name()).arg(App::version()), t);
             apxMsgW() << title().append(':') << tr("Requesting latest release");
             requestRelease("latest");
             return;
@@ -364,6 +388,7 @@ void Releases::responseDownload()
     m_releaseFile = s;
     if (!extractRelease(s)) {
         m_releaseFile.clear();
+        return;
     }
 }
 

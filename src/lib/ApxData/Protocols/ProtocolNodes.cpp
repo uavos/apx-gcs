@@ -219,6 +219,7 @@ ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid, const QString &sn, 
         _queue.removeAll(r);
         r->deleteLater();
     });
+
     return req;
 }
 
@@ -294,6 +295,8 @@ void ProtocolNodes::clear()
 
 void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
 {
+    trace_downlink(ProtocolTraceItem::NMT, Mandala::meta(pid).name);
+
     if (!enabled())
         return;
 
@@ -303,6 +306,8 @@ void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
     QByteArray sn_ba(sizeof(xbus::node::guid_t), '\0');
     stream.read(sn_ba.data(), sizeof(xbus::node::guid_t));
     QString sn(sn_ba.toHex().toUpper());
+
+    trace_downlink(ProtocolTraceItem::GUID, "GUID");
 
     //qDebug() << QString::number(pid, 16) << sn;
     //qDebug() << "nmt" << sn;

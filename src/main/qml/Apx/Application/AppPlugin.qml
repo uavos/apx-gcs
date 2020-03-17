@@ -30,7 +30,7 @@ Loader {
 
     function activate(object)
     {
-        active=true //unloadOnHide?Qt.binding(function(){return visible}):true
+        active=unloadOnHide?Qt.binding(function(){return visible}):true
         configure()
     }
     Connections {

@@ -3,7 +3,7 @@
 Project {
 
     property var plugins: [
-        //"DatalinkInspector",
+        "DatalinkInspector",
         "VideoStreaming",
         "Signals",
         "HeadingWheel",

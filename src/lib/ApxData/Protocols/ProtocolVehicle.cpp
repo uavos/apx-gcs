@@ -141,13 +141,13 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
-    qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
-
     if (mandala::cmd::env::nmt::match(pid)) {
         updateStreamType(NMT);
         nodes->downlink(pid, stream);
         return;
     }
+
+    trace_downlink(ProtocolTraceItem::PID, Mandala::meta(pid).path);
 
     switch (pid) {
     default:
@@ -161,6 +161,8 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     case mandala::cmd::env::vcp::rx::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
+            trace_downlink(ProtocolTraceItem::DATA, QString::number(port_id));
+            trace_downlink(stream.payload());
             updateStreamType(DATA);
             emit serialRxData(port_id, stream.payload());
             return;
@@ -170,6 +172,8 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     case mandala::cmd::env::vcp::tx::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
+            trace_downlink(ProtocolTraceItem::DATA, QString::number(port_id));
+            trace_downlink(stream.payload());
             updateStreamType(DATA);
             emit serialTxData(port_id, stream.payload());
             return;
@@ -196,8 +200,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
 
 void ProtocolVehicle::send(const QByteArray packet)
 {
-    if (vehicles)
-        vehicles->send(m_squawk, packet);
+    vehicles->send(m_squawk, packet);
 }
 
 void ProtocolVehicle::requestTelemetry() {}
