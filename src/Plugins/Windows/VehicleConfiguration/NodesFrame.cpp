@@ -119,15 +119,15 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
 
     //editor actions
     QAction *a_revert = nullptr;
-    for (auto i : selectedItems<NodesBase>()) {
+    for (auto i : selectedItems<NodeItem>()) {
         if (!i->modified())
             continue;
-        if (!a_revert) {
+        /* FIXME: if (!a_revert) {
             a_revert = new QActionFact(i->f_revert);
             a_revert->setParent(&m);
             m.addAction(a_revert);
             m.addSeparator();
-        }
+        }*/
     }
 
     //node tools
@@ -155,11 +155,11 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
 void NodesFrame::aUndo_triggered(void)
 {
     treeWidget->tree->setFocus();
-    QList<NodesBase *> list = selectedItems<NodesBase>();
-    foreach (NodesBase *f, list) {
+    QList<NodeItem *> list = selectedItems<NodeItem>();
+    /*for(NodesBase *f, list) {
         if (f->modified())
             f->f_revert->trigger();
-    }
+    }*/
     //FIXME:
     //if (list.isEmpty())
     //    vehicle->f_nodes->f_revert->trigger();

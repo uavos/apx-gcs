@@ -94,10 +94,6 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
         protocol->requestSearch();
     }
 
-    /*ProtocolServiceFirmware *fw = Vehicles::instance()->protocol->firmware;
-        connect(fw, &ProtocolServiceFirmware::started, this, &Nodes::upgradeStarted);
-        connect(fw, &ProtocolServiceFirmware::finished, this, &Nodes::upgradeFinished);*/
-
     connect(this, &Fact::triggered, this, &Nodes::search);
 
     App::jsync(this);
@@ -126,16 +122,16 @@ void Nodes::syncDone()
 void Nodes::updateActions()
 {
     bool enb = protocol()->enabled();
-    bool busy = protocol()->active();
     bool upgrading = protocol()->upgrading();
-    bool bEmpty = protocol()->size() <= 0;
-    bool bModAll = modified();
+    bool busy = protocol()->active() || upgrading;
+    bool empty = protocol()->size() <= 0;
+    bool mod = modified();
     f_search->setEnabled(enb);
-    f_upload->setEnabled(enb && bModAll && (!(busy)));
-    f_stop->setEnabled(enb && (busy || upgrading));
-    f_reload->setEnabled(enb && (!(upgrading)));
-    f_clear->setEnabled((!bEmpty) && (!(upgrading || busy)));
-    f_status->setEnabled(enb && (!bEmpty) && (!(upgrading || busy)));
+    f_upload->setEnabled(enb && mod);
+    f_stop->setEnabled(enb && busy);
+    f_reload->setEnabled(enb && !upgrading);
+    f_clear->setEnabled(!empty && !busy);
+    f_status->setEnabled(enb && !empty && !busy);
 }
 
 void Nodes::search()
@@ -158,7 +154,6 @@ void Nodes::clear()
         return;
     }
     m_sn_map.clear();
-    m_groups.clear();
     removeAll();
     protocol()->clear();
     setModified(false);

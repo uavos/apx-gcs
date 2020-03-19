@@ -64,7 +64,7 @@ Telemetry::Telemetry(Vehicle *parent)
 
         f_player = new TelemetryPlayer(this, this);
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
-        bind(f_player, "active", true);
+        bindProperty(f_player, "active", true);
 
         f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {

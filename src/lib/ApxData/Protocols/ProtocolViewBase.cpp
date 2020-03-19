@@ -23,8 +23,9 @@
 #include "ProtocolViewBase.h"
 
 ProtocolViewBaseImpl::ProtocolViewBaseImpl(QObject *parent, Fact *protocol)
-    : Fact(parent, "item#", "", QString(), Fact::Group)
+    : Fact(parent, "item#")
 {
+    setTreeType(Group);
     setEnabled(false);
     setProtocol(protocol);
 }
@@ -49,7 +50,7 @@ void ProtocolViewBaseImpl::setProtocol(Fact *protocol)
         connect(protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
         connect(protocol, &Fact::progressChanged, this, &ProtocolViewBaseImpl::updateProgress);
 
-        bind(protocol, "active");
+        bindProperty(protocol, "active");
 
         updateName();
         updateTitle();
@@ -109,12 +110,12 @@ bool ProtocolViewBaseImpl::setValue(const QVariant &v)
     return Fact::setValue(v);
 }
 
-QString ProtocolViewBaseImpl::info() const
+QString ProtocolViewBaseImpl::toolTip() const
 {
     if (m_protocol)
-        return m_protocol->info();
+        return m_protocol->toolTip();
     else
-        return Fact::info();
+        return Fact::toolTip();
 }
 void ProtocolViewBaseImpl::hashData(QCryptographicHash *h) const
 {

@@ -41,6 +41,8 @@ public:
 
     ProtocolNodeRequest *request(xbus::node::file::op_e op);
 
+    static xbus::node::hash_t get_hash(const void *src, size_t sz, xbus::node::hash_t hash = 0);
+
 private:
     ProtocolNode *node;
 
@@ -52,7 +54,7 @@ private:
     xbus::node::file::offset_t _op_offset{0};
     xbus::node::file::size_t _op_size{0};
     xbus::node::file::size_t _op_tcnt{0};
-    xbus::node::file::hash_t _op_hash{0};
+    xbus::node::hash_t _op_hash{0};
 
     void reset();
     bool check_info(ProtocolStreamReader &stream);
@@ -77,5 +79,5 @@ signals:
     void interrupted();
 
     void uploaded();
-    void downloaded(QByteArray data);
+    void downloaded(const xbus::node::file::info_s &info, const QByteArray data);
 };

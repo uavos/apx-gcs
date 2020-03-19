@@ -28,8 +28,6 @@
 #include <Mandala/Mandala.h>
 #include <Xbus/XbusNode.h>
 
-#include <crc/crc.h>
-
 ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle, "nodes")
     , vehicle(vehicle)

@@ -37,7 +37,10 @@ CleanButton {
             list.push(descr)
             return list.join("\n")
         }
-        list = fact.info().split("\n")
+
+        var s=fact.toolTip().trim()
+        if(s) list.push(s)
+
 
         if(fact.section)
             list.push("section: "+fact.section)

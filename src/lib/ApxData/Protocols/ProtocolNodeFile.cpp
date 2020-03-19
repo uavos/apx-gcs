@@ -37,6 +37,11 @@ ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
     memset(&_info, 0, sizeof(_info));
 }
 
+xbus::node::hash_t ProtocolNodeFile::get_hash(const void *src, size_t sz, xbus::node::hash_t hash)
+{
+    return CRC_32_APX(src, sz, hash);
+}
+
 void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset)
 {
     reset();
@@ -69,7 +74,7 @@ void ProtocolNodeFile::write_next()
     ProtocolNodeRequest *req = request(xbus::node::file::write);
     req->write<xbus::node::file::offset_t>(_op_offset);
     sz = req->write(ba.data(), sz);
-    _op_hash = CRC_32_APX(ba.data(), sz, _op_hash);
+    _op_hash = get_hash(ba.data(), sz, _op_hash);
     req->schedule();
     //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
 
@@ -96,9 +101,9 @@ bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
         return false;
     }
 
-    if (stream.available() < sizeof(xbus::node::file::hash_t))
+    if (stream.available() < sizeof(xbus::node::hash_t))
         return false;
-    xbus::node::file::hash_t hash;
+    xbus::node::hash_t hash;
     stream >> hash;
     if (hash != _op_hash) {
         qWarning() << "hash: " << QString::number(hash, 16) << QString::number(_op_hash, 16);
@@ -136,7 +141,8 @@ void ProtocolNodeFile::read_next()
     if (_op_tcnt == _op_size) {
         //all data written
         qDebug() << "done";
-        emit downloaded(_op_data);
+        emit downloaded(_info, _op_data);
+        reset();
         stop();
         return;
     }
@@ -191,7 +197,7 @@ void ProtocolNodeFile::updateProgress()
 
 void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader &stream)
 {
-    qDebug() << name() << op << stream.available();
+    //qDebug() << name() << op << stream.available();
 
     switch (op) {
     default:

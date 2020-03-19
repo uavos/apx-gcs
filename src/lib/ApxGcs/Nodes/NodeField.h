@@ -20,57 +20,47 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeField_H
-#define NodeField_H
-//=============================================================================
-#include "NodesBase.h"
+#pragma once
+
+#include <Fact/Fact.h>
 #include <QtCore>
+
+#include <Protocols/ProtocolNode.h>
+
 class NodeItem;
 class PawnCompiler;
-//=============================================================================
-class NodeField : public NodesBase
+
+class NodeField : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit NodeField(NodeItem *node,
-                       quint16 id,
-                       int dtype,
-                       const QString &name,
-                       const QString &title,
-                       const QString &descr,
-                       const QString &units,
-                       const QStringList &opts,
-                       const QStringList &groups,
+    explicit NodeField(Fact *parent,
+                       NodeItem *node,
+                       xbus::node::conf::fid_t fid,
+                       const ProtocolNode::dict_field_s &field,
                        NodeField *parentField = nullptr);
 
-    quint16 id;
-    int dtype;
-    QStringList groups;
-
-    //Fact override
-    virtual QVariant data(int col, int role) const override;
-    virtual bool setValue(const QVariant &v) override;
-
+    xbus::node::conf::fid_t fid() const;
     QVariant uploadableValue(void) const;
-
-    void hashData(QCryptographicHash *h) const override;
-
-    NodeItem *node;
-    PawnCompiler *pawncc;
 
     //values used for storage and share
     QString toString() const;
     void fromString(const QString &s);
 
-private:
-    NodeField *parentField;
+    //Fact override
+    virtual bool setValue(const QVariant &v) override;
 
+private:
+    NodeItem *_node;
+    NodeField *_parentField;
+
+    xbus::node::conf::fid_t m_fid;
+    xbus::node::conf::type_e _type;
+
+    PawnCompiler *pawncc{nullptr};
     QByteArray scriptCodeSave;
 
 private slots:
     void updateStatus();
-    void validateData();
 };
-//=============================================================================
-#endif

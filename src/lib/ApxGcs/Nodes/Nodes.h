@@ -59,7 +59,6 @@ public:
 
 private:
     QMap<QString, NodeItem *> m_sn_map;
-    QList<NodeItemBase *> m_groups;
     QDateTime m_syncTimestamp;
 
 private slots:

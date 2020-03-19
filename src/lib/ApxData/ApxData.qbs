@@ -67,8 +67,6 @@ ApxApp.ApxLibrary {
             "ProtocolNodeFile.cpp", "ProtocolNodeFile.h",
 
             //"ProtocolMission.cpp", "ProtocolMission.h",
-            //"ProtocolServiceFile.cpp", "ProtocolServiceFile.h",
-            //"ProtocolServiceFirmware.cpp", "ProtocolServiceFirmware.h",
         ]
     }
 

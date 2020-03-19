@@ -27,7 +27,6 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppNotify.h>
-#include <ApxMisc/SignalForwarder.h>
 
 #include <QColor>
 #include <QFont>
@@ -48,7 +47,7 @@ Fact::Fact(QObject *parent,
     , m_active(false)
     , m_progress(-1)
     , m_icon(icon)
-    , m_bind(nullptr)
+    , m_binding(nullptr)
     , m_scnt(0)
     , m_parentEnabled(true)
     , m_parentVisible(true)
@@ -163,7 +162,7 @@ QVariant Fact::data(int col, int role) const
     }
     case Qt::ToolTipRole:
         if (col == Fact::FACT_MODEL_COLUMN_NAME) {
-            return info();
+            return toolTip();
         } else if (col == Fact::FACT_MODEL_COLUMN_VALUE) {
             if (size()) {
                 QString s = name();
@@ -218,7 +217,7 @@ QVariant Fact::data(int col, int role) const
     return QVariant();
 }
 //=============================================================================
-QString Fact::info() const
+QString Fact::toolTip() const
 {
     QStringList st;
     QString sDataType;
@@ -388,10 +387,10 @@ Fact *Fact::factByTitlePath(const QString &spath) const
     return nullptr;
 }
 //=============================================================================
-bool Fact::lessThan(Fact *rightFact) const
+bool Fact::lessThan(Fact *other) const
 {
     //no sorting by default
-    return num() < rightFact->num();
+    return num() < other->num();
 }
 bool Fact::showThis(QRegExp re) const
 {
@@ -413,9 +412,9 @@ void Fact::trigger(QVariantMap opts)
     if (!enabled())
         return;
 
-    if (bind()) {
-        if (bind()->treeType() == Action) {
-            bind()->trigger(opts);
+    if (binding()) {
+        if (binding()->treeType() == Action) {
+            binding()->trigger(opts);
             return;
         }
     }
@@ -424,8 +423,8 @@ void Fact::trigger(QVariantMap opts)
     emit triggered(opts);
     AppRoot::instance()->factTriggered(this, opts);
 
-    if (bind() && size() <= 0)
-        bind()->trigger(opts);
+    if (binding() && size() <= 0)
+        binding()->trigger(opts);
 }
 Fact *Fact::menu()
 {
@@ -439,10 +438,10 @@ Fact *Fact::menu()
         return mandala();
 
     if (treeType() == Group)
-        return bind() ? bind()->menu() : this;
+        return binding() ? binding()->menu() : this;
 
-    if (bind())
-        return bind()->menu();
+    if (binding())
+        return binding()->menu();
     return nullptr;
 }
 //=============================================================================
@@ -455,59 +454,26 @@ QObject *Fact::loadQml(const QString &qmlFile)
 //=============================================================================
 void Fact::bind(FactData *fact)
 {
+    if (m_binding == fact)
+        return;
+
     FactData::bind(fact);
-    bool rebind = bind();
-    if (bind()) {
-        disconnect(m_bind, nullptr, this, nullptr);
-    }
-    m_bind = qobject_cast<Fact *>(fact);
-    if (bind()) {
-        //connect(m_bind, &Fact::actionsModelChanged, this, &Fact::actionsModelChanged);
-        connect(m_bind, &Fact::activeChanged, this, &Fact::activeChanged);
-        connect(m_bind, &Fact::progressChanged, this, &Fact::progressChanged);
-        connect(m_bind, &Fact::enabledChanged, this, &Fact::enabledChanged);
-        connect(m_bind, &Fact::iconChanged, this, &Fact::iconChanged);
-        connect(m_bind, &Fact::qmlPageChanged, this, &Fact::qmlPageChanged);
-    }
-    if (rebind) {
-        //emit actionsModelChanged();
-        emit activeChanged();
-        emit progressChanged();
-        emit enabledChanged();
-        emit iconChanged();
-        emit qmlPageChanged();
-    }
+    m_binding = qobject_cast<Fact *>(fact);
+    if (!fact)
+        return;
+
+    bindProperty(m_binding, "enabled");
+    bindProperty(m_binding, "active");
+    bindProperty(m_binding, "progress", true);
+
+    if (m_icon.isEmpty())
+        bindProperty(m_binding, "icon", true);
+    if (m_qmlPage.isEmpty())
+        bindProperty(m_binding, "qmlPage", true);
+
+    emit bindingChanged();
 }
 
-void Fact::bind(Fact *src, QString propertyName, bool oneway)
-{
-    int pidx_dst = metaObject()->indexOfProperty(propertyName.toLatin1());
-    if (pidx_dst < 0) {
-        apxMsgW() << "misisng property:" << path() << propertyName << oneway;
-        return;
-    }
-
-    int pidx_src = src->metaObject()->indexOfProperty(propertyName.toLatin1());
-    if (pidx_src < 0) {
-        apxMsgW() << "misisng property:" << src->path() << propertyName << oneway;
-        return;
-    }
-    QMetaProperty prop_src = src->metaObject()->property(pidx_src);
-    QMetaProperty prop_dst = metaObject()->property(pidx_dst);
-
-    SignalForwarder *sf = new SignalForwarder(this);
-    connect(src, prop_src.notifySignal().methodSignature().prepend('2'), sf, SIGNAL(forward()));
-    connect(sf, &SignalForwarder::forward, this, [this, src, prop_src, prop_dst]() {
-        prop_dst.write(this, prop_src.read(src));
-        //prop_dst.notifySignal().invoke(this);
-    });
-    prop_dst.write(this, prop_src.read(src));
-
-    if (oneway)
-        return;
-
-    src->bind(this, propertyName, true);
-}
 //=============================================================================
 Fact *Fact::createAction(Fact *parent)
 {
@@ -681,17 +647,11 @@ void Fact::setActionsModel(QAbstractListModel *v)
 }
 bool Fact::enabled() const
 {
-    if (bind())
-        return bind()->enabled();
     return m_enabled && m_parentEnabled;
 }
 void Fact::setEnabled(const bool v)
 {
     //qDebug() << "BEGIN" << path() << v << m_parentEnabled;
-    if (bind()) {
-        bind()->setEnabled(v);
-        return;
-    }
     if (m_enabled == v)
         return;
     m_enabled = v;
@@ -764,16 +724,10 @@ void Fact::setSection(const QString &v)
 }
 bool Fact::active() const
 {
-    if (bind())
-        return bind()->active();
     return m_active;
 }
 void Fact::setActive(const bool v)
 {
-    if (bind()) {
-        bind()->setActive(v);
-        return;
-    }
     if (m_active == v)
         return;
     m_active = v;
@@ -781,16 +735,10 @@ void Fact::setActive(const bool v)
 }
 int Fact::progress() const
 {
-    if (bind())
-        return bind()->progress();
     return m_progress;
 }
 void Fact::setProgress(const int v)
 {
-    if (bind()) {
-        bind()->setProgress(v);
-        return;
-    }
     if (m_progress == v)
         return;
 
@@ -845,8 +793,6 @@ bool Fact::busy() const
 }
 QString Fact::icon() const
 {
-    if (bind() && m_icon.isEmpty())
-        return bind()->icon();
     return m_icon;
 }
 void Fact::setIcon(const QString &v)
@@ -856,21 +802,19 @@ void Fact::setIcon(const QString &v)
     m_icon = v;
     emit iconChanged();
 }
-Fact *Fact::bind() const
+Fact *Fact::binding() const
 {
-    return m_bind.isNull() ? nullptr : m_bind;
+    return m_binding;
 }
-void Fact::setBind(Fact *v)
+void Fact::setBinding(Fact *v)
 {
-    if (m_bind == v)
+    if (m_binding == v)
         return;
     bind(v);
-    emit bindChanged();
+    emit bindingChanged();
 }
 QString Fact::qmlPage() const
 {
-    if (bind() && m_qmlPage.isEmpty())
-        return bind()->qmlPage();
     return m_qmlPage;
 }
 void Fact::setQmlPage(const QString &v)
@@ -917,5 +861,3 @@ void Fact::setScnt(const int v)
     m_scnt = v;
     emit scntChanged();
 }
-//=============================================================================
-//=============================================================================

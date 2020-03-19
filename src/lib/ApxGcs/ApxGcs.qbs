@@ -98,9 +98,9 @@ ApxApp.ApxLibrary {
         files: [
             "Nodes.cpp", "Nodes.h",
             "NodeItem.cpp", "NodeItem.h",
-            "NodesBase.cpp", "NodesBase.h",
-            "NodeItemBase.cpp", "NodeItemBase.h",
-            //"NodeField.cpp", "NodeField.h",
+            //"NodesBase.cpp", "NodesBase.h",
+            //"NodeItemBase.cpp", "NodeItemBase.h",
+            "NodeField.cpp", "NodeField.h",
             //"NodeItemData.cpp", "NodeItemData.h",
             //"NodesStorage.cpp", "NodesStorage.h",
             //"NodeTools.cpp", "NodeTools.h",

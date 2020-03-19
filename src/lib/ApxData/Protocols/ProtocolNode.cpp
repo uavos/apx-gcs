@@ -29,9 +29,6 @@
 #include <Mandala/Mandala.h>
 
 #include <Xbus/XbusNode.h>
-#include <Xbus/XbusNodeConf.h>
-
-#include <crc/crc.h>
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     : ProtocolBase(nodes, "node")
@@ -91,14 +88,14 @@ void ProtocolNode::updateDescr()
     //st.append(sn());
     setDescr(st.join(' '));
 }
-QString ProtocolNode::info() const
+QString ProtocolNode::toolTip() const
 {
     QStringList st;
     st.append(QString("sn: %1").arg(sn()));
     st.append(QString("files: %1").arg(files().join(',')));
     st.append(QString("version: %1").arg(version()));
     st.append(QString("hardware: %1").arg(hardware()));
-    return ProtocolBase::info().append("\n").append(st.join('\n'));
+    return ProtocolBase::toolTip().append("\n").append(st.join('\n'));
 }
 void ProtocolNode::hashData(QCryptographicHash *h) const
 {
@@ -308,47 +305,368 @@ void ProtocolNode::requestDict()
         qWarning() << "Dict unavailable";
         return;
     }
-    connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::dictData);
+    connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseDictData);
     f->download();
 }
 void ProtocolNode::requestConf()
 {
-    qDebug() << "file download";
+    ProtocolNodeFile *f = file("conf");
+    if (!f) {
+        qWarning() << "Conf unavailable";
+        return;
+    }
+    connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseConfData);
+    f->download();
 }
 void ProtocolNode::requestStatus()
 {
     request(mandala::cmd::env::nmt::status::uid)->schedule();
 }
 
-void ProtocolNode::dictData(QByteArray data)
+void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
 {
-    qDebug() << data.toHex().toUpper();
-    ProtocolStreamReader stream(data);
-    while (stream.available() > 4) {
-        uint8_t type, array, group;
-        stream >> type;
-        array = type >> 4;
-        type &= 0x0F;
-        stream >> group;
-
-        if (type == xbus::node::dict::group) {
-            QStringList st = stream.read_strings(2);
-            if (st.isEmpty())
-                break;
-            qDebug() << "group" << group << st;
-            continue;
-        }
-        QStringList st = stream.read_strings(3);
-        if (st.isEmpty())
-            break;
-        qDebug() << "field" << type << array << group << st;
-    }
-
-    if (stream.available() > 0) {
-        apxMsgW() << "dict error";
+    const dict_field_s *f = field(fid);
+    if (!f)
+        return;
+    //qDebug() << f->name << value;
+    nodes->clear_requests();
+    nodes->setActive(true);
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
+    *req << fid;
+    if (!write_param(*req, fid, value)) {
+        req->deleteLater();
+        nodes->clear_requests();
         return;
     }
-    qDebug() << "dict ok";
+    connect(req, &ProtocolNodeRequest::timeout, nodes, &ProtocolNodes::clear_requests);
+    req->schedule();
+}
+void ProtocolNode::requestUpdateSave()
+{
+    if (!nodes->active())
+        return;
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
+    req->write<xbus::node::conf::fid_t>(0xFFFF);
+    connect(req, &ProtocolNodeRequest::finished, this, [this](ProtocolNodeRequest *request) {
+        if (request->acknowledged)
+            emit confSaved();
+        else
+            nodes->clear_requests();
+    });
+    req->schedule();
+}
+
+void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    ProtocolStreamReader stream(data);
+    bool err = true;
+    m_dict.clear();
+    m_dict_fields.clear();
+    QList<int> groups;
+    do {
+        // check node hash
+        if (info.hash != m_ident.hash) {
+            qWarning() << "node hash error:" << QString::number(info.hash, 16)
+                       << QString::number(m_ident.hash, 16);
+            break;
+        }
+
+        while (stream.available() > 4) {
+            dict_field_s field;
+
+            uint8_t v;
+            stream >> v;
+            field.type = v & 0x0F;
+            field.array = v >> 4;
+            stream >> v;
+            field.group = v;
+
+            QStringList st;
+
+            switch (field.type) {
+            case xbus::node::conf::group:
+                st = stream.read_strings(3);
+                if (st.isEmpty() || st.at(0).isEmpty())
+                    break;
+                //qDebug() << "group" << field.group << st;
+                field.name = st.at(0);
+                field.title = st.at(1);
+                field.descr = st.at(2);
+                groups.append(m_dict.size());
+                break;
+            case xbus::node::conf::command:
+                st = stream.read_strings(2);
+                if (st.isEmpty() || st.at(0).isEmpty())
+                    break;
+                field.name = st.at(0);
+                field.title = st.at(1);
+                break;
+            default:
+                st = stream.read_strings(3);
+                if (st.isEmpty() || st.at(0).isEmpty())
+                    break;
+                //qDebug() << "field" << field.type << field.array << field.group << st;
+                field.name = st.at(0);
+                field.title = st.at(0);
+                field.descr = st.at(1);
+                field.units = st.at(2);
+                m_dict_fields.append(m_dict.size());
+                // guess name prepended with groups
+                uint8_t group = field.group;
+                while (group) {
+                    group--;
+                    if (group < groups.size()) {
+                        const dict_field_s &g = m_dict.at(groups.at(group));
+                        field.name.prepend(QString("%1_").arg(g.name));
+                        group = g.group;
+                        continue;
+                    }
+                    qWarning() << "missing group:" << field.type << field.array << field.group
+                               << st;
+                    field.name.clear(); //mark error
+                    break;
+                }
+            }
+            if (field.name.isEmpty())
+                break;
+
+            m_dict.append(field);
+
+            if (stream.available() == 0) {
+                err = false;
+                break;
+            }
+        }
+
+    } while (0);
+
+    if (err) {
+        setDictValid(false);
+        qWarning() << "dict error" << data.toHex().toUpper();
+        return;
+    }
+    qDebug() << "dict parsed";
+    setDictValid(true);
+    emit dictReceived(m_dict);
+
+    requestConf();
+}
+
+void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    ProtocolStreamReader stream(data);
+    bool err = true;
+    QVariantList values;
+    do {
+        // check node hash
+        if (info.hash != m_ident.hash) {
+            qWarning() << "file hash error:" << QString::number(info.hash, 16)
+                       << QString::number(m_ident.hash, 16);
+            break;
+        }
+
+        // read offsets
+        QList<size_t> offsets;
+        while (stream.available() >= 2) {
+            uint16_t v;
+            stream >> v;
+            if (!v)
+                break;
+            offsets.append(v);
+        }
+        if (offsets.size() != m_dict_fields.size()) {
+            qWarning() << "offsets size:" << offsets.size() << m_dict_fields.size() << offsets;
+            break;
+        }
+
+        // read Parameters::Data struct
+        size_t pos_s = stream.pos();
+
+        // read and check prepended hash
+        xbus::node::hash_t dhash;
+        stream >> dhash;
+        if (info.hash != m_ident.hash) {
+            qWarning() << "data hash error:" << QString::number(dhash, 16)
+                       << QString::number(m_ident.hash, 16);
+            break;
+        }
+
+        xbus::node::conf::fid_t fid = 0;
+        size_t offset_s = 0;
+        while (stream.available() > 0) {
+            // stream padding with offset
+            size_t d_pos = stream.pos() - pos_s;
+            size_t offset = offsets.at(fid);
+            size_t d_offset = offset - offset_s;
+            offset_s = offset;
+            if (d_offset > d_pos) {
+                d_pos = d_offset - d_pos;
+                //qDebug() << "padding:" << d_pos;
+                if (stream.available() < d_pos)
+                    break;
+                stream.reset(stream.pos() + d_pos);
+            } else if (d_offset < d_pos) {
+                qWarning() << "padding negative:" << d_offset << d_pos << offsets;
+                break;
+            }
+
+            pos_s = stream.pos();
+            QVariant v = read_param(stream, fid);
+            //qDebug() << v << stream.pos() << stream.available();
+            if (!v.isValid())
+                break;
+
+            values.append(v);
+            fid++;
+
+            if (fid == m_dict_fields.size()) {
+                err = false;
+                break;
+            }
+        }
+
+    } while (0);
+
+    if (err) {
+        setValid(false);
+        qWarning() << "conf error" << data.toHex().toUpper();
+        return;
+    }
+    qDebug() << "conf parsed";
+    setValid(true);
+    emit confReceived(values);
+}
+
+const ProtocolNode::dict_field_s *ProtocolNode::field(xbus::node::conf::fid_t fid) const
+{
+    if (fid >= m_dict_fields.size())
+        return nullptr;
+    return &m_dict.at(m_dict_fields.at(fid));
+}
+
+template<typename _T>
+static QVariant read_param(ProtocolStreamReader &stream, size_t array)
+{
+    if (stream.available() < (sizeof(_T) * (array ? array : 1)))
+        return QVariant();
+    if (array > 0) {
+        QVariantList list;
+        while (array--) {
+            list.append(QVariant::fromValue(stream.read<_T>()));
+        }
+        return QVariant::fromValue(list);
+    }
+    return QVariant::fromValue(stream.read<_T>());
+}
+template<typename _T>
+static QVariant read_param_str(ProtocolStreamReader &stream, size_t array)
+{
+    if (stream.available() < (sizeof(_T) * (array ? array : 1)))
+        return QVariant();
+    if (array > 0) {
+        QVariantList list;
+        while (array--) {
+            const char *s = stream.read_string(sizeof(_T));
+            if (!s)
+                return QVariant();
+            list.append(QVariant::fromValue(QString(s)));
+        }
+        return QVariant::fromValue(list);
+    }
+    const char *s = stream.read_string(sizeof(_T));
+    return s ? QVariant::fromValue(QString(s)) : QVariant();
+}
+
+QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid)
+{
+    const dict_field_s *f = field(fid);
+    if (!f)
+        return QVariant();
+    //qDebug() << f->name << stream.payload().toHex().toUpper();
+    size_t array = f->array;
+    switch (f->type) {
+    case xbus::node::conf::group:
+    case xbus::node::conf::command:
+        break;
+    case xbus::node::conf::option:
+        return ::read_param<xbus::node::conf::option_t>(stream, array);
+    case xbus::node::conf::real:
+        return ::read_param<xbus::node::conf::real_t>(stream, array);
+    case xbus::node::conf::byte:
+        return ::read_param<xbus::node::conf::byte_t>(stream, array);
+    case xbus::node::conf::word:
+        return ::read_param<xbus::node::conf::word_t>(stream, array);
+    case xbus::node::conf::dword:
+        return ::read_param<xbus::node::conf::dword_t>(stream, array);
+    case xbus::node::conf::string:
+        return ::read_param_str<xbus::node::conf::string_t>(stream, array);
+    case xbus::node::conf::text:
+        return ::read_param_str<xbus::node::conf::text_t>(stream, array);
+    }
+    return QVariant();
+}
+
+template<typename _T>
+static bool write_param(ProtocolStreamWriter &stream, size_t array, const QVariant &value)
+{
+    if (array > 0) {
+        const QVariantList &list = value.value<QVariantList>();
+        if (static_cast<size_t>(list.size()) != array)
+            return false;
+        for (auto v : list) {
+            if (!stream.write<_T>(v.value<_T>()))
+                return false;
+        }
+        return true;
+    }
+    return stream.write<_T>(value.value<_T>());
+}
+
+template<typename _T>
+static bool write_param_str(ProtocolStreamWriter &stream, size_t array, const QVariant &value)
+{
+    if (array > 0) {
+        const QVariantList &list = value.value<QVariantList>();
+        if (static_cast<size_t>(list.size()) != array)
+            return false;
+        for (auto v : list) {
+            if (!stream.write_string(v.toString().toLatin1().data()))
+                return false;
+        }
+        return true;
+    }
+    return stream.write_string(value.toString().toLatin1().data());
+}
+
+bool ProtocolNode::write_param(ProtocolStreamWriter &stream,
+                               xbus::node::conf::fid_t fid,
+                               const QVariant &value)
+{
+    const dict_field_s *f = field(fid);
+    if (!f)
+        return false;
+    //qDebug() << f->name << stream.payload().toHex().toUpper();
+    size_t array = f->array;
+    switch (f->type) {
+    case xbus::node::conf::group:
+    case xbus::node::conf::command:
+        break;
+    case xbus::node::conf::option:
+        return ::write_param<xbus::node::conf::option_t>(stream, array, value);
+    case xbus::node::conf::real:
+        return ::write_param<xbus::node::conf::real_t>(stream, array, value);
+    case xbus::node::conf::byte:
+        return ::write_param<xbus::node::conf::byte_t>(stream, array, value);
+    case xbus::node::conf::word:
+        return ::write_param<xbus::node::conf::word_t>(stream, array, value);
+    case xbus::node::conf::dword:
+        return ::write_param<xbus::node::conf::dword_t>(stream, array, value);
+    case xbus::node::conf::string:
+        return ::write_param_str<xbus::node::conf::string_t>(stream, array, value);
+    case xbus::node::conf::text:
+        return ::write_param_str<xbus::node::conf::text_t>(stream, array, value);
+    }
+    return false;
 }
 
 //---------------------------------------
@@ -365,6 +683,7 @@ bool ProtocolNode::setIdent(const xbus::node::ident::ident_s &ident)
         return false;
     m_ident = ident;
     setIdentValid(true);
+    setDictValid(false);
     emit identChanged();
     return true;
 }
@@ -441,6 +760,8 @@ void ProtocolNode::setDictValid(const bool &v)
     if (v && !identValid())
         return;
     if (!v) {
+        m_dict.clear();
+        m_dict_fields.clear();
         setValid(false);
     }
     m_dictValid = v;

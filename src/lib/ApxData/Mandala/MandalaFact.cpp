@@ -55,7 +55,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &met
         case mandala::type_void:
             apxMsgW() << "void:" << mpath();
             break;
-        case mandala::type_float:
+        case mandala::type_real:
             setDataType(Float);
             setPrecision(getPrecision());
             break;
@@ -74,7 +74,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &met
             setMin(0);
             setMax(255);
             break;
-        case mandala::type_enum: {
+        case mandala::type_option: {
             setDataType(Enum);
             QStringList st = units().split(',');
             setUnits(QString());

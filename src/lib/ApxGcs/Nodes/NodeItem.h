@@ -23,7 +23,6 @@
 #pragma once
 
 #include "NodeField.h"
-#include "NodeItemBase.h"
 #include "NodeTools.h"
 
 #include <Protocols/ProtocolNode.h>
@@ -59,7 +58,9 @@ private:
     qint64 m_lastSeenTime{0};
 
     NodeField *m_status_field{nullptr};
-    NodeItemBase *m_group{nullptr};
+    void groupArrays();
+    void groupArrays(Fact *group);
+    void updateArrayRowDescr(Fact *fRow);
 
 private slots:
 
@@ -76,8 +77,12 @@ public slots:
     //protocols:
 private slots:
     void identReceived();
-    void dictReceived(const ProtocolNode::Dictionary &dict);
+    void dictReceived(const ProtocolNode::Dict &dict);
     void confReceived(const QVariantList &values);
+    void confSaved();
 
     void messageReceived(xbus::node::msg::type_t type, QString msg);
+
+signals:
+    void saveValues();
 };

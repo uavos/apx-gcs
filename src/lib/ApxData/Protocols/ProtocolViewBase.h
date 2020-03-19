@@ -45,7 +45,7 @@ protected:
     virtual void setDescr(const QString &v) override;
     virtual bool setValue(const QVariant &v) override;
 
-    virtual QString info() const override;
+    virtual QString toolTip() const override;
     virtual void hashData(QCryptographicHash *h) const override;
 
 private slots:

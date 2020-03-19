@@ -24,8 +24,8 @@ function show(fact,opts,parent)
             //console.log(menuItem.priority)
             if(menuItem.fact === factMenu
                     || menuItem.fact === fact
-                    || menuItem.fact.bind === factMenu
-                    || menuItem.fact.bind === fact){
+                    || menuItem.fact.binding === factMenu
+                    || menuItem.fact.binding === fact){
                 //already displaying fact
                 //console.log("Menu.skip", fact)
                 menuItem.factOpened(menuItem.fact)

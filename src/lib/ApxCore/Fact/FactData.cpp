@@ -23,12 +23,13 @@
 #include "FactData.h"
 #include <App/AppPrefs.h>
 #include <App/AppRoot.h>
+#include <ApxMisc/SignalForwarder.h>
 #include <cmath>
 //=============================================================================
 FactData::FactData(
     QObject *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
     : FactBase(parent, name, flags)
-    , bindedFactData(nullptr)
+    , _binded_data(nullptr)
     , m_dataType(NoFlags)
     , m_modified(false)
     , m_precision(-1)
@@ -82,8 +83,6 @@ void FactData::setDataType(FactBase::Flag v)
 //=============================================================================
 QVariant FactData::value(void) const
 {
-    if (bindedFactData)
-        return bindedFactData->value();
     if (dataType() == Count && m_value.isNull()) {
         return size() > 0 ? QString::number(size()) : QString();
     }
@@ -92,9 +91,6 @@ QVariant FactData::value(void) const
 //=============================================================================
 bool FactData::setValue(const QVariant &v)
 {
-    if (bindedFactData)
-        return bindedFactData->setValue(v);
-
     if (!updateValue(v))
         return false;
 
@@ -109,8 +105,6 @@ bool FactData::setValue(const QVariant &v)
 }
 bool FactData::updateValue(const QVariant &v)
 {
-    if (bindedFactData)
-        return bindedFactData->updateValue(v);
     //filter the same
     QVariant v_prev = value();
     if (vtype(v, QMetaType::QByteArray)) {
@@ -165,7 +159,8 @@ bool FactData::updateValue(const QVariant &v)
             break;
         } else if (m_enumStrings.size() > 1)
             return false;
-        else if (!vtype(v, QMetaType::Int)) {
+        else if (!(vtype(v, QMetaType::Int) || vtype(v, QMetaType::UInt)
+                   || vtype(v, QMetaType::UChar) || vtype(v, QMetaType::UShort))) {
             QString s = v.toString();
             if (units() == "time" && s.contains(':')) {
                 i = static_cast<long long>(AppRoot::timeFromString(s));
@@ -256,15 +251,12 @@ bool FactData::updateValue(const QVariant &v)
 //=============================================================================
 int FactData::enumValue(const QVariant &v) const
 {
-    if (bindedFactData)
-        return bindedFactData->enumValue(v);
     if (m_enumStrings.isEmpty())
         return -1;
     QString s = v.toString();
     int idx = -1;
-    if (vtype(v, QMetaType::Int))
-        idx = v.toInt();
-    else if (vtype(v, QMetaType::UInt))
+    if (vtype(v, QMetaType::Int) || vtype(v, QMetaType::UInt) || vtype(v, QMetaType::UChar)
+        || vtype(v, QMetaType::UShort))
         idx = v.toInt();
     else
         idx = m_enumStrings.indexOf(s);
@@ -286,8 +278,6 @@ int FactData::enumValue(const QVariant &v) const
 }
 QString FactData::enumText(int v) const
 {
-    if (bindedFactData)
-        return bindedFactData->enumText(v);
     if (!m_enumValues.isEmpty()) {
         if (m_enumValues.contains(v))
             return m_enumStrings.at(m_enumValues.indexOf(v));
@@ -370,8 +360,6 @@ QString FactData::toText(const QVariant &v) const
 //=============================================================================
 bool FactData::isZero() const
 {
-    if (bindedFactData)
-        return bindedFactData->isZero();
     if (treeType() == Group) {
         for (int i = 0; i < size(); i++) {
             FactData *f = child(i);
@@ -401,16 +389,10 @@ bool FactData::isZero() const
 //=============================================================================
 bool FactData::modified() const
 {
-    if (bindedFactData)
-        return bindedFactData->modified();
     return m_modified;
 }
 void FactData::setModified(const bool &v, const bool &recursive)
 {
-    if (bindedFactData) {
-        bindedFactData->setModified(v, recursive);
-        return;
-    }
     if (recursive) {
         for (int i = 0; i < size(); ++i) {
             child(i)->setModified(v, recursive);
@@ -456,16 +438,10 @@ void FactData::setModified(const bool &v, const bool &recursive)
 }
 int FactData::precision(void) const
 {
-    if (bindedFactData)
-        return bindedFactData->precision();
     return m_precision;
 }
 void FactData::setPrecision(const int &v)
 {
-    if (bindedFactData) {
-        bindedFactData->setPrecision(v);
-        return;
-    }
     if (m_precision == v)
         return;
     m_precision = v;
@@ -473,16 +449,10 @@ void FactData::setPrecision(const int &v)
 }
 QVariant FactData::min(void) const
 {
-    if (bindedFactData)
-        return bindedFactData->min();
     return m_min;
 }
 void FactData::setMin(const QVariant &v)
 {
-    if (bindedFactData) {
-        bindedFactData->setMin(v);
-        return;
-    }
     if (m_min == v)
         return;
     m_min = v;
@@ -494,16 +464,10 @@ void FactData::setMin(const QVariant &v)
 }
 QVariant FactData::max(void) const
 {
-    if (bindedFactData)
-        return bindedFactData->max();
     return m_max;
 }
 void FactData::setMax(const QVariant &v)
 {
-    if (bindedFactData) {
-        bindedFactData->setMax(v);
-        return;
-    }
     if (m_max == v)
         return;
     m_max = v;
@@ -515,8 +479,6 @@ void FactData::setMax(const QVariant &v)
 }
 QString FactData::title(void) const
 {
-    if (bindedFactData && m_title.isEmpty())
-        return bindedFactData->title();
     return m_title.isEmpty() ? name() : m_title;
 }
 void FactData::setTitle(const QString &v)
@@ -529,8 +491,6 @@ void FactData::setTitle(const QString &v)
 }
 QString FactData::descr(void) const
 {
-    if (bindedFactData && m_descr.isEmpty())
-        return bindedFactData->descr();
     return m_descr;
 }
 void FactData::setDescr(const QString &v)
@@ -543,28 +503,18 @@ void FactData::setDescr(const QString &v)
 }
 QString FactData::text() const
 {
-    if (bindedFactData)
-        return bindedFactData->text();
     return toText(value());
 }
 const QStringList &FactData::enumStrings() const
 {
-    if (bindedFactData)
-        return bindedFactData->enumStrings();
     return m_enumStrings;
 }
 const QList<int> &FactData::enumValues() const
 {
-    if (bindedFactData)
-        return bindedFactData->enumValues();
     return m_enumValues;
 }
 void FactData::setEnumStrings(const QStringList &v, const QList<int> &enumValues)
 {
-    if (bindedFactData) {
-        bindedFactData->setEnumStrings(v, enumValues);
-        return;
-    }
     if (m_enumStrings == v)
         return;
     m_enumStrings = v;
@@ -576,10 +526,6 @@ void FactData::setEnumStrings(const QStringList &v, const QList<int> &enumValues
 }
 void FactData::setEnumStrings(const QMetaEnum &v)
 {
-    if (bindedFactData) {
-        bindedFactData->setEnumStrings(v);
-        return;
-    }
     QStringList st;
     QList<int> vlist;
     for (int i = 0; i < v.keyCount(); ++i) {
@@ -591,16 +537,10 @@ void FactData::setEnumStrings(const QMetaEnum &v)
 }
 QString FactData::units() const
 {
-    if (bindedFactData)
-        return bindedFactData->units();
     return m_units;
 }
 void FactData::setUnits(const QString &v)
 {
-    if (bindedFactData) {
-        bindedFactData->setUnits(v);
-        return;
-    }
     if (m_units == v)
         return;
     m_units = v;
@@ -608,16 +548,10 @@ void FactData::setUnits(const QString &v)
 }
 QVariant FactData::defaultValue(void) const
 {
-    if (bindedFactData)
-        return bindedFactData->defaultValue();
     return m_defaultValue;
 }
 void FactData::setDefaultValue(const QVariant &v)
 {
-    if (bindedFactData) {
-        bindedFactData->setDefaultValue(v);
-        return;
-    }
     if (m_defaultValue == v)
         return;
     m_defaultValue = v;
@@ -637,10 +571,6 @@ quint16 FactData::stringToMandala(const QString &s) const
 //=============================================================================
 void FactData::copyValuesFrom(const FactData *item)
 {
-    if (bindedFactData) {
-        bindedFactData->copyValuesFrom(item);
-        return;
-    }
     for (int i = 0; i < size(); ++i) {
         FactData *dest = child(i);
         FactData *src = item->child(dest->name());
@@ -658,8 +588,8 @@ void FactData::copyValuesFrom(const FactData *item)
 //=============================================================================
 void FactData::backup()
 {
-    if (bindedFactData) {
-        bindedFactData->backup();
+    if (_binded_data) {
+        _binded_data->backup();
         return;
     }
     if (size()) {
@@ -676,8 +606,8 @@ void FactData::backup()
 }
 void FactData::restore()
 {
-    if (bindedFactData) {
-        bindedFactData->restore();
+    if (_binded_data) {
+        _binded_data->restore();
         return;
     }
     if (!modified())
@@ -694,10 +624,6 @@ void FactData::restore()
 }
 void FactData::defaults()
 {
-    if (bindedFactData) {
-        bindedFactData->defaults();
-        return;
-    }
     if (m_value.isNull()) {
         switch (dataType()) {
         case Float:
@@ -723,39 +649,69 @@ void FactData::defaults()
 //=============================================================================
 void FactData::bind(FactData *fact)
 {
-    bool rebind = bindedFactData;
-    if (bindedFactData) {
-        disconnect(bindedFactData, nullptr, this, nullptr);
+    if (_binded_data) {
+        disconnect(_binded_data, nullptr, this, nullptr);
+        qDeleteAll(_binded_properties);
+        _binded_properties.clear();
     }
-    bindedFactData = fact;
-    if (bindedFactData) {
-        connect(fact, &FactData::valueChanged, this, &FactData::valueChanged);
-        connect(fact, &FactData::enumStringsChanged, this, &FactData::enumStringsChanged);
-        connect(fact, &FactData::dataTypeChanged, this, &FactData::dataTypeChanged);
-        connect(fact, &FactData::modifiedChanged, this, &FactData::modifiedChanged);
-        connect(fact, &FactData::precisionChanged, this, &FactData::precisionChanged);
-        connect(fact, &FactData::minChanged, this, &FactData::minChanged);
-        connect(fact, &FactData::maxChanged, this, &FactData::maxChanged);
-        connect(fact, &FactData::titleChanged, this, &FactData::titleChanged);
-        connect(fact, &FactData::descrChanged, this, &FactData::descrChanged);
-        connect(fact, &FactData::unitsChanged, this, &FactData::unitsChanged);
-        connect(fact, &FactData::defaultValueChanged, this, &FactData::defaultValueChanged);
-        if (!dataType())
-            setDataType(bindedFactData->dataType());
+    _binded_data = fact;
+    if (!_binded_data)
+        return;
+
+    bindProperty(fact, "value");
+    bindProperty(fact, "modified");
+    bindProperty(fact, "precision");
+    bindProperty(fact, "min");
+    bindProperty(fact, "max");
+    bindProperty(fact, "text");
+    bindProperty(fact, "enumStrings");
+    bindProperty(fact, "units");
+    bindProperty(fact, "defaultValue");
+
+    if (m_title.isEmpty())
+        bindProperty(fact, "title", true);
+    if (m_descr.isEmpty())
+        bindProperty(fact, "descr", true);
+
+    if (!dataType())
+        setDataType(_binded_data->dataType());
+}
+void FactData::bindProperty(FactData *src, QString propertyName, bool oneway)
+{
+    SignalForwarder *sf = _binded_properties.value(propertyName);
+    if (sf) {
+        _binded_properties.remove(propertyName);
+        delete sf;
     }
-    if (rebind) {
-        emit valueChanged();
-        emit enumStringsChanged();
-        emit dataTypeChanged();
-        emit modifiedChanged();
-        emit precisionChanged();
-        emit minChanged();
-        emit maxChanged();
-        emit titleChanged();
-        emit descrChanged();
-        emit unitsChanged();
-        emit defaultValueChanged();
+
+    int pidx_dst = metaObject()->indexOfProperty(propertyName.toLatin1());
+    if (pidx_dst < 0) {
+        qWarning() << "misisng property:" << path() << propertyName << oneway;
+        return;
     }
+
+    int pidx_src = src->metaObject()->indexOfProperty(propertyName.toLatin1());
+    if (pidx_src < 0) {
+        qWarning() << "misisng property:" << src->path() << propertyName << oneway;
+        return;
+    }
+    QMetaProperty prop_src = src->metaObject()->property(pidx_src);
+    QMetaProperty prop_dst = metaObject()->property(pidx_dst);
+
+    sf = new SignalForwarder(this);
+    _binded_properties.insert(propertyName, sf);
+
+    connect(src, prop_src.notifySignal().methodSignature().prepend('2'), sf, SIGNAL(forward()));
+    connect(sf, &SignalForwarder::forward, this, [this, src, prop_src, prop_dst]() {
+        prop_dst.write(this, prop_src.read(src));
+        //prop_dst.notifySignal().invoke(this);
+    });
+    prop_dst.write(this, prop_src.read(src));
+
+    if (oneway)
+        return;
+
+    src->bindProperty(this, propertyName, true);
 }
 //=============================================================================
 void FactData::getPresistentValue()

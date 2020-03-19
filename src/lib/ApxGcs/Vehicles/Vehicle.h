@@ -44,7 +44,7 @@ class Vehicle : public ProtocolViewBase<ProtocolVehicle>
     Q_OBJECT
     Q_ENUMS(FlightState)
 
-    Q_PROPERTY(QString info READ info NOTIFY infoChanged)
+    Q_PROPERTY(QString info READ toolTip NOTIFY infoChanged)
 
     Q_PROPERTY(bool follow READ follow WRITE setFollow NOTIFY followChanged)
 
@@ -159,7 +159,7 @@ public slots:
     //---------------------------------------
     // PROPERTIES
 public:
-    QString info(void) const override;
+    QString toolTip(void) const override;
 
     bool follow(void) const;
     void setFollow(const bool &v);

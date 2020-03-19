@@ -58,6 +58,7 @@ NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
+    connect(protocol, &ProtocolNode::confSaved, this, &NodeItem::confSaved);
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
 
     //FIXME: nodes->storage->loadNodeInfo(this);
@@ -69,13 +70,15 @@ NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
 
 void NodeItem::validateDict()
 {
-    if (!protocol()->dictValid())
+    if (!protocol()->dictValid()) {
+        clear();
         return;
+    }
     //groupFields();
     //qDebug()<path();
 
     //fields map
-    for (int i = 0; i < allFields.size(); ++i) {
+    /*for (int i = 0; i < allFields.size(); ++i) {
         NodeField *f = allFields.at(i);
         //expand complex numbers
         bool bComplex = f->size() > 0;
@@ -86,7 +89,7 @@ void NodeItem::validateDict()
             }
         } else
             allFieldsByName.insert(f->name(), f);
-    }
+    }*/
 }
 void NodeItem::validateData()
 {
@@ -141,14 +144,19 @@ void NodeItem::upload()
         return;
     //saveTelemetryUploadEvent();
     int cnt = 0;
-    /*foreach (NodeField *f, allFields) {
+    foreach (NodeField *f, allFields) {
         if (!f->modified())
             continue;
-        emit uploadValue(f->id, f->uploadableValue());
+        protocol()->requestUpdate(f->fid(), f->uploadableValue());
         cnt++;
     }
-    if (cnt > 0)
-        emit saveValues();*/
+    if (cnt > 0) {
+        protocol()->requestUpdateSave();
+    }
+}
+void NodeItem::confSaved()
+{
+    backup();
 }
 
 QVariant NodeItem::data(int col, int role) const
@@ -190,6 +198,120 @@ QVariant NodeItem::data(int col, int role) const
     return Fact::data(col, role);
 }
 
+void NodeItem::groupArrays()
+{
+    //hide grouped arrays (gpio, controls etc)
+    QList<Fact *> groups;
+    for (auto f : allFields) {
+        Fact *groupItem = f->parentFact();
+        if (!groupItem || groupItem == this || groups.contains(groupItem))
+            continue;
+
+        if (groupItem && groupItem->size() > 1) {
+            //qDebug() << groupItem->path();
+            //check if group members are arrays
+            bool bArray = false;
+            uint cnt = 0;
+            for (int i = 0; i < groupItem->size(); ++i) {
+                NodeField *f = groupItem->child<NodeField>(i);
+                bArray = false;
+                if (cnt < 2 && f->size() == 0)
+                    break;
+                cnt++;
+                bArray = true;
+            }
+            if (bArray)
+                groups.append(groupItem);
+        }
+    }
+    for (auto group : groups) {
+        //qDebug() << group->path();
+        groupArrays(group);
+    }
+}
+
+void NodeItem::groupArrays(Fact *group)
+{
+    //create action with underlaying table structure to edit arrays rows
+
+    Fact *action = new Fact(group, group->name(), group->title(), group->descr(), Action);
+    //group->bind(action);
+    group->setModel(action->model());
+
+    connect(group->child(0), &Fact::valueChanged, group, [group]() {
+        group->setValue(group->child(0)->value());
+    });
+    group->setValue(group->child(0)->value());
+
+    //hide group members
+    for (auto i : *group) {
+        //static_cast<Fact *>(i)->setVisible(false);
+    }
+
+    Fact *f1 = group->child(0);
+    int colCnt = group->size();
+    for (int row = 0; row < f1->size(); ++row) {
+        Fact *fi = f1->child(row);
+        Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Group);
+        /*connect(
+            group,
+            &Fact::modifiedChanged,
+            fRow,
+            [fRow, group]() { fRow->setModified(group->modified()); },
+            Qt::QueuedConnection);*/
+        connect(fi, &Fact::valueChanged, fRow, [fRow, fi]() { fRow->setValue(fi->value()); });
+        connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
+
+        Fact *f_ch = nullptr;
+        int f_ch_max = 0;
+        for (int i = 0; i < colCnt; ++i) {
+            Fact *fArray = group->child(i);
+            if (!fArray)
+                continue;
+            Fact *fp;
+            bool bChParam = false;
+            if (f_ch && fArray->name().contains("_controls_ch_")) {
+                fp = fArray->child(f_ch->value().toInt());
+                f_ch_max = fArray->size() - 1;
+                bChParam = true;
+            } else {
+                fp = fArray->child(row);
+            }
+            if (!fp)
+                continue;
+            Fact *f = new Fact(fRow,
+                               fArray->name(),
+                               fArray->title(),
+                               fArray->descr(),
+                               fp->treeType() | fp->dataType());
+            f->bind(fp);
+            connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
+            if (bChParam) {
+                connect(f_ch, &Fact::valueChanged, f, [f, fArray, f_ch]() {
+                    f->bind(fArray->child(f_ch->value().toInt()));
+                });
+            }
+
+            if (f->name().endsWith("_controls_ch")) {
+                f_ch = f;
+            }
+        }
+        if (f_ch && f_ch_max > 0) {
+            f_ch->setMax(f_ch_max);
+        }
+    }
+}
+void NodeItem::updateArrayRowDescr(Fact *fRow)
+{
+    QStringList st;
+    if (!fRow->value().toString().isEmpty()) {
+        for (int i = 0; i < fRow->size(); ++i) {
+            st.append(fRow->child(i)->text());
+        }
+    }
+    fRow->setDescr(st.join(", "));
+}
+
 //=============================================================================
 // Protocols connection
 //=============================================================================
@@ -198,14 +320,64 @@ void NodeItem::identReceived()
 {
     m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
-    protocol()->requestDict();
-    protocol()->setDictValid(true);
-    protocol()->setValid(true);
+    if (!protocol()->dictValid()) {
+        protocol()->requestDict();
+    }
 }
 
-void NodeItem::dictReceived(const ProtocolNode::Dictionary &dict) {}
+void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
+{
+    //qDebug() << dict.size();
 
-void NodeItem::confReceived(const QVariantList &values) {}
+    allFields.clear();
+    allFieldsByName.clear();
+    m_status_field = nullptr;
+
+    QMap<int, Fact *> groups;
+    Fact *g = this;
+    NodeField *f;
+    for (auto const &i : dict) {
+        switch (i.type) {
+        case xbus::node::conf::group:
+            g = i.group ? groups.value(i.group) : this;
+            g = new Fact(g, i.name, i.title, i.descr, Group);
+            groups.insert(groups.size() + 1, g);
+            break;
+        case xbus::node::conf::command:
+            break;
+        default: // data field
+            g = i.group ? groups.value(i.group) : this;
+            f = new NodeField(g, this, static_cast<xbus::node::conf::fid_t>(allFields.size()), i);
+            f->setEnabled(false);
+            allFields.append(f);
+            allFieldsByName.insert(i.name, f);
+            if (!m_status_field) {
+                if (i.type == xbus::node::conf::string) {
+                    m_status_field = f;
+                    connect(m_status_field, &Fact::valueChanged, this, &NodeItem::updateStatus);
+                }
+            }
+        }
+    }
+    groupArrays();
+}
+
+void NodeItem::confReceived(const QVariantList &values)
+{
+    //qDebug() << values;
+    if (values.size() != allFields.size()) {
+        qWarning() << "fields mismatch:" << values.size() << allFields.size();
+        protocol()->setValid(false);
+        return;
+    }
+    int i = 0;
+    for (auto f : allFields) {
+        f->setValue(values.at(i++));
+        f->setEnabled(true);
+    }
+    backup();
+    updateStatus();
+}
 
 void NodeItem::messageReceived(xbus::node::msg::type_t type, QString msg)
 {

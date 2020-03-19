@@ -61,16 +61,16 @@ MandalaFactStreamBase *MandalaFactStream::get_stream(const mandala::type_id_t &t
     switch (type_id) {
     case mandala::type_void:
         return nullptr;
-    case mandala::type_float:
-        return new MandalaFactStreamT<mandala::float_t>(this);
+    case mandala::type_real:
+        return new MandalaFactStreamT<mandala::real_t>(this);
     case mandala::type_dword:
         return new MandalaFactStreamT<mandala::dword_t>(this);
     case mandala::type_word:
         return new MandalaFactStreamT<mandala::word_t>(this);
     case mandala::type_byte:
         return new MandalaFactStreamT<mandala::byte_t>(this);
-    case mandala::type_enum:
-        return new MandalaFactStreamT<mandala::enum_t>(this);
+    case mandala::type_option:
+        return new MandalaFactStreamT<mandala::option_t>(this);
     }
 }
 

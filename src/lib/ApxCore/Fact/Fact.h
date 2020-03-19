@@ -47,7 +47,7 @@ class Fact : public FactData
 
     Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 
-    Q_PROPERTY(Fact *bind READ bind WRITE setBind NOTIFY bindChanged)
+    Q_PROPERTY(Fact *binding READ binding WRITE setBinding NOTIFY bindingChanged)
 
     Q_PROPERTY(QString qmlPage READ qmlPage WRITE setQmlPage NOTIFY qmlPageChanged)
     Q_PROPERTY(QVariantMap opts READ opts WRITE setOpts NOTIFY optsChanged)
@@ -81,8 +81,8 @@ public:
 
     virtual bool setValue(const QVariant &v) override; //collect stats
 
-    virtual bool lessThan(Fact *rightFact) const; //sorting helper
-    virtual bool showThis(QRegExp re) const;      //filter helper
+    virtual bool lessThan(Fact *other) const; //sorting helper
+    virtual bool showThis(QRegExp re) const;  //filter helper
 
     //data model
     enum {
@@ -131,12 +131,11 @@ public:
 
     virtual QVariant data(int col, int role) const;
 
-    Q_INVOKABLE virtual QString info() const;
+    Q_INVOKABLE virtual QString toolTip() const;
 
     virtual void hashData(QCryptographicHash *h) const;
 
     Q_INVOKABLE void bind(FactData *fact) override;
-    Q_INVOKABLE void bind(Fact *src, QString propertyName, bool oneway = false);
 
     //create action fact that opens this fact, or binded to this action
     Q_INVOKABLE Fact *createAction(Fact *parent);
@@ -205,8 +204,8 @@ public:
     QString icon() const;
     void setIcon(const QString &v);
 
-    Fact *bind() const;
-    void setBind(Fact *v);
+    Fact *binding() const;
+    void setBinding(Fact *v);
 
     QString qmlPage() const;
     void setQmlPage(const QString &v);
@@ -230,7 +229,7 @@ protected:
     int m_progress;
     QString m_icon;
 
-    QPointer<Fact> m_bind;
+    QPointer<Fact> m_binding;
 
     QString m_qmlPage;
     QVariantMap m_opts;
@@ -252,7 +251,7 @@ signals:
 
     void iconChanged();
 
-    void bindChanged();
+    void bindingChanged();
 
     void qmlPageChanged();
     void optsChanged();

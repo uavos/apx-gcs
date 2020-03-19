@@ -429,7 +429,7 @@ void Vehicle::updateDatalinkVars(quint16 id, QByteArray)
     fdest->setValue(fsrc->value());*/
 }
 
-QString Vehicle::info(void) const
+QString Vehicle::toolTip(void) const
 {
     return m_info;
 }

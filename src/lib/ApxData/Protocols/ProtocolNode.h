@@ -56,39 +56,51 @@ public:
 
     ProtocolNodeFile *file(const QString &fname);
 
-    struct field_s : public xbus::node::dict::field_s
+    struct dict_field_s : public xbus::node::conf::field_s
     {
         QString name;
+        QString title;
         QString descr;
-        QStringList units;
+        QString units;
     };
-    typedef QList<field_s> Dictionary;
+    typedef QList<dict_field_s> Dict;
 
 protected:
-    QString info() const override;
+    QString toolTip() const override;
     void hashData(QCryptographicHash *h) const override;
 
 private:
     ProtocolNodes *nodes;
 
     QMap<QString, ProtocolNodeFile *> _files_map;
+    Dict m_dict;
+    QList<int> m_dict_fields;
 
     QElapsedTimer timeReqLoader;
+
+    const dict_field_s *field(xbus::node::conf::fid_t fid) const;
+    QVariant read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid);
+    bool write_param(ProtocolStreamWriter &stream,
+                     xbus::node::conf::fid_t fid,
+                     const QVariant &value);
+
 private slots:
     void requestRebootLoaderNext();
 
     void resetFilesMap();
     void updateDescr();
 
-    void dictData(QByteArray data);
+    void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
 
     //export signals and slots
 signals:
     void requestTimeout(quint16 cmd, QByteArray data);
 
     void identReceived();
-    void dictReceived(const ProtocolNode::Dictionary &dict);
+    void dictReceived(const ProtocolNode::Dict &dict);
     void confReceived(const QVariantList &values);
+    void confSaved();
 
     void messageReceived(xbus::node::msg::type_t type, QString msg);
 
@@ -103,6 +115,9 @@ public slots:
     void requestDict();
     void requestConf();
     void requestStatus();
+
+    void requestUpdate(xbus::node::conf::fid_t fid, QVariant value);
+    void requestUpdateSave();
 
     //---------------------------------------
     // PROPERTIES

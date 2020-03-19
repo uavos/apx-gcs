@@ -44,10 +44,10 @@ void VehicleSelect::addVehicle(Vehicle *vehicle)
 
     connect(f, &Fact::triggered, this, &VehicleSelect::_factTriggered);
 
-    f->bind(vehicle, "visible", true);
-    f->bind(vehicle, "active", true);
-    f->bind(vehicle, "value", true);
-    f->bind(vehicle, "icon", true);
+    f->bindProperty(vehicle, "visible", true);
+    f->bindProperty(vehicle, "active", true);
+    f->bindProperty(vehicle, "value", true);
+    f->bindProperty(vehicle, "icon", true);
 
     setEnabled(true);
 }

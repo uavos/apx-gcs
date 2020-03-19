@@ -23,59 +23,89 @@
 #include "NodeField.h"
 #include "NodeItem.h"
 #include "Nodes.h"
+
 #include <App/AppRoot.h>
 #include <Pawn/PawnCompiler.h>
 #include <Protocols/ProtocolNode.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
-NodeField::NodeField(NodeItem *node,
-                     quint16 id,
-                     int dtype,
-                     const QString &name,
-                     const QString &title,
-                     const QString &descr,
-                     const QString &units,
-                     const QStringList &opts,
-                     const QStringList &groups,
-                     NodeField *parentField)
-    : NodesBase(parentField, name, title, descr, NoFlags)
-    , id(id)
-    , dtype(dtype)
-    , groups(groups)
-    , node(node)
-    , pawncc(nullptr)
-    , parentField(parentField)
-{
-    setUnits(units);
-    setEnumStrings(opts);
 
-    switch (dtype) {
+NodeField::NodeField(Fact *parent,
+                     NodeItem *node,
+                     xbus::node::conf::fid_t fid,
+                     const ProtocolNode::dict_field_s &field,
+                     NodeField *parentField)
+    : Fact(parent, field.name, field.title, field.descr, NoFlags)
+    , _node(node)
+    , _parentField(parentField)
+    , m_fid(fid)
+    , _type(static_cast<xbus::node::conf::type_e>(field.type))
+{
+    if (field.array && !parentField) {
+        QStringList st = field.units.split(',');
+        if (st.size() != field.array)
+            st.clear();
+        for (int i = 0; i < field.array; ++i) {
+            ProtocolNode::dict_field_s field_item = field;
+            QString s;
+            if (st.isEmpty())
+                s = QString::number(i + 1);
+            else {
+                s = st.at(i);
+                field_item.units.clear();
+            }
+            field_item.name.append(QString("_%1").arg(s.toLower()));
+            field_item.title = s;
+            NodeField *f = new NodeField(this, node, fid, field_item, this);
+            connect(f, &Fact::valueChanged, this, &NodeField::updateStatus);
+        }
+        setTreeType(Group);
+        updateStatus();
+        return;
+    }
+
+    setUnits(field.units);
+
+    switch (field.type) {
     default:
-        qDebug() << "Unknown node field data type" << dtype << name << descr;
+        qDebug() << "Unknown node field data type" << field.type << name() << descr();
         break;
-    case DictNode::Float:
+    case xbus::node::conf::real:
         setDataType(Float);
-        if (!name.startsWith("mekf_"))
-            setPrecision(4);
+        setPrecision(6);
         break;
-    case DictNode::Byte:
+    case xbus::node::conf::byte:
         setMax(255);
-        //fallthru
-    case DictNode::UInt:
         setMin(0);
         setDataType(Int);
         break;
-    case DictNode::Option:
-        setDataType(Enum);
+    case xbus::node::conf::word:
+        if (units() == "mandala") {
+            setDataType(MandalaID);
+            break;
+        }
+        setMax(65535);
+        setMin(0);
+        setDataType(Int);
         break;
-    case DictNode::String:
-    case DictNode::StringL:
+    case xbus::node::conf::dword:
+        setMin(0);
+        setDataType(Int);
+        break;
+    case xbus::node::conf::option:
+        setDataType(Enum);
+        if (field.units.isEmpty()) {
+            setEnumStrings(QStringList() << "off"
+                                         << "on");
+        } else {
+            setEnumStrings(field.units.split(','));
+        }
+        setUnits(QString());
+        break;
+    case xbus::node::conf::text:
+    case xbus::node::conf::string:
         setDataType(Text);
         break;
-    case DictNode::MandalaID:
-        setDataType(MandalaID);
-        setEnumStrings(QStringList());
-        break;
+        /*
     case DictNode::Script:
         setDataType(Script);
         if (pawncc)
@@ -100,59 +130,40 @@ NodeField::NodeField(NodeItem *node,
     case DictNode::Vector:
     case DictNode::Array:
         setTreeType(Group);
-        break;
-    }
-
-    if (!parentField) {
-        connect(this, &NodeField::dataValidChanged, this, &NodeField::validateData);
-
-        connect(this, &NodesBase::dataValidChanged, this, [=]() { setEnabled(dataValid()); });
-        setEnabled(dataValid());
-
-        addActions();
-        node->allFields.append(this);
-    } else {
-        //expanded sub field
-        connect(this, &NodeField::valueChanged, parentField, &NodeField::updateStatus);
-        parentField->updateStatus();
-
-        connect(this, &NodesBase::dataValidChanged, this, [=]() { setEnabled(dataValid()); });
-        setEnabled(dataValid());
+        break;*/
     }
 }
-//=============================================================================
+
 void NodeField::updateStatus()
 {
-    switch (dtype) {
-    case DictNode::Vector: {
+    //arrays only
+
+    if (size() == 3 && _type == xbus::node::conf::real) {
         QStringList st;
         for (int i = 0; i < size(); ++i) {
-            NodeField *f = child<NodeField>(i);
-            st.append(f->text());
+            st.append(child(i)->text());
         }
         Fact::setValue(QString("(%1)").arg(st.join(',')));
-    } break;
-    case DictNode::Array: {
-        int acnt = 0;
-        for (int i = 0; i < size(); ++i) {
-            NodeField *f = child<NodeField>(i);
-            if (f->isZero())
-                continue;
-            QString s = f->text();
-            if (s.isEmpty())
-                continue;
-            if (s == "0")
-                continue;
-            acnt++;
-        }
-        if (acnt > 0)
-            Fact::setValue(QString("[%1/%2]").arg(acnt).arg(size()));
-        else
-            Fact::setValue(QString("[%1]").arg(size()));
-    } break;
     }
+
+    int acnt = 0;
+    for (int i = 0; i < size(); ++i) {
+        Fact *f = child(i);
+        if (f->isZero())
+            continue;
+        QString s = f->text();
+        if (s.isEmpty())
+            continue;
+        if (s == "0")
+            continue;
+        acnt++;
+    }
+    if (acnt > 0)
+        Fact::setValue(QString("[%1/%2]").arg(acnt).arg(size()));
+    else
+        Fact::setValue(QString("[%1]").arg(size()));
 }
-//=============================================================================
+
 bool NodeField::setValue(const QVariant &v)
 {
     if (vtype(v, QMetaType::QVariantList)) {
@@ -168,12 +179,12 @@ bool NodeField::setValue(const QVariant &v)
             }
             return rv;
         }
-        if (dtype == DictNode::Script) {
+        /*if (dtype == DictNode::Script) {
             QString src = values.value(0).toString();
             scriptCodeSave = values.value(1).toByteArray();
             //qDebug()<<scriptCodeSave.size();
             return Fact::setValue(src);
-        }
+        }*/
     }
     return Fact::setValue(v);
 }
@@ -188,16 +199,16 @@ QVariant NodeField::uploadableValue(void) const
         }
         return list;
     }
-    if (dtype == DictNode::Script) {
+    /*if (dtype == DictNode::Script) {
         QVariantList list;
         if (!pawncc->outData().isEmpty())
             list << value() << pawncc->outData();
         return list;
-    }
+    }*/
     return value();
 }
-//=============================================================================
-QVariant NodeField::data(int col, int role) const
+
+/*QVariant NodeField::data(int col, int role) const
 {
     if (dtype == DictNode::Script) {
         if (role == Qt::DisplayRole && role != Qt::EditRole && col == FACT_MODEL_COLUMN_VALUE) {
@@ -211,41 +222,29 @@ QVariant NodeField::data(int col, int role) const
         }
     }
     return NodesBase::data(col, role);
-}
-//=============================================================================
+}*/
+
 QString NodeField::toString() const
 {
     QString v = text();
-    if (dtype == DictNode::Script && (!v.isEmpty())) {
+    /*if (dtype == DictNode::Script && (!v.isEmpty())) {
         v = qCompress(v.toUtf8(), 9).toHex().toUpper();
-    }
+    }*/
     return v;
 }
 void NodeField::fromString(const QString &s)
 {
-    if (dtype == DictNode::Script && (!s.isEmpty())) {
+    /*if (dtype == DictNode::Script && (!s.isEmpty())) {
         QByteArray ba = qUncompress(QByteArray::fromHex(s.toUtf8()));
         if (!ba.isEmpty()) {
             Fact::setValue(QString(ba));
             return;
         }
-    }
+    }*/
     Fact::setValue(s);
 }
-//=============================================================================
-//=============================================================================
-void NodeField::validateData()
+
+xbus::node::conf::fid_t NodeField::fid() const
 {
-    if (!dataValid())
-        return;
-    backup();
+    return m_fid;
 }
-//=============================================================================
-//=============================================================================
-void NodeField::hashData(QCryptographicHash *h) const
-{
-    Fact::hashData(h);
-    h->addData(QString::number(id).toUtf8());
-    h->addData(DictNode::dataTypeToString(dtype).toUtf8());
-}
-//=============================================================================

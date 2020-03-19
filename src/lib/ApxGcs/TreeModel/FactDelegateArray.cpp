@@ -165,14 +165,16 @@ Fact *FactDelegateArrayModel::field(const QModelIndex &index) const
         return nullptr;
     int item_n = index.row();
     //check for controls array
-    if (f->name().startsWith("ctr_")) {
+    const QString sctr("_controls_");
+    if (f->name().contains(sctr)) {
         QString s = f->name();
+        s.remove(0, s.indexOf(sctr) + 1);
         s = s.left(s.lastIndexOf('_'));
         //xx_yy_zz nested array
         if (s.contains('_')) {
             for (int i = 0; i < group->size(); ++i) {
                 Fact *fi = group->child(i);
-                if (!fi->name().startsWith(s))
+                if (!fi->name().contains(s))
                     continue;
                 if ((int) item_n >= fi->size())
                     break; //protect

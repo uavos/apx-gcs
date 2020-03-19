@@ -20,11 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactData_H
-#define FactData_H
-//=============================================================================
+#pragma once
+
 #include "FactBase.h"
-//=============================================================================
+
+class SignalForwarder;
+
 class FactData : public FactBase
 {
     Q_OBJECT
@@ -67,7 +68,8 @@ public:
 
     void defaults();
 
-    virtual void bind(FactData *fact);
+    Q_INVOKABLE virtual void bind(FactData *fact);
+    Q_INVOKABLE void bindProperty(FactData *src, QString propertyName, bool oneway = false);
 
     //Mandala support - must override in derived classes
     // to collect dict ids from vehicle mandala
@@ -90,8 +92,10 @@ public slots:
     virtual void restore();
 
 protected:
+    QPointer<FactData> _binded_data;
+    QHash<QString, SignalForwarder *> _binded_properties;
+
     QVariant backup_value;
-    QPointer<FactData> bindedFactData;
 
     bool vtype(const QVariant &v, QMetaType::Type t) const;
 
@@ -186,5 +190,3 @@ signals:
 
     void defaultValueChanged();
 };
-//=============================================================================
-#endif
