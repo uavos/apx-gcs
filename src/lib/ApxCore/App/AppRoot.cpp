@@ -28,11 +28,9 @@
 //=============================================================================
 AppRoot *AppRoot::_instance = nullptr;
 AppRoot::AppRoot(QObject *parent)
-    : Fact(nullptr, "apx", tr("Application"), QCoreApplication::applicationName(), Root | FlatModel)
+    : Fact(parent, "apx", tr("Application"), QCoreApplication::applicationName(), Root | FlatModel)
 {
     _instance = this;
-    if (parent)
-        setParent(parent);
 
     f_settings = new AppSettings(this);
 

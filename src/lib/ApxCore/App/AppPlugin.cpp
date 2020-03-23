@@ -151,11 +151,14 @@ void AppPlugin::loadLib()
                 title = f->title();
             if (descr.isEmpty())
                 descr = f->descr();
+            //connect(App::instance(), &App::aboutToQuit, f, &Fact::remove);
         } else {
+            //connect(App::instance(), &App::aboutToQuit, control, &QObject::deleteLater);
         }
         f_enabled->setSection(section);
         if (!descr.isEmpty())
             descr.prepend(tr("Tool").append(": "));
+
         plugins->loadedTool(this);
     } break;
     case PluginInterface::Widget: {

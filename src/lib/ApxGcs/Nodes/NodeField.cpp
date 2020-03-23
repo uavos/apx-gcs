@@ -34,7 +34,7 @@ NodeField::NodeField(Fact *parent,
                      xbus::node::conf::fid_t fid,
                      const ProtocolNode::dict_field_s &field,
                      NodeField *parentField)
-    : Fact(parent, field.name, field.title, field.descr, NoFlags)
+    : Fact(parent, field.name, field.title, field.descr, ModifiedTrack)
     , _node(node)
     , _parentField(parentField)
     , m_fid(fid)
@@ -79,10 +79,6 @@ NodeField::NodeField(Fact *parent,
         setDataType(Int);
         break;
     case xbus::node::conf::word:
-        if (units() == "mandala") {
-            setDataType(MandalaID);
-            break;
-        }
         setMax(65535);
         setMin(0);
         setDataType(Int);
@@ -90,6 +86,9 @@ NodeField::NodeField(Fact *parent,
     case xbus::node::conf::dword:
         setMin(0);
         setDataType(Int);
+        break;
+    case xbus::node::conf::mandala:
+        setDataType(MandalaID);
         break;
     case xbus::node::conf::option:
         setDataType(Enum);
@@ -166,7 +165,7 @@ void NodeField::updateStatus()
 
 bool NodeField::setValue(const QVariant &v)
 {
-    if (vtype(v, QMetaType::QVariantList)) {
+    if (_check_type(v, QMetaType::QVariantList)) {
         const QVariantList &values = v.value<QVariantList>();
         if (size() > 0) {
             //expanded field

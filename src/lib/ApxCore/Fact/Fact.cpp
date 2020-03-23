@@ -38,23 +38,10 @@ Fact::Fact(QObject *parent,
            const QString &descr,
            Flags flags,
            const QString &icon)
-    : FactData(parent, name, title, descr, flags)
-    , m_mandala(nullptr)
-    , m_model(nullptr)
-    , m_actionsModel(nullptr)
-    , m_enabled(true)
-    , m_visible(true)
-    , m_active(false)
-    , m_progress(-1)
+    : FactData(nullptr, name, title, descr, flags)
     , m_icon(icon)
-    , m_binding(nullptr)
-    , m_scnt(0)
-    , m_parentEnabled(true)
-    , m_parentVisible(true)
 {
     //models
-    //m_model = new FactListModel(this);
-    //m_actionsModel = new FactListModelActions(this);
     connect(this, &Fact::actionsUpdated, this, &Fact::updateModels);
     connect(this, &Fact::itemInserted, this, &Fact::updateModels);
     connect(this, &Fact::itemRemoved, this, &Fact::updateModels);
@@ -73,7 +60,7 @@ Fact::Fact(QObject *parent,
 
     connect(this, &Fact::parentFactChanged, this, [this]() {
         if (parentFact() && parentFact()->options() & Section)
-            setSection(static_cast<Fact *>(parentFact())->title());
+            setSection(parentFact()->title());
     });
 
     //flags
@@ -82,7 +69,7 @@ Fact::Fact(QObject *parent,
     connect(this, &Fact::optionsChanged, this, &Fact::flagsChanged);
 
     //append to parent
-    setParentFact(qobject_cast<FactBase *>(parent));
+    setParentFact(qobject_cast<Fact *>(parent));
 
     /*if (!name.isEmpty() && name.front().isUpper()) { //.toLower() != name) {
         qDebug() << path() << name;
@@ -301,23 +288,21 @@ QVariant Fact::findValue(const QString &namePath)
 //=============================================================================
 Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
 {
-    QList<Fact *> slist;
+    FactList slist;
     bool del = factNamePath.contains('.');
-    for (int i = 0; i < size(); ++i) {
-        Fact *f = child(i);
-        if (f->name() == factNamePath)
-            return f;
-        if (del && f->path().endsWith(factNamePath))
-            return f;
-        if ((!exactMatch) && f->name().startsWith(factNamePath))
-            slist.append(f);
+    for (auto i : children()) {
+        if (i->name() == factNamePath)
+            return i;
+        if (del && i->path().endsWith(factNamePath))
+            return i;
+        if ((!exactMatch) && i->name().startsWith(factNamePath))
+            slist.append(i);
     }
     if (del) {
-        for (int i = 0; i < size(); ++i) {
-            Fact *f = child(i);
-            f = f->findChild(factNamePath);
-            if (f)
-                return f;
+        for (auto i : children()) {
+            i = i->findChild(factNamePath);
+            if (i)
+                return i;
         }
     }
     //qDebug()<<slist.size();
@@ -426,59 +411,70 @@ void Fact::trigger(QVariantMap opts)
     if (binding() && size() <= 0)
         binding()->trigger(opts);
 }
-Fact *Fact::menu()
-{
-    if (size() > 0)
-        return this;
-    if (!qmlPage().isEmpty())
-        return this;
-    if (treeType() == Root)
-        return this;
-    if (dataType() == MandalaID)
-        return mandala();
-
-    if (treeType() == Group)
-        return binding() ? binding()->menu() : this;
-
-    if (binding())
-        return binding()->menu();
-    return nullptr;
-}
 //=============================================================================
 QObject *Fact::loadQml(const QString &qmlFile)
 {
     QVariantMap opts;
     opts.insert("fact", QVariant::fromValue(this));
-    return App::instance()->engine()->loadQml(qmlFile, opts);
+    return App::loadQml(qmlFile, opts);
 }
 //=============================================================================
-void Fact::bind(FactData *fact)
+void Fact::updateBinding(Fact *src)
 {
-    if (m_binding == fact)
+    if (m_binding == src)
         return;
 
-    FactData::bind(fact);
-    m_binding = qobject_cast<Fact *>(fact);
-    if (!fact)
+    if (m_binding) {
+        disconnect(m_binding, nullptr, this, nullptr);
+        unbindProperties(m_binding);
+    }
+    m_binding = src;
+    setMenu(src);
+
+    if (!src)
         return;
 
-    bindProperty(m_binding, "enabled");
-    bindProperty(m_binding, "active");
-    bindProperty(m_binding, "progress", true);
-
+    if (m_title.isEmpty())
+        bindProperty(src, "title", true);
+    if (m_descr.isEmpty())
+        bindProperty(src, "descr", true);
     if (m_icon.isEmpty())
-        bindProperty(m_binding, "icon", true);
+        bindProperty(src, "icon", true);
     if (m_qmlPage.isEmpty())
-        bindProperty(m_binding, "qmlPage", true);
+        bindProperty(src, "qmlPage", true);
 
-    emit bindingChanged();
+    if (treeType() != Action && src->treeType() != Action) {
+        bindProperty(src, "value");
+        bindProperty(src, "modified");
+
+        bindProperty(src, "backupValue", true);
+        bindProperty(src, "defaultValue", true);
+        bindProperty(src, "enabled", true);
+        bindProperty(src, "progress", true);
+        bindProperty(src, "active", true);
+
+        if (!dataType())
+            setDataType(src->dataType());
+
+        if (treeType() != Group && src->treeType() != Group) {
+            bindProperty(src, "precision", true);
+            bindProperty(src, "min", true);
+            bindProperty(src, "max", true);
+            bindProperty(src, "text", true);
+            bindProperty(src, "enumStrings", true);
+            bindProperty(src, "units", true);
+        }
+
+    } else {
+        bindProperty(src, "enabled");
+    }
 }
 
 //=============================================================================
 Fact *Fact::createAction(Fact *parent)
 {
     Fact *f = new Fact(parent, m_name, "", "", Action | dataType() | options(), icon());
-    f->bind(this);
+    f->setBinding(this);
     return f;
 }
 //=============================================================================
@@ -660,9 +656,8 @@ void Fact::setEnabled(const bool v)
     for (int i = 0; i < size(); ++i) {
         child(i)->updateParentEnabled();
     }
-    for (int i = 0; i < actions().size(); ++i) {
-        Fact *f = static_cast<Fact *>(actions().at(i));
-        f->updateParentEnabled();
+    for (auto i : actions()) {
+        i->updateParentEnabled();
     }
     //qDebug() << "END" << path() << v << m_parentEnabled;
 }
@@ -692,12 +687,11 @@ void Fact::setVisible(const bool v)
     m_visible = v;
     emit visibleChanged();
 
-    for (int i = 0; i < size(); ++i) {
-        child(i)->updateParentVisible();
+    for (auto i : children()) {
+        i->updateParentVisible();
     }
-    for (int i = 0; i < actions().size(); ++i) {
-        Fact *f = static_cast<Fact *>(actions().at(i));
-        f->updateParentVisible();
+    for (auto i : actions()) {
+        i->updateParentVisible();
     }
 }
 void Fact::updateParentVisible()
@@ -762,8 +756,7 @@ void Fact::trackProgress()
 {
     int ncnt = 0, v = 0;
     if (options() & ProgressTrack) {
-        for (auto const i : *this) {
-            const Fact *f = static_cast<Fact *>(i);
+        for (auto const f : children()) {
             int np = f->progress();
             if (np < 0)
                 continue;
@@ -810,8 +803,34 @@ void Fact::setBinding(Fact *v)
 {
     if (m_binding == v)
         return;
-    bind(v);
+    updateBinding(v);
     emit bindingChanged();
+}
+Fact *Fact::menu()
+{
+    if (size() > 0)
+        return this;
+    if (!qmlPage().isEmpty())
+        return this;
+    if (treeType() == Root)
+        return this;
+    if (dataType() == MandalaID)
+        return mandala();
+
+    if (m_menu)
+        return m_menu->menu();
+
+    if (treeType() == Group)
+        return this;
+
+    return nullptr;
+}
+void Fact::setMenu(Fact *v)
+{
+    if (m_menu == v)
+        return;
+    m_menu = v;
+    emit menuChanged();
 }
 QString Fact::qmlPage() const
 {

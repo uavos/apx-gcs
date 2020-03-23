@@ -20,13 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactListModel_H
-#define FactListModel_H
-//=============================================================================
+#pragma once
+
 #include <QtCore>
+
 class Fact;
 class FactBase;
-//=============================================================================
+
 class FactListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -79,5 +79,3 @@ signals:
     void filterChanged();
     void layoutChanged();
 };
-//=============================================================================
-#endif

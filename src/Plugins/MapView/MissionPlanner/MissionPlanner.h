@@ -40,7 +40,6 @@ class MissionPlanner : public Fact
 
 public:
     explicit MissionPlanner(Fact *parent = nullptr);
-    ~MissionPlanner();
 
     Fact *f_add;
     Fact *f_vehicle;

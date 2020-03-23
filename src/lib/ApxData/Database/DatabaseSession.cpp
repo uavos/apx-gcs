@@ -22,7 +22,8 @@
  */
 #include "DatabaseSession.h"
 #include "Database.h"
-#include <App/AppDirs.h>
+
+#include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 //=============================================================================
@@ -38,8 +39,7 @@ DatabaseSession::DatabaseSession(QObject *parent,
     , m_worker(nullptr)
     , m_capacity(0)
 {
-    setParent(parent);
-    connect(parent, &QObject::destroyed, this, &Fact::remove);
+    connect(App::instance(), &App::aboutToQuit, this, &Fact::remove);
 
     setIcon("database");
 
@@ -67,8 +67,7 @@ DatabaseSession::DatabaseSession(QObject *parent,
         query.exec("PRAGMA locking_mode = NORMAL;");
         query.exec("PRAGMA journal_mode = WAL;");
         query.exec("PRAGMA auto_vacuum = NONE;");
-        database->add(this);
-        connect(this, &DatabaseSession::destroyed, [=]() {
+        connect(this, &DatabaseSession::destroyed, [sessionName]() {
             QSqlDatabase::removeDatabase(sessionName);
             //qDebug()<<"DB"<<sessionName<<"removed";
         });

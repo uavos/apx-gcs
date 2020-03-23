@@ -12,9 +12,8 @@ GeoTileFetcher::GeoTileFetcher(QGeoTiledMappingManagerEngine *parent)
     //_timer.setSingleShot(false);
     //_timer.start(30000);
 
-    loader = TileLoader::instance();
-    if (!loader) {
-        loader = new TileLoader();
+    if (!TileLoader::instance()) {
+        new TileLoader();
     }
 }
 //=============================================================================

@@ -40,7 +40,6 @@
 //=============================================================================
 AppMenu::AppMenu(Fact *parent)
     : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Action | IconOnly, "menu")
-    , menuBar(nullptr)
 {
     setOpt("pos", QPointF(1, 0.3));
 
@@ -69,11 +68,11 @@ AppMenu::AppMenu(Fact *parent)
     file = new Fact(this, "file", tr("File"), "", Group, "file");
     f = new Fact(file, "telemetry");
     f->setOpt("shortcut", QKeySequence::Open);
-    f->bind(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
-    f = new Fact(file, "nodes");
+    f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
+    //f = new Fact(file, "nodes");
     // FIXME: f->bind(Vehicles::instance()->f_replay->f_nodes->f_share->f_import);
     f = new Fact(file, "datalink");
-    f->bind(AppGcs::instance()->f_datalink);
+    f->setBinding(AppGcs::instance()->f_datalink);
     f->setSection(tr("Communication"));
 
     vehicles = new Fact(this, "vehicles", tr("Vehicles"), "", Group | FlatModel, "airplane");
@@ -98,10 +97,10 @@ AppMenu::AppMenu(Fact *parent)
     updateVehicleSelect();
 
     tools = new Fact(this, "tools", "", "", Group);
-    tools->bind(AppRoot::instance()->f_tools);
+    tools->setBinding(AppRoot::instance()->f_tools);
 
     windows = new Fact(this, "windows", "", "", Group);
-    windows->bind(AppRoot::instance()->f_windows);
+    windows->setBinding(AppRoot::instance()->f_windows);
 
     help = new Fact(this, "help", tr("Help"), "", Group, "help");
     f = new Fact(help, "mrep", tr("Mandala Report"), "", NoFlags, "format-list-bulleted");
@@ -122,7 +121,11 @@ AppMenu::AppMenu(Fact *parent)
         QDesktopServices::openUrl(QUrl("https://github.com/uavos/apx-releases/issues"));
     });
 
-    connect(App::instance(), &App::loadingFinished, this, &AppMenu::createMenuBar);
+    connect(App::instance(),
+            &App::loadingFinished,
+            this,
+            &AppMenu::createMenuBar,
+            Qt::QueuedConnection);
 }
 //=============================================================================
 void AppMenu::updateVehicleTools()
@@ -134,8 +137,9 @@ void AppMenu::updateVehicleTools()
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);
         Fact *a = new Fact(vehicleTools, f->name());
-        a->bind(f);
+        a->setBinding(f);
     }
+    updateMenu(vehicleTools->parentFact());
 }
 void AppMenu::updateVehicleSelect()
 {
@@ -152,16 +156,16 @@ void AppMenu::updateVehicleSelect()
 //=============================================================================
 void AppMenu::createMenuBar()
 {
-    if (menuBar)
-        delete menuBar;
+    if (_menuBar)
+        delete _menuBar;
 
-    menuBar = new QMenuBar(nullptr);
+    _menuBar = new QMenuBar(nullptr);
     for (int i = 0; i < size(); ++i) {
         Fact *g = child(i);
         Fact *f = g->menu();
         if (!f)
             continue;
-        QMenu *menu = menuBar->addMenu(g->title());
+        QMenu *menu = _menuBar->addMenu(g->title());
         f->setOpt("qmenu", QVariant::fromValue(menu));
         updateMenu(f);
         QAbstractListModel *model = f->model();
@@ -178,6 +182,7 @@ void AppMenu::createMenuBar()
 void AppMenu::updateMenu(Fact *fact)
 {
     QMenu *menu = fact->opts().value("qmenu").value<QMenu *>();
+    //qDebug() << fact->path() << menu;
     if (!menu)
         return;
 
@@ -186,20 +191,22 @@ void AppMenu::updateMenu(Fact *fact)
     FactListModel *model = qobject_cast<FactListModel *>(fact->model());
     if (!model)
         return;
+
     model->sync();
 
     QString sect;
     for (int i = 0; i < model->count(); ++i) {
         Fact *f = model->get(i);
-        Fact *fm = f->menu();
-        if (fm)
-            f = fm;
+        //Fact *fm = f->menu();
+        //if (fm)
+        //    f = fm;
         if (sect != f->section()) {
             sect = f->section();
             menu->addSection(sect);
         }
         QAction *a = new QActionFact(f, QColor(Qt::black));
         menu->addAction(a);
+        //qDebug() << a->text() << a->menuRole() << f->path();
     }
 }
 //=============================================================================

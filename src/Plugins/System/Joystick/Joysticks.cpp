@@ -87,9 +87,9 @@ void Joysticks::updateEnabled()
         scan();
         waitEvent();
     } else {
-        for (auto f : *f_list) {
-            f->remove();
-            delete f;
+        foreach (auto i, f_list->children()) {
+            i->remove();
+            delete i;
         }
         //f_list->removeAll();
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);

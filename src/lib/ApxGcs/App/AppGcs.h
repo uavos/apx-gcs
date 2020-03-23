@@ -20,8 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppGcs_H
-#define AppGcs_H
+#pragma once
+
 #include <App/App.h>
 
 #include <App/App.h>
@@ -35,7 +35,7 @@
 
 #include <Protocols/ProtocolVehicles.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 class AppGcs : public App
 {
     Q_OBJECT
@@ -61,7 +61,7 @@ private:
     static AppGcs *_instance;
 
 protected:
-    void loadServices();
+    void loadServices() override;
 
 public slots:
     void openFile(AppGcs::FileType type = FileType::UnknownFile);
@@ -69,5 +69,3 @@ public slots:
 signals:
     void fileOpenRequest(QString fileName);
 };
-//=============================================================================
-#endif

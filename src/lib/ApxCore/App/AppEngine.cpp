@@ -69,6 +69,10 @@ AppEngine::AppEngine(QObject *parent)
     //connect(this,&Fact::itemAdded,this,&AppEngine::jsAddItem);//,Qt::QueuedConnection);
     //connect(this,&Fact::itemRemoved,this,&AppEngine::jsRemoveItem);//,Qt::QueuedConnection);
 }
+AppEngine::~AppEngine()
+{
+    qDebug() << "enigne destroyed";
+}
 //=============================================================================
 void AppEngine::jsSyncObject(QObject *obj)
 {
@@ -81,12 +85,12 @@ void AppEngine::jsSync(Fact *fact)
     if (fact->name().isEmpty())
         return;
 
-    QList<FactBase *> list = fact->pathList();
     QJSValue v = globalObject();
     //qDebug() << fact << list;
     //build tree from root
+    const FactList &list = fact->pathList();
     for (int i = list.size() - 1; i > 0; --i) {
-        Fact *f = static_cast<Fact *>(list.at(i));
+        Fact *f = list.at(i);
         QJSValue vp = v.property(f->name());
         if (vp.isUndefined() || (!vp.isQObject()) || vp.toQObject() != f) {
             jsSetProperty(v, f->name(), newQObject(f));
@@ -103,6 +107,7 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
     //qDebug() << fact->path();
     if (fact->name().isEmpty())
         return QJSValue();
+
     QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);
     QJSValue js_fact = newQObject(fact);
 
@@ -124,9 +129,8 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
     //sync actions
     if (!fact->actions().isEmpty()) {
         //QJSValue js_actions = newObject();
-        foreach (FactBase *i, fact->actions()) {
-            Fact *f = static_cast<Fact *>(i);
-            jsSync(f, js_fact);
+        for (auto i : fact->actions()) {
+            jsSync(i, js_fact);
             /*QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
             jsSetProperty(js_actions, f->name(), newQObject(f));
             if (f->bind() && f->bind()->parentFact() == nullptr) {

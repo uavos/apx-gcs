@@ -32,7 +32,7 @@ JSTreeModel::JSTreeModel(QJSEngine *e)
 {
     setObjectName("jsTreeModel");
     root = new JSTreeItem(nullptr, "root", e->globalObject());
-    root->setParent(this);
+    root->QObject::setParent(this);
 }
 //=============================================================================
 QHash<int, QByteArray> JSTreeModel::roleNames() const

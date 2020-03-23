@@ -172,7 +172,7 @@ QModelIndex FactTreeModel::factIndex(FactBase *item, int column) const
 void FactTreeModel::checkConnections(Fact *fact) const
 {
     if (!conFactLayout.contains(fact)) {
-        const_cast<QList<Fact *> *>(&conFactLayout)->append(fact);
+        const_cast<FactList *>(&conFactLayout)->append(fact);
         connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed);
 
         connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted);

@@ -76,6 +76,7 @@ TileLoader::TileLoader(Fact *parent)
 }
 TileLoader::~TileLoader()
 {
+    _instance = nullptr;
     abort();
 }
 //=============================================================================

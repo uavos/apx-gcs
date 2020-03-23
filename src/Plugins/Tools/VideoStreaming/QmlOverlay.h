@@ -32,17 +32,16 @@ public slots:
     void renderNext();
 
 private:
-    QOpenGLContext *m_context;
-    QOffscreenSurface *m_offscreenSurface;
-    QQuickRenderControl *m_renderControl;
-    QQuickWindow *m_quickWindow;
-    QQmlEngine *m_qmlEngine;
-    QQmlComponent *m_qmlComponent;
-    QQuickItem *m_rootItem;
-    QOpenGLFramebufferObject *m_fbo;
-    qreal m_dpr;
+    QOpenGLContext *m_context{nullptr};
+    QOffscreenSurface *m_offscreenSurface{nullptr};
+    QQuickRenderControl *m_renderControl{nullptr};
+    QQuickWindow *m_quickWindow{nullptr};
+    QQmlComponent *m_qmlComponent{nullptr};
+    QQuickItem *m_rootItem{nullptr};
+    QOpenGLFramebufferObject *m_fbo{nullptr};
+    qreal m_dpr{1.0};
 
-    bool m_needPolishAndSync;
+    bool m_needPolishAndSync{true};
 
     QMutex mutex;
     QImage cb_overlay;

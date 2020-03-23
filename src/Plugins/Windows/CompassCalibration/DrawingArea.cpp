@@ -27,7 +27,6 @@ void DrawingArea::resizeEvent(QResizeEvent *event)
     resizeArea(event->size().width(), event->size().height());
 }
 
-DrawingArea::~DrawingArea() {}
 QPointF DrawingArea::DPoint(double x, double y)
 {
     return QPointF((x * dScale + dOffset), (-y * dScale + dOffset));

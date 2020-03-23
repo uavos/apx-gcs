@@ -46,7 +46,6 @@ class QFontIconEngine : public QIconEngine
 {
 public:
     QFontIconEngine();
-    virtual ~QFontIconEngine();
     virtual void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
         Q_DECL_OVERRIDE;
     virtual QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;

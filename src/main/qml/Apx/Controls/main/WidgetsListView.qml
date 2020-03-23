@@ -47,7 +47,10 @@ ListView {
 
         plugins.push(plugin)
         var p = {}
-        for(var i in plugin) p[i]=plugin[i]
+        for(var i in plugin) {
+            var v=plugin[i]
+            if(v) p[i]=v
+        }
         p.idx = plugins.length-1
         pluginsModel.insert(index, p)
         plugin.active=false //settings.value(plugin.title,false)===true

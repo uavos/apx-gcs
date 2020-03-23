@@ -50,8 +50,8 @@ public:
     Fact *f_codec;
 
     Fact *f_routing;
-    QList<Fact *> f_rx;
-    QList<Fact *> f_tx;
+    FactList f_rx;
+    FactList f_tx;
 
     Fact *f_save;
     Fact *f_remove;

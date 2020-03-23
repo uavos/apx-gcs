@@ -16,7 +16,6 @@ class SerialForm : public QWidget
 
 public:
     explicit SerialForm(QWidget *parent = 0);
-    ~SerialForm();
 
 protected:
     void closeEvent(QCloseEvent *event);

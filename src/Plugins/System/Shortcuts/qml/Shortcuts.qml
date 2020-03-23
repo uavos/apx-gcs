@@ -6,7 +6,7 @@ import Apx.Common 1.0
 Loader {
 
     property var plugin: apx.settings.interface.shortcuts
-    active: !plugin.blocked.value
+    active: plugin && !plugin.blocked.value
 
     sourceComponent: sys
 
@@ -17,7 +17,7 @@ Loader {
     Component {
         id: sys
         Instantiator {
-            model: plugin.system.model
+            model: plugin?plugin.system.model:null
             Shortcut {
                 context: Qt.ApplicationShortcut
                 enabled: modelData.enb.value
@@ -30,7 +30,7 @@ Loader {
     Component {
         id: usr
         Instantiator {
-            model: plugin.user.model
+            model: plugin?plugin.user.model:null
             Shortcut {
                 context: Qt.ApplicationShortcut
                 enabled: modelData.enb.value

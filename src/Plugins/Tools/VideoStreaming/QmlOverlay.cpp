@@ -5,15 +5,6 @@
 
 QmlOverlay::QmlOverlay(QObject *parent)
     : QObject(parent)
-    , m_context(nullptr)
-    , m_offscreenSurface(nullptr)
-    , m_renderControl(nullptr)
-    , m_quickWindow(nullptr)
-    , m_qmlEngine(nullptr)
-    , m_qmlComponent(nullptr)
-    , m_rootItem(nullptr)
-    , m_fbo(nullptr)
-    , m_needPolishAndSync(true)
 {
     QOpenGLContext *extContext = QOpenGLContext::currentContext();
 
@@ -31,12 +22,10 @@ QmlOverlay::QmlOverlay(QObject *parent)
     m_offscreenSurface->setFormat(m_context->format());
     m_offscreenSurface->create();
 
-    m_renderControl = new QQuickRenderControl(this);
+    m_renderControl = new QQuickRenderControl;
     m_quickWindow = new QQuickWindow(m_renderControl);
     m_quickWindow->setColor(QColor(0, 0, 0, 0));
     connect(m_renderControl, &QQuickRenderControl::sceneChanged, this, &QmlOverlay::sceneChanged);
-
-    m_qmlEngine = App::instance()->engine();
 
     m_context->makeCurrent(m_offscreenSurface);
     m_renderControl->initialize(m_context);
@@ -66,7 +55,8 @@ QmlOverlay::QmlOverlay(QObject *parent)
 
 QmlOverlay::~QmlOverlay()
 {
-    disconnect(this, nullptr, this, nullptr);
+    disconnect(this);
+    disconnect();
 
     m_context->makeCurrent(m_offscreenSurface);
     delete m_renderControl;
@@ -112,7 +102,11 @@ bool QmlOverlay::loadQml(const QString &qmlFile)
     if (m_qmlComponent != nullptr) {
         delete m_qmlComponent;
     }
-    m_qmlComponent = new QQmlComponent(m_qmlEngine, QUrl(qmlFile), QQmlComponent::PreferSynchronous);
+    AppEngine *e = App::instance()->engine();
+    if (!e)
+        return false;
+
+    m_qmlComponent = new QQmlComponent(e, QUrl(qmlFile), QQmlComponent::PreferSynchronous);
 
     if (m_qmlComponent->isError()) {
         const QList<QQmlError> errorList = m_qmlComponent->errors();

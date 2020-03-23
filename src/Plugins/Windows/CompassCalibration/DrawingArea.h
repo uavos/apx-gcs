@@ -8,7 +8,6 @@ class DrawingArea : public QWidget
     Q_OBJECT
 public:
     DrawingArea();
-    ~DrawingArea();
 
 public:
     void resizeArea(int width, int height);

@@ -15,7 +15,6 @@ class ServosForm : public QWidget
 
 public:
     explicit ServosForm(QWidget *parent = 0);
-    ~ServosForm();
 
 protected:
     void closeEvent(QCloseEvent *event);

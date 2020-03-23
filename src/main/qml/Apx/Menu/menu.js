@@ -10,7 +10,7 @@ var menuPopups = new Set()
 function show(fact,opts,parent)
 {
     if(!fact) return
-    var factMenu=fact.menu()
+    var factMenu=fact.menu
     if(!factMenu) return
 
     if(!opts) opts={}

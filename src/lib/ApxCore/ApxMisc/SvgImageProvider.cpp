@@ -39,7 +39,7 @@ SvgImageProvider::SvgImageProvider(const QString &basePath)
 
 SvgImageProvider::~SvgImageProvider()
 {
-    qDeleteAll(m_renderers.values());
+    //qDeleteAll(m_renderers.values());
 }
 
 QSvgRenderer *SvgImageProvider::loadRenderer(const QString &svgFile)
@@ -57,7 +57,7 @@ QSvgRenderer *SvgImageProvider::loadRenderer(const QString &svgFile)
     if (!renderer) {
         //qDebug()<<svgFile;
         renderer = new QSvgRenderer(this);
-        connect(renderer, &QSvgRenderer::destroyed, this, [=]() {
+        connect(renderer, &QSvgRenderer::destroyed, this, [this, renderer]() {
             m_renderers.remove(m_renderers.key(renderer));
         });
 

@@ -104,8 +104,8 @@ void MissionGroup::updateTime()
 void MissionGroup::updateTimeDo()
 {
     uint v = 0;
-    for (int i = 0; i < size(); ++i) {
-        MissionItem *wp = child<MissionItem>(i);
+    for (auto i : children()) {
+        MissionItem *wp = static_cast<MissionItem *>(i);
         v += wp->time();
         wp->setTotalTime(v);
     }
@@ -118,8 +118,8 @@ void MissionGroup::updateDistance()
 void MissionGroup::updateDistanceDo()
 {
     uint v = 0;
-    for (int i = 0; i < size(); ++i) {
-        MissionItem *wp = child<MissionItem>(i);
+    for (auto i : children()) {
+        MissionItem *wp = static_cast<MissionItem *>(i);
         v += wp->distance();
         wp->setTotalDistance(v);
     }

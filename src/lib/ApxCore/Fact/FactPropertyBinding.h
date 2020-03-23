@@ -22,26 +22,26 @@
  */
 #pragma once
 
-#include "DatabaseSession.h"
-#include <Fact/Fact.h>
+#include <QtCore>
 
-class NodesDB;
-class TelemetryDB;
-class MissionsDB;
+class Fact;
 
-class Database : public Fact
+class FactPropertyBinding : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit Database(Fact *parent);
+    explicit FactPropertyBinding(Fact *parent, Fact *src, const QString &name);
 
-    static Database *instance() { return _instance; }
-
-    NodesDB *nodes;
-    TelemetryDB *telemetry;
-    MissionsDB *missions;
+    bool match(Fact *src, const QString &name);
 
 private:
-    static Database *_instance;
+    Fact *_src;
+    Fact *_dst;
+    QString _name;
+
+    QMetaProperty _psrc;
+    QMetaProperty _pdst;
+
+private slots:
+    void propertyChanged();
 };

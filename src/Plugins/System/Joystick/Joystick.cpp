@@ -32,7 +32,6 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
     , device_index(device_index)
     , uid(uid)
     , instanceID(-1)
-    , dev(nullptr)
 {
     f_conf = new Fact(this, "conf", tr("Configuration"), tr("Configuration title"), Enum);
 
@@ -81,14 +80,14 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
         new Fact(f_hats, QString("hat%1_d").arg(i), QString::number(i + 1) + "_DOWN", "", Text);
         new Fact(f_hats, QString("hat%1_l").arg(i), QString::number(i + 1) + "_LEFT", "", Text);
     }
-    for (auto f : *f_buttons) {
-        static_cast<Fact *>(f)->setOption(HighlightActive);
+    for (auto i : f_buttons->children()) {
+        i->setOption(HighlightActive);
     }
-    for (auto f : *f_hats) {
-        static_cast<Fact *>(f)->setOption(HighlightActive);
+    for (auto i : f_hats->children()) {
+        i->setOption(HighlightActive);
     }
-    for (auto f : *f_axes) {
-        static_cast<Fact *>(f)->setOption(HighlightActive);
+    for (auto i : f_axes->children()) {
+        i->setOption(HighlightActive);
     }
 
     devName = SDL_JoystickName(dev);
@@ -106,7 +105,7 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
     saveEvent.setInterval(1000);
     connect(&saveEvent, &DelayedEvent::triggered, this, &Joystick::save);
     connect(f_title, &Fact::valueChanged, &saveEvent, &DelayedEvent::schedule);
-    foreach (Fact *f, QList<Fact *>() << f_axes << f_buttons << f_hats) {
+    for (auto f : FactList() << f_axes << f_buttons << f_hats) {
         for (int i = 0; i < f->size(); ++i) {
             connect(f->child(i), &Fact::valueChanged, &saveEvent, &DelayedEvent::schedule);
             for (int j = 0; j < f->child(i)->size(); ++j) {
@@ -233,7 +232,7 @@ QJsonObject Joystick::saveConfig()
     config.insert("index", device_index);
     config.insert("uid", uid);
     QJsonObject conf;
-    foreach (Fact *f, QList<Fact *>() << f_axes << f_buttons << f_hats) {
+    for (auto f : FactList() << f_axes << f_buttons << f_hats) {
         QJsonArray a;
         for (int i = 0; i < f->size(); ++i) {
             QString s = f->child(i)->text().simplified();

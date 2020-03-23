@@ -27,7 +27,7 @@ MissionField::MissionField(
     Fact *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
     : Fact(parent, name, title, descr, flags)
 {
-    connect(this, &Fact::removed, this, [=]() { setModified(false); });
+    connect(this, &Fact::removed, this, [this]() { setModified(false); });
 }
 //=============================================================================
 void MissionField::hashData(QCryptographicHash *h) const

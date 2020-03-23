@@ -28,7 +28,7 @@ Item {
             return
         if(mainLayout.add(item, layout, index))
             return
-        console.error("Unsupported item position:", layout, item)
+        console.error("Unsupported item layout:", layout, item)
     }
 
     //internal

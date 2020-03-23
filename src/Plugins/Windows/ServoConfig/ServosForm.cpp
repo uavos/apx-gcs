@@ -18,10 +18,6 @@ ServosForm::ServosForm(QWidget *parent)
     vehicleSelected(Vehicles::instance()->current());
 }
 //=============================================================================
-ServosForm::~ServosForm()
-{
-    delete ui;
-}
 void ServosForm::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)

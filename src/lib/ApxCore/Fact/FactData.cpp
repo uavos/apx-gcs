@@ -21,25 +21,18 @@
  *
  */
 #include "FactData.h"
+
 #include <App/AppPrefs.h>
 #include <App/AppRoot.h>
-#include <ApxMisc/SignalForwarder.h>
 #include <cmath>
-//=============================================================================
+
 FactData::FactData(
     QObject *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
     : FactBase(parent, name, flags)
-    , _binded_data(nullptr)
-    , m_dataType(NoFlags)
-    , m_modified(false)
-    , m_precision(-1)
-    , m_title()
-    , m_descr()
 {
-    connect(this, &FactData::valueChanged, this, &FactData::textChanged);
-    connect(this, &FactData::precisionChanged, this, &FactData::textChanged);
-
-    connect(this, &FactData::enumStringsChanged, this, &FactData::textChanged, Qt::QueuedConnection);
+    connect(this, &FactData::valueChanged, this, &FactData::updateText);
+    connect(this, &FactData::precisionChanged, this, &FactData::updateText);
+    connect(this, &FactData::enumStringsChanged, this, &FactData::updateText, Qt::QueuedConnection);
 
     connect(this, &FactData::dataTypeChanged, this, &FactData::defaults);
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);
@@ -55,12 +48,7 @@ FactData::FactData(
 
     setDataType(Flag(uint(flags) & DataMask));
 }
-//=============================================================================
-bool FactData::vtype(const QVariant &v, QMetaType::Type t) const
-{
-    return static_cast<QMetaType::Type>(v.type()) == t;
-}
-//=============================================================================
+
 FactBase::Flag FactData::dataType() const
 {
     return m_dataType;
@@ -80,7 +68,7 @@ void FactData::setDataType(FactBase::Flag v)
 
     emit dataTypeChanged();
 }
-//=============================================================================
+
 QVariant FactData::value(void) const
 {
     if (dataType() == Count && m_value.isNull()) {
@@ -88,14 +76,14 @@ QVariant FactData::value(void) const
     }
     return m_value;
 }
-//=============================================================================
+
 bool FactData::setValue(const QVariant &v)
 {
     if (!updateValue(v))
         return false;
 
     if (options() & ModifiedTrack)
-        setModified(backup_value != m_value);
+        setModified(backupValue() != m_value);
 
     if (m_options & PersistentValue)
         savePresistentValue();
@@ -106,145 +94,150 @@ bool FactData::setValue(const QVariant &v)
 bool FactData::updateValue(const QVariant &v)
 {
     //filter the same
-    QVariant v_prev = value();
-    if (vtype(v, QMetaType::QByteArray)) {
-        if (vtype(v_prev, QMetaType::QByteArray) && v_prev.toByteArray() == v.toByteArray())
+    const QVariant &v_prev = value();
+    /*if (_check_type(v, QMetaType::QByteArray)) {
+        if (_check_type(v_prev, QMetaType::QByteArray) && v_prev.toByteArray() == v.toByteArray())
             return false;
     } else if (v_prev == v)
+        return false;*/
+
+    if (v_prev == v)
         return false;
-    QVariant vx = v;
-    int ev = enumValue(v);
-    bool ok = false;
-    //if (treeType() != Group) {
+
     switch (dataType()) {
-    case Enum:
+    case Enum: {
         //qDebug()<<"set"<<path()<<vx<<"->"<<ev;
-        if (ev < 0) {
-            if (m_enumStrings.size() == 2) {
-                //try boolean strings
-                QString s = v.toString();
-                if (s == "true" || s == "on" || s == "yes")
-                    ev = enumValue(1);
-                else if (s == "false" || s == "off" || s == "no")
-                    ev = enumValue(0);
-                if (ev < 0) {
-                    if (v_prev.isNull())
-                        ev = 0;
-                    else
-                        return false;
-                }
-            } else if (v_prev.isNull())
-                ev = 0;
-            else
+        int enumIndex = enumValue(v);
+        if (enumIndex < 0) {
+            if (m_enumStrings.size() != 2)
+                return false;
+            enumIndex = _string_to_bool(v.toString());
+            if (enumIndex < 0)
                 return false;
         }
-        vx = ev;
-        break;
-    case Bool:
-        if (ev < 0) {
-            QString s = v.toString().toLower();
-            vx = ((s == "true" || s == "1" || s == "on" || s == "yes") || v.toUInt() > 0) ? true
-                                                                                          : false;
-        } else
-            vx = ev;
-        break;
-    case Text:
-        if (ev >= 0)
-            vx = enumText(ev);
-        break;
-    case Int: {
-        long long i = 0;
-        if (ev >= 0) {
-            vx = ev;
-            break;
-        } else if (m_enumStrings.size() > 1)
+        if (v_prev.toInt() == enumIndex)
             return false;
-        else if (!(vtype(v, QMetaType::Int) || vtype(v, QMetaType::UInt)
-                   || vtype(v, QMetaType::UChar) || vtype(v, QMetaType::UShort))) {
+        //qDebug() << path() << m_value << enumIndex;
+        m_value = QVariant::fromValue(enumIndex);
+    } break;
+    case Bool: {
+        int enumIndex = enumValue(v);
+        if (enumIndex < 0) {
+            enumIndex = _string_to_bool(v.toString());
+            if (enumIndex < 0)
+                enumIndex = 0;
+        }
+        if (v_prev.toBool() == enumIndex)
+            return false;
+        m_value = QVariant::fromValue(enumIndex);
+    } break;
+    case Text: {
+        int enumIndex = enumValue(v);
+        const QString &s = enumIndex < 0 ? v.toString() : enumText(enumIndex);
+        if (v_prev.toString() == s)
+            return false;
+        m_value = QVariant::fromValue(s);
+    } break;
+    case Int: {
+        int enumIndex = enumValue(v);
+        if (enumIndex >= 0) {
+            m_value = enumText(enumIndex);
+            break;
+        }
+        if (m_enumStrings.size() > 1)
+            return false;
+
+        long long vi = 0;
+        bool ok = false;
+        if (!_check_int(v)) {
             QString s = v.toString();
             if (units() == "time" && s.contains(':')) {
-                i = static_cast<long long>(AppRoot::timeFromString(s));
+                vi = static_cast<long long>(AppRoot::timeFromString(s));
                 ok = true;
             }
-            if (ok == false && units() == "hex") {
-                i = s.toLongLong(&ok, 16);
+            if (!ok && units() == "hex") {
+                vi = s.toLongLong(&ok, 16);
             }
             if (!ok) {
-                i = s.toLongLong(&ok);
+                vi = s.toLongLong(&ok);
                 if (!ok)
-                    i = static_cast<long long>(round(s.toDouble(&ok)));
+                    vi = static_cast<long long>(round(s.toDouble(&ok)));
                 if (!ok)
-                    i = s.toLongLong(&ok, 16);
+                    vi = s.toLongLong(&ok, 16);
             }
             if (!ok)
                 return false;
         } else {
-            i = v.toLongLong();
+            vi = v.toLongLong();
         }
         if (!m_min.isNull()) {
             long long m = m_min.toLongLong();
-            if (i < m)
-                i = m;
+            if (vi < m)
+                vi = m;
         }
         if (!m_max.isNull()) {
             long long m = m_max.toLongLong();
-            if (i > m)
-                i = m;
+            if (vi > m)
+                vi = m;
         }
-        vx = QVariant::fromValue(i);
+        if (v_prev.toLongLong() == vi)
+            return false;
+        m_value = QVariant::fromValue(vi);
     } break;
-    case Float:
-        if (!vtype(v, QMetaType::Double)) {
-            QString s = v.toString();
+    case Float: {
+        qreal vf;
+        if (!_check_type(v, QMetaType::Double)) {
+            const QString &s = v.toString();
             if (units() == "lat") {
-                vx = AppRoot::latFromString(s);
+                vf = AppRoot::latFromString(s);
             } else if (units() == "lon") {
-                vx = AppRoot::lonFromString(s);
+                vf = AppRoot::lonFromString(s);
             } else {
-                double d = s.toDouble(&ok);
+                bool ok = false;
+                vf = s.toDouble(&ok);
                 if (!ok) {
-                    //try boolean
-                    if (s == "true" || s == "on" || s == "yes")
-                        d = 1;
-                    else if (s == "false" || s == "off" || s == "no")
-                        d = 0;
-                    else
+                    int i = _string_to_int(s);
+                    if (i < 0)
                         return false;
+                    vf = i;
                 }
-                if ((!m_min.isNull()) && d < m_min.toDouble())
-                    d = m_min.toDouble();
-                if ((!m_max.isNull()) && d > m_max.toDouble())
-                    d = m_max.toDouble();
-                vx = d;
+                if ((!m_min.isNull()) && vf < m_min.toDouble())
+                    vf = m_min.toDouble();
+                if ((!m_max.isNull()) && vf > m_max.toDouble())
+                    vf = m_max.toDouble();
             }
         } else
-            vx = v.toDouble();
-        break;
-    case MandalaID:
-        if (quint16 uid = stringToMandala(v.toString().trimmed()))
-            vx = uid;
-        break;
-    case Script:
-        vx = v.toString();
-        break;
-    default:
-        if (ev >= 0)
-            vx = ev;
-        break;
-    }
-    //}
-    if (v_prev == vx)
-        return false;
-    if (dataType() == Float || dataType() == Text) {
-        QVariant vbak = v_prev;
-        QString sv = text();
-        m_value = vx;
-        if (sv == text()) {
-            m_value = vbak;
+            vf = v.toDouble();
+
+        if (v_prev.toDouble() == vf)
             return false;
+
+        m_value = QVariant::fromValue(vf);
+    } break;
+    case MandalaID: {
+        quint16 vuid = stringToMandala(v.toString().trimmed());
+        if (v_prev.toUInt() == vuid)
+            return false;
+        m_value = QVariant::fromValue(vuid);
+    } break;
+    case Script: {
+        const QString &s = v.toString();
+        if (v_prev.toString() == s)
+            return false;
+        m_value = QVariant::fromValue(s);
+    } break;
+    default: {
+        int enumIndex = enumValue(v);
+        if (enumIndex >= 0) {
+            if (v_prev.toInt() == enumIndex)
+                return false;
+            m_value = QVariant::fromValue(enumIndex);
+            break;
         }
-    } else {
-        m_value = vx;
+        if (toText(v) == text())
+            return false;
+        m_value = v;
+    } break;
     }
     return true;
 }
@@ -253,40 +246,60 @@ int FactData::enumValue(const QVariant &v) const
 {
     if (m_enumStrings.isEmpty())
         return -1;
-    QString s = v.toString();
+
     int idx = -1;
-    if (vtype(v, QMetaType::Int) || vtype(v, QMetaType::UInt) || vtype(v, QMetaType::UChar)
-        || vtype(v, QMetaType::UShort))
+    if (_check_int(v))
         idx = v.toInt();
-    else
-        idx = m_enumStrings.indexOf(s);
-    if (idx >= 0 && idx < m_enumStrings.size()) {
-        if (idx < m_enumValues.size())
-            idx = m_enumValues.at(idx);
-    } else {
-        bool ok = false;
-        int i = s.toInt(&ok);
-        if (ok) {
-            if (!m_enumValues.isEmpty()) {
-                if (m_enumValues.contains(i))
-                    idx = i;
-            } else if (i >= 0 && i < m_enumStrings.size())
-                idx = i;
-        }
+    else {
+        idx = m_enumStrings.indexOf(v.toString());
+        if (idx >= 0)
+            return idx;
     }
+    if (idx < 0)
+        idx = _string_to_int(v.toString());
+    if (idx < 0 || idx >= m_enumStrings.size())
+        return -1;
     return idx;
 }
-QString FactData::enumText(int v) const
+QString FactData::enumText(int idx) const
 {
-    if (!m_enumValues.isEmpty()) {
-        if (m_enumValues.contains(v))
-            return m_enumStrings.at(m_enumValues.indexOf(v));
-    } else {
-        if (v >= 0 && v < m_enumStrings.size())
-            return m_enumStrings.at(v);
-    }
-    return QString();
+    return m_enumStrings.value(idx);
 }
+
+int FactData::_string_to_bool(QString s)
+{
+    s = s.toLower();
+    if (s == "true" || s == "on" || s == "yes")
+        return 1;
+    else if (s == "false" || s == "off" || s == "no")
+        return 0;
+    int v = _string_to_int(s);
+    if (v < 0)
+        return -1;
+    return v > 0 ? 1 : 0;
+}
+int FactData::_string_to_int(const QString &s)
+{
+    bool ok = false;
+    int v = s.toInt(&ok);
+    if (ok)
+        return v;
+    v = static_cast<int>(s.toDouble(&ok));
+    if (ok)
+        return v;
+    return -1;
+}
+bool FactData::_check_type(const QVariant &v, QMetaType::Type t)
+{
+    return static_cast<QMetaType::Type>(v.type()) == t;
+}
+bool FactData::_check_int(const QVariant &v)
+{
+    return _check_type(v, QMetaType::Int) || _check_type(v, QMetaType::UInt)
+           || _check_type(v, QMetaType::UChar) || _check_type(v, QMetaType::UShort)
+           || _check_type(v, QMetaType::ULongLong);
+}
+
 //=============================================================================
 static double cint(double x)
 {
@@ -304,8 +317,7 @@ QString FactData::toText(const QVariant &v) const
     }
     if ((t != Group) && (!m_enumStrings.isEmpty())) {
         int ev = enumValue(v);
-        //qDebug()<<"text"<<v<<ev;
-        if (ev >= 0 && ev < m_enumStrings.size())
+        if (ev >= 0)
             return enumText(ev);
         if (t == Enum)
             return v.toString();
@@ -332,9 +344,9 @@ QString FactData::toText(const QVariant &v) const
             return AppRoot::lonToString(v.toDouble());
         }
     }
-    if (vtype(v, QMetaType::QByteArray))
+    if (_check_type(v, QMetaType::QByteArray))
         return v.toByteArray().toHex().toUpper();
-    if (vtype(v, QMetaType::Double)) {
+    if (_check_type(v, QMetaType::Double)) {
         double vf = v.toDouble();
         if (m_precision > 0) {
             double p = std::pow(10.0, m_precision);
@@ -405,25 +417,22 @@ void FactData::setModified(const bool &v, const bool &recursive)
     emit modifiedChanged();
 
     //check to sync parents
-    FactBase *ps = parentFact();
-    for (FactBase *p = ps; p; p = p->parentFact()) {
+    FactData *ps = parentFact();
+    for (FactData *p = ps; p; p = p->parentFact()) {
         if (p->options() & ModifiedGroup) {
             if (v) {
                 //set all parents to modified=true
-                for (FactBase *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
-                    static_cast<FactData *>(i)->setModified(true);
+                for (FactData *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
+                    i->setModified(true);
                 }
                 continue;
             }
             //refresh modified status of all parent items
             bool mod = false;
-            for (FactBase *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
+            for (FactData *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
                 //check for modified children
-                for (int j = 0; j < i->size(); ++j) {
-                    FactBase *f = i->child(j);
-                    if (!f)
-                        break;
-                    if (static_cast<FactData *>(f)->modified()) {
+                for (auto j : i->children()) {
+                    if (j->modified()) {
                         mod = true;
                         break;
                     }
@@ -431,7 +440,7 @@ void FactData::setModified(const bool &v, const bool &recursive)
                 if (mod)
                     break;
                 //parent with unmodified children
-                static_cast<FactData *>(i)->setModified(false);
+                i->setModified(false);
             }
         }
     }
@@ -503,37 +512,38 @@ void FactData::setDescr(const QString &v)
 }
 QString FactData::text() const
 {
-    return toText(value());
+    return m_text;
+}
+void FactData::setText(const QString &v)
+{
+    if (m_text == v)
+        return;
+    m_text = v;
+    emit textChanged();
+}
+void FactData::updateText()
+{
+    setText(toText(value()));
 }
 const QStringList &FactData::enumStrings() const
 {
     return m_enumStrings;
 }
-const QList<int> &FactData::enumValues() const
-{
-    return m_enumValues;
-}
-void FactData::setEnumStrings(const QStringList &v, const QList<int> &enumValues)
+void FactData::setEnumStrings(const QStringList &v)
 {
     if (m_enumStrings == v)
         return;
     m_enumStrings = v;
-    if (v.size() == enumValues.size())
-        m_enumValues = enumValues;
-    else
-        m_enumValues.clear();
     emit enumStringsChanged();
 }
 void FactData::setEnumStrings(const QMetaEnum &v)
 {
     QStringList st;
-    QList<int> vlist;
     for (int i = 0; i < v.keyCount(); ++i) {
         int vi = v.value(i);
         st.append(v.valueToKey(vi));
-        vlist.append(vi);
     }
-    setEnumStrings(st, vlist);
+    setEnumStrings(st);
 }
 QString FactData::units() const
 {
@@ -585,31 +595,39 @@ void FactData::copyValuesFrom(const FactData *item)
         }
     }
 }
-//=============================================================================
+
+QVariant FactData::backupValue(void) const
+{
+    return m_backupValue;
+}
+void FactData::setBackupValue(const QVariant &v)
+{
+    if (options() & ModifiedTrack)
+        setModified(backupValue() != m_value);
+
+    if (m_backupValue == v)
+        return;
+    m_backupValue = v;
+    emit backupValueChanged();
+}
+
 void FactData::backup()
 {
-    if (_binded_data) {
-        _binded_data->backup();
-        return;
-    }
-    if (size()) {
+    if (size() > 0) {
         for (int i = 0; i < size(); ++i) {
             child(i)->backup();
         }
-        return;
     }
+
+    setModified(false);
+
     if (treeType() == Group)
         return;
-    backup_value = m_value;
-    setOption(ModifiedTrack);
-    setModified(false);
+
+    setBackupValue(m_value);
 }
 void FactData::restore()
 {
-    if (_binded_data) {
-        _binded_data->restore();
-        return;
-    }
     if (!modified())
         return;
     if (size()) {
@@ -618,7 +636,7 @@ void FactData::restore()
         }
     }
     if (treeType() != Group) {
-        setValue(backup_value);
+        setValue(backupValue());
     }
     setModified(false);
 }
@@ -646,74 +664,7 @@ void FactData::defaults()
         }
     }
 }
-//=============================================================================
-void FactData::bind(FactData *fact)
-{
-    if (_binded_data) {
-        disconnect(_binded_data, nullptr, this, nullptr);
-        qDeleteAll(_binded_properties);
-        _binded_properties.clear();
-    }
-    _binded_data = fact;
-    if (!_binded_data)
-        return;
 
-    bindProperty(fact, "value");
-    bindProperty(fact, "modified");
-    bindProperty(fact, "precision");
-    bindProperty(fact, "min");
-    bindProperty(fact, "max");
-    bindProperty(fact, "text");
-    bindProperty(fact, "enumStrings");
-    bindProperty(fact, "units");
-    bindProperty(fact, "defaultValue");
-
-    if (m_title.isEmpty())
-        bindProperty(fact, "title", true);
-    if (m_descr.isEmpty())
-        bindProperty(fact, "descr", true);
-
-    if (!dataType())
-        setDataType(_binded_data->dataType());
-}
-void FactData::bindProperty(FactData *src, QString propertyName, bool oneway)
-{
-    SignalForwarder *sf = _binded_properties.value(propertyName);
-    if (sf) {
-        _binded_properties.remove(propertyName);
-        delete sf;
-    }
-
-    int pidx_dst = metaObject()->indexOfProperty(propertyName.toLatin1());
-    if (pidx_dst < 0) {
-        qWarning() << "misisng property:" << path() << propertyName << oneway;
-        return;
-    }
-
-    int pidx_src = src->metaObject()->indexOfProperty(propertyName.toLatin1());
-    if (pidx_src < 0) {
-        qWarning() << "misisng property:" << src->path() << propertyName << oneway;
-        return;
-    }
-    QMetaProperty prop_src = src->metaObject()->property(pidx_src);
-    QMetaProperty prop_dst = metaObject()->property(pidx_dst);
-
-    sf = new SignalForwarder(this);
-    _binded_properties.insert(propertyName, sf);
-
-    connect(src, prop_src.notifySignal().methodSignature().prepend('2'), sf, SIGNAL(forward()));
-    connect(sf, &SignalForwarder::forward, this, [this, src, prop_src, prop_dst]() {
-        prop_dst.write(this, prop_src.read(src));
-        //prop_dst.notifySignal().invoke(this);
-    });
-    prop_dst.write(this, prop_src.read(src));
-
-    if (oneway)
-        return;
-
-    src->bindProperty(this, propertyName, true);
-}
-//=============================================================================
 void FactData::getPresistentValue()
 {
     if (m_options & PersistentValue)
@@ -757,4 +708,3 @@ QString FactData::prefsGroup() const
     p.removeLast();
     return p.join('.');
 }
-//=============================================================================

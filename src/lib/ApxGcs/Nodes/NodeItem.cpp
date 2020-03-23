@@ -36,10 +36,10 @@
 NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     : ProtocolViewBase(parent, protocol)
 {
-    setOptions(ProgressTrack);
+    setOptions(ProgressTrack | ModifiedTrack);
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
-    setValue(QVariant()); //unbind from protocol
+    unbindProperty("value"); //unbind from protocol
 
     //FIXME: tools = new NodeTools(this, Action);
 
@@ -201,7 +201,7 @@ QVariant NodeItem::data(int col, int role) const
 void NodeItem::groupArrays()
 {
     //hide grouped arrays (gpio, controls etc)
-    QList<Fact *> groups;
+    FactList groups;
     for (auto f : allFields) {
         Fact *groupItem = f->parentFact();
         if (!groupItem || groupItem == this || groups.contains(groupItem))
@@ -212,8 +212,8 @@ void NodeItem::groupArrays()
             //check if group members are arrays
             bool bArray = false;
             uint cnt = 0;
-            for (int i = 0; i < groupItem->size(); ++i) {
-                NodeField *f = groupItem->child<NodeField>(i);
+            for (auto i : groupItem->children()) {
+                NodeField *f = static_cast<NodeField *>(i);
                 bArray = false;
                 if (cnt < 2 && f->size() == 0)
                     break;
@@ -244,8 +244,8 @@ void NodeItem::groupArrays(Fact *group)
     group->setValue(group->child(0)->value());
 
     //hide group members
-    for (auto i : *group) {
-        //static_cast<Fact *>(i)->setVisible(false);
+    for (auto i : group->children()) {
+        //i->setVisible(false);
     }
 
     Fact *f1 = group->child(0);
@@ -284,11 +284,11 @@ void NodeItem::groupArrays(Fact *group)
                                fArray->title(),
                                fArray->descr(),
                                fp->treeType() | fp->dataType());
-            f->bind(fp);
+            f->setBinding(fp);
             connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
             if (bChParam) {
                 connect(f_ch, &Fact::valueChanged, f, [f, fArray, f_ch]() {
-                    f->bind(fArray->child(f_ch->value().toInt()));
+                    f->setBinding(fArray->child(f_ch->value().toInt()));
                 });
             }
 
@@ -340,7 +340,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
         switch (i.type) {
         case xbus::node::conf::group:
             g = i.group ? groups.value(i.group) : this;
-            g = new Fact(g, i.name, i.title, i.descr, Group);
+            g = new Fact(g, i.name, i.title, i.descr, Group | ModifiedTrack);
             groups.insert(groups.size() + 1, g);
             break;
         case xbus::node::conf::command:
@@ -359,7 +359,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
             }
         }
     }
-    groupArrays();
+    //groupArrays();
 }
 
 void NodeItem::confReceived(const QVariantList &values)
@@ -376,6 +376,7 @@ void NodeItem::confReceived(const QVariantList &values)
         f->setEnabled(true);
     }
     backup();
+    setModified(false, true);
     updateStatus();
 }
 

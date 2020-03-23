@@ -54,6 +54,7 @@ ApxApp.ApxLibrary {
             "FactListModel.cpp", "FactListModel.h",
             "FactListModelActions.cpp", "FactListModelActions.h",
             "FactBase.cpp", "FactBase.h",
+            "FactPropertyBinding.cpp", "FactPropertyBinding.h",
         ]
     }
 
@@ -70,6 +71,7 @@ ApxApp.ApxLibrary {
             "AppPlugin.cpp", "AppPlugin.h",
             "AppSettings.cpp", "AppSettings.h",
             "AppWindow.cpp", "AppWindow.h",
+            "AppQuickView.cpp", "AppQuickView.h",
             "AppInstances.cpp", "AppInstances.h",
             "AppLog.cpp", "AppLog.h",
             "AppDirs.cpp", "AppDirs.h",
@@ -85,7 +87,6 @@ ApxApp.ApxLibrary {
         files: [
             "QueueJob.cpp", "QueueJob.h",
             "QueueWorker.cpp", "QueueWorker.h",
-            "SignalForwarder.h",
             "DelayedEvent.cpp", "DelayedEvent.h",
             "FactValue.h",
             "SvgImageProvider.cpp", "SvgImageProvider.h",

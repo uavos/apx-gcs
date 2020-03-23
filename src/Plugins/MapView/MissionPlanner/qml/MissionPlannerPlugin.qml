@@ -9,6 +9,8 @@ AppPlugin {
 
     state: "maximized"
 
+    unloadOnHide: false
+
     uiComponent: "main"
     onConfigure: {
         ui.main.add(plugin, GroundControl.Layout.Main, 100)

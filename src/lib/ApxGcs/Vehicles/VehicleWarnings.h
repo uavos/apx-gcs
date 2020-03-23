@@ -45,7 +45,7 @@ private:
     Fact *createItem(const QString &msg, MsgType kind);
 
     QHash<Fact *, int> showMap;
-    QList<Fact *> showList;
+    FactList showList;
     int showNum;
 private slots:
     void showTimerTimeout();

@@ -21,15 +21,11 @@
  *
  */
 #include "FactBase.h"
-//=============================================================================
+#include "Fact.h"
+#include "FactPropertyBinding.h"
+
 FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
     : QObject(parent)
-    , m_treeType(NoFlags)
-    , m_options(NoFlags)
-    , m_parentFact(nullptr)
-    , m_name()
-    , m_size(0)
-    , m_num(0)
 {
     setName(makeNameUnique(name));
     setTreeType(Flag(uint(flags) & TypeMask));
@@ -37,17 +33,68 @@ FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
 }
 FactBase::~FactBase()
 {
-    setParentFact(nullptr);
+    //qDebug() << path() << parent();
+    //removed();
+    /*if (parentFact()) {
+        parentFact()->m_children.removeAll(static_cast<Fact *>(this));
+    }*/
+    //setParentFact(nullptr);
+    //unbindProperties();
+    //emit destroyed(this);
+    for (auto i : m_actions) {
+        delete i;
+    }
+    for (auto i : m_children) {
+        delete i;
+    }
+    //qDeleteAll(m_children);
+    //removeAll();
 }
+
+void FactBase::bindProperty(Fact *src, QString name, bool oneway)
+{
+    unbindProperties(src, name);
+
+    if (src == this) {
+        qWarning() << "recursive bind:" << path() << name;
+        return;
+    }
+
+    FactPropertyBinding *b = new FactPropertyBinding(static_cast<Fact *>(this), src, name);
+    _property_binds.append(b);
+
+    if (oneway)
+        return;
+
+    src->bindProperty(static_cast<Fact *>(this), name, true);
+}
+void FactBase::unbindProperty(QString name)
+{
+    unbindProperties(nullptr, name);
+}
+void FactBase::unbindProperties(Fact *src, const QString &name)
+{
+    foreach (auto i, _property_binds) {
+        if (!i->match(src, name))
+            continue;
+        _property_binds.removeOne(i);
+        delete i;
+    }
+}
+
 //=============================================================================
-QList<FactBase *> FactBase::actions() const
+const FactList &FactBase::children() const
+{
+    return m_children;
+}
+const FactList &FactBase::actions() const
 {
     return m_actions;
 }
 //=============================================================================
-void FactBase::addChild(FactBase *item)
+void FactBase::addChild(Fact *item)
 {
-    item->setParent(this);
+    //item->Qobject::setParent(this);
     if (item->treeType() == Action) {
         if (!m_actions.contains(item)) {
             m_actions.append(item);
@@ -55,78 +102,77 @@ void FactBase::addChild(FactBase *item)
         }
         return;
     }
-    if (contains(item))
+    if (m_children.contains(item))
         return;
     if (property(item->name().toUtf8()).isValid()) {
         qWarning() << "Property override:" << path() << item->name();
     }
-    emit itemToBeInserted(count(), item);
-    append(item);
+    emit itemToBeInserted(m_children.count(), item);
+    m_children.append(item);
     updateChildrenNums();
     updateSize();
     emit itemInserted(item);
 }
-void FactBase::removeChild(FactBase *item)
+void FactBase::removeChild(Fact *item)
 {
     int i = m_actions.indexOf(item);
     if (i >= 0) {
         m_actions.removeAll(item);
         emit actionsUpdated();
     }
-    i = indexOf(item);
+    i = m_children.indexOf(item);
     if (i < 0)
         return;
     emit itemToBeRemoved(i, item);
-    removeAt(i);
+    m_children.removeAt(i);
     updateChildrenNums();
     updateSize();
     emit itemRemoved(item);
 }
 void FactBase::removeAll()
 {
-    if (count() <= 0)
+    if (m_children.count() <= 0)
         return;
-    for (int i = 0; i < count(); i++) {
+    for (int i = 0; i < m_children.count(); i++) {
         FactBase *item = child(i);
         disconnect(this, nullptr, item, nullptr);
         item->removeAll();
     }
     //qDebug()<<"removeAll"<<this;
-    while (count() > 0) {
-        FactBase *item = child(count() - 1);
+    while (m_children.count() > 0) {
+        FactBase *item = child(m_children.count() - 1);
         disconnect(this, nullptr, item, nullptr);
-        emit itemToBeRemoved(count() - 1, item);
-        takeLast();
-        m_size = count();
+        emit itemToBeRemoved(m_children.count() - 1, item);
+        m_children.takeLast();
+        m_size = m_children.count();
         item->removed();
         emit itemRemoved(item);
         item->deleteLater();
-        //delete item;
     }
     emit sizeChanged();
 }
-void FactBase::moveChild(FactBase *item, int n, bool safeMode)
+void FactBase::moveChild(Fact *item, int n, bool safeMode)
 {
-    int i = indexOf(item);
+    int i = m_children.indexOf(item);
     if (i < 0 || i == n)
         return;
     if (safeMode) {
         emit itemToBeRemoved(i, item);
-        removeAt(i);
+        m_children.removeAt(i);
         emit itemRemoved(item);
         emit itemToBeInserted(n, item);
-        insert(n, item);
+        m_children.insert(n, item);
         emit itemInserted(item);
         updateChildrenNums();
     } else {
         if (n > i)
             n++;
         emit itemToBeMoved(i, n, item);
-        removeAt(i);
-        insert(n, item);
+        m_children.removeAt(i);
+        m_children.insert(n, item);
         emit itemMoved(item);
     }
-    for (int i = 0; i < count(); ++i)
+    for (int i = 0; i < m_children.count(); ++i)
         child(i)->updateNum();
 }
 //=============================================================================
@@ -135,14 +181,12 @@ void FactBase::remove()
     setParentFact(nullptr);
     emit removed();
     deleteLater();
-    //removeAll();
-    //delete this;
 }
 void FactBase::move(int n, bool safeMode)
 {
     FactBase *p = parentFact();
     if (p)
-        p->moveChild(this, n, safeMode);
+        p->moveChild(static_cast<Fact *>(this), n, safeMode);
 }
 //=============================================================================
 QString FactBase::makeNameUnique(const QString &s)
@@ -187,27 +231,27 @@ int FactBase::num() const
     return m_num;
 }
 //=============================================================================
-FactBase *FactBase::child(int n) const
+Fact *FactBase::child(int n) const
 {
-    return qobject_cast<FactBase *>(value(n, nullptr));
+    return m_children.value(n, nullptr);
 }
 //=============================================================================
-int FactBase::indexOfChild(FactBase *item) const
+int FactBase::indexOfChild(Fact *item) const
 {
-    return indexOf(item);
+    return m_children.indexOf(item);
 }
 int FactBase::indexInParent() const
 {
-    return parentFact() ? parentFact()->indexOfChild(const_cast<FactBase *>(this)) : -1;
+    return parentFact()
+               ? parentFact()->indexOfChild(static_cast<Fact *>(const_cast<FactBase *>(this)))
+               : -1;
 }
 //=============================================================================
-FactBase *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
+Fact *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
 {
-    for (int i = 0; i < count(); ++i) {
-        FactBase *item = child(i);
-        if (item
-            && (item->objectName().compare(name, cs) == 0 || item->name().compare(name, cs) == 0))
-            return item;
+    for (auto i : m_children) {
+        if (i->objectName().compare(name, cs) == 0 || i->name().compare(name, cs) == 0)
+            return i;
     }
     return nullptr;
 }
@@ -228,11 +272,11 @@ QString FactBase::path(int maxLevel, const QChar pathDelimiter) const
 {
     return pathStringList(maxLevel).join(pathDelimiter);
 }
-QList<FactBase *> FactBase::pathList() const
+FactList FactBase::pathList() const
 {
-    QList<FactBase *> list;
+    FactList list;
     for (const FactBase *i = this; i;) {
-        list.append(const_cast<FactBase *>(i));
+        list.append(static_cast<Fact *>(const_cast<FactBase *>(i)));
         if (i->treeType() == Root)
             break;
         i = i->parentFact();
@@ -260,7 +304,7 @@ void FactBase::updateNum()
 }
 void FactBase::updateSize()
 {
-    int v = count();
+    int v = m_children.count();
     if (m_size == v)
         return;
     m_size = v;
@@ -268,7 +312,7 @@ void FactBase::updateSize()
 }
 void FactBase::updateChildrenNums()
 {
-    for (int i = 0; i < count(); ++i)
+    for (int i = 0; i < m_children.count(); ++i)
         child(i)->updateNum();
 }
 //=============================================================================
@@ -284,8 +328,8 @@ void FactBase::setTreeType(FactBase::Flag v)
     m_treeType = v;
     emit treeTypeChanged();
     if (v == Action && parentFact()) {
-        parentFact()->removeChild(this);
-        parentFact()->addChild(this);
+        parentFact()->removeChild(static_cast<Fact *>(this));
+        parentFact()->addChild(static_cast<Fact *>(this));
     }
 }
 FactBase::Flags FactBase::options(void) const
@@ -330,32 +374,31 @@ void FactBase::setName(const QString &v)
     //emit itemAdded(this);
     emit nameChanged();
 }
-FactBase *FactBase::parentFact() const
+Fact *FactBase::parentFact() const
 {
-    return m_parentFact;
+    return qobject_cast<Fact *>(m_parentFact);
 }
-void FactBase::setParentFact(FactBase *v)
+void FactBase::setParentFact(Fact *v)
 {
     FactBase *prevParent = parentFact();
     if (prevParent == v)
         return;
     if (prevParent) {
-        prevParent->removeChild(this);
+        prevParent->removeChild(static_cast<Fact *>(this));
     }
 
-    QObject::setParent(v);
+    //QObject::setParent(v);
     m_parentFact = v;
     emit parentFactChanged();
     if (!v)
         return;
-    v->addChild(this);
+    v->addChild(static_cast<Fact *>(this));
     updatePath();
 }
 void FactBase::updatePath()
 {
-    for (auto f : *this) {
+    for (auto f : m_children) {
         f->updatePath();
     }
     emit pathChanged();
 }
-//=============================================================================

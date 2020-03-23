@@ -33,10 +33,6 @@ SerialForm::SerialForm(QWidget *parent)
     vehicleSelected(Vehicles::instance()->current());
 }
 //==============================================================================
-SerialForm::~SerialForm()
-{
-    delete ui;
-}
 void SerialForm::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)

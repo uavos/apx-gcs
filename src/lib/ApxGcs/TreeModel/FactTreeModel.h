@@ -38,7 +38,7 @@ public:
     void recursiveDisconnect(Fact *fact);
     void checkConnections(Fact *fact) const;
 
-    QList<Fact *> expandedFacts;
+    FactList expandedFacts;
 
     QHash<int, QByteArray> roleNames() const override;
 
@@ -62,7 +62,7 @@ private:
     QList<QPointer<Fact>> updateList;
     QMultiHash<Fact *, int> updateHash;
 
-    QList<Fact *> conFactLayout;
+    FactList conFactLayout;
 
 private slots:
     void itemToBeInserted(int row, FactBase *item);

@@ -37,6 +37,8 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
 {
     setSection(vehicles->title());
 
+    protocol->bindProperty(this, "active", true);
+
     f_select
         = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
     connect(f_select, &Fact::triggered, this, [this, vehicles]() { vehicles->selectVehicle(this); });
@@ -257,7 +259,7 @@ QGeoRectangle Vehicle::geoPathRect() const
 
 void Vehicle::jsexecData(QString data)
 {
-    App::instance()->engine()->jsexec(data);
+    App::jsexec(data);
 }
 void Vehicle::vmexec(QString func)
 {

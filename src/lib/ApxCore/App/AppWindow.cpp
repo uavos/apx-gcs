@@ -46,7 +46,7 @@ AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
         updateWidget();
     }
     connect(this, &Fact::valueChanged, this, &AppWindow::updateWidget);
-    connect(this, &Fact::triggered, this, [=]() {
+    connect(this, &Fact::triggered, this, [this]() {
         if (value().toBool())
             updateWidget();
         else
@@ -71,7 +71,7 @@ void AppWindow::updateWidget()
             w = qobject_cast<QWidget *>(plugin->control);
             if (!w)
                 return;
-            connect(w, &QWidget::destroyed, this, [=]() {
+            connect(w, &QWidget::destroyed, this, [this]() {
                 w = nullptr;
                 plugin->control = nullptr;
                 setValue(false);
@@ -84,7 +84,9 @@ void AppWindow::updateWidget()
                     &App::visibilityChanged,
                     this,
                     &AppWindow::applicationVisibilityChanged);
+
             w->setWindowIcon(QApplication::windowIcon());
+
             if (!plugin->interface->title().isEmpty())
                 w->setWindowTitle(plugin->interface->title());
             //qDebug()<<w->windowFlags();
@@ -102,7 +104,12 @@ void AppWindow::updateWidget()
         restoreState();
         w->show();
         w->raise();
-        connect(qApp, &QCoreApplication::aboutToQuit, w, &QWidget::close);
+
+        connect(App::instance(), &App::appQuit, w, [this]() {
+            blockWidgetVisibilityEvent = true;
+            w->close();
+        });
+
         QWindow *wh = w->windowHandle();
         if (wh) {
             connect(wh,
@@ -114,13 +121,15 @@ void AppWindow::updateWidget()
             connect(wh, &QWindow::yChanged, this, &AppWindow::saveState);
             connect(wh, &QWindow::widthChanged, this, &AppWindow::saveState);
             connect(wh, &QWindow::heightChanged, this, &AppWindow::saveState);
+
             if (wh->visibility() == QWindow::Minimized)
                 w->showNormal();
+
             //if(wh->visibility()==QWindow::FullScreen)w->showNormal();
             //wh->showNormal();
             //wh->raise();
             //QTimer::singleShot(100,wh,&QWindow::showNormal);
-            connect(qApp, &QCoreApplication::aboutToQuit, wh, &QWindow::hide);
+            //connect(qApp, &QCoreApplication::aboutToQuit, wh, &QWindow::hide);
         }
         return;
     }

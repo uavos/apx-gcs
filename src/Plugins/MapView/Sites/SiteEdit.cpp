@@ -58,7 +58,7 @@ SiteEdit::SiteEdit(Fact *parent,
         a_add = new Fact(this, "add", tr("Add"), "", Action | Apply | CloseOnTrigger | ShowDisabled);
         a_add->setEnabled(false);
         connect(a_add, &Fact::triggered, this, [this]() { emit addTriggered(this->modelData); });
-        connect(f_title, &Fact::textChanged, this, [=]() {
+        connect(f_title, &Fact::textChanged, this, [this]() {
             a_add->setEnabled(!f_title->text().isEmpty());
         });
         connect(this, &Fact::triggered, this, &SiteEdit::reset);

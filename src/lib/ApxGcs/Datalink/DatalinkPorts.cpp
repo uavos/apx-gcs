@@ -118,8 +118,10 @@ QStringList DatalinkPorts::activeSerialPorts() const
 QList<DatalinkPort *> DatalinkPorts::serialPorts() const
 {
     QList<DatalinkPort *> list;
-    for (int i = 0; i < f_list->size(); ++i) {
-        DatalinkPort *port = f_list->child<DatalinkPort>(i);
+    for (auto i : f_list->children()) {
+        DatalinkPort *port = qobject_cast<DatalinkPort *>(i);
+        if (!port)
+            continue;
         if (port->f_type->value().toInt() != DatalinkPort::SERIAL)
             continue;
         list.append(port);
@@ -129,7 +131,7 @@ QList<DatalinkPort *> DatalinkPorts::serialPorts() const
 //=============================================================================
 void DatalinkPorts::blockSerialPorts()
 {
-    foreach (DatalinkPort *port, serialPorts()) {
+    for (auto port : serialPorts()) {
         if (!port->f_enable->value().toBool())
             continue;
         blockedPorts.append(port);
@@ -143,7 +145,7 @@ void DatalinkPorts::unblockSerialPorts()
 {
     if (blockedPorts.isEmpty())
         return;
-    foreach (DatalinkPort *port, serialPorts()) {
+    for (auto port : serialPorts()) {
         if (!blockedPorts.contains(port))
             continue;
         port->f_enable->setValue(true);

@@ -21,11 +21,11 @@
  *
  */
 #include "FactQml.h"
-//=============================================================================
+
 FactQml::FactQml(QObject *parent)
     : Fact(parent)
 {}
-//=============================================================================
+
 QQmlListProperty<FactQml> FactQml::children()
 {
     return QQmlListProperty<FactQml>(this,
@@ -35,7 +35,7 @@ QQmlListProperty<FactQml> FactQml::children()
                                      &FactQml::atChildren,
                                      &FactQml::clearChildren);
 }
-//=============================================================================
+
 void FactQml::appendChildren(QQmlListProperty<FactQml> *property, FactQml *value)
 {
     value->setParentFact(reinterpret_cast<Fact *>(property->data));
@@ -52,4 +52,3 @@ int FactQml::countChildren(QQmlListProperty<FactQml> *property)
 {
     return reinterpret_cast<Fact *>(property->data)->size();
 }
-//=============================================================================

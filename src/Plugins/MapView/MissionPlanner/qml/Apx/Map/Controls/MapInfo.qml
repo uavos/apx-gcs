@@ -49,7 +49,7 @@ RowLayout {
         showTitle: false
         showIcon: false
         value: (active?qsTr("offline"):qsTr("online")).toUpperCase()
-        active: fact.value
+        active: fact && fact.value
         enabled: true
         onTriggered: fact.value=!fact.value
         visible: active

@@ -24,8 +24,6 @@
 
 #include "FactBase.h"
 
-class SignalForwarder;
-
 class FactData : public FactBase
 {
     Q_OBJECT
@@ -33,6 +31,7 @@ class FactData : public FactBase
     Q_PROPERTY(FactBase::Flag dataType READ dataType WRITE setDataType NOTIFY dataTypeChanged)
 
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(QVariant backupValue READ backupValue WRITE setBackupValue NOTIFY backupValueChanged)
 
     Q_PROPERTY(bool modified READ modified WRITE setModified NOTIFY modifiedChanged)
 
@@ -43,7 +42,7 @@ class FactData : public FactBase
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
 
-    Q_PROPERTY(QString text READ text NOTIFY textChanged)
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
     Q_PROPERTY(const QStringList &enumStrings READ enumStrings WRITE setEnumStrings NOTIFY
                    enumStringsChanged)
@@ -62,14 +61,11 @@ public:
     void copyValuesFrom(const FactData *item);
 
     int enumValue(const QVariant &v) const;
-    QString enumText(int v) const;
+    QString enumText(int idx) const;
 
     virtual bool isZero() const;
 
     void defaults();
-
-    Q_INVOKABLE virtual void bind(FactData *fact);
-    Q_INVOKABLE void bindProperty(FactData *src, QString propertyName, bool oneway = false);
 
     //Mandala support - must override in derived classes
     // to collect dict ids from vehicle mandala
@@ -79,34 +75,26 @@ public:
     virtual QString mandalaToString(quint16 uid) const;
     virtual quint16 stringToMandala(const QString &s) const;
 
-    //type cast
-private:
-    FactData *child(int n) const { return qobject_cast<FactData *>(FactBase::child(n)); }
-    FactData *child(const QString &name) const
-    {
-        return qobject_cast<FactData *>(FactBase::child(name));
-    }
-
 public slots:
     virtual void backup();
     virtual void restore();
 
 protected:
-    QPointer<FactData> _binded_data;
-    QHash<QString, SignalForwarder *> _binded_properties;
-
-    QVariant backup_value;
-
-    bool vtype(const QVariant &v, QMetaType::Type t) const;
-
     bool updateValue(const QVariant &v);
 
     QString toText(const QVariant &v) const;
 
     QString prefsGroup() const;
 
+    static int _string_to_bool(QString s);
+    static int _string_to_int(const QString &s);
+    static bool _check_type(const QVariant &v, QMetaType::Type t);
+    static bool _check_int(const QVariant &v);
+
 private slots:
     void getPresistentValue();
+    void updateText();
+
 public slots:
     void savePresistentValue();
     void loadPresistentValue();
@@ -119,6 +107,9 @@ public:
 
     QVariant value(void) const;
     Q_INVOKABLE virtual bool setValue(const QVariant &v);
+
+    QVariant backupValue(void) const;
+    void setBackupValue(const QVariant &v);
 
     bool modified() const;
     void setModified(const bool &v, const bool &recursive = false);
@@ -136,10 +127,10 @@ public:
     virtual void setDescr(const QString &v);
 
     QString text() const;
+    void setText(const QString &v);
 
     virtual const QStringList &enumStrings() const;
-    virtual const QList<int> &enumValues() const;
-    void setEnumStrings(const QStringList &v, const QList<int> &enumValues = QList<int>());
+    void setEnumStrings(const QStringList &v);
     void setEnumStrings(const QMetaEnum &v);
 
     QString units() const;
@@ -149,21 +140,22 @@ public:
     void setDefaultValue(const QVariant &v);
 
 protected:
-    Flag m_dataType;
+    Flag m_dataType{NoFlags};
 
     QVariant m_value;
+    QVariant m_backupValue;
 
-    bool m_modified;
+    bool m_modified{false};
 
-    int m_precision;
+    int m_precision{-1};
     QVariant m_min;
     QVariant m_max;
 
     QString m_title;
     QString m_descr;
+    QString m_text;
 
     QStringList m_enumStrings;
-    QList<int> m_enumValues;
 
     QString m_units;
 
@@ -173,6 +165,7 @@ signals:
     void dataTypeChanged();
 
     void valueChanged();
+    void backupValueChanged();
 
     void modifiedChanged();
 

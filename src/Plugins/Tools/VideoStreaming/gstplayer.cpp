@@ -211,18 +211,30 @@ GstPlayer::GstPlayer(Fact *parent)
     m_reconnectTimer.setInterval(RECONNECT_TIMEOUT);
     m_reconnectTimer.setSingleShot(true);
 
-    overlay = new QmlOverlay(this);
-    m_videoThread.setOverlayCallback(std::bind(&QmlOverlay::cb_drawOverlay, overlay, _1));
+    App::jsync(f_tune);
 
     loadQml(QString("qrc:/%1/VideoPlugin.qml").arg(PLUGIN_NAME));
 
     onSourceTypeChanged();
+
+    overlay = new QmlOverlay();
+    m_videoThread.setOverlayCallback(std::bind(&QmlOverlay::cb_drawOverlay, overlay, _1));
+
+    connect(App::instance(), &App::appQuit, overlay, [this]() {
+        delete overlay;
+        overlay = nullptr;
+    });
 }
 
 GstPlayer::~GstPlayer()
 {
     if (m_videoThread.isRunning())
         stop();
+
+    if (overlay) {
+        delete overlay;
+        overlay = nullptr;
+    }
 }
 
 void GstPlayer::vehicleSelected(Vehicle *vehicle)
@@ -230,7 +242,7 @@ void GstPlayer::vehicleSelected(Vehicle *vehicle)
     Mandala *m = vehicle->f_mandala;
     for (int i = 0; i < f_tools->size(); ++i) {
         Fact *f = f_tools->child(i);
-        f->bind(m->fact(f->name().replace('_', '.')));
+        f->setBinding(m->fact(f->name().replace('_', '.')));
     }
 }
 
@@ -241,6 +253,8 @@ GstPlayer::ConnectionState GstPlayer::getConnectionState() const
 
 void GstPlayer::snapshot() const
 {
+    if (!overlay)
+        return;
     QImage image = m_lastFrame.copy();
     QImage img = overlay->getSnapshotOverlay(image.size());
     if (!img.isNull()) {

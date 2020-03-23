@@ -11,8 +11,6 @@ public:
     explicit GeoTileFetcher(QGeoTiledMappingManagerEngine *parent = 0);
     ~GeoTileFetcher();
 
-    TileLoader *loader;
-
 protected:
     QGeoTiledMapReply *getTileImage(const QGeoTileSpec &spec);
 };

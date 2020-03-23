@@ -138,13 +138,13 @@ void Nodes::search()
 {
     if (!protocol()->enabled())
         return;
-    setActive(true);
+    protocol()->setActive(true);
     protocol()->requestSearch();
 }
 void Nodes::stop()
 {
     qDebug() << sender();
-    setActive(false);
+    protocol()->setActive(false);
 }
 
 void Nodes::clear()

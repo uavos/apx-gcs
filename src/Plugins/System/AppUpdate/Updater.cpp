@@ -45,7 +45,7 @@ Updater::Updater(Fact *parent)
     //add menu to app
     Fact *m = new Fact(AppGcs::instance()->f_menu->app, f_check->name());
     m->setOpt("role", QAction::ApplicationSpecificRole);
-    m->bind(f_check);
+    m->setBinding(f_check);
 
     initUpdaterImpl();
 

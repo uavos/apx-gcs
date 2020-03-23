@@ -304,7 +304,7 @@ void VehicleMission::test(int n)
 {
     if (f_waypoints->size() <= 0)
         return;
-    Waypoint *w = f_waypoints->child<Waypoint>(f_waypoints->size() - 1);
+    Waypoint *w = static_cast<Waypoint *>(f_waypoints->children().last());
     QGeoCoordinate p(w->f_latitude->value().toDouble(), w->f_longitude->value().toDouble());
     double hdg = 360.0 * qrand() / RAND_MAX;
     for (int i = 0; i < n; ++i) {

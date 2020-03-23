@@ -15,9 +15,11 @@ Item {
 
     property var plugin: apx.tools.videostreaming
     property bool alive: true
+    property bool loaded: plugin?true:false
 
     property bool showNumbers: true
     property bool showAim: true
+
 
     opacity: ui.effects?0.7:1
     MouseArea {
@@ -57,36 +59,36 @@ Item {
     }
 
 
-    OverlayNumbers {
-        id: numbers
-        anchors.fill: interactive?(plugin.tune.view_mode.value>0?control:videoFrame):control
+    Loader {
+        active: control.loaded && showNumbers
+        anchors.fill: interactive?(loaded && apx.tools.videostreaming.tune.view_mode.value>0?control:videoFrame):control
         anchors.margins: 10
-        interactive: control.interactive
-        alive: control.alive
-        visible: showNumbers
+        sourceComponent: OverlayNumbers {
+            id: numbers
+            interactive: control.interactive
+            alive: control.alive
 
-        Loader {
-            active: visible
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.topMargin: numbers.overlayItemSize*1.1
-            width: Math.min(80, parent.height/5)
-            sourceComponent: OverlayGimbal { }
+            OverlayGimbal {
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.topMargin: numbers.overlayItemSize*1.1
+                width: Math.min(80, parent.height/5)
+            }
         }
     }
 
     property int aimSize: Math.max(60,Math.min(100, control.height/10))
     Loader {
-        active: alive && showAim
+        active: control.loaded && alive && showAim
         anchors.centerIn: videoFrame
         sourceComponent: OverlayAim {
             size: aimSize
-            type: plugin.tune.overlay.aim.value
+            type: apx.tools.videostreaming.tune.overlay.aim.value
         }
     }
 
     Loader {
-        active: interactive && plugin.tune.controls.value
+        active: control.loaded && interactive && apx.tools.videostreaming.tune.controls.value
         anchors.fill: videoFrame
         sourceComponent: CamControls {
             size: aimSize
@@ -95,10 +97,12 @@ Item {
 
 
     Connections {
-        enabled: !interactive
+        enabled: true //!interactive
         target: application
         onLoadingFinished: {
             control.plugin=apx.tools.videostreaming
+            control.loaded=true
+            //console.log(control.plugin)
         }
     }
 

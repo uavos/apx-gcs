@@ -24,10 +24,6 @@
 
 #include "FactData.h"
 
-class Fact;
-
-typedef QList<Fact *> FactList;
-
 class Fact : public FactData
 {
     Q_OBJECT
@@ -48,6 +44,7 @@ class Fact : public FactData
     Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 
     Q_PROPERTY(Fact *binding READ binding WRITE setBinding NOTIFY bindingChanged)
+    Q_PROPERTY(Fact *menu READ menu WRITE setMenu NOTIFY menuChanged)
 
     Q_PROPERTY(QString qmlPage READ qmlPage WRITE setQmlPage NOTIFY qmlPageChanged)
     Q_PROPERTY(QVariantMap opts READ opts WRITE setOpts NOTIFY optsChanged)
@@ -100,9 +97,6 @@ public:
         TextRole,
     };
 
-    // type conversions
-    Fact *parentFact() const { return qobject_cast<Fact *>(FactBase::parentFact()); }
-
     Q_INVOKABLE bool hasParent(Fact *parent) const;
     Q_INVOKABLE bool hasChild(Fact *child) const;
 
@@ -117,31 +111,14 @@ public:
         return nullptr;
     }
 
-    template<class T = Fact>
-    T *child(int n) const
-    {
-        return qobject_cast<T *>(FactBase::child(n));
-    }
-
-    template<class T = Fact>
-    T *child(const QString &name) const
-    {
-        return qobject_cast<T *>(FactBase::child(name));
-    }
-
     virtual QVariant data(int col, int role) const;
 
     Q_INVOKABLE virtual QString toolTip() const;
 
     virtual void hashData(QCryptographicHash *h) const;
 
-    Q_INVOKABLE void bind(FactData *fact) override;
-
     //create action fact that opens this fact, or binded to this action
     Q_INVOKABLE Fact *createAction(Fact *parent);
-
-    //fact menu. returns fact (this or binded) which has the menu or null
-    Q_INVOKABLE Fact *menu();
 
     //forward to app instance with fact opts
     Q_INVOKABLE QObject *loadQml(const QString &qmlFile);
@@ -153,12 +130,14 @@ public:
     virtual quint16 stringToMandala(const QString &s) const override;
 
 private:
-    Fact *m_mandala;
+    Fact *m_mandala{nullptr};
 
     int m_progress_s{0};
 
 private:
     QString pTitle() const;
+
+    void updateBinding(Fact *src);
 
 private slots:
     void updateModels();
@@ -207,6 +186,9 @@ public:
     Fact *binding() const;
     void setBinding(Fact *v);
 
+    Fact *menu();
+    void setMenu(Fact *v);
+
     QString qmlPage() const;
     void setQmlPage(const QString &v);
 
@@ -218,23 +200,24 @@ public:
     void setScnt(const int v);
 
 protected:
-    QAbstractListModel *m_model;
-    QAbstractListModel *m_actionsModel;
+    QAbstractListModel *m_model{nullptr};
+    QAbstractListModel *m_actionsModel{nullptr};
 
-    bool m_enabled;
-    bool m_visible;
+    bool m_enabled{true};
+    bool m_visible{true};
     QString m_section;
     QString m_statusText;
-    bool m_active;
-    int m_progress;
+    bool m_active{false};
+    int m_progress{-1};
     QString m_icon;
 
-    QPointer<Fact> m_binding;
+    QPointer<Fact> m_binding{nullptr};
+    QPointer<Fact> m_menu{nullptr};
 
     QString m_qmlPage;
     QVariantMap m_opts;
 
-    int m_scnt;
+    int m_scnt{0};
 
 signals:
     void flagsChanged();
@@ -252,6 +235,7 @@ signals:
     void iconChanged();
 
     void bindingChanged();
+    void menuChanged();
 
     void qmlPageChanged();
     void optsChanged();
@@ -260,8 +244,8 @@ signals:
 
     //tree properties propagate
 private:
-    bool m_parentEnabled;
+    bool m_parentEnabled{true};
     void updateParentEnabled();
-    bool m_parentVisible;
+    bool m_parentVisible{true};
     void updateParentVisible();
 };

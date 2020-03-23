@@ -20,16 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactQml_H
-#define FactQml_H
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QQmlListProperty>
-//=============================================================================
+
 class FactQml : public Fact
 {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<FactQml> children READ children)
+    Q_PROPERTY(QQmlListProperty<FactQml> children READ children CONSTANT)
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
@@ -46,5 +46,3 @@ public:
     static void clearChildren(QQmlListProperty<FactQml> *property);
     static int countChildren(QQmlListProperty<FactQml> *property);
 };
-//=============================================================================
-#endif

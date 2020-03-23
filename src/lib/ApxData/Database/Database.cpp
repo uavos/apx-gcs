@@ -24,11 +24,14 @@
 #include "MissionsDB.h"
 #include "NodesDB.h"
 #include "TelemetryDB.h"
+
+#include <App/App.h>
 #include <App/AppLog.h>
-//=============================================================================
+
 APX_LOGGING_CATEGORY(DatabaseLog, "core.Database")
-//=============================================================================
+
 Database *Database::_instance = nullptr;
+
 Database::Database(Fact *parent)
     : Fact(parent, "db", tr("Database"), tr("Data storage"), Group)
 {
@@ -44,21 +47,3 @@ Database::Database(Fact *parent)
     telemetry = new TelemetryDB(this, QStringLiteral("TelemetryDbSession"));
     missions = new MissionsDB(this, QStringLiteral("MissionsDbSession"));
 }
-//=============================================================================
-Database::~Database()
-{
-    //qDebug()<<"DB"<<"destroy";
-}
-//=============================================================================
-void Database::add(DatabaseSession *session)
-{
-    //qDebug() << session->name();
-    if (sessions.contains(session))
-        return;
-    sessions.append(session);
-    connect(session, &DatabaseSession::destroyed, this, [=]() {
-        sessions.removeAll(static_cast<DatabaseSession *>(sender()));
-    });
-    //connect(session,&Fact::
-}
-//=============================================================================

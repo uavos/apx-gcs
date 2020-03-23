@@ -598,6 +598,8 @@ QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf
         return ::read_param<xbus::node::conf::word_t>(stream, array);
     case xbus::node::conf::dword:
         return ::read_param<xbus::node::conf::dword_t>(stream, array);
+    case xbus::node::conf::mandala:
+        return ::read_param<xbus::node::conf::mandala_t>(stream, array);
     case xbus::node::conf::string:
         return ::read_param_str<xbus::node::conf::string_t>(stream, array);
     case xbus::node::conf::text:
@@ -661,6 +663,8 @@ bool ProtocolNode::write_param(ProtocolStreamWriter &stream,
         return ::write_param<xbus::node::conf::word_t>(stream, array, value);
     case xbus::node::conf::dword:
         return ::write_param<xbus::node::conf::dword_t>(stream, array, value);
+    case xbus::node::conf::mandala:
+        return ::write_param<xbus::node::conf::mandala_t>(stream, array, value);
     case xbus::node::conf::string:
         return ::write_param_str<xbus::node::conf::string_t>(stream, array, value);
     case xbus::node::conf::text:

@@ -23,6 +23,7 @@
 #include "App.h"
 #include "AppDirs.h"
 #include "AppNotifyListModel.h"
+#include "AppQuickView.h"
 #include "AppWindow.h"
 
 #include <ApxMisc/MaterialIcon.h>
@@ -30,17 +31,20 @@
 #include <version.h>
 
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QFontDatabase>
 #include <QFontInfo>
 #include <QGLFormat>
 #include <QQuickStyle>
+#include <QQuickView>
 #include <QScreen>
 #include <QStyleFactory>
+#include <QtQuick>
+
 //=============================================================================
 App *App::_instance = nullptr;
 App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     : AppBase(argc, argv, name)
-    , url(url)
     , m_window(nullptr)
     , m_scale(1.0)
 {
@@ -115,11 +119,12 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     if (style)
         qApp->setStyle(style);
 
-    connect(this, &QCoreApplication::aboutToQuit, this, &App::quitRequested);
+    connect(this, &QCoreApplication::aboutToQuit, this, &App::appAboutToQuit);
     connect(this, &QGuiApplication::applicationStateChanged, this, &App::appStateChanged);
 
     //js engine
-    m_engine = new AppEngine(this);
+    m_engine = new AppEngine();
+
     if (!oQml.isEmpty()) {
         m_engine->globalObject().setProperty("qmlMainFile", oQml);
     } else {
@@ -138,9 +143,56 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     setGlobalProperty("ui", m_engine->newObject());
     jsexec(QString("ui.__defineGetter__('%1', function(){ return application.%1; });").arg("scale"));
 
+    f_apx = new AppRoot();
+
+    m_engine->jsSyncObject(this);
+
     loadFonts();
 
-    f_apx = new AppRoot(this);
+    // main window
+
+    QString title = QString("%1 (%2)").arg(App::applicationName()).arg(App::applicationVersion());
+    if (!installed())
+        title.append(QString(" - %1").arg(tr("not installed").toUpper()));
+    AppQuickView *view = new AppQuickView("main", title);
+
+    view->setFlag(Qt::WindowSystemMenuHint);
+    view->setFlag(Qt::WindowMinimizeButtonHint);
+    view->setFlag(Qt::WindowFullscreenButtonHint);
+
+    view->setMinimumSize(view->screen()->geometry().size() / 4);
+
+    connect(view, &AppQuickView::closed, this, &App::mainWindowClosed);
+
+    if (m_window != view) {
+        connect(view, &QQuickWindow::visibilityChanged, this, &App::visibilityChanged);
+        m_window = view;
+        emit windowChanged();
+    }
+    registerUiComponent(view, "window");
+
+    view->setSource(url);
+}
+App::~App()
+{
+    qDebug() << QDateTime::currentDateTimeUtc().toString();
+}
+void App::mainWindowClosed(QCloseEvent *event)
+{
+    event->ignore();
+    emit appQuit();
+    QTimer::singleShot(0, this, &App::quit);
+}
+void App::appAboutToQuit()
+{
+    apxMsg() << tr("Quit").append("...");
+    m_engine->collectGarbage();
+    emit appQuit();
+}
+
+void App::loadApp()
+{
+    apxConsole() << QObject::tr("Loading application").append("...");
 
     //plugins
     plugins = new AppPlugins(f_apx->f_pluginsSettings, this);
@@ -151,32 +203,15 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 
     jsync(f_apx);
 
-    m_engine->jsSyncObject(this);
-
-    connect(m_engine, &QQmlApplicationEngine::quit, m_engine, &QQmlApplicationEngine::deleteLater);
-    connect(m_engine, &QQmlApplicationEngine::destroyed, this, &QGuiApplication::quit);
-
-    QTimer::singleShot(1, this, &App::loadUrl);
-}
-App::~App() {}
-//=============================================================================
-void App::loadApp()
-{
-    apxConsole() << QObject::tr("Loading application").append("...");
     loadServices();
+    updateSurfaceFormat();
+
     plugins->load(oPlugins);
+
     apxConsole() << QObject::tr("Loading finished");
     emit loadingFinished();
 }
-//=============================================================================
-void App::quitRequested()
-{
-    apxMsg() << tr("Quit").append("...");
-    f_apx->removeAll();
-    //jsexec("ui.map.destroy()");
-}
-//=============================================================================
-//=============================================================================
+
 void App::loadServices()
 {
     apxConsole() << QObject::tr("Loading services").append("...");
@@ -184,62 +219,27 @@ void App::loadServices()
     SvgImageProvider *svgProvider = new SvgImageProvider(":/");
     m_engine->addImageProvider("svg", svgProvider);
     m_engine->rootContext()->setContextProperty("svgRenderer", svgProvider);
-
-    //SoundEffects *soundEffects=new SoundEffects(this);
-    //QObject::connect(this,&App::playSoundEffect,soundEffects,&SoundEffects::play);
 }
-//=============================================================================
-void App::loadUrl()
-{
-    load(url);
-}
-void App::load(const QUrl &qml)
-{
-    if (qml.isEmpty())
-        return;
-    m_engine->load(qml);
-    QQuickWindow *w = m_engine->rootObjects().size()
-                          ? qobject_cast<QQuickWindow *>(m_engine->rootObjects().first())
-                          : nullptr;
-    if (!w)
-        return;
 
-    //update property
-    if (m_window != w) {
-        connect(w, &QQuickWindow::visibilityChanged, this, &App::visibilityChanged);
-        m_window = w;
-        emit windowChanged();
-    }
-
-    //surface format
-    Fact *f;
-    f = AppSettings::instance()->findChild("graphics.opengl");
-    if (f)
-        connect(f, &Fact::valueChanged, this, &App::updateSurfaceFormat);
-    f = AppSettings::instance()->findChild("graphics.antialiasing");
-    if (f)
-        connect(f, &Fact::valueChanged, this, &App::updateSurfaceFormat);
-    updateSurfaceFormat();
-
-    //update global property
-    registerUiComponent(w, "window"); //setGlobalProperty("ui.window",m_engine->newQObject(w));
-}
-//=============================================================================
 void App::updateSurfaceFormat()
 {
     if (!m_window)
         return;
+    if (!AppSettings::instance())
+        return;
+
+    Fact *f_opengl = AppSettings::instance()->findChild("graphics.opengl");
+    Fact *f_effects = AppSettings::instance()->findChild("graphics.effects");
 
     QSurfaceFormat fmt = m_window->format();
     //fmt.setSwapBehavior(QSurfaceFormat::SingleBuffer);
     //m_window->setFormat(fmt);
     //return;
 
-    Fact *f;
+    if (f_opengl) {
+        connect(f_opengl, &Fact::valueChanged, this, &App::updateSurfaceFormat, Qt::UniqueConnection);
 
-    f = AppSettings::instance()->findChild("graphics.opengl");
-    if (f) {
-        int v = f->value().toInt();
+        int v = f_opengl->value().toInt();
         QGLFormat::OpenGLVersionFlags gl = QGLFormat::openGLVersionFlags();
         switch (v) {
         default:
@@ -274,9 +274,14 @@ void App::updateSurfaceFormat()
         fmt.setSamples(v == 2 ? 4 : 0);
     }*/
 
-    f = AppSettings::instance()->findChild("graphics.effects");
-    if (f) {
-        int v = f->value().toInt();
+    if (f_effects) {
+        connect(f_effects,
+                &Fact::valueChanged,
+                this,
+                &App::updateSurfaceFormat,
+                Qt::UniqueConnection);
+
+        int v = f_effects->value().toInt();
         if (v < 2) {
             fmt.setStencilBufferSize(8);
             fmt.setDepthBufferSize(8);
@@ -284,7 +289,7 @@ void App::updateSurfaceFormat()
     }
 
     //qDebug()<<fmt;
-    //m_window->setFormat(fmt);
+    m_window->setFormat(fmt);
 }
 //=============================================================================
 void App::appStateChanged(Qt::ApplicationState state)
@@ -295,9 +300,50 @@ void App::appStateChanged(Qt::ApplicationState state)
     }
 }
 //=============================================================================
+//=============================================================================
+void App::registerUiComponent(QObject *item, QString name)
+{
+    if (!m_engine)
+        return;
+    //qDebug()<<item<<name;
+    QQmlEngine::setObjectOwnership(item, QQmlEngine::CppOwnership);
+    QJSValue obj = m_engine->newQObject(item);
+    setGlobalProperty(QString("ui.%1").arg(name), obj);
+    emit uiComponentLoaded(name, obj);
+}
+//=============================================================================
+QJSValue App::jsexec(const QString &s)
+{
+    if (!_instance->engine())
+        return QJSValue();
+    return _instance->engine()->jsexec(s);
+}
+void App::jsync(Fact *fact)
+{
+    if (!_instance->engine())
+        return;
+    _instance->engine()->jsSync(fact);
+}
+QObject *App::loadQml(const QString &qmlFile, const QVariantMap &opts)
+{
+    if (!_instance->engine())
+        return nullptr;
+    return _instance->engine()->loadQml(qmlFile, opts);
+}
+void App::setGlobalProperty(const QString &path, const QVariant &value)
+{
+    AppEngine *e = _instance->engine();
+    if (!e)
+        return;
+    setGlobalProperty(path, e->toScriptValue(value));
+}
 void App::setGlobalProperty(const QString &path, const QJSValue &value)
 {
-    QJSValue v = m_engine->globalObject();
+    AppEngine *e = _instance->engine();
+    if (!e)
+        return;
+
+    QJSValue v = e->globalObject();
 
     QStringList list = path.split('.');
     for (int i = 0; i < list.size(); ++i) {
@@ -308,22 +354,36 @@ void App::setGlobalProperty(const QString &path, const QJSValue &value)
         }
         QJSValue vp = v.property(pname);
         if (vp.isUndefined() || (!vp.isObject())) {
-            vp = m_engine->newObject();
+            vp = e->newObject();
             v.setProperty(pname, vp);
         }
         v = vp;
     }
-    //m_engine->collectGarbage();
+    //e->collectGarbage();
 }
-//=============================================================================
-void App::registerUiComponent(QObject *item, QString name)
+void App::setGlobalProperty(const QString &path, QObject *object)
 {
-    //qDebug()<<item<<name;
-    QJSValue obj = m_engine->newQObject(item);
-    setGlobalProperty(QString("ui.%1").arg(name), obj);
-    emit uiComponentLoaded(name, obj);
+    AppEngine *e = _instance->engine();
+    if (!e)
+        return;
+    QQmlEngine::setObjectOwnership(object, QQmlEngine::CppOwnership);
+    setGlobalProperty(path, e->newQObject(object));
 }
-//=============================================================================
+void App::setContextProperty(const QString name, const QVariant &value)
+{
+    AppEngine *e = _instance->engine();
+    if (!e)
+        return;
+    e->rootContext()->setContextProperty(name, value);
+}
+void App::setContextProperty(const QString name, QObject *object)
+{
+    AppEngine *e = _instance->engine();
+    if (!e)
+        return;
+    QQmlEngine::setObjectOwnership(object, QQmlEngine::CppOwnership);
+    e->rootContext()->setContextProperty(name, object);
+}
 //=============================================================================
 void App::loadFonts()
 {

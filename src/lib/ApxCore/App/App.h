@@ -58,20 +58,26 @@ public:
     ~App();
     static App *instance() { return _instance; }
 
-    void load(const QUrl &qml);
-
     Q_INVOKABLE static void sound(const QString &v) { _instance->playSoundEffect(v); }
 
     //js
-    Q_INVOKABLE static QJSValue jsexec(const QString &s) { return instance()->engine()->jsexec(s); }
-    static void jsync(Fact *fact) { instance()->engine()->jsSync(fact); }
+    static void jsync(Fact *fact);
+    Q_INVOKABLE static QJSValue jsexec(const QString &s);
+    Q_INVOKABLE static QObject *loadQml(const QString &qmlFile, const QVariantMap &opts);
 
     template<class T>
     static T propertyValue(const QString &path)
     {
-        return instance()->engine()->jsGetProperty(path).toVariant().value<T>();
+        if (!_instance->engine())
+            return T();
+        return _instance->engine()->jsGetProperty(path).toVariant().value<T>();
     }
-    void setGlobalProperty(const QString &path, const QJSValue &value);
+    static void setGlobalProperty(const QString &path, const QVariant &value);
+    static void setGlobalProperty(const QString &path, const QJSValue &value);
+    static void setGlobalProperty(const QString &path, QObject *object);
+
+    static void setContextProperty(const QString name, const QVariant &value);
+    static void setContextProperty(const QString name, QObject *object);
 
     Q_INVOKABLE static QFont getMonospaceFont();
     Q_INVOKABLE static bool isFixedPitch(const QFont &font);
@@ -94,14 +100,16 @@ private:
     void loadTranslator(const QString &fileName);
 
 protected:
-    QUrl url;
     AppRoot *f_apx;
 
+    virtual void loadFonts();
+    virtual void loadServices();
+
 private slots:
-    void loadUrl();
     void appStateChanged(Qt::ApplicationState state);
 
-    void quitRequested();
+    void mainWindowClosed(QCloseEvent *event);
+    void appAboutToQuit();
 
     void updateSurfaceFormat();
 
@@ -110,8 +118,6 @@ public slots:
 
     //load
     virtual void loadApp();
-    virtual void loadFonts();
-    virtual void loadServices();
 
 signals:
     void loadingFinished();
@@ -120,13 +126,15 @@ signals:
     void visibilityChanged(QWindow::Visibility visibility);
     void playSoundEffect(const QString &v);
 
-signals:
     void about();
+
+    void appQuit();
 
     //---------------------------------------
     //PROPERTIES
 public:
     AppEngine *engine() const;
+
     QQuickWindow *window() const;
     double scale() const;
     void setScale(double v);

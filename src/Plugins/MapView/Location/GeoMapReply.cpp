@@ -10,17 +10,23 @@ static const unsigned char gifSignature[] = {0x47, 0x49, 0x46, 0x38, 0x00};
 //=============================================================================
 GeoMapReply::GeoMapReply(const QGeoTileSpec &spec, GeoTileFetcher *fetcher)
     : QGeoTiledMapReply(spec, fetcher)
-    , fetcher(fetcher)
 {
+    TileLoader *loader = TileLoader::instance();
+    if (!loader) {
+        setError(QGeoTiledMapReply::UnknownError, "no loader");
+        setFinished(true);
+        return;
+    }
+
     _uid = TileLoader::uid(spec.mapId(), spec.zoom(), spec.x(), spec.y());
-    connect(fetcher->loader, &TileLoader::tileLoaded, this, &GeoMapReply::tileLoaded);
-    connect(fetcher->loader, &TileLoader::tileError, this, &GeoMapReply::tileError);
-    fetcher->loader->loadTile(_uid);
+    connect(loader, &TileLoader::tileLoaded, this, &GeoMapReply::tileLoaded);
+    connect(loader, &TileLoader::tileError, this, &GeoMapReply::tileError);
+    loader->loadTile(_uid);
 }
 //=============================================================================
 GeoMapReply::~GeoMapReply()
 {
-    fetcher->loader->loadCancel(_uid);
+    abort();
     //qDebug()<<"~GeoMapReply";
 }
 //=============================================================================
@@ -45,7 +51,8 @@ void GeoMapReply::tileError(quint64 uid, QString errorString)
 //=============================================================================
 void GeoMapReply::abort()
 {
-    fetcher->loader->loadCancel(_uid);
+    if (TileLoader::instance())
+        TileLoader::instance()->loadCancel(_uid);
 }
 //=============================================================================
 //=============================================================================

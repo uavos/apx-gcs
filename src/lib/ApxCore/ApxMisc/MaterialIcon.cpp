@@ -113,7 +113,6 @@ void MaterialIcon::updateMap()
 QFontIconEngine::QFontIconEngine()
     : QIconEngine()
 {}
-QFontIconEngine::~QFontIconEngine() {}
 void QFontIconEngine::paint(QPainter *painter,
                             const QRect &rect,
                             QIcon::Mode mode,

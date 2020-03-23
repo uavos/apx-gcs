@@ -37,9 +37,7 @@ QueueItem::QueueItem(Fact *parent, ProtocolNode *protocol, QString type)
     else
         setIcon("chip");*/
 
-    connect(this, &Fact::valueChanged, protocol, [this, protocol]() {
-        protocol->setValue(value());
-    });
+    //protocol->bindProperty(this,"value");
 }
 
 bool QueueItem::match(const QString &sn) const

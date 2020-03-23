@@ -27,7 +27,6 @@ DatabaseLookupModel::DatabaseLookupModel(QObject *parent)
     , ordered(true)
     , qmlMapSafe(false)
 {}
-DatabaseLookupModel::~DatabaseLookupModel() {}
 //=============================================================================
 int DatabaseLookupModel::rowCount(const QModelIndex &parent) const
 {

@@ -69,16 +69,6 @@ MissionPlanner::MissionPlanner(Fact *parent)
 
     qml = loadQml("qrc:/MissionPlannerPlugin.qml");
 }
-MissionPlanner::~MissionPlanner()
-{
-    //qDebug()<<"del begin"<<this;
-    //App::jsexec("ui.map.clearMapItems()");
-    //App::jsexec("ui.map.destroy()");
-    //App::jsexec("delete ui.map");
-    //qml->deleteLater();
-    //delete qml;
-    //qDebug()<<"del"<<this;
-}
 //=============================================================================
 //=============================================================================
 Vehicle *MissionPlanner::vehicle() const

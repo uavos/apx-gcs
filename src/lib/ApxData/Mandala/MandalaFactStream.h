@@ -51,5 +51,5 @@ public:
     const MandalaFactStream &operator>>(XbusStreamWriter &stream) const override;
 
 private:
-    MandalaFactStreamBase *m_stream;
+    MandalaFactStreamBase *m_stream{nullptr};
 };

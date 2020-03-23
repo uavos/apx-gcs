@@ -33,6 +33,7 @@ class AppEngine : public QQmlApplicationEngine
     Q_OBJECT
 public:
     explicit AppEngine(QObject *parent = nullptr);
+    ~AppEngine();
 
     QJSValue jsexec(const QString &s);
 

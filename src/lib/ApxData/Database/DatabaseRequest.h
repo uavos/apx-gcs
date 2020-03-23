@@ -35,8 +35,6 @@ public:
     explicit DatabaseRequest(DatabaseSession *db,
                              const QString &queryString,
                              const QVariantList &bindValues = QVariantList());
-    ~DatabaseRequest();
-
     enum Status {
         Success = 0,
         Error,

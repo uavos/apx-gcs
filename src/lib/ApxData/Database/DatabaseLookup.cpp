@@ -57,7 +57,7 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
                              tr("Database maintenance"),
                              Action | IconOnly,
                              "wrench");
-    f_tools->bind(db);
+    f_tools->setBinding(db);
 
     modelSyncTimer.setSingleShot(true);
     modelSyncTimer.setInterval(500);

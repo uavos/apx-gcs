@@ -108,7 +108,10 @@ ApplicationWindow {
         if(settings.fullScreen)control.showFullScreen()
     }
 
-    onClosing: Qt.quit()
+    onClosing: {
+        //application.quitAction()
+        Qt.quit()
+    }
 
     //onActiveChanged:         console.log(active)
 

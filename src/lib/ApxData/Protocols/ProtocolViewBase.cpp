@@ -38,25 +38,20 @@ void ProtocolViewBaseImpl::setProtocol(Fact *protocol)
     if (m_protocol) {
         disconnect(m_protocol, nullptr, this, nullptr);
         disconnect(this, nullptr, m_protocol, nullptr);
+        unbindProperties(m_protocol);
     }
     m_protocol = protocol;
 
     if (protocol) {
         connect(protocol, &Fact::destroyed, this, &Fact::remove);
 
-        connect(protocol, &Fact::nameChanged, this, &ProtocolViewBaseImpl::updateName);
-        connect(protocol, &Fact::titleChanged, this, &ProtocolViewBaseImpl::updateTitle);
-        connect(protocol, &Fact::descrChanged, this, &ProtocolViewBaseImpl::updateDescr);
-        connect(protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
-        connect(protocol, &Fact::progressChanged, this, &ProtocolViewBaseImpl::updateProgress);
+        bindProperty(protocol, "name", true);
+        bindProperty(protocol, "title", true);
+        bindProperty(protocol, "descr", true);
+        bindProperty(protocol, "value", false);
+        bindProperty(protocol, "progress", true);
 
-        bindProperty(protocol, "active");
-
-        updateName();
-        updateTitle();
-        updateDescr();
-        updateValue();
-        updateProgress();
+        bindProperty(protocol, "active", true);
 
         if (icon().isEmpty())
             setIcon(protocol->icon());
@@ -68,46 +63,6 @@ void ProtocolViewBaseImpl::setProtocol(Fact *protocol)
 Fact *ProtocolViewBaseImpl::protocol_fact() const
 {
     return m_protocol;
-}
-
-void ProtocolViewBaseImpl::updateName()
-{
-    setName(m_protocol->name());
-}
-void ProtocolViewBaseImpl::updateTitle()
-{
-    Fact::setTitle(m_protocol->title());
-}
-void ProtocolViewBaseImpl::updateDescr()
-{
-    Fact::setDescr(m_protocol->descr());
-}
-void ProtocolViewBaseImpl::updateValue()
-{
-    Fact::setValue(m_protocol->value());
-}
-void ProtocolViewBaseImpl::updateProgress()
-{
-    setProgress(m_protocol->progress());
-}
-
-void ProtocolViewBaseImpl::setTitle(const QString &v)
-{
-    if (m_protocol)
-        disconnect(m_protocol, &Fact::titleChanged, this, &ProtocolViewBaseImpl::updateTitle);
-    Fact::setTitle(v);
-}
-void ProtocolViewBaseImpl::setDescr(const QString &v)
-{
-    if (m_protocol)
-        disconnect(m_protocol, &Fact::descrChanged, this, &ProtocolViewBaseImpl::updateDescr);
-    Fact::setDescr(v);
-}
-bool ProtocolViewBaseImpl::setValue(const QVariant &v)
-{
-    if (m_protocol)
-        disconnect(m_protocol, &Fact::valueChanged, this, &ProtocolViewBaseImpl::updateValue);
-    return Fact::setValue(v);
 }
 
 QString ProtocolViewBaseImpl::toolTip() const

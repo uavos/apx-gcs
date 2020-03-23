@@ -22,15 +22,27 @@
  */
 #pragma once
 
+#include <QQuickView>
+
 #include <QtCore>
 
-class SignalForwarder : public QObject
+class AppQuickView : public QQuickView
 {
     Q_OBJECT
+
 public:
-    SignalForwarder(QObject *parent = nullptr)
-        : QObject(parent)
-    {}
+    explicit AppQuickView(const QString &name, const QString &title, QWindow *parent = nullptr);
+
+private:
+    QTimer _saveStateTimer;
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private slots:
+    void saveState();
+    void saveStateDo();
+    void restoreState();
 signals:
-    void forward();
+    void closed(QCloseEvent *event);
 };

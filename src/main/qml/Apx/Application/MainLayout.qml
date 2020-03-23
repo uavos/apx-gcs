@@ -126,14 +126,21 @@ Item {
     {
         plugins.push(plugin)
         var p = {}
-        for(var i in plugin) p[i]=plugin[i]
+        for(var i in plugin) {
+            var v=plugin[i]
+            if(v) p[i]=v
+        }
         p.idx = plugins.length-1
         if(index<pluginsModel.count) pluginsModel.insert(index, p)
         else pluginsModel.append(p)
 
-        plugin.loaded.connect(function(){ updatePluginPadding(plugin) })
+        plugin.loaded.connect(function(){
+            if(!updatePluginPadding)return;
+            updatePluginPadding(plugin)
+        })
         plugin.stateChanged.connect(function(){ updatePluginState(plugin) })
         plugin.activeChanged.connect(function(){
+            if(!minimizePlugin)return;
             if(plugin.active)return
             minimizePlugin(plugin)
             maximizePlugin()

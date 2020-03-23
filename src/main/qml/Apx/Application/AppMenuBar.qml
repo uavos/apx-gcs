@@ -14,7 +14,7 @@ MenuBar {
             id: menu
             title: modelData.title
             Instantiator {
-                model: modelData.menu().model
+                model: modelData.menu.model
                 MenuItem {
                     text: modelData.title
                     onTriggered: modelData.trigger()

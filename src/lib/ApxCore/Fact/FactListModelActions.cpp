@@ -49,9 +49,9 @@ QHash<int, QByteArray> FactListModelActions::roleNames() const
 //=============================================================================
 QVariant FactListModelActions::data(const QModelIndex &index, int role) const
 {
-    if (index.row() < 0 || index.row() >= rowCount())
+    Fact *item = fact->actions().value(index.row());
+    if (!item)
         return QVariant();
-    Fact *item = qobject_cast<Fact *>(fact->actions().at(index.row()));
     return item->data(index.column(), role);
 }
 //=============================================================================

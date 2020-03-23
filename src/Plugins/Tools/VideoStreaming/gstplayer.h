@@ -65,7 +65,7 @@ private:
     QTimer m_reconnectTimer;
     quint64 m_frameCnt;
 
-    QmlOverlay *overlay;
+    QmlOverlay *overlay{nullptr};
 
     void setConnectionState(ConnectionState cs);
 

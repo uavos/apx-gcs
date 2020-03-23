@@ -71,18 +71,20 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     f_select->addVehicle(f_replay);
 
     //JS register mandala
-    App *app = App::instance();
-    App::jsync(this);
+    if (App::instance()->engine()) {
+        App::jsync(this);
 
-    //register mandala constants for QML and JS
-    for (auto s : f_local->f_mandala->constants.keys()) {
-        const QVariant &v = f_local->f_mandala->constants.value(s);
-        //JSEngine layer
-        App::instance()->engine()->globalObject().setProperty(s, app->engine()->toScriptValue(v));
-        //QmlEngine layer
-        App::instance()->engine()->rootContext()->setContextProperty(s, v);
+        //register mandala constants for QML and JS
+        for (auto s : f_local->f_mandala->constants.keys()) {
+            const QVariant &v = f_local->f_mandala->constants.value(s);
+            //JSEngine layer
+            App::setGlobalProperty(s, v);
+            //QmlEngine layer
+            App::setContextProperty(s, v);
+        }
+
+        jsSyncMandalaAccess(f_local->f_mandala, App::instance()->engine()->globalObject());
     }
-    jsSyncMandalaAccess(f_local->f_mandala, App::instance()->engine()->globalObject());
 
     //Database register fields
     DatabaseRequest::Records recMandala;
@@ -165,9 +167,8 @@ void Vehicles::selectVehicle(Vehicle *v)
     v->message(msg, AppNotify::Important);
 
     //update JSengine
-    AppEngine *e = App::instance()->engine();
-    e->globalObject().setProperty("mandala", e->newQObject(v->f_mandala));
-    e->rootContext()->setContextProperty("mandala", v->f_mandala);
+    App::setGlobalProperty("mandala", v->f_mandala);
+    App::setContextProperty("mandala", v->f_mandala);
 
     emit currentChanged();
     emit vehicleSelected(v);
@@ -210,7 +211,9 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
     // direct access to fact values from JS context
     // pure JS objects and data
 
+    QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);
     AppEngine *e = App::instance()->engine();
+
     MandalaFact *m = qobject_cast<MandalaFact *>(fact);
 
     if (fact->treeType() == Group) {
@@ -221,11 +224,12 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
             v = e->newObject(); //plain JS object
             parent.setProperty(fact->name(), v);
         }
-        for (auto f : *fact) {
-            jsSyncMandalaAccess(static_cast<Fact *>(f), v);
+        for (auto i : fact->children()) {
+            jsSyncMandalaAccess(i, v);
         }
         return;
     }
+
     QString mpath = m->mpath();
     QString s;
     s = QString("Object.defineProperty(%1,'%2',{get:function(){return "
@@ -233,5 +237,5 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
                 "set:function(v){apx.vehicles.current.mandala.%1.%2.value=v}})")
             .arg(mpath.left(mpath.lastIndexOf('.')))
             .arg(fact->name());
-    e->evaluate(s);
+    App::jsexec(s);
 }

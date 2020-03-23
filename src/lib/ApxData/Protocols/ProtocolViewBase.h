@@ -41,19 +41,8 @@ private:
     void setProtocol(Fact *protocol);
 
 protected:
-    virtual void setTitle(const QString &v) override;
-    virtual void setDescr(const QString &v) override;
-    virtual bool setValue(const QVariant &v) override;
-
     virtual QString toolTip() const override;
     virtual void hashData(QCryptographicHash *h) const override;
-
-private slots:
-    void updateName();
-    void updateTitle();
-    void updateDescr();
-    void updateValue();
-    void updateProgress();
 
 signals:
     void protocolChanged();

@@ -182,10 +182,8 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         }
 
         //enable switch
-        bindProperty(f_enable, "value");
-
         connect(App::instance(), &App::loadingFinished, this, [this]() {
-            setValue(f_enable->value());
+            bindProperty(f_enable, "value");
         });
     }
 

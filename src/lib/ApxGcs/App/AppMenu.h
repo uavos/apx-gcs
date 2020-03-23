@@ -20,12 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef AppMenu_H
-#define AppMenu_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QMenuBar>
-//=============================================================================
+
 class AppMenu : public Fact
 {
     Q_OBJECT
@@ -45,7 +44,7 @@ public:
     Fact *vehicleTools;
 
 private:
-    QMenuBar *menuBar;
+    QMenuBar *_menuBar{nullptr};
 
 private slots:
     void updateMenu(Fact *fact);
@@ -56,5 +55,3 @@ private slots:
 public slots:
     void createMenuBar();
 };
-//=============================================================================
-#endif

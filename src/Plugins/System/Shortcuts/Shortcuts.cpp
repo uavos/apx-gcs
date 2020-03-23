@@ -82,12 +82,12 @@ void Shortcuts::updateStats()
     f_allonUsr->setEnabled(bSz);
     f_alloffUsr->setEnabled(bSz);
     //disable f_sys shortcuts found in user
-    for (int i = 0; i < f_usr->size(); ++i) {
-        Shortcut *item = f_usr->child<Shortcut>(i);
+    for (auto i : f_usr->children()) {
+        Shortcut *item = static_cast<Shortcut *>(i);
         if (item->_enabled->value().toBool() == false)
             continue;
-        for (int j = 0; j < f_sys->size(); ++j) {
-            Shortcut *fsys = f_sys->child<Shortcut>(j);
+        for (auto j : f_sys->children()) {
+            Shortcut *fsys = static_cast<Shortcut *>(j);
             if (fsys->_enabled->value().toBool() == false)
                 continue;
             if (fsys->_key->text() == item->_key->text()) {
@@ -165,12 +165,12 @@ void Shortcuts::save()
 void Shortcuts::saveDo()
 {
     QJsonArray asys;
-    for (int i = 0; i < f_sys->size(); ++i) {
-        asys.append(f_sys->child<Shortcut>(i)->valuesToJson());
+    for (auto i : f_sys->children()) {
+        asys.append(static_cast<Shortcut *>(i)->valuesToJson());
     }
     QJsonArray ausr;
-    for (int i = 0; i < f_usr->size(); ++i) {
-        ausr.append(f_usr->child<Shortcut>(i)->valuesToJson());
+    for (auto i : f_usr->children()) {
+        ausr.append(static_cast<Shortcut *>(i)->valuesToJson());
     }
     //save json file
     QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));

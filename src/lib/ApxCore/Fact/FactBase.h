@@ -20,12 +20,16 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactTree_H
-#define FactTree_H
-//=============================================================================
+#pragma once
+
 #include <QtCore>
-//=============================================================================
-class FactBase : public QObject, public QList<FactBase *>
+
+class Fact;
+class FactPropertyBinding;
+
+typedef QList<Fact *> FactList;
+
+class FactBase : public QObject
 {
     Q_OBJECT
 
@@ -34,7 +38,7 @@ class FactBase : public QObject, public QList<FactBase *>
 
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
-    Q_PROPERTY(FactBase *parentFact READ parentFact WRITE setParentFact NOTIFY parentFactChanged)
+    Q_PROPERTY(Fact *parentFact READ parentFact WRITE setParentFact NOTIFY parentFactChanged)
 
     Q_PROPERTY(int size READ size NOTIFY sizeChanged)
     Q_PROPERTY(int num READ num NOTIFY numChanged)
@@ -103,19 +107,23 @@ public:
     Q_INVOKABLE void move(int n, bool safeMode = false);
 
     Q_INVOKABLE int indexInParent() const;
-    Q_INVOKABLE int indexOfChild(FactBase *item) const;
+    Q_INVOKABLE int indexOfChild(Fact *item) const;
 
-    Q_INVOKABLE FactBase *child(int n) const;
-    Q_INVOKABLE FactBase *child(const QString &name,
-                                Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
+    Q_INVOKABLE Fact *child(int n) const;
+    Q_INVOKABLE Fact *child(const QString &name, Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
 
     Q_INVOKABLE QString path(int maxLevel = -1, const QChar pathDelimiter = QChar('.')) const;
     Q_INVOKABLE QString path(const FactBase *root) const;
     Q_INVOKABLE QStringList pathStringList(int maxLevel = -1) const;
 
-    QList<FactBase *> pathList() const;
+    Q_INVOKABLE void bindProperty(Fact *src, QString name, bool oneway = false);
+    Q_INVOKABLE void unbindProperties(Fact *src = nullptr, const QString &name = QString());
+    Q_INVOKABLE void unbindProperty(QString name);
 
-    QList<FactBase *> actions() const;
+    FactList pathList() const;
+
+    const FactList &children() const;
+    const FactList &actions() const;
 
 public slots:
     void remove();
@@ -135,21 +143,23 @@ signals:
     void removed();
 
 private:
-    QList<FactBase *> m_children;
-    QList<FactBase *> m_actions;
+    FactList m_children;
+    FactList m_actions;
 
     QString makeNameUnique(const QString &s);
     QString nameSuffix;
 
-    void addChild(FactBase *item);
-    void removeChild(FactBase *item);
-    void moveChild(FactBase *item, int n, bool safeMode = false);
+    void addChild(Fact *item);
+    void removeChild(Fact *item);
+    void moveChild(Fact *item, int n, bool safeMode = false);
 
     void updateNum();
     void updateSize();
     void updateChildrenNums();
 
     void updatePath();
+
+    QList<FactPropertyBinding *> _property_binds;
 
     //-----------------------------------------
     //PROPERTIES
@@ -161,8 +171,8 @@ public:
     void setOptions(FactBase::Flags v);
     void setOption(FactBase::Flag opt, bool v = true);
 
-    FactBase *parentFact() const;
-    void setParentFact(FactBase *v);
+    Fact *parentFact() const;
+    void setParentFact(Fact *v);
 
     QString name(void) const;
     void setName(const QString &v);
@@ -171,14 +181,14 @@ public:
     int num() const;
 
 protected:
-    Flag m_treeType;
-    Flags m_options;
+    Flag m_treeType{NoFlags};
+    Flags m_options{NoFlags};
 
-    QPointer<FactBase> m_parentFact;
+    QPointer<QObject> m_parentFact{nullptr};
 
     QString m_name;
-    int m_size;
-    int m_num;
+    int m_size{0};
+    int m_num{0};
 
 signals:
     void treeTypeChanged();
@@ -191,6 +201,5 @@ signals:
     void sizeChanged();
     void numChanged();
 };
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(FactBase::Flags)
-//=============================================================================
-#endif

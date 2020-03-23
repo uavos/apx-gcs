@@ -45,10 +45,10 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &met
     setDescr(mpath());
 
     if (meta.group) {
-        connect(this, &Fact::sizeChanged, this, &Fact::textChanged);
+        /*connect(this, &Fact::sizeChanged, this, &Fact::valueChanged);
         if (meta.level == 2) {
             connect(this, &Fact::sectionChanged, parent, &Fact::textChanged);
-        }
+        }*/
     } else {
         setUnits(meta.units);
         switch (meta.type_id) {
@@ -120,6 +120,9 @@ bool MandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
     bool rv = Fact::setValue(v);
+    if (!rv)
+        return false;
+
     //qDebug() << name() << text() << rv;
     if (sendTimer.isActive())
         return rv;
@@ -219,8 +222,8 @@ QVariant MandalaFact::data(int col, int role) const
             if (m_meta.level == 0) {
                 QStringList slist;
                 QList<int> vlist;
-                for (auto i : *this) {
-                    const QString &s = static_cast<Fact *>(i)->section();
+                for (auto i : children()) {
+                    const QString &s = i->section();
                     if (!slist.contains(s))
                         slist.append(s);
                     if (vlist.size() < slist.size())

@@ -61,7 +61,7 @@ public:
     QJsonObject saveConfig();
 
 private:
-    SDL_Joystick *dev;
+    SDL_Joystick *dev{nullptr};
     DelayedEvent saveEvent;
 
 signals:

@@ -51,11 +51,7 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
             &DatabaseSession::modifiedNotify,
             Qt::QueuedConnection);
 }
-DatabaseRequest::~DatabaseRequest()
-{
-    //qDebug()<<"rm";
-}
-//=============================================================================
+
 void DatabaseRequest::exec()
 {
     db->request(this);

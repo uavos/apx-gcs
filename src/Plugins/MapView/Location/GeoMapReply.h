@@ -16,12 +16,9 @@ private slots:
     void tileError(quint64 uid, QString errorString);
 
 private:
-    quint64 _uid;
+    quint64 _uid{0};
 
     QString getImageFormat(const QByteArray &image);
-
-private:
-    GeoTileFetcher *fetcher;
 };
 //=============================================================================
 #endif

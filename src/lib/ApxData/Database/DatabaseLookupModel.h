@@ -33,7 +33,6 @@ class DatabaseLookupModel : public QAbstractListModel
 
 public:
     explicit DatabaseLookupModel(QObject *parent = nullptr);
-    ~DatabaseLookupModel();
 
     bool ordered;
     bool qmlMapSafe;

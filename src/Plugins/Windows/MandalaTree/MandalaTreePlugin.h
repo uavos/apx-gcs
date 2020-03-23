@@ -20,8 +20,7 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MandalaTreePlugin_H
-#define MandalaTreePlugin_H
+#pragma once
 
 #include <App/AppRoot.h>
 #include <App/PluginInterface.h>
@@ -30,8 +29,8 @@
 
 #include <Mandala/Mandala.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
-class SystreePlugin : public PluginInterface
+
+class MandalaTreePlugin : public PluginInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
@@ -43,7 +42,7 @@ public:
                                                true,
                                                false);
         w->tree->expandToDepth(0);
-        connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [w](Vehicle *v) {
+        connect(Vehicles::instance(), &Vehicles::vehicleSelected, w, [w](Vehicle *v) {
             w->setRoot(v->f_mandala);
             w->tree->expandToDepth(0);
         });
@@ -54,5 +53,3 @@ public:
     QString descr() { return tr("Mandala tree view"); }
     QString icon() { return "hexagon-multiple"; }
 };
-//=============================================================================
-#endif
