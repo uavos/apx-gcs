@@ -34,7 +34,7 @@ NodeField::NodeField(Fact *parent,
                      xbus::node::conf::fid_t fid,
                      const ProtocolNode::dict_field_s &field,
                      NodeField *parentField)
-    : Fact(parent, field.name, field.title, field.descr, ModifiedTrack)
+    : Fact(parent, field.name, field.title, field.descr)
     , _node(node)
     , _parentField(parentField)
     , m_fid(fid)
@@ -59,10 +59,12 @@ NodeField::NodeField(Fact *parent,
             connect(f, &Fact::valueChanged, this, &NodeField::updateStatus);
         }
         setTreeType(Group);
+        setOption(ModifiedGroup);
         updateStatus();
         return;
     }
 
+    setOption(ModifiedTrack);
     setUnits(field.units);
 
     switch (field.type) {

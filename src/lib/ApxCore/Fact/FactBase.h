@@ -122,7 +122,7 @@ public:
 
     FactList pathList() const;
 
-    const FactList &children() const;
+    const FactList &facts() const;
     const FactList &actions() const;
 
 public slots:
@@ -143,7 +143,7 @@ signals:
     void removed();
 
 private:
-    FactList m_children;
+    FactList m_facts;
     FactList m_actions;
 
     QString makeNameUnique(const QString &s);

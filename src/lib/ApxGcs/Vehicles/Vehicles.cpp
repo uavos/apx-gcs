@@ -224,7 +224,7 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
             v = e->newObject(); //plain JS object
             parent.setProperty(fact->name(), v);
         }
-        for (auto i : fact->children()) {
+        for (auto i : fact->facts()) {
             jsSyncMandalaAccess(i, v);
         }
         return;

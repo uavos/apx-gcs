@@ -82,11 +82,11 @@ void Shortcuts::updateStats()
     f_allonUsr->setEnabled(bSz);
     f_alloffUsr->setEnabled(bSz);
     //disable f_sys shortcuts found in user
-    for (auto i : f_usr->children()) {
+    for (auto i : f_usr->facts()) {
         Shortcut *item = static_cast<Shortcut *>(i);
         if (item->_enabled->value().toBool() == false)
             continue;
-        for (auto j : f_sys->children()) {
+        for (auto j : f_sys->facts()) {
             Shortcut *fsys = static_cast<Shortcut *>(j);
             if (fsys->_enabled->value().toBool() == false)
                 continue;
@@ -165,11 +165,11 @@ void Shortcuts::save()
 void Shortcuts::saveDo()
 {
     QJsonArray asys;
-    for (auto i : f_sys->children()) {
+    for (auto i : f_sys->facts()) {
         asys.append(static_cast<Shortcut *>(i)->valuesToJson());
     }
     QJsonArray ausr;
-    for (auto i : f_usr->children()) {
+    for (auto i : f_usr->facts()) {
         ausr.append(static_cast<Shortcut *>(i)->valuesToJson());
     }
     //save json file

@@ -87,7 +87,7 @@ void Joysticks::updateEnabled()
         scan();
         waitEvent();
     } else {
-        foreach (auto i, f_list->children()) {
+        foreach (auto i, f_list->facts()) {
             i->remove();
             delete i;
         }

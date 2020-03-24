@@ -271,7 +271,7 @@ bool Fact::hasParent(Fact *parent) const
 }
 bool Fact::hasChild(Fact *child) const
 {
-    return children().contains(child);
+    return facts().contains(child);
 }
 //=============================================================================
 QVariant Fact::findValue(const QString &namePath)
@@ -290,7 +290,7 @@ Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
 {
     FactList slist;
     bool del = factNamePath.contains('.');
-    for (auto i : children()) {
+    for (auto i : facts()) {
         if (i->name() == factNamePath)
             return i;
         if (del && i->path().endsWith(factNamePath))
@@ -299,7 +299,7 @@ Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
             slist.append(i);
     }
     if (del) {
-        for (auto i : children()) {
+        for (auto i : facts()) {
             i = i->findChild(factNamePath);
             if (i)
                 return i;
@@ -427,6 +427,7 @@ void Fact::updateBinding(Fact *src)
     if (m_binding) {
         disconnect(m_binding, nullptr, this, nullptr);
         unbindProperties(m_binding);
+        m_binding->unbindProperties(this);
     }
     m_binding = src;
     setMenu(src);
@@ -672,8 +673,8 @@ void Fact::updateParentEnabled()
         emit enabledChanged();
 
     //update children
-    for (int i = 0; i < size(); ++i) {
-        child(i)->updateParentEnabled();
+    for (auto i : facts()) {
+        i->updateParentEnabled();
     }
 }
 bool Fact::visible() const
@@ -687,7 +688,7 @@ void Fact::setVisible(const bool v)
     m_visible = v;
     emit visibleChanged();
 
-    for (auto i : children()) {
+    for (auto i : facts()) {
         i->updateParentVisible();
     }
     for (auto i : actions()) {
@@ -756,7 +757,7 @@ void Fact::trackProgress()
 {
     int ncnt = 0, v = 0;
     if (options() & ProgressTrack) {
-        for (auto const f : children()) {
+        for (auto const f : facts()) {
             int np = f->progress();
             if (np < 0)
                 continue;
@@ -808,6 +809,9 @@ void Fact::setBinding(Fact *v)
 }
 Fact *Fact::menu()
 {
+    if (m_menu)
+        return m_menu->menu();
+
     if (size() > 0)
         return this;
     if (!qmlPage().isEmpty())
@@ -816,9 +820,6 @@ Fact *Fact::menu()
         return this;
     if (dataType() == MandalaID)
         return mandala();
-
-    if (m_menu)
-        return m_menu->menu();
 
     if (treeType() == Group)
         return this;

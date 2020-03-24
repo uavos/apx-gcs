@@ -80,13 +80,13 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
         new Fact(f_hats, QString("hat%1_d").arg(i), QString::number(i + 1) + "_DOWN", "", Text);
         new Fact(f_hats, QString("hat%1_l").arg(i), QString::number(i + 1) + "_LEFT", "", Text);
     }
-    for (auto i : f_buttons->children()) {
+    for (auto i : f_buttons->facts()) {
         i->setOption(HighlightActive);
     }
-    for (auto i : f_hats->children()) {
+    for (auto i : f_hats->facts()) {
         i->setOption(HighlightActive);
     }
-    for (auto i : f_axes->children()) {
+    for (auto i : f_axes->facts()) {
         i->setOption(HighlightActive);
     }
 

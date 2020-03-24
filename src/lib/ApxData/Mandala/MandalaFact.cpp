@@ -222,7 +222,7 @@ QVariant MandalaFact::data(int col, int role) const
             if (m_meta.level == 0) {
                 QStringList slist;
                 QList<int> vlist;
-                for (auto i : children()) {
+                for (auto i : facts()) {
                     const QString &s = i->section();
                     if (!slist.contains(s))
                         slist.append(s);

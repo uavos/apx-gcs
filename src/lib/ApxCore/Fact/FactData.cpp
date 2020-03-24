@@ -403,47 +403,29 @@ bool FactData::modified() const
 {
     return m_modified;
 }
-void FactData::setModified(const bool &v, const bool &recursive)
+void FactData::setModified(const bool &v)
 {
-    if (recursive) {
-        for (int i = 0; i < size(); ++i) {
-            child(i)->setModified(v, recursive);
-        }
-    }
     if (m_modified == v)
         return;
     m_modified = v;
-    //qDebug() << path();
     emit modifiedChanged();
 
-    //check to sync parents
-    FactData *ps = parentFact();
-    for (FactData *p = ps; p; p = p->parentFact()) {
-        if (p->options() & ModifiedGroup) {
-            if (v) {
-                //set all parents to modified=true
-                for (FactData *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
-                    i->setModified(true);
-                }
-                continue;
-            }
-            //refresh modified status of all parent items
-            bool mod = false;
-            for (FactData *i = ps; i && i != p->parentFact(); i = i->parentFact()) {
-                //check for modified children
-                for (auto j : i->children()) {
-                    if (j->modified()) {
-                        mod = true;
-                        break;
-                    }
-                }
-                if (mod)
-                    break;
-                //parent with unmodified children
-                i->setModified(false);
-            }
+    if (!(options() & (ModifiedTrack | ModifiedGroup)))
+        return;
+
+    Fact *p = parentFact();
+    if (!p)
+        return;
+    if (!(p->options() & (ModifiedTrack | ModifiedGroup)))
+        return;
+
+    for (auto i : p->facts()) {
+        if (i->modified()) {
+            p->setModified(true);
+            return;
         }
     }
+    p->setModified(false);
 }
 int FactData::precision(void) const
 {
@@ -603,7 +585,7 @@ QVariant FactData::backupValue(void) const
 void FactData::setBackupValue(const QVariant &v)
 {
     if (options() & ModifiedTrack)
-        setModified(backupValue() != m_value);
+        setModified(v != m_value);
 
     if (m_backupValue == v)
         return;
@@ -613,10 +595,8 @@ void FactData::setBackupValue(const QVariant &v)
 
 void FactData::backup()
 {
-    if (size() > 0) {
-        for (int i = 0; i < size(); ++i) {
-            child(i)->backup();
-        }
+    for (auto i : facts()) {
+        i->backup();
     }
 
     setModified(false);

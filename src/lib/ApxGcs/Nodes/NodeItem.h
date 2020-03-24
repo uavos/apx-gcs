@@ -39,15 +39,14 @@ class NodeItem : public ProtocolViewBase<ProtocolNode>
 public:
     explicit NodeItem(Fact *parent, ProtocolNode *protocol);
 
-    QList<NodeField *> allFields;
-    QMap<QString, NodeField *> allFieldsByName;
-
     //NodeTools *tools;
 
     void execCommand(quint16 cmd, const QString &name, const QString &descr);
 
     //int loadConfigValues(QVariantMap values);
     //bool loadConfigValue(const QString &name, const QString &value);
+
+    const QList<NodeField *> &fields() const;
 
 protected:
     QTimer statusTimer;
@@ -56,6 +55,8 @@ protected:
 
 private:
     qint64 m_lastSeenTime{0};
+
+    QList<NodeField *> m_fields;
 
     NodeField *m_status_field{nullptr};
     void groupArrays();

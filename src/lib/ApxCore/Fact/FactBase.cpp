@@ -34,21 +34,13 @@ FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
 FactBase::~FactBase()
 {
     //qDebug() << path() << parent();
-    //removed();
-    /*if (parentFact()) {
-        parentFact()->m_children.removeAll(static_cast<Fact *>(this));
-    }*/
-    //setParentFact(nullptr);
-    //unbindProperties();
-    //emit destroyed(this);
+    setParentFact(nullptr);
     for (auto i : m_actions) {
         delete i;
     }
-    for (auto i : m_children) {
+    for (auto i : m_facts) {
         delete i;
     }
-    //qDeleteAll(m_children);
-    //removeAll();
 }
 
 void FactBase::bindProperty(Fact *src, QString name, bool oneway)
@@ -83,9 +75,9 @@ void FactBase::unbindProperties(Fact *src, const QString &name)
 }
 
 //=============================================================================
-const FactList &FactBase::children() const
+const FactList &FactBase::facts() const
 {
-    return m_children;
+    return m_facts;
 }
 const FactList &FactBase::actions() const
 {
@@ -102,13 +94,13 @@ void FactBase::addChild(Fact *item)
         }
         return;
     }
-    if (m_children.contains(item))
+    if (m_facts.contains(item))
         return;
     if (property(item->name().toUtf8()).isValid()) {
         qWarning() << "Property override:" << path() << item->name();
     }
-    emit itemToBeInserted(m_children.count(), item);
-    m_children.append(item);
+    emit itemToBeInserted(m_facts.count(), item);
+    m_facts.append(item);
     updateChildrenNums();
     updateSize();
     emit itemInserted(item);
@@ -120,31 +112,31 @@ void FactBase::removeChild(Fact *item)
         m_actions.removeAll(item);
         emit actionsUpdated();
     }
-    i = m_children.indexOf(item);
+    i = m_facts.indexOf(item);
     if (i < 0)
         return;
     emit itemToBeRemoved(i, item);
-    m_children.removeAt(i);
+    m_facts.removeAt(i);
     updateChildrenNums();
     updateSize();
     emit itemRemoved(item);
 }
 void FactBase::removeAll()
 {
-    if (m_children.count() <= 0)
+    if (m_facts.count() <= 0)
         return;
-    for (int i = 0; i < m_children.count(); i++) {
+    for (int i = 0; i < m_facts.count(); i++) {
         FactBase *item = child(i);
         disconnect(this, nullptr, item, nullptr);
         item->removeAll();
     }
     //qDebug()<<"removeAll"<<this;
-    while (m_children.count() > 0) {
-        FactBase *item = child(m_children.count() - 1);
+    while (m_facts.count() > 0) {
+        FactBase *item = child(m_facts.count() - 1);
         disconnect(this, nullptr, item, nullptr);
-        emit itemToBeRemoved(m_children.count() - 1, item);
-        m_children.takeLast();
-        m_size = m_children.count();
+        emit itemToBeRemoved(m_facts.count() - 1, item);
+        m_facts.takeLast();
+        m_size = m_facts.count();
         item->removed();
         emit itemRemoved(item);
         item->deleteLater();
@@ -153,26 +145,26 @@ void FactBase::removeAll()
 }
 void FactBase::moveChild(Fact *item, int n, bool safeMode)
 {
-    int i = m_children.indexOf(item);
+    int i = m_facts.indexOf(item);
     if (i < 0 || i == n)
         return;
     if (safeMode) {
         emit itemToBeRemoved(i, item);
-        m_children.removeAt(i);
+        m_facts.removeAt(i);
         emit itemRemoved(item);
         emit itemToBeInserted(n, item);
-        m_children.insert(n, item);
+        m_facts.insert(n, item);
         emit itemInserted(item);
         updateChildrenNums();
     } else {
         if (n > i)
             n++;
         emit itemToBeMoved(i, n, item);
-        m_children.removeAt(i);
-        m_children.insert(n, item);
+        m_facts.removeAt(i);
+        m_facts.insert(n, item);
         emit itemMoved(item);
     }
-    for (int i = 0; i < m_children.count(); ++i)
+    for (int i = 0; i < m_facts.count(); ++i)
         child(i)->updateNum();
 }
 //=============================================================================
@@ -209,12 +201,11 @@ QString FactBase::makeNameUnique(const QString &s)
     QString suffix;
     while (1) {
         FactBase *dup = nullptr;
-        for (int i = 0; i < parentFact()->size(); ++i) {
-            FactBase *item = parentFact()->child(i);
-            if (item == this)
+        for (auto i : parentFact()->facts()) {
+            if (i == this)
                 continue;
-            if (item->name() == (sr + suffix)) {
-                dup = item;
+            if (i->name() == (sr + suffix)) {
+                dup = i;
                 break;
             }
         }
@@ -233,12 +224,12 @@ int FactBase::num() const
 //=============================================================================
 Fact *FactBase::child(int n) const
 {
-    return m_children.value(n, nullptr);
+    return m_facts.value(n, nullptr);
 }
 //=============================================================================
 int FactBase::indexOfChild(Fact *item) const
 {
-    return m_children.indexOf(item);
+    return m_facts.indexOf(item);
 }
 int FactBase::indexInParent() const
 {
@@ -249,7 +240,7 @@ int FactBase::indexInParent() const
 //=============================================================================
 Fact *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
 {
-    for (auto i : m_children) {
+    for (auto i : m_facts) {
         if (i->objectName().compare(name, cs) == 0 || i->name().compare(name, cs) == 0)
             return i;
     }
@@ -304,7 +295,7 @@ void FactBase::updateNum()
 }
 void FactBase::updateSize()
 {
-    int v = m_children.count();
+    int v = m_facts.size();
     if (m_size == v)
         return;
     m_size = v;
@@ -312,8 +303,8 @@ void FactBase::updateSize()
 }
 void FactBase::updateChildrenNums()
 {
-    for (int i = 0; i < m_children.count(); ++i)
-        child(i)->updateNum();
+    for (auto i : m_facts)
+        i->updateNum();
 }
 //=============================================================================
 FactBase::Flag FactBase::treeType(void) const
@@ -397,7 +388,7 @@ void FactBase::setParentFact(Fact *v)
 }
 void FactBase::updatePath()
 {
-    for (auto f : m_children) {
+    for (auto f : m_facts) {
         f->updatePath();
     }
     emit pathChanged();

@@ -121,7 +121,7 @@ void MissionTools::copyVehicleSelected(Vehicle *vehicle)
     if (hash.isEmpty())
         return;
     vehicle->f_mission->storage->loadMission(hash);
-    vehicle->f_mission->setModified(true, true);
+    vehicle->f_mission->setModified(true);
     Vehicles::instance()->selectVehicle(vehicle);
 }
 //=============================================================================

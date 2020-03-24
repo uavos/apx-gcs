@@ -57,12 +57,12 @@ FactDelegateArrayModel::FactDelegateArrayModel(Fact *group, QObject *parent)
         //populate consolidated fnames list
         int nidx = -1;
         int fidx = 0;
-        for (auto i : group->children()) {
+        for (auto i : group->facts()) {
             NodeItem *node = qobject_cast<NodeItem *>(i);
             if (!node)
                 continue;
             nidx++;
-            foreach (NodeField *f, node->allFields) {
+            for (auto f : node->fields()) {
                 QString s = f->name();
                 if (f->size()) {
                     //complex node field

@@ -36,7 +36,7 @@
 NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     : ProtocolViewBase(parent, protocol)
 {
-    setOptions(ProgressTrack | ModifiedTrack);
+    setOptions(ProgressTrack | ModifiedGroup);
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
     unbindProperty("value"); //unbind from protocol
@@ -66,6 +66,11 @@ NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     statusTimer.setSingleShot(true);
     statusTimer.setInterval(10000);
     connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
+}
+
+const QList<NodeField *> &NodeItem::fields() const
+{
+    return m_fields;
 }
 
 void NodeItem::validateDict()
@@ -130,8 +135,7 @@ void NodeItem::clear()
 {
     m_status_field = nullptr;
     //tools->clearCommands();
-    allFields.clear();
-    allFieldsByName.clear();
+    m_fields.clear();
     removeAll();
     setModified(false);
 }
@@ -144,10 +148,10 @@ void NodeItem::upload()
         return;
     //saveTelemetryUploadEvent();
     int cnt = 0;
-    foreach (NodeField *f, allFields) {
-        if (!f->modified())
+    for (auto i : m_fields) {
+        if (!i->modified())
             continue;
-        protocol()->requestUpdate(f->fid(), f->uploadableValue());
+        protocol()->requestUpdate(i->fid(), i->uploadableValue());
         cnt++;
     }
     if (cnt > 0) {
@@ -202,7 +206,7 @@ void NodeItem::groupArrays()
 {
     //hide grouped arrays (gpio, controls etc)
     FactList groups;
-    for (auto f : allFields) {
+    for (auto f : m_fields) {
         Fact *groupItem = f->parentFact();
         if (!groupItem || groupItem == this || groups.contains(groupItem))
             continue;
@@ -212,7 +216,7 @@ void NodeItem::groupArrays()
             //check if group members are arrays
             bool bArray = false;
             uint cnt = 0;
-            for (auto i : groupItem->children()) {
+            for (auto i : groupItem->facts()) {
                 NodeField *f = static_cast<NodeField *>(i);
                 bArray = false;
                 if (cnt < 2 && f->size() == 0)
@@ -232,34 +236,28 @@ void NodeItem::groupArrays()
 
 void NodeItem::groupArrays(Fact *group)
 {
-    //create action with underlaying table structure to edit arrays rows
+    //create action with underlaying table structure to edit array rows
 
     Fact *action = new Fact(group, group->name(), group->title(), group->descr(), Action);
-    //group->bind(action);
-    group->setModel(action->model());
-
-    connect(group->child(0), &Fact::valueChanged, group, [group]() {
-        group->setValue(group->child(0)->value());
-    });
-    group->setValue(group->child(0)->value());
+    group->setMenu(action);
 
     //hide group members
-    for (auto i : group->children()) {
-        //i->setVisible(false);
+    for (auto i : group->facts()) {
+        i->setVisible(false);
     }
 
     Fact *f1 = group->child(0);
+
+    group->bindProperty(f1, "value", true);
+
     int colCnt = group->size();
     for (int row = 0; row < f1->size(); ++row) {
         Fact *fi = f1->child(row);
         Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Group);
-        /*connect(
-            group,
-            &Fact::modifiedChanged,
-            fRow,
-            [fRow, group]() { fRow->setModified(group->modified()); },
-            Qt::QueuedConnection);*/
-        connect(fi, &Fact::valueChanged, fRow, [fRow, fi]() { fRow->setValue(fi->value()); });
+
+        fRow->bindProperty(fi, "text", true);
+        fRow->bindProperty(fi, "modified", true);
+
         connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
 
         Fact *f_ch = nullptr;
@@ -304,9 +302,9 @@ void NodeItem::groupArrays(Fact *group)
 void NodeItem::updateArrayRowDescr(Fact *fRow)
 {
     QStringList st;
-    if (!fRow->value().toString().isEmpty()) {
-        for (int i = 0; i < fRow->size(); ++i) {
-            st.append(fRow->child(i)->text());
+    if (!fRow->isZero()) {
+        for (auto i : fRow->facts()) {
+            st.append(i->text());
         }
     }
     fRow->setDescr(st.join(", "));
@@ -329,8 +327,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
 {
     //qDebug() << dict.size();
 
-    allFields.clear();
-    allFieldsByName.clear();
+    m_fields.clear();
     m_status_field = nullptr;
 
     QMap<int, Fact *> groups;
@@ -340,17 +337,16 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
         switch (i.type) {
         case xbus::node::conf::group:
             g = i.group ? groups.value(i.group) : this;
-            g = new Fact(g, i.name, i.title, i.descr, Group | ModifiedTrack);
+            g = new Fact(g, i.name, i.title, i.descr, Group | ModifiedGroup);
             groups.insert(groups.size() + 1, g);
             break;
         case xbus::node::conf::command:
             break;
         default: // data field
             g = i.group ? groups.value(i.group) : this;
-            f = new NodeField(g, this, static_cast<xbus::node::conf::fid_t>(allFields.size()), i);
+            f = new NodeField(g, this, static_cast<xbus::node::conf::fid_t>(m_fields.size()), i);
             f->setEnabled(false);
-            allFields.append(f);
-            allFieldsByName.insert(i.name, f);
+            m_fields.append(f);
             if (!m_status_field) {
                 if (i.type == xbus::node::conf::string) {
                     m_status_field = f;
@@ -359,24 +355,23 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
             }
         }
     }
-    //groupArrays();
+    groupArrays();
 }
 
 void NodeItem::confReceived(const QVariantList &values)
 {
     //qDebug() << values;
-    if (values.size() != allFields.size()) {
-        qWarning() << "fields mismatch:" << values.size() << allFields.size();
+    if (values.size() != m_fields.size()) {
+        qWarning() << "fields mismatch:" << values.size() << m_fields.size();
         protocol()->setValid(false);
         return;
     }
     int i = 0;
-    for (auto f : allFields) {
+    for (auto f : m_fields) {
         f->setValue(values.at(i++));
         f->setEnabled(true);
     }
     backup();
-    setModified(false, true);
     updateStatus();
 }
 

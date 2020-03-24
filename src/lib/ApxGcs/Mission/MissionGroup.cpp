@@ -104,7 +104,7 @@ void MissionGroup::updateTime()
 void MissionGroup::updateTimeDo()
 {
     uint v = 0;
-    for (auto i : children()) {
+    for (auto i : facts()) {
         MissionItem *wp = static_cast<MissionItem *>(i);
         v += wp->time();
         wp->setTotalTime(v);
@@ -118,7 +118,7 @@ void MissionGroup::updateDistance()
 void MissionGroup::updateDistanceDo()
 {
     uint v = 0;
-    for (auto i : children()) {
+    for (auto i : facts()) {
         MissionItem *wp = static_cast<MissionItem *>(i);
         v += wp->distance();
         wp->setTotalDistance(v);
@@ -171,7 +171,7 @@ MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
     f->backup();
     f->f_latitude->setValue(p.latitude());
     f->f_longitude->setValue(p.longitude());
-    f->setModified(true, true);
+    f->setModified(true);
     return f;
 }
 //=============================================================================
@@ -181,6 +181,6 @@ void MissionGroup::clearGroup()
     removeAll();
     setDistance(0);
     setTime(0);
-    setModified(true, true);
+    setModified(true);
 }
 //=============================================================================

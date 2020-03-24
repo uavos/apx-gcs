@@ -162,7 +162,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
     connect(storage, &MissionStorage::saved, this, [=]() {
         setSaved(true);
-        setModified(false, true);
+        setModified(false);
     });
 
     //protocols
@@ -272,7 +272,7 @@ void VehicleMission::clearMission()
         group->f_clear->trigger();
     }
     blockSizeUpdate = false;
-    setModified(false, true);
+    setModified(false);
 
     App::jsync(this);
 }
@@ -283,7 +283,7 @@ void VehicleMission::backup()
         group->backup();
     }
     f_title->backup();
-    setModified(false, true);
+    setModified(false);
 }
 void VehicleMission::restore()
 {
@@ -291,7 +291,7 @@ void VehicleMission::restore()
         group->restore();
     }
     f_title->restore();
-    setModified(false, true);
+    setModified(false);
 }
 void VehicleMission::hashData(QCryptographicHash *h) const
 {
@@ -304,7 +304,7 @@ void VehicleMission::test(int n)
 {
     if (f_waypoints->size() <= 0)
         return;
-    Waypoint *w = static_cast<Waypoint *>(f_waypoints->children().last());
+    Waypoint *w = static_cast<Waypoint *>(f_waypoints->facts().last());
     QGeoCoordinate p(w->f_latitude->value().toDouble(), w->f_longitude->value().toDouble());
     double hdg = 360.0 * qrand() / RAND_MAX;
     for (int i = 0; i < n; ++i) {
@@ -328,7 +328,7 @@ void VehicleMission::missionDataReceived(DictMission::Mission d)
         vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()),
                          AppNotify::Important);
     }
-    setModified(false, true);
+    setModified(false);
 }
 void VehicleMission::missionDataError()
 {

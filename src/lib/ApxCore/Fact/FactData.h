@@ -112,7 +112,7 @@ public:
     void setBackupValue(const QVariant &v);
 
     bool modified() const;
-    void setModified(const bool &v, const bool &recursive = false);
+    void setModified(const bool &v);
 
     int precision(void) const;
     void setPrecision(const int &v);

@@ -124,7 +124,7 @@ void Firmware::updateStatus()
 
 QueueItem *Firmware::queued(Fact *list, const QString &sn)
 {
-    for (auto i : list->children()) {
+    for (auto i : list->facts()) {
         QueueItem *f = static_cast<QueueItem *>(i);
         if (f->match(sn))
             return f;

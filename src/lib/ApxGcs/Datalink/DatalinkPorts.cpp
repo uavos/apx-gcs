@@ -118,7 +118,7 @@ QStringList DatalinkPorts::activeSerialPorts() const
 QList<DatalinkPort *> DatalinkPorts::serialPorts() const
 {
     QList<DatalinkPort *> list;
-    for (auto i : f_list->children()) {
+    for (auto i : f_list->facts()) {
         DatalinkPort *port = qobject_cast<DatalinkPort *>(i);
         if (!port)
             continue;
