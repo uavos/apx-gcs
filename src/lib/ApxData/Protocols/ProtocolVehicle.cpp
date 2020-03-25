@@ -129,27 +129,28 @@ void ProtocolVehicle::updateActive()
 
 void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
 {
-    if (stream.available() < sizeof(xbus::pid_t)) {
+    if (stream.available() < xbus::pid_s::psize()) {
         qWarning() << "size" << stream.dump();
         return;
     }
 
-    xbus::pid_t pid = stream.read<xbus::pid_t>();
+    xbus::pid_s pid;
+    pid.read(&stream);
 
-    if (pid < mandala::uid_base || pid > mandala::uid_max) {
-        qWarning() << "wrong pid" << pid << stream.dump();
+    if (pid.uid > mandala::uid_max) {
+        qWarning() << "wrong pid" << pid.uid << stream.dump();
         return;
     }
 
-    if (mandala::cmd::env::nmt::match(pid)) {
+    if (mandala::cmd::env::nmt::match(pid.uid)) {
         updateStreamType(NMT);
         nodes->downlink(pid, stream);
         return;
     }
 
-    trace_downlink(ProtocolTraceItem::PID, Mandala::meta(pid).path);
+    trace_downlink(pid);
 
-    switch (pid) {
+    switch (pid.uid) {
     default:
         updateStreamType(DATA);
         emit receivedData(pid, &stream);
@@ -209,8 +210,7 @@ void ProtocolVehicle::vmexec(QString func)
     func = func.simplified().trimmed();
     if (func.isEmpty())
         return;
-    ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::script::vmexec::uid);
+    ostream.req(mandala::cmd::env::script::vmexec::uid);
     ostream.append(func.toUtf8());
     send(ostream.toByteArray());
 }
@@ -218,8 +218,7 @@ void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
 {
     if (data.isEmpty())
         return;
-    ostream.reset();
-    ostream.write<xbus::pid_t>(mandala::cmd::env::vcp::tx::uid);
+    ostream.req(mandala::cmd::env::vcp::tx::uid);
     ostream.write<uint8_t>(portID);
     ostream.append(data);
     send(ostream.toByteArray());

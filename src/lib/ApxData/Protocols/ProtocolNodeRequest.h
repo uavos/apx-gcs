@@ -25,6 +25,7 @@
 #include <QtCore>
 
 #include "ProtocolStream.h"
+#include <Mandala/Mandala.h>
 #include <Xbus/XbusNode.h>
 
 class ProtocolNodes;
@@ -36,7 +37,7 @@ class ProtocolNodeRequest : public QObject, public ProtocolStreamWriter
 public:
     explicit ProtocolNodeRequest(ProtocolNodes *nodes,
                                  const QString &sn,
-                                 xbus::pid_t pid,
+                                 const xbus::pid_s &pid,
                                  size_t retry_cnt,
                                  size_t timeout_ms = 0);
 
@@ -58,7 +59,7 @@ public:
 private:
     ProtocolNodes *nodes;
     ProtocolNode *node;
-    xbus::pid_t pid;
+    mandala::uid_t _uid;
     size_t retry_cnt;
     size_t timeout_ms;
 

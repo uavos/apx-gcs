@@ -148,11 +148,10 @@ void NodeField::updateStatus()
     }
 
     int acnt = 0;
-    for (int i = 0; i < size(); ++i) {
-        Fact *f = child(i);
-        if (f->isZero())
+    for (auto i : facts()) {
+        if (i->isZero())
             continue;
-        QString s = f->text();
+        QString s = i->text();
         if (s.isEmpty())
             continue;
         if (s == "0")
@@ -194,9 +193,8 @@ QVariant NodeField::uploadableValue(void) const
     if (size() > 0) {
         //expanded field
         QVariantList list;
-        for (int i = 0; i < size(); ++i) {
-            Fact *f = child(i);
-            list.append(f->value());
+        for (auto i : facts()) {
+            list.append(i->value());
         }
         return list;
     }

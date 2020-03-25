@@ -164,7 +164,7 @@ Fact *FactTreeModel::fact(const QModelIndex &index) const
 }
 QModelIndex FactTreeModel::factIndex(FactBase *item, int column) const
 {
-    if (item == root)
+    if (!item || item == root)
         return QModelIndex();
     return createIndex(item->num(), column, item);
 }

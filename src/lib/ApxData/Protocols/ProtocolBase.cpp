@@ -45,6 +45,24 @@ void ProtocolBase::trace(bool uplink, const QByteArray &data)
                              QString("[%1]%2").arg(data.size()).arg(QString(data.toHex().toUpper())));
     }
 }
+void ProtocolBase::trace(bool uplink, const xbus::pid_s &pid)
+{
+    if (mandala::cmd::env::nmt::match(pid.uid)) {
+        QString s = Mandala::meta(pid.uid).name;
+        if (pid.sub)
+            s += QString("/%1").arg(static_cast<int>(pid.sub));
+        ProtocolTrace::trace(uplink, ProtocolTraceItem::NMT, s);
+    } else {
+        QString s = Mandala::meta(pid.uid).path;
+        if (pid.sub)
+            s += QString("/%1").arg(static_cast<int>(pid.sub));
+        ProtocolTrace::trace(uplink, ProtocolTraceItem::PID, s);
+    }
+    if (pid.seq)
+        ProtocolTrace::trace(uplink,
+                             ProtocolTraceItem::PID,
+                             QString::number(static_cast<int>(pid.seq)));
+}
 
 void ProtocolBase::trace_downlink(ProtocolTraceItem::TraceType type, const QString &text)
 {
@@ -53,6 +71,10 @@ void ProtocolBase::trace_downlink(ProtocolTraceItem::TraceType type, const QStri
 void ProtocolBase::trace_downlink(const QByteArray &data)
 {
     trace(false, data);
+}
+void ProtocolBase::trace_downlink(const xbus::pid_s &pid)
+{
+    trace(false, pid);
 }
 
 void ProtocolBase::trace_uplink(ProtocolTraceItem::TraceType type, const QString &text)
@@ -64,17 +86,16 @@ void ProtocolBase::trace_uplink_packet(const QByteArray &data)
     trace_uplink(ProtocolTraceItem::PACKET, QString::number(data.size()));
 
     ProtocolStreamReader stream(data);
-    xbus::pid_t pid;
-    stream >> pid;
+    xbus::pid_s pid;
+    pid.read(&stream);
 
-    if (mandala::cmd::env::nmt::match(pid)) {
-        trace_uplink(ProtocolTraceItem::NMT, Mandala::meta(pid).name);
+    trace(true, pid);
+
+    if (mandala::cmd::env::nmt::match(pid.uid)) {
         if (stream.available() >= sizeof(xbus::node::guid_t)) {
             trace_uplink(ProtocolTraceItem::GUID, "GUID");
             stream.reset(stream.pos() + sizeof(xbus::node::guid_t));
         }
-    } else {
-        trace_uplink(ProtocolTraceItem::PID, Mandala::meta(pid).path);
     }
     trace(true, stream.payload());
 }

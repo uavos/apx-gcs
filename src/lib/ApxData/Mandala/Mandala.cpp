@@ -151,7 +151,7 @@ quint64 Mandala::timestamp() const
 
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
-    if (!uid)
+    if (uid == 0xFFFF)
         return nullptr;
     MandalaFact *f = uid_map.value(uid);
     if (f)
@@ -189,8 +189,8 @@ QString Mandala::mandalaToString(quint16 uid) const
 }
 quint16 Mandala::stringToMandala(const QString &s) const
 {
-    if (s.isEmpty() || s == "0")
-        return 0;
+    if (s.isEmpty())
+        return 0xFFFF;
     //try int
     bool ok = false;
     uint i = s.toUInt(&ok);
@@ -202,7 +202,7 @@ quint16 Mandala::stringToMandala(const QString &s) const
     }
     //try text
     MandalaFact *f = fact(s);
-    return f ? f->uid() : 0;
+    return f ? f->uid() : 0xFFFF;
 }
 
 const mandala::meta_t &Mandala::meta(mandala::uid_t uid)

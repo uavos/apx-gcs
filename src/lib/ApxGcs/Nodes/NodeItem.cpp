@@ -327,8 +327,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
 {
     //qDebug() << dict.size();
 
-    m_fields.clear();
-    m_status_field = nullptr;
+    clear();
 
     QMap<int, Fact *> groups;
     Fact *g = this;

@@ -206,9 +206,12 @@ void ProtocolNodes::syncTimeout()
     requestSearch();
 }
 
-ProtocolNodeRequest *ProtocolNodes::request(xbus::pid_t pid, const QString &sn, size_t retry_cnt)
+ProtocolNodeRequest *ProtocolNodes::request(mandala::uid_t uid, const QString &sn, size_t retry_cnt)
 {
-    ProtocolNodeRequest *req = new ProtocolNodeRequest(this, sn, pid, retry_cnt);
+    _req_pid.uid = uid;
+    _req_pid.sub = xbus::sub_request;
+    ProtocolNodeRequest *req = new ProtocolNodeRequest(this, sn, _req_pid, retry_cnt);
+    _req_pid.seq++;
     connect(req, &QObject::destroyed, this, [this, req]() {
         _queue.removeAll(req);
         next();
@@ -291,11 +294,12 @@ void ProtocolNodes::clear()
     setValid(false);
 }
 
-void ProtocolNodes::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
+void ProtocolNodes::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
-    trace_downlink(ProtocolTraceItem::NMT, Mandala::meta(pid).name);
-
     if (!enabled())
+        return;
+
+    if (pid.sub != xbus::sub_response)
         return;
 
     if (stream.available() < sizeof(xbus::node::guid_t))

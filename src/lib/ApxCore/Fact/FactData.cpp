@@ -215,7 +215,19 @@ bool FactData::updateValue(const QVariant &v)
         m_value = QVariant::fromValue(vf);
     } break;
     case MandalaID: {
+        if (v.isNull()) {
+            if (v_prev.isNull())
+                return false;
+            m_value = v;
+            break;
+        }
         quint16 vuid = stringToMandala(v.toString().trimmed());
+        if (vuid == 0xFFFF) {
+            if (v_prev.isNull())
+                return false;
+            m_value = QVariant();
+            break;
+        }
         if (v_prev.toUInt() == vuid)
             return false;
         m_value = QVariant::fromValue(vuid);
@@ -334,6 +346,8 @@ QString FactData::toText(const QVariant &v) const
         return QVariant(v.toBool()).toString();
     }
     if (t == MandalaID) {
+        if (v.isNull())
+            return QString();
         return mandalaToString(static_cast<quint16>(v.toUInt()));
     }
     if (t == Float) {
@@ -637,7 +651,7 @@ void FactData::defaults()
             m_value = 0;
             break;
         case MandalaID:
-            m_value = 0;
+            m_value = QVariant();
             break;
         default:
             m_value = QVariant();

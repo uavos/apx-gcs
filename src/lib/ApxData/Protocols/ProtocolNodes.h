@@ -42,7 +42,7 @@ public:
     friend class ProtocolNode;
     friend class ProtocolNodeRequest;
 
-    ProtocolNodeRequest *request(xbus::pid_t pid, const QString &sn, size_t retry_cnt);
+    ProtocolNodeRequest *request(mandala::uid_t uid, const QString &sn, size_t retry_cnt);
 
     ProtocolNode *getNode(QString sn, bool createNew = true);
 
@@ -51,7 +51,7 @@ public:
     ProtocolNodeRequest *extendRequest(xbus::node::crc_t crc, size_t timeout_ms);
 
     // called by vehicle
-    void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);
+    void downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream);
 
     void syncLater(int time_ms, bool force_active);
 
@@ -68,6 +68,7 @@ private:
     QTimer reqTimer;
     QTimer wdTimer;
     void schedule(ProtocolNodeRequest *request);
+    xbus::pid_s _req_pid{};
 
     // sync management
     QTimer syncTimer;

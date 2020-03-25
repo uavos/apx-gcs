@@ -93,7 +93,6 @@ void QueueItem::cleanUploadConnections()
 bool QueueItem::loadFirmware()
 {
     QString fw = title();
-    QString sn = protocol()->sn();
     QString hw = protocol()->hardware();
     QString ver = protocol()->version();
 

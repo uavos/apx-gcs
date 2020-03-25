@@ -28,6 +28,7 @@
 
 #include "ProtocolStream.h"
 #include "ProtocolTrace.h"
+#include <Mandala/Mandala.h>
 
 class ProtocolBase : public Fact
 {
@@ -36,9 +37,11 @@ public:
     explicit ProtocolBase(QObject *parent, const QString &name);
 
     void trace(bool uplink, const QByteArray &data);
+    void trace(bool uplink, const xbus::pid_s &pid);
 
     void trace_downlink(ProtocolTraceItem::TraceType type, const QString &text);
     void trace_downlink(const QByteArray &data);
+    void trace_downlink(const xbus::pid_s &pid);
 
     void trace_uplink(ProtocolTraceItem::TraceType type, const QString &text);
     void trace_uplink_packet(const QByteArray &data);

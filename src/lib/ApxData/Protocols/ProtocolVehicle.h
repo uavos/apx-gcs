@@ -113,7 +113,7 @@ signals:
     void missionData(QByteArray data);
 
     //data with other id (i.e. mandala data)
-    void receivedData(xbus::pid_t pid, ProtocolStreamReader *stream);
+    void receivedData(xbus::pid_s pid, ProtocolStreamReader *stream);
 
     //---------------------------------------
     // PROPERTIES

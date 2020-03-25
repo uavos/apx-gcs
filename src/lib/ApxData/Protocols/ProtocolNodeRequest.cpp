@@ -29,17 +29,21 @@
 
 #include <App/AppLog.h>
 
-ProtocolNodeRequest::ProtocolNodeRequest(
-    ProtocolNodes *nodes, const QString &sn, xbus::pid_t pid, size_t retry_cnt, size_t timeout_ms)
+ProtocolNodeRequest::ProtocolNodeRequest(ProtocolNodes *nodes,
+                                         const QString &sn,
+                                         const xbus::pid_s &pid,
+                                         size_t retry_cnt,
+                                         size_t timeout_ms)
     : QObject(nodes)
     , ProtocolStreamWriter(packet_buf, sizeof(packet_buf))
     , nodes(nodes)
     , node(nodes->getNode(sn, false))
+    , _uid(pid.uid)
     , retry_cnt(retry_cnt)
     , timeout_ms(timeout_ms > 0 ? timeout_ms : 500)
 {
     //repare stream
-    write<xbus::pid_t>(pid);
+    pid.write(this);
     if (!sn.isEmpty()) {
         QByteArray src(QByteArray::fromHex(sn.toUtf8()));
         size_t sz = static_cast<size_t>(src.size());
@@ -133,7 +137,7 @@ void ProtocolNodeRequest::triggerTimeout()
         apxConsoleW() << tr("Service timeout")
                       << QString("(%1): %2 %3")
                              .arg(node ? node->name() : "?")
-                             .arg(Mandala::meta(pid).name)
+                             .arg(Mandala::meta(_uid).name)
                              .arg(dump(stream_pos_s));
         emit timeout();
     }

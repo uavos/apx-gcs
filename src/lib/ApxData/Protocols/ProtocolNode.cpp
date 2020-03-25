@@ -105,16 +105,16 @@ void ProtocolNode::hashData(QCryptographicHash *h) const
     h->addData(QString::number(ident().hash).toUtf8());
 }
 
-void ProtocolNode::downlink(xbus::pid_t pid, ProtocolStreamReader &stream)
+void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
     //filter requests
-    if (stream.available() == 0 && pid != mandala::cmd::env::nmt::search::uid)
+    if (stream.available() == 0 && pid.uid != mandala::cmd::env::nmt::search::uid)
         return;
 
     //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
     trace_downlink(stream.payload());
 
-    switch (pid) {
+    switch (pid.uid) {
     default:
         //qDebug() << cmd << data.size();
         return;
@@ -241,9 +241,9 @@ ProtocolNodeFile *ProtocolNode::file(const QString &fname)
     return f;
 }
 
-ProtocolNodeRequest *ProtocolNode::request(xbus::pid_t pid, size_t retry_cnt)
+ProtocolNodeRequest *ProtocolNode::request(mandala::uid_t uid, size_t retry_cnt)
 {
-    return nodes->request(pid, m_sn, retry_cnt);
+    return nodes->request(uid, m_sn, retry_cnt);
 }
 
 void ProtocolNode::requestReboot()

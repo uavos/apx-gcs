@@ -25,6 +25,7 @@
 #include "MandalaFactStream.h"
 
 #include <Mandala/MandalaMetaBase.h>
+#include <Protocols/ProtocolStream.h>
 
 #include <Fact/Fact.h>
 
@@ -64,6 +65,9 @@ private:
     Mandala *m_tree;
     const mandala::meta_t &m_meta;
     QString m_alias;
+
+    uint8_t txbuf[32];
+    ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
 
     QElapsedTimer sendTime;
     QTimer sendTimer;

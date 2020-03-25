@@ -50,9 +50,9 @@ public:
     explicit ProtocolNode(ProtocolNodes *nodes, const QString &sn);
 
     // called by nodes
-    void downlink(xbus::pid_t pid, ProtocolStreamReader &stream);
+    void downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream);
 
-    ProtocolNodeRequest *request(xbus::pid_t pid, size_t retry_cnt = 3);
+    ProtocolNodeRequest *request(mandala::uid_t uid, size_t retry_cnt = 3);
 
     ProtocolNodeFile *file(const QString &fname);
 
