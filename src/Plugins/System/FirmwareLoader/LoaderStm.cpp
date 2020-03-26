@@ -21,7 +21,6 @@
  *
  */
 #include "LoaderStm.h"
-#include "QueueItem.h"
 
 #include <App/App.h>
 #include <App/AppGcs.h>
@@ -31,48 +30,52 @@
 #define SLDR_ACK 0x79
 #define SLDR_NACK 0x1F
 
-LoaderStm::LoaderStm(QueueItem *item,
-                     const QByteArray &fileData,
-                     quint32 startAddr,
+LoaderStm::LoaderStm(Fact *parent,
+                     const QString &type,
+                     const QString &name,
+                     const QString &hw,
                      const QString &portName,
                      bool continuous)
-    : QObject(item)
-    , item(item)
-    , fileData(fileData)
-    , startAddr(startAddr)
+    : QueueItem(parent, nullptr, type)
+    , hw(hw)
     , portName(portName)
     , continuous(continuous)
 {
-    AppGcs::instance()->f_datalink->f_ports->blockSerialPorts();
-    //connect(item, &QueueItem::stop, this, &LoaderStm::stop);
-
-    dev = new QSerialPort(QSerialPortInfo(portName), this);
-    connect(dev, &QSerialPort::readyRead, this, &LoaderStm::readData);
+    setTitle(name);
 
     timer.setSingleShot(true);
     timer.setInterval(1000);
     connect(&timer, &QTimer::timeout, this, &LoaderStm::next);
+}
+LoaderStm::~LoaderStm()
+{
+    if (dev) {
+        dev->close();
+        AppGcs::instance()->f_datalink->f_ports->unblockSerialPorts();
+    }
+}
+
+void LoaderStm::upload()
+{
+    if (!loadFirmware(hw)) {
+        finish(false);
+        return;
+    }
+
+    AppGcs::instance()->f_datalink->f_ports->blockSerialPorts();
+
+    dev = new QSerialPort(QSerialPortInfo(portName), this);
+    connect(dev, &QSerialPort::readyRead, this, &LoaderStm::readData);
+
     stage = 0;
     success = false;
     retry = 0;
     timer.start();
 }
-LoaderStm::~LoaderStm()
-{
-    dev->close();
-    AppGcs::instance()->f_datalink->f_ports->unblockSerialPorts();
-    item->finish(success);
-    if (success) {
-        apxMsg() << tr("Firmware uploaded");
-    } else {
-        apxMsgW() << tr("Firmware upload error");
-    }
-}
 
 void LoaderStm::stop()
 {
     timer.stop();
-    deleteLater();
 }
 
 void LoaderStm::next()
@@ -87,6 +90,7 @@ void LoaderStm::next()
         retry = 0;
         stage++;
         //fallthru
+        [[clang::fallthrough]];
     case 1:
         if (dev->open(QIODevice::ReadWrite)) {
             apxMsg() << tr("Using port").append(':') << dev->portName();
@@ -108,7 +112,7 @@ void LoaderStm::next()
     // port opened
     case 10: //init loader
         apxMsg() << tr("Initializing").append("...");
-        item->setProgress(0);
+        setProgress(0);
         write(QByteArray(1, 0x7F), rx_loader, 100);
         retry = 0;
         stage++;
@@ -153,13 +157,13 @@ void LoaderStm::next()
 
     // erase chip
     case 30:
-        if (startAddr != 0x08000000) {
+        if (_offset != 0x08000000) {
             /*apxMsg() << tr("Chip erase skipped");
             stage = 50;
             timer.start(0);
             return;*/
             apxMsg() << tr("Offset").append(':')
-                     << QString("0x%1").arg(static_cast<qulonglong>(startAddr), 8, 16, QChar('0'));
+                     << QString("0x%1").arg(static_cast<qulonglong>(_offset), 8, 16, QChar('0'));
         }
         apxMsg() << tr("Erasing chip").append("...");
         write(cmd_erase, rx_ack);
@@ -193,6 +197,7 @@ void LoaderStm::next()
         writeCnt = 0;
         stage++;
         //fallthru
+        [[clang::fallthrough]];
     case 51:
         write(0x31, rx_ack);
         stage++;
@@ -200,7 +205,7 @@ void LoaderStm::next()
     case 52:
         if (rx_stage == rx_ok) {
             QByteArray ba;
-            quint32 writeAddr = startAddr + writeCnt;
+            quint32 writeAddr = _offset + writeCnt;
             ba.append(static_cast<char>(writeAddr >> 24));
             ba.append(static_cast<char>(writeAddr >> 16));
             ba.append(static_cast<char>(writeAddr >> 8));
@@ -213,13 +218,13 @@ void LoaderStm::next()
         break;
     case 53:
         if (rx_stage == rx_ok) {
-            QByteArray ba = fileData.mid(writeCnt, 256);
+            QByteArray ba = _data.mid(writeCnt, 256);
             writeCnt += ba.size();
             while ((ba.size() & 3) != 0)
                 ba.append(static_cast<char>(0xFF));
             ba.prepend(ba.size() - 1);
             write(crc(ba), rx_ack);
-            item->setProgress(100 * writeCnt / fileData.size());
+            setProgress(100 * writeCnt / _data.size());
             stage++;
             return;
         }
@@ -228,7 +233,7 @@ void LoaderStm::next()
     case 54:
         if (rx_stage == rx_ok) {
             //qDebug() << "written" << writeCnt;
-            if (writeCnt >= fileData.size()) {
+            if (writeCnt >= _data.size()) {
                 stage = 100;
                 timer.start(0);
                 return;
@@ -249,10 +254,10 @@ void LoaderStm::next()
     case 101:
         if (rx_stage == rx_ok) {
             QByteArray ba;
-            ba.append(static_cast<char>(startAddr >> 24));
-            ba.append(static_cast<char>(startAddr >> 16));
-            ba.append(static_cast<char>(startAddr >> 8));
-            ba.append(static_cast<char>(startAddr));
+            ba.append(static_cast<char>(_offset >> 24));
+            ba.append(static_cast<char>(_offset >> 16));
+            ba.append(static_cast<char>(_offset >> 8));
+            ba.append(static_cast<char>(_offset));
             write(crc(ba), rx_ack);
             stage++;
             return;
@@ -324,6 +329,7 @@ void LoaderStm::readData()
         rxData.remove(0, 1);
         rx_stage = rx_info_data;
     } //fallthru
+        [[clang::fallthrough]];
     case rx_info_data: {
         if (rxData.size() < 2)
             return;

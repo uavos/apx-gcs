@@ -17,10 +17,10 @@ Project {
         "src/Plugins/Plugins.qbs",
         "src/pawncc/pawncc.qbs",
 
-        "../fw/sim.qbs",
+        //"../fw/sim.qbs",
 
-        "deploy/deploy.qbs",
-        "translations/translations.qbs",
+        //"deploy/deploy.qbs",
+        //"translations/translations.qbs",
     ]
 
     Product {

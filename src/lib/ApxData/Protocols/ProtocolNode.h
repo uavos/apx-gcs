@@ -102,7 +102,7 @@ signals:
     void confReceived(const QVariantList &values);
     void confSaved();
 
-    void messageReceived(xbus::node::msg::type_t type, QString msg);
+    void messageReceived(xbus::node::msg::type_e type, QString msg);
 
     void loaderAvailable();
     void filesAvailable();

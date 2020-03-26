@@ -22,27 +22,28 @@
  */
 #pragma once
 
+#include "QueueItem.h"
+
 #include <QSerialPort>
 #include <QtCore>
 
 class QueueItem;
 
-class LoaderStm : public QObject
+class LoaderStm : public QueueItem
 {
     Q_OBJECT
 
-public:
-    explicit LoaderStm(QueueItem *item,
-                       const QByteArray &fileData,
-                       quint32 startAddr,
+public: //186
+    explicit LoaderStm(Fact *parent,
+                       const QString &type,
+                       const QString &name,
+                       const QString &hw,
                        const QString &portName,
                        bool continuous);
-    ~LoaderStm();
+    ~LoaderStm() override;
 
 private:
-    QueueItem *item;
-    QByteArray fileData;
-    quint32 startAddr;
+    QString hw;
     QString portName;
     bool continuous;
 
@@ -50,7 +51,7 @@ private:
     int stage;
     bool success;
 
-    QSerialPort *dev;
+    QSerialPort *dev{nullptr};
     int retry;
     QByteArray rxData;
     enum RxStage {
@@ -70,6 +71,9 @@ private:
     void write(quint8 cmd, RxStage rx_stage = rx_ok, int timeout = 200);
 
     QByteArray crc(QByteArray data) const;
+
+protected:
+    void upload() override;
 
 private slots:
     void next();

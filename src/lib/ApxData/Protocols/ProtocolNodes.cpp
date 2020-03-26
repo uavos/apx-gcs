@@ -69,7 +69,6 @@ void ProtocolNodes::updateActive()
     qDebug() << active();
 
     if (!active()) {
-        setUpgrading(false);
         setProgress(-1);
         wdTimer.stop();
         clear_requests();
@@ -100,8 +99,13 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
     foreach (auto const r, _queue) {
         if (!r->equals(request))
             continue;
+        if (r->active) {
+            request->deleteLater();
+            return;
+        }
         _queue.removeAll(r);
         r->deleteLater();
+        break;
     }
 
     int ins = _queue.size();
@@ -157,6 +161,8 @@ void ProtocolNodes::check_finished()
         next();
         return;
     }
+    if (upgrading())
+        return;
     int cnt = _nodes.size();
     if (cnt <= 0)
         return;
@@ -224,27 +230,15 @@ ProtocolNodeRequest *ProtocolNodes::request(mandala::uid_t uid, const QString &s
     return req;
 }
 
-ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(xbus::node::crc_t crc)
+ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(const QString &sn,
+                                                       const xbus::pid_s &pid,
+                                                       xbus::node::ack::ack_e v,
+                                                       xbus::node::ack::timeout_t timeout)
 {
     ProtocolNodeRequest *r = nullptr;
     for (auto i : _queue) {
-        if (i->equals(crc)) {
-            i->acknowledge();
-            r = i;
-        }
-    }
-    return r;
-}
-ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(ProtocolStreamReader &stream)
-{
-    return acknowledgeRequest(ProtocolNodeRequest::get_crc(stream.buffer(), stream.pos()));
-}
-ProtocolNodeRequest *ProtocolNodes::extendRequest(xbus::node::crc_t crc, size_t timeout_ms)
-{
-    ProtocolNodeRequest *r = nullptr;
-    for (auto i : _queue) {
-        if (i->equals(crc)) {
-            i->extend(timeout_ms);
+        if (i->equals(pid, sn)) {
+            i->acknowledge(v, timeout);
             r = i;
         }
     }
@@ -299,8 +293,13 @@ void ProtocolNodes::downlink(const xbus::pid_s &pid, ProtocolStreamReader &strea
     if (!enabled())
         return;
 
-    if (pid.sub != xbus::sub_response)
+    while (pid.sub != xbus::sub_response) {
+        if (pid.uid == mandala::cmd::env::nmt::msg::uid)
+            break;
+        if (pid.uid == mandala::cmd::env::nmt::search::uid)
+            break;
         return;
+    }
 
     if (stream.available() < sizeof(xbus::node::guid_t))
         return;

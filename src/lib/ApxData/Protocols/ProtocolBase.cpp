@@ -49,24 +49,41 @@ void ProtocolBase::trace(bool uplink, const xbus::pid_s &pid)
 {
     if (mandala::cmd::env::nmt::match(pid.uid)) {
         QString s = Mandala::meta(pid.uid).name;
-        if (pid.sub)
-            s += QString("/%1").arg(static_cast<int>(pid.sub));
         ProtocolTrace::trace(uplink, ProtocolTraceItem::NMT, s);
     } else {
         QString s = Mandala::meta(pid.uid).path;
-        if (pid.sub)
-            s += QString("/%1").arg(static_cast<int>(pid.sub));
         ProtocolTrace::trace(uplink, ProtocolTraceItem::PID, s);
     }
-    if (pid.seq)
-        ProtocolTrace::trace(uplink,
-                             ProtocolTraceItem::PID,
-                             QString::number(static_cast<int>(pid.seq)));
+    QString s;
+    switch (pid.sub) {
+    case xbus::sub_primary:
+        s = "pri ";
+        break;
+    case xbus::sub_secondary:
+        s = "sec ";
+        break;
+    case xbus::sub_failsafe:
+        s = "fsf ";
+        break;
+    case xbus::sub_ext:
+        s = "ext ";
+        break;
+    case xbus::sub_response:
+        s = "R";
+        break;
+    case xbus::sub_request:
+        s = "Q";
+        break;
+    default:
+        s = QString::number(static_cast<int>(pid.sub));
+    }
+    s = QString("%1%2").arg(s).arg(QString::number(static_cast<int>(pid.seq)));
+    ProtocolTrace::trace(uplink, ProtocolTraceItem::DATA, s);
 }
 
 void ProtocolBase::trace_downlink(ProtocolTraceItem::TraceType type, const QString &text)
 {
-    ProtocolTrace::trace(false, type, text.contains('.') ? text : text.toUpper());
+    ProtocolTrace::trace(false, type, text);
 }
 void ProtocolBase::trace_downlink(const QByteArray &data)
 {
@@ -75,6 +92,10 @@ void ProtocolBase::trace_downlink(const QByteArray &data)
 void ProtocolBase::trace_downlink(const xbus::pid_s &pid)
 {
     trace(false, pid);
+}
+void ProtocolBase::trace_downlink(const QString &text)
+{
+    trace_downlink(ProtocolTraceItem::DATA, text);
 }
 
 void ProtocolBase::trace_uplink(ProtocolTraceItem::TraceType type, const QString &text)

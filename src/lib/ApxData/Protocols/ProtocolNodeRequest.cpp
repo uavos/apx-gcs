@@ -25,7 +25,6 @@
 #include "ProtocolNodes.h"
 
 #include <Mandala/Mandala.h>
-#include <crc/crc.h>
 
 #include <App/AppLog.h>
 
@@ -38,7 +37,8 @@ ProtocolNodeRequest::ProtocolNodeRequest(ProtocolNodes *nodes,
     , ProtocolStreamWriter(packet_buf, sizeof(packet_buf))
     , nodes(nodes)
     , node(nodes->getNode(sn, false))
-    , _uid(pid.uid)
+    , _pid(pid)
+    , _sn(sn)
     , retry_cnt(retry_cnt)
     , timeout_ms(timeout_ms > 0 ? timeout_ms : 500)
 {
@@ -61,14 +61,27 @@ ProtocolNodeRequest::ProtocolNodeRequest(ProtocolNodes *nodes,
     connect(&timer, &QTimer::timeout, this, &ProtocolNodeRequest::triggerTimeout);
 }
 
-xbus::node::crc_t ProtocolNodeRequest::get_crc(const void *data, size_t sz)
-{
-    return CRC_16_APX(data, sz, 0);
-}
-
 bool ProtocolNodeRequest::equals(const ProtocolNodeRequest *other)
 {
-    return equals(other->_crc);
+    if (other->_sn != _sn)
+        return false;
+    if (other->_pid.uid != _pid.uid)
+        return false;
+    if (other->_pid.sub != _pid.sub)
+        return false;
+    if (other->pos() != pos())
+        return false;
+    if (other->stream_pos_s != stream_pos_s)
+        return false;
+    if (memcmp(other->buffer() + stream_pos_s, buffer() + stream_pos_s, pos() - stream_pos_s) != 0)
+        return false;
+
+    qDebug() << "duplicate req"
+             << QString("(%1): %2 %3")
+                    .arg(node ? node->name() : "?")
+                    .arg(Mandala::meta(_pid.uid).name)
+                    .arg(dump(stream_pos_s));
+    return true;
 }
 bool ProtocolNodeRequest::lessThan(const ProtocolNodeRequest *other)
 {
@@ -76,9 +89,19 @@ bool ProtocolNodeRequest::lessThan(const ProtocolNodeRequest *other)
         return true;
     return QString::compare(toByteArray().toHex(), other->toByteArray().toHex()) < 0;
 }
-void ProtocolNodeRequest::acknowledge()
+void ProtocolNodeRequest::acknowledge(xbus::node::ack::ack_e v, xbus::node::ack::timeout_t timeout)
 {
-    finish(true);
+    switch (v) {
+    default:
+        finish(false);
+        break;
+    case xbus::node::ack::ack_ok:
+        finish(true);
+        break;
+    case xbus::node::ack::ack_extend:
+        extend(timeout);
+        break;
+    }
 }
 void ProtocolNodeRequest::extend(size_t ms)
 {
@@ -88,13 +111,15 @@ void ProtocolNodeRequest::extend(size_t ms)
         timer.start(static_cast<int>(ms));
     }
 }
-bool ProtocolNodeRequest::equals(xbus::node::crc_t crc)
+bool ProtocolNodeRequest::equals(const xbus::pid_s &pid, const QString &sn)
 {
-    if (!_crc_valid) {
-        _crc = get_crc(packet_buf, pos());
-        _crc_valid = true;
-    }
-    return _crc == crc;
+    if (sn != _sn)
+        return false;
+    if (pid.uid != _pid.uid)
+        return false;
+    if (pid.seq != _pid.seq)
+        return false;
+    return true;
 }
 
 void ProtocolNodeRequest::schedule()
@@ -137,7 +162,7 @@ void ProtocolNodeRequest::triggerTimeout()
         apxConsoleW() << tr("Service timeout")
                       << QString("(%1): %2 %3")
                              .arg(node ? node->name() : "?")
-                             .arg(Mandala::meta(_uid).name)
+                             .arg(Mandala::meta(_pid.uid).name)
                              .arg(dump(stream_pos_s));
         emit timeout();
     }

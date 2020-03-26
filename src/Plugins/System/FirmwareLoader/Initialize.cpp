@@ -82,13 +82,14 @@ void Initialize::startTriggered()
 {
     QString type;
     if (f_fw->value().toInt() == 0)
-        type = "ldr.stm";
+        type = "ldr";
     else
-        type = "fw.stm";
-    QStringList opts;
-    opts << f_port->text();
-    opts << f_continuous->text();
-    //m_firmware->requestUpgrade(f_node->text(), f_hw->text(), opts.join(','), type);
+        type = "fw";
+    m_firmware->requestInitialize(type,
+                                  f_node->text(),
+                                  f_hw->text(),
+                                  f_port->text(),
+                                  f_continuous->value().toBool());
 }
 //=============================================================================
 //=============================================================================

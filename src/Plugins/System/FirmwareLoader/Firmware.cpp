@@ -22,6 +22,7 @@
  */
 #include "Firmware.h"
 #include "FirmwareTools.h"
+#include "LoaderStm.h"
 #include "QueueItem.h"
 #include "Releases.h"
 
@@ -69,12 +70,28 @@ Firmware::Firmware(Fact *parent)
         nodes_protocol()->setActive(false);
     });
 
-    connect(nodes_protocol(), &Firmware::activeChanged, this, [this]() {
+    connect(nodes_protocol(), &Fact::activeChanged, this, [this]() {
         if (!nodes_protocol()->active()) {
             setActive(false);
             f_queue->removeAll();
         }
     });
+    connect(this, &Fact::activeChanged, nodes_protocol(), [this]() {
+        nodes_protocol()->setUpgrading(active());
+    });
+
+    connect(
+        f_queue,
+        &Fact::sizeChanged,
+        this,
+        [this]() {
+            if (f_queue->size() == 0)
+                return;
+            if (f_queue->size() == 1)
+                next();
+            trigger(); // show menu
+        },
+        Qt::QueuedConnection);
 
     //tools actions
     f_tools = new FirmwareTools(this);
@@ -143,12 +160,18 @@ void Firmware::requestUpgrade(ProtocolNode *protocol, QString type)
     if (f)
         f->remove();
 
-    f = new QueueItem(f_queue, protocol, type);
+    new QueueItem(f_queue, protocol, type);
+}
+void Firmware::requestInitialize(const QString &type,
+                                 const QString &name,
+                                 const QString &hw,
+                                 const QString &portName,
+                                 bool continuous)
+{
+    setActive(false);
+    f_queue->removeAll();
 
-    if (f_queue->size() == 1)
-        next();
-
-    trigger(); // show menu
+    new LoaderStm(f_queue, type, name, hw, portName, continuous);
 }
 
 void Firmware::next()
@@ -157,8 +180,7 @@ void Firmware::next()
         setActive(false);
         return;
     }
-    setActive(true);
-    nodes_protocol()->setActive(true);
+
     //find next node in queue
     QueueItem *item = nullptr;
     //loaders first
@@ -188,7 +210,9 @@ void Firmware::next()
     if (!item)
         return;
 
-    emit upgradeStarted(item->protocol()->sn(), item->type());
+    setActive(true);
+    nodes_protocol()->setActive(true);
+    emit upgradeStarted(item->protocol() ? item->protocol()->sn() : QString(), item->type());
 
     connect(item, &QueueItem::finished, this, &Firmware::loaderFinished);
 
@@ -198,11 +222,14 @@ void Firmware::next()
 
 void Firmware::loaderFinished(QueueItem *item, bool success)
 {
-    emit upgradeFinished(item->protocol()->sn(), item->type());
+    emit upgradeFinished(item->protocol() ? item->protocol()->sn() : QString(), item->type());
+
     if (success) {
         item->remove();
     } else {
         nodes_protocol()->setActive(false);
+        setActive(false);
+        f_queue->removeAll();
     }
     QTimer::singleShot(100, this, &Firmware::next);
 }

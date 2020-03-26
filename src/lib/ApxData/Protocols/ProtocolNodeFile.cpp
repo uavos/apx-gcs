@@ -131,6 +131,7 @@ void ProtocolNodeFile::download()
     _op_offset = 0;
     _op_size = 0;
     _op_tcnt = 0;
+
     setValue(tr("Downloading"));
     request(xbus::node::file::ropen)->schedule();
 }
@@ -341,6 +342,6 @@ void ProtocolNodeFile::ack_req()
 {
     if (!_req)
         return;
-    _req->acknowledge();
+    _req->finish(true);
     _req = nullptr;
 }

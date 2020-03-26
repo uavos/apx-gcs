@@ -108,30 +108,35 @@ void ProtocolNode::hashData(QCryptographicHash *h) const
 void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
     //filter requests
-    if (stream.available() == 0 && pid.uid != mandala::cmd::env::nmt::search::uid)
+    while (stream.available() == 0) {
+        if (pid.uid == mandala::cmd::env::nmt::search::uid)
+            break;
         return;
+    }
 
     //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
-    trace_downlink(stream.payload());
 
     switch (pid.uid) {
     default:
         //qDebug() << cmd << data.size();
+        trace_downlink(stream.payload());
         return;
 
     case mandala::cmd::env::nmt::search::uid: { //response to search
         //qDebug() << "apc_search" << sn;
+        trace_downlink(stream.payload());
         requestIdent();
     } break;
 
         // node ident
     case mandala::cmd::env::nmt::ident::uid: {
         //qDebug() << "ident" << sn;
+        trace_downlink(stream.payload());
         if (stream.available() <= (xbus::node::ident::ident_s::psize() + 3 * 2)) {
             qWarning() << "size" << stream.available() << xbus::node::ident::ident_s::psize();
             break;
         }
-        nodes->acknowledgeRequest(stream);
+        nodes->acknowledgeRequest(m_sn, pid);
         xbus::node::ident::ident_s ident;
         ident.read(&stream);
 
@@ -172,20 +177,22 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
 
         // request acknowledge
     case mandala::cmd::env::nmt::ack::uid: {
-        if (stream.available() != sizeof(xbus::node::crc_t))
+        trace_downlink(stream.payload());
+        if (stream.available() <= sizeof(xbus::pid_s))
             break;
-        nodes->acknowledgeRequest(stream.read<xbus::node::crc_t>());
-    } break;
-    case mandala::cmd::env::nmt::nack::uid: {
-        if (stream.available() <= sizeof(xbus::node::crc_t))
+        xbus::pid_s ack_pid;
+        ack_pid.read(&stream);
+        if (stream.available() < sizeof(xbus::node::ack::ack_e))
             break;
-        xbus::node::crc_t crc;
-        stream >> crc;
-        if (stream.available() != sizeof(uint16_t))
-            break;
-        uint16_t ms;
-        stream >> ms;
-        nodes->extendRequest(crc, ms);
+        xbus::node::ack::ack_e ack;
+        stream >> ack;
+        xbus::node::ack::timeout_t timeout = 0;
+        if (ack == xbus::node::ack::ack_extend) {
+            if (stream.available() != sizeof(xbus::node::ack::timeout_t))
+                break;
+            stream >> timeout;
+        }
+        nodes->acknowledgeRequest(m_sn, ack_pid, ack, timeout);
     } break;
 
         // file operations
@@ -198,24 +205,32 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
         if (!(op & xbus::node::file::reply_op_mask))
             break;
         op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
+        trace_downlink(QString::number(op));
 
         const char *s = stream.read_string(16);
         if (!s)
             break;
+        trace_downlink(QString(s));
         ProtocolNodeFile *f = file(s);
         if (!f)
             break;
+        trace_downlink(stream.payload());
         f->downlink(op, stream);
     } break;
 
         // message from vehicle
     case mandala::cmd::env::nmt::msg::uid: {
-        if (stream.available() < (sizeof(xbus::node::msg::type_t) + 1))
+        if (stream.available() < (sizeof(xbus::node::msg::type_e) + 1))
             break;
-        xbus::node::msg::type_t t;
+
+        xbus::node::msg::type_e t;
         stream >> t;
+        trace_downlink(QString::number(t));
+
         const char *s = stream.read_string(stream.available());
         QString msg(QString(s).trimmed());
+        trace_downlink(msg);
+
         if (msg.isEmpty())
             break;
         emit messageReceived(t, msg);
@@ -305,7 +320,12 @@ void ProtocolNode::requestDict()
         qWarning() << "Dict unavailable";
         return;
     }
-    connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseDictData);
+    f->stop();
+    connect(f,
+            &ProtocolNodeFile::downloaded,
+            this,
+            &ProtocolNode::parseDictData,
+            Qt::UniqueConnection);
     f->download();
 }
 void ProtocolNode::requestConf()
@@ -315,7 +335,12 @@ void ProtocolNode::requestConf()
         qWarning() << "Conf unavailable";
         return;
     }
-    connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseConfData);
+    f->stop();
+    connect(f,
+            &ProtocolNodeFile::downloaded,
+            this,
+            &ProtocolNode::parseConfData,
+            Qt::UniqueConnection);
     f->download();
 }
 void ProtocolNode::requestStatus()

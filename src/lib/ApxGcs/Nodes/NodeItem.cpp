@@ -320,6 +320,8 @@ void NodeItem::identReceived()
 
     if (!protocol()->dictValid()) {
         protocol()->requestDict();
+    } else if (!protocol()->valid()) {
+        protocol()->requestConf();
     }
 }
 
@@ -374,7 +376,7 @@ void NodeItem::confReceived(const QVariantList &values)
     updateStatus();
 }
 
-void NodeItem::messageReceived(xbus::node::msg::type_t type, QString msg)
+void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
 {
     AppNotify::instance()->report(msg, AppNotify::FromVehicle | AppNotify::Important);
 }

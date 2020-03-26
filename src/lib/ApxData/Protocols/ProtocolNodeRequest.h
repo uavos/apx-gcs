@@ -42,16 +42,14 @@ public:
                                  size_t timeout_ms = 0);
 
     bool equals(const ProtocolNodeRequest *other);
-    bool equals(xbus::node::crc_t crc);
+    bool equals(const xbus::pid_s &pid, const QString &sn);
     bool lessThan(const ProtocolNodeRequest *other);
 
-    void acknowledge();
+    void acknowledge(xbus::node::ack::ack_e v, xbus::node::ack::timeout_t timeout);
     void extend(size_t ms);
     void finish(bool acknowledged = false);
 
     void schedule();
-
-    static xbus::node::crc_t get_crc(const void *data, size_t sz);
 
     bool active{false};
     bool acknowledged{false};
@@ -59,7 +57,8 @@ public:
 private:
     ProtocolNodes *nodes;
     ProtocolNode *node;
-    mandala::uid_t _uid;
+    xbus::pid_s _pid;
+    QString _sn;
     size_t retry_cnt;
     size_t timeout_ms;
 
@@ -68,9 +67,6 @@ private:
     QTimer timer;
 
     size_t retry{0};
-
-    xbus::node::crc_t _crc;
-    bool _crc_valid{false};
 
     size_t stream_pos_s;
 

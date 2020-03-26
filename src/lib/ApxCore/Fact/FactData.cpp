@@ -394,10 +394,12 @@ bool FactData::isZero() const
         }
         return true;
     }
-    Flag t = dataType();
+
     const QVariant &v = value();
     if (v.isNull())
         return true;
+
+    Flag t = dataType();
     if (t == Text || t == Script)
         return v.toString().isEmpty();
     if (t == Float)
@@ -409,6 +411,7 @@ bool FactData::isZero() const
         return true;
     if (v.toInt() == 0)
         return true;
+
     return false;
 }
 //=============================================================================

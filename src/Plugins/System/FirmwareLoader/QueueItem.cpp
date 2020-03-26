@@ -32,12 +32,11 @@ QueueItem::QueueItem(Fact *parent, ProtocolNode *protocol, QString type)
     , m_type(type)
 {
     setTreeType(NoFlags);
+    //setTitle(QString("%1 (%2)").arg(title()).arg(type));
     /*if (type == Firmware::LD)
         setIcon("alert-circle");
     else
         setIcon("chip");*/
-
-    //protocol->bindProperty(this,"value");
 }
 
 bool QueueItem::match(const QString &sn) const
@@ -57,14 +56,17 @@ void QueueItem::start()
 {
     qDebug() << title();
 
-    Firmware::nodes_protocol()->setUpgrading(true);
+    Firmware::nodes_protocol()->clear_requests();
 
     setValue(tr("Initializing update").append("..."));
 
-    // always refresh ident
-    Firmware::nodes_protocol()->clear_requests();
-    protocol()->setIdentValid(false);
+    if (!protocol()) {
+        upload();
+        return;
+    }
 
+    // always refresh ident
+    protocol()->setIdentValid(false);
     if (type() == "fw") {
         _clist.append(connect(protocol(), &ProtocolNode::loaderAvailable, this, &QueueItem::upload));
         protocol()->requestRebootLoader();
@@ -90,11 +92,9 @@ void QueueItem::cleanUploadConnections()
     _clist.clear();
 }
 
-bool QueueItem::loadFirmware()
+bool QueueItem::loadFirmware(QString hw, QString ver)
 {
     QString fw = title();
-    QString hw = protocol()->hardware();
-    QString ver = protocol()->version();
 
     QString stype = type().toUpper();
 
@@ -111,11 +111,13 @@ bool QueueItem::loadFirmware()
     _data.clear();
     _offset = 0;
 
-    QString rel_type;
-    if (type() == "fw")
+    QString rel_type = type();
+    if (rel_type == "fw")
         rel_type = "firmware";
-    else if (type() == "ldr")
+    else if (rel_type == "ldr")
         rel_type = "loader";
+    else
+        apxMsgW() << "unknown type:" << type();
 
     return releases->loadFirmware(fw, hw, rel_type, &_data, &_offset);
 }
@@ -125,7 +127,7 @@ void QueueItem::upload()
     cleanUploadConnections();
     Firmware::nodes_protocol()->clear_requests();
 
-    if (!loadFirmware()) {
+    if (!loadFirmware(protocol()->hardware(), protocol()->version())) {
         finish(false);
         return;
     }

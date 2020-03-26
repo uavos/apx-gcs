@@ -40,7 +40,7 @@ public:
 
     void finish(bool success);
 
-private:
+protected:
     QString m_type;
 
     QByteArray _data;
@@ -49,14 +49,15 @@ private:
     ProtocolNodeFile *file_p{nullptr};
     ProtocolNodeFile *file(const QString &fname);
 
-    bool loadFirmware();
+    bool loadFirmware(QString hw, QString ver = QString());
 
     QList<QMetaObject::Connection> _clist;
 
 private slots:
     void cleanUploadConnections();
 
-    void upload();
+protected slots:
+    virtual void upload();
 
 public slots:
     void start();

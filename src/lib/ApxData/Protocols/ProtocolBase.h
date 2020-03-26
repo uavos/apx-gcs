@@ -42,6 +42,7 @@ public:
     void trace_downlink(ProtocolTraceItem::TraceType type, const QString &text);
     void trace_downlink(const QByteArray &data);
     void trace_downlink(const xbus::pid_s &pid);
+    void trace_downlink(const QString &text);
 
     void trace_uplink(ProtocolTraceItem::TraceType type, const QString &text);
     void trace_uplink_packet(const QByteArray &data);
