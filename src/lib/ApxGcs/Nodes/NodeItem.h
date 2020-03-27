@@ -37,7 +37,7 @@ class NodeItem : public ProtocolViewBase<ProtocolNode>
     Q_OBJECT
 
 public:
-    explicit NodeItem(Fact *parent, ProtocolNode *protocol);
+    explicit NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol);
 
     //NodeTools *tools;
 
@@ -54,6 +54,7 @@ protected:
     QVariant data(int col, int role) const override;
 
 private:
+    Nodes *_nodes{nullptr};
     qint64 m_lastSeenTime{0};
 
     QList<NodeField *> m_fields;
@@ -83,6 +84,7 @@ private slots:
     void confSaved();
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);
+    void statusReceived(const xbus::node::status::status_s &status);
 
 signals:
     void saveValues();

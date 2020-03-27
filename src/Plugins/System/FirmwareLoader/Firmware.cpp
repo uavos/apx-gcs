@@ -42,6 +42,8 @@ Firmware::Firmware(Fact *parent)
 {
     _instance = this;
 
+    setOpt("pos", QPointF(1, 1));
+
     f_releases = new Releases(this);
 
     f_queue = new Fact(this,

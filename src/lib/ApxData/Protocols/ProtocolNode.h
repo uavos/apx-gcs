@@ -103,6 +103,7 @@ signals:
     void confSaved();
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);
+    void statusReceived(const xbus::node::status::status_s &status);
 
     void loaderAvailable();
     void filesAvailable();
@@ -114,7 +115,7 @@ public slots:
     void requestIdent();
     void requestDict();
     void requestConf();
-    void requestStatus();
+    void requestStatus(xbus::node::status::type_e type);
 
     void requestUpdate(xbus::node::conf::fid_t fid, QVariant value);
     void requestUpdateSave();

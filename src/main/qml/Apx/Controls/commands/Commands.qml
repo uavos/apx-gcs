@@ -64,7 +64,7 @@ Rectangle {
                 value: vehicle.nodes.protocol.size
                 iconName: fact.icon
                 warning: vehicle.nodes.protocol.size<=0
-                active: fact.modified || fact.progress>=0 || (!fact.dataValid)
+                active: fact.modified || fact.progress>=0 || (!vehicle.nodes.protocol.valid)
                 enabled: true
             }
 

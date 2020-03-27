@@ -33,8 +33,9 @@
 #include <QFontDatabase>
 #include <QQmlEngine>
 
-NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
+NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
     : ProtocolViewBase(parent, protocol)
+    , _nodes(nodes)
 {
     setOptions(ProgressTrack | ModifiedGroup);
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
@@ -60,12 +61,14 @@ NodeItem::NodeItem(Fact *parent, ProtocolNode *protocol)
     connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
     connect(protocol, &ProtocolNode::confSaved, this, &NodeItem::confSaved);
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
+    connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
 
     //FIXME: nodes->storage->loadNodeInfo(this);
 
     statusTimer.setSingleShot(true);
     statusTimer.setInterval(10000);
     connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
+    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);
 }
 
 const QList<NodeField *> &NodeItem::fields() const
@@ -378,5 +381,36 @@ void NodeItem::confReceived(const QVariantList &values)
 
 void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
 {
-    AppNotify::instance()->report(msg, AppNotify::FromVehicle | AppNotify::Important);
+    AppNotify::NotifyFlags flags = AppNotify::FromVehicle | AppNotify::Important;
+    switch (type) {
+    default:
+        break;
+    case xbus::node::msg::warn:
+        flags |= AppNotify::Warning;
+        break;
+    case xbus::node::msg::err:
+        flags |= AppNotify::Error;
+        break;
+    }
+    QString s = title();
+    if (!text().isEmpty()) {
+        s.append(QString("/%1").arg(text()));
+    }
+    _nodes->vehicle->message(msg, flags, s);
+}
+
+void NodeItem::statusReceived(const xbus::node::status::status_s &status)
+{
+    statusTimer.start();
+    setActive(true);
+    QStringList st;
+    st << QString("H:%1").arg(status.err.hw, 2, 16, QChar('0')).toUpper();
+    st << QString("C:%1").arg(status.err.can, 2, 16, QChar('0')).toUpper();
+    st << QString("U:%1").arg(status.err.uart, 2, 16, QChar('0')).toUpper();
+    st << QString("RT:%1/%2")
+              .arg(status.cnt.rx, 2, 16, QChar('0'))
+              .toUpper()
+              .arg(status.cnt.tx, 2, 16, QChar('0'))
+              .toUpper();
+    setDescr(st.join(' '));
 }

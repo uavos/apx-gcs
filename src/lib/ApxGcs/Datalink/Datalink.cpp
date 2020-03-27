@@ -32,6 +32,7 @@ Datalink::Datalink(Fact *parent)
     , m_errcnt(0)
 {
     setIcon("swap-vertical");
+    setOpt("pos", QPointF(0, 1));
 
     f_readonly = new Fact(this,
                           "readonly",

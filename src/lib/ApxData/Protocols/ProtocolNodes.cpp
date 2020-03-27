@@ -148,11 +148,14 @@ void ProtocolNodes::check_queue()
 {
     //qDebug() << _queue.size();
     if (_queue.isEmpty()) {
+        setProgress(-1);
         reqTimer.stop();
         if (!finishedTimer.isActive())
             finishedTimer.start();
         return;
     }
+    if (progress() < 0)
+        setProgress(0);
     finishedTimer.stop();
 }
 void ProtocolNodes::check_finished()
@@ -339,6 +342,12 @@ void ProtocolNodes::requestSearch()
     req->schedule();
     req->finish();
     finishedTimer.start(2500);
+}
+void ProtocolNodes::requestStatus(xbus::node::status::type_e type)
+{
+    setActive(true);
+    for (auto i : _nodes)
+        i->requestStatus(type);
 }
 
 //---------------------------------------

@@ -94,8 +94,11 @@ private slots:
 public slots:
     //nodes dict sync
     void requestSearch();
+
     void clear();
     void clear_requests();
+
+    void requestStatus(xbus::node::status::type_e type = xbus::node::status::errors);
 
 signals:
     void nodeNotify(ProtocolNode *protocol);

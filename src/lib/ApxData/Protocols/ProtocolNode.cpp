@@ -235,6 +235,20 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             break;
         emit messageReceived(t, msg);
     } break;
+
+        // status from node
+    case mandala::cmd::env::nmt::status::uid: {
+        if (stream.available() != sizeof(xbus::node::status::status_s))
+            break;
+        nodes->acknowledgeRequest(m_sn, pid);
+
+        trace_downlink(stream.payload());
+
+        xbus::node::status::status_s status;
+        status.read(&stream);
+
+        emit statusReceived(status);
+    } break;
     }
 }
 
@@ -343,9 +357,12 @@ void ProtocolNode::requestConf()
             Qt::UniqueConnection);
     f->download();
 }
-void ProtocolNode::requestStatus()
+void ProtocolNode::requestStatus(xbus::node::status::type_e type)
 {
-    request(mandala::cmd::env::nmt::status::uid)->schedule();
+    nodes->setActive(true);
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::status::uid);
+    *req << type;
+    req->schedule();
 }
 
 void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
@@ -753,11 +770,15 @@ void ProtocolNode::setFiles(const QStringList &v)
     m_files = v;
     emit filesChanged();
 
-    if (!m_files.isEmpty())
-        emit filesAvailable();
+    if (m_files.isEmpty())
+        return;
+
+    emit filesAvailable();
     if (nodes->active() && m_files.contains("fw")) {
         emit loaderAvailable();
     }
+    for (auto i : m_files)
+        file(i); // create fact
 }
 bool ProtocolNode::identValid() const
 {

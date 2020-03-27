@@ -62,7 +62,7 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 
     f_status
         = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
-    //connect(f_status, &Fact::triggered, this, &Nodes::status);
+    connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     //storage actions
     /*storage = new NodesStorage(this);
@@ -109,7 +109,7 @@ NodeItem *Nodes::add(ProtocolNode *protocol)
     if (node)
         return node;
 
-    node = new NodeItem(this, protocol);
+    node = new NodeItem(this, this, protocol);
     m_sn_map.insert(protocol->sn(), node);
 
     return node;
@@ -127,11 +127,11 @@ void Nodes::updateActions()
     bool empty = protocol()->size() <= 0;
     bool mod = modified();
     f_search->setEnabled(enb);
-    f_upload->setEnabled(enb && mod);
+    f_upload->setEnabled(enb && mod && !upgrading);
     f_stop->setEnabled(enb && busy);
     f_reload->setEnabled(enb && !upgrading);
-    f_clear->setEnabled(!empty && !busy);
-    f_status->setEnabled(enb && !empty && !busy);
+    f_clear->setEnabled(!empty && !upgrading);
+    f_status->setEnabled(enb && !empty && !upgrading);
 }
 
 void Nodes::search()

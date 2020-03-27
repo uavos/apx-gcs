@@ -27,6 +27,7 @@
 #include <crc/crc.h>
 
 #include <App/AppLog.h>
+#include <App/AppRoot.h>
 #include <Mandala/Mandala.h>
 
 ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
@@ -35,6 +36,8 @@ ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
 {
     setIcon("paperclip");
     memset(&_info, 0, sizeof(_info));
+
+    connect(this, &ProtocolNodeFile::error, this, &ProtocolNodeFile::reset);
 }
 
 xbus::node::hash_t ProtocolNodeFile::get_hash(const void *src, size_t sz, xbus::node::hash_t hash)
@@ -272,7 +275,6 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
     }
     // error
     emit error();
-    reset();
     //reply_info(xbus::node::file::abort);
 }
 
@@ -283,6 +285,7 @@ ProtocolNodeRequest *ProtocolNodeFile::request(xbus::node::file::op_e op)
     req->write_string(name().toUtf8());
     _op = op;
     _req = req;
+    connect(req, &ProtocolNodeRequest::timeout, this, &ProtocolNodeFile::error);
     //qDebug() << op << req->dump();
     return req;
 }
@@ -324,7 +327,15 @@ bool ProtocolNodeFile::check_info(ProtocolStreamReader &stream)
     _info = info;
     if (chg) {
         qDebug() << "info update";
-        //reset();
+        QStringList st;
+        st << AppRoot::capacityToString(info.size, 2);
+        st << QString("T:%1").arg(info.time);
+        st << QString("H:%1").arg(info.hash, 8, 16, QChar('0')).toUpper();
+        st << QString("O:%1").arg(info.offset, 8, 16, QChar('0')).toUpper();
+        st << QString("%1%2")
+                  .arg(info.flags.bits.readable ? 'R' : ' ')
+                  .arg(info.flags.bits.writable ? 'W' : ' ');
+        setDescr(st.join(' '));
     }
     return true;
 }
