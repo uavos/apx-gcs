@@ -89,7 +89,7 @@ Firmware::Firmware(Fact *parent)
         [this]() {
             if (f_queue->size() == 0)
                 return;
-            if (f_queue->size() == 1)
+            if (f_queue->size() == 1 && !active())
                 next();
             trigger(); // show menu
         },
@@ -115,6 +115,12 @@ void Firmware::nodeNotify(ProtocolNode *protocol)
 {
     if (!protocol->identValid())
         return;
+
+    connect(protocol,
+            &ProtocolNode::requestUpgrade,
+            this,
+            &Firmware::requestUpgrade,
+            Qt::UniqueConnection);
 
     QString sn = protocol->sn();
 
@@ -163,6 +169,9 @@ void Firmware::requestUpgrade(ProtocolNode *protocol, QString type)
         f->remove();
 
     new QueueItem(f_queue, protocol, type);
+
+    if (!active())
+        next();
 }
 void Firmware::requestInitialize(const QString &type,
                                  const QString &name,

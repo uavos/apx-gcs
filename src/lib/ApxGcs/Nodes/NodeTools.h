@@ -20,13 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeTools_H
-#define NodeTools_H
-//=============================================================================
+#pragma once
+
 #include "LookupNodeBackup.h"
 #include "NodeToolsGroup.h"
+
 class NodeItem;
-//=============================================================================
+
 class NodeTools : public NodeToolsGroup
 {
     Q_OBJECT
@@ -37,17 +37,16 @@ public:
     Fact *addCommand(QString name, QString title, QString descr, quint16 cmd) override;
     void clearCommands();
 
-    NodeToolsGroup *f_cmd;
-    NodeToolsGroup *f_syscmd;
+    NodeToolsGroup *f_usr;
+    NodeToolsGroup *f_status;
     NodeToolsGroup *f_maintenance;
 
     LookupNodeBackup *f_backups;
 
     Fact *f_restore;
 
-    Fact *f_rebootall;
-
     Fact *f_updates;
+
+private:
+    void execUsr(Fact *f);
 };
-//=============================================================================
-#endif

@@ -22,7 +22,7 @@
  */
 #include "NodeToolsGroup.h"
 #include "NodeItem.h"
-//=============================================================================
+
 NodeToolsGroup::NodeToolsGroup(Fact *parent,
                                NodeItem *node,
                                const QString &name,
@@ -32,7 +32,7 @@ NodeToolsGroup::NodeToolsGroup(Fact *parent,
     : Fact(parent, name.toLower(), title, descr, flags)
     , node(node)
 {}
-//=============================================================================
+
 Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, quint16 cmd)
 {
     name = name.toLower();
@@ -78,12 +78,8 @@ Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, qui
     //App::jsync(this);
     return f;
 }
-//=============================================================================
+
 void NodeToolsGroup::registerOnlineAction(Fact *fact)
 {
-    connect(node, &NodeItem::offlineChanged, fact, [fact, this]() {
-        fact->setEnabled(!node->offline());
-    });
-    fact->setEnabled(!node->offline());
+    fact->bindProperty(node->protocol(), "enabled");
 }
-//=============================================================================

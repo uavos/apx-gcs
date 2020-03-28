@@ -98,16 +98,16 @@ ApxApp.ApxLibrary {
         files: [
             "Nodes.cpp", "Nodes.h",
             "NodeItem.cpp", "NodeItem.h",
-            //"NodesBase.cpp", "NodesBase.h",
-            //"NodeItemBase.cpp", "NodeItemBase.h",
             "NodeField.cpp", "NodeField.h",
-            //"NodeItemData.cpp", "NodeItemData.h",
+            "NodeTools.cpp", "NodeTools.h",
+            "NodeToolsGroup.cpp", "NodeToolsGroup.h",
             //"NodesStorage.cpp", "NodesStorage.h",
-            //"NodeTools.cpp", "NodeTools.h",
-            //"NodeToolsGroup.cpp", "NodeToolsGroup.h",
             //"LookupNodeBackup.cpp", "LookupNodeBackup.h",
             //"LookupConfigs.cpp", "LookupConfigs.h",
             //"NodesShare.cpp", "NodesShare.h",
+            //"NodesBase.cpp", "NodesBase.h",
+            //"NodeItemBase.cpp", "NodeItemBase.h",
+            //"NodeItemData.cpp", "NodeItemData.h",
         ]
     }
 

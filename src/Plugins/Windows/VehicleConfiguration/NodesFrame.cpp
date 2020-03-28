@@ -131,7 +131,6 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     }
 
     //node tools
-    /* FIXME:
     for (auto node : nlist) {
         QString sect;
         for (int i = 0; i < node->tools->size(); ++i) {
@@ -144,7 +143,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
             }
             addNodeTools(&m, f, node->title());
         }
-    }*/
+    }
     if (nlist.size() > 1)
         updateMenuTitles(&m);
 

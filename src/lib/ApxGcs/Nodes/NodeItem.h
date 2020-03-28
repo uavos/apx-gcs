@@ -28,6 +28,8 @@
 #include <Protocols/ProtocolNode.h>
 #include <Protocols/ProtocolViewBase.h>
 
+#include <App/AppNotify.h>
+
 #include <QtCore>
 
 class Nodes;
@@ -39,14 +41,16 @@ class NodeItem : public ProtocolViewBase<ProtocolNode>
 public:
     explicit NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol);
 
-    //NodeTools *tools;
-
-    void execCommand(quint16 cmd, const QString &name, const QString &descr);
+    NodeTools *tools;
 
     //int loadConfigValues(QVariantMap values);
     //bool loadConfigValue(const QString &name, const QString &value);
 
     const QList<NodeField *> &fields() const;
+
+    Q_INVOKABLE void message(QString msg,
+                             AppNotify::NotifyFlags flags = AppNotify::FromVehicle
+                                                            | AppNotify::Important);
 
 protected:
     QTimer statusTimer;

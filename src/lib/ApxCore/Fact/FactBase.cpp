@@ -36,10 +36,12 @@ FactBase::~FactBase()
     //qDebug() << path() << parent();
     setParentFact(nullptr);
     for (auto i : m_actions) {
-        delete i;
+        i->removed();
+        i->deleteLater();
     }
     for (auto i : m_facts) {
-        delete i;
+        i->removed();
+        i->deleteLater();
     }
 }
 

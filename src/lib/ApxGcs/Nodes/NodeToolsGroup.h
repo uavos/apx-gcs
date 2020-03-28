@@ -20,12 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodeToolsGroup_H
-#define NodeToolsGroup_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
+
 class NodeItem;
-//=============================================================================
+
 class NodeToolsGroup : public Fact
 {
     Q_OBJECT
@@ -44,5 +44,3 @@ protected:
     NodeItem *node;
     void registerOnlineAction(Fact *fact);
 };
-//=============================================================================
-#endif

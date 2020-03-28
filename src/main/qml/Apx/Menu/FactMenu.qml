@@ -11,7 +11,7 @@ import APX.Facts 1.0
 import "."
 
 StackView {
-    id: factMenu
+    id: stackView
 
     property var fact
 
@@ -27,11 +27,11 @@ StackView {
     property int priority: 0
 
     Component.onCompleted: {
-        Menu.registerMenuView(factMenu)
+        Menu.registerMenuView(stackView)
         showFact(fact)
     }
     Component.onDestruction: {
-        Menu.unregisterMenuView(factMenu)
+        Menu.unregisterMenuView(stackView)
     }
 
     clip: true
@@ -66,6 +66,7 @@ StackView {
     }
     function mandalaFactReset()
     {
+        if(!mandalaFact) return
         mandalaFact.value=null;
         while(mandalaFact)back()
     }
@@ -76,7 +77,7 @@ StackView {
         var opts={}
         opts.fact=f
         var c=pageDelegate.createObject(this, opts)
-        fact=f
+        stackView.fact=f
         push(c)
         forceActiveFocus()
         factOpened(f)
@@ -90,23 +91,24 @@ StackView {
 
     function back()
     {
-        //console.log("back")
+        //console.log("back",depth)
         if(depth==1)stackEmpty()
         if(depth>1)pop();
-        fact=Qt.binding(function(){return currentItem.fact})
-    }
-    Connections {
-        target: factMenu.fact
-        onMenuBack: {
-            //console.log("menuBack")
-            back()
-        }
-        onRemoved: {
-            //console.log("removed")
-            factMenu.fact=null
-        }
+        stackView.fact=Qt.binding(function(){return currentItem.fact})
     }
 
+    onCurrentItemChanged: _validCheckTimer.restart()
+    Timer {
+        id: _validCheckTimer
+        interval: 1
+        onTriggered: {
+            for(var i=currentItem; i; i = stackView.get(i.StackView.index - 1)){
+                if(i.valid) continue
+                back()
+                break
+            }
+        }
+    }
 
     function openSystemTree()
     {

@@ -50,7 +50,7 @@ Popup {
     onClosed: {
         if(popup && popup.destroy)popup.destroy()
     }
-    onFactChanged: if(!fact)factMenu.back()
+    //onFactChanged: if(!fact)factMenu.back()
 
     x: posXY.x - width/2
     y: posXY.y

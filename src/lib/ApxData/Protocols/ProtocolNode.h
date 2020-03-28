@@ -108,6 +108,9 @@ signals:
     void loaderAvailable();
     void filesAvailable();
 
+    // firmware upgrade forwarded signals
+    void requestUpgrade(ProtocolNode *protocol, QString type);
+
 public slots:
     void requestReboot();
     void requestRebootLoader();
@@ -119,6 +122,8 @@ public slots:
 
     void requestUpdate(xbus::node::conf::fid_t fid, QVariant value);
     void requestUpdateSave();
+
+    void requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data);
 
     //---------------------------------------
     // PROPERTIES

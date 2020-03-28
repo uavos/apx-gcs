@@ -20,6 +20,8 @@ ColumnLayout {
     property string pageDescr: fact.descr
     property string pageStatus: fact.text
 
+    property bool valid: fact?true:false
+
     Component.onCompleted: {
         pageLoader.source=pageSource()
     }
@@ -28,14 +30,24 @@ ColumnLayout {
         if(menuPage)menuPage.destroy()
     }
 
-    onFactChanged: {
-        if(!fact){
-            fact=factC.createObject(this)
-        }
-    }
+    onValidChanged: if(!valid) back()
+
     Component {
         id: factC
         Fact {}
+    }
+    Connections {
+        enabled: valid
+        target: fact
+        onMenuBack: {
+            //console.log("menuBack")
+            valid=false
+        }
+        onRemoved: {
+            //console.log("removed",fact)
+            valid=false
+            fact=factC.createObject(this)
+        }
     }
 
 
@@ -43,7 +55,7 @@ ColumnLayout {
     clip: true
 
     Loader {
-        active: true
+        active: valid
         asynchronous: true
         source: "FactMenuPageTitle.qml"
         Layout.fillWidth: true
@@ -55,7 +67,7 @@ ColumnLayout {
     }
     Loader {
         id: pageLoader
-        active: true
+        active: valid
         asynchronous: true
         Layout.fillWidth: true
         Layout.fillHeight: true

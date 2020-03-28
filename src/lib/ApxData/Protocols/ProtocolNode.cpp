@@ -398,6 +398,14 @@ void ProtocolNode::requestUpdateSave()
     req->schedule();
 }
 
+void ProtocolNode::requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data)
+{
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::usr::uid);
+    *req << cmd;
+    req->append(data);
+    req->schedule();
+}
+
 void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
 {
     ProtocolStreamReader stream(data);

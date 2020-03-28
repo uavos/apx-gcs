@@ -42,7 +42,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
 
     unbindProperty("value"); //unbind from protocol
 
-    //FIXME: tools = new NodeTools(this, Action);
+    tools = new NodeTools(this, Action);
 
     //protocol
     connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
@@ -392,13 +392,16 @@ void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
         flags |= AppNotify::Error;
         break;
     }
+    message(msg, flags);
+}
+void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
+{
     QString s = title();
     if (!text().isEmpty()) {
         s.append(QString("/%1").arg(text()));
     }
     _nodes->vehicle->message(msg, flags, s);
 }
-
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {
     statusTimer.start();
