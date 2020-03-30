@@ -34,10 +34,11 @@ class NodeTools : public NodeToolsGroup
 public:
     explicit NodeTools(NodeItem *anode, FactBase::Flags flags = FactBase::Flags(Group));
 
-    Fact *addCommand(QString name, QString title, QString descr, quint16 cmd) override;
+    Fact *addCommand(Fact *group, QString name, QString title, xbus::node::usr::cmd_t cmd) override;
     void clearCommands();
 
     NodeToolsGroup *f_usr;
+    NodeToolsGroup *f_sys;
     NodeToolsGroup *f_status;
     NodeToolsGroup *f_maintenance;
 

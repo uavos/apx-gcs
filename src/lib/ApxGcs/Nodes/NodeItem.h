@@ -67,6 +67,7 @@ private:
     void groupArrays();
     void groupArrays(Fact *group);
     void updateArrayRowDescr(Fact *fRow);
+    void removeEmptyGroups(Fact *f);
 
 private slots:
 

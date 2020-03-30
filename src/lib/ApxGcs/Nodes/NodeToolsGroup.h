@@ -23,6 +23,7 @@
 #pragma once
 
 #include <Fact/Fact.h>
+#include <Xbus/XbusNode.h>
 
 class NodeItem;
 
@@ -38,7 +39,7 @@ public:
                             const QString &descr,
                             FactBase::Flags flags = FactBase::Flags(Group));
 
-    virtual Fact *addCommand(QString name, QString title, QString descr, quint16 cmd);
+    virtual Fact *addCommand(Fact *group, QString name, QString title, xbus::node::usr::cmd_t cmd);
 
 protected:
     NodeItem *node;

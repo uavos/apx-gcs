@@ -31,36 +31,39 @@ NodeToolsGroup::NodeToolsGroup(Fact *parent,
                                Flags flags)
     : Fact(parent, name.toLower(), title, descr, flags)
     , node(node)
-{}
+{
+    if (name == "bb")
+        setIcon("database");
+    if (name == "vm")
+        setIcon("code-braces");
+    registerOnlineAction(this);
+}
 
-Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, quint16 cmd)
+Fact *NodeToolsGroup::addCommand(Fact *group,
+                                 QString name,
+                                 QString title,
+                                 xbus::node::usr::cmd_t cmd)
 {
     name = name.toLower();
-    if (title.contains(':')) {
-        //recursive grouping
-        QString sgroup = title.left(title.indexOf(':')).trimmed();
-        title = title.remove(0, title.indexOf(':') + 1).trimmed();
-        NodeToolsGroup *fg = nullptr;
-        for (int i = 0; i < size(); ++i) {
-            NodeToolsGroup *g = qobject_cast<NodeToolsGroup *>(child(i));
-            if (!g)
-                continue;
-            if (g->title() == sgroup) {
-                fg = g;
-                break;
-            }
+    if (group != node) {
+        // create groups
+        FactList plist;
+        while (group != node) {
+            plist.insert(0, group);
+            group = group->parentFact();
         }
-        if (!fg) {
-            fg = new NodeToolsGroup(this, node, sgroup, sgroup, "");
-            if (name.startsWith("bb"))
-                fg->setIcon("database");
-            if (name.startsWith("vm"))
-                fg->setIcon("code-braces");
-            registerOnlineAction(fg);
+        group = this;
+        for (auto i : plist) {
+            NodeToolsGroup *g = qobject_cast<NodeToolsGroup *>(group->child(i->name()));
+            if (g)
+                group = g;
+            else
+                group = new NodeToolsGroup(group, node, i->name(), i->title(), i->descr());
         }
-        return fg->addCommand(name, title, descr, cmd);
-    }
-    Fact *f = new Fact(this, name, title, descr);
+    } else
+        group = this;
+
+    Fact *f = new Fact(group, name, title);
     if (name.contains("reboot") || name.contains("restart"))
         f->setIcon("reload");
     else if (name.contains("mute"))
@@ -69,7 +72,7 @@ Fact *NodeToolsGroup::addCommand(QString name, QString title, QString descr, qui
         f->setIcon("close-circle");
     else if (name.contains("conf"))
         f->setIcon("alert-octagram");
-    else if (name.startsWith("vm"))
+    else if (group->name() == "vm")
         f->setIcon("code-braces");
     else
         f->setIcon("asterisk");

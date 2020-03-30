@@ -137,7 +137,7 @@ void NodeItem::updateStatus()
 void NodeItem::clear()
 {
     m_status_field = nullptr;
-    //tools->clearCommands();
+    tools->clearCommands();
     m_fields.clear();
     removeAll();
     setModified(false);
@@ -313,6 +313,20 @@ void NodeItem::updateArrayRowDescr(Fact *fRow)
     fRow->setDescr(st.join(", "));
 }
 
+void NodeItem::removeEmptyGroups(Fact *f)
+{
+    if (qobject_cast<NodeField *>(f))
+        return;
+
+    for (auto i : f->facts()) {
+        removeEmptyGroups(i);
+    }
+    if (f != this && f->size() == 0) {
+        qDebug() << f;
+        f->remove();
+    }
+}
+
 //=============================================================================
 // Protocols connection
 //=============================================================================
@@ -335,6 +349,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     clear();
 
     QMap<int, Fact *> groups;
+    xbus::node::usr::cmd_t cmd_cnt = 0;
     Fact *g = this;
     NodeField *f;
     for (auto const &i : dict) {
@@ -345,6 +360,8 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
             groups.insert(groups.size() + 1, g);
             break;
         case xbus::node::conf::command:
+            g = i.group ? groups.value(i.group) : this;
+            tools->addCommand(g, i.name, i.title, cmd_cnt++);
             break;
         default: // data field
             g = i.group ? groups.value(i.group) : this;
@@ -359,6 +376,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
             }
         }
     }
+    removeEmptyGroups(this);
     groupArrays();
 }
 

@@ -76,10 +76,9 @@ QVariant FactListModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
         return QVariant();
-    QPointer<Fact> item = _items.at(index.row());
+    Fact *item = qobject_cast<Fact *>(_items.at(index.row()));
     //if(!item)qDebug()<<"INVALID"<<fact;
-    return item ? item->data(index.column(), role)
-                : QVariant(); //FactSystem::instance()->data(index.column(),role);
+    return item ? item->data(index.column(), role) : QVariant();
 }
 //=============================================================================
 bool FactListModel::setData(const QModelIndex &index, const QVariant &value, int role)

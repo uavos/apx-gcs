@@ -400,6 +400,7 @@ void ProtocolNode::requestUpdateSave()
 
 void ProtocolNode::requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data)
 {
+    nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::usr::uid);
     *req << cmd;
     req->append(data);

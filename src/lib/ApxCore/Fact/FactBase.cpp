@@ -34,14 +34,15 @@ FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
 FactBase::~FactBase()
 {
     //qDebug() << path() << parent();
+    //removed();
     setParentFact(nullptr);
     for (auto i : m_actions) {
-        i->removed();
-        i->deleteLater();
+        i->remove();
+        //i->deleteLater();
     }
     for (auto i : m_facts) {
-        i->removed();
-        i->deleteLater();
+        i->remove();
+        //i->deleteLater();
     }
 }
 

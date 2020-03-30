@@ -55,34 +55,13 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                tr("Node hardware commands"),
                                Section);
 
-    // status requests
-    f_status = new NodeToolsGroup(this,
-                                  node,
-                                  "status",
-                                  tr("Status"),
-                                  tr("Node status request"),
-                                  Section);
-    f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestStatus(xbus::node::status::errors);
-    });
-    f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestStatus(xbus::node::status::mem);
-    });
-    f = new Fact(f_status, "debug", tr("Debug"), tr("Request debug data"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestStatus(xbus::node::status::debug);
-    });
-
     // maintenance
     f_maintenance = new NodeToolsGroup(this,
                                        node,
                                        "maintenance",
                                        tr("Maintenance"),
                                        tr("Hardware maintenance"),
-                                       Group);
-    f_maintenance->setSection(tr("System"));
+                                       Group | FlatModel);
     f_maintenance->setIcon("wrench");
 
     f_updates = new Fact(f_maintenance, "updates", tr("Updates"), tr("Firmware updates"), Group);
@@ -104,20 +83,59 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
         connect(f, &Fact::triggered, node, &NodeItem::upgradeRadio);
     }*/
 
+    registerOnlineAction(f_updates);
+
+    // status requests
+    f_status = new NodeToolsGroup(f_maintenance,
+                                  node,
+                                  "status",
+                                  tr("Status"),
+                                  tr("Node status request"),
+                                  Group);
+    f_status->setIcon("playlist-check");
+    f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
+    connect(f, &Fact::triggered, this, [this]() {
+        node->protocol()->requestStatus(xbus::node::status::errors);
+    });
+    f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));
+    connect(f, &Fact::triggered, this, [this]() {
+        node->protocol()->requestStatus(xbus::node::status::mem);
+    });
+    f = new Fact(f_status, "debug", tr("Debug"), tr("Request debug data"));
+    connect(f, &Fact::triggered, this, [this]() {
+        node->protocol()->requestStatus(xbus::node::status::debug);
+    });
+    registerOnlineAction(f_status);
+
+    f_sys = new NodeToolsGroup(f_maintenance,
+                               node,
+                               "sys",
+                               tr("System"),
+                               tr("System commands"),
+                               Section);
+
+    f_maintenance->setSection(f_sys->title());
+
+    // reboot
     f = new Fact(f_maintenance, "reboot", tr("Reboot node"), tr("Node system reset"));
     f->setIcon("reload");
+    f->setSection(f_sys->title());
     connect(f, &Fact::triggered, this, [this, f]() {
         node->message(f->title().append(": ").append(node->title()));
         node->protocol()->requestReboot();
     });
-
-    registerOnlineAction(f_updates);
 }
 
-Fact *NodeTools::addCommand(QString name, QString title, QString descr, quint16 cmd)
+Fact *NodeTools::addCommand(Fact *group, QString name, QString title, xbus::node::usr::cmd_t cmd)
 {
     //qDebug()<<node->title()<<name<<descr<<sys;
-    Fact *f = f_usr->addCommand(name, title, descr, cmd);
+
+    NodeToolsGroup *g = f_usr;
+    if (group->name() == f_sys->name()) {
+        g = f_sys;
+        group = node;
+    }
+    Fact *f = g->addCommand(group, name, title, cmd);
     if (!f)
         return f;
 
@@ -129,6 +147,7 @@ Fact *NodeTools::addCommand(QString name, QString title, QString descr, quint16 
 void NodeTools::clearCommands()
 {
     f_usr->removeAll();
+    f_sys->removeAll();
 }
 
 void NodeTools::execUsr(Fact *f)
