@@ -36,7 +36,7 @@ class MandalaFact : public Fact, public MandalaFactStream
     Q_OBJECT
 
 public:
-    explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &meta);
+    explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);
 
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
@@ -47,8 +47,8 @@ public:
     // set values array and send uplink batch update (f.ex. vecors)
     bool setValues(const QVariantList &vlist);
 
-    // pack value as mandala::type_t raw binary arary
-    QByteArray pack() const;
+    // raw value size
+    size_t psize() const;
 
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
@@ -63,8 +63,9 @@ public:
 
 private:
     Mandala *m_tree;
-    const mandala::meta_t &m_meta;
+    const mandala::meta_s &m_meta;
     QString m_alias;
+    size_t m_psize{0};
 
     uint8_t txbuf[32];
     ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
@@ -74,8 +75,6 @@ private:
 
     int getPrecision();
     QColor getColor();
-
-    void sendPacket(const QByteArray data);
 
 protected:
     //Fact override

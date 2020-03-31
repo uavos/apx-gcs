@@ -148,11 +148,12 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
-    trace_downlink(pid);
+    //trace_downlink(pid);
 
     switch (pid.uid) {
     default:
         updateStreamType(DATA);
+        trace_downlink(stream.payload());
         emit receivedData(pid, &stream);
         return;
     case mandala::cmd::env::telemetry::data::uid:

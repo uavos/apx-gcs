@@ -67,7 +67,7 @@ bool ProtocolNodeRequest::equals(const ProtocolNodeRequest *other)
         return false;
     if (other->_pid.uid != _pid.uid)
         return false;
-    if (other->_pid.sub != _pid.sub)
+    if (other->_pid.pri != _pid.pri)
         return false;
     if (other->pos() != pos())
         return false;

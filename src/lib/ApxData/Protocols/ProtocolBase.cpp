@@ -55,27 +55,24 @@ void ProtocolBase::trace(bool uplink, const xbus::pid_s &pid)
         ProtocolTrace::trace(uplink, ProtocolTraceItem::PID, s);
     }
     QString s;
-    switch (pid.sub) {
-    case xbus::sub_primary:
+    switch (pid.pri) {
+    case xbus::pri_primary:
         s = "pri ";
         break;
-    case xbus::sub_secondary:
+    case xbus::pri_secondary:
         s = "sec ";
         break;
-    case xbus::sub_failsafe:
+    case xbus::pri_failsafe:
         s = "fsf ";
         break;
-    case xbus::sub_ext:
-        s = "ext ";
-        break;
-    case xbus::sub_response:
+    case xbus::pri_response:
         s = "R";
         break;
-    case xbus::sub_request:
+    case xbus::pri_request:
         s = "Q";
         break;
     default:
-        s = QString::number(static_cast<int>(pid.sub));
+        s = QString::number(static_cast<int>(pid.pri));
     }
     s = QString("%1%2").arg(s).arg(QString::number(static_cast<int>(pid.seq)));
     ProtocolTrace::trace(uplink, ProtocolTraceItem::DATA, s);

@@ -42,10 +42,10 @@ public:
 class MandalaFactStream : public MandalaFactStreamBase
 {
 public:
-    explicit MandalaFactStream(const mandala::type_id_t &type_id);
+    explicit MandalaFactStream(const mandala::type_id_e &type_id);
     virtual ~MandalaFactStream() override;
 
-    MandalaFactStreamBase *get_stream(const mandala::type_id_t &type_id);
+    MandalaFactStreamBase *get_stream(const mandala::type_id_e &type_id);
 
     MandalaFactStream &operator<<(XbusStreamReader &stream) override;
     const MandalaFactStream &operator>>(XbusStreamWriter &stream) const override;

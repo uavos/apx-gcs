@@ -102,6 +102,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         connect(f_mandala, &Mandala::sendUplink, protocol, &ProtocolVehicle::send);
 
         connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
+        connect(protocol, &ProtocolVehicle::receivedData, f_mandala, &Mandala::receivedData);
 
         //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 

@@ -218,7 +218,7 @@ void ProtocolNodes::syncTimeout()
 ProtocolNodeRequest *ProtocolNodes::request(mandala::uid_t uid, const QString &sn, size_t retry_cnt)
 {
     _req_pid.uid = uid;
-    _req_pid.sub = xbus::sub_request;
+    _req_pid.pri = xbus::pri_request;
     ProtocolNodeRequest *req = new ProtocolNodeRequest(this, sn, _req_pid, retry_cnt);
     _req_pid.seq++;
     connect(req, &QObject::destroyed, this, [this, req]() {
@@ -296,7 +296,7 @@ void ProtocolNodes::downlink(const xbus::pid_s &pid, ProtocolStreamReader &strea
     if (!enabled())
         return;
 
-    while (pid.sub != xbus::sub_response) {
+    while (pid.pri != xbus::pri_response) {
         if (pid.uid == mandala::cmd::env::nmt::msg::uid)
             break;
         if (pid.uid == mandala::cmd::env::nmt::search::uid)

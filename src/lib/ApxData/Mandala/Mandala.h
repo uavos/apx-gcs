@@ -41,7 +41,7 @@ public:
 
     quint64 timestamp() const;
 
-    static const mandala::meta_t &meta(mandala::uid_t uid);
+    static const mandala::meta_s &meta(mandala::uid_t uid);
 
 protected:
     // Fact override
@@ -50,6 +50,9 @@ protected:
 
 private:
     quint64 m_timestamp;
+
+public slots:
+    void receivedData(xbus::pid_s pid, ProtocolStreamReader *stream);
 
 signals:
     void sendUplink(QByteArray data); //forwarded to vehicle

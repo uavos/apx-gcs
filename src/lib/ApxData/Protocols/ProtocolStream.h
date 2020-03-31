@@ -40,6 +40,7 @@ public:
     {}
 
     inline QString dump() { return toByteArray().toHex().toUpper(); }
+    inline QString dump_payload() { return payload().toHex().toUpper(); }
 
     inline QByteArray toByteArray(size_t spos, size_t sz) const
     {
@@ -95,11 +96,11 @@ public:
         return XbusStreamWriter::write(ba.data(), static_cast<size_t>(ba.size()));
     }
 
-    inline void req(mandala::uid_t uid, xbus::sub_e sub = xbus::sub_request)
+    inline void req(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request)
     {
         reset();
         _req_pid.uid = uid;
-        _req_pid.sub = sub;
+        _req_pid.pri = pri;
         _req_pid.write(this);
         _req_pid.seq++;
     }

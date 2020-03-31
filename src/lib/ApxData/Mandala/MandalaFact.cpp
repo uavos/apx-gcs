@@ -26,7 +26,7 @@
 #include <Mandala/MandalaMeta.h>
 #include <QColor>
 
-MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &meta)
+MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)
     : Fact(parent, meta.name, meta.title, "", meta.group ? Group | FilterModel : ModifiedTrack)
     , MandalaFactStream(meta.type_id)
     , m_tree(tree)
@@ -52,28 +52,34 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_t &met
         setUnits(meta.units);
         switch (meta.type_id) {
         case mandala::type_void:
+        case mandala::type_vec3:
             apxMsgW() << "void:" << mpath();
             break;
         case mandala::type_real:
+            m_psize = sizeof(mandala::real_t);
             setDataType(Float);
             setPrecision(getPrecision());
             break;
         case mandala::type_dword:
+            m_psize = sizeof(mandala::dword_t);
             setDataType(Int);
             setMin(0);
             setMax(QVariant::fromValue(0xFFFFFFFFll));
             break;
         case mandala::type_word:
+            m_psize = sizeof(mandala::word_t);
             setDataType(Int);
             setMin(0);
             setMax(QVariant::fromValue(0xFFFFu));
             break;
         case mandala::type_byte:
+            m_psize = sizeof(mandala::byte_t);
             setDataType(Int);
             setMin(0);
             setMax(255);
             break;
         case mandala::type_option: {
+            m_psize = sizeof(mandala::option_t);
             setDataType(Enum);
             QStringList st = units().split(',');
             setUnits(QString());
@@ -114,6 +120,10 @@ QString MandalaFact::alias() const
 {
     return m_alias;
 }
+size_t MandalaFact::psize() const
+{
+    return m_psize;
+}
 
 bool MandalaFact::setValue(const QVariant &v)
 {
@@ -140,20 +150,12 @@ bool MandalaFact::setValueLocal(const QVariant &v)
 
 void MandalaFact::setValueFromStream(const QVariant &v)
 {
-    qDebug() << v;
+    //qDebug() << v;
     setValueLocal(v);
 }
 QVariant MandalaFact::getValueForStream() const
 {
     return value();
-}
-
-QByteArray MandalaFact::pack() const
-{
-    uint8_t buf[32];
-    ProtocolStreamWriter stream(buf, sizeof(buf));
-    *this >> stream;
-    return stream.toByteArray();
 }
 
 bool MandalaFact::setValues(const QVariantList &vlist)
@@ -168,18 +170,11 @@ bool MandalaFact::setValues(const QVariantList &vlist)
             return false;
         if (f->setValueLocal(v))
             rv = true;
-        data.append(f->pack());
+        //data.append(f->pack());
         f = m_tree->fact(f->uid() + 1);
     }
-    sendPacket(data);
+    //sendPacket(data);
     return rv;
-}
-
-void MandalaFact::sendPacket(const QByteArray data)
-{
-    ostream.req(uid());
-    sendTime.start();
-    emit sendUplink(ostream.toByteArray().append(data));
 }
 
 mandala::uid_t MandalaFact::uid() const
@@ -192,11 +187,17 @@ mandala::uid_t MandalaFact::offset() const
 }
 void MandalaFact::request()
 {
-    sendPacket(QByteArray());
+    //sendPacket(QByteArray());
 }
 void MandalaFact::send()
 {
-    sendPacket(pack());
+    ostream.req(uid(), xbus::pri_gcs);
+    mandala::dspec_s dspec;
+    dspec.type = m_meta.type_id;
+    dspec.write(&ostream);
+    *this >> ostream;
+    sendTime.start();
+    emit sendUplink(ostream.toByteArray());
 }
 
 QVariant MandalaFact::data(int col, int role) const

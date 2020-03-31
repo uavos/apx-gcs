@@ -119,7 +119,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         break;
 
     case mandala::cmd::env::vehicle::xpdr::uid: { //transponder from UAV received
-        if (pid.sub == xbus::sub_request)
+        if (pid.pri == xbus::pri_request)
             return;
 
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
@@ -145,7 +145,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
     } break;
 
     case mandala::cmd::env::vehicle::ident::uid: {
-        if (pid.sub == xbus::sub_request)
+        if (pid.pri == xbus::pri_request)
             return;
 
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
@@ -206,7 +206,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         }
     } break;
     case mandala::cmd::env::vehicle::downlink::uid: {
-        if (pid.sub == xbus::sub_request)
+        if (pid.pri == xbus::pri_request)
             return;
 
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();

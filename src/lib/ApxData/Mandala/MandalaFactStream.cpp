@@ -47,7 +47,7 @@ private:
     MandalaFactStreamBase *m_base;
 };
 
-MandalaFactStream::MandalaFactStream(const mandala::type_id_t &type_id)
+MandalaFactStream::MandalaFactStream(const mandala::type_id_e &type_id)
     : m_stream(get_stream(type_id))
 {}
 MandalaFactStream::~MandalaFactStream()
@@ -56,10 +56,11 @@ MandalaFactStream::~MandalaFactStream()
         delete m_stream;
 }
 
-MandalaFactStreamBase *MandalaFactStream::get_stream(const mandala::type_id_t &type_id)
+MandalaFactStreamBase *MandalaFactStream::get_stream(const mandala::type_id_e &type_id)
 {
     switch (type_id) {
     case mandala::type_void:
+    case mandala::type_vec3:
         return nullptr;
     case mandala::type_real:
         return new MandalaFactStreamT<mandala::real_t>(this);

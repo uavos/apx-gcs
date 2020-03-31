@@ -101,7 +101,7 @@ Mandala::Mandala(Fact *parent)
     uint8_t level = 0;
     QString sect;
     for (size_t i = 0; i < (sizeof(mandala::meta) / sizeof(*mandala::meta)); ++i) {
-        const mandala::meta_t &d = mandala::meta[i];
+        const mandala::meta_s &d = mandala::meta[i];
         if (d.group) {
             //move group to upper level
             for (; level > d.level; --level)
@@ -204,7 +204,7 @@ quint16 Mandala::stringToMandala(const QString &s) const
     return f ? f->uid() : 0xFFFF;
 }
 
-const mandala::meta_t &Mandala::meta(mandala::uid_t uid)
+const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
 {
     for (auto const &d : mandala::meta) {
         if (d.group)
@@ -213,4 +213,53 @@ const mandala::meta_t &Mandala::meta(mandala::uid_t uid)
             return d;
     }
     return mandala::cmd::env::nmt::meta;
+}
+
+void Mandala::receivedData(xbus::pid_s pid, ProtocolStreamReader *stream)
+{
+    if (stream->available() <= mandala::dspec_s::psize())
+        return;
+
+    MandalaFact *f = fact(pid.uid);
+    if (!f)
+        return;
+
+    mandala::dspec_s dspec;
+    dspec.read(stream);
+
+    if (dspec.sub > 0) {
+        qWarning() << "sub:" << dspec.sub << f->mpath();
+    }
+
+    switch (dspec.type) {
+    default:
+        if (f->psize() != stream->available())
+            break;
+        *f << *stream;
+        return;
+    case mandala::type_vec3: {
+        MandalaFact *v[3];
+        v[0] = f;
+        f = fact(pid.uid + 1);
+        if (!f)
+            break;
+        v[1] = f;
+        f = fact(pid.uid + 2);
+        if (!f)
+            break;
+        v[2] = f;
+        size_t sz = 0;
+        for (auto i : v)
+            sz += i->psize();
+        if (sz != stream->available())
+            break;
+        for (auto i : v)
+            *i << *stream;
+        return;
+    }
+    }
+    // error
+    qDebug() << "error: " << Mandala::meta(pid.uid).name << f->psize() << stream->available()
+             << stream->dump_payload();
+    //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
 }
