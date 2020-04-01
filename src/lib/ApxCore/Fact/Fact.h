@@ -126,7 +126,7 @@ public:
     //Mandala support
     Fact *mandala() const;
     void setMandala(Fact *v);
-    virtual QString mandalaToString(quint16 uid) const override;
+    virtual QString mandalaToString(quint16 pid_raw) const override;
     virtual quint16 stringToMandala(const QString &s) const override;
 
 private:

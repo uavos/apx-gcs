@@ -38,7 +38,7 @@ NodeField::NodeField(Fact *parent,
     , _node(node)
     , _parentField(parentField)
     , m_fid(fid)
-    , _type(static_cast<xbus::node::conf::type_e>(field.type))
+    , _type(field.type)
 {
     if (field.array && !parentField) {
         QStringList st = field.units.split(',');
@@ -89,7 +89,7 @@ NodeField::NodeField(Fact *parent,
         setMin(0);
         setDataType(Int);
         break;
-    case xbus::node::conf::mandala:
+    case xbus::node::conf::bind:
         setDataType(MandalaID);
         break;
     case xbus::node::conf::option:

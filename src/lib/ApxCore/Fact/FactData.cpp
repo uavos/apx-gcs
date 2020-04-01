@@ -215,22 +215,21 @@ bool FactData::updateValue(const QVariant &v)
         m_value = QVariant::fromValue(vf);
     } break;
     case MandalaID: {
+        quint32 bind_raw;
         if (v.isNull()) {
-            if (v_prev.isNull())
-                return false;
-            m_value = v;
-            break;
+            bind_raw = 0;
+        } else if (_check_int(v)) {
+            bind_raw = v.toUInt();
+            if (mandalaToString(bind_raw).isEmpty()) {
+                bind_raw = 0;
+            }
+        } else {
+            bind_raw = stringToMandala(v.toString().trimmed());
         }
-        quint16 vuid = stringToMandala(v.toString().trimmed());
-        if (vuid == 0xFFFF) {
-            if (v_prev.isNull())
-                return false;
-            m_value = QVariant();
-            break;
-        }
-        if (v_prev.toUInt() == vuid)
+        const QVariant &vx = bind_raw ? QVariant::fromValue(bind_raw) : QVariant();
+        if (v_prev == vx)
             return false;
-        m_value = QVariant::fromValue(vuid);
+        m_value = vx;
     } break;
     case Script: {
         const QString &s = v.toString();
@@ -346,9 +345,7 @@ QString FactData::toText(const QVariant &v) const
         return QVariant(v.toBool()).toString();
     }
     if (t == MandalaID) {
-        if (v.isNull())
-            return QString();
-        return mandalaToString(static_cast<quint16>(v.toUInt()));
+        return mandalaToString(static_cast<quint32>(v.toUInt()));
     }
     if (t == Float) {
         if (units() == "lat") {
@@ -567,9 +564,9 @@ void FactData::setDefaultValue(const QVariant &v)
     emit defaultValueChanged();
 }
 //=============================================================================
-QString FactData::mandalaToString(quint16 uid) const
+QString FactData::mandalaToString(quint16 pid_raw) const
 {
-    Q_UNUSED(uid)
+    Q_UNUSED(pid_raw)
     return QString();
 }
 quint16 FactData::stringToMandala(const QString &s) const

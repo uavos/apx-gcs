@@ -554,10 +554,10 @@ void Fact::setMandala(Fact *v)
 {
     m_mandala = v;
 }
-QString Fact::mandalaToString(quint16 uid) const
+QString Fact::mandalaToString(quint16 pid_raw) const
 {
     Fact *m = mandala();
-    return m ? m->mandalaToString(uid) : QString();
+    return m ? m->mandalaToString(pid_raw) : QString();
 }
 quint16 Fact::stringToMandala(const QString &s) const
 {

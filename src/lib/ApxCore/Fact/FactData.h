@@ -72,7 +72,7 @@ public:
     // default impl searches for parent facts and
     // returns the first nonzero data found
 public:
-    virtual QString mandalaToString(quint16 uid) const;
+    virtual QString mandalaToString(quint16 pid_raw) const;
     virtual quint16 stringToMandala(const QString &s) const;
 
 public slots:

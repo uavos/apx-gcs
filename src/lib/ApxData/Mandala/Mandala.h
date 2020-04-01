@@ -45,8 +45,8 @@ public:
 
 protected:
     // Fact override
-    virtual QString mandalaToString(quint16 uid) const override;
-    virtual quint16 stringToMandala(const QString &s) const override;
+    virtual QString mandalaToString(xbus::pid_raw_t pid_raw) const override;
+    virtual xbus::pid_raw_t stringToMandala(const QString &s) const override;
 
 private:
     quint64 m_timestamp;

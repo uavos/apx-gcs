@@ -192,9 +192,9 @@ void MandalaFact::request()
 void MandalaFact::send()
 {
     ostream.req(uid(), xbus::pri_gcs);
-    mandala::dspec_s dspec;
-    dspec.type = m_meta.type_id;
-    dspec.write(&ostream);
+    mandala::spec_s spec;
+    spec.type = m_meta.type_id;
+    spec.write(&ostream);
     *this >> ostream;
     sendTime.start();
     emit sendUplink(ostream.toByteArray());

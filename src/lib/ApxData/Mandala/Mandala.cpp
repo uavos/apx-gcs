@@ -24,6 +24,7 @@
 #include "MandalaFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
+#include <Mandala/MandalaMetaBase.h>
 #include <Mandala/backport/MandalaBackport.h>
 
 Mandala::Mandala(Fact *parent)
@@ -181,27 +182,23 @@ MandalaFact *Mandala::fact(const QString &mpath) const
     return f;
 }
 
-QString Mandala::mandalaToString(quint16 uid) const
+QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
 {
-    MandalaFact *f = uid_map.value(uid);
+    xbus::pid_s pid(pid_raw);
+    if (!pid.seq)
+        return QString();
+    MandalaFact *f = uid_map.value(pid.uid);
     return f ? f->mpath() : QString();
 }
-quint16 Mandala::stringToMandala(const QString &s) const
+xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
 {
     if (s.isEmpty())
-        return 0xFFFF;
-    //try int
-    bool ok = false;
-    uint i = s.toUInt(&ok);
-    if (ok && i < 0xFFFF) {
-        quint16 uid = static_cast<quint16>(i);
-        MandalaFact *f = fact(uid);
-        if (f)
-            return f->uid();
-    }
-    //try text
+        return 0;
     MandalaFact *f = fact(s);
-    return f ? f->uid() : 0xFFFF;
+    if (!f)
+        return 0;
+    xbus::pid_s pid(f->uid(), xbus::pri_none, 1);
+    return pid._raw;
 }
 
 const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
@@ -217,21 +214,21 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
 
 void Mandala::receivedData(xbus::pid_s pid, ProtocolStreamReader *stream)
 {
-    if (stream->available() <= mandala::dspec_s::psize())
+    if (stream->available() <= mandala::spec_s::psize())
         return;
 
     MandalaFact *f = fact(pid.uid);
     if (!f)
         return;
 
-    mandala::dspec_s dspec;
-    dspec.read(stream);
+    mandala::spec_s spec;
+    spec.read(stream);
 
-    if (dspec.sub > 0) {
-        qWarning() << "sub:" << dspec.sub << f->mpath();
+    if (pid.pri > 0) {
+        qWarning() << "pri:" << pid.pri << f->mpath();
     }
 
-    switch (dspec.type) {
+    switch (spec.type) {
     default:
         if (f->psize() != stream->available())
             break;
