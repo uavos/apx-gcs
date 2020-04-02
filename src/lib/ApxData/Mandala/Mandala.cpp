@@ -197,7 +197,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
     MandalaFact *f = fact(s);
     if (!f)
         return 0;
-    xbus::pid_s pid(f->uid(), xbus::pri_none, 1);
+    xbus::pid_s pid(f->uid(), xbus::pri_none);
     return pid._raw;
 }
 
@@ -214,49 +214,18 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
 
 void Mandala::receivedData(xbus::pid_s pid, ProtocolStreamReader *stream)
 {
-    if (stream->available() <= mandala::spec_s::psize())
+    if (pid.uid >= mandala::cmd::env::uid)
         return;
 
     MandalaFact *f = fact(pid.uid);
     if (!f)
         return;
 
+    if (stream->available() <= mandala::spec_s::psize())
+        return;
+
     mandala::spec_s spec;
     spec.read(stream);
 
-    if (pid.pri > 0) {
-        qWarning() << "pri:" << pid.pri << f->mpath();
-    }
-
-    switch (spec.type) {
-    default:
-        if (f->psize() != stream->available())
-            break;
-        *f << *stream;
-        return;
-    case mandala::type_vec3: {
-        MandalaFact *v[3];
-        v[0] = f;
-        f = fact(pid.uid + 1);
-        if (!f)
-            break;
-        v[1] = f;
-        f = fact(pid.uid + 2);
-        if (!f)
-            break;
-        v[2] = f;
-        size_t sz = 0;
-        for (auto i : v)
-            sz += i->psize();
-        if (sz != stream->available())
-            break;
-        for (auto i : v)
-            *i << *stream;
-        return;
-    }
-    }
-    // error
-    qDebug() << "error: " << Mandala::meta(pid.uid).name << f->psize() << stream->available()
-             << stream->dump_payload();
-    //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
+    f->unpack(pid, spec, *stream);
 }

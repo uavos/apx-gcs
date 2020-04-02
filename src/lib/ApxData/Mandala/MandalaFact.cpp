@@ -27,7 +27,11 @@
 #include <QColor>
 
 MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)
-    : Fact(parent, meta.name, meta.title, "", meta.group ? Group | FilterModel : ModifiedTrack)
+    : Fact(parent,
+           meta.name,
+           meta.title,
+           "",
+           meta.group ? Group | FilterModel | ModifiedGroup : ModifiedTrack)
     , MandalaFactStream(meta.type_id)
     , m_tree(tree)
     , m_meta(meta)
@@ -51,8 +55,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
     } else {
         setUnits(meta.units);
         switch (meta.type_id) {
-        case mandala::type_void:
-        case mandala::type_vec3:
+        default:
             apxMsgW() << "void:" << mpath();
             break;
         case mandala::type_real:
@@ -162,18 +165,31 @@ bool MandalaFact::setValues(const QVariantList &vlist)
 {
     if (!dataType())
         return false;
-    MandalaFact *f = this;
+
+    ostream.req(uid(), xbus::pri_none);
+    mandala::spec_s spec;
+    if (vlist.size() == 2)
+        spec.type = mandala::type_vec2;
+    else if (vlist.size() == 3)
+        spec.type = mandala::type_vec3;
+    else {
+        qWarning() << "size:" << vlist.size();
+        return false;
+    }
+
+    spec.write(&ostream);
+
     bool rv = false;
-    QByteArray data;
+    mandala::uid_t id = uid();
     for (auto const &v : vlist) {
+        MandalaFact *f = m_tree->fact(id++);
         if (!f)
             return false;
         if (f->setValueLocal(v))
             rv = true;
-        //data.append(f->pack());
-        f = m_tree->fact(f->uid() + 1);
+        *f >> ostream;
     }
-    //sendPacket(data);
+    emit sendUplink(ostream.toByteArray());
     return rv;
 }
 
@@ -191,13 +207,70 @@ void MandalaFact::request()
 }
 void MandalaFact::send()
 {
-    ostream.req(uid(), xbus::pri_gcs);
+    ostream.req(uid(), xbus::pri_none);
     mandala::spec_s spec;
     spec.type = m_meta.type_id;
     spec.write(&ostream);
     *this >> ostream;
     sendTime.start();
     emit sendUplink(ostream.toByteArray());
+}
+void MandalaFact::unpack(const xbus::pid_s &pid,
+                         const mandala::spec_s &spec,
+                         ProtocolStreamReader &stream)
+{
+    if (pid.pri > 0) {
+        qWarning() << "pri:" << pid.pri << mpath();
+    }
+
+    //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
+    switch (spec.type) {
+    default:
+        break;
+    case mandala::type_real:
+        if (!unpack<mandala::real_t>(stream))
+            break;
+        return;
+    case mandala::type_dword:
+        if (!unpack<mandala::dword_t>(stream))
+            break;
+        return;
+    case mandala::type_word:
+        if (!unpack<mandala::word_t>(stream))
+            break;
+        return;
+    case mandala::type_byte:
+        if (!unpack<mandala::byte_t>(stream))
+            break;
+        return;
+    case mandala::type_option:
+        if (!unpack<mandala::option_t>(stream))
+            break;
+        return;
+
+    case mandala::type_vec3: {
+        MandalaFact *v[3];
+        v[0] = this;
+        MandalaFact *f = m_tree->fact(pid.uid + 1);
+        if (!f)
+            break;
+        v[1] = f;
+        f = m_tree->fact(pid.uid + 2);
+        if (!f)
+            break;
+        v[2] = f;
+        size_t sz = 0;
+        for (auto i : v)
+            sz += i->psize();
+        if (sz != stream.available())
+            break;
+        for (auto i : v)
+            *i << stream;
+        return;
+    }
+    }
+    // error
+    qDebug() << "error: " << mpath() << psize() << stream.available() << stream.dump_payload();
 }
 
 QVariant MandalaFact::data(int col, int role) const

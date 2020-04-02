@@ -61,6 +61,16 @@ public:
     Q_INVOKABLE QString alias() const;
     Q_INVOKABLE mandala::uid_t offset() const;
 
+    void unpack(const xbus::pid_s &pid, const mandala::spec_s &spec, ProtocolStreamReader &stream);
+    template<typename _T>
+    bool unpack(ProtocolStreamReader &stream)
+    {
+        if (stream.available() != sizeof(_T))
+            return false;
+        setValueLocal(QVariant::fromValue(stream.read<_T>()));
+        return true;
+    }
+
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;

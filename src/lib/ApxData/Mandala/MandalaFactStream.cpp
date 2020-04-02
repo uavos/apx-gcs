@@ -59,8 +59,7 @@ MandalaFactStream::~MandalaFactStream()
 MandalaFactStreamBase *MandalaFactStream::get_stream(const mandala::type_id_e &type_id)
 {
     switch (type_id) {
-    case mandala::type_void:
-    case mandala::type_vec3:
+    default:
         return nullptr;
     case mandala::type_real:
         return new MandalaFactStreamT<mandala::real_t>(this);
