@@ -453,7 +453,7 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
                 field.title = st.at(1);
                 break;
             default:
-                st = stream.read_strings(3);
+                st = stream.read_strings(3, stream.available());
                 if (st.isEmpty() || st.at(0).isEmpty())
                     break;
                 //qDebug() << "field" << field.type << field.array << field.group << st;
@@ -482,6 +482,9 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
                 break;
 
             m_dict.append(field);
+
+            qDebug() << field.name << field.type << field.array << field.group << st
+                     << stream.available();
 
             if (stream.available() == 0) {
                 err = false;
