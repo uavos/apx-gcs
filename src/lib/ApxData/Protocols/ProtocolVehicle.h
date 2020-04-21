@@ -24,6 +24,7 @@
 
 #include "ProtocolBase.h"
 #include "ProtocolNodes.h"
+#include "ProtocolTelemetry.h"
 #include "ProtocolVehicles.h"
 
 #include <QtCore>
@@ -70,6 +71,7 @@ public:
     bool match(const xbus::vehicle::ident_s &ident) const;
 
     ProtocolNodes *nodes;
+    ProtocolTelemetry *telemetry;
 
 private:
     ProtocolVehicles *vehicles;

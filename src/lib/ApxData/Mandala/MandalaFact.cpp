@@ -54,35 +54,31 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         }*/
     } else {
         setUnits(meta.units);
+        m_psize = mandala::type_size(meta.type_id);
         switch (meta.type_id) {
         default:
             apxMsgW() << "void:" << mpath();
             break;
         case mandala::type_real:
-            m_psize = sizeof(mandala::real_t);
             setDataType(Float);
             setPrecision(getPrecision());
             break;
         case mandala::type_dword:
-            m_psize = sizeof(mandala::dword_t);
             setDataType(Int);
             setMin(0);
             setMax(QVariant::fromValue(0xFFFFFFFFll));
             break;
         case mandala::type_word:
-            m_psize = sizeof(mandala::word_t);
             setDataType(Int);
             setMin(0);
             setMax(QVariant::fromValue(0xFFFFu));
             break;
         case mandala::type_byte:
-            m_psize = sizeof(mandala::byte_t);
             setDataType(Int);
             setMin(0);
             setMax(255);
             break;
         case mandala::type_option: {
-            m_psize = sizeof(mandala::option_t);
             setDataType(Enum);
             QStringList st = units().split(',');
             setUnits(QString());
@@ -154,11 +150,28 @@ bool MandalaFact::setValueLocal(const QVariant &v)
 void MandalaFact::setValueFromStream(const QVariant &v)
 {
     //qDebug() << v;
-    setValueLocal(v);
+    double k = 1.;
+    do {
+        if (units().startsWith("deg")) {
+            k = qRadiansToDegrees(1.);
+            break;
+        }
+        setValueLocal(v);
+        return;
+    } while (0);
+    setValueLocal(QVariant::fromValue(v.toDouble() * k));
 }
 QVariant MandalaFact::getValueForStream() const
 {
-    return value();
+    double k = 1.;
+    do {
+        if (units().startsWith("deg")) {
+            k = qDegreesToRadians(1.);
+            break;
+        }
+        return value();
+    } while (0);
+    return k * value().toDouble();
 }
 
 bool MandalaFact::setValues(const QVariantList &vlist)

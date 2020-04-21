@@ -37,6 +37,7 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     setIcon(squawk ? "drone" : "chip");
 
     nodes = new ProtocolNodes(this);
+    telemetry = new ProtocolTelemetry(this);
 
     updateIdent(squawk, ident, callsign);
 
@@ -158,6 +159,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     case mandala::cmd::env::telemetry::data::uid:
         updateStreamType(TELEMETRY);
+        telemetry->downlink(pid, stream);
         emit telemetryData(&stream);
         return;
     case mandala::cmd::env::vcp::rx::uid:

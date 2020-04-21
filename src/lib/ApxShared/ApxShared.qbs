@@ -7,11 +7,12 @@ ApxApp.ApxLibrary {
 
     property stringList names: {
         var list = [
-            "Xbus",
-            "Xbus.uart",
-            "Xbus.tcp",
-            "crc",
-            "common",
+                    "Xbus",
+                    "Xbus.uart",
+                    "Xbus.tcp",
+                    "Xbus.telemetry",
+                    "crc",
+                    "common",
         ]
         if(!qbs.buildVariant.contains("release")){
             list.push("Mandala")

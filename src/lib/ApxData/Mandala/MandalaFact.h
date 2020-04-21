@@ -67,7 +67,7 @@ public:
     {
         if (stream.available() != sizeof(_T))
             return false;
-        setValueLocal(QVariant::fromValue(stream.read<_T>()));
+        setValueFromStream(QVariant::fromValue(stream.read<_T>()));
         return true;
     }
 
