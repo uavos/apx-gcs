@@ -22,16 +22,14 @@
  */
 #pragma once
 
-#include "MandalaFactStream.h"
-
 #include <Mandala/MandalaMetaBase.h>
-#include <Protocols/ProtocolStream.h>
+#include <Protocols/ProtocolTelemetry.h>
 
 #include <Fact/Fact.h>
 
 class Mandala;
 
-class MandalaFact : public Fact, public MandalaFactStream
+class MandalaFact : public Fact
 {
     Q_OBJECT
 
@@ -45,10 +43,7 @@ public:
     bool setValueLocal(const QVariant &v);
 
     // set values array and send uplink batch update (f.ex. vecors)
-    bool setValues(const QVariantList &vlist);
-
-    // raw value size
-    size_t psize() const;
+    bool sendValues(const QVariantList &vlist);
 
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
@@ -61,24 +56,14 @@ public:
     Q_INVOKABLE QString alias() const;
     Q_INVOKABLE mandala::uid_t offset() const;
 
-    void unpack(const xbus::pid_s &pid, const mandala::spec_s &spec, ProtocolStreamReader &stream);
-    template<typename _T>
-    bool unpack(ProtocolStreamReader &stream)
-    {
-        if (stream.available() != sizeof(_T))
-            return false;
-        setValueFromStream(QVariant::fromValue(stream.read<_T>()));
-        return true;
-    }
+    //stream
+    void setValueFromStream(const QVariant &v);
+    QVariant getValueForStream() const;
 
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
     QString m_alias;
-    size_t m_psize{0};
-
-    uint8_t txbuf[32];
-    ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
 
     QElapsedTimer sendTime;
     QTimer sendTimer;
@@ -91,12 +76,9 @@ protected:
     virtual QVariant data(int col, int role) const override;
     virtual bool showThis(QRegExp re) const override; //filter helper
 
-    //stream
-    void setValueFromStream(const QVariant &v) override;
-    QVariant getValueForStream() const override;
-
 signals:
-    void sendUplink(QByteArray data); //forwarded to tree
+    void sendValue(ProtocolTelemetry::TelemetryValue value);
+    void sendBundle(ProtocolTelemetry::TelemetryValues values);
 
     //---------------------------------------
     // PROPERTIES

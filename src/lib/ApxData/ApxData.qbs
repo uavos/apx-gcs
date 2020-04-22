@@ -37,7 +37,6 @@ ApxApp.ApxLibrary {
         files: [
             "Mandala.cpp", "Mandala.h",
             "MandalaFact.cpp", "MandalaFact.h",
-            "MandalaFactStream.cpp", "MandalaFactStream.h",
         ]
     }
 

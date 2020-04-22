@@ -25,6 +25,7 @@
 #include "MandalaFact.h"
 #include <Fact/Fact.h>
 #include <Mandala/MandalaMetaTree.h>
+#include <Protocols/ProtocolTelemetry.h>
 
 class Mandala : public Fact
 {
@@ -52,8 +53,10 @@ private:
     quint64 m_timestamp;
 
 public slots:
-    void receivedData(xbus::pid_s pid, ProtocolStreamReader *stream);
+    void telemetryData(ProtocolTelemetry::TelemetryValues values);
 
 signals:
-    void sendUplink(QByteArray data); //forwarded to vehicle
+    //forwarded to vehicle
+    void sendValue(ProtocolTelemetry::TelemetryValue value);
+    void sendBundle(ProtocolTelemetry::TelemetryValues values);
 };

@@ -99,17 +99,31 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
                 Qt::QueuedConnection);
 
         //mandala update signals
-        connect(f_mandala, &Mandala::sendUplink, protocol, &ProtocolVehicle::send);
+        connect(f_mandala, &Mandala::sendValue, protocol->telemetry, &ProtocolTelemetry::sendValue);
+        connect(f_mandala,
+                &Mandala::sendBundle,
+                protocol->telemetry,
+                &ProtocolTelemetry::sendBundle);
+        connect(protocol->telemetry,
+                &ProtocolTelemetry::telemetryData,
+                f_mandala,
+                &Mandala::telemetryData);
+        connect(protocol->telemetry,
+                &ProtocolTelemetry::valuesData,
+                f_mandala,
+                &Mandala::telemetryData);
 
         connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
-        connect(protocol, &ProtocolVehicle::receivedData, f_mandala, &Mandala::receivedData);
 
         //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
-        connect(protocol, &ProtocolVehicle::telemetryData, this, &Vehicle::recordDownlink);
-        connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::recordDownlink);
+        connect(protocol->telemetry,
+                &ProtocolTelemetry::telemetryData,
+                this,
+                &Vehicle::recordDownlink);
+        connect(protocol->telemetry, &ProtocolTelemetry::valuesData, this, &Vehicle::recordDownlink);
         connect(protocol, &ProtocolVehicle::serialRxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, false);
         });
@@ -283,7 +297,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
     QVariantList vlist;
     vlist << std::cos(azimuth_r) * distance;
     vlist << std::sin(azimuth_r) * distance;
-    f_cmd_n->setValues(vlist);
+    f_cmd_n->sendValues(vlist);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
@@ -295,7 +309,7 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
     vlist << c.latitude();
     vlist << c.longitude();
     vlist << f_ref_hmsl->value();
-    f_cmd_gimbal_lat->setValues(vlist);
+    f_cmd_gimbal_lat->sendValues(vlist);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
@@ -307,7 +321,7 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
     vlist << c.latitude();
     vlist << c.longitude();
     vlist << f_ref_hmsl->value();
-    f_ref_lat->setValues(vlist);
+    f_ref_lat->sendValues(vlist);
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
@@ -319,7 +333,7 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
     vlist << c.latitude();
     vlist << c.longitude();
     vlist << f_hmsl->value();
-    f_gps_lat->setValues(vlist);
+    f_gps_lat->sendValues(vlist);
 }
 
 void Vehicle::resetGeoPath()

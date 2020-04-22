@@ -27,11 +27,10 @@
 #include <QtCore>
 
 #include <Xbus/telemetry/TelemetryDecoder.h>
-#include <Xbus/uart/CobsDecoder.h>
 
 class ProtocolVehicle;
 
-class ProtocolTelemetry : public ProtocolBase, private TelemetryDecoder
+class ProtocolTelemetry : public ProtocolBase
 {
     Q_OBJECT
 
@@ -41,10 +40,45 @@ public:
     // called by nodes
     void downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream);
 
+    struct TelemetryValue
+    {
+        xbus::pid_s pid;
+        QVariant value;
+    };
+    typedef QList<TelemetryValue> TelemetryValues;
+
 private:
     ProtocolVehicle *vehicle;
     uint8_t _rate_s{0};
 
+    TelemetryDecoder decoder;
+
+    QVariant raw_value(const void *src, mandala::type_id_e type);
+
+    TelemetryValues unpack(const xbus::pid_s &pid,
+                           const mandala::spec_s &spec,
+                           ProtocolStreamReader &stream);
+
+    template<typename T>
+    QVariant unpack(ProtocolStreamReader &stream)
+    {
+        if (stream.available() != sizeof(T))
+            return QVariant();
+        return QVariant::fromValue(stream.read<T>());
+    }
+
+    uint8_t txbuf[32];
+    ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
+    void pack(const QVariant &v, mandala::type_id_e type, ProtocolStreamWriter &stream);
+
 private slots:
     void updateStatus();
+
+signals:
+    void telemetryData(ProtocolTelemetry::TelemetryValues values);
+    void valuesData(ProtocolTelemetry::TelemetryValues values);
+
+public slots:
+    void sendValue(ProtocolTelemetry::TelemetryValue value);
+    void sendBundle(ProtocolTelemetry::TelemetryValues values);
 };

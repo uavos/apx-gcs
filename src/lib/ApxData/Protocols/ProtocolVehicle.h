@@ -88,11 +88,12 @@ private:
     QTimer telemetryReqTimer;
 
 private slots:
-    void updateStreamType(StreamType type);
     void updateActive();
 
 public slots:
     void inc_errcnt();
+
+    void updateStreamType(StreamType type);
 
     void requestTelemetry();
 
@@ -106,16 +107,11 @@ signals:
     void xpdrData(const xbus::vehicle::xpdr_s &xpdr);
 
     //known received data
-    void telemetryData(ProtocolStreamReader *stream);
-
     void serialRxData(quint16 portNo, QByteArray data);
     void serialTxData(quint16 portNo, QByteArray data);
 
     void jsexecData(QString script);
     void missionData(QByteArray data);
-
-    //data with other id (i.e. mandala data)
-    void receivedData(xbus::pid_s pid, ProtocolStreamReader *stream);
 
     //---------------------------------------
     // PROPERTIES

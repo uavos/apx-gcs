@@ -153,14 +153,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
 
     switch (pid.uid) {
     default:
-        updateStreamType(DATA);
-        trace_downlink(stream.payload());
-        emit receivedData(pid, &stream);
-        return;
-    case mandala::cmd::env::telemetry::data::uid:
-        updateStreamType(TELEMETRY);
         telemetry->downlink(pid, stream);
-        emit telemetryData(&stream);
         return;
     case mandala::cmd::env::vcp::rx::uid:
         if (stream.available() > 1) {

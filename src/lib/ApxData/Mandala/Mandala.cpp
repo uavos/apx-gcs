@@ -212,20 +212,13 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
     return mandala::cmd::env::nmt::meta;
 }
 
-void Mandala::receivedData(xbus::pid_s pid, ProtocolStreamReader *stream)
+void Mandala::telemetryData(ProtocolTelemetry::TelemetryValues values)
 {
-    if (pid.uid >= mandala::cmd::env::uid)
-        return;
-
-    MandalaFact *f = fact(pid.uid);
-    if (!f)
-        return;
-
-    if (stream->available() <= mandala::spec_s::psize())
-        return;
-
-    mandala::spec_s spec;
-    spec.read(stream);
-
-    f->unpack(pid, spec, *stream);
+    //qDebug() << values.size();
+    for (auto const &v : values) {
+        MandalaFact *f = fact(v.pid.uid);
+        if (!f)
+            continue;
+        f->setValueFromStream(v.value);
+    }
 }

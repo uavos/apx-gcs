@@ -89,8 +89,10 @@ void CompassFrame::vehicleSelected(Vehicle *vehicle)
 
     ProtocolVehicle *protocol = vehicle->protocol();
     // FIXME:
-    clist.append(
-        connect(protocol, &ProtocolVehicle::telemetryData, this, &CompassFrame::dataReceived));
+    clist.append(connect(protocol->telemetry,
+                         &ProtocolTelemetry::telemetryData,
+                         this,
+                         &CompassFrame::dataReceived));
 
     c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::uid);
     c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::uid);

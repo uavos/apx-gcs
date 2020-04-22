@@ -28,7 +28,6 @@
 
 #include "ProtocolStream.h"
 #include "ProtocolTrace.h"
-#include <Mandala/Mandala.h>
 
 class ProtocolBase : public Fact
 {
