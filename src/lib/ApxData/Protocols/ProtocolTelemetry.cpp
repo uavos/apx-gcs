@@ -51,9 +51,8 @@ void ProtocolTelemetry::updateStatus()
 
 void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
-    trace_downlink(stream.payload());
-
     if (pid.uid != mandala::cmd::env::telemetry::data::uid) {
+        trace_downlink(stream.payload());
         // regular mandala value
         if (pid.uid >= mandala::cmd::env::uid)
             return;
@@ -79,6 +78,11 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
     }
 
     vehicle->updateStreamType(ProtocolVehicle::TELEMETRY);
+
+    trace_downlink(stream.toByteArray(stream.pos(), 1));
+    trace_downlink(stream.toByteArray(stream.pos() + 1, 1));
+    trace_downlink(stream.toByteArray(stream.pos() + 2, 1));
+    trace_downlink(stream.toByteArray(stream.pos() + 3, stream.available() - 3));
 
     bool upd = decoder.decode(pid, stream);
     bool valid = decoder.valid();
