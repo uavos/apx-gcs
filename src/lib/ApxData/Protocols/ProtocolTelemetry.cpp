@@ -42,7 +42,7 @@ ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
 void ProtocolTelemetry::updateStatus()
 {
     if (!enabled()) {
-        setValue("RESYNC");
+        setValue(QString("RESYNC %1").arg(decoder.fmt_cnt()));
         return;
     }
     setValue(
@@ -89,7 +89,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     setEnabled(valid);
 
-    if (valid && _rate_s != decoder.rate_hz()) {
+    if (!valid || _rate_s != decoder.rate_hz()) {
         _rate_s = decoder.rate_hz();
         updateStatus();
     }
@@ -106,15 +106,16 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
     TelemetryValues values;
 
     for (size_t i = 0; i < decoder.slots_cnt(); ++i) {
-        auto &d = decoder.dec_slots().data[i];
-        if (!d.upd)
+        auto &flags = decoder.dec_slots().flags[i];
+        if (!flags.upd)
             continue;
-        d.upd = false;
+        flags.upd = false;
         auto const &f = decoder.dec_slots().fields[i];
-        TelemetryValue value;
-        value.pid = f.pid;
-        value.value = raw_value(&d.value, d.type);
-        values.append(value);
+        TelemetryValue t;
+        t.pid = f.pid;
+        auto const &value = decoder.dec_slots().value[i];
+        t.value = raw_value(&value, flags.type);
+        values.append(t);
     }
 
     emit telemetryData(values);
