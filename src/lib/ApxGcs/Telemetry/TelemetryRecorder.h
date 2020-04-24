@@ -58,10 +58,8 @@ private:
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp
-    quint64 dl_timestamp_s, dl_timestamp_t0;
-    QElapsedTimer uplinkTime;
+    quint64 dl_timestamp_t0{0};
 
-    quint64 timestamp;
     quint64 getDataTimestamp();
 
     DatabaseRequest *reqNewRecord;
@@ -75,7 +73,7 @@ private:
 
     void invalidateCache();
 
-    quint64 m_currentTimestamp;
+    quint64 m_currentTimestamp{0};
 
 private slots:
     void updateStatus();
@@ -110,7 +108,7 @@ public:
     quint64 time() const;
 
 private:
-    quint64 m_time;
+    quint64 m_time{0};
     void setTime(quint64 v, bool forceUpdate = false);
 signals:
     void timeChanged();

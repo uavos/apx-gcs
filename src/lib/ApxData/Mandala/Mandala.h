@@ -51,9 +51,11 @@ protected:
 
 private:
     quint64 m_timestamp;
+    QElapsedTimer _timestamp_time;
 
 public slots:
-    void telemetryData(ProtocolTelemetry::TelemetryValues values);
+    void telemetryData(ProtocolTelemetry::TelemetryValues values, quint64 timestamp_ms);
+    void valuesData(ProtocolTelemetry::TelemetryValues values);
 
 signals:
     //forwarded to vehicle

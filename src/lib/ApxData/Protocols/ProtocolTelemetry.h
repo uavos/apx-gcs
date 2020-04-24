@@ -49,9 +49,17 @@ public:
 
 private:
     ProtocolVehicle *vehicle;
-    uint8_t _rate_s{0};
+
+    float _rate_s{0};
+    uint16_t _ts_s{0};
+    quint64 _timestamp_ms{0};
+    QElapsedTimer _ts_time;
 
     TelemetryDecoder decoder;
+
+    void request_format(uint8_t part);
+    uint8_t _request_format_part{0};
+    QElapsedTimer _request_format_time;
 
     QVariant raw_value(const void *src, mandala::type_id_e type);
 
@@ -75,7 +83,7 @@ private slots:
     void updateStatus();
 
 signals:
-    void telemetryData(ProtocolTelemetry::TelemetryValues values);
+    void telemetryData(ProtocolTelemetry::TelemetryValues values, quint64 timestamp_ms);
     void valuesData(ProtocolTelemetry::TelemetryValues values);
 
 public slots:

@@ -39,10 +39,14 @@ void ProtocolBase::trace(bool uplink, const QByteArray &data)
                              QString("[%1]%2...")
                                  .arg(data.size())
                                  .arg(QString(data.left(16).toHex().toUpper())));
-    } else {
+    } else if (data.size() > 2) {
         ProtocolTrace::trace(uplink,
                              ProtocolTraceItem::DATA,
                              QString("[%1]%2").arg(data.size()).arg(QString(data.toHex().toUpper())));
+    } else {
+        ProtocolTrace::trace(uplink,
+                             ProtocolTraceItem::DATA,
+                             QString("%1").arg(QString(data.toHex().toUpper())));
     }
 }
 void ProtocolBase::trace(bool uplink, const xbus::pid_s &pid)

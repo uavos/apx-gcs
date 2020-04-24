@@ -111,7 +111,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         connect(protocol->telemetry,
                 &ProtocolTelemetry::valuesData,
                 f_mandala,
-                &Mandala::telemetryData);
+                &Mandala::valuesData);
 
         connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
 
@@ -119,11 +119,13 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
 
         //recorder
         connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
+
         connect(protocol->telemetry,
                 &ProtocolTelemetry::telemetryData,
                 this,
                 &Vehicle::recordDownlink);
         connect(protocol->telemetry, &ProtocolTelemetry::valuesData, this, &Vehicle::recordDownlink);
+
         connect(protocol, &ProtocolVehicle::serialRxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, false);
         });

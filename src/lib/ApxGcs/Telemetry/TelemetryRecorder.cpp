@@ -34,10 +34,6 @@
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , vehicle(vehicle)
-    , dl_timestamp_s(0)
-    , dl_timestamp_t0(0)
-    , m_currentTimestamp(0)
-    , m_time(0)
 {
     setIcon("record-rec");
 
@@ -120,8 +116,7 @@ bool TelemetryRecorder::dbCheckRecord()
     checkAutoRecord();
     if (recTelemetryID)
         return true;
-    timestamp = static_cast<quint64>(QDateTime::currentDateTime().toMSecsSinceEpoch());
-    uplinkTime.start();
+
     //register telemetry file record
     if (!reqNewRecord) {
         QString title = vehicle->confTitle();
@@ -175,17 +170,13 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
 //=============================================================================
 quint64 TelemetryRecorder::getDataTimestamp()
 {
-    //snap to dl_timestamp
     quint64 vts = vehicle->f_mandala->timestamp();
+    if (vts == 0)
+        reset();
     if (!dl_timestamp_t0)
         dl_timestamp_t0 = vts;
     quint64 t = vts - dl_timestamp_t0;
 
-    if (dl_timestamp_s != t) {
-        dl_timestamp_s = t;
-        uplinkTime.start();
-    } else if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
-        t += static_cast<uint>(uplinkTime.elapsed());
     setTime(t / 1000);
     m_currentTimestamp = t;
     return t;
@@ -390,7 +381,6 @@ void TelemetryRecorder::setRecording(bool v)
 void TelemetryRecorder::reset(void)
 {
     recTelemetryID = 0;
-    dl_timestamp_s = 0;
     dl_timestamp_t0 = 0;
     recValues.clear();
     setTime(0, true);

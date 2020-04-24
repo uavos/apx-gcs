@@ -37,6 +37,7 @@ ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
     setDescr(tr("Downlink stream decoder"));
 
     connect(this, &Fact::enabledChanged, this, &ProtocolTelemetry::updateStatus);
+    connect(this, &Fact::triggered, this, [this]() { decoder.reset(); });
 }
 
 void ProtocolTelemetry::updateStatus()
@@ -45,16 +46,16 @@ void ProtocolTelemetry::updateStatus()
         setValue(QString("RESYNC %1").arg(decoder.fmt_cnt()));
         return;
     }
-    setValue(
-        QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(static_cast<int>(decoder.rate_hz())));
+    setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(decoder.rate(), 0, 'f', 1));
 }
 
 void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
-    if (pid.uid != mandala::cmd::env::telemetry::data::uid) {
+    mandala::uid_t uid = pid.uid;
+    if (!mandala::cmd::env::telemetry::match(uid)) {
         trace_downlink(stream.payload());
         // regular mandala value
-        if (pid.uid >= mandala::cmd::env::uid)
+        if (uid >= mandala::cmd::env::uid)
             return;
         if (stream.available() <= mandala::spec_s::psize())
             return;
@@ -72,6 +73,41 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
         return;
     }
 
+    // telemetry section uid
+    switch (uid) {
+    case mandala::cmd::env::telemetry::format::uid:
+        trace_downlink(stream.payload());
+        if (pid.pri == xbus::pri_response) {
+            if (stream.available() < (sizeof(uint8_t) * 2))
+                return;
+            uint8_t part, parts;
+            stream >> part;
+            stream >> parts;
+            _request_format_part = 0;
+            qDebug() << "format:" << part << parts << stream.available();
+            if (!decoder.decode_format(part, parts, stream)) {
+                qWarning() << decoder.valid() << decoder.slots_cnt();
+                return;
+            }
+            if (decoder.valid())
+                return;
+            if (parts <= 1)
+                return;
+            if (++part >= parts) {
+                qWarning() << "format done";
+                _request_format_part = 0;
+                return;
+            }
+            _request_format_part = part;
+            request_format(part);
+        }
+        return;
+    }
+
+    // telemetry data stream
+    if (uid != mandala::cmd::env::telemetry::data::uid)
+        return;
+
     if (stream.available() < xbus::telemetry::stream_s::psize()) {
         qWarning() << stream.available();
         return;
@@ -79,13 +115,31 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     vehicle->updateStreamType(ProtocolVehicle::TELEMETRY);
 
-    trace_downlink(stream.toByteArray(stream.pos(), 1));
-    trace_downlink(stream.toByteArray(stream.pos() + 1, 1));
-    trace_downlink(stream.toByteArray(stream.pos() + 2, 1));
-    trace_downlink(stream.toByteArray(stream.pos() + 3, stream.available() - 3));
+    trace_downlink(stream.toByteArray(stream.pos(), 2));     // ts
+    trace_downlink(stream.toByteArray(stream.pos() + 2, 1)); // hash
+    trace_downlink(stream.toByteArray(stream.pos() + 3, 1)); // fmt
+    trace_downlink(stream.toByteArray(stream.pos() + 4, stream.available() - 4));
 
     bool upd = decoder.decode(pid, stream);
     bool valid = decoder.valid();
+
+    // manage timestamp wraps
+    uint16_t ts = decoder.timestamp_dms();
+    uint16_t dts = ts - _ts_s;
+    _ts_s = ts;
+    qint64 dts_ms = dts * 100;
+    qint64 elapsed = _ts_time.elapsed();
+    _ts_time.start();
+
+    if (!_ts_time.isValid())
+        _timestamp_ms = 0;
+    else if (abs(elapsed - dts_ms) > 1000) {
+        _timestamp_ms = 0;
+    } else {
+        _timestamp_ms += dts_ms;
+    }
+
+    //qDebug() << decoder.seq();
 
     if (enabled() && !valid) {
         qWarning() << "stream error";
@@ -93,15 +147,18 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     setEnabled(valid);
 
-    if (!valid || _rate_s != decoder.rate_hz()) {
-        _rate_s = decoder.rate_hz();
+    if (!valid || _rate_s != decoder.rate()) {
+        _rate_s = decoder.rate();
         updateStatus();
     }
 
     //qDebug() << valid << upd;
 
-    if (!valid)
+    if (!valid) {
+        if (!_request_format_time.isValid() || _request_format_time.elapsed() > 500)
+            request_format(_request_format_part);
         return;
+    }
 
     if (!upd)
         return;
@@ -122,7 +179,16 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
         values.append(t);
     }
 
-    emit telemetryData(values);
+    emit telemetryData(values, _timestamp_ms);
+}
+
+void ProtocolTelemetry::request_format(uint8_t part)
+{
+    qDebug() << part;
+    _request_format_time.start();
+    ostream.req(mandala::cmd::env::telemetry::format::uid);
+    ostream << part;
+    vehicle->send(ostream.toByteArray());
 }
 
 QVariant ProtocolTelemetry::raw_value(const void *src, mandala::type_id_e type)

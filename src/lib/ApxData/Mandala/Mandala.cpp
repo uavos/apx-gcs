@@ -212,8 +212,32 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
     return mandala::cmd::env::nmt::meta;
 }
 
-void Mandala::telemetryData(ProtocolTelemetry::TelemetryValues values)
+void Mandala::telemetryData(ProtocolTelemetry::TelemetryValues values, quint64 timestamp_ms)
 {
+    m_timestamp = timestamp_ms;
+    if (m_timestamp == 0)
+        _timestamp_time.start();
+
+    for (auto const &v : values) {
+        MandalaFact *f = fact(v.pid.uid);
+        if (!f)
+            continue;
+        f->setValueFromStream(v.value);
+    }
+}
+
+void Mandala::valuesData(ProtocolTelemetry::TelemetryValues values)
+{
+    if (!_timestamp_time.isValid()) {
+        m_timestamp = 0;
+        _timestamp_time.start();
+    } else {
+        qint64 elapsed = _timestamp_time.elapsed();
+        quint64 uelapsed = elapsed > 0 ? elapsed : 0;
+        if (m_timestamp < uelapsed)
+            m_timestamp = uelapsed;
+    }
+
     //qDebug() << values.size();
     for (auto const &v : values) {
         MandalaFact *f = fact(v.pid.uid);
