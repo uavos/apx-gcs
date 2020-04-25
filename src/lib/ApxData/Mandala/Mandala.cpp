@@ -36,67 +36,8 @@ Mandala::Mandala(Fact *parent)
            "hexagon-multiple")
     , m_timestamp(0)
 {
-    //qDebug() << mandala::sns::nav::ins::gyro::title;
-
     setMandala(this);
     qmlRegisterUncreatableType<MandalaFact>("APX.Facts", 1, 0, "MandalaFact", "Reference only");
-
-    /*mandala::data m;
-    qDebug() << m.sns.title;
-
-    m.sns.nav.ins.mag.y.setValue(0.123f);
-    qDebug() << m.sns.nav.ins.mag.y;
-    //m.sns.nav.ins.mag.z = 0.123f;
-    qDebug() << m.sns.nav.ins.mag.z;
-    qDebug() << m.sns.nav.ins.mag.z.uid;*/
-
-    /*static mandala::Text<mandala::sns::nav::ins::acc::y> txt;
-    qDebug() << txt.title();*/
-
-    /*struct mandala::sns::nav::ins::mag::y hy;
-    qDebug() << hy.meta.title << hy;
-    hy.set(0.551f);
-    qDebug() << hy.meta.title << hy;
-
-    {
-        mandala::Value<mandala::sns::nav::ins::mag::y> v_hy;
-        qDebug() << "Value:" << v_hy.meta.title << v_hy;
-        v_hy.set(0.101f);
-        qDebug() << "Value:" << v_hy.meta.title << v_hy;
-        mandala::Value<mandala::sns::nav::ins::mag::y> v_hy2;
-        qDebug() << "Value:" << v_hy2.meta.title << v_hy2;
-    }
-
-    {
-        mandala::StaticValue<mandala::sns::nav::ins::mag::y> s_hy;
-        qDebug() << "StaticValue:" << s_hy.data().meta.title << s_hy.data();
-        s_hy.data().set(0.101f);
-        qDebug() << "StaticValue:" << s_hy.data().meta.title << s_hy.data();
-        mandala::StaticValue<mandala::sns::nav::ins::mag::y> s_hy2;
-        qDebug() << "StaticValue:" << s_hy2.data().meta.title << s_hy2.data();
-    }
-
-    {
-        mandala::Value<mandala::sns::nav::ins::gyro::temp> v;
-        v.set(-5.101f);
-        qDebug() << "Pack:" << v.meta.title << v;
-        QByteArray ba(100, '\0');
-        size_t sz = v.pack(ba.data());
-        ba.resize(sz);
-        qDebug() << "Pack:" << sz << ba.toHex().toUpper();
-        sz = v.unpack(ba.data());
-        qDebug() << "Unpack:" << sz << v.meta.title << v;
-        ba.resize(100);
-        sz = v.copy_to(ba.data());
-        ba.resize(sz);
-        qDebug() << "Copy:" << sz << ba.toHex().toUpper();
-        sz = v.copy_from(ba.data());
-        qDebug() << "Copy:" << sz << v.meta.title << v;
-    }*/
-
-    //size_t sz = sizeof(mandala::meta);
-    //size_t sz1 = sizeof(*mandala::meta);
-    //qDebug() << sz1 << sz << "bytes" << sz / sz1 << "items";
 
     Fact *group = this;
     uint8_t level = 0;
@@ -136,12 +77,6 @@ Mandala::Mandala(Fact *parent)
             break;
         }
     }
-
-    //fact tests
-    //mandala::backport::MandalaBackport backport;
-
-    //apxMsg() << findChild("sns.tcas.vel")->title();
-    //apxMsg() << fact(mandala::sns::nav::air::aoa::uid)->title();
 }
 
 quint64 Mandala::timestamp() const

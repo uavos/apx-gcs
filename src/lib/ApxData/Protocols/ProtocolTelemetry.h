@@ -27,6 +27,7 @@
 #include <QtCore>
 
 #include <Xbus/telemetry/TelemetryDecoder.h>
+#include <Xbus/uart/CobsDecoder.h>
 
 class ProtocolVehicle;
 
@@ -56,6 +57,8 @@ private:
     QElapsedTimer _ts_time;
 
     TelemetryDecoder decoder;
+
+    //CobsDecoder<8192> cobs;
 
     void request_format(uint8_t part);
     uint8_t _request_format_part{0};

@@ -155,6 +155,9 @@ void MandalaFact::setValueFromStream(const QVariant &v)
         return;
     } while (0);
     setValueLocal(QVariant::fromValue(v.toDouble() * k));
+    if (!modified())
+        qDebug() << mpath();
+    setModified(true);
 }
 QVariant MandalaFact::getValueForStream() const
 {
@@ -325,11 +328,13 @@ int MandalaFact::getPrecision()
             return 1;
         if (u == "deg/s")
             return 1;
+        if (u == "rad^2")
+            return 2;
         if (u == "m")
             return 2;
         if (u == "m/s")
             return 1;
-        if (u == "m/s2")
+        if (u == "m/s^2")
             return 1;
         if (u == "v")
             return 2;
@@ -337,7 +342,7 @@ int MandalaFact::getPrecision()
             return 3;
         if (u == "c")
             return 1;
-        if (u == "1/min")
+        if (u == "rpm")
             return 0;
         if (u == "kpa")
             return 1;

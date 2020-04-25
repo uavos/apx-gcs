@@ -47,6 +47,30 @@ void ProtocolTelemetry::updateStatus()
         return;
     }
     setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(decoder.rate(), 0, 'f', 1));
+
+    qDebug() << "----------------------------------";
+    qDebug() << "decoder slots";
+    qDebug() << "----------------------------------";
+
+    for (size_t i = 0; i < decoder.slots_cnt(); ++i) {
+        xbus::telemetry::fmt_e fmt = decoder.dec_slots().fields[i].fmt;
+        QString path = Mandala::meta(decoder.dec_slots().fields[i].pid.uid).path;
+        QString sfmt = QString::number(fmt);
+        switch (fmt) {
+        default:
+            break;
+        case xbus::telemetry::fmt_bit:
+            sfmt = "bit";
+            break;
+        case xbus::telemetry::fmt_opt:
+            sfmt = "opt";
+            break;
+        case xbus::telemetry::fmt_none:
+            sfmt = "none";
+            break;
+        }
+        qDebug() << i << sfmt << path;
+    }
 }
 
 void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
@@ -115,10 +139,15 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     vehicle->updateStreamType(ProtocolVehicle::TELEMETRY);
 
+    //qDebug() << stream.dump_payload();
+
     trace_downlink(stream.toByteArray(stream.pos(), 2));     // ts
     trace_downlink(stream.toByteArray(stream.pos() + 2, 1)); // hash
     trace_downlink(stream.toByteArray(stream.pos() + 3, 1)); // fmt
     trace_downlink(stream.toByteArray(stream.pos() + 4, stream.available() - 4));
+
+    //cobs.decode(stream.ptr() + 3, 1);
+    //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();
 
     bool upd = decoder.decode(pid, stream);
     bool valid = decoder.valid();
@@ -184,7 +213,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
 void ProtocolTelemetry::request_format(uint8_t part)
 {
-    qDebug() << part;
+    //qDebug() << part;
     _request_format_time.start();
     ostream.req(mandala::cmd::env::telemetry::format::uid);
     ostream << part;
