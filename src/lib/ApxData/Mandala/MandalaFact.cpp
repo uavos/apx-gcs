@@ -145,16 +145,19 @@ bool MandalaFact::setValueLocal(const QVariant &v)
 void MandalaFact::setValueFromStream(const QVariant &v)
 {
     //qDebug() << v;
+    bool conv = false;
     double k = 1.;
     do {
         if (units().startsWith("deg")) {
             k = qRadiansToDegrees(1.);
+            conv = true;
             break;
         }
-        setValueLocal(v);
-        return;
     } while (0);
-    setValueLocal(QVariant::fromValue(v.toDouble() * k));
+    if (conv)
+        setValueLocal(QVariant::fromValue(v.toDouble() * k));
+    else
+        setValueLocal(v);
     if (!modified())
         qDebug() << mpath();
     setModified(true);

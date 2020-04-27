@@ -139,7 +139,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     vehicle->updateStreamType(ProtocolVehicle::TELEMETRY);
 
-    //qDebug() << stream.dump_payload();
+    qDebug() << stream.dump_payload();
 
     trace_downlink(stream.toByteArray(stream.pos(), 2));     // ts
     trace_downlink(stream.toByteArray(stream.pos() + 2, 1)); // hash
@@ -213,6 +213,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
 void ProtocolTelemetry::request_format(uint8_t part)
 {
+    //return;
     //qDebug() << part;
     _request_format_time.start();
     ostream.req(mandala::cmd::env::telemetry::format::uid);
