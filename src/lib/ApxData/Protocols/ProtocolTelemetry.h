@@ -47,6 +47,7 @@ public:
         QVariant value;
     };
     typedef QList<TelemetryValue> TelemetryValues;
+    typedef QList<xbus::pid_s> TelemetryFormat;
 
 private:
     ProtocolVehicle *vehicle;
@@ -86,6 +87,7 @@ private slots:
     void updateStatus();
 
 signals:
+    void formatUpdated(TelemetryFormat format);
     void telemetryData(ProtocolTelemetry::TelemetryValues values, quint64 timestamp_ms);
     void valuesData(ProtocolTelemetry::TelemetryValues values);
 

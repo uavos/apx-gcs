@@ -35,6 +35,7 @@ ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
     setIcon("sitemap");
     setTitle(tr("Telemetry"));
     setDescr(tr("Downlink stream decoder"));
+    setEnabled(false);
 
     connect(this, &Fact::enabledChanged, this, &ProtocolTelemetry::updateStatus);
     connect(this, &Fact::triggered, this, [this]() { decoder.reset(); });
@@ -139,7 +140,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     vehicle->updateStreamType(ProtocolVehicle::TELEMETRY);
 
-    qDebug() << stream.dump_payload();
+    //qDebug() << stream.dump_payload();
 
     trace_downlink(stream.toByteArray(stream.pos(), 2));     // ts
     trace_downlink(stream.toByteArray(stream.pos() + 2, 1)); // hash
@@ -171,7 +172,14 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
     //qDebug() << decoder.seq();
 
     if (enabled() && !valid) {
-        qWarning() << "stream error";
+        apxMsgW() << tr("Telemetry stream reset");
+    }
+    if (!enabled() && valid) {
+        TelemetryFormat format;
+        for (size_t i = 0; i < decoder.slots_cnt(); ++i) {
+            format.append(decoder.dec_slots().fields[i].pid);
+        }
+        emit formatUpdated(format);
     }
 
     setEnabled(valid);

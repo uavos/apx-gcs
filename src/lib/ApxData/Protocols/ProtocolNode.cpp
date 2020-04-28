@@ -425,12 +425,9 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
         while (stream.available() > 4) {
             dict_field_s field;
 
-            uint8_t v;
-            stream >> v;
-            field.type = static_cast<xbus::node::conf::type_e>(v & 0x0F);
-            field.array = v >> 4;
-            stream >> v;
-            field.group = v;
+            field.type = static_cast<xbus::node::conf::type_e>(stream.read<uint8_t>());
+            field.array = stream.read<uint8_t>();
+            field.group = stream.read<uint8_t>();
 
             QStringList st;
 
