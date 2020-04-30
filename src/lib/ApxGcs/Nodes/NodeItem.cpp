@@ -63,6 +63,8 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
 
+    connect(this, &NodeItem::shell, protocol, &ProtocolNode::requestShell);
+
     //FIXME: nodes->storage->loadNodeInfo(this);
 
     statusTimer.setSingleShot(true);

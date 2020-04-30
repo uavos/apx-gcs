@@ -228,6 +228,10 @@ void AppEngine::jsRegisterFunctions()
                QObject::tr("reset local GPS coordinates"),
                "home_lat=gps_lat;home_lon=gps_lon;home_hmsl=gps_hmsl;");
     jsRegister("hmsl()", QObject::tr("reset local GPS altitude"), "home_hmsl=gps_hmsl;");
+
+    jsRegister("sh(clist)",
+               QObject::tr("Node shell commands"),
+               "apx.vehicles.current.nodes.shell(clist)");
 }
 //=============================================================================
 void AppEngine::help()

@@ -57,6 +57,8 @@ public:
 
     void loadConfValue(const QString &sn, QString s);
 
+    Q_INVOKABLE void shell(QStringList commands);
+
 private:
     QMap<QString, NodeItem *> m_sn_map;
     QDateTime m_syncTimestamp;

@@ -33,6 +33,7 @@ function jhyst(v,h,max)
 }
 jhyst.info="joystick hysterezis (v,h)"
 
+
 // Joystick movements
 function jsw_R(v,h){ rc_roll=limit(v,-1,1); }
 function jsw_P(v,h){ rc_pitch=limit(v,-1,1); }

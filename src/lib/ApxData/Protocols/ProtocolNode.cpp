@@ -398,6 +398,16 @@ void ProtocolNode::requestUpdateSave()
     req->schedule();
 }
 
+void ProtocolNode::requestShell(QStringList commands)
+{
+    qDebug() << commands;
+    nodes->setActive(true);
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::sh::uid, 0);
+    for (auto const &s : commands) {
+        req->write_string(s.toUtf8().data());
+    }
+    req->schedule();
+}
 void ProtocolNode::requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data)
 {
     nodes->setActive(true);

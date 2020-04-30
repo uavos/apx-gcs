@@ -210,3 +210,10 @@ void Nodes::loadConfValue(const QString &sn, QString s)
         return;
     //FIXME: node->loadConfigValue(spath, sv);
 }
+
+void Nodes::shell(QStringList commands)
+{
+    for (auto i : m_sn_map) {
+        i->shell(commands);
+    }
+}

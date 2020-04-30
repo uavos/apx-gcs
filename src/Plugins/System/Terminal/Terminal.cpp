@@ -63,8 +63,11 @@ void Terminal::exec(const QString &cmd)
         QString sc = st.takeFirst();
         if ((sc.startsWith("set") || sc.startsWith("req") || sc.startsWith("send")) && st.size()) {
             st.insert(0, "'" + st.takeFirst() + "'"); //quote var name
+        } else if (sc == "sh") {
+            s = sc + "(['" + st.join("','") + "'])";
+        } else {
+            s = sc + "(" + st.join(",") + ")";
         }
-        s = sc + "(" + st.join(",") + ")";
     }
     QJSValue v = App::jsexec(s);
     //history

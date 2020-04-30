@@ -93,4 +93,5 @@ private slots:
 
 signals:
     void saveValues();
+    void shell(QStringList commands);
 };
