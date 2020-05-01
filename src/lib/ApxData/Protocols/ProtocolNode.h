@@ -118,7 +118,7 @@ public slots:
     void requestIdent();
     void requestDict();
     void requestConf();
-    void requestStatus(xbus::node::status::type_e type);
+    void requestStatus();
 
     void requestUpdate(xbus::node::conf::fid_t fid, QVariant value);
     void requestUpdateSave();

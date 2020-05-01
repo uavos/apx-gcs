@@ -343,11 +343,11 @@ void ProtocolNodes::requestSearch()
     req->finish();
     finishedTimer.start(2500);
 }
-void ProtocolNodes::requestStatus(xbus::node::status::type_e type)
+void ProtocolNodes::requestStatus()
 {
     setActive(true);
     for (auto i : _nodes)
-        i->requestStatus(type);
+        i->requestStatus();
 }
 
 //---------------------------------------

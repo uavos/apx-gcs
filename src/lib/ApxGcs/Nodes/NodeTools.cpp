@@ -94,16 +94,10 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                   Group);
     f_status->setIcon("playlist-check");
     f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestStatus(xbus::node::status::errors);
-    });
+    connect(f, &Fact::triggered, this, [this]() { node->protocol()->requestStatus(); });
     f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));
     connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestStatus(xbus::node::status::mem);
-    });
-    f = new Fact(f_status, "debug", tr("Debug"), tr("Request debug data"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestStatus(xbus::node::status::debug);
+        node->protocol()->requestShell(QStringList() << "tasks");
     });
     registerOnlineAction(f_status);
 

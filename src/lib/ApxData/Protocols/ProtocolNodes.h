@@ -98,7 +98,7 @@ public slots:
     void clear();
     void clear_requests();
 
-    void requestStatus(xbus::node::status::type_e type = xbus::node::status::errors);
+    void requestStatus();
 
 signals:
     void nodeNotify(ProtocolNode *protocol);

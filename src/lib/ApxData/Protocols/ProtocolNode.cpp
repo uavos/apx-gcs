@@ -237,7 +237,7 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
     } break;
 
         // status from node
-    case mandala::cmd::env::nmt::status::uid: {
+        /*case mandala::cmd::env::nmt::status::uid: {
         if (stream.available() != sizeof(xbus::node::status::status_s))
             break;
         nodes->acknowledgeRequest(m_sn, pid);
@@ -248,7 +248,7 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
         status.read(&stream);
 
         emit statusReceived(status);
-    } break;
+    } break;*/
     }
 }
 
@@ -357,12 +357,12 @@ void ProtocolNode::requestConf()
             Qt::UniqueConnection);
     f->download();
 }
-void ProtocolNode::requestStatus(xbus::node::status::type_e type)
+void ProtocolNode::requestStatus()
 {
-    nodes->setActive(true);
+    /*nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::status::uid);
     *req << type;
-    req->schedule();
+    req->schedule();*/
 }
 
 void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
@@ -400,9 +400,10 @@ void ProtocolNode::requestUpdateSave()
 
 void ProtocolNode::requestShell(QStringList commands)
 {
-    qDebug() << commands;
     nodes->setActive(true);
-    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::sh::uid, 0);
+    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::mod::uid, 0);
+    xbus::node::mod::op_e op = xbus::node::mod::sh;
+    *req << op;
     for (auto const &s : commands) {
         req->write_string(s.toUtf8().data());
     }
