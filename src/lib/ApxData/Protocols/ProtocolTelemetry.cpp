@@ -89,7 +89,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
         spec.read(&stream);
 
         TelemetryValues values = unpack(pid, spec, stream);
-        if (values.isEmpty()) {
+        if (values.isEmpty() || stream.available() > 0) {
             qWarning() << "unpack data values error";
             return;
         }
@@ -270,7 +270,7 @@ ProtocolTelemetry::TelemetryValues ProtocolTelemetry::unpack(const xbus::pid_s &
             break;
         }
         mandala::spec_s vspec{};
-        xbus::pid_s vpid{pid};
+        xbus::pid_s vpid(pid);
         for (int i = 0; i < vcnt; ++i) {
             vspec.type = Mandala::meta(vpid.uid).type_id;
             TelemetryValues vlist = unpack(vpid, vspec, stream);

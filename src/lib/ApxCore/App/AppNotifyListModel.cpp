@@ -148,3 +148,11 @@ void AppNotifyListModel::updateItem(int row, const QVariant &value, int role)
     emit dataChanged(i, i, QVector<int>() << role);
 }
 //=============================================================================
+void AppNotifyListModel::clear()
+{
+    beginResetModel();
+    qDeleteAll(m_items);
+    m_items.clear();
+    endResetModel();
+    emit countChanged();
+}

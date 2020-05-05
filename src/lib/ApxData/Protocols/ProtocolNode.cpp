@@ -398,7 +398,7 @@ void ProtocolNode::requestUpdateSave()
     req->schedule();
 }
 
-void ProtocolNode::requestShell(QStringList commands)
+void ProtocolNode::requestMod(QStringList commands)
 {
     nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::mod::uid, 0);

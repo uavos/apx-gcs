@@ -54,6 +54,11 @@ void Terminal::exec(const QString &cmd)
     if (s.isEmpty())
         return;
 
+    if (s == "cls") {
+        App::instance()->notifyModel()->clear();
+        return;
+    }
+
     if (s.startsWith(';') || s.startsWith('!')) {
         s.remove(0, 1);
     } else if (!(s.contains("(") || s.contains("=") || s.contains("+") || s.contains("-"))) {

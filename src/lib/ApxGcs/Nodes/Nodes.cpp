@@ -213,7 +213,26 @@ void Nodes::loadConfValue(const QString &sn, QString s)
 
 void Nodes::shell(QStringList commands)
 {
-    for (auto i : m_sn_map) {
+    if (!commands.isEmpty()) {
+        QString name = commands.first();
+        NodeItem *n = nullptr;
+        for (auto i : nodes()) {
+            n = i;
+            if (i->value().toString() == name)
+                break;
+            if (i->title() == name)
+                break;
+            if (QString("%1/%2").arg(i->title()).arg(i->value().toString()) == name)
+                break;
+            n = nullptr;
+        }
+        if (n) {
+            n->shell(commands.mid(1));
+            return;
+        }
+    }
+    // fallback to all nodes
+    for (auto i : nodes()) {
         i->shell(commands);
     }
 }

@@ -96,9 +96,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
     connect(f, &Fact::triggered, this, [this]() { node->protocol()->requestStatus(); });
     f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestShell(QStringList() << "tasks");
-    });
+    connect(f, &Fact::triggered, this, [this]() { node->shell(QStringList() << "tasks"); });
     registerOnlineAction(f_status);
 
     f_sys = new NodeToolsGroup(f_maintenance,

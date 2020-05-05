@@ -123,7 +123,7 @@ public slots:
     void requestUpdate(xbus::node::conf::fid_t fid, QVariant value);
     void requestUpdateSave();
 
-    void requestShell(QStringList commands);
+    void requestMod(QStringList commands);
     void requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data);
 
     //---------------------------------------

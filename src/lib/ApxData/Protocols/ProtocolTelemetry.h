@@ -74,7 +74,7 @@ private:
     template<typename T>
     QVariant unpack(ProtocolStreamReader &stream)
     {
-        if (stream.available() != sizeof(T))
+        if (stream.available() < sizeof(T))
             return QVariant();
         return QVariant::fromValue(stream.read<T>());
     }
