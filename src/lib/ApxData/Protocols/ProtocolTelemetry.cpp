@@ -154,16 +154,14 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
     bool valid = decoder.valid();
 
     // manage timestamp wraps
-    uint16_t ts = decoder.timestamp_dms();
-    uint16_t dts = ts - _ts_s;
+    uint32_t ts = decoder.timestamp_10ms();
+    uint32_t dts = ts > _ts_s ? ts - _ts_s : 0;
     _ts_s = ts;
-    qint64 dts_ms = dts * 100;
+    qint64 dts_ms = dts * 10;
     qint64 elapsed = _ts_time.elapsed();
     _ts_time.start();
 
-    if (!_ts_time.isValid())
-        _timestamp_ms = 0;
-    else if (abs(elapsed - dts_ms) > 1000) {
+    if (!_ts_time.isValid() || dts == 0 || elapsed > (60 * 60 * 1000)) {
         _timestamp_ms = 0;
     } else {
         _timestamp_ms += dts_ms;
