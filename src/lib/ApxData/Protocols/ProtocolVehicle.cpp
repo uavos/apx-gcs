@@ -200,7 +200,11 @@ void ProtocolVehicle::send(const QByteArray packet)
     vehicles->send(m_squawk, packet);
 }
 
-void ProtocolVehicle::requestTelemetry() {}
+void ProtocolVehicle::requestTelemetry()
+{
+    ostream.req(mandala::cmd::env::vehicle::downlink::uid);
+    send(ostream.toByteArray());
+}
 void ProtocolVehicle::vmexec(QString func)
 {
     func = func.simplified().trimmed();
@@ -259,11 +263,11 @@ void ProtocolVehicle::inc_errcnt()
 
 bool ProtocolVehicle::isLocal() const
 {
-    return squawk() == 0 && ident().flags.bits.gcs == 0;
+    return squawk() == 0 && ident().flags.gcs == 0;
 }
 bool ProtocolVehicle::isReplay() const
 {
-    return squawk() == 0 && ident().flags.bits.gcs == 1;
+    return squawk() == 0 && ident().flags.gcs == 1;
 }
 bool ProtocolVehicle::isIdentified() const
 {
@@ -271,5 +275,5 @@ bool ProtocolVehicle::isIdentified() const
 }
 bool ProtocolVehicle::isGroundControl() const
 {
-    return isIdentified() && ident().flags.bits.gcs == 1;
+    return isIdentified() && ident().flags.gcs == 1;
 }

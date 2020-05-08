@@ -23,6 +23,7 @@
 #include "ProtocolBase.h"
 #include <Mandala/Mandala.h>
 #include <Xbus/XbusNode.h>
+#include <Xbus/XbusVehicle.h>
 
 ProtocolBase::ProtocolBase(QObject *parent, const QString &name)
     : Fact(parent, name.toLower(), name, "", ProgressTrack)
@@ -117,6 +118,17 @@ void ProtocolBase::trace_uplink_packet(const QByteArray &data)
         if (stream.available() >= sizeof(xbus::node::guid_t)) {
             trace_uplink(ProtocolTraceItem::GUID, "GUID");
             stream.reset(stream.pos() + sizeof(xbus::node::guid_t));
+        }
+    }
+    if (mandala::cmd::env::vehicle::match(pid.uid)) {
+        if (stream.available() >= sizeof(xbus::vehicle::squawk_t)) {
+            const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
+            trace_uplink(ProtocolTraceItem::SQUAWK, QString::number(squawk, 16));
+            if (stream.available() >= xbus::pid_s::psize()) {
+                xbus::pid_s vpid;
+                vpid.read(&stream);
+                trace(true, vpid);
+            }
         }
     }
     trace(true, stream.payload());

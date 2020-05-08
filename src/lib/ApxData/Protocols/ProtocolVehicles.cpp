@@ -41,7 +41,7 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     xbus::vehicle::ident_s ident;
     memset(&ident, 0, sizeof(ident));
     local = new ProtocolVehicle(this, 0, ident, "LOCAL");
-    ident.flags.bits.gcs = 1;
+    ident.flags.gcs = 1;
     replay = new ProtocolVehicle(this, 0, ident, "REPLAY");
 
     // delayed requests timer

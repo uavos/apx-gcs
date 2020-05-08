@@ -118,7 +118,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 
         //recorder
-        connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
+        /*connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
 
         connect(protocol->telemetry,
                 &ProtocolTelemetry::telemetryData,
@@ -131,7 +131,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         });
         connect(protocol, &ProtocolVehicle::serialTxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, true);
-        });
+        });*/
     }
 
     Fact *f = new Fact(f_telemetry,

@@ -49,7 +49,7 @@ void ProtocolTelemetry::updateStatus()
     }
     setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(decoder.rate(), 0, 'f', 1));
 
-    qDebug() << "----------------------------------";
+    /*qDebug() << "----------------------------------";
     qDebug() << "decoder slots";
     qDebug() << "----------------------------------";
 
@@ -71,7 +71,7 @@ void ProtocolTelemetry::updateStatus()
             break;
         }
         qDebug() << i << sfmt << path;
-    }
+    }*/
 }
 
 void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
@@ -155,13 +155,13 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     // manage timestamp wraps
     uint32_t ts = decoder.timestamp_10ms();
-    uint32_t dts = ts > _ts_s ? ts - _ts_s : 0;
+    uint32_t dts = ts - _ts_s;
     _ts_s = ts;
     qint64 dts_ms = dts * 10;
     qint64 elapsed = _ts_time.elapsed();
     _ts_time.start();
 
-    if (!_ts_time.isValid() || dts == 0 || elapsed > (60 * 60 * 1000)) {
+    if (!_ts_time.isValid() || dts == 0 || abs(elapsed - dts_ms) > (60 * 1000)) {
         _timestamp_ms = 0;
     } else {
         _timestamp_ms += dts_ms;
