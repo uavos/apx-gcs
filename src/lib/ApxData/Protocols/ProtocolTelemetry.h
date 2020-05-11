@@ -52,8 +52,9 @@ public:
 private:
     ProtocolVehicle *vehicle;
 
-    float _rate_s{0};
-    uint16_t _ts_s{0};
+    uint32_t _seq_s{0};
+    uint32_t _seq{0};
+    uint32_t _dt_ms{0};
     quint64 _timestamp_ms{0};
     QElapsedTimer _ts_time;
 

@@ -62,6 +62,11 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
         if (!upgrading())
             syncLater(5000, true);
     });
+
+    connect(vehicle, &ProtocolVehicle::activeChanged, this, [this]() {
+        if (!this->vehicle->active())
+            setActive(false);
+    });
 }
 
 void ProtocolNodes::updateActive()

@@ -202,7 +202,6 @@ void ProtocolNodeFile::updateProgress()
 void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader &stream)
 {
     //qDebug() << name() << op << stream.available();
-
     switch (op) {
     default:
         break;

@@ -72,10 +72,9 @@ public:
 
     ProtocolNodes *nodes;
     ProtocolTelemetry *telemetry;
-
-private:
     ProtocolVehicles *vehicles;
 
+private:
     xbus::vehicle::ident_s m_ident;
 
     uint8_t txbuf[xbus::size_packet_max];

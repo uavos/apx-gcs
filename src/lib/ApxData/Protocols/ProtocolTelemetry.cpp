@@ -47,7 +47,7 @@ void ProtocolTelemetry::updateStatus()
         setValue(QString("RESYNC %1").arg(decoder.fmt_cnt()));
         return;
     }
-    setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(decoder.rate(), 0, 'f', 1));
+    setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(1000.0 / _dt_ms, 0, 'f', 1));
 
     /*qDebug() << "----------------------------------";
     qDebug() << "decoder slots";
@@ -114,8 +114,9 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
                 qWarning() << decoder.valid() << decoder.slots_cnt();
                 return;
             }
-            if (decoder.valid())
+            if (decoder.valid()) {
                 return;
+            }
             if (parts <= 1)
                 return;
             if (++part >= parts) {
@@ -142,10 +143,10 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     //qDebug() << stream.dump_payload();
 
-    trace_downlink(stream.toByteArray(stream.pos(), 2));     // ts
-    trace_downlink(stream.toByteArray(stream.pos() + 2, 1)); // hash
-    trace_downlink(stream.toByteArray(stream.pos() + 3, 1)); // fmt
-    trace_downlink(stream.toByteArray(stream.pos() + 4, stream.available() - 4));
+    trace_downlink(stream.toByteArray(stream.pos(), 4));     // ts
+    trace_downlink(stream.toByteArray(stream.pos() + 4, 1)); // hash
+    trace_downlink(stream.toByteArray(stream.pos() + 5, 1)); // fmt
+    trace_downlink(stream.toByteArray(stream.pos() + 6, stream.available() - 6));
 
     //cobs.decode(stream.ptr() + 3, 1);
     //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();
@@ -154,17 +155,25 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
     bool valid = decoder.valid();
 
     // manage timestamp wraps
-    uint32_t ts = decoder.timestamp_10ms();
-    uint32_t dts = ts - _ts_s;
-    _ts_s = ts;
-    qint64 dts_ms = dts * 10;
-    qint64 elapsed = _ts_time.elapsed();
+    uint32_t seq = decoder.seq();
+    uint32_t dt_ms = decoder.dt_ms();
+    uint32_t dseq = (seq - _seq_s) & 0x7FFFFFFF;
+
+    bool dt_ok = _dt_ms == dt_ms;
+    _dt_ms = dt_ms;
+
+    bool seq_ok = seq > _seq_s;
+    _seq_s = seq;
+
+    qint64 elapsed = _ts_time.isValid() ? _ts_time.elapsed() : 0;
     _ts_time.start();
 
-    if (!_ts_time.isValid() || dts == 0 || abs(elapsed - dts_ms) > (60 * 1000)) {
+    if (!dt_ok || !seq_ok || abs(elapsed - dseq * dt_ms) > (10 * 1000)) {
+        _seq = 0;
         _timestamp_ms = 0;
     } else {
-        _timestamp_ms += dts_ms;
+        _seq += dseq;
+        _timestamp_ms = _seq * dt_ms;
     }
 
     //qDebug() << decoder.seq();
@@ -182,8 +191,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     setEnabled(valid);
 
-    if (!valid || _rate_s != decoder.rate()) {
-        _rate_s = decoder.rate();
+    if (!valid || !dt_ok) {
         updateStatus();
     }
 

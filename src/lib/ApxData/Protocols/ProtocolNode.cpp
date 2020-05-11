@@ -197,6 +197,9 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
 
         // file operations
     case mandala::cmd::env::nmt::file::uid: {
+        if (nodes->vehicle->isLocal() && !nodes->active())
+            return;
+
         if (stream.available() <= sizeof(xbus::node::file::op_e))
             break;
         xbus::node::file::op_e op;
@@ -325,10 +328,16 @@ void ProtocolNode::requestRebootLoaderNext()
 
 void ProtocolNode::requestIdent()
 {
+    if (nodes->vehicle->isLocal() && !nodes->active())
+        return;
+
     request(mandala::cmd::env::nmt::ident::uid)->schedule();
 }
 void ProtocolNode::requestDict()
 {
+    if (nodes->vehicle->isLocal() && !nodes->active())
+        return;
+
     ProtocolNodeFile *f = file("dict");
     if (!f) {
         qWarning() << "Dict unavailable";
@@ -344,6 +353,9 @@ void ProtocolNode::requestDict()
 }
 void ProtocolNode::requestConf()
 {
+    if (nodes->vehicle->isLocal() && !nodes->active())
+        return;
+
     ProtocolNodeFile *f = file("conf");
     if (!f) {
         qWarning() << "Conf unavailable";

@@ -135,6 +135,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
+    size_t pos_s = stream.pos();
     xbus::pid_s pid;
     pid.read(&stream);
 
@@ -146,10 +147,19 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     if (mandala::cmd::env::nmt::match(pid.uid)) {
         updateStreamType(NMT);
         nodes->downlink(pid, stream);
+        //forward to local nodes too
+        if (!isLocal()
+            && (pid.uid == mandala::cmd::env::nmt::search::uid
+                || pid.uid == mandala::cmd::env::nmt::ident::uid
+                || pid.uid == mandala::cmd::env::nmt::ack::uid
+                || pid.uid == mandala::cmd::env::nmt::file::uid)) {
+            stream.reset(pos_s);
+            vehicles->local->downlink(stream);
+        }
         return;
     }
 
-    //trace_downlink(pid);
+    trace_downlink(pid);
 
     switch (pid.uid) {
     default:
@@ -202,7 +212,7 @@ void ProtocolVehicle::send(const QByteArray packet)
 
 void ProtocolVehicle::requestTelemetry()
 {
-    ostream.req(mandala::cmd::env::vehicle::downlink::uid);
+    ostream.req(mandala::cmd::env::telemetry::data::uid);
     send(ostream.toByteArray());
 }
 void ProtocolVehicle::vmexec(QString func)
