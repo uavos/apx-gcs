@@ -118,7 +118,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         local->downlink(stream);
         break;
 
-    case mandala::cmd::env::vehicle::xpdr::uid: { //transponder from UAV received
+        /*case mandala::cmd::env::vehicle::xpdr::uid: { //transponder from UAV received
         if (pid.pri == xbus::pri_request)
             return;
 
@@ -142,7 +142,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         xpdr.read(&stream);
 
         v->xpdrData(xpdr);
-    } break;
+    } break;*/
 
     case mandala::cmd::env::vehicle::ident::uid: {
         if (pid.pri == xbus::pri_request)

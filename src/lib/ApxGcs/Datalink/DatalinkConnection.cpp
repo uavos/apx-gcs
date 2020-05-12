@@ -136,7 +136,7 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
     static constexpr const mandala::uid_t allowed[] = {
         mandala::cmd::env::nmt::uid,
         mandala::cmd::env::vehicle::ident::uid,
-        mandala::cmd::env::vehicle::xpdr::uid,
+        mandala::cmd::env::vehicle::downlink::uid,
     };
     for (auto i : allowed)
         if (pid.uid == i)

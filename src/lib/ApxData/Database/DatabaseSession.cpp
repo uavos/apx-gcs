@@ -39,6 +39,7 @@ DatabaseSession::DatabaseSession(QObject *parent,
     , m_worker(nullptr)
     , m_capacity(0)
 {
+    Q_UNUSED(parent)
     connect(App::instance(), &App::aboutToQuit, this, &Fact::remove);
 
     setIcon("database");

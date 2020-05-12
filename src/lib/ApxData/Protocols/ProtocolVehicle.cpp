@@ -154,6 +154,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
                 || pid.uid == mandala::cmd::env::nmt::ack::uid
                 || pid.uid == mandala::cmd::env::nmt::file::uid)) {
             stream.reset(pos_s);
+            vehicles->local->trace_downlink(pid);
             vehicles->local->downlink(stream);
         }
         return;
