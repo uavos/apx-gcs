@@ -40,6 +40,9 @@ public:
 
     void finish(bool success);
 
+    QString format_name;
+    QString format_hw;
+
 protected:
     QString m_type;
 

@@ -159,19 +159,7 @@ QueueItem *Firmware::queued(Fact *list, const QString &sn)
 
 void Firmware::requestUpgrade(ProtocolNode *protocol, QString type)
 {
-    QString sn = protocol->sn();
-    QueueItem *f = queued(f_available, sn);
-    if (f)
-        f->remove();
-
-    f = queued(f_queue, sn);
-    if (f)
-        f->remove();
-
-    new QueueItem(f_queue, protocol, type);
-
-    if (!active())
-        next();
+    requestFormat(protocol, type, QString(), QString());
 }
 void Firmware::requestInitialize(const QString &type,
                                  const QString &name,
@@ -183,6 +171,24 @@ void Firmware::requestInitialize(const QString &type,
     f_queue->removeAll();
 
     new LoaderStm(f_queue, type, name, hw, portName, continuous);
+}
+void Firmware::requestFormat(ProtocolNode *protocol, QString type, QString name, QString hw)
+{
+    QString sn = protocol->sn();
+    QueueItem *f = queued(f_available, sn);
+    if (f)
+        f->remove();
+
+    f = queued(f_queue, sn);
+    if (f)
+        f->remove();
+
+    QueueItem *q = new QueueItem(f_queue, protocol, type);
+    q->format_name = name;
+    q->format_hw = hw;
+
+    if (!active())
+        next();
 }
 
 void Firmware::next()

@@ -85,5 +85,5 @@ void Format::startTriggered()
         return;
 
     ProtocolNode *node = Firmware::nodes_protocol()->getNode(sn, true);
-    m_firmware->requestUpgrade(node, type);
+    m_firmware->requestFormat(node, type, f_node->text(), f_hw->text());
 }

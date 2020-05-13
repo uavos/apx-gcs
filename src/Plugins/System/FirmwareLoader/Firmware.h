@@ -49,11 +49,14 @@ public:
     static ProtocolNodes *nodes_protocol();
 
     Q_INVOKABLE void requestUpgrade(ProtocolNode *protocol, QString type);
+
     Q_INVOKABLE void requestInitialize(const QString &type,
                                        const QString &name,
                                        const QString &hw,
                                        const QString &portName,
                                        bool continuous);
+
+    Q_INVOKABLE void requestFormat(ProtocolNode *protocol, QString type, QString name, QString hw);
 
 private:
     static Firmware *_instance;

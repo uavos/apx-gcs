@@ -94,7 +94,10 @@ void QueueItem::cleanUploadConnections()
 
 bool QueueItem::loadFirmware(QString hw, QString ver)
 {
-    QString fw = title();
+    QString fw = format_name.isEmpty() ? title() : format_name;
+
+    if (!format_hw.isEmpty())
+        hw = format_hw;
 
     QString stype = type().toUpper();
 
