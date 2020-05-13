@@ -41,6 +41,8 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
         setEnabled(this->vehicle->enabled());
     });
 
+    connect(this, &ProtocolNodes::nodeNotify, vehicle->vehicles, &ProtocolVehicles::nodeNotify);
+
     connect(this, &Fact::activeChanged, this, &ProtocolNodes::updateActive);
 
     reqTime.start();

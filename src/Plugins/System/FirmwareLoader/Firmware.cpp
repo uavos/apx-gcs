@@ -103,7 +103,10 @@ Firmware::Firmware(Fact *parent)
     connect(this, &Fact::activeChanged, this, &Firmware::updateStatus);
     updateStatus();
 
-    connect(nodes_protocol(), &ProtocolNodes::nodeNotify, this, &Firmware::nodeNotify);
+    connect(AppGcs::instance()->protocol,
+            &ProtocolVehicles::nodeNotify,
+            this,
+            &Firmware::nodeNotify);
 }
 
 ProtocolNodes *Firmware::nodes_protocol()
@@ -175,6 +178,8 @@ void Firmware::requestInitialize(const QString &type,
 void Firmware::requestFormat(ProtocolNode *protocol, QString type, QString name, QString hw)
 {
     QString sn = protocol->sn();
+    qDebug() << sn << type << protocol->title();
+
     QueueItem *f = queued(f_available, sn);
     if (f)
         f->remove();
