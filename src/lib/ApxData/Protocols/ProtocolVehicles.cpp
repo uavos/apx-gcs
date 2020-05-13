@@ -162,7 +162,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         ident.read(&stream);
 
         const char *s = stream.read_string(stream.available());
-        if (!s)
+        if (!s || stream.available() > 0)
             break;
 
         QString callsign = QString(s).trimmed();
@@ -218,10 +218,12 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
             break; //broadcast?
         //check if new transponder detected, request IDENT
         ProtocolVehicle *v = squawkMap.value(squawk);
-        if (v)
+        if (v) {
             v->downlink(stream);
-        else
-            identRequest(squawk);
+            break;
+        }
+        trace_downlink(stream.payload());
+        identRequest(squawk);
     } break;
     }
 }
