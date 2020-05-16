@@ -132,7 +132,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
     MandalaFact *f = fact(s);
     if (!f)
         return 0;
-    xbus::pid_s pid(f->uid(), xbus::pri_none, 3);
+    xbus::pid_s pid(f->uid(), xbus::pri_final, 3);
     return pid.raw();
 }
 

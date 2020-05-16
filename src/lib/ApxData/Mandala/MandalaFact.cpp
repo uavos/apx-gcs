@@ -192,7 +192,7 @@ bool MandalaFact::sendValues(const QVariantList &vlist)
             rv = true;
         ProtocolTelemetry::TelemetryValue value;
         value.pid.uid = f->uid();
-        value.pid.pri = xbus::pri_none;
+        value.pid.pri = xbus::pri_final;
         value.value = f->getValueForStream();
         values.append(value);
     }
@@ -220,7 +220,7 @@ void MandalaFact::send()
     sendTime.start();
     ProtocolTelemetry::TelemetryValue v;
     v.pid.uid = uid();
-    v.pid.pri = xbus::pri_none;
+    v.pid.pri = xbus::pri_final;
     v.value = getValueForStream();
     emit sendValue(v);
 }
