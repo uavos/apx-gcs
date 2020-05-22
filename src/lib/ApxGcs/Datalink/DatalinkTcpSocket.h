@@ -47,7 +47,7 @@ private:
     typedef struct
     {
         quint16 size;    //packet size
-        quint16 crc16;   //packet qChecksum
+        quint32 crc32;   //packet qChecksum
         bool datalink;   //datalink stream connected
         QStringList hdr; //http header response
         QHash<QString, QString> hdr_hash;

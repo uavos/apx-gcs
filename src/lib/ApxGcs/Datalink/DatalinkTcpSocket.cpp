@@ -26,7 +26,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <crc/crc.h>
+#include <crc.h>
 //=============================================================================
 DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
                                      QTcpSocket *socket,
@@ -76,7 +76,7 @@ DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
 void DatalinkTcpSocket::resetDataStream()
 {
     data.size = 0;
-    data.crc16 = 0;
+    data.crc32 = 0;
     data.datalink = false;
 }
 //=============================================================================
@@ -196,14 +196,14 @@ QByteArray DatalinkTcpSocket::read()
     QByteArray packet;
     while (cnt > 0) {
         quint16 sz = data.size;
-        quint16 crc16 = data.crc16;
+        quint32 crc32 = data.crc32;
         if (sz == 0) {
-            if (cnt < static_cast<qint64>(sizeof(sz) + sizeof(crc16))) {
+            if (cnt < static_cast<qint64>(sizeof(sz) + sizeof(crc32))) {
                 cnt = 0;
                 break;
             }
             socket->read(reinterpret_cast<char *>(&sz), sizeof(sz));
-            socket->read(reinterpret_cast<char *>(&crc16), sizeof(crc16));
+            socket->read(reinterpret_cast<char *>(&crc32), sizeof(crc32));
             if (sz > 2048) {
                 apxConsoleW() << "tcp sz error:" << socket->peerAddress().toString()
                               << QString("(%1)").arg(sz);
@@ -211,7 +211,7 @@ QByteArray DatalinkTcpSocket::read()
                 break;
             }
             data.size = sz;
-            data.crc16 = crc16;
+            data.crc32 = crc32;
         }
         if (cnt < static_cast<qint64>(sz)) {
             cnt = 0;
@@ -226,10 +226,8 @@ QByteArray DatalinkTcpSocket::read()
             cnt = -1;
             break;
         }
-        if (crc16
-            != CRC_16_IBM(reinterpret_cast<const uint8_t *>(packet.data()),
-                          static_cast<quint16>(packet.size()),
-                          0xFFFF)) {
+        uint32_t packet_crc32 = CRC32(packet.data(), packet.size()).result();
+        if (crc32 != packet_crc32) {
             apxConsoleW() << "tcp crc error:"
                           << QString("%1:%2")
                                  .arg(socket->peerAddress().toString())
@@ -311,7 +309,7 @@ bool DatalinkTcpSocket::checkServerRequestHeader()
         }*/
                 data.datalink = true;
                 data.size = 0;
-                data.crc16 = 0;
+                data.crc32 = 0;
                 /*if(connections.size()>1)sname.append(QString(" [%1]").arg(connections.size()));
         apxMsg("#%s: %s",tr("client").toUtf8().data(),sname.toUtf8().data());
         if(!extctrEnabled()){
@@ -379,7 +377,7 @@ bool DatalinkTcpSocket::checkDatalinkResponseHeader()
             sname.prepend(data.hdr_hash.value("server") + "@");
         data.datalink = true;
         data.size = 0;
-        data.crc16 = 0;
+        data.crc32 = 0;
         apxMsg() << QString("#%1: %2").arg(tr("server connected")).arg(sname);
         return true;
     }
@@ -391,10 +389,10 @@ bool DatalinkTcpSocket::checkDatalinkResponseHeader()
 QByteArray DatalinkTcpSocket::makeTcpPacket(const QByteArray &ba) const
 {
     quint16 sz = static_cast<quint16>(ba.size());
-    quint16 crc16 = CRC_16_IBM(reinterpret_cast<const uint8_t *>(ba.data()), sz, 0xFFFF);
+    quint32 crc32 = CRC32(ba.data(), sz).result();
     QByteArray tcpData;
     tcpData.append(reinterpret_cast<const char *>(&sz), sizeof(sz));
-    tcpData.append(reinterpret_cast<const char *>(&crc16), sizeof(crc16));
+    tcpData.append(reinterpret_cast<const char *>(&crc32), sizeof(crc32));
     tcpData.append(ba);
     return tcpData;
 }

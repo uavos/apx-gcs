@@ -24,7 +24,7 @@
 #include "ProtocolNode.h"
 #include "ProtocolNodes.h"
 
-#include <crc/crc.h>
+#include <crc.h>
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
@@ -38,11 +38,6 @@ ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
     memset(&_info, 0, sizeof(_info));
 
     connect(this, &ProtocolNodeFile::error, this, &ProtocolNodeFile::reset);
-}
-
-xbus::node::hash_t ProtocolNodeFile::get_hash(const void *src, size_t sz, xbus::node::hash_t hash)
-{
-    return CRC_32_APX(src, sz, hash);
 }
 
 void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset)
@@ -77,7 +72,7 @@ void ProtocolNodeFile::write_next()
     ProtocolNodeRequest *req = request(xbus::node::file::write);
     req->write<xbus::node::file::offset_t>(_op_offset);
     sz = req->write(ba.data(), sz);
-    _op_hash = get_hash(ba.data(), sz, _op_hash);
+    _op_hash = CRC32(ba.data(), sz).result();
     req->schedule();
     //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
 

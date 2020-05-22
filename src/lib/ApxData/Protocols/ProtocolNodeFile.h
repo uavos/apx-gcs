@@ -41,8 +41,6 @@ public:
 
     ProtocolNodeRequest *request(xbus::node::file::op_e op);
 
-    static xbus::node::hash_t get_hash(const void *src, size_t sz, xbus::node::hash_t hash = 0);
-
 private:
     ProtocolNode *node;
 
