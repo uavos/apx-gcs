@@ -72,7 +72,7 @@ void ProtocolNodeFile::write_next()
     ProtocolNodeRequest *req = request(xbus::node::file::write);
     req->write<xbus::node::file::offset_t>(_op_offset);
     sz = req->write(ba.data(), sz);
-    _op_hash = CRC32(ba.data(), sz).result();
+    _op_hash = apx::crc32(ba.data(), sz);
     req->schedule();
     //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
 

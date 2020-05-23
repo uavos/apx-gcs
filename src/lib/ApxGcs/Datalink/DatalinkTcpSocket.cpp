@@ -226,7 +226,7 @@ QByteArray DatalinkTcpSocket::read()
             cnt = -1;
             break;
         }
-        uint32_t packet_crc32 = CRC32(packet.data(), packet.size()).result();
+        uint32_t packet_crc32 = apx::crc32(packet.data(), packet.size());
         if (crc32 != packet_crc32) {
             apxConsoleW() << "tcp crc error:"
                           << QString("%1:%2")
@@ -389,7 +389,7 @@ bool DatalinkTcpSocket::checkDatalinkResponseHeader()
 QByteArray DatalinkTcpSocket::makeTcpPacket(const QByteArray &ba) const
 {
     quint16 sz = static_cast<quint16>(ba.size());
-    quint32 crc32 = CRC32(ba.data(), sz).result();
+    quint32 crc32 = apx::crc32(ba.data(), sz);
     QByteArray tcpData;
     tcpData.append(reinterpret_cast<const char *>(&sz), sizeof(sz));
     tcpData.append(reinterpret_cast<const char *>(&crc32), sizeof(crc32));
