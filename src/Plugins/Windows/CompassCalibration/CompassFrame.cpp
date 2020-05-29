@@ -94,9 +94,9 @@ void CompassFrame::vehicleSelected(Vehicle *vehicle)
                          this,
                          &CompassFrame::dataReceived));
 
-    c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::uid);
-    c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::uid);
-    c_Hz = vehicle->f_mandala->fact(mandala::sns::nav::mag::z::uid);
+    //c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::uid);
+    //c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::uid);
+    //c_Hz = vehicle->f_mandala->fact(mandala::sns::nav::mag::z::uid);
 }
 //=============================================================================
 void CompassFrame::dataReceived()

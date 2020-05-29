@@ -101,10 +101,6 @@ private:
     MandalaFact *f_cmd_gimbal_lon;
     MandalaFact *f_cmd_gimbal_hmsl;
 
-    MandalaFact *f_gps_lat;
-    MandalaFact *f_gps_lon;
-    MandalaFact *f_gps_hmsl;
-
 private slots:
     void updateInfo();
     void updateInfoReq();

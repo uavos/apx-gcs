@@ -71,10 +71,6 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     f_cmd_gimbal_lon = f_mandala->fact(mandala::cmd::nav::gimbal::lon::uid);
     f_cmd_gimbal_hmsl = f_mandala->fact(mandala::cmd::nav::gimbal::hmsl::uid);
 
-    f_gps_lat = f_mandala->fact(mandala::sns::nav::gps::lat::uid);
-    f_gps_lon = f_mandala->fact(mandala::sns::nav::gps::lon::uid);
-    f_gps_hmsl = f_mandala->fact(mandala::sns::nav::gps::hmsl::uid);
-
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);
     connect(&updateInfoTimer, &QTimer::timeout, this, &Vehicle::updateInfo);
@@ -335,7 +331,8 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
     vlist << c.latitude();
     vlist << c.longitude();
     vlist << f_hmsl->value();
-    f_gps_lat->sendValues(vlist);
+    //f_gps_lat->sendValues(vlist);
+    //FIXME: posfix
 }
 
 void Vehicle::resetGeoPath()
