@@ -10,7 +10,7 @@ Rectangle {
     readonly property int m_mode: mandala.cmd.op.mode.value
     readonly property int m_mtype: mandala.est.ctr.mtype.value
     readonly property real m_adj: mandala.cmd.op.adj.value
-    readonly property int m_agl_status: mandala.est.agl.status.value
+    readonly property int m_agl_status: mandala.est.status.agl.value
 
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_wpt_dist: mandala.est.wpt.dist
@@ -20,7 +20,7 @@ Rectangle {
     readonly property var f_loops: mandala.est.ctr.loops
     readonly property var f_tdist: mandala.est.ctr.tdist
     readonly property var f_radius: mandala.est.ctr.radius
-    readonly property var f_agl: mandala.est.agl.altitude
+    readonly property var f_agl: mandala.est.pos.agl
 
 
     border.width: 0

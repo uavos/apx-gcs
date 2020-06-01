@@ -61,7 +61,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     f_ref_lat = f_mandala->fact(mandala::est::nav::ref::lat::uid);
     f_ref_lon = f_mandala->fact(mandala::est::nav::ref::lon::uid);
     f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
-    f_vd = f_mandala->fact(mandala::est::nav::pos::vd::uid);
+    f_vspeed = f_mandala->fact(mandala::est::nav::pos::vspeed::uid);
     f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::uid);
     f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::uid);
     f_cmd_n = f_mandala->fact(mandala::cmd::nav::pos::n::uid);
@@ -78,7 +78,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     connect(f_lat, &Fact::valueChanged, this, &Vehicle::updateCoordinate);
     connect(f_lon, &Fact::valueChanged, this, &Vehicle::updateCoordinate);
     connect(f_hmsl, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
-    connect(f_vd, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
+    connect(f_vspeed, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_mode, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
     connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateInfoReq);
 
@@ -194,7 +194,7 @@ void Vehicle::updateInfo()
             alt = 0;
         s = QString("MSL%1").arg(alt);
 
-        int vs = -f_vd->value().toInt();
+        int vs = f_vspeed->value().toInt();
         if (vs > 1)
             s.append(QString("+%1").arg(vs));
         else if (vs < -1)

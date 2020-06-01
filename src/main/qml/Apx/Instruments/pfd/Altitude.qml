@@ -12,8 +12,8 @@ ControlArea {
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_ref_hmsl: mandala.est.ref.hmsl
 
-    readonly property var f_agl: mandala.est.agl.altitude
-    readonly property bool m_agl_available: mandala.est.agl.status.value===agl_status_available
+    readonly property var f_agl: mandala.est.pos.agl
+    readonly property bool m_agl_available: mandala.est.status.agl.value===status_agl_ok
 
     mvar: f_cmd_altitude   //ControlArea
     span: 20

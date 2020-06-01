@@ -331,6 +331,8 @@ int MandalaFact::getPrecision()
             return 1;
         if (u == "deg/s")
             return 1;
+        if (u == "deg/s^2")
+            return 2;
         if (u == "rad^2")
             return 2;
         if (u == "m")

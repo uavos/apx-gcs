@@ -91,7 +91,7 @@ private:
     MandalaFact *f_ref_lon;
     MandalaFact *f_ref_hmsl;
 
-    Fact *f_vd;
+    Fact *f_vspeed;
     Fact *f_mode;
     Fact *f_stage;
 
