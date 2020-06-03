@@ -59,8 +59,8 @@ MapQuickItem {  //to be used inside MapComponent only
 
     Connections {
         target: map
-        onClicked: deselect()
-        onMenuRequested: deselect()
+        function onClicked(){ deselect() }
+        function onMenuRequested(){ deselect() }
     }
 
     onTriggered: center()

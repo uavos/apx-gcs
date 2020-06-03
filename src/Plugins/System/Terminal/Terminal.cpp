@@ -162,7 +162,7 @@ QString Terminal::autocomplete(const QString &cmd)
         result = App::jsexec(QString("(function(){var s='';for(var v in "
                                      "%1)if(typeof(%1[v])=='function')s+=v+';';return s;})()")
                                  .arg(scope));
-        QStringList st(result.toString().replace('\n', ',').split(';', QString::SkipEmptyParts));
+        QStringList st(result.toString().replace('\n', ',').split(';', Qt::SkipEmptyParts));
         st = st.filter(QRegExp("^" + c));
         if (st.size()) {
             if (st.size() == 1)
@@ -170,7 +170,7 @@ QString Terminal::autocomplete(const QString &cmd)
         } else {
             result = App::jsexec(
                 QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
-            st = result.toString().replace('\n', ',').split(';', QString::SkipEmptyParts);
+            st = result.toString().replace('\n', ',').split(';', Qt::SkipEmptyParts);
             st = st.filter(QRegExp("^" + c));
             if (st.size() == 1)
                 st.append(prefix.left(prefix.size() - c.size()) + st.takeFirst());
@@ -187,8 +187,8 @@ QString Terminal::autocomplete(const QString &cmd)
         }
         result = App::jsexec(
             QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
-        QStringList st(result.toString().replace('\n', ',').split(';', QString::SkipEmptyParts));
-        //QStringList st(FactSystem::instance()->jsexec(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',QString::SkipEmptyParts));
+        QStringList st(result.toString().replace('\n', ',').split(';', Qt::SkipEmptyParts));
+        //QStringList st(FactSystem::instance()->jsexec(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',Qt::SkipEmptyParts));
         st = st.filter(QRegExp("^" + c));
         if (st.size() == 1)
             st.append(prefix.left(prefix.size() - c.size()) + st.takeFirst() + (bDot ? "" : " "));

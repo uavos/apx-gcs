@@ -264,8 +264,7 @@ QByteArray AppEngine::jsToArray(QJSValue data)
     QByteArray ba;
     if (data.isString() || data.toString().contains(',')) {
         bool ok = false;
-        foreach (QString sv,
-                 data.toString().trimmed().toLower().split(',', QString::SkipEmptyParts)) {
+        foreach (QString sv, data.toString().trimmed().toLower().split(',', Qt::SkipEmptyParts)) {
             uint v;
             sv = sv.trimmed();
             if (sv.startsWith("0x"))

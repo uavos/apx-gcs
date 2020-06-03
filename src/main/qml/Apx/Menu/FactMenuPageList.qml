@@ -125,7 +125,7 @@ ColumnLayout {
                         onAccepted: control.filterAccepted(listView.model.filter)
                         Connections {
                             target: listView
-                            onCountChanged: filterItem.forceActiveFocus()
+                            function onCountChanged(){ filterItem.forceActiveFocus() }
                         }
                         Component.onCompleted: {
                             forceActiveFocus()
@@ -209,10 +209,6 @@ ColumnLayout {
                         fact: modelData
                         showText: true
                         onTriggered: control.factButtonTriggered(modelData)
-                        /*Connections {
-                            target: modelData
-                            onTriggered: control.factTriggered(modelData)
-                        }*/
                     }
                 }
             }

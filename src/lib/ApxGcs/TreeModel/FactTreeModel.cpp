@@ -260,7 +260,7 @@ void FactTreeModel::textChanged()
     if (!updateList.contains(fact))
         updateList.append(fact);
     if (!updateHash.values(fact).contains(Fact::FACT_MODEL_COLUMN_VALUE))
-        updateHash.insertMulti(fact, Fact::FACT_MODEL_COLUMN_VALUE);
+        updateHash.insert(fact, Fact::FACT_MODEL_COLUMN_VALUE);
     if (!updateTimer.isActive())
         updateTimer.start();
 }

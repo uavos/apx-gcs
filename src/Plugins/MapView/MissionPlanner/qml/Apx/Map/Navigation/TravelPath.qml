@@ -21,16 +21,16 @@ MapPolyline {
 
     Connections {
         target: vehicle
-        onGeoPathAppend: addCoordinate(p)
+        function onGeoPathAppend(p){ addCoordinate(p) }
     }
     Connections {
         enabled: replay
         target: vehicle
-        onGeoPathChanged: updatePath()
+        function onGeoPathChanged(){ updatePath() }
     }
     Connections {
         target: vehicle.telemetry.rpath
-        onTriggered: setPath(QtPositioning.path())
+        function onTriggered(){ setPath(QtPositioning.path()) }
     }
 
     function updatePath()
@@ -49,7 +49,7 @@ MapPolyline {
     Connections {
         enabled: replay
         target: apx.vehicles.replay.telemetry.reader
-        onTriggered: showRegion()
+        function onTriggered(){ showRegion() }
     }
     Component.onCompleted: updatePath()
 }

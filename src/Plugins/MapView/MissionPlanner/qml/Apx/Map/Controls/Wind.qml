@@ -26,7 +26,7 @@ Item {
     }
     Connections {
         target: apx.vehicles
-        onVehicleSelected: {
+        function onVehicleSelected() {
             smoothMove=false
             smoothMoveTimer.restart()
         }

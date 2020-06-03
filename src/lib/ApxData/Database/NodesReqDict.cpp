@@ -218,8 +218,8 @@ bool DBReqNodesLoadDict::run(QSqlQuery &query)
         f.title = query.value("title").toString();
         f.descr = query.value("descr").toString();
         f.units = query.value("units").toString();
-        f.opts = query.value("opts").toString().split(',', QString::SkipEmptyParts);
-        f.groups = query.value("sect").toString().split('/', QString::SkipEmptyParts);
+        f.opts = query.value("opts").toString().split(',', Qt::SkipEmptyParts);
+        f.groups = query.value("sect").toString().split('/', Qt::SkipEmptyParts);
         if (f.type == DictNode::Void) {
             qDebug() << "wrong field type" << f.name << f.type;
             return false;

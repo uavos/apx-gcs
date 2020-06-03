@@ -39,11 +39,13 @@ ColumnLayout {
     Connections {
         enabled: valid
         target: fact
-        onMenuBack: {
+        function onMenuBack()
+        {
             //console.log("menuBack")
             valid=false
         }
-        onRemoved: {
+        function onRemoved()
+        {
             //console.log("removed",fact)
             valid=false
             fact=factC.createObject(this)

@@ -14,10 +14,12 @@ Control {
 
     Connections {
         target: application
-        onLoadingFinished: {
+        function onLoadingFinished()
+        {
             loaderMain.active=Qt.binding(function(){return !apx.value})
         }
-        onAbout: {
+        function onAbout()
+        {
             var c=c_about.createObject(application.window)
             c.closed.connect(c.destroy)
             c.open()
@@ -48,7 +50,8 @@ Control {
     //fact menu dispatcher
     Connections {
         target: apx
-        onFactTriggered: {
+        function onFactTriggered(fact,opts)
+        {
             Menu.show(fact,opts)
         }
     }
@@ -91,6 +94,9 @@ Control {
     }
     Connections {
         target: application.appLog
-        onConsoleMessage: logText = msg
+        function onConsoleMessage(msg)
+        {
+            logText = msg
+        }
     }
 }

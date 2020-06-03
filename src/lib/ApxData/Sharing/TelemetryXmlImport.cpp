@@ -121,7 +121,7 @@ quint64 TelemetryXmlImport::read(QXmlStreamReader &xml)
             else if (tag == "sharedHash")
                 sharedHashExplicit = xml.readElementText();
             else if (tag == "fields")
-                fields = xml.readElementText().split(',', QString::SkipEmptyParts);
+                fields = xml.readElementText().split(',', Qt::SkipEmptyParts);
             else if (tag == "data")
                 break;
             else
@@ -238,7 +238,7 @@ quint64 TelemetryXmlImport::read(QXmlStreamReader &xml)
                 continue;
             }
             if (tag == "D") {
-                QStringList st = xml.readElementText().split(',', QString::KeepEmptyParts);
+                QStringList st = xml.readElementText().split(',', Qt::KeepEmptyParts);
                 for (int i = 0; i < st.size(); ++i) {
                     const QString &s = st.at(i);
                     if (s.isEmpty())

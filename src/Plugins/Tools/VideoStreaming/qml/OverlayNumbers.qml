@@ -89,7 +89,8 @@ Item {
     Connections {
         enabled: !interactive
         target: application
-        onLoadingFinished: {
+        function onLoadingFinished()
+        {
             //plugin is available
             for(var i in overlays){
                 var overlay=overlays[i]

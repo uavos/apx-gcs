@@ -51,7 +51,7 @@ ApplicationWindow {
                         property string msg
                         Connections {
                             target: application.appLog
-                            onConsoleMessage: loadingText.msg=msg
+                            function onConsoleMessage(msg){ loadingText.msg=msg }
                         }
                     }
                     BusyIndicator {

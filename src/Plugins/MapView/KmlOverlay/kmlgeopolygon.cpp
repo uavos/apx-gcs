@@ -3,6 +3,7 @@
 #include <cmath>
 #include <QGeoRectangle>
 #include <QPainter>
+#include <QPainterPath>
 
 KmlGeoPolygon::KmlGeoPolygon(QQuickItem *parent)
     : QQuickPaintedItem(parent)

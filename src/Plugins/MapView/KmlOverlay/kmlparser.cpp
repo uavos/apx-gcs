@@ -95,9 +95,9 @@ void KmlParser::polygonHolesCallback(const QDomElement &el, KmlPolygon &polygon)
 QList<QGeoCoordinate> KmlParser::parseCoordinates(const QString &text)
 {
     QList<QGeoCoordinate> result;
-    QStringList tuples = text.simplified().split(" ", QString::SkipEmptyParts);
+    QStringList tuples = text.simplified().split(" ", Qt::SkipEmptyParts);
     for (auto &t : tuples) {
-        QStringList coordinates = t.split(",", QString::SkipEmptyParts);
+        QStringList coordinates = t.split(",", Qt::SkipEmptyParts);
         bool ok1, ok2;
         double lon = t.section(",", 0, 0).toDouble(&ok1);
         double lat = t.section(",", 1, 1).toDouble(&ok2);

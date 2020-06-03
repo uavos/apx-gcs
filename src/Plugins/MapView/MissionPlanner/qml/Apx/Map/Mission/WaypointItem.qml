@@ -170,7 +170,7 @@ MissionObject {
                 }
                 Connections {
                     target: waypointItem
-                    onPathChanged: updatePath()
+                    function onPathChanged(){ updatePath() }
                 }
                 Component.onCompleted: updatePath()
             }

@@ -288,7 +288,7 @@ QRectF SvgImageProvider::elementBounds(const QString &svgFile, const QString &el
     }
 
     QRectF elementBounds = renderer->boundsOnElement(elementName);
-    QMatrix matrix = renderer->matrixForElement(elementName);
+    QTransform matrix = renderer->transformForElement(elementName);
     elementBounds = matrix.mapRect(elementBounds);
 
     return elementBounds;

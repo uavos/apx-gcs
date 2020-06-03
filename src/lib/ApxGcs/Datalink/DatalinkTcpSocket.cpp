@@ -53,12 +53,12 @@ DatalinkTcpSocket::DatalinkTcpSocket(Fact *parent,
             Qt::QueuedConnection);
     connect(socket,
             static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(
-                &QAbstractSocket::error),
+                &QAbstractSocket::errorOccurred),
             this,
             &DatalinkTcpSocket::socketError);
     connect(socket,
             static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(
-                &QAbstractSocket::error),
+                &QAbstractSocket::errorOccurred),
             this,
             &DatalinkTcpSocket::close,
             Qt::QueuedConnection);

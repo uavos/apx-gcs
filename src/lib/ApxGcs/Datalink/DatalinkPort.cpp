@@ -274,11 +274,11 @@ void DatalinkPort::updateRoutingFacts()
         return;
     _blockUpdateRoutingValue = true;
     QString v = f_routing->value().toString();
-    QStringList rx = v.left(v.indexOf(':')).split(',', QString::SkipEmptyParts);
+    QStringList rx = v.left(v.indexOf(':')).split(',', Qt::SkipEmptyParts);
     for (int i = 0; i < f_rx.size(); ++i) {
         f_rx.at(i)->setValue(rx.contains(f_rx.at(i)->title()));
     }
-    QStringList tx = v.mid(v.indexOf(':') + 1).split(',', QString::SkipEmptyParts);
+    QStringList tx = v.mid(v.indexOf(':') + 1).split(',', Qt::SkipEmptyParts);
     for (int i = 0; i < f_rx.size(); ++i) {
         f_tx.at(i)->setValue(tx.contains(f_tx.at(i)->title()));
     }
@@ -302,11 +302,11 @@ void DatalinkPort::updateConnectionNetwork()
     const QMetaEnum &m = QMetaEnum::fromType<Datalink::NetworkMask>();
     QString v = f_routing->value().toString();
     quint16 rxNetwork = 0;
-    foreach (QString s, v.left(v.indexOf(':')).split(',', QString::SkipEmptyParts)) {
+    foreach (QString s, v.left(v.indexOf(':')).split(',', Qt::SkipEmptyParts)) {
         rxNetwork |= m.keyToValue(s.toUtf8());
     }
     quint16 txNetwork = 0;
-    foreach (QString s, v.mid(v.indexOf(':') + 1).split(',', QString::SkipEmptyParts)) {
+    foreach (QString s, v.mid(v.indexOf(':') + 1).split(',', Qt::SkipEmptyParts)) {
         txNetwork |= m.keyToValue(s.toUtf8());
     }
     f_connection->setRxNetwork(rxNetwork);

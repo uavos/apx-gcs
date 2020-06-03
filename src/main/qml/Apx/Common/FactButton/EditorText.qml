@@ -43,7 +43,10 @@ Rectangle {
 
     Connections {
         target: factButton
-        onFocusRequested: checkFocusRequest()
+        function onFocusRequested()
+        {
+            checkFocusRequest()
+        }
     }
     Component.onCompleted: checkFocusRequest()
     function checkFocusRequest()

@@ -57,13 +57,14 @@ TileLoader::TileLoader(Fact *parent)
     net = new QNetworkAccessManager(this);
 
     userAgent = QString("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%1.0) Gecko/%2%3%4 Firefox/%5.0.%6")
-                    .arg(QString::number(Random(3, 14)),
-                         QString::number(Random(QDate().currentDate().year() - 4,
-                                                QDate().currentDate().year())),
-                         QString::number(Random(11, 12)),
-                         QString::number(Random(10, 30)),
-                         QString::number(Random(3, 14)),
-                         QString::number(Random(1, 10)))
+                    .arg(QString::number(QRandomGenerator::global()->bounded(3, 14)),
+                         QString::number(
+                             QRandomGenerator::global()->bounded(QDate().currentDate().year() - 4,
+                                                                 QDate().currentDate().year())),
+                         QString::number(QRandomGenerator::global()->bounded(11, 12)),
+                         QString::number(QRandomGenerator::global()->bounded(10, 30)),
+                         QString::number(QRandomGenerator::global()->bounded(3, 14)),
+                         QString::number(QRandomGenerator::global()->bounded(1, 10)))
                     .toUtf8();
     /*QStringList langs = QLocale::system().uiLanguages();
   if (langs.length()>0){
@@ -184,7 +185,8 @@ void TileLoader::download(quint64 uid)
     QNetworkReply *reply = downloadRequest(&request);
     //qDebug()<<request.url();
     connect(reply,
-            static_cast<void (QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
+            static_cast<void (QNetworkReply::*)(QNetworkReply::NetworkError)>(
+                &QNetworkReply::errorOccurred),
             this,
             &TileLoader::networkReplyError);
     if (bVersionRequest) {

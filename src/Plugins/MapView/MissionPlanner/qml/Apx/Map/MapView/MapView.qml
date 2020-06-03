@@ -147,7 +147,7 @@ Control {
             Connections {
                 enabled: showVehicles && showNavigation
                 target: apx.vehicles.current.mission
-                onTriggered: map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle())
+                function onTriggered(){ map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle()) }
             }
         }
     }

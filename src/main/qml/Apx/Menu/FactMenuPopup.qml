@@ -76,7 +76,7 @@ Popup {
         }
         Connections {
             target: fact
-            onProgressChanged: popup.pinned=true
+            function onProgressChanged(){ popup.pinned=true }
         }
         onStackEmpty: popup.close()
         titleRightMargin: btnClose.width

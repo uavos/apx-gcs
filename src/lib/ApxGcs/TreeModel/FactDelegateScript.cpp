@@ -132,7 +132,7 @@ void FactDelegateScript::updateLog()
     logList->clear();
     //label->setText(field->data(NodesItem::tc_value,Qt::DisplayRole).toString());
     uint icnt = 0;
-    foreach (QString s, pawncc->getLog().split("\n", QString::SkipEmptyParts)) {
+    foreach (QString s, pawncc->getLog().split("\n", Qt::SkipEmptyParts)) {
         if (s.startsWith("Pawn"))
             continue;
         if (s.contains("error") || s.contains("warning")) {

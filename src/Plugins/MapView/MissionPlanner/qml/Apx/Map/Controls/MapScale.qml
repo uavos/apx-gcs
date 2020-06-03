@@ -75,10 +75,10 @@ Item {
 
     Connections {
         target: map
-        onCenterChanged: update()
-        onZoomLevelChanged: update()
-        onWidthChanged: update()
-        onHeightChanged: update()
+        function onCenterChanged(){ update() }
+        function onZoomLevelChanged(){ update() }
+        function onWidthChanged(){ update() }
+        function onHeightChanged(){ update() }
     }
 
     Component.onCompleted: calculateScale()

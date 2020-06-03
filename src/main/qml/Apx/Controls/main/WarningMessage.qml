@@ -17,7 +17,7 @@ CleanButton {
 
     Connections {
         target: fact
-        onShow: message(msg, msgType)
+        function onShow(msg, msgType){ message(msg, msgType) }
     }
     onTriggered: fact.trigger()
 

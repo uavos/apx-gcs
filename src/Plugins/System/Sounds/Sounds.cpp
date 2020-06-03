@@ -269,7 +269,7 @@ void Sounds::play(QString text)
 {
     //qDebug()<<"play:"<<text;
     if (text.contains('\n')) {
-        foreach (QString s, text.split('\n', QString::SkipEmptyParts)) {
+        foreach (QString s, text.split('\n', Qt::SkipEmptyParts)) {
             play(s);
         }
         return;

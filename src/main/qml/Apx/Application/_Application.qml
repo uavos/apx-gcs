@@ -25,7 +25,7 @@ AppWindow {
     //fact menu dispatcher
     Connections {
         target: apx
-        onFactTriggered: {
+        function onFactTriggered(fact,opts) {
             Menu.show(fact,opts)
         }
     }
@@ -54,10 +54,10 @@ AppWindow {
     showBgImage: loaderMain.opacity!=1
     Connections {
         target: application
-        onLoadingFinished: {
+        function onLoadingFinished() {
             loaderMain.active=Qt.binding(function(){return !apx.value})
         }
-        onAbout: {
+        function onAbout() {
             var c=c_about.createObject(application.window)
             c.closed.connect(c.destroy)
             c.open()

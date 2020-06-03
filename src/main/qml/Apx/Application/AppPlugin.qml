@@ -36,19 +36,9 @@ Loader {
     Connections {
         target: application
         enabled: uiComponent
-        onUiComponentLoaded: if(name==plugin.uiComponent)activate(object)
-    }
-    /*Connections {
-        target: application
-        onAboutToQuit: {
-            console.log(plugin.name)
-            plugin.asynchronous=false
-            plugin.sourceComponent=null
-            plugin.uiComponent=""
-            plugin.active=false
-            plugin.visible=false
-            //if(plugin.item)plugin.item.destroy()
+        function onUiComponentLoaded(name,object){
+            if(name===plugin.uiComponent)
+                activate(object)
         }
-    }*/
-    //onLoaded: console.log(plugin)
+    }
 }

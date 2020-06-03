@@ -41,18 +41,18 @@ Item {
     Connections {
         target: map
         enabled: selGroup
-        onClicked: reset()
-        onMoved: reset()
+        function onClicked(){ reset() }
+        function onMoved(){ reset() }
     }
     Connections {
         target: apx
         enabled: selTool || selGroup
-        onFactTriggered: if(fact!==selectedTool) reset()
+        function onFactTriggered(fact){ if(fact!==selectedTool) reset() }
     }
     Connections {
         target: apx.vehicles
         enabled: selTool || selGroup
-        onVehicleSelected: reset()
+        function onVehicleSelected(){ reset() }
     }
 
 

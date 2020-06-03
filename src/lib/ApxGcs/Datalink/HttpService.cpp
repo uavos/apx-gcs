@@ -109,7 +109,7 @@ QString HttpService::reply_mandala(const QString &req)
     //xml.writeTextElement("version",FactSystem::version());
     //------------------------------
     bool doDescr = false;
-    QStringList rlist = req.trimmed().split('&', QString::SkipEmptyParts);
+    QStringList rlist = req.trimmed().split('&', Qt::SkipEmptyParts);
     Mandala *mandala = Vehicles::instance()->current()->f_mandala;
     QList<MandalaFact *> facts;
     for (auto const &s : rlist) {

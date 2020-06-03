@@ -17,7 +17,7 @@ MapObject {
     Connections {
         target: fact?fact:null
         enabled: fact!==null
-        onTriggered: selectAndCenter()
+        function onTriggered(){ selectAndCenter() }
     }
 
     onTriggered: {
@@ -27,8 +27,8 @@ MapObject {
     property int detailsLevel: 20
     Connections {
         target: map
-        onZoomLevelChanged: dlTimer.start()
-        onSelectedObjectChanged: {
+        function onZoomLevelChanged(){ dlTimer.start() }
+        function onSelectedObjectChanged() {
             if(!fact)return
             fact.selected = selected
         }
@@ -41,9 +41,9 @@ MapObject {
 
     Connections {
         target: mission
-        onSelectedItemChanged: {
+        function onSelectedItemChanged() {
             if(!fact)return
-            if(mission.selectedItem == fact && !selected) selectAndCenter()
+            if(mission.selectedItem === fact && !selected) selectAndCenter()
         }
     }
 

@@ -99,7 +99,8 @@ Item {
     Connections {
         enabled: true //!interactive
         target: application
-        onLoadingFinished: {
+        function onLoadingFinished()
+        {
             control.plugin=apx.tools.videostreaming
             control.loaded=true
             //console.log(control.plugin)

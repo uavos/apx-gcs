@@ -18,6 +18,8 @@ AppPlugin {
 
     Connections {
         target: application
-        onUiComponentLoaded: updateMap() // when mapbase loads after plugin
+        function onUiComponentLoaded(name,object){
+            updateMap() // when mapbase loads after plugin
+        }
     }
 }

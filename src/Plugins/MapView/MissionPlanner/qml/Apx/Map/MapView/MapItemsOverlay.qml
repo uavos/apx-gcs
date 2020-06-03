@@ -15,8 +15,8 @@ MapBase {
 
     Connections {
         target: map
-        onCenterChanged: mpTimer.start()
-        onZoomLevelChanged: mpTimer.start()
+        function onCenterChanged(){ mpTimer.start() }
+        function onZoomLevelChanged(){ mpTimer.start() }
     }
 
     property real metersToPixelsFactor: 1

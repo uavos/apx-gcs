@@ -181,7 +181,7 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
             m->setToolTip(nodeName);
         } else {
             //list nodes in tooltip
-            QStringList st = m->toolTip().split(',', QString::SkipEmptyParts);
+            QStringList st = m->toolTip().split(',', Qt::SkipEmptyParts);
             st.append(nodeName);
             st.removeDuplicates();
             m->setToolTip(st.join(','));
@@ -234,7 +234,7 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
         a->setToolTip(nodeName);
     } else {
         //list nodes in tooltip
-        QStringList st = a->toolTip().split(',', QString::SkipEmptyParts);
+        QStringList st = a->toolTip().split(',', Qt::SkipEmptyParts);
         st.append(nodeName);
         st.removeDuplicates();
         a->setToolTip(st.join(','));
@@ -244,12 +244,12 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
 }
 void NodesFrame::updateMenuTitles(QMenu *menu)
 {
-    QStringList st = menu->toolTip().split(',', QString::SkipEmptyParts);
+    QStringList st = menu->toolTip().split(',', Qt::SkipEmptyParts);
     QString s = st.size() > 3 ? QString::number(st.size()) : st.join(',');
     menu->setTitle(QString("%1 [%2]").arg(menu->objectName()).arg(s));
 
     for (auto a : menu->actions()) {
-        QStringList st = a->toolTip().split(',', QString::SkipEmptyParts);
+        QStringList st = a->toolTip().split(',', Qt::SkipEmptyParts);
         QString s = st.size() > 3 ? QString::number(st.size()) : st.join(',');
         a->setText(QString("%1 [%2]").arg(a->objectName()).arg(s));
     }

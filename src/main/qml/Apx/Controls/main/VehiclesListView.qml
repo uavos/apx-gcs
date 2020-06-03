@@ -23,7 +23,9 @@ Item {
             vehicle: modelData
             Connections {
                 target: vehicle
-                onSelected: vehiclesList.positionViewAtIndex(index, ListView.Beginning)
+                function onSelected(){
+                    vehiclesList.positionViewAtIndex(index, ListView.Beginning)
+                }
             }
         }
 

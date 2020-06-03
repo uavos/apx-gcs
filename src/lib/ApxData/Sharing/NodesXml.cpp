@@ -227,8 +227,8 @@ bool NodesXmlImport::read(const QDomNode &dom)
             f.title = e.firstChildElement("title").text();
             f.descr = e.firstChildElement("descr").text();
             f.units = e.firstChildElement("units").text();
-            f.opts = e.firstChildElement("opts").text().split(',', QString::SkipEmptyParts);
-            f.groups = e.firstChildElement("sect").text().split('/', QString::SkipEmptyParts);
+            f.opts = e.firstChildElement("opts").text().split(',', Qt::SkipEmptyParts);
+            f.groups = e.firstChildElement("sect").text().split('/', Qt::SkipEmptyParts);
             f.valid = true;
             QDomElement ev = e.firstChildElement("value");
             if (!ev.isNull()) {
@@ -244,7 +244,7 @@ bool NodesXmlImport::read(const QDomNode &dom)
                 fs.title = ev.firstChildElement("title").text();
                 fs.descr = ev.firstChildElement("descr").text();
                 fs.units = ev.firstChildElement("units").text();
-                fs.opts = ev.firstChildElement("opts").text().split(',', QString::SkipEmptyParts);
+                fs.opts = ev.firstChildElement("opts").text().split(',', Qt::SkipEmptyParts);
                 fs.valid = true;
                 f.subFields.append(fs);
                 QDomElement evs = ev.firstChildElement("value");
@@ -444,7 +444,7 @@ bool NodesXmlImport::readOldFormat(const QDomNode &dom, int fmt)
                 continue;
             QVariantMap fstruct = readInfo(e, "struct");
             f.type = DictNode::dataTypeFromString(ftypeMap.value(fstruct.value("type").toString()));
-            f.opts = fstruct.value("opts").toString().split(',', QString::SkipEmptyParts);
+            f.opts = fstruct.value("opts").toString().split(',', Qt::SkipEmptyParts);
             f.descr = fstruct.value("descr").toString();
             f.expandStrings();
             f.valid = true;

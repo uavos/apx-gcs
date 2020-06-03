@@ -25,7 +25,7 @@ Item {
 
     Connections {
         target: apx.vehicles
-        onCurrentDownstreamDataReceived: chartView.appendData();
+        function onCurrentDownstreamDataReceived(){ chartView.appendData() }
     }
 
     ChartView {

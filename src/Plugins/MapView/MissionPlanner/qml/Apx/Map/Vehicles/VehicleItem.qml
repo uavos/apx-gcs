@@ -37,7 +37,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
     Connections {
         target: vehicle
-        onTriggered: {
+        function onTriggered() {
             if(active) focusTimer.start()
         }
     }

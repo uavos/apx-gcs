@@ -27,7 +27,7 @@ FactValue {
 
     Connections {
         target: apx.vehicles
-        onVehicleSelected: {
+        function onVehicleSelected() {
             cv = apx.vehicles.current
         }
     }

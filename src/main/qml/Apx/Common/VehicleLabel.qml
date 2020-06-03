@@ -44,7 +44,7 @@ Item {
 
     Connections {
         target: textLayout
-        onImplicitWidthChanged: timerWidthUpdate.start()
+        function onImplicitWidthChanged(){ timerWidthUpdate.start() }
     }
     property Timer timerWidthUpdate: Timer {
         interval: 1

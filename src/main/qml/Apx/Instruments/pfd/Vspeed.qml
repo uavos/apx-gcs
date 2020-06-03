@@ -3,13 +3,13 @@ import "../common"
 
 ControlArea {
 
-    readonly property var f_vspeed: mandala.est.air.vspeed
+    readonly property var f_vspeed: mandala.est.air.vario
     readonly property real m_vspeed: f_vspeed.value
 
-    readonly property var f_cmd_vspeed: mandala.cmd.air.vspeed
+    readonly property var f_cmd_vspeed: mandala.cmd.air.vario
     readonly property real m_cmd_vspeed: f_cmd_vspeed.value
 
-    readonly property var f_vd: mandala.est.pos.vd
+    readonly property var f_vd: mandala.est.pos.vspeed
     readonly property real m_vd: f_vd.value
 
     readonly property var f_venergy: mandala.est.tecs.vse
@@ -76,7 +76,7 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_gps.width
             origin.y: vsi_gps.height/2
-            angle: get_deg(-m_vd)
+            angle: get_deg(m_vd)
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
         ToolTipArea {text: f_vd.descr}

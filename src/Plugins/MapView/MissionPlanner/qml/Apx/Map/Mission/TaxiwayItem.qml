@@ -91,7 +91,7 @@ MissionObject {
                 }
                 Connections {
                     target: taxiwayItem
-                    onPathChanged: updatePath()
+                    function onPathChanged(){ updatePath() }
                 }
                 Component.onCompleted: updatePath()
             }

@@ -125,7 +125,7 @@ Map {
     Connections {
         enabled: follow
         target: itemToFollow
-        onCoordinateChanged: if(follow) centerOn(itemToFollow.coordinate)
+        function onCoordinateChanged(){ if(follow) centerOn(itemToFollow.coordinate) }
     }
 
     //internal

@@ -40,7 +40,7 @@ ComboBox {
 
     Connections {
         target: listView
-        onMovementStarted: {
+        function onMovementStarted() {
             editor.popup.close()
         }
     }

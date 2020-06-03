@@ -21,7 +21,7 @@ MapItemGroup {
     Connections {
         enabled: !map.follow
         target: mission
-        onMissionAvailable: showRegion()
+        function onMissionAvailable(){ showRegion() }
     }
 
     function showRegion()

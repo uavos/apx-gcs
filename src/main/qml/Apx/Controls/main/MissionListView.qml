@@ -77,14 +77,6 @@ ColumnLayout {
                         return Material.color(Material.Grey, Material.Shade800) //Style.cListTaxiway
                     }
                 }
-
-                /*Connections {
-                    target: fact
-                    onSelectedChanged: {
-                        if(fact.selected)
-                            missionListView.positionViewAtIndex(index, ListView.Center)
-                    }
-                }*/
             }
             Loader {
                 active: modelData.active

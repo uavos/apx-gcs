@@ -99,7 +99,7 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     parser.addOption(qmlMainFile);
 
     parser.process(*qApp);
-    oPlugins = parser.value(pluginsOption).split(',', QString::SkipEmptyParts);
+    oPlugins = parser.value(pluginsOption).split(',', Qt::SkipEmptyParts);
     oQml = parser.value(qmlMainFile);
     //---------------------------------------
 

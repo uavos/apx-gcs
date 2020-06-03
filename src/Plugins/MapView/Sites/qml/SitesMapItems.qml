@@ -27,7 +27,9 @@ MapItemGroup {
     //triggered site in lookup - focus on map
     Connections {
         target: sites.lookup
-        onItemTriggered: map.showCoordinate(QtPositioning.coordinate(modelData.lat,modelData.lon))
+        function onItemTriggered(){
+            map.showCoordinate(QtPositioning.coordinate(modelData.lat,modelData.lon))
+        }
     }
 
 

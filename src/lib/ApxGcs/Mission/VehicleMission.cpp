@@ -306,10 +306,10 @@ void VehicleMission::test(int n)
         return;
     Waypoint *w = static_cast<Waypoint *>(f_waypoints->facts().last());
     QGeoCoordinate p(w->f_latitude->value().toDouble(), w->f_longitude->value().toDouble());
-    double hdg = 360.0 * qrand() / RAND_MAX;
+    double hdg = QRandomGenerator::global()->bounded(360.0);
     for (int i = 0; i < n; ++i) {
-        hdg += 200.0 * qrand() / RAND_MAX - 100.0;
-        p = p.atDistanceAndAzimuth(100 + 10000.0 * qrand() / RAND_MAX, hdg);
+        hdg += QRandomGenerator::global()->bounded(200.0) - 100.0;
+        p = p.atDistanceAndAzimuth(100 + QRandomGenerator::global()->bounded(10000.0), hdg);
         f_waypoints->addObject(p);
     }
 }
