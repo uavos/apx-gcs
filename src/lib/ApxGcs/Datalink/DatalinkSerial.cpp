@@ -32,6 +32,8 @@
 #include <Xbus/uart/CobsDecoder.h>
 #include <Xbus/uart/CobsEncoder.h>
 
+#pragma GCC diagnostic ignored "-Wdelete-abstract-non-virtual-dtor"
+
 QStringList DatalinkSerial::openPorts;
 
 DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
