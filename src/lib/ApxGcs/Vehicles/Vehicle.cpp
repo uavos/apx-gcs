@@ -129,6 +129,8 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
             emit recordSerialData(static_cast<quint8>(portNo), data, true);
         });*/
     }
+    // forward
+    connect(protocol->telemetry, &ProtocolTelemetry::telemetryData, this, &Vehicle::telemetryData);
 
     Fact *f = new Fact(f_telemetry,
                        "rpath",

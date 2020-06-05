@@ -24,8 +24,8 @@ Item {
     }
 
     Connections {
-        target: apx.vehicles
-        function onCurrentDownstreamDataReceived(){ chartView.appendData() }
+        target: apx.vehicles.current
+        function onTelemetryData(){ chartView.appendData() }
     }
 
     ChartView {

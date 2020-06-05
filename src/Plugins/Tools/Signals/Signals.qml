@@ -53,23 +53,23 @@ Rectangle {
             }
             SignalButton {
                 text: "Axy"
-                values: [ mandala.est.rel.ax, mandala.est.rel.ay ]
+                values: [ mandala.est.acc.x, mandala.est.acc.y ]
             }
             SignalButton {
                 text: "Az"
-                values: [ mandala.est.rel.az ]
+                values: [ mandala.est.acc.z ]
             }
             SignalButton {
                 text: "G"
-                values: [ mandala.est.att.p, mandala.est.att.q, mandala.est.att.r ]
+                values: [ mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z ]
             }
-            SignalButton {
+            /*SignalButton {
                 text: "M"
                 values: [ mandala.sns.mag.x, mandala.sns.mag.y, mandala.sns.mag.z, mandala.est.aux.mag ]
-            }
+            }*/
             SignalButton {
                 text: "Pt"
-                values: [ mandala.est.air.altitude, mandala.est.air.vspeed, mandala.est.air.airspeed ]
+                values: [ mandala.est.air.altitude, mandala.est.air.vario, mandala.est.air.airspeed ]
             }
             SignalButton {
                 text: "Ctr"

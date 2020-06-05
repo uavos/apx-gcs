@@ -202,6 +202,16 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         }
         qWarning() << "Empty jsexec data received" << stream.dump();
         break;
+    case mandala::cmd::env::stream::calib::uid:
+        if (stream.available() > sizeof(mandala::uid_t)) {
+            mandala::uid_t uid;
+            stream >> uid;
+            updateStreamType(DATA);
+            emit calibrationData(uid, stream.payload());
+            return;
+        }
+        qWarning() << "Empty calibration data received";
+        break;
     }
     inc_errcnt();
 }
@@ -231,6 +241,13 @@ void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
         return;
     ostream.req(mandala::cmd::env::vcp::tx::uid);
     ostream.write<uint8_t>(portID);
+    ostream.append(data);
+    send(ostream.toByteArray());
+}
+void ProtocolVehicle::requestCalibrationData(mandala::uid_t uid, QByteArray data)
+{
+    ostream.req(mandala::cmd::env::stream::calib::uid);
+    ostream << uid;
     ostream.append(data);
     send(ostream.toByteArray());
 }

@@ -158,8 +158,8 @@ void MandalaFact::setValueFromStream(const QVariant &v)
         setValueLocal(QVariant::fromValue(v.toDouble() * k));
     else
         setValueLocal(v);
-    if (!modified())
-        qDebug() << mpath();
+    //if (!modified())
+    //    qDebug() << mpath();
     setModified(true);
 }
 QVariant MandalaFact::getValueForStream() const

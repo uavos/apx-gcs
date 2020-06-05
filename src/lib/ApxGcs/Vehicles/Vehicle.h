@@ -121,6 +121,9 @@ signals:
     void selected();
 
 signals:
+    //forward from protocols
+    void telemetryData();
+
     //forward for recorder
     void recordDownlink();
     void recordUplink(Fact *f);

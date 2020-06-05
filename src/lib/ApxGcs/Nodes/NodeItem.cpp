@@ -324,7 +324,7 @@ void NodeItem::removeEmptyGroups(Fact *f)
         removeEmptyGroups(i);
     }
     if (f != this && f->size() == 0) {
-        qDebug() << f;
+        //qDebug() << f;
         f->remove();
     }
 }

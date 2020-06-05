@@ -100,6 +100,8 @@ public slots:
     void vmexec(QString func);
     void sendSerial(quint8 portID, QByteArray data);
 
+    void requestCalibrationData(mandala::uid_t uid, QByteArray data);
+
 signals:
     void identChanged();
 
@@ -111,6 +113,8 @@ signals:
 
     void jsexecData(QString script);
     void missionData(QByteArray data);
+
+    void calibrationData(mandala::uid_t uid, QByteArray data);
 
     //---------------------------------------
     // PROPERTIES

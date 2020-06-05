@@ -20,13 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef COMPASSFRAME_H
-#define COMPASSFRAME_H
-//==============================================================================
+#pragma once
+
 #include "DrawingArea.h"
 #include <Vehicles/Vehicles.h>
 #include <QWidget>
-//==============================================================================
+
 class CompassFrame : public QWidget
 {
     Q_OBJECT
@@ -37,10 +36,6 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
-    Fact *c_Hx;
-    Fact *c_Hy;
-    Fact *c_Hz;
-
     QToolBar *toolBar;
     QCheckBox checkBoxTrace;
     QPushButton buttonClear, buttonClose;
@@ -60,16 +55,19 @@ private:
 
     QList<QMetaObject::Connection> clist;
 
+    QTimer reqTimer;
+
 private slots:
     void vehicleSelected(Vehicle *vehicle);
 
-    void dataReceived();
+    void calibrationData(mandala::uid_t uid, QByteArray data);
+
     void action_toggled(bool);
     void oncheckBoxTraceChange(int);
     void onbuttonClearPressed();
 
+    void requestCalibrationData();
+
 signals:
     void closed();
 };
-//==============================================================================
-#endif // CompassFrame_H

@@ -23,7 +23,7 @@
 #include "CompassFrame.h"
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
-//==============================================================================
+
 CompassFrame::CompassFrame(QWidget *parent)
     : QWidget(parent)
 {
@@ -67,6 +67,9 @@ CompassFrame::CompassFrame(QWidget *parent)
     dArea[2]->sAxis[0] = "Z";
     dArea[2]->sAxis[1] = "Y";
 
+    reqTimer.setInterval(100);
+    connect(&reqTimer, &QTimer::timeout, this, &CompassFrame::requestCalibrationData);
+
     connect(&checkBoxTrace, SIGNAL(stateChanged(int)), this, SLOT(oncheckBoxTraceChange(int)));
     connect(&buttonClear, SIGNAL(clicked()), this, SLOT(onbuttonClearPressed()));
     connect(&buttonClose, SIGNAL(clicked()), this, SLOT(close()));
@@ -88,22 +91,35 @@ void CompassFrame::vehicleSelected(Vehicle *vehicle)
         disconnect(c);
 
     ProtocolVehicle *protocol = vehicle->protocol();
-    // FIXME:
-    clist.append(connect(protocol->telemetry,
-                         &ProtocolTelemetry::telemetryData,
-                         this,
-                         &CompassFrame::dataReceived));
-
-    //c_Hx = vehicle->f_mandala->fact(mandala::sns::nav::mag::x::uid);
-    //c_Hy = vehicle->f_mandala->fact(mandala::sns::nav::mag::y::uid);
-    //c_Hz = vehicle->f_mandala->fact(mandala::sns::nav::mag::z::uid);
+    clist.append(
+        connect(protocol, &ProtocolVehicle::calibrationData, this, &CompassFrame::calibrationData));
 }
-//=============================================================================
-void CompassFrame::dataReceived()
+
+void CompassFrame::requestCalibrationData()
 {
-    dArea[0]->addData(c_Hx->value().toDouble(), c_Hy->value().toDouble());
-    dArea[1]->addData(c_Hx->value().toDouble(), c_Hz->value().toDouble());
-    dArea[2]->addData(c_Hz->value().toDouble(), c_Hy->value().toDouble());
+    ProtocolVehicle *protocol = Vehicles::instance()->current()->protocol();
+    if (!protocol)
+        return;
+    protocol->requestCalibrationData(mandala::sns::nav::mag::uid, QByteArray());
+}
+
+void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
+{
+    if (uid != mandala::sns::nav::mag::uid)
+        return;
+
+    ProtocolStreamReader stream(data);
+    if (stream.available() != (3 * sizeof(float)))
+        return;
+
+    double x, y, z;
+    x = stream.read<float>();
+    y = stream.read<float>();
+    z = stream.read<float>();
+
+    dArea[0]->addData(x, y);
+    dArea[1]->addData(x, z);
+    dArea[2]->addData(z, y);
     lbInfo.setText(QString("bias {%1, %2, %3}\tscale {%4, %5, %6}")
                        .arg(dArea[0]->bX, 0, 'f', 2)
                        .arg(dArea[0]->bY, 0, 'f', 2)
@@ -122,10 +138,12 @@ void CompassFrame::action_toggled(bool checked)
 void CompassFrame::oncheckBoxTraceChange(int val)
 {
     if (val) {
+        reqTimer.start();
         for (int i = 0; i < 3; i++) {
             dArea[i]->startTrace();
         }
     } else {
+        reqTimer.stop();
         for (int i = 0; i < 3; i++) {
             dArea[i]->stopTrace();
         }

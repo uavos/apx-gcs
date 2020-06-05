@@ -503,8 +503,8 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
 
             m_dict.append(field);
 
-            qDebug() << field.name << field.type << field.array << field.group << st
-                     << stream.available();
+            //qDebug() << field.name << field.type << field.array << field.group << st
+            //         << stream.available();
 
             if (stream.available() == 0) {
                 err = false;
