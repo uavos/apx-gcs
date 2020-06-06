@@ -20,18 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesStorage_H
-#define NodesStorage_H
-//=============================================================================
+#pragma once
+
 #include <Database/NodesReqDict.h>
 #include <Database/NodesReqNconf.h>
 #include <Database/NodesReqVehicle.h>
-#include <Dictionary/DictNode.h>
-#include <Protocols/ProtocolServiceNode.h>
+#include <Protocols/ProtocolNode.h>
 #include <QtCore>
+
 class Nodes;
 class NodeItem;
-//=============================================================================
+
 class NodesStorage : public QObject
 {
     Q_OBJECT
@@ -84,5 +83,3 @@ private slots:
 signals:
     void configInfoUpdated();
 };
-//=============================================================================
-#endif

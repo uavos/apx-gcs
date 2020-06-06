@@ -68,8 +68,6 @@ public:
 
     Fact *f_select;
 
-    QString uid;
-
     quint64 dbKey{0}; //from db
 
     QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
@@ -150,10 +148,6 @@ public slots:
     void message(QString msg,
                  AppNotify::NotifyFlags flags = AppNotify::FromApp | AppNotify::Info,
                  QString subsystem = QString());
-
-    //Database
-public slots:
-    void dbSaveVehicleInfo();
 
     //---------------------------------------
     // PROPERTIES

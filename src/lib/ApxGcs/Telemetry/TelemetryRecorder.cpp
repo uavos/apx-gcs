@@ -123,7 +123,7 @@ bool TelemetryRecorder::dbCheckRecord()
         if (!title.isEmpty())
             confTitle = title;
         DBReqTelemetryNewRecord *req
-            = new DBReqTelemetryNewRecord(vehicle->uid,
+            = new DBReqTelemetryNewRecord(vehicle->protocol()->uid(),
                                           vehicle->title(),
                                           confTitle,
                                           recording(),

@@ -24,7 +24,7 @@
 #define NodesXml_H
 //=============================================================================
 #include "ShareXml.h"
-#include <Database/NodesReqVehicle.h>
+#include <Database/VehiclesReqVehicle.h>
 #include <Dictionary/DictNode.h>
 //=============================================================================
 class NodesXmlExport : public ShareXmlExport
@@ -38,7 +38,7 @@ protected:
     bool write(QDomNode &dom);
 
 private:
-    DBReqNodesLoadConfig req;
+    DBReqVehiclesLoadConfig req;
     QVariantMap vehicleInfo;
 
     void writeNode(QDomNode &dom, const QVariantMap &data) const;

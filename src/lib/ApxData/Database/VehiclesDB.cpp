@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "NodesDB.h"
+#include "VehiclesDB.h"
 #include "Database.h"
 #include <App/AppDirs.h>
-//=============================================================================
-NodesDB::NodesDB(QObject *parent, QString sessionName)
+
+VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, AppDirs::db().absoluteFilePath("vehicles.db"), sessionName)
 {
     qRegisterMetaType<DictNode::Info>("DictNode::Info");
@@ -183,14 +183,13 @@ NodesDB::NodesDB(QObject *parent, QString sessionName)
                       << "FOREIGN KEY(nconfID) REFERENCES NodeConfigs(key) ON DELETE CASCADE");
     new DBReqMakeIndex(this, "VehicleConfigData", "configID", false);
 }
-//=============================================================================
-//=============================================================================
-DBReqNodes::DBReqNodes(QString sn)
-    : DatabaseRequest(Database::instance()->nodes)
+
+DBReqVehicles::DBReqVehicles(QString sn)
+    : DatabaseRequest(Database::instance()->vehicles)
     , sn(sn)
     , nodeID(0)
 {}
-bool DBReqNodes::run(QSqlQuery &query)
+bool DBReqVehicles::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM Nodes WHERE sn = ?");
     query.addBindValue(sn);
@@ -201,7 +200,7 @@ bool DBReqNodes::run(QSqlQuery &query)
     }
     return true;
 }
-QHash<QString, quint64> DBReqNodes::getFieldsByName(QSqlQuery &query, quint64 dictID) const
+QHash<QString, quint64> DBReqVehicles::getFieldsByName(QSqlQuery &query, quint64 dictID) const
 {
     QHash<QString, quint64> map;
     query.prepare("SELECT * FROM NodeDictData "
@@ -224,4 +223,3 @@ QHash<QString, quint64> DBReqNodes::getFieldsByName(QSqlQuery &query, quint64 di
     }
     return map;
 }
-//=============================================================================

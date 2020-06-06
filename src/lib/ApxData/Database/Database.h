@@ -25,7 +25,7 @@
 #include "DatabaseSession.h"
 #include <Fact/Fact.h>
 
-class NodesDB;
+class VehiclesDB;
 class TelemetryDB;
 class MissionsDB;
 
@@ -38,7 +38,7 @@ public:
 
     static Database *instance() { return _instance; }
 
-    NodesDB *nodes;
+    VehiclesDB *vehicles;
     TelemetryDB *telemetry;
     MissionsDB *missions;
 

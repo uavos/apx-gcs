@@ -144,7 +144,7 @@ void Nodes::search()
 void Nodes::stop()
 {
     qDebug() << sender();
-    protocol()->setActive(false);
+    vehicle->protocol()->vehicles->stopNmtRequests();
 }
 
 void Nodes::clear()

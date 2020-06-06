@@ -80,10 +80,11 @@ ApxApp.ApxLibrary {
             "DatabaseRequest.cpp", "DatabaseRequest.h",
             "DatabaseLookup.cpp", "DatabaseLookup.h",
             "DatabaseLookupModel.cpp", "DatabaseLookupModel.h",
-            "NodesDB.cpp", "NodesDB.h",
-            "NodesReqDict.cpp", "NodesReqDict.h",
-            "NodesReqNconf.cpp", "NodesReqNconf.h",
-            "NodesReqVehicle.cpp", "NodesReqVehicle.h",
+            "VehiclesDB.cpp", "VehiclesDB.h",
+            "VehiclesStorage.cpp", "VehiclesStorage.h",
+            "VehiclesReqDict.cpp", "VehiclesReqDict.h",
+            "VehiclesReqNconf.cpp", "VehiclesReqNconf.h",
+            "VehiclesReqVehicle.cpp", "VehiclesReqVehicle.h",
             "MissionsDB.cpp", "MissionsDB.h",
             "TelemetryDB.cpp", "TelemetryDB.h",
             "TelemetryReqWrite.cpp", "TelemetryReqWrite.h",
@@ -97,10 +98,10 @@ ApxApp.ApxLibrary {
         files: [
             "Share.cpp", "Share.h",
             "ShareXml.cpp", "ShareXml.h",
-            "NodesXml.cpp", "NodesXml.h",
+            //"NodesXml.cpp", "NodesXml.h",
             "MissionsXml.cpp", "MissionsXml.h",
-            "TelemetryXmlImport.cpp", "TelemetryXmlImport.h",
-            "TelemetryXmlExport.cpp", "TelemetryXmlExport.h",
+            //"TelemetryXmlImport.cpp", "TelemetryXmlImport.h",
+            //"TelemetryXmlExport.cpp", "TelemetryXmlExport.h",
         ]
     }
 

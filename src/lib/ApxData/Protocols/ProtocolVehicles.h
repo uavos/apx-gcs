@@ -32,6 +32,7 @@
 class ProtocolVehicle;
 class ProtocolConverter;
 class ProtocolNode;
+class ProtocolNodes;
 
 class ProtocolVehicles : public ProtocolBase
 {
@@ -79,6 +80,8 @@ public slots:
 signals:
     void vehicleIdentified(ProtocolVehicle *protocol);
     void nodeNotify(ProtocolNode *protocol); // forwarded from all vehicles
+
+    void stopNmtRequests();
 
     // data comm
 public slots:

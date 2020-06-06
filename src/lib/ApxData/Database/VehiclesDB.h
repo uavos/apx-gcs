@@ -20,24 +20,23 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesDB_H
-#define NodesDB_H
-//=============================================================================
+#pragma once
+
 #include "DatabaseSession.h"
 #include <Dictionary/DictNode.h>
-//=============================================================================
-class NodesDB : public DatabaseSession
+
+class VehiclesDB : public DatabaseSession
 {
     Q_OBJECT
 public:
-    explicit NodesDB(QObject *parent, QString sessionName);
+    explicit VehiclesDB(QObject *parent, QString sessionName);
 };
-//=============================================================================
-class DBReqNodes : public DatabaseRequest
+
+class DBReqVehicles : public DatabaseRequest
 {
     Q_OBJECT
 public:
-    explicit DBReqNodes(QString sn = QString());
+    explicit DBReqVehicles(QString sn = QString());
 
 protected:
     QString sn;
@@ -47,5 +46,3 @@ protected:
 
     virtual bool run(QSqlQuery &query);
 };
-//=============================================================================
-#endif

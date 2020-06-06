@@ -20,9 +20,9 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "NodesReqNconf.h"
-//=============================================================================
-bool DBReqNodesLoadNconf::run(QSqlQuery &query)
+#include "VehiclesReqNconf.h"
+
+bool DBReqVehiclesLoadNconf::run(QSqlQuery &query)
 {
     //read time to filter
     query.prepare("SELECT * FROM NodeConfigs"
@@ -58,10 +58,10 @@ bool DBReqNodesLoadNconf::run(QSqlQuery &query)
     emit configLoaded(info, values);
     return true;
 }
-//=============================================================================
-bool DBReqNodesLoadNconfLatest::run(QSqlQuery &query)
+
+bool DBReqVehiclesLoadNconfLatest::run(QSqlQuery &query)
 {
-    if (!DBReqNodes::run(query))
+    if (!DBReqVehicles::run(query))
         return false; //get nodeID
     if (!nodeID)
         return true;
@@ -74,14 +74,14 @@ bool DBReqNodesLoadNconfLatest::run(QSqlQuery &query)
     if (!query.next())
         return true;
     nconfID = query.value("key").toULongLong();
-    return DBReqNodesLoadNconf::run(query);
+    return DBReqVehiclesLoadNconf::run(query);
 }
-//=============================================================================
-bool DBReqNodesSaveNconf::run(QSqlQuery &query)
+
+bool DBReqVehiclesSaveNconf::run(QSqlQuery &query)
 {
     if (dictInfo.contains("nodeID"))
         nodeID = dictInfo.value("nodeID").toULongLong();
-    else if (!DBReqNodes::run(query))
+    else if (!DBReqVehicles::run(query))
         return false; //get nodeID
     if (!nodeID)
         return false;
@@ -241,4 +241,3 @@ bool DBReqNodesSaveNconf::run(QSqlQuery &query)
     qDebug() << "node config updated" << title;
     return true;
 }
-//=============================================================================

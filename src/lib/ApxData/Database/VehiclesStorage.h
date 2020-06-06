@@ -20,30 +20,32 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Database.h"
-#include "MissionsDB.h"
-#include "TelemetryDB.h"
-#include "VehiclesDB.h"
+#pragma once
 
-#include <App/App.h>
-#include <App/AppLog.h>
+#include <QtCore>
 
-APX_LOGGING_CATEGORY(DatabaseLog, "core.Database")
+#include <Protocols/ProtocolNode.h>
 
-Database *Database::_instance = nullptr;
+class ProtocolVehicle;
 
-Database::Database(Fact *parent)
-    : Fact(parent, "db", tr("Database"), tr("Data storage"), Group)
+class VehiclesStorage : public QObject
 {
-    _instance = this;
-    setIcon("database");
+    Q_OBJECT
+public:
+    explicit VehiclesStorage(QObject *parent);
 
-    //new DatabaseSession(this,"test.db","TestSession");
-    qRegisterMetaType<DatabaseRequest::Records>("DatabaseRequest::Records");
-    qRegisterMetaType<DatabaseRequest::Status>("DatabaseRequest::Status");
-    qRegisterMetaType<QList<QSqlRecord>>("QList<QSqlRecord>");
+    void saveVehicleInfo(ProtocolVehicle *vehicle);
 
-    vehicles = new VehiclesDB(this, QStringLiteral("NodesDbSession"));
-    telemetry = new TelemetryDB(this, QStringLiteral("TelemetryDbSession"));
-    missions = new MissionsDB(this, QStringLiteral("MissionsDbSession"));
-}
+    void loadNodeInfo(ProtocolNode *node);
+    void saveNodeInfo(ProtocolNode *node);
+
+    void saveNodeUser(ProtocolNode *node);
+
+    void saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict &dict);
+
+public:
+    inline quint64 vehicle_key() const { return m_vehicle_key; }
+
+private:
+    quint64 m_vehicle_key{};
+};

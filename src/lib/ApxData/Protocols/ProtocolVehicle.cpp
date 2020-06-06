@@ -27,6 +27,8 @@
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusPacket.h>
 
+#include <Database/VehiclesReqVehicle.h>
+
 ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
                                  xbus::vehicle::squawk_t squawk,
                                  const xbus::vehicle::ident_s &ident,
@@ -35,6 +37,12 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     , vehicles(vehicles)
 {
     setIcon(squawk ? "drone" : "chip");
+
+    m_uid = QByteArray(reinterpret_cast<const char *>(ident.uid), sizeof(xbus::vehicle::uid_t))
+                .toHex()
+                .toUpper();
+
+    storage = new VehiclesStorage(this);
 
     nodes = new ProtocolNodes(this);
     telemetry = new ProtocolTelemetry(this);
@@ -56,6 +64,10 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
         telemetryReqTimer.setInterval(1000);
         connect(&telemetryReqTimer, &QTimer::timeout, this, &ProtocolVehicle::requestTelemetry);
         connect(this, &Fact::activeChanged, this, &ProtocolVehicle::updateActive);
+    }
+
+    if (!isReplay()) {
+        storage->saveVehicleInfo(this);
     }
 }
 
@@ -142,6 +154,10 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     if (pid.uid > mandala::uid_max) {
         qWarning() << "wrong pid" << pid.uid << stream.dump();
         return;
+    }
+
+    if (mandala::cmd::env::match(pid.uid)) {
+        emit receivedCmdEnvPacket(pid.uid);
     }
 
     if (mandala::cmd::env::nmt::match(pid.uid)) {
@@ -263,6 +279,10 @@ xbus::vehicle::squawk_t ProtocolVehicle::squawk() const
 QString ProtocolVehicle::squawkText() const
 {
     return QString("%1").arg(squawk(), 4, 16, QChar('0')).toUpper();
+}
+QString ProtocolVehicle::uid() const
+{
+    return m_uid;
 }
 ProtocolVehicle::StreamType ProtocolVehicle::streamType(void) const
 {

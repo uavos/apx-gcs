@@ -66,11 +66,12 @@ Telemetry::Telemetry(Vehicle *parent)
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         bindProperty(f_player, "active", true);
 
-        f_share = new TelemetryShare(this, this);
+        //FIXME:
+        /*f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
             f_lookup->jumpToRecord(id);
         });
-        connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
+        connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);*/
 
         connect(vehicle, &Vehicle::selected, f_reader, &TelemetryReader::loadCurrent);
 

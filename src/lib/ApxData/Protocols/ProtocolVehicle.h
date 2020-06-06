@@ -27,6 +27,8 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicles.h"
 
+#include <Database/VehiclesStorage.h>
+
 #include <QtCore>
 
 class ProtocolVehicle : public ProtocolBase
@@ -35,6 +37,8 @@ class ProtocolVehicle : public ProtocolBase
     Q_ENUMS(StreamType)
     Q_PROPERTY(quint16 squawk READ squawk NOTIFY squawkChanged)
     Q_PROPERTY(QString squawkText READ squawkText NOTIFY squawkChanged)
+
+    Q_PROPERTY(QString uid READ uid CONSTANT)
 
     Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
     Q_PROPERTY(QString streamTypeText READ streamTypeText NOTIFY streamTypeChanged)
@@ -73,6 +77,8 @@ public:
     ProtocolNodes *nodes;
     ProtocolTelemetry *telemetry;
     ProtocolVehicles *vehicles;
+
+    VehiclesStorage *storage;
 
 private:
     xbus::vehicle::ident_s m_ident;
@@ -116,11 +122,15 @@ signals:
 
     void calibrationData(mandala::uid_t uid, QByteArray data);
 
+    void receivedCmdEnvPacket(mandala::uid_t uid);
+
     //---------------------------------------
     // PROPERTIES
 public:
     xbus::vehicle::squawk_t squawk() const;
     QString squawkText() const;
+
+    QString uid() const;
 
     StreamType streamType(void) const;
     QString streamTypeText() const;
@@ -135,6 +145,7 @@ public:
 
 protected:
     xbus::vehicle::squawk_t m_squawk{0};
+    QString m_uid;
     StreamType m_streamType{OFFLINE};
     uint m_errcnt{0};
 

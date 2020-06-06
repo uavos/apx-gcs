@@ -118,8 +118,6 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
 
     selectVehicle(f_local);
 
-    f_local->dbSaveVehicleInfo();
-
     //connect protocols
     connect(protocol, &ProtocolVehicles::vehicleIdentified, this, &Vehicles::vehicleIdentified);
 }
@@ -134,8 +132,6 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
     if (protocol->squawk() > 0)
         msg.append(QString(" (%1)").arg(protocol->squawkText()));
     v->message(msg, AppNotify::Important);
-
-    v->dbSaveVehicleInfo();
 
     /* FIXME: select identified vehicle
      while (f_list->size() > 0) {

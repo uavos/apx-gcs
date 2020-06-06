@@ -69,7 +69,7 @@ Firmware::Firmware(Fact *parent)
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
     connect(f_stop, &Fact::triggered, nodes_protocol(), []() {
-        nodes_protocol()->setActive(false);
+        AppGcs::instance()->protocol->stopNmtRequests();
     });
 
     connect(nodes_protocol(), &Fact::activeChanged, this, [this]() {
@@ -249,9 +249,13 @@ void Firmware::loaderFinished(QueueItem *item, bool success)
     if (success) {
         item->remove();
     } else {
-        nodes_protocol()->setActive(false);
-        setActive(false);
         f_queue->removeAll();
     }
+
+    if (f_queue->size() == 0) {
+        nodes_protocol()->setActive(false);
+        setActive(false);
+    }
+
     QTimer::singleShot(100, this, &Firmware::next);
 }

@@ -20,11 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "NodesReqDict.h"
-//=============================================================================
-bool DBReqNodesLoadInfo::run(QSqlQuery &query)
+#include "VehiclesReqDict.h"
+
+bool DBReqVehiclesLoadInfo::run(QSqlQuery &query)
 {
-    if (!DBReqNodes::run(query))
+    if (!DBReqVehicles::run(query))
         return false; //get nodeID
     if (!nodeID)
         return true;
@@ -37,10 +37,10 @@ bool DBReqNodesLoadInfo::run(QSqlQuery &query)
     emit infoLoaded(queryRecord(query));
     return true;
 }
-//=============================================================================
-bool DBReqNodesSaveInfo::run(QSqlQuery &query)
+
+bool DBReqVehiclesSaveInfo::run(QSqlQuery &query)
 {
-    if (!DBReqNodes::run(query))
+    if (!DBReqVehicles::run(query))
         return false; //get nodeID
     if (!nodeID) {
         //register node
@@ -72,10 +72,10 @@ bool DBReqNodesSaveInfo::run(QSqlQuery &query)
         return false;
     return true;
 }
-//=============================================================================
-bool DBReqNodesSaveUser::run(QSqlQuery &query)
+
+bool DBReqVehiclesSaveUser::run(QSqlQuery &query)
 {
-    if (!DBReqNodes::run(query))
+    if (!DBReqVehicles::run(query))
         return false; //get nodeID
     if (!nodeID) {
         qDebug() << "missing node" << sn;
@@ -120,9 +120,9 @@ bool DBReqNodesSaveUser::run(QSqlQuery &query)
              << info.value("hostname").toString();
     return true;
 }
-bool DBReqNodesLoadUser::run(QSqlQuery &query)
+bool DBReqVehiclesLoadUser::run(QSqlQuery &query)
 {
-    if (!DBReqNodes::run(query))
+    if (!DBReqVehicles::run(query))
         return false; //get nodeID
     if (!nodeID) {
         qDebug() << "missing node" << sn;
@@ -138,9 +138,8 @@ bool DBReqNodesLoadUser::run(QSqlQuery &query)
     info = filterIdValues(queryRecord(query));
     return true;
 }
-//=============================================================================
-//=============================================================================
-bool DBReqNodesLoadDict::run(QSqlQuery &query)
+
+bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
 {
     //QTime t0;
     //t0.start();
@@ -157,7 +156,7 @@ bool DBReqNodesLoadDict::run(QSqlQuery &query)
         }
     }
     if (!sn.isEmpty()) {
-        if (!DBReqNodes::run(query))
+        if (!DBReqVehicles::run(query))
             return false; //get nodeID
         if (!nodeID)
             return true;
@@ -254,8 +253,8 @@ bool DBReqNodesLoadDict::run(QSqlQuery &query)
     emit dictLoaded(info, dict);
     return true;
 }
-//=============================================================================
-void DBReqNodesSaveDict::makeRecords(const DictNode::Dict &dict)
+
+void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
 {
     records.names << "id"
                   << "subID"
@@ -266,7 +265,8 @@ void DBReqNodesSaveDict::makeRecords(const DictNode::Dict &dict)
                   << "dtype"
                   << "opts"
                   << "sect";
-    for (int i = 0; i < dict.fields.size(); ++i) {
+
+    /*for (int i = 0; i < dict.fields.size(); ++i) {
         const DictNode::Field &f = dict.fields.at(i);
         records.values.append(QVariantList() << f.id << QVariant() << f.name << f.title << f.descr
                                              << f.units << DictNode::dataTypeToString(f.type)
@@ -283,13 +283,13 @@ void DBReqNodesSaveDict::makeRecords(const DictNode::Dict &dict)
         records.values.append(QVariantList()
                               << c.cmd << QVariant() << c.name << QVariant() << c.descr
                               << QVariant() << QString("command") << QVariant() << QVariant());
-    }
+    }*/
 }
-bool DBReqNodesSaveDict::run(QSqlQuery &query)
+bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
 {
     if (info.contains("nodeID"))
         nodeID = info.value("nodeID").toULongLong();
-    else if (!DBReqNodes::run(query))
+    else if (!DBReqVehicles::run(query))
         return false; //get nodeID
     else
         info = queryRecord(query, info);
@@ -297,14 +297,14 @@ bool DBReqNodesSaveDict::run(QSqlQuery &query)
         return false;
 
     //generate hash
-    if (!info.contains("hash")) {
+    /*if (!info.contains("hash")) {
         QCryptographicHash h(QCryptographicHash::Sha1);
         h.addData(info.value("name").toString().toUtf8());
         h.addData(info.value("version").toString().toUtf8());
         h.addData(info.value("hardware").toString().toUtf8());
         getHash(h, records);
         info.insert("hash", h.result().toHex().toUpper());
-    }
+    }*/
 
     //find existing dictionary
     quint64 dictID = 0;
@@ -324,11 +324,11 @@ bool DBReqNodesSaveDict::run(QSqlQuery &query)
             //uptime existing dict record of actual synced node
             if (info.value("time").toULongLong() < query.value("time").toULongLong())
                 info.insert("time", query.value("time").toULongLong());
-            if (info.value("chash").toString().isEmpty())
-                info.insert("chash", query.value("chash").toString());
-            query.prepare("UPDATE NodeDicts SET time=?, chash=? WHERE key = ?");
+            if (info.value("hash").toString().isEmpty())
+                info.insert("hash", query.value("hash").toString());
+            query.prepare("UPDATE NodeDicts SET time=?, hash=? WHERE key = ?");
             query.addBindValue(info.value("time").toULongLong());
-            query.addBindValue(info.value("chash").toString());
+            query.addBindValue(info.value("hash").toString());
             query.addBindValue(dictID);
             if (!query.exec())
                 return false;
@@ -340,15 +340,14 @@ bool DBReqNodesSaveDict::run(QSqlQuery &query)
 
     //create new dict record
     db->transaction(query);
-    query.prepare("INSERT INTO NodeDicts(nodeID,time,hash,name,version,hardware,chash) "
-                  "VALUES(?,?,?,?,?,?,?)");
+    query.prepare("INSERT INTO NodeDicts(nodeID,time,hash,name,version,hardware) "
+                  "VALUES(?,?,?,?,?,?)");
     query.addBindValue(nodeID);
     query.addBindValue(info.value("time").toULongLong());
     query.addBindValue(info.value("hash").toString());
     query.addBindValue(info.value("name").toString());
     query.addBindValue(info.value("version").toString());
     query.addBindValue(info.value("hardware").toString());
-    query.addBindValue(info.value("chash").toString());
     if (!query.exec())
         return false;
     dictID = query.lastInsertId().toULongLong();
@@ -426,5 +425,3 @@ bool DBReqNodesSaveDict::run(QSqlQuery &query)
     qDebug() << "new dict" << info.value("name").toString();
     return true;
 }
-//=============================================================================
-//=============================================================================

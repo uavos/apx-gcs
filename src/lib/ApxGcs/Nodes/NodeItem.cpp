@@ -27,7 +27,6 @@
 #include <QtSql>
 
 #include <App/App.h>
-#include <Database/NodesDB.h>
 #include <Vehicles/VehicleWarnings.h>
 #include <Vehicles/Vehicles.h>
 #include <QFontDatabase>

@@ -52,51 +52,51 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             connect(this, &Fact::sectionChanged, parent, &Fact::textChanged);
         }*/
     } else {
-        setUnits(meta.units);
-        switch (meta.type_id) {
-        default:
-            apxMsgW() << "void:" << mpath();
-            break;
-        case mandala::type_real:
-            setDataType(Float);
-            setPrecision(getPrecision());
-            break;
-        case mandala::type_dword:
-            setDataType(Int);
-            setMin(0);
-            setMax(QVariant::fromValue(0xFFFFFFFFll));
-            break;
-        case mandala::type_word:
-            setDataType(Int);
-            setMin(0);
-            setMax(QVariant::fromValue(0xFFFFu));
-            break;
-        case mandala::type_byte:
-            setDataType(Int);
-            setMin(0);
-            setMax(255);
-            break;
-        case mandala::type_option: {
-            setDataType(Enum);
-            QStringList st = units().split(',');
-            setUnits(QString());
-            setEnumStrings(st);
-            for (int i = 0; i < st.size(); ++i) {
-                const QString &s
-                    = QString("%1_%2_%3").arg(parentFact()->name()).arg(name()).arg(st.at(i));
-                //const QString &s = QString("%1_%2").arg(name()).arg(st.at(i));
-                if (!tree->constants.contains(s)) {
-                    tree->constants.insert(s, i);
-                    continue;
-                }
-                if (tree->constants.value(s) == i)
-                    continue;
-                apxMsgW() << "enum:" << s << mpath();
-            }
-        } break;
-        }
-
         if (!isSystem()) {
+            setUnits(meta.units);
+            switch (meta.type_id) {
+            default:
+                apxMsgW() << "void:" << mpath();
+                break;
+            case mandala::type_real:
+                setDataType(Float);
+                setPrecision(getPrecision());
+                break;
+            case mandala::type_dword:
+                setDataType(Int);
+                setMin(0);
+                setMax(QVariant::fromValue(0xFFFFFFFFll));
+                break;
+            case mandala::type_word:
+                setDataType(Int);
+                setMin(0);
+                setMax(QVariant::fromValue(0xFFFFu));
+                break;
+            case mandala::type_byte:
+                setDataType(Int);
+                setMin(0);
+                setMax(255);
+                break;
+            case mandala::type_option: {
+                setDataType(Enum);
+                QStringList st = units().split(',');
+                setUnits(QString());
+                setEnumStrings(st);
+                for (int i = 0; i < st.size(); ++i) {
+                    const QString &s
+                        = QString("%1_%2_%3").arg(parentFact()->name()).arg(name()).arg(st.at(i));
+                    //const QString &s = QString("%1_%2").arg(name()).arg(st.at(i));
+                    if (!tree->constants.contains(s)) {
+                        tree->constants.insert(s, i);
+                        continue;
+                    }
+                    if (tree->constants.value(s) == i)
+                        continue;
+                    apxMsgW() << "enum:" << s << mpath();
+                }
+            } break;
+            }
+
             setOpt("color", getColor());
             sendTime.start();
             sendTimer.setInterval(100);
@@ -104,6 +104,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             connect(&sendTimer, &QTimer::timeout, this, &MandalaFact::send);
             connect(this, &MandalaFact::sendValue, tree, &Mandala::sendValue);
             connect(this, &MandalaFact::sendBundle, tree, &Mandala::sendBundle);
+        } else {
+            setDataType(Int);
         }
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
     }
@@ -160,7 +162,8 @@ void MandalaFact::setValueFromStream(const QVariant &v)
         setValueLocal(v);
     //if (!modified())
     //    qDebug() << mpath();
-    setModified(true);
+    //setModified(true);
+    count_rx();
 }
 QVariant MandalaFact::getValueForStream() const
 {
@@ -173,6 +176,15 @@ QVariant MandalaFact::getValueForStream() const
         return value();
     } while (0);
     return k * value().toDouble();
+}
+
+void MandalaFact::count_rx()
+{
+    _rx_cnt++;
+    if (isSystem()) {
+        Fact::setValue(QVariant::fromValue(_rx_cnt));
+    }
+    setModified(true);
 }
 
 bool MandalaFact::sendValues(const QVariantList &vlist)
@@ -482,6 +494,5 @@ QColor MandalaFact::getColor()
 
 bool MandalaFact::isSystem() const
 {
-    return m_meta.uid
-           >= (mandala::uid_base + (3 << mandala::uid_shift[0]) | (1 << mandala::uid_shift[1]));
+    return mandala::cmd::env::match(uid());
 }

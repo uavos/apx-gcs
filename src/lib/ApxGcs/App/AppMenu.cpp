@@ -68,7 +68,7 @@ AppMenu::AppMenu(Fact *parent)
     file = new Fact(this, "file", tr("File"), "", Group, "file");
     f = new Fact(file, "telemetry");
     f->setOpt("shortcut", QKeySequence::Open);
-    f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
+    //f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
     //f = new Fact(file, "nodes");
     // FIXME: f->bind(Vehicles::instance()->f_replay->f_nodes->f_share->f_import);
     f = new Fact(file, "datalink");

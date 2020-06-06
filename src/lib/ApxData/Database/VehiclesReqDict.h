@@ -20,18 +20,18 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesReqDict_H
-#define NodesReqDict_H
-//=============================================================================
-#include "NodesDB.h"
+#pragma once
+
+#include "VehiclesDB.h"
+#include <Protocols/ProtocolNode.h>
 #include <QtCore>
-//=============================================================================
-class DBReqNodesLoadInfo : public DBReqNodes
+
+class DBReqVehiclesLoadInfo : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesLoadInfo(QString sn)
-        : DBReqNodes(sn)
+    explicit DBReqVehiclesLoadInfo(QString sn)
+        : DBReqVehicles(sn)
     {}
 
 protected:
@@ -39,13 +39,13 @@ protected:
 signals:
     void infoLoaded(QVariantMap info);
 };
-//=============================================================================
-class DBReqNodesSaveInfo : public DBReqNodes
+
+class DBReqVehiclesSaveInfo : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesSaveInfo(QVariantMap info)
-        : DBReqNodes(info.value("sn").toString())
+    explicit DBReqVehiclesSaveInfo(QVariantMap info)
+        : DBReqVehicles(info.value("sn").toString())
         , info(info)
     {}
     bool run(QSqlQuery &query);
@@ -53,13 +53,13 @@ public:
 private:
     QVariantMap info;
 };
-//=============================================================================
-class DBReqNodesSaveUser : public DBReqNodes
+
+class DBReqVehiclesSaveUser : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesSaveUser(QString sn, QVariantMap info, qint64 t = 0)
-        : DBReqNodes(sn)
+    explicit DBReqVehiclesSaveUser(QString sn, QVariantMap info, qint64 t = 0)
+        : DBReqVehicles(sn)
         , info(info)
         , t(t > 0 ? t : QDateTime::currentDateTime().toMSecsSinceEpoch())
     {}
@@ -69,30 +69,30 @@ private:
     QVariantMap info;
     qint64 t;
 };
-class DBReqNodesLoadUser : public DBReqNodes
+class DBReqVehiclesLoadUser : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesLoadUser(QString sn)
-        : DBReqNodes(sn)
+    explicit DBReqVehiclesLoadUser(QString sn)
+        : DBReqVehicles(sn)
     {}
     //result
     QVariantMap info;
     bool run(QSqlQuery &query);
 };
-//=============================================================================
-class DBReqNodesLoadDict : public DBReqNodes
+
+class DBReqVehiclesLoadDict : public DBReqVehicles
 {
     Q_OBJECT
 public:
     //load cache
-    explicit DBReqNodesLoadDict(QString sn, QString chash)
-        : DBReqNodes(sn)
+    explicit DBReqVehiclesLoadDict(QString sn, QString chash)
+        : DBReqVehicles(sn)
         , dictID(0)
         , chash(chash)
     {}
-    explicit DBReqNodesLoadDict(quint64 dictID)
-        : DBReqNodes()
+    explicit DBReqVehiclesLoadDict(quint64 dictID)
+        : DBReqVehicles()
         , dictID(dictID)
     {}
     bool run(QSqlQuery &query);
@@ -107,13 +107,13 @@ signals:
     void dictInfoFound(QVariantMap dictInfo);
     void dictLoaded(QVariantMap info, DictNode::Dict dict);
 };
-//=============================================================================
-class DBReqNodesSaveDict : public DBReqNodes
+
+class DBReqVehiclesSaveDict : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesSaveDict(QVariantMap info, const DictNode::Dict &dict)
-        : DBReqNodes(info.value("sn").toString())
+    explicit DBReqVehiclesSaveDict(QVariantMap info, const ProtocolNode::Dict &dict)
+        : DBReqVehicles(info.value("sn").toString())
         , info(info)
     {
         makeRecords(dict);
@@ -124,9 +124,7 @@ public:
 
 private:
     Records records;
-    void makeRecords(const DictNode::Dict &dict);
+    void makeRecords(const ProtocolNode::Dict &dict);
 signals:
     void dictInfoFound(QVariantMap dictInfo);
 };
-//=============================================================================
-#endif

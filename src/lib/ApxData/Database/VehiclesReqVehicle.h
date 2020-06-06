@@ -20,18 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesReqVehicle_H
-#define NodesReqVehicle_H
-//=============================================================================
-#include "NodesDB.h"
+#pragma once
+
+#include "VehiclesDB.h"
 #include <QtCore>
-//=============================================================================
-class DBReqSaveVehicleInfo : public DBReqNodes
+
+class DBReqSaveVehicleInfo : public DBReqVehicles
 {
     Q_OBJECT
 public:
     explicit DBReqSaveVehicleInfo(QVariantMap info)
-        : DBReqNodes()
+        : DBReqVehicles()
         , vehicleID(0)
         , info(info)
         , t(QDateTime::currentDateTime().toMSecsSinceEpoch())
@@ -46,16 +45,16 @@ private:
 signals:
     void foundID(quint64 key);
 };
-//=============================================================================
-class DBReqNodesSaveConfig : public DBReqNodes
+
+class DBReqVehiclesSaveConfig : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesSaveConfig(QList<quint64> nconfList,
-                                  quint64 vehicleID,
-                                  QString notes,
-                                  quint64 t = 0)
-        : DBReqNodes()
+    explicit DBReqVehiclesSaveConfig(QList<quint64> nconfList,
+                                     quint64 vehicleID,
+                                     QString notes,
+                                     quint64 t = 0)
+        : DBReqVehicles()
         , nconfList(nconfList)
         , vehicleID(vehicleID)
         , notes(notes)
@@ -75,13 +74,13 @@ signals:
     void configUpdated();
     void configCreated();
 };
-//=============================================================================
-class DBReqNodesLoadConfig : public DBReqNodes
+
+class DBReqVehiclesLoadConfig : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesLoadConfig(QString hash)
-        : DBReqNodes()
+    explicit DBReqVehiclesLoadConfig(QString hash)
+        : DBReqVehicles()
         , hash(hash)
     {}
     bool run(QSqlQuery &query);
@@ -94,5 +93,3 @@ private:
 signals:
     void loaded(QVariantMap configInfo, QList<QVariantMap> data);
 };
-//=============================================================================
-#endif

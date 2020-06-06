@@ -23,12 +23,12 @@
 #include "NodesXml.h"
 #include <App/AppLog.h>
 #include <Database/Database.h>
-#include <Database/NodesReqDict.h>
-#include <Database/NodesReqNconf.h>
+#include <Database/VehiclesReqDict.h>
+#include <Database/VehiclesReqNconf.h>
 #define NODES_XML_FORMAT 1
 //=============================================================================
 NodesXmlExport::NodesXmlExport(QString hash, QString title, QString fileName)
-    : ShareXmlExport(Database::instance()->nodes, "nodes", NODES_XML_FORMAT, title, fileName)
+    : ShareXmlExport(Database::instance()->vehicles, "nodes", NODES_XML_FORMAT, title, fileName)
     , req(hash)
 {}
 bool NodesXmlExport::run(QSqlQuery &query)
@@ -51,7 +51,7 @@ bool NodesXmlExport::run(QSqlQuery &query)
 
     //collect node users for each node
     for (int i = 0; i < req.data.size(); ++i) {
-        DBReqNodesLoadUser reqUser(
+        DBReqVehiclesLoadUser reqUser(
             req.data.at(i).value("dictInfo").value<QVariantMap>().value("sn").toString());
         if (!reqUser.run(query))
             return false;
@@ -166,7 +166,7 @@ void NodesXmlExport::writeNodeField(QDomNode &dom,
 //=============================================================================
 //=============================================================================
 NodesXmlImport::NodesXmlImport(QString title, QString fileName)
-    : ShareXmlImport(Database::instance()->nodes, "nodes", NODES_XML_FORMAT, title, fileName)
+    : ShareXmlImport(Database::instance()->vehicles, "nodes", NODES_XML_FORMAT, title, fileName)
 {}
 bool NodesXmlImport::read(const QDomNode &dom)
 {
@@ -300,13 +300,13 @@ bool NodesXmlImport::save(QSqlQuery &query)
         {
             QVariantMap ninfo = dictInfo;
             ninfo.remove("time");
-            DBReqNodesSaveInfo req(ninfo);
+            DBReqVehiclesSaveInfo req(ninfo);
             if (!req.run(query))
                 break;
         }
         //register dictionary
         {
-            DBReqNodesSaveDict req(dictInfo, nodesItem.value("dict").value<DictNode::Dict>());
+            DBReqVehiclesSaveDict req(dictInfo, nodesItem.value("dict").value<DictNode::Dict>());
             if (!req.run(query))
                 break;
             dictInfo["key"] = req.info.value("key");
@@ -315,7 +315,7 @@ bool NodesXmlImport::save(QSqlQuery &query)
         {
             const QVariantMap &nconfInfo = nodesItem.value("nconfInfo").value<QVariantMap>();
             const QVariantMap &values = nodesItem.value("values").value<QVariantMap>();
-            DBReqNodesSaveNconf req(dictInfo, values, nconfInfo.value("time").toULongLong());
+            DBReqVehiclesSaveNconf req(dictInfo, values, nconfInfo.value("time").toULongLong());
             if (!req.run(query))
                 break;
             nconfList.append(req.nconfID);
@@ -324,9 +324,9 @@ bool NodesXmlImport::save(QSqlQuery &query)
         {
             QVariantMap userInfo = nodesItem.value("userInfo").value<QVariantMap>();
             if (!userInfo.isEmpty()) {
-                DBReqNodesSaveUser req(dictInfo.value("sn").toString(),
-                                       userInfo,
-                                       userInfo.value("time").toLongLong());
+                DBReqVehiclesSaveUser req(dictInfo.value("sn").toString(),
+                                          userInfo,
+                                          userInfo.value("time").toLongLong());
                 if (!req.run(query))
                     break;
             }
@@ -334,10 +334,10 @@ bool NodesXmlImport::save(QSqlQuery &query)
 
         //save config bundle
         if (i == (nodes.size() - 1)) {
-            DBReqNodesSaveConfig req(nconfList,
-                                     vehicleID,
-                                     info.value("notes").toString(),
-                                     info.value("time").toULongLong());
+            DBReqVehiclesSaveConfig req(nconfList,
+                                        vehicleID,
+                                        info.value("notes").toString(),
+                                        info.value("time").toULongLong());
             if (!req.run(query))
                 break;
             info["hash"] = req.configInfo.value("hash");

@@ -65,6 +65,8 @@ public:
     };
     typedef QList<dict_field_s> Dict;
 
+    inline quint64 lastSeenTime() const { return m_lastSeenTime; }
+
 protected:
     QString toolTip() const override;
     void hashData(QCryptographicHash *h) const override;
@@ -77,6 +79,8 @@ private:
     QList<int> m_dict_fields;
 
     QElapsedTimer timeReqLoader;
+
+    quint64 m_lastSeenTime{};
 
     const dict_field_s *field(xbus::node::conf::fid_t fid) const;
     QVariant read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid);

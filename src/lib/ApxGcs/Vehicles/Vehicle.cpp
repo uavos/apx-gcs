@@ -27,7 +27,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <Database/NodesReqVehicle.h>
+#include <Database/VehiclesReqVehicle.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
@@ -132,6 +132,14 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     // forward
     connect(protocol->telemetry, &ProtocolTelemetry::telemetryData, this, &Vehicle::telemetryData);
 
+    // counters
+    connect(protocol, &ProtocolVehicle::receivedCmdEnvPacket, this, [this](mandala::uid_t uid) {
+        MandalaFact *f = f_mandala->fact(uid);
+        if (f)
+            f->count_rx();
+    });
+
+    // path
     Fact *f = new Fact(f_telemetry,
                        "rpath",
                        tr("Reset Path"),
@@ -161,23 +169,6 @@ void Vehicle::updateActive()
     setFollow(false);
 }
 
-void Vehicle::dbSaveVehicleInfo()
-{
-    if (protocol()->isReplay())
-        return;
-    QVariantMap info;
-    info.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
-    info.insert("uid", uid);
-    info.insert("callsign", title());
-    info.insert("squawk", protocol()->squawkText());
-    DBReqSaveVehicleInfo *req = new DBReqSaveVehicleInfo(info);
-    connect(req,
-            &DBReqSaveVehicleInfo::foundID,
-            this,
-            &Vehicle::dbSetVehicleKey,
-            Qt::QueuedConnection);
-    req->exec();
-}
 void Vehicle::dbSetVehicleKey(quint64 key)
 {
     dbKey = key;
@@ -404,16 +395,31 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
 
     AppNotify::NotifyFlags fType = flags & AppNotify::NotifyTypeMask;
 
+    static const QStringList err(QStringList() << "err"
+                                               << "fail"
+                                               << "critical"
+                                               << "timeout");
+    static const QStringList warn(QStringList() << "warn"
+                                                << "nofix"
+                                                << "missing"
+                                                << "not found");
+
     if (fType != AppNotify::Error && fType != AppNotify::Warning) {
         AppNotify::NotifyFlags t = fType;
-        if (msg.contains("err", Qt::CaseInsensitive))
+        for (auto i : err) {
+            if (!msg.contains(i, Qt::CaseInsensitive))
+                continue;
             t = AppNotify::Error;
-        else if (msg.contains("fail", Qt::CaseInsensitive))
-            t = AppNotify::Error;
-        else if (msg.contains("timeout", Qt::CaseInsensitive))
-            t = AppNotify::Error;
-        else if (msg.contains("warn", Qt::CaseInsensitive))
-            t = AppNotify::Warning;
+            break;
+        }
+        if (t != AppNotify::Error) {
+            for (auto i : warn) {
+                if (!msg.contains(i, Qt::CaseInsensitive))
+                    continue;
+                t = AppNotify::Warning;
+                break;
+            }
+        }
         if (t != fType)
             flags = (flags & ~AppNotify::NotifyTypeMask) | t;
         fType = t;

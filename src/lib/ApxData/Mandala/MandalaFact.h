@@ -60,6 +60,8 @@ public:
     void setValueFromStream(const QVariant &v);
     QVariant getValueForStream() const;
 
+    void count_rx();
+
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
@@ -70,6 +72,8 @@ private:
 
     int getPrecision();
     QColor getColor();
+
+    size_t _rx_cnt{};
 
 protected:
     //Fact override

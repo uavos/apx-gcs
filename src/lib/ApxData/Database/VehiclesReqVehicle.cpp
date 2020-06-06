@@ -20,10 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "NodesReqVehicle.h"
-#include "NodesReqDict.h"
-#include "NodesReqNconf.h"
-//=============================================================================
+#include "VehiclesReqVehicle.h"
+#include "VehiclesReqDict.h"
+#include "VehiclesReqNconf.h"
+
 bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
 {
     QString uid = info.value("uid").toString();
@@ -97,8 +97,8 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
     emit foundID(vehicleID);
     return true;
 }
-//=============================================================================
-bool DBReqNodesSaveConfig::run(QSqlQuery &query)
+
+bool DBReqVehiclesSaveConfig::run(QSqlQuery &query)
 {
     configInfo.insert("time", t);
     if (vehicleID)
@@ -246,8 +246,8 @@ bool DBReqNodesSaveConfig::run(QSqlQuery &query)
     emit configCreated();
     return true;
 }
-//=============================================================================
-bool DBReqNodesLoadConfig::run(QSqlQuery &query)
+
+bool DBReqVehiclesLoadConfig::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM VehicleConfigs WHERE hash=?");
     query.addBindValue(hash);
@@ -283,8 +283,8 @@ bool DBReqNodesLoadConfig::run(QSqlQuery &query)
         QVariantMap dataItem;
         QPair<quint64, quint64> p = list.at(i);
         {
-            DBReqNodesLoadDict *req = new DBReqNodesLoadDict(p.first);
-            //connect(req,&DBReqLoadNodeDict::dictLoaded,this,&DBReqNodesLoadConfig::dictLoaded);
+            DBReqVehiclesLoadDict *req = new DBReqVehiclesLoadDict(p.first);
+            //connect(req,&DBReqLoadNodeDict::dictLoaded,this,&DBReqVehiclesLoadConfig::dictLoaded);
             bool ok = req->run(query);
             if (ok) {
                 dataItem.insert("dictInfo", QVariant::fromValue(req->info));
@@ -296,8 +296,8 @@ bool DBReqNodesLoadConfig::run(QSqlQuery &query)
         }
         {
             //collect configs to list for import
-            DBReqNodesLoadNconf *req = new DBReqNodesLoadNconf(p.second);
-            //connect(req,&DBReqNodesLoadNconf::configLoaded,this,&DBReqNodesLoadConfig::configLoaded);
+            DBReqVehiclesLoadNconf *req = new DBReqVehiclesLoadNconf(p.second);
+            //connect(req,&DBReqVehiclesLoadNconf::configLoaded,this,&DBReqVehiclesLoadConfig::configLoaded);
             bool ok = req->run(query);
             if (ok) {
                 dataItem.insert("nconfInfo", QVariant::fromValue(req->info));
@@ -316,4 +316,3 @@ bool DBReqNodesLoadConfig::run(QSqlQuery &query)
     emit loaded(configInfo, data);
     return true;
 }
-//=============================================================================

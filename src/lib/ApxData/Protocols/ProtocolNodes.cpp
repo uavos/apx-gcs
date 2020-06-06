@@ -69,6 +69,10 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
         if (!this->vehicle->active())
             setActive(false);
     });
+
+    connect(vehicle->vehicles, &ProtocolVehicles::stopNmtRequests, this, [this]() {
+        setActive(false);
+    });
 }
 
 void ProtocolNodes::updateActive()
@@ -81,6 +85,7 @@ void ProtocolNodes::updateActive()
         clear_requests();
         return;
     }
+
     wdTimer.start();
 
     if (progress() < 0)
@@ -339,6 +344,12 @@ void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
 {
     if (!enabled())
         return;
+
+    if (vehicle->isLocal() && !active()) {
+        request->finish();
+        return;
+    }
+
     reqTime.start();
     vehicle->send(request->toByteArray());
 }

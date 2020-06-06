@@ -116,7 +116,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
     default:
         stream.reset();
         local->downlink(stream);
-        break;
+        return;
 
         /*case mandala::cmd::env::vehicle::xpdr::uid: { //transponder from UAV received
         if (pid.pri == xbus::pri_request)
@@ -204,6 +204,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
             squawkMap.insert(squawk, v);
             emit vehicleIdentified(v);
         }
+        v->receivedCmdEnvPacket(pid.uid);
     } break;
     case mandala::cmd::env::vehicle::downlink::uid: {
         if (pid.pri == xbus::pri_request)
@@ -220,6 +221,7 @@ void ProtocolVehicles::process_downlink(const QByteArray packet)
         ProtocolVehicle *v = squawkMap.value(squawk);
         if (v) {
             v->downlink(stream);
+            v->receivedCmdEnvPacket(pid.uid);
             break;
         }
         trace_downlink(stream.payload());

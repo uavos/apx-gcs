@@ -36,9 +36,10 @@ void AppGcs::loadServices()
 {
     App::loadServices();
 
+    new Database(f_apx);
+
     protocol = new ProtocolVehicles(f_apx);
 
-    new Database(f_apx);
     Vehicles *vehicles = new Vehicles(f_apx, protocol);
 
     //datalink

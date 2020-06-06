@@ -72,6 +72,10 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
             &ProtocolNode::updateDescr,
             Qt::QueuedConnection);
 
+    if (nodes->vehicle->isReplay())
+        return;
+
+    nodes->vehicle->storage->loadNodeInfo(this);
     requestIdent();
 }
 
@@ -113,6 +117,8 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             break;
         return;
     }
+
+    m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
     //qDebug() << QString("[%1]").arg(Mandala::meta(pid).name) << stream.available();
 
@@ -172,6 +178,10 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             setFiles(fnames);
         }
         emit identReceived();
+        if (ident.flags.bits.files > 1) {
+            nodes->vehicle->storage->saveNodeInfo(this);
+            nodes->vehicle->storage->saveNodeUser(this);
+        }
         nodes->nodeNotify(this);
     } break;
 
@@ -522,6 +532,8 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
     qDebug() << "dict parsed";
     setDictValid(true);
     emit dictReceived(m_dict);
+
+    nodes->vehicle->storage->saveNodeDict(this, m_dict);
 
     requestConf();
 }

@@ -27,18 +27,18 @@
 #include <App/App.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 NodesStorage::NodesStorage(Nodes *nodes)
     : QObject(nodes)
     , loading(false)
     , nodes(nodes)
     , loadDicts(false)
 {}
-//=============================================================================
+
 void NodesStorage::loadNodeInfo(NodeItem *node)
 {
     //qDebug()<<"req info";
-    DBReqNodesLoadInfo *req = new DBReqNodesLoadInfo(node->sn());
+    DBReqNodesLoadInfo *req = new DBReqNodesLoadInfo(node->protocol()->sn());
     connect(req,
             &DBReqNodesLoadInfo::infoLoaded,
             this,
@@ -50,11 +50,11 @@ void NodesStorage::saveNodeInfo(NodeItem *node)
 {
     //qDebug()<<"save info";
     QVariantMap info;
-    info.insert("sn", node->sn());
+    info.insert("sn", node->protocol()->sn());
     info.insert("time", node->lastSeenTime);
     info.insert("name", node->title());
-    info.insert("version", node->version());
-    info.insert("hardware", node->hardware());
+    info.insert("version", node->protocol()->version());
+    info.insert("hardware", node->protocol()->hardware());
     DBReqNodesSaveInfo *req = new DBReqNodesSaveInfo(info);
     req->exec();
 }
@@ -70,7 +70,7 @@ void NodesStorage::infoLoaded(QVariantMap info)
     node->setTitle(info.value("name").toString());
     node->setHardware(info.value("hardware").toString());
 }
-//=============================================================================
+
 void NodesStorage::saveNodeUser(NodeItem *node)
 {
     //qDebug()<<"save user";
@@ -81,8 +81,7 @@ void NodesStorage::saveNodeUser(NodeItem *node)
     DBReqNodesSaveUser *req = new DBReqNodesSaveUser(node->sn(), info);
     req->exec();
 }
-//=============================================================================
-//=============================================================================
+
 void NodesStorage::loadDictCache(NodeItem *node)
 {
     DBReqNodesLoadDict *req = new DBReqNodesLoadDict(node->sn(), node->conf_hash);
@@ -100,7 +99,7 @@ void NodesStorage::loadDictCache(NodeItem *node)
     req->exec();
     //qDebug()<<"req cache";
 }
-//=============================================================================
+
 void NodesStorage::saveDictCache(NodeItem *node, const DictNode::Dict &dict)
 {
     //qDebug()<<"save cache";
@@ -117,7 +116,7 @@ void NodesStorage::saveDictCache(NodeItem *node, const DictNode::Dict &dict)
             Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
+
 void NodesStorage::dictLoaded(QVariantMap info, DictNode::Dict dict)
 {
     //qDebug()<<"cache loaded";
@@ -129,8 +128,7 @@ void NodesStorage::dictLoaded(QVariantMap info, DictNode::Dict dict)
     node->setDictInfo(info);
     node->dictReceived(dict);
 }
-//=============================================================================
-//=============================================================================
+
 void NodesStorage::loadNodeConfig(NodeItem *node, quint64 nconfID)
 {
     if (!node->dictValid())
@@ -183,7 +181,7 @@ void NodesStorage::configLoaded(QVariantMap info, QVariantMap values)
                     .arg(backupTitle(info.value("time").toULongLong(),
                                      info.value("title").toString()));
 }
-//=============================================================================
+
 void NodesStorage::restoreNodeConfig(NodeItem *node)
 {
     if (!node->dictValid())
@@ -208,8 +206,7 @@ QString NodesStorage::backupTitle(quint64 time, QString title)
         s += QString(" (%1)").arg(title);
     return s;
 }
-//=============================================================================
-//=============================================================================
+
 void NodesStorage::saveConfiguration(bool force)
 {
     QList<quint64> list;
@@ -257,14 +254,13 @@ void NodesStorage::vehicleConfigCreated()
 {
     nodes->vehicle->message(tr("Configuration created"), AppNotify::Important);
 }
-//=============================================================================
+
 void NodesStorage::setConfigInfo(QVariantMap info)
 {
     configInfo = info;
     emit configInfoUpdated();
 }
-//=============================================================================
-//=============================================================================
+
 void NodesStorage::loadConfiguration(QString hash)
 {
     DBReqNodesLoadConfig *req = new DBReqNodesLoadConfig(hash);
@@ -280,7 +276,7 @@ void NodesStorage::loadConfiguration(QString hash)
             Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
+
 void NodesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap> data)
 {
     QString title = configInfo.value("title").toString();
@@ -322,7 +318,7 @@ void NodesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap
         s.append(QString(" (%1)").arg(title));
     nodes->vehicle->message(s, AppNotify::Important);
 }
-//=============================================================================
+
 void NodesStorage::newNodeDict(QVariantMap info, DictNode::Dict dict)
 {
     //qDebug()<<info;
@@ -344,7 +340,7 @@ void NodesStorage::newNodeDict(QVariantMap info, DictNode::Dict dict)
     n->setInfoValid(true);
     dictLoaded(info, dict);
 }
-//=============================================================================
+
 void NodesStorage::newNodeConfig(quint64 nconfID, QVariantMap info, QVariantMap values)
 {
     //qDebug()<<info;
@@ -358,7 +354,7 @@ void NodesStorage::newNodeConfig(quint64 nconfID, QVariantMap info, QVariantMap 
     n->setDataValid(true);
     n->setNconfID(nconfID);
 }
-//=============================================================================
+
 int NodesStorage::importConfigs(QList<QVariantMap> data)
 {
     int icnt = 0;
@@ -467,6 +463,3 @@ int NodesStorage::importConfigs(QList<QVariantMap> data)
     }
     return rcnt;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================

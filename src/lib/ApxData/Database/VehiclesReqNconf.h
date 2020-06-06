@@ -20,22 +20,21 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef NodesReqNconf_H
-#define NodesReqNconf_H
-//=============================================================================
-#include "NodesDB.h"
+#pragma once
+
+#include "VehiclesDB.h"
 #include <QtCore>
-//=============================================================================
-class DBReqNodesLoadNconf : public DBReqNodes
+
+class DBReqVehiclesLoadNconf : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesLoadNconf(quint64 nconfID)
-        : DBReqNodes()
+    explicit DBReqVehiclesLoadNconf(quint64 nconfID)
+        : DBReqVehicles()
         , nconfID(nconfID)
     {}
-    explicit DBReqNodesLoadNconf(QString sn)
-        : DBReqNodes(sn)
+    explicit DBReqVehiclesLoadNconf(QString sn)
+        : DBReqVehicles(sn)
         , nconfID(0)
     {}
     virtual bool run(QSqlQuery &query);
@@ -50,25 +49,25 @@ signals:
     void nconfFound(quint64 nconfID);
     void configLoaded(QVariantMap info, QVariantMap values);
 };
-//=============================================================================
-class DBReqNodesLoadNconfLatest : public DBReqNodesLoadNconf
+
+class DBReqVehiclesLoadNconfLatest : public DBReqVehiclesLoadNconf
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesLoadNconfLatest(QString sn)
-        : DBReqNodesLoadNconf(sn)
+    explicit DBReqVehiclesLoadNconfLatest(QString sn)
+        : DBReqVehiclesLoadNconf(sn)
     {}
 
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
-class DBReqNodesSaveNconf : public DBReqNodes
+
+class DBReqVehiclesSaveNconf : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqNodesSaveNconf(QVariantMap dictInfo, QVariantMap values, quint64 time)
-        : DBReqNodes(dictInfo.value("sn").toString())
+    explicit DBReqVehiclesSaveNconf(QVariantMap dictInfo, QVariantMap values, quint64 time)
+        : DBReqVehicles(dictInfo.value("sn").toString())
         , nconfID(0)
         , dictInfo(dictInfo)
         , values(values)
@@ -85,5 +84,3 @@ private:
 signals:
     void nconfFound(quint64 nconfID);
 };
-//=============================================================================
-#endif
