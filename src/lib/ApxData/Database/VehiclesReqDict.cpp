@@ -160,15 +160,15 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
             return false; //get nodeID
         if (!nodeID)
             return true;
-        if (!chash.isEmpty()) {
+        if (!hash.isEmpty()) {
             //find existing dictionary by chash
             query.prepare("SELECT * FROM NodeDicts "
                           "INNER JOIN Nodes ON NodeDicts.nodeID=Nodes.key "
-                          "WHERE nodeID=? AND chash=? "
+                          "WHERE nodeID=? AND hash=? "
                           "ORDER BY NodeDicts.time DESC, NodeDicts.key DESC "
                           "LIMIT 1");
             query.addBindValue(nodeID);
-            query.addBindValue(chash);
+            query.addBindValue(hash);
             if (!query.exec())
                 return false;
             if (!query.next()) {
@@ -180,7 +180,7 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
     }
 
     if (!dictID) {
-        qWarning() << "missing node dict" << sn << chash;
+        qWarning() << "missing node dict" << sn << hash;
         return true;
     }
 
@@ -190,63 +190,29 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
     query.prepare("SELECT * FROM NodeDictData "
                   "INNER JOIN NodeDictDataFields ON NodeDictData.fieldID=NodeDictDataFields.key "
                   "WHERE dictID=? "
-                  "ORDER BY id ASC, subID ASC");
+                  "ORDER BY fidx ASC");
     query.addBindValue(dictID);
     if (!query.exec())
         return false;
-    while (query.next()) {
-        const QString dtype = query.value("dtype").toString();
-        quint16 id = static_cast<quint16>(query.value("id").toUInt());
-        if (dtype == "command") {
-            DictNode::Command c;
-            c.cmd = id;
-            c.name = query.value("name").toString();
-            c.descr = query.value("descr").toString();
-            dict.commands.append(c);
+    QHash<QString, xbus::node::conf::type_e> types;
+    for (uint8_t i = 0; i < xbus::node::conf::type_max; ++i) {
+        QString s(xbus::node::conf::type_to_str(static_cast<xbus::node::conf::type_e>(i)));
+        if (s.isEmpty())
             continue;
-        }
-        QVariant vsubID = query.value("subID");
-        if (vsubID.isNull() && id != dict.fields.size()) {
-            qDebug() << "wrong params sequence" << id;
-            return false;
-        }
-        DictNode::Field f;
-        f.id = id;
-        f.type = DictNode::dataTypeFromString(dtype);
+        types.insert(s, static_cast<xbus::node::conf::type_e>(i));
+    }
+
+    while (query.next()) {
+        ProtocolNode::dict_field_s f;
         f.name = query.value("name").toString();
         f.title = query.value("title").toString();
         f.descr = query.value("descr").toString();
         f.units = query.value("units").toString();
-        f.opts = query.value("opts").toString().split(',', Qt::SkipEmptyParts);
-        f.groups = query.value("sect").toString().split('/', Qt::SkipEmptyParts);
-        if (f.type == DictNode::Void) {
-            qDebug() << "wrong field type" << f.name << f.type;
-            return false;
-        }
-        f.valid = true;
-        if (vsubID.isNull()) {
-            dict.fields.append(f);
-            continue;
-        }
-        int subID = vsubID.toInt();
-        if (dict.fields.isEmpty()) {
-            qDebug() << "wrong sub params sequence" << f.id;
-        }
-        DictNode::Field &fp = dict.fields[dict.fields.size() - 1];
-        if (f.id != fp.id || fp.subFields.size() != subID) {
-            qDebug() << "wrong sub params sequence" << subID << fp.id << f.id
-                     << fp.subFields.size();
-            return false;
-        }
-        f.id = static_cast<quint16>(subID);
-        fp.subFields.append(f);
+        f.type = types.value(query.value("type").toString());
+        f.array = query.value("array").toUInt();
+        f.group = query.value("gidx").toUInt();
+        dict.append(f);
     }
-
-    //valitime and publish dict
-    dict.fieldsValid = true;
-    dict.commandsValid = true;
-    dict.chash = info.value("chash").toString();
-    dict.cached = true;
 
     //qDebug()<<t0.elapsed()<<"ms";
     emit dictInfoFound(info);
@@ -256,34 +222,28 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
 
 void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
 {
-    records.names << "id"
-                  << "subID"
-                  << "name"
+    records.names << "name"
                   << "title"
                   << "descr"
                   << "units"
-                  << "dtype"
-                  << "opts"
-                  << "sect";
+                  << "type"
+                  << "array"
+                  << "fidx"
+                  << "gidx";
 
-    /*for (int i = 0; i < dict.fields.size(); ++i) {
-        const DictNode::Field &f = dict.fields.at(i);
-        records.values.append(QVariantList() << f.id << QVariant() << f.name << f.title << f.descr
-                                             << f.units << DictNode::dataTypeToString(f.type)
-                                             << f.opts.join(',') << f.groups.join('/'));
-        for (int j = 0; j < f.subFields.size(); ++j) {
-            const DictNode::Field &fs = f.subFields.at(j);
-            records.values.append(QVariantList() << f.id << fs.id << fs.name << fs.title << fs.descr
-                                                 << fs.units << DictNode::dataTypeToString(fs.type)
-                                                 << fs.opts.join(',') << fs.groups.join('/'));
-        }
+    uint16_t fid = 0;
+    for (auto const &i : dict) {
+        QVariantList v;
+        v << i.name;
+        v << (i.title.isEmpty() ? QVariant() : i.title);
+        v << (i.descr.isEmpty() ? QVariant() : i.descr);
+        v << (i.units.isEmpty() ? QVariant() : i.units);
+        v << QString(xbus::node::conf::type_to_str(i.type));
+        v << (i.array > 0 ? i.array : QVariant());
+        v << fid++;
+        v << i.group;
+        records.values.append(v);
     }
-    for (int i = 0; i < dict.commands.size(); i++) {
-        const DictNode::Command &c = dict.commands.at(i);
-        records.values.append(QVariantList()
-                              << c.cmd << QVariant() << c.name << QVariant() << c.descr
-                              << QVariant() << QString("command") << QVariant() << QVariant());
-    }*/
 }
 bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
 {
@@ -297,14 +257,14 @@ bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
         return false;
 
     //generate hash
-    /*if (!info.contains("hash")) {
+    if (!info.contains("hash")) {
         QCryptographicHash h(QCryptographicHash::Sha1);
         h.addData(info.value("name").toString().toUtf8());
         h.addData(info.value("version").toString().toUtf8());
         h.addData(info.value("hardware").toString().toUtf8());
         getHash(h, records);
         info.insert("hash", h.result().toHex().toUpper());
-    }*/
+    }
 
     //find existing dictionary
     quint64 dictID = 0;
@@ -354,15 +314,14 @@ bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
     info["key"] = dictID;
 
     //uptime fields records
-    QList<quint64> flist;
+    QList<quint64> fieldIDs;
     QStringList fnames;
     fnames << "name"
-           << "dtype"
            << "title"
            << "descr"
            << "units"
-           << "opts"
-           << "sect";
+           << "type"
+           << "array";
     for (int i = 0; i < records.values.size(); ++i) {
         QVariantList vlist;
         for (int j = 0; j < fnames.size(); ++j) {
@@ -392,30 +351,30 @@ bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
         if (!query.exec())
             return false;
         if (query.next()) {
-            flist.append(query.value(0).toULongLong());
+            fieldIDs.append(query.value(0).toULongLong());
             continue;
         }
 
         query.prepare("INSERT INTO NodeDictDataFields(" + fnames.join(',')
                       + ") "
-                        "VALUES(?,?,?,?,?,?,?)");
+                        "VALUES(?,?,?,?,?,?)");
         for (int j = 0; j < fnames.size(); ++j) {
             query.addBindValue(vlist.at(j));
         }
         if (!query.exec())
             return false;
         //qDebug()<<"new field"<<vlist.at(0).toString();
-        flist.append(query.lastInsertId().toULongLong());
+        fieldIDs.append(query.lastInsertId().toULongLong());
     }
 
     //write dict fields
     for (int i = 0; i < records.values.size(); ++i) {
-        query.prepare("INSERT INTO NodeDictData(dictID,id,subID,fieldID) "
+        query.prepare("INSERT INTO NodeDictData(dictID,fieldID,fidx,gidx) "
                       "VALUES(?,?,?,?)");
         query.addBindValue(dictID);
-        query.addBindValue(records.values.at(i).at(records.names.indexOf("id")));
-        query.addBindValue(records.values.at(i).at(records.names.indexOf("subID")));
-        query.addBindValue(flist.at(i));
+        query.addBindValue(fieldIDs.at(i));
+        query.addBindValue(records.values.at(i).at(records.names.indexOf("fidx")));
+        query.addBindValue(records.values.at(i).at(records.names.indexOf("gidx")));
         if (!query.exec())
             return false;
     }

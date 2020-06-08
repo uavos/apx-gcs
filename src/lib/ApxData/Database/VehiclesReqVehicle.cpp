@@ -32,8 +32,11 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
         uid.clear();
     if (uid.isEmpty()) {
         info.remove("squawk");
-    } else
+    } else {
         vuid = uid;
+        if (info.value("class").isNull())
+            info["class"] = "UAV";
+    }
     if (!info.value("time").toULongLong())
         info["time"] = t;
 
@@ -51,8 +54,6 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
         //merge ident from previous registrations
         if (info.value("callsign").toString().isEmpty())
             info["callsign"] = query.value("callsign");
-        if (info.value("class").toString().isEmpty())
-            info["class"] = query.value("class");
         if (vuid.isNull()) {
             //only one record with null uid (LOCAL)
             vehicleID = query.value(0).toULongLong();

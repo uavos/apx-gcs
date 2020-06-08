@@ -42,7 +42,7 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
                 .toHex()
                 .toUpper();
 
-    storage = new VehiclesStorage(this);
+    storage = new VehiclesStorage(this, this);
 
     nodes = new ProtocolNodes(this);
     telemetry = new ProtocolTelemetry(this);
@@ -67,8 +67,22 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     }
 
     if (!isReplay()) {
-        storage->saveVehicleInfo(this);
+        storage->saveVehicleInfo();
     }
+}
+
+void ProtocolVehicle::dbKeyFound(quint64 key)
+{
+    m_dbKey = key;
+}
+void ProtocolVehicle::dbConfigInfoFound(QVariantMap info)
+{
+    m_dbConfigInfo = info;
+    emit dbConfigInfoChanged();
+}
+void ProtocolVehicle::dbSetConfigHash(QString hash)
+{
+    m_dbConfigHash = hash;
 }
 
 const xbus::vehicle::ident_s &ProtocolVehicle::ident() const

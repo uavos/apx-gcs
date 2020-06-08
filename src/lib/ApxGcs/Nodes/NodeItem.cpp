@@ -377,6 +377,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
             }
         }
     }
+    //qDebug() << m_fields.size();
     removeEmptyGroups(this);
     groupArrays();
 }

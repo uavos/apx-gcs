@@ -109,6 +109,15 @@ void ProtocolNode::hashData(QCryptographicHash *h) const
     h->addData(QString::number(ident().hash).toUtf8());
 }
 
+void ProtocolNode::dbDictInfoFound(QVariantMap dictInfo)
+{
+    m_dbDictInfo = dictInfo;
+}
+void ProtocolNode::dbConfigIDFound(quint64 configID)
+{
+    m_dbConfigID = configID;
+}
+
 void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
     //filter requests
@@ -602,6 +611,12 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
             if (!v.isValid())
                 break;
 
+            // check dict and fix field value for some types
+            const dict_field_s &f = m_dict.at(m_dict_fields.at(fid));
+            if (f.type == xbus::node::conf::option) {
+                v = f.units.split(',').value(v.toInt(), v.toString());
+            }
+
             values.append(v);
             fid++;
 
@@ -620,6 +635,16 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     }
     qDebug() << "conf parsed";
     setValid(true);
+
+    // save config
+    QVariantMap valuesMap;
+    for (auto i = 0; i < values.size(); ++i) {
+        const dict_field_s &f = m_dict.at(m_dict_fields.at(i));
+        valuesMap.insert(f.name, values.at(i));
+    }
+    nodes->vehicle->storage->saveNodeConfig(this, valuesMap);
+
+    // notify
     emit confReceived(values);
 }
 
@@ -630,19 +655,19 @@ const ProtocolNode::dict_field_s *ProtocolNode::field(xbus::node::conf::fid_t fi
     return &m_dict.at(m_dict_fields.at(fid));
 }
 
-template<typename _T>
+template<typename T, typename Tout = T>
 static QVariant read_param(ProtocolStreamReader &stream, size_t array)
 {
-    if (stream.available() < (sizeof(_T) * (array ? array : 1)))
+    if (stream.available() < (sizeof(T) * (array ? array : 1)))
         return QVariant();
     if (array > 0) {
         QVariantList list;
         while (array--) {
-            list.append(QVariant::fromValue(stream.read<_T>()));
+            list.append(QVariant::fromValue(stream.read<T, Tout>()));
         }
         return QVariant::fromValue(list);
     }
-    return QVariant::fromValue(stream.read<_T>());
+    return QVariant::fromValue(stream.read<T, Tout>());
 }
 template<typename _T>
 static QVariant read_param_str(ProtocolStreamReader &stream, size_t array)
@@ -673,13 +698,14 @@ QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf
     switch (f->type) {
     case xbus::node::conf::group:
     case xbus::node::conf::command:
+    case xbus::node::conf::type_max:
         break;
     case xbus::node::conf::option:
-        return ::read_param<xbus::node::conf::option_t>(stream, array);
+        return ::read_param<xbus::node::conf::option_t, quint16>(stream, array);
     case xbus::node::conf::real:
         return ::read_param<xbus::node::conf::real_t>(stream, array);
     case xbus::node::conf::byte:
-        return ::read_param<xbus::node::conf::byte_t>(stream, array);
+        return ::read_param<xbus::node::conf::byte_t, quint16>(stream, array);
     case xbus::node::conf::word:
         return ::read_param<xbus::node::conf::word_t>(stream, array);
     case xbus::node::conf::dword:
@@ -738,6 +764,7 @@ bool ProtocolNode::write_param(ProtocolStreamWriter &stream,
     switch (f->type) {
     case xbus::node::conf::group:
     case xbus::node::conf::command:
+    case xbus::node::conf::type_max:
         break;
     case xbus::node::conf::option:
         return ::write_param<xbus::node::conf::option_t>(stream, array, value);

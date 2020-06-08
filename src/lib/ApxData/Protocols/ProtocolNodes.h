@@ -56,6 +56,8 @@ public:
 
     void syncLater(int time_ms, bool force_active);
 
+    inline QList<ProtocolNode *> nodes() const { return _nodes.values(); }
+
 private:
     ProtocolVehicle *vehicle;
 

@@ -80,6 +80,10 @@ public:
 
     VehiclesStorage *storage;
 
+    inline quint64 dbKey() const { return m_dbKey; }
+    inline QVariantMap dbConfigInfo() const { return m_dbConfigInfo; }
+    inline QString dbConfigHash() const { return m_dbConfigHash; }
+
 private:
     xbus::vehicle::ident_s m_ident;
 
@@ -91,6 +95,10 @@ private:
     QElapsedTimer time_xpdr;
 
     QTimer telemetryReqTimer;
+
+    quint64 m_dbKey{};
+    QVariantMap m_dbConfigInfo;
+    QString m_dbConfigHash{};
 
 private slots:
     void updateActive();
@@ -108,6 +116,11 @@ public slots:
 
     void requestCalibrationData(mandala::uid_t uid, QByteArray data);
 
+    // storage
+    void dbKeyFound(quint64 key);
+    void dbConfigInfoFound(QVariantMap info);
+    void dbSetConfigHash(QString hash);
+
 signals:
     void identChanged();
 
@@ -123,6 +136,8 @@ signals:
     void calibrationData(mandala::uid_t uid, QByteArray data);
 
     void receivedCmdEnvPacket(mandala::uid_t uid);
+
+    void dbConfigInfoChanged();
 
     //---------------------------------------
     // PROPERTIES

@@ -22,31 +22,31 @@
  */
 #include "LookupConfigs.h"
 #include <Database/Database.h>
-#include <Database/NodesDB.h>
+#include <Database/VehiclesDB.h>
 
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicle.h>
-//=============================================================================
+
 LookupConfigs::LookupConfigs(Nodes *nodes, Fact *parent)
     : DatabaseLookup(parent,
                      "load",
                      tr("Load configuration"),
                      tr("Database lookup"),
-                     Database::instance()->nodes,
+                     Database::instance()->vehicles,
                      Action)
     , nodes(nodes)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupConfigs::loadItem);
 }
-//=============================================================================
+
 void LookupConfigs::loadItem(QVariantMap modelData)
 {
     QString hash = modelData.value("hash").toString();
     if (hash.isEmpty())
         return;
-    nodes->storage->loadConfiguration(hash);
+    nodes->vehicle->protocol()->storage->loadConfiguration(hash);
 }
-//=============================================================================
+
 bool LookupConfigs::fixItemDataThr(QVariantMap *item)
 {
     QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
@@ -59,9 +59,7 @@ bool LookupConfigs::fixItemDataThr(QVariantMap *item)
     item->insert("descr", callsign + (notes.isEmpty() ? "" : QString(" - %1").arg(notes)));
     return true;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 void LookupConfigs::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
@@ -71,5 +69,3 @@ void LookupConfigs::defaultLookup()
           " ORDER BY VehicleConfigs.time DESC",
           QVariantList() << s << s << s << s);
 }
-//=============================================================================
-//=============================================================================

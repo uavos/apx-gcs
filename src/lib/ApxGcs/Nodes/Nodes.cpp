@@ -65,10 +65,9 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     //storage actions
-    /*storage = new NodesStorage(this);
-
     f_lookup = new LookupConfigs(this, this);
 
+    /*
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
 

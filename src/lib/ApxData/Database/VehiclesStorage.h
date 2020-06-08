@@ -32,9 +32,9 @@ class VehiclesStorage : public QObject
 {
     Q_OBJECT
 public:
-    explicit VehiclesStorage(QObject *parent);
+    explicit VehiclesStorage(ProtocolVehicle *vehicle, QObject *parent);
 
-    void saveVehicleInfo(ProtocolVehicle *vehicle);
+    void saveVehicleInfo();
 
     void loadNodeInfo(ProtocolNode *node);
     void saveNodeInfo(ProtocolNode *node);
@@ -42,10 +42,13 @@ public:
     void saveNodeUser(ProtocolNode *node);
 
     void saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict &dict);
+    void saveNodeConfig(ProtocolNode *node, QVariantMap values);
 
-public:
-    inline quint64 vehicle_key() const { return m_vehicle_key; }
+    void saveConfiguration(bool force = false);
+    void loadConfiguration(QString hash);
 
 private:
-    quint64 m_vehicle_key{};
+    ProtocolVehicle *_vehicle;
+private slots:
+    void loadedConfiguration(QVariantMap configInfo, QList<QVariantMap> data);
 };

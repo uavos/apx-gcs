@@ -22,6 +22,7 @@
  */
 #pragma once
 
+#include "LookupConfigs.h"
 #include "NodeItem.h"
 
 #include <Protocols/ProtocolNodes.h>
@@ -45,7 +46,7 @@ public:
     Fact *f_clear;
     Fact *f_status;
 
-    //LookupConfigs *f_lookup;
+    LookupConfigs *f_lookup;
     //NodesStorage *storage;
     //NodesShare *f_share;
     //Fact *f_save;

@@ -20,14 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef LookupConfigs_H
-#define LookupConfigs_H
-//=============================================================================
+#pragma once
+
 #include <Database/DatabaseLookup.h>
 #include <Fact/Fact.h>
 #include <QtCore>
 class Nodes;
-//=============================================================================
+
 class LookupConfigs : public DatabaseLookup
 {
     Q_OBJECT
@@ -45,5 +44,3 @@ protected:
 private slots:
     void loadItem(QVariantMap modelData);
 };
-//=============================================================================
-#endif

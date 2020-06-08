@@ -66,6 +66,8 @@ public:
     typedef QList<dict_field_s> Dict;
 
     inline quint64 lastSeenTime() const { return m_lastSeenTime; }
+    inline QVariantMap dbDictInfo() const { return m_dbDictInfo; }
+    inline quint64 dbConfigID() const { return m_dbConfigID; }
 
 protected:
     QString toolTip() const override;
@@ -77,6 +79,9 @@ private:
     QMap<QString, ProtocolNodeFile *> _files_map;
     Dict m_dict;
     QList<int> m_dict_fields;
+
+    QVariantMap m_dbDictInfo;
+    quint64 m_dbConfigID{};
 
     QElapsedTimer timeReqLoader;
 
@@ -130,6 +135,10 @@ public slots:
     void requestMod(QStringList commands);
     void requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data);
 
+    // storage
+    void dbDictInfoFound(QVariantMap dictInfo);
+    void dbConfigIDFound(quint64 configID);
+
     //---------------------------------------
     // PROPERTIES
 public:
@@ -177,3 +186,5 @@ signals:
     void dictValidChanged();
     void validChanged();
 };
+
+Q_DECLARE_METATYPE(ProtocolNode::Dict);

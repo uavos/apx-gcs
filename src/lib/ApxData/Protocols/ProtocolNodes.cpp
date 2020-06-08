@@ -203,6 +203,7 @@ void ProtocolNodes::check_finished()
         if (!(syncActive && syncTimer.isActive()))
             setActive(false);
         emit syncDone();
+        vehicle->storage->saveConfiguration(vehicle);
         return;
     } while (0);
 

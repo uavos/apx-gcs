@@ -123,9 +123,9 @@ bool DBReqVehiclesSaveNconf::run(QSqlQuery &query)
     QString hash = h.result().toHex().toUpper();
 
     //grab title from node's comment
-    QString title = values.value("name").toString();
+    QString title = values.value("label").toString();
     if (title.isEmpty())
-        title = values.value("comment", values.value("node_label")).toString();
+        title = values.value("name", values.value("comment", values.value("node_label"))).toString();
     title = title.simplified().trimmed();
 
     //find existing config
@@ -195,6 +195,7 @@ bool DBReqVehiclesSaveNconf::run(QSqlQuery &query)
             quint64 valueID = 0;
             QVariant v = values.value(s);
             if (v.isNull()) {
+                v = QVariant();
                 query.prepare("SELECT key FROM NodeConfigDataValues WHERE value IS NULL LIMIT 1");
             } else {
                 query.prepare("SELECT key FROM NodeConfigDataValues WHERE value=? LIMIT 1");

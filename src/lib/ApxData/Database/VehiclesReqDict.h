@@ -86,10 +86,10 @@ class DBReqVehiclesLoadDict : public DBReqVehicles
     Q_OBJECT
 public:
     //load cache
-    explicit DBReqVehiclesLoadDict(QString sn, QString chash)
+    explicit DBReqVehiclesLoadDict(QString sn, QString hash)
         : DBReqVehicles(sn)
         , dictID(0)
-        , chash(chash)
+        , hash(hash)
     {}
     explicit DBReqVehiclesLoadDict(quint64 dictID)
         : DBReqVehicles()
@@ -98,14 +98,14 @@ public:
     bool run(QSqlQuery &query);
     //result
     QVariantMap info;
-    DictNode::Dict dict;
+    ProtocolNode::Dict dict;
 
 private:
     quint64 dictID;
-    QString chash;
+    QString hash;
 signals:
     void dictInfoFound(QVariantMap dictInfo);
-    void dictLoaded(QVariantMap info, DictNode::Dict dict);
+    void dictLoaded(QVariantMap info, const ProtocolNode::Dict &dict);
 };
 
 class DBReqVehiclesSaveDict : public DBReqVehicles

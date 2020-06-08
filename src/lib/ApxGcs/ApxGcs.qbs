@@ -103,7 +103,7 @@ ApxApp.ApxLibrary {
             "NodeToolsGroup.cpp", "NodeToolsGroup.h",
             //"NodesStorage.cpp", "NodesStorage.h",
             //"LookupNodeBackup.cpp", "LookupNodeBackup.h",
-            //"LookupConfigs.cpp", "LookupConfigs.h",
+            "LookupConfigs.cpp", "LookupConfigs.h",
             //"NodesShare.cpp", "NodesShare.h",
             //"NodesBase.cpp", "NodesBase.h",
             //"NodeItemBase.cpp", "NodeItemBase.h",
