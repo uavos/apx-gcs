@@ -21,20 +21,20 @@
  *
  */
 #include "LookupConfigs.h"
+
 #include <Database/Database.h>
 #include <Database/VehiclesDB.h>
 
-#include <Nodes/Nodes.h>
-#include <Vehicles/Vehicle.h>
+#include <Database/VehiclesStorage.h>
 
-LookupConfigs::LookupConfigs(Nodes *nodes, Fact *parent)
+LookupConfigs::LookupConfigs(VehiclesStorage *storage, Fact *parent)
     : DatabaseLookup(parent,
                      "load",
                      tr("Load configuration"),
-                     tr("Database lookup"),
+                     tr("Load configuration from database"),
                      Database::instance()->vehicles,
                      Action)
-    , nodes(nodes)
+    , storage(storage)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupConfigs::loadItem);
 }
@@ -44,7 +44,7 @@ void LookupConfigs::loadItem(QVariantMap modelData)
     QString hash = modelData.value("hash").toString();
     if (hash.isEmpty())
         return;
-    nodes->vehicle->protocol()->storage->loadConfiguration(hash);
+    storage->loadConfiguration(hash);
 }
 
 bool LookupConfigs::fixItemDataThr(QVariantMap *item)

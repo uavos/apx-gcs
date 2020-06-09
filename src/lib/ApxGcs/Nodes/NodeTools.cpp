@@ -36,16 +36,15 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
 
     QString sect = tr("Backups");
 
-    //f_backups = new LookupNodeBackup(node, this);
-    //f_backups->setSection(sect);
+    f_backups = new LookupNodeBackup(node->protocol(), this);
+    f_backups->setSection(sect);
 
     f_restore = new Fact(this, "recent", tr("Restore recent"), tr("Restore the most recent backup"));
     f_restore->setIcon("undo");
     f_restore->setSection(sect);
-    /* FIXME:
-    connect(f_restore, &Fact::triggered, node->nodes->storage, [this]() {
-        this->node->nodes->storage->restoreNodeConfig(this->node);
-    });*/
+    connect(f_restore, &Fact::triggered, node->protocol()->vehicle()->storage, [this]() {
+        node->protocol()->vehicle()->storage->loadNodeConfig(node->protocol());
+    });
 
     //sections
     f_usr = new NodeToolsGroup(this,

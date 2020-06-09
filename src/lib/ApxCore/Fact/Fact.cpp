@@ -467,7 +467,7 @@ void Fact::updateBinding(Fact *src)
         }
 
     } else {
-        bindProperty(src, "enabled");
+        bindProperty(src, "enabled", true);
     }
 }
 
@@ -648,6 +648,9 @@ bool Fact::enabled() const
 }
 void Fact::setEnabled(const bool v)
 {
+    /*if (v == false && name() == "vehicles") {
+        qDebug() << "BEGIN" << path() << v << m_parentEnabled;
+    }*/
     //qDebug() << "BEGIN" << path() << v << m_parentEnabled;
     if (m_enabled == v)
         return;

@@ -20,28 +20,30 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#pragma once
+#include "NodeViewActions.h"
+#include "Nodes.h"
 
-#include "DatabaseSession.h"
-
-class VehiclesDB : public DatabaseSession
+NodeViewActions::NodeViewActions(Fact *fact, Nodes *nodes)
+    : QObject(fact)
+    , _fact(fact)
+    , _nodes(nodes)
 {
-    Q_OBJECT
-public:
-    explicit VehiclesDB(QObject *parent, QString sessionName);
-};
+    Fact *f = nodes->f_upload->createAction(fact);
+    f->setOption(Fact::ShowDisabled, false);
+    f->setOption(Fact::IconOnly, false);
 
-class DBReqVehicles : public DatabaseRequest
+    f_revert = new Fact(fact,
+                        "revert",
+                        tr("Revert"),
+                        tr("Undo changes"),
+                        Fact::Action | Fact::IconOnly,
+                        "undo");
+    connect(f_revert, &Fact::triggered, fact, &Fact::restore);
+    connect(fact, &Fact::modifiedChanged, this, &NodeViewActions::updateRevert);
+    updateRevert();
+}
+
+void NodeViewActions::updateRevert()
 {
-    Q_OBJECT
-public:
-    explicit DBReqVehicles(QString sn = QString());
-
-protected:
-    QString sn;
-    quint64 nodeID;
-
-    QHash<QString, quint64> getFieldsByName(QSqlQuery &query, quint64 dictID) const;
-
-    virtual bool run(QSqlQuery &query);
-};
+    f_revert->setEnabled(_fact->modified());
+}

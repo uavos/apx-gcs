@@ -46,7 +46,7 @@ private:
     //database
     bool dbCheckRecord();
 
-    quint64 recTelemetryID;
+    quint64 recTelemetryID{};
     QList<double> recValues;
     QHash<quint64, Fact *> factsMap;
 
@@ -93,9 +93,9 @@ private slots:
 public slots:
     //exported slots for recording
     void recordDownlink();
-    void recordUplink(Fact *f);
+    void recordUplink(ProtocolTelemetry::TelemetryValue value);
     //events
-    void recordNodeMessage(QString nodeName, QString text, QString sn);
+    void recordNodeMessage(QString subsystem, QString text, QString sn);
     void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
 

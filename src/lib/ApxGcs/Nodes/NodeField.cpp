@@ -22,6 +22,7 @@
  */
 #include "NodeField.h"
 #include "NodeItem.h"
+#include "NodeViewActions.h"
 #include "Nodes.h"
 
 #include <App/AppRoot.h>
@@ -40,6 +41,8 @@ NodeField::NodeField(Fact *parent,
     , m_fid(fid)
     , _type(field.type)
 {
+    new NodeViewActions(this, node->nodes());
+
     if (field.array && !parentField) {
         QStringList st = field.units.split(',');
         if (st.size() != field.array)

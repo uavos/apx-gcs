@@ -25,7 +25,7 @@
 #include <App/AppDirs.h>
 //=============================================================================
 MissionsDB::MissionsDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("missions.db"), sessionName)
+    : DatabaseSession(parent, "missions", sessionName, "v2")
 {
     new DBReqMakeTable(this,
                        "Missions",

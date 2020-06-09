@@ -62,6 +62,8 @@ public:
 
     void count_rx();
 
+    inline const mandala::meta_s &meta() const { return m_meta; }
+
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;

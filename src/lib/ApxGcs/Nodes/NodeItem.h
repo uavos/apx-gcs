@@ -52,6 +52,8 @@ public:
                              AppNotify::NotifyFlags flags = AppNotify::FromVehicle
                                                             | AppNotify::Important);
 
+    inline Nodes *nodes() const { return _nodes; }
+
 protected:
     QTimer statusTimer;
 
@@ -59,7 +61,6 @@ protected:
 
 private:
     Nodes *_nodes{nullptr};
-    qint64 m_lastSeenTime{0};
 
     QList<NodeField *> m_fields;
 
@@ -85,7 +86,7 @@ public slots:
 private slots:
     void identReceived();
     void dictReceived(const ProtocolNode::Dict &dict);
-    void confReceived(const QVariantList &values);
+    void confReceived(const QVariantMap &values);
     void confSaved();
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);

@@ -100,6 +100,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
                 &Mandala::sendBundle,
                 protocol->telemetry,
                 &ProtocolTelemetry::sendBundle);
+
         connect(protocol->telemetry,
                 &ProtocolTelemetry::telemetryData,
                 f_mandala,
@@ -114,7 +115,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
         //FIXME: connect(protocol, &ProtocolVehicle::receivedData, this, &Vehicle::updateDatalinkVars);
 
         //recorder
-        /*connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
+        //FIXME: connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
 
         connect(protocol->telemetry,
                 &ProtocolTelemetry::telemetryData,
@@ -122,12 +123,15 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
                 &Vehicle::recordDownlink);
         connect(protocol->telemetry, &ProtocolTelemetry::valuesData, this, &Vehicle::recordDownlink);
 
+        connect(f_mandala, &Mandala::sendValue, this, &Vehicle::recordUplink);
+
         connect(protocol, &ProtocolVehicle::serialRxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, false);
         });
         connect(protocol, &ProtocolVehicle::serialTxData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, true);
-        });*/
+        });
+        connect(protocol, &ProtocolVehicle::dbConfigInfoChanged, this, &Vehicle::recordConfig);
     }
     // forward
     connect(protocol->telemetry, &ProtocolTelemetry::telemetryData, this, &Vehicle::telemetryData);

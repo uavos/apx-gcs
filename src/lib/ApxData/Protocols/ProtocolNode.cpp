@@ -32,7 +32,7 @@
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     : ProtocolBase(nodes, "node")
-    , nodes(nodes)
+    , _nodes(nodes)
     , m_sn(sn)
 {
     setIcon("sitemap");
@@ -72,11 +72,20 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
             &ProtocolNode::updateDescr,
             Qt::QueuedConnection);
 
-    if (nodes->vehicle->isReplay())
+    connect(this, &ProtocolNode::confReceived, this, [this](const QVariantMap &values) {
+        _values = values;
+    });
+
+    if (vehicle()->isReplay())
         return;
 
-    nodes->vehicle->storage->loadNodeInfo(this);
+    vehicle()->storage->loadNodeInfo(this);
     requestIdent();
+}
+
+ProtocolVehicle *ProtocolNode::vehicle() const
+{
+    return _nodes->vehicle();
 }
 
 void ProtocolNode::updateDescr()
@@ -111,11 +120,24 @@ void ProtocolNode::hashData(QCryptographicHash *h) const
 
 void ProtocolNode::dbDictInfoFound(QVariantMap dictInfo)
 {
+    //qDebug() << vehicle()->title() << title() << dictInfo;
     m_dbDictInfo = dictInfo;
 }
 void ProtocolNode::dbConfigIDFound(quint64 configID)
 {
     m_dbConfigID = configID;
+}
+void ProtocolNode::setDict(const ProtocolNode::Dict &dict)
+{
+    m_dict = dict;
+    m_dict_fields.clear();
+    for (auto i = 0; i < m_dict.size(); ++i) {
+        auto const &f = m_dict.at(i);
+        if (f.type >= xbus::node::conf::type_field)
+            m_dict_fields.append(i);
+    }
+    setDictValid(true);
+    emit dictReceived(m_dict);
 }
 
 void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)
@@ -151,7 +173,7 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             qWarning() << "size" << stream.available() << xbus::node::ident::ident_s::psize();
             break;
         }
-        nodes->acknowledgeRequest(m_sn, pid);
+        _nodes->acknowledgeRequest(m_sn, pid);
         xbus::node::ident::ident_s ident;
         ident.read(&stream);
 
@@ -188,10 +210,18 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
         }
         emit identReceived();
         if (ident.flags.bits.files > 1) {
-            nodes->vehicle->storage->saveNodeInfo(this);
-            nodes->vehicle->storage->saveNodeUser(this);
+            vehicle()->storage->saveNodeInfo(this);
+            vehicle()->storage->saveNodeUser(this);
         }
-        nodes->nodeNotify(this);
+        _nodes->nodeNotify(this);
+
+        // continue requests
+        if (!dictValid()) {
+            vehicle()->storage->loadNodeDict(this);
+        } else if (!valid()) {
+            requestConf();
+        }
+
     } break;
 
         // request acknowledge
@@ -211,12 +241,12 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
                 break;
             stream >> timeout;
         }
-        nodes->acknowledgeRequest(m_sn, ack_pid, ack, timeout);
+        _nodes->acknowledgeRequest(m_sn, ack_pid, ack, timeout);
     } break;
 
         // file operations
     case mandala::cmd::env::nmt::file::uid: {
-        if (nodes->vehicle->isLocal() && !nodes->active())
+        if (vehicle()->isLocal() && !_nodes->active())
             return;
 
         if (stream.available() <= sizeof(xbus::node::file::op_e))
@@ -288,19 +318,19 @@ ProtocolNodeFile *ProtocolNode::file(const QString &fname)
         return f;
     f = new ProtocolNodeFile(this, fname);
     _files_map.insert(fname, f);
-    connect(nodes, &Fact::activeChanged, f, [f]() { f->stop(); });
+    connect(_nodes, &Fact::activeChanged, f, [f]() { f->stop(); });
     return f;
 }
 
 ProtocolNodeRequest *ProtocolNode::request(mandala::uid_t uid, size_t retry_cnt)
 {
-    return nodes->request(uid, m_sn, retry_cnt);
+    return _nodes->request(uid, m_sn, retry_cnt);
 }
 
 void ProtocolNode::requestReboot()
 {
-    nodes->clear_requests();
-    nodes->setActive(true);
+    _nodes->clear_requests();
+    _nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid);
     req->write<xbus::node::reboot::type_e>(xbus::node::reboot::firmware);
     req->schedule();
@@ -308,8 +338,8 @@ void ProtocolNode::requestReboot()
 void ProtocolNode::requestRebootLoader()
 {
     setIdentValid(false);
-    nodes->clear_requests();
-    nodes->setActive(true);
+    _nodes->clear_requests();
+    _nodes->setActive(true);
     setProgress(0);
     timeReqLoader.start();
     requestRebootLoaderNext();
@@ -319,7 +349,7 @@ void ProtocolNode::requestRebootLoaderNext()
     qDebug() << "ldr";
     if (timeReqLoader.elapsed() > 10000) {
         qWarning() << "timeout";
-        nodes->setActive(false);
+        _nodes->setActive(false);
         return;
     }
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::reboot::uid, 0);
@@ -335,7 +365,7 @@ void ProtocolNode::requestRebootLoaderNext()
                 &ProtocolNodeRequest::finished,
                 this,
                 [this]() {
-                    if (!file("fw") && nodes->active())
+                    if (!file("fw") && _nodes->active())
                         requestRebootLoaderNext();
                 },
                 Qt::QueuedConnection);
@@ -347,15 +377,20 @@ void ProtocolNode::requestRebootLoaderNext()
 
 void ProtocolNode::requestIdent()
 {
-    if (nodes->vehicle->isLocal() && !nodes->active())
+    if (vehicle()->isLocal() && !_nodes->active())
         return;
 
     request(mandala::cmd::env::nmt::ident::uid)->schedule();
 }
 void ProtocolNode::requestDict()
 {
-    if (nodes->vehicle->isLocal() && !nodes->active())
+    if (vehicle()->isLocal() && !_nodes->active())
         return;
+
+    if (dictValid()) {
+        requestConf();
+        return;
+    }
 
     ProtocolNodeFile *f = file("dict");
     if (!f) {
@@ -372,8 +407,12 @@ void ProtocolNode::requestDict()
 }
 void ProtocolNode::requestConf()
 {
-    if (nodes->vehicle->isLocal() && !nodes->active())
+    if (vehicle()->isLocal() && !_nodes->active())
         return;
+
+    if (valid()) {
+        return;
+    }
 
     ProtocolNodeFile *f = file("conf");
     if (!f) {
@@ -402,36 +441,49 @@ void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
     if (!f)
         return;
     //qDebug() << f->name << value;
-    nodes->clear_requests();
-    nodes->setActive(true);
+
+    // update _values
+    if (fid < m_dict_fields.size()) {
+        const dict_field_s &f = m_dict.at(m_dict_fields.at(fid));
+        QVariant v = value;
+        if (f.type == xbus::node::conf::option) {
+            v = f.units.split(',').value(v.toInt(), v.toString());
+        }
+        _values[f.name] = v;
+    }
+
+    // request
+    _nodes->clear_requests();
+    _nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
     *req << fid;
     if (!write_param(*req, fid, value)) {
         req->deleteLater();
-        nodes->clear_requests();
+        _nodes->clear_requests();
         return;
     }
-    connect(req, &ProtocolNodeRequest::timeout, nodes, &ProtocolNodes::clear_requests);
+    connect(req, &ProtocolNodeRequest::timeout, _nodes, &ProtocolNodes::clear_requests);
     req->schedule();
 }
 void ProtocolNode::requestUpdateSave()
 {
-    if (!nodes->active())
+    if (!_nodes->active())
         return;
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
     req->write<xbus::node::conf::fid_t>(0xFFFF);
     connect(req, &ProtocolNodeRequest::finished, this, [this](ProtocolNodeRequest *request) {
-        if (request->acknowledged)
+        if (request->acknowledged) {
+            vehicle()->storage->saveNodeConfig(this);
             emit confSaved();
-        else
-            nodes->clear_requests();
+        } else
+            _nodes->clear_requests();
     });
     req->schedule();
 }
 
 void ProtocolNode::requestMod(QStringList commands)
 {
-    nodes->setActive(true);
+    _nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::mod::uid, 0);
     xbus::node::mod::op_e op = xbus::node::mod::sh;
     *req << op;
@@ -442,7 +494,7 @@ void ProtocolNode::requestMod(QStringList commands)
 }
 void ProtocolNode::requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data)
 {
-    nodes->setActive(true);
+    _nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::usr::uid);
     *req << cmd;
     req->append(data);
@@ -456,6 +508,7 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
     m_dict.clear();
     m_dict_fields.clear();
     QList<int> groups;
+    Dict dict;
     do {
         // check node hash
         if (info.hash != m_ident.hash) {
@@ -482,7 +535,7 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
                 field.name = st.at(0);
                 field.title = st.at(1);
                 field.descr = st.at(2);
-                groups.append(m_dict.size());
+                groups.append(dict.size());
                 break;
             case xbus::node::conf::command:
                 st = stream.read_strings(2);
@@ -500,13 +553,12 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
                 field.title = st.at(0);
                 field.descr = st.at(1);
                 field.units = st.at(2);
-                m_dict_fields.append(m_dict.size());
                 // guess name prepended with groups
                 uint8_t group = field.group;
                 while (group) {
                     group--;
                     if (group < groups.size()) {
-                        const dict_field_s &g = m_dict.at(groups.at(group));
+                        const dict_field_s &g = dict.at(groups.at(group));
                         field.name.prepend(QString("%1_").arg(g.name));
                         group = g.group;
                         continue;
@@ -520,7 +572,7 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
             if (field.name.isEmpty())
                 break;
 
-            m_dict.append(field);
+            dict.append(field);
 
             //qDebug() << field.name << field.type << field.array << field.group << st
             //         << stream.available();
@@ -539,10 +591,9 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
         return;
     }
     qDebug() << "dict parsed";
-    setDictValid(true);
-    emit dictReceived(m_dict);
+    setDict(dict);
 
-    nodes->vehicle->storage->saveNodeDict(this, m_dict);
+    vehicle()->storage->saveNodeDict(this, m_dict);
 
     requestConf();
 }
@@ -633,19 +684,24 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
         qWarning() << "conf error" << data.toHex().toUpper();
         return;
     }
-    qDebug() << "conf parsed";
-    setValid(true);
-
-    // save config
-    QVariantMap valuesMap;
+    _values.clear();
     for (auto i = 0; i < values.size(); ++i) {
         const dict_field_s &f = m_dict.at(m_dict_fields.at(i));
-        valuesMap.insert(f.name, values.at(i));
+        _values.insert(f.name, values.at(i));
     }
-    nodes->vehicle->storage->saveNodeConfig(this, valuesMap);
+    qDebug() << "conf parsed";
 
     // notify
-    emit confReceived(values);
+    emit confReceived(_values);
+    setValid(true);
+
+    if (ident().flags.bits.reconf) {
+        vehicle()->storage->loadNodeConfig(this);
+        return;
+    }
+
+    // save config
+    vehicle()->storage->saveNodeConfig(this);
 }
 
 const ProtocolNode::dict_field_s *ProtocolNode::field(xbus::node::conf::fid_t fid) const
@@ -845,7 +901,7 @@ void ProtocolNode::setFiles(const QStringList &v)
         return;
 
     emit filesAvailable();
-    if (nodes->active() && m_files.contains("fw")) {
+    if (_nodes->active() && m_files.contains("fw")) {
         emit loaderAvailable();
     }
     for (auto i : m_files)

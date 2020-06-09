@@ -21,31 +21,34 @@
  *
  */
 #include "LookupNodeBackup.h"
-#include "NodeItem.h"
-#include "Nodes.h"
+
 #include <Database/Database.h>
-#include <Database/NodesDB.h>
-//=============================================================================
-LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
+#include <Database/VehiclesDB.h>
+
+#include <Database/VehiclesStorage.h>
+#include <Protocols/ProtocolNode.h>
+#include <Protocols/ProtocolVehicle.h>
+
+LookupNodeBackup::LookupNodeBackup(ProtocolNode *node, Fact *parent)
     : DatabaseLookup(parent,
                      "backups",
                      tr("Backups"),
                      tr("Restore parameters from backup"),
-                     Database::instance()->nodes)
+                     Database::instance()->vehicles)
     , node(node)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupNodeBackup::loadItem);
     QTimer::singleShot(500, this, &DatabaseLookup::defaultLookup);
 }
-//=============================================================================
+
 void LookupNodeBackup::loadItem(QVariantMap modelData)
 {
     quint64 nconfID = modelData.value("key", 0).toULongLong();
     if (!nconfID)
         return;
-    node->nodes->storage->loadNodeConfig(node, nconfID);
+    node->vehicle()->storage->loadNodeConfig(node, nconfID);
 }
-//=============================================================================
+
 bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
 {
     QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
@@ -60,9 +63,7 @@ bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
                      : QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
     return true;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 void LookupNodeBackup::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
@@ -74,5 +75,3 @@ void LookupNodeBackup::defaultLookup()
           " LIMIT 50",
           QVariantList() << node->sn() << s);
 }
-//=============================================================================
-//=============================================================================

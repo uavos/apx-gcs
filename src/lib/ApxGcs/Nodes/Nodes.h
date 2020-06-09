@@ -47,7 +47,6 @@ public:
     Fact *f_status;
 
     LookupConfigs *f_lookup;
-    //NodesStorage *storage;
     //NodesShare *f_share;
     //Fact *f_save;
 

@@ -57,9 +57,10 @@ public:
     void syncLater(int time_ms, bool force_active);
 
     inline QList<ProtocolNode *> nodes() const { return _nodes.values(); }
+    inline ProtocolVehicle *vehicle() const { return _vehicle; }
 
 private:
-    ProtocolVehicle *vehicle;
+    ProtocolVehicle *_vehicle;
 
     // nodes
     QHash<QString, ProtocolNode *> _nodes;

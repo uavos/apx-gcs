@@ -52,6 +52,8 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(vehicle, &Vehicle::recordConfigUpdate, this, &TelemetryRecorder::recordConfigUpdate);
     connect(vehicle, &Vehicle::recordSerialData, this, &TelemetryRecorder::recordSerialData);
 
+    connect(vehicle, &Vehicle::recordConfig, this, &TelemetryRecorder::recordConfig);
+
     //write config on each update
     /* FIXME: connect(this->vehicle->f_nodes->storage,
             &NodesStorage::configInfoUpdated,
@@ -146,6 +148,7 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
 {
     if (!reqNewRecord)
         return;
+    //qDebug() << telemetryID << reqPendingList.size();
     recTelemetryID = telemetryID;
     reqNewRecord = nullptr;
     configHash.clear();  //force write
@@ -153,8 +156,7 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
     recordMission(false);
     recordConfig();
     recordDownlink();
-    for (int i = 0; i < reqPendingList.size(); ++i) {
-        DBReqTelemetryWriteBase *req = reqPendingList.at(i);
+    for (auto req : reqPendingList) {
         req->telemetryID = recTelemetryID;
         req->exec();
     }
@@ -171,11 +173,14 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
 quint64 TelemetryRecorder::getDataTimestamp()
 {
     quint64 vts = vehicle->f_mandala->timestamp();
-    if (vts == 0)
-        reset();
-    if (!dl_timestamp_t0)
+    //if (vts == 0)
+    //    reset();
+    if (!dl_timestamp_t0 || vts < dl_timestamp_t0)
         dl_timestamp_t0 = vts;
     quint64 t = vts - dl_timestamp_t0;
+
+    if (m_currentTimestamp > t)
+        reset();
 
     setTime(t / 1000);
     m_currentTimestamp = t;
@@ -187,11 +192,11 @@ void TelemetryRecorder::updateFactsMap()
     //fill facts map
     if (!factsMap.isEmpty())
         return;
-    TelemetryDB::TelemetryFieldsMap map = Database::instance()->telemetry->fieldsMap();
-    foreach (quint64 key, map.keys()) {
-        Fact *f = vehicle->f_mandala->fact(map.value(key));
+    const TelemetryDB::TelemetryFieldsMap &map = Database::instance()->telemetry->fieldsMap();
+    for (auto i : map.keys()) {
+        Fact *f = vehicle->f_mandala->fact(map.value(i));
         if (f)
-            factsMap.insert(key, f);
+            factsMap.insert(i, f);
     }
 }
 //=============================================================================
@@ -224,7 +229,7 @@ void TelemetryRecorder::recordDownlink()
     QList<QPair<quint64, double>> values;
     int iv = -1;
     updateFactsMap();
-    foreach (quint64 fieldID, factsMap.keys()) {
+    for (auto fieldID : factsMap.keys()) {
         Fact *f = factsMap.value(fieldID);
         iv++;
         QVariant vv = f->value();
@@ -235,8 +240,11 @@ void TelemetryRecorder::recordDownlink()
             } else {
                 recValues[iv] = v;
             }
-        } else
+        } else {
             recValues.append(v);
+            if (v == 0)
+                continue;
+        }
         values.append(QPair<quint64, double>(fieldID, v));
     }
     //qDebug() << values.size();
@@ -258,14 +266,18 @@ void TelemetryRecorder::recordDownlink()
     }
 }
 //=============================================================================
-void TelemetryRecorder::recordUplink(Fact *f)
+void TelemetryRecorder::recordUplink(ProtocolTelemetry::TelemetryValue value)
 {
     bool bID = dbCheckRecord();
     updateFactsMap();
+
+    Fact *f = vehicle->f_mandala->fact(value.pid.uid);
+    if (!f)
+        return;
     DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
                                                                getDataTimestamp(),
                                                                factsMap.key(f),
-                                                               f->value().toDouble(),
+                                                               value.value.toDouble(),
                                                                true);
     if (bID) {
         req->exec();
@@ -276,9 +288,9 @@ void TelemetryRecorder::recordUplink(Fact *f)
 //=============================================================================
 // write data slots
 //=============================================================================
-void TelemetryRecorder::recordNodeMessage(QString nodeName, QString text, QString sn)
+void TelemetryRecorder::recordNodeMessage(QString subsystem, QString text, QString sn)
 {
-    writeEvent("msg", QString("[%1]%2").arg(nodeName).arg(text), sn, false);
+    writeEvent("msg", QString("[%1]%2").arg(subsystem).arg(text), sn, false);
 }
 void TelemetryRecorder::recordConfigUpdate(QString nodeName,
                                            QString fieldName,
@@ -322,7 +334,10 @@ void TelemetryRecorder::recordMission(bool uplink)
 }
 void TelemetryRecorder::recordConfig()
 {
-    /* FIXME: const QVariantMap &info = vehicle->f_nodes->storage->configInfo;
+    if (!dbCheckRecord())
+        return;
+
+    const QVariantMap &info = vehicle->protocol()->dbConfigInfo();
     QString hash = info.value("hash").toString();
     if (hash.isEmpty())
         return;
@@ -342,7 +357,7 @@ void TelemetryRecorder::recordConfig()
             DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(recTelemetryID, info);
             req->exec();
         }
-    }*/
+    }
 }
 //=============================================================================
 //=============================================================================

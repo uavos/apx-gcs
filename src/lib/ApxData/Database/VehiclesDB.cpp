@@ -25,12 +25,8 @@
 #include <App/AppDirs.h>
 
 VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("vehicles.db"), sessionName)
+    : DatabaseSession(parent, "vehicles", sessionName, "v2")
 {
-    qRegisterMetaType<DictNode::Info>("DictNode::Info");
-    qRegisterMetaType<DictNode::DictInfo>("DictNode::DictInfo");
-    qRegisterMetaType<DictNode::Dict>("DictNode::Dict");
-
     new DBReqMakeTable(this,
                        "Nodes",
                        QStringList() << "key INTEGER PRIMARY KEY NOT NULL"

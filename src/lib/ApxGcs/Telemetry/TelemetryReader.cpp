@@ -266,7 +266,7 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
         const event_t &e = this->events.at(i);
         addEventFact(e.time, e.name, e.value, e.uid);
     }*/
-    f_events->moveToThread(thread());
+    changeThread(f_events, thread());
     f_events->setParentFact(this);
     for (int i = 0; i < f_events->size(); ++i) {
         Fact *g = f_events->child(i);
@@ -291,6 +291,12 @@ void TelemetryReader::dbProgress(quint64 telemetryID, int v)
         return;
     setProgress(v);
 }
+void TelemetryReader::changeThread(Fact *fact, QThread *thread)
+{
+    fact->moveToThread(thread);
+    for (auto i : fact->facts())
+        changeThread(i, thread);
+}
 //=============================================================================
 //=============================================================================
 void TelemetryReader::notesChanged()
@@ -306,7 +312,7 @@ void TelemetryReader::notesChanged()
         req,
         &DBReqTelemetryWriteInfo::finished,
         this,
-        [=]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
+        [this]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
         Qt::QueuedConnection);
     req->exec();
 }

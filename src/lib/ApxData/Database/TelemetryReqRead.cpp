@@ -27,7 +27,7 @@
 bool DBReqTelemetryFindCache::run(QSqlQuery &query)
 {
     //check for invalid cache (telemetry hash is null)
-    query.prepare("SELECT * FROM TelemetryStats WHERE telemetryID=?");
+    query.prepare("SELECT * FROM Telemetry WHERE key=?");
     query.addBindValue(telemetryID);
     if (!query.exec())
         return false;
@@ -207,7 +207,7 @@ bool DBReqTelemetryMakeStats::run(QSqlQuery &query)
 {
     QElapsedTimer t0;
     t0.start();
-    query.prepare("SELECT * FROM TelemetryStats WHERE telemetryID=?");
+    query.prepare("SELECT * FROM Telemetry WHERE key=?");
     query.addBindValue(telemetryID);
     if (!query.exec())
         return false;
@@ -217,7 +217,8 @@ bool DBReqTelemetryMakeStats::run(QSqlQuery &query)
         if (static_cast<TelemetryDB *>(db)->invalidCacheList().contains(telemetryID)) {
             stats.remove("hash");
         }
-    }
+    } else
+        return false;
     if (discarded())
         return true;
     if (!stats.value("hash").toString().isEmpty()) {
@@ -341,37 +342,26 @@ bool DBReqTelemetryMakeStats::run(QSqlQuery &query)
         ok = true;
         break;
     }
+    quint64 key = stats.value("key").toULongLong();
+    stats.clear();
+    stats["totalTime"] = totalTime;
+    stats["downlink"] = downlink;
+    stats["uplink"] = uplink;
+    stats["events"] = events;
+    stats["evtDetails"] = evtDetails;
+    stats["hash"] = hash;
+
     if (!ok) {
-        bool bNew = stats.isEmpty();
-        stats["totalTime"] = totalTime;
-        stats["downlink"] = downlink;
-        stats["uplink"] = uplink;
-        stats["events"] = events;
-        stats["evtDetails"] = evtDetails;
-        stats["hash"] = hash;
-        if (bNew) {
-            stats["telemetryID"] = telemetryID;
-            if (recordInsertQuery(query, stats, "TelemetryStats")) {
-                if (!query.exec())
-                    return false;
-                emit dbModified();
-            }
-        } else {
-            quint64 key = stats.value("key").toULongLong();
-            stats.remove("key");
-            if (recordUpdateQuery(query, stats, "TelemetryStats", "WHERE key=?")) {
-                query.addBindValue(key);
-                if (!query.exec())
-                    return false;
-                emit dbModified();
-            }
+        if (recordUpdateQuery(query, stats, "Telemetry", "WHERE key=?")) {
+            query.addBindValue(key);
+            if (!query.exec())
+                return false;
+            emit dbModified();
         }
     }
 
     if (discarded())
         return true;
-    stats.remove("key");
-    stats.remove("telemetryID");
 
     qDebug() << t0.elapsed() << "ms";
     emit statsUpdated(telemetryID, stats);
@@ -387,28 +377,18 @@ bool DBReqTelemetryReadData::run(QSqlQuery &query)
     emit progress(telemetryID, 0);
 
     //get count for progress
-    query.prepare("SELECT * FROM TelemetryStats"
-                  " WHERE telemetryID=?");
+    query.prepare("SELECT * FROM Telemetry WHERE key=?");
     query.addBindValue(telemetryID);
     if (!query.exec())
         return false;
     quint64 count = 0;
-    if (query.next()) {
-        count += query.value("downlink").toULongLong();
-        count += query.value("uplink").toULongLong();
-        count += query.value("events").toULongLong();
-        stats = filterIdValues(queryRecord(query));
-    }
-    //qDebug()<<t0.elapsed()<<"ms"<<count;
-
-    //info
-    query.prepare("SELECT * FROM Telemetry"
-                  " WHERE key=?");
-    query.addBindValue(telemetryID);
-    if (!query.exec())
-        return false;
     if (!query.next())
         return false;
+
+    count += query.value("downlink").toULongLong();
+    count += query.value("uplink").toULongLong();
+    count += query.value("events").toULongLong();
+
     info = filterIdValues(queryRecord(query));
 
     //data
@@ -554,15 +534,14 @@ bool DBReqTelemetryReadSharedHashId::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqTelemetryFindDataHash::run(QSqlQuery &query)
 {
-    query.prepare("SELECT * FROM TelemetryStats"
-                  " INNER JOIN Telemetry ON TelemetryStats.telemetryID=Telemetry.key"
+    query.prepare("SELECT * FROM Telemetry"
                   " WHERE hash=? AND trash IS NULL");
     query.addBindValue(hash);
     if (!query.exec())
         return false;
     if (!query.next())
         return true;
-    telemetryID = query.value("telemetryID").toULongLong();
+    telemetryID = query.value(0).toULongLong();
     emit foundID(telemetryID);
     return true;
 }

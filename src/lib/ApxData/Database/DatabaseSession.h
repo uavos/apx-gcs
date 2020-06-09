@@ -37,7 +37,10 @@ class DatabaseSession : public Fact //, public QSqlDatabase
     Q_PROPERTY(quint64 capacity READ capacity NOTIFY capacityChanged)
 
 public:
-    explicit DatabaseSession(QObject *parent, const QString &fileName, const QString &sessionName);
+    explicit DatabaseSession(QObject *parent,
+                             const QString &name,
+                             const QString &sessionName,
+                             QString version);
     ~DatabaseSession();
 
     Fact *f_vacuum;

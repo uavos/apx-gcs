@@ -44,7 +44,6 @@ ApxApp.ApxLibrary {
         name: "Dictionary"
         prefix: name+"/"
         files: [
-            "DictNode.cpp", "DictNode.h",
             "DictMission.cpp", "DictMission.h",
         ]
     }

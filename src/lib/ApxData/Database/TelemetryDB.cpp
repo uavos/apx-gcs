@@ -24,9 +24,9 @@
 #include "Database.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-//=============================================================================
+
 TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, AppDirs::db().absoluteFilePath("telemetry.db"), sessionName)
+    : DatabaseSession(parent, "telemetry", sessionName, "v2")
     , latestInvalidCacheID(0)
 {
     qRegisterMetaType<QMap<quint64, QString>>("QMap<quint64,QString>");
@@ -64,26 +64,18 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
                                      << "vehicleUID TEXT"
                                      << "callsign TEXT"
                                      << "notes TEXT"
-                                     << "comment TEXT");
-    new DBReqMakeIndex(this, "Telemetry", "trash", false);
-    new DBReqMakeIndex(this, "Telemetry", "time", false);
-    new DBReqMakeIndex(this, "Telemetry", "vehicleUID", false);
-    new DBReqMakeIndex(this, "Telemetry", "callsign", false);
-
-    new DBReqMakeTable(this,
-                       "TelemetryStats",
-                       QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
-                                     << "telemetryID INTEGER NOT NULL UNIQUE"
+                                     << "comment TEXT"
                                      << "hash TEXT"
                                      << "totalTime INTEGER"
                                      << "downlink INTEGER"
                                      << "uplink INTEGER"
                                      << "events INTEGER"
-                                     << "evtDetails TEXT"
-                                     << "FOREIGN KEY(telemetryID) REFERENCES Telemetry(key) ON "
-                                        "DELETE CASCADE ON UPDATE CASCADE");
-    new DBReqMakeIndex(this, "TelemetryStats", "telemetryID", false);
-    new DBReqMakeIndex(this, "TelemetryStats", "hash", false);
+                                     << "evtDetails TEXT");
+    new DBReqMakeIndex(this, "Telemetry", "trash", false);
+    new DBReqMakeIndex(this, "Telemetry", "time", false);
+    new DBReqMakeIndex(this, "Telemetry", "vehicleUID", false);
+    new DBReqMakeIndex(this, "Telemetry", "callsign", false);
+    new DBReqMakeIndex(this, "Telemetry", "hash", false);
 
     new DBReqMakeTable(this,
                        "TelemetryShare",
@@ -102,10 +94,11 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
                        "TelemetryFields",
                        QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
                                      << "id INTEGER"
-                                     << "name TEXT"
+                                     << "name TEXT NOT NULL"
                                      << "title TEXT"
-                                     << "descr TEXT"
                                      << "units TEXT");
+    new DBReqMakeIndex(this, "TelemetryFields", "id", false);
+    new DBReqMakeIndex(this, "TelemetryFields", "name", true);
 
     //---------------------------------
     // data
@@ -176,7 +169,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "TelemetryCacheData", "type", false);
 }
 //=============================================================================
-TelemetryDB::TelemetryFieldsMap TelemetryDB::fieldsMap()
+TelemetryDB::TelemetryFieldsMap &TelemetryDB::fieldsMap()
 {
     QMutexLocker lock(&pMutex);
     return m_fieldsMap;
@@ -186,16 +179,7 @@ void TelemetryDB::setFieldsMap(const TelemetryFieldsMap &v)
     QMutexLocker lock(&pMutex);
     m_fieldsMap = v;
 }
-TelemetryDB::TelemetryFieldsAliases TelemetryDB::fieldsAliases()
-{
-    QMutexLocker lock(&pMutex);
-    return m_fieldsAliases;
-}
-void TelemetryDB::setFieldsAliases(const TelemetryFieldsAliases &v)
-{
-    QMutexLocker lock(&pMutex);
-    m_fieldsAliases = v;
-}
+
 void TelemetryDB::markCacheInvalid(quint64 telemetryID)
 {
     if (latestInvalidCacheID == telemetryID)
@@ -348,7 +332,9 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
         }
         //update existing record
         QStringList nlist = rn;
-        nlist.removeAt(0); //skip key
+        if (!nlist.isEmpty()) {
+            nlist.removeAt(0); //skip key
+        }
         if (nlist.isEmpty()) {
             nlist = n;
             nlist.removeOne("alias");
@@ -405,7 +391,6 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     }
 
     static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
-    static_cast<TelemetryDB *>(db)->setFieldsAliases(faliases);
 
     return true;
 }

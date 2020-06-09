@@ -58,7 +58,6 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     QAction *a;
     a = new QActionFact(vehicle->f_nodes->f_upload);
     toolBar->addAction(a);
-    // toolBar->widgetForAction(a)->setObjectName("greenAction");
 
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_search));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_reload));
@@ -66,16 +65,15 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
-    /* FIXME:
     QAction *aLookup = new QActionFact(vehicle->f_nodes->f_lookup);
     toolBar->addAction(aLookup);
+    connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
+    /* FIXME:
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
 
     QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
     toolBar->addAction(aShare);
-
-    connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 */
 

@@ -29,8 +29,8 @@
 
 #include <App/App.h>
 
-VehiclesStorage::VehiclesStorage(ProtocolVehicle *vehicle, QObject *parent)
-    : QObject(parent)
+VehiclesStorage::VehiclesStorage(ProtocolVehicle *vehicle)
+    : QObject(vehicle)
     , _vehicle(vehicle)
 {}
 
@@ -58,12 +58,10 @@ void VehiclesStorage::loadNodeInfo(ProtocolNode *node)
         &DBReqVehiclesLoadInfo::infoLoaded,
         node,
         [node](QVariantMap info) {
-            if (!node)
-                return;
-            if (node->identValid())
-                return;
-            node->setTitle(info.value("name").toString());
-            node->setHardware(info.value("hardware").toString());
+            if (node && node->identValid()) {
+                node->setTitle(info.value("name").toString());
+                node->setHardware(info.value("hardware").toString());
+            }
         },
         Qt::QueuedConnection);
     req->exec();
@@ -94,7 +92,7 @@ void VehiclesStorage::saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict 
     QVariantMap info;
     info.insert("sn", node->sn());
     info.insert("time", node->lastSeenTime());
-    info.insert("hash", QString("%1").arg(node->ident().hash, 8, 16, QChar('0')).toUpper());
+    info.insert("hash", node->identHash());
 
     DBReqVehiclesSaveDict *req = new DBReqVehiclesSaveDict(info, dict);
     connect(req,
@@ -104,7 +102,28 @@ void VehiclesStorage::saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict 
             Qt::QueuedConnection);
     req->exec();
 }
-void VehiclesStorage::saveNodeConfig(ProtocolNode *node, QVariantMap values)
+void VehiclesStorage::loadNodeDict(ProtocolNode *node)
+{
+    DBReqVehiclesLoadDict *req = new DBReqVehiclesLoadDict(node->sn(), node->identHash());
+    connect(req,
+            &DBReqVehiclesLoadDict::dictInfoFound,
+            node,
+            &ProtocolNode::dbDictInfoFound,
+            Qt::QueuedConnection);
+    connect(
+        req,
+        &DBReqVehiclesLoadDict::dictLoaded,
+        node,
+        [node](QVariantMap info, const ProtocolNode::Dict &dict) {
+            node->dbDictInfoFound(info);
+            node->setDict(dict);
+        },
+        Qt::QueuedConnection);
+    connect(req, &DatabaseRequest::finished, node, &ProtocolNode::requestDict, Qt::QueuedConnection);
+    req->exec();
+}
+
+void VehiclesStorage::saveNodeConfig(ProtocolNode *node)
 {
     if (!node->valid())
         return;
@@ -114,15 +133,55 @@ void VehiclesStorage::saveNodeConfig(ProtocolNode *node, QVariantMap values)
         qWarning() << "missing dictInfo";
         return;
     }
+    if (node->values().isEmpty()) {
+        qWarning() << "missing values";
+        return;
+    }
     qDebug() << "save node config" << node->title() << node->value().toString();
 
-    DBReqVehiclesSaveNconf *req = new DBReqVehiclesSaveNconf(node->dbDictInfo(), values, 0);
+    DBReqVehiclesSaveNconf *req = new DBReqVehiclesSaveNconf(node->dbDictInfo(), node->values(), 0);
     connect(req,
             &DBReqVehiclesSaveNconf::nconfFound,
             node,
             &ProtocolNode::dbConfigIDFound,
             Qt::QueuedConnection);
     req->exec();
+}
+void VehiclesStorage::loadNodeConfig(ProtocolNode *node, quint64 key)
+{
+    if (!node->valid())
+        return;
+
+    DBReqVehiclesLoadNconf *req = key ? new DBReqVehiclesLoadNconf(key)
+                                      : new DBReqVehiclesLoadNconfLatest(node->sn());
+    connect(req,
+            &DBReqVehiclesLoadNconf::nconfFound,
+            node,
+            &ProtocolNode::dbConfigIDFound,
+            Qt::QueuedConnection);
+    connect(
+        req,
+        &DBReqVehiclesLoadNconf::configLoaded,
+        node,
+        [node](QVariantMap info, QVariantMap values) {
+            node->confReceived(values);
+            apxMsg() << QString("%1 (%2): %3")
+                            .arg(tr("Data restored"))
+                            .arg(node->title())
+                            .arg(backupTitle(info.value("time").toULongLong(),
+                                             info.value("title").toString()));
+        },
+        Qt::QueuedConnection);
+
+    req->exec();
+}
+QString VehiclesStorage::backupTitle(quint64 time, QString title)
+{
+    QString s = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(time))
+                    .toString("yyyy MMM dd hh:mm:ss");
+    if (!title.isEmpty())
+        s += QString(" (%1)").arg(title);
+    return s;
 }
 
 void VehiclesStorage::saveConfiguration(bool force)
@@ -182,8 +241,10 @@ void VehiclesStorage::loadConfiguration(QString hash)
     DBReqVehiclesLoadConfig *req = new DBReqVehiclesLoadConfig(hash);
     if (_vehicle->isReplay()) {
         if ((!_vehicle->nodes->modified()) && _vehicle->nodes->nodes().size() > 0
-            && _vehicle->dbConfigHash() == hash)
+            && _vehicle->dbConfigHash() == hash) {
+            qDebug() << "vehicle config already loaded";
             return;
+        }
         _vehicle->dbSetConfigHash(hash);
     }
     connect(req,
@@ -195,10 +256,10 @@ void VehiclesStorage::loadConfiguration(QString hash)
 }
 void VehiclesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap> data)
 {
-    int loadedCnt = data.size();
+    size_t loadedCnt = data.size();
     QString title = configInfo.value("title").toString();
     if (!_vehicle->isReplay()) {
-        loadedCnt = 0; //importConfigs(data);
+        loadedCnt = importConfiguration(data);
     } else {
         // vehicle is REPLAY
         _vehicle->dbConfigInfoFound(configInfo);
@@ -210,8 +271,8 @@ void VehiclesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariant
             QString sn = info.value("sn").toString();
             ProtocolNode *node = _vehicle->nodes->getNode(sn);
             do {
-                if (node->identValid()) {
-                    if (node->valid() && node->dbDictInfo() == info) {
+                if (node->valid()) {
+                    if (node->dbDictInfo().value("hash") == info.value("hash")) {
                         qWarning() << "node exists" << node->title();
                         break;
                     }
@@ -223,32 +284,134 @@ void VehiclesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariant
                 node->setVersion(info.value("version").toString());
                 node->setHardware(info.value("hardware").toString());
                 node->setIdentValid(true);
-                node->setDictValid(true);
                 node->dbDictInfoFound(info);
-                node->dictReceived(dict);
+                node->setDict(dict);
             } while (0);
 
             quint64 nconfID = data.at(i).value("nconfID").toULongLong();
             //const QVariantMap &nconfInfo = data.at(i).value("nconfInfo").value<QVariantMap>();
             const QVariantMap &valuesMap = data.at(i).value("values").value<QVariantMap>();
-            QVariantList values;
-            for (auto const &f : dict) {
-                if (f.type < xbus::node::conf::type_field)
-                    continue;
-                values.append(valuesMap.value(f.name));
-            }
+            node->confReceived(valuesMap);
             node->setValid(true);
             node->dbConfigIDFound(nconfID);
-            node->confReceived(values);
         }
     }
 
     QString s = tr("Configuration loaded");
     if (!title.isEmpty())
         s.append(QString(" (%1)").arg(title));
-    if (data.size() != loadedCnt) {
+    if (static_cast<size_t>(data.size()) != loadedCnt) {
         s.append(QString(" %1 of %2 nodes").arg(loadedCnt).arg(data.size()));
         AppNotify::instance()->report(s, AppNotify::Warning, _vehicle->title());
     } else
         AppNotify::instance()->report(s, AppNotify::Important, _vehicle->title());
+}
+size_t VehiclesStorage::importConfiguration(QList<QVariantMap> data)
+{
+    size_t icnt = 0;
+    QHash<ProtocolNode *, QString> snmap;
+    QHash<ProtocolNode *, int> nmap;
+    int priority = 0;
+
+    for (int i = 0; i < data.size(); ++i) {
+        const QVariantMap &info = data.at(i).value("nconfInfo").value<QVariantMap>();
+
+        QString sn = info.value("sn").toString();
+        QString node_name = info.value("name").toString();
+        QString comment = info.value("title").toString();
+        //qDebug()<<ssn<<node_name<<comment;
+        ProtocolNode *node = nullptr;
+        //match by serial numner
+        priority = 0;
+        node = _vehicle->nodes->getNode(sn, false);
+        if (node) {
+            nmap.insert(node, priority);
+            //qDebug()<<"Node by sn: "<<node->name<<node_name<<comment;
+        }
+        //find matching node by name and comment
+        priority++;
+        if (!node) {
+            if (comment.size()) {
+                for (auto i : _vehicle->nodes->nodes())
+                    if (i->title() == node_name && i->value().toString() == comment) {
+                        if (nmap.contains(i) && nmap.value(i) <= priority)
+                            continue;
+                        node = i;
+                        nmap.insert(node, priority);
+                        //qDebug()<<"Node by name+comment: "<<node->name<<node_name<<comment;
+                        break;
+                    }
+            }
+        } //else qDebug()<<"Node by sn: "<<node->name<<node_name<<comment;
+        //find matching node by name without comment
+        priority++;
+        if (!node) {
+            if (node_name != "servo") {
+                for (auto i : _vehicle->nodes->nodes())
+                    if (i->title() == node_name && i->value().toString().isEmpty()) {
+                        if (nmap.contains(i) && nmap.value(i) <= priority)
+                            continue;
+                        node = i;
+                        nmap.insert(node, priority);
+                        //qDebug()<<"Node by name-no-comment: "<<node->name<<node_name<<comment;
+                        break;
+                    }
+            }
+        }
+        //find matching node by name with any comment
+        priority++;
+        if (!node) {
+            if (node_name != "servo") {
+                for (auto i : _vehicle->nodes->nodes())
+                    if (i->title() == node_name) {
+                        if (nmap.contains(i) && nmap.value(i) <= priority)
+                            continue;
+                        node = i;
+                        nmap.insert(node, priority);
+                        //qDebug()<<"Node by name: "<<node->name<<node_name<<comment;
+                        break;
+                    }
+            }
+        }
+        //find matching node by name part
+        priority++;
+        if (!node) {
+            if (node_name.contains('.')) {
+                node_name.remove(0, node_name.indexOf('.'));
+                for (auto i : _vehicle->nodes->nodes())
+                    if (i->title().endsWith(node_name)) {
+                        if (nmap.contains(i) && nmap.value(i) <= priority)
+                            continue;
+                        node = i;
+                        nmap.insert(node, priority);
+                        //qDebug()<<"Node by name part: "<<node->name<<node_name<<comment;
+                        break;
+                    }
+            }
+        }
+        if (!node)
+            continue; //no matching nodes
+        snmap.insert(node, sn);
+        icnt++;
+    }
+    int rcnt = 0;
+    QVariantList ignoredNconfs;
+    for (int i = 0; i < data.size(); ++i) {
+        const QVariantMap &info = data.at(i).value("nconfInfo").value<QVariantMap>();
+        const QVariantMap &values = data.at(i).value("values").value<QVariantMap>();
+        QString sn = info.value("sn").toString();
+        auto node = snmap.key(sn, nullptr);
+        if (node) {
+            node->confReceived(values);
+            rcnt++;
+            continue;
+        }
+        ignoredNconfs.append(QVariant::fromValue(info));
+    }
+    for (int i = 0; i < ignoredNconfs.size(); ++i) {
+        const QVariantMap &info = ignoredNconfs.at(i).value<QVariantMap>();
+        apxMsgW() << tr("Ignored config") << info.value("name").toString()
+                  << info.value("title").toString();
+    }
+    return rcnt;
 }

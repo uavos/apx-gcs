@@ -30,7 +30,7 @@
 
 ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle, "nodes")
-    , vehicle(vehicle)
+    , _vehicle(vehicle)
 {
     setTitle(tr("Nodes"));
     setDescr(tr("Vehicle components"));
@@ -38,7 +38,7 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     setDataType(Count);
 
     connect(vehicle, &Fact::enabledChanged, this, [this]() {
-        setEnabled(this->vehicle->enabled());
+        setEnabled(this->vehicle()->enabled());
     });
 
     connect(this, &ProtocolNodes::nodeNotify, vehicle->vehicles, &ProtocolVehicles::nodeNotify);
@@ -66,7 +66,7 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     });
 
     connect(vehicle, &ProtocolVehicle::activeChanged, this, [this]() {
-        if (!this->vehicle->active())
+        if (!this->vehicle()->active())
             setActive(false);
     });
 
@@ -144,7 +144,7 @@ void ProtocolNodes::next()
 
     if (!active()) {
         // background sync
-        if (vehicle->squawk() == 0) {
+        if (vehicle()->squawk() == 0) {
             req->finish();
             return;
         }
@@ -193,7 +193,7 @@ void ProtocolNodes::check_finished()
         bool bCntChanged = syncCount != cnt;
         syncCount = cnt;
         if (bCntChanged) {
-            qDebug() << "sync" << vehicle->title()
+            qDebug() << "sync" << vehicle()->title()
                      << QString("%1 sec").arg(syncRequestTime.elapsed() / 1000.0, 0, 'f', 1);
             break;
         }
@@ -203,7 +203,11 @@ void ProtocolNodes::check_finished()
         if (!(syncActive && syncTimer.isActive()))
             setActive(false);
         emit syncDone();
-        vehicle->storage->saveConfiguration(vehicle);
+
+        // save config
+        if (!vehicle()->isLocal() || vehicle()->active())
+            vehicle()->storage->saveConfiguration();
+
         return;
     } while (0);
 
@@ -217,7 +221,7 @@ void ProtocolNodes::syncLater(int time_ms, bool force_active)
     if (syncTimer.isActive() && time_ms > syncTimer.interval())
         time_ms = syncTimer.interval();
     syncTimer.start(time_ms);
-    qDebug() << time_ms << vehicle->title();
+    qDebug() << time_ms << vehicle()->title();
 }
 void ProtocolNodes::syncTimeout()
 {
@@ -346,13 +350,13 @@ void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
     if (!enabled())
         return;
 
-    if (vehicle->isLocal() && !active()) {
+    if (vehicle()->isLocal() && !active()) {
         request->finish();
         return;
     }
 
     reqTime.start();
-    vehicle->send(request->toByteArray());
+    vehicle()->send(request->toByteArray());
 }
 
 void ProtocolNodes::requestSearch()

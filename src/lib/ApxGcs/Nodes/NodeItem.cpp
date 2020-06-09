@@ -23,6 +23,7 @@
 #include "NodeItem.h"
 #include "NodeField.h"
 #include "NodeTools.h"
+#include "NodeViewActions.h"
 #include "Nodes.h"
 #include <QtSql>
 
@@ -40,6 +41,8 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
     unbindProperty("value"); //unbind from protocol
+
+    new NodeViewActions(this, _nodes);
 
     tools = new NodeTools(this, Action);
 
@@ -63,8 +66,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
     connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
 
     connect(this, &NodeItem::shell, protocol, &ProtocolNode::requestMod);
-
-    //FIXME: nodes->storage->loadNodeInfo(this);
 
     statusTimer.setSingleShot(true);
     statusTimer.setInterval(10000);
@@ -150,12 +151,13 @@ void NodeItem::upload()
         return;
     if (!modified())
         return;
-    //saveTelemetryUploadEvent();
+
     int cnt = 0;
     for (auto i : m_fields) {
         if (!i->modified())
             continue;
         protocol()->requestUpdate(i->fid(), i->uploadableValue());
+        _nodes->vehicle->recordConfigUpdate(title(), i->name(), i->text(), protocol()->sn());
         cnt++;
     }
     if (cnt > 0) {
@@ -244,6 +246,9 @@ void NodeItem::groupArrays(Fact *group)
 
     Fact *action = new Fact(group, group->name(), group->title(), group->descr(), Action);
     group->setMenu(action);
+    //action->setActionsModel(group->actionsModel());
+    new NodeViewActions(action, _nodes);
+    action->bindProperty(group, "modified", true);
 
     //hide group members
     for (auto i : group->facts()) {
@@ -257,7 +262,8 @@ void NodeItem::groupArrays(Fact *group)
     int colCnt = group->size();
     for (int row = 0; row < f1->size(); ++row) {
         Fact *fi = f1->child(row);
-        Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Group);
+        Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Group | ModifiedGroup);
+        new NodeViewActions(fRow, _nodes);
 
         fRow->bindProperty(fi, "text", true);
         fRow->bindProperty(fi, "modified", true);
@@ -285,7 +291,8 @@ void NodeItem::groupArrays(Fact *group)
                                fArray->name(),
                                fArray->title(),
                                fArray->descr(),
-                               fp->treeType() | fp->dataType());
+                               fp->treeType() | fp->dataType() | ModifiedTrack);
+            new NodeViewActions(f, _nodes);
             f->setBinding(fp);
             connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
             if (bChParam) {
@@ -334,13 +341,7 @@ void NodeItem::removeEmptyGroups(Fact *f)
 
 void NodeItem::identReceived()
 {
-    m_lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-
-    if (!protocol()->dictValid()) {
-        protocol()->requestDict();
-    } else if (!protocol()->valid()) {
-        protocol()->requestConf();
-    }
+    updateStatus();
 }
 
 void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
@@ -358,6 +359,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
         case xbus::node::conf::group:
             g = i.group ? groups.value(i.group) : this;
             g = new Fact(g, i.name, i.title, i.descr, Group | ModifiedGroup);
+            new NodeViewActions(g, _nodes);
             groups.insert(groups.size() + 1, g);
             break;
         case xbus::node::conf::command:
@@ -382,20 +384,19 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     groupArrays();
 }
 
-void NodeItem::confReceived(const QVariantList &values)
+void NodeItem::confReceived(const QVariantMap &values)
 {
     //qDebug() << values;
-    if (values.size() != m_fields.size()) {
-        qWarning() << "fields mismatch:" << values.size() << m_fields.size();
-        protocol()->setValid(false);
-        return;
-    }
-    int i = 0;
     for (auto f : m_fields) {
-        f->setValue(values.at(i++));
+        if (!values.contains(f->name()))
+            continue;
+        f->setValue(values.value(f->name()));
         f->setEnabled(true);
     }
-    backup();
+    if (!protocol()->valid()) {
+        backup();
+    }
+
     updateStatus();
 }
 
@@ -421,6 +422,7 @@ void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
         s.append(QString("/%1").arg(text()));
     }
     _nodes->vehicle->message(msg, flags, s);
+    _nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
 }
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {

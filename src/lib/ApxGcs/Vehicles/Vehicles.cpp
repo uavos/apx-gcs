@@ -91,18 +91,20 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     recMandala.names << "id"
                      << "name"
                      << "title"
-                     << "descr"
                      << "units"
                      << "alias";
-    foreach (MandalaFact *f, f_local->f_mandala->uid_map.values()) {
+    for (auto f : f_local->f_mandala->uid_map.values()) {
         if (f->isSystem())
             continue;
         QVariantList v;
-        v << f->offset() << f->mpath() << f->title() << f->descr();
-        v << (f->enumStrings().isEmpty() ? f->units() : f->enumStrings().join(','));
+        v << f->meta().uid;
+        v << f->mpath();
+        v << f->meta().title;
+        v << f->meta().units;
         v << f->alias();
         recMandala.values.append(v);
     }
+
     DBReqTelemetryUpdateMandala *req = new DBReqTelemetryUpdateMandala(recMandala);
     connect(
         req,

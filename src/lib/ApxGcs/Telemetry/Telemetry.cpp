@@ -60,7 +60,11 @@ Telemetry::Telemetry(Vehicle *parent)
                 this,
                 &Telemetry::recordFactTriggered);
 
-        connect(f_reader, &TelemetryReader::dataAvailable, this, &Telemetry::recordLoaded);
+        connect(f_reader,
+                &TelemetryReader::dataAvailable,
+                this,
+                &Telemetry::recordLoaded,
+                Qt::QueuedConnection);
 
         f_player = new TelemetryPlayer(this, this);
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
@@ -121,7 +125,7 @@ void Telemetry::recordFactTriggered(Fact *f)
     const QString &s = f->name();
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
-        //FIXME: vehicle->f_nodes->storage->loadConfiguration(uid);
+        vehicle->protocol()->storage->loadConfiguration(uid);
     } else if (s.startsWith("mission")) {
         vehicle->f_mission->storage->loadMission(uid);
     } else {

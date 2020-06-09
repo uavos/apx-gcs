@@ -22,41 +22,24 @@
  */
 #pragma once
 
+#include <Fact/Fact.h>
 #include <QtCore>
 
-#include <Protocols/ProtocolNode.h>
+class Nodes;
 
-class ProtocolVehicle;
-
-class VehiclesStorage : public QObject
+class NodeViewActions : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit VehiclesStorage(ProtocolVehicle *vehicle);
-
-    void saveVehicleInfo();
-
-    void loadNodeInfo(ProtocolNode *node);
-    void saveNodeInfo(ProtocolNode *node);
-
-    void saveNodeUser(ProtocolNode *node);
-
-    void saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict &dict);
-    void loadNodeDict(ProtocolNode *node);
-
-    void saveNodeConfig(ProtocolNode *node);
-    void loadNodeConfig(ProtocolNode *node, quint64 key = 0);
-
-    void saveConfiguration(bool force = false);
-    void loadConfiguration(QString hash);
-
-    static QString backupTitle(quint64 time, QString title);
+    explicit NodeViewActions(Fact *fact, Nodes *nodes);
 
 private:
-    ProtocolVehicle *_vehicle;
+    Fact *_fact;
+    Nodes *_nodes;
 
-    size_t importConfiguration(QList<QVariantMap> data);
+    Fact *f_revert;
 
 private slots:
-    void loadedConfiguration(QVariantMap configInfo, QList<QVariantMap> data);
+    void updateRevert();
 };

@@ -84,7 +84,7 @@ QDir AppDirs::scripts()
 
 QDir AppDirs::db()
 {
-    return QDir(user().absoluteFilePath("Data.new"));
+    return QDir(user().absoluteFilePath("Data"));
 }
 
 QDir AppDirs::logs()

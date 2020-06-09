@@ -65,20 +65,32 @@ public:
     };
     typedef QList<dict_field_s> Dict;
 
+    ProtocolVehicle *vehicle() const;
+
+    inline QVariantMap &values() { return _values; }
+
     inline quint64 lastSeenTime() const { return m_lastSeenTime; }
     inline QVariantMap dbDictInfo() const { return m_dbDictInfo; }
     inline quint64 dbConfigID() const { return m_dbConfigID; }
+    inline QString identHash() const
+    {
+        return QString("%1").arg(ident().hash, 8, 16, QChar('0')).toUpper();
+    }
+
+    void setDict(const ProtocolNode::Dict &dict);
 
 protected:
     QString toolTip() const override;
     void hashData(QCryptographicHash *h) const override;
 
 private:
-    ProtocolNodes *nodes;
+    ProtocolNodes *_nodes;
 
     QMap<QString, ProtocolNodeFile *> _files_map;
     Dict m_dict;
     QList<int> m_dict_fields;
+
+    QVariantMap _values;
 
     QVariantMap m_dbDictInfo;
     quint64 m_dbConfigID{};
@@ -108,7 +120,7 @@ signals:
 
     void identReceived();
     void dictReceived(const ProtocolNode::Dict &dict);
-    void confReceived(const QVariantList &values);
+    void confReceived(const QVariantMap &values);
     void confSaved();
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);

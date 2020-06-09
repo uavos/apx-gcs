@@ -200,14 +200,17 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
                                           const QString &uid)
 {
     Fact *g = f_events->child(name);
-    if (!g)
+    if (!g) {
         g = new Fact(f_events, name, "", "", Fact::Group | Fact::Count);
+        g->moveToThread(nullptr);
+    }
 
     Fact *f = nullptr;
     if (name == "uplink") {
         f = g->childByTitle(value);
         if (!f) {
             f = new Fact(g, value, value, "");
+            f->moveToThread(nullptr);
             //qDebug() << name << value;
             f->setValue(1);
         } else {
@@ -217,6 +220,7 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
         f = g->childByTitle(uid);
         if (!f) {
             f = new Fact(g, uid, uid, "");
+            f->moveToThread(nullptr);
             //qDebug() << name << value;
             f->setValue(1);
         } else {
@@ -237,6 +241,7 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
                 descr.prepend(QString("%1/").arg(s));
         }
         f = new Fact(g, name + "#", title, descr);
+        f->moveToThread(nullptr);
         QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
         f->setValue(stime);
     }

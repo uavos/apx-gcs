@@ -37,6 +37,7 @@ bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
     telemetryID = query.lastInsertId().toULongLong();
     emit idUpdated(telemetryID);
     emit dbModified();
+    //qDebug() << telemetryID;
     return true;
 }
 //=============================================================================
@@ -66,6 +67,7 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqTelemetryWriteEvent::run(QSqlQuery &query)
 {
+    qDebug() << telemetryID;
     query.prepare("INSERT INTO TelemetryEvents"
                   "(telemetryID, time, name, value, uid, uplink) "
                   "VALUES(?, ?, ?, ?, ?, ?)");

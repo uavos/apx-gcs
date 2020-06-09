@@ -20,23 +20,23 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef LookupNodeBackup_H
-#define LookupNodeBackup_H
-//=============================================================================
+#pragma once
+
 #include <Database/DatabaseLookup.h>
 #include <Fact/Fact.h>
 #include <QtCore>
-class NodeItem;
-//=============================================================================
+
+class ProtocolNode;
+
 class LookupNodeBackup : public DatabaseLookup
 {
     Q_OBJECT
 
 public:
-    explicit LookupNodeBackup(NodeItem *node, Fact *parent);
+    explicit LookupNodeBackup(ProtocolNode *node, Fact *parent);
 
 private:
-    NodeItem *node;
+    ProtocolNode *node;
 
 protected:
     bool fixItemDataThr(QVariantMap *item) override;
@@ -45,5 +45,3 @@ protected:
 private slots:
     void loadItem(QVariantMap modelData);
 };
-//=============================================================================
-#endif

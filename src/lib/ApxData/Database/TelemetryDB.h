@@ -20,12 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef TelemetrysDB_H
-#define TelemetrysDB_H
-//=============================================================================
+#pragma once
+
 #include <Database/DatabaseSession.h>
 #include <QtCore>
-//=============================================================================
+
 class TelemetryDB : public DatabaseSession
 {
     Q_OBJECT
@@ -35,10 +34,8 @@ public:
     typedef QMap<quint64, QString> TelemetryFieldsMap;
     typedef QMap<QString, QString> TelemetryFieldsAliases;
 
-    TelemetryFieldsMap fieldsMap();
+    TelemetryFieldsMap &fieldsMap();
     void setFieldsMap(const TelemetryFieldsMap &v);
-    TelemetryFieldsAliases fieldsAliases();
-    void setFieldsAliases(const TelemetryFieldsAliases &v);
 
     void markCacheInvalid(quint64 telemetryID);
     QList<quint64> invalidCacheList();
@@ -53,7 +50,6 @@ private:
     QMutex pMutex; //property access mutex
 
     TelemetryFieldsMap m_fieldsMap;
-    TelemetryFieldsAliases m_fieldsAliases;
 
     QList<quint64> m_invalidCacheList;
     quint64 latestInvalidCacheID;
@@ -66,7 +62,7 @@ public slots:
 signals:
     void invalidateRecords(); //called after record del
 };
-//=============================================================================
+
 class DBReqTelemetry : public DatabaseRequest
 {
     Q_OBJECT
@@ -76,7 +72,7 @@ public:
 protected:
     virtual bool run(QSqlQuery &query);
 };
-//=============================================================================
+
 class DBReqTelemetryUpdateMandala : public DBReqTelemetry
 {
     Q_OBJECT
@@ -94,7 +90,7 @@ protected:
 signals:
     void progress(int v);
 };
-//=============================================================================
+
 class DBReqTelemetryEmptyTrash : public DBReqTelemetry
 {
     Q_OBJECT
@@ -108,7 +104,7 @@ protected:
 signals:
     void progress(int v);
 };
-//=============================================================================
+
 class DBReqTelemetryEmptyCache : public DBReqTelemetry
 {
     Q_OBJECT
@@ -122,7 +118,7 @@ protected:
 signals:
     void progress(int v);
 };
-//=============================================================================
+
 class DBReqTelemetryStats : public DBReqTelemetry
 {
     Q_OBJECT
@@ -136,5 +132,3 @@ protected:
 signals:
     void totals(quint64 total, quint64 trash);
 };
-//=============================================================================
-#endif

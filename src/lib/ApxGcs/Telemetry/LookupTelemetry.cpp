@@ -188,7 +188,6 @@ void LookupTelemetry::defaultLookup()
 {
     //qDebug()<<filter();
     query("SELECT * FROM Telemetry"
-          " LEFT JOIN TelemetryStats ON TelemetryStats.telemetryID=Telemetry.key"
           " WHERE "
               + filterTrash() + (filter().isEmpty() ? "" : " AND " + filterQuery())
               + " ORDER BY time DESC, key DESC",
@@ -216,7 +215,6 @@ void LookupTelemetry::dbLoadInfo()
     if (!key)
         return;
     QString qs = "SELECT * FROM Telemetry"
-                 " LEFT JOIN TelemetryStats ON TelemetryStats.telemetryID=Telemetry.key"
                  " WHERE Telemetry.key=?";
     DatabaseRequest *req = new DatabaseRequest(db, qs, QVariantList() << recordId());
     connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);

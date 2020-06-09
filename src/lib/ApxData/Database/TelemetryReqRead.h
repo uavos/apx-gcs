@@ -94,7 +94,6 @@ public:
     //result
     quint64 cacheID;
     QVariantMap info;
-    QVariantMap stats;
     Records records;
     QMap<quint64, QString> fieldNames;
 

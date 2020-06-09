@@ -25,17 +25,17 @@
 #include <Database/DatabaseLookup.h>
 #include <Fact/Fact.h>
 #include <QtCore>
-class Nodes;
+class VehiclesStorage;
 
 class LookupConfigs : public DatabaseLookup
 {
     Q_OBJECT
 
 public:
-    explicit LookupConfigs(Nodes *nodes, Fact *parent);
+    explicit LookupConfigs(VehiclesStorage *storage, Fact *parent);
 
 private:
-    Nodes *nodes;
+    VehiclesStorage *storage;
 
 protected:
     bool fixItemDataThr(QVariantMap *item) override;

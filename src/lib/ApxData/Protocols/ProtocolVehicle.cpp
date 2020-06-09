@@ -42,7 +42,7 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
                 .toHex()
                 .toUpper();
 
-    storage = new VehiclesStorage(this, this);
+    storage = new VehiclesStorage(this);
 
     nodes = new ProtocolNodes(this);
     telemetry = new ProtocolTelemetry(this);

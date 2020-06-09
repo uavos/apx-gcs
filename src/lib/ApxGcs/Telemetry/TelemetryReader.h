@@ -64,6 +64,8 @@ private:
     bool blockNotesChange;
     DelayedEvent loadEvent;
 
+    void changeThread(Fact *fact, QThread *thread);
+
 private slots:
     void notesChanged();
     void updateStatus();

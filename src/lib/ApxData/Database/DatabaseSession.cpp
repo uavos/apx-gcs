@@ -28,10 +28,11 @@
 #include <App/AppRoot.h>
 //=============================================================================
 DatabaseSession::DatabaseSession(QObject *parent,
-                                 const QString &fileName,
-                                 const QString &sessionName)
-    : Fact(Database::instance(), QFileInfo(fileName).baseName(), "", "", Group)
-    , fileName(fileName)
+                                 const QString &name,
+                                 const QString &sessionName,
+                                 QString version)
+    : Fact(Database::instance(), name, "", "", Group)
+    , fileName(AppDirs::db().absoluteFilePath(version + QDir::separator() + name + ".db"))
     , sessionName(sessionName)
     , inTransaction(false)
     , sql(QSqlDatabase::addDatabase("QSQLITE", sessionName))

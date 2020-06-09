@@ -249,6 +249,7 @@ void TelemetryFrame::updateStatus()
 //=============================================================================
 void TelemetryFrame::updateData()
 {
+    resetPlot();
     //create curves
     QHash<quint64, MandalaFact *> fidmap;
     for (auto fid : reader->fieldNames.keys()) {
