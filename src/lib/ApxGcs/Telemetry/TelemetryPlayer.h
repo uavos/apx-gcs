@@ -67,6 +67,8 @@ private:
     QHash<quint64, int> dataPosMap;
     double sampleValue(quint64 fieldID, double t);
 
+    void loadConfValue(const QString &sn, QString s);
+
 private slots:
     void updateActions();
     void updateStatus();

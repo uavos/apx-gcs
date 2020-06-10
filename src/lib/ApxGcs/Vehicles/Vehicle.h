@@ -85,19 +85,17 @@ private:
     Fact *f_lon;
     Fact *f_hmsl;
 
-    MandalaFact *f_ref_lat;
-    MandalaFact *f_ref_lon;
+    MandalaFact *f_pos;
+
+    MandalaFact *f_ref;
     MandalaFact *f_ref_hmsl;
 
     Fact *f_vspeed;
     Fact *f_mode;
     Fact *f_stage;
 
-    MandalaFact *f_cmd_n;
-    MandalaFact *f_cmd_e;
-    MandalaFact *f_cmd_gimbal_lat;
-    MandalaFact *f_cmd_gimbal_lon;
-    MandalaFact *f_cmd_gimbal_hmsl;
+    MandalaFact *f_cmd_pos;
+    MandalaFact *f_cmd_gimbal;
 
 private slots:
     void updateInfo();
@@ -111,8 +109,6 @@ private slots:
 private slots:
     void updateActive();
 
-    void updateDatalinkVars(quint16 id, QByteArray);
-
     void jsexecData(QString data);
 
 signals:
@@ -124,7 +120,7 @@ signals:
 
     //forward for recorder
     void recordDownlink();
-    void recordUplink(ProtocolTelemetry::TelemetryValue value);
+    void recordUplink(xbus::pid_s pid, QVariant value);
 
     //events
     void recordNodeMessage(QString subsystem, QString text, QString sn);

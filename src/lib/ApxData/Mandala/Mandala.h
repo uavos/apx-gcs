@@ -37,7 +37,7 @@ public:
     Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
     Q_INVOKABLE MandalaFact *fact(const QString &mpath) const;
 
-    QHash<QString, QVariant> constants; // <name,value> enums in form varname_ENUM
+    QHash<QString, QVariant> constants; // <name,value> constants
     QMap<mandala::uid_t, MandalaFact *> uid_map;
 
     quint64 timestamp() const;
@@ -59,6 +59,6 @@ public slots:
 
 signals:
     //forwarded to vehicle
-    void sendValue(ProtocolTelemetry::TelemetryValue value);
-    void sendBundle(ProtocolTelemetry::TelemetryValues values);
+    void sendValue(mandala::uid_t uid, QVariant value);
+    void sendBundle(mandala::uid_t uid, uint16_t mask, QVariantList values);
 };

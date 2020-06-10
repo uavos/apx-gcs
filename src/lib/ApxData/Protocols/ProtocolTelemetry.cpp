@@ -354,36 +354,23 @@ void ProtocolTelemetry::pack(const QVariant &v,
     }
 }
 
-void ProtocolTelemetry::sendValue(ProtocolTelemetry::TelemetryValue value)
+void ProtocolTelemetry::sendValue(mandala::uid_t uid, QVariant value)
 {
-    ostream.req(value.pid.uid, value.pid.pri);
+    ostream.req(uid, value.isNull() ? xbus::pri_request : xbus::pri_final);
     mandala::spec_s spec;
-    spec.type = Mandala::meta(value.pid.uid).type_id;
+    spec.type = Mandala::meta(uid).type_id;
     spec.write(&ostream);
-    if (!value.value.isNull()) {
-        pack(value.value, spec.type, ostream);
+    if (!value.isNull()) {
+        pack(value, spec.type, ostream);
     }
     vehicle->send(ostream.toByteArray());
 }
-void ProtocolTelemetry::sendBundle(ProtocolTelemetry::TelemetryValues values)
+void ProtocolTelemetry::sendBundle(mandala::uid_t uid, uint16_t mask, QVariantList values)
 {
-    if (values.size() <= 1 && values.size() > 3) {
-        qWarning() << "wrong size" << values.size();
-        return;
-    }
-
-    ostream.req(values.first().pid.uid, values.first().pid.pri);
-    mandala::spec_s spec;
-    if (values.size() == 2)
-        spec.type = mandala::type_vec2;
-    else if (values.size() == 3)
-        spec.type = mandala::type_vec3;
-
-    spec.write(&ostream);
-
+    ostream.req(uid, xbus::pri_final);
+    ostream << mask;
     for (auto const &v : values) {
-        pack(v.value, Mandala::meta(v.pid.uid).type_id, ostream);
+        pack(v, mandala::type_real, ostream);
     }
-
     vehicle->send(ostream.toByteArray());
 }

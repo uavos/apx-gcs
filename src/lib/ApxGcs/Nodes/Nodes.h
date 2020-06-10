@@ -46,16 +46,15 @@ public:
     Fact *f_clear;
     Fact *f_status;
 
+    Fact *f_save;
+
     LookupConfigs *f_lookup;
     //NodesShare *f_share;
-    //Fact *f_save;
 
     NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
     QList<NodeItem *> nodes() { return m_sn_map.values(); }
 
     NodeItem *add(ProtocolNode *protocol);
-
-    void loadConfValue(const QString &sn, QString s);
 
     Q_INVOKABLE void shell(QStringList commands);
 

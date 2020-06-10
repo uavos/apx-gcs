@@ -55,7 +55,19 @@ void FactBase::bindProperty(Fact *src, QString name, bool oneway)
         return;
     }
 
-    FactPropertyBinding *b = new FactPropertyBinding(static_cast<Fact *>(this), src, name);
+    // find two-way binds to filter loops
+    FactPropertyBinding *src_binding = nullptr;
+    for (auto i : src->_property_binds) {
+        if (!i->match(static_cast<Fact *>(this), name))
+            continue;
+        src_binding = i;
+        break;
+    }
+
+    FactPropertyBinding *b = new FactPropertyBinding(static_cast<Fact *>(this),
+                                                     src,
+                                                     name,
+                                                     src_binding);
     _property_binds.append(b);
 
     if (oneway)

@@ -102,8 +102,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             sendTimer.setInterval(100);
             sendTimer.setSingleShot(true);
             connect(&sendTimer, &QTimer::timeout, this, &MandalaFact::send);
-            connect(this, &MandalaFact::sendValue, tree, &Mandala::sendValue);
-            connect(this, &MandalaFact::sendBundle, tree, &Mandala::sendBundle);
         } else {
             setDataType(Int);
         }
@@ -187,31 +185,6 @@ void MandalaFact::count_rx()
     setModified(true);
 }
 
-bool MandalaFact::sendValues(const QVariantList &vlist)
-{
-    if (!dataType())
-        return false;
-
-    ProtocolTelemetry::TelemetryValues values;
-
-    bool rv = false;
-    mandala::uid_t id = uid();
-    for (auto const &v : vlist) {
-        MandalaFact *f = m_tree->fact(id++);
-        if (!f)
-            return false;
-        if (f->setValueLocal(v))
-            rv = true;
-        ProtocolTelemetry::TelemetryValue value;
-        value.pid.uid = f->uid();
-        value.pid.pri = xbus::pri_final;
-        value.value = f->getValueForStream();
-        values.append(value);
-    }
-    emit sendBundle(values);
-    return rv;
-}
-
 mandala::uid_t MandalaFact::uid() const
 {
     return m_meta.uid;
@@ -222,19 +195,31 @@ mandala::uid_t MandalaFact::offset() const
 }
 void MandalaFact::request()
 {
-    ProtocolTelemetry::TelemetryValue v;
-    v.pid.uid = uid();
-    v.pid.pri = xbus::pri_request;
-    emit sendValue(v);
+    m_tree->sendValue(uid(), QVariant());
 }
 void MandalaFact::send()
 {
     sendTime.start();
-    ProtocolTelemetry::TelemetryValue v;
-    v.pid.uid = uid();
-    v.pid.pri = xbus::pri_final;
-    v.value = getValueForStream();
-    emit sendValue(v);
+    m_tree->sendValue(uid(), getValueForStream());
+}
+void MandalaFact::sendBundle(const BundleValues &values)
+{
+    uint16_t mask = 0;
+    for (auto vuid : values.keys()) {
+        uint16_t v = vuid - uid() - 1;
+        if (v >= 16) {
+            qWarning() << path() << vuid << v;
+            return;
+        }
+        mask |= 1 << v;
+        MandalaFact *f = m_tree->fact(vuid);
+        if (!f) {
+            qWarning() << "missing" << vuid;
+            return;
+        }
+        f->setValueLocal(values.value(vuid));
+    }
+    m_tree->sendBundle(uid(), mask, values.values());
 }
 
 QVariant MandalaFact::data(int col, int role) const

@@ -384,6 +384,17 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     groupArrays();
 }
 
+bool NodeItem::loadConfigValue(const QString &name, const QString &value)
+{
+    for (auto f : m_fields) {
+        if (f->name() != name)
+            continue;
+        f->setValue(value);
+        return true;
+    }
+    return false;
+}
+
 void NodeItem::confReceived(const QVariantMap &values)
 {
     //qDebug() << values;

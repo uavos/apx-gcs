@@ -55,10 +55,10 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(vehicle, &Vehicle::recordConfig, this, &TelemetryRecorder::recordConfig);
 
     //write config on each update
-    /* FIXME: connect(this->vehicle->f_nodes->storage,
-            &NodesStorage::configInfoUpdated,
+    connect(vehicle->protocol(),
+            &ProtocolVehicle::dbConfigInfoChanged,
             this,
-            &TelemetryRecorder::recordConfig);*/
+            &TelemetryRecorder::recordConfig);
 
     //write mission on each upload or download
     connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
@@ -266,18 +266,18 @@ void TelemetryRecorder::recordDownlink()
     }
 }
 //=============================================================================
-void TelemetryRecorder::recordUplink(ProtocolTelemetry::TelemetryValue value)
+void TelemetryRecorder::recordUplink(xbus::pid_s pid, QVariant value)
 {
     bool bID = dbCheckRecord();
     updateFactsMap();
 
-    Fact *f = vehicle->f_mandala->fact(value.pid.uid);
+    Fact *f = vehicle->f_mandala->fact(pid.uid);
     if (!f)
         return;
     DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
                                                                getDataTimestamp(),
                                                                factsMap.key(f),
-                                                               value.value.toDouble(),
+                                                               value.toDouble(),
                                                                true);
     if (bID) {
         req->exec();

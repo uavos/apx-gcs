@@ -23,11 +23,15 @@
 #include "FactPropertyBinding.h"
 #include "Fact.h"
 
-FactPropertyBinding::FactPropertyBinding(Fact *parent, Fact *src, const QString &name)
+FactPropertyBinding::FactPropertyBinding(Fact *parent,
+                                         Fact *src,
+                                         const QString &name,
+                                         FactPropertyBinding *src_binding)
     : QObject(parent)
     , _src(src)
     , _dst(parent)
     , _name(name)
+    , _src_binding(src_binding)
 {
     int pidx_dst = _dst->metaObject()->indexOfProperty(name.toLatin1());
     if (pidx_dst < 0) {
@@ -60,13 +64,26 @@ FactPropertyBinding::FactPropertyBinding(Fact *parent, Fact *src, const QString 
 
     connect(_src, &QObject::destroyed, this, [this]() { _dst->unbindProperties(_src); });
 
+    if (_src_binding)
+        _src_binding->_src_binding = this;
+
     propertyChanged();
 }
 
 void FactPropertyBinding::propertyChanged()
 {
-    //qDebug() << _src->path() << "->" << _dst->path() << _name;
+    //qDebug() << _src->name() << "->" << _dst->name() << _name;
+    if (_blocked) {
+        //qDebug() << "blocked" << _src->name() << "->" << _dst->name() << _name;
+        return;
+    }
+    if (_src_binding)
+        _src_binding->block();
+
     _pdst.write(_dst, _psrc.read(_src));
+
+    if (_src_binding)
+        _src_binding->unblock();
 }
 
 bool FactPropertyBinding::match(Fact *src, const QString &name)
@@ -76,4 +93,13 @@ bool FactPropertyBinding::match(Fact *src, const QString &name)
     if (!name.isEmpty() && name != _name)
         return false;
     return true;
+}
+
+void FactPropertyBinding::block()
+{
+    _blocked = true;
+}
+void FactPropertyBinding::unblock()
+{
+    _blocked = false;
 }

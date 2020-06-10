@@ -76,12 +76,6 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
         node->protocol()->requestUpgrade(node->protocol(), "ldr");
     });
 
-    /* FIXME:
-    if (node->protocol()->files() == "mhx") {
-        f = new Fact(f_updates, "radio", tr("Radio"), tr("Update radio module"));
-        connect(f, &Fact::triggered, node, &NodeItem::upgradeRadio);
-    }*/
-
     registerOnlineAction(f_updates);
 
     // status requests

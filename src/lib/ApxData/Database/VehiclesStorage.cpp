@@ -58,7 +58,7 @@ void VehiclesStorage::loadNodeInfo(ProtocolNode *node)
         &DBReqVehiclesLoadInfo::infoLoaded,
         node,
         [node](QVariantMap info) {
-            if (node && node->identValid()) {
+            if (!node->identValid()) {
                 node->setTitle(info.value("name").toString());
                 node->setHardware(info.value("hardware").toString());
             }

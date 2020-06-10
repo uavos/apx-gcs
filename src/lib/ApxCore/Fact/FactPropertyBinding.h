@@ -30,17 +30,26 @@ class FactPropertyBinding : public QObject
 {
     Q_OBJECT
 public:
-    explicit FactPropertyBinding(Fact *parent, Fact *src, const QString &name);
+    explicit FactPropertyBinding(Fact *parent,
+                                 Fact *src,
+                                 const QString &name,
+                                 FactPropertyBinding *src_binding);
 
     bool match(Fact *src, const QString &name);
+
+    void block();
+    void unblock();
 
 private:
     Fact *_src;
     Fact *_dst;
     QString _name;
+    QPointer<FactPropertyBinding> _src_binding;
 
     QMetaProperty _psrc;
     QMetaProperty _pdst;
+
+    bool _blocked{false};
 
 private slots:
     void propertyChanged();

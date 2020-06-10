@@ -93,7 +93,7 @@ private slots:
 public slots:
     //exported slots for recording
     void recordDownlink();
-    void recordUplink(ProtocolTelemetry::TelemetryValue value);
+    void recordUplink(xbus::pid_s pid, QVariant value);
     //events
     void recordNodeMessage(QString subsystem, QString text, QString sn);
     void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);

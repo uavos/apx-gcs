@@ -70,7 +70,7 @@ Telemetry::Telemetry(Vehicle *parent)
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         bindProperty(f_player, "active", true);
 
-        //FIXME:
+        //FIXME: share
         /*f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
             f_lookup->jumpToRecord(id);
@@ -136,7 +136,7 @@ void Telemetry::recordFactTriggered(Fact *f)
 //=============================================================================
 void Telemetry::recordLoaded()
 {
-    vehicle->f_select->trigger();
+    //vehicle->f_select->trigger();
 
     vehicle->setGeoPath(f_reader->geoPath);
 

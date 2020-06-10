@@ -629,7 +629,7 @@ void FactData::restore()
             child(i)->restore();
         }
     }
-    if (treeType() != Group) {
+    if (treeType() != Group && backupValue().isValid()) {
         setValue(backupValue());
     }
     setModified(false);

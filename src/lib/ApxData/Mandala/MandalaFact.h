@@ -42,9 +42,6 @@ public:
     // set value locally and do not send uplink
     bool setValueLocal(const QVariant &v);
 
-    // set values array and send uplink batch update (f.ex. vecors)
-    bool sendValues(const QVariantList &vlist);
-
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
@@ -64,6 +61,10 @@ public:
 
     inline const mandala::meta_s &meta() const { return m_meta; }
 
+    typedef QMap<mandala::uid_t, QVariant> BundleValues;
+
+    void sendBundle(const BundleValues &values);
+
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
@@ -81,10 +82,6 @@ protected:
     //Fact override
     virtual QVariant data(int col, int role) const override;
     virtual bool showThis(QRegExp re) const override; //filter helper
-
-signals:
-    void sendValue(ProtocolTelemetry::TelemetryValue value);
-    void sendBundle(ProtocolTelemetry::TelemetryValues values);
 
     //---------------------------------------
     // PROPERTIES

@@ -135,13 +135,13 @@ void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
         msg.append(QString(" (%1)").arg(protocol->squawkText()));
     v->message(msg, AppNotify::Important);
 
-    /* FIXME: select identified vehicle
-     while (f_list->size() > 0) {
-        if (m_current->vehicleClass() == Vehicle::UAV)
+    // select identified vehicle
+    while (protocol->isIdentified()) {
+        if (current()->protocol()->isIdentified() && !current()->protocol()->isGroundControl())
             break;
         selectVehicle(v);
         break;
-    }*/
+    }
 }
 
 void Vehicles::selectVehicle(Vehicle *v)

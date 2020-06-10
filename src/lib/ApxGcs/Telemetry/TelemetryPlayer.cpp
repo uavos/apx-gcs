@@ -263,7 +263,7 @@ void TelemetryPlayer::nodesDataLoaded(QString value, QString uid, bool uplink)
 {
     Q_UNUSED(value)
     Q_UNUSED(uplink)
-    // FIXME: vehicle->f_nodes->storage->loadConfiguration(uid);
+    vehicle->protocol()->storage->loadConfiguration(uid);
 }
 void TelemetryPlayer::nodesConfUpdatesLoaded(DatabaseRequest::Records records)
 {
@@ -274,8 +274,27 @@ void TelemetryPlayer::nodesConfUpdatesLoaded(DatabaseRequest::Records records)
     int iValue = n.indexOf("value");
     for (int i = 0; i < records.values.size(); ++i) {
         const QVariantList &r = records.values.at(i);
-        vehicle->f_nodes->loadConfValue(r.at(iUid).toByteArray(), r.at(iValue).toString());
+        loadConfValue(r.at(iUid).toByteArray(), r.at(iValue).toString());
     }
+}
+void TelemetryPlayer::loadConfValue(const QString &sn, QString s)
+{
+    NodeItem *node = vehicle->f_nodes->node(sn);
+    if (!node) {
+        qWarning() << "missing node" << sn;
+        return;
+    }
+    int del = s.indexOf('=');
+    if (del < 0)
+        return;
+    QString spath = s.left(del).trimmed();
+    QString sv = s.mid(del + 1);
+    //qDebug()<<spath<<sv;
+    if (spath.startsWith(node->title()))
+        spath.remove(0, node->title().size() + 1);
+    if (spath.isEmpty())
+        return;
+    node->loadConfigValue(spath, sv);
 }
 //==============================================================================
 void TelemetryPlayer::next()
@@ -363,9 +382,9 @@ void TelemetryPlayer::next()
                 if (evt == "mission") {
                     vehicle->f_mission->storage->loadMission(uid);
                 } else if (evt == "nodes") {
-                    //FIXME: vehicle->f_nodes->storage->loadConfiguration(uid);
+                    vehicle->protocol()->storage->loadConfiguration(uid);
                 } else if (evt == "conf") {
-                    vehicle->f_nodes->loadConfValue(uid, sv);
+                    loadConfValue(uid, sv);
                     QString fn = sv.left(sv.indexOf('='));
                     if (sv.size() > (fn.size() + 32) || sv.contains('\n')) {
                         sv = fn + "=<data>";
@@ -387,7 +406,7 @@ void TelemetryPlayer::next()
 
         //update states
         if (updCnt) {
-            // FIXME: vehicle->protocol()->telemetryDataReceived();
+            vehicle->telemetryData();
             //qDebug()<<updCnt<<tNext;
         }
         if (_time != t) {

@@ -166,7 +166,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
 
     //protocols
-    // FIXME:
+    // FIXME: mission protocol
     /*connect(vehicle->protocol->mission,
                 &ProtocolMission::missionDataReceived,
                 this,

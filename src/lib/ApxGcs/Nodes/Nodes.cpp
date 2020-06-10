@@ -68,11 +68,10 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     //storage actions
     f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
 
-    /*
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
 
-    f_share = new NodesShare(this, this);*/
+    //FIXME: share f_share = new NodesShare(this, this);
 
     foreach (FactBase *a, actions()) {
         a->setOption(IconOnly);
@@ -184,31 +183,15 @@ void Nodes::save()
         return;
     if (!protocol()->valid())
         return;
-    for (auto i : m_sn_map) {
+
+    //FIXME: save modified config
+    /*for (auto i : m_sn_map) {
         if (!i->modified())
             continue;
-        //storage->saveNodeConfig(node);
-    }
-}
+        vehicle->protocol()->storage->saveNodeConfig(i->protocol());
+    }*/
 
-void Nodes::loadConfValue(const QString &sn, QString s)
-{
-    NodeItem *node = this->node(sn);
-    if (!node) {
-        qWarning() << "missing node" << sn;
-        return;
-    }
-    int del = s.indexOf('=');
-    if (del < 0)
-        return;
-    QString spath = s.left(del).trimmed();
-    QString sv = s.mid(del + 1);
-    //qDebug()<<spath<<sv;
-    if (spath.startsWith(node->title()))
-        spath.remove(0, node->title().size() + 1);
-    if (spath.isEmpty())
-        return;
-    //FIXME: node->loadConfigValue(spath, sv);
+    vehicle->protocol()->storage->saveConfiguration();
 }
 
 void Nodes::shell(QStringList commands)

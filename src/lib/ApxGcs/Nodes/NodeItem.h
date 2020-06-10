@@ -44,7 +44,7 @@ public:
     NodeTools *tools;
 
     //int loadConfigValues(QVariantMap values);
-    //bool loadConfigValue(const QString &name, const QString &value);
+    bool loadConfigValue(const QString &name, const QString &value);
 
     const QList<NodeField *> &fields() const;
 

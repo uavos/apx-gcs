@@ -93,6 +93,6 @@ signals:
     void valuesData(ProtocolTelemetry::TelemetryValues values);
 
 public slots:
-    void sendValue(ProtocolTelemetry::TelemetryValue value);
-    void sendBundle(ProtocolTelemetry::TelemetryValues values);
+    void sendValue(mandala::uid_t uid, QVariant value);
+    void sendBundle(mandala::uid_t uid, uint16_t mask, QVariantList values);
 };

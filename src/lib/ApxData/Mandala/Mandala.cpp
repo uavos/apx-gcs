@@ -57,7 +57,9 @@ Mandala::Mandala(Fact *parent)
             if (group->child(d.name)) {
                 apxMsgW() << "dup group:" << group->child(d.name)->path(1);
             }
-            group = new MandalaFact(this, group, d);
+            MandalaFact *f = new MandalaFact(this, group, d);
+            uid_map.insert(f->uid(), f);
+            group = f;
             if (d.level == 2)
                 group->setSection(sect);
             continue;
@@ -139,8 +141,6 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
 const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
 {
     for (auto const &d : mandala::meta) {
-        if (d.group)
-            continue;
         if (d.uid == uid)
             return d;
     }

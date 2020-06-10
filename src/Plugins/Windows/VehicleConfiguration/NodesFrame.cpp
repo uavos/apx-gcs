@@ -69,9 +69,9 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(aLookup);
     connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
-    /* FIXME:
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
 
+    /* FIXME: share
     QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
     toolBar->addAction(aShare);
     connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
@@ -116,16 +116,14 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     QMenu m(treeWidget);
 
     //editor actions
-    QAction *a_revert = nullptr;
-    for (auto i : selectedItems<NodeItem>()) {
+    for (auto i : selectedItems<Fact>()) {
         if (!i->modified())
             continue;
-        /* FIXME: if (!a_revert) {
-            a_revert = new QActionFact(i->f_revert);
-            a_revert->setParent(&m);
-            m.addAction(a_revert);
-            m.addSeparator();
-        }*/
+        QAction *a = new QAction(aUndo->icon(), aUndo->text(), &m);
+        connect(a, &QAction::triggered, aUndo, &QAction::trigger);
+        m.addAction(a);
+        m.addSeparator();
+        break;
     }
 
     //node tools
@@ -152,14 +150,13 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
 void NodesFrame::aUndo_triggered(void)
 {
     treeWidget->tree->setFocus();
-    QList<NodeItem *> list = selectedItems<NodeItem>();
-    /*for(NodesBase *f, list) {
-        if (f->modified())
-            f->f_revert->trigger();
-    }*/
-    //FIXME:
-    //if (list.isEmpty())
-    //    vehicle->f_nodes->f_revert->trigger();
+    QList<Fact *> list = selectedItems<Fact>();
+    for (auto i : list) {
+        if (i->modified())
+            i->restore();
+    }
+    if (list.isEmpty())
+        vehicle->f_nodes->restore();
 }
 //=============================================================================
 void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
