@@ -35,6 +35,12 @@ CompassFrame::CompassFrame(QWidget *parent)
     buttonClear.setText(tr("Clear"));
     checkBoxTrace.setText(tr("Trace"));
 
+    cbSelect.addItem("local");
+    cbSelect.addItem("primary");
+    cbSelect.addItem("secondary");
+    cbSelect.addItem("failsafe");
+    cbSelect.addItem("auxilary");
+
     toolBar = new QToolBar(this);
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setIconSize(QSize(16, 16));
@@ -44,6 +50,8 @@ CompassFrame::CompassFrame(QWidget *parent)
     buttonClose.setObjectName("killButton");
     //toolBar->addWidget(&buttonClose);
     //toolBar->addSeparator();
+    toolBar->addWidget(&cbSelect);
+    toolBar->addSeparator();
     toolBar->addWidget(&checkBoxTrace);
     toolBar->addSeparator();
     toolBar->addWidget(&buttonClear);
@@ -100,7 +108,9 @@ void CompassFrame::requestCalibrationData()
     ProtocolVehicle *protocol = Vehicles::instance()->current()->protocol();
     if (!protocol)
         return;
-    protocol->requestCalibrationData(mandala::sns::nav::mag::uid, QByteArray());
+    QByteArray ba;
+    ba.append((char) cbSelect.currentIndex());
+    protocol->requestCalibrationData(mandala::sns::nav::mag::uid, ba);
 }
 
 void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
@@ -109,8 +119,11 @@ void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
         return;
 
     ProtocolStreamReader stream(data);
-    if (stream.available() != (3 * sizeof(float)))
+    if (stream.available() != (sizeof(uint8_t) + 3 * sizeof(float)))
         return;
+
+    uint8_t pri;
+    stream >> pri;
 
     double x, y, z;
     x = stream.read<float>();

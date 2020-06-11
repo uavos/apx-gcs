@@ -51,6 +51,8 @@ private:
     QVBoxLayout *vbLayout;
     QHBoxLayout *hbLayoutBottom;
 
+    QComboBox cbSelect;
+
     uint tcounter;
 
     QList<QMetaObject::Connection> clist;
