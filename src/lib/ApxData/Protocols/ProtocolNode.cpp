@@ -285,6 +285,10 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
 
         if (msg.isEmpty())
             break;
+
+        msg.replace(":", ": ");
+        msg = msg.simplified();
+
         emit messageReceived(t, msg);
     } break;
 
