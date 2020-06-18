@@ -69,7 +69,7 @@ Rectangle {
             }*/
             SignalButton {
                 text: "Pt"
-                values: [ mandala.est.air.altitude, mandala.est.air.vario, mandala.est.air.airspeed ]
+                values: [ mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed ]
             }
             SignalButton {
                 text: "Ctr"

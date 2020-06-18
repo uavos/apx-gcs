@@ -1,6 +1,7 @@
 ﻿import QtQuick 2.3
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Material 2.2
+import QtPositioning 5.12
 
 import APX.Vehicles 1.0
 import Apx.Common 1.0
@@ -10,7 +11,7 @@ FactValue {
     title: qsTr("LOS")
     descr: qsTr("Line of Sight distance to Home")
 
-    readonly property real m_dist: mandala.est.ref.dist.value
+    readonly property real m_dist: QtPositioning.coordinate(mandala.est.ref.lat.value,mandala.est.ref.lon.value).distanceTo(apx.vehicles.current.coordinate)
     readonly property real m_hmsl: mandala.est.pos.hmsl.value
     readonly property real m_ref_hmsl: mandala.est.ref.hmsl.value
     readonly property real m_rss: mandala.sns.com.rss.value

@@ -82,7 +82,7 @@ Item {
         settingsName: "video"
         defaults: [
             {"bind": "est.pos.hmsl", "title": "MSL", "prec": "0"},
-            {"bind": "est.air.altitude", "title": "ALT", "prec": "0"},
+            {"bind": "est.pos.altitude", "title": "ALT", "prec": "0"},
         ]
     }
 

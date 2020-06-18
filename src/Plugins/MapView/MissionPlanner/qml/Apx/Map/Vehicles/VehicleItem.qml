@@ -19,7 +19,7 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property real f_roll: vm.est.att.roll.value
     readonly property real f_pitch: vm.est.att.pitch.value
     readonly property real f_yaw: vm.est.att.yaw.value
-    readonly property real f_altitude: vm.est.air.altitude.value
+    readonly property real f_altitude: vm.est.pos.altitude.value
     readonly property real f_cmd_course: vm.cmd.pos.course.value
     readonly property real f_course: vm.est.pos.course.value
     readonly property real f_windHdg: vm.est.aux.whdg.value

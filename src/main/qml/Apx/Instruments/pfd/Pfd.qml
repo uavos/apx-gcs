@@ -13,7 +13,7 @@ Item {
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
-    readonly property var f_cmd_altitude: mandala.cmd.air.altitude
+    readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
     readonly property var f_ref_status: mandala.est.ref.status
 

@@ -12,7 +12,7 @@ MapCircle {
     //Fact bindings
     property real lat: mandala.est.pos.lat.value
     property real lon: mandala.est.pos.lon.value
-    property real altitude: mandala.est.air.altitude.value
+    property real altitude: mandala.est.pos.altitude.value
     property real gSpeed: mandala.est.pos.speed.value
     property real course: mandala.est.pos.course.value
     property real gps_Vdown: mandala.est.rel.vd.value

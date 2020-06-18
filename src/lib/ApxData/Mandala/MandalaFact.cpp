@@ -334,6 +334,8 @@ int MandalaFact::getPrecision()
             return 2;
         if (u == "m")
             return 2;
+        if (u == "mbar")
+            return 1;
         if (u == "m/s")
             return 1;
         if (u == "m/s^2")
@@ -346,6 +348,8 @@ int MandalaFact::getPrecision()
             return 1;
         if (u == "rpm")
             return 0;
+        if (u == "kg/m^3")
+            return 2;
         if (u == "kpa")
             return 1;
         if (u == "bar")

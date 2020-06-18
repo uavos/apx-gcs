@@ -20,8 +20,8 @@ Item {
     readonly property var f_tdist: mandala.est.ctr.tdist
     readonly property real m_tdist: f_tdist.value
 
-    readonly property var f_ref_dist: mandala.est.ref.dist
-    readonly property var f_ref_hdg: mandala.est.ref.hdg
+    //readonly property var f_ref_dist: mandala.est.ref.dist
+    //readonly property var f_ref_hdg: mandala.est.ref.hdg
 
     readonly property var f_wpt_dist: mandala.est.wpt.dist
     readonly property var f_wpt_hdg: mandala.est.wpt.hdg
@@ -202,7 +202,7 @@ Item {
                 }
 
             }
-            HdgImage {
+            /*HdgImage {
                 id: wpt_home
                 elementName: "hdg-wpt-green"
                 smooth: ui.antialiasing
@@ -213,7 +213,7 @@ Item {
                 height: elementBounds.height*wheel.sf
                 rotation: apx.angle(-(m_yaw-f_ref_hdg.value))
                 Behavior on rotation { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
-            }
+            }*/
 
             HdgImage {
                 elementName: "hdg-wpt-blue"
@@ -289,7 +289,7 @@ Item {
                 text: v>=10?v.toFixed():v.toFixed(1)
             }
 
-            NumberHdg {
+            /*NumberHdg {
                 id: dh_text
                 property double v: (m_mode===op_mode_TAXI)?f_delta.value:f_ref_dist.value
                 anchors.left: parent.left
@@ -298,7 +298,7 @@ Item {
                 mfield: f_ref_dist
                 label: qsTr("DH")
                 text: v>=1000?(v/1000).toFixed(1)+"km":v.toFixed()
-            }
+            }*/
             NumberHdg {
                 id: rd_text
                 visible: ui.test || isLanding

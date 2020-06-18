@@ -3,10 +3,10 @@ import "../common"
 
 ControlArea {
 
-    readonly property var f_vspeed: mandala.est.air.vario
+    readonly property var f_vspeed: mandala.est.pos.vspeed
     readonly property real m_vspeed: f_vspeed.value
 
-    readonly property var f_cmd_vspeed: mandala.cmd.air.vario
+    readonly property var f_cmd_vspeed: mandala.cmd.pos.vspeed
     readonly property real m_cmd_vspeed: f_cmd_vspeed.value
 
     readonly property var f_vd: mandala.est.pos.vspeed

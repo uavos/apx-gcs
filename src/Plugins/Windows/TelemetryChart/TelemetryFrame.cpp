@@ -377,7 +377,7 @@ void TelemetryFrame::avSTD_triggered(void)
        << "cmd.reg.roll"
        << "est.att.pitch"
        << "cmd.reg.pitch";
-    st << "est.air.altitude";
+    st << "est.pos.altitude";
     st << "est.air.airspeed"
        << "cmd.reg.airspeed";
     st << "est.air.vspeed";
