@@ -11,97 +11,90 @@ Column {
     readonly property var f_ign: mandala.ctr.pwr.ignition
     readonly property var f_pld: mandala.ctr.pwr.payload
 
-    readonly property var f_lights: mandala.ctr.light.taxi
+    //readonly property var f_lights: mandala.ctr.light.taxi
 
 
 
     property double txtHeight
     spacing: 4
     //anchors.fill: parent
-    Flag {
+    StatusFlag {
         id: flaps
-        show: f_flaps.value > 0
         height: txtHeight
-        flagColor: "cyan"
+        visible: true
+        fact: f_flaps
         text: qsTr("FLAPS")
-        toolTip: f_flaps.descr
-        //control: ctr_flaps
-        Text {
-            visible: ui.test || flaps.show
-            color: "white"
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
+        readonly property real v: fact.value
+        show: v > 0
+        status_warning: 0.6
+        CleanText {
+            height: txtHeight
+            fact: flaps.fact
+            show: flaps.show
             anchors.left: parent.right
             anchors.leftMargin: 2
-            text: (f_flaps.value*100).toFixed()
-            font.pixelSize: height
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            font.family: font_narrow
+            text: (flaps.v*100).toFixed()
         }
     }
-    Flag {
+    StatusFlag {
         id: brakes
-        show: f_brake.value > 0
         height: txtHeight
+        visible: true
+        fact: f_brake
         text: qsTr("BRAKE")
-        toolTip: f_brake.descr
-        //control: ctr_brake
-        Text {
-            visible: ui.test || (brakes.show && (f_brake.value>0) && (f_brake.value<1))
-            color: "white"
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
+        readonly property real v: fact.value
+        show: v > 0
+        type: CleanText.Yellow
+        CleanText {
+            height: txtHeight
+            fact: brakes.fact
+            show: brakes.show && brakes.v < 1
             anchors.left: parent.right
             anchors.leftMargin: 2
-            text: (f_brake.value*100).toFixed()
-            font.pixelSize: height
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            font.family: font_narrow
+            text: (brakes.v*100).toFixed()
         }
     }
     Row {
         spacing: 1
-        Flag {
+        height: txtHeight
+        StatusFlag {
             id: ers_flag
-            show: f_ers.value > 0
-            visible: opacity
             height: txtHeight
-            flagColor: "red"
+            fact: f_ers
+            show: fact.value > 0
+            type: CleanText.Red
             text: qsTr("ERS")
-            toolTip: f_ers.descr
-            //control: ctrb_ers
         }
-        Flag {
-            show: f_rel.value > 0
-            //anchors.left: ers_flag.show?ers_flag.right:ers_flag.left
-            //anchors.top: ers_flag.top
+        StatusFlag {
             height: txtHeight
-            flagColor: "yellow"
+            fact: f_rel
+            show: fact.value > 0
+            type: CleanText.Yellow
             text: qsTr("REL")
-            toolTip: f_rel.descr
-            //control: ctrb_rel
         }
     }
-    Flag {
-        show: f_ign.value <= 0 && apx.datalink.valid
+    StatusFlag {
         height: txtHeight
-        flagColor: "red"
+        visible: true
+        fact: f_ign
+        show: fact.value <= 0 && apx.datalink.valid
+        type: CleanText.Red
         text: qsTr("IGN")
-        toolTip: f_ign.descr
     }
-    Flag {
-        show: f_pld.value > 0
+    StatusFlag {
         height: txtHeight
+        visible: true
+        fact: f_pld
+        show: fact.value > 0
+        type: CleanText.Green
         text: qsTr("PYLD")
-        toolTip: f_pld.descr
     }
-    Flag {
-        show: f_lights.value > 0
+    /*StatusFlag {
         height: txtHeight
+        visible: true
+        fact: f_lights
+        show: fact.value > 0
         text: qsTr("TAXI")
-        toolTip: f_lights.descr
-    }
+    }*/
 }
 

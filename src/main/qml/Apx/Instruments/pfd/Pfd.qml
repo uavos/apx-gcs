@@ -15,13 +15,15 @@ Item {
     readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
-    readonly property var f_ref_status: mandala.est.ref.status
-
+    readonly property var f_gps_src: mandala.sns.gps.src
+    readonly property var f_gps_status: mandala.sns.gps.status
+    readonly property var f_gps_emi: mandala.sns.gps.emi
     readonly property var f_gps_su: mandala.sns.gps.su
     readonly property var f_gps_sv: mandala.sns.gps.sv
-    readonly property var f_ktas: mandala.est.tecs.ktas
-    readonly property var f_ld: mandala.est.tecs.ld
-    readonly property var f_stab: mandala.est.tecs.stab
+    readonly property var f_ref_status: mandala.est.ref.status
+
+    readonly property var f_ktas: mandala.est.air.ktas
+    readonly property var f_ld: mandala.est.air.ld
 
     readonly property var f_thrcut: mandala.cmd.opt.thrcut
     readonly property var f_throvr: mandala.cmd.opt.throvr
@@ -39,27 +41,34 @@ Item {
     readonly property var f_rpm: mandala.sns.eng.rpm
     readonly property var f_airbrk: mandala.ctr.wing.airbrk
 
-    readonly property var f_status_pwr: mandala.est.status.pwr
-    readonly property var f_status_ers: mandala.est.status.ers
-    readonly property var f_status_ps: mandala.est.status.ps
-    readonly property var f_status_pt: mandala.est.status.pt
-    readonly property var f_status_gps: mandala.est.status.gps
-    readonly property var f_status_imu: mandala.est.status.imu
-    readonly property var f_status_bat: mandala.est.status.bat
-    readonly property var f_status_eng: mandala.est.status.eng
+    readonly property var f_baro_status: mandala.sns.baro.status
+    readonly property var f_pwr_status: mandala.sns.pwr.status
+
+    readonly property var f_pitot_status: mandala.sns.pitot.status
+
+    readonly property var f_bat_status: mandala.sns.bat.status
+
+    readonly property var f_eng_status: mandala.sns.eng.status
+    readonly property var f_eng_tc: mandala.sns.eng.tc
+    readonly property var f_eng_starter: mandala.ctr.eng.starter
 
     readonly property var f_pwr_servo: mandala.ctr.pwr.servo
     readonly property var f_pwr_payload: mandala.ctr.pwr.payload
 
-    readonly property var f_aux_ers: mandala.sns.aux.ers
-    readonly property var f_air_status: mandala.est.air.status
+    readonly property var f_ers_status: mandala.sns.ers.status
+    readonly property var f_ers_block: mandala.sns.ers.block
 
-    readonly property var f_ref_altps: mandala.est.ref.altps
-    readonly property var f_ref_hmsl: mandala.est.ref.hmsl
+    readonly property var f_ahrs_status: mandala.est.ahrs.status
+    readonly property var f_ahrs_stall: mandala.est.ahrs.stall
+    readonly property var f_ahrs_inair: mandala.est.ahrs.inair
+    readonly property var f_ahrs_imu: mandala.est.ahrs.imu
+
+    readonly property var f_rc_ovr: mandala.cmd.rc.ovr
+
+
+    readonly property var f_ref_altitude: mandala.est.ref.altitude
 
     readonly property var f_ctr_hover: mandala.est.ctr.hover
-    readonly property var f_rc_ovr: mandala.cmd.rc.ovr
-    readonly property var f_starter: mandala.ctr.eng.starter
 
 
     clip: true
@@ -73,7 +82,7 @@ Item {
     property bool showWind: true
     property alias flagHeight: pfdScene.flagHeight
 
-    readonly property bool m_err_pwr: f_status_pwr.value > status_pwr_ok
+    readonly property bool m_err_pwr: f_pwr_status.value > pwr_status_ok
 
     Rectangle {
         color: "#777"
@@ -129,7 +138,7 @@ Item {
             font.pixelSize: pfdScene.txtHeight
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
-            ToolTipArea { text: f_mode.descr }
+            ToolTipArea { text: f_mode.title }
         }
 
 
@@ -152,7 +161,7 @@ Item {
 
             RectNum {
                 value: f_cmd_airspeed.value.toFixed()
-                toolTip: f_cmd_airspeed.descr
+                toolTip: f_cmd_airspeed.title
                 anchors.left: speed_window.left
                 anchors.right: speed_window.right
                 anchors.top: parent.top
@@ -178,93 +187,115 @@ Item {
                 anchors.left: parent.left
                 readonly property real modeHeight: pfdScene.flagHeight
 
-                Number {
-                    visible: ui.test || value>1 || m_err_pwr
+                NumberText {
                     height: modeFlags.modeHeight
-                    label: "Vs"
-                    mfield: f_vsrv
+                    fact: f_vsrv
+                    title: "Vs"
+                    show: value>1 || failure
                     precision: 1
-                    color: f_pwr_servo.value>0?pfdScene.power_color:"#80000000"
-                    blinking: true
+                    type_default: f_pwr_servo.value>0?CleanText.Clean:CleanText.Normal
+                    failure: m_err_pwr
                 }
-                Number {
-                    visible: ui.test || value>1 || m_err_pwr
+                NumberText {
                     height: modeFlags.modeHeight
-                    label: "Vm"
-                    mfield: f_veng
+                    fact: f_veng
+                    title: "Vm"
+                    show: value>1 || failure
                     precision: 1
-                    color: pfdScene.power_color
-                    blinking: true
+                    failure: m_err_pwr
                 }
-                Number {
-                    visible: ui.test || value>1 || m_err_pwr
+                NumberText {
                     height: modeFlags.modeHeight
-                    label: "Vp"
-                    mfield: f_vpld
+                    fact: f_vpld
+                    title: "Vp"
+                    show: value>1 || failure
                     precision: 1
-                    color: f_pwr_payload.value>0?pfdScene.power_color:"#80000000"
-                    blinking: m_err_pwr
+                    type_default: f_pwr_payload.value>0?CleanText.Clean:CleanText.Normal
+                    failure: m_err_pwr
                 }
 
-                Rectangle {
-                    readonly property bool v: f_status_ers.value > status_ers_ok
-                    color: v?"red":"green"
-                    border.width: 0
-                    radius: 3
+                CleanText {
                     height: pfdScene.flagHeight
-                    width: text.width+3
-                    visible: ui.test || f_aux_ers.value > aux_ers_ok || v
-                    Text {
-                        id: text
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.leftMargin: 1
-                        anchors.topMargin: 1
-                        text: qsTr("ERS")+" "+f_aux_ers.text
-                        color: f_aux_ers.value === aux_ers_disarmed?"white":"yellow"
-                        font.pixelSize: parent.height
-                        verticalAlignment: Text.AlignVCenter
-                        font.family: font_narrow
-                    }
+
+                    fact: f_ers_status
+                    readonly property int status: f_ers_status.value
+                    readonly property bool blocked: f_ers_block.value > 0
+                    readonly property bool ok: status == ers_status_ok
+                    readonly property bool disarmed: status == ers_status_disarmed
+
+                    visible: ui.test || status > ers_status_ok || blocked
+
+                    type: disarmed
+                           ? blocked
+                             ? CleanText.Green
+                             : CleanText.Black
+                           : CleanText.Red
+                    prefix: qsTr("ERS")
                 }
 
-                Number {
+                NumberText {
                     id: at_num
                     height: modeFlags.modeHeight
-                    label: "AT"
-                    mfield: f_air_temp
-                    visible: ui.test
-                    onValueChanged: visible=visible || (mfield.value !== 0)
+                    fact: f_air_temp
+                    title: "AT"
+                    show: false
+                    onValueChanged: show = (show || value !== 0)
                 }
-                Number {
+                NumberText {
                     id: rt_num
                     height: modeFlags.modeHeight
-                    label: "RT"
-                    mfield: f_rt
-                    color: value>=70?"red":value>=50?"#40ffff30":"transparent"
+                    fact: f_rt
+                    title: "RT"
+                    show: false
+                    onValueChanged: show = (show || value !== 0)
+                    warning: value>=50
+                    failure: value>=70
                     blinking: value>=60
-                    visible: ui.test
-                    onValueChanged: visible=visible || (mfield.value !== 0)
                 }
 
-                Number {
+                BlinkingText {
                     height: modeFlags.modeHeight
-                    label: qsTr("GPS")
-                    text: su+"/"+sv
-                    toolTip: f_status_gps.descr+", "+f_gps_su.descr+"/"+f_gps_sv.descr
+                    prefix: qsTr("EMI")
+                    fact: f_gps_emi
+
+                    readonly property int emi: fact.value
+
+                    visible: ui.test || emi > gps_emi_ok
+
+                    type: (emi === gps_emi_warning)
+                           ? CleanText.Normal
+                           : CleanText.Red
+
+                    blinking: emi > gps_emi_warning
+                }
+                NumberText {
+                    height: modeFlags.modeHeight
+                    fact: f_gps_status
+                    title: qsTr("GPS")
+                    toolTip: f_gps_status.title+", "+f_gps_su.title+"/"+f_gps_sv.title
+
+                    readonly property int status: f_gps_status.value
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
-                    readonly property bool ref: f_ref_status.value
-                    readonly property bool avail: f_status_gps.value===status_gps_ok
+                    readonly property bool ref: f_ref_status.value === ref_status_initialized
+                    readonly property bool avail: status !== gps_status_nofix
 
                     readonly property bool isOff: (!avail) && (!ref)
                     readonly property bool isErr: ref && (!avail)
-                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8
+                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && status >= gps_status_3D
 
-                    color: isOff?"#80000000":isErr?"red":"transparent"
-                    blinking: isErr
-                    valueColor: isOk?"white":"yellow"
+                    show: f_gps_src.value > gps_src_unknown
+
+                    type_default: ref?CleanText.Clean:CleanText.Normal
+                    failure: isErr
+
+                    textColor: isOk?"white":"yellow"
+
+                    text: su+"/"+sv +(
+                              (!avail || status === gps_status_3D)
+                              ? ""
+                              : (" "+f_gps_status.text)
+                              )
                 }
             }
         }
@@ -284,17 +315,19 @@ Item {
                 anchors.topMargin: pfdScene.topFramesMargin
                 anchors.bottomMargin: (parent.width-parent.width*0.5)*0.3
 
-                Flag {
-                    id: landedFlag
-                    anchors.verticalCenterOffset: pfdScene.flagHeight*1.45
+                CleanText { // in air
+                    anchors.verticalCenterOffset: pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
-                    opacity: ui.effects?0.6:1
-                    show: ui.test || f_air_status.value > 0
-                    visible: show
+                    visible: ui.test || ( fact.value === ahrs_inair_landed && f_ahrs_status.value > ahrs_status_unknown)
+                    height: pfdScene.txtHeight*0.7
+                    fact: f_ahrs_inair
+                }
+                StatusFlag { // baro status
+                    anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
+                    anchors.centerIn: parent
                     height: pfdScene.flagHeight
-                    flagColor: "#8f8"
-                    text: f_air_status.text.toUpperCase()
-                    toolTip: f_air_status.descr
+                    fact: f_baro_status
+                    status_warning: baro_status_warning
                 }
 
             }
@@ -309,7 +342,7 @@ Item {
 
             RectNum {
                 value: f_cmd_altitude.value.toFixed()
-                toolTip: f_cmd_altitude.descr
+                toolTip: f_cmd_altitude.title
                 anchors.left: altitude_window.left
                 anchors.right: altitude_window.right
                 anchors.top: parent.top
@@ -321,32 +354,23 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
 
-                Number {
-                    visible: ui.test || value>0
+                NumberText {
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
-                    mfield: f_ref_altps
-                    label: qsTr("PS")
-                    color: (ui.test || f_status_ps.value>status_ps_ok)?"red":"transparent"
-                    blinking: true
-                }
-                Number {
-                    visible: ui.test || value>0
-                    anchors.bottom: parent.bottom
-                    height: pfdScene.txtHeight
-                    mfield: f_ref_hmsl
-                    label: qsTr("MSL")
+                    show: ui.test || value>0
+                    fact: f_ref_altitude
+                    title: qsTr("MSL")
                 }
             }
-            Number {
-                visible: ui.test || value>0
+            NumberText {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
                 anchors.rightMargin: 4
                 height: pfdScene.txtHeight
-                mfield: f_ld
-                label: qsTr("LD")
+                show: ui.test || value>0
+                fact: f_ld
+                title: qsTr("LD")
                 precision: 1
             }
 
@@ -359,35 +383,31 @@ Item {
             anchors.leftMargin: 4
             spacing: 4
 
-            Flag {
+            StatusFlag {
                 id: hoverFlag
-                show: f_ctr_hover.value > 0
-                visible: opacity
                 height: pfdScene.flagHeight
-                flagColor: "#8f8"
-                text: qsTr("HOVER")
-                toolTip: f_ctr_hover.descr
+                fact: f_ctr_hover
+                status_show: 1
+                type: CleanText.Green
+                text: fact.name
             }
-            Flag {
-                readonly property real v: f_airbrk.value
+            StatusFlag {
                 id: airbrkFlag
-                show: v > 0
                 height: pfdScene.flagHeight
+                fact: f_airbrk
+                readonly property real v: fact.value
+                show: v > 0
                 text: qsTr("AIRBR")
-                toolTip: f_airbrk.descr
-                Text {
+                status_warning: 0.3
+                status_failure: 0.7
+                CleanText {
                     readonly property real v: airbrkFlag.v
-                    visible: ui.test || (airbrkFlag.show && (v>0) && (v<1))
-                    color: "white"
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
+                    fact: airbrkFlag.fact
+                    show: (v>0 && v<1)
+                    height: pfdScene.flagHeight
                     anchors.left: parent.right
                     anchors.leftMargin: 2
                     text: (v*100).toFixed()
-                    font.pixelSize: height
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.family: font_narrow
                 }
             }
         }
@@ -397,24 +417,20 @@ Item {
             anchors.bottomMargin: 4
             anchors.left: left_window.right
             anchors.leftMargin: 4
-            Flag {
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_ktas
                 readonly property real v: f_ktas.value
                 show: (v!==0) && (v<0.5||v>1.8)
-                blinking: false
-                height: pfdScene.flagHeight
-                flagColor: "yellow"
+                type: CleanText.Yellow
                 text: qsTr("TAS")
-                toolTip: f_ktas.descr
             }
-            Flag {
+            StatusFlag {
                 id: flag_CAS
-                show: ui.test || f_status_pt.value>status_pt_ok
-                blinking: true
-                visible: show
                 height: pfdScene.flagHeight
-                flagColor: "red"
-                text: qsTr("CAS")
-                toolTip: f_status_pt.descr
+                fact: f_pitot_status
+                status_warning: pitot_status_warning
+                status_reset: pitot_status_unknown
             }
         }
         Column {
@@ -423,39 +439,36 @@ Item {
             anchors.bottomMargin: 4
             anchors.horizontalCenter: horizon.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
-            Flag {
-                readonly property real v: f_stab.value
-                show: v > 0.5
-                blinking: v > 0.8
+            StatusFlag {
                 height: pfdScene.flagHeight
-                flagColor: blinking?"red":"yellow"
-                text: qsTr("STALL")
-                toolTip: f_stab.descr
+                fact: f_ahrs_stall
+                status_warning: ahrs_stall_warning
             }
-            Flag {
-                show: f_mode.value<op_mode_UAV && f_status_imu.value > status_imu_ok
-                blinking: true
+            StatusFlag {
                 height: pfdScene.flagHeight
-                flagColor: "red"
-                text: qsTr("GYRO")
-                toolTip: f_status_imu.descr
+                fact: f_ahrs_status
+                status_warning: ahrs_status_warning
+                status_show: ahrs_status_busy
             }
-            Flag {
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_ahrs_imu
+                status_warning: ahrs_imu_warning
+            }
+            StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2
-                show: f_status_bat.value > status_bat_ok
-                blinking: true
                 height: pfdScene.flagHeight
-                flagColor: "red"
-                text: qsTr("BAT")
-                toolTip: f_status_bat.descr
+                fact: f_bat_status
+                status_warning: bat_status_warning
+                status_show: bat_status_shutdown
             }
-            Flag {
-                show: f_rc_ovr.value > 0
-                blinking: true
+            StatusFlag {
                 height: pfdScene.flagHeight
-                flagColor: "yellow"
+                fact: f_rc_ovr
                 text: qsTr("RC")
-                toolTip: f_rc_ovr.descr
+                status_show: rc_ovr_on
+                blinking: true
+                type: CleanText.Yellow
             }
         }
 
@@ -495,78 +508,97 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             width: parent.width*0.33
-            Number {
+            NumberText {
                 id: rpm_number
-                readonly property bool err: f_status_eng.value > status_eng_ok
-                visible: ui.test || value>0 || err
+                readonly property int status: f_eng_status.value
+                readonly property bool ok: status > eng_status_unknown
+                readonly property bool warn: status == eng_status_warning
+                readonly property bool err: status > eng_status_warning
+                visible: ui.test || ok || err || value>0
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
-                label: qsTr("RPM")
-                value: f_rpm.value/(precision>0?1000:1)
+                fact: f_rpm
+                title: qsTr("RPM")
+                value: fact.value/(precision>0?1000:1)
                 precision: 0
-                toolTip: f_rpm.descr + (precision>0?"[x1000]":"")
-                color: (ui.test || err)?"red":"transparent"
-                blinking: true
+                toolTip: fact.title + (precision>0?"[x1000]":"")
+                warning: warn||!ok
+                failure: err
             }
-            Flag {
-                id: rpm_starter
+            Column {
                 anchors.bottom: rpm_number.top
                 anchors.bottomMargin: 1
                 anchors.left: rpm_number.left
-                show: f_starter.value>0
-                blinking: true
-                height: pfdScene.flagHeight
-                flagColor: "red"
-                text: qsTr("START")
-                toolTip: f_starter.descr
+
+                BlinkingText { // turbocharger
+                    property int v: fact.value
+                    visible: ui.test || v > eng_tc_off
+                    height: pfdScene.txtHeight*0.7
+                    fact: f_eng_tc
+                    type: v >= eng_tc_warning
+                           ? CleanText.Red
+                           : CleanText.Clean
+                    blinking: v > eng_tc_warning
+                }
+                BlinkingText { // engine status
+                    property int v: fact.value
+                    property bool ctr: f_eng_starter.value>0
+                    visible: ui.test || ctr || (v > eng_status_unknown && v < eng_status_running)
+                    height: pfdScene.txtHeight*0.7
+                    fact: f_eng_status
+                    type: ctr
+                           ? (v == eng_status_start ? CleanText.Green : CleanText.Red )
+                           : CleanText.Clean
+                    blinking: ctr
+                }
             }
 
-
-            Number {
+            NumberText {
                 id: thr_number
-                visible: true
                 anchors.left: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
-                label: qsTr("T")
+                fact: f_thr
+                title: qsTr("T")
                 readonly property bool throvr: f_throvr.value
                 readonly property bool thrcut: f_thrcut.value
-                readonly property real thr: f_thr.value
-                text: thrcut?qsTr("CUT"):(thr*100).toFixed()
-                toolTip: f_thr.descr +"[x100]"+", "+f_thrcut.descr+" ("+qsTr("red")+"), "+f_throvr.descr+" ("+qsTr("blue")+")"
-                color: throvr?"blue":thrcut?"red":thr>=0.9?"#80000000":"transparent"
-                blinking: thr>=0.98
+                text: thrcut?qsTr("CUT"):(value*100).toFixed()
+                toolTip: fact.title +"[x100]"+", "+f_thrcut.title+" ("+qsTr("red")+"), "+f_throvr.title+" ("+qsTr("blue")+")"
+                show: true
+                blinking: value>=0.98
+                type: throvr
+                      ? CleanText.Blue
+                      : thrcut
+                        ? CleanText.Red
+                        : value >= 0.9
+                            ? CleanText.Normal
+                            : CleanText.Clean
             }
-            Number {
+            NumberText {
                 id: rc_thr_number
-                readonly property real rc_thr: f_rc_thr.value
-                readonly property bool show: rc_thr>0 && (value!=(f_thr.value*100).toFixed())
                 anchors.right: thr_number.left
                 anchors.rightMargin: 4
-                anchors.top: thr_number.top
-                anchors.bottom: thr_number.bottom
+                anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
-                label: qsTr("R")
-                opacity: ui.effects?((show||ui.test)?1:0):1
-                visible: ui.smooth?opacity:(show||ui.test)
-                valueColor: "magenta"
-                color: "#80000000"
-                value: (rc_thr*100).toFixed()
-                toolTip: f_rc_thr.descr +"[x100]"
-                Behavior on opacity { enabled: ui.smooth; PropertyAnimation {duration: 500} }
+                fact: f_rc_thr
+                title: qsTr("R")
+                text: (value*100).toFixed()
+                show: value>0 //&& (value!=(f_thr.value*100).toFixed())
+                textColor: "magenta"
+                type_default: CleanText.Normal
+                toolTip: f_rc_thr.title +"[x100]"
             }
 
-            Number {
-                visible: ui.test || value>0 || m_err_pwr
+            NumberText {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 height: pfdScene.txtHeight
-                mfield: f_vsys
-                label: qsTr("V")
+                fact: f_vsys
+                title: qsTr("V")
+                show: value>0 || failure
                 precision: 1
-                color: pfdScene.power_color
-                blinking: true
+                failure: m_err_pwr
             }
         }
     }

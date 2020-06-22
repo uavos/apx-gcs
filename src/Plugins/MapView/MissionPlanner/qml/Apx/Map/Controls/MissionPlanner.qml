@@ -10,7 +10,7 @@ import Apx.Controls 1.0
 MapView {
     id: missionPlanner
 
-    readonly property real m_wspd: mandala.est.aux.wspd.value
+    readonly property real m_wspd: mandala.est.ahrs.wspd.value
 
     readonly property real margins: 10
 

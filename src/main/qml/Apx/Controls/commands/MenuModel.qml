@@ -26,7 +26,21 @@ Fact {
         Fact { binding: mandala.cmd.opt.throvr; flags: Fact.Bool; }
         Fact { enabled: false }
         Fact { binding: mandala.ctr.pwr.ignition; flags: Fact.Bool; }
-        Fact { binding: mandala.sns.btn.starter; flags: Fact.Bool; active: mandala.ctr.eng.starter.value; }
+        Fact {
+            title: mandala.ctr.eng.starter.title;
+            descr: mandala.ctr.eng.starter.descr;
+            flags: Fact.Bool;
+            active: mandala.ctr.eng.starter.value;
+            onValueChanged: {
+                if(value){
+                    mandala.sns.eng.status.value = eng_status_start
+                }else{
+                    mandala.ctr.eng.starter.value = false;
+                }
+            }
+            property bool v: mandala.sns.eng.status.value === eng_status_start
+            onVChanged: value=v
+        }
     }
     Fact {
         title: mandala.ctr.pwr.title

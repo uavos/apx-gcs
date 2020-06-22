@@ -304,7 +304,7 @@ Item {
                 visible: ui.test || isLanding
                 property double v: m_tdist
                 anchors.left: parent.left
-                anchors.bottom: dh_text.top
+                anchors.bottom: parent.bottom //dh_text.top
                 height: hdg.txtHeight
                 mfield: f_tdist
                 label: qsTr("RD")

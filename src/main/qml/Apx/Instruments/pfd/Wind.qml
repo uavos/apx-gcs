@@ -4,8 +4,8 @@ import "."
 
 Item {
     id: wind_window
-    readonly property real m_wspd: mandala.est.aux.wspd.value
-    readonly property real m_whdg: mandala.est.aux.whdg.value
+    readonly property real m_wspd: mandala.est.ahrs.wspd.value
+    readonly property real m_whdg: mandala.est.ahrs.whdg.value
 
     property real value: m_whdg
 
