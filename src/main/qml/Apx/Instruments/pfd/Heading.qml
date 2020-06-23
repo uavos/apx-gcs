@@ -17,6 +17,8 @@ Item {
     readonly property var f_nomag: mandala.cmd.opt.nomag
     readonly property var f_rud: mandala.ctr.att.rud
 
+    readonly property var f_mag_status: mandala.sns.mag.status
+
 
     //instrument item
     property double animation_duration: 500
@@ -186,6 +188,7 @@ Item {
             }
             ToolTipArea { text: f_yaw.descr }
         }
+
     }
 
     //turn rate bar
@@ -285,6 +288,7 @@ Item {
         anchors.fill: parent
         anchors.rightMargin: parent.width/2
         cursorShape: Qt.PointingHandCursor
+        //propagateComposedEvents: true
         onClicked: {
             if(isShiftControl) f_adj.setValue(f_adj.value-1)
             else f_cmd_course.setValue(apx.angle(f_cmd_course.value-15))
@@ -294,9 +298,27 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: parent.width/2
         cursorShape: Qt.PointingHandCursor
+        //propagateComposedEvents: true
         onClicked: {
             if(isShiftControl) f_adj.setValue(f_adj.value+1)
             else f_cmd_course.setValue(apx.angle(f_cmd_course.value+15))
         }
     }
+
+    StatusFlag {
+        anchors.top: parent.top
+        anchors.topMargin: 2
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: -width
+        //anchors.right: hdg_box.left
+        //anchors.rightMargin: height/2
+        //anchors.bottomMargin: parent.height*0.4
+        //height: parent.height
+        height: pfdScene.flagHeight
+        fact: f_mag_status
+        status_warning: mag_status_warning
+        status_reset: mag_status_unknown
+        status_show: mag_status_blocked
+    }
+
 }

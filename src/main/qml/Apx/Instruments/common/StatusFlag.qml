@@ -35,10 +35,11 @@ BlinkingText {
 
     visible: ui.test || show
 
+    toolTip: fact.title+": "+fact.text
 
     MouseArea {
         anchors.fill: parent
-        enabled: status_reset>=0
+        enabled: status_reset >= 0 && (status >= status_warning || warning || failure)
         onClicked: fact.value = status_reset
     }
 }

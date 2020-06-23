@@ -49,7 +49,7 @@ void ProtocolTelemetry::updateStatus()
     }
     setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(1000.0 / _dt_ms, 0, 'f', 1));
 
-    qDebug() << "----------------------------------";
+    /*qDebug() << "----------------------------------";
     qDebug() << "decoder slots";
     qDebug() << "----------------------------------";
 
@@ -71,7 +71,7 @@ void ProtocolTelemetry::updateStatus()
             break;
         }
         qDebug() << i << sfmt << path;
-    }
+    }*/
 }
 
 void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream)

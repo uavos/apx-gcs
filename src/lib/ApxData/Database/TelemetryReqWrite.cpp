@@ -67,7 +67,7 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqTelemetryWriteEvent::run(QSqlQuery &query)
 {
-    qDebug() << telemetryID;
+    //qDebug() << telemetryID;
     query.prepare("INSERT INTO TelemetryEvents"
                   "(telemetryID, time, name, value, uid, uplink) "
                   "VALUES(?, ?, ?, ?, ?, ?)");

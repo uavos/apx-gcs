@@ -22,6 +22,8 @@ Item {
     readonly property var f_gps_sv: mandala.sns.gps.sv
     readonly property var f_ref_status: mandala.est.ref.status
 
+    //readonly property var f_mag_status: mandala.sns.mag.status
+
     readonly property var f_ktas: mandala.est.air.ktas
     readonly property var f_ld: mandala.est.air.ld
 
@@ -62,6 +64,7 @@ Item {
     readonly property var f_ahrs_stall: mandala.est.ahrs.stall
     readonly property var f_ahrs_inair: mandala.est.ahrs.inair
     readonly property var f_ahrs_imu: mandala.est.ahrs.imu
+    readonly property var f_ahrs_hgt: mandala.est.ahrs.hgt
 
     readonly property var f_rc_ovr: mandala.cmd.rc.ovr
 
@@ -129,6 +132,7 @@ Item {
 
         //flight mode text
         Text {
+            id: _modeText
             color: "white"
             anchors.top: parent.top
             anchors.left: parent.horizontalCenter
@@ -139,6 +143,16 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
             ToolTipArea { text: f_mode.title }
+        }
+        CleanText { // in air
+            anchors.top: _modeText.bottom
+            anchors.horizontalCenter: _modeText.horizontalCenter
+            anchors.topMargin: pfdScene.flagHeight*0.1
+            visible: ui.test || ( fact.value <= ahrs_inair_ground && f_ahrs_status.value > ahrs_status_unknown)
+            height: pfdScene.txtHeight*0.7
+            fact: f_ahrs_inair
+            type: f_ahrs_inair.value === ahrs_inair_stby?CleanText.Green:CleanText.Normal
+            text: qsTr("LAND")
         }
 
 
@@ -315,21 +329,14 @@ Item {
                 anchors.topMargin: pfdScene.topFramesMargin
                 anchors.bottomMargin: (parent.width-parent.width*0.5)*0.3
 
-                CleanText { // in air
-                    anchors.verticalCenterOffset: pfdScene.flagHeight*1.5
-                    anchors.centerIn: parent
-                    visible: ui.test || ( fact.value === ahrs_inair_landed && f_ahrs_status.value > ahrs_status_unknown)
-                    height: pfdScene.txtHeight*0.7
-                    fact: f_ahrs_inair
-                }
-                StatusFlag { // baro status
+                CleanText { // height source
                     anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
-                    height: pfdScene.flagHeight
-                    fact: f_baro_status
-                    status_warning: baro_status_warning
+                    visible: ui.test || ( fact.value !== ahrs_hgt_gps && f_ahrs_status.value>0)
+                    height: pfdScene.txtHeight*0.5
+                    fact: f_ahrs_hgt
+                    type: CleanText.Clean
                 }
-
             }
 
 
@@ -411,6 +418,7 @@ Item {
                 }
             }
         }
+        // left bottom central
         Column {
             spacing: 4
             anchors.bottom: parent.bottom
@@ -433,6 +441,23 @@ Item {
                 status_reset: pitot_status_unknown
             }
         }
+
+        // right bottom central
+        Column {
+            spacing: 4
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 4
+            anchors.right: right_window.left
+            anchors.rightMargin: 4
+            StatusFlag { // baro status
+                height: pfdScene.flagHeight
+                fact: f_baro_status
+                status_warning: baro_status_warning
+            }
+        }
+
+
+        // central
         Column {
             spacing: 4
             anchors.bottom: parent.verticalCenter
@@ -449,18 +474,28 @@ Item {
                 fact: f_ahrs_status
                 status_warning: ahrs_status_warning
                 status_show: ahrs_status_busy
+                status_reset: ahrs_status_unknown
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_ahrs_imu
                 status_warning: ahrs_imu_warning
+                status_reset: ahrs_imu_unknown
             }
+            /*StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_mag_status
+                status_warning: mag_status_warning
+                status_reset: mag_status_ok
+                status_show: mag_status_blocked
+            }*/
             StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2
                 height: pfdScene.flagHeight
                 fact: f_bat_status
                 status_warning: bat_status_warning
                 status_show: bat_status_shutdown
+                status_reset: bat_status_unknown
             }
             StatusFlag {
                 height: pfdScene.flagHeight

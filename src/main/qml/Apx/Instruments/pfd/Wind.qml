@@ -4,6 +4,7 @@ import "."
 
 Item {
     id: wind_window
+    readonly property bool m_wind: mandala.est.ahrs.wind.value>0
     readonly property real m_wspd: mandala.est.ahrs.wspd.value
     readonly property real m_whdg: mandala.est.ahrs.whdg.value
 
@@ -12,7 +13,7 @@ Item {
     property real anumation_duration: 1000
     property bool simplified: false
 
-    visible: m_wspd>0.5
+    visible: m_wind
 
     PfdImage {
         id: wind_arrow
