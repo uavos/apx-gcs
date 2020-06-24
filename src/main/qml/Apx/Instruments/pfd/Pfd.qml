@@ -22,7 +22,7 @@ Item {
     readonly property var f_gps_sv: mandala.sns.gps.sv
     readonly property var f_ref_status: mandala.est.ref.status
 
-    //readonly property var f_mag_status: mandala.sns.mag.status
+    readonly property var f_gyro_status: mandala.sns.gyro.status
 
     readonly property var f_ktas: mandala.est.air.ktas
     readonly property var f_ld: mandala.est.air.ld
@@ -63,7 +63,6 @@ Item {
     readonly property var f_ahrs_status: mandala.est.ahrs.status
     readonly property var f_ahrs_stall: mandala.est.ahrs.stall
     readonly property var f_ahrs_inair: mandala.est.ahrs.inair
-    readonly property var f_ahrs_imu: mandala.est.ahrs.imu
     readonly property var f_ahrs_hgt: mandala.est.ahrs.hgt
 
     readonly property var f_rc_ovr: mandala.cmd.rc.ovr
@@ -453,6 +452,7 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_baro_status
                 status_warning: baro_status_warning
+                status_reset: baro_status_unknown
             }
         }
 
@@ -478,17 +478,10 @@ Item {
             }
             StatusFlag {
                 height: pfdScene.flagHeight
-                fact: f_ahrs_imu
-                status_warning: ahrs_imu_warning
-                status_reset: ahrs_imu_unknown
+                fact: f_gyro_status
+                status_warning: gyro_status_warning
+                status_reset: gyro_status_unknown
             }
-            /*StatusFlag {
-                height: pfdScene.flagHeight
-                fact: f_mag_status
-                status_warning: mag_status_warning
-                status_reset: mag_status_ok
-                status_show: mag_status_blocked
-            }*/
             StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2
                 height: pfdScene.flagHeight

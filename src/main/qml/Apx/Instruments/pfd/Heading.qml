@@ -310,15 +310,21 @@ Item {
         anchors.topMargin: 2
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: -width
-        //anchors.right: hdg_box.left
-        //anchors.rightMargin: height/2
-        //anchors.bottomMargin: parent.height*0.4
-        //height: parent.height
         height: pfdScene.flagHeight
         fact: f_mag_status
         status_warning: mag_status_warning
         status_reset: mag_status_unknown
-        status_show: mag_status_blocked
+        //status_show: mag_status_blocked
+    }
+    CleanText {
+        anchors.top: parent.top
+        anchors.topMargin: 0
+        anchors.left: parent.horizontalCenter
+        anchors.leftMargin: height
+        height: pfdScene.flagHeight
+        fact: f_mag_status
+        type: CleanText.Clean
+        show: fact.value > mag_status_3D
     }
 
 }
