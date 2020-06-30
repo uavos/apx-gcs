@@ -14,11 +14,13 @@ Item {
     readonly property var f_thdg: mandala.est.ctr.thdg
     readonly property var f_adj: mandala.cmd.op.adj
 
-    readonly property var f_nomag: mandala.cmd.opt.nomag
+    readonly property var f_nomag: mandala.cmd.ahrs.nomag
     readonly property var f_rud: mandala.ctr.att.rud
 
-    readonly property var f_mag_status: mandala.sns.mag.status
+    readonly property var f_att_mag: mandala.est.att.mag
 
+
+    readonly property bool nomag: f_nomag.value > 0 || f_att_mag.value === att_mag_blocked
 
     //instrument item
     property double animation_duration: 500
@@ -170,7 +172,7 @@ Item {
                 anchors.rightMargin: anchors.leftMargin
                 anchors.topMargin: anchors.leftMargin+1
                 anchors.bottomMargin: parent.height*0.4
-                visible: f_nomag.value
+                visible: nomag
             }
             Text {
                 id: hdg_text
@@ -183,7 +185,7 @@ Item {
                 font.pixelSize: parent.height*0.75
                 font.family: font_mono
                 font.bold: true
-                color: f_nomag.value?"yellow":"white"
+                color: nomag?"yellow":"white"
 
             }
             ToolTipArea { text: f_yaw.descr }
@@ -311,10 +313,11 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: -width
         height: pfdScene.flagHeight
-        fact: f_mag_status
-        status_warning: mag_status_warning
-        status_reset: mag_status_unknown
-        //status_show: mag_status_blocked
+        fact: f_att_mag
+        text: qsTr("MAG")
+        status_warning: att_mag_warning
+        status_reset: att_mag_unknown
+        //status_show: att_mag_blocked
     }
     CleanText {
         anchors.top: parent.top
@@ -322,9 +325,9 @@ Item {
         anchors.left: parent.horizontalCenter
         anchors.leftMargin: height
         height: pfdScene.flagHeight
-        fact: f_mag_status
+        fact: f_att_mag
         type: CleanText.Clean
-        show: fact.value > mag_status_3D
+        show: fact.value > att_mag_3D
     }
 
 }

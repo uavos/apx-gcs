@@ -10,7 +10,7 @@ import Apx.Controls 1.0
 MapView {
     id: missionPlanner
 
-    readonly property real m_wspd: mandala.est.ahrs.wspd.value
+    readonly property bool showWind: mandala.est.wind.status.value > 0 || mandala.est.wind.speed.value > 0
 
     readonly property real margins: 10
 
@@ -88,7 +88,7 @@ MapView {
             anchors.bottomMargin: status.implicitHeight+margins
             Loader {
                 id: wind
-                active: m_wspd>0
+                active: showWind
                 asynchronous: true
                 sourceComponent: Component { Wind { } }
                 visible: wind.status===Loader.Ready

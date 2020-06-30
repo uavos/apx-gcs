@@ -4,16 +4,18 @@ import "."
 
 Item {
     id: wind_window
-    readonly property bool m_wind: mandala.est.ahrs.wind.value>0
-    readonly property real m_wspd: mandala.est.ahrs.wspd.value
-    readonly property real m_whdg: mandala.est.ahrs.whdg.value
+    readonly property bool m_wind: mandala.est.wind.status.value > 0
+    readonly property real m_wspd: mandala.est.wind.speed.value
+    readonly property real m_whdg: mandala.est.wind.heading.value
 
     property real value: m_whdg
 
     property real anumation_duration: 1000
     property bool simplified: false
 
-    visible: m_wind
+    visible: m_wind || m_wspd > 0
+
+    readonly property color color: m_wind?"#fff":"yellow"
 
     PfdImage {
         id: wind_arrow
@@ -36,7 +38,7 @@ Item {
             anchors.verticalCenterOffset: -wind_arrow.height*0.7
             rotation: -parent.rotation
             text: m_wspd.toFixed(m_wspd>=10?0:1)
-            color: "white"
+            color: wind_window.color
             font.family: font_narrow
             font.pixelSize: parent.height*0.5
         }

@@ -19,8 +19,8 @@ MapCircle {
     property real lon: mandala.est.pos.lon.value
     property real altitude: mandala.est.pos.altitude.value
     property real ldratio: mandala.est.air.ld.value
-    property real windHdg: mandala.est.ahrs.whdg.value
-    property real windSpd: mandala.est.ahrs.wspd.value
+    property real windHdg: mandala.est.wind.heading.value
+    property real windSpd: mandala.est.wind.speed.value
     property real airspeed: mandala.est.air.airspeed.value
     property real cas2tas: mandala.est.air.ktas.value
     property real venergy: mandala.est.air.vse.value

@@ -16,13 +16,13 @@ Item {
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
     readonly property var f_gps_src: mandala.sns.gps.src
-    readonly property var f_gps_status: mandala.sns.gps.status
+    readonly property var f_gps_fix: mandala.sns.gps.fix
     readonly property var f_gps_emi: mandala.sns.gps.emi
     readonly property var f_gps_su: mandala.sns.gps.su
     readonly property var f_gps_sv: mandala.sns.gps.sv
     readonly property var f_ref_status: mandala.est.ref.status
+    readonly property var f_ahrs_nogps: mandala.cmd.ahrs.nogps
 
-    readonly property var f_gyro_status: mandala.sns.gyro.status
 
     readonly property var f_ktas: mandala.est.air.ktas
     readonly property var f_ld: mandala.est.air.ld
@@ -60,17 +60,22 @@ Item {
     readonly property var f_ers_status: mandala.sns.ers.status
     readonly property var f_ers_block: mandala.sns.ers.block
 
-    readonly property var f_ahrs_status: mandala.est.ahrs.status
-    readonly property var f_ahrs_stall: mandala.est.ahrs.stall
-    readonly property var f_ahrs_inair: mandala.est.ahrs.inair
-    readonly property var f_ahrs_hgt: mandala.est.ahrs.hgt
-
     readonly property var f_rc_ovr: mandala.cmd.rc.ovr
-
 
     readonly property var f_ref_altitude: mandala.est.ref.altitude
 
     readonly property var f_ctr_hover: mandala.est.ctr.hover
+
+    // status flags and warnings
+    readonly property var f_att_status: mandala.est.att.status
+    readonly property var f_att_rest: mandala.est.att.rest
+    readonly property var f_pos_status: mandala.est.pos.status
+    readonly property var f_pos_hsrc: mandala.est.pos.hsrc
+    readonly property var f_lpos_status: mandala.est.lpos.status
+    readonly property var f_air_stall: mandala.est.air.stall
+    readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
+    //readonly property var f_sys_mode: mandala.est.sys.mode
+
 
 
     clip: true
@@ -113,6 +118,7 @@ Item {
         }
 
         Wind {
+            id: windArrow
             anchors.right: right_window.left
             anchors.bottom: parent.bottom
             anchors.rightMargin: right_window.width*0.2
@@ -122,6 +128,19 @@ Item {
             value: m_whdg-f_yaw.value
         }
 
+        // at rest text
+        CleanText {
+            anchors.bottom: windArrow.top
+            anchors.horizontalCenter: windArrow.horizontalCenter
+            anchors.bottomMargin: height*2
+            height: pfdScene.txtHeight*0.5
+            fact: f_att_rest
+            type: CleanText.Clean
+            show: fact.value > 0
+            text: fact.title.toUpperCase()
+        }
+
+
         ILS {
             anchors.centerIn: parent
             anchors.horizontalCenterOffset: parent.width*(horizon.margin_left-horizon.margin_right)/2
@@ -130,29 +149,26 @@ Item {
         }
 
         //flight mode text
-        Text {
+        CleanText {
             id: _modeText
-            color: "white"
             anchors.top: parent.top
             anchors.left: parent.horizontalCenter
             anchors.right: right_window.left
             anchors.topMargin: pfdScene.flagHeight*1.5
-            text: f_mode.text
-            font.pixelSize: pfdScene.txtHeight
-            horizontalAlignment: Text.AlignHCenter
-            font.family: font_narrow
-            ToolTipArea { text: f_mode.title }
+            height: pfdScene.txtHeight*0.7
+            fact: f_mode
+            type: CleanText.Clean
         }
-        CleanText { // in air
+        // system mode
+        /*CleanText {
             anchors.top: _modeText.bottom
             anchors.horizontalCenter: _modeText.horizontalCenter
             anchors.topMargin: pfdScene.flagHeight*0.1
-            visible: ui.test || ( fact.value <= ahrs_inair_ground && f_ahrs_status.value > ahrs_status_unknown)
-            height: pfdScene.txtHeight*0.7
-            fact: f_ahrs_inair
-            type: f_ahrs_inair.value === ahrs_inair_stby?CleanText.Green:CleanText.Normal
-            text: qsTr("LAND")
-        }
+            visible: ui.test || ( fact.value < sys_mode_airborne && f_att_status.value > att_status_unknown)
+            height: pfdScene.txtHeight*0.5
+            fact: f_sys_mode
+            type: f_att_rest.value > 0?CleanText.Green:CleanText.Normal
+        }*/
 
 
 
@@ -283,32 +299,60 @@ Item {
                 }
                 NumberText {
                     height: modeFlags.modeHeight
-                    fact: f_gps_status
+                    fact: f_gps_fix
                     title: qsTr("GPS")
-                    toolTip: f_gps_status.title+", "+f_gps_su.title+"/"+f_gps_sv.title
+                    toolTip: f_gps_fix.title+", "+f_gps_su.title+"/"+f_gps_sv.title
 
-                    readonly property int status: f_gps_status.value
+                    readonly property int fix: f_gps_fix.value
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
                     readonly property bool ref: f_ref_status.value === ref_status_initialized
-                    readonly property bool avail: status !== gps_status_nofix
+                    readonly property bool avail: fix !== gps_fix_none
+                    readonly property bool blocked: f_ahrs_nogps.value > 0
 
                     readonly property bool isOff: (!avail) && (!ref)
                     readonly property bool isErr: ref && (!avail)
-                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && status >= gps_status_3D
+                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && fix >= gps_fix_3D
 
                     show: f_gps_src.value > gps_src_unknown
 
                     type_default: ref?CleanText.Clean:CleanText.Normal
                     failure: isErr
+                    warning: blocked
 
                     textColor: isOk?"white":"yellow"
 
                     text: su+"/"+sv +(
-                              (!avail || status === gps_status_3D)
+                              (!ui.test && (!avail || fix === gps_fix_3D))
                               ? ""
-                              : (" "+f_gps_status.text)
+                              : (" "+f_gps_fix.text)
                               )
+                }
+            }
+
+            Row {
+                spacing: 2
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 2
+                anchors.right: parent.right
+
+                StatusFlag {
+                    height: pfdScene.flagHeight
+                    width: implicitWidth
+                    fact: f_pos_status
+                    status_warning: pos_status_warning
+                    status_show: pos_status_busy
+                    status_reset: pos_status_unknown
+                    text: qsTr("GPS")
+                }
+                StatusFlag {
+                    height: pfdScene.flagHeight
+                    width: implicitWidth
+                    fact: f_lpos_status
+                    status_warning: lpos_status_warning
+                    status_show: lpos_status_busy
+                    status_reset: lpos_status_unknown
+                    text: qsTr("LPS")
                 }
             }
         }
@@ -331,9 +375,9 @@ Item {
                 CleanText { // height source
                     anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
-                    visible: ui.test || ( fact.value !== ahrs_hgt_gps && f_ahrs_status.value>0)
+                    visible: ui.test || ( fact.value !== pos_hsrc_gps && f_att_status.value>0)
                     height: pfdScene.txtHeight*0.5
-                    fact: f_ahrs_hgt
+                    fact: f_pos_hsrc
                     type: CleanText.Clean
                 }
             }
@@ -421,7 +465,7 @@ Item {
         Column {
             spacing: 4
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 4
+            anchors.bottomMargin: 2
             anchors.left: left_window.right
             anchors.leftMargin: 4
             StatusFlag {
@@ -439,13 +483,20 @@ Item {
                 status_warning: pitot_status_warning
                 status_reset: pitot_status_unknown
             }
+            StatusFlag { // inair status
+                height: pfdScene.flagHeight
+                fact: f_ahrs_inair
+                text: qsTr("AIR")
+                show: ui.test || ( fact.value <= 0 && f_att_status.value > 0)
+                status_reset: ahrs_inair_yes
+            }
         }
 
         // right bottom central
         Column {
             spacing: 4
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 4
+            anchors.bottomMargin: 2
             anchors.right: right_window.left
             anchors.rightMargin: 4
             StatusFlag { // baro status
@@ -461,26 +512,21 @@ Item {
         Column {
             spacing: 4
             anchors.bottom: parent.verticalCenter
-            anchors.bottomMargin: 4
+            anchors.bottomMargin: 2
             anchors.horizontalCenter: horizon.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             StatusFlag {
                 height: pfdScene.flagHeight
-                fact: f_ahrs_stall
-                status_warning: ahrs_stall_warning
+                fact: f_air_stall
+                status_warning: air_stall_warning
             }
             StatusFlag {
                 height: pfdScene.flagHeight
-                fact: f_ahrs_status
-                status_warning: ahrs_status_warning
-                status_show: ahrs_status_busy
-                status_reset: ahrs_status_unknown
-            }
-            StatusFlag {
-                height: pfdScene.flagHeight
-                fact: f_gyro_status
-                status_warning: gyro_status_warning
-                status_reset: gyro_status_unknown
+                fact: f_att_status
+                status_warning: att_status_warning
+                status_show: att_status_busy
+                status_reset: att_status_unknown
+                text: qsTr("AHRS")
             }
             StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2
@@ -532,7 +578,7 @@ Item {
         Item{
             id: center_numbers
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 4
+            anchors.bottomMargin: 2
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             width: parent.width*0.33

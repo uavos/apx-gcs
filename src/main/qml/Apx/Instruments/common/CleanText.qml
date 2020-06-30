@@ -21,11 +21,12 @@ Item {
 
     property string text: fact.text
     property string prefix
-    property string toolTip: fact.title
+    property string toolTip: fact.title+": "+fact.text
 
     property string displayText: (control.prefix ? control.prefix + " " + control.text : control.text).toUpperCase()
 
     property string font: font_narrow
+    property int fontSize: Math.max(4, fix_font?(height*1.2):height)
 
     property bool show: true
 
@@ -49,6 +50,8 @@ Item {
                 return "black"
         }
     }
+
+    readonly property bool fix_font: font === font_narrow
 
     Component.onCompleted: {
         if(!fact)
@@ -84,10 +87,11 @@ Item {
             id: textItem
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.topMargin: fix_font?font.pixelSize*0.05+1:0
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: control.displayText
-            font.pixelSize: Math.max(4, parent.height)
+            font.pixelSize: fontSize
             font.family: control.font
             font.bold: (control.font !== font_narrow)
             color: textColor

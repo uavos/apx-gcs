@@ -5,8 +5,9 @@ import Apx.Common 1.0
 Item {
     id: control
 
-    readonly property real m_wspd: mandala.est.ahrs.wspd.value
-    readonly property real m_whdg: mandala.est.ahrs.whdg.value
+    readonly property bool m_status: mandala.est.wind.status.value > 0
+    readonly property real m_wspd: mandala.est.wind.speed.value
+    readonly property real m_whdg: mandala.est.wind.heading.value
 
     implicitWidth: 100
     implicitHeight: implicitWidth
@@ -16,6 +17,8 @@ Item {
 
     //internal
     readonly property int arrowSize: height-textItem.height-spacing
+
+    readonly property color color: m_status?"#fff":"yellow"
 
     property bool smoothMove: true
     Timer {
@@ -34,7 +37,7 @@ Item {
 
     Text {
         id: textItem
-        color: "#fff"
+        color: control.color
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         text: m_wspd.toFixed(1)
@@ -44,7 +47,7 @@ Item {
     }
     Text {
         id: textHdg
-        color: "#fff"
+        color: control.color
         text: (Math.round(apx.angle360(image.v+180)/5)*5).toFixed(0)
         font.family: font_narrow
         font.pixelSize: fontSize*0.6

@@ -22,8 +22,8 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property real f_altitude: vm.est.pos.altitude.value
     readonly property real f_cmd_course: vm.cmd.pos.course.value
     readonly property real f_course: vm.est.pos.course.value
-    readonly property real f_windHdg: vm.est.ahrs.whdg.value
-    readonly property real f_windSpd: vm.est.ahrs.wspd.value
+    readonly property real f_windHdg: vm.est.wind.heading.value
+    readonly property real f_windSpd: vm.est.wind.speed.value
     readonly property int f_mode: vm.cmd.op.mode.value
 
     readonly property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF
