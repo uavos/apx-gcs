@@ -13,7 +13,7 @@ Item {
     property real anumation_duration: 1000
     property bool simplified: false
 
-    visible: m_wind || m_wspd > 0
+    visible: ui.test || m_wind || m_wspd > 0
 
     readonly property color color: m_wind?"#fff":"yellow"
 

@@ -33,7 +33,7 @@ StatusFlag {
             Layout.fillHeight: true
             verticalAlignment: Text.AlignTop
             text: control.title
-            font.pixelSize: Math.max(4, control.height*0.6)
+            font.pixelSize: Math.max(Math.min(12,control.height), control.height*0.6)
             font.family: font_narrow
             color: "#80DEEA"
         }

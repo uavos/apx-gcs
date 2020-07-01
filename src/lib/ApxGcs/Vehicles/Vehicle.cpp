@@ -399,6 +399,7 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
     static const QStringList warn(QStringList() << "warn"
                                                 << "nofix"
                                                 << "missing"
+                                                << "none"
                                                 << "not found");
 
     if (fType != AppNotify::Error && fType != AppNotify::Warning) {

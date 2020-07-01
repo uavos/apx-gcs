@@ -335,6 +335,22 @@ void NodeItem::removeEmptyGroups(Fact *f)
     }
 }
 
+void NodeItem::linkGroupValues(Fact *f)
+{
+    if (f->parentFact() != this && qobject_cast<NodeField *>(f)) {
+        if (f->num() == 0) {
+            connect(f, &Fact::textChanged, f->parentFact(), [f]() {
+                f->parentFact()->setValue(f->text());
+            });
+        }
+        return;
+    }
+
+    for (auto i : f->facts()) {
+        linkGroupValues(i);
+    }
+}
+
 //=============================================================================
 // Protocols connection
 //=============================================================================
@@ -382,6 +398,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     //qDebug() << m_fields.size();
     removeEmptyGroups(this);
     groupArrays();
+    linkGroupValues(this);
 }
 
 bool NodeItem::loadConfigValue(const QString &name, const QString &value)
