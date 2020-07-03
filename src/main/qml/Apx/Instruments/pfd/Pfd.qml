@@ -15,7 +15,6 @@ Item {
     readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
-    readonly property var f_gps_src: mandala.sns.gps.src
     readonly property var f_gps_fix: mandala.sns.gps.fix
     readonly property var f_gps_emi: mandala.sns.gps.emi
     readonly property var f_gps_su: mandala.sns.gps.su
@@ -74,7 +73,6 @@ Item {
     readonly property var f_lpos_status: mandala.est.lpos.status
     readonly property var f_air_stall: mandala.est.air.stall
     readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
-    //readonly property var f_sys_mode: mandala.est.sys.mode
 
 
 
@@ -314,7 +312,7 @@ Item {
                     readonly property bool isErr: ref && (!avail)
                     readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && fix >= gps_fix_3D
 
-                    show: f_gps_src.value > gps_src_unknown
+                    show: f_att_status.value > 0
 
                     type_default: ref?CleanText.Clean:CleanText.Normal
                     failure: isErr
