@@ -7,7 +7,7 @@ Project {
         "FirmwareLoader",
         "Joystick",
         //"Notifications",
-        //"Simulator",
+        "Simulator",
         "Sounds",
         "Terminal",
         //"Blackbox",

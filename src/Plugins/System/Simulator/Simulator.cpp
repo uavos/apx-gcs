@@ -64,7 +64,15 @@ Simulator::Simulator(Fact *parent)
     f_oAHRS = new Fact(this, "oahrs", tr("AHRS"), tr("Enable AHRS XKF simulation"), Bool);
     f_oNoise = new Fact(this, "onoise", tr("Noise"), tr("Sensors noise simulation"), Bool);
     f_oDLHD = new Fact(this, "odlhd", tr("DLHD"), tr("Higher precision downlink"), Bool);
-    f_oDLHD->setValue(true);
+
+    f_cmd = new Fact(this,
+                     "cmd",
+                     tr("Command"),
+                     tr("Command line arguments"),
+                     Text | PersistentValue);
+    f_cmd->setDefaultValue(
+        "--window=400x400 --no_sound --no_fshaders --no_vshaders --no_glsl --no_sprites "
+        "--no_aniso_filtering --no_pixel_counters --no_pbos --no_fbos --no_vbos");
 
     //shiva
     pShiva.setProgram(QCoreApplication::applicationDirPath() + "/shiva");
@@ -206,10 +214,10 @@ void Simulator::launch()
          << "-u";
     pShiva.setArguments(args);
 
-    f_launch->setEnabled(false);
-    f_stop->setEnabled(true);
+    //f_launch->setEnabled(false);
+    //f_stop->setEnabled(true);
 
-    pShiva.start();
+    //pShiva.start();
 
     if (f_oXplane->value().toBool() && (!xplaneDir.isEmpty())) {
         //QTimer::singleShot(1000, this, [xplaneDir]() {
@@ -244,12 +252,18 @@ void Simulator::launchXplane(QString xplaneDir)
     QString xplaneApp("X-Plane");
 #if defined Q_OS_MAC
     xplaneApp.append(".app");
+    xplaneApp = QDir(xplaneApp).filePath("Contents/MacOS/X-Plane");
 #elif defined Q_OS_WIN
     xplaneApp.append(".exe");
 #endif
-    QUrl xplaneUrl(QUrl::fromLocalFile(xplaneDir + "/X-Plane.app"));
+    /*QUrl xplaneUrl(QUrl::fromLocalFile(xplaneDir + "/" + xplaneApp));
     if (!QDesktopServices::openUrl(xplaneUrl)) {
         apxMsgW() << tr("Failed to start X-Plane app") << xplaneUrl;
+    }*/
+    QStringList args = f_cmd->text().split(' ');
+    QString exe = QDir(xplaneDir).absoluteFilePath(xplaneApp);
+    if (!QProcess::startDetached(exe, args)) {
+        apxMsgW() << tr("Failed to start X-Plane app") << exe;
     }
 }
 //=============================================================================

@@ -9,28 +9,31 @@
 //---------------
 #include <version.h>
 
-#include <Mandala/flat/MandalaFlat.h>
+#include <Mandala/MandalaBundles.h>
+#include <Mandala/MandalaMetaTree.h>
 
-#include <Xbus/XbusNodeConf.h>
+#include <Xbus/XbusNode.h>
 #include <Xbus/XbusPacket.h>
 
 #include <Xbus/tcp/tcp_server.h>
 #include <tcp_ports.h>
-//==============================================================================
-//#define UDP_HOST_UAV            "127.0.0.1"      //machine where 'shiva' runs
-static _tcp_server server;
-//==============================================================================
-_var_float noise(_var_float amp);
-Vect noise_vect(_var_float amp);
-//==============================================================================
-static Mandala var;
+
+#include <mathlib/mathlib.h>
+#include <matrix/math.hpp>
+
+using namespace math;
+using namespace matrix;
+
+static xbus::tcp::Server tcp;
+
 static bool enabled;
-//==============================================================================
+
 static struct
 {
     //input
     XPLMDataRef roll, pitch, yaw;
     XPLMDataRef ax, ay, az;
+    XPLMDataRef x, y, z;
     XPLMDataRef p, q, r;
     XPLMDataRef psi;
     XPLMDataRef lat, lon, alt;
@@ -40,125 +43,122 @@ static struct
     XPLMDataRef agl;
     XPLMDataRef rpm;
     XPLMDataRef altitude;
+    XPLMDataRef rho;
+    XPLMDataRef air_temp;
+    XPLMDataRef room_temp;
     //output
     /*XPLMDataRef ail,elv,thr,rud,flap,brakes;
   //display
   XPLMDataRef dsp;
   XPLMDataRef x,y,z;*/
 
-} ref;
-//==============================================================================
+} xp;
+
+static mandala::bundle::sim_s sim_bundle{};
+
+static xbus::pid_s sim_pid{mandala::cmd::env::sim::uid, xbus::pri_final, 0};
+
 #define PWM_CNT 10
-static xbus::node::conf::ft_lstr_t xpl[PWM_CNT]; //var names per PWM channel
+static xbus::node::conf::text_t xpl[PWM_CNT]; //var names per PWM channel
 static bool xpl_is_array[PWM_CNT];
 static uint xpl_array_idx[PWM_CNT];
 static XPLMDataRef xpl_ref[PWM_CNT];
 static XPLMDataTypeID xpl_type[PWM_CNT];
 static float pwm_ch[PWM_CNT]; //received pwm_ch values
-//==============================================================================
-void sendvar(uint16_t idx)
+
+static void send_bundle()
 {
     static uint8_t buf[xbus::size_packet_max];
-    XbusStreamWriter stream(buf);
-    stream.write<xbus::pid_t>(idx_sim);
-    stream.write<xbus::pid_t>(idx);
+    XbusStreamWriter stream(buf, sizeof(buf));
+    sim_pid.write(&stream);
+    stream.write(&sim_bundle, sizeof(sim_bundle));
 
-    size_t cnt = var.pack(buf + stream.position(), idx);
-    cnt += stream.position();
-    server.write(buf, cnt);
+    tcp.write_packet(buf, stream.pos());
 }
-//==============================================================================
-void sendVars(void)
+
+void parse_sensors(void)
 {
-    _var_float elapsed = XPLMGetElapsedTime();
-    static _var_float elapsed_s = 0;
-    _var_float dt = elapsed - elapsed_s;
+    float elapsed = XPLMGetElapsedTime();
+    static float elapsed_s = 0;
+    float dt = elapsed - elapsed_s;
     elapsed_s = elapsed;
 
-    var.theta[0] = var.boundAngle((_var_float) XPLMGetDataf(ref.roll));
-    var.theta[1] = var.boundAngle((_var_float) XPLMGetDataf(ref.pitch));
-    var.theta[2] = var.boundAngle((_var_float) XPLMGetDataf(ref.yaw));
-    sendvar(idx_theta);
+    // AHRS
 
-    //frame accelerations
-    Vect accNED = Vect(-(_var_float) XPLMGetDataf(ref.az),       //N=-vz
-                       +(_var_float) XPLMGetDataf(ref.ax),       //E=vx
-                       -(_var_float) XPLMGetDataf(ref.ay) - 9.81 //D=-vy
-    );
+    Vector3f att_rad = {wrap_pi(radians((float) XPLMGetDataf(xp.roll))),
+                        wrap_pi(radians((float) XPLMGetDataf(xp.pitch))),
+                        wrap_pi(radians((float) XPLMGetDataf(xp.yaw)))};
+    att_rad.copyTo(sim_bundle.att);
 
-    var.acc = var.rotate(accNED, var.theta); //+noise_vect(0.3);
+    Quatf dq{Eulerf(att_rad)};
 
-    var.gyro = Vect((_var_float) XPLMGetDataf(ref.p),
-                    (_var_float) XPLMGetDataf(ref.q),
-                    (_var_float) XPLMGetDataf(ref.r)); //+noise_vect(2);
+    Vector3f acc_ned = {
+        -(float) XPLMGetDataf(xp.az),        //N=-vz
+        +(float) XPLMGetDataf(xp.ax),        //E=vx
+        -(float) XPLMGetDataf(xp.ay) - 9.81f //D=-vy
+    };
 
-    var.acc += noise_vect(0.5);
-    var.gyro += noise_vect(1);
-    sendvar(idx_acc);
-    sendvar(idx_gyro);
+    Vector3f acc = dq.conjugate_inversed(acc_ned);
 
-    var.mag = var.rotate(Vect(1, 0, 0), var.theta);
-    var.mag += noise_vect(0.05);
-    sendvar(idx_mag);
+    acc.copyTo(sim_bundle.acc);
 
-    var.airspeed = 0.51444 * (_var_float) XPLMGetDataf(ref.airspeed); //knots to mps
-    var.airspeed += noise(0.05);
-    var.airspeed *= 0.895;
-    sendvar(idx_airspeed);
+    Vector3f gyro_rad = {radians((float) XPLMGetDataf(xp.p)),
+                         radians((float) XPLMGetDataf(xp.q)),
+                         radians((float) XPLMGetDataf(xp.r))};
 
+    gyro_rad.copyTo(sim_bundle.gyro);
+
+    Vector3f llh = {wrap_pi(radians((float) XPLMGetDatad(xp.lat))),
+                    wrap_pi(radians((float) XPLMGetDatad(xp.lon))),
+                    (float) XPLMGetDatad(xp.alt)};
+
+    /*Vector3f xyz = {(float) XPLMGetDatad(xp.x),
+                    (float) XPLMGetDatad(xp.y),
+                    (float) XPLMGetDatad(xp.z)};
+    double lat, lon, hmsl;
+    XPLMLocalToWorld(xyz(0), xyz(1), xyz(2), &lat, &lon, &hmsl);
+    llh = {math::radians((float) lat), math::radians((float) lon), (float) hmsl};*/
+    llh.copyTo(sim_bundle.llh);
+
+    Vector3f vel_ned = {
+        -(float) XPLMGetDataf(xp.vz), //N=-vz
+        +(float) XPLMGetDataf(xp.vx), //E=vx
+        -(float) XPLMGetDataf(xp.vy)  //D=vy
+    };
+    vel_ned.copyTo(sim_bundle.vel);
+
+    // AGL
+    sim_bundle.agl = (float) XPLMGetDataf(xp.agl);
+
+    // RPM
     static float a[8];
-    XPLMGetDatavf(ref.rpm, a, 0, 1);
-    var.rpm = a[0] * 60.0 * R2D / 360.0 + noise(100);
-    sendvar(idx_rpm);
+    XPLMGetDatavf(xp.rpm, a, 0, 1);
+    sim_bundle.rpm = degrees(a[0] * 60.f) / 360.f;
 
-    var.agl = 0.2 + (_var_float) XPLMGetDataf(ref.agl);
-    /*if((float)rand()/(float)RAND_MAX>0.99 || var.agl>7){
-    float d=10.0*(float)rand()/(float)(RAND_MAX)-5;
-    if(std::abs(d)>1)var.agl+=d;
-    if(var.agl<0)var.agl=0;
-  }*/
-    //if(var.power&power_agl)
-    sendvar(idx_agl);
+    // Airdata
+    sim_bundle.airspeed = 0.51444f * (float) XPLMGetDataf(xp.airspeed); //knots to mps
 
-    var.gps_pos[0] = (_var_float) XPLMGetDatad(ref.lat);
-    var.gps_pos[1] = (_var_float) XPLMGetDatad(ref.lon);
-    var.gps_pos[2] = (_var_float) XPLMGetDatad(ref.alt);
-    var.gps_vel[0] = -(_var_float) XPLMGetDataf(ref.vz); //N=-vz
-    var.gps_vel[1] = +(_var_float) XPLMGetDataf(ref.vx); //E=vx
-    var.gps_vel[2] = -(_var_float) XPLMGetDataf(ref.vy); //D=vy
-    sendvar(idx_gps_pos);
-    sendvar(idx_gps_vel);
-
-    var.gps_SU = 12;
-    sendvar(idx_gps_SU);
-
-    //local altitude
-    //if(var.gps_home_hmsl==0)var.gps_home_hmsl=var.gps_hmsl;
-    //var.altitude=var.gps_hmsl-var.gps_home_hmsl;
-    //var.altitude=0.3048*(_var_float)XPLMGetDataf(ref.altitude); //knots to mps
-    var.altps = var.gps_pos[2]; //101325.0*std::pow(1.0-2.25577e-5*var.gps_pos[2],5.25588)/3386.389;
-    var.altps += noise(0.01);
-    sendvar(idx_altps);
-
-    var.vario = -var.gps_vel[2];
-    var.vario += noise(0.05);
-    sendvar(idx_vario);
+    float rho = (float) XPLMGetDataf(xp.rho);
+    float at = (float) XPLMGetDataf(xp.air_temp);
+    sim_bundle.baro_mbar = rho * 287.1f * (at + 273.15f) / 100.0f;
 }
-//==============================================================================
-float flightLoopCallback(float inElapsedSinceLastCall,
-                         float inElapsedTimeSinceLastFlightLoop,
-                         int inCounter,
-                         void *inRefcon);
-//==============================================================================
+
+static float flightLoopCallback(float inElapsedSinceLastCall,
+                                float inElapsedTimeSinceLastFlightLoop,
+                                int inCounter,
+                                void *inRefcon);
+
 PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
 {
     printf("--------------------------------------\n");
-    printf("APX plugin version: %s\n", VERSION);
+    printf("APX X-Plane plugin version: %s\n", VERSION);
     printf("--------------------------------------\n");
     fflush(stdout);
 
-    server.tcpdebug = true;
-    server.connect(0, TCP_PORT_SIM, false, "/sim");
+    //server.tcpdebug = true;
+    //server.connect(0, TCP_PORT_SIM, false, "/sim");
+    tcp.set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
+    tcp.connect();
 
     strcpy(outName, "UAVOS Autopilot SIL plugin");
     strcpy(outSig, "www.uavos.com");
@@ -169,68 +169,78 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     memset(&xpl_is_array, 0, sizeof(xpl_is_array));
     memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
 
-    ref.roll = XPLMFindDataRef("sim/flightmodel/position/phi");
-    ref.pitch = XPLMFindDataRef("sim/flightmodel/position/theta");
-    ref.yaw = XPLMFindDataRef("sim/flightmodel/position/psi");
+    xp.roll = XPLMFindDataRef("sim/flightmodel/position/phi");
+    xp.pitch = XPLMFindDataRef("sim/flightmodel/position/theta");
+    xp.yaw = XPLMFindDataRef("sim/flightmodel/position/psi");
 
-    ref.ax = XPLMFindDataRef("sim/flightmodel/position/local_ax");
-    ref.ay = XPLMFindDataRef("sim/flightmodel/position/local_ay");
-    ref.az = XPLMFindDataRef("sim/flightmodel/position/local_az");
+    xp.ax = XPLMFindDataRef("sim/flightmodel/position/local_ax");
+    xp.ay = XPLMFindDataRef("sim/flightmodel/position/local_ay");
+    xp.az = XPLMFindDataRef("sim/flightmodel/position/local_az");
 
-    ref.p = XPLMFindDataRef("sim/flightmodel/position/P");
-    ref.q = XPLMFindDataRef("sim/flightmodel/position/Q");
-    ref.r = XPLMFindDataRef("sim/flightmodel/position/R");
+    xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
+    xp.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
+    xp.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
 
-    ref.psi = XPLMFindDataRef("sim/flightmodel/position/magpsi");
+    xp.p = XPLMFindDataRef("sim/flightmodel/position/P");
+    xp.q = XPLMFindDataRef("sim/flightmodel/position/Q");
+    xp.r = XPLMFindDataRef("sim/flightmodel/position/R");
 
-    ref.lat = XPLMFindDataRef("sim/flightmodel/position/latitude");
-    ref.lon = XPLMFindDataRef("sim/flightmodel/position/longitude");
-    ref.alt = XPLMFindDataRef("sim/flightmodel/position/elevation");
+    xp.psi = XPLMFindDataRef("sim/flightmodel/position/magpsi");
 
-    ref.course = XPLMFindDataRef("sim/flightmodel/position/hpath");
+    xp.lat = XPLMFindDataRef("sim/flightmodel/position/latitude");
+    xp.lon = XPLMFindDataRef("sim/flightmodel/position/longitude");
+    xp.alt = XPLMFindDataRef("sim/flightmodel/position/elevation");
 
-    ref.vx = XPLMFindDataRef("sim/flightmodel/position/local_vx");
-    ref.vy = XPLMFindDataRef("sim/flightmodel/position/local_vy");
-    ref.vz = XPLMFindDataRef("sim/flightmodel/position/local_vz");
+    xp.course = XPLMFindDataRef("sim/flightmodel/position/hpath");
 
-    ref.airspeed = XPLMFindDataRef("sim/flightmodel/position/indicated_airspeed");
-    ref.agl = XPLMFindDataRef("sim/flightmodel/position/y_agl");
+    xp.vx = XPLMFindDataRef("sim/flightmodel/position/local_vx");
+    xp.vy = XPLMFindDataRef("sim/flightmodel/position/local_vy");
+    xp.vz = XPLMFindDataRef("sim/flightmodel/position/local_vz");
 
-    ref.rpm = XPLMFindDataRef("sim/flightmodel/engine/ENGN_tacrad");
+    xp.airspeed = XPLMFindDataRef("sim/flightmodel/position/indicated_airspeed");
+    xp.agl = XPLMFindDataRef("sim/flightmodel/position/y_agl");
 
-    ref.altitude = XPLMFindDataRef("sim/flightmodel/misc/h_ind2");
+    xp.rpm = XPLMFindDataRef("sim/flightmodel/engine/ENGN_tacrad");
+
+    xp.altitude = XPLMFindDataRef("sim/flightmodel/misc/h_ind2");
+    xp.rho = XPLMFindDataRef("sim/weather/rho");
+    xp.air_temp = XPLMFindDataRef("sim/weather/temperature_ambient_c");
 
     //request xpl config
-    uint8_t v = idx_sim;
-    server.write(&v, 1);
+    //uint8_t v = idx_sim;
+    //server.write(&v, 1);
 
-    /*ref.ail = XPLMFindDataRef("sim/joystick/yoke_roll_ratio");
-  //ref.ail = XPLMFindDataRef("sim/flightmodel/controls/wing1l_ail1def");
-  ref.elv= XPLMFindDataRef("sim/joystick/yoke_pitch_ratio");
-  ref.rud = XPLMFindDataRef("sim/joystick/yoke_heading_ratio");
-  //ref.thr = XPLMFindDataRef("sim/joystick/joystick_axis_values");
-  ref.thr = XPLMFindDataRef("sim/flightmodel/engine/ENGN_thro_use");
-  ref.flap = XPLMFindDataRef("sim/flightmodel/controls/flaprqst");
-  ref.brakes = XPLMFindDataRef("sim/flightmodel/controls/parkbrake");
+    /*xp.ail = XPLMFindDataRef("sim/joystick/yoke_roll_ratio");
+  //xp.ail = XPLMFindDataRef("sim/flightmodel/controls/wing1l_ail1def");
+  xp.elv= XPLMFindDataRef("sim/joystick/yoke_pitch_ratio");
+  xp.rud = XPLMFindDataRef("sim/joystick/yoke_heading_ratio");
+  //xp.thr = XPLMFindDataRef("sim/joystick/joystick_axis_values");
+  xp.thr = XPLMFindDataRef("sim/flightmodel/engine/ENGN_thro_use");
+  xp.flap = XPLMFindDataRef("sim/flightmodel/controls/flaprqst");
+  xp.brakes = XPLMFindDataRef("sim/flightmodel/controls/parkbrake");
 
-  ref.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
-  ref.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
-  ref.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
-  ref.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
+  xp.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
+  xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
+  xp.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
+  xp.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
 */
     XPLMRegisterFlightLoopCallback(flightLoopCallback, 1.0, nullptr);
     return 1;
 }
-//==============================================================================
-float flightLoopCallback(float inElapsedSinceLastCall,
-                         float inElapsedTimeSinceLastFlightLoop,
-                         int inCounter,
-                         void *inRefcon)
+
+static float flightLoopCallback(float inElapsedSinceLastCall,
+                                float inElapsedTimeSinceLastFlightLoop,
+                                int inCounter,
+                                void *inRefcon)
 {
     if (!enabled)
         return 1.0;
+
+    parse_sensors();
+    send_bundle();
+
     //send controls to sim
-    uint rcnt = 0;
+    /*uint rcnt = 0;
     while (1) {
         static uint8_t buf[xbus::size_packet_max];
         uint cnt = server.read(buf, sizeof(buf));
@@ -291,18 +301,23 @@ float flightLoopCallback(float inElapsedSinceLastCall,
                 //printf("set: %s=%f\n",(char*)xpl[i],(pwm_ch[i]));
                 if (xpl_is_array[i]) {
                     XPLMSetDatavf(xpl_ref[i], &(pwm_ch[i]), xpl_array_idx[i], 1);
-                    /*if(xpl_type[i]&xplmType_FloatArray) XPLMSetDatavf(xpl_ref[i],&(pwm_ch[i]),xpl_array_idx[i],1);
-            else if(xpl_type[i]&xplmType_IntArray){
-              int v=pwm_ch[i];
-              XPLMSetDatavi(xpl_ref[i],&v,xpl_array_idx[i],1);
-            }*/
+                    //                    if (xpl_type[i] & xplmType_FloatArray)
+                    //                        XPLMSetDatavf(xpl_ref[i], &(pwm_ch[i]), xpl_array_idx[i], 1);
+                    //                    else if (xpl_type[i] & xplmType_IntArray) {
+                    //                        int v = pwm_ch[i];
+                    //                        XPLMSetDatavi(xpl_ref[i], &v, xpl_array_idx[i], 1);
+                    //                    }
                     continue;
                 }
                 XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
-                /*if(xpl_type[i]&xplmType_Float) XPLMSetDataf(xpl_ref[i],pwm_ch[i]);
-          else if(xpl_type[i]&xplmType_Double) XPLMSetDatad(xpl_ref[i],pwm_ch[i]);
-          else if(xpl_type[i]&xplmType_Int) XPLMSetDatai(xpl_ref[i],pwm_ch[i]);
-          else XPLMSetDataf(xpl_ref[i],pwm_ch[i]);*/
+//                if (xpl_type[i] & xplmType_Float)
+//                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
+//                else if (xpl_type[i] & xplmType_Double)
+//                    XPLMSetDatad(xpl_ref[i], pwm_ch[i]);
+//                else if (xpl_type[i] & xplmType_Int)
+//                    XPLMSetDatai(xpl_ref[i], pwm_ch[i]);
+//                else
+//                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
             }
             break;
         case 2: //Mandala var
@@ -313,21 +328,10 @@ float flightLoopCallback(float inElapsedSinceLastCall,
     } //while rcv
     //if(bDisplay)return 0.01;
     //send vars to shiva
-    sendVars();
-    return 0.1; //max freqs
+    sendVars();*/
+    return -1.0; //call me next loop
 }
-//==============================================================================
-_var_float noise(_var_float amp)
-{
-    _var_float v = amp * rand() / (_var_float) RAND_MAX - amp / 2;
-    return v;
-}
-Vect noise_vect(_var_float amp)
-{
-    return Vect(noise(amp), noise(amp), noise(amp));
-}
-//==============================================================================
-//==============================================================================
+
 PLUGIN_API void XPluginStop(void)
 {
     enabled = false;
@@ -338,8 +342,8 @@ PLUGIN_API void XPluginDisable(void)
     //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"),0);
     //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"),0);
     //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"),0);
-    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
-    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
 
     //server.close();
 
@@ -351,11 +355,10 @@ PLUGIN_API int XPluginEnable(void)
     //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"),1);
     //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"),1);
     //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"),1);
-    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 1);
-    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 1);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
 
     enabled = true;
     return 1;
 }
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFromWho, long inMessage, void *inParam) {}
-//==============================================================================

@@ -46,6 +46,8 @@ public:
     Fact *f_oNoise;
     Fact *f_oDLHD;
 
+    Fact *f_cmd;
+
 private:
     QStringList xplaneDirs;
     QProcess pShiva;
@@ -54,7 +56,7 @@ private slots:
     void detectXplane();
     void launch();
 
-    static void launchXplane(QString xplaneDir);
+    void launchXplane(QString xplaneDir);
 
     void pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus);
 };

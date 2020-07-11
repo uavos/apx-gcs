@@ -23,6 +23,7 @@ ApxApp.ApxProduct {
             "Xbus",
             "Xbus__tcp",
             "Mandala",
+            "apx-math__mathlib",
         ]
     }
 
