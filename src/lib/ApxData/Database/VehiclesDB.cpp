@@ -131,12 +131,14 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
                        QStringList()
                            << "nconfID INTEGER NOT NULL"
                            << "fieldID INTEGER NOT NULL"
+                           << "subidx INTEGER"
                            << "valueID INTEGER NOT NULL"
                            << "FOREIGN KEY(nconfID) REFERENCES NodeConfigs(key) ON DELETE CASCADE"
                            << "FOREIGN KEY(fieldID) REFERENCES NodeDictData(key) ON DELETE CASCADE"
                            << "FOREIGN KEY(valueID) REFERENCES NodeConfigDataValues(key) ON DELETE "
                               "CASCADE");
     new DBReqMakeIndex(this, "NodeConfigData", "nconfID", false);
+    new DBReqMakeIndex(this, "NodeConfigData", "nconfID,fieldID,subidx", true);
 
     //Vehicles
     new DBReqMakeTable(this,

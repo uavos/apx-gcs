@@ -38,11 +38,11 @@ bool DBReqVehiclesLoadNconf::run(QSqlQuery &query)
 
     //build values table
     query.prepare(
-        "SELECT name, value FROM NodeConfigData"
+        "SELECT name, subidx, value FROM NodeConfigData"
         " INNER JOIN NodeDictData ON NodeConfigData.fieldID=NodeDictData.key"
         " INNER JOIN NodeDictDataFields ON NodeDictData.fieldID=NodeDictDataFields.key"
         " INNER JOIN NodeConfigDataValues ON NodeConfigData.valueID=NodeConfigDataValues.key"
-        " WHERE NodeConfigData.nconfID=?");
+        " WHERE NodeConfigData.nconfID=? ORDER BY name,subidx");
     query.addBindValue(nconfID);
     if (!query.exec())
         return false;
@@ -52,7 +52,15 @@ bool DBReqVehiclesLoadNconf::run(QSqlQuery &query)
         if (values.contains(s)) {
             qWarning() << "duplicate field" << s;
         }
-        values.insert(s, query.value(1));
+        const QVariant &v = query.value(2);
+        if (query.value(1).isNull()) {
+            values.insert(s, v);
+            continue;
+        }
+        QVariantList list = values.contains(s) ? values.value(s).value<QVariantList>()
+                                               : QVariantList();
+        list.append(v);
+        values.insert(s, QVariant::fromValue<QVariantList>(list));
     }
     emit nconfFound(nconfID);
     emit configLoaded(info, values);
@@ -185,41 +193,47 @@ bool DBReqVehiclesSaveNconf::run(QSqlQuery &query)
 
         //write values
         int dcnt = 0;
-        foreach (QString s, values.keys()) {
-            quint64 fieldID = fieldsMap.value(s, 0);
+        for (auto const &key : values.keys()) {
+            quint64 fieldID = fieldsMap.value(key, 0);
             if (!fieldID) {
-                qWarning() << "missing field" << s;
+                qWarning() << "missing field" << key;
                 return false;
             }
-            //find valueID
-            quint64 valueID = 0;
-            QVariant v = values.value(s);
-            if (v.isNull()) {
-                v = QVariant();
-                query.prepare("SELECT key FROM NodeConfigDataValues WHERE value IS NULL LIMIT 1");
+            const QVariant &v = values.value(key);
+            if (static_cast<QMetaType::Type>(v.type()) == QMetaType::QVariantList) {
+                int subidx = 0;
+                for (auto const &i : v.value<QVariantList>()) {
+                    quint64 valueID = getValueID(query, i);
+                    if (!valueID)
+                        return false;
+
+                    //insert new record
+                    query.prepare("INSERT INTO NodeConfigData(nconfID,fieldID,subidx,valueID) "
+                                  "VALUES(?,?,?,?)");
+                    query.addBindValue(nconfID);
+                    query.addBindValue(fieldID);
+                    query.addBindValue(subidx);
+                    query.addBindValue(valueID);
+                    if (!query.exec())
+                        return false;
+                    dcnt++;
+                    subidx++;
+                }
             } else {
-                query.prepare("SELECT key FROM NodeConfigDataValues WHERE value=? LIMIT 1");
-                query.addBindValue(v);
-            }
-            if (!query.exec())
-                return false;
-            if (query.next())
-                valueID = query.value(0).toULongLong();
-            else {
-                query.prepare("INSERT INTO NodeConfigDataValues(value) VALUES(?)");
-                query.addBindValue(v);
+                //find valueID
+                quint64 valueID = getValueID(query, v);
+                if (!valueID)
+                    return false;
+
+                //insert new record
+                query.prepare("INSERT INTO NodeConfigData(nconfID,fieldID,valueID) VALUES(?,?,?)");
+                query.addBindValue(nconfID);
+                query.addBindValue(fieldID);
+                query.addBindValue(valueID);
                 if (!query.exec())
                     return false;
-                valueID = query.lastInsertId().toULongLong();
+                dcnt++;
             }
-            //insert new record
-            query.prepare("INSERT INTO NodeConfigData(nconfID,fieldID,valueID) VALUES(?,?,?)");
-            query.addBindValue(nconfID);
-            query.addBindValue(fieldID);
-            query.addBindValue(valueID);
-            if (!query.exec())
-                return false;
-            dcnt++;
         }
         if (dcnt <= 0) {
             qWarning() << "nothing to save";
@@ -241,4 +255,23 @@ bool DBReqVehiclesSaveNconf::run(QSqlQuery &query)
 
     qDebug() << "node config updated" << title;
     return true;
+}
+quint64 DBReqVehiclesSaveNconf::getValueID(QSqlQuery &query, const QVariant &v)
+{
+    if (v.isNull()) {
+        query.prepare("SELECT key FROM NodeConfigDataValues WHERE value IS NULL LIMIT 1");
+    } else {
+        query.prepare("SELECT key FROM NodeConfigDataValues WHERE value=? LIMIT 1");
+        query.addBindValue(v);
+    }
+    if (!query.exec())
+        return 0;
+    if (query.next())
+        return query.value(0).toULongLong();
+
+    query.prepare("INSERT INTO NodeConfigDataValues(value) VALUES(?)");
+    query.addBindValue(v);
+    if (!query.exec())
+        return 0;
+    return query.lastInsertId().toULongLong();
 }

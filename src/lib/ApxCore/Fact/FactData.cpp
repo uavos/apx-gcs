@@ -216,16 +216,21 @@ bool FactData::updateValue(const QVariant &v)
     } break;
     case MandalaID: {
         quint32 bind_raw;
-        if (v.isNull()) {
-            bind_raw = 0;
-        } else if (_check_int(v)) {
-            bind_raw = v.toUInt();
-            if (mandalaToString(bind_raw).isEmpty()) {
+        do {
+            if (v.isNull()) {
                 bind_raw = 0;
+                break;
             }
-        } else {
+            bool ok = false;
+            bind_raw = v.toUInt(&ok);
+            if (_check_int(v) || ok) {
+                if (mandalaToString(bind_raw).isEmpty()) {
+                    bind_raw = 0;
+                }
+                break;
+            }
             bind_raw = stringToMandala(v.toString().trimmed());
-        }
+        } while (0);
         const QVariant &vx = bind_raw ? QVariant::fromValue(bind_raw) : QVariant();
         if (v_prev == vx)
             return false;

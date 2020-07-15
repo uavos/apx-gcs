@@ -78,6 +78,7 @@ public:
     quint64 nconfID;
 
 private:
+    quint64 getValueID(QSqlQuery &query, const QVariant &v);
     QVariantMap dictInfo;
     QVariantMap values;
     quint64 time;

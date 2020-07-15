@@ -607,6 +607,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     ProtocolStreamReader stream(data);
     bool err = true;
     QVariantList values;
+    xbus::node::conf::fid_t fid = 0;
     do {
         // check node hash
         if (info.hash != m_ident.hash) {
@@ -641,7 +642,6 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
             break;
         }
 
-        xbus::node::conf::fid_t fid = 0;
         size_t offset_s = 0;
         while (stream.available() > 0) {
             // stream padding with offset
@@ -669,14 +669,22 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
             // check dict and fix field value for some types
             const dict_field_s &f = m_dict.at(m_dict_fields.at(fid));
             if (f.type == xbus::node::conf::option) {
-                v = f.units.split(',').value(v.toInt(), v.toString());
+                const QStringList st = f.units.split(',');
+                if (f.array > 0) {
+                    QVariantList list;
+                    for (auto const &i : v.value<QVariantList>())
+                        list.append(st.value(i.toInt(), i.toString()));
+                    v = QVariant::fromValue<QVariantList>(list);
+                } else {
+                    v = st.value(v.toInt(), v.toString());
+                }
             }
 
             values.append(v);
             fid++;
 
             if (fid == m_dict_fields.size()) {
-                err = false;
+                err = false; //stream.available() ? true : false;
                 break;
             }
         }
@@ -685,7 +693,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
 
     if (err) {
         setValid(false);
-        qWarning() << "conf error" << data.toHex().toUpper();
+        qWarning() << "conf error" << fid << stream.available() << data.toHex().toUpper();
         return;
     }
     _values.clear();
@@ -725,6 +733,7 @@ static QVariant read_param(ProtocolStreamReader &stream, size_t array)
         while (array--) {
             list.append(QVariant::fromValue(stream.read<T, Tout>()));
         }
+        //qDebug() << list;
         return QVariant::fromValue(list);
     }
     return QVariant::fromValue(stream.read<T, Tout>());
@@ -737,15 +746,21 @@ static QVariant read_param_str(ProtocolStreamReader &stream, size_t array)
     if (array > 0) {
         QVariantList list;
         while (array--) {
+            size_t pos_s = stream.pos();
             const char *s = stream.read_string(sizeof(_T));
             if (!s)
                 return QVariant();
+            stream.reset(pos_s + sizeof(_T));
             list.append(QVariant::fromValue(QString(s)));
         }
         return QVariant::fromValue(list);
     }
+    size_t pos_s = stream.pos();
     const char *s = stream.read_string(sizeof(_T));
-    return s ? QVariant::fromValue(QString(s)) : QVariant();
+    if (!s)
+        return QVariant();
+    stream.reset(pos_s + sizeof(_T));
+    return QVariant::fromValue(QString(s));
 }
 
 QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid)

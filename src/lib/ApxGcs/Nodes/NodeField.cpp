@@ -59,7 +59,7 @@ NodeField::NodeField(Fact *parent,
             field_item.name.append(QString("_%1").arg(s.toLower()));
             field_item.title = s;
             NodeField *f = new NodeField(this, node, fid, field_item, this);
-            connect(f, &Fact::valueChanged, this, &NodeField::updateStatus);
+            connect(f, &Fact::valueChanged, this, &NodeField::updateStatus, Qt::QueuedConnection);
         }
         setTreeType(Group);
         setOption(ModifiedGroup);
@@ -169,10 +169,11 @@ void NodeField::updateStatus()
 
 bool NodeField::setValue(const QVariant &v)
 {
-    if (_check_type(v, QMetaType::QVariantList)) {
-        const QVariantList &values = v.value<QVariantList>();
-        if (size() > 0) {
-            //expanded field
+    bool isList = _check_type(v, QMetaType::QVariantList);
+    if (size() > 0) {
+        //expanded field - i.e. array
+        if (isList) {
+            const QVariantList &values = v.value<QVariantList>();
             if (values.size() != size())
                 return false;
             bool rv = false;
@@ -182,12 +183,8 @@ bool NodeField::setValue(const QVariant &v)
             }
             return rv;
         }
-        /*if (dtype == DictNode::Script) {
-            QString src = values.value(0).toString();
-            scriptCodeSave = values.value(1).toByteArray();
-            //qDebug()<<scriptCodeSave.size();
-            return Fact::setValue(src);
-        }*/
+        qWarning() << path() << v;
+        return false;
     }
     return Fact::setValue(v);
 }

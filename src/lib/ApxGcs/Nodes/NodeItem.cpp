@@ -210,6 +210,7 @@ QVariant NodeItem::data(int col, int role) const
 
 void NodeItem::groupArrays()
 {
+    //return;
     //hide grouped arrays (gpio, controls etc)
     FactList groups;
     for (auto f : m_fields) {
@@ -223,8 +224,11 @@ void NodeItem::groupArrays()
             bool bArray = false;
             uint cnt = 0;
             for (auto i : groupItem->facts()) {
-                NodeField *f = static_cast<NodeField *>(i);
                 bArray = false;
+                NodeField *f = qobject_cast<NodeField *>(i);
+                if (!f) {
+                    break;
+                }
                 if (cnt < 2 && f->size() == 0)
                     break;
                 cnt++;
@@ -337,7 +341,10 @@ void NodeItem::removeEmptyGroups(Fact *f)
 
 void NodeItem::linkGroupValues(Fact *f)
 {
+    return;
     if (f->parentFact() != this && qobject_cast<NodeField *>(f)) {
+        if (qobject_cast<NodeField *>(f->parentFact()))
+            return;
         if (f->num() == 0) {
             connect(f, &Fact::textChanged, f->parentFact(), [f]() {
                 f->parentFact()->setValue(f->text());
