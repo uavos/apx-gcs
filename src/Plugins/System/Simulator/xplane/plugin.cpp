@@ -56,24 +56,36 @@ static struct
 
 static mandala::bundle::sim_s sim_bundle{};
 
-static xbus::pid_s sim_pid{mandala::cmd::env::sim::uid, xbus::pri_final, 0};
+static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid, xbus::pri_final, 0};
+static xbus::pid_s cfg_pid{mandala::cmd::env::sim::cfg::uid, xbus::pri_request, 0};
 
-#define PWM_CNT 10
-static xbus::node::conf::text_t xpl[PWM_CNT]; //var names per PWM channel
-static bool xpl_is_array[PWM_CNT];
-static uint xpl_array_idx[PWM_CNT];
-static XPLMDataRef xpl_ref[PWM_CNT];
-static XPLMDataTypeID xpl_type[PWM_CNT];
-static float pwm_ch[PWM_CNT]; //received pwm_ch values
+static uint8_t xpl_channels{0};                        //assigned controls cnt
+static constexpr const uint8_t xpl_channels_max{16};   //assigned controls cnt
+static xbus::node::conf::text_t xpl[xpl_channels_max]; //var names per PWM channel
+
+static bool xpl_is_array[xpl_channels_max];
+static uint xpl_array_idx[xpl_channels_max];
+static XPLMDataRef xpl_ref[xpl_channels_max];
+static XPLMDataTypeID xpl_type[xpl_channels_max];
+
+static uint8_t packet_buf[xbus::size_packet_max];
 
 static void send_bundle()
 {
-    static uint8_t buf[xbus::size_packet_max];
-    XbusStreamWriter stream(buf, sizeof(buf));
+    XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     sim_pid.write(&stream);
     stream.write(&sim_bundle, sizeof(sim_bundle));
 
-    tcp.write_packet(buf, stream.pos());
+    tcp.write_packet(stream.buffer(), stream.pos());
+    sim_pid.seq++;
+}
+
+static void request_controls()
+{
+    XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
+    cfg_pid.write(&stream);
+    tcp.write_packet(stream.buffer(), stream.pos());
+    cfg_pid.seq++;
 }
 
 void parse_sensors(void)
@@ -143,6 +155,96 @@ void parse_sensors(void)
     sim_bundle.baro_mbar = rho * 287.1f * (at + 273.15f) / 100.0f;
 }
 
+static void parse_rx(const void *data, size_t size)
+{
+    XbusStreamReader stream(data, size);
+    if (stream.available() < xbus::pid_s::psize())
+        return;
+    xbus::pid_s pid;
+    pid.read(&stream);
+
+    mandala::uid_t uid = pid.uid;
+    if (!mandala::cmd::env::sim::match(uid))
+        return;
+
+    switch (uid) {
+    case mandala::cmd::env::sim::ctr::uid: {
+        if (pid.pri != xbus::pri_final)
+            break;
+        if (!xpl_channels)
+            break;
+        for (uint8_t i = 0; i < xpl_channels; i++) {
+            float v = stream.read<float>();
+            if (!xpl_ref[i])
+                continue;
+            //printf("set: %s=%f\n",(char*)xpl[i],(pwm_ch[i]));
+            if (xpl_is_array[i]) {
+                XPLMSetDatavf(xpl_ref[i], &v, xpl_array_idx[i], 1);
+                //                    if (xpl_type[i] & xplmType_FloatArray)
+                //                        XPLMSetDatavf(xpl_ref[i], &(pwm_ch[i]), xpl_array_idx[i], 1);
+                //                    else if (xpl_type[i] & xplmType_IntArray) {
+                //                        int v = pwm_ch[i];
+                //                        XPLMSetDatavi(xpl_ref[i], &v, xpl_array_idx[i], 1);
+                //                    }
+                continue;
+            }
+            XPLMSetDataf(xpl_ref[i], v);
+            //                if (xpl_type[i] & xplmType_Float)
+            //                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
+            //                else if (xpl_type[i] & xplmType_Double)
+            //                    XPLMSetDatad(xpl_ref[i], pwm_ch[i]);
+            //                else if (xpl_type[i] & xplmType_Int)
+            //                    XPLMSetDatai(xpl_ref[i], pwm_ch[i]);
+            //                else
+            //                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
+        }
+    } break;
+    case mandala::cmd::env::sim::cfg::uid: {
+        if (pid.pri != xbus::pri_response)
+            break;
+        for (xpl_channels = 0; xpl_channels < xpl_channels_max; ++xpl_channels) {
+            const char *s = stream.read_string(sizeof(xpl[0]));
+            if (!s)
+                break;
+            strncpy(xpl[xpl_channels], s, sizeof(xpl[0]));
+        }
+        printf("X-Plane controls updated (%u)\n", xpl_channels);
+        memset(&xpl_ref, 0, sizeof(xpl_ref));
+        memset(&xpl_is_array, 0, sizeof(xpl_is_array));
+        memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
+        if (!xpl_channels)
+            break;
+        for (uint8_t i = 0; i < xpl_channels; ++i) {
+            xbus::node::conf::text_t &s = xpl[i];
+            if (s[0] == 0)
+                continue;
+            char *it1 = strchr(s, '[');
+            if (it1) {
+                *it1++ = 0;
+                char *it2 = strchr(it1, ']');
+                if (!it2)
+                    continue;
+                if (*(it2 + 1) != 0)
+                    continue;
+                *it2 = 0;
+                uint aidx;
+                if (sscanf(it1, "%u", &aidx) != 1)
+                    continue;
+                //if(!(XPLMGetDataRefTypes(sref)&(xplmType_FloatArray|xplmType_IntArray)))continue;
+                xpl_array_idx[i] = aidx;
+                xpl_is_array[i] = true;
+            }
+            XPLMDataRef ref = XPLMFindDataRef(s);
+            if (!ref)
+                continue;
+            xpl_type[i] = XPLMGetDataRefTypes(s);
+            xpl_ref[i] = ref;
+            printf("DataRef: %s\n", s);
+        }
+    } break;
+    }
+}
+
 static float flightLoopCallback(float inElapsedSinceLastCall,
                                 float inElapsedTimeSinceLastFlightLoop,
                                 int inCounter,
@@ -155,8 +257,6 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     printf("--------------------------------------\n");
     fflush(stdout);
 
-    //server.tcpdebug = true;
-    //server.connect(0, TCP_PORT_SIM, false, "/sim");
     tcp.set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
     tcp.connect();
 
@@ -206,24 +306,11 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     xp.rho = XPLMFindDataRef("sim/weather/rho");
     xp.air_temp = XPLMFindDataRef("sim/weather/temperature_ambient_c");
 
-    //request xpl config
-    //uint8_t v = idx_sim;
-    //server.write(&v, 1);
+    //  xp.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
+    //  xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
+    //  xp.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
+    //  xp.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
 
-    /*xp.ail = XPLMFindDataRef("sim/joystick/yoke_roll_ratio");
-  //xp.ail = XPLMFindDataRef("sim/flightmodel/controls/wing1l_ail1def");
-  xp.elv= XPLMFindDataRef("sim/joystick/yoke_pitch_ratio");
-  xp.rud = XPLMFindDataRef("sim/joystick/yoke_heading_ratio");
-  //xp.thr = XPLMFindDataRef("sim/joystick/joystick_axis_values");
-  xp.thr = XPLMFindDataRef("sim/flightmodel/engine/ENGN_thro_use");
-  xp.flap = XPLMFindDataRef("sim/flightmodel/controls/flaprqst");
-  xp.brakes = XPLMFindDataRef("sim/flightmodel/controls/parkbrake");
-
-  xp.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
-  xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
-  xp.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
-  xp.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
-*/
     XPLMRegisterFlightLoopCallback(flightLoopCallback, 1.0, nullptr);
     return 1;
 }
@@ -233,103 +320,31 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
-    if (!enabled)
-        return 1.0;
+    if (!(enabled && tcp.is_connected())) {
+        xpl_channels = 0;
+        return 1.f;
+    }
+
+    do {
+        while (1) {
+            size_t cnt = tcp.read_packet(packet_buf, sizeof(packet_buf));
+            if (!cnt)
+                break;
+            parse_rx(packet_buf, cnt);
+        }
+
+        if (!xpl_channels) {
+            //xpl_channels = 1;
+            request_controls();
+            return 0.5f;
+        }
+
+    } while (0);
 
     parse_sensors();
     send_bundle();
 
-    //send controls to sim
-    /*uint rcnt = 0;
-    while (1) {
-        static uint8_t buf[xbus::size_packet_max];
-        uint cnt = server.read(buf, sizeof(buf));
-        if (!cnt)
-            break;
-        XbusStreamReader stream(buf);
-        if (cnt <= sizeof(xbus::pid_t))
-            continue;
-        xbus::pid_t pid;
-        stream >> pid;
-        if (pid != idx_sim)
-            continue;
-        uint8_t op;
-        stream >> op;
-
-        switch (op) {
-        case 0: //controls assignments
-            printf("X-Plane controls assignments for PWM updated.\n");
-            memset(&xpl_ref, 0, sizeof(xpl_ref));
-            memset(&xpl_is_array, 0, sizeof(xpl_is_array));
-            memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
-            stream.read(xpl, sizeof(xpl));
-            for (uint i = 0; i < PWM_CNT; ++i) {
-                xbus::node::conf::ft_lstr_t &s = xpl[i];
-                if (s[0] == 0)
-                    continue;
-                char *it1 = strchr(s, '[');
-                if (it1) {
-                    *it1++ = 0;
-                    char *it2 = strchr(it1, ']');
-                    if (!it2)
-                        continue;
-                    if (*(it2 + 1) != 0)
-                        continue;
-                    *it2 = 0;
-                    uint aidx;
-                    if (sscanf(it1, "%u", &aidx) != 1)
-                        continue;
-                    //if(!(XPLMGetDataRefTypes(sref)&(xplmType_FloatArray|xplmType_IntArray)))continue;
-                    xpl_array_idx[i] = aidx;
-                    xpl_is_array[i] = true;
-                }
-                XPLMDataRef ref = XPLMFindDataRef(s);
-                if (!ref)
-                    continue;
-                xpl_type[i] = XPLMGetDataRefTypes(s);
-                xpl_ref[i] = ref;
-                printf("DataRef: %s\n", s);
-            }
-            break;
-        case 1: //PWM outputs
-            if (rcnt)
-                break; //repeated packet, skip
-            stream.read(pwm_ch, sizeof(pwm_ch));
-            for (uint i = 0; i < PWM_CNT; i++) {
-                if (!xpl_ref[i])
-                    continue;
-                //printf("set: %s=%f\n",(char*)xpl[i],(pwm_ch[i]));
-                if (xpl_is_array[i]) {
-                    XPLMSetDatavf(xpl_ref[i], &(pwm_ch[i]), xpl_array_idx[i], 1);
-                    //                    if (xpl_type[i] & xplmType_FloatArray)
-                    //                        XPLMSetDatavf(xpl_ref[i], &(pwm_ch[i]), xpl_array_idx[i], 1);
-                    //                    else if (xpl_type[i] & xplmType_IntArray) {
-                    //                        int v = pwm_ch[i];
-                    //                        XPLMSetDatavi(xpl_ref[i], &v, xpl_array_idx[i], 1);
-                    //                    }
-                    continue;
-                }
-                XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
-//                if (xpl_type[i] & xplmType_Float)
-//                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
-//                else if (xpl_type[i] & xplmType_Double)
-//                    XPLMSetDatad(xpl_ref[i], pwm_ch[i]);
-//                else if (xpl_type[i] & xplmType_Int)
-//                    XPLMSetDatai(xpl_ref[i], pwm_ch[i]);
-//                else
-//                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
-            }
-            break;
-        case 2: //Mandala var
-            //var.extract(&packet->data[1],cnt-1);
-            break;
-        } //switch
-        rcnt++;
-    } //while rcv
-    //if(bDisplay)return 0.01;
-    //send vars to shiva
-    sendVars();*/
-    return -1.0; //call me next loop
+    return -1.f; //call me next loop
 }
 
 PLUGIN_API void XPluginStop(void)
@@ -338,12 +353,13 @@ PLUGIN_API void XPluginStop(void)
 }
 PLUGIN_API void XPluginDisable(void)
 {
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"),0);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"),0);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"),0);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"),0);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 0);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 0);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"), 0);
+
+    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
+    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
 
     //server.close();
 
@@ -351,12 +367,13 @@ PLUGIN_API void XPluginDisable(void)
 }
 PLUGIN_API int XPluginEnable(void)
 {
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"),1);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"),1);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"),1);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"),1);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 1);
-    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 1);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 1);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 1);
+    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"), 1);
+
+    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 1);
+    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
 
     enabled = true;
     return 1;

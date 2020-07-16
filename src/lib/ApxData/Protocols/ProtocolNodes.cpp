@@ -260,6 +260,7 @@ ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(const QString &sn,
         if (i->equals(pid, sn)) {
             i->acknowledge(v, timeout);
             r = i;
+            break;
         }
     }
     return r;
