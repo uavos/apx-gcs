@@ -341,15 +341,21 @@ void NodeItem::removeEmptyGroups(Fact *f)
 
 void NodeItem::linkGroupValues(Fact *f)
 {
-    return;
     if (f->parentFact() != this && qobject_cast<NodeField *>(f)) {
         if (qobject_cast<NodeField *>(f->parentFact()))
             return;
-        if (f->num() == 0) {
-            connect(f, &Fact::textChanged, f->parentFact(), [f]() {
-                f->parentFact()->setValue(f->text());
-            });
-        }
+        do {
+            if (f->num() != 0)
+                return;
+            if (f->dataType() == Text)
+                break;
+            if (f->dataType() == Enum && (f->title() == "mode" || f->title() == "type"))
+                break;
+            return;
+        } while (0);
+        connect(f, &Fact::textChanged, f->parentFact(), [f]() {
+            f->parentFact()->setValue(f->text());
+        });
         return;
     }
 
