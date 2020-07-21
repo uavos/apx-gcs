@@ -88,6 +88,9 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             QLineEdit *le = new QLineEdit(parent);
             le->setFrame(false);
             e = le;
+            //            QDoubleSpinBox *sb = new QDoubleSpinBox(parent);
+            //            sb->setFrame(false);
+            //            e = sb;
         } break;
         case Fact::NoFlags: {
             if (f->treeType() == Fact::Group && f->size() > 1
@@ -142,7 +145,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             if (su == "hex") {
                 sb->setDisplayIntegerBase(16);
             } else {
-                sb->setSuffix(su.prepend(" "));
+                //sb->setSuffix(su.prepend(" "));
             }
         }
     } else if (qobject_cast<QDoubleSpinBox *>(e)) {

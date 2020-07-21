@@ -207,21 +207,14 @@ QVariant NodeField::uploadableValue(void) const
     return value();
 }
 
-/*QVariant NodeField::data(int col, int role) const
+QVariant NodeField::data(int col, int role) const
 {
-    if (dtype == DictNode::Script) {
-        if (role == Qt::DisplayRole && role != Qt::EditRole && col == FACT_MODEL_COLUMN_VALUE) {
-            if (pawncc->error())
-                return "<" + tr("error") + ">";
-            else if (text().isEmpty())
-                return "<" + tr("empty") + ">";
-            else
-                return QString("~%1").arg(
-                    AppRoot::capacityToString(text().size() + pawncc->outData().size(), 2));
-        }
+    if (col == Fact::FACT_MODEL_COLUMN_VALUE && role == Qt::DisplayRole && !units().isEmpty()
+        && dataType() != Enum) {
+        return QString("%1 %2").arg(text()).arg(units());
     }
-    return NodesBase::data(col, role);
-}*/
+    return Fact::data(col, role);
+}
 
 QString NodeField::toString() const
 {

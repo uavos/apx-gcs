@@ -50,6 +50,7 @@ public:
 
     //Fact override
     virtual bool setValue(const QVariant &v) override;
+    virtual QVariant data(int col, int role) const override;
 
 private:
     NodeItem *_node;
