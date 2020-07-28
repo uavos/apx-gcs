@@ -9,11 +9,11 @@ ControlArea {
     readonly property var f_cmd_vspeed: mandala.cmd.pos.vspeed
     readonly property real m_cmd_vspeed: f_cmd_vspeed.value
 
-    readonly property var f_vd: mandala.est.pos.vspeed
-    readonly property real m_vd: f_vd.value
+    //readonly property var f_vd: mandala.est.pos.vspeed
+    //readonly property real m_vd: f_vd.value
 
-    readonly property var f_venergy: mandala.est.air.vse
-    readonly property real m_venergy: f_venergy.value
+    readonly property var f_vse: mandala.est.air.vse
+    readonly property real m_vse: f_vse.value
 
 
     mvar: mandala.cmd.rc.thr   //ControlArea
@@ -65,7 +65,7 @@ ControlArea {
         ToolTipArea {text: f_vspeed.descr}
     }
 
-    PfdImage {
+    /*PfdImage {
         id: vsi_gps
         elementName: "vsi-gps"
         //smooth: ui.antialiasing
@@ -80,7 +80,7 @@ ControlArea {
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
         ToolTipArea {text: f_vd.descr}
-    }
+    }*/
 
     PfdImage {
         id: vsi_triangle
@@ -93,10 +93,10 @@ ControlArea {
         transform: Rotation{
             origin.x: vsi_triangle.width
             origin.y: vsi_triangle.height/2
-            angle: get_deg(m_venergy)
+            angle: get_deg(m_vse+m_vspeed)
             Behavior on angle { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         }
-        ToolTipArea {text: f_venergy.descr}
+        ToolTipArea {text: f_vse.descr}
     }
 
     PfdImage {
