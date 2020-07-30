@@ -39,6 +39,8 @@ public:
     void load(const QStringList &names = QStringList());
     void unload();
 
+    AppPlugin *plugin(QString name);
+
     Fact *f_enabled;
 
 private:

@@ -20,15 +20,15 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "Releases.h"
+#include "ApxFw.h"
 
 #include <App/App.h>
 #include <App/AppDirs.h>
 
-#include <JlCompress.h>
+#include "quazip/JlCompress.h"
 
-Releases::Releases(Fact *parent)
-    : Fact(parent, "releases", tr("Releases"), tr("Available firmware packages"), Group | Count)
+ApxFw::ApxFw(Fact *parent)
+    : Fact(parent, "apxfw", tr("Firmware releases"), tr("Available firmware packages"), Group | Count)
     , f_current(nullptr)
     , f_dev(nullptr)
     , reply(nullptr)
@@ -38,13 +38,13 @@ Releases::Releases(Fact *parent)
     m_packagePrefix = "APX_Nodes_Firmware";
 
     f_sync = new Fact(this, "sync", tr("Sync"), tr("Check for updates"), Action | Apply, "sync");
-    connect(f_sync, &Fact::triggered, this, &Releases::sync);
+    connect(f_sync, &Fact::triggered, this, &ApxFw::sync);
 
     net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
-    QTimer::singleShot(2300, this, &Releases::sync);
+    QTimer::singleShot(2300, this, &ApxFw::sync);
 }
 
-void Releases::abort()
+void ApxFw::abort()
 {
     if (!reply)
         return;
@@ -53,7 +53,7 @@ void Releases::abort()
     setProgress(-1);
 }
 
-void Releases::sync()
+void ApxFw::sync()
 {
     m_releaseFile.clear();
     if (!AppDirs::firmware().exists())
@@ -101,7 +101,7 @@ void Releases::sync()
     requestRelease(QString("tags/%1").arg(App::version()));
 }
 
-bool Releases::extractRelease(const QString &fname)
+bool ApxFw::extractRelease(const QString &fname)
 {
     QDir dir = releaseDir();
     QFileInfo fzip(QDir(AppDirs::firmware().absoluteFilePath("releases")).absoluteFilePath(fname));
@@ -124,18 +124,18 @@ bool Releases::extractRelease(const QString &fname)
     return true;
 }
 
-QDir Releases::releaseDir() const
+QDir ApxFw::releaseDir() const
 {
     return QDir(AppDirs::firmware().absoluteFilePath(
                     QString("%1-%2").arg(m_packagePrefix).arg(releaseVersion())),
                 "*.apxfw");
 }
-QDir Releases::devDir() const
+QDir ApxFw::devDir() const
 {
     return QDir(AppDirs::firmware().absoluteFilePath("development"), "*.apxfw");
 }
 
-QString Releases::releaseVersion() const
+QString ApxFw::releaseVersion() const
 {
     QString s = App::version();
     if (!m_releaseFile.isEmpty()) {
@@ -148,7 +148,7 @@ QString Releases::releaseVersion() const
     return s;
 }
 
-void Releases::makeReleaseFact(const QDir &dir)
+void ApxFw::makeReleaseFact(const QDir &dir)
 {
     if (!f_current) {
         f_current = new Fact(this, "current", "", "", Group);
@@ -159,7 +159,7 @@ void Releases::makeReleaseFact(const QDir &dir)
     f_current->setValue(QString::number(dir.entryList().size()));
     makeReleaseFactDo(f_current, dir);
 }
-void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
+void ApxFw::makeReleaseFactDo(Fact *fact, const QDir &dir)
 {
     //create content tree
     foreach (QFileInfo fi, dir.entryInfoList()) {
@@ -185,7 +185,7 @@ void Releases::makeReleaseFactDo(Fact *fact, const QDir &dir)
     }
 }
 
-void Releases::clean()
+void ApxFw::clean()
 {
     QDir dir = releaseDir();
     //clean up other extracted packages
@@ -219,12 +219,12 @@ void Releases::clean()
     }
 }
 
-QNetworkReply *Releases::request(const QString &r)
+QNetworkReply *ApxFw::request(const QString &r)
 {
     return request(
         QUrl(QString("https://api.github.com/repos/uavos/apx-releases/releases%1").arg(r)));
 }
-QNetworkReply *Releases::request(const QUrl &url)
+QNetworkReply *ApxFw::request(const QUrl &url)
 {
     QNetworkRequest *request = new QNetworkRequest(url);
 
@@ -243,7 +243,7 @@ QNetworkReply *Releases::request(const QUrl &url)
     return reply;
 }
 
-QNetworkReply *Releases::checkReply(QObject *sender)
+QNetworkReply *ApxFw::checkReply(QObject *sender)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender);
     if (!reply)
@@ -262,7 +262,7 @@ QNetworkReply *Releases::checkReply(QObject *sender)
     }
     return reply;
 }
-bool Releases::isFirmwarePackageFile(const QString &s, const QString &ver)
+bool ApxFw::isFirmwarePackageFile(const QString &s, const QString &ver)
 {
     if (!ver.isEmpty())
         return s == QString("%1-%2.zip").arg(m_packagePrefix).arg(ver);
@@ -273,14 +273,14 @@ bool Releases::isFirmwarePackageFile(const QString &s, const QString &ver)
     return true;
 }
 
-void Releases::requestRelease(QString req)
+void ApxFw::requestRelease(QString req)
 {
     abort();
     setProgress(0);
     reply = request(QString("/%1").arg(req));
-    connect(reply, &QNetworkReply::finished, this, &Releases::responseRelease);
+    connect(reply, &QNetworkReply::finished, this, &ApxFw::responseRelease);
 }
-void Releases::responseRelease()
+void ApxFw::responseRelease()
 {
     QNetworkReply *reply = checkReply(sender());
     if (!reply)
@@ -336,22 +336,22 @@ void Releases::responseRelease()
     qWarning() << json;
 }
 
-void Releases::requestDownload(QUrl url)
+void ApxFw::requestDownload(QUrl url)
 {
     apxMsg() << title().append(':') << tr("Downloading firmware").append("...");
     abort();
     setProgress(0);
     reply = request(url);
-    connect(reply, &QNetworkReply::finished, this, &Releases::responseDownload);
-    connect(reply, &QNetworkReply::downloadProgress, this, &Releases::downloadProgress);
+    connect(reply, &QNetworkReply::finished, this, &ApxFw::responseDownload);
+    connect(reply, &QNetworkReply::downloadProgress, this, &ApxFw::downloadProgress);
 }
-void Releases::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+void ApxFw::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal > 0) {
         setProgress((bytesReceived * 100) / bytesTotal);
     }
 }
-void Releases::responseDownload()
+void ApxFw::responseDownload()
 {
     QNetworkReply *reply = checkReply(sender());
     if (!reply)
@@ -392,7 +392,7 @@ void Releases::responseDownload()
     }
 }
 
-QString Releases::getApxfwFileName(QString nodeName, QString hw)
+QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
 {
     //map deprecated hardware
     if (nodeName == "gimbal")
@@ -473,7 +473,7 @@ QString Releases::getApxfwFileName(QString nodeName, QString hw)
     return fileName;
 }
 
-bool Releases::loadFirmware(
+bool ApxFw::loadFirmware(
     QString nodeName, QString hw, QString type, QByteArray *data, quint32 *startAddr)
 {
     QString fileName = getApxfwFileName(nodeName, hw);
@@ -495,7 +495,7 @@ bool Releases::loadFirmware(
     return rv;
 }
 
-bool Releases::loadHexFile(QString fileName, QByteArray *data, quint32 *startAddr)
+bool ApxFw::loadHexFile(QString fileName, QByteArray *data, quint32 *startAddr)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -578,12 +578,13 @@ bool Releases::loadHexFile(QString fileName, QByteArray *data, quint32 *startAdd
     }
     ba.resize(cnt);
     *data = ba;
-    *startAddr = data_addr;
+    if (startAddr)
+        *startAddr = data_addr;
     qDebug() << "File: " << ba.size();
     return ba.size() > 0;
 }
 
-bool Releases::loadApfwFile(QString fileName, QString section, QByteArray *data, quint32 *startAddr)
+bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, quint32 *startAddr)
 {
     if (fileName.isEmpty())
         return false;
@@ -626,11 +627,13 @@ bool Releases::loadApfwFile(QString fileName, QString section, QByteArray *data,
             break;
         }
 
-        if (!msect.contains("offset")) {
-            errString = "missing offset";
-            break;
+        if (startAddr) {
+            if (!msect.contains("offset")) {
+                errString = "missing offset";
+                break;
+            }
+            *startAddr = msect.value("offset").toUInt();
         }
-        *startAddr = msect.value("offset").toUInt();
 
         QByteArray ba = QByteArray::fromBase64(msect.value("data").toString().toUtf8());
         errString = "missing image data";
@@ -652,7 +655,7 @@ bool Releases::loadApfwFile(QString fileName, QString section, QByteArray *data,
     return false;
 }
 
-bool Releases::loadFileMHX(QString ver, QByteArray *data)
+bool ApxFw::loadFileMHX(QString ver, QByteArray *data)
 {
     bool bErr = true;
     //parse version

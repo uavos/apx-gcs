@@ -24,7 +24,6 @@
 #include "FirmwareTools.h"
 #include "LoaderStm.h"
 #include "QueueItem.h"
-#include "Releases.h"
 
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
@@ -35,16 +34,14 @@ Firmware *Firmware::_instance = nullptr;
 Firmware::Firmware(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
-           tr("Firmware"),
-           tr("Firmware updates"),
+           tr("Firmware loader"),
+           tr("Devices update tool"),
            Group | FlatModel | ProgressTrack,
            "update")
 {
     _instance = this;
 
     setOpt("pos", QPointF(1, 1));
-
-    f_releases = new Releases(this);
 
     f_queue = new Fact(this,
                        "queue",

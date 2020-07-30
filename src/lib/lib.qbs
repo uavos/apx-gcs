@@ -5,5 +5,6 @@ Project {
         "ApxData/ApxData.qbs",
         "ApxGcs/ApxGcs.qbs",
         "ApxShared/ApxShared.qbs",
+        "ApxFw/ApxFw.qbs",
     ]
 }

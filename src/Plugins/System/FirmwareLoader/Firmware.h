@@ -23,6 +23,7 @@
 #pragma once
 
 #include "QueueItem.h"
+#include <App/AppGcs.h>
 #include <Fact/Fact.h>
 
 class Releases;
@@ -38,8 +39,6 @@ public:
 
     Fact *f_start;
     Fact *f_stop;
-
-    Releases *f_releases;
 
     Fact *f_queue;
     Fact *f_available;

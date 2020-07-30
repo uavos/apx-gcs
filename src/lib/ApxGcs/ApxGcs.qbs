@@ -8,6 +8,7 @@ ApxApp.ApxLibrary {
     Depends { name: "ApxCore" }
     Depends { name: "ApxData" }
     Depends { name: "ApxShared" }
+    Depends { name: "ApxFw" }
 
     Depends {
         name: "Qt";
@@ -158,6 +159,7 @@ ApxApp.ApxLibrary {
             "PawnCompiler.cpp", "PawnCompiler.h",
         ]
     }
+
 
     ApxApp.ApxResource {
         src: "scripts"

@@ -85,6 +85,8 @@ public:
 
     QStringList languages() const { return m_languages; }
 
+    static AppPlugin *plugin(QString name);
+
 private:
     static App *_instance;
 

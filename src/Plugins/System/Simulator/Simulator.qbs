@@ -17,6 +17,7 @@ Project {
             ]
         }
 
+        Depends { name: "ApxFw" }
 
         files: [
             "SimPlugin.h",

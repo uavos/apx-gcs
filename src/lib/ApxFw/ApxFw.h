@@ -22,20 +22,18 @@
  */
 #pragma once
 
-#include "Firmware.h"
-#include "QueueItem.h"
 #include <Fact/Fact.h>
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
-class Releases : public Fact
+class ApxFw : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit Releases(Fact *parent);
+    explicit ApxFw(Fact *parent);
 
     Fact *f_sync;
     Fact *f_current;
@@ -71,8 +69,9 @@ private:
     bool isFirmwarePackageFile(const QString &s, const QString &ver = QString());
 
     QString getApxfwFileName(QString nodeName, QString hw);
-    bool loadHexFile(QString fileName, QByteArray *data, quint32 *startAddr);
     bool loadApfwFile(QString fileName, QString section, QByteArray *data, quint32 *startAddr);
+
+    bool loadHexFile(QString fileName, QByteArray *data, quint32 *startAddr);
     bool loadFileMHX(QString ver, QByteArray *data);
 
 private slots:

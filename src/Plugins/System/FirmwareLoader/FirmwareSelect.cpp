@@ -22,7 +22,6 @@
  */
 #include "FirmwareSelect.h"
 #include "Firmware.h"
-#include "Releases.h"
 
 FirmwareSelect::FirmwareSelect(Firmware *firmware,
                                Fact *parent,
@@ -58,15 +57,16 @@ FirmwareSelect::FirmwareSelect(Firmware *firmware,
 
 void FirmwareSelect::updateNodeEnums()
 {
-    if (!m_firmware->f_releases->f_current)
+    ApxFw *apxfw = AppGcs::apxfw();
+    if (!apxfw->f_current)
         return;
     QStringList st;
-    for (int i = 0; i < m_firmware->f_releases->f_current->size(); ++i) {
-        st.append(m_firmware->f_releases->f_current->child(i)->name());
+    for (int i = 0; i < apxfw->f_current->size(); ++i) {
+        st.append(apxfw->f_current->child(i)->name());
     }
-    if (m_firmware->f_releases->f_dev) {
-        for (int i = 0; i < m_firmware->f_releases->f_dev->size(); ++i) {
-            st.append(m_firmware->f_releases->f_dev->child(i)->name());
+    if (apxfw->f_dev) {
+        for (int i = 0; i < apxfw->f_dev->size(); ++i) {
+            st.append(apxfw->f_dev->child(i)->name());
         }
     }
     st.removeDuplicates();
@@ -77,17 +77,18 @@ void FirmwareSelect::updateNodeEnums()
 
 void FirmwareSelect::updateHwEnums()
 {
-    if (!m_firmware->f_releases->f_current)
+    ApxFw *apxfw = AppGcs::apxfw();
+    if (!apxfw->f_current)
         return;
     QStringList st;
-    FactBase *f_n = m_firmware->f_releases->f_current->child(f_node->text());
+    FactBase *f_n = apxfw->f_current->child(f_node->text());
     if (f_n) {
         for (int i = 0; i < f_n->size(); ++i) {
             st.append(f_n->child(i)->name());
         }
     }
-    if (m_firmware->f_releases->f_dev) {
-        f_n = m_firmware->f_releases->f_dev->child(f_node->text());
+    if (apxfw->f_dev) {
+        f_n = apxfw->f_dev->child(f_node->text());
         if (f_n) {
             for (int i = 0; i < f_n->size(); ++i) {
                 st.append(f_n->child(i)->name());

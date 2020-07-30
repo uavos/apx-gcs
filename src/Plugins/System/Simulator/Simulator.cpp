@@ -21,7 +21,9 @@
  *
  */
 #include "Simulator.h"
+#include <App/App.h>
 #include <App/AppDirs.h>
+#include <App/AppGcs.h>
 #include <App/AppLog.h>
 #include <QDesktopServices>
 
@@ -60,7 +62,7 @@ Simulator::Simulator(Fact *parent)
     f_type->setIcon("package-variant");
 
     f_oXplane = new Fact(this, "oxplane", tr("X-Plane"), tr("Run X-Plane on start"), Bool);
-    f_oXplane->setValue(true);
+    //f_oXplane->setValue(true);
     f_oAHRS = new Fact(this, "oahrs", tr("AHRS"), tr("Enable AHRS XKF simulation"), Bool);
     f_oNoise = new Fact(this, "onoise", tr("Noise"), tr("Sensors noise simulation"), Bool);
     f_oDLHD = new Fact(this, "odlhd", tr("DLHD"), tr("Higher precision downlink"), Bool);
@@ -75,12 +77,15 @@ Simulator::Simulator(Fact *parent)
         "--no_aniso_filtering --no_pixel_counters --no_pbos --no_fbos --no_vbos");
 
     //shiva
-    pShiva.setProgram(QCoreApplication::applicationDirPath() + "/shiva");
+    //pShiva.setProgram(QCoreApplication::applicationDirPath() + "/shiva");
+    pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/sim"));
     connect(&pShiva,
             QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this,
             &Simulator::pShivaFinished);
+    connect(&pShiva, &QProcess::errorOccurred, this, &Simulator::pShivaErrorOccurred);
 
+    pShivaKill();
     QTimer::singleShot(2000, this, &Simulator::detectXplane);
 }
 Simulator::~Simulator()
@@ -90,8 +95,39 @@ Simulator::~Simulator()
     disconnect(&pShiva, nullptr, nullptr, nullptr);
     pShiva.terminate();
     pShiva.waitForFinished(1000);
+    pShivaKill();
 }
-//=============================================================================
+
+void Simulator::pShivaKill()
+{
+    if (QProcess::startDetached("killall", QStringList() << "sim") == 0) {
+        //apxMsgW() << tr("SIL simulation session restart");
+    }
+}
+
+bool Simulator::extract_apxfw()
+{
+    ApxFw *apxfw = AppGcs::apxfw();
+
+    QByteArray data;
+    apxfw->loadFirmware("sim", "PC", "application", &data, nullptr);
+    if (data.size() <= 0)
+        return false;
+
+    QDir dir(AppDirs::firmware().absoluteFilePath("sim"));
+    dir.mkpath(".");
+    QFile fsim(dir.absoluteFilePath("sim"));
+    fsim.remove();
+    if (!fsim.open(QFile::WriteOnly)) {
+        qWarning() << "can't write" << fsim.fileName();
+        return false;
+    }
+    fsim.write(data);
+    fsim.close();
+    fsim.setPermissions(QFileDevice::ReadOwner | QFileDevice::ExeOwner);
+    return true;
+}
+
 void Simulator::detectXplane()
 {
     QStringList st;
@@ -199,11 +235,13 @@ void Simulator::launch()
     }
 
     //launch shiva
-    if (QProcess::execute("killall", QStringList() << "shiva") == 0) {
-        apxMsgW() << tr("SIL simulation session restart");
-    }
+    pShivaKill();
     pShiva.kill();
-    QStringList args;
+
+    if (!extract_apxfw()) {
+        apxMsgW() << tr("Simulation firmware unavailable");
+    } else {
+        /*QStringList args;
     if (f_oDLHD->value().toBool())
         args << "-a";
     if (f_oAHRS->value().toBool())
@@ -212,12 +250,13 @@ void Simulator::launch()
         args << "-n";
     args << "-s"
          << "-u";
-    pShiva.setArguments(args);
+    pShiva.setArguments(args);*/
 
-    //f_launch->setEnabled(false);
-    //f_stop->setEnabled(true);
+        f_launch->setEnabled(false);
+        f_stop->setEnabled(true);
 
-    //pShiva.start();
+        pShiva.start();
+    }
 
     if (f_oXplane->value().toBool() && (!xplaneDir.isEmpty())) {
         //QTimer::singleShot(1000, this, [xplaneDir]() {
@@ -277,5 +316,9 @@ void Simulator::pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus)
     f_stop->setEnabled(false);
     if (exitCode == 7)
         launch();
+}
+void Simulator::pShivaErrorOccurred(QProcess::ProcessError error)
+{
+    apxMsgW() << pShiva.errorString() << error;
 }
 //=============================================================================

@@ -213,3 +213,11 @@ void AppPlugins::unload()
     clear();
 }
 //=============================================================================
+AppPlugin *AppPlugins::plugin(QString name)
+{
+    for (auto p : *this) {
+        if (p->name == name)
+            return p;
+    }
+    return nullptr;
+}

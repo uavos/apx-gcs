@@ -36,6 +36,8 @@
 #include <Protocols/ProtocolVehicles.h>
 #include <Vehicles/Vehicles.h>
 
+#include <ApxFw.h>
+
 class AppGcs : public App
 {
     Q_OBJECT
@@ -56,6 +58,10 @@ public:
     ProtocolVehicles *protocol;
     Datalink *f_datalink;
     AppMenu *f_menu;
+
+    ApxFw *f_apxfw;
+
+    static inline ApxFw *apxfw() { return _instance->f_apxfw; }
 
 private:
     static AppGcs *_instance;

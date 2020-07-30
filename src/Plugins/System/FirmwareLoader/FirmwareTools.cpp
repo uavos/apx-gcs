@@ -22,7 +22,6 @@
  */
 #include "FirmwareTools.h"
 #include "Firmware.h"
-#include "Releases.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>

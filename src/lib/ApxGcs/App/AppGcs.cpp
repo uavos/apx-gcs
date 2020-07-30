@@ -42,6 +42,8 @@ void AppGcs::loadServices()
 
     Vehicles *vehicles = new Vehicles(f_apx, protocol);
 
+    f_apxfw = new ApxFw(f_apx);
+
     //datalink
     f_datalink = new Datalink(f_apx);
 

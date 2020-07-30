@@ -22,7 +22,6 @@
  */
 #include "QueueItem.h"
 #include "Firmware.h"
-#include "Releases.h"
 
 #include <App/AppGcs.h>
 #include <App/AppNotify.h>
@@ -101,8 +100,8 @@ bool QueueItem::loadFirmware(QString hw, QString ver)
 
     QString stype = type().toUpper();
 
-    Releases *releases = Firmware::instance()->f_releases;
-    QString relVer = releases->releaseVersion();
+    ApxFw *apxfw = AppGcs::apxfw();
+    QString relVer = apxfw->releaseVersion();
     if (ver != relVer) {
         ver = QString("%1->%2").arg(ver).arg(relVer);
     }
@@ -122,7 +121,7 @@ bool QueueItem::loadFirmware(QString hw, QString ver)
     else
         apxMsgW() << "unknown type:" << type();
 
-    return releases->loadFirmware(fw, hw, rel_type, &_data, &_offset);
+    return apxfw->loadFirmware(fw, hw, rel_type, &_data, &_offset);
 }
 
 void QueueItem::upload()

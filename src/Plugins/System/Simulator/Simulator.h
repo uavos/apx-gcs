@@ -52,6 +52,10 @@ private:
     QStringList xplaneDirs;
     QProcess pShiva;
 
+    bool extract_apxfw();
+
+    void pShivaKill();
+
 private slots:
     void detectXplane();
     void launch();
@@ -59,6 +63,7 @@ private slots:
     void launchXplane(QString xplaneDir);
 
     void pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void pShivaErrorOccurred(QProcess::ProcessError error);
 };
 //=============================================================================
 #endif
