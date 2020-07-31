@@ -74,7 +74,6 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
                        QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
                                      << "name TEXT NOT NULL"
                                      << "title TEXT"
-                                     << "descr TEXT"
                                      << "units TEXT"
                                      << "type TEXT NOT NULL"
                                      << "array INTEGER");

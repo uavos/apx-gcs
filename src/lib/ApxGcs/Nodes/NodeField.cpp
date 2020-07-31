@@ -35,11 +35,12 @@ NodeField::NodeField(Fact *parent,
                      xbus::node::conf::fid_t fid,
                      const ProtocolNode::dict_field_s &field,
                      NodeField *parentField)
-    : Fact(parent, field.name, field.title, field.descr)
+    : Fact(parent, field.name, field.title)
     , _node(node)
     , _parentField(parentField)
     , m_fid(fid)
     , _type(field.type)
+    , _fpath(field.path)
 {
     new NodeViewActions(this, node->nodes());
 
@@ -174,10 +175,10 @@ bool NodeField::setValue(const QVariant &v)
         //expanded field - i.e. array
         if (isList) {
             const QVariantList &values = v.value<QVariantList>();
-            if (values.size() != size())
+            if (values.size() > size())
                 return false;
             bool rv = false;
-            for (int i = 0; i < size(); ++i) {
+            for (int i = 0; i < values.size(); ++i) {
                 Fact *f = child(i);
                 rv |= f->setValue(values.at(i));
             }
@@ -214,6 +215,13 @@ QVariant NodeField::data(int col, int role) const
         return QString("%1 %2").arg(text()).arg(units());
     }
     return Fact::data(col, role);
+}
+QString NodeField::toolTip() const
+{
+    if (!_help.isEmpty()) {
+        return Fact::toolTip() + "\n\n" + _help;
+    }
+    return Fact::toolTip();
 }
 
 QString NodeField::toString() const

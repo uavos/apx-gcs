@@ -82,6 +82,11 @@ void NodesFrame::vehicleSelected(Vehicle *v)
                                this,
                                &NodesFrame::aUndo_triggered);
 
+    aDefaults = toolBar->addAction(MaterialIcon("lock-reset"),
+                                   tr("Restore defaults"),
+                                   this,
+                                   &NodesFrame::aDefaults_triggered);
+
     //all actions signals
     foreach (QAction *a, toolBar->actions()) {
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
@@ -116,15 +121,18 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     QMenu m(treeWidget);
 
     //editor actions
+    QAction *a = new QAction(aDefaults->icon(), aDefaults->text(), &m);
+    connect(a, &QAction::triggered, aDefaults, &QAction::trigger);
+    m.addAction(a);
     for (auto i : selectedItems<Fact>()) {
         if (!i->modified())
             continue;
-        QAction *a = new QAction(aUndo->icon(), aUndo->text(), &m);
+        a = new QAction(aUndo->icon(), aUndo->text(), &m);
         connect(a, &QAction::triggered, aUndo, &QAction::trigger);
         m.addAction(a);
-        m.addSeparator();
         break;
     }
+    m.addSeparator();
 
     //node tools
     for (auto node : nlist) {
@@ -157,6 +165,16 @@ void NodesFrame::aUndo_triggered(void)
     }
     if (list.isEmpty())
         vehicle->f_nodes->restore();
+}
+void NodesFrame::aDefaults_triggered(void)
+{
+    treeWidget->tree->setFocus();
+    QList<Fact *> list = selectedItems<Fact>();
+    for (auto i : list) {
+        i->restoreDefaults();
+    }
+    if (list.isEmpty())
+        vehicle->f_nodes->restoreDefaults();
 }
 //=============================================================================
 void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)

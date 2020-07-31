@@ -39,6 +39,7 @@ private:
     Nodes *_nodes;
 
     Fact *f_revert;
+    Fact *f_defaults;
 
 private slots:
     void updateRevert();

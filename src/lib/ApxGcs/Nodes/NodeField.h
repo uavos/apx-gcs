@@ -51,6 +51,10 @@ public:
     //Fact override
     virtual bool setValue(const QVariant &v) override;
     virtual QVariant data(int col, int role) const override;
+    virtual QString toolTip() const override;
+
+    inline void setHelp(const QString &s) { _help = s; }
+    inline QString fpath() const { return _fpath; }
 
 private:
     NodeItem *_node;
@@ -61,6 +65,9 @@ private:
 
     PawnCompiler *pawncc{nullptr};
     QByteArray scriptCodeSave;
+
+    QString _fpath;
+    QString _help;
 
 private slots:
     void updateStatus();

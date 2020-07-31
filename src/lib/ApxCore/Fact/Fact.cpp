@@ -123,7 +123,7 @@ QVariant Fact::data(int col, int role) const
                 return QColor(Qt::green).lighter();
             if (isZero())
                 return QColor(Qt::gray);
-            return QColor(Qt::white); //QVariant();
+            return QColor(Qt::white);
         }
         if (col == Fact::FACT_MODEL_COLUMN_VALUE) {
             if (!enabled())
@@ -134,6 +134,8 @@ QVariant Fact::data(int col, int role) const
                 return QColor(Qt::yellow);
             if (isZero())
                 return QColor(Qt::gray);
+            //if (isDefault())
+            //    return QColor(Qt::blue).lighter(180);
             return QColor(Qt::cyan).lighter(180);
         }
         return QColor(Qt::darkCyan);
@@ -158,8 +160,9 @@ QVariant Fact::data(int col, int role) const
                     s += QString("\n%1: %2").arg(f->title()).arg(f->text());
                 }
                 return s;
-            } else
-                descr();
+            } else {
+                return toolTip();
+            }
         }
         return data(col, Qt::DisplayRole);
     }
@@ -225,6 +228,8 @@ QString Fact::toolTip() const
         else
             st << QString("{%1}").arg(m_enumStrings.join(','));
     }
+    if (!defaultValue().isNull())
+        st << QString("Default: %1").arg(defaultValue().toString());
     return st.join('\n');
 }
 //=============================================================================

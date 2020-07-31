@@ -64,8 +64,9 @@ public:
     QString enumText(int idx) const;
 
     virtual bool isZero() const;
+    bool isDefault() const;
 
-    void defaults();
+    void resetValue();
 
     //Mandala support - must override in derived classes
     // to collect dict ids from vehicle mandala
@@ -78,6 +79,7 @@ public:
 public slots:
     virtual void backup();
     virtual void restore();
+    void restoreDefaults();
 
 protected:
     bool updateValue(const QVariant &v);

@@ -27,7 +27,7 @@
 #include "Nodes.h"
 #include <QtSql>
 
-#include <App/App.h>
+#include <App/AppGcs.h>
 #include <Vehicles/VehicleWarnings.h>
 #include <Vehicles/Vehicles.h>
 #include <QFontDatabase>
@@ -157,7 +157,7 @@ void NodeItem::upload()
         if (!i->modified())
             continue;
         protocol()->requestUpdate(i->fid(), i->uploadableValue());
-        _nodes->vehicle->recordConfigUpdate(title(), i->name(), i->text(), protocol()->sn());
+        _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->text(), protocol()->sn());
         cnt++;
     }
     if (cnt > 0) {
@@ -387,7 +387,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
         switch (i.type) {
         case xbus::node::conf::group:
             g = i.group ? groups.value(i.group) : this;
-            g = new Fact(g, i.name, i.title, i.descr, Group | ModifiedGroup);
+            g = new Fact(g, i.name, i.title, "", Group | ModifiedGroup);
             new NodeViewActions(g, _nodes);
             groups.insert(groups.size() + 1, g);
             break;
@@ -412,12 +412,67 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     removeEmptyGroups(this);
     groupArrays();
     linkGroupValues(this);
+
+    // update descr and help from APXFW package
+    _parameters = AppGcs::apxfw()->loadParameters(protocol()->name(), protocol()->hardware());
+    for (auto v : _parameters) {
+        updateFieldsHelp(this, this, v);
+    }
+}
+void NodeItem::updateFieldsHelp(Fact *root, Fact *group, QJsonValue json)
+{
+    if (!json.isObject())
+        return;
+    QJsonObject obj = json.toObject();
+    if (!obj.contains("name"))
+        return;
+    QString name = obj["name"].toString();
+    Fact *fx = group->child(name, Qt::CaseSensitive);
+    if (!fx)
+        return;
+
+    QString title = obj["title"].toString();
+    QString descr = obj["descr"].toString();
+
+    NodeField *nf = qobject_cast<NodeField *>(fx);
+    if (nf) {
+        nf->setHelp(descr);
+        descr = title;
+    }
+    fx->setDescr(descr);
+
+    // default values
+    if (obj.contains("default")) {
+        QJsonValue def = obj["default"];
+        if (nf) {
+            fx->setDefaultValue(def.toVariant());
+        } else if (def.isObject()) {
+            QJsonObject def_obj = def.toObject();
+            for (auto key : def_obj.keys()) {
+                Fact *f = fx->findChild(key);
+                if (!f) {
+                    qWarning() << "Unsupported defaults object format" << def << fx->path();
+                    continue;
+                }
+                f->setDefaultValue(def_obj[key].toVariant());
+            }
+        } else {
+            qWarning() << "Unsupported defaults format" << def << fx->path();
+        }
+    }
+
+    // parse child objects
+    if (!obj.contains("content"))
+        return;
+    for (auto v : obj["content"].toArray()) {
+        updateFieldsHelp(root, fx, v);
+    }
 }
 
 bool NodeItem::loadConfigValue(const QString &name, const QString &value)
 {
     for (auto f : m_fields) {
-        if (f->name() != name)
+        if (f->fpath() != name)
             continue;
         f->setValue(value);
         return true;
@@ -429,9 +484,9 @@ void NodeItem::confReceived(const QVariantMap &values)
 {
     //qDebug() << values;
     for (auto f : m_fields) {
-        if (!values.contains(f->name()))
+        if (!values.contains(f->fpath()))
             continue;
-        f->setValue(values.value(f->name()));
+        f->setValue(values.value(f->fpath()));
         f->setEnabled(true);
     }
     if (!protocol()->valid()) {
@@ -439,6 +494,10 @@ void NodeItem::confReceived(const QVariantMap &values)
     }
 
     updateStatus();
+
+    if (protocol()->ident().flags.bits.reconf) {
+        restoreDefaults();
+    }
 }
 
 void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)

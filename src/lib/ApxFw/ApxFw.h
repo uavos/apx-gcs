@@ -44,6 +44,8 @@ public:
 
     QString releaseVersion() const;
 
+    QJsonArray loadParameters(QString nodeName, QString hw);
+
 private:
     QNetworkAccessManager net;
 

@@ -113,7 +113,7 @@ public:
     Q_INVOKABLE Fact *child(const QString &name, Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
 
     Q_INVOKABLE QString path(int maxLevel = -1, const QChar pathDelimiter = QChar('.')) const;
-    Q_INVOKABLE QString path(const FactBase *root) const;
+    Q_INVOKABLE QString path(const FactBase *root, const QChar pathDelimiter = QChar('.')) const;
     Q_INVOKABLE QStringList pathStringList(int maxLevel = -1) const;
 
     Q_INVOKABLE void bindProperty(Fact *src, QString name, bool oneway = false);

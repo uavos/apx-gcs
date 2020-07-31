@@ -732,3 +732,39 @@ bool ApxFw::loadFileMHX(QString ver, QByteArray *data)
     //qDebug()<<fileData.size();
     return true;
 }
+
+QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
+{
+    QFile file(getApxfwFileName(nodeName, hw));
+    if (!file.exists() || !file.open(QFile::ReadOnly | QFile::Text)) {
+        apxMsgW() << tr("Firmware package missing") << nodeName << hw;
+    }
+    QJsonDocument json = QJsonDocument::fromJson(file.readAll());
+    file.close();
+
+    do {
+        QJsonObject params = json["parameters"].toObject();
+        if (params.isEmpty())
+            break;
+        QByteArray ba = QByteArray::fromBase64(params["data"].toString().toUtf8());
+        if (ba.isEmpty())
+            break;
+
+        quint32 size = params["size"].toInt();
+
+        ba.prepend(static_cast<char>(size));
+        ba.prepend(static_cast<char>(size >> 8));
+        ba.prepend(static_cast<char>(size >> 16));
+        ba.prepend(static_cast<char>(size >> 24));
+        ba = qUncompress(ba);
+        if (ba.isEmpty())
+            break;
+
+        json = QJsonDocument::fromJson(ba);
+        if (!json.isArray())
+            break;
+        return json.array();
+    } while (0);
+    apxMsgW() << tr("Parameters package error") << nodeName << hw;
+    return QJsonArray();
+}

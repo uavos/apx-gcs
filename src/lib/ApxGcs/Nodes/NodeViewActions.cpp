@@ -41,6 +41,14 @@ NodeViewActions::NodeViewActions(Fact *fact, Nodes *nodes)
     connect(f_revert, &Fact::triggered, fact, &Fact::restore);
     connect(fact, &Fact::modifiedChanged, this, &NodeViewActions::updateRevert);
     updateRevert();
+
+    f_defaults = new Fact(fact,
+                          "defaults",
+                          tr("Defaults"),
+                          tr("Restore default values"),
+                          Fact::Action | Fact::IconOnly,
+                          "lock-reset");
+    connect(f_defaults, &Fact::triggered, fact, &Fact::restoreDefaults);
 }
 
 void NodeViewActions::updateRevert()

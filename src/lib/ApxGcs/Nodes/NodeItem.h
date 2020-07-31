@@ -64,6 +64,9 @@ private:
 
     QList<NodeField *> m_fields;
 
+    QJsonArray _parameters;
+    void updateFieldsHelp(Fact *root, Fact *group, QJsonValue json);
+
     NodeField *m_status_field{nullptr};
     void groupArrays();
     void groupArrays(Fact *group);

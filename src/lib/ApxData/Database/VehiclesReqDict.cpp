@@ -204,9 +204,9 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
 
     while (query.next()) {
         ProtocolNode::dict_field_s f;
-        f.name = query.value("name").toString();
+        f.path = query.value("name").toString();
+        f.name = f.path.split('.').last();
         f.title = query.value("title").toString();
-        f.descr = query.value("descr").toString();
         f.units = query.value("units").toString();
         f.type = types.value(query.value("type").toString());
         f.array = query.value("array").toUInt();
@@ -224,7 +224,6 @@ void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
 {
     records.names << "name"
                   << "title"
-                  << "descr"
                   << "units"
                   << "type"
                   << "array"
@@ -234,9 +233,8 @@ void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
     uint16_t fid = 0;
     for (auto const &i : dict) {
         QVariantList v;
-        v << i.name;
+        v << i.path;
         v << (i.title.isEmpty() ? QVariant() : i.title);
-        v << (i.descr.isEmpty() ? QVariant() : i.descr);
         v << (i.units.isEmpty() ? QVariant() : i.units);
         v << QString(xbus::node::conf::type_to_str(i.type));
         v << (i.array > 0 ? i.array : QVariant());
@@ -318,7 +316,6 @@ bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
     QStringList fnames;
     fnames << "name"
            << "title"
-           << "descr"
            << "units"
            << "type"
            << "array";
@@ -357,7 +354,7 @@ bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
 
         query.prepare("INSERT INTO NodeDictDataFields(" + fnames.join(',')
                       + ") "
-                        "VALUES(?,?,?,?,?,?)");
+                        "VALUES(?,?,?,?,?)");
         for (int j = 0; j < fnames.size(); ++j) {
             query.addBindValue(vlist.at(j));
         }

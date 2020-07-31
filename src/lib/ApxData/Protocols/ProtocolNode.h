@@ -60,8 +60,8 @@ public:
     {
         QString name;
         QString title;
-        QString descr;
         QString units;
+        QString path;
     };
     typedef QList<dict_field_s> Dict;
 

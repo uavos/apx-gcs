@@ -289,13 +289,13 @@ FactList FactBase::pathList() const
     }
     return list;
 }
-QString FactBase::path(const FactBase *root) const
+QString FactBase::path(const FactBase *root, const QChar pathDelimiter) const
 {
     int level = -1;
     for (const FactBase *i = this; i && i != root; i = i->parentFact()) {
         level++;
     }
-    return path(level);
+    return path(level, pathDelimiter);
 }
 //=============================================================================
 void FactBase::updateNum()

@@ -453,7 +453,7 @@ void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
         if (f.type == xbus::node::conf::option) {
             v = f.units.split(',').value(v.toInt(), v.toString());
         }
-        _values[f.name] = v;
+        _values[f.path] = v;
     }
 
     // request
@@ -532,13 +532,12 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
 
             switch (field.type) {
             case xbus::node::conf::group:
-                st = stream.read_strings(3);
+                st = stream.read_strings(2);
                 if (st.isEmpty() || st.at(0).isEmpty())
                     break;
                 //qDebug() << "group" << field.group << st;
                 field.name = st.at(0);
                 field.title = st.at(1);
-                field.descr = st.at(2);
                 groups.append(dict.size());
                 break;
             case xbus::node::conf::command:
@@ -549,33 +548,39 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
                 field.title = st.at(1);
                 break;
             default:
-                st = stream.read_strings(3, stream.available());
+                st = stream.read_strings(2, stream.available());
                 if (st.isEmpty() || st.at(0).isEmpty())
                     break;
                 //qDebug() << "field" << field.type << field.array << field.group << st;
                 field.name = st.at(0);
                 field.title = st.at(0);
-                field.descr = st.at(1);
-                field.units = st.at(2);
-                // guess name prepended with groups
-                uint8_t group = field.group;
-                while (group) {
-                    group--;
-                    if (group < groups.size()) {
-                        const dict_field_s &g = dict.at(groups.at(group));
-                        field.name.prepend(QString("%1_").arg(g.name));
-                        group = g.group;
-                        continue;
-                    }
-                    qWarning() << "missing group:" << field.type << field.array << field.group
-                               << st;
-                    field.name.clear(); //mark error
-                    break;
-                }
+                field.units = st.at(1);
             }
             if (field.name.isEmpty())
                 break;
 
+            if (field.title.isEmpty())
+                field.title = field.name;
+
+            // guess path prepended with groups
+            QStringList path;
+            path.append(field.name);
+            uint8_t group = field.group;
+            while (group) {
+                group--;
+                if (group < groups.size()) {
+                    const dict_field_s &g = dict.at(groups.at(group));
+                    path.prepend(g.name);
+                    group = g.group;
+                    continue;
+                }
+                qWarning() << "missing group:" << field.type << field.array << field.group << st;
+                path.clear(); //mark error
+                break;
+            }
+            field.path = path.join('.');
+
+            // push to dict
             dict.append(field);
 
             //qDebug() << field.name << field.type << field.array << field.group << st
@@ -699,7 +704,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     _values.clear();
     for (auto i = 0; i < values.size(); ++i) {
         const dict_field_s &f = m_dict.at(m_dict_fields.at(i));
-        _values.insert(f.name, values.at(i));
+        _values.insert(f.path, values.at(i));
     }
     qDebug() << "conf parsed";
 

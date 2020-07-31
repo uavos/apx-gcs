@@ -34,7 +34,7 @@ FactData::FactData(
     connect(this, &FactData::precisionChanged, this, &FactData::updateText);
     connect(this, &FactData::enumStringsChanged, this, &FactData::updateText, Qt::QueuedConnection);
 
-    connect(this, &FactData::dataTypeChanged, this, &FactData::defaults);
+    connect(this, &FactData::dataTypeChanged, this, &FactData::resetValue);
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);
 
     connect(this, &FactData::optionsChanged, this, &FactData::getPresistentValue);
@@ -389,8 +389,7 @@ QString FactData::toText(const QVariant &v) const
 bool FactData::isZero() const
 {
     if (treeType() == Group) {
-        for (int i = 0; i < size(); i++) {
-            FactData *f = child(i);
+        for (auto f : facts()) {
             if (!f->isZero())
                 return false;
         }
@@ -415,6 +414,21 @@ bool FactData::isZero() const
         return true;
 
     return false;
+}
+bool FactData::isDefault() const
+{
+    if (treeType() == Group) {
+        for (auto f : facts()) {
+            if (!f->isDefault())
+                return false;
+        }
+        return true;
+    }
+
+    if (defaultValue().isNull())
+        return false;
+
+    return value() == defaultValue();
 }
 //=============================================================================
 //=============================================================================
@@ -639,7 +653,7 @@ void FactData::restore()
     }
     setModified(false);
 }
-void FactData::defaults()
+void FactData::resetValue()
 {
     if (m_value.isNull()) {
         switch (dataType()) {
@@ -662,6 +676,17 @@ void FactData::defaults()
             m_value = QVariant();
         }
     }
+}
+void FactData::restoreDefaults()
+{
+    for (auto i : facts()) {
+        i->restoreDefaults();
+    }
+
+    if (defaultValue().isNull())
+        return;
+
+    setValue(defaultValue());
 }
 
 void FactData::getPresistentValue()

@@ -40,6 +40,7 @@ private:
     QVBoxLayout *vlayout;
 
     QAction *aUndo;
+    QAction *aDefaults;
     QLabel *lbUavName;
 
     template<class T = Fact>
@@ -69,6 +70,7 @@ private slots:
     void treeContextMenu(const QPoint &pos);
 
     void aUndo_triggered(void);
+    void aDefaults_triggered(void);
 };
 //=============================================================================
 #endif
