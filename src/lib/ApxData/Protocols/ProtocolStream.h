@@ -36,7 +36,6 @@ public:
     ProtocolStreamReader(const QByteArray &packet)
         : XbusStreamReader(reinterpret_cast<const uint8_t *>(packet.data()),
                            static_cast<size_t>(packet.size()))
-        , m_packet(packet)
     {}
 
     inline QString dump() { return toByteArray().toHex().toUpper(); }
@@ -46,9 +45,8 @@ public:
     {
         if ((spos + sz) > size())
             return QByteArray();
-        return m_packet.mid(static_cast<int>(spos), static_cast<int>(sz));
-        //QByteArray::fromRawData(reinterpret_cast<const char *>(buffer() + spos),
-        //                        static_cast<int>(sz));
+        return QByteArray::fromRawData(reinterpret_cast<const char *>(buffer() + spos),
+                                       static_cast<int>(sz));
     }
 
     inline QByteArray toByteArray() const { return toByteArray(0, pos()); }
@@ -69,9 +67,6 @@ public:
             st.clear();
         return st;
     }
-
-private:
-    const QByteArray &m_packet;
 };
 
 class ProtocolStreamWriter : public XbusStreamWriter

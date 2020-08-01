@@ -32,6 +32,7 @@ class FactData : public FactBase
 
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(QVariant backupValue READ backupValue WRITE setBackupValue NOTIFY backupValueChanged)
+    Q_PROPERTY(bool backupValid READ backupValid NOTIFY backupValidChanged)
 
     Q_PROPERTY(bool modified READ modified WRITE setModified NOTIFY modifiedChanged)
 
@@ -112,6 +113,7 @@ public:
 
     QVariant backupValue(void) const;
     void setBackupValue(const QVariant &v);
+    bool backupValid() const;
 
     bool modified() const;
     void setModified(const bool &v);
@@ -146,6 +148,7 @@ protected:
 
     QVariant m_value;
     QVariant m_backupValue;
+    bool m_backupValid{false};
 
     bool m_modified{false};
 
@@ -168,6 +171,7 @@ signals:
 
     void valueChanged();
     void backupValueChanged();
+    void backupValidChanged();
 
     void modifiedChanged();
 

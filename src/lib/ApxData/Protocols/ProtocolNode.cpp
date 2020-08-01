@@ -173,7 +173,7 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             qWarning() << "size" << stream.available() << xbus::node::ident::ident_s::psize();
             break;
         }
-        _nodes->acknowledgeRequest(m_sn, pid);
+        _nodes->acknowledgeRequest(pid, stream);
         xbus::node::ident::ident_s ident;
         ident.read(&stream);
 
@@ -224,26 +224,6 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
 
     } break;
 
-        // request acknowledge
-    case mandala::cmd::env::nmt::ack::uid: {
-        trace_downlink(stream.payload());
-        if (stream.available() <= sizeof(xbus::pid_s))
-            break;
-        xbus::pid_s ack_pid;
-        ack_pid.read(&stream);
-        if (stream.available() < sizeof(xbus::node::ack::ack_e))
-            break;
-        xbus::node::ack::ack_e ack;
-        stream >> ack;
-        xbus::node::ack::timeout_t timeout = 0;
-        if (ack == xbus::node::ack::ack_extend) {
-            if (stream.available() != sizeof(xbus::node::ack::timeout_t))
-                break;
-            stream >> timeout;
-        }
-        _nodes->acknowledgeRequest(m_sn, ack_pid, ack, timeout);
-    } break;
-
         // file operations
     case mandala::cmd::env::nmt::file::uid: {
         if (vehicle()->isLocal() && !_nodes->active())
@@ -290,6 +270,33 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
         msg = msg.simplified();
 
         emit messageReceived(t, msg);
+    } break;
+
+        // reboot ack
+    case mandala::cmd::env::nmt::reboot::uid: {
+        trace_downlink(stream.payload());
+        if (stream.available() != sizeof(xbus::node::reboot::type_e))
+            break;
+        stream.discard();
+        _nodes->acknowledgeRequest(pid, stream);
+    } break;
+
+        // upd ack
+    case mandala::cmd::env::nmt::upd::uid: {
+        trace_downlink(stream.payload());
+        if (stream.available() != sizeof(xbus::node::conf::fid_t))
+            break;
+        stream.discard();
+        _nodes->acknowledgeRequest(pid, stream);
+    } break;
+
+        // usr ack
+    case mandala::cmd::env::nmt::usr::uid: {
+        trace_downlink(stream.payload());
+        if (stream.available() != sizeof(xbus::node::usr::cmd_t))
+            break;
+        stream.discard();
+        _nodes->acknowledgeRequest(pid, stream);
     } break;
 
         // status from node
@@ -452,6 +459,8 @@ void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
         QVariant v = value;
         if (f.type == xbus::node::conf::option) {
             v = f.units.split(',').value(v.toInt(), v.toString());
+        } else if (f.type == xbus::node::conf::real) {
+            v = v.toString();
         }
         _values[f.path] = v;
     }
@@ -682,6 +691,15 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
                     v = QVariant::fromValue<QVariantList>(list);
                 } else {
                     v = st.value(v.toInt(), v.toString());
+                }
+            } else if (f.type == xbus::node::conf::real) {
+                if (f.array > 0) {
+                    QVariantList list;
+                    for (auto const &i : v.value<QVariantList>())
+                        list.append(QString::number(i.toFloat()));
+                    v = QVariant::fromValue<QVariantList>(list);
+                } else {
+                    v = QString::number(v.toFloat());
                 }
             }
 

@@ -89,20 +89,7 @@ bool ProtocolNodeRequest::lessThan(const ProtocolNodeRequest *other)
         return true;
     return QString::compare(toByteArray().toHex(), other->toByteArray().toHex()) < 0;
 }
-void ProtocolNodeRequest::acknowledge(xbus::node::ack::ack_e v, xbus::node::ack::timeout_t timeout)
-{
-    switch (v) {
-    default:
-        finish(false);
-        break;
-    case xbus::node::ack::ack_ok:
-        finish(true);
-        break;
-    case xbus::node::ack::ack_extend:
-        extend(timeout);
-        break;
-    }
-}
+
 void ProtocolNodeRequest::extend(size_t ms)
 {
     if (timeout_ms > ms)
@@ -111,13 +98,16 @@ void ProtocolNodeRequest::extend(size_t ms)
         timer.start(static_cast<int>(ms));
     }
 }
-bool ProtocolNodeRequest::equals(const xbus::pid_s &pid, const QString &sn)
+bool ProtocolNodeRequest::equals(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
-    if (sn != _sn)
-        return false;
     if (pid.uid != _pid.uid)
         return false;
     if (pid.seq != _pid.seq)
+        return false;
+    if (stream.pos() > pos())
+        return false;
+    size_t pad = xbus::pid_s::psize();
+    if (memcmp(stream.buffer() + pad, buffer() + pad, stream.pos() - pad) != 0)
         return false;
     return true;
 }

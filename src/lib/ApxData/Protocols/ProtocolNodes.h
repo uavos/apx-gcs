@@ -46,10 +46,7 @@ public:
 
     ProtocolNode *getNode(QString sn, bool createNew = true);
 
-    ProtocolNodeRequest *acknowledgeRequest(const QString &sn,
-                                            const xbus::pid_s &pid,
-                                            xbus::node::ack::ack_e v = xbus::node::ack::ack_ok,
-                                            xbus::node::ack::timeout_t timeout = 0);
+    void acknowledgeRequest(const xbus::pid_s &pid, ProtocolStreamReader &stream);
 
     // called by vehicle
     void downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream);

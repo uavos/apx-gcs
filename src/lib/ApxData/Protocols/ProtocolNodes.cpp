@@ -250,20 +250,15 @@ ProtocolNodeRequest *ProtocolNodes::request(mandala::uid_t uid, const QString &s
     return req;
 }
 
-ProtocolNodeRequest *ProtocolNodes::acknowledgeRequest(const QString &sn,
-                                                       const xbus::pid_s &pid,
-                                                       xbus::node::ack::ack_e v,
-                                                       xbus::node::ack::timeout_t timeout)
+void ProtocolNodes::acknowledgeRequest(const xbus::pid_s &pid, ProtocolStreamReader &stream)
 {
-    ProtocolNodeRequest *r = nullptr;
     for (auto i : _queue) {
-        if (i->equals(pid, sn)) {
-            i->acknowledge(v, timeout);
-            r = i;
+        if (i->equals(pid, stream)) {
+            qDebug() << "ack" << i;
+            i->finish(true);
             break;
         }
     }
-    return r;
 }
 
 void ProtocolNodes::clear_requests()

@@ -49,7 +49,7 @@ bool DBReqVehiclesLoadNconf::run(QSqlQuery &query)
 
     while (query.next()) {
         QString s = query.value(0).toString();
-        if (values.contains(s)) {
+        if (values.contains(s) && values.value(s).type() != QVariant::List) {
             qWarning() << "duplicate field" << s;
         }
         const QVariant &v = query.value(2);

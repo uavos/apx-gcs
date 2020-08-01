@@ -195,10 +195,12 @@ QVariant NodeField::uploadableValue(void) const
         //expanded field
         QVariantList list;
         for (auto i : facts()) {
-            list.append(i->value());
+            list.append(static_cast<NodeField *>(i)->uploadableValue());
         }
         return list;
     }
+    if (_type == xbus::node::conf::real)
+        return QString::number(value().toFloat());
     /*if (dtype == DictNode::Script) {
         QVariantList list;
         if (!pawncc->outData().isEmpty())

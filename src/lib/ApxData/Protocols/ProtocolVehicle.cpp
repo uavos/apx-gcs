@@ -161,7 +161,8 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         return;
     }
 
-    size_t pos_s = stream.pos();
+    stream.trim();
+
     xbus::pid_s pid;
     pid.read(&stream);
 
@@ -181,9 +182,8 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
         if (!isLocal()
             && (pid.uid == mandala::cmd::env::nmt::search::uid
                 || pid.uid == mandala::cmd::env::nmt::ident::uid
-                || pid.uid == mandala::cmd::env::nmt::ack::uid
                 || pid.uid == mandala::cmd::env::nmt::file::uid)) {
-            stream.reset(pos_s);
+            stream.reset();
             vehicles->local->trace_downlink(pid);
             vehicles->local->downlink(stream);
         }

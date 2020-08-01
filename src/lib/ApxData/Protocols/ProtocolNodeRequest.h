@@ -42,10 +42,9 @@ public:
                                  size_t timeout_ms = 0);
 
     bool equals(const ProtocolNodeRequest *other);
-    bool equals(const xbus::pid_s &pid, const QString &sn);
+    bool equals(const xbus::pid_s &pid, ProtocolStreamReader &stream);
     bool lessThan(const ProtocolNodeRequest *other);
 
-    void acknowledge(xbus::node::ack::ack_e v, xbus::node::ack::timeout_t timeout);
     void extend(size_t ms);
     void finish(bool acknowledged = false);
 

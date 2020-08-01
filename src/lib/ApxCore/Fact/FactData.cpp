@@ -83,7 +83,7 @@ bool FactData::setValue(const QVariant &v)
         return false;
 
     if (options() & ModifiedTrack)
-        setModified(backupValue() != m_value);
+        setModified(backupValue().toString() != m_value.toString());
 
     if (m_options & PersistentValue)
         savePresistentValue();
@@ -620,10 +620,16 @@ void FactData::setBackupValue(const QVariant &v)
     if (options() & ModifiedTrack)
         setModified(v != m_value);
 
+    m_backupValid = true;
+
     if (m_backupValue == v)
         return;
     m_backupValue = v;
     emit backupValueChanged();
+}
+bool FactData::backupValid() const
+{
+    return m_backupValid;
 }
 
 void FactData::backup()
@@ -644,11 +650,11 @@ void FactData::restore()
     if (!modified())
         return;
     if (size()) {
-        for (int i = 0; i < size(); ++i) {
-            child(i)->restore();
+        for (auto f : facts()) {
+            f->restore();
         }
     }
-    if (treeType() != Group && backupValue().isValid()) {
+    if (treeType() != Group && backupValid()) {
         setValue(backupValue());
     }
     setModified(false);

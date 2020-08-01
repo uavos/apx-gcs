@@ -128,10 +128,10 @@ QVariant Fact::data(int col, int role) const
         if (col == Fact::FACT_MODEL_COLUMN_VALUE) {
             if (!enabled())
                 return QColor(Qt::darkGray);
-            if (size())
-                return QColor(Qt::darkGray); //expandable
             if (modified())
                 return QColor(Qt::yellow);
+            if (size() && !text().startsWith('[')) //expandable
+                return QColor(Qt::darkGray);
             if (isZero())
                 return QColor(Qt::gray);
             //if (isDefault())

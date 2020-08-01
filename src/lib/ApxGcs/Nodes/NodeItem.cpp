@@ -247,7 +247,6 @@ void NodeItem::groupArrays()
 void NodeItem::groupArrays(Fact *group)
 {
     //create action with underlaying table structure to edit array rows
-
     Fact *action = new Fact(group, group->name(), group->title(), group->descr(), Action);
     group->setMenu(action);
     //action->setActionsModel(group->actionsModel());
@@ -416,10 +415,27 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     // update descr and help from APXFW package
     _parameters = AppGcs::apxfw()->loadParameters(protocol()->name(), protocol()->hardware());
     for (auto v : _parameters) {
-        updateFieldsHelp(this, this, v);
+        updateMetadataAPXFW(this, this, v);
     }
 }
-void NodeItem::updateFieldsHelp(Fact *root, Fact *group, QJsonValue json)
+static QVariant jsonToVariant(QJsonValue json)
+{
+    switch (json.type()) {
+    default:
+        break;
+    case QJsonValue::Double:
+        return QString::number(json.toVariant().toFloat());
+    case QJsonValue::Array: {
+        QVariantList list;
+        for (auto v : json.toArray())
+            list.append(jsonToVariant(v));
+        return list;
+    }
+    }
+    return json.toVariant();
+}
+
+void NodeItem::updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json)
 {
     if (!json.isObject())
         return;
@@ -445,7 +461,7 @@ void NodeItem::updateFieldsHelp(Fact *root, Fact *group, QJsonValue json)
     if (obj.contains("default")) {
         QJsonValue def = obj["default"];
         if (nf) {
-            fx->setDefaultValue(def.toVariant());
+            fx->setDefaultValue(jsonToVariant(def));
         } else if (def.isObject()) {
             QJsonObject def_obj = def.toObject();
             for (auto key : def_obj.keys()) {
@@ -454,7 +470,7 @@ void NodeItem::updateFieldsHelp(Fact *root, Fact *group, QJsonValue json)
                     qWarning() << "Unsupported defaults object format" << def << fx->path();
                     continue;
                 }
-                f->setDefaultValue(def_obj[key].toVariant());
+                f->setDefaultValue(jsonToVariant(def_obj[key]));
             }
         } else {
             qWarning() << "Unsupported defaults format" << def << fx->path();
@@ -465,7 +481,7 @@ void NodeItem::updateFieldsHelp(Fact *root, Fact *group, QJsonValue json)
     if (!obj.contains("content"))
         return;
     for (auto v : obj["content"].toArray()) {
-        updateFieldsHelp(root, fx, v);
+        updateMetadataAPXFW(root, fx, v);
     }
 }
 
