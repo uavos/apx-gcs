@@ -122,6 +122,7 @@ signals:
     void dictReceived(const ProtocolNode::Dict &dict);
     void confReceived(const QVariantMap &values);
     void confSaved();
+    void confDefault();
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);
     void statusReceived(const xbus::node::status::status_s &status);

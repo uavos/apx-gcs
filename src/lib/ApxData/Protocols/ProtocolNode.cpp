@@ -731,6 +731,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     setValid(true);
 
     if (ident().flags.bits.reconf) {
+        emit confDefault();
         vehicle()->storage->loadNodeConfig(this);
         return;
     }

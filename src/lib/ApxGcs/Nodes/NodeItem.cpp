@@ -62,6 +62,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
     connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
     connect(protocol, &ProtocolNode::confSaved, this, &NodeItem::confSaved);
+    connect(protocol, &ProtocolNode::confDefault, this, &NodeItem::restoreDefaults);
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
 
@@ -510,10 +511,6 @@ void NodeItem::confReceived(const QVariantMap &values)
     }
 
     updateStatus();
-
-    if (protocol()->ident().flags.bits.reconf) {
-        restoreDefaults();
-    }
 }
 
 void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
