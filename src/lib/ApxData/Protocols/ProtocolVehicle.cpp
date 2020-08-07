@@ -23,6 +23,7 @@
 #include "ProtocolVehicle.h"
 
 #include <Mandala/Mandala.h>
+#include <Mandala/MandalaBundles.h>
 
 #include <Xbus/XbusNode.h>
 #include <Xbus/XbusPacket.h>
@@ -280,6 +281,14 @@ void ProtocolVehicle::requestCalibrationData(mandala::uid_t uid, QByteArray data
     ostream << uid;
     ostream.append(data);
     send(ostream.toByteArray());
+}
+
+void ProtocolVehicle::flyTo(qreal lat, qreal lon)
+{
+    mandala::bundle::cmd_pos_s data{};
+    data.lat = lat;
+    data.lon = lon;
+    sendBundle<mandala::bundle::cmd_pos_s>(mandala::cmd::nav::pos::uid, data);
 }
 
 //---------------------------------------

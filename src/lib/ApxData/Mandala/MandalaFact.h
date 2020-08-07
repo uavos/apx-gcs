@@ -61,10 +61,6 @@ public:
 
     inline const mandala::meta_s &meta() const { return m_meta; }
 
-    typedef QMap<mandala::uid_t, QVariant> BundleValues;
-
-    void sendBundle(const BundleValues &values);
-
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;

@@ -83,6 +83,7 @@ private:
     uint8_t txbuf[32];
     ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};
     void pack(const QVariant &v, mandala::type_id_e type, ProtocolStreamWriter &stream);
+    void send();
 
 private slots:
     void updateStatus();
@@ -94,5 +95,4 @@ signals:
 
 public slots:
     void sendValue(mandala::uid_t uid, QVariant value);
-    void sendBundle(mandala::uid_t uid, uint16_t mask, QVariantList values);
 };

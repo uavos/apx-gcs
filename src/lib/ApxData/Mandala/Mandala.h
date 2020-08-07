@@ -60,5 +60,4 @@ public slots:
 signals:
     //forwarded to vehicle
     void sendValue(mandala::uid_t uid, QVariant value);
-    void sendBundle(mandala::uid_t uid, uint16_t mask, QVariantList values);
 };

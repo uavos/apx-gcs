@@ -84,6 +84,14 @@ public:
     inline QVariantMap dbConfigInfo() const { return m_dbConfigInfo; }
     inline QString dbConfigHash() const { return m_dbConfigHash; }
 
+    template<typename S>
+    void sendBundle(mandala::uid_t uid, const S &data)
+    {
+        ostream.req(uid, xbus::pri_final);
+        ostream.write(&data, sizeof(S));
+        send(ostream.toByteArray());
+    }
+
 private:
     xbus::vehicle::ident_s m_ident;
 
@@ -115,6 +123,8 @@ public slots:
     void sendSerial(quint8 portID, QByteArray data);
 
     void requestCalibrationData(mandala::uid_t uid, QByteArray data);
+
+    void flyTo(qreal lat, qreal lon);
 
     // storage
     void dbKeyFound(quint64 key);

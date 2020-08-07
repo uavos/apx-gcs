@@ -67,9 +67,6 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     f_vspeed = f_mandala->fact(mandala::est::nav::pos::vspeed::uid);
     f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::uid);
     f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::uid);
-    f_cmd_pos = f_mandala->fact(mandala::cmd::nav::pos::uid);
-
-    f_cmd_gimbal = f_mandala->fact(mandala::cmd::nav::gimbal::uid);
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);
@@ -96,10 +93,6 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
 
         //mandala update signals
         connect(f_mandala, &Mandala::sendValue, protocol->telemetry, &ProtocolTelemetry::sendValue);
-        connect(f_mandala,
-                &Mandala::sendBundle,
-                protocol->telemetry,
-                &ProtocolTelemetry::sendBundle);
 
         connect(protocol->telemetry,
                 &ProtocolTelemetry::telemetryData,
@@ -285,10 +278,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    MandalaFact::BundleValues values;
-    values.insert(mandala::cmd::nav::pos::lat::meta.uid, c.latitude());
-    values.insert(mandala::cmd::nav::pos::lon::meta.uid, c.longitude());
-    f_cmd_pos->sendBundle(values);
+    protocol()->flyTo(qDegreesToRadians(c.latitude()), qDegreesToRadians(c.longitude()));
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
@@ -296,11 +286,11 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    MandalaFact::BundleValues values;
-    values.insert(mandala::cmd::nav::gimbal::lat::meta.uid, c.latitude());
-    values.insert(mandala::cmd::nav::gimbal::lon::meta.uid, c.longitude());
-    values.insert(mandala::cmd::nav::gimbal::hmsl::meta.uid, f_ref_hmsl->value());
-    f_cmd_gimbal->sendBundle(values);
+    //    MandalaFact::BundleValues values;
+    //    values.insert(mandala::cmd::nav::gimbal::lat::meta.uid, c.latitude());
+    //    values.insert(mandala::cmd::nav::gimbal::lon::meta.uid, c.longitude());
+    //    values.insert(mandala::cmd::nav::gimbal::hmsl::meta.uid, f_ref_hmsl->value());
+    //    f_cmd_gimbal->sendBundle(values);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
@@ -308,11 +298,11 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    MandalaFact::BundleValues values;
-    values.insert(mandala::est::nav::ref::lat::meta.uid, c.latitude());
-    values.insert(mandala::est::nav::ref::lon::meta.uid, c.longitude());
-    values.insert(mandala::est::nav::ref::hmsl::meta.uid, f_ref_hmsl->value());
-    f_ref->sendBundle(values);
+    //    MandalaFact::BundleValues values;
+    //    values.insert(mandala::est::nav::ref::lat::meta.uid, c.latitude());
+    //    values.insert(mandala::est::nav::ref::lon::meta.uid, c.longitude());
+    //    values.insert(mandala::est::nav::ref::hmsl::meta.uid, f_ref_hmsl->value());
+    //    f_ref->sendBundle(values);
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
@@ -320,11 +310,11 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    MandalaFact::BundleValues values;
-    values.insert(mandala::est::nav::pos::lat::meta.uid, c.latitude());
-    values.insert(mandala::est::nav::pos::lon::meta.uid, c.longitude());
-    values.insert(mandala::est::nav::pos::hmsl::meta.uid, f_hmsl->value());
-    f_pos->sendBundle(values);
+    //    MandalaFact::BundleValues values;
+    //    values.insert(mandala::est::nav::pos::lat::meta.uid, c.latitude());
+    //    values.insert(mandala::est::nav::pos::lon::meta.uid, c.longitude());
+    //    values.insert(mandala::est::nav::pos::hmsl::meta.uid, f_hmsl->value());
+    //    f_pos->sendBundle(values);
 }
 
 void Vehicle::resetGeoPath()

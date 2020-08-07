@@ -232,7 +232,7 @@ void ProtocolTelemetry::request_format(uint8_t part)
     _request_format_time.start();
     ostream.req(mandala::cmd::env::telemetry::format::uid);
     ostream << part;
-    vehicle->send(ostream.toByteArray());
+    send();
 }
 
 QVariant ProtocolTelemetry::raw_value(const void *src, mandala::type_id_e type)
@@ -353,6 +353,10 @@ void ProtocolTelemetry::pack(const QVariant &v,
         return;
     }
 }
+void ProtocolTelemetry::send()
+{
+    vehicle->send(ostream.toByteArray());
+}
 
 void ProtocolTelemetry::sendValue(mandala::uid_t uid, QVariant value)
 {
@@ -363,14 +367,5 @@ void ProtocolTelemetry::sendValue(mandala::uid_t uid, QVariant value)
     if (!value.isNull()) {
         pack(value, spec.type, ostream);
     }
-    vehicle->send(ostream.toByteArray());
-}
-void ProtocolTelemetry::sendBundle(mandala::uid_t uid, uint16_t mask, QVariantList values)
-{
-    ostream.req(uid, xbus::pri_final);
-    ostream << mask;
-    for (auto const &v : values) {
-        pack(v, mandala::type_real, ostream);
-    }
-    vehicle->send(ostream.toByteArray());
+    send();
 }

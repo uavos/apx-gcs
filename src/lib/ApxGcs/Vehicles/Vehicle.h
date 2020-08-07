@@ -94,9 +94,6 @@ private:
     Fact *f_mode;
     Fact *f_stage;
 
-    MandalaFact *f_cmd_pos;
-    MandalaFact *f_cmd_gimbal;
-
 private slots:
     void updateInfo();
     void updateInfoReq();

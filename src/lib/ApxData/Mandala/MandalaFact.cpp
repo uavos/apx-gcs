@@ -202,26 +202,6 @@ void MandalaFact::send()
     sendTime.start();
     m_tree->sendValue(uid(), getValueForStream());
 }
-void MandalaFact::sendBundle(const BundleValues &values)
-{
-    uint16_t mask = 0;
-    for (auto vuid : values.keys()) {
-        uint16_t v = vuid - uid() - 1;
-        if (v >= 16) {
-            qWarning() << path() << vuid << v;
-            return;
-        }
-        mask |= 1 << v;
-        MandalaFact *f = m_tree->fact(vuid);
-        if (!f) {
-            qWarning() << "missing" << vuid;
-            return;
-        }
-        f->setValueLocal(values.value(vuid));
-    }
-    m_tree->sendBundle(uid(), mask, values.values());
-}
-
 QVariant MandalaFact::data(int col, int role) const
 {
     switch (role) {
