@@ -63,7 +63,7 @@ Item {
 
     readonly property var f_ref_altitude: mandala.est.ref.altitude
 
-    readonly property var f_ctr_hover: mandala.est.ctr.hover
+    readonly property var f_op_man: mandala.cmd.op.man
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
@@ -434,10 +434,11 @@ Item {
             StatusFlag {
                 id: hoverFlag
                 height: pfdScene.flagHeight
-                fact: f_ctr_hover
-                status_show: 1
+                fact: f_op_man
+                status_show: op_man_track
+                blinking: false
                 type: CleanText.Green
-                text: fact.name
+                text: fact.text
             }
             StatusFlag {
                 id: airbrkFlag

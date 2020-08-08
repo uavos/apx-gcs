@@ -13,7 +13,7 @@ MapCircle {
     property real cmd_lat: mandala.cmd.pos.lat.value
     property real cmd_lon: mandala.cmd.pos.lon.value
 
-    property real turnR: mandala.est.ctr.radius.value
+    property real turnR: mandala.cmd.op.radius.value
     property bool landing: mandala.cmd.op.mode.value === op_mode_LANDING
 
     center: QtPositioning.coordinate(cmd_lat,cmd_lon)

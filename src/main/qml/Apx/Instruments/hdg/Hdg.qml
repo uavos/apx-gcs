@@ -6,7 +6,7 @@ import "."
 Item {
 
     readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_mtype: mandala.est.ctr.mtype.value
+    readonly property int m_man: mandala.cmd.op.man.value
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property real m_yaw: f_yaw.value
@@ -17,8 +17,8 @@ Item {
 
     readonly property var f_thdg: mandala.est.ctr.thdg
     readonly property real m_thdg: f_thdg.value
-    readonly property var f_tdist: mandala.est.ctr.tdist
-    readonly property real m_tdist: f_tdist.value
+    readonly property var f_xtrack: mandala.est.ctr.xtrack
+    readonly property real m_xtrack: f_xtrack.value
 
     //readonly property var f_ref_dist: mandala.est.ref.dist
     //readonly property var f_ref_hdg: mandala.est.ref.hdg
@@ -49,8 +49,9 @@ Item {
     property bool isLanding:
         m_mode===op_mode_LANDING ||
         m_mode===op_mode_TAKEOFF ||
-        m_mode===op_mode_TAXI ||
-        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
+        m_mode===op_mode_TAXI || isTrack
+
+    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
 
     Rectangle {
         id: hdg
@@ -192,10 +193,10 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: elementBounds.width*wheel.sf+border*2
                         height: elementBounds.height*wheel.sf+border*2
-                        anchors.horizontalCenterOffset: apx.limit(-m_tdist*width*0.5,-height,height)
+                        anchors.horizontalCenterOffset: apx.limit(-m_xtrack*width*0.5,-height,height)
                         Behavior on anchors.horizontalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: animation_duration} }
                         ToolTipArea {
-                            text: f_tdist.descr
+                            text: f_xtrack.descr
                         }
                     }
 
@@ -302,13 +303,13 @@ Item {
             NumberHdg {
                 id: rd_text
                 visible: ui.test || isLanding
-                property double v: m_tdist
+                property double v: m_xtrack
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom //dh_text.top
                 height: hdg.txtHeight
-                mfield: f_tdist
+                mfield: f_xtrack
                 label: qsTr("RD")
-                text: m_tdist.toFixed()+(f_adj.value>0?"+"+f_adj.value.toFixed():f_adj.value<0?"-"+(-f_adj.value).toFixed():"")
+                text: m_xtrack.toFixed()+(f_adj.value>0?"+"+f_adj.value.toFixed():f_adj.value<0?"-"+(-f_adj.value).toFixed():"")
             }
             Column{
                 anchors.left: parent.left

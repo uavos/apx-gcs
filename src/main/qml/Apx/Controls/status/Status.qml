@@ -8,7 +8,7 @@ import Apx.Common 1.0
 Rectangle {
 
     readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_mtype: mandala.est.ctr.mtype.value
+    readonly property int m_man: mandala.cmd.op.man.value
     readonly property real m_adj: mandala.cmd.op.adj.value
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
@@ -18,8 +18,8 @@ Rectangle {
     readonly property var f_energy: mandala.est.sys.energy
     readonly property var f_wpidx: mandala.est.wpt.wpidx
     readonly property var f_loops: mandala.est.ctr.loops
-    readonly property var f_tdist: mandala.est.ctr.tdist
-    readonly property var f_radius: mandala.est.ctr.radius
+    readonly property var f_xtrack: mandala.est.ctr.xtrack
+    readonly property var f_radius: mandala.cmd.op.radius
     readonly property var f_agl: mandala.est.pos.agl
 
 
@@ -41,8 +41,9 @@ Rectangle {
     property bool isLanding:
         m_mode===op_mode_LANDING ||
         m_mode===op_mode_TAKEOFF ||
-        m_mode===op_mode_TAXI ||
-        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
+        m_mode===op_mode_TAXI
+
+    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
 
     ProgressBar {
         anchors.left: parent.left
@@ -198,9 +199,9 @@ Rectangle {
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
-                title: qsTr("RD")
-                fact: f_tdist
-                visible: ui.test || isLanding
+                title: qsTr("XT")
+                fact: f_xtrack
+                visible: ui.test || isTrack
                 property real v: fact.value
                 value: (Math.abs(v)<1?0:v.toFixed())+(m_adj>0?"+"+m_adj.toFixed():m_adj<0?"-"+(-m_adj).toFixed():"")
                 Layout.fillWidth: true

@@ -6,7 +6,7 @@ Item {
     id: hdg_window
 
     readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_mtype: mandala.est.ctr.mtype.value
+    readonly property int m_man: mandala.cmd.op.man.value
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_course: mandala.est.pos.course
@@ -21,6 +21,8 @@ Item {
 
 
     readonly property bool nomag: f_nomag.value > 0 || f_att_mag.value === att_mag_blocked
+
+    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
 
     //instrument item
     property double animation_duration: 500
@@ -134,11 +136,7 @@ Item {
         //rw hdg bug arrow
         PfdImage {
             id: hdg_rw_bug
-            visible:
-                m_mode===op_mode_LANDING ||
-                m_mode===op_mode_TAKEOFF ||
-                m_mode===op_mode_TAXI ||
-                (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
+            visible: isTrack
             elementName: "hdg-rw-bug"
             property double value: apx.angle(f_thdg.value-f_yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
@@ -283,7 +281,7 @@ Item {
         m_mode===op_mode_LANDING ||
         m_mode===op_mode_TAKEOFF ||
         m_mode===op_mode_TAXI ||
-        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line) ||
+        (m_mode===op_mode_WPT && m_man===op_man_track) ||
         m_mode===op_mode_STBY
 
     MouseArea {

@@ -28,12 +28,18 @@ MapQuickItem {  //to be used inside MapComponent only
 
     readonly property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF
 
+    readonly property var f_xtrack: mandala.est.ctr.xtrack
+    readonly property var f_thdg: mandala.est.ctr.thdg
+    readonly property int m_man: mandala.cmd.op.man.value
+
     readonly property bool active: vehicle.active
 
     visible: vehicle.visible
 
     readonly property bool bGCU: vehicle.protocol.isGroundControl
     readonly property bool bLOCAL: vehicle.protocol.isLocal
+
+    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
 
     Connections {
         target: vehicle
@@ -242,6 +248,23 @@ MapQuickItem {  //to be used inside MapComponent only
             property real v: f_windHdg
             Behavior on v { enabled: ui.smooth; RotationAnimation {duration: 1000; direction: RotationAnimation.Shortest; } }
         }
+
+        Image {
+            id: xtrackArrow
+            source: "../icons/hdg-arrow.svg"
+            z: image.z-200
+            sourceSize.height: image.width*2
+            fillMode: Image.PreserveAspectFit
+            visible: active
+            anchors.centerIn: image
+            anchors.horizontalCenterOffset: f_xtrack.value
+            transform: Rotation{
+                origin.x: crsArrow.width/2
+                origin.y: crsArrow.height/2
+                angle: vyaw-map.bearing
+            }
+        }
+
 
         //info label
         Rectangle {

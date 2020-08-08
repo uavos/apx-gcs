@@ -5,24 +5,22 @@ Item {
     id: ils_window
 
     readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_mtype: mandala.est.ctr.mtype.value
+    readonly property int m_man: mandala.cmd.op.man.value
 
     readonly property var f_delta: mandala.est.ctr.delta
-    readonly property var f_tdist: mandala.est.ctr.tdist
+    readonly property var f_xtrack: mandala.est.ctr.xtrack
 
     property double anumation_duration: 1000
 
-    property bool isRW: ui.test ||
-        m_mode===op_mode_LANDING ||
-        m_mode===op_mode_TAKEOFF ||
-        m_mode===op_mode_TAXI ||
-        (m_mode===op_mode_WPT && m_mtype===ctr_mtype_line)
+    property bool isLanding: m_mode===op_mode_LANDING
+
+    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
 
     property double sz: (width>height?height:width)*0.6
 
     PfdImage {
         id: ils_bar_vertical
-        visible: ui.test || m_mode===op_mode_LANDING
+        visible: ui.test || isLanding
         elementName: "ils-bar-vertical"
         fillMode: Image.PreserveAspectFit
         anchors.left: parent.left
@@ -55,7 +53,7 @@ Item {
 
     PfdImage {
         id: ils_bar_horizontal
-        visible: isRW
+        visible: isTrack
         elementName: "ils-bar-horizontal"
         fillMode: Image.PreserveAspectFit
         anchors.bottom: parent.bottom
@@ -71,10 +69,10 @@ Item {
             width: parent.height*0.5
             height: parent.height*1.5
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: apx.limit(-f_tdist.value/20*parent.width/2,-parent.width*0.6,parent.width*0.6)
+            anchors.horizontalCenterOffset: apx.limit(-f_xtrack.value/20*parent.width/2,-parent.width*0.6,parent.width*0.6)
             Behavior on anchors.horizontalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration; } }
             Text {
-                property double value: Math.abs(f_tdist.value.toFixed())
+                property double value: Math.abs(f_xtrack.value.toFixed())
                 visible: value>5 && value<100
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.bottom
