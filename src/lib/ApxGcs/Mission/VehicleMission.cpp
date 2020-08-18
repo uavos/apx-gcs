@@ -166,6 +166,11 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
 
     //protocols
+    connect(vehicle->protocol()->mission,
+            &ProtocolMission::uploaded,
+            this,
+            &VehicleMission::missionUploaded);
+
     // FIXME: mission protocol
     /*connect(vehicle->protocol->mission,
                 &ProtocolMission::missionDataReceived,
@@ -315,7 +320,7 @@ void VehicleMission::test(int n)
 }
 //=============================================================================
 //=============================================================================
-void VehicleMission::missionDataReceived(DictMission::Mission d)
+void VehicleMission::missionDataReceived(ProtocolMission::Mission d)
 {
     clearMission();
     storage->loadFromDict(d);
@@ -338,8 +343,7 @@ void VehicleMission::missionDataError()
 //=============================================================================
 void VehicleMission::uploadMission()
 {
-    emit missionDataUpload(storage->saveToDict());
-    emit missionUploaded();
+    vehicle->protocol()->mission->upload(storage->saveToDict());
     f_save->trigger();
 }
 //=============================================================================

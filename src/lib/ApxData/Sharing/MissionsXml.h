@@ -25,7 +25,6 @@
 //=============================================================================
 #include "ShareXml.h"
 #include <Database/MissionsDB.h>
-#include <Dictionary/DictMission.h>
 //=============================================================================
 class MissionsXmlExport : public ShareXmlExport
 {
@@ -43,7 +42,7 @@ private:
     void write(QDomNode &dom,
                const QString &sectionName,
                const QString &elementName,
-               const QList<DictMission::Item> &items);
+               const QList<ProtocolMission::Item> &items);
 };
 //=============================================================================
 class MissionsXmlImport : public ShareXmlImport
@@ -58,17 +57,17 @@ protected:
     bool save(QSqlQuery &query);
 
 private:
-    DictMission::Mission mission;
+    ProtocolMission::Mission mission;
     QVariantMap details;
 
     int read(const QDomNode &dom,
              const QString &sectionName,
              const QString &elementName,
-             QList<DictMission::Item> &items);
+             QList<ProtocolMission::Item> &items);
     int readOldFormat(const QDomNode &dom,
                       const QString &sectionName,
                       const QString &elementName,
-                      QList<DictMission::Item> &items);
+                      QList<ProtocolMission::Item> &items);
 };
 //=============================================================================
 #endif

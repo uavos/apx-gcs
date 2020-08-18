@@ -30,7 +30,6 @@
 #include <App/AppLog.h>
 #include <Database/Database.h>
 #include <Database/MissionsDB.h>
-#include <Dictionary/DictMission.h>
 #include <Vehicles/VehicleSelect.h>
 #include <Vehicles/Vehicles.h>
 
@@ -134,7 +133,7 @@ void MissionStorage::loadMission(QString hash)
     connect(req, &DBReqMissionsLoad::loaded, this, &MissionStorage::dbLoaded, Qt::QueuedConnection);
     req->exec();
 }
-void MissionStorage::dbLoaded(QVariantMap info, QVariantMap details, DictMission::Mission data)
+void MissionStorage::dbLoaded(QVariantMap info, QVariantMap details, ProtocolMission::Mission data)
 {
     Q_UNUSED(details)
     //qDebug()<<"mission loaded"<<m.values.size();
@@ -157,9 +156,9 @@ void MissionStorage::dbLoaded(QVariantMap info, QVariantMap details, DictMission
 }
 //=============================================================================
 //=============================================================================
-DictMission::Mission MissionStorage::saveToDict() const
+ProtocolMission::Mission MissionStorage::saveToDict() const
 {
-    DictMission::Mission d;
+    ProtocolMission::Mission d;
     saveItemsToDict(d.runways, mission->f_runways);
     saveItemsToDict(d.waypoints, mission->f_waypoints);
     saveItemsToDict(d.taxiways, mission->f_taxiways);
@@ -172,7 +171,7 @@ DictMission::Mission MissionStorage::saveToDict() const
     d.lon = c.longitude();
     return d;
 }
-void MissionStorage::loadFromDict(DictMission::Mission d)
+void MissionStorage::loadFromDict(ProtocolMission::Mission d)
 {
     mission->blockSizeUpdate = true;
     loadItemsFromDict(d.runways, mission->f_runways);
@@ -186,11 +185,12 @@ void MissionStorage::loadFromDict(DictMission::Mission d)
 }
 //=============================================================================
 //=============================================================================
-void MissionStorage::saveItemsToDict(QList<DictMission::Item> &items, const MissionGroup *g) const
+void MissionStorage::saveItemsToDict(QList<ProtocolMission::Item> &items,
+                                     const MissionGroup *g) const
 {
     for (int i = 0; i < g->size(); ++i) {
         MissionItem *f = static_cast<MissionItem *>(g->child(i));
-        DictMission::Item e;
+        ProtocolMission::Item e;
         e.lat = f->f_latitude->value().toDouble();
         e.lon = f->f_longitude->value().toDouble();
         for (int j = 0; j < f->size(); ++j) {
@@ -207,10 +207,11 @@ void MissionStorage::saveItemsToDict(QList<DictMission::Item> &items, const Miss
         items.append(e);
     }
 }
-void MissionStorage::loadItemsFromDict(const QList<DictMission::Item> &items, MissionGroup *g) const
+void MissionStorage::loadItemsFromDict(const QList<ProtocolMission::Item> &items,
+                                       MissionGroup *g) const
 {
     for (int i = 0; i < items.size(); ++i) {
-        const DictMission::Item &e = items.at(i);
+        const ProtocolMission::Item &e = items.at(i);
         MissionItem *f = g->createObject();
         f->f_latitude->setValue(e.lat);
         f->f_longitude->setValue(e.lon);

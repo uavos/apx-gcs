@@ -25,8 +25,8 @@
 //=============================================================================
 #include <ApxMisc/DelayedEvent.h>
 #include <Database/DatabaseRequest.h>
-#include <Dictionary/DictMission.h>
 #include <Fact/Fact.h>
+#include <Protocols/ProtocolMission.h>
 #include <QGeoCoordinate>
 #include <QtCore>
 class VehicleMission;
@@ -46,19 +46,19 @@ public:
     VehicleMission *mission;
     QString dbHash;
 
-    DictMission::Mission saveToDict() const;
-    void loadFromDict(DictMission::Mission d);
+    ProtocolMission::Mission saveToDict() const;
+    void loadFromDict(ProtocolMission::Mission d);
 
 private:
-    void saveItemsToDict(QList<DictMission::Item> &items, const MissionGroup *g) const;
-    void loadItemsFromDict(const QList<DictMission::Item> &items, MissionGroup *g) const;
+    void saveItemsToDict(QList<ProtocolMission::Item> &items, const MissionGroup *g) const;
+    void loadItemsFromDict(const QList<ProtocolMission::Item> &items, MissionGroup *g) const;
 
     DelayedEvent evtUpdateSite;
 
 private slots:
     //database
     void dbSaved(QString hash);
-    void dbLoaded(QVariantMap info, QVariantMap details, DictMission::Mission data);
+    void dbLoaded(QVariantMap info, QVariantMap details, ProtocolMission::Mission data);
     void dbSiteFound(quint64 siteID, QString site);
     void dbFindSite();
 

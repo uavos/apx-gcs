@@ -32,7 +32,6 @@
 class Waypoint : public MissionItem
 {
     Q_OBJECT
-    Q_ENUMS(ManeuverType)
 
     Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
@@ -44,12 +43,6 @@ public:
     Fact *f_type;
 
     WaypointActions *f_actions;
-
-    enum ManeuverType {
-        Hdg = 0,
-        Line,
-    };
-    Q_ENUM(ManeuverType)
 
 protected:
     QGeoPath getPath();

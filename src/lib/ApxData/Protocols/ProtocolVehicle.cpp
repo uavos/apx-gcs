@@ -47,6 +47,7 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
 
     nodes = new ProtocolNodes(this);
     telemetry = new ProtocolTelemetry(this);
+    mission = new ProtocolMission(this);
 
     updateIdent(squawk, ident, callsign);
 

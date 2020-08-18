@@ -24,7 +24,7 @@
 #define MissionsDB_H
 //=============================================================================
 #include <Database/DatabaseSession.h>
-#include <Dictionary/DictMission.h>
+#include <Protocols/ProtocolMission.h>
 #include <QtCore>
 //=============================================================================
 class MissionsDB : public DatabaseSession
@@ -126,7 +126,7 @@ class DBReqMissionsSave : public DBReqMissionsUpdateDetails
 {
     Q_OBJECT
 public:
-    explicit DBReqMissionsSave(DictMission::Mission mission, QVariantMap details, quint64 t = 0)
+    explicit DBReqMissionsSave(ProtocolMission::Mission mission, QVariantMap details, quint64 t = 0)
         : DBReqMissionsUpdateDetails(0, details)
         , t(t ? t : QDateTime::currentDateTime().toMSecsSinceEpoch())
         , reqSite(mission.lat, mission.lon)
@@ -140,8 +140,8 @@ public:
 private:
     quint64 t;
     DatabaseRequest::Records rw, wp, tw, pi;
-    void makeRecords(const DictMission::Mission &mission);
-    void makeRecords(const QList<DictMission::Item> &items, DatabaseRequest::Records &records);
+    void makeRecords(const ProtocolMission::Mission &mission);
+    void makeRecords(const QList<ProtocolMission::Item> &items, DatabaseRequest::Records &records);
     DBReqMissionsFindSite reqSite;
 signals:
     void missionHash(QString hash);
@@ -161,14 +161,14 @@ public:
     //result
     QVariantMap info;
     QVariantMap details;
-    DictMission::Mission mission;
+    ProtocolMission::Mission mission;
 
 private:
     QString hash;
-    void readItems(QSqlQuery &query, QList<DictMission::Item> &items);
+    void readItems(QSqlQuery &query, QList<ProtocolMission::Item> &items);
 
 signals:
-    void loaded(QVariantMap info, QVariantMap details, DictMission::Mission data);
+    void loaded(QVariantMap info, QVariantMap details, ProtocolMission::Mission data);
 };
 //=============================================================================
 #endif

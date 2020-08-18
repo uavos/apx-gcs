@@ -30,7 +30,6 @@
 class Runway : public MissionItem
 {
     Q_OBJECT
-    Q_ENUMS(RunwayType)
     Q_PROPERTY(QGeoCoordinate endPoint READ endPoint WRITE setEndPoint NOTIFY endPointChanged)
     Q_PROPERTY(QGeoCoordinate appPoint READ appPoint WRITE setAppPoint NOTIFY appPointChanged)
     Q_PROPERTY(double heading READ heading NOTIFY headingChanged)
@@ -43,12 +42,6 @@ public:
     Fact *f_hmsl;
     Fact *f_dN;
     Fact *f_dE;
-
-    enum RunwayType {
-        Left = 0,
-        Right,
-    };
-    Q_ENUM(RunwayType)
 
 protected:
     QGeoRectangle boundingGeoRectangle() const;

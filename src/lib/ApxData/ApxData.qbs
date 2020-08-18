@@ -41,14 +41,6 @@ ApxApp.ApxLibrary {
     }
 
     Group {
-        name: "Dictionary"
-        prefix: name+"/"
-        files: [
-            "DictMission.cpp", "DictMission.h",
-        ]
-    }
-
-    Group {
         name: "Protocols"
         prefix: name+"/"
         files: [
@@ -64,8 +56,7 @@ ApxApp.ApxLibrary {
             "ProtocolNodeRequest.cpp", "ProtocolNodeRequest.h",
             "ProtocolNodeFile.cpp", "ProtocolNodeFile.h",
             "ProtocolTelemetry.cpp", "ProtocolTelemetry.h",
-
-            //"ProtocolMission.cpp", "ProtocolMission.h",
+            "ProtocolMission.cpp", "ProtocolMission.h",
         ]
     }
 

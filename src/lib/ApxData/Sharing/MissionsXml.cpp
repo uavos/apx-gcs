@@ -50,7 +50,7 @@ bool MissionsXmlExport::write(QDomNode &dom)
 void MissionsXmlExport::write(QDomNode &dom,
                               const QString &sectionName,
                               const QString &elementName,
-                              const QList<DictMission::Item> &items)
+                              const QList<ProtocolMission::Item> &items)
 {
     if (items.isEmpty())
         return;
@@ -60,7 +60,7 @@ void MissionsXmlExport::write(QDomNode &dom,
     for (int i = 0; i < items.size(); ++i) {
         QDomNode e = eg.appendChild(doc.createElement(elementName));
         e.toElement().setAttribute("id", QString::number(i));
-        const DictMission::Item &item = items.at(i);
+        const ProtocolMission::Item &item = items.at(i);
         if (!item.title.isEmpty())
             e.appendChild(doc.createElement("title")).appendChild(doc.createTextNode(item.title));
         e.appendChild(doc.createElement("lat"))
@@ -114,7 +114,7 @@ bool MissionsXmlImport::read(const QDomNode &dom)
 int MissionsXmlImport::read(const QDomNode &dom,
                             const QString &sectionName,
                             const QString &elementName,
-                            QList<DictMission::Item> &items)
+                            QList<ProtocolMission::Item> &items)
 {
     QDomElement e = dom.firstChildElement(sectionName);
     if (e.isNull())
@@ -128,7 +128,7 @@ int MissionsXmlImport::read(const QDomNode &dom,
         QVariantMap values = readInfo(e, "");
         if (values.isEmpty())
             return -1;
-        DictMission::Item item;
+        ProtocolMission::Item item;
         item.title = values.value("title").toString();
         item.lat = values.value("lat").toDouble();
         item.lon = values.value("lon").toDouble();
@@ -224,7 +224,7 @@ bool MissionsXmlImport::readOldFormat(const QDomNode &dom, int fmt)
 int MissionsXmlImport::readOldFormat(const QDomNode &dom,
                                      const QString &sectionName,
                                      const QString &elementName,
-                                     QList<DictMission::Item> &items)
+                                     QList<ProtocolMission::Item> &items)
 {
     QDomElement e = dom.firstChildElement(sectionName);
     int cnt = -1;
@@ -241,7 +241,7 @@ int MissionsXmlImport::readOldFormat(const QDomNode &dom,
         QVariantMap values = readInfo(e, "");
         if (values.isEmpty())
             return -1;
-        DictMission::Item item;
+        ProtocolMission::Item item;
         item.lat = values.value(values.contains("latitude") ? "latitude" : "lat").toDouble();
         item.lon = values.value(values.contains("longitude") ? "longitude" : "lon").toDouble();
         if (values.contains("HMSL"))

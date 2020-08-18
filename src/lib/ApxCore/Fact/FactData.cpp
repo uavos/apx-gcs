@@ -141,7 +141,7 @@ bool FactData::updateValue(const QVariant &v)
     case Int: {
         int enumIndex = enumValue(v);
         if (enumIndex >= 0) {
-            m_value = enumText(enumIndex);
+            m_value = enumIndex; //enumText(enumIndex);
             break;
         }
         if (m_enumStrings.size() > 1)

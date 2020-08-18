@@ -12,7 +12,7 @@ MissionObject {
 
     readonly property int m_rwidx: mandala.est.wpt.rwidx.value
     readonly property bool m_mode: mandala.cmd.op.mode.value
-    readonly property real m_radius: mandala.est.ctr.radius.value
+    readonly property real m_radius: mandala.cmd.op.radius.value
     readonly property real m_delta: mandala.est.ctr.delta.value
 
     color: Style.cRunway
@@ -90,7 +90,7 @@ MissionObject {
     property real appCircleOpacity: ui.effects?(appCircleActive?0.8:0.6):1
 
     property variant appCircleAppCoord: appPointCoordinate
-    property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===APX.Runway.Left?-90:90))
+    property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90))
     property real appCircleRadiusDefault: f_approach/2
     property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
 

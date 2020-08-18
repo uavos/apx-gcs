@@ -23,6 +23,7 @@
 #pragma once
 
 #include "ProtocolBase.h"
+#include "ProtocolMission.h"
 #include "ProtocolNodes.h"
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicles.h"
@@ -77,6 +78,7 @@ public:
     ProtocolNodes *nodes;
     ProtocolTelemetry *telemetry;
     ProtocolVehicles *vehicles;
+    ProtocolMission *mission;
 
     VehiclesStorage *storage;
 

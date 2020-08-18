@@ -329,7 +329,7 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     emit missionHash(hash);
     return true;
 }
-void DBReqMissionsSave::makeRecords(const DictMission::Mission &mission)
+void DBReqMissionsSave::makeRecords(const ProtocolMission::Mission &mission)
 {
     info["title"] = mission.title;
     info["lat"] = mission.lat;
@@ -340,7 +340,7 @@ void DBReqMissionsSave::makeRecords(const DictMission::Mission &mission)
     makeRecords(mission.taxiways, tw);
     makeRecords(mission.pois, pi);
 }
-void DBReqMissionsSave::makeRecords(const QList<DictMission::Item> &items,
+void DBReqMissionsSave::makeRecords(const QList<ProtocolMission::Item> &items,
                                     DatabaseRequest::Records &records)
 {
     records.names << "num"
@@ -348,7 +348,7 @@ void DBReqMissionsSave::makeRecords(const QList<DictMission::Item> &items,
                   << "lat"
                   << "lon";
     for (int i = 0; i < items.size(); ++i) {
-        const DictMission::Item &f = items.at(i);
+        const ProtocolMission::Item &f = items.at(i);
         QVariantList r;
         r.append(i);
         r.append(f.title);
@@ -431,10 +431,10 @@ bool DBReqMissionsLoad::run(QSqlQuery &query)
     emit loaded(info, details, mission);
     return true;
 }
-void DBReqMissionsLoad::readItems(QSqlQuery &query, QList<DictMission::Item> &items)
+void DBReqMissionsLoad::readItems(QSqlQuery &query, QList<ProtocolMission::Item> &items)
 {
     while (query.next()) {
-        DictMission::Item e;
+        ProtocolMission::Item e;
         e.title = query.value("title").toString();
         e.lat = query.value("lat").toDouble();
         e.lon = query.value("lon").toDouble();

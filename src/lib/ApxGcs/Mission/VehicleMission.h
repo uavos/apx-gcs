@@ -24,8 +24,8 @@
 #define VehicleMission_H
 //=============================================================================
 #include "MissionGroup.h"
-#include <Dictionary/DictMission.h>
 #include <Fact/Fact.h>
+#include <Protocols/ProtocolMission.h>
 #include <Vehicles/Vehicles.h>
 
 #include <QGeoCoordinate>
@@ -139,10 +139,8 @@ signals:
 
     //protocols
 private slots:
-    void missionDataReceived(DictMission::Mission d);
+    void missionDataReceived(ProtocolMission::Mission d);
     void missionDataError();
-signals:
-    void missionDataUpload(DictMission::Mission d);
 
     //---------------------------------------
     // PROPERTIES

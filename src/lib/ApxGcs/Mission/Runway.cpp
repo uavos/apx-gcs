@@ -30,7 +30,7 @@ Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
 {
     f_type = new MissionField(this, "type", tr("Type"), tr("Landing pattern type"), Enum);
-    f_type->setEnumStrings(QMetaEnum::fromType<RunwayType>());
+    f_type->setEnumStrings(QMetaEnum::fromType<ProtocolMission::RunwayType>());
 
     f_approach = new MissionField(this,
                                   "approach",
@@ -183,7 +183,7 @@ void Runway::setAppPoint(const QGeoCoordinate &v)
     ne = AppRoot::rotate(ne, heading() + 180.0);
     if (std::abs(ne.y()) > (f_approach->value().toDouble() / 2.0)) {
         //switch turn direction
-        f_type->setValue(ne.y() > 0 ? Left : Right);
+        f_type->setValue(ne.y() > 0 ? ProtocolMission::Left : ProtocolMission::Right);
     }
     int dist = ne.x();
     if (dist < 5)
