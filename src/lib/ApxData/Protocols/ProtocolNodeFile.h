@@ -68,7 +68,7 @@ private:
 
 public slots:
     void stop();
-    void upload(QByteArray data, xbus::node::file::offset_t offset);
+    void upload(QByteArray data, xbus::node::file::offset_t offset = 0);
     void download();
 
 signals:

@@ -267,7 +267,7 @@ void Sounds::enabledChanged()
 //=============================================================================
 void Sounds::play(QString text)
 {
-    //qDebug()<<"play:"<<text;
+    //qDebug() << text;
     if (text.contains('\n')) {
         foreach (QString s, text.split('\n', Qt::SkipEmptyParts)) {
             play(s);
@@ -277,7 +277,7 @@ void Sounds::play(QString text)
     if (!f_enabled->value().toBool())
         return;
     //qDebug()<<"play"<<text;
-    say(text.remove(':').toLower(), false);
+    say(text.replace(':', ' ').simplified().toLower(), false);
 }
 //=============================================================================
 void Sounds::queue(QSound *e)
@@ -304,6 +304,7 @@ void Sounds::effectTimeout()
 //=============================================================================
 void Sounds::say(const QString &text, bool ttsForce)
 {
+    //qDebug() << text;
     QStringList st;
     if (tts) {
         foreach (QString key, phrases.keys()) {

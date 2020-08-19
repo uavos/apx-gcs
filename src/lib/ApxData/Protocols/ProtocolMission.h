@@ -91,14 +91,29 @@ public:
     }
 
 private:
-    ProtocolVehicle *_vehicle;
+    ProtocolVehicle *vehicle;
+
+    QByteArray pack(const Mission &d);
+    bool unpack(const QByteArray &data, Mission &d);
+
+    static constexpr const char *nfile{"mission"};
+
+    bool _enb{false};
+
+private slots:
+    void nodeNotify(ProtocolNode *protocol);
+    void filesChanged();
+    void fileUploaded();
+    void fileDownloaded(const xbus::node::file::info_s &info, const QByteArray data);
 
 public slots:
     void download();
-    void upload(Mission d);
+    void upload(ProtocolMission::Mission d);
 
 signals:
+    void available();
     void uploaded();
+    void downloaded(ProtocolMission::Mission d);
 };
 
 Q_DECLARE_METATYPE(ProtocolMission::Mission);

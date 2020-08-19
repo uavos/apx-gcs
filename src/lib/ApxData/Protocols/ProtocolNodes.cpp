@@ -73,11 +73,14 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     connect(vehicle->vehicles, &ProtocolVehicles::stopNmtRequests, this, [this]() {
         setActive(false);
     });
+
+    if (vehicle->isIdentified())
+        syncLater(3000, false);
 }
 
 void ProtocolNodes::updateActive()
 {
-    qDebug() << active();
+    //qDebug() << active();
 
     if (!active()) {
         setProgress(-1);
@@ -129,6 +132,7 @@ void ProtocolNodes::schedule(ProtocolNodeRequest *request)
     }
     _queue.insert(ins, request);
 
+    //qDebug() << request;
     next();
 }
 void ProtocolNodes::next()
@@ -144,16 +148,18 @@ void ProtocolNodes::next()
 
     if (!active()) {
         // background sync
-        if (vehicle()->squawk() == 0) {
+        if (!vehicle()->isIdentified()) {
             req->finish();
             return;
         }
         qint64 t = reqTime.elapsed();
         if (t < 3120) {
+            //qDebug() << t;
             reqTimer.start(3120 - static_cast<int>(t));
             return;
         }
     }
+    //qDebug() << req;
     req->trigger();
 }
 void ProtocolNodes::check_queue()
@@ -218,6 +224,8 @@ void ProtocolNodes::syncLater(int time_ms, bool force_active)
 {
     if (force_active)
         syncActive = true;
+    else if (!active() && !vehicle()->isIdentified())
+        return;
     if (syncTimer.isActive() && time_ms > syncTimer.interval())
         time_ms = syncTimer.interval();
     syncTimer.start(time_ms);
@@ -357,9 +365,10 @@ void ProtocolNodes::sendRequest(ProtocolNodeRequest *request)
 
 void ProtocolNodes::requestSearch()
 {
+    qDebug() << vehicle()->title() << "search...";
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::search::uid, QString(), 0);
     req->schedule();
-    req->finish();
+    //req->finish();
     finishedTimer.start(2500);
 }
 void ProtocolNodes::requestStatus()

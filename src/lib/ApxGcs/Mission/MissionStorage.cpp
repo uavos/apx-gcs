@@ -173,6 +173,8 @@ ProtocolMission::Mission MissionStorage::saveToDict() const
 }
 void MissionStorage::loadFromDict(ProtocolMission::Mission d)
 {
+    mission->f_title->setValue(d.title);
+
     mission->blockSizeUpdate = true;
     loadItemsFromDict(d.runways, mission->f_runways);
     loadItemsFromDict(d.waypoints, mission->f_waypoints);

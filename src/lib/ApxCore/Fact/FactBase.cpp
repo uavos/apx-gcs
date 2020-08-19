@@ -88,6 +88,14 @@ void FactBase::unbindProperties(Fact *src, const QString &name)
         delete i;
     }
 }
+bool FactBase::bindedProperty(Fact *src, QString name)
+{
+    for (auto i : _property_binds) {
+        if (i->match(src, name))
+            return true;
+    }
+    return false;
+}
 
 //=============================================================================
 const FactList &FactBase::facts() const

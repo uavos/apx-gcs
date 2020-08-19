@@ -418,6 +418,8 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
     }
+    setEnabled(false);
+    backup();
 }
 static QVariant jsonToVariant(QJsonValue json)
 {
@@ -500,6 +502,7 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
 void NodeItem::confReceived(const QVariantMap &values)
 {
     //qDebug() << values;
+    setEnabled(true);
     for (auto f : m_fields) {
         if (!values.contains(f->fpath()))
             continue;

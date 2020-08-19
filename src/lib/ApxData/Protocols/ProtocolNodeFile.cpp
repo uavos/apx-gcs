@@ -74,7 +74,7 @@ void ProtocolNodeFile::write_next()
     sz = req->write(ba.data(), sz);
     _op_hash = apx::crc32(ba.data(), sz);
     req->schedule();
-    //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
+    qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
 
     setValue(QString("%1kB/%2kB").arg(_op_tcnt / 1024).arg(_op_size / 1024.0, 0, 'f', 1));
 }
@@ -137,12 +137,11 @@ void ProtocolNodeFile::read_next()
 {
     setValue(QString("%1kB/%2kB").arg(_op_tcnt / 1024).arg(_op_size / 1024.0, 0, 'f', 1));
 
+    //qDebug() << _op_offset << _op_tcnt << _op_size;
     if (_op_tcnt == _op_size) {
-        //all data written
+        //all data read
         qDebug() << "done";
-        emit downloaded(_info, _op_data);
-        reset();
-        stop();
+        request(xbus::node::file::close)->schedule();
         return;
     }
 
@@ -168,6 +167,9 @@ bool ProtocolNodeFile::resp_read(ProtocolStreamReader &stream)
     size_t size = stream.available();
     _op_offset += size;
     _op_tcnt += size;
+
+    //qDebug() << _op_offset << _op_tcnt << _op_size;
+
     if (_op_tcnt > _op_size)
         return false;
 
@@ -245,6 +247,8 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
             qDebug() << "transfer complete";
             if (_info.flags.bits.owrite)
                 emit uploaded();
+            else if (_info.flags.bits.oread)
+                emit downloaded(_info, _op_data);
         }
         reset();
         stop();

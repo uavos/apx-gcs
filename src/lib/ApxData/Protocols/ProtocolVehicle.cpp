@@ -33,9 +33,11 @@
 ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
                                  xbus::vehicle::squawk_t squawk,
                                  const xbus::vehicle::ident_s &ident,
-                                 const QString &callsign)
+                                 const QString &callsign,
+                                 Type type)
     : ProtocolBase(vehicles, callsign)
     , vehicles(vehicles)
+    , _type(type)
 {
     setIcon(squawk ? "drone" : "chip");
 
@@ -335,15 +337,15 @@ void ProtocolVehicle::inc_errcnt()
 
 bool ProtocolVehicle::isLocal() const
 {
-    return squawk() == 0 && ident().flags.gcs == 0;
+    return _type == LOCAL;
 }
 bool ProtocolVehicle::isReplay() const
 {
-    return squawk() == 0 && ident().flags.gcs == 1;
+    return _type == REPLY;
 }
 bool ProtocolVehicle::isIdentified() const
 {
-    return !(isLocal() || isReplay());
+    return _type == IDENTIFIED;
 }
 bool ProtocolVehicle::isGroundControl() const
 {

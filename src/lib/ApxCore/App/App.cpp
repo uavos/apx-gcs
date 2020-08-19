@@ -66,6 +66,11 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     m_appNotify = new AppNotify(this);
     m_notifyModel = new AppNotifyListModel(m_appNotify);
 
+    connect(m_appNotify, &AppNotify::notification, this, [](QString msg) {
+        if (!msg.isEmpty())
+            sound(msg);
+    });
+
     //load
     loadTranslations();
 

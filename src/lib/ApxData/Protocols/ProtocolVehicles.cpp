@@ -40,9 +40,9 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     //create base vehicles
     xbus::vehicle::ident_s ident;
     memset(&ident, 0, sizeof(ident));
-    local = new ProtocolVehicle(this, 0, ident, "LOCAL");
+    local = new ProtocolVehicle(this, 0, ident, "LOCAL", ProtocolVehicle::LOCAL);
     ident.flags.gcs = 1;
-    replay = new ProtocolVehicle(this, 0, ident, "REPLAY");
+    replay = new ProtocolVehicle(this, 0, ident, "REPLAY", ProtocolVehicle::REPLY);
 
     // delayed requests timer
     reqTimer.setInterval(500);
@@ -235,7 +235,11 @@ ProtocolVehicle *ProtocolVehicles::addVehicle(xbus::vehicle::squawk_t squawk,
                                               const QString &callsign)
 {
     qDebug() << "new vehicle protocol";
-    ProtocolVehicle *v = new ProtocolVehicle(this, squawk, ident, callsign);
+    ProtocolVehicle *v = new ProtocolVehicle(this,
+                                             squawk,
+                                             ident,
+                                             callsign,
+                                             ProtocolVehicle::IDENTIFIED);
     return v;
 }
 

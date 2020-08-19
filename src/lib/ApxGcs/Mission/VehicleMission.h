@@ -127,7 +127,10 @@ private slots:
 public slots:
     void updateSize();
     void clearMission();
+
     void uploadMission();
+    void downloadMission();
+
     void test(int n = 50);
 
 signals:

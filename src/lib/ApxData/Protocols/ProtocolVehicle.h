@@ -52,10 +52,13 @@ class ProtocolVehicle : public ProtocolBase
     Q_PROPERTY(bool isGroundControl READ isGroundControl NOTIFY identChanged)
 
 public:
+    enum Type { LOCAL = 0, REPLY, TEMP, IDENTIFIED };
+
     ProtocolVehicle(ProtocolVehicles *vehicles,
                     xbus::vehicle::squawk_t squawk,
                     const xbus::vehicle::ident_s &ident,
-                    const QString &callsign);
+                    const QString &callsign,
+                    Type type);
 
     friend class ProtocolVehicles;
 
@@ -96,6 +99,7 @@ public:
 
 private:
     xbus::vehicle::ident_s m_ident;
+    Type _type;
 
     uint8_t txbuf[xbus::size_packet_max];
     ProtocolStreamWriter ostream{txbuf, sizeof(txbuf)};

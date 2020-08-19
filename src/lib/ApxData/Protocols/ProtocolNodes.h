@@ -74,7 +74,7 @@ private:
     // sync management
     QTimer syncTimer;
     QElapsedTimer syncRequestTime;
-    bool syncActive;
+    bool syncActive{false};
     int syncCount{0};
 
 private slots:

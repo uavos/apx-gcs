@@ -119,6 +119,7 @@ public:
     Q_INVOKABLE void bindProperty(Fact *src, QString name, bool oneway = false);
     Q_INVOKABLE void unbindProperties(Fact *src = nullptr, const QString &name = QString());
     Q_INVOKABLE void unbindProperty(QString name);
+    Q_INVOKABLE bool bindedProperty(Fact *src, QString name);
 
     FactList pathList() const;
 

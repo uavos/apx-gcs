@@ -95,6 +95,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     //actions
     f_request
         = new Fact(this, "request", tr("Request"), tr("Download from vehicle"), Action, "download");
+    connect(f_request, &Fact::triggered, this, &VehicleMission::downloadMission);
 
     f_upload
         = new Fact(this, "upload", tr("Upload"), tr("Upload to vehicle"), Action | Apply, "upload");
@@ -140,13 +141,13 @@ VehicleMission::VehicleMission(Vehicle *parent)
     connect(this, &VehicleMission::startLengthChanged, this, &VehicleMission::updateStartPath);
 
     //sync and saved status behavior
-    connect(this, &Fact::modifiedChanged, this, [=]() {
+    connect(this, &Fact::modifiedChanged, this, [this]() {
         if (modified()) {
             setSynced(false);
             setSaved(false);
         }
     });
-    connect(this, &VehicleMission::emptyChanged, this, [=]() {
+    connect(this, &VehicleMission::emptyChanged, this, [this]() {
         if (empty()) {
             setSynced(false);
             setSaved(true);
@@ -156,11 +157,11 @@ VehicleMission::VehicleMission(Vehicle *parent)
         setSynced(true);
         setSaved(false);
     });
-    connect(storage, &MissionStorage::loaded, this, [=]() {
+    connect(storage, &MissionStorage::loaded, this, [this]() {
         setSynced(false);
         setSaved(true);
     });
-    connect(storage, &MissionStorage::saved, this, [=]() {
+    connect(storage, &MissionStorage::saved, this, [this]() {
         setSaved(true);
         setModified(false);
     });
@@ -171,23 +172,21 @@ VehicleMission::VehicleMission(Vehicle *parent)
             this,
             &VehicleMission::missionUploaded);
 
+    connect(vehicle->protocol()->mission,
+            &ProtocolMission::downloaded,
+            this,
+            &VehicleMission::missionDataReceived);
+
+    connect(vehicle->protocol()->mission, &ProtocolMission::available, this, [this]() {
+        if (empty())
+            vehicle->protocol()->mission->download();
+    });
+
     // FIXME: mission protocol
-    /*connect(vehicle->protocol->mission,
-                &ProtocolMission::missionDataReceived,
-                this,
-                &VehicleMission::missionDataReceived);
-        connect(vehicle->protocol->mission,
+    /*  connect(vehicle->protocol->mission,
                 &ProtocolMission::missionDataError,
                 this,
                 &VehicleMission::missionDataError);
-        connect(this,
-                &VehicleMission::missionDataUpload,
-                vehicle->protocol->mission,
-                &ProtocolMission::missionDataUpload);
-        connect(f_request,
-                &Fact::triggered,
-                vehicle->protocol->mission,
-                &ProtocolMission::downloadMission);
 
         if (!vehicle->isLocal()) {
             QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
@@ -330,7 +329,7 @@ void VehicleMission::missionDataReceived(ProtocolMission::Mission d)
         emit missionAvailable();
         emit missionDownloaded();
         storage->saveMission();
-        vehicle->message(QString("%1 (%2)").arg(tr("Mission received from vehicle")).arg(size()),
+        vehicle->message(QString("%1: %2").arg(tr("Mission received")).arg(text()),
                          AppNotify::Important);
     }
     setModified(false);
@@ -343,8 +342,16 @@ void VehicleMission::missionDataError()
 //=============================================================================
 void VehicleMission::uploadMission()
 {
+    vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
+    vehicle->protocol()->mission->setActive(true);
     vehicle->protocol()->mission->upload(storage->saveToDict());
     f_save->trigger();
+}
+void VehicleMission::downloadMission()
+{
+    vehicle->message(QString("%1...").arg(tr("Requesting mission")), AppNotify::Info);
+    vehicle->protocol()->mission->setActive(true);
+    vehicle->protocol()->mission->download();
 }
 //=============================================================================
 //=============================================================================
