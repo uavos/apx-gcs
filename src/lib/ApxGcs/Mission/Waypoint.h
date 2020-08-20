@@ -20,15 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Waypoint_H
-#define Waypoint_H
-//=============================================================================
+#pragma once
+
 #include "MissionItem.h"
 #include "WaypointActions.h"
 #include <QGeoCoordinate>
 #include <QGeoPath>
 #include <QtCore>
-//=============================================================================
+
 class Waypoint : public MissionItem
 {
     Q_OBJECT
@@ -71,5 +70,3 @@ signals:
     void reachableChanged();
     void warningChanged();
 };
-//=============================================================================
-#endif

@@ -20,14 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionListModel_H
-#define MissionListModel_H
-//=============================================================================
+#pragma once
+
 #include <Fact/FactListModel.h>
 #include <QtCore>
 class VehicleMission;
 class MissionGroup;
-//=============================================================================
+
 class MissionListModel : public FactListModel
 {
     Q_OBJECT
@@ -41,5 +40,3 @@ private:
 protected:
     void populate(ItemsList *list, Fact *fact) override;
 };
-//=============================================================================
-#endif

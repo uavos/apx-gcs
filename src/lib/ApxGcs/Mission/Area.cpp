@@ -25,7 +25,7 @@
 #include "VehicleMission.h"
 #include <App/App.h>
 #include <QGeoCircle>
-//=============================================================================
+
 Area::Area(MissionGroup *parent)
     : MissionItem(parent, "P#", "", tr("Areant of interest"))
 {
@@ -65,7 +65,7 @@ Area::Area(MissionGroup *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Area::updateTitle()
 {
     QStringList st;
@@ -98,13 +98,13 @@ void Area::updateDescr()
     setDescr(st.join(' '));
     setValue(sts);
 }
-//=============================================================================
+
 QGeoRectangle Area::boundingGeoRectangle() const
 {
     return MissionItem::boundingGeoRectangle().united(
         QGeoCircle(coordinate(), std::abs(f_radius->value().toDouble())).boundingGeoRectangle());
 }
-//=============================================================================
+
 QGeoCoordinate Area::radiusAreant() const
 {
     QGeoCoordinate p(f_latitude->value().toDouble(), f_longitude->value().toDouble());
@@ -133,4 +133,3 @@ void Area::setRadiusAreant(const QGeoCoordinate &v)
         dist = (dist / 10) * 10;
     f_radius->setValue(f_radius->value().toInt() < 0 ? -dist : dist);
 }
-//=============================================================================

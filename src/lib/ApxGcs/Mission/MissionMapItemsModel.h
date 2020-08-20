@@ -20,11 +20,10 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionMapItemsModel_H
-#define MissionMapItemsModel_H
-//=============================================================================
+#pragma once
+
 #include <Fact/FactListModel.h>
-//=============================================================================
+
 class MissionMapItemsModel : public FactListModel
 {
     Q_OBJECT
@@ -34,5 +33,3 @@ public:
 protected:
     void syncModel(const ItemsList &list);
 };
-//=============================================================================
-#endif

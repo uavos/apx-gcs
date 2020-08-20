@@ -30,7 +30,7 @@
 
 #include <Vehicles/VehicleSelect.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     : Fact(mission, "tools", tr("Tools"), tr("Mission edit tools"), flags)
     , mission(mission)
@@ -48,11 +48,14 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     f_altadjust = new Fact(f, "value", tr("Value to add"), "", Int);
     f_altadjust->setUnits("m");
     f_altadjust->setIcon(f->icon());
-    connect(f_altadjust, &Fact::valueChanged, this, [=]() {
-        f_altadjust->setModified(false);
+    connect(f_altadjust, &Fact::valueChanged, this, [this]() {
         f_altadjustApply->setEnabled(f_altadjust->value().toInt() != 0);
     });
-    f_altadjustApply = new Fact(f, "apply", tr("Apply"), "", Action | Apply | CloseOnTrigger);
+    f_altadjustApply = new Fact(f,
+                                "apply",
+                                tr("Apply"),
+                                "",
+                                Action | Apply | CloseOnTrigger | ShowDisabled);
     f_altadjustApply->setEnabled(false);
     connect(f_altadjustApply, &Fact::triggered, this, &MissionTools::altadjustTriggered);
 
@@ -63,11 +66,14 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     f_altset->setUnits("m");
     f_altset->setIcon(f->icon());
     f_altset->setMin(0);
-    connect(f_altset, &Fact::valueChanged, this, [=]() {
-        f_altset->setModified(false);
+    connect(f_altset, &Fact::valueChanged, this, [this]() {
         f_altsetApply->setEnabled(f_altset->value().toInt() != 0);
     });
-    f_altsetApply = new Fact(f, "apply", tr("Apply"), "", Action | Apply | CloseOnTrigger);
+    f_altsetApply = new Fact(f,
+                             "apply",
+                             tr("Apply"),
+                             "",
+                             Action | Apply | CloseOnTrigger | ShowDisabled);
     f_altsetApply->setEnabled(false);
     connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
 
@@ -78,7 +84,7 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     f_copy->setIcon("content-copy");
     connect(fvs, &VehicleSelect::vehicleSelected, this, &MissionTools::copyVehicleSelected);
 }
-//=============================================================================
+
 void MissionTools::altadjustTriggered()
 {
     int v = f_altadjust->value().toInt();
@@ -88,7 +94,7 @@ void MissionTools::altadjustTriggered()
     }
     f_altadjust->setValue(0);
 }
-//=============================================================================
+
 void MissionTools::altsetTriggered()
 {
     int v = f_altset->value().toInt();
@@ -97,7 +103,7 @@ void MissionTools::altsetTriggered()
         f->setValue(v);
     }
 }
-//=============================================================================
+
 void MissionTools::updateMaxAltitude()
 {
     int alt = 0;
@@ -112,16 +118,11 @@ void MissionTools::updateMaxAltitude()
     if (alt > 0)
         f_altset->setValue(alt);
 }
-//=============================================================================
+
 void MissionTools::copyVehicleSelected(Vehicle *vehicle)
 {
     if (vehicle == mission->vehicle)
         return;
-    QString hash = mission->storage->dbHash;
-    if (hash.isEmpty())
-        return;
-    vehicle->f_mission->storage->loadMission(hash);
-    vehicle->f_mission->setModified(true);
+    vehicle->f_mission->storage->loadFromDict(mission->storage->saveToDict());
     Vehicles::instance()->selectVehicle(vehicle);
 }
-//=============================================================================

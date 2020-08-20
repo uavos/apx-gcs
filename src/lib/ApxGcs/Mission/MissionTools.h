@@ -20,14 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionTools_H
-#define MissionTools_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 class VehicleMission;
 class Vehicle;
-//=============================================================================
+
 class MissionTools : public Fact
 {
     Q_OBJECT
@@ -52,5 +51,3 @@ private slots:
 
     void copyVehicleSelected(Vehicle *vehicle);
 };
-//=============================================================================
-#endif

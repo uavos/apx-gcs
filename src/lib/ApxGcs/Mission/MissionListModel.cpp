@@ -23,7 +23,7 @@
 #include "MissionListModel.h"
 #include "MissionGroup.h"
 #include "VehicleMission.h"
-//=============================================================================
+
 MissionListModel::MissionListModel(VehicleMission *parent)
     : FactListModel(nullptr)
     , mission(parent)
@@ -34,7 +34,7 @@ MissionListModel::MissionListModel(VehicleMission *parent)
     }
     fact = mission;
 }
-//=============================================================================
+
 void MissionListModel::populate(ItemsList *list, Fact *fact)
 {
     if (fact == mission) {
@@ -45,4 +45,3 @@ void MissionListModel::populate(ItemsList *list, Fact *fact)
     }
     FactListModel::populate(list, fact);
 }
-//=============================================================================

@@ -22,11 +22,11 @@
  */
 #include "MissionMapItemsModel.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
 MissionMapItemsModel::MissionMapItemsModel(Fact *fact)
     : FactListModel(fact)
 {}
-//=============================================================================
+
 void MissionMapItemsModel::syncModel(const ItemsList &list)
 {
     //find deleted
@@ -52,4 +52,3 @@ void MissionMapItemsModel::syncModel(const ItemsList &list)
         emit countChanged();
     }
 }
-//=============================================================================

@@ -20,12 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Poi_H
-#define Poi_H
-//=============================================================================
+#pragma once
+
 #include "MissionItem.h"
 #include <QtCore>
-//=============================================================================
+
 class Poi : public MissionItem
 {
     Q_OBJECT
@@ -59,5 +58,3 @@ protected:
 signals:
     void radiusPointChanged();
 };
-//=============================================================================
-#endif

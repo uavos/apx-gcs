@@ -20,13 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef WaypointActions_H
-#define WaypointActions_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 class Waypoint;
-//=============================================================================
+
 class WaypointActions : public Fact
 {
     Q_OBJECT
@@ -54,5 +53,3 @@ private slots:
     void updateActionsValue();
     void actionsValueChanged();
 };
-//=============================================================================
-#endif

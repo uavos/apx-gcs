@@ -13,10 +13,10 @@ MapItemGroup {
     TravelPath { }
     EnergyCircle { }
     CmdPosCircle { }
+    CmdPosIcon { }
     Home { }
     LoiterCircle { }
 
     CamTargetCircleCmd { }
     CamTargetCircle { }
-
 }

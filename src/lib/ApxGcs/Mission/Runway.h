@@ -20,13 +20,12 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Runway_H
-#define Runway_H
-//=============================================================================
+#pragma once
+
 #include "MissionItem.h"
 #include <QGeoCoordinate>
 #include <QtCore>
-//=============================================================================
+
 class Runway : public MissionItem
 {
     Q_OBJECT
@@ -69,5 +68,3 @@ signals:
     void appPointChanged();
     void headingChanged();
 };
-//=============================================================================
-#endif

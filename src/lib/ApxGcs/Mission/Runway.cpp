@@ -25,7 +25,7 @@
 #include "MissionField.h"
 #include "VehicleMission.h"
 #include <App/App.h>
-//=============================================================================
+
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
 {
@@ -100,7 +100,7 @@ Runway::Runway(MissionGroup *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Runway::updateTitle()
 {
     setValue(
@@ -118,7 +118,7 @@ void Runway::updateTitle()
         st.append("MSL" + f_hmsl->text());
     setTitle(st.join(' '));
 }
-//=============================================================================
+
 void Runway::updateMissionStartPoint()
 {
     if (num() != 0)
@@ -131,7 +131,7 @@ void Runway::updateMissionStartPoint()
     group->mission->setStartLength(slen < 0 ? 0 : slen);
     group->mission->setCoordinate(p);
 }
-//=============================================================================
+
 QGeoRectangle Runway::boundingGeoRectangle() const
 {
     QList<QGeoCoordinate> clist;
@@ -147,7 +147,7 @@ QGeoRectangle Runway::boundingGeoRectangle() const
     clist.append(endPoint());
     return MissionItem::boundingGeoRectangle().united(QGeoRectangle(clist));
 }
-//=============================================================================
+
 QGeoCoordinate Runway::endPoint() const
 {
     QGeoCoordinate p(coordinate());
@@ -202,4 +202,3 @@ double Runway::heading() const
     double dE = f_dE->value().toDouble();
     return qRadiansToDegrees(std::atan2(dE, dN));
 }
-//=============================================================================

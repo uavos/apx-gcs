@@ -28,7 +28,7 @@
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent, Flags flags)
     : DatabaseLookup(parent,
                      "load",
@@ -42,7 +42,7 @@ LookupMissions::LookupMissions(VehicleMission *mission, Fact *parent, Flags flag
 
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupMissions::loadItem);
 }
-//=============================================================================
+
 void LookupMissions::loadItem(QVariantMap modelData)
 {
     QString hash = modelData.value("hash").toString();
@@ -53,7 +53,7 @@ void LookupMissions::loadItem(QVariantMap modelData)
     else
         Vehicles::instance()->current()->f_mission->storage->loadMission(hash);
 }
-//=============================================================================
+
 bool LookupMissions::fixItemDataThr(QVariantMap *item)
 {
     QString title = item->value("title").toString();
@@ -83,9 +83,7 @@ bool LookupMissions::fixItemDataThr(QVariantMap *item)
     item->insert("value", value);
     return true;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 void LookupMissions::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
@@ -123,5 +121,3 @@ void LookupMissions::dbLookupMissionsByArea(QGeoCoordinate c, QString siteName)
     QString sdescr = tr("Closest to site");
     setDescr(siteName.isEmpty() ? sdescr : (sdescr.append(QString(" '%1'").arg(siteName))));
 }
-//=============================================================================
-//=============================================================================

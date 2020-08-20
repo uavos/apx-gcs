@@ -20,9 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionItem_H
-#define MissionItem_H
-//=============================================================================
+#pragma once
+
 #include "MissionGroup.h"
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
@@ -31,7 +30,7 @@
 #include <QtCore>
 
 #include <Xbus/XbusMission.h>
-//=============================================================================
+
 class MissionItem : public Fact
 {
     Q_OBJECT
@@ -143,5 +142,3 @@ signals:
 
     void selectedChanged();
 };
-//=============================================================================
-#endif

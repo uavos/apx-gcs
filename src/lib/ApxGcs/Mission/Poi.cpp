@@ -25,7 +25,7 @@
 #include "VehicleMission.h"
 #include <App/App.h>
 #include <QGeoCircle>
-//=============================================================================
+
 Poi::Poi(MissionGroup *parent)
     : MissionItem(parent, "p#", "", "")
 {
@@ -65,7 +65,7 @@ Poi::Poi(MissionGroup *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Poi::updateTitle()
 {
     QStringList st;
@@ -98,13 +98,13 @@ void Poi::updateDescr()
     setDescr(st.join(' '));
     setValue(sts);
 }
-//=============================================================================
+
 QGeoRectangle Poi::boundingGeoRectangle() const
 {
     return MissionItem::boundingGeoRectangle().united(
         QGeoCircle(coordinate(), std::abs(f_radius->value().toDouble())).boundingGeoRectangle());
 }
-//=============================================================================
+
 QGeoCoordinate Poi::radiusPoint() const
 {
     QGeoCoordinate p(f_latitude->value().toDouble(), f_longitude->value().toDouble());
@@ -133,4 +133,3 @@ void Poi::setRadiusPoint(const QGeoCoordinate &v)
         dist = (dist / 10) * 10;
     f_radius->setValue(f_radius->value().toInt() < 0 ? -dist : dist);
 }
-//=============================================================================

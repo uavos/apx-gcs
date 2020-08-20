@@ -20,12 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionField_H
-#define MissionField_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class MissionField : public Fact
 {
     Q_OBJECT
@@ -40,5 +39,3 @@ public:
 protected:
     void hashData(QCryptographicHash *h) const;
 };
-//=============================================================================
-#endif

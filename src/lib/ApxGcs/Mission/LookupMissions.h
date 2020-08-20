@@ -20,15 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef LookupMissions_H
-#define LookupMissions_H
-//=============================================================================
+#pragma once
+
 #include <Database/DatabaseLookup.h>
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QtCore>
 class VehicleMission;
-//=============================================================================
+
 class LookupMissions : public DatabaseLookup
 {
     Q_OBJECT
@@ -52,5 +51,3 @@ private slots:
 public slots:
     void dbLookupMissionsByArea(QGeoCoordinate c, QString siteName = QString());
 };
-//=============================================================================
-#endif

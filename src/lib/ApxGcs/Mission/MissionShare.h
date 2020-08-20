@@ -20,15 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionShare_H
-#define MissionShare_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <Sharing/Share.h>
 #include <QtCore>
 
 class VehicleMission;
-//=============================================================================
+
 class MissionShare : public Share
 {
     Q_OBJECT
@@ -46,5 +45,3 @@ protected:
     ShareXmlExport *exportRequest(QString title, QString fileName);
     ShareXmlImport *importRequest(QString title, QString fileName);
 };
-//=============================================================================
-#endif

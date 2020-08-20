@@ -26,12 +26,12 @@
 
 #include <App/AppRoot.h>
 #include <QGeoCircle>
-//=============================================================================
+
 MissionItem::MissionItem(MissionGroup *parent,
                          const QString &name,
                          const QString &title,
                          const QString &descr)
-    : Fact(parent, name, title, descr, Group)
+    : Fact(parent, name, title, descr, Group | ModifiedGroup)
     , group(parent)
     , blockUpdateCoordinate(false)
     , m_course(0)
@@ -108,24 +108,24 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &MissionItem::totalDistanceChanged, this, &MissionItem::updateStatus);
     updateStatus();
 }
-//=============================================================================
+
 void MissionItem::hashData(QCryptographicHash *h) const
 {
     for (int i = 0; i < size(); ++i) {
         child(i)->hashData(h);
     }
 }
-//=============================================================================
+
 int MissionItem::missionItemType() const
 {
     return group->missionItemType();
 }
-//=============================================================================
+
 void MissionItem::updateTitle()
 {
     setTitle(QString::number(num() + 1));
 }
-//=============================================================================
+
 void MissionItem::updateStatus()
 {
     uint d = totalDistance();
@@ -139,14 +139,14 @@ void MissionItem::updateStatus()
         setValue(st.join(' '));
     }
 }
-//=============================================================================
+
 void MissionItem::updateCoordinate()
 {
     if (blockUpdateCoordinate)
         return;
     setCoordinate(QGeoCoordinate(f_latitude->value().toDouble(), f_longitude->value().toDouble()));
 }
-//=============================================================================
+
 void MissionItem::updatePath()
 {
     setGeoPath(getPath());
@@ -164,7 +164,7 @@ void MissionItem::updatePath()
         }
     }
 }
-//=============================================================================
+
 void MissionItem::updateOrder()
 {
     int n = f_order->value().toInt() - 1;
@@ -187,22 +187,22 @@ void MissionItem::updateSelected()
 {
     setSelected(group->mission->selectedItem() == this);
 }
-//=============================================================================
+
 void MissionItem::selectTriggered()
 {
     group->f_activeIndex->setValue(num());
 }
-//=============================================================================
+
 void MissionItem::resetPath()
 {
     m_geoPath = QGeoPath();
 }
-//=============================================================================
+
 QGeoPath MissionItem::getPath()
 {
     return QGeoPath();
 }
-//=============================================================================
+
 MissionItem *MissionItem::prevItem() const
 {
     return static_cast<MissionItem *>(parentFact()->child(indexInParent() - 1));
@@ -211,7 +211,7 @@ MissionItem *MissionItem::nextItem() const
 {
     return static_cast<MissionItem *>(parentFact()->child(indexInParent() + 1));
 }
-//=============================================================================
+
 QGeoRectangle MissionItem::boundingGeoRectangle() const
 {
     QGeoRectangle r(QGeoCircle(coordinate(), 20).boundingGeoRectangle());
@@ -219,9 +219,7 @@ QGeoRectangle MissionItem::boundingGeoRectangle() const
     r.setHeight(r.height() * 1.2);
     return r;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 QGeoCoordinate MissionItem::coordinate() const
 {
     return m_coordinate;
@@ -318,5 +316,3 @@ void MissionItem::setSelected(bool v)
     else if (group->mission->selectedItem() == this)
         group->mission->setSelectedItem(nullptr);
 }
-//=============================================================================
-//=============================================================================

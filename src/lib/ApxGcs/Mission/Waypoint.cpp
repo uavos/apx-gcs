@@ -24,7 +24,7 @@
 #include "MissionField.h"
 #include "VehicleMission.h"
 #include <App/App.h>
-//=============================================================================
+
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
     , icourse(0)
@@ -58,7 +58,7 @@ Waypoint::Waypoint(MissionGroup *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Waypoint::updateTitle()
 {
     QStringList st;
@@ -71,7 +71,7 @@ void Waypoint::updateDescr()
 {
     setDescr(f_actions->value().toString());
 }
-//=============================================================================
+
 QGeoPath Waypoint::getPath()
 {
     QGeoPath p;
@@ -189,8 +189,7 @@ QGeoPath Waypoint::getPath()
 
     return p;
 }
-//=============================================================================
-//=============================================================================
+
 bool Waypoint::reachable() const
 {
     return m_reachable;
@@ -213,5 +212,3 @@ void Waypoint::setWarning(bool v)
     m_warning = v;
     emit warningChanged();
 }
-//=============================================================================
-//=============================================================================

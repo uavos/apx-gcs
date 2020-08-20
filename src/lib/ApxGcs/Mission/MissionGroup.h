@@ -20,15 +20,14 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionGroup_H
-#define MissionGroup_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QtCore>
 class VehicleMission;
 class MissionItem;
-//=============================================================================
+
 class MissionGroup : public Fact
 {
     Q_OBJECT
@@ -97,7 +96,7 @@ signals:
     void distanceChanged();
     void timeChanged();
 };
-//=============================================================================
+
 template<class T, int miType>
 class MissionGroupT : public MissionGroup
 {
@@ -113,5 +112,3 @@ public:
 
     MissionItem *createObject() { return new T(this); }
 };
-//=============================================================================
-#endif

@@ -28,14 +28,14 @@
 #include <App/AppLog.h>
 #include <Sharing/MissionsXml.h>
 #include <Vehicles/Vehicle.h>
-//=============================================================================
+
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
     : Share(parent, tr("Mission"), "mission", AppDirs::missions(), QStringList(), flags)
     , mission(mission)
 {
     connect(this, &Share::imported, mission->storage, &MissionStorage::loadMission);
 }
-//=============================================================================
+
 QString MissionShare::defaultExportFileName() const
 {
     QString fname = mission->site().replace(" ", "");
@@ -63,5 +63,3 @@ ShareXmlImport *MissionShare::importRequest(QString title, QString fileName)
 {
     return new MissionsXmlImport(title, fileName);
 }
-//=============================================================================
-//=============================================================================

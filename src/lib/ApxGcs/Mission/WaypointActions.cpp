@@ -23,9 +23,13 @@
 #include "WaypointActions.h"
 #include "MissionField.h"
 #include "Waypoint.h"
-//=============================================================================
+
 WaypointActions::WaypointActions(Waypoint *parent)
-    : Fact(parent, "actions", tr("Actions"), tr("Actions to perform on waypoint"), Group)
+    : Fact(parent,
+           "actions",
+           tr("Actions"),
+           tr("Actions to perform on waypoint"),
+           Group | ModifiedGroup)
     , blockActionsValueChanged(false)
 {
     setObjectName("actions"); //name to identify in text value
@@ -34,12 +38,12 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                tr("Speed"),
                                tr("Fly with this speed to waypoint"),
                                Int);
-    f_speed->setEnumStrings(QStringList() << "cruise");
+    f_speed->setEnumStrings(QStringList() << "off");
     f_speed->setUnits("m/s");
     f_speed->setMin(0);
     f_speed->setMax(1000);
     f_shot = new MissionField(this, "shot", tr("Shot"), tr("Make a cam shot on waypoint"), Enum);
-    f_shot->setEnumStrings(QStringList() << "no"
+    f_shot->setEnumStrings(QStringList() << "off"
                                          << "single"
                                          << "start"
                                          << "stop");
@@ -48,7 +52,7 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                tr("Auto Shot"),
                                tr("Continuous cam shots distance"),
                                Int);
-    f_dshot->setEnumStrings(QStringList() << "no");
+    f_dshot->setEnumStrings(QStringList() << "off");
     f_dshot->setUnits("m");
     f_dshot->setMin(0);
 
@@ -65,7 +69,7 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                 tr("Loiter"),
                                 tr("Loiter around POI or waypoint"),
                                 Enum);
-    f_loiter->setEnumStrings(QStringList() << "no"
+    f_loiter->setEnumStrings(QStringList() << "off"
                                            << "yes");
     f_turnR = new MissionField(this, "radius", tr("Radius"), tr("Loiter radius"), Int);
     f_turnR->setEnumStrings(QStringList() << "default");
@@ -85,14 +89,14 @@ WaypointActions::WaypointActions(Waypoint *parent)
         connect(child(i), &Fact::valueChanged, this, &WaypointActions::updateActionsValue);
     }
 }
-//=============================================================================
+
 void WaypointActions::hashData(QCryptographicHash *h) const
 {
     for (int i = 0; i < size(); ++i) {
         child(i)->hashData(h);
     }
 }
-//=============================================================================
+
 void WaypointActions::updateActionsValue()
 {
     QStringList st;
@@ -134,4 +138,3 @@ void WaypointActions::actionsValueChanged()
         f->setValue(map.value(s));
     }
 }
-//=============================================================================

@@ -23,7 +23,7 @@
 #include "Taxiway.h"
 #include "VehicleMission.h"
 #include <App/App.h>
-//=============================================================================
+
 Taxiway::Taxiway(MissionGroup *parent)
     : MissionItem(parent, "t#", "", "")
 {
@@ -33,7 +33,7 @@ Taxiway::Taxiway(MissionGroup *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Taxiway::updateTitle()
 {
     QStringList st;
@@ -41,7 +41,7 @@ void Taxiway::updateTitle()
     st.append(AppRoot::distanceToString(distance()));
     setTitle(st.join(' '));
 }
-//=============================================================================
+
 QGeoPath Taxiway::getPath()
 {
     QGeoPath p;
@@ -63,4 +63,3 @@ QGeoPath Taxiway::getPath()
     setCourse(azimuth);
     return p;
 }
-//=============================================================================

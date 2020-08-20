@@ -20,9 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef VehicleMission_H
-#define VehicleMission_H
-//=============================================================================
+#pragma once
+
 #include "MissionGroup.h"
 #include <Fact/Fact.h>
 #include <Protocols/ProtocolMission.h>
@@ -41,7 +40,7 @@ class LookupMissions;
 class MissionShare;
 class MissionStorage;
 class MissionTools;
-//=============================================================================
+
 class VehicleMission : public Fact
 {
     Q_OBJECT
@@ -114,9 +113,6 @@ public:
     Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
     //Fact override
-    void backup();
-    void restore();
-
     void hashData(QCryptographicHash *h) const;
 
 private slots:
@@ -210,5 +206,3 @@ signals:
     void savedChanged();
     void selectedItemChanged();
 };
-//=============================================================================
-#endif

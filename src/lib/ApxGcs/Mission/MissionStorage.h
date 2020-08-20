@@ -20,9 +20,8 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef MissionStorage_H
-#define MissionStorage_H
-//=============================================================================
+#pragma once
+
 #include <ApxMisc/DelayedEvent.h>
 #include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
@@ -34,7 +33,7 @@ class Vehicle;
 class MissionShare;
 class MissionGroup;
 class LookupMissions;
-//=============================================================================
+
 class MissionStorage : public QObject
 {
     Q_OBJECT
@@ -70,5 +69,3 @@ signals:
     void loaded();
     void saved();
 };
-//=============================================================================
-#endif

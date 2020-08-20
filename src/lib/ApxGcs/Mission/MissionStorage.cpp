@@ -34,7 +34,7 @@
 #include <Vehicles/Vehicles.h>
 
 #include "MissionShare.h"
-//=============================================================================
+
 MissionStorage::MissionStorage(VehicleMission *mission)
     : QObject(mission)
     , mission(mission)
@@ -42,7 +42,7 @@ MissionStorage::MissionStorage(VehicleMission *mission)
     connect(&evtUpdateSite, &DelayedEvent::triggered, this, &MissionStorage::dbFindSite);
     connect(mission, &VehicleMission::coordinateChanged, &evtUpdateSite, &DelayedEvent::schedule);
 }
-//=============================================================================
+
 void MissionStorage::saveMission()
 {
     dbHash.clear();
@@ -98,7 +98,7 @@ void MissionStorage::dbSaved(QString hash)
     }
     mission->backup();
 }
-//=============================================================================
+
 void MissionStorage::dbFindSite()
 {
     QGeoCoordinate c(mission->coordinate());
@@ -119,7 +119,7 @@ void MissionStorage::dbSiteFound(quint64 siteID, QString site)
     Q_UNUSED(siteID)
     mission->setSite(site);
 }
-//=============================================================================
+
 void MissionStorage::loadMission(QString hash)
 {
     //qDebug()<<"load mission"<<missionID;
@@ -154,8 +154,7 @@ void MissionStorage::dbLoaded(QVariantMap info, QVariantMap details, ProtocolMis
     else
         mission->vehicle->message(s.append(": ").append(data.title));
 }
-//=============================================================================
-//=============================================================================
+
 ProtocolMission::Mission MissionStorage::saveToDict() const
 {
     ProtocolMission::Mission d;
@@ -185,8 +184,7 @@ void MissionStorage::loadFromDict(ProtocolMission::Mission d)
     mission->backup();
     mission->updateSize();
 }
-//=============================================================================
-//=============================================================================
+
 void MissionStorage::saveItemsToDict(QList<ProtocolMission::Item> &items,
                                      const MissionGroup *g) const
 {
@@ -227,5 +225,3 @@ void MissionStorage::loadItemsFromDict(const QList<ProtocolMission::Item> &items
         }
     }
 }
-//=============================================================================
-//=============================================================================

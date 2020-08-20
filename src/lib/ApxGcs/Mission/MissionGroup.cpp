@@ -26,13 +26,13 @@
 #include "VehicleMission.h"
 
 #include <App/AppRoot.h>
-//=============================================================================
+
 MissionGroup::MissionGroup(VehicleMission *parent,
                            const QString &name,
                            const QString &title,
                            const QString &descr,
                            Fact *activeIndex)
-    : Fact(parent, name, title, descr, Group)
+    : Fact(parent, name, title, descr, Group | ModifiedGroup)
     , mission(parent)
     , f_activeIndex(activeIndex)
     , _descr(descr)
@@ -54,6 +54,8 @@ MissionGroup::MissionGroup(VehicleMission *parent,
 
     connect(this, &Fact::sizeChanged, this, &MissionGroup::updateStatus);
 
+    connect(this, &Fact::sizeChanged, this, [this]() { setModified(true); });
+
     //time & distance
     updateTimeTimer.setSingleShot(true);
     updateTimeTimer.setInterval(1000);
@@ -72,7 +74,7 @@ MissionGroup::MissionGroup(VehicleMission *parent,
     updateStatus();
     updateDescr();
 }
-//=============================================================================
+
 void MissionGroup::updateStatus()
 {
     int sz = size();
@@ -82,7 +84,7 @@ void MissionGroup::updateStatus()
         setValue(QVariant());
     f_clear->setEnabled(sz > 0);
 }
-//=============================================================================
+
 void MissionGroup::updateDescr()
 {
     uint d = distance();
@@ -96,7 +98,7 @@ void MissionGroup::updateDescr()
         setDescr(st.join(' '));
     }
 }
-//=============================================================================
+
 void MissionGroup::updateTime()
 {
     updateTimeTimer.start();
@@ -125,7 +127,7 @@ void MissionGroup::updateDistanceDo()
     }
     setDistance(v);
 }
-//=============================================================================
+
 uint MissionGroup::distance() const
 {
     if (m_distance == 0)
@@ -156,7 +158,7 @@ QAbstractListModel *MissionGroup::mapModel() const
 {
     return m_mapModel;
 }
-//=============================================================================
+
 void MissionGroup::add(const QGeoCoordinate &p)
 {
     if (!p.isValid()) {
@@ -164,18 +166,16 @@ void MissionGroup::add(const QGeoCoordinate &p)
     }
     addObject(p);
 }
-//=============================================================================
+
 MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
 {
     MissionItem *f = createObject();
     f->backup();
     f->f_latitude->setValue(p.latitude());
     f->f_longitude->setValue(p.longitude());
-    f->setModified(true);
     return f;
 }
-//=============================================================================
-//=============================================================================
+
 void MissionGroup::clearGroup()
 {
     removeAll();
@@ -183,4 +183,3 @@ void MissionGroup::clearGroup()
     setTime(0);
     setModified(true);
 }
-//=============================================================================

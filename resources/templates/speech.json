@@ -13,6 +13,9 @@
             "msg": "mission updated"
         },
         {
+            "msg": "mission received"
+        },
+        {
             "msg": "mission accomplished"
         },
         {

@@ -38,7 +38,7 @@
 #include <App/App.h>
 #include <Vehicles/Vehicles.h>
 #include <QQmlEngine>
-//=============================================================================
+
 VehicleMission::VehicleMission(Vehicle *parent)
     : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group | ModifiedGroup, "ship-wheel")
     , vehicle(parent)
@@ -163,7 +163,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
     connect(storage, &MissionStorage::saved, this, [this]() {
         setSaved(true);
-        setModified(false);
+        backup();
     });
 
     //protocols
@@ -214,7 +214,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void VehicleMission::updateActions()
 {
     bool bEmpty = empty();
@@ -245,14 +245,14 @@ void VehicleMission::updateStatus()
         s.append(QString(" [%1]").arg(sz));
     setValue(s.simplified());
 }
-//=============================================================================
+
 void VehicleMission::updateStartPath()
 {
     if (f_waypoints->size() <= 0)
         return;
     static_cast<Waypoint *>(f_waypoints->child(0))->updatePath();
 }
-//=============================================================================
+
 QGeoRectangle VehicleMission::boundingGeoRectangle() const
 {
     QGeoRectangle r;
@@ -264,8 +264,7 @@ QGeoRectangle VehicleMission::boundingGeoRectangle() const
     }
     return r;
 }
-//=============================================================================
-//=============================================================================
+
 void VehicleMission::clearMission()
 {
     f_title->setValue("");
@@ -280,30 +279,14 @@ void VehicleMission::clearMission()
 
     App::jsync(this);
 }
-//=============================================================================
-void VehicleMission::backup()
-{
-    foreach (MissionGroup *group, groups) {
-        group->backup();
-    }
-    f_title->backup();
-    setModified(false);
-}
-void VehicleMission::restore()
-{
-    foreach (MissionGroup *group, groups) {
-        group->restore();
-    }
-    f_title->restore();
-    setModified(false);
-}
+
 void VehicleMission::hashData(QCryptographicHash *h) const
 {
     foreach (MissionGroup *group, groups) {
         group->hashData(h);
     }
 }
-//=============================================================================
+
 void VehicleMission::test(int n)
 {
     if (f_waypoints->size() <= 0)
@@ -317,8 +300,7 @@ void VehicleMission::test(int n)
         f_waypoints->addObject(p);
     }
 }
-//=============================================================================
-//=============================================================================
+
 void VehicleMission::missionDataReceived(ProtocolMission::Mission d)
 {
     clearMission();
@@ -332,14 +314,14 @@ void VehicleMission::missionDataReceived(ProtocolMission::Mission d)
         vehicle->message(QString("%1: %2").arg(tr("Mission received")).arg(text()),
                          AppNotify::Important);
     }
-    setModified(false);
+    backup();
 }
 void VehicleMission::missionDataError()
 {
     vehicle->message(tr("Error in mission data from vehicle"), AppNotify::Error);
     clearMission();
 }
-//=============================================================================
+
 void VehicleMission::uploadMission()
 {
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
@@ -353,8 +335,7 @@ void VehicleMission::downloadMission()
     vehicle->protocol()->mission->setActive(true);
     vehicle->protocol()->mission->download();
 }
-//=============================================================================
-//=============================================================================
+
 QGeoCoordinate VehicleMission::startPoint() const
 {
     return m_startPoint;
@@ -470,5 +451,3 @@ void VehicleMission::setSelectedItem(Fact *v)
     m_selectedItem = v;
     emit selectedItemChanged();
 }
-//=============================================================================
-//=============================================================================

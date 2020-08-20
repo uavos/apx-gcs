@@ -20,12 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Taxiway_H
-#define Taxiway_H
-//=============================================================================
+#pragma once
+
 #include "MissionItem.h"
 #include <QtCore>
-//=============================================================================
+
 class Taxiway : public MissionItem
 {
     Q_OBJECT
@@ -38,5 +37,3 @@ private slots:
 protected:
     QGeoPath getPath();
 };
-//=============================================================================
-#endif

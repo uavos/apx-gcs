@@ -22,16 +22,15 @@
  */
 #include "MissionField.h"
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 MissionField::MissionField(
     Fact *parent, const QString &name, const QString &title, const QString &descr, Flags flags)
-    : Fact(parent, name, title, descr, flags)
+    : Fact(parent, name, title, descr, flags | ModifiedTrack)
 {
     connect(this, &Fact::removed, this, [this]() { setModified(false); });
 }
-//=============================================================================
+
 void MissionField::hashData(QCryptographicHash *h) const
 {
     h->addData(text().toUtf8());
 }
-//=============================================================================

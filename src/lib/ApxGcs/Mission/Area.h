@@ -20,12 +20,11 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef Area_H
-#define Area_H
-//=============================================================================
+#pragma once
+
 #include "MissionItem.h"
 #include <QtCore>
-//=============================================================================
+
 class Area : public MissionItem
 {
     Q_OBJECT
@@ -59,5 +58,3 @@ protected:
 signals:
     void radiusAreantChanged();
 };
-//=============================================================================
-#endif

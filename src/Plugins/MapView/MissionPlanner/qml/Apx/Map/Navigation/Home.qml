@@ -5,7 +5,6 @@ import QtPositioning 5.12
 import Apx.Map.Common 1.0
 
 MapQuickItem {  //to be used inside MapComponent only
-    id: vehicleItem
 
     //Fact bindings
     property real home_lat: mandala.est.ref.lat.value

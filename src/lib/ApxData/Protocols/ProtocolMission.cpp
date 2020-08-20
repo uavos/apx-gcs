@@ -129,21 +129,6 @@ QByteArray ProtocolMission::pack(const Mission &d)
     xbus::mission::file_hdr_s fhdr{};
     fhdr.write(&stream); // will update later
 
-    for (int i = 0; i < d.runways.size(); ++i) {
-        const Item &m = d.runways.at(i);
-        xbus::mission::Header hdr;
-        hdr.type = xbus::mission::Header::mi_rw;
-        hdr.option = runwayTypeFromString(m.details.value("type").toString());
-        hdr.write(&stream);
-        xbus::mission::Runway e;
-        e.lat = static_cast<float>(m.lat);
-        e.lon = static_cast<float>(m.lon);
-        e.hmsl = m.details.value("hmsl").toInt();
-        e.dN = m.details.value("dN").toInt();
-        e.dE = m.details.value("dE").toInt();
-        e.approach = m.details.value("approach").toUInt();
-        e.write(&stream);
-    }
     for (int i = 0; i < d.waypoints.size(); ++i) {
         const ProtocolMission::Item &m = d.waypoints.at(i);
         xbus::mission::Header hdr;
@@ -233,6 +218,21 @@ QByteArray ProtocolMission::pack(const Mission &d)
             }
             a.write(&stream);
         }
+    }
+    for (int i = 0; i < d.runways.size(); ++i) {
+        const Item &m = d.runways.at(i);
+        xbus::mission::Header hdr;
+        hdr.type = xbus::mission::Header::mi_rw;
+        hdr.option = runwayTypeFromString(m.details.value("type").toString());
+        hdr.write(&stream);
+        xbus::mission::Runway e;
+        e.lat = static_cast<float>(m.lat);
+        e.lon = static_cast<float>(m.lon);
+        e.hmsl = m.details.value("hmsl").toInt();
+        e.dN = m.details.value("dN").toInt();
+        e.dE = m.details.value("dE").toInt();
+        e.approach = m.details.value("approach").toUInt();
+        e.write(&stream);
     }
     for (int i = 0; i < d.taxiways.size(); ++i) {
         const ProtocolMission::Item &m = d.taxiways.at(i);
