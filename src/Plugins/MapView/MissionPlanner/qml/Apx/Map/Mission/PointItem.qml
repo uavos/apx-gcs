@@ -8,7 +8,7 @@ import Apx.Map.Common 1.0
 MissionObject {
     id: pointItem
 
-    readonly property int m_piidx: mandala.est.wpt.piidx.value
+    readonly property int m_piidx: mandala.cmd.op.pi.value
 
 
     color: Style.cPoint

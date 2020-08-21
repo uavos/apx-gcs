@@ -36,7 +36,7 @@ Item {
     readonly property var f_loops: mandala.est.ctr.loops
 
     readonly property var f_eta: mandala.est.wpt.eta
-    readonly property var f_wpidx: mandala.est.wpt.wpidx
+    readonly property var f_wpidx: mandala.cmd.op.wp
 
     readonly property var f_fuel: mandala.sns.fuel.capacity
     readonly property var f_frate: mandala.sns.fuel.rate

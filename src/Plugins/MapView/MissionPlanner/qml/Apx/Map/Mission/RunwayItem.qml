@@ -10,7 +10,7 @@ import APX.Mission 1.0 as APX
 MissionObject {
     id: runwayItem
 
-    readonly property int m_rwidx: mandala.est.wpt.rwidx.value
+    readonly property int m_rwidx: mandala.cmd.op.rw.value
     readonly property bool m_mode: mandala.cmd.op.mode.value
     readonly property real m_radius: mandala.cmd.op.radius.value
     readonly property real m_delta: mandala.est.ctr.delta.value

@@ -128,7 +128,9 @@ QByteArray ProtocolMission::pack(const Mission &d)
 
     xbus::mission::file_hdr_s fhdr{};
     fhdr.write(&stream); // will update later
+    size_t pos_s = stream.pos();
 
+    fhdr.offset.wp = stream.pos() - pos_s;
     for (int i = 0; i < d.waypoints.size(); ++i) {
         const ProtocolMission::Item &m = d.waypoints.at(i);
         xbus::mission::Header hdr;
@@ -219,6 +221,8 @@ QByteArray ProtocolMission::pack(const Mission &d)
             a.write(&stream);
         }
     }
+
+    fhdr.offset.rw = stream.pos() - pos_s;
     for (int i = 0; i < d.runways.size(); ++i) {
         const Item &m = d.runways.at(i);
         xbus::mission::Header hdr;
@@ -234,6 +238,8 @@ QByteArray ProtocolMission::pack(const Mission &d)
         e.approach = m.details.value("approach").toUInt();
         e.write(&stream);
     }
+
+    fhdr.offset.tw = stream.pos() - pos_s;
     for (int i = 0; i < d.taxiways.size(); ++i) {
         const ProtocolMission::Item &m = d.taxiways.at(i);
         xbus::mission::Header hdr;
@@ -245,6 +251,8 @@ QByteArray ProtocolMission::pack(const Mission &d)
         e.lon = static_cast<float>(m.lon);
         e.write(&stream);
     }
+
+    fhdr.offset.pi = stream.pos() - pos_s;
     for (int i = 0; i < d.pois.size(); ++i) {
         const ProtocolMission::Item &m = d.pois.at(i);
         xbus::mission::Header hdr;
@@ -272,14 +280,14 @@ QByteArray ProtocolMission::pack(const Mission &d)
     data.resize(stream.pos());
 
     //update fhdr
-    fhdr.size = stream.pos() - fhdr.psize();
-    fhdr.hash = apx::crc32(stream.buffer() + fhdr.psize(), fhdr.size);
+    fhdr.size = stream.pos() - pos_s;
+    fhdr.hash = apx::crc32(stream.buffer() + pos_s, fhdr.size);
 
     strncpy(fhdr.title, d.title.toLocal8Bit(), sizeof(fhdr.title));
-    fhdr.wp = d.waypoints.size();
-    fhdr.rw = d.runways.size();
-    fhdr.tw = d.taxiways.size();
-    fhdr.pi = d.pois.size();
+    fhdr.cnt.wp = d.waypoints.size();
+    fhdr.cnt.rw = d.runways.size();
+    fhdr.cnt.tw = d.taxiways.size();
+    fhdr.cnt.pi = d.pois.size();
 
     stream.reset();
     fhdr.write(&stream);
@@ -442,8 +450,8 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             d.pois.append(m);
             continue;
         }
-        case xbus::mission::Header::mi_emergency:
-        case xbus::mission::Header::mi_restricted: {
+        case xbus::mission::Header::mi_emg:
+        case xbus::mission::Header::mi_avoid: {
             uint16_t sz = stream.available();
             if (sz < xbus::mission::Area::psize(0))
                 break;

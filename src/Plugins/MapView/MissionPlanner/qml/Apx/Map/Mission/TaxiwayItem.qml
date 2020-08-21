@@ -7,7 +7,7 @@ import Apx.Map.Common 1.0
 MissionObject {
     id: taxiwayItem
 
-    readonly property int m_twidx: mandala.est.wpt.twidx.value
+    readonly property int m_twidx: mandala.cmd.op.wp.value
     readonly property int m_mode: mandala.cmd.op.mode.value
 
     color: Style.cTaxiway
