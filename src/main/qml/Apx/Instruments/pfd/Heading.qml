@@ -5,14 +5,14 @@ import "."
 Item {
     id: hdg_window
 
-    readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_man: mandala.cmd.op.man.value
+    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_course: mandala.est.pos.course
     readonly property var f_cmd_course: mandala.cmd.pos.course
     readonly property var f_thdg: mandala.est.ctr.thdg
-    readonly property var f_adj: mandala.cmd.op.adj
+    readonly property var f_adj: mandala.cmd.proc.adj
 
     readonly property var f_nomag: mandala.cmd.ahrs.nomag
     readonly property var f_rud: mandala.ctr.att.rud
@@ -22,7 +22,7 @@ Item {
 
     readonly property bool nomag: f_nomag.value > 0 || f_att_mag.value === att_mag_blocked
 
-    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
+    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     //instrument item
     property double animation_duration: 500
@@ -278,11 +278,11 @@ Item {
     }
 
     property bool isShiftControl:
-        m_mode===op_mode_LANDING ||
-        m_mode===op_mode_TAKEOFF ||
-        m_mode===op_mode_TAXI ||
-        (m_mode===op_mode_WPT && m_man===op_man_track) ||
-        m_mode===op_mode_STBY
+        m_mode===proc_mode_LANDING ||
+        m_mode===proc_mode_TAKEOFF ||
+        m_mode===proc_mode_TAXI ||
+        (m_mode===proc_mode_WPT && m_man===proc_man_track) ||
+        m_mode===proc_mode_STBY
 
     MouseArea {
         anchors.fill: parent

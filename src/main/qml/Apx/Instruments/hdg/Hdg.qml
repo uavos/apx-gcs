@@ -5,8 +5,8 @@ import "."
 
 Item {
 
-    readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_man: mandala.cmd.op.man.value
+    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property real m_yaw: f_yaw.value
@@ -26,7 +26,7 @@ Item {
     readonly property var f_wpt_dist: mandala.est.wpt.dist
     readonly property var f_wpt_hdg: mandala.est.wpt.hdg
 
-    readonly property var f_adj: mandala.cmd.op.adj
+    readonly property var f_adj: mandala.cmd.proc.adj
     readonly property var f_delta: mandala.est.ctr.delta
 
     readonly property var f_lat: mandala.est.pos.lat
@@ -36,7 +36,7 @@ Item {
     readonly property var f_loops: mandala.est.ctr.loops
 
     readonly property var f_eta: mandala.est.wpt.eta
-    readonly property var f_wpidx: mandala.cmd.op.wp
+    readonly property var f_wpidx: mandala.cmd.proc.wp
 
     readonly property var f_fuel: mandala.sns.fuel.capacity
     readonly property var f_frate: mandala.sns.fuel.rate
@@ -47,11 +47,11 @@ Item {
 
     property double animation_duration: 100
     property bool isLanding:
-        m_mode===op_mode_LANDING ||
-        m_mode===op_mode_TAKEOFF ||
-        m_mode===op_mode_TAXI || isTrack
+        m_mode===proc_mode_LANDING ||
+        m_mode===proc_mode_TAKEOFF ||
+        m_mode===proc_mode_TAXI || isTrack
 
-    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
+    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     Rectangle {
         id: hdg
@@ -292,7 +292,7 @@ Item {
 
             /*NumberHdg {
                 id: dh_text
-                property double v: (m_mode===op_mode_TAXI)?f_delta.value:f_ref_dist.value
+                property double v: (m_mode===proc_mode_TAXI)?f_delta.value:f_ref_dist.value
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 height: hdg.txtHeight
@@ -345,7 +345,7 @@ Item {
 
                 NumberHdg {
                     id: wpt_text
-                    visible: ui.test || m_mode===op_mode_WPT
+                    visible: ui.test || m_mode===proc_mode_WPT
                     smooth: ui.antialiasing
                     height: hdg.txtHeight
                     mfield: f_wpidx
@@ -356,7 +356,7 @@ Item {
 
                 NumberHdg {
                     id: poi_text
-                    visible: ui.test || (m_mode===op_mode_STBY && f_loops.value>0)
+                    visible: ui.test || (m_mode===proc_mode_STBY && f_loops.value>0)
                     smooth: ui.antialiasing
                     height: hdg.txtHeight
                     mfield: f_loops

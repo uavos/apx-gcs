@@ -8,7 +8,7 @@ import Apx.Common 1.0
 ListView {
     id: listView
 
-    readonly property var f_mode: mandala.cmd.op.mode
+    readonly property var f_mode: mandala.cmd.proc.mode
 
     implicitHeight: 32
 
@@ -35,8 +35,8 @@ ListView {
         ui_scale: 1
         text: f_mode.text
         property int v: f_mode.value
-        property bool warning: v==op_mode_EMG || v==op_mode_RPV || v==op_mode_HOME || v==op_mode_TAXI
-        property bool active: v==op_mode_LANDING || v==op_mode_TAKEOFF
+        property bool warning: v==proc_mode_EMG || v==proc_mode_RPV || v==proc_mode_HOME || v==proc_mode_TAXI
+        property bool active: v==proc_mode_LANDING || v==proc_mode_TAKEOFF
         color: "#000"
         titleColor: warning?Material.color(Material.Yellow):active?Material.color(Material.Blue):Qt.darker(Material.primaryTextColor,1.5)
         onTriggered: {

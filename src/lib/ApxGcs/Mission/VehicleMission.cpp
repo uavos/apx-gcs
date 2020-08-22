@@ -70,22 +70,22 @@ VehicleMission::VehicleMission(Vehicle *parent)
                             "runways",
                             tr("Runways"),
                             tr("Takeoff and Landing"),
-                            vehicle->f_mandala->fact(mandala::cmd::nav::op::rw::uid));
+                            vehicle->f_mandala->fact(mandala::cmd::nav::proc::rw::uid));
     f_waypoints = new Waypoints(this,
                                 "waypoints",
                                 tr("Waypoints"),
                                 "",
-                                vehicle->f_mandala->fact(mandala::cmd::nav::op::wp::uid));
+                                vehicle->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
     f_pois = new Pois(this,
                       "points",
                       tr("Points"),
                       tr("Points of Interest"),
-                      vehicle->f_mandala->fact(mandala::cmd::nav::op::pi::uid));
+                      vehicle->f_mandala->fact(mandala::cmd::nav::proc::pi::uid));
     f_taxiways = new Taxiways(this,
                               "taxiways",
                               tr("Taxiways"),
                               "",
-                              vehicle->f_mandala->fact(mandala::cmd::nav::op::wp::uid));
+                              vehicle->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
     f_areas = new Areas(this, "areas", tr("Area"), tr("Airspace definitions"));
 
     foreach (MissionGroup *group, groups) {

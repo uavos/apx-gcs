@@ -4,17 +4,17 @@ import "../common"
 Item {
     id: ils_window
 
-    readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_man: mandala.cmd.op.man.value
+    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property var f_delta: mandala.est.ctr.delta
     readonly property var f_xtrack: mandala.est.ctr.xtrack
 
     property double anumation_duration: 1000
 
-    property bool isLanding: m_mode===op_mode_LANDING
+    property bool isLanding: m_mode===proc_mode_LANDING
 
-    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
+    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     property double sz: (width>height?height:width)*0.6
 

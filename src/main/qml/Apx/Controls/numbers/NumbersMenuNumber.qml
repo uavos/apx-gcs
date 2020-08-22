@@ -121,7 +121,7 @@ Fact {
     Fact {
         name: "act"
         title: qsTr("Action")
-        descr: "cmd.op.action=op_action_cancel"
+        descr: "cmd.proc.action=proc_action_cancel"
         flags: Fact.Text
         onValueChanged: updateDescr()
     }

@@ -24,13 +24,13 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property real f_course: vm.est.pos.course.value
     readonly property real f_windHdg: vm.est.wind.heading.value
     readonly property real f_windSpd: vm.est.wind.speed.value
-    readonly property int f_mode: vm.cmd.op.mode.value
+    readonly property int f_mode: vm.cmd.proc.mode.value
 
-    readonly property bool f_LDTO: f_mode === op_mode_LANDING || f_mode === op_mode_TAKEOFF
+    readonly property bool f_LDTO: f_mode === proc_mode_LANDING || f_mode === proc_mode_TAKEOFF
 
     readonly property var f_xtrack: mandala.est.ctr.xtrack
     readonly property var f_thdg: mandala.est.ctr.thdg
-    readonly property int m_man: mandala.cmd.op.man.value
+    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property bool active: vehicle.active
 
@@ -39,7 +39,7 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property bool bGCU: vehicle.protocol.isGroundControl
     readonly property bool bLOCAL: vehicle.protocol.isLocal
 
-    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
+    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     Connections {
         target: vehicle

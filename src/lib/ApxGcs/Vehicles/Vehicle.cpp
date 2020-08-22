@@ -65,8 +65,8 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
 
     f_vspeed = f_mandala->fact(mandala::est::nav::pos::vspeed::uid);
-    f_mode = f_mandala->fact(mandala::cmd::nav::op::mode::uid);
-    f_stage = f_mandala->fact(mandala::cmd::nav::op::stage::uid);
+    f_mode = f_mandala->fact(mandala::cmd::nav::proc::mode::uid);
+    f_stage = f_mandala->fact(mandala::cmd::nav::proc::stage::uid);
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);
@@ -216,10 +216,10 @@ void Vehicle::updateCoordinate()
 }
 void Vehicle::updateFlightState()
 {
-    if ((f_mode->value().toUInt() == mandala::op_mode_LANDING)
+    if ((f_mode->value().toUInt() == mandala::proc_mode_LANDING)
         && (f_stage->value().toUInt() >= 250)) {
         setFlightState(FS_LANDED);
-    } else if ((f_mode->value().toUInt() == mandala::op_mode_TAKEOFF)
+    } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
                && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
     } else

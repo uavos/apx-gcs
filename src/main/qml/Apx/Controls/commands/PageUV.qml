@@ -7,10 +7,10 @@ import Apx.Common 1.0
 
 RowLayout {
 
-    readonly property var f_mode: mandala.cmd.op.mode
-    readonly property var f_stage: mandala.cmd.op.stage
-    readonly property var f_action: mandala.cmd.op.action
-    readonly property var f_adj: mandala.cmd.op.adj
+    readonly property var f_mode: mandala.cmd.proc.mode
+    readonly property var f_stage: mandala.cmd.proc.stage
+    readonly property var f_action: mandala.cmd.proc.action
+    readonly property var f_adj: mandala.cmd.proc.adj
 
     readonly property var f_flaps: mandala.ctr.wing.flaps
     readonly property var f_brake: mandala.ctr.str.brake
@@ -68,7 +68,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: f_stage.value<=1?"AUTO":"STOP"
-            value: op_action_next
+            value: proc_action_next
             width: height*4
             highlighted: v>1
             resetValue: 100
@@ -79,7 +79,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "NEXT"
-            value: op_action_next
+            value: proc_action_next
             width: height*4
             highlighted: false
         }
@@ -89,7 +89,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "NEXT"
-            value: op_action_inc
+            value: proc_action_inc
             width: height*4
             highlighted: false
         }
@@ -99,7 +99,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "PREV"
-            value: op_action_dec
+            value: proc_action_dec
             width: height*4
             highlighted: false
         }
@@ -109,7 +109,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "CANCEL"
-            value: op_action_cancel
+            value: proc_action_cancel
             width: height*4
             highlighted: false
         }
@@ -119,7 +119,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "RESET"
-            value: op_action_cancel
+            value: proc_action_cancel
             width: height*4
             highlighted: false
         }

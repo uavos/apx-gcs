@@ -10,9 +10,9 @@ import APX.Mission 1.0 as APX
 MissionObject {
     id: runwayItem
 
-    readonly property int m_rwidx: mandala.cmd.op.rw.value
-    readonly property bool m_mode: mandala.cmd.op.mode.value
-    readonly property real m_radius: mandala.cmd.op.radius.value
+    readonly property int m_rwidx: mandala.cmd.proc.rw.value
+    readonly property bool m_mode: mandala.cmd.proc.mode.value
+    readonly property real m_radius: mandala.cmd.proc.radius.value
     readonly property real m_delta: mandala.est.ctr.delta.value
 
     color: Style.cRunway
@@ -33,7 +33,7 @@ MissionObject {
     property int num: fact?fact.num:0
 
     property bool is_current: m_rwidx === num
-    property bool is_landing: m_mode === op_mode_LANDING && is_current
+    property bool is_landing: m_mode === proc_mode_LANDING && is_current
 
     function updateEndPoint(coord)
     {

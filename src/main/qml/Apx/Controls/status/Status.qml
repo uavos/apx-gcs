@@ -7,19 +7,19 @@ import Apx.Common 1.0
 
 Rectangle {
 
-    readonly property int m_mode: mandala.cmd.op.mode.value
-    readonly property int m_man: mandala.cmd.op.man.value
-    readonly property real m_adj: mandala.cmd.op.adj.value
+    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_man: mandala.cmd.proc.man.value
+    readonly property real m_adj: mandala.cmd.proc.adj.value
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_wpt_dist: mandala.est.wpt.dist
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_energy: mandala.est.sys.energy
-    readonly property var f_wpidx: mandala.cmd.op.wp
+    readonly property var f_wpidx: mandala.cmd.proc.wp
     readonly property var f_loops: mandala.est.ctr.loops
     readonly property var f_xtrack: mandala.est.ctr.xtrack
-    readonly property var f_radius: mandala.cmd.op.radius
+    readonly property var f_radius: mandala.cmd.proc.radius
     readonly property var f_agl: mandala.est.pos.agl
 
 
@@ -39,11 +39,11 @@ Rectangle {
     readonly property real itemHeight: height/15//*ui.scale
 
     property bool isLanding:
-        m_mode===op_mode_LANDING ||
-        m_mode===op_mode_TAKEOFF ||
-        m_mode===op_mode_TAXI
+        m_mode===proc_mode_LANDING ||
+        m_mode===proc_mode_TAKEOFF ||
+        m_mode===proc_mode_TAXI
 
-    property bool isTrack: m_man===op_man_track || m_man===op_man_loiter
+    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     ProgressBar {
         anchors.left: parent.left
@@ -187,14 +187,14 @@ Rectangle {
                 title: qsTr("WPT")
                 fact: f_wpidx
                 value: fact.value+1
-                visible: ui.test || (m_mode===op_mode_WPT || m_mode===op_mode_STBY)
+                visible: ui.test || (m_mode===proc_mode_WPT || m_mode===proc_mode_STBY)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
                 title: qsTr("LPS")
                 fact: f_loops
-                visible: ui.test || (m_mode===op_mode_STBY && fact.value>0)
+                visible: ui.test || (m_mode===proc_mode_STBY && fact.value>0)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
@@ -210,7 +210,7 @@ Rectangle {
             FactValue {
                 title: qsTr("LR")
                 fact: f_radius
-                visible: ui.test || m_mode===op_mode_STBY || m_mode===op_mode_LANDING
+                visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
                 property real v: fact.value
                 value: v>=1000?(v/1000).toFixed(1):v.toFixed()
                 Layout.fillWidth: true

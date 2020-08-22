@@ -9,7 +9,7 @@ import "../common"
 Item {
     id: pfd
 
-    readonly property var f_mode: mandala.cmd.op.mode
+    readonly property var f_mode: mandala.cmd.proc.mode
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
@@ -63,7 +63,7 @@ Item {
 
     readonly property var f_ref_altitude: mandala.est.ref.altitude
 
-    readonly property var f_op_man: mandala.cmd.op.man
+    readonly property var f_op_man: mandala.cmd.proc.man
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
@@ -435,7 +435,7 @@ Item {
                 id: hoverFlag
                 height: pfdScene.flagHeight
                 fact: f_op_man
-                status_show: op_man_track
+                status_show: proc_man_track
                 blinking: false
                 type: CleanText.Green
                 text: fact.text

@@ -10,7 +10,7 @@ import Apx.Menu 1.0
 Rectangle {
     id: root
 
-    readonly property var f_mode: mandala.cmd.op.mode
+    readonly property var f_mode: mandala.cmd.proc.mode
 
 
     border.width: 0
@@ -94,32 +94,32 @@ Rectangle {
                 var body
                 switch(f_mode.value){
                 default: modes=f_mode.enumStrings; break;
-                case op_mode_EMG:
+                case proc_mode_EMG:
                     modes=["RPV","TAXI"]
                     body="EMG"
                     break
-                case op_mode_RPV:
+                case proc_mode_RPV:
                     modes=["UAV","WPT"]
                     break
-                case op_mode_UAV:
+                case proc_mode_UAV:
                     modes=["WPT","LANDING"]
                     break
-                case op_mode_WPT:
+                case proc_mode_WPT:
                     modes=["STBY","LANDING"]
                     break
-                case op_mode_HOME:
+                case proc_mode_HOME:
                     modes=["WPT","LANDING"]
                     break
-                case op_mode_STBY:
+                case proc_mode_STBY:
                     modes=["WPT","LANDING"]
                     break
-                case op_mode_TAXI:
+                case proc_mode_TAXI:
                     modes=["TAKEOFF","EMG"]
                     break
-                case op_mode_TAKEOFF:
+                case proc_mode_TAKEOFF:
                     modes=["WPT","STBY"]
                     break
-                case op_mode_LANDING:
+                case proc_mode_LANDING:
                     modes=["WPT","STBY"]
                     break
                 }
