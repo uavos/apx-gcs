@@ -10,8 +10,8 @@ MapCircle {
     border.width: 1
 
     //Fact bindings
-    property real cmd_lat: mandala.cmd.pos.lat.value
-    property real cmd_lon: mandala.cmd.pos.lon.value
+    readonly property real cmd_lat: mandala.cmd.pos.lat.value
+    readonly property real cmd_lon: mandala.cmd.pos.lon.value
 
     property real turnR: mandala.cmd.proc.radius.value
     property bool landing: mandala.cmd.proc.mode.value === proc_mode_LANDING

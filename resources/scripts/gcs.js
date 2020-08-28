@@ -54,7 +54,6 @@ function btn_EMG(){ mode=mode_EMG; }
 function btn_RPV(){ mode=mode_RPV; }
 function btn_UAV(){ mode=mode_UAV; }
 function btn_WPT(){ mode=mode_WPT; }
-function btn_HOME(){ mode=mode_HOME; }
 function btn_STBY(){ mode=mode_STBY; }
 function btn_TAXI(){ mode=mode_TAXI; }
 function btn_TAKEOFF(){ mode=mode_TAKEOFF; }

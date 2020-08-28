@@ -77,10 +77,14 @@ void FactPropertyBinding::propertyChanged()
         //qDebug() << "blocked" << _src->name() << "->" << _dst->name() << _name;
         return;
     }
+    QVariant v = _psrc.read(_src);
+    if (v == _pdst.read(_dst))
+        return;
+
     if (_src_binding)
         _src_binding->block();
 
-    _pdst.write(_dst, _psrc.read(_src));
+    _pdst.write(_dst, v);
 
     if (_src_binding)
         _src_binding->unblock();

@@ -2,6 +2,7 @@
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
+import QtPositioning 5.12
 
 import Apx.Common 1.0
 
@@ -13,7 +14,6 @@ Rectangle {
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
     readonly property var f_hmsl: mandala.est.pos.hmsl
-    readonly property var f_wpt_dist: mandala.est.wpt.dist
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_energy: mandala.est.sys.energy
     readonly property var f_wpidx: mandala.cmd.proc.wp
@@ -29,6 +29,12 @@ Rectangle {
     readonly property bool m_agl_warning: m_agl_status===agl_status_warning
     readonly property bool m_agl_failure: m_agl_status===agl_status_failure
     readonly property bool m_agl_ready: m_agl_status===agl_status_ready
+
+    readonly property real m_cmd_lat: mandala.cmd.pos.lat.value
+    readonly property real m_cmd_lon: mandala.cmd.pos.lon.value
+    readonly property real wp_dist: (m_cmd_lat!=0 && m_cmd_lon!=0)
+                                    ? apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
+                                    : 0
 
     border.width: 0
     color: "#000"
@@ -147,10 +153,10 @@ Rectangle {
                 Layout.preferredHeight: itemHeight
             }
             FactValue {
-                title: qsTr("DME")
-                fact: f_wpt_dist
-                property real v: fact.value
-                value: v>=1000?(v/1000).toFixed(1):v.toFixed()
+                title: qsTr("D")
+                descr: qsTr("Distance to waypoint")
+                value: wp_dist>0?apx.distanceToString(wp_dist):"--"
+                valueScale: 0.8
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }

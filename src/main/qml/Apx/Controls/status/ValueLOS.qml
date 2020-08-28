@@ -17,7 +17,9 @@ FactValue {
     readonly property real m_rss: mandala.sns.com.rss.value
 
     property double v: Math.sqrt(Math.pow(m_dist,2) + Math.pow(m_hmsl-m_ref_hmsl,2))
-    value: v>=1000?(v/1000).toFixed(1):v.toFixed()
+    value: v>1000000?"--":apx.distanceToString(v)
+
+    valueScale: 0.8
 
     property int err: apx.vehicles.current.protocol.errcnt
     Timer {

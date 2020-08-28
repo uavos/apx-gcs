@@ -107,9 +107,6 @@ Rectangle {
                 case proc_mode_WPT:
                     modes=["STBY","LANDING"]
                     break
-                case proc_mode_HOME:
-                    modes=["WPT","LANDING"]
-                    break
                 case proc_mode_STBY:
                     modes=["WPT","LANDING"]
                     break

@@ -1,4 +1,5 @@
 import QtQuick 2.2
+import QtPositioning 5.12
 
 import "../common"
 import "."
@@ -23,9 +24,6 @@ Item {
     //readonly property var f_ref_dist: mandala.est.ref.dist
     //readonly property var f_ref_hdg: mandala.est.ref.hdg
 
-    readonly property var f_wpt_dist: mandala.est.wpt.dist
-    readonly property var f_wpt_hdg: mandala.est.wpt.hdg
-
     readonly property var f_adj: mandala.cmd.proc.adj
     readonly property var f_delta: mandala.est.ctr.delta
 
@@ -42,6 +40,12 @@ Item {
     readonly property var f_frate: mandala.sns.fuel.rate
 
 
+    readonly property real m_cmd_lat: mandala.cmd.pos.lat.value
+    readonly property real m_cmd_lon: mandala.cmd.pos.lon.value
+    readonly property real wp_dist: apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
+    readonly property real wp_hdg: apx.vehicles.current.coordinate.azimuthTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
+
+
     implicitWidth: 400
     implicitHeight: 400
 
@@ -52,6 +56,7 @@ Item {
         m_mode===proc_mode_TAXI || isTrack
 
     property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
+
 
     Rectangle {
         id: hdg
@@ -219,12 +224,12 @@ Item {
             HdgImage {
                 elementName: "hdg-wpt-blue"
                 smooth: ui.antialiasing
-                visible: ui.test || f_wpt_dist.value>5
+                visible: ui.test || wp_dist>5
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: elementBounds.width*wheel.sf
                 height: elementBounds.height*wheel.sf
-                rotation: apx.angle(-(m_yaw-f_wpt_hdg.value))
+                rotation: apx.angle(-(m_yaw-wp_hdg))
                 Behavior on rotation { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             }
 
@@ -318,12 +323,10 @@ Item {
 
                 NumberHdg {
                     id: dme_text
-                    property double v: f_wpt_dist.value
                     smooth: ui.antialiasing
                     height: hdg.txtHeight
-                    mfield: f_wpt_dist
                     label: qsTr("DME")
-                    text: v>=1000?(v/1000).toFixed(1)+"km":v.toFixed()
+                    text: apx.distanceToString(wp_dist)
                 }
 
                 Text {

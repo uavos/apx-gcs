@@ -35,7 +35,7 @@ ListView {
         ui_scale: 1
         text: f_mode.text
         property int v: f_mode.value
-        property bool warning: v==proc_mode_EMG || v==proc_mode_RPV || v==proc_mode_HOME || v==proc_mode_TAXI
+        property bool warning: v==proc_mode_EMG || v==proc_mode_RPV || v==proc_mode_TAXI
         property bool active: v==proc_mode_LANDING || v==proc_mode_TAKEOFF
         color: "#000"
         titleColor: warning?Material.color(Material.Yellow):active?Material.color(Material.Blue):Qt.darker(Material.primaryTextColor,1.5)

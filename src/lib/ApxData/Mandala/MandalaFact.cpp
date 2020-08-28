@@ -123,8 +123,8 @@ bool MandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
     bool rv = Fact::setValue(v);
-    if (!rv)
-        return false;
+    //    if (!rv)
+    //        return false;
 
     //qDebug() << name() << text() << rv;
     if (sendTimer.isActive())
