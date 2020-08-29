@@ -22,8 +22,8 @@ Fact {
         title: mandala.ctr.eng.title
         icon: "engine"
         Fact { binding: mandala.ctr.eng.choke; flags: Fact.Bool; }
-        Fact { binding: mandala.cmd.opt.thrcut; flags: Fact.Bool; }
-        Fact { binding: mandala.cmd.opt.throvr; flags: Fact.Bool; }
+        Fact { binding: mandala.cmd.eng.cut; flags: Fact.Bool; }
+        Fact { binding: mandala.cmd.eng.ovr; flags: Fact.Bool; }
         Fact { enabled: false }
         Fact { binding: mandala.ctr.pwr.ignition; flags: Fact.Bool; }
         Fact {

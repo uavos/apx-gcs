@@ -40,7 +40,7 @@ FactValue {
             font.pixelSize: fontSize(bodyHeight*valueSize)
             verticalAlignment: Text.AlignVCenter
             text: "0%1".arg(apx.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
-            color: apx.datalink.online?(apx.vehicles.current.protocol.streamType===Vehicle.TELEMETRY?cGreen:cCyan):cRed
+            color: apx.datalink.online?(apx.vehicles.current.protocol.streamType===ProtocolVehicle.TELEMETRY?cGreen:cCyan):cRed
         },
         Text {
             Layout.maximumHeight: bodyHeight-Layout.topMargin

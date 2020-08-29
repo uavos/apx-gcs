@@ -4,6 +4,8 @@ import QtPositioning 5.12
 
 import Apx.Map.Common 1.0
 
+import APX.Vehicles 1.0 as APX
+
 MapPolyline {
     opacity: ui.effects?0.8:1
     line.width: replay?1.5:1.5
@@ -13,7 +15,7 @@ MapPolyline {
                   ? Style.cLineGreen
                   : Style.cBlue
 
-    property var vehicle: apx.vehicles.current
+    property APX.Vehicle vehicle: apx.vehicles.current
 
     property bool replay: vehicle.protocol.isReplay
 

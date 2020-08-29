@@ -44,6 +44,11 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
 
     qmlRegisterUncreatableType<Vehicles>("APX.Vehicles", 1, 0, "Vehicles", "Reference only");
     qmlRegisterUncreatableType<Vehicle>("APX.Vehicles", 1, 0, "Vehicle", "Reference only");
+    qmlRegisterUncreatableType<ProtocolVehicle>("APX.Vehicles",
+                                                1,
+                                                0,
+                                                "ProtocolVehicle",
+                                                "Reference only");
     qmlRegisterUncreatableType<VehicleWarnings>("APX.Vehicles",
                                                 1,
                                                 0,

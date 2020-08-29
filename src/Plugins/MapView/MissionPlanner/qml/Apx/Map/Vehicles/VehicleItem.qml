@@ -12,7 +12,7 @@ import APX.Vehicles 1.0 as APX
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
 
-    readonly property APX.Vehicle vehicle: modelData
+    readonly property var vehicle: modelData
 
     //Fact bindings
     readonly property var vm: vehicle.mandala
@@ -30,7 +30,9 @@ MapQuickItem {  //to be used inside MapComponent only
 
     readonly property var f_xtrack: mandala.est.ctr.xtrack
     readonly property var f_thdg: mandala.est.ctr.thdg
-    readonly property int m_man: mandala.cmd.proc.man.value
+
+    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
+    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
 
     readonly property bool active: vehicle.active
 
@@ -39,7 +41,6 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property bool bGCU: vehicle.protocol.isGroundControl
     readonly property bool bLOCAL: vehicle.protocol.isLocal
 
-    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     Connections {
         target: vehicle

@@ -6,6 +6,8 @@ import QtQuick.Controls.Material 2.2
 import Apx.Common 1.0
 import Apx.Menu 1.0
 
+import APX.Vehicles 1.0 as APX
+
 
 Rectangle {
     id: root
@@ -23,7 +25,7 @@ Rectangle {
 
     readonly property int margins: 3
 
-    property var vehicle: apx.vehicles.current
+    property APX.Vehicle vehicle: apx.vehicles.current
 
     //sizes
     readonly property int buttonHeight: width*0.1//,32)

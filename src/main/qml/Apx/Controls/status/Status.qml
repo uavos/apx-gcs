@@ -9,7 +9,6 @@ import Apx.Common 1.0
 Rectangle {
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
-    readonly property int m_man: mandala.cmd.proc.man.value
     readonly property real m_adj: mandala.cmd.proc.adj.value
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
@@ -36,6 +35,9 @@ Rectangle {
                                     ? apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
                                     : 0
 
+    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
+    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+
     border.width: 0
     color: "#000"
     implicitWidth: itemHeight*4
@@ -48,8 +50,6 @@ Rectangle {
         m_mode===proc_mode_LANDING ||
         m_mode===proc_mode_TAKEOFF ||
         m_mode===proc_mode_TAXI
-
-    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     ProgressBar {
         anchors.left: parent.left

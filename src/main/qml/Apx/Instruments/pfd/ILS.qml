@@ -5,16 +5,16 @@ Item {
     id: ils_window
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
-    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property var f_delta: mandala.est.ctr.delta
     readonly property var f_xtrack: mandala.est.ctr.xtrack
 
+    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
+    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+
     property double anumation_duration: 1000
 
     property bool isLanding: m_mode===proc_mode_LANDING
-
-    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     property double sz: (width>height?height:width)*0.6
 

@@ -7,7 +7,6 @@ import "."
 Item {
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
-    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property real m_yaw: f_yaw.value
@@ -45,6 +44,8 @@ Item {
     readonly property real wp_dist: apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
     readonly property real wp_hdg: apx.vehicles.current.coordinate.azimuthTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
 
+    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
+    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
 
     implicitWidth: 400
     implicitHeight: 400
@@ -55,7 +56,6 @@ Item {
         m_mode===proc_mode_TAKEOFF ||
         m_mode===proc_mode_TAXI || isTrack
 
-    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
 
     Rectangle {

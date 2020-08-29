@@ -12,9 +12,10 @@ Item {
     readonly property var f_mode: mandala.cmd.proc.mode
 
     readonly property var f_yaw: mandala.est.att.yaw
-    readonly property var f_cmd_airspeed: mandala.cmd.air.airspeed
+    readonly property var f_cmd_airspeed: mandala.cmd.pos.airspeed
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
+    readonly property var f_gps_src: mandala.sns.gps.src
     readonly property var f_gps_fix: mandala.sns.gps.fix
     readonly property var f_gps_emi: mandala.sns.gps.emi
     readonly property var f_gps_su: mandala.sns.gps.su
@@ -26,8 +27,10 @@ Item {
     readonly property var f_ktas: mandala.est.air.ktas
     readonly property var f_ld: mandala.est.air.ld
 
-    readonly property var f_thrcut: mandala.cmd.opt.thrcut
-    readonly property var f_throvr: mandala.cmd.opt.throvr
+    readonly property var f_ctr_thr: mandala.cmd.eng.ctr
+    readonly property var f_ctr_throvr: mandala.cmd.eng.ovr
+    readonly property var f_ctr_thrcut: mandala.cmd.eng.cut
+
     readonly property var f_thr: mandala.ctr.eng.thr
     readonly property var f_rc_thr: mandala.cmd.rc.thr
 
@@ -63,7 +66,7 @@ Item {
 
     readonly property var f_ref_altitude: mandala.est.ref.altitude
 
-    readonly property var f_op_man: mandala.cmd.proc.man
+    readonly property var f_ctr_pos: mandala.cmd.pos.ctr
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
@@ -75,6 +78,7 @@ Item {
     readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
 
 
+    readonly property bool isValid: f_att_status.value > 0
 
     clip: true
 
@@ -253,10 +257,10 @@ Item {
                     visible: ui.test || status > ers_status_ok || blocked
 
                     type: disarmed
-                           ? blocked
-                             ? CleanText.Green
-                             : CleanText.Black
-                           : CleanText.Red
+                          ? blocked
+                            ? CleanText.Green
+                            : CleanText.Black
+                    : CleanText.Red
                     prefix: qsTr("ERS")
                 }
 
@@ -290,8 +294,8 @@ Item {
                     visible: ui.test || emi > gps_emi_ok
 
                     type: (emi === gps_emi_warning)
-                           ? CleanText.Normal
-                           : CleanText.Red
+                          ? CleanText.Normal
+                          : CleanText.Red
 
                     blinking: emi > gps_emi_warning
                 }
@@ -301,6 +305,7 @@ Item {
                     title: qsTr("GPS")
                     toolTip: f_gps_fix.title+", "+f_gps_su.title+"/"+f_gps_sv.title
 
+                    readonly property int src: f_gps_src.value
                     readonly property int fix: f_gps_fix.value
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
@@ -312,7 +317,7 @@ Item {
                     readonly property bool isErr: ref && (!avail)
                     readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && fix >= gps_fix_3D
 
-                    show: f_att_status.value > 0
+                    show: isValid || su>0 || sv>0 || fix>0 || src>0
 
                     type_default: ref?CleanText.Clean:CleanText.Normal
                     failure: isErr
@@ -373,7 +378,7 @@ Item {
                 CleanText { // height source
                     anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
-                    visible: ui.test || ( fact.value !== pos_hsrc_gps && f_att_status.value>0)
+                    visible: ui.test || ( fact.value !== pos_hsrc_gps && isValid)
                     height: pfdScene.txtHeight*0.5
                     fact: f_pos_hsrc
                     type: CleanText.Clean
@@ -431,14 +436,17 @@ Item {
             anchors.leftMargin: 4
             spacing: 4
 
-            StatusFlag {
-                id: hoverFlag
+            StatusFlag { // pos control mode
                 height: pfdScene.flagHeight
-                fact: f_op_man
-                status_show: proc_man_track
+                fact: f_ctr_pos
+                show: ui.test || (status != pos_ctr_direct && isValid)
                 blinking: false
-                type: CleanText.Green
                 text: fact.text
+                type: status===pos_ctr_off
+                      ? CleanText.White
+                      : (status===pos_ctr_hdg || status===pos_ctr_hover)
+                        ? CleanText.Yellow
+                        : CleanText.Green
             }
             StatusFlag {
                 id: airbrkFlag
@@ -486,7 +494,7 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_ahrs_inair
                 text: qsTr("AIR")
-                show: ui.test || ( fact.value <= 0 && f_att_status.value > 0)
+                show: ui.test || ( fact.value <= 0 && isValid)
                 status_reset: ahrs_inair_yes
             }
         }
@@ -566,8 +574,8 @@ Item {
             anchors.bottom: parent.verticalCenter
             anchors.left: left_window.right
             anchors.right: right_window.left
-            text: apx.vehicles.current.protocol.streamType===Vehicle.XPDR?qsTr("XPDR"):qsTr("NO DATA")
-            visible: !apx.vehicles.current.protocol.isReplay && apx.datalink.valid && (apx.vehicles.current.protocol.streamType!==Vehicle.TELEMETRY)
+            text: apx.vehicles.current.protocol.text
+            visible: !apx.vehicles.current.protocol.isReplay && apx.datalink.valid && (apx.vehicles.current.protocol.streamType!==ProtocolVehicle.TELEMETRY)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow
@@ -610,8 +618,8 @@ Item {
                     height: pfdScene.txtHeight*0.7
                     fact: f_eng_tc
                     type: v >= eng_tc_warning
-                           ? CleanText.Red
-                           : CleanText.Clean
+                          ? CleanText.Red
+                          : CleanText.Clean
                     blinking: v > eng_tc_warning
                 }
                 BlinkingText { // engine status
@@ -621,8 +629,8 @@ Item {
                     height: pfdScene.txtHeight*0.7
                     fact: f_eng_status
                     type: ctr
-                           ? (v == eng_status_start ? CleanText.Green : CleanText.Red )
-                           : CleanText.Clean
+                          ? (v == eng_status_start ? CleanText.Green : CleanText.Red )
+                          : CleanText.Clean
                     blinking: ctr
                 }
             }
@@ -634,17 +642,21 @@ Item {
                 height: pfdScene.txtHeight
                 fact: f_thr
                 title: qsTr("T")
-                readonly property bool throvr: f_throvr.value
-                readonly property bool thrcut: f_thrcut.value
-                text: thrcut?qsTr("CUT"):(value*100).toFixed()
-                toolTip: fact.title +"[x100]"+", "+f_thrcut.title+" ("+qsTr("red")+"), "+f_throvr.title+" ("+qsTr("blue")+")"
+                readonly property bool thrctr: f_ctr_thr.value
+                readonly property bool throvr: f_ctr_throvr.value
+                readonly property bool thrcut: f_ctr_thrcut.value
+                text: (thrcut && value==0)?qsTr("CUT"):(value*100).toFixed()
+                toolTip: fact.title +"[%]"+", "+f_ctr_thrcut.title+" ("+qsTr("red")+"), "+f_ctr_throvr.title+" ("+qsTr("blue")+"), "+f_ctr_thr.title+" ("+qsTr("yellow")+")"
                 show: true
                 blinking: value>=0.98
+                frame: !(thrctr || throvr || thrcut)
                 type: throvr
                       ? CleanText.Blue
                       : thrcut
                         ? CleanText.Red
-                        : value >= 0.9
+                        : !thrctr
+                          ? CleanText.Yellow
+                          : value >= 0.9
                             ? CleanText.Normal
                             : CleanText.Clean
             }

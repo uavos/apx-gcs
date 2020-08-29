@@ -29,6 +29,7 @@ Item {
     property int fontSize: Math.max(4, fix_font?(height*1.2):height)
 
     property bool show: true
+    property bool frame: false
 
     property color bgColor: {
         switch(type){
@@ -43,6 +44,8 @@ Item {
         }
     }
     property color textColor: {
+        if(frame)
+            return "white"
         switch(type){
             default: return "white"
             case CleanText.Yellow:
@@ -63,6 +66,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
+        visible: !frame
         color: bgColor
         opacity: hide_bg?0:1
         radius: 2
@@ -96,6 +100,15 @@ Item {
             font.bold: (control.font !== font_narrow)
             color: textColor
         }
+    }
+    Rectangle {
+        anchors.fill: _body
+        anchors.leftMargin: _prefixItems.width
+        visible: frame
+        color: "transparent"
+        radius: 2
+        border.width: 1
+        border.color: bgColor
     }
 
     ToolTipArea {

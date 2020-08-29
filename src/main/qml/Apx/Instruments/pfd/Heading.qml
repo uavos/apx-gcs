@@ -6,7 +6,6 @@ Item {
     id: hdg_window
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
-    readonly property int m_man: mandala.cmd.proc.man.value
 
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_course: mandala.est.pos.course
@@ -19,10 +18,12 @@ Item {
 
     readonly property var f_att_mag: mandala.est.att.mag
 
+    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
+    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+
 
     readonly property bool nomag: f_nomag.value > 0 || f_att_mag.value === att_mag_blocked
 
-    property bool isTrack: m_man===proc_man_track || m_man===proc_man_loiter
 
     //instrument item
     property double animation_duration: 500
@@ -281,7 +282,7 @@ Item {
         m_mode===proc_mode_LANDING ||
         m_mode===proc_mode_TAKEOFF ||
         m_mode===proc_mode_TAXI ||
-        (m_mode===proc_mode_WPT && m_man===proc_man_track) ||
+        (m_mode===proc_mode_WPT && isTrack) ||
         m_mode===proc_mode_STBY
 
     MouseArea {

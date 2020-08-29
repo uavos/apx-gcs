@@ -25,7 +25,11 @@ Item {
     readonly property real m_elv: mandala.ctr.att.elv.value
 
     readonly property real m_slip: mandala.est.air.slip.value
+    readonly property real m_cmd_slip: mandala.cmd.hdg.slip.value
 
+    readonly property bool m_att_ctr: mandala.cmd.att.ctr.value
+
+    readonly property int m_hdg_ctr: mandala.cmd.hdg.ctr.value
 
 
     property bool showHeading: true
@@ -44,7 +48,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: ui.effects?((apx.datalink.valid && !(apx.vehicles.current.protocol.streamType===Vehicle.XPDR||apx.vehicles.current.protocol.streamType===Vehicle.TELEMETRY))?0.7:1):1
+    opacity: ui.effects?((apx.datalink.valid && !(apx.vehicles.current.protocol.streamType===ProtocolVehicle.XPDR||apx.vehicles.current.protocol.streamType===ProtocolVehicle.TELEMETRY))?0.7:1):1
 
     Item{
         id: horizon_bg
@@ -138,13 +142,26 @@ Item {
             elementName: "sideslip-moving"
             //smooth: ui.antialiasing
             rotation: -m_slip
+            Behavior on rotation { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
             fillMode: Image.PreserveAspectFit
             width: roll_scale_image.width
             height: roll_scale_image.height
             anchors.fill: parent
             anchors.topMargin: roll_scale_image.anchors.topMargin
             anchors.bottomMargin: anchors.topMargin
+        }
+        PfdImage {
+            id: sideslip_cmd
+            elementName: m_hdg_ctr==hdg_ctr_slip?"sideslip-cmd":"sideslip-cmd-dash"
+            rotation: -m_cmd_slip
+            visible: m_hdg_ctr > hdg_ctr_yaw
             Behavior on rotation { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
+            fillMode: Image.PreserveAspectFit
+            width: roll_scale_image.width
+            height: roll_scale_image.height
+            anchors.fill: parent
+            anchors.topMargin: roll_scale_image.anchors.topMargin
+            anchors.bottomMargin: anchors.topMargin
         }
 
         Rectangle {
@@ -201,7 +218,8 @@ Item {
         antialiasing: ui.smooth
         width: apx.limit(diagonal*0.006,2,8)
         height: parent.width*0.2
-        color: "magenta"
+        color: m_att_ctr?"magenta":"#ddd"
+        scale: m_att_ctr?1:0.7
         property double pos: -(m_roll-m_cmd_roll)*rollDeg2img
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: apx.limit(pos,-parent.width*0.2,parent.width*0.2)
@@ -213,7 +231,8 @@ Item {
         antialiasing: ui.smooth
         height: apx.limit(diagonal*0.006,2,8)
         width: parent.width*0.2
-        color: "magenta"
+        color: m_att_ctr?"magenta":"#ddd"
+        scale: m_att_ctr?1:0.7
         property double pos: (m_pitch-m_cmd_pitch)*pitchDeg2img
         anchors.centerIn: parent
         anchors.verticalCenterOffset: apx.limit(pos,-parent.height*0.4,parent.height*0.4)
