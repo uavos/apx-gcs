@@ -28,11 +28,11 @@ MapQuickItem {  //to be used inside MapComponent only
 
     readonly property bool f_LDTO: f_mode === proc_mode_LANDING || f_mode === proc_mode_TAKEOFF
 
-    readonly property var f_xtrack: mandala.est.ctr.xtrack
-    readonly property var f_thdg: mandala.est.ctr.thdg
+    readonly property var f_xtrack: mandala.est.wpt.xtrack
+    readonly property var f_thdg: mandala.est.wpt.thdg
 
-    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
-    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+    readonly property int m_reg_pos: mandala.cmd.reg.pos.value
+    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
     readonly property bool active: vehicle.active
 

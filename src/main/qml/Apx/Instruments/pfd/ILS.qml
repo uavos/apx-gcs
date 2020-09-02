@@ -6,11 +6,11 @@ Item {
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
 
-    readonly property var f_delta: mandala.est.ctr.delta
-    readonly property var f_xtrack: mandala.est.ctr.xtrack
+    readonly property var f_delta: mandala.est.wpt.delta
+    readonly property var f_xtrack: mandala.est.wpt.xtrack
 
-    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
-    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+    readonly property int m_reg_pos: mandala.cmd.reg.pos.value
+    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
     property double anumation_duration: 1000
 

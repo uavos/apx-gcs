@@ -25,11 +25,10 @@ Item {
     readonly property real m_elv: mandala.ctr.att.elv.value
 
     readonly property real m_slip: mandala.est.air.slip.value
-    readonly property real m_cmd_slip: mandala.cmd.hdg.slip.value
+    readonly property real m_cmd_slip: mandala.cmd.att.slip.value
 
-    readonly property bool m_att_ctr: mandala.cmd.att.ctr.value
-
-    readonly property int m_hdg_ctr: mandala.cmd.hdg.ctr.value
+    readonly property bool m_att_ctr: mandala.cmd.reg.att.value
+    readonly property int m_reg_yaw: mandala.cmd.reg.yaw.value
 
 
     property bool showHeading: true
@@ -152,9 +151,9 @@ Item {
         }
         PfdImage {
             id: sideslip_cmd
-            elementName: m_hdg_ctr==hdg_ctr_slip?"sideslip-cmd":"sideslip-cmd-dash"
+            elementName: m_reg_yaw==reg_yaw_slip?"sideslip-cmd":"sideslip-cmd-dash"
             rotation: -m_cmd_slip
-            visible: m_hdg_ctr > hdg_ctr_yaw
+            visible: m_reg_yaw > reg_yaw_hdg
             Behavior on rotation { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
             fillMode: Image.PreserveAspectFit
             width: roll_scale_image.width

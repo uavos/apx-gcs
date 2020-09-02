@@ -10,7 +10,7 @@ Item {
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_course: mandala.est.pos.course
     readonly property var f_cmd_course: mandala.cmd.pos.course
-    readonly property var f_thdg: mandala.est.ctr.thdg
+    readonly property var f_thdg: mandala.est.wpt.thdg
     readonly property var f_adj: mandala.cmd.proc.adj
 
     readonly property var f_nomag: mandala.cmd.ahrs.nomag
@@ -18,8 +18,8 @@ Item {
 
     readonly property var f_att_mag: mandala.est.att.mag
 
-    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
-    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+    readonly property int m_reg_pos: mandala.cmd.reg.pos.value
+    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
 
     readonly property bool nomag: f_nomag.value > 0 || f_att_mag.value === att_mag_blocked

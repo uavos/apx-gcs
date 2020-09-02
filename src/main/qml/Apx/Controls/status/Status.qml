@@ -16,8 +16,8 @@ Rectangle {
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_energy: mandala.est.sys.energy
     readonly property var f_wpidx: mandala.cmd.proc.wp
-    readonly property var f_loops: mandala.est.ctr.loops
-    readonly property var f_xtrack: mandala.est.ctr.xtrack
+    readonly property var f_loops: mandala.est.wpt.loops
+    readonly property var f_xtrack: mandala.est.wpt.xtrack
     readonly property var f_radius: mandala.cmd.proc.radius
     readonly property var f_agl: mandala.est.pos.agl
 
@@ -35,8 +35,8 @@ Rectangle {
                                     ? apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
                                     : 0
 
-    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
-    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+    readonly property int m_reg_pos: mandala.cmd.reg.pos.value
+    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
     border.width: 0
     color: "#000"

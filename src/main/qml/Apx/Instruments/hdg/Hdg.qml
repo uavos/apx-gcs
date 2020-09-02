@@ -15,22 +15,22 @@ Item {
     readonly property var f_cmd_course: mandala.cmd.pos.course
     readonly property real m_cmd_course: f_cmd_course.value
 
-    readonly property var f_thdg: mandala.est.ctr.thdg
+    readonly property var f_thdg: mandala.est.wpt.thdg
     readonly property real m_thdg: f_thdg.value
-    readonly property var f_xtrack: mandala.est.ctr.xtrack
+    readonly property var f_xtrack: mandala.est.wpt.xtrack
     readonly property real m_xtrack: f_xtrack.value
 
     //readonly property var f_ref_dist: mandala.est.ref.dist
     //readonly property var f_ref_hdg: mandala.est.ref.hdg
 
     readonly property var f_adj: mandala.cmd.proc.adj
-    readonly property var f_delta: mandala.est.ctr.delta
+    readonly property var f_delta: mandala.est.wpt.delta
 
     readonly property var f_lat: mandala.est.pos.lat
     readonly property var f_lon: mandala.est.pos.lon
 
     readonly property var f_speed: mandala.est.pos.speed
-    readonly property var f_loops: mandala.est.ctr.loops
+    readonly property var f_loops: mandala.est.wpt.loops
 
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_wpidx: mandala.cmd.proc.wp
@@ -44,8 +44,8 @@ Item {
     readonly property real wp_dist: apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
     readonly property real wp_hdg: apx.vehicles.current.coordinate.azimuthTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
 
-    readonly property int m_pos_ctr: mandala.cmd.pos.ctr.value
-    property bool isTrack: m_pos_ctr===pos_ctr_track || m_pos_ctr===pos_ctr_loiter
+    readonly property int m_reg_pos: mandala.cmd.reg.pos.value
+    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
     implicitWidth: 400
     implicitHeight: 400

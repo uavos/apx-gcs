@@ -27,9 +27,9 @@ Item {
     readonly property var f_ktas: mandala.est.air.ktas
     readonly property var f_ld: mandala.est.air.ld
 
-    readonly property var f_ctr_thr: mandala.cmd.eng.ctr
-    readonly property var f_ctr_throvr: mandala.cmd.eng.ovr
-    readonly property var f_ctr_thrcut: mandala.cmd.eng.cut
+    readonly property var f_reg_thr: mandala.cmd.reg.eng
+    readonly property var f_reg_throvr: mandala.cmd.eng.ovr
+    readonly property var f_reg_thrcut: mandala.cmd.eng.cut
 
     readonly property var f_thr: mandala.ctr.eng.thr
     readonly property var f_rc_thr: mandala.cmd.rc.thr
@@ -66,7 +66,9 @@ Item {
 
     readonly property var f_ref_altitude: mandala.est.ref.altitude
 
-    readonly property var f_ctr_pos: mandala.cmd.pos.ctr
+    readonly property var f_reg_pos: mandala.cmd.reg.pos
+
+    readonly property bool m_reg_air: mandala.cmd.reg.air.value
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
@@ -199,6 +201,7 @@ Item {
                 anchors.bottom: speed_window.top
                 anchors.topMargin: 3
                 anchors.leftMargin: parent.width*0.1
+                enabled: m_reg_air
             }
 
             Flags {
@@ -401,6 +404,7 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: altitude_window.top
                 anchors.topMargin: 3
+                enabled: m_reg_air
             }
             Row {
                 spacing: 2
@@ -438,13 +442,13 @@ Item {
 
             StatusFlag { // pos control mode
                 height: pfdScene.flagHeight
-                fact: f_ctr_pos
-                show: ui.test || (status != pos_ctr_direct && isValid)
+                fact: f_reg_pos
+                show: ui.test || (status != reg_pos_direct && isValid)
                 blinking: false
                 text: fact.text
-                type: status===pos_ctr_off
+                type: status===reg_pos_off
                       ? CleanText.White
-                      : (status===pos_ctr_hdg || status===pos_ctr_hover)
+                      : (status===reg_pos_hdg || status===reg_pos_hover)
                         ? CleanText.Yellow
                         : CleanText.Green
             }
@@ -642,11 +646,11 @@ Item {
                 height: pfdScene.txtHeight
                 fact: f_thr
                 title: qsTr("T")
-                readonly property bool thrctr: f_ctr_thr.value
-                readonly property bool throvr: f_ctr_throvr.value
-                readonly property bool thrcut: f_ctr_thrcut.value
+                readonly property bool thrctr: f_reg_thr.value
+                readonly property bool throvr: f_reg_throvr.value
+                readonly property bool thrcut: f_reg_thrcut.value
                 text: (thrcut && value==0)?qsTr("CUT"):(value*100).toFixed()
-                toolTip: fact.title +"[%]"+", "+f_ctr_thrcut.title+" ("+qsTr("red")+"), "+f_ctr_throvr.title+" ("+qsTr("blue")+"), "+f_ctr_thr.title+" ("+qsTr("yellow")+")"
+                toolTip: fact.title +"[%]"+", "+f_reg_thrcut.title+" ("+qsTr("red")+"), "+f_reg_throvr.title+" ("+qsTr("blue")+"), "+f_reg_thr.title+" ("+qsTr("yellow")+")"
                 show: true
                 blinking: value>=0.98
                 frame: !(thrctr || throvr || thrcut)

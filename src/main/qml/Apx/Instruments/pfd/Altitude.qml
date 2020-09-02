@@ -17,8 +17,10 @@ ControlArea {
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
     readonly property bool m_agl_available: m_agl_status===agl_status_available
-                                        || m_agl_status===agl_status_ready
-                                        || m_agl_status===agl_status_warning
+                                            || m_agl_status===agl_status_ready
+                                            || m_agl_status===agl_status_warning
+
+
 
     mvar: f_cmd_altitude   //ControlArea
     span: 20
