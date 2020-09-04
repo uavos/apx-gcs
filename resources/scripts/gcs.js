@@ -42,7 +42,7 @@ function jsw_Y(v,h){ rc_yaw=limit(v,-1,1); }
 
 // Encoders
 function inc_ALT(v){ cmd_altitude=limit(cmd_altitude+v,0,30000); }
-function inc_CRS(v){ cmd_course=bound(cmd_course+v); }
+function inc_CRS(v){ cmd.pos.course=bound(cmd.pos.course+v); }
 function inc_SPD(v){ cmd_airspeed=limit(cmd_airspeed+v,0,100); }
 function inc_ADJ(v){ rwAdj=limit(rwAdj+v,-100,+100); }
 function inc_FLAPS(v){ ctr_flaps=limit(ctr_flaps+v,0,1); }
