@@ -13,6 +13,7 @@ Column {
 
     //readonly property var f_lights: mandala.ctr.light.taxi
 
+    readonly property bool m_reg_brk: mandala.cmd.reg.brk.value
 
 
     property double txtHeight
@@ -43,12 +44,12 @@ Column {
         fact: f_brake
         text: qsTr("BRAKE")
         readonly property real v: fact.value
-        show: v > 0
-        type: CleanText.Yellow
+        show: m_reg_brk || v > 0
+        type: m_reg_brk?CleanText.Green:CleanText.Yellow
         CleanText {
             height: txtHeight
             fact: brakes.fact
-            show: brakes.show && brakes.v < 1
+            show: brakes.show && (brakes.v < 1 || m_reg_brk)
             anchors.left: parent.right
             anchors.leftMargin: 2
             text: (brakes.v*100).toFixed()

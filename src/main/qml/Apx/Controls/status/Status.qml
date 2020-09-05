@@ -18,7 +18,7 @@ Rectangle {
     readonly property var f_wpidx: mandala.cmd.proc.wp
     readonly property var f_loops: mandala.est.wpt.loops
     readonly property var f_xtrack: mandala.est.wpt.xtrack
-    readonly property var f_radius: mandala.cmd.proc.radius
+    readonly property var f_radius: mandala.cmd.pos.radius
     readonly property var f_agl: mandala.est.pos.agl
 
 

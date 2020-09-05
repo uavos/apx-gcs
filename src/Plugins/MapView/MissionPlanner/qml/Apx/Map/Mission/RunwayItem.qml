@@ -12,7 +12,7 @@ MissionObject {
 
     readonly property int m_rwidx: mandala.cmd.proc.rw.value
     readonly property bool m_mode: mandala.cmd.proc.mode.value
-    readonly property real m_radius: mandala.cmd.proc.radius.value
+    readonly property real m_radius: mandala.cmd.pos.radius.value
     readonly property real m_delta: mandala.est.wpt.delta.value
 
     color: Style.cRunway

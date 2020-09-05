@@ -16,6 +16,7 @@ RowLayout {
     readonly property var f_brake: mandala.ctr.str.brake
     readonly property var f_thr: mandala.cmd.rc.thr
 
+    readonly property bool m_reg_str: mandala.cmd.reg.str.value
 
     //spacing: buttonHeight/4
     ColumnLayout {
@@ -44,15 +45,29 @@ RowLayout {
 
     Component {
         id: btnFLP
-        CtrButton { title: "FLAPS"; fact: f_flaps; }
+        CtrButton {
+            title: "FLAPS"
+            fact: f_flaps
+            onTriggered: fact.value=highlighted?0:1
+            highlighted: fact.value>0
+        }
     }
     Component {
         id: btnBRK_TAXI
         CtrButton {
             title: "BRAKE"
             fact: f_brake
-            color: (v>0 && v<1)?Qt.darker(Material.color(Material.Orange),1.5):v==0?Material.color(Material.Red):undefined
+            readonly property real v: fact.value
+            color: (v>0 && v<1)?Qt.darker(Material.color(Material.Orange),1.5):undefined
             width: height*3
+            highlighted: v>0
+            onTriggered: {
+                if(m_reg_str){
+                    f_brake.value=1
+                }else{
+                    f_brake.value=v>0?0:1
+                }
+            }
         }
     }
     Component {
@@ -61,17 +76,18 @@ RowLayout {
             title: "BRAKE"
             fact: f_brake
             width: height*3
+            onTriggered: fact.value=highlighted?0:1
+            highlighted: fact.value>0
         }
     }
     Component {
         id: btnATAXI
         CtrButton {
             fact: f_action
-            title: f_stage.value<=1?"AUTO":"STOP"
-            value: proc_action_next
+            title: m_reg_str?"STOP":"AUTO"
             width: height*4
-            highlighted: v>1
-            resetValue: 100
+            highlighted: m_reg_str
+            onTriggered: fact.value=m_reg_str?proc_action_reset:proc_action_next
         }
     }
     Component {
@@ -79,9 +95,8 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "NEXT"
-            value: proc_action_next
             width: height*4
-            highlighted: false
+            onTriggered: fact.value=proc_action_next
         }
     }
     Component {
@@ -89,9 +104,8 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "NEXT"
-            value: proc_action_inc
             width: height*4
-            highlighted: false
+            onTriggered: fact.value=proc_action_inc
         }
     }
     Component {
@@ -99,9 +113,8 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "PREV"
-            value: proc_action_dec
             width: height*4
-            highlighted: false
+            onTriggered: fact.value=proc_action_dec
         }
     }
     Component {
@@ -109,9 +122,8 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "CANCEL"
-            value: proc_action_cancel
             width: height*4
-            highlighted: false
+            onTriggered: fact.value=proc_action_reset
         }
     }
     Component {
@@ -119,9 +131,8 @@ RowLayout {
         CtrButton {
             fact: f_action
             title: "RESET"
-            value: proc_action_cancel
             width: height*4
-            highlighted: false
+            onTriggered: fact.value=proc_action_reset
         }
     }
 }
