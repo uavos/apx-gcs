@@ -116,39 +116,35 @@
             "_comment": "# ------ MODE -----------------"
         },
         {
-            "msg": "flight mode angles control",
+            "msg": "procedure RPV",
             "say": "RPV mode"
         },
         {
-            "msg": "flight mode go back home",
-            "say": "home"
-        },
-        {
-            "msg": "flight mode heading control",
+            "msg": "procedure UAV",
             "say": "course control"
         },
         {
-            "msg": "flight mode loiter around",
+            "msg": "procedure STBY",
             "say": "loiter"
         },
         {
-            "msg": "flight mode realtime control",
+            "msg": "procedure EMG",
             "say": "manual mode"
         },
         {
-            "msg": "flight mode waypoints navigation",
+            "msg": "procedure WPT",
             "say": "mission started"
         },
         {
-            "msg": "flight mode takeoff",
+            "msg": "procedure TAKEOFF",
             "say": "takeoff procedure initiated"
         },
         {
-            "msg": "flight mode taxi",
+            "msg": "procedure TAXI",
             "say": "taxi mode"
         },
         {
-            "msg": "flight mode landing",
+            "msg": "procedure LANDING",
             "say": "landing procedure initiated"
         },
 
@@ -156,16 +152,14 @@
             "_comment": "# ------ TAXI -----------------"
         },
         {
-            "msg": "taxi reset",
-            "say": "taxi cancelled"
+            "msg": "manual taxi"
         },
         {
             "msg": "auto taxi",
             "say": "auto taxi"
         },
         {
-            "msg": "taxi pattern finished",
-            "say": "taxi finished"
+            "msg": "taxi finished"
         },
 
         {

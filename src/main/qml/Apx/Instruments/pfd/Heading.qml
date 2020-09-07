@@ -19,7 +19,9 @@ Item {
     readonly property var f_att_mag: mandala.est.att.mag
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
-    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
+    readonly property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
+
+    readonly property bool isShiftControl: isTrack
 
 
     readonly property bool nomag: f_nomag.value > 0 || f_att_mag.value === att_mag_blocked
@@ -277,13 +279,6 @@ Item {
         }
 
     }
-
-    property bool isShiftControl:
-        m_mode===proc_mode_LANDING ||
-        m_mode===proc_mode_TAKEOFF ||
-        m_mode===proc_mode_TAXI ||
-        (m_mode===proc_mode_WPT && isTrack) ||
-        m_mode===proc_mode_STBY
 
     MouseArea {
         anchors.fill: parent
