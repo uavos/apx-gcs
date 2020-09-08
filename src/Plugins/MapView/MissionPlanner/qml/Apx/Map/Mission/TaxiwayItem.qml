@@ -21,7 +21,7 @@ MissionObject {
 
     //Fact bindings
     property real f_distance: fact?fact.distance:0
-    property bool f_current: (m_twidx+1) === num
+    property bool f_current: (m_twidx) === num
     property bool f_taxi: m_mode === proc_mode_TAXI
     property var path: fact?fact.geoPath:0
     property real f_course: fact?fact.course:0
