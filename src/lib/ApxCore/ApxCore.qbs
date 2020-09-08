@@ -112,7 +112,7 @@ ApxApp.ApxLibrary {
             "fonts/Ubuntu-C.ttf",
             "fonts/Bierahinia.ttf",
 
-            "styles/style-old.css",
+            "styles/style-dark.css",
 
             "icons/material-icons.*",
             "icons/uavos-logo.*",

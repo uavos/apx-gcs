@@ -112,7 +112,7 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 
     //styles
     QQuickStyle::setStyle("Material");
-    QFile styleSheet(":styles/style-old.css");
+    QFile styleSheet(":styles/style-dark.css");
     if (styleSheet.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qApp->setStyleSheet(styleSheet.readAll());
     }
