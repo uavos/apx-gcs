@@ -191,13 +191,13 @@ void TelemetryPlot::restoreSettings()
     if (!QSettings().contains("plots")) {
         QStringList st;
         st << "est.att.roll"
-           << "cmd.reg.roll"
+           << "cmd.att.roll"
            << "est.att.pitch"
-           << "cmd.reg.pitch";
+           << "cmd.att.pitch";
         st << "est.pos.altitude";
         st << "est.air.airspeed"
-           << "cmd.reg.airspeed";
-        st << "est.air.vspeed";
+           << "cmd.pos.airspeed";
+        st << "est.pos.vspeed";
         QSettings().setValue("plots", st);
     }
     QStringList sps = QSettings().value("plots").toStringList();

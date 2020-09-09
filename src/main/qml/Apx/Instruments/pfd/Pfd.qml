@@ -68,7 +68,8 @@ Item {
 
     readonly property var f_reg_pos: mandala.cmd.reg.pos
 
-    readonly property bool m_reg_air: mandala.cmd.reg.air.value
+    readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
+    readonly property bool m_reg_alt: mandala.cmd.reg.alt.value
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
@@ -201,7 +202,7 @@ Item {
                 anchors.bottom: speed_window.top
                 anchors.topMargin: 3
                 anchors.leftMargin: parent.width*0.1
-                enabled: m_reg_air
+                enabled: m_reg_spd
             }
 
             Flags {
@@ -404,7 +405,7 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: altitude_window.top
                 anchors.topMargin: 3
-                enabled: m_reg_air
+                enabled: m_reg_alt
             }
             Row {
                 spacing: 2

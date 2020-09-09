@@ -374,28 +374,24 @@ void TelemetryFrame::avSTD_triggered(void)
 {
     QStringList st;
     st << "est.att.roll"
-       << "cmd.reg.roll"
+       << "cmd.att.roll"
        << "est.att.pitch"
-       << "cmd.reg.pitch";
+       << "cmd.att.pitch";
     st << "est.pos.altitude";
     st << "est.air.airspeed"
-       << "cmd.reg.airspeed";
-    st << "est.air.vspeed";
+       << "cmd.pos.airspeed";
+    st << "est.pos.vspeed";
     plot->showCurves(true, st, true);
 }
 void TelemetryFrame::avIMU_triggered(void)
 {
     QStringList st;
-    st << "est.rel.ax"
-       << "est.rel.ay"
-       << "est.rel.az";
-    st << "est.att.p"
-       << "est.att.q"
-       << "est.att.r";
-    st << "sns.mag.x"
-       << "sns.mag.y"
-       << "sns.mag.z";
-    st << "est.calc.mag";
+    st << "est.acc.x"
+       << "est.acc.y"
+       << "est.acc.z";
+    st << "est.gyro.x"
+       << "est.gyro.y"
+       << "est.gyro.z";
     plot->showCurves(true, st, true);
 }
 void TelemetryFrame::avCTR_triggered(void)

@@ -44,6 +44,10 @@
             "_comment": "# ------ status flags -----------------"
         },
         {
+            "msg": "ahrs airdata yes",
+            "say": "in flight"
+        },
+        {
             "msg": "brake on",
             "say": "brakes"
         },
@@ -155,8 +159,7 @@
             "msg": "manual taxi"
         },
         {
-            "msg": "auto taxi",
-            "say": "auto taxi"
+            "msg": "auto taxi"
         },
         {
             "msg": "taxi finished"
@@ -166,7 +169,11 @@
             "_comment": "# ------ TAKEOFF -----------------"
         },
         {
-            "msg": "takeoff start",
+            "msg": "takeoff state ready",
+            "say": "ready"
+        },
+        {
+            "msg": "takeoff state start",
             "say": "full throttle"
         },
         {
@@ -174,26 +181,23 @@
             "say": "launcher ready"
         },
         {
-            "msg": "takeoff run",
+            "msg": "takeoff state run",
             "say": "running"
         },
         {
-            "msg": "takeoff liftoff",
+            "msg": "takeoff state liftoff",
             "say": "liftoff"
         },
         {
-            "msg": "takeoff climbing",
+            "msg": "takeoff state climb",
             "say": "climbing"
         },
         {
-            "msg": "takeoff finished"
+            "msg": "takeoff state finished",
+            "say": "takeoff finished"
         },
         {
             "msg": "takeoff cancelled"
-        },
-        {
-            "msg": "takeoff taxi test",
-            "say": "taxi test"
         },
         {
             "_comment": "# ------ LANDING -----------------"

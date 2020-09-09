@@ -45,7 +45,8 @@ Item {
     readonly property real wp_hdg: apx.vehicles.current.coordinate.azimuthTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
-    property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
+    readonly property bool m_reg_str: mandala.cmd.reg.str.value
+    property bool isTrack: m_reg_str || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
     implicitWidth: 400
     implicitHeight: 400

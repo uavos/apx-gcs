@@ -19,7 +19,8 @@ Item {
     readonly property var f_att_mag: mandala.est.att.mag
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
-    readonly property bool isTrack: m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
+    readonly property bool m_reg_str: mandala.cmd.reg.str.value
+    property bool isTrack: m_reg_str || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
 
     readonly property bool isShiftControl: isTrack
 
