@@ -130,7 +130,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
     fhdr.write(&stream); // will update later
     size_t pos_s = stream.pos();
 
-    fhdr.offset.wp = stream.pos() - pos_s;
+    fhdr.off.wp = stream.pos() - pos_s;
     for (int i = 0; i < d.waypoints.size(); ++i) {
         const ProtocolMission::Item &m = d.waypoints.at(i);
         xbus::mission::Header hdr;
@@ -222,7 +222,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
         }
     }
 
-    fhdr.offset.rw = stream.pos() - pos_s;
+    fhdr.off.rw = stream.pos() - pos_s;
     for (int i = 0; i < d.runways.size(); ++i) {
         const Item &m = d.runways.at(i);
         xbus::mission::Header hdr;
@@ -239,7 +239,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
         e.write(&stream);
     }
 
-    fhdr.offset.tw = stream.pos() - pos_s;
+    fhdr.off.tw = stream.pos() - pos_s;
     for (int i = 0; i < d.taxiways.size(); ++i) {
         const ProtocolMission::Item &m = d.taxiways.at(i);
         xbus::mission::Header hdr;
@@ -252,7 +252,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
         e.write(&stream);
     }
 
-    fhdr.offset.pi = stream.pos() - pos_s;
+    fhdr.off.pi = stream.pos() - pos_s;
     for (int i = 0; i < d.pois.size(); ++i) {
         const ProtocolMission::Item &m = d.pois.at(i);
         xbus::mission::Header hdr;
