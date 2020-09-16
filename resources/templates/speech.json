@@ -169,11 +169,11 @@
             "_comment": "# ------ TAKEOFF -----------------"
         },
         {
-            "msg": "takeoff state ready",
+            "msg": "takeoff stage ready",
             "say": "ready"
         },
         {
-            "msg": "takeoff state start",
+            "msg": "takeoff stage start",
             "say": "full throttle"
         },
         {
@@ -181,19 +181,19 @@
             "say": "launcher ready"
         },
         {
-            "msg": "takeoff state run",
+            "msg": "takeoff stage run",
             "say": "running"
         },
         {
-            "msg": "takeoff state liftoff",
+            "msg": "takeoff stage liftoff",
             "say": "liftoff"
         },
         {
-            "msg": "takeoff state climb",
+            "msg": "takeoff stage climb",
             "say": "climbing"
         },
         {
-            "msg": "takeoff state finished",
+            "msg": "takeoff stage finished",
             "say": "takeoff finished"
         },
         {
@@ -203,31 +203,32 @@
             "_comment": "# ------ LANDING -----------------"
         },
         {
-            "msg": "landing ta",
-            "say": "path estimation"
+            "msg": "landing stage ta",
+            "say": "descending"
         },
         {
-            "msg": "landing ta_app",
-            "say": "turn to approach"
+            "msg": "landing stage app",
+            "say": "approach"
         },
         {
-            "msg": "landing final approach",
+            "msg": "landing stage final",
             "say": "final approach"
         },
         {
-            "msg": "landing flare",
+            "msg": "landing stage flare",
             "say": "flare"
         },
         {
-            "msg": "landing touchdown",
+            "msg": "landing stage touchdown",
             "say": "touchdown"
         },
         {
-            "msg": "landing run",
+            "msg": "landing stage run",
             "say": "running"
         },
         {
-            "msg": "landing finished"
+            "msg": "landing stage finished",
+            "say": "landing finished"
         },
         {
             "msg": "landing cancelled"
