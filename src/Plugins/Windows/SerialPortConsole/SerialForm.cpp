@@ -71,7 +71,7 @@ void SerialForm::btnSend()
     QByteArray ba;
     switch (ui->cbTxFormat->currentIndex()) {
     case 0: //ASCII
-        ba.append(s);
+        ba.append(s.toUtf8());
         break;
     case 1: //HEX
         ba = QByteArray::fromHex(s.trimmed().toUtf8());
@@ -82,7 +82,7 @@ void SerialForm::btnSend()
             if (si.contains('"')) {
                 si.remove('"');
                 if (si.size())
-                    ba.append(si);
+                    ba.append(si.toUtf8());
             } else
                 ba.append(static_cast<char>(si.toInt()));
         }

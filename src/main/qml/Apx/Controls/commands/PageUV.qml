@@ -16,7 +16,7 @@ RowLayout {
     readonly property var f_brake: mandala.ctr.str.brake
     readonly property var f_thr: mandala.cmd.rc.thr
 
-    readonly property bool m_reg_str: mandala.cmd.reg.str.value
+    readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
 
     //spacing: buttonHeight/4
     ColumnLayout {
@@ -62,7 +62,7 @@ RowLayout {
             width: height*3
             highlighted: v>0
             onTriggered: {
-                if(m_reg_str){
+                if(m_reg_taxi){
                     f_brake.value=1
                 }else{
                     f_brake.value=v>0?0:1
@@ -84,10 +84,10 @@ RowLayout {
         id: btnATAXI
         CtrButton {
             fact: f_action
-            title: m_reg_str?"STOP":"AUTO"
+            title: m_reg_taxi?"STOP":"AUTO"
             width: height*4
-            highlighted: m_reg_str
-            onTriggered: fact.value=m_reg_str?proc_action_reset:proc_action_next
+            highlighted: m_reg_taxi
+            onTriggered: fact.value=m_reg_taxi?proc_action_reset:proc_action_next
         }
     }
     Component {
