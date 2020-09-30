@@ -10,7 +10,6 @@ Rectangle {
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
     readonly property real m_adj: mandala.cmd.proc.adj.value
-    readonly property int m_agl_status: mandala.sns.agl.status.value
 
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_eta: mandala.est.wpt.eta
@@ -19,15 +18,17 @@ Rectangle {
     readonly property var f_loops: mandala.est.wpt.loops
     readonly property var f_xtrack: mandala.est.wpt.xtrack
     readonly property var f_radius: mandala.cmd.pos.radius
+
     readonly property var f_agl: mandala.est.pos.agl
+    readonly property int m_agl_src: mandala.sns.agl.src.value
+    readonly property bool m_agl_status: mandala.sns.agl.status.value
+    readonly property bool m_pwr_agl: mandala.ctr.pwr.agl.value
+    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
 
-
-    readonly property bool m_agl_show: m_agl_status !== agl_status_unknown
-                                       && m_agl_status !== agl_status_unavailable
-
-    readonly property bool m_agl_warning: m_agl_status===agl_status_warning
-    readonly property bool m_agl_failure: m_agl_status===agl_status_failure
-    readonly property bool m_agl_ready: m_agl_status===agl_status_ready
+    readonly property bool m_agl_show: (m_agl_status || m_ahrs_hagl || m_pwr_agl || m_agl_src)
+    readonly property bool m_agl_ready: m_agl_status
+    readonly property bool m_agl_warning: m_ahrs_hagl && !m_agl_status
+    readonly property bool m_agl_failure: m_pwr_agl && !m_agl_src
 
     readonly property real m_cmd_lat: mandala.cmd.pos.lat.value
     readonly property real m_cmd_lon: mandala.cmd.pos.lon.value

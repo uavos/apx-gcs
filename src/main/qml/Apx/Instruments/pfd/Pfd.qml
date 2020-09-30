@@ -64,7 +64,7 @@ Item {
 
     readonly property var f_rc_ovr: mandala.cmd.rc.ovr
 
-    readonly property var f_ref_altitude: mandala.est.ref.altitude
+    readonly property var f_ref_hmsl: mandala.est.ref.hmsl
 
     readonly property var f_reg_pos: mandala.cmd.reg.pos
 
@@ -416,7 +416,7 @@ Item {
                     anchors.bottom: parent.bottom
                     height: pfdScene.txtHeight
                     show: ui.test || value>0
-                    fact: f_ref_altitude
+                    fact: f_ref_hmsl
                     title: qsTr("MSL")
                 }
             }

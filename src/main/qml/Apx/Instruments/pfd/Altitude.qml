@@ -16,9 +16,7 @@ ControlArea {
 
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
-    readonly property bool m_agl_available: m_agl_status===agl_status_available
-                                            || m_agl_status===agl_status_ready
-                                            || m_agl_status===agl_status_warning
+    readonly property bool m_agl_valid: m_agl_status
 
 
 
@@ -208,7 +206,7 @@ ControlArea {
         id: agl_image
         elementName: "agl"
         //smooth: ui.antialiasing
-        visible: m_agl_available
+        visible: m_agl_valid
         width: elementBounds.width*altitude_window.strip_scale
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left
