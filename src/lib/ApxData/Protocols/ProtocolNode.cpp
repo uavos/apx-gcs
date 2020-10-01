@@ -108,6 +108,7 @@ QString ProtocolNode::toolTip() const
     st.append(QString("files: %1").arg(files().join(',')));
     st.append(QString("version: %1").arg(version()));
     st.append(QString("hardware: %1").arg(hardware()));
+    st.append(QString("fields: %1").arg(m_dict_fields.size()));
     return ProtocolBase::toolTip().append("\n").append(st.join('\n'));
 }
 void ProtocolNode::hashData(QCryptographicHash *h) const
