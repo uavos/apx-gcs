@@ -133,11 +133,11 @@ QByteArray ProtocolMission::pack(const Mission &d)
     fhdr.off.wp = stream.pos() - pos_s;
     for (int i = 0; i < d.waypoints.size(); ++i) {
         const ProtocolMission::Item &m = d.waypoints.at(i);
-        xbus::mission::Header hdr;
-        hdr.type = xbus::mission::Header::mi_wp;
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::WP;
         hdr.option = ProtocolMission::waypointTypeFromString(m.details.value("type").toString());
         hdr.write(&stream);
-        xbus::mission::Waypoint e;
+        xbus::mission::wp_s e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.alt = m.details.value("altitude").toInt();
@@ -153,29 +153,29 @@ QByteArray ProtocolMission::pack(const Mission &d)
         }
 
         if (!amap.value("speed").isEmpty()) {
-            xbus::mission::Header ahdr;
-            ahdr.type = xbus::mission::Header::mi_action;
-            ahdr.option = xbus::mission::Action::mo_speed;
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_SPEED;
             ahdr.write(&stream);
-            xbus::mission::ActionSpeed a;
+            xbus::mission::act_speed_s a;
             a.speed = amap.value("speed").toUInt();
             a.write(&stream);
         }
         if (!amap.value("poi").isEmpty()) {
-            xbus::mission::Header ahdr;
-            ahdr.type = xbus::mission::Header::mi_action;
-            ahdr.option = xbus::mission::Action::mo_poi;
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_PI;
             ahdr.write(&stream);
-            xbus::mission::ActionPoi a;
-            a.poi = amap.value("poi").toUInt() - 1;
+            xbus::mission::act_pi_s a;
+            a.index = amap.value("poi").toUInt() - 1;
             a.write(&stream);
         }
         if (!amap.value("script").isEmpty()) {
-            xbus::mission::Header ahdr;
-            ahdr.type = xbus::mission::Header::mi_action;
-            ahdr.option = xbus::mission::Action::mo_scr;
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_SCR;
             ahdr.write(&stream);
-            xbus::mission::ActionScr a;
+            xbus::mission::act_scr_s a;
             QByteArray src(amap.value("script").toUtf8());
             memset(a.scr, 0, sizeof(a.scr));
             memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
@@ -183,22 +183,22 @@ QByteArray ProtocolMission::pack(const Mission &d)
             a.write(&stream);
         }
         if (!amap.value("loiter").isEmpty()) {
-            xbus::mission::Header ahdr;
-            ahdr.type = xbus::mission::Header::mi_action;
-            ahdr.option = xbus::mission::Action::mo_loiter;
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_LOITER;
             ahdr.write(&stream);
-            xbus::mission::ActionLoiter a;
-            a.turnR = amap.value("radius").toInt();
+            xbus::mission::act_loiter_s a;
+            a.radius = amap.value("radius").toInt();
             a.loops = amap.value("loops").toUInt();
-            a.timeS = AppRoot::timeFromString(amap.value("time"));
+            a.timeout = AppRoot::timeFromString(amap.value("time"));
             a.write(&stream);
         }
         if (!amap.value("shot").isEmpty()) {
-            xbus::mission::Header ahdr;
-            ahdr.type = xbus::mission::Header::mi_action;
-            ahdr.option = xbus::mission::Action::mo_shot;
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_SHOT;
             ahdr.write(&stream);
-            xbus::mission::ActionShot a;
+            xbus::mission::act_shot_s a;
             uint dshot = amap.value("dshot").toUInt();
             const QString shot = amap.value("shot");
             a.opt = 0;
@@ -225,11 +225,11 @@ QByteArray ProtocolMission::pack(const Mission &d)
     fhdr.off.rw = stream.pos() - pos_s;
     for (int i = 0; i < d.runways.size(); ++i) {
         const Item &m = d.runways.at(i);
-        xbus::mission::Header hdr;
-        hdr.type = xbus::mission::Header::mi_rw;
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::RW;
         hdr.option = runwayTypeFromString(m.details.value("type").toString());
         hdr.write(&stream);
-        xbus::mission::Runway e;
+        xbus::mission::rw_s e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.hmsl = m.details.value("hmsl").toInt();
@@ -242,11 +242,11 @@ QByteArray ProtocolMission::pack(const Mission &d)
     fhdr.off.tw = stream.pos() - pos_s;
     for (int i = 0; i < d.taxiways.size(); ++i) {
         const ProtocolMission::Item &m = d.taxiways.at(i);
-        xbus::mission::Header hdr;
-        hdr.type = xbus::mission::Header::mi_tw;
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::TW;
         hdr.option = 0;
         hdr.write(&stream);
-        xbus::mission::Taxiway e;
+        xbus::mission::tw_s e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.write(&stream);
@@ -255,26 +255,26 @@ QByteArray ProtocolMission::pack(const Mission &d)
     fhdr.off.pi = stream.pos() - pos_s;
     for (int i = 0; i < d.pois.size(); ++i) {
         const ProtocolMission::Item &m = d.pois.at(i);
-        xbus::mission::Header hdr;
-        hdr.type = xbus::mission::Header::mi_pi;
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::PI;
         hdr.option = 0;
         hdr.write(&stream);
-        xbus::mission::Poi e;
+        xbus::mission::pi_s e;
         e.lat = static_cast<float>(m.lat);
         e.lon = static_cast<float>(m.lon);
         e.hmsl = m.details.value("hmsl").toInt();
-        e.turnR = m.details.value("radius").toInt();
+        e.radius = m.details.value("radius").toInt();
         e.loops = m.details.value("loops").toUInt();
-        e.timeS = AppRoot::timeFromString(m.details.value("timeout").toString());
+        e.timeout = AppRoot::timeFromString(m.details.value("timeout").toString());
         e.write(&stream);
     }
 
-    if (stream.pos() <= xbus::mission::Header::psize()) {
+    if (stream.pos() <= xbus::mission::hdr_s::psize()) {
         qDebug() << "Upload empty mission";
     }
 
-    xbus::mission::Header hdr;
-    hdr.type = xbus::mission::Header::mi_stop;
+    xbus::mission::hdr_s hdr;
+    hdr.type = xbus::mission::STOP;
     hdr.option = 0;
     hdr.write(&stream);
     data.resize(stream.pos());
@@ -321,18 +321,18 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
 
     while (stream.available() > 0) {
         ecnt++;
-        xbus::mission::Header hdr;
+        xbus::mission::hdr_s hdr;
         hdr.read(&stream);
 
         switch (hdr.type) {
-        case xbus::mission::Header::mi_stop:
+        case xbus::mission::STOP:
             stream.reset(psize); //finish
             ecnt--;
             continue;
-        case xbus::mission::Header::mi_wp: {
-            if (stream.available() < xbus::mission::Waypoint::psize())
+        case xbus::mission::WP: {
+            if (stream.available() < xbus::mission::wp_s::psize())
                 break;
-            xbus::mission::Waypoint e;
+            xbus::mission::wp_s e;
             e.read(&stream);
             wpcnt++;
             Item m;
@@ -344,40 +344,40 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             d.waypoints.append(m);
             continue;
         }
-        case xbus::mission::Header::mi_action: { //wp actions
+        case xbus::mission::ACT: { //wp actions
             QVariantMap a;
             switch (hdr.option) {
             default:
                 break;
-            case xbus::mission::Action::mo_speed: {
-                xbus::mission::ActionSpeed e;
+            case xbus::mission::ACT_SPEED: {
+                xbus::mission::act_speed_s e;
                 e.read(&stream);
                 a["speed"] = e.speed;
                 break;
             }
-            case xbus::mission::Action::mo_poi: {
-                xbus::mission::ActionPoi e;
+            case xbus::mission::ACT_PI: {
+                xbus::mission::act_pi_s e;
                 e.read(&stream);
-                a["poi"] = e.poi + 1;
+                a["poi"] = e.index + 1;
                 break;
             }
-            case xbus::mission::Action::mo_scr: {
-                xbus::mission::ActionScr e;
+            case xbus::mission::ACT_SCR: {
+                xbus::mission::act_scr_s e;
                 e.read(&stream);
                 a["script"] = QString(QByteArray(e.scr, sizeof(e.scr)));
                 break;
             }
-            case xbus::mission::Action::mo_loiter: {
-                xbus::mission::ActionLoiter e;
+            case xbus::mission::ACT_LOITER: {
+                xbus::mission::act_loiter_s e;
                 e.read(&stream);
                 a["loiter"] = 1;
-                a["radius"] = e.turnR;
+                a["radius"] = e.radius;
                 a["loops"] = e.loops;
-                a["time"] = e.timeS;
+                a["time"] = e.timeout;
                 break;
             }
-            case xbus::mission::Action::mo_shot: {
-                xbus::mission::ActionShot e;
+            case xbus::mission::ACT_SHOT: {
+                xbus::mission::act_shot_s e;
                 e.read(&stream);
                 switch (e.opt) {
                 case 0: //single
@@ -407,10 +407,10 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             d.waypoints[lastWp].details["actions"] = st.join(',');
             continue;
         }
-        case xbus::mission::Header::mi_rw: {
-            if (stream.available() < xbus::mission::Runway::psize())
+        case xbus::mission::RW: {
+            if (stream.available() < xbus::mission::rw_s::psize())
                 break;
-            xbus::mission::Runway e;
+            xbus::mission::rw_s e;
             e.read(&stream);
             rwcnt++;
             Item m;
@@ -424,10 +424,10 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             d.runways.append(m);
             continue;
         }
-        case xbus::mission::Header::mi_tw: {
-            if (stream.available() < xbus::mission::Taxiway::psize())
+        case xbus::mission::TW: {
+            if (stream.available() < xbus::mission::tw_s::psize())
                 break;
-            xbus::mission::Taxiway e;
+            xbus::mission::tw_s e;
             e.read(&stream);
             Item m;
             m.lat = static_cast<qreal>(e.lat);
@@ -435,33 +435,30 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             d.taxiways.append(m);
             continue;
         }
-        case xbus::mission::Header::mi_pi: {
-            if (stream.available() < xbus::mission::Poi::psize())
+        case xbus::mission::PI: {
+            if (stream.available() < xbus::mission::pi_s::psize())
                 break;
-            xbus::mission::Poi e;
+            xbus::mission::pi_s e;
             e.read(&stream);
             Item m;
             m.lat = static_cast<qreal>(e.lat);
             m.lon = static_cast<qreal>(e.lon);
             m.details["hmsl"] = e.hmsl;
-            m.details["radius"] = e.turnR;
+            m.details["radius"] = e.radius;
             m.details["loops"] = e.loops;
-            m.details["timeout"] = e.timeS;
+            m.details["timeout"] = e.timeout;
             d.pois.append(m);
             continue;
         }
-        case xbus::mission::Header::mi_emg:
-        case xbus::mission::Header::mi_avoid: {
+        case xbus::mission::EMG:
+        case xbus::mission::DIS: {
             uint16_t sz = stream.available();
-            if (sz < xbus::mission::Area::psize(0))
-                break;
-            xbus::mission::Area e;
-            e.read(&stream);
-            if (sz < xbus::mission::Area::psize(e.pointsCnt))
+            size_t pointsCnt = hdr.option;
+            if (sz < xbus::mission::area_s::psize(pointsCnt))
                 break;
             //TODO - implement areas in GCS
-            for (int i = 0; i < e.pointsCnt; ++i) {
-                xbus::mission::Area::Point p;
+            for (size_t i = 0; i < pointsCnt; ++i) {
+                xbus::mission::area_s p;
                 p.read(&stream);
             }
             continue;

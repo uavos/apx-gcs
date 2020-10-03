@@ -30,7 +30,7 @@ Item {
     readonly property var f_lon: mandala.est.pos.lon
 
     readonly property var f_speed: mandala.est.pos.speed
-    readonly property var f_loops: mandala.est.wpt.loops
+    readonly property var f_loops: mandala.cmd.proc.loops
 
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_wpidx: mandala.cmd.proc.wp
