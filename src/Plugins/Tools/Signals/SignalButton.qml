@@ -4,15 +4,15 @@ import QtQuick.Layouts 1.3
 
 import Apx.Common 1.0
 
-CleanButton {
-    titleSize: 0.8
+TextButton {
     Layout.fillHeight: true
     checkable: true
     ButtonGroup.group: buttonGroup
+
     property var values: []
     onActivated: signals.facts=Qt.binding(function(){return values})
 
-    toolTip: getToolTip(values)
+    //toolTip: getToolTip(values)
 
     function getToolTip(facts)
     {

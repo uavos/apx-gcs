@@ -400,7 +400,7 @@ void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
     QFile res;
-    res.setFileName(":/fonts/BebasNeue.otf");
+    res.setFileName(":/fonts/BebasNeue.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();

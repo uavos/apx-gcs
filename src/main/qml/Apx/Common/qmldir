@@ -5,6 +5,7 @@ Apx 1.0 helpers.js
 FactObject      1.0 FactObject.qml
 
 CleanButton     1.0 CleanButton.qml
+TextButton      1.0 TextButton.qml
 
 SvgImage        1.0 SvgImage.qml
 VehicleButton   1.0 VehicleButton.qml

@@ -15,24 +15,36 @@ FactValue {
     Component.onCompleted: {
         implicitWidth=height
         updateWidth()
+        //_con.enabled=true
     }
+
+    /*Connections {
+        id: _con
+        target: control
+        //enabled: false
+        function onDefaultWidthChanged(){ updateWidth() }
+        function onModelChanged(){ updateWidth() }
+    }*/
 
     function updateWidth()
     {
-        if(implicitWidth<defaultWidth){
+        /*if(implicitWidth<defaultWidth){
             implicitWidth=Qt.binding(function(){return defaultWidth})
             //implicitWidth=defaultWidth
         }
 
         if(model && model.minimumWidth<defaultWidth)
-            model.minimumWidth=defaultWidth
+            model.minimumWidth=defaultWidth*/
     }
 
     onDefaultWidthChanged: timerWidthUpdate.start()
     property Timer timerWidthUpdate: Timer {
         //running: true
-        interval: 0
-        onTriggered: updateWidth()
+        interval: 100
+        onTriggered: {
+            updateWidth()
+            interval=0
+        }
     }
 
     //update model minimum width

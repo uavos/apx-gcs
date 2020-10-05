@@ -1,5 +1,5 @@
 ﻿import QtQuick 2.6
-import QtQuick.Controls 2.2
+import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.2
 import QtQml 2.12
 import QtQuick.Layouts 1.3
@@ -12,20 +12,22 @@ ComboBox {
     spacing: 0
     topPadding: 0
     bottomPadding: 0
-    background.y: 0
-    background.height: height
+    //background.y: 0
+    //background.height: height
     //contentItem.height: height
 
     //Layout.fillHeight: true
-    implicitHeight: bodyHeight
+    //implicitHeight: bodyHeight
 
     topInset: 0
     bottomInset: 0
 
-    font.family: font_condenced
-    font.pixelSize: fontSize(bodyHeight*valueSize)
+    flat: true
+    //font.family: font_condenced
+    //font.pixelSize: fontSize(bodyHeight*valueSize)
 
     contentItem.implicitWidth: contentItem.contentWidth+indicator.width/2 //+editor.height/2
+    background.implicitWidth: contentItem.implicitWidth
 
     model: fact.enumStrings
 

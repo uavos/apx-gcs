@@ -84,8 +84,7 @@ Rectangle {
                 values: [ mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6 ]
             }
 
-            CleanButton {
-                titleSize: 0.8
+            TextButton {
                 text: signals.speedFactorValue+"x"
                 onClicked: signals.changeSpeed()
                 Layout.fillHeight: true

@@ -37,7 +37,9 @@ Button {
     focus: false
 
     //internal
-    property bool showContents: (iconName&&showIcon)?showText && title:true
+    property bool showContents: (iconName&&showIcon)
+                                ? showText && title
+                                : true
 
     padding: 2*ui_scale //iconName?3:3
     leftPadding: padding+1
@@ -69,7 +71,10 @@ Button {
     implicitHeight: defaultHeight*ui_scale
     implicitWidth: defaultWidth
 
-    property int defaultWidth: showContents?Math.max(implicitHeight,Math.max(minimumWidth,contentItem.implicitWidth+leftPadding+rightPadding)):implicitHeight
+    //property int defaultWidth: showContents?Math.max(implicitHeight,Math.max(minimumWidth,contentItem.implicitWidth+leftPadding+rightPadding)):implicitHeight
+    property int defaultWidth: showContents
+                               ? Math.max(implicitHeight, Math.max(minimumWidth, contentItem.implicitWidth + leftPadding+rightPadding))
+                               : implicitHeight
 
 
     ToolTip.delay: 1000
@@ -88,6 +93,7 @@ Button {
     function fontSize(v){return Math.max(7,v)}
 
     contentItem: Item {
+        id: _content
         implicitWidth: rowItem.implicitWidth
         height: bodyHeight
         RowLayout {
@@ -178,22 +184,23 @@ Button {
                 visible: showContents
             }
         }
-        ProgressBar {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
+        Loader {
+            asynchronous: true
+            active: control.progress>=0
+            anchors.fill: parent
             anchors.margins: 1
-            anchors.leftMargin: anchors.margins+(iconName?bodyHeight:0)
-            background.height: height-anchors.margins*2
-            contentItem.implicitHeight: control.contentItem.height-anchors.margins*2
-            opacity: 0.33
-            to: 100
-            property int v: control.progress
-            value: v
-            visible: v>=0
-            indeterminate: v==0
-            Material.accent: Material.color(Material.Green)
+            anchors.leftMargin: anchors.margins+((showIcon && iconName)?bodyHeight:0)
+            sourceComponent: ProgressBar {
+                background.height: height-2
+                contentItem.implicitHeight: control.contentItem.height-2
+                opacity: 0.33
+                to: 100
+                property int v: control.progress
+                value: v
+                visible: v>=0
+                indeterminate: v==0
+                Material.accent: Material.color(Material.Green)
+            }
         }
     }
 
