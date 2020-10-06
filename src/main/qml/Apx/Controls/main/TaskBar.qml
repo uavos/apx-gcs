@@ -30,7 +30,7 @@ RowLayout {
         model: apx.windows.model
         groups: [ DelegateModelGroup { name: "launcher" } ]
         filterOnGroup: "launcher"
-        delegate: CleanButton {
+        delegate: IconButton {
             iconName: modelData.icon
             onTriggered: modelData.trigger()
             toolTip: modelData.title+" - "+modelData.descr
@@ -57,14 +57,14 @@ RowLayout {
     }
 
     //tools menu
-    CleanButton {
+    IconButton {
         Layout.fillHeight: true
         iconName: apx.tools.icon
         toolTip: apx.tools.title
         onTriggered: apx.tools.trigger()
     }
     //windows menu
-    CleanButton {
+    IconButton {
         Layout.fillHeight: true
         iconName: apx.windows.icon
         toolTip: apx.windows.title
@@ -77,7 +77,7 @@ RowLayout {
         asynchronous: true
         active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (apx.vehicles.current.protocol.isLocal || apx.tools.simulator.stop.enabled)
         sourceComponent: Component {
-            CleanButton {
+            IconButton {
                 iconName: apx.tools.simulator.icon
                 toolTip: apx.tools.simulator.descr
                 onTriggered: apx.tools.simulator.trigger()
@@ -86,7 +86,7 @@ RowLayout {
         visible: status===Loader.Ready
     }
 
-    CleanButton {
+    IconButton {
         Layout.fillHeight: true
         iconName: groundControl.maximized?"fullscreen-exit":"fullscreen"
         toolTip: qsTr("Switch view")

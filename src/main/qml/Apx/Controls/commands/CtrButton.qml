@@ -5,15 +5,12 @@ import QtQuick.Controls.Material 2.2
 
 import Apx.Common 1.0
 
-CleanButton {
+TextButton {
     id: control
     property var fact
-    property int size: buttonHeight
 
-    ui_scale: 1
-
-    title: fact.title
+    text: fact.title
     toolTip: fact.descr
 
-    defaultHeight: size
+    size: buttonHeight
 }

@@ -5,7 +5,11 @@ Apx 1.0 helpers.js
 FactObject      1.0 FactObject.qml
 
 CleanButton     1.0 CleanButton.qml
-TextButton      1.0 TextButton.qml
+TextButton      1.0 Button/TextButton.qml
+IconButton      1.0 Button/IconButton.qml
+ToolButton      1.0 Button/ToolButton.qml
+ActionButton    1.0 Button/ActionButton.qml
+ValueButton     1.0 Button/ValueButton.qml
 
 SvgImage        1.0 SvgImage.qml
 VehicleButton   1.0 VehicleButton.qml

@@ -48,10 +48,8 @@ RowLayout {
         spacing: 3
         clip: true
         model: pagesModel
-        delegate: CleanButton {
-            height: buttonHeight
-            width: height
-            ui_scale: 1
+        delegate: TextButton {
+            size: buttonHeight
             text: name
             highlighted: pagesView.currentIndex==index
             onTriggered: pagesView.currentIndex=index

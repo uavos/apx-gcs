@@ -400,7 +400,7 @@ void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
     QFile res;
-    res.setFileName(":/fonts/BebasNeue.ttf");
+    res.setFileName(":/fonts/BebasNeue-Bold.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
@@ -426,7 +426,7 @@ void App::loadFonts()
         res.close();
     }
 
-    m_engine->rootContext()->setContextProperty("font_narrow", "Bebas Neue");
+    m_engine->rootContext()->setContextProperty("font_narrow", "Bebas Neue Pro");
     m_engine->rootContext()->setContextProperty("font_mono", "FreeMono");
     m_engine->rootContext()->setContextProperty("font_condenced", "Ubuntu Condensed");
 #ifdef Q_OS_MAC

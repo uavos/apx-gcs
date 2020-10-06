@@ -106,7 +106,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
             font.family: control.font.family
-            font.pixelSize: control.font.pixelSize*0.7
+            font.pixelSize: control.font.pixelSize * 0.7
             font.bold: control.font.bold
             text: vehicle.info
             color: colorFG

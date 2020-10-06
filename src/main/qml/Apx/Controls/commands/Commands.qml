@@ -42,43 +42,36 @@ Rectangle {
             Layout.alignment: Qt.AlignTop|Qt.AlignLeft
             height: buttonHeight
 
-            FactValue {
-                defaultHeight: buttonHeight
-                ui_scale: 1
+            ValueButton {
+                size: buttonHeight
                 fact: vehicle
-                iconName: fact.icon
                 toolTip: apx.vehicles.title
-                showTitle: false
-                valueScale: 0.6
+                showText: false
                 value: vehicle.title
                 active: false
                 warning: vehicle.protocol.streamType<=0
                 enabled: true
             }
 
-            FactValue {
-                defaultHeight: buttonHeight
-                ui_scale: 1
+            ValueButton {
+                size: buttonHeight
                 fact: vehicle.nodes
-                showTitle: false
+                showText: false
                 showIcon: true
-                valueScale: 0.6
+                //valueScale: 0.6
                 value: vehicle.nodes.protocol.size
-                iconName: fact.icon
                 warning: vehicle.nodes.protocol.size<=0
                 active: fact.modified || fact.progress>=0 || (!vehicle.nodes.protocol.valid)
                 enabled: true
             }
 
-            FactValue {
-                defaultHeight: buttonHeight
-                ui_scale: 1
+            ValueButton {
+                size: buttonHeight
                 fact: vehicle.mission
-                showTitle: false
+                showText: false
                 showIcon: true
-                valueScale: 0.6
+                //valueScale: 0.6
                 value: fact.missionSize
-                iconName: fact.icon
                 warning: fact.missionSize<=0
                 active: fact.modified || fact.progress>=0
                 enabled: true
@@ -133,7 +126,7 @@ Rectangle {
         }
 
         //menus
-        Ctr {
+        MenuButtons {
             Layout.fillWidth: true
             Layout.preferredHeight: buttonHeight
         }

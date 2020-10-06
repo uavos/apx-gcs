@@ -71,7 +71,7 @@ Item {
             anchors.left: parent.left
             anchors.top: parent.top
             active: plugin.state==="minimized"
-            sourceComponent: CleanButton {
+            sourceComponent: IconButton {
                 color: "transparent"
                 iconName: "fullscreen"
                 toolTip: qsTr("Maximize view")

@@ -46,7 +46,7 @@ RowLayout {
     Component {
         id: btnFLP
         CtrButton {
-            title: "FLAPS"
+            text: "FLAPS"
             fact: f_flaps
             onTriggered: fact.value=highlighted?0:1
             highlighted: fact.value>0
@@ -55,11 +55,11 @@ RowLayout {
     Component {
         id: btnBRK_TAXI
         CtrButton {
-            title: "BRAKE"
+            text: "BRAKE"
             fact: f_brake
             readonly property real v: fact.value
             color: (v>0 && v<1)?Qt.darker(Material.color(Material.Orange),1.5):undefined
-            width: height*3
+            minimumWidth: height*3
             highlighted: v>0
             onTriggered: {
                 if(m_reg_taxi){
@@ -73,9 +73,9 @@ RowLayout {
     Component {
         id: btnBRK
         CtrButton {
-            title: "BRAKE"
+            text: "BRAKE"
             fact: f_brake
-            width: height*3
+            minimumWidth: height*3
             onTriggered: fact.value=highlighted?0:1
             highlighted: fact.value>0
         }
@@ -84,8 +84,8 @@ RowLayout {
         id: btnATAXI
         CtrButton {
             fact: f_action
-            title: m_reg_taxi?"STOP":"AUTO"
-            width: height*4
+            text: m_reg_taxi?"STOP":"AUTO"
+            minimumWidth: height*4
             highlighted: m_reg_taxi
             onTriggered: fact.value=m_reg_taxi?proc_action_reset:proc_action_next
         }
@@ -94,8 +94,8 @@ RowLayout {
         id: btnNEXT
         CtrButton {
             fact: f_action
-            title: "NEXT"
-            width: height*4
+            text: "NEXT"
+            minimumWidth: height*4
             onTriggered: fact.value=proc_action_next
         }
     }
@@ -103,8 +103,8 @@ RowLayout {
         id: btnINC
         CtrButton {
             fact: f_action
-            title: "NEXT"
-            width: height*4
+            text: "NEXT"
+            minimumWidth: height*4
             onTriggered: fact.value=proc_action_inc
         }
     }
@@ -112,8 +112,8 @@ RowLayout {
         id: btnDEC
         CtrButton {
             fact: f_action
-            title: "PREV"
-            width: height*4
+            text: "PREV"
+            minimumWidth: height*4
             onTriggered: fact.value=proc_action_dec
         }
     }
@@ -121,8 +121,8 @@ RowLayout {
         id: btnCANCEL
         CtrButton {
             fact: f_action
-            title: "CANCEL"
-            width: height*4
+            text: "CANCEL"
+            minimumWidth: height*4
             onTriggered: fact.value=proc_action_reset
         }
     }
@@ -130,8 +130,8 @@ RowLayout {
         id: btnRESET
         CtrButton {
             fact: f_action
-            title: "RESET"
-            width: height*4
+            text: "RESET"
+            minimumWidth: height*4
             onTriggered: fact.value=proc_action_reset
         }
     }

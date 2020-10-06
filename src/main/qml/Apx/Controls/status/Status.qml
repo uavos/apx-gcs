@@ -13,6 +13,7 @@ Rectangle {
 
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_eta: mandala.est.wpt.eta
+    readonly property var f_dist: mandala.est.wpt.dist
     readonly property var f_energy: mandala.est.sys.energy
     readonly property var f_wpidx: mandala.cmd.proc.wp
     readonly property var f_loops: mandala.cmd.proc.loops
@@ -87,14 +88,13 @@ Rectangle {
 
             Loader {
                 asynchronous: true
-                active: apx.datalink.server.text
+                active: apx.datalink.server.text || ui.test
                 visible: active
                 sourceComponent: Component {
-                    FactValue {
-                        title: qsTr("RC")
+                    ValueButton {
+                        text: qsTr("RC")
                         fact: apx.datalink.server
                         active: false
-                        value: fact.text
                         valueScale: 0.8
                         valueColor: fact.extctr.value?Material.color(Material.LightGreen):Material.color(Material.Red)
                         enabled: true
@@ -109,11 +109,10 @@ Rectangle {
                 active: apx.datalink.hosts.text
                 visible: active
                 sourceComponent: Component {
-                    FactValue {
-                        title: qsTr("RS")
+                    ValueButton {
+                        text: qsTr("RS")
                         fact: apx.datalink.hosts
                         active: false
-                        value: fact.text
                         valueScale: 0.8
                         valueColor: apx.datalink.server.extctr.value?Material.color(Material.LightGreen):Material.color(Material.LightRed)
                         enabled: true
@@ -129,22 +128,13 @@ Rectangle {
             }
 
 
-            /*FactValue {
-            title: qsTr("EXT")
-            value: apx.datalink.hosts.availableCount
-        }
-        FactValue {
-            title: qsTr("CTR")
-            //value
-        }*/
-
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
 
-            FactValue {
-                title: qsTr("H")
+            ValueButton {
+                text: qsTr("H")
                 fact: f_hmsl
                 property real v: fact.value*(3.281/100)
                 value: "FL"+v.toFixed()
@@ -154,16 +144,16 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("D")
-                descr: qsTr("Distance to waypoint")
+            ValueButton {
+                text: qsTr("D")
+                fact: f_dist
                 value: wp_dist>0?apx.distanceToString(wp_dist):"--"
                 valueScale: 0.8
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("ETA")
+            ValueButton {
+                text: qsTr("ETA")
                 fact: f_eta
                 property int v: fact.value
                 property real valid: v>0
@@ -176,8 +166,8 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("FL")
+            ValueButton {
+                text: qsTr("FL")
                 fact: f_energy
                 value: fact.value.toFixed(1)
                 visible: ui.test || fact.value>0
@@ -191,23 +181,23 @@ Rectangle {
                 Layout.preferredHeight: itemHeight/2
             }
 
-            FactValue {
-                title: qsTr("WPT")
+            ValueButton {
+                text: qsTr("WPT")
                 fact: f_wpidx
                 value: fact.value+1
                 visible: ui.test || (m_mode===proc_mode_WPT || m_mode===proc_mode_STBY)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("LPS")
+            ValueButton {
+                text: qsTr("LPS")
                 fact: f_loops
                 visible: ui.test || (m_mode===proc_mode_STBY && fact.value>0)
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("XT")
+            ValueButton {
+                text: qsTr("XT")
                 fact: f_xtrack
                 visible: ui.test || isTrack
                 property real v: fact.value
@@ -215,8 +205,8 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("LR")
+            ValueButton {
+                text: qsTr("LR")
                 fact: f_radius
                 visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
                 property real v: fact.value
@@ -224,8 +214,8 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }
-            FactValue {
-                title: qsTr("AGL")
+            ValueButton {
+                text: qsTr("AGL")
                 fact: f_agl
                 value: fact.value.toFixed(1)
                 visible: ui.test || m_agl_show

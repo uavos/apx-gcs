@@ -159,11 +159,12 @@ RowLayout {
                 model: pluginsModel
                 visible: count>1
                 orientation: ListView.Horizontal
-                delegate: CleanButton {
+                delegate: ToolButton {
                     property var plugin: plugins[model.idx]
                     text: plugin.title
                     toolTip: plugin.descr
                     iconName: plugin.icon
+                    showText: false
                     highlighted: view.currentItem===plugin
                     onTriggered: show(plugin)
                     Component.onCompleted: {

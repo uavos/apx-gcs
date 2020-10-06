@@ -52,7 +52,7 @@ Item {
         radius: ui.antialiasing?titleText.height/2:0
         visible: factMenu && factMenu.effects && titleText.visible
     }
-    CleanButton {
+    IconButton {
         id: btnBack
         visible: showBtnBack
         anchors.left: parent.left
@@ -60,8 +60,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: -2
         iconName: "chevron-left"
-        height: parent.height*0.8
-        width: height
+        size: parent.height*0.8
         onClicked: back()
         color: "#478fff"
     }

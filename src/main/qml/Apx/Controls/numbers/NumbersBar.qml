@@ -24,9 +24,8 @@ Flow {
     Loader {
         active: showEditButton
         visible: active
-        sourceComponent: CleanButton {
-            implicitHeight: numbersModel.itemHeight
-            implicitWidth: implicitHeight
+        sourceComponent: IconButton {
+            size: numbersModel.itemHeight
             iconName: "note-plus-outline"//"plus-circle"
             toolTip: qsTr("Edit display values")
             onTriggered: numbersModel.edit()

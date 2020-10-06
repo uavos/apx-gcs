@@ -46,11 +46,9 @@ Rectangle {
         ScrollBar.vertical: ScrollBar { width: 6 }
         footer: Loader{
             active: showEditButton
-            sourceComponent: NumbersItem {
-                title: " +"
-                height: control.itemSize
-                minimumWidth: height
-                enabled: true
+            sourceComponent: TextButton {
+                text: "+"
+                size: control.itemSize
                 toolTip: qsTr("Edit display values")
                 onTriggered: numbersModel.edit()
             }

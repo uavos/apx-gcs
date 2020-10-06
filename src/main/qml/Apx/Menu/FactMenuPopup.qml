@@ -80,7 +80,7 @@ Popup {
         }
         onStackEmpty: popup.close()
         titleRightMargin: btnClose.width
-        CleanButton {
+        IconButton {
             id: btnClose
             z: 10
             anchors.right: factMenu.right
@@ -88,8 +88,7 @@ Popup {
             anchors.margins: 5
             iconName: "close"
             color: popup.pinned?Material.BlueGrey:undefined
-            height: MenuStyle.titleSize*0.8
-            width: height
+            size: MenuStyle.titleSize*0.8
             onClicked: popup.close()
         }
     }

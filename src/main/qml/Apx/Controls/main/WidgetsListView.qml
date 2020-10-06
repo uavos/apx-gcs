@@ -16,7 +16,7 @@ ListView {
     visible: count>0
     orientation: ListView.Horizontal
 
-    delegate: CleanButton {
+    delegate: IconButton {
         property var plugin: plugins[model.idx]
         text: plugin.title
         toolTip: plugin.descr

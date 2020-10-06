@@ -20,45 +20,34 @@ RowLayout {
     //property int itemSize: Math.max(10,missionButton.height)
     //property int iconFontSize: itemSize*0.8
     //property int titleFontSize: itemSize*0.8
-    CleanButton {
+    TextButton {
         id: missionButton
         minimumWidth: height*3
-        //implicitHeight: label.height+padding*2
         color: mission.modified?"#FFF59D":"#A5D6A7"
         Material.theme: Material.Light
         onClicked: mission.trigger()
-        contents: [
-            Label {
-                id: label
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: missionButton.fontSize(missionButton.bodyHeight/2.3)
-                text: (mission.text)
-                      +"\n"+(mission.empty?"":mission.waypoints.descr)
-            }
-        ]
+        text: (mission.text)
+              +"\n"+(mission.empty?"":mission.waypoints.descr)
+        textScale: 0.45
     }
-    FactMenuAction {
+    ActionButton {
         fact: mission.request
+        showText: false
         visible: (!mission.synced)
     }
-    FactMenuAction {
+    ActionButton {
         fact: mission.upload
+        showText: false
         visible: (!mission.synced) && (!mission.empty)
     }
-    FactMenuAction {
+    ActionButton {
         fact: mission.tools.save
+        showText: false
         visible: (!mission.saved) && (!mission.empty)
     }
-    FactMenuAction {
+    ActionButton {
         fact: mission.tools.load
+        showText: false
         visible: (mission.empty)
     }
-    /*FactMenuAction {
-        fact: mission.mission_title
-        title: fact.descr
-        visible: (!mission.empty) && mission.mission_title.text===""
-        onTriggered: mission.trigger()
-    }*/
 }

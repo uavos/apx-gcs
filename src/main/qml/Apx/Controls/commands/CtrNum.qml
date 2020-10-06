@@ -24,11 +24,10 @@ RowLayout {
 
     property real value: fact.value*mult
 
-    CleanButton {
+    TextButton {
         id: titleItem
         Layout.minimumWidth: titleWidth
-        defaultHeight: control.size
-        ui_scale: 1
+        size: control.size
         color: highlighted?undefined:"#000"
         highlighted: value!==0
         onTriggered: fact.value=0
@@ -54,9 +53,8 @@ RowLayout {
         }
     }
 
-    CleanButton {
-        defaultHeight: control.size
-        ui_scale: 1
+    TextButton {
+        size: control.size
         text: "-"
         enabled: value>min
         onTriggered: adjust(-stepSize)
@@ -67,9 +65,8 @@ RowLayout {
         onReleased: timer.stop()
         toolTip: qsTr("Decrease")+" "+fact.descr
     }
-    CleanButton {
-        defaultHeight: control.size
-        ui_scale: 1
+    TextButton {
+        size: control.size
         text: "+"
         enabled: value<max
         onTriggered: adjust(stepSize)

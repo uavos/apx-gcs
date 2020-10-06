@@ -7,26 +7,26 @@ import QtPositioning 5.6
 
 import APX.Vehicles 1.0
 
-CleanButton {
+import "Button"
+
+ButtonBase {
     id: control
     property var vehicle
-    property var menuFact: vehicle
 
-    implicitHeight: label.implicitHeight+padding*2
+    size: 48 * ui_scale
+    font.pixelSize: Math.max(7, height * 0.33 - 2)
 
     highlighted: vehicle.active
     visible: vehicle.visible
 
-    color: label.colorBG
+    color: _label.colorBG
 
+    contentItem: VehicleLabel {
+        id: _label
+        font: control.font
+        vehicle: control.vehicle
+    }
 
-    contents: [
-        VehicleLabel {
-            id: label
-            font: control.font
-            vehicle: control.vehicle
-        }
-    ]
 
     onClicked: {
         if(vehicle.active){

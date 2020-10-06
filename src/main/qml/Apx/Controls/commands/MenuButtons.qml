@@ -15,14 +15,11 @@ ListView {
     implicitHeight: 32
     implicitWidth: 100
 
-    delegate: CleanButton {
-        defaultHeight: listView.height
-        ui_scale: 1
-        text: modelData.title
+    delegate: IconButton {
+        size: listView.height
         toolTip: modelData.descr?modelData.descr:modelData.title
         iconName: modelData.icon
         highlighted: modelData.active
-        showText: false
         color: Qt.darker(Material.color(Material.Blue),2.2)
         onTriggered: {
             Menu.show(modelData,{},root)

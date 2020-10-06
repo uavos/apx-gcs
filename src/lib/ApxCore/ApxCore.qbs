@@ -107,7 +107,7 @@ ApxApp.ApxLibrary {
         Qt.core.resourcePrefix: "/"
         Qt.core.resourceSourceBase: prefix
         files: [
-            "fonts/BebasNeue.ttf",
+            "fonts/BebasNeue*.ttf",
             "fonts/FreeMono*.ttf",
             "fonts/Ubuntu-C.ttf",
             "fonts/Bierahinia.ttf",

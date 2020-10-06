@@ -72,18 +72,18 @@ Control {
             anchors.right: parent.right
             anchors.margins: 3
             spacing: 5
-            CleanButton {
+            IconButton {
                 visible: running
                 iconName: "record-rec"
                 iconColor: recording ? Material.color(Material.DeepOrange) : Material.primaryTextColor
                 onTriggered: plugin.tune.record.value =! plugin.tune.record.value
             }
-            CleanButton {
+            IconButton {
                 visible: running
                 iconName: "image"
                 onTriggered: plugin.snapshot()
             }
-            CleanButton {
+            IconButton {
                 toolTip: plugin.tune.running.descr
                 iconName: running?"cast-off":"cast"
                 onTriggered: plugin.tune.running.value=!plugin.tune.running.value
@@ -94,7 +94,7 @@ Control {
                 width: height
             }
 
-            CleanButton {
+            IconButton {
                 iconName: "tune"
                 onTriggered: {
                     plugin.tune.trigger()

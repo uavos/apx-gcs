@@ -134,8 +134,8 @@ ColumnLayout {
                     }
                     Loader {
                         active: mandalaFact && mandalaFact.value>0
-                        sourceComponent: CleanButton {
-                            title: qsTr("Remove")
+                        sourceComponent: ToolButton {
+                            text: qsTr("Remove")
                             iconName: "delete"
                             color: MenuStyle.cActionRemove
                             onTriggered: mandalaFactReset()
@@ -205,9 +205,8 @@ ColumnLayout {
                 active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
                 visible: active
                 sourceComponent: Component {
-                    FactMenuAction {
+                    ActionButton {
                         fact: modelData
-                        showText: true
                         onTriggered: control.factButtonTriggered(modelData)
                     }
                 }

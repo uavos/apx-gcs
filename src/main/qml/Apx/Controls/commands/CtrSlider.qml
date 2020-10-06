@@ -21,11 +21,10 @@ RowLayout {
 
     spacing: 0
 
-    CleanButton {
+    TextButton {
         id: titleItem
         Layout.minimumWidth: titleWidth
-        defaultHeight: control.size
-        ui_scale: 1
+        size: control.size
         color: highlighted?undefined:"#000"
         highlighted: fact.value!==0
         onTriggered: fact.value=0

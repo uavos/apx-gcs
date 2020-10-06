@@ -9,8 +9,11 @@ Text {
     property string name
     property int size: 32
 
+    readonly property string value: application.materialIconChar(name)
+
     font.family: "Material Design Icons"
     font.pixelSize: control.size
-    text: (name&&visible)?application.materialIconChar(name):""
+    text: (name && visible) ?  value : ""
     color: "#fff"
+    textFormat: Text.PlainText
 }

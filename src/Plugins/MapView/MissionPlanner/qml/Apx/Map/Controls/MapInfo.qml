@@ -5,6 +5,8 @@ import QtQuick.Controls 2.12
 import Apx.Common 1.0
 
 RowLayout {
+    id: control
+    readonly property int size: 20
 
     // mouse coordinate
     Text {
@@ -23,7 +25,7 @@ RowLayout {
         property int progress: fact?fact.progress:-1
 
         padding: 1
-        implicitHeight: 20
+        implicitHeight: control.size
         implicitWidth: implicitHeight
         running: progress>=0
         Text {
@@ -43,10 +45,10 @@ RowLayout {
         }
     }
 
-    FactValue {
-        implicitHeight: 20
+    ValueButton {
+        size: control.size
         fact: apx.tools?apx.tools.location.offline:null
-        showTitle: false
+        showText: false
         showIcon: false
         value: (active?qsTr("offline"):qsTr("online")).toUpperCase()
         active: fact && fact.value
@@ -98,8 +100,8 @@ RowLayout {
 
     // travel path
     Item {
-        id: control
-        implicitHeight: 20
+        id: pathItem
+        implicitHeight: control.size
         implicitWidth: Math.max(icon.width+textItem.implicitWidth, height*4)
 
         opacity: apx.vehicles.current.totalDistance>0?1:0.5
@@ -120,7 +122,7 @@ RowLayout {
             anchors.bottom: parent.bottom
             font.family: font_condenced
             color: "#fff"
-            text: control.text
+            text: pathItem.text
         }
         ToolTipArea {
             text: qsTr("Distance travelled")
