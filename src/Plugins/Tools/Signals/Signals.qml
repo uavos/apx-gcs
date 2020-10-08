@@ -38,7 +38,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.margins: 3
             spacing: 3
-            Layout.maximumHeight: 22*ui.scale
+            Layout.maximumHeight: 24*ui.scale
             SignalButton {
                 text: "R"
                 values: [ mandala.cmd.att.roll, mandala.est.att.roll ]

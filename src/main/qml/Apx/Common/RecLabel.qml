@@ -25,7 +25,6 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: 5
         anchors.rightMargin: 5
-        anchors.topMargin: font.pixelSize*0.1
         font.family: font_narrow
         font.pixelSize: Math.max(8,control.height)
         verticalAlignment: Text.AlignVCenter

@@ -10,31 +10,29 @@ RowLayout {
         id: scText
         enabled: false
         sequence: (s.length>1 && s.endsWith("+"))?s.substr(0,s.length-1):s
-        property alias s: control.text
+        property alias s: _textInput.text
     }
     Text {
-        //anchors.verticalCenter: parent.verticalCenter
-        //Layout.fillWidth: true
-        //anchors.leftMargin: font.pixelSize
+        Layout.fillHeight: true
         verticalAlignment: Qt.AlignVCenter
         font.family: font_condenced
-        font.pixelSize: fontSize(bodyHeight*valueSize)
+        font.pixelSize: control.valueSize
         color: Material.color(Material.Green)
         text: scText.nativeText
     }
     TextField {
-        id: control
+        id: _textInput
         focus: true
-        Layout.alignment: Qt.AlignRight
+        //Layout.alignment: Qt.AlignRight
         //Layout.fillWidth: true
-        //Layout.fillHeight: true
+        Layout.fillHeight: true
         //anchors.verticalCenter: parent.verticalCenter
         topPadding: 0
         bottomPadding: 0
         //height: MenuStyle.itemSize
         font.family: font_condenced
-        font.pixelSize: fontSize(bodyHeight*valueSize)
-        color: control.activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
+        font.pixelSize: control.valueSize
+        color: _textInput.activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         placeholderText: qsTr("Key Sequence")
         text: fact.text
         hoverEnabled: true
@@ -50,8 +48,8 @@ RowLayout {
         }
         onActiveFocusChanged: {
             apx.settings.interface.shortcuts.blocked.setValue(activeFocus);
-            if(activeFocus && control.selectedText===""){
-                control.selectAll();
+            if(activeFocus && _textInput.selectedText===""){
+                _textInput.selectAll();
             }
         }
         onEditingFinished: {
@@ -62,12 +60,12 @@ RowLayout {
         Keys.onPressed: {
             //console.log("key: "+event.key+" text: "+event.text)
             event.accepted=true
-            control.remove(control.selectionStart,control.selectionEnd);
+            _textInput.remove(_textInput.selectionStart,_textInput.selectionEnd);
             var s=apx.settings.interface.shortcuts.keyToPortableString(event.key,event.modifiers);
-            var i=control.cursorPosition;
-            if(control.text.endsWith('+'))i=control.text.length;
-            control.insert(i,s);
-            if(!control.text.endsWith('+'))control.selectAll();
+            var i=_textInput.cursorPosition;
+            if(_textInput.text.endsWith('+'))i=_textInput.text.length;
+            _textInput.insert(i,s);
+            if(!_textInput.text.endsWith('+'))_textInput.selectAll();
         }
     }
 }

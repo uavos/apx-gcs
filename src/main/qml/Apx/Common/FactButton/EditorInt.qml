@@ -3,7 +3,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 
 SpinBox {
-    id: control
+    id: editor
     from: (typeof fact.min!=='undefined')?fact.min*div:-1000000000
     to: (typeof fact.max!=='undefined')?fact.max*div:1000000000
     value: fact.value*div
@@ -17,17 +17,16 @@ SpinBox {
     stepSize: (fact.units==="m" && div==1 && (value>=10))?10:1
 
     font.family: font_condenced
-    font.pixelSize: factButton.valueFontSize
+    font.pixelSize: control.valueSize
 
-    up.onPressedChanged: if(activeFocus)control.parent.forceActiveFocus()
-    down.onPressedChanged: if(activeFocus)control.parent.forceActiveFocus()
+    up.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
+    down.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
     contentItem: Item{
         implicitWidth: textInput.contentWidth
         TextInput {
             id: textInput
             anchors.centerIn: parent
-            font.family: font_condenced
-            font.pixelSize: fontSize(bodyHeight*valueSize)
+            font: editor.font
 
             color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
             text: textWithUnits(fact.text)
@@ -37,7 +36,7 @@ SpinBox {
             selectByMouse: true
             onEditingFinished: {
                 setFactValue(text);
-                factButton.focusFree();
+                control.focusFree();
             }
             onActiveFocusChanged: {
                 if(activeFocus){
@@ -70,7 +69,7 @@ SpinBox {
     baselineOffset: 0
 
     background: Item {
-        implicitWidth: control.height*3
+        implicitWidth: editor.height*3
     }
 
     leftPadding: 0

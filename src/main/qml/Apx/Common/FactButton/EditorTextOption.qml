@@ -4,7 +4,7 @@ import QtQuick.Controls.Material 2.2
 import QtQml 2.12
 
 EditorOption {
-    id: control
+    id: editor
 
     editable: true
     contentItem: TextInput {
@@ -12,13 +12,13 @@ EditorOption {
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignRight
         font.family: font_condenced
-        font.pixelSize: fontSize(bodyHeight*valueSize)
+        font.pixelSize: control.valueSize
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text
         selectByMouse: true
         onEditingFinished: {
             fact.setValue(text);
-            factButton.focusFree();
+            control.focusFree();
         }
         onActiveFocusChanged: if(activeFocus)selectAll();
     }
@@ -38,15 +38,15 @@ EditorOption {
     }
 
     Connections {
-        target: factButton
+        target: control
         function onFocusRequested(){ checkFocusRequest() }
     }
     Component.onCompleted: checkFocusRequest()
     function checkFocusRequest()
     {
-        if(!factButton.bFocusRequest)return
-        factButton.bFocusRequest=false
-        control.forceActiveFocus()
+        if(!control.bFocusRequest)return
+        control.bFocusRequest=false
+        editor.forceActiveFocus()
     }
 
 }

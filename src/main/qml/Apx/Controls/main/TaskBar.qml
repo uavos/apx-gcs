@@ -111,7 +111,7 @@ RowLayout {
         active: Qt.platform.os === "linux"
         visible: active
         sourceComponent: Component {
-            FactButton {
+            ActionButton {
                 fact: apx.sysmenu
                 showText: false
             }

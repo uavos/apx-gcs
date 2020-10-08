@@ -1,20 +1,26 @@
 import QtQuick 2.5;
+import QtQuick.Controls.Material 2.12
 
 import Apx.Common 1.0
 
-FactValue {
+ValueButton {
     id: control
     property bool light: false
 
     alerts: true
     normalColor: light?"#555":normalColor
 
-    title: fact?fact.name:""
+    //highlighted: true
+
+
+    property string title: fact?fact.name:""
+    text: title
 
     //ensure width only grows
     Component.onCompleted: {
         implicitWidth=height
         updateWidth()
+
         //_con.enabled=true
     }
 
@@ -28,13 +34,13 @@ FactValue {
 
     function updateWidth()
     {
-        /*if(implicitWidth<defaultWidth){
+        if(implicitWidth<defaultWidth){
             implicitWidth=Qt.binding(function(){return defaultWidth})
             //implicitWidth=defaultWidth
         }
 
         if(model && model.minimumWidth<defaultWidth)
-            model.minimumWidth=defaultWidth*/
+            model.minimumWidth=defaultWidth
     }
 
     onDefaultWidthChanged: timerWidthUpdate.start()

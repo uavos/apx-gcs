@@ -16,8 +16,9 @@ ActionButton {
 
     textScale: 1
 
-    property var value: fact.text
-    property string valueText: value
+    property bool showValue: true
+
+    property string value: fact?fact.text:""
 
     property bool warning: false
     property bool error: false
@@ -36,6 +37,7 @@ ActionButton {
     property color valueHighlightColor: "#30ffffff"
 
     property real valueScale: 1
+    property real valueSize: height * valueScale
 
     font.family: font_condenced
 
@@ -56,7 +58,7 @@ ActionButton {
         var s=[]
         s.push(title+":")
         if(descr)s.push(descr)
-        s.push("("+valueText+")")
+        s.push("("+value+")")
         return s.join(" ")
     }
 
@@ -85,22 +87,33 @@ ActionButton {
         }
     }
 
-    //value
-
-    readonly property Item valueItem: Text {
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignRight
-        text: control.valueText
-        font.family: font_narrow
-        font.pixelSize: control.height * valueScale
-        color: valueColor
-        width: Math.max(implicitWidth,parent.width-x)
-    }
-
-
     Component.onCompleted: {
         cv = apx.vehicles.current
-        addItem(valueItem)
+        background.color=Qt.binding(function(){return Material.buttonColor})
+    }
+
+    //value
+
+    Component {
+        id: _valueC
+        Text {
+            verticalAlignment: Text.AlignVCenter
+            text: control.value
+            font.family: font_narrow
+            font.pixelSize: valueSize
+            color: valueColor
+            font.capitalization: Font.AllUppercase
+        }
+    }
+    property Component valueC: _valueC
+
+
+    contentComponent: Component {
+        ValueContent {
+            iconC: (control.showIcon && control.iconName)?control.iconC:null
+            textC: (control.showText && control.text)?control.textC:null
+            valueC: (control.showValue)?control.valueC:null
+        }
     }
 
 }

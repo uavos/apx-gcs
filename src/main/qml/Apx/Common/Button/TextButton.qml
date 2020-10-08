@@ -18,17 +18,18 @@ ButtonBase {
 
     font.pixelSize: textSize
 
-    readonly property Item textItem: Text {
-        visible: showText && text
-        font: control.font
-        text: control.text
-        color: control.currentTextColor
+    contentComponent: Component {
+        id: _textC
+        Text {
+            visible: showText && text
+            font: control.font
+            text: control.text
+            color: control.currentTextColor
 
-        textFormat: Text.PlainText
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+            textFormat: Text.PlainText
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
     }
-
-
-    contentItem: textItem
+    property Component textC: _textC
 }

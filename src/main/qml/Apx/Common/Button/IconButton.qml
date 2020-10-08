@@ -14,20 +14,22 @@ TextButton {
     property color iconColor: Material.iconColor
     property color disabledIconColor: Material.iconDisabledColor
 
-    readonly property real iconScale: 0.9
-    readonly property int iconSize: Math.max(7, control.height * iconScale - 2)
+    property real iconScale: 0.9
+    property int iconSize: Math.max(7, control.height * iconScale - 2)
 
     property color currentIconColor: enabled?iconColor:disabledIconColor
 
-    readonly property Item iconItem: MaterialIcon {
-        visible: showIcon && iconName
-        size: iconSize
-        color: currentIconColor
-        name: control.iconName
+    contentComponent: Component {
+        id: _iconC
+        MaterialIcon {
+            visible: showIcon && iconName
+            size: iconSize
+            color: currentIconColor
+            name: control.iconName
 
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
     }
-
-    contentItem: iconItem
+    property Component iconC: _iconC
 }

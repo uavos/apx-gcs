@@ -29,7 +29,7 @@ ColumnLayout {
         model: mission.listModel
         implicitWidth: contentItem.childrenRect.width
         orientation: ListView.Vertical
-        spacing: 4*ui.scale
+        spacing: 4 * ui.scale
         clip: true
         snapMode: ListView.SnapToItem
         visible: !empty
@@ -39,10 +39,11 @@ ColumnLayout {
             FactButton {
                 id: missionItem
 
-                defaultHeight: 24
-                titleSize: 0.55
-                descrSize: 0.45
-                nextSize: 1
+                size: 24 * ui.scale
+                //titleSize: textSize * 0.8
+                descrSize: textSize * 0.7
+                descrColor: textColor
+                descrFontFamily: font.family
 
                 fact: modelData
                 toolTip: fact?fact.descr:""
@@ -55,7 +56,11 @@ ColumnLayout {
                         return s.slice(0,Math.min(3,i)).toUpperCase()
                     }).join(' ')
                 }
+                showIcon: false
+                showEditor: false
+                showValue: false
                 showNext: (fact && fact.selected)?true:false
+
                 active: false
 
                 noFactTrigger: true

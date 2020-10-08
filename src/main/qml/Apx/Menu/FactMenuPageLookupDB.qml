@@ -22,9 +22,9 @@ FactMenuPageList {
         height: active?MenuStyle.itemSize:0
         sourceComponent: Component {
             FactButton {
-                height: MenuStyle.itemSize
+                size: MenuStyle.itemSize
                 property var d: modelData
-                title: d.title?d.title:qsTr("No title")
+                text: d.title?d.title:qsTr("No title")
                 descr: d.descr?d.descr:""
                 value: d.value?d.value:""
                 active: d.active?d.active:false

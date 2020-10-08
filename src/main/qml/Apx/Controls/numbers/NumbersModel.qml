@@ -56,7 +56,7 @@ ObjectModel {
     {
         clearObjList()
         model.clear()
-        model.minimumWidth=0
+        model.minimumWidth=itemHeight*4
         for(var i in list){
             var n=list[i]
             //console.log(n.bind)
@@ -70,14 +70,14 @@ ObjectModel {
                 f=apx.vehicles.current.mandala.fact(n.bind)
             if(f){
                 s+="fact: mandala."+f.mpath()+";"
-                s+="value: fact?fact.value:''"+";"
-                if(!n.prec)
-                    s+="valueText: fact?fact.text:''"+";"
+                s+="property var v: fact?fact.value:undefined"+";"
             }else{
-                s+="value: "+n.bind+";"
+                s+="property var v: "+n.bind+";"
             }
             if(n.prec){
-                s+="valueText: value.toFixed("+n.prec+")"+";"
+                s+="value: v.toFixed("+n.prec+")"+";"
+            }else{
+                s+="value: v;"
             }
             if(n.act){
                 s+="enabled: true;"

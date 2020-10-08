@@ -2,7 +2,7 @@
 import QtQuick.Controls 2.2
 
 EditorInt {
-    id: control
+    id: editor
 
     textFromValue: function(value, locale) {
         return fact.text

@@ -82,7 +82,7 @@ Rectangle {
         StackView {
             clip: true
             Layout.fillWidth: true
-            Layout.preferredHeight: buttonHeight
+            implicitHeight: buttonHeight
             property string mode: f_mode.text
             onModeChanged: {
                 var modes

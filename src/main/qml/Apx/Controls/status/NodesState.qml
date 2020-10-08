@@ -25,11 +25,11 @@ Rectangle {
         cacheBuffer: 0
         model: apx.vehicles.current.nodes.model
         snapMode: ListView.SnapToItem
-        delegate: FactValue {
+        delegate: ValueButton {
             implicitWidth: itemWidth
-            implicitHeight: itemHeight
+            size: itemHeight
             fact: modelData
-            descr: fact?fact.text+"\n"+fact.descr:""
+            toolTip: fact?fact.text+"\n"+fact.descr:""
             value: fact?fact.text:"" //.startsWith('[')?fact.size:""
             valueScale: 0.7
             valueColor: titleColor
@@ -38,7 +38,7 @@ Rectangle {
                 if(fact.active)apx.vehicles.current.nodes.request()
                 else apx.vehicles.current.nodes.nstat()
             }
-            titleColor: {
+            textColor: {
                 if(fact){
                     if(fact.modified)return "#ffa" //Material.color(Material.Yellow)
                     if(fact.reconf)return "#faa" //Material.color(Material.Red)
@@ -47,10 +47,10 @@ Rectangle {
             }
         }
         headerPositioning: ListView.OverlayHeader
-        header: FactValue {
+        header: ValueButton {
             z: 100
             implicitWidth: itemWidth
-            implicitHeight: itemHeight
+            size: itemHeight
             fact: apx.vehicles.current.nodes
             value: fact.text
             valueScale: 0.7

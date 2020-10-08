@@ -2,15 +2,15 @@
 import QtQuick.Controls 2.2
 
 EditorInt {
-    id: control
+    id: editor
 
     property int decimals: Math.min(2,fact.precision>0?fact.precision:2)
 
     div: Math.pow(10,decimals)
 
     validator: DoubleValidator {
-        bottom: Math.min(control.from, control.to)
-        top:  Math.max(control.from, control.to)
+        bottom: Math.min(editor.from, editor.to)
+        top:  Math.max(editor.from, editor.to)
     }
 
     textFromValue: function(value, locale) {

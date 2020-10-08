@@ -58,7 +58,6 @@ RowLayout {
 
     Label {
         Layout.minimumWidth: valueWidth
-        Layout.topMargin: font.pixelSize*0.05+1
         font.family: font_narrow
         font.pixelSize: control.size*0.8
         text: fact.value.toFixed(2)

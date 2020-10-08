@@ -94,7 +94,7 @@ Item {
         visible: selGroup
         Repeater {
             model: selectedGroup ? selectedGroup.model : null
-            delegate: FactButton {
+            delegate: ActionButton {
                 fact: model.fact
                 noFactTrigger: true
                 onTriggered: selectTool(fact)
@@ -104,7 +104,7 @@ Item {
 
     RowLayout {
         id: buttons
-        FactButton {
+        ActionButton {
             id: add
             fact: factAdd
             noFactTrigger: true
@@ -115,7 +115,7 @@ Item {
                 else selectedGroup=fact
             }
         }
-        FactButton {
+        ActionButton {
             id: vehicle
             fact: factVehicle
             noFactTrigger: true

@@ -5,7 +5,7 @@ import Apx.Common 1.0
 FactButton {
     fact: apx.vehicles.replay.telemetry.reader
     value: ""
-    titleSize: 0.45
+    titleSize: descrSize
     expandable: false
     noFactTrigger: true
     onTriggered: {

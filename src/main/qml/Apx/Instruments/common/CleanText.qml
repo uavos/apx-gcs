@@ -26,7 +26,7 @@ Item {
     property string displayText: (control.prefix ? control.prefix + " " + control.text : control.text).toUpperCase()
 
     property string font: font_narrow
-    property int fontSize: Math.max(4, fix_font?(height*1.2):height)
+    property int fontSize: Math.max(4, fix_font?(height*1.1):height)
 
     property bool show: true
     property bool frame: false
@@ -91,7 +91,6 @@ Item {
             id: textItem
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.topMargin: fix_font?font.pixelSize*0.05+1:0
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: control.displayText

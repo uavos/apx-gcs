@@ -36,18 +36,6 @@ Item {
     }
 
 
-    /*Loader {
-        active: !alive
-        anchors.centerIn: videoFrame
-        anchors.verticalCenterOffset: -parent.height/6
-        sourceComponent: Text {
-            color: "#60FFFFFF"
-            text: qsTr("no video").toUpperCase()
-            font.pixelSize: 48
-            font.family: font_narrow
-            font.bold: true
-        }
-    }*/
     Loader {
         active: !alive
         anchors.centerIn: videoFrame

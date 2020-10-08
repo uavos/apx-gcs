@@ -8,24 +8,22 @@ import ".."
 IconButton {
     id: control
 
-
-    default property alias contents: _row.children
-
-    property alias contentsItem: _row
-
-    contentItem: Row {
-        id: _row
-        spacing: 3
+    contentComponent: Component {
+        id: _toolC
+        Row {
+            id: _row
+            spacing: 2
+            Loader {
+                active: control.showIcon
+                height: parent.height
+                sourceComponent: control.iconC
+            }
+            Loader {
+                active: control.showText
+                height: parent.height
+                sourceComponent: control.textC
+            }
+        }
     }
-
-    Component.onCompleted: {
-        addItem(iconItem)
-        addItem(textItem)
-    }
-
-    function addItem(item)
-    {
-        item.parent = _row
-        item.height = Qt.binding(function(){return _row.height})
-    }
+    property Component toolC: _toolC
 }

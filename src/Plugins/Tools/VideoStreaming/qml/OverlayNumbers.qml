@@ -107,11 +107,11 @@ Item {
         anchors.margins: control.margins
         spacing: overlayItemSize/2
         height: overlayItemSize
-        FactValue {
+        ValueButton {
             id: timeItem
             Layout.fillHeight: true
             fact: f_time
-            title: gps?"GPS":"LOCAL"
+            text: gps?"GPS":"LOCAL"
             value: apx.dateToString(time)
             property bool gps: false
             property int time: gps?gpsTime:localTime
@@ -141,10 +141,10 @@ Item {
         }
 
         //frame cnt
-        FactValue {
+        ValueButton {
             id: frameCntItem
             Layout.fillHeight: true
-            showTitle: false
+            showText: false
             readonly property int v: plugin.frameCnt
             value: ("0"+v).slice(-2)
             visible: alive && v>0
@@ -159,13 +159,13 @@ Item {
     }
 
     //cam track pos
-    FactValue {
+    ValueButton {
         id: tposItem
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: timeLayout.bottom
         anchors.margins: control.margins
         height: overlayItemSize
-        showTitle: false
+        showText: false
         property real lat: m_lat
         property real lon: m_lon
         property real hmsl: m_hmsl
@@ -187,14 +187,13 @@ Item {
 
 
     //cam mode
-    FactValue {
+    ValueButton {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: control.margins
         height: overlayItemSize
         fact: f_gimbal_mode
-        showTitle: false
-        valueText: fact.text
+        showText: false
         enabled: interactive
         onTriggered: popupC.createObject(this)
         Component{
@@ -242,9 +241,9 @@ Item {
         height: overlayItemSize
         spacing: 3
 
-        FactValue {
+        ValueButton {
             Layout.fillHeight: true
-            showTitle: false
+            showText: false
             property var f: plugin.tune.controls
             value: qsTr("CTR")
             toolTip: f.descr
@@ -255,30 +254,30 @@ Item {
 
         }
 
-        FactValue {
+        ValueButton {
             Layout.fillHeight: true
             fact: f_zoom
-            title: "zoom"
-            valueText: (fact.value*100).toFixed()
-            visible: value>0
+            text: "zoom"
+            value: (fact.value*100).toFixed()
+            visible: fact.value>0
             enabled: interactive
             onTriggered: fact.value=0
         }
-        FactValue {
+        ValueButton {
             Layout.fillHeight: true
             fact: f_focus
-            title: "focus"
-            valueText: (fact.value*100).toFixed()
-            visible: value>0
+            text: "focus"
+            value: (fact.value*100).toFixed()
+            visible: fact.value>0
             enabled: interactive
             onTriggered: fact.value=0
         }
-        FactValue {
+        ValueButton {
             Layout.fillHeight: true
             fact: f_ch
-            title: "ch"
-            visible: value>0
-            onValueChanged: if(value>0)visible=true
+            text: "ch"
+            visible: fact.value>0
+            onValueChanged: if(fact.value>0)visible=true
             enabled: interactive
             onTriggered: fact.value=0
         }
@@ -291,17 +290,16 @@ Item {
                 f_FT,
                 f_RNG,
             ]
-            delegate: FactValue {
+            delegate: ValueButton {
                 Layout.fillHeight: true
                 fact: modelData
-                showTitle: false
-                value: fact.value
-                valueText: fact.name //.slice(fact.title.lastIndexOf("_")+1)
-                visible: value
-                onValueChanged: if(value)visible=true
+                showText: false
+                value: fact.name //.slice(fact.title.lastIndexOf("_")+1)
+                visible: fact.value
+                onValueChanged: if(fact.value)visible=true
                 enabled: interactive
-                onTriggered: fact.value=value?0:1
-                active: value
+                onTriggered: fact.value=fact.value?0:1
+                active: fact.value
             }
         }
 

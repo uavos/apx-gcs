@@ -50,15 +50,11 @@ AppSettings::AppSettings(Fact *parent)
     st.append(App::instance()->languages());
     item->setEnumStrings(st);
 
-    item = new Fact(f_graphics,
-                    "scale",
-                    tr("Scale"),
-                    tr("Fonts scale [-1..+1]"),
-                    Float | PersistentValue);
+    item = new Fact(f_graphics, "scale", tr("Scale"), tr("UI scale factor"), Float | PersistentValue);
     item->setDefaultValue(1.0);
     //item->setPrecision(1);
-    //item->setMin(0.5);
-    //item->setMax(2.0);
+    item->setMin(0.5);
+    item->setMax(2.0);
     scaleEvent.setInterval(1000);
     connect(item, &Fact::valueChanged, &scaleEvent, &DelayedEvent::schedule);
     connect(&scaleEvent, &DelayedEvent::triggered, this, [item]() {

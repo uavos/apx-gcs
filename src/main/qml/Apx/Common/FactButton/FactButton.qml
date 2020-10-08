@@ -10,30 +10,28 @@ import QtQuick.Controls.Material.impl 2.12
 import APX.Facts 1.0
 import Apx.Common 1.0
 
-CleanButton {
-    id: factButton
-    property var fact
+import "../Button"
 
+ActionButton {
+    id: control
 
     onFactChanged: {
-        if(!fact)fact=factC.createObject(this)
+        if(!fact) fact=factC.createObject(this)
     }
     Component {
         id: factC
         Fact {}
     }
 
+    property int progress: fact?fact.progress:-1
 
-    iconName: fact?fact.icon:""
-    title: fact?fact.title:""
-    descr: fact?fact.descr:""
-
-    progress: fact?fact.progress:-1
+    showText: true
+    bShowDisabled: true
 
     toolTip: {
         var list = []
         if(!fact){
-            list.push(title)
+            list.push(text)
             list.push(descr)
             return list.join("\n")
         }
@@ -53,33 +51,29 @@ CleanButton {
 
 
     property string value: fact?fact.text:""
-    property bool active: fact?fact.active:false
-    property bool modified: fact?fact.modified:false
 
-    property int treeType: fact?fact.treeType:Fact.NoFlags
-    property int dataType: fact?fact.dataType:Fact.NoFlags
+    property bool modified: fact?fact.modified:false
 
     property int factSize: fact?fact.size:0
     property string qmlPage: fact?fact.qmlPage:""
-
-    enabled: fact?fact.enabled:true
 
     property bool selected: false
     property bool draggable: (fact && fact.parentFact)?fact.parentFact.options&Fact.DragChildren:false
 
     property bool signaled: false
 
-    property bool noFactTrigger: false
     property bool noEdit: false
 
-    showText: true
-    textAlignment: Text.AlignLeft
 
     readonly property bool opt_highlight: fact?fact.options&Fact.HighlightActive:true
 
     highlighted: activeFocus || selected || (active && opt_highlight)
 
-    titleColor: modified?Material.color(Material.Yellow):active?"#A5D6A7":Material.primaryTextColor
+    textColor: modified
+               ? Material.color(Material.Yellow)
+               : active
+                 ? "#A5D6A7"
+                 : Material.primaryTextColor
 
 
     property bool expandable: treeType !== Fact.Action
@@ -96,11 +90,12 @@ CleanButton {
     property bool showEditor: (!noEdit) && hasValue && showText && (!isScript)
     property bool showValue: hasValue && showText
     property bool showNext: expandable
+    property bool showDescr: descr
 
     //focus requests
     signal focusRequested()
     signal focusFree()
-    focus: false
+
     property bool bFocusRequest: false
     onFocusRequested: bFocusRequest=true
     onFocusFree: forceActiveFocus()
@@ -109,8 +104,6 @@ CleanButton {
 
     onTriggered: {
         focusRequested()
-        if(noFactTrigger) return
-        if(fact)fact.trigger()
         if(isScript) openDialog("EditorScript")
     }
 
@@ -129,9 +122,9 @@ CleanButton {
     //Drag.keys: String(parent) //fact.parentFact?fact.parentFact.name:"root"
 
     DropArea {
-        enabled: factButton.draggable
+        enabled: control.draggable
         anchors { fill: parent; margins: 10 }
-        //keys: String(factButton.parent)
+        //keys: String(control.parent)
         onEntered: {
             //console.log(drag.source.title+" -> "+title)
             if(fact)drag.source.fact.move(fact.num)
@@ -139,59 +132,118 @@ CleanButton {
     }
 
 
+    property real titleSize: textSize * 1
+    property real descrSize: textSize * 0.56
 
-    property real statusSize: 0.5
-    property real valueSize: 0.6
-    property real nextSize: 0.7
 
-    contents: [
-        //value
-        Loader {
-            active: showValue && (!editorItem.active)
-            //Layout.fillHeight: true
-            //Layout.maximumHeight: size
-            sourceComponent: Component {
-                Label {
-                    text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
-                    font.family: font_condenced
-                    font.pixelSize: fontSize(bodyHeight*valueSize)
-                    color: Material.secondaryTextColor
-                }
+    property real statusSize: textSize * 1
+    property real valueSize: textSize * 1
+    property real nextSize: textSize * 1
+
+    property color descrColor: Material.secondaryTextColor
+
+    property string descrFontFamily: font_condenced
+
+    textC: Component {
+        Item {
+            id: titleLayout
+            implicitWidth: Math.max(titleText.implicitWidth, descrText.visible?descrText.implicitWidth:0)
+            Text {
+                id: titleText
+                anchors.fill: parent
+                verticalAlignment: descrText.visible?Text.AlignTop:Text.AlignVCenter
+                font.family: control.font.family
+                font.pixelSize: titleSize
+                text: control.text
+                color: control.enabled?textColor:disabledTextColor
             }
-        },
-        Loader {
-            id: editorItem
-            Layout.maximumHeight: bodyHeight
-            Layout.maximumWidth: factButton.height*10
-            Layout.rightMargin: 4
-            asynchronous: true
-            Material.accent: Material.color(Material.Green)
-            property string src: showEditor?getEditorSource():""
-            active: src
-            visible: active
-            source: src
-        },
-        //next icon
-        Loader {
-            id: nextIcon
-            Layout.maximumWidth: size*0.7
-            Layout.leftMargin: -size*0.25
-            Layout.preferredHeight: bodyHeight
-            active: showNext
-            visible: active
-            asynchronous: true
-            property int size: fontSize(bodyHeight*nextSize)
-            sourceComponent: Component {
-                MaterialIcon {
-                    size: nextIcon.size
-                    verticalAlignment: Text.AlignVCenter
-                    name: "chevron-right"
-                    color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
-                }
+            Text {
+                id: descrText
+                anchors.fill: parent
+                visible: showDescr && text
+                verticalAlignment: Text.AlignBottom
+                font.family: descrFontFamily
+                font.pixelSize: descrSize
+                text: control.descr
+                color: control.enabled?descrColor:disabledTextColor
             }
         }
-    ]
+    }
 
+    Component {
+        id: _valueC
+        Row {
+            height: parent.height
+
+            // value
+            Loader {
+                id: _value
+                active: showValue && (!_editor.active)
+                height: parent.height
+                sourceComponent: Text {
+                    text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
+                    font.family: font_condenced
+                    font.pixelSize: valueSize
+                    color: Material.secondaryTextColor
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+            Loader {
+                id: _editor
+                height: parent.height
+                //Layout.maximumWidth: control.height*10
+                //Layout.rightMargin: 4
+                asynchronous: true
+                Material.accent: Material.color(Material.Green)
+                property string src: showEditor?getEditorSource():""
+                active: src
+                visible: active
+                source: src
+            }
+
+            // next icon
+            MaterialIcon {
+                id: _next
+                height: parent.height
+                visible: showNext
+                size: nextSize
+                verticalAlignment: Text.AlignVCenter
+                name: "chevron-right"
+                color: control.enabled?Material.secondaryTextColor:Material.hintTextColor
+            }
+        }
+    }
+    property Component valueC: _valueC
+
+    contentComponent: Component {
+        ValueContent {
+            iconC: (control.showIcon && control.iconName)?control.iconC:null
+            textC: (control.showText && control.text)?control.textC:null
+            valueC: control.valueC
+        }
+    }
+
+    Loader {
+        parent: contentItem
+        z: -1
+        asynchronous: true
+        active: control.progress>=0
+        anchors.fill: parent
+        anchors.margins: 1
+        sourceComponent: Component {
+            ProgressBar {
+                background.height: height-2
+                contentItem.implicitHeight: height-2
+                opacity: 0.7
+                to: 100
+                property int v: control.progress
+                value: v
+                visible: v>=0
+                indeterminate: v==0
+                Material.accent: Material.color(Material.Green)
+            }
+        }
+    }
 
     function getEditorSource()
     {
@@ -230,7 +282,7 @@ CleanButton {
     function openDialog(name)
     {
         if(!fact)return
-        var c=Qt.createComponent(name+".qml",factButton)
+        var c=Qt.createComponent(name+".qml",control)
         if(c.status===Component.Ready) {
             c.createObject(ui.window,{"fact": fact});
         }
@@ -244,9 +296,9 @@ CleanButton {
             Ripple {
                 id: ripple
                 clipRadius: 2
-                anchor: factButton
+                anchor: control
                 active: false
-                color: factButton.flat && factButton.highlighted ? factButton.Material.highlightedRippleColor : factButton.Material.rippleColor
+                color: control.flat && control.highlighted ? control.Material.highlightedRippleColor : control.Material.rippleColor
                 Timer {
                     interval: 500
                     repeat: true
@@ -259,13 +311,6 @@ CleanButton {
         }
     }
 
-
-    /*MouseArea {
-        anchors.fill: factButton
-        propagateComposedEvents: true
-        drag.target: held ? factButton : undefined
-        drag.axis: Drag.YAxis
-    }*/
 }
 
 

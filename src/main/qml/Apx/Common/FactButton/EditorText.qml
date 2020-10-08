@@ -5,9 +5,10 @@ import QtQuick.Layouts 1.3
 import QtQml 2.12
 
 Rectangle {
-    id: control
+    id: editor
     implicitHeight: textInput.contentHeight+4
     implicitWidth: Math.max(textInput.contentWidth+4,height*2)
+
     radius: 3
     color: "#50000000"
     border.width: 0
@@ -18,13 +19,13 @@ Rectangle {
         clip: true
         focus: true
 
-        width: control.width-4
+        width: editor.width-4
 
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
 
         font.family: font_condenced
-        font.pixelSize: fontSize(bodyHeight*valueSize)
+        font.pixelSize: control.valueSize
 
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text
@@ -34,7 +35,7 @@ Rectangle {
 
         onEditingFinished: {
             fact.setValue(text);
-            factButton.focusFree();
+            control.focusFree();
         }
         onActiveFocusChanged: {
             if(activeFocus)selectAll();
@@ -42,7 +43,7 @@ Rectangle {
     }
 
     Connections {
-        target: factButton
+        target: control
         function onFocusRequested()
         {
             checkFocusRequest()
@@ -51,8 +52,8 @@ Rectangle {
     Component.onCompleted: checkFocusRequest()
     function checkFocusRequest()
     {
-        if(!factButton.bFocusRequest)return
-        factButton.bFocusRequest=false
+        if(!control.bFocusRequest)return
+        control.bFocusRequest=false
         textInput.forceActiveFocus()
     }
 }

@@ -4,7 +4,8 @@ import QtQuick.Controls.Material 2.2
 import QtQml 2.12
 import QtQuick.Layouts 1.3
 
-//import ".."
+
+import "../Button"
 
 ComboBox {
     id: editor
@@ -12,9 +13,10 @@ ComboBox {
     spacing: 0
     topPadding: 0
     bottomPadding: 0
-    //background.y: 0
-    //background.height: height
-    //contentItem.height: height
+
+//    background.y: 0
+//    background.height: height
+//    contentItem.height: height
 
     //Layout.fillHeight: true
     //implicitHeight: bodyHeight
@@ -23,8 +25,9 @@ ComboBox {
     bottomInset: 0
 
     flat: true
-    //font.family: font_condenced
-    //font.pixelSize: fontSize(bodyHeight*valueSize)
+
+    font.family: font_condenced
+    font.pixelSize: control.valueSize
 
     contentItem.implicitWidth: contentItem.contentWidth+indicator.width/2 //+editor.height/2
     background.implicitWidth: contentItem.implicitWidth
@@ -46,8 +49,15 @@ ComboBox {
             editor.popup.close()
         }
     }
-    popup.width: factButton.width*0.7
-    popup.x: editor.width-popup.width
+    delegate: ItemDelegate {
+        text: modelData
+        width: popup.width
+        highlighted: text === fact.text
+        font: editor.font
+        Component.onCompleted: popup.width=Math.max(popup.width, implicitWidth)
+    }
+    //popup.width: popup.implicitWidth //.childrenRect.width //control.width*0.7
+    //popup.x: editor.width-popup.width
     function updateIndex()
     {
         //currentIndex=find(value)

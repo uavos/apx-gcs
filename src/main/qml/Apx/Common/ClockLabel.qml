@@ -11,7 +11,6 @@ Item {
     Text {
         id: textItem
         anchors.fill: parent
-        anchors.topMargin: font.pixelSize*0.1
         font.family: font_narrow
         font.pixelSize: Math.max(8,control.height)
         verticalAlignment: Text.AlignVCenter

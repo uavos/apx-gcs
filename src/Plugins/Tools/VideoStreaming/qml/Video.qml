@@ -38,19 +38,29 @@ Control {
     background: Rectangle {
         border.width: 0
         color: "#000"
-        VideoOutput {
-            id: videoOutput
+        Item {
             anchors.fill: parent
             anchors.leftMargin: viewFull?0:control.leftPadding
             anchors.rightMargin: viewFull?0:control.rightPadding
             anchors.topMargin: viewFull?0:control.topPadding
             anchors.bottomMargin: viewFull?0:control.bottomPadding
-            source: plugin
-            flushMode: VideoOutput.EmptyFrame
-            fillMode: viewMode>0?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
+
+            VideoOutput {
+                id: videoOutput
+                anchors.fill: parent
+                source: plugin
+                flushMode: VideoOutput.EmptyFrame
+                fillMode: viewMode>0?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
+
+                layer.enabled: ui.effects
+                layer.effect: ShaderEffect {
+                    fragmentShader: Qt.resolvedUrl("/shaders/vignette.fsh")
+                }
+            }
+
             Overlay {
                 id: overlay
-                anchors.fill: parent
+                anchors.fill: videoOutput
                 anchors.topMargin: viewFull?control.topPadding:0
                 showNumbers: !pluginMinimized
                 showAim: !pluginMinimized

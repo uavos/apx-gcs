@@ -5,13 +5,17 @@ import Apx.Common 1.0
 //import Apx.Menu 1.0
 import APX.Vehicles 1.0
 
-CleanButton {
+FactButton {
     id: control
-    showText: true
+
+    showText: enabled
+    showValue: false
+    showNext: false
+    showEditor: false
 
     enabled: fact.size
 
-    readonly property var fact: apx.vehicles.current.warnings
+    fact: apx.vehicles.current.warnings
     readonly property int showTimeout: 5000
     readonly property int showTimes: 3
 
@@ -19,7 +23,6 @@ CleanButton {
         target: fact
         function onShow(msg, msgType){ message(msg, msgType) }
     }
-    onTriggered: fact.trigger()
 
     state: "NORMAL"
     states: [
@@ -29,7 +32,7 @@ CleanButton {
                 target: control
                 highlighted: false
                 iconName: "alert-circle-outline"
-                title: fact.text
+                text: fact.text
                 descr: ""
                 toolTip: ""
                 opacity: 1
@@ -41,7 +44,7 @@ CleanButton {
                 target: control
                 highlighted: true
                 iconName: showItem.icon
-                title: showItem.title
+                text: showItem.title
                 descr: "["+(model.pos)+"/"+model.count+"] "+showItem.descr
                 opacity: 1
             }
@@ -124,7 +127,7 @@ CleanButton {
         }
         var stitle=msg
         var sdescr=""
-        var i=msg.indexOf(":")
+        var i=msg.lastIndexOf(":")
         if(i>0){
             sdescr=msg.slice(i+1).trim()
             stitle=msg.slice(0,i).trim()

@@ -11,28 +11,35 @@ ToolButton {
 
     property QtObject fact
 
-    property int options: fact.options
-    property int dataType: fact.dataType
+    property bool noFactTrigger: false
 
-    toolTip: fact.descr
-    iconName: fact.icon
-    text: fact.title
+    property int treeType: fact?fact.treeType:Fact.NoFlags
+    property int dataType: fact?fact.dataType:Fact.NoFlags
+    property int options: fact?fact.options:Fact.NoFlags
 
-    enabled: fact.enabled
-    visible: fact.visible && (bShowDisabled || enabled)
+    property string descr: fact?fact.descr:""
 
-    property bool active: fact.active
+    iconName: fact?fact.icon:""
+    text: fact?fact.title:""
+
+    enabled: fact?fact.enabled:true
+    visible: (fact?fact.visible:true) && (bShowDisabled || enabled)
+
+    property bool active: fact?fact.active:false
     highlighted: activeFocus || active
 
     showText: !bIconOnly
 
-    //internal
-    readonly property bool bApply: dataType==Fact.Apply
-    readonly property bool bRemove: dataType==Fact.Remove
-    readonly property bool bStop: dataType==Fact.Stop
+    toolTip: descr
 
-    readonly property bool bIconOnly: options&Fact.IconOnly
-    readonly property bool bShowDisabled: options&Fact.ShowDisabled
+
+    //internal
+    property bool bApply: dataType==Fact.Apply
+    property bool bRemove: dataType==Fact.Remove
+    property bool bStop: dataType==Fact.Stop
+
+    property bool bIconOnly: options&Fact.IconOnly
+    property bool bShowDisabled: options&Fact.ShowDisabled
 
     function action_color()
     {
@@ -46,5 +53,5 @@ ToolButton {
 
     color: action_color()
 
-    onTriggered: fact.trigger()
+    onTriggered: if(fact && !noFactTrigger) fact.trigger()
 }

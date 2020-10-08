@@ -32,7 +32,7 @@ Button {
     leftPadding: padding+1
     rightPadding: padding+2
     topPadding: padding
-    bottomPadding: padding+2
+    bottomPadding: padding+1
 
     implicitHeight: size
     implicitWidth: defaultWidth
@@ -48,6 +48,7 @@ Button {
 
     // tooltip
 
+    //ToolTip.enabled: true
     ToolTip.delay: 1000
     ToolTip.timeout: 5000
     ToolTip.visible: ToolTip.text && (down || hovered)
@@ -71,4 +72,13 @@ Button {
             else control.focus=false
         }
     }
+
+    // contents
+
+    property Component contentComponent
+    Component.onCompleted: {
+        if(contentComponent)
+            contentItem = contentComponent.createObject(control)
+    }
+
 }
