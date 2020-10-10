@@ -29,21 +29,22 @@ SpinBox {
             font: editor.font
 
             color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
-            text: textWithUnits(fact.text)
+            text: fact.text
 
             activeFocusOnTab: true
 
             selectByMouse: true
             onEditingFinished: {
-                setFactValue(text);
+                fact.setValue(text);
                 control.focusFree();
             }
             onActiveFocusChanged: {
                 if(activeFocus){
-                    text=fact.text
+                    if(fact.units === "hex") text=fact.value.toString(16).toUpperCase()
+                    else text=fact.value
                     selectAll();
                 }else{
-                    text=Qt.binding(function(){return textWithUnits(fact.text)})
+                    text=Qt.binding(function(){return fact.text})
                 }
             }
             horizontalAlignment: Qt.AlignHCenter
@@ -76,31 +77,13 @@ SpinBox {
     rightPadding: 0
 
 
-
     property real div: 1
 
-    function setFactValue(s)
-    {
-        var u=fact.units
-        if(u === "hex") s="0x"+s
-        fact.setValue(s);
-    }
-
-    function textWithUnits(s)
-    {
-        var u=fact.units
-        while(u){
-            if(u.indexOf("..") >= 0) break
-            if(u === "hex") break
-            if(isNaN(s)) break
-            //if(s !== parseFloat(s)) break
-            return s+" "+u
-        }
-        return s;
-    }
-
     onValueModified: {
-        fact.setValue(value/div)
+        var s=value/div
+        if(fact.units === "hex") s=s.toString(16)
+
+        fact.setValue(s)
         value=Qt.binding(function(){return Math.round(fact.value*div)})
     }
 

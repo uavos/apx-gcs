@@ -20,12 +20,13 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef FactDelegateScript_H
-#define FactDelegateScript_H
+#pragma once
+
 #include "FactDelegateDialog.h"
+
 class PawnCompiler;
 class SourceEdit;
-//=============================================================================
+
 class FactDelegateScript : public FactDelegateDialog
 {
     Q_OBJECT
@@ -59,5 +60,3 @@ private slots:
 
     void updateLog();
 };
-//=============================================================================
-#endif

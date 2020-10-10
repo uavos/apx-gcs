@@ -59,6 +59,7 @@ void VehiclesStorage::loadNodeInfo(ProtocolNode *node)
         node,
         [node](QVariantMap info) {
             if (!node->identValid()) {
+                node->setName(info.value("name").toString());
                 node->setTitle(info.value("name").toString());
                 node->setHardware(info.value("hardware").toString());
             }
@@ -280,6 +281,7 @@ void VehiclesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariant
                 } else {
                     qWarning() << "new node" << info.value("name").toString();
                 }
+                node->setName(info.value("name").toString());
                 node->setTitle(info.value("name").toString());
                 node->setVersion(info.value("version").toString());
                 node->setHardware(info.value("hardware").toString());

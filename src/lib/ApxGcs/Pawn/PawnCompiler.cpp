@@ -24,10 +24,9 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
-PawnCompiler::PawnCompiler(Fact *fact)
-    : QObject(fact)
-    , fact(fact)
+
+PawnCompiler::PawnCompiler(QObject *parent)
+    : QObject(parent)
 {
     //const uint vm_data_size=1024;
     tmpFile.open();
@@ -35,15 +34,14 @@ PawnCompiler::PawnCompiler(Fact *fact)
     pawncc.setProgram(QCoreApplication::applicationDirPath() + "/pawncc");
     pawncc.setProcessChannelMode(QProcess::MergedChannels);
 }
-//=============================================================================
-bool PawnCompiler::compile()
+
+bool PawnCompiler::compile(QString src)
 {
     m_outData.clear();
     m_error = false;
     tmpFile.resize(0);
     tmpFile.flush();
     QFile::remove(outFileName);
-    QString src = fact->value().toString();
     if (src.trimmed().isEmpty()) {
         emit compiled();
         return true;
@@ -61,7 +59,7 @@ bool PawnCompiler::compile()
     args << "-r";
     //fill mandala constants
     if (constants.isEmpty()) {
-        Vehicle *vehicle = fact->findParent<Vehicle *>();
+        Vehicle *vehicle = Vehicles::instance()->f_local;
         if (vehicle) {
             for (auto f : vehicle->f_mandala->uid_map.values()) {
                 QString s = f->mpath().replace('.', '_');
@@ -119,19 +117,18 @@ bool PawnCompiler::compile()
     //qDebug()<<"compile"<<rv<<m_outData.size();//<<getLog();
     return rv;
 }
-//=============================================================================
+
 QString PawnCompiler::getLog()
 {
     return pawncc.isOpen() ? pawncc_log : QString();
 }
-//=============================================================================
+
 const QByteArray &PawnCompiler::outData() const
 {
     return m_outData;
 }
-//=============================================================================
+
 bool PawnCompiler::error()
 {
     return m_error;
 }
-//=============================================================================

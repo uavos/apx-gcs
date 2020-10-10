@@ -175,14 +175,9 @@ QVariant Fact::data(int col, int role) const
     case Fact::FACT_MODEL_COLUMN_NAME:
         return title();
     case Fact::FACT_MODEL_COLUMN_VALUE: {
-        //if (dataType() == Script)
-        //    return statusText();
         const QString s = text();
         if (s.isEmpty()) {
-            //if (!statusText().isEmpty())
-            //    return statusText();
             if (treeType() == Group) {
-                //if(isZero())return tr("default");
                 return QVariant();
             }
         }
@@ -446,8 +441,8 @@ void Fact::updateBinding(Fact *src)
         bindProperty(src, "descr", true);
     if (m_icon.isEmpty())
         bindProperty(src, "icon", true);
-    if (m_qmlPage.isEmpty())
-        bindProperty(src, "qmlPage", true);
+    //if (m_opts.isEmpty())
+    //    bindProperty(src, "opts", true);
 
     if (treeType() != Action && src->treeType() != Action) {
         bindProperty(src, "value");
@@ -558,6 +553,7 @@ Fact *Fact::mandala() const
 void Fact::setMandala(Fact *v)
 {
     m_mandala = v;
+    updateText();
 }
 QString Fact::mandalaToString(quint16 pid_raw) const
 {
@@ -822,11 +818,11 @@ Fact *Fact::menu()
 
     if (size() > 0)
         return this;
-    if (!qmlPage().isEmpty())
+    if (opts().contains("page"))
         return this;
     if (treeType() == Root)
         return this;
-    if (dataType() == MandalaID)
+    if (dataType() == Int && units() == "mandala")
         return mandala();
 
     if (treeType() == Group)
@@ -840,17 +836,6 @@ void Fact::setMenu(Fact *v)
         return;
     m_menu = v;
     emit menuChanged();
-}
-QString Fact::qmlPage() const
-{
-    return m_qmlPage;
-}
-void Fact::setQmlPage(const QString &v)
-{
-    if (m_qmlPage == v)
-        return;
-    m_qmlPage = v;
-    emit qmlPageChanged();
 }
 QVariantMap Fact::opts() const
 {

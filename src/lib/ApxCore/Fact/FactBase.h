@@ -86,11 +86,6 @@ public:
         Enum = 5 << 20,  // value=text of enumStrings (set by text or index or enumValues)
         Count = 6 << 20, // value=size - number of child items
 
-        //complex data types
-        MandalaID = 10 << 20, // Mandala ID
-        Script = 11 << 20,    // script editor
-        Key = 12 << 20,       // keyboard shortcut
-
         //actions data types
         Apply = 20 << 20,  // green apply button
         Remove = 21 << 20, // red trash button

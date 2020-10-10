@@ -29,6 +29,7 @@
 #include <Mandala/Mandala.h>
 
 #include <Xbus/XbusNode.h>
+#include <Xbus/XbusScript.h>
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     : ProtocolBase(nodes, "node")
@@ -715,18 +716,53 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
 
     } while (0);
 
-    if (err) {
-        setValid(false);
-        qWarning() << "conf error" << fid << stream.available() << data.toHex().toUpper();
-        return;
-    }
-    _values.clear();
-    for (auto i = 0; i < values.size(); ++i) {
-        const dict_field_s &f = m_dict.at(m_dict_fields.at(i));
-        _values.insert(f.path, values.at(i));
-    }
-    qDebug() << "conf parsed";
+    // conf file parsed
+    do {
+        if (err)
+            break;
 
+        // collect values
+        _script_idx = -1;
+        _values.clear();
+        for (auto i = 0; i < values.size(); ++i) {
+            const dict_field_s &f = m_dict.at(m_dict_fields.at(i));
+            if (f.type == xbus::node::conf::script) {
+                _script_idx = i;
+                continue;
+            }
+            _values.insert(f.path, values.at(i));
+        }
+        qDebug() << "conf parsed";
+
+        if (_script_idx >= 0) {
+            qDebug() << "script field" << _script_idx;
+            ProtocolNodeFile *f = file("script");
+            if (!f) {
+                qWarning() << "Script unavailable";
+                break;
+            }
+            _script_hash = values.at(_script_idx).value<xbus::node::hash_t>();
+            f->stop();
+            connect(f,
+                    &ProtocolNodeFile::downloaded,
+                    this,
+                    &ProtocolNode::parseScriptData,
+                    Qt::UniqueConnection);
+            f->download();
+            return;
+        }
+
+        validate();
+        return;
+    } while (0);
+
+    // error
+    _script_idx = -1;
+    setValid(false);
+    qWarning() << "conf error" << fid << stream.available() << data.toHex().toUpper();
+}
+void ProtocolNode::validate()
+{
     // notify
     emit confReceived(_values);
     setValid(true);
@@ -739,6 +775,75 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
 
     // save config
     vehicle()->storage->saveNodeConfig(this);
+}
+void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    ProtocolStreamReader stream(data);
+    do {
+        if (_script_idx < 0)
+            break;
+
+        // check node hash
+        if (info.hash != _script_hash) {
+            qWarning() << "file hash error:" << QString::number(info.hash, 16)
+                       << QString::number(_script_hash, 16);
+            break;
+        }
+
+        if (info.size == 0) {
+            // empty script
+            _values.insert(m_dict.at(m_dict_fields.at(_script_idx)).path, QString());
+            validate();
+            return;
+        }
+
+        xbus::script::file_hdr_s hdr{};
+        if (stream.available() < hdr.psize()) {
+            qWarning() << "hdr size" << stream.available();
+            break;
+        }
+        hdr.read(&stream);
+
+        if (stream.available() != (hdr.code_size + hdr.src_size)) {
+            qWarning() << "size" << stream.available() << hdr.code_size << hdr.src_size;
+            break;
+        }
+        QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
+        QByteArray src = qUncompress(stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
+        if (src.isEmpty() || code.isEmpty()) {
+            qWarning() << "empty" << stream.available() << src.size() << code.size();
+            break;
+        }
+
+        setScriptTitle(QString::fromLocal8Bit(hdr.title, sizeof(hdr.title)));
+
+        emit scriptReceived(src, code);
+    } while (0);
+
+    // error
+    setScriptTitle(QString());
+    setValid(false);
+    qWarning() << "script error" << stream.available() << data.toHex().toUpper();
+}
+
+QByteArray ProtocolNode::scriptFileData(const QString &source, const QByteArray &code) const
+{
+    QByteArray ba(xbus::script::max_file_size, '\0');
+    ProtocolStreamWriter stream(ba.data(), ba.size());
+
+    xbus::script::file_hdr_s hdr{};
+    strncpy(hdr.title, scriptTitle().toLocal8Bit(), sizeof(hdr.title));
+
+    QByteArray src = qCompress(source.toLocal8Bit(), 9);
+
+    hdr.code_size = code.size();
+    hdr.src_size = src.size();
+
+    hdr.write(&stream);
+    stream.append(code);
+    stream.append(src);
+
+    return ba.left(stream.pos());
 }
 
 const ProtocolNode::dict_field_s *ProtocolNode::field(xbus::node::conf::fid_t fid) const
@@ -816,6 +921,8 @@ QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf
         return ::read_param_str<xbus::node::conf::string_t>(stream, array);
     case xbus::node::conf::text:
         return ::read_param_str<xbus::node::conf::text_t>(stream, array);
+    case xbus::node::conf::script:
+        return ::read_param<xbus::node::conf::script_t>(stream, array);
     }
     return QVariant();
 }
@@ -882,6 +989,8 @@ bool ProtocolNode::write_param(ProtocolStreamWriter &stream,
         return ::write_param_str<xbus::node::conf::string_t>(stream, array, value);
     case xbus::node::conf::text:
         return ::write_param_str<xbus::node::conf::text_t>(stream, array, value);
+    case xbus::node::conf::script:
+        return ::write_param<xbus::node::conf::script_t>(stream, array, value);
     }
     return false;
 }
@@ -1000,4 +1109,16 @@ void ProtocolNode::setValid(const bool &v)
         return;
     m_valid = v;
     emit validChanged();
+}
+
+QString ProtocolNode::scriptTitle() const
+{
+    return m_scriptTitle;
+}
+void ProtocolNode::setScriptTitle(const QString &v)
+{
+    if (m_scriptTitle == v)
+        return;
+    m_scriptTitle = v.simplified();
+    emit scriptTitleChanged();
 }

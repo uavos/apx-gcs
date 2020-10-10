@@ -28,7 +28,7 @@
 #include <Pawn/PawnCompiler.h>
 #include <Vehicles/Vehicles.h>
 #include <QtWidgets>
-//=============================================================================
+
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     : FactDelegateDialog(fact, parent)
 {
@@ -66,13 +66,13 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
 
     pawncc = new PawnCompiler(fact);
     connect(pawncc, &PawnCompiler::compiled, this, &FactDelegateScript::updateLog);
-    pawncc->compile();
+    pawncc->compile(fact->value().toString());
 
     editor->addKeywords(pawncc->constants.keys());
 
     editor->setPlainText(fact->value().toString());
     connect(fact, &Fact::valueChanged, this, [=]() {
-        pawncc->compile();
+        pawncc->compile(fact->value().toString());
         QString s = fact->value().toString();
         if (editor->toPlainText() != s) {
             editor->setPlainText(s);
@@ -85,19 +85,19 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
         fact->setValue(s.simplified().isEmpty() ? QString() : s);
     });
 }
-//=============================================================================
+
 bool FactDelegateScript::aboutToUpload(void)
 {
     aCompile->trigger();
     return true;
 }
-//=============================================================================
+
 bool FactDelegateScript::aboutToClose(void)
 {
     aCompile->trigger();
     return true;
 }
-//=============================================================================
+
 void FactDelegateScript::aSave_triggered(void)
 {
     QFileDialog dlg(this, aSave->toolTip(), AppDirs::scripts().canonicalPath());
@@ -112,7 +112,7 @@ void FactDelegateScript::aSave_triggered(void)
         return;
     saveToFile(dlg.selectedFiles().first());
 }
-//=============================================================================
+
 void FactDelegateScript::aLoad_triggered(void)
 {
     QFileDialog dlg(this, aLoad->toolTip(), AppDirs::scripts().canonicalPath());
@@ -126,7 +126,7 @@ void FactDelegateScript::aLoad_triggered(void)
         return;
     loadFromFile(dlg.selectedFiles().first());
 }
-//=============================================================================
+
 void FactDelegateScript::updateLog()
 {
     logList->clear();
@@ -153,7 +153,7 @@ void FactDelegateScript::updateLog()
     if (pawncc->outData().isEmpty())
         new QListWidgetItem(tr("Empty script"), logList);
 }
-//=============================================================================
+
 bool FactDelegateScript::saveToFile(QString fname)
 {
     QFile file(fname);
@@ -169,7 +169,7 @@ bool FactDelegateScript::saveToFile(QString fname)
     s << editor->toPlainText();
     return true;
 }
-//=============================================================================
+
 bool FactDelegateScript::loadFromFile(QString fname)
 {
     QFile file(fname);
@@ -184,7 +184,7 @@ bool FactDelegateScript::loadFromFile(QString fname)
     fact->setValue(s.readAll());
     return true;
 }
-//=============================================================================
+
 void FactDelegateScript::logView_itemClicked(QListWidgetItem *item)
 {
     QString s = item->text();
@@ -201,4 +201,3 @@ void FactDelegateScript::logView_itemClicked(QListWidgetItem *item)
         }
     }
 }
-//=============================================================================

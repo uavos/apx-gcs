@@ -400,7 +400,12 @@ void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
     QFile res;
-    res.setFileName(":/fonts/BebasNeue.ttf");
+    res.setFileName(":/fonts/ApxNarrow.ttf");
+    if (res.open(QIODevice::ReadOnly)) {
+        QFontDatabase::addApplicationFontFromData(res.readAll());
+        res.close();
+    }
+    res.setFileName(":/fonts/ApxCondenced.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
@@ -426,9 +431,11 @@ void App::loadFonts()
         res.close();
     }
 
-    m_engine->rootContext()->setContextProperty("font_narrow", "Bebas Neue Pro");
+    m_engine->rootContext()->setContextProperty("font_narrow", "ApxNarrow");
+    m_engine->rootContext()->setContextProperty("font_narrow_regular", "ApxCondenced");
     m_engine->rootContext()->setContextProperty("font_mono", "FreeMono");
     m_engine->rootContext()->setContextProperty("font_condenced", "Ubuntu Condensed");
+    //m_engine->rootContext()->setContextProperty("font_condenced", "ApxCondenced");
 #ifdef Q_OS_MAC
     m_engine->rootContext()->setContextProperty("font_fixed", "Menlo");
 #else

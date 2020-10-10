@@ -37,7 +37,9 @@ Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool 
 {
     _enabled = new Fact(this, "enb", tr("Enabled"), "", Bool);
 
-    _key = new Fact(this, "key", tr("Key sequence"), "", Key);
+    _key = new Fact(this, "key", tr("Key sequence"), "", Text);
+    _key->setOpt("editor", "qrc:/" PLUGIN_NAME "/EditorKey.qml");
+
     _cmd = new Fact(this, "jscmd", tr("Java script"), "", Text);
 
     if (_new) {

@@ -39,7 +39,7 @@ ActionButton {
     property real valueScale: 1
     property real valueSize: height * valueScale
 
-    font.family: font_condenced
+    font.family: font_narrow_regular
 
     color: {
         var c

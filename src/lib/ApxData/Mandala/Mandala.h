@@ -35,7 +35,7 @@ public:
     explicit Mandala(Fact *parent = nullptr);
 
     Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
-    Q_INVOKABLE MandalaFact *fact(const QString &mpath) const;
+    Q_INVOKABLE MandalaFact *fact(const QString &mpath, bool silent = false) const;
 
     QHash<QString, QVariant> constants; // <name,value> constants
     QMap<mandala::uid_t, MandalaFact *> uid_map;

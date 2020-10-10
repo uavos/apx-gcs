@@ -43,18 +43,23 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
                                     const QStyleOptionViewItem &option,
                                     const QModelIndex &index) const
 {
-    Q_UNUSED(option)
+    QWidget *e = index.data(Fact::EditorWidgetRole).value<QWidget *>();
+    if (e) {
+        e->setParent(parent);
+        e->setContentsMargins(-1, -1, -1, -1);
+        return e;
+    }
+
     Fact *f = index.data(Fact::ModelDataRole).value<Fact *>();
     if (!f)
         return QItemDelegate::createEditor(parent, option, index);
-    QWidget *e = nullptr;
-    QString su = f->units();
+
+    QString units = f->units();
     if (f->enumStrings().size() > 1) {
         QComboBox *cb = new QComboBox(parent);
         cb->setFrame(false);
         cb->addItems(f->enumStrings());
         cb->view()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
-        //cb->view()->setMaximumWidth(cb->view()->sizeHintForColumn(0));
         e = cb;
     } else {
         switch (f->dataType()) {
@@ -69,18 +74,25 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             e = cb;
         } break;
         case Fact::Int: {
-            if (su == "time") {
+            /*if (units == "time") {
                 QTimeEdit *te = new QTimeEdit(parent);
                 te->setDisplayFormat("HH:mm:ss");
                 e = te;
                 break;
+            }*/
+            if (units == "mandala") {
+                QPushButton *btn = createButton(parent);
+                connect(btn, &QPushButton::clicked, this, [f, btn]() {
+                    new FactDelegateMandala(f, btn);
+                });
+                return btn;
             }
             QSpinBox *sb = new QSpinBox(parent);
             sb->setMinimum(std::numeric_limits<int>::min());
             sb->setMaximum(std::numeric_limits<int>::max());
             sb->setFrame(false);
             sb->setSingleStep(1);
-            if (su == "m")
+            if (units == "m")
                 sb->setSingleStep(10);
             e = sb;
         } break;
@@ -103,32 +115,21 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
                 return btn;
             }
         } break;
-        case Fact::MandalaID: {
-            QPushButton *btn = createButton(parent);
-            connect(btn, &QPushButton::clicked, this, [f, btn]() {
-                new FactDelegateMandala(f, btn);
-            });
-            return btn;
-        }
-        case Fact::Script: {
-            QPushButton *btn = createButton(parent);
-            connect(btn, &QPushButton::clicked, this, [f, parent]() {
-                new FactDelegateScript(f, parent->parentWidget());
-            });
-            return btn;
-        }
+        case Fact::Text:
+            if (units == "script") {
+                QPushButton *btn = createButton(parent);
+                connect(btn, &QPushButton::clicked, this, [f, parent]() {
+                    new FactDelegateScript(f, parent->parentWidget());
+                });
+                return btn;
+            }
+            break;
         }
     }
     if (!e)
         e = QItemDelegate::createEditor(parent, option, index);
-    //e->setAutoFillBackground(true);
-    /*static_cast<QFrame*>(e)->setFrameShape(QFrame::NoFrame);
-  static_cast<QFrame*>(e)->setLineWidth(0);
-  static_cast<QFrame*>(e)->setMidLineWidth(0);*/
+
     e->setContentsMargins(-1, -1, -1, -1);
-    //QFont font(index.data(Qt::FontRole).value<QFont>());
-    //font.setPointSize(font.pointSize()+2);
-    //e->setFont(font);
 
     //number edits
     if (qobject_cast<QSpinBox *>(e)) {
@@ -141,8 +142,8 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             if (static_cast<long long>(mi) == m)
                 sb->setMaximum(mi);
         }
-        if (!su.isEmpty()) {
-            if (su == "hex") {
+        if (!units.isEmpty()) {
+            if (units == "hex") {
                 sb->setDisplayIntegerBase(16);
             } else {
                 //sb->setSuffix(su.prepend(" "));
@@ -154,9 +155,9 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             sb->setMinimum(f->min().toDouble());
         if (!f->max().isNull())
             sb->setMaximum(f->max().toDouble());
-        if (!su.isEmpty()) {
-            if (su != "lat" && su != "lon") {
-                sb->setSuffix(su.prepend(" "));
+        if (!units.isEmpty()) {
+            if (units != "lat" && units != "lon") {
+                sb->setSuffix(units.prepend(" "));
             }
         }
     }

@@ -22,7 +22,7 @@ AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent)
 
     //setup qml
     qmlRegisterType<AppImageAutoUpdater>("AppImageAutoUpdater", 1, 0, "AppImageAutoUpdater");
-    setQmlPage(QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
+    setOpt("page", QString("qrc:/%1/AppImageAutoUpdater.qml").arg(PLUGIN_NAME));
     setVisible(false);
 }
 

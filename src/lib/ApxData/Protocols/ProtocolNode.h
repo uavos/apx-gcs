@@ -46,6 +46,8 @@ class ProtocolNode : public ProtocolBase
     Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
     Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
 
+    Q_PROPERTY(QString scriptTitle READ scriptTitle WRITE setScriptTitle NOTIFY scriptTitleChanged)
+
 public:
     explicit ProtocolNode(ProtocolNodes *nodes, const QString &sn);
 
@@ -79,6 +81,9 @@ public:
 
     void setDict(const ProtocolNode::Dict &dict);
 
+    // script support
+    QByteArray scriptFileData(const QString &source, const QByteArray &code) const;
+
 protected:
     QString toolTip() const override;
     void hashData(QCryptographicHash *h) const override;
@@ -105,6 +110,12 @@ private:
                      xbus::node::conf::fid_t fid,
                      const QVariant &value);
 
+    void validate();
+
+    // script
+    int _script_idx{-1};
+    xbus::node::hash_t _script_hash;
+
 private slots:
     void requestRebootLoaderNext();
 
@@ -113,6 +124,7 @@ private slots:
 
     void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);
 
     //export signals and slots
 signals:
@@ -120,9 +132,12 @@ signals:
 
     void identReceived();
     void dictReceived(const ProtocolNode::Dict &dict);
+
     void confReceived(const QVariantMap &values);
     void confSaved();
     void confDefault();
+
+    void scriptReceived(QString source, QByteArray code);
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);
     void statusReceived(const xbus::node::status::status_s &status);
@@ -177,6 +192,9 @@ public:
     bool valid() const;
     void setValid(const bool &v);
 
+    QString scriptTitle() const;
+    void setScriptTitle(const QString &v);
+
 protected:
     xbus::node::ident::ident_s m_ident;
 
@@ -189,6 +207,8 @@ protected:
     bool m_dictValid{false};
     bool m_valid{false};
 
+    QString m_scriptTitle;
+
 signals:
     void identChanged();
     void versionChanged();
@@ -198,6 +218,8 @@ signals:
     void identValidChanged();
     void dictValidChanged();
     void validChanged();
+
+    void scriptTitleChanged();
 };
 
 Q_DECLARE_METATYPE(ProtocolNode::Dict);

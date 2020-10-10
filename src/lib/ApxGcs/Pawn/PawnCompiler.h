@@ -20,17 +20,17 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef PawnCompiler_H
-#define PawnCompiler_H
-#include <Fact/Fact.h>
-//=============================================================================
+#pragma once
+
+#include <QtCore>
+
 class PawnCompiler : public QObject
 {
     Q_OBJECT
 public:
-    explicit PawnCompiler(Fact *fact);
+    explicit PawnCompiler(QObject *parent = 0);
 
-    bool compile();
+    bool compile(QString src);
 
     QString getLog();
     bool error();
@@ -40,8 +40,6 @@ public:
     QMap<QString, QString> constants;
 
 private:
-    Fact *fact;
-
     //compiler
     QProcess pawncc;
     QTemporaryFile tmpFile;
@@ -53,5 +51,3 @@ private:
 signals:
     void compiled();
 };
-//=============================================================================
-#endif

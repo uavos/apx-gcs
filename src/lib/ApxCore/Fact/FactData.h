@@ -67,8 +67,6 @@ public:
     virtual bool isZero() const;
     bool isDefault() const;
 
-    void resetValue();
-
     //Mandala support - must override in derived classes
     // to collect dict ids from vehicle mandala
     // default impl searches for parent facts and
@@ -84,8 +82,9 @@ public slots:
 
 protected:
     bool updateValue(const QVariant &v);
+    void updateText();
 
-    QString toText(const QVariant &v) const;
+    virtual QString toText(const QVariant &v) const;
 
     QString prefsGroup() const;
 
@@ -94,9 +93,11 @@ protected:
     static bool _check_type(const QVariant &v, QMetaType::Type t);
     static bool _check_int(const QVariant &v);
 
+    QVariant _type_value(const QVariant &v) const;
+    QString _string_with_units(const QString &v) const;
+
 private slots:
     void getPresistentValue();
-    void updateText();
 
 public slots:
     void savePresistentValue();

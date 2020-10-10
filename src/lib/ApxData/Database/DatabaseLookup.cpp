@@ -32,7 +32,7 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
     : Fact(parent, name, title, descr, flags | FilterModel, "database-search")
     , db(db)
 {
-    setQmlPage("Menu/FactMenuPageLookupDB.qml");
+    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
 
     setModel(new DatabaseLookupModel(this));
 

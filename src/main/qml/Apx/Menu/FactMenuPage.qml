@@ -81,8 +81,8 @@ ColumnLayout {
 
     function pageSource()
     {
-        if(fact.qmlPage){
-            var s=fact.qmlPage
+        if(fact.opts.page){
+            var s=fact.opts.page
             if(s.indexOf(":")>=0){
                 return s
             }

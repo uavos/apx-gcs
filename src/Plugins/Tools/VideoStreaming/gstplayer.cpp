@@ -117,14 +117,16 @@ GstPlayer::GstPlayer(Fact *parent)
                  "gimbal_yaw_var",
                  tr("Gimbal yaw"),
                  tr("Gimbal yaw position variable"),
-                 MandalaID | PersistentValue);
+                 Int | PersistentValue);
+    f->setUnits("mandala");
     f->setDefaultValue("est.cam.yaw");
 
     f = new Fact(f_overlay,
                  "gimbal_pitch_var",
                  tr("Gimbal pitch"),
                  tr("Gimbal pitch position variable"),
-                 MandalaID | PersistentValue);
+                 Int | PersistentValue);
+    f->setUnits("mandala");
     f->setDefaultValue("est.cam.pitch");
 
     // controls
@@ -140,7 +142,8 @@ GstPlayer::GstPlayer(Fact *parent)
                  "control_x",
                  tr("Control X"),
                  tr("Horizontal axis control variable"),
-                 MandalaID | PersistentValue);
+                 Int | PersistentValue);
+    f->setUnits("mandala");
     f->setDefaultValue("cmd.gimbal.yaw");
     f = new Fact(f_controls,
                  "control_sx",
@@ -153,7 +156,8 @@ GstPlayer::GstPlayer(Fact *parent)
                  "control_y",
                  tr("Control Y"),
                  tr("Vertical axis control variable"),
-                 MandalaID | PersistentValue);
+                 Int | PersistentValue);
+    f->setUnits("mandala");
     f->setDefaultValue("cmd.gimbal.pitch");
     f = new Fact(f_controls,
                  "control_sy",

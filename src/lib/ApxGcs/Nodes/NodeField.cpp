@@ -25,6 +25,7 @@
 #include "NodeViewActions.h"
 #include "Nodes.h"
 
+#include <App/AppLog.h>
 #include <App/AppRoot.h>
 #include <Pawn/PawnCompiler.h>
 #include <Protocols/ProtocolNode.h>
@@ -94,7 +95,8 @@ NodeField::NodeField(Fact *parent,
         setDataType(Int);
         break;
     case xbus::node::conf::bind:
-        setDataType(MandalaID);
+        setDataType(Int);
+        setUnits("mandala");
         break;
     case xbus::node::conf::option:
         setDataType(Enum);
@@ -110,32 +112,34 @@ NodeField::NodeField(Fact *parent,
     case xbus::node::conf::string:
         setDataType(Text);
         break;
-        /*
-    case DictNode::Script:
-        setDataType(Script);
+    case xbus::node::conf::script:
+        setDataType(Text);
+        setUnits("script");
         if (pawncc)
             break;
         pawncc = new PawnCompiler(this);
-        connect(this, &Fact::valueChanged, pawncc, &PawnCompiler::compile);
+        connect(
+            this,
+            &Fact::valueChanged,
+            pawncc,
+            [this]() { pawncc->compile(value().toString()); },
+            Qt::QueuedConnection);
         connect(
             pawncc,
             &PawnCompiler::compiled,
             this,
             [this]() {
-                if (dataValid() && (!scriptCodeSave.isEmpty())
-                    && scriptCodeSave != pawncc->outData()) {
+                if (!_node->protocol()->valid())
+                    return;
+                //apxMsgW() << pawncc->error() << _node->protocol()->valid();
+                if (pawncc->error() || scriptCodeSave != pawncc->outData()) {
                     setModified(true);
                 }
-                emit textChanged();
+                updateText();
             },
             Qt::QueuedConnection);
+        updateText();
         break;
-        //field with subfields
-    case DictNode::Hash:
-    case DictNode::Vector:
-    case DictNode::Array:
-        setTreeType(Group);
-        break;*/
     }
 }
 
@@ -201,29 +205,62 @@ QVariant NodeField::uploadableValue(void) const
     }
     if (_type == xbus::node::conf::real)
         return QString::number(value().toFloat());
-    /*if (dtype == DictNode::Script) {
+
+    if (_type == xbus::node::conf::script) {
         QVariantList list;
         if (!pawncc->outData().isEmpty())
             list << value() << pawncc->outData();
         return list;
-    }*/
+    }
+
     return value();
 }
 
-QVariant NodeField::data(int col, int role) const
+/*QVariant NodeField::data(int col, int role) const
 {
-    if (col == Fact::FACT_MODEL_COLUMN_VALUE && role == Qt::DisplayRole && !units().isEmpty()
-        && dataType() != Enum) {
-        return QString("%1 %2").arg(text()).arg(units());
-    }
+    do {
+        if (col != Fact::FACT_MODEL_COLUMN_VALUE)
+            break;
+
+        if (role != Qt::DisplayRole)
+            break;
+
+        if (_type == xbus::node::conf::script) {
+            if (pawncc->error())
+                return tr("error");
+            if (value().toString().trimmed().isEmpty())
+                return tr("empty");
+            QString title = _node->protocol()->scriptTitle();
+            size_t sz = scriptFileData().size();
+            if (title.isEmpty())
+                return AppRoot::capacityToString(sz, 2);
+            return QString("%1 (%2)").arg(title).arg(AppRoot::capacityToString(sz, 2));
+        }
+
+    } while (0);
     return Fact::data(col, role);
-}
+}*/
 QString NodeField::toolTip() const
 {
     if (!_help.isEmpty()) {
         return Fact::toolTip() + "\n\n" + _help;
     }
     return Fact::toolTip();
+}
+QString NodeField::toText(const QVariant &v) const
+{
+    if (pawncc) {
+        if (pawncc->error())
+            return tr("error");
+        if (v.toString().trimmed().isEmpty())
+            return tr("empty");
+        QString title = _node->protocol()->scriptTitle();
+        QString s = AppRoot::capacityToString(scriptFileData().size(), 2);
+        if (!title.isEmpty())
+            s = QString("%1 (%2)").arg(title).arg(s);
+        return s;
+    }
+    return Fact::toText(v);
 }
 
 QString NodeField::toString() const
@@ -249,4 +286,9 @@ void NodeField::fromString(const QString &s)
 xbus::node::conf::fid_t NodeField::fid() const
 {
     return m_fid;
+}
+
+QByteArray NodeField::scriptFileData() const
+{
+    return _node->protocol()->scriptFileData(value().toString().trimmed(), pawncc->outData());
 }

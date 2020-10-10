@@ -179,7 +179,7 @@ void AppPlugin::loadQml()
         App::instance()->engine()->loadQml(fileName, opts);
     } else {
         Fact *f = new Fact(nullptr, name.toLower(), name, "", Fact::Group);
-        f->setQmlPage(fileName);
+        f->setOpt("page", fileName);
         control = f;
     }
     plugins->loadedControl(this);

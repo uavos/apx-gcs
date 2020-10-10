@@ -414,7 +414,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     linkGroupValues(this);
 
     // update descr and help from APXFW package
-    _parameters = AppGcs::apxfw()->loadParameters(protocol()->name(), protocol()->hardware());
+    _parameters = AppGcs::apxfw()->loadParameters(title(), protocol()->hardware());
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
     }

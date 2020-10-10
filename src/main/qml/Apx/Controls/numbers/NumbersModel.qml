@@ -67,7 +67,7 @@ ObjectModel {
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
-                f=apx.vehicles.current.mandala.fact(n.bind)
+                f=apx.vehicles.current.mandala.fact(n.bind, true)
             if(f){
                 s+="fact: mandala."+f.mpath()+";"
                 s+="property var v: fact?fact.value:undefined"+";"
@@ -76,7 +76,7 @@ ObjectModel {
             }
             if(n.prec){
                 s+="value: v.toFixed("+n.prec+")"+";"
-            }else{
+            }else if(!f){
                 s+="value: v;"
             }
             if(n.act){

@@ -46,7 +46,6 @@ class Fact : public FactData
     Q_PROPERTY(Fact *binding READ binding WRITE setBinding NOTIFY bindingChanged)
     Q_PROPERTY(Fact *menu READ menu WRITE setMenu NOTIFY menuChanged)
 
-    Q_PROPERTY(QString qmlPage READ qmlPage WRITE setQmlPage NOTIFY qmlPageChanged)
     Q_PROPERTY(QVariantMap opts READ opts WRITE setOpts NOTIFY optsChanged)
 
     Q_PROPERTY(int scnt READ scnt WRITE setScnt NOTIFY scntChanged)
@@ -95,6 +94,7 @@ public:
         NameRole,
         ValueRole,
         TextRole,
+        EditorWidgetRole,
     };
 
     Q_INVOKABLE bool hasParent(Fact *parent) const;
@@ -189,9 +189,6 @@ public:
     Fact *menu();
     void setMenu(Fact *v);
 
-    QString qmlPage() const;
-    void setQmlPage(const QString &v);
-
     QVariantMap opts() const;
     void setOpts(const QVariantMap &v);
     void setOpt(const QString &name, const QVariant &v);
@@ -214,7 +211,6 @@ protected:
     QPointer<Fact> m_binding{nullptr};
     QPointer<Fact> m_menu{nullptr};
 
-    QString m_qmlPage;
     QVariantMap m_opts;
 
     int m_scnt{0};

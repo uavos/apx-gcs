@@ -36,7 +36,7 @@ Terminal::Terminal(Fact *parent)
            Group,
            "console-line")
 {
-    setQmlPage("qrc:/" PLUGIN_NAME "/Terminal.qml");
+    setOpt("page", "qrc:/" PLUGIN_NAME "/Terminal.qml");
 
     _enterIndex = 0;
 

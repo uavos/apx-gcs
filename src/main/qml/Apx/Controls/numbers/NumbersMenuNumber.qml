@@ -74,7 +74,8 @@ Fact {
         id: mFact
         title: qsTr("Binding")
         descr: qsTr("Fact value")
-        flags: Fact.MandalaID
+        flags: Fact.Int
+        units: "mandala"
         onTextChanged: {
             if(value){
                 mBind.setValue(text)

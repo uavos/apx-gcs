@@ -97,7 +97,7 @@ MandalaFact *Mandala::fact(mandala::uid_t uid) const
     return nullptr;
 }
 
-MandalaFact *Mandala::fact(const QString &mpath) const
+MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
 {
     MandalaFact *f = nullptr;
     if (mpath.isEmpty())
@@ -113,7 +113,7 @@ MandalaFact *Mandala::fact(const QString &mpath) const
             break;
         }
     }
-    if (!f) {
+    if (!f && !silent) {
         apxMsgW() << "Mandala fact not found:" << mpath;
     }
     return f;

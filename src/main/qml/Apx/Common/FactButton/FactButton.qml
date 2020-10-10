@@ -55,7 +55,9 @@ ActionButton {
     property bool modified: fact?fact.modified:false
 
     property int factSize: fact?fact.size:0
-    property string qmlPage: fact?fact.qmlPage:""
+    property string factPage: (fact && fact.opts.page)?fact.opts.page:""
+
+    property string units: fact?fact.units:""
 
     property bool selected: false
     property bool draggable: (fact && fact.parentFact)?fact.parentFact.options&Fact.DragChildren:false
@@ -80,11 +82,11 @@ ActionButton {
                               && (
                                   factSize>0
                                   || (treeType === Fact.Group)
-                                  || qmlPage
+                                  || factPage
                                   || isMandala
                                   )
-    property bool isMandala: dataType===Fact.MandalaID
-    property bool isScript: dataType===Fact.Script
+    property bool isMandala: dataType === Fact.Int && units === "mandala"
+    property bool isScript: dataType === Fact.Text && units === "script"
     property bool hasValue: dataType || value
 
     property bool showEditor: (!noEdit) && hasValue && showText && (!isScript)
@@ -178,7 +180,7 @@ ActionButton {
             // value
             Loader {
                 id: _value
-                active: showValue && (!_editor.active)
+                active: showValue && (!_editor.item)
                 height: parent.height
                 sourceComponent: Text {
                     text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
@@ -191,14 +193,9 @@ ActionButton {
             Loader {
                 id: _editor
                 height: parent.height
-                //Layout.maximumWidth: control.height*10
-                //Layout.rightMargin: 4
                 asynchronous: true
                 Material.accent: Material.color(Material.Green)
-                property string src: showEditor?getEditorSource():""
-                active: src
-                visible: active
-                source: src
+                source: showEditor?getEditorSource():""
             }
 
             // next icon
@@ -247,32 +244,32 @@ ActionButton {
 
     function getEditorSource()
     {
-        if(!fact)return ""
-        var qml=""
+        if(!fact)
+            return ""
+
+        if(fact.opts.editor)
+            return fact.opts.editor
+
+        var qml
         switch(fact.dataType){
         case Fact.Bool:
             qml="Switch"
             break
         case Fact.Text:
-            if(fact.enumStrings.length > 0)qml="TextOption"
+            if(fact.enumStrings.length > 0) qml="TextOption"
             else qml="Text"
             break
         case Fact.Enum:
             qml="Option"
             break
-        case Fact.Key:
-            qml="Key"
-            break
         case Fact.Int:
-            if(fact.units==="time")qml="Time"
+            if(units==="time")qml="Time"
+            else if(units==="mandala")break
             else qml="Int"
             break
         case Fact.Float:
-            if(fact.units==="lat" || fact.units==="lon")qml="Text"
+            if(units==="lat" || units==="lon")qml="Text"
             else qml="Float"
-            break
-        case Fact.Script:
-            qml=""
             break
         }
         if(!qml)return ""
