@@ -14,7 +14,7 @@ Item {
         spacing: 0
         anchors.fill: parent
         anchors.rightMargin: Math.min(_valueRow.implicitWidth, _valueRow.width)
-        clip: true
+        //clip: true
 
         // icon
         Loader {

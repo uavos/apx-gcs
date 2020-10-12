@@ -80,6 +80,10 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     if (vehicle()->isReplay())
         return;
 
+    connect(this, &ProtocolNode::confSaved, this, [this]() {
+        vehicle()->storage->saveNodeConfig(this);
+    });
+
     vehicle()->storage->loadNodeInfo(this);
     requestIdent();
 }
@@ -458,17 +462,42 @@ void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
     // update _values
     if (fid < m_dict_fields.size()) {
         const dict_field_s &f = m_dict.at(m_dict_fields.at(fid));
-        QVariant v = value;
+        const QString fpath = f.path;
         if (f.type == xbus::node::conf::option) {
-            v = f.units.split(',').value(v.toInt(), v.toString());
+            _values[fpath] = f.units.split(',').value(value.toInt(), value.toString());
         } else if (f.type == xbus::node::conf::real) {
-            v = v.toString();
+            _values[fpath] = value.toString();
+        } else if (f.type == xbus::node::conf::script) {
+            if (fid != _script_idx) {
+                qWarning() << "script fid:" << fid << _script_idx;
+                return;
+            }
+            QByteArray data = value.toByteArray();
+            _script_hash = apx::crc32(data.data(), data.size());
+            qDebug() << "script:" << data.size();
+            _parseScript(data);
+
+            ProtocolNodeFile *f = file("script");
+            if (!f) {
+                qWarning() << "Script unavailable";
+                return;
+            }
+            f->stop();
+            connect(f,
+                    &ProtocolNodeFile::uploaded,
+                    this,
+                    &ProtocolNode::confSaved,
+                    Qt::UniqueConnection);
+            _nodes->setActive(true);
+            f->upload(data);
+            value = QVariant::fromValue(_script_hash);
+        } else {
+            _values[fpath] = value;
         }
-        _values[f.path] = v;
     }
 
     // request
-    _nodes->clear_requests();
+    //_nodes->clear_requests();
     _nodes->setActive(true);
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
     *req << fid;
@@ -484,14 +513,22 @@ void ProtocolNode::requestUpdateSave()
 {
     if (!_nodes->active())
         return;
+
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
     req->write<xbus::node::conf::fid_t>(0xFFFF);
     connect(req, &ProtocolNodeRequest::finished, this, [this](ProtocolNodeRequest *request) {
+        ProtocolNodeFile *f = file("script");
         if (request->acknowledged) {
-            vehicle()->storage->saveNodeConfig(this);
+            if (f && f->active()) {
+                qDebug() << "Script upload pending";
+                return;
+            }
             emit confSaved();
-        } else
+        } else {
+            if (f)
+                f->stop();
             _nodes->clear_requests();
+        }
     });
     req->schedule();
 }
@@ -778,7 +815,6 @@ void ProtocolNode::validate()
 }
 void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
 {
-    ProtocolStreamReader stream(data);
     do {
         if (_script_idx < 0)
             break;
@@ -797,6 +833,29 @@ void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const Q
             return;
         }
 
+        if (!_parseScript(data))
+            break;
+
+        validate();
+        return;
+
+    } while (0);
+
+    // error
+    setValid(false);
+    qWarning() << "script error" << data.size() << data.toHex().toUpper();
+}
+bool ProtocolNode::_parseScript(const QByteArray data)
+{
+    do {
+        if (_script_idx < 0 || _script_idx >= m_dict_fields.size()) {
+            qWarning() << "script fid" << _script_idx;
+            break;
+        }
+        const QString fpath = m_dict.at(m_dict_fields.at(_script_idx)).path;
+        _values.insert(fpath, QString());
+
+        ProtocolStreamReader stream(data);
         xbus::script::file_hdr_s hdr{};
         if (stream.available() < hdr.psize()) {
             qWarning() << "hdr size" << stream.available();
@@ -808,25 +867,29 @@ void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const Q
             qWarning() << "size" << stream.available() << hdr.code_size << hdr.src_size;
             break;
         }
-        QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
-        QByteArray src = qUncompress(stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
+        const QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
+        const QByteArray src = qUncompress(
+            stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
         if (src.isEmpty() || code.isEmpty()) {
             qWarning() << "empty" << stream.available() << src.size() << code.size();
             break;
         }
 
-        setScriptTitle(QString::fromLocal8Bit(hdr.title, sizeof(hdr.title)));
+        _script_code = code;
+        _script_src = src;
+        _values.insert(m_dict.at(m_dict_fields.at(_script_idx)).path, QString(src));
 
-        emit scriptReceived(src, code);
+        setScriptTitle(QString(QByteArray(hdr.title, sizeof(hdr.title))));
+        qDebug() << "script:" << scriptTitle(); // << _script_code.toHex().toUpper();
+        return true;
     } while (0);
-
-    // error
+    _script_code.clear();
+    _script_src.clear();
     setScriptTitle(QString());
-    setValid(false);
-    qWarning() << "script error" << stream.available() << data.toHex().toUpper();
+    return false;
 }
 
-QByteArray ProtocolNode::scriptFileData(const QString &source, const QByteArray &code) const
+QByteArray ProtocolNode::scriptFileData(const QString source, const QByteArray code) const
 {
     QByteArray ba(xbus::script::max_file_size, '\0');
     ProtocolStreamWriter stream(ba.data(), ba.size());
@@ -1119,6 +1182,6 @@ void ProtocolNode::setScriptTitle(const QString &v)
 {
     if (m_scriptTitle == v)
         return;
-    m_scriptTitle = v.simplified();
+    m_scriptTitle = v.simplified().trimmed();
     emit scriptTitleChanged();
 }

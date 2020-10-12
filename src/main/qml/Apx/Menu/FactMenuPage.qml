@@ -16,9 +16,9 @@ ColumnLayout {
     property bool pageInfo: false //load fact info instead of list
     property var pageInfoAction //load fact action info instead fact info
 
-    property string pageTitle: fact.title
-    property string pageDescr: fact.descr
-    property string pageStatus: fact.text
+    property string pageTitle: fact?fact.title:""
+    property string pageDescr: fact?fact.descr:""
+    property string pageStatus: fact?fact.text:""
 
     property bool valid: fact?true:false
 

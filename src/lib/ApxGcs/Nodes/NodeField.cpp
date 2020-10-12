@@ -115,24 +115,25 @@ NodeField::NodeField(Fact *parent,
     case xbus::node::conf::script:
         setDataType(Text);
         setUnits("script");
-        if (pawncc)
+        if (scriptCompiler)
             break;
-        pawncc = new PawnCompiler(this);
+        scriptCompiler = new PawnCompiler(this);
         connect(
             this,
             &Fact::valueChanged,
-            pawncc,
-            [this]() { pawncc->compile(value().toString()); },
+            scriptCompiler,
+            [this]() { scriptCompiler->compile(value().toString()); },
             Qt::QueuedConnection);
         connect(
-            pawncc,
+            scriptCompiler,
             &PawnCompiler::compiled,
             this,
             [this]() {
                 if (!_node->protocol()->valid())
                     return;
-                //apxMsgW() << pawncc->error() << _node->protocol()->valid();
-                if (pawncc->error() || scriptCodeSave != pawncc->outData()) {
+                //apxMsgW() << scriptCompiler->error() << _node->protocol()->valid();
+                if (scriptCompiler->error()
+                    || _node->protocol()->scriptCode() != scriptCompiler->outData()) {
                     setModified(true);
                 }
                 updateText();
@@ -207,39 +208,15 @@ QVariant NodeField::uploadableValue(void) const
         return QString::number(value().toFloat());
 
     if (_type == xbus::node::conf::script) {
-        QVariantList list;
-        if (!pawncc->outData().isEmpty())
-            list << value() << pawncc->outData();
-        return list;
+        QByteArray data;
+        if (!scriptCompiler->outData().isEmpty())
+            data = scriptFileData();
+        return QVariant::fromValue(data);
     }
 
     return value();
 }
 
-/*QVariant NodeField::data(int col, int role) const
-{
-    do {
-        if (col != Fact::FACT_MODEL_COLUMN_VALUE)
-            break;
-
-        if (role != Qt::DisplayRole)
-            break;
-
-        if (_type == xbus::node::conf::script) {
-            if (pawncc->error())
-                return tr("error");
-            if (value().toString().trimmed().isEmpty())
-                return tr("empty");
-            QString title = _node->protocol()->scriptTitle();
-            size_t sz = scriptFileData().size();
-            if (title.isEmpty())
-                return AppRoot::capacityToString(sz, 2);
-            return QString("%1 (%2)").arg(title).arg(AppRoot::capacityToString(sz, 2));
-        }
-
-    } while (0);
-    return Fact::data(col, role);
-}*/
 QString NodeField::toolTip() const
 {
     if (!_help.isEmpty()) {
@@ -249,8 +226,8 @@ QString NodeField::toolTip() const
 }
 QString NodeField::toText(const QVariant &v) const
 {
-    if (pawncc) {
-        if (pawncc->error())
+    if (_type == xbus::node::conf::script && scriptCompiler) {
+        if (scriptCompiler->error())
             return tr("error");
         if (v.toString().trimmed().isEmpty())
             return tr("empty");
@@ -265,21 +242,23 @@ QString NodeField::toText(const QVariant &v) const
 
 QString NodeField::toString() const
 {
-    QString v = text();
-    /*if (dtype == DictNode::Script && (!v.isEmpty())) {
-        v = qCompress(v.toUtf8(), 9).toHex().toUpper();
-    }*/
-    return v;
+    if (_type == xbus::node::conf::script) {
+        QString src = value().toString().trimmed();
+        if (src.isEmpty())
+            return src;
+        return qCompress(src.toUtf8(), 9).toHex().toUpper();
+    }
+    return text();
 }
 void NodeField::fromString(const QString &s)
 {
-    /*if (dtype == DictNode::Script && (!s.isEmpty())) {
-        QByteArray ba = qUncompress(QByteArray::fromHex(s.toUtf8()));
-        if (!ba.isEmpty()) {
-            Fact::setValue(QString(ba));
-            return;
-        }
-    }*/
+    if (_type == xbus::node::conf::script) {
+        QString src = qUncompress(QByteArray::fromHex(s.toUtf8()));
+        if (src.isEmpty())
+            src = s;
+        Fact::setValue(src);
+        return;
+    }
     Fact::setValue(s);
 }
 
@@ -290,5 +269,6 @@ xbus::node::conf::fid_t NodeField::fid() const
 
 QByteArray NodeField::scriptFileData() const
 {
-    return _node->protocol()->scriptFileData(value().toString().trimmed(), pawncc->outData());
+    return _node->protocol()->scriptFileData(value().toString().trimmed(),
+                                             scriptCompiler->outData());
 }

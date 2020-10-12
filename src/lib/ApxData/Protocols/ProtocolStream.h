@@ -45,8 +45,7 @@ public:
     {
         if ((spos + sz) > size())
             return QByteArray();
-        return QByteArray::fromRawData(reinterpret_cast<const char *>(buffer() + spos),
-                                       static_cast<int>(sz));
+        return QByteArray(reinterpret_cast<const char *>(buffer() + spos), static_cast<int>(sz));
     }
 
     inline QByteArray toByteArray() const { return toByteArray(0, pos()); }
@@ -82,8 +81,8 @@ public:
     {
         if (spos >= size())
             return QByteArray();
-        return QByteArray::fromRawData(reinterpret_cast<const char *>(buffer() + spos),
-                                       static_cast<int>(pos() - spos));
+        return QByteArray(reinterpret_cast<const char *>(buffer() + spos),
+                          static_cast<int>(pos() - spos));
     }
 
     inline size_t append(const QByteArray &ba)

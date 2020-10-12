@@ -307,7 +307,7 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
 
     xbus::mission::file_hdr_s fhdr{};
     fhdr.read(&stream); // will update later
-    d.title = QString(fhdr.title);
+    d.title = QString(QByteArray(fhdr.title, sizeof(fhdr.title)));
 
     qDebug() << d.title << data.size() << "bytes";
 

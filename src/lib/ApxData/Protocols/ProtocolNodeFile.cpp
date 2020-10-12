@@ -48,6 +48,7 @@ void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset
     _op_size = static_cast<xbus::node::file::size_t>(_op_data.size());
     _op_tcnt = 0;
     setValue(tr("Uploading"));
+    setActive(true);
     request(xbus::node::file::wopen)->schedule();
 }
 void ProtocolNodeFile::write_next()
@@ -131,6 +132,7 @@ void ProtocolNodeFile::download()
     _op_tcnt = 0;
 
     setValue(tr("Downloading"));
+    setActive(true);
     request(xbus::node::file::ropen)->schedule();
 }
 void ProtocolNodeFile::read_next()
@@ -180,6 +182,7 @@ bool ProtocolNodeFile::resp_read(ProtocolStreamReader &stream)
 
 void ProtocolNodeFile::stop()
 {
+    setActive(false);
     if (_op != xbus::node::file::idle) {
         qWarning() << "interrupted:" << name() << _op;
         reset();
@@ -245,6 +248,7 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
 
         if (_op_tcnt == _op_size) {
             qDebug() << "transfer complete";
+            setActive(false);
             if (_info.flags.bits.owrite)
                 emit uploaded();
             else if (_info.flags.bits.oread)
@@ -298,6 +302,7 @@ void ProtocolNodeFile::reset()
     setValue(QVariant());
     setProgress(-1);
     ack_req();
+    setActive(false);
 }
 
 bool ProtocolNodeFile::check_info(ProtocolStreamReader &stream)

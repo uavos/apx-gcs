@@ -34,7 +34,7 @@ NodeToolsGroup::NodeToolsGroup(Fact *parent,
 {
     if (name == "bb")
         setIcon("database");
-    if (name == "vm")
+    if (name == "scr")
         setIcon("code-braces");
     registerOnlineAction(this);
 }
@@ -64,15 +64,19 @@ Fact *NodeToolsGroup::addCommand(Fact *group,
         group = this;
 
     Fact *f = new Fact(group, name, title);
-    if (name.contains("reboot") || name.contains("restart"))
+    if (name.contains("reboot") || name.contains("restart") || name.contains("reset"))
         f->setIcon("reload");
     else if (name.contains("mute"))
         f->setIcon("volume-mute");
+    else if (name.contains("start"))
+        f->setIcon("play");
+    else if (name.contains("stop"))
+        f->setIcon("stop");
     else if (name.contains("erase") || name.contains("clear"))
         f->setIcon("close-circle");
     else if (name.contains("conf"))
         f->setIcon("alert-octagram");
-    else if (group->name() == "vm")
+    else if (group->name() == "scr")
         f->setIcon("code-braces");
     else
         f->setIcon("asterisk");

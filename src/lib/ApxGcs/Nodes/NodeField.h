@@ -50,7 +50,6 @@ public:
 
     //Fact override
     virtual bool setValue(const QVariant &v) override;
-    //virtual QVariant data(int col, int role) const override;
     virtual QString toolTip() const override;
     virtual QString toText(const QVariant &v) const override;
 
@@ -64,8 +63,7 @@ private:
     xbus::node::conf::fid_t m_fid;
     xbus::node::conf::type_e _type;
 
-    PawnCompiler *pawncc{nullptr};
-    QByteArray scriptCodeSave;
+    PawnCompiler *scriptCompiler{nullptr};
     QByteArray scriptFileData() const;
 
     QString _fpath;

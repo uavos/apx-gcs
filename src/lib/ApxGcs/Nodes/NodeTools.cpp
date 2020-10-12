@@ -113,7 +113,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
 
 Fact *NodeTools::addCommand(Fact *group, QString name, QString title, xbus::node::usr::cmd_t cmd)
 {
-    //qDebug()<<node->title()<<name<<descr<<sys;
+    qDebug() << node->title() << group << name << title << cmd;
 
     NodeToolsGroup *g = f_usr;
     if (group->name() == f_sys->name()) {

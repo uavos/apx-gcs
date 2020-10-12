@@ -82,7 +82,8 @@ public:
     void setDict(const ProtocolNode::Dict &dict);
 
     // script support
-    QByteArray scriptFileData(const QString &source, const QByteArray &code) const;
+    QByteArray scriptFileData(const QString source, const QByteArray code) const;
+    inline QByteArray scriptCode() const { return _script_code; }
 
 protected:
     QString toolTip() const override;
@@ -115,6 +116,9 @@ private:
     // script
     int _script_idx{-1};
     xbus::node::hash_t _script_hash;
+    QByteArray _script_code;
+    QByteArray _script_src;
+    bool _parseScript(const QByteArray data);
 
 private slots:
     void requestRebootLoaderNext();
@@ -136,8 +140,6 @@ signals:
     void confReceived(const QVariantMap &values);
     void confSaved();
     void confDefault();
-
-    void scriptReceived(QString source, QByteArray code);
 
     void messageReceived(xbus::node::msg::type_e type, QString msg);
     void statusReceived(const xbus::node::status::status_s &status);
