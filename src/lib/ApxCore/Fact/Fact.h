@@ -73,8 +73,6 @@ public:
     Q_INVOKABLE virtual void valuesFromJson(const QJsonObject &jso);
     Q_INVOKABLE virtual QJsonObject valuesToJson(bool array = false) const;
 
-    QVariant userData;
-
     virtual bool setValue(const QVariant &v) override; //collect stats
 
     virtual bool lessThan(Fact *other) const; //sorting helper

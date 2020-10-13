@@ -13,9 +13,9 @@ import APX.Facts 1.0
 Dialog {
     id: editor
 
-    property var fact
+    property QtObject fact
 
-    property string value: fact? fact.value:""
+    property string value: fact? fact.script.source:""
 
     visible: true
     title: qsTr("Script editor")
@@ -24,18 +24,22 @@ Dialog {
     modal: false
     closePolicy: Popup.NoAutoClose
 
-    x: Math.max(0,(parent.width-width)/2)
-    y: Math.max(0,(parent.height-height)/2)
+    x: Math.max(0, (parent.width-width)/2)
+    y: Math.max(0, (parent.height-height)/2)
 
     padding: 0
 
-    onApplied: {
-        fact.value=editedText
+    onApplied: compile()
+    onAccepted: compile()
+
+    onFactChanged: {
+        if(!fact) reject()
     }
-    onAccepted: {
-        fact.value=editedText
+
+    function compile()
+    {
+        fact.script.setSource(fact.script.title, editedText)
     }
-    onFactChanged: if(!fact)reject()
 
     property alias editedText: textArea.text
 

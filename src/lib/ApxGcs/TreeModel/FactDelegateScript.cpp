@@ -25,7 +25,7 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <ApxMisc/MaterialIcon.h>
-#include <Pawn/PawnCompiler.h>
+#include <Nodes/ScriptCompiler.h>
 #include <Vehicles/Vehicles.h>
 #include <QtWidgets>
 
@@ -64,26 +64,35 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
 
     setWidget(w);
 
-    pawncc = new PawnCompiler(fact);
-    connect(pawncc, &PawnCompiler::compiled, this, &FactDelegateScript::updateLog);
-    pawncc->compile(fact->value().toString());
+    scriptCompiler = qobject_cast<ScriptCompiler *>(fact->property("script").value<QObject *>());
+    connect(scriptCompiler, &ScriptCompiler::compiled, this, &FactDelegateScript::updateLog);
+    updateLog();
 
-    editor->addKeywords(pawncc->constants.keys());
+    editor->addKeywords(scriptCompiler->constants.keys());
 
-    editor->setPlainText(fact->value().toString());
-    connect(fact, &Fact::valueChanged, this, [=]() {
-        pawncc->compile(fact->value().toString());
-        QString s = fact->value().toString();
-        if (editor->toPlainText() != s) {
-            editor->setPlainText(s);
-        }
-    });
+    connect(fact,
+            &Fact::valueChanged,
+            this,
+            &FactDelegateScript::updateEditorText,
+            Qt::QueuedConnection);
+    updateEditorText();
 
-    connect(aCompile, &QAction::triggered, this, [=]() {
-        editor->cleanText();
-        QString s = editor->toPlainText();
-        fact->setValue(s.simplified().isEmpty() ? QString() : s);
-    });
+    connect(aCompile, &QAction::triggered, this, &FactDelegateScript::updateFactValue);
+}
+void FactDelegateScript::updateEditorText()
+{
+    QString s = scriptCompiler->source();
+    if (editor->toPlainText() != s) {
+        editor->setPlainText(s);
+    }
+}
+void FactDelegateScript::updateFactValue()
+{
+    editor->cleanText();
+    QString s = editor->toPlainText();
+    if (s.simplified().isEmpty())
+        s.clear();
+    scriptCompiler->setSource(scriptCompiler->title(), s);
 }
 
 bool FactDelegateScript::aboutToUpload(void)
@@ -132,7 +141,7 @@ void FactDelegateScript::updateLog()
     logList->clear();
     //label->setText(field->data(NodesItem::tc_value,Qt::DisplayRole).toString());
     uint icnt = 0;
-    foreach (QString s, pawncc->getLog().split("\n", Qt::SkipEmptyParts)) {
+    for (auto s : scriptCompiler->log().split("\n", Qt::SkipEmptyParts)) {
         if (s.startsWith("Pawn"))
             continue;
         if (s.contains("error") || s.contains("warning")) {
@@ -147,10 +156,10 @@ void FactDelegateScript::updateLog()
         }
     }
     if (!icnt) {
-        if (!pawncc->outData().isEmpty())
+        if (!scriptCompiler->code().isEmpty())
             new QListWidgetItem(tr("Success"), logList);
     }
-    if (pawncc->outData().isEmpty())
+    if (scriptCompiler->code().isEmpty())
         new QListWidgetItem(tr("Empty script"), logList);
 }
 

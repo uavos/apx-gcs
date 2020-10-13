@@ -252,7 +252,6 @@ void Fact::hashData(QCryptographicHash *h) const
     h->addData(enumStrings().join("").toUtf8());
 
     h->addData(text().toUtf8());
-    h->addData(userData.toString().toUtf8());
 }
 //=============================================================================
 bool Fact::setValue(const QVariant &v)

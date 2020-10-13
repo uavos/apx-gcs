@@ -105,6 +105,7 @@ ApxApp.ApxLibrary {
             "NodeToolsGroup.cpp", "NodeToolsGroup.h",
             "LookupNodeBackup.cpp", "LookupNodeBackup.h",
             "LookupConfigs.cpp", "LookupConfigs.h",
+            "ScriptCompiler.cpp", "ScriptCompiler.h",
             //"NodesShare.cpp", "NodesShare.h",
             //"NodesBase.cpp", "NodesBase.h",
             //"NodeItemData.cpp", "NodeItemData.h",
@@ -149,14 +150,6 @@ ApxApp.ApxLibrary {
             "DatalinkSerial.cpp", "DatalinkSerial.h",
             "DatalinkStats.cpp", "DatalinkStats.h",
             "HttpService.cpp", "HttpService.h",
-        ]
-    }
-
-    Group {
-        name: "Pawn"
-        prefix: name+"/"
-        files: [
-            "PawnCompiler.cpp", "PawnCompiler.h",
         ]
     }
 

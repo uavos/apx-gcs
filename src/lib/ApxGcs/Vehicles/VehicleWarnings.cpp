@@ -65,7 +65,7 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
     Fact *fact = nullptr;
     if (size() > 0) {
         fact = child(0);
-        if (fact->title() != msg || fact->userData.toInt() != kind)
+        if (fact->title() != msg || fact->property("kind").toInt() != kind)
             fact = nullptr;
     }
     if (!fact) {
@@ -74,7 +74,7 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
         if (size() > 100)
             child(size() - 1)->remove();
         fact->setValue(1);
-        fact->userData = kind;
+        fact->setProperty("kind", kind);
         switch (kind) {
         case INFO:
             fact->setIcon("information");
@@ -119,7 +119,7 @@ void VehicleWarnings::showTimerTimeout()
     if (showNum >= showList.size())
         showNum = 0;
     Fact *fact = showList.at(showNum);
-    emit showMore(fact->title(), (MsgType) fact->userData.toInt());
+    emit showMore(fact->title(), (MsgType) fact->property("kind").toInt());
     //qDebug()<<fact->title();
 
     //next item

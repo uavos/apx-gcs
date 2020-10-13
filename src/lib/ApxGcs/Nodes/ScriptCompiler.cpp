@@ -20,25 +20,64 @@
  * Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "PawnCompiler.h"
+#include "ScriptCompiler.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <Vehicles/Vehicles.h>
 
-PawnCompiler::PawnCompiler(QObject *parent)
-    : QObject(parent)
+ScriptCompiler::ScriptCompiler(Fact *fact)
+    : QObject(fact)
+    , _fact(fact)
 {
-    //const uint vm_data_size=1024;
     tmpFile.open();
     outFileName = tmpFile.fileName() + "-compiled.amx";
     pawncc.setProgram(QCoreApplication::applicationDirPath() + "/pawncc");
     pawncc.setProcessChannelMode(QProcess::MergedChannels);
+
+    connect(fact, &Fact::valueChanged, this, &ScriptCompiler::factValueChanged, Qt::QueuedConnection);
+}
+void ScriptCompiler::factValueChanged()
+{
+    QString value = _fact->value().toString();
+    if (_value_s == value)
+        return;
+
+    QStringList st = value.split(',', Qt::KeepEmptyParts);
+    QString title = st.value(0);
+    QString src = st.value(1);
+    _title = title;
+    _source = qUncompress(QByteArray::fromHex(src.toLocal8Bit()));
+
+    _compile(_source);
+
+    QString code_string;
+    if (!code().isEmpty())
+        code_string = qCompress(code(), 9).toHex().toUpper();
+
+    st.clear();
+    st << _title;
+    st << src;
+    st << code_string;
+    _value_s = st.join(',');
+
+    _fact->setValue(_value_s);
 }
 
-bool PawnCompiler::compile(QString src)
+void ScriptCompiler::setSource(QString title, QString source)
 {
-    m_outData.clear();
-    m_error = false;
+    _title = title;
+    _value_s.clear();
+    QStringList st;
+    st << title;
+    st << qCompress(source.toLocal8Bit(), 9).toHex().toUpper();
+    _fact->setValue(st.join(','));
+}
+
+bool ScriptCompiler::_compile(QString src)
+{
+    qDebug() << "compiling:" << _title << src.size();
+    _code.clear();
+    _error = false;
     tmpFile.resize(0);
     tmpFile.flush();
     QFile::remove(outFileName);
@@ -87,9 +126,9 @@ bool PawnCompiler::compile(QString src)
         rv = false;
     } else if (pawncc.exitCode() != 0)
         rv = false;
-    pawncc_log = pawncc.isOpen() ? pawncc.readAll() : QString();
+    _log = pawncc.isOpen() ? pawncc.readAll() : QString();
     if (!rv)
-        pawncc_log.append("\n\n" + pawncc.errorString());
+        _log.append("\n\n" + pawncc.errorString());
 
     //log file
     QTemporaryFile logFile;
@@ -99,7 +138,7 @@ bool PawnCompiler::compile(QString src)
         QTextStream s(&logFile);
         s << pawncc.program() + " " + pawncc.arguments().join(' ');
         s << "\n\n";
-        s << pawncc_log;
+        s << _log;
         s.flush();
         logFile.flush();
         logFile.close();
@@ -109,26 +148,11 @@ bool PawnCompiler::compile(QString src)
         //read out data
         QFile file(outFileName);
         if (file.open(QFile::ReadOnly)) {
-            m_outData = file.readAll();
+            _code = file.readAll();
         }
     }
-    m_error = !rv;
+    _error = !rv;
     emit compiled();
     //qDebug()<<"compile"<<rv<<m_outData.size();//<<getLog();
     return rv;
-}
-
-QString PawnCompiler::getLog()
-{
-    return pawncc.isOpen() ? pawncc_log : QString();
-}
-
-const QByteArray &PawnCompiler::outData() const
-{
-    return m_outData;
-}
-
-bool PawnCompiler::error()
-{
-    return m_error;
 }

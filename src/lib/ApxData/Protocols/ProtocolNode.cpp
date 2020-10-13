@@ -452,24 +452,24 @@ void ProtocolNode::requestStatus()
     req->schedule();*/
 }
 
-void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
+void ProtocolNode::requestUpdate(const QVariantMap &values)
 {
-    const dict_field_s *f = field(fid);
-    if (!f)
-        return;
-    //qDebug() << f->name << value;
-
-    // update _values
-    if (fid < m_dict_fields.size()) {
-        const dict_field_s &f = m_dict.at(m_dict_fields.at(fid));
-        const QString fpath = f.path;
-        if (f.type == xbus::node::conf::option) {
-            _values[fpath] = f.units.split(',').value(value.toInt(), value.toString());
-        } else if (f.type == xbus::node::conf::real) {
+    _update_requests.clear();
+    _nodes->clear_requests();
+    for (auto const &fpath : values.keys()) {
+        const dict_field_s *f = field(fpath);
+        if (!f) {
+            qWarning() << "missing field" << fpath;
+            continue;
+        }
+        QVariant value = values.value(fpath);
+        if (f->type == xbus::node::conf::option) {
+            _values[fpath] = f->units.split(',').value(value.toInt(), value.toString());
+        } else if (f->type == xbus::node::conf::real) {
             _values[fpath] = value.toString();
-        } else if (f.type == xbus::node::conf::script) {
-            if (fid != _script_idx) {
-                qWarning() << "script fid:" << fid << _script_idx;
+        } else if (f->type == xbus::node::conf::script) {
+            if (fpath != _script_fpath) {
+                qWarning() << "script field mismatch:" << fpath << _script_fpath;
                 return;
             }
             QByteArray data = value.toByteArray();
@@ -482,51 +482,58 @@ void ProtocolNode::requestUpdate(xbus::node::conf::fid_t fid, QVariant value)
                 qWarning() << "Script unavailable";
                 return;
             }
-            f->stop();
             connect(f,
                     &ProtocolNodeFile::uploaded,
                     this,
-                    &ProtocolNode::confSaved,
+                    &ProtocolNode::updateRequestsCheckDone,
                     Qt::UniqueConnection);
+            _update_requests.append(f);
+            f->stop();
             _nodes->setActive(true);
             f->upload(data);
             value = QVariant::fromValue(_script_hash);
         } else {
             _values[fpath] = value;
         }
-    }
 
-    // request
-    //_nodes->clear_requests();
-    _nodes->setActive(true);
-    ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
-    *req << fid;
-    if (!write_param(*req, fid, value)) {
-        req->deleteLater();
-        _nodes->clear_requests();
+        // request
+        _nodes->setActive(true);
+        ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
+        xbus::node::conf::fid_t id = fid(fpath);
+        *req << id;
+        if (!write_param(*req, id, value)) {
+            req->deleteLater();
+            _nodes->clear_requests();
+            qWarning() << "update request error:" << fpath;
+            return;
+        }
+        connect(req, &ProtocolNodeRequest::finished, this, &ProtocolNode::updateRequestsCheckDone);
+        _update_requests.append(req);
+        connect(req, &ProtocolNodeRequest::timeout, _nodes, &ProtocolNodes::clear_requests);
+        req->schedule();
+    }
+    if (_update_requests.isEmpty()) {
+        qWarning() << "nothing to update";
         return;
     }
-    connect(req, &ProtocolNodeRequest::timeout, _nodes, &ProtocolNodes::clear_requests);
-    req->schedule();
 }
-void ProtocolNode::requestUpdateSave()
+void ProtocolNode::updateRequestsCheckDone()
 {
-    if (!_nodes->active())
+    if (!_update_requests.contains(sender()))
         return;
-
+    ProtocolNodeRequest *sreq = qobject_cast<ProtocolNodeRequest *>(sender());
+    if (sreq && !sreq->acknowledged)
+        return;
+    _update_requests.removeAll(sender());
+    if (!_update_requests.isEmpty())
+        return;
+    // save to node storage request
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
     req->write<xbus::node::conf::fid_t>(0xFFFF);
     connect(req, &ProtocolNodeRequest::finished, this, [this](ProtocolNodeRequest *request) {
-        ProtocolNodeFile *f = file("script");
         if (request->acknowledged) {
-            if (f && f->active()) {
-                qDebug() << "Script upload pending";
-                return;
-            }
             emit confSaved();
         } else {
-            if (f)
-                f->stop();
             _nodes->clear_requests();
         }
     });
@@ -759,26 +766,26 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
             break;
 
         // collect values
-        _script_idx = -1;
+        _script_fpath.clear();
         _values.clear();
         for (auto i = 0; i < values.size(); ++i) {
             const dict_field_s &f = m_dict.at(m_dict_fields.at(i));
             if (f.type == xbus::node::conf::script) {
-                _script_idx = i;
+                _script_fpath = f.path;
+                _script_hash = values.at(i).value<xbus::node::hash_t>();
                 continue;
             }
             _values.insert(f.path, values.at(i));
         }
         qDebug() << "conf parsed";
 
-        if (_script_idx >= 0) {
-            qDebug() << "script field" << _script_idx;
+        if (!_script_fpath.isEmpty()) {
+            qDebug() << "script field" << _script_fpath;
             ProtocolNodeFile *f = file("script");
             if (!f) {
                 qWarning() << "Script unavailable";
                 break;
             }
-            _script_hash = values.at(_script_idx).value<xbus::node::hash_t>();
             f->stop();
             connect(f,
                     &ProtocolNodeFile::downloaded,
@@ -794,7 +801,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     } while (0);
 
     // error
-    _script_idx = -1;
+    _script_fpath.clear();
     setValid(false);
     qWarning() << "conf error" << fid << stream.available() << data.toHex().toUpper();
 }
@@ -816,8 +823,12 @@ void ProtocolNode::validate()
 void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
 {
     do {
-        if (_script_idx < 0)
-            break;
+        if (_script_fpath.isEmpty()) {
+            qWarning() << "script idx err" << data.size() << data.toHex().toUpper();
+            setValid(false);
+            _resetScript();
+            return;
+        }
 
         // check node hash
         if (info.hash != _script_hash) {
@@ -828,8 +839,6 @@ void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const Q
 
         if (info.size == 0) {
             // empty script
-            _values.insert(m_dict.at(m_dict_fields.at(_script_idx)).path, QString());
-            validate();
             return;
         }
 
@@ -842,18 +851,19 @@ void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const Q
     } while (0);
 
     // error
-    setValid(false);
-    qWarning() << "script error" << data.size() << data.toHex().toUpper();
+    _resetScript();
+    validate();
+    //setValid(false);
+    qWarning() << "script error" << data.size(); // << data.toHex().toUpper();
 }
 bool ProtocolNode::_parseScript(const QByteArray data)
 {
     do {
-        if (_script_idx < 0 || _script_idx >= m_dict_fields.size()) {
-            qWarning() << "script fid" << _script_idx;
+        if (!field(_script_fpath)) {
+            qWarning() << "script field missing" << _script_fpath;
             break;
         }
-        const QString fpath = m_dict.at(m_dict_fields.at(_script_idx)).path;
-        _values.insert(fpath, QString());
+        _values.insert(_script_fpath, QString());
 
         ProtocolStreamReader stream(data);
         xbus::script::file_hdr_s hdr{};
@@ -874,28 +884,35 @@ bool ProtocolNode::_parseScript(const QByteArray data)
             qWarning() << "empty" << stream.available() << src.size() << code.size();
             break;
         }
+        QString title = QString(QByteArray(hdr.title, sizeof(hdr.title)));
 
-        _script_code = code;
-        _script_src = src;
-        _values.insert(m_dict.at(m_dict_fields.at(_script_idx)).path, QString(src));
+        QStringList st;
+        st << title;
+        st << qCompress(src, 9).toHex().toUpper();
+        st << qCompress(code, 9).toHex().toUpper();
+        _values.insert(_script_fpath, st.join(','));
 
-        setScriptTitle(QString(QByteArray(hdr.title, sizeof(hdr.title))));
-        qDebug() << "script:" << scriptTitle(); // << _script_code.toHex().toUpper();
+        qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
         return true;
     } while (0);
-    _script_code.clear();
-    _script_src.clear();
-    setScriptTitle(QString());
+    _resetScript();
     return false;
 }
+void ProtocolNode::_resetScript()
+{
+    if (field(_script_fpath))
+        _values.insert(_script_fpath, QString());
+}
 
-QByteArray ProtocolNode::scriptFileData(const QString source, const QByteArray code) const
+QByteArray ProtocolNode::scriptFileData(const QString title,
+                                        const QString source,
+                                        const QByteArray code) const
 {
     QByteArray ba(xbus::script::max_file_size, '\0');
     ProtocolStreamWriter stream(ba.data(), ba.size());
 
     xbus::script::file_hdr_s hdr{};
-    strncpy(hdr.title, scriptTitle().toLocal8Bit(), sizeof(hdr.title));
+    strncpy(hdr.title, title.toLocal8Bit(), sizeof(hdr.title));
 
     QByteArray src = qCompress(source.toLocal8Bit(), 9);
 
@@ -914,6 +931,26 @@ const ProtocolNode::dict_field_s *ProtocolNode::field(xbus::node::conf::fid_t fi
     if (fid >= m_dict_fields.size())
         return nullptr;
     return &m_dict.at(m_dict_fields.at(fid));
+}
+const ProtocolNode::dict_field_s *ProtocolNode::field(const QString &fpath) const
+{
+    if (fpath.isEmpty())
+        return nullptr;
+    for (auto i : m_dict_fields) {
+        if (m_dict.at(i).path == fpath)
+            return &m_dict.at(i);
+    }
+    return nullptr;
+}
+xbus::node::conf::fid_t ProtocolNode::fid(const QString &fpath) const
+{
+    xbus::node::conf::fid_t fid{0};
+    for (auto i : m_dict_fields) {
+        if (m_dict.at(i).path == fpath)
+            return fid;
+        fid++;
+    }
+    return 0;
 }
 
 template<typename T, typename Tout = T>
@@ -1172,16 +1209,4 @@ void ProtocolNode::setValid(const bool &v)
         return;
     m_valid = v;
     emit validChanged();
-}
-
-QString ProtocolNode::scriptTitle() const
-{
-    return m_scriptTitle;
-}
-void ProtocolNode::setScriptTitle(const QString &v)
-{
-    if (m_scriptTitle == v)
-        return;
-    m_scriptTitle = v.simplified().trimmed();
-    emit scriptTitleChanged();
 }

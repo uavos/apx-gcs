@@ -24,7 +24,7 @@
 
 #include "FactDelegateDialog.h"
 
-class PawnCompiler;
+class ScriptCompiler;
 class SourceEdit;
 
 class FactDelegateScript : public FactDelegateDialog
@@ -42,7 +42,7 @@ private:
     bool saveToFile(QString fname);
     bool loadFromFile(QString fname);
 
-    PawnCompiler *pawncc;
+    ScriptCompiler *scriptCompiler;
 
     QAction *aCompile;
     QAction *aLoad;
@@ -59,4 +59,7 @@ private slots:
     void logView_itemClicked(QListWidgetItem *item);
 
     void updateLog();
+
+    void updateEditorText();
+    void updateFactValue();
 };

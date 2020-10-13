@@ -130,7 +130,7 @@ void Telemetry::recordFactTriggered(Fact *f)
         vehicle->f_mission->storage->loadMission(uid);
     } else {
         if (f_player)
-            f_player->f_time->setValue(f->userData.toULongLong() - 1);
+            f_player->f_time->setValue(f->property("time").toULongLong() - 1);
     }
 }
 //=============================================================================

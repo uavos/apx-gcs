@@ -27,7 +27,6 @@
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <Pawn/PawnCompiler.h>
 #include <Protocols/ProtocolNode.h>
 #include <Vehicles/Vehicles.h>
 
@@ -115,30 +114,7 @@ NodeField::NodeField(Fact *parent,
     case xbus::node::conf::script:
         setDataType(Text);
         setUnits("script");
-        if (scriptCompiler)
-            break;
-        scriptCompiler = new PawnCompiler(this);
-        connect(
-            this,
-            &Fact::valueChanged,
-            scriptCompiler,
-            [this]() { scriptCompiler->compile(value().toString()); },
-            Qt::QueuedConnection);
-        connect(
-            scriptCompiler,
-            &PawnCompiler::compiled,
-            this,
-            [this]() {
-                if (!_node->protocol()->valid())
-                    return;
-                //apxMsgW() << scriptCompiler->error() << _node->protocol()->valid();
-                if (scriptCompiler->error()
-                    || _node->protocol()->scriptCode() != scriptCompiler->outData()) {
-                    setModified(true);
-                }
-                updateText();
-            },
-            Qt::QueuedConnection);
+        _script = new ScriptCompiler(this);
         updateText();
         break;
     }
@@ -153,7 +129,7 @@ void NodeField::updateStatus()
         for (int i = 0; i < size(); ++i) {
             st.append(child(i)->text());
         }
-        Fact::setValue(QString("(%1)").arg(st.join(',')));
+        setValue(QString("(%1)").arg(st.join(',')));
     }
 
     int acnt = 0;
@@ -168,12 +144,27 @@ void NodeField::updateStatus()
         acnt++;
     }
     if (acnt > 0)
-        Fact::setValue(QString("[%1/%2]").arg(acnt).arg(size()));
+        setValue(QString("[%1/%2]").arg(acnt).arg(size()));
     else
-        Fact::setValue(QString("[%1]").arg(size()));
+        setValue(QString("[%1]").arg(size()));
 }
 
-bool NodeField::setValue(const QVariant &v)
+QVariant NodeField::confValue(void) const
+{
+    if (size() > 0) {
+        //expanded field
+        QVariantList list;
+        for (auto i : facts()) {
+            list.append(static_cast<NodeField *>(i)->confValue());
+        }
+        return list;
+    }
+    if (_type == xbus::node::conf::real)
+        return QString::number(value().toFloat());
+
+    return value();
+}
+void NodeField::setConfValue(const QVariant &v)
 {
     bool isList = _check_type(v, QMetaType::QVariantList);
     if (size() > 0) {
@@ -181,40 +172,16 @@ bool NodeField::setValue(const QVariant &v)
         if (isList) {
             const QVariantList &values = v.value<QVariantList>();
             if (values.size() > size())
-                return false;
-            bool rv = false;
+                return;
             for (int i = 0; i < values.size(); ++i) {
-                Fact *f = child(i);
-                rv |= f->setValue(values.at(i));
+                child(i)->setValue(values.at(i));
             }
-            return rv;
+            return;
         }
         qWarning() << path() << v;
-        return false;
+        return;
     }
-    return Fact::setValue(v);
-}
-QVariant NodeField::uploadableValue(void) const
-{
-    if (size() > 0) {
-        //expanded field
-        QVariantList list;
-        for (auto i : facts()) {
-            list.append(static_cast<NodeField *>(i)->uploadableValue());
-        }
-        return list;
-    }
-    if (_type == xbus::node::conf::real)
-        return QString::number(value().toFloat());
-
-    if (_type == xbus::node::conf::script) {
-        QByteArray data;
-        if (!scriptCompiler->outData().isEmpty())
-            data = scriptFileData();
-        return QVariant::fromValue(data);
-    }
-
-    return value();
+    setValue(v);
 }
 
 QString NodeField::toolTip() const
@@ -226,13 +193,25 @@ QString NodeField::toolTip() const
 }
 QString NodeField::toText(const QVariant &v) const
 {
-    if (_type == xbus::node::conf::script && scriptCompiler) {
-        if (scriptCompiler->error())
-            return tr("error");
-        if (v.toString().trimmed().isEmpty())
+    if (_type == xbus::node::conf::script) {
+        QStringList st = v.toString().split(',', Qt::KeepEmptyParts);
+        QString title;
+        QString src;
+        QByteArray code;
+        size_t size = 0;
+        if (st.size() == 3) {
+            title = st.at(0);
+            QByteArray ba = QByteArray::fromHex(st.at(1).toLocal8Bit());
+            src = qUncompress(ba);
+            size += ba.size();
+            code = qUncompress(QByteArray::fromHex(st.at(2).toLocal8Bit()));
+            size += code.size();
+        }
+        if (src.isEmpty() && code.isEmpty())
             return tr("empty");
-        QString title = _node->protocol()->scriptTitle();
-        QString s = AppRoot::capacityToString(scriptFileData().size(), 2);
+        if (code.isEmpty())
+            return tr("error");
+        QString s = AppRoot::capacityToString(size, 2);
         if (!title.isEmpty())
             s = QString("%1 (%2)").arg(title).arg(s);
         return s;
@@ -240,35 +219,7 @@ QString NodeField::toText(const QVariant &v) const
     return Fact::toText(v);
 }
 
-QString NodeField::toString() const
-{
-    if (_type == xbus::node::conf::script) {
-        QString src = value().toString().trimmed();
-        if (src.isEmpty())
-            return src;
-        return qCompress(src.toUtf8(), 9).toHex().toUpper();
-    }
-    return text();
-}
-void NodeField::fromString(const QString &s)
-{
-    if (_type == xbus::node::conf::script) {
-        QString src = qUncompress(QByteArray::fromHex(s.toUtf8()));
-        if (src.isEmpty())
-            src = s;
-        Fact::setValue(src);
-        return;
-    }
-    Fact::setValue(s);
-}
-
 xbus::node::conf::fid_t NodeField::fid() const
 {
     return m_fid;
-}
-
-QByteArray NodeField::scriptFileData() const
-{
-    return _node->protocol()->scriptFileData(value().toString().trimmed(),
-                                             scriptCompiler->outData());
 }

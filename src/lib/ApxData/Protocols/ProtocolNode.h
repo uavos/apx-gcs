@@ -46,8 +46,6 @@ class ProtocolNode : public ProtocolBase
     Q_PROPERTY(bool dictValid READ dictValid WRITE setDictValid NOTIFY dictValidChanged)
     Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
 
-    Q_PROPERTY(QString scriptTitle READ scriptTitle WRITE setScriptTitle NOTIFY scriptTitleChanged)
-
 public:
     explicit ProtocolNode(ProtocolNodes *nodes, const QString &sn);
 
@@ -82,8 +80,9 @@ public:
     void setDict(const ProtocolNode::Dict &dict);
 
     // script support
-    QByteArray scriptFileData(const QString source, const QByteArray code) const;
-    inline QByteArray scriptCode() const { return _script_code; }
+    QByteArray scriptFileData(const QString title,
+                              const QString source,
+                              const QByteArray code) const;
 
 protected:
     QString toolTip() const override;
@@ -106,6 +105,9 @@ private:
     quint64 m_lastSeenTime{};
 
     const dict_field_s *field(xbus::node::conf::fid_t fid) const;
+    const dict_field_s *field(const QString &fpath) const;
+    xbus::node::conf::fid_t fid(const QString &fpath) const;
+
     QVariant read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid);
     bool write_param(ProtocolStreamWriter &stream,
                      xbus::node::conf::fid_t fid,
@@ -113,12 +115,14 @@ private:
 
     void validate();
 
+    // update fields batch
+    QList<QObject *> _update_requests;
+
     // script
-    int _script_idx{-1};
+    QString _script_fpath;
     xbus::node::hash_t _script_hash;
-    QByteArray _script_code;
-    QByteArray _script_src;
     bool _parseScript(const QByteArray data);
+    void _resetScript();
 
 private slots:
     void requestRebootLoaderNext();
@@ -129,6 +133,8 @@ private slots:
     void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);
+
+    void updateRequestsCheckDone();
 
     //export signals and slots
 signals:
@@ -159,8 +165,7 @@ public slots:
     void requestConf();
     void requestStatus();
 
-    void requestUpdate(xbus::node::conf::fid_t fid, QVariant value);
-    void requestUpdateSave();
+    void requestUpdate(const QVariantMap &values);
 
     void requestMod(QStringList commands);
     void requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data);
@@ -194,9 +199,6 @@ public:
     bool valid() const;
     void setValid(const bool &v);
 
-    QString scriptTitle() const;
-    void setScriptTitle(const QString &v);
-
 protected:
     xbus::node::ident::ident_s m_ident;
 
@@ -209,8 +211,6 @@ protected:
     bool m_dictValid{false};
     bool m_valid{false};
 
-    QString m_scriptTitle;
-
 signals:
     void identChanged();
     void versionChanged();
@@ -220,8 +220,6 @@ signals:
     void identValidChanged();
     void dictValidChanged();
     void validChanged();
-
-    void scriptTitleChanged();
 };
 
 Q_DECLARE_METATYPE(ProtocolNode::Dict);

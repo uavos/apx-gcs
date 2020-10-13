@@ -153,17 +153,14 @@ void NodeItem::upload()
     if (!modified())
         return;
 
-    int cnt = 0;
+    QVariantMap values;
     for (auto i : m_fields) {
         if (!i->modified())
             continue;
-        protocol()->requestUpdate(i->fid(), i->uploadableValue());
         _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->text(), protocol()->sn());
-        cnt++;
+        values.insert(i->fpath(), i->confValue());
     }
-    if (cnt > 0) {
-        protocol()->requestUpdateSave();
-    }
+    protocol()->requestUpdate(values);
 }
 void NodeItem::confSaved()
 {
@@ -493,7 +490,7 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
     for (auto f : m_fields) {
         if (f->fpath() != name)
             continue;
-        f->setValue(value);
+        f->setConfValue(value);
         return true;
     }
     return false;
@@ -506,7 +503,7 @@ void NodeItem::confReceived(const QVariantMap &values)
     for (auto f : m_fields) {
         if (!values.contains(f->fpath()))
             continue;
-        f->setValue(values.value(f->fpath()));
+        f->setConfValue(values.value(f->fpath()));
         f->setEnabled(true);
     }
     if (!protocol()->valid()) {

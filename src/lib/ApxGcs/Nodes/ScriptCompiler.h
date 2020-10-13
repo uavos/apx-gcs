@@ -22,20 +22,24 @@
  */
 #pragma once
 
-#include <QtCore>
+#include <Fact/Fact.h>
 
-class PawnCompiler : public QObject
+class ScriptCompiler : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString title MEMBER _title);
+    Q_PROPERTY(QString source MEMBER _source);
+
 public:
-    explicit PawnCompiler(QObject *parent = 0);
+    explicit ScriptCompiler(Fact *fact);
 
-    bool compile(QString src);
+    inline QString title() const { return _title; }
+    inline QString source() const { return _source; }
+    inline QByteArray code() const { return _code; }
 
-    QString getLog();
-    bool error();
-
-    const QByteArray &outData() const; //binary compiled data
+    inline bool error() const { return _error; }
+    inline QString log() const { return _log; }
 
     QMap<QString, QString> constants;
 
@@ -44,9 +48,25 @@ private:
     QProcess pawncc;
     QTemporaryFile tmpFile;
     QString outFileName;
-    QString pawncc_log;
-    QByteArray m_outData;
-    bool m_error;
+
+    QString _title;
+    QString _source;
+    QByteArray _code;
+
+    bool _error;
+    QString _log;
+
+    Fact *_fact;
+
+    QString _value_s;
+
+    bool _compile(QString src);
+
+private slots:
+    void factValueChanged();
+
+public slots:
+    void setSource(QString title, QString source);
 
 signals:
     void compiled();

@@ -27,12 +27,15 @@
 
 #include <Protocols/ProtocolNode.h>
 
+#include "ScriptCompiler.h"
+
 class NodeItem;
-class PawnCompiler;
 
 class NodeField : public Fact
 {
     Q_OBJECT
+
+    Q_PROPERTY(ScriptCompiler *script MEMBER _script);
 
 public:
     explicit NodeField(Fact *parent,
@@ -42,14 +45,10 @@ public:
                        NodeField *parentField = nullptr);
 
     xbus::node::conf::fid_t fid() const;
-    QVariant uploadableValue(void) const;
-
-    //values used for storage and share
-    QString toString() const;
-    void fromString(const QString &s);
+    QVariant confValue(void) const;
+    void setConfValue(const QVariant &v);
 
     //Fact override
-    virtual bool setValue(const QVariant &v) override;
     virtual QString toolTip() const override;
     virtual QString toText(const QVariant &v) const override;
 
@@ -63,11 +62,10 @@ private:
     xbus::node::conf::fid_t m_fid;
     xbus::node::conf::type_e _type;
 
-    PawnCompiler *scriptCompiler{nullptr};
-    QByteArray scriptFileData() const;
-
     QString _fpath;
     QString _help;
+
+    ScriptCompiler *_script{};
 
 private slots:
     void updateStatus();

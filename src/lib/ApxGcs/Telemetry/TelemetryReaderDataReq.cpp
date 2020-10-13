@@ -248,6 +248,6 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
 
     if (!f)
         return;
-    f->userData = time;
+    f->setProperty("time", QVariant::fromValue(time));
 }
 //=============================================================================

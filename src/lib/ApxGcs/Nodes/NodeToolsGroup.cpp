@@ -80,7 +80,7 @@ Fact *NodeToolsGroup::addCommand(Fact *group,
         f->setIcon("code-braces");
     else
         f->setIcon("asterisk");
-    f->userData = cmd;
+    f->setProperty("cmd", cmd);
     registerOnlineAction(f);
     //App::jsync(this);
     return f;
