@@ -32,6 +32,8 @@
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     : FactDelegateDialog(fact, parent)
 {
+    toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+
     aCompile = new QAction(MaterialIcon("code-tags-check"), tr("Compile"), this);
     addAction(aCompile);
 
@@ -42,6 +44,10 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     aSave = new QAction(MaterialIcon("content-save"), tr("Save"), this);
     connect(aSave, &QAction::triggered, this, &FactDelegateScript::aSave_triggered);
     addAction(aSave);
+
+    eTitle = new QLineEdit(this);
+    eTitle->setPlaceholderText(tr("script title"));
+    toolBar->addWidget(eTitle);
 
     QWidget *w = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(w);
@@ -78,12 +84,18 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     updateEditorText();
 
     connect(aCompile, &QAction::triggered, this, &FactDelegateScript::updateFactValue);
+
+    connect(eTitle, &QLineEdit::editingFinished, aCompile, &QAction::trigger);
 }
 void FactDelegateScript::updateEditorText()
 {
     QString s = scriptCompiler->source();
     if (editor->toPlainText() != s) {
         editor->setPlainText(s);
+    }
+    s = scriptCompiler->title();
+    if (eTitle->text() != s) {
+        eTitle->setText(s);
     }
 }
 void FactDelegateScript::updateFactValue()
@@ -92,7 +104,7 @@ void FactDelegateScript::updateFactValue()
     QString s = editor->toPlainText();
     if (s.simplified().isEmpty())
         s.clear();
-    scriptCompiler->setSource(scriptCompiler->title(), s);
+    scriptCompiler->setSource(eTitle->text(), s);
 }
 
 bool FactDelegateScript::aboutToUpload(void)
@@ -112,8 +124,8 @@ void FactDelegateScript::aSave_triggered(void)
     QFileDialog dlg(this, aSave->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptSave);
     dlg.setOption(QFileDialog::DontConfirmOverwrite, false);
-    if (!scrName.isEmpty())
-        dlg.selectFile(AppDirs::scripts().filePath(scrName + ".p"));
+    if (!eTitle->text().isEmpty())
+        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".p"));
     QStringList filters;
     filters << tr("Script files") + " (*.p)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
@@ -126,8 +138,8 @@ void FactDelegateScript::aLoad_triggered(void)
 {
     QFileDialog dlg(this, aLoad->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptOpen);
-    if (!scrName.isEmpty())
-        dlg.selectFile(AppDirs::scripts().filePath(scrName + ".p"));
+    if (!eTitle->text().isEmpty())
+        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".p"));
     QStringList filters;
     filters << tr("Script files") + " (*.p)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
@@ -171,8 +183,7 @@ bool FactDelegateScript::saveToFile(QString fname)
                   << QString("%1:\n%2.").arg(fname).arg(file.errorString());
         return false;
     }
-    scrName = QFileInfo(fname).baseName();
-    //label->setText(scrName);
+    eTitle->setText(QFileInfo(fname).baseName());
     editor->cleanText();
     QTextStream s(&file);
     s << editor->toPlainText();
@@ -187,10 +198,10 @@ bool FactDelegateScript::loadFromFile(QString fname)
                   << QString("%1:\n%2.").arg(fname).arg(file.errorString());
         return false;
     }
-    scrName = QFileInfo(fname).baseName();
-    //label->setText(scrName);
+    eTitle->setText(QFileInfo(fname).baseName());
     QTextStream s(&file);
-    fact->setValue(s.readAll());
+    editor->setPlainText(s.readAll());
+    aCompile->trigger();
     return true;
 }
 

@@ -65,10 +65,11 @@ void ScriptCompiler::factValueChanged()
 
 void ScriptCompiler::setSource(QString title, QString source)
 {
-    _title = title;
+    //qDebug() << "set src:" << title;
+    _title = title.simplified().trimmed();
     _value_s.clear();
     QStringList st;
-    st << title;
+    st << _title;
     st << qCompress(source.toLocal8Bit(), 9).toHex().toUpper();
     _fact->setValue(st.join(','));
 }

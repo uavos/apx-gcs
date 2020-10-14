@@ -202,8 +202,8 @@ QString NodeField::toText(const QVariant &v) const
         if (st.size() == 3) {
             title = st.at(0);
             QByteArray ba = QByteArray::fromHex(st.at(1).toLocal8Bit());
-            src = qUncompress(ba);
             size += ba.size();
+            src = qUncompress(ba);
             code = qUncompress(QByteArray::fromHex(st.at(2).toLocal8Bit()));
             size += code.size();
         }

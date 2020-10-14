@@ -38,7 +38,6 @@ protected:
     bool aboutToClose(void);
 
 private:
-    QString scrName;
     bool saveToFile(QString fname);
     bool loadFromFile(QString fname);
 
@@ -50,6 +49,8 @@ private:
 
     SourceEdit *editor;
     QListWidget *logList;
+
+    QLineEdit *eTitle;
 
     //data
 private slots:

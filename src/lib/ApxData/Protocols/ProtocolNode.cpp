@@ -472,7 +472,7 @@ void ProtocolNode::requestUpdate(const QVariantMap &values)
                 qWarning() << "script field mismatch:" << fpath << _script_fpath;
                 return;
             }
-            QByteArray data = value.toByteArray();
+            QByteArray data = _scriptFileData(value);
             _script_hash = apx::crc32(data.data(), data.size());
             qDebug() << "script:" << data.size();
             _parseScript(data);
@@ -822,6 +822,7 @@ void ProtocolNode::validate()
 }
 void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
 {
+    qDebug() << "script data" << info.size << data.size();
     do {
         if (_script_fpath.isEmpty()) {
             qWarning() << "script idx err" << data.size() << data.toHex().toUpper();
@@ -839,7 +840,7 @@ void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const Q
 
         if (info.size == 0) {
             // empty script
-            return;
+            break;
         }
 
         if (!_parseScript(data))
@@ -904,17 +905,24 @@ void ProtocolNode::_resetScript()
         _values.insert(_script_fpath, QString());
 }
 
-QByteArray ProtocolNode::scriptFileData(const QString title,
-                                        const QString source,
-                                        const QByteArray code) const
+QByteArray ProtocolNode::_scriptFileData(const QVariant &value) const
 {
+    QStringList st = value.toString().split(',', Qt::KeepEmptyParts);
+    QString title;
+    QByteArray src;
+    QByteArray code;
+    if (st.size() != 3)
+        return QByteArray();
+
+    title = st.at(0);
+    src = QByteArray::fromHex(st.at(1).toLocal8Bit());
+    code = qUncompress(QByteArray::fromHex(st.at(2).toLocal8Bit()));
+
     QByteArray ba(xbus::script::max_file_size, '\0');
     ProtocolStreamWriter stream(ba.data(), ba.size());
 
     xbus::script::file_hdr_s hdr{};
     strncpy(hdr.title, title.toLocal8Bit(), sizeof(hdr.title));
-
-    QByteArray src = qCompress(source.toLocal8Bit(), 9);
 
     hdr.code_size = code.size();
     hdr.src_size = src.size();
