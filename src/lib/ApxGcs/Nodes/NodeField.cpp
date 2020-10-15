@@ -115,7 +115,6 @@ NodeField::NodeField(Fact *parent,
         setDataType(Text);
         setUnits("script");
         _script = new ScriptCompiler(this);
-        updateText();
         break;
     }
 }
@@ -193,29 +192,8 @@ QString NodeField::toolTip() const
 }
 QString NodeField::toText(const QVariant &v) const
 {
-    if (_type == xbus::node::conf::script) {
-        QStringList st = v.toString().split(',', Qt::KeepEmptyParts);
-        QString title;
-        QString src;
-        QByteArray code;
-        size_t size = 0;
-        if (st.size() == 3) {
-            title = st.at(0);
-            QByteArray ba = QByteArray::fromHex(st.at(1).toLocal8Bit());
-            size += ba.size();
-            src = qUncompress(ba);
-            code = qUncompress(QByteArray::fromHex(st.at(2).toLocal8Bit()));
-            size += code.size();
-        }
-        if (src.isEmpty() && code.isEmpty())
-            return tr("empty");
-        if (code.isEmpty())
-            return tr("error");
-        QString s = AppRoot::capacityToString(size, 2);
-        if (!title.isEmpty())
-            s = QString("%1 (%2)").arg(title).arg(s);
-        return s;
-    }
+    if (_type == xbus::node::conf::script)
+        return QString();
     return Fact::toText(v);
 }
 

@@ -23,6 +23,7 @@
 #include "ScriptCompiler.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
+#include <App/AppRoot.h>
 #include <Vehicles/Vehicles.h>
 
 ScriptCompiler::ScriptCompiler(Fact *fact)
@@ -35,6 +36,8 @@ ScriptCompiler::ScriptCompiler(Fact *fact)
     pawncc.setProcessChannelMode(QProcess::MergedChannels);
 
     connect(fact, &Fact::valueChanged, this, &ScriptCompiler::factValueChanged, Qt::QueuedConnection);
+
+    _updateFactText();
 }
 void ScriptCompiler::factValueChanged()
 {
@@ -46,7 +49,9 @@ void ScriptCompiler::factValueChanged()
     QString title = st.value(0);
     QString src = st.value(1);
     _title = title;
-    _source = qUncompress(QByteArray::fromHex(src.toLocal8Bit()));
+
+    QByteArray src_ba = QByteArray::fromHex(src.toLocal8Bit());
+    _source = qUncompress(src_ba);
 
     _compile(_source);
 
@@ -61,6 +66,23 @@ void ScriptCompiler::factValueChanged()
     _value_s = st.join(',');
 
     _fact->setValue(_value_s);
+    _updateFactText();
+}
+
+void ScriptCompiler::_updateFactText()
+{
+    QString text;
+    if (error())
+        text = tr("error");
+    else if (code().isEmpty())
+        text = tr("empty");
+    else {
+        size_t size = code().size() + qCompress(source().toLocal8Bit(), 9).size();
+        text = AppRoot::capacityToString(size, 2);
+        if (!_title.isEmpty())
+            text = QString("%1 (%2)").arg(_title).arg(text);
+    }
+    _fact->setText(text);
 }
 
 void ScriptCompiler::setSource(QString title, QString source)

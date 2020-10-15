@@ -62,6 +62,8 @@ private:
 
     bool _compile(QString src);
 
+    void _updateFactText();
+
 private slots:
     void factValueChanged();
 

@@ -472,7 +472,7 @@ void ProtocolNode::requestUpdate(const QVariantMap &values)
                 qWarning() << "script field mismatch:" << fpath << _script_fpath;
                 return;
             }
-            QByteArray data = _scriptFileData(value);
+            QByteArray data = scriptFileData(value);
             _script_hash = apx::crc32(data.data(), data.size());
             qDebug() << "script:" << data.size();
             _parseScript(data);
@@ -905,7 +905,7 @@ void ProtocolNode::_resetScript()
         _values.insert(_script_fpath, QString());
 }
 
-QByteArray ProtocolNode::_scriptFileData(const QVariant &value) const
+QByteArray ProtocolNode::scriptFileData(const QVariant &value) const
 {
     QStringList st = value.toString().split(',', Qt::KeepEmptyParts);
     QString title;

@@ -79,6 +79,8 @@ public:
 
     void setDict(const ProtocolNode::Dict &dict);
 
+    QByteArray scriptFileData(const QVariant &value) const;
+
 protected:
     QString toolTip() const override;
     void hashData(QCryptographicHash *h) const override;
@@ -118,7 +120,6 @@ private:
     xbus::node::hash_t _script_hash;
     bool _parseScript(const QByteArray data);
     void _resetScript();
-    QByteArray _scriptFileData(const QVariant &value) const;
 
 private slots:
     void requestRebootLoaderNext();
