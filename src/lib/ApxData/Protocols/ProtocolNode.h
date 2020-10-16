@@ -28,7 +28,7 @@
 
 #include <QtCore>
 
-#include <Xbus/XbusNode.h>
+#include <xbus/XbusNode.h>
 
 class ProtocolNodes;
 

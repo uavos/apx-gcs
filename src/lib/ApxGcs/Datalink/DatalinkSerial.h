@@ -24,9 +24,9 @@
 
 #include "DatalinkConnection.h"
 
-#include <Xbus/XbusPacket.h>
+#include <xbus/XbusPacket.h>
 
-#include <Xbus/uart/SerialCodec.h>
+#include <xbus/uart/SerialCodec.h>
 
 #include <QSerialPort>
 #include <QSerialPortInfo>

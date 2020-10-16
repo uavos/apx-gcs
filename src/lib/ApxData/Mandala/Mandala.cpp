@@ -24,8 +24,8 @@
 #include "MandalaFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
-#include <Mandala/MandalaMetaBase.h>
-#include <Mandala/backport/MandalaBackport.h>
+#include <mandala/MandalaMetaBase.h>
+#include <mandala/backport/MandalaBackport.h>
 
 Mandala::Mandala(Fact *parent)
     : Fact(parent,

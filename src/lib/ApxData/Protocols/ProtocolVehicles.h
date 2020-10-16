@@ -25,7 +25,7 @@
 #include "ProtocolBase.h"
 #include "ProtocolTrace.h"
 
-#include <Xbus/XbusVehicle.h>
+#include <xbus/XbusVehicle.h>
 
 #include <QtCore>
 

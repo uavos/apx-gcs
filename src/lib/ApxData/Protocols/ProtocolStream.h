@@ -24,11 +24,11 @@
 
 #include <QtCore>
 
-#include <Xbus/XbusStreamReader.h>
-#include <Xbus/XbusStreamWriter.h>
+#include <xbus/XbusStreamReader.h>
+#include <xbus/XbusStreamWriter.h>
 
-#include <Mandala/MandalaTreeBase.h>
-#include <Xbus/XbusPacket.h>
+#include <mandala/MandalaTreeBase.h>
+#include <xbus/XbusPacket.h>
 
 class ProtocolStreamReader : public XbusStreamReader
 {

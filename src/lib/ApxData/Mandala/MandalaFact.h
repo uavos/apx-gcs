@@ -22,7 +22,7 @@
  */
 #pragma once
 
-#include <Mandala/MandalaMetaBase.h>
+#include <mandala/MandalaMetaBase.h>
 #include <Protocols/ProtocolTelemetry.h>
 
 #include <Fact/Fact.h>

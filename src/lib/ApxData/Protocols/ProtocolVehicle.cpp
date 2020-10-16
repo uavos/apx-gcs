@@ -23,10 +23,9 @@
 #include "ProtocolVehicle.h"
 
 #include <Mandala/Mandala.h>
-#include <Mandala/MandalaBundles.h>
 
-#include <Xbus/XbusNode.h>
-#include <Xbus/XbusPacket.h>
+#include <xbus/XbusNode.h>
+#include <xbus/XbusPacket.h>
 
 #include <Database/VehiclesReqVehicle.h>
 

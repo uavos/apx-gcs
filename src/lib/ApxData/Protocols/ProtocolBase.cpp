@@ -22,8 +22,8 @@
  */
 #include "ProtocolBase.h"
 #include <Mandala/Mandala.h>
-#include <Xbus/XbusNode.h>
-#include <Xbus/XbusVehicle.h>
+#include <xbus/XbusNode.h>
+#include <xbus/XbusVehicle.h>
 
 ProtocolBase::ProtocolBase(QObject *parent, const QString &name)
     : Fact(parent, name.toLower(), name, "", ProgressTrack)

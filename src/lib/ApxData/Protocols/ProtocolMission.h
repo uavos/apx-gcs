@@ -27,8 +27,8 @@
 
 #include <QtCore>
 
-#include <Xbus/XbusMission.h>
-#include <Xbus/XbusNode.h>
+#include <xbus/XbusMission.h>
+#include <xbus/XbusNode.h>
 
 class ProtocolVehicle;
 

@@ -20,10 +20,9 @@ ApxApp.ApxProduct {
     Depends {
         name: "apx_libs"
         submodules: [
-            "Xbus",
-            "Xbus__tcp",
-            "Mandala",
-            "apx-math__mathlib",
+            "xbus",
+            "xbus__tcp",
+            "mandala",
         ]
     }
 
@@ -106,4 +105,3 @@ ApxApp.ApxProduct {
         ]
     }
 }
-

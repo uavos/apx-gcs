@@ -26,8 +26,8 @@
 
 #include <Mandala/Mandala.h>
 
-#include <Xbus/XbusPacket.h>
-#include <Xbus/XbusVehicle.h>
+#include <xbus/XbusPacket.h>
+#include <xbus/XbusVehicle.h>
 //=============================================================================
 DatalinkConnection::DatalinkConnection(Fact *parent,
                                        const QString &name,

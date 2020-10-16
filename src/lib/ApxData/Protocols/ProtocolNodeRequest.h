@@ -26,7 +26,7 @@
 
 #include "ProtocolStream.h"
 #include <Mandala/Mandala.h>
-#include <Xbus/XbusNode.h>
+#include <xbus/XbusNode.h>
 
 class ProtocolNodes;
 class ProtocolNode;

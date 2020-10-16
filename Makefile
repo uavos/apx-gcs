@@ -2,6 +2,8 @@
 #
 # APX project makefile to build Ground Control application release package
 #
+# For development and custom builds, use gcs.qbs project.
+#
 ###########################################################################
 all: build
 
@@ -31,11 +33,11 @@ clean: FORCE
 # prepare bundle with libs and frameworks
 deploy: build deploy-app deploy-$(HOST_OS)
 
-deploy-clean: 
+deploy-clean:
 	@rm -rf $(GCS_ROOT_DIR)/*
 
 deploy-app: $(APP_DATA)
-	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(CODE_IDENTITY:%=--sign=%) $(LIBS_DIST_DIR:%=--dist=%) 
+	@python $(TOOLS_DIR)/deploy/deploy_app.py --appdata=$< $(CODE_IDENTITY:%=--sign=%) $(LIBS_DIST_DIR:%=--dist=%)
 
 # build dist image
 deploy-osx: $(APP_DATA)

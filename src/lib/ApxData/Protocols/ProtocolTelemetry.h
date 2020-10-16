@@ -26,8 +26,8 @@
 
 #include <QtCore>
 
-#include <Xbus/telemetry/TelemetryDecoder.h>
-#include <Xbus/uart/CobsDecoder.h>
+#include <xbus/telemetry/TelemetryDecoder.h>
+#include <xbus/uart/CobsDecoder.h>
 
 class ProtocolVehicle;
 

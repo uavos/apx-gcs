@@ -24,8 +24,9 @@
 
 #include "MandalaFact.h"
 #include <Fact/Fact.h>
-#include <Mandala/MandalaMetaTree.h>
 #include <Protocols/ProtocolTelemetry.h>
+#include <mandala/MandalaBundles.h>
+#include <mandala/MandalaMetaTree.h>
 
 class Mandala : public Fact
 {

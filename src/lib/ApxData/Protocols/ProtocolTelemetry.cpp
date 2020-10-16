@@ -26,7 +26,7 @@
 #include <App/App.h>
 #include <Mandala/Mandala.h>
 
-#include <Xbus/telemetry/TelemetryValuePack.h>
+#include <xbus/telemetry/TelemetryValuePack.h>
 
 ProtocolTelemetry::ProtocolTelemetry(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle, "telemetry")

@@ -23,7 +23,7 @@
 #include "MandalaFact.h"
 #include "Mandala.h"
 #include <App/AppLog.h>
-#include <Mandala/MandalaMeta.h>
+#include <mandala/MandalaMeta.h>
 #include <QColor>
 
 MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)

@@ -28,8 +28,8 @@
 #include <App/App.h>
 #include <Mandala/Mandala.h>
 
-#include <Xbus/XbusNode.h>
-#include <Xbus/XbusScript.h>
+#include <xbus/XbusNode.h>
+#include <xbus/XbusScript.h>
 
 ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     : ProtocolBase(nodes, "node")

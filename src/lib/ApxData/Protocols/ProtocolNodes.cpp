@@ -26,7 +26,7 @@
 #include <App/AppLog.h>
 
 #include <Mandala/Mandala.h>
-#include <Xbus/XbusNode.h>
+#include <xbus/XbusNode.h>
 
 ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
     : ProtocolBase(vehicle, "nodes")

@@ -29,7 +29,7 @@
 #include <QGeoRectangle>
 #include <QtCore>
 
-#include <Xbus/XbusMission.h>
+#include <xbus/XbusMission.h>
 
 class MissionItem : public Fact
 {

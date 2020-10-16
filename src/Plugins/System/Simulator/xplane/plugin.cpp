@@ -4,25 +4,20 @@
 #include "XPLMUtilities.h"
 #include <algorithm>
 #include <cstring>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 //---------------
 #include <version.h>
 
-#include <Mandala/MandalaBundles.h>
-#include <Mandala/MandalaMetaTree.h>
+#include <mandala/MandalaBundles.h>
+#include <mandala/MandalaMetaTree.h>
 
-#include <Xbus/XbusNode.h>
-#include <Xbus/XbusPacket.h>
+#include <xbus/XbusNode.h>
+#include <xbus/XbusPacket.h>
 
-#include <Xbus/tcp/tcp_server.h>
 #include <tcp_ports.h>
-
-#include <mathlib/mathlib.h>
-#include <matrix/math.hpp>
-
-using namespace math;
-using namespace matrix;
+#include <xbus/tcp/tcp_server.h>
 
 static xbus::tcp::Server tcp;
 
@@ -96,56 +91,33 @@ void parse_sensors(void)
     elapsed_s = elapsed;
 
     // AHRS
+    sim_bundle.att_deg[0] = XPLMGetDataf(xp.roll);
+    sim_bundle.att_deg[1] = XPLMGetDataf(xp.pitch);
+    sim_bundle.att_deg[2] = XPLMGetDataf(xp.yaw);
 
-    Vector3f att_rad = {wrap_pi(radians((float) XPLMGetDataf(xp.roll))),
-                        wrap_pi(radians((float) XPLMGetDataf(xp.pitch))),
-                        wrap_pi(radians((float) XPLMGetDataf(xp.yaw)))};
-    att_rad.copyTo(sim_bundle.att);
+    sim_bundle.gyro_deg[0] = XPLMGetDataf(xp.p);
+    sim_bundle.gyro_deg[1] = XPLMGetDataf(xp.q);
+    sim_bundle.gyro_deg[2] = XPLMGetDataf(xp.r);
 
-    Quatf dq{Eulerf(att_rad)};
+    sim_bundle.acc_ned[0] = -XPLMGetDataf(xp.az);
+    sim_bundle.acc_ned[1] = +XPLMGetDataf(xp.ax);
+    sim_bundle.acc_ned[2] = -XPLMGetDataf(xp.ay) - 9.81f;
 
-    Vector3f acc_ned = {
-        -(float) XPLMGetDataf(xp.az),        //N=-vz
-        +(float) XPLMGetDataf(xp.ax),        //E=vx
-        -(float) XPLMGetDataf(xp.ay) - 9.81f //D=-vy
-    };
+    sim_bundle.lat_deg = XPLMGetDatad(xp.lat);
+    sim_bundle.lon_deg = XPLMGetDatad(xp.lon);
+    sim_bundle.hmsl = XPLMGetDataf(xp.alt);
 
-    Vector3f acc = dq.conjugate_inversed(acc_ned);
-
-    acc.copyTo(sim_bundle.acc);
-
-    Vector3f gyro_rad = {radians((float) XPLMGetDataf(xp.p)),
-                         radians((float) XPLMGetDataf(xp.q)),
-                         radians((float) XPLMGetDataf(xp.r))};
-
-    gyro_rad.copyTo(sim_bundle.gyro);
-
-    Vector3f llh = {wrap_pi(radians((float) XPLMGetDatad(xp.lat))),
-                    wrap_pi(radians((float) XPLMGetDatad(xp.lon))),
-                    (float) XPLMGetDatad(xp.alt)};
-
-    /*Vector3f xyz = {(float) XPLMGetDatad(xp.x),
-                    (float) XPLMGetDatad(xp.y),
-                    (float) XPLMGetDatad(xp.z)};
-    double lat, lon, hmsl;
-    XPLMLocalToWorld(xyz(0), xyz(1), xyz(2), &lat, &lon, &hmsl);
-    llh = {math::radians((float) lat), math::radians((float) lon), (float) hmsl};*/
-    llh.copyTo(sim_bundle.llh);
-
-    Vector3f vel_ned = {
-        -(float) XPLMGetDataf(xp.vz), //N=-vz
-        +(float) XPLMGetDataf(xp.vx), //E=vx
-        -(float) XPLMGetDataf(xp.vy)  //D=vy
-    };
-    vel_ned.copyTo(sim_bundle.vel);
+    sim_bundle.vel_ned[0] = -XPLMGetDataf(xp.vz);
+    sim_bundle.vel_ned[1] = +XPLMGetDataf(xp.vx);
+    sim_bundle.vel_ned[2] = -XPLMGetDataf(xp.vy);
 
     // AGL
-    sim_bundle.agl = (float) XPLMGetDataf(xp.agl);
+    sim_bundle.agl = XPLMGetDataf(xp.agl);
 
     // RPM
     static float a[8];
     XPLMGetDatavf(xp.rpm, a, 0, 1);
-    sim_bundle.rpm = degrees(a[0] * 60.f) / 360.f;
+    sim_bundle.rpm = (a[0] * 60.f) / (M_PI * 2.f);
 
     // Airdata
     sim_bundle.airspeed = 0.51444f * (float) XPLMGetDataf(xp.airspeed); //knots to mps
