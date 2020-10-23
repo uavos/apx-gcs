@@ -5,20 +5,16 @@ import ApxApp
 
 ApxApp.ApxLibrary {
 
-    property stringList names: {
-        var list = [
-                    "xbus",
-                    "xbus.uart",
-                    "xbus.tcp",
-                    "xbus.telemetry",
-                    "crc",
-                    "common",
-                    "mandala",
-                    "mandala.backport",
-        ]
-
-        return list
-    }
+    property stringList names: [
+        "common",
+        "crc",
+        "xbus",
+        "xbus.uart",
+        "xbus.tcp",
+        "xbus.telemetry",
+        "mandala",
+        "mandala.backport",
+    ]
 
     Export {
         Depends { name: "cpp" }

@@ -6,8 +6,8 @@ GCS - APX Ground Control Software
 
 ```
 mkdir apx && cd apx
-git clone git@github.com:uavos/apx-gcs.git gcs
-git clone git@github.com:uavos/apx-lib.git lib
+git clone --recurse-submodules git@github.com:uavos/apx-gcs.git gcs
+git clone --recurse-submodules git@github.com:uavos/apx-lib.git lib
 ```
 
 Use `gcs/gcs.qbs` to open and build project in QtCreator.
