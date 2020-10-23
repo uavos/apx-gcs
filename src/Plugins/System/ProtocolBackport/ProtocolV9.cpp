@@ -22,8 +22,8 @@
  */
 #include "ProtocolV9.h"
 
-#include <Xbus/XbusPacket.h>
-#include <Xbus/XbusVehicle.h>
+#include <xbus/XbusPacket.h>
+#include <xbus/XbusVehicle.h>
 
 #include <Mandala/backport/MandalaBackport.h>
 

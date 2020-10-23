@@ -25,8 +25,8 @@
 #include <Fact/Fact.h>
 #include <Mandala/MandalaMetaBase.h>
 
-#include <Xbus/XbusStreamReader.h>
-#include <Xbus/XbusStreamWriter.h>
+#include <xbus/XbusStreamReader.h>
+#include <xbus/XbusStreamWriter.h>
 
 class MandalaFactStreamBase
 {
