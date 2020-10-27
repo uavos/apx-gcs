@@ -1,4 +1,4 @@
-﻿
+
 Project {
     references: [
         "ApxCore/ApxCore.qbs",

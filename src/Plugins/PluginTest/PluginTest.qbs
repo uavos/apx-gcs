@@ -1,4 +1,4 @@
-﻿import qbs.FileInfo
+import qbs.FileInfo
 
 import ApxApp
 

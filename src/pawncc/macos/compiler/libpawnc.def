@@ -1,7 +1,0 @@
-LIBRARY       PAWNC
-
-EXPORTS Compile
-        pc_compile
-        pc_addconstant
-        pc_addtag
-        pc_enablewarning

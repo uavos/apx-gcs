@@ -1,4 +1,4 @@
-﻿import ApxApp
+import ApxApp
 
 Project {
 

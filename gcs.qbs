@@ -15,9 +15,6 @@ Project {
         "src/lib/lib.qbs",
         "src/main/main.qbs",
         "src/Plugins/Plugins.qbs",
-        "src/pawncc/pawncc.qbs",
-
-        //"../fw/sim.qbs",
 
         //"deploy/deploy.qbs",
         //"translations/translations.qbs",

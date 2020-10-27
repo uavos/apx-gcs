@@ -1,20 +1,15 @@
-/*
- * Copyright (C) 2015 Aliaksei Stratsilatau <sa@uavos.com>
- *
- * This file is part of the UAV Open System Project
- *  http://www.uavos.com/
- *
- * GCU QtScript functions
- * http://en.wikipedia.org/wiki/QtScript
- * QtScript is a scripting engine that has been part of the Qt cross-platform
- * application framework since version 4.3.0.
- * The scripting language is based on the ECMAScript standard with a few
- * extensions, such as QObject-style signal and slot connections.
- * Uses JavaScriptCore.
- *
- * This script is included in the context on gcu startup.
- * User functions can be defined in .gcu/scripts/gcu.js which is also included.
-*/
+/**
+ * APX Autopilot project <http://docs.uavos.com>
+ * 
+ * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
+ * All rights reserved
+ * 
+ * This file is part of APX Ground Control.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted exclusively under the terms of the
+ * LGPLv3 license. You should have received a copy of the license with
+ * this file. If not, please visit: http://docs.uavos.com/gcs.
+ */
 
 function limit(v,min,max)
 {
