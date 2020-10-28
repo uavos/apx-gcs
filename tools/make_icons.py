@@ -31,8 +31,6 @@ import cssutils
 import simplejson
 
 
-
-
 # Parse commandline
 parser = argparse.ArgumentParser(description='Material Design Icons CSS parser for the APX system.')
 parser.add_argument('--src', action='store', required=True, help='source CSS file path')
@@ -59,8 +57,6 @@ for rule in css:
         for item in rule.style:
             if item.name == 'content':
                 s = item.value.strip('\"')
-                if s.startswith('\\F'):
-                    continue
                 icons[icon] = s.encode('utf8')
 
 with open(args.dest, 'w') as f:

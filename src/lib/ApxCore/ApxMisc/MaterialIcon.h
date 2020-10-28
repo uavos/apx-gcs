@@ -32,10 +32,10 @@ class MaterialIcon : public QIcon
 public:
     MaterialIcon(const QString &name, const QColor &color = QColor(Qt::white));
 
-    static QChar getChar(const QString &name);
+    static QString getChar(const QString &name);
 
 private:
-    static QHash<QString, QChar> map;
+    static QHash<QString, QString> map;
     static void updateMap();
 
     QIcon icon(const QString &name, const QColor &color) const;
@@ -50,14 +50,14 @@ public:
     virtual QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
     void setFontFamily(const QString &family);
     // define icon code using QChar or implicit using ushort ...
-    void setLetter(const QChar &letter);
+    void setLetter(const QString &letter);
     // You can set a base color. I don't advice. Keep system color
     void setBaseColor(const QColor &baseColor);
     virtual QIconEngine *clone() const override;
 
 private:
     QString mFontFamily;
-    QChar mLetter;
+    QString mLetter;
     QColor mBaseColor;
 };
 //=============================================================================

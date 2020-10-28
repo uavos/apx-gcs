@@ -21,54 +21,44 @@
  */
 #pragma once
 
+#include <App/AppNotify.h>
+#include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
+#include <QtCore>
 
-class ScriptCompiler : public QObject
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+
+class ScriptCompiler : public Fact
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString title MEMBER _title);
-    Q_PROPERTY(QString source MEMBER _source);
+    Q_PROPERTY(QString cc MEMBER m_cc);
 
 public:
-    explicit ScriptCompiler(Fact *fact);
-
-    inline QString title() const { return _title; }
-    inline QString source() const { return _source; }
-    inline QByteArray code() const { return _code; }
-
-    inline bool error() const { return _error; }
-    inline QString log() const { return _log; }
-
-    QMap<QString, QString> constants;
+    explicit ScriptCompiler(QObject *parent = nullptr);
 
 private:
-    //compiler
-    QProcess pawncc;
-    QTemporaryFile tmpFile;
-    QString outFileName;
+    QNetworkAccessManager net;
 
-    QString _title;
-    QString _source;
-    QByteArray _code;
+    bool lookup();
 
-    bool _error;
-    QString _log;
+    QString m_cc;
 
-    Fact *_fact;
+    QString m_version;
+    QString m_platform;
+    QString m_sdk;
 
-    QString _value_s;
+    QDir m_dir;
 
-    bool _compile(QString src);
-
-    void _updateFactText();
+    void extract(QString fileName);
 
 private slots:
-    void factValueChanged();
+    void download();
 
-public slots:
-    void setSource(QString title, QString source);
+    void responseDownload();
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
-signals:
-    void compiled();
+    void extractFinished(int exitCode, QProcess::ExitStatus exitStatus);
 };

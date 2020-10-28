@@ -113,7 +113,7 @@ NodeField::NodeField(Fact *parent,
     case xbus::node::conf::script:
         setDataType(Text);
         setUnits("script");
-        _script = new ScriptCompiler(this);
+        _script = new NodeScript(this);
         break;
     }
 }

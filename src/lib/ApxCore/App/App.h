@@ -80,7 +80,7 @@ public:
 
     Q_INVOKABLE static QFont getMonospaceFont();
     Q_INVOKABLE static bool isFixedPitch(const QFont &font);
-    Q_INVOKABLE static QChar materialIconChar(const QString &name);
+    Q_INVOKABLE static QString materialIconChar(const QString &name);
 
     QStringList languages() const { return m_languages; }
 

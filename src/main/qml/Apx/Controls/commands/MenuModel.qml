@@ -78,7 +78,7 @@ Fact {
     }
     Fact {
         title: qsTr("Service")
-        icon: "settings"
+        icon: "cog"
         Fact {
             title: qsTr("AHRS")
             Fact { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; onTriggered: application.jsexec(descr); }

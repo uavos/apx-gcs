@@ -26,7 +26,7 @@
 
 #include <Protocols/ProtocolNode.h>
 
-#include "ScriptCompiler.h"
+#include "NodeScript.h"
 
 class NodeItem;
 
@@ -34,7 +34,7 @@ class NodeField : public Fact
 {
     Q_OBJECT
 
-    Q_PROPERTY(ScriptCompiler *script MEMBER _script);
+    Q_PROPERTY(NodeScript *script MEMBER _script);
 
 public:
     explicit NodeField(Fact *parent,
@@ -64,7 +64,7 @@ private:
     QString _fpath;
     QString _help;
 
-    ScriptCompiler *_script{};
+    NodeScript *_script{};
 
 private slots:
     void updateStatus();

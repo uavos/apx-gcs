@@ -38,8 +38,9 @@ Fact::Fact(QObject *parent,
            Flags flags,
            const QString &icon)
     : FactData(nullptr, name, title, descr, flags)
-    , m_icon(icon)
 {
+    setIcon(icon);
+
     //models
     connect(this, &Fact::actionsUpdated, this, &Fact::updateModels);
     connect(this, &Fact::itemInserted, this, &Fact::updateModels);
@@ -797,6 +798,12 @@ void Fact::setIcon(const QString &v)
         return;
     m_icon = v;
     emit iconChanged();
+
+    // test availability
+    if (!v.isEmpty()) {
+        if (App::materialIconChar(v).isEmpty())
+            qWarning() << path();
+    }
 }
 Fact *Fact::binding() const
 {

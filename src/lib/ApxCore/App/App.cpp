@@ -471,7 +471,7 @@ QFont App::getMonospaceFont()
     return font;
 }
 //=============================================================================
-QChar App::materialIconChar(const QString &name)
+QString App::materialIconChar(const QString &name)
 {
     return MaterialIcon::getChar(name);
 }

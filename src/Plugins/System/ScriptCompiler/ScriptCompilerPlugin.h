@@ -21,45 +21,16 @@
  */
 #pragma once
 
-#include "FactDelegateDialog.h"
+#include "ScriptCompiler.h"
+#include <App/PluginInterface.h>
+#include <QtCore>
 
-class NodeScript;
-class SourceEdit;
-
-class FactDelegateScript : public FactDelegateDialog
+class ScriptCompilerPlugin : public PluginInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    explicit FactDelegateScript(Fact *fact, QWidget *parent = 0);
-
-protected:
-    bool aboutToUpload(void);
-    bool aboutToClose(void);
-
-private:
-    bool saveToFile(QString fname);
-    bool loadFromFile(QString fname);
-
-    NodeScript *scriptCompiler;
-
-    QAction *aCompile;
-    QAction *aLoad;
-    QAction *aSave;
-
-    SourceEdit *editor;
-    QListWidget *logList;
-
-    QLineEdit *eTitle;
-
-    //data
-private slots:
-    void aSave_triggered(void);
-    void aLoad_triggered(void);
-
-    void logView_itemClicked(QListWidgetItem *item);
-
-    void updateLog();
-
-    void updateEditorText();
-    void updateFactValue();
+    int flags() override { return Feature | System; }
+    QObject *createControl() override { return new ScriptCompiler(); }
 };

@@ -19,26 +19,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "ScriptCompiler.h"
+#include "NodeScript.h"
+#include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 #include <Vehicles/Vehicles.h>
 
-ScriptCompiler::ScriptCompiler(Fact *fact)
+NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
     , _fact(fact)
 {
-    tmpFile.open();
-    outFileName = tmpFile.fileName() + "-compiled.amx";
-    pawncc.setProgram(QCoreApplication::applicationDirPath() + "/pawncc");
-    pawncc.setProcessChannelMode(QProcess::MergedChannels);
+    srcFile.open();
+    outFileName = srcFile.fileName() + "-compiled.amx";
+    proc.setProcessChannelMode(QProcess::MergedChannels);
 
-    connect(fact, &Fact::valueChanged, this, &ScriptCompiler::factValueChanged, Qt::QueuedConnection);
+    connect(fact, &Fact::valueChanged, this, &NodeScript::factValueChanged, Qt::QueuedConnection);
 
     _updateFactText();
 }
-void ScriptCompiler::factValueChanged()
+void NodeScript::factValueChanged()
 {
     QString value = _fact->value().toString();
     if (_value_s == value)
@@ -68,7 +68,7 @@ void ScriptCompiler::factValueChanged()
     _updateFactText();
 }
 
-void ScriptCompiler::_updateFactText()
+void NodeScript::_updateFactText()
 {
     QString text;
     if (error())
@@ -76,7 +76,7 @@ void ScriptCompiler::_updateFactText()
     else if (code().isEmpty())
         text = tr("empty");
     else {
-        size_t size = code().size() + qCompress(source().toLocal8Bit(), 9).size();
+        size_t size = code().size(); // + qCompress(source().toLocal8Bit(), 9).size();
         text = AppRoot::capacityToString(size, 2);
         if (!_title.isEmpty())
             text = QString("%1 (%2)").arg(_title).arg(text);
@@ -84,7 +84,7 @@ void ScriptCompiler::_updateFactText()
     _fact->setText(text);
 }
 
-void ScriptCompiler::setSource(QString title, QString source)
+void NodeScript::setSource(QString title, QString source)
 {
     //qDebug() << "set src:" << title;
     _title = title.simplified().trimmed();
@@ -95,24 +95,66 @@ void ScriptCompiler::setSource(QString title, QString source)
     _fact->setValue(st.join(','));
 }
 
-bool ScriptCompiler::_compile(QString src)
+bool NodeScript::_compile(QString src)
 {
     qDebug() << "compiling:" << _title << src.size();
     _code.clear();
     _error = false;
-    tmpFile.resize(0);
-    tmpFile.flush();
+    srcFile.resize(0);
+    srcFile.flush();
     QFile::remove(outFileName);
     if (src.trimmed().isEmpty()) {
         emit compiled();
         return true;
     }
     //qDebug()<<src;
-    QTextStream s(&tmpFile);
+    QTextStream s(&srcFile);
     s << src;
     s.flush();
-    tmpFile.flush();
+    srcFile.flush();
+
     //process
+    _compile_wasm();
+
+    bool rv = true;
+    if (!proc.waitForFinished()) {
+        apxMsgW() << "script compiler error:" << proc.errorString();
+        rv = false;
+    } else if (proc.exitCode() != 0)
+        rv = false;
+    _log = proc.isOpen() ? proc.readAll() : QString();
+    if (!rv)
+        _log.append("\n\n" + proc.errorString());
+
+    //log file
+    QTemporaryFile logFile;
+    logFile.setFileTemplate(QDir::tempPath() + "/pawncc_log");
+    logFile.setAutoRemove(false);
+    if (logFile.open()) {
+        QTextStream s(&logFile);
+        s << proc.program() + " " + proc.arguments().join(' ');
+        s << "\n\n";
+        s << _log;
+        s.flush();
+        logFile.flush();
+        logFile.close();
+    }
+
+    if (rv) {
+        //read out data
+        QFile file(outFileName);
+        if (file.open(QFile::ReadOnly)) {
+            _code = file.readAll();
+        }
+    }
+    _error = !rv;
+    emit compiled();
+    //qDebug()<<"compile"<<rv<<m_outData.size();//<<getLog();
+    return rv;
+}
+
+bool NodeScript::_compile_pawn()
+{
     QStringList args;
     args << "-d0";
     args << "-O3";
@@ -139,42 +181,38 @@ bool ScriptCompiler::_compile(QString src)
     args << "-i" + AppDirs::scripts().absoluteFilePath("pawn");
     args << "-i" + AppDirs::scripts().absoluteFilePath(".");
     args << "-o" + outFileName;
-    args << tmpFile.fileName();
-    pawncc.setArguments(args);
-    pawncc.start();
-    bool rv = true;
-    if (!pawncc.waitForFinished()) {
-        apxMsgW() << "pawncc error:" << pawncc.errorString();
-        rv = false;
-    } else if (pawncc.exitCode() != 0)
-        rv = false;
-    _log = pawncc.isOpen() ? pawncc.readAll() : QString();
-    if (!rv)
-        _log.append("\n\n" + pawncc.errorString());
+    args << srcFile.fileName();
+    proc.start(QCoreApplication::applicationDirPath() + "/pawncc", args);
+    return true;
+}
 
-    //log file
-    QTemporaryFile logFile;
-    logFile.setFileTemplate(QDir::tempPath() + "/pawncc_log");
-    logFile.setAutoRemove(false);
-    if (logFile.open()) {
-        QTextStream s(&logFile);
-        s << pawncc.program() + " " + pawncc.arguments().join(' ');
-        s << "\n\n";
-        s << _log;
-        s.flush();
-        logFile.flush();
-        logFile.close();
+bool NodeScript::_compile_wasm()
+{
+    QString cc = "wasmcc";
+    AppPlugin *p = App::plugin("ScriptCompiler");
+    if (p) {
+        QString pcc = p->control->property("cc").toString();
+        if (!pcc.isEmpty() && QFile::exists(pcc))
+            cc = pcc;
     }
 
-    if (rv) {
-        //read out data
-        QFile file(outFileName);
-        if (file.open(QFile::ReadOnly)) {
-            _code = file.readAll();
-        }
-    }
-    _error = !rv;
-    emit compiled();
-    //qDebug()<<"compile"<<rv<<m_outData.size();//<<getLog();
-    return rv;
+    QStringList args;
+    args << "--sysroot=" + AppDirs::res().absoluteFilePath("scripts/wasm/sysroot");
+    args << "-O3";
+    args << "-nostdlib";
+    args << "-z"
+         << "stack-size=8192";
+    args << "-Wl,--initial-memory=65536";
+    args << "-Wl,--export=main";
+    args << "-o" + outFileName;
+    args << srcFile.fileName();
+    args << "-Wl,--export=__heap_base,--export=__data_end";
+    args << "-Wl,--no-entry";
+    args << "-Wl,--strip-all";
+    args << "-Wl,--allow-undefined";
+
+    qDebug() << args;
+
+    proc.start(cc, args);
+    return true;
 }

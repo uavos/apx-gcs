@@ -62,7 +62,7 @@ void Sites::createEditor(QVariantMap item)
     //    if (f_edit)
     //        f_edit->remove();
     f_edit = new SiteEdit(this, "edit", tr("Edit site"), tr("Edit area parameters"), item);
-    f_edit->setIcon("settings");
+    f_edit->setIcon("cog");
     connect(f_edit, &SiteEdit::removed, this, [this]() { f_edit = nullptr; });
     connect(f_edit, &SiteEdit::removeTriggered, this, &Sites::dbRemoveSite);
     connect(f_edit, &SiteEdit::siteEdited, this, &Sites::dbUpdateSite);

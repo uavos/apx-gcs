@@ -24,7 +24,7 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <ApxMisc/MaterialIcon.h>
-#include <Nodes/ScriptCompiler.h>
+#include <Nodes/NodeScript.h>
 #include <Vehicles/Vehicles.h>
 #include <QtWidgets>
 
@@ -69,8 +69,8 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
 
     setWidget(w);
 
-    scriptCompiler = qobject_cast<ScriptCompiler *>(fact->property("script").value<QObject *>());
-    connect(scriptCompiler, &ScriptCompiler::compiled, this, &FactDelegateScript::updateLog);
+    scriptCompiler = qobject_cast<NodeScript *>(fact->property("script").value<QObject *>());
+    connect(scriptCompiler, &NodeScript::compiled, this, &FactDelegateScript::updateLog);
     updateLog();
 
     editor->addKeywords(scriptCompiler->constants.keys());
@@ -124,9 +124,9 @@ void FactDelegateScript::aSave_triggered(void)
     dlg.setAcceptMode(QFileDialog::AcceptSave);
     dlg.setOption(QFileDialog::DontConfirmOverwrite, false);
     if (!eTitle->text().isEmpty())
-        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".p"));
+        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".c"));
     QStringList filters;
-    filters << tr("Script files") + " (*.p)" << tr("Any files") + " (*)";
+    filters << tr("Source files") + " (*.c)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
@@ -138,9 +138,9 @@ void FactDelegateScript::aLoad_triggered(void)
     QFileDialog dlg(this, aLoad->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptOpen);
     if (!eTitle->text().isEmpty())
-        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".p"));
+        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".c"));
     QStringList filters;
-    filters << tr("Script files") + " (*.p)" << tr("Any files") + " (*)";
+    filters << tr("Source files") + " (*.c)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;

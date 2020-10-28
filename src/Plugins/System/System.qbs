@@ -12,6 +12,7 @@ Project {
         "Terminal",
         //"Blackbox",
         "Shortcuts",
+        "ScriptCompiler",
         //"ProtocolBackport",
     ]
 

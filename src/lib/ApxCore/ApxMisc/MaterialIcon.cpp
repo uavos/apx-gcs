@@ -27,7 +27,7 @@
 #include <QPalette>
 #include <QSvgRenderer>
 //=============================================================================
-QHash<QString, QChar> MaterialIcon::map;
+QHash<QString, QString> MaterialIcon::map;
 
 MaterialIcon::MaterialIcon(const QString &name, const QColor &color)
     : QIcon(icon(name, color))
@@ -37,7 +37,7 @@ MaterialIcon::MaterialIcon(const QString &name, const QColor &color)
 //=============================================================================
 QIcon MaterialIcon::icon(const QString &name, const QColor &color) const
 {
-    QChar c = getChar(name);
+    QString c = getChar(name);
     if (c.isNull()) {
         return QIcon();
     }
@@ -48,15 +48,15 @@ QIcon MaterialIcon::icon(const QString &name, const QColor &color) const
     return QIcon(engine);
 }
 //=============================================================================
-QChar MaterialIcon::getChar(const QString &name)
+QString MaterialIcon::getChar(const QString &name)
 {
     if (map.isEmpty())
         updateMap();
 
     if (name.isEmpty())
         return QChar();
-    QChar c = map.value(name);
-    if (c == '\0') {
+    QString c = map.value(name);
+    if (c.isEmpty()) {
         apxConsoleW() << "Material icon is missing:" << name;
     }
     return c;
@@ -77,7 +77,7 @@ void MaterialIcon::updateMap()
         QJsonObject obj = json.object();
         for (auto v = obj.constBegin(); v != obj.constEnd(); ++v) {
             QString s = v.value().toVariant().toString(); //.toString();
-            QChar c = 0;
+            QString c = 0;
             if (s.size() == 1) {
                 c = s.at(0);
             } else if (s.startsWith("\\u")) {
@@ -85,17 +85,9 @@ void MaterialIcon::updateMap()
                 s = QString::fromStdWString(str);
                 if (s.size() == 1)
                     c = s.at(0);
-            } else if (s.startsWith("\\F", Qt::CaseInsensitive)) {
-                /*QTextCodec *codec = QTextCodec::codecForName("UTF-32BE");
-                QString sc = codec->toUnicode(s.mid(1).prepend("\\U").toUtf8());
-                uint v = s.mid(1).prepend("0x").toUInt(nullptr, 16);
-                c = QChar(v); //sc.at(0);*/
-                /*bool ok;
-                uint v = s.mid(1).toUInt(&ok, 16);
-                if (ok)
-                    c = v;*/
-
-                //qDebug() << s << sc;
+            } else if (s.startsWith("\\", Qt::CaseInsensitive)) {
+                uint code = s.mid(1).toUInt(nullptr, 16);
+                c = QString::fromUcs4(&code, 1);
             }
             if (c == '\0') {
                 //qWarning() << v.key() << s << v.value() << s.size();
@@ -155,7 +147,7 @@ void QFontIconEngine::setFontFamily(const QString &family)
 {
     mFontFamily = family;
 }
-void QFontIconEngine::setLetter(const QChar &letter)
+void QFontIconEngine::setLetter(const QString &letter)
 {
     mLetter = letter;
 }

@@ -54,7 +54,7 @@ AppMenu::AppMenu(Fact *parent)
     f->setOpt("role", QAction::AboutRole);
     connect(f, &Fact::triggered, App::instance(), &App::about);
 
-    f = new Fact(app, "preferences", tr("Preferences"), "", NoFlags, "settings-outline");
+    f = new Fact(app, "preferences", tr("Preferences"), "", NoFlags, "cog-outline");
     f->setOpt("role", QAction::PreferencesRole);
     connect(f, &Fact::triggered, AppRoot::instance(), &Fact::trigger);
 

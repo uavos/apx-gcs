@@ -30,7 +30,7 @@ AppSettings::AppSettings(Fact *parent)
            tr("Preferences"),
            tr("Application settings"),
            Group | FlatModel,
-           "settings")
+           "cog")
 {
     _instance = this;
 
