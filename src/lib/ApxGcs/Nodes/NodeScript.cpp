@@ -30,8 +30,9 @@ NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
     , _fact(fact)
 {
+    srcFile.setFileTemplate("XXXXXX.cpp");
     srcFile.open();
-    outFileName = srcFile.fileName() + "-compiled.amx";
+    outFileName = srcFile.fileName() + ".code";
     proc.setProcessChannelMode(QProcess::MergedChannels);
 
     connect(fact, &Fact::valueChanged, this, &NodeScript::factValueChanged, Qt::QueuedConnection);
@@ -128,7 +129,7 @@ bool NodeScript::_compile(QString src)
 
     //log file
     QTemporaryFile logFile;
-    logFile.setFileTemplate(QDir::tempPath() + "/pawncc_log");
+    logFile.setFileTemplate(QDir::tempPath() + "/script_log");
     logFile.setAutoRemove(false);
     if (logFile.open()) {
         QTextStream s(&logFile);
@@ -211,7 +212,7 @@ bool NodeScript::_compile_wasm()
     args << "-Wl,--strip-all";
     args << "-Wl,--allow-undefined";
 
-    qDebug() << args;
+    //qDebug() << args;
 
     proc.start(cc, args);
     return true;

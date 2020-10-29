@@ -45,7 +45,7 @@ public:
 private:
     //compiler
     QProcess proc;
-    QTemporaryFile srcFile{"XXXXXX.c"};
+    QTemporaryFile srcFile;
     QString outFileName;
 
     QString _title;

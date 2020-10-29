@@ -124,9 +124,9 @@ void FactDelegateScript::aSave_triggered(void)
     dlg.setAcceptMode(QFileDialog::AcceptSave);
     dlg.setOption(QFileDialog::DontConfirmOverwrite, false);
     if (!eTitle->text().isEmpty())
-        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".c"));
+        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".cpp"));
     QStringList filters;
-    filters << tr("Source files") + " (*.c)" << tr("Any files") + " (*)";
+    filters << tr("Source files") + " (*.cpp)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
@@ -138,9 +138,9 @@ void FactDelegateScript::aLoad_triggered(void)
     QFileDialog dlg(this, aLoad->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptOpen);
     if (!eTitle->text().isEmpty())
-        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".c"));
+        dlg.selectFile(AppDirs::scripts().filePath(eTitle->text() + ".cpp"));
     QStringList filters;
-    filters << tr("Source files") + " (*.c)" << tr("Any files") + " (*)";
+    filters << tr("Source files") + " (*.cpp)" << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
