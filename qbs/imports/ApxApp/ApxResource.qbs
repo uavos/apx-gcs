@@ -10,4 +10,5 @@ Group {
     excludeFiles: [
         "**/.DS_Store",
     ]
+    fileTags: ["resources"]
 }

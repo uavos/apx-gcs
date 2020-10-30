@@ -1,5 +1,6 @@
 import qbs
 import ApxApp
+import qbs.FileInfo
 
 ApxApp.ApxPlugin {
 
@@ -17,9 +18,12 @@ ApxApp.ApxPlugin {
     ]
 
     ApxApp.ApxResource {
-        src: "scripts"
+        src: "sysroot"
+        prefix: FileInfo.joinPaths(project.libDir, "wasm/")
+        qbs.installDir: FileInfo.joinPaths(app.app_data_path, "scripts")
+        qbs.installSourceBase: prefix
         files: [
-            "wasm/**",
+            "sysroot/**",
         ]
     }
 

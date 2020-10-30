@@ -8,6 +8,7 @@ Project {
     ]
 
     property path resorcesDir: FileInfo.joinPaths(sourceDirectory, "resources")
+    property path libDir: FileInfo.joinPaths(sourceDirectory, "../lib")
 
     property string target_arch: "x86_64"
 
