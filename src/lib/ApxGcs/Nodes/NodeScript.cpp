@@ -30,15 +30,49 @@ NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
     , _fact(fact)
 {
-    srcFile.setFileTemplate("XXXXXX.cpp");
+    srcFile.setFileTemplate(srcFile.fileTemplate() + ".cpp");
     srcFile.open();
-    outFileName = srcFile.fileName() + ".code";
+    outFileName = QFileInfo(srcFile.fileName())
+                      .absoluteDir()
+                      .absoluteFilePath(QFileInfo(srcFile.fileName()).baseName() + ".wasm");
     proc.setProcessChannelMode(QProcess::MergedChannels);
+
+    _update_cc_args();
 
     connect(fact, &Fact::valueChanged, this, &NodeScript::factValueChanged, Qt::QueuedConnection);
 
     _updateFactText();
 }
+void NodeScript::_update_cc_args()
+{
+    cc_args.clear();
+    QFile ftasks(AppDirs::res().filePath("scripts/.vscode/tasks.json"));
+    if (ftasks.open(QFile::ReadOnly | QFile::Text)) {
+        QJsonDocument json = QJsonDocument::fromJson(ftasks.readAll());
+        ftasks.close();
+        qDebug() << json;
+        foreach (QJsonValue v, json["tasks"].toArray()) {
+            if (!v["group"]["isDefault"].toBool())
+                continue;
+            QHash<QString, QString> map;
+            map.insert("config:wasm.sysroot", AppDirs::scripts().absoluteFilePath("sysroot"));
+            map.insert("fileDirname", QFileInfo(srcFile.fileName()).absolutePath());
+            map.insert("fileBasenameNoExtension", QFileInfo(srcFile.fileName()).baseName());
+            map.insert("file", srcFile.fileName());
+            for (auto a : v["args"].toArray().toVariantList()) {
+                QString s = a.toString();
+                if (s.contains("${")) {
+                    for (auto k : map.keys())
+                        s.replace(QString("${%1}").arg(k), map.value(k));
+                }
+                cc_args.append(s);
+            }
+            break;
+        }
+    }
+    qDebug() << cc_args;
+}
+
 void NodeScript::factValueChanged()
 {
     QString value = _fact->value().toString();
@@ -154,39 +188,6 @@ bool NodeScript::_compile(QString src)
     return rv;
 }
 
-bool NodeScript::_compile_pawn()
-{
-    QStringList args;
-    args << "-d0";
-    args << "-O3";
-    args << "-v2";
-    args << "-r";
-    //fill mandala constants
-    if (constants.isEmpty()) {
-        Vehicle *vehicle = Vehicles::instance()->f_local;
-        if (vehicle) {
-            for (auto f : vehicle->f_mandala->uid_map.values()) {
-                QString s = f->mpath().replace('.', '_');
-                constants.insert(s, QString::number(f->uid()));
-            }
-            for (auto s : vehicle->f_mandala->constants.keys()) {
-                constants.insert(s, vehicle->f_mandala->constants.value(s).toString());
-            }
-        }
-    }
-
-    for (auto s : constants.keys()) {
-        args << s + "=" + constants.value(s);
-    }
-    args << "-i" + AppDirs::res().absoluteFilePath("scripts/pawn/include");
-    args << "-i" + AppDirs::scripts().absoluteFilePath("pawn");
-    args << "-i" + AppDirs::scripts().absoluteFilePath(".");
-    args << "-o" + outFileName;
-    args << srcFile.fileName();
-    proc.start(QCoreApplication::applicationDirPath() + "/pawncc", args);
-    return true;
-}
-
 bool NodeScript::_compile_wasm()
 {
     QString cc = "wasmcc";
@@ -197,23 +198,53 @@ bool NodeScript::_compile_wasm()
             cc = pcc;
     }
 
-    QStringList args;
-    args << "--sysroot=" + AppDirs::res().absoluteFilePath("scripts/wasm/sysroot");
-    args << "-O3";
-    args << "-nostdlib";
-    args << "-z"
-         << "stack-size=8192";
-    args << "-Wl,--initial-memory=65536";
-    args << "-Wl,--export=main";
-    args << "-o" + outFileName;
-    args << srcFile.fileName();
-    args << "-Wl,--export=__heap_base,--export=__data_end";
-    args << "-Wl,--no-entry";
-    args << "-Wl,--strip-all";
-    args << "-Wl,--allow-undefined";
-
-    //qDebug() << args;
-
-    proc.start(cc, args);
+    proc.start(cc, cc_args);
     return true;
+}
+
+bool NodeScript::saveToFile(QString fname)
+{
+    QFile file(fname);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        apxMsgW() << tr("Cannot write file")
+                  << QString("%1:\n%2.").arg(fname).arg(file.errorString());
+        return false;
+    }
+    if (title() != QFileInfo(fname).baseName())
+        setSource(QFileInfo(fname).baseName(), source());
+    QTextStream s(&file);
+    s << source();
+    s.flush();
+    file.close();
+    _updateWatcher(fname);
+    return true;
+}
+bool NodeScript::loadFromFile(QString fname)
+{
+    QFile file(fname);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        apxMsgW() << tr("Cannot read file")
+                  << QString("%1:\n%2.").arg(fname).arg(file.errorString());
+        return false;
+    }
+    QTextStream s(&file);
+    setSource(QFileInfo(fname).baseName(), s.readAll());
+    file.close();
+    _updateWatcher(fname);
+    return true;
+}
+void NodeScript::_updateWatcher(QString fileName)
+{
+    if (_watcher) {
+        if (_watcher->files().contains(fileName))
+            return;
+        _watcher->deleteLater();
+    }
+    _watcher = new QFileSystemWatcher(this);
+    _watcher->addPath(fileName);
+    connect(_watcher, &QFileSystemWatcher::fileChanged, this, &NodeScript::fileChanged);
+}
+void NodeScript::fileChanged(const QString &path)
+{
+    loadFromFile(path);
 }

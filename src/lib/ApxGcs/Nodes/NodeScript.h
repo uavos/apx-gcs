@@ -42,6 +42,9 @@ public:
 
     QMap<QString, QString> constants;
 
+    bool saveToFile(QString fname);
+    bool loadFromFile(QString fname);
+
 private:
     //compiler
     QProcess proc;
@@ -59,15 +62,22 @@ private:
 
     QString _value_s;
 
+    QStringList cc_args;
+
     bool _compile(QString src);
 
-    bool _compile_pawn();
     bool _compile_wasm();
 
     void _updateFactText();
 
+    void _update_cc_args();
+
+    QFileSystemWatcher *_watcher{};
+    void _updateWatcher(QString fileName);
+
 private slots:
     void factValueChanged();
+    void fileChanged(const QString &path);
 
 public slots:
     void setSource(QString title, QString source);

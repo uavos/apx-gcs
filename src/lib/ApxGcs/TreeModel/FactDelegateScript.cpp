@@ -120,6 +120,7 @@ bool FactDelegateScript::aboutToClose(void)
 
 void FactDelegateScript::aSave_triggered(void)
 {
+    aCompile->trigger();
     QFileDialog dlg(this, aSave->toolTip(), AppDirs::scripts().canonicalPath());
     dlg.setAcceptMode(QFileDialog::AcceptSave);
     dlg.setOption(QFileDialog::DontConfirmOverwrite, false);
@@ -130,7 +131,8 @@ void FactDelegateScript::aSave_triggered(void)
     dlg.setNameFilters(filters);
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
-    saveToFile(dlg.selectedFiles().first());
+    QString fname = dlg.selectedFiles().first();
+    scriptCompiler->saveToFile(fname);
 }
 
 void FactDelegateScript::aLoad_triggered(void)
@@ -144,7 +146,8 @@ void FactDelegateScript::aLoad_triggered(void)
     dlg.setNameFilters(filters);
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
-    loadFromFile(dlg.selectedFiles().first());
+    QString fname = dlg.selectedFiles().first();
+    scriptCompiler->loadFromFile(fname);
 }
 
 void FactDelegateScript::updateLog()
@@ -172,36 +175,6 @@ void FactDelegateScript::updateLog()
     }
     if (scriptCompiler->code().isEmpty())
         new QListWidgetItem(tr("Empty script"), logList);
-}
-
-bool FactDelegateScript::saveToFile(QString fname)
-{
-    QFile file(fname);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        apxMsgW() << tr("Cannot write file")
-                  << QString("%1:\n%2.").arg(fname).arg(file.errorString());
-        return false;
-    }
-    eTitle->setText(QFileInfo(fname).baseName());
-    editor->cleanText();
-    QTextStream s(&file);
-    s << editor->toPlainText();
-    return true;
-}
-
-bool FactDelegateScript::loadFromFile(QString fname)
-{
-    QFile file(fname);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        apxMsgW() << tr("Cannot read file")
-                  << QString("%1:\n%2.").arg(fname).arg(file.errorString());
-        return false;
-    }
-    eTitle->setText(QFileInfo(fname).baseName());
-    QTextStream s(&file);
-    editor->setPlainText(s.readAll());
-    aCompile->trigger();
-    return true;
 }
 
 void FactDelegateScript::logView_itemClicked(QListWidgetItem *item)

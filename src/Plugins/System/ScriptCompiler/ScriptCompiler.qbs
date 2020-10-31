@@ -24,7 +24,9 @@ ApxApp.ApxPlugin {
         qbs.installSourceBase: prefix
         files: [
             "sysroot/**",
+            ".vscode/**",
         ]
+        excludeFiles: base.concat(["*.wasm"])
     }
 
 }

@@ -106,10 +106,11 @@ QDir AppDirs::images()
 
 bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
 {
+    bool rv = false;
     QDir originDirectory(sourceDir);
 
     if (!originDirectory.exists()) {
-        return false;
+        return rv;
     }
 
     QDir destinationDirectory(destinationDir);
@@ -119,7 +120,10 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
         destinationDirectory.removeRecursively();
     }*/
 
-    destinationDirectory.mkpath(".");
+    if (!destinationDirectory.exists()) {
+        destinationDirectory.mkpath(".");
+        rv = true;
+    }
 
     foreach (QString directoryName, originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         QString destinationPath = destinationDir + "/" + directoryName;
@@ -128,19 +132,20 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
     }
 
     foreach (QString fileName, originDirectory.entryList(QDir::Files)) {
-        QFileInfo fi(destinationDir + "/" + fileName);
-        if (fi.exists())
-            QFile::remove(fi.absoluteFilePath());
-        QFile::copy(sourceDir + "/" + fileName, fi.absoluteFilePath());
+        QFileInfo dest(destinationDir + "/" + fileName);
+        QFileInfo src(sourceDir + "/" + fileName);
+        if (dest.exists()) {
+            if (dest.lastModified() == src.lastModified())
+                continue;
+            QFile::remove(dest.absoluteFilePath());
+        }
+        rv = true;
+        QFile::copy(src.absoluteFilePath(), dest.absoluteFilePath());
     }
 
     /*! Possible race-condition mitigation? */
     QDir finalDestination(destinationDir);
     finalDestination.refresh();
 
-    if (finalDestination.exists()) {
-        return true;
-    }
-
-    return false;
+    return rv;
 }

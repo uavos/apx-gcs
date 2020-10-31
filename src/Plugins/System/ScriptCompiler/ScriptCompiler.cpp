@@ -67,6 +67,12 @@ bool ScriptCompiler::lookup()
         m_cc = cc.absoluteFilePath();
         qDebug() << "found:" << m_cc;
 
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
+                          AppDirs::scripts().absoluteFilePath(".vscode"));
+
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
+                          AppDirs::scripts().absoluteFilePath("sysroot"));
+
         setEnabled(true);
         return true;
     } while (0);

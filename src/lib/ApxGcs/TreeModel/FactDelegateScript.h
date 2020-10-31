@@ -37,9 +37,6 @@ protected:
     bool aboutToClose(void);
 
 private:
-    bool saveToFile(QString fname);
-    bool loadFromFile(QString fname);
-
     NodeScript *scriptCompiler;
 
     QAction *aCompile;
