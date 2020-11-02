@@ -28,4 +28,11 @@ ApxApp.ApxLibrary {
         return s.replace(/\./g,"__")
     })
     Depends { name: "apx_libs"; submodules: mnames }
+
+    Group {
+        fileTagsFilter: [ "gensrc.output.hpp" ]
+        qbs.install: true
+        qbs.installDir: FileInfo.joinPaths(app.app_data_path, "scripts/sysroot/include/apx")
+        qbs.installSourceBase: FileInfo.joinPaths(product.destinationDirectory, "gensrc/mandala")
+    }
 }

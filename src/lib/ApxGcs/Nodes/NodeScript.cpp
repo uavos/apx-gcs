@@ -70,7 +70,7 @@ void NodeScript::_update_cc_args()
             break;
         }
     }
-    qDebug() << cc_args;
+    //qDebug() << cc_args;
 }
 
 void NodeScript::factValueChanged()
