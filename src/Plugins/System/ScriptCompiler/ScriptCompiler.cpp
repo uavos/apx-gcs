@@ -73,6 +73,9 @@ bool ScriptCompiler::lookup()
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
                           AppDirs::scripts().absoluteFilePath("sysroot"));
 
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
+                          AppDirs::scripts().absoluteFilePath("include"));
+
         setEnabled(true);
         return true;
     } while (0);

@@ -32,7 +32,7 @@ ApxApp.ApxLibrary {
     Group {
         fileTagsFilter: [ "gensrc.output.hpp" ]
         qbs.install: true
-        qbs.installDir: FileInfo.joinPaths(app.app_data_path, "scripts/sysroot/include/apx")
+        qbs.installDir: FileInfo.joinPaths(app.app_data_path, "scripts/include")
         qbs.installSourceBase: FileInfo.joinPaths(product.destinationDirectory, "gensrc/mandala")
     }
 }

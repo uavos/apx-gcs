@@ -56,6 +56,7 @@ void NodeScript::_update_cc_args()
                 continue;
             QHash<QString, QString> map;
             map.insert("config:wasm.sysroot", AppDirs::scripts().absoluteFilePath("sysroot"));
+            map.insert("config:wasm.flags", "-I" + AppDirs::scripts().absoluteFilePath("include"));
             map.insert("fileDirname", QFileInfo(srcFile.fileName()).absolutePath());
             map.insert("fileBasenameNoExtension", QFileInfo(srcFile.fileName()).baseName());
             map.insert("file", srcFile.fileName());
