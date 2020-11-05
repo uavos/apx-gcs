@@ -198,30 +198,16 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     default:
         telemetry->downlink(pid, stream);
         return;
-    case mandala::cmd::env::vcp::rx::uid:
+    case mandala::cmd::env::stream::vcp::uid:
         if (stream.available() > 1) {
             uint8_t port_id = stream.read<uint8_t>();
             trace_downlink(ProtocolTraceItem::DATA, QString::number(port_id));
             trace_downlink(stream.payload());
             updateStreamType(DATA);
-            emit serialRxData(port_id, stream.payload());
+            emit serialData(port_id, stream.payload());
             return;
         }
-        qWarning() << "Empty serial RX data received";
-        break;
-    case mandala::cmd::env::vcp::tx::uid:
-        if (stream.available() > 1) {
-            uint8_t port_id = stream.read<uint8_t>();
-            trace_downlink(ProtocolTraceItem::DATA, QString::number(port_id));
-            trace_downlink(stream.payload());
-            updateStreamType(DATA);
-            emit serialTxData(port_id, stream.payload());
-            return;
-        }
-        qWarning() << "Empty serial TX data received";
-        break;
-    case mandala::cmd::env::mission::data::uid:
-        updateStreamType(DATA);
+        qWarning() << "Empty serial data received";
         break;
     case mandala::cmd::env::script::jsexec::uid:
         if (stream.available() > 2) {
@@ -271,7 +257,7 @@ void ProtocolVehicle::sendSerial(quint8 portID, QByteArray data)
 {
     if (data.isEmpty())
         return;
-    ostream.req(mandala::cmd::env::vcp::tx::uid);
+    ostream.req(mandala::cmd::env::stream::vcp::uid);
     ostream.write<uint8_t>(portID);
     ostream.append(data);
     send(ostream.toByteArray());

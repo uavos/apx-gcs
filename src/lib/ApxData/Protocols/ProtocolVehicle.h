@@ -142,8 +142,7 @@ signals:
     void xpdrData(const xbus::vehicle::xpdr_s &xpdr);
 
     //known received data
-    void serialRxData(quint16 portNo, QByteArray data);
-    void serialTxData(quint16 portNo, QByteArray data);
+    void serialData(quint16 portNo, QByteArray data);
 
     void jsexecData(QString script);
     void missionData(QByteArray data);

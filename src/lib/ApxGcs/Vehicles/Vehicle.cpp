@@ -116,11 +116,8 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
 
         connect(f_mandala, &Mandala::sendValue, this, &Vehicle::recordUplink);
 
-        connect(protocol, &ProtocolVehicle::serialRxData, this, [this](uint portNo, QByteArray data) {
+        connect(protocol, &ProtocolVehicle::serialData, this, [this](uint portNo, QByteArray data) {
             emit recordSerialData(static_cast<quint8>(portNo), data, false);
-        });
-        connect(protocol, &ProtocolVehicle::serialTxData, this, [this](uint portNo, QByteArray data) {
-            emit recordSerialData(static_cast<quint8>(portNo), data, true);
         });
         connect(protocol, &ProtocolVehicle::dbConfigInfoChanged, this, &Vehicle::recordConfig);
     }

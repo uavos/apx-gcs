@@ -73,8 +73,7 @@ void SerialForm::vehicleSelected(Vehicle *vehicle)
     for (auto c : clist)
         disconnect(c);
     ProtocolVehicle *protocol = vehicle->protocol();
-    clist.append(connect(protocol, &ProtocolVehicle::serialRxData, this, &SerialForm::serialData));
-    clist.append(connect(protocol, &ProtocolVehicle::serialTxData, this, &SerialForm::serialData));
+    clist.append(connect(protocol, &ProtocolVehicle::serialData, this, &SerialForm::serialData));
 }
 //==============================================================================
 void SerialForm::btnReset()

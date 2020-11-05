@@ -345,7 +345,8 @@ void NodeItem::linkGroupValues(Fact *f)
                 return;
             if (f->dataType() == Text)
                 break;
-            if (f->dataType() == Enum && (f->title() == "mode" || f->title() == "type"))
+            if (f->dataType() == Enum
+                && (f->title() == "mode" || f->title() == "type" || f->title() == "enable"))
                 break;
             return;
         } while (0);
