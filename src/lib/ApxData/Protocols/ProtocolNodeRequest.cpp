@@ -91,6 +91,7 @@ bool ProtocolNodeRequest::lessThan(const ProtocolNodeRequest *other)
 
 void ProtocolNodeRequest::extend(size_t ms)
 {
+    qDebug() << ms;
     if (timeout_ms > ms)
         ms = timeout_ms;
     if (active && timeout_ms > 0) {

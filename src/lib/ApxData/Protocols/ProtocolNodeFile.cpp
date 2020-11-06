@@ -74,7 +74,7 @@ void ProtocolNodeFile::write_next()
     sz = req->write(ba.data(), sz);
     _op_hash = apx::crc32(ba.data(), sz);
     req->schedule();
-    qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
+    //qDebug() << _op_tcnt << sz << QString::number(_op_hash, 16);
 
     setValue(QString("%1kB/%2kB").arg(_op_tcnt / 1024).arg(_op_size / 1024.0, 0, 'f', 1));
 }
@@ -122,7 +122,32 @@ bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
     write_next();
     return true;
 }
+bool ProtocolNodeFile::resp_extend(ProtocolStreamReader &stream)
+{
+    //qDebug() << _req << stream.available();
+    if (!_req)
+        return true;
+    if (stream.available() < sizeof(xbus::node::file::offset_t))
+        return true;
+    xbus::node::file::offset_t offset;
+    stream >> offset;
+    if (offset != _op_offset) {
+        qWarning() << "offset: " << QString::number(offset, 16) << QString::number(_op_offset, 16);
+        // response offset mismatch - don't interrupt
+        return true;
+    }
 
+    if (stream.available() != sizeof(xbus::node::file::timeout_t))
+        return true;
+    xbus::node::file::timeout_t time;
+    stream >> time;
+    if (time == 0) {
+        qWarning() << "time: " << time;
+        return true;
+    }
+    _req->extend(time);
+    return true;
+}
 void ProtocolNodeFile::download()
 {
     reset();
@@ -272,6 +297,12 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
             break;
         if (!resp_write(stream))
             break;
+        return;
+    case xbus::node::file::extend:
+        if (!_info.flags.bits.owrite)
+            return;
+        if (!resp_extend(stream))
+            return;
         return;
     }
     // error

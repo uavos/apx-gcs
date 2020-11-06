@@ -334,7 +334,15 @@ ProtocolNodeFile *ProtocolNode::file(const QString &fname)
         return f;
     f = new ProtocolNodeFile(this, fname);
     _files_map.insert(fname, f);
-    connect(_nodes, &Fact::activeChanged, f, [f]() { f->stop(); });
+    connect(
+        _nodes,
+        &Fact::activeChanged,
+        f,
+        [f, this]() {
+            if (!_nodes->active())
+                f->stop();
+        },
+        Qt::QueuedConnection);
     return f;
 }
 

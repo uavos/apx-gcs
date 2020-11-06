@@ -59,6 +59,7 @@ private:
     void ack_req();
     bool resp_read(ProtocolStreamReader &stream);
     bool resp_write(ProtocolStreamReader &stream);
+    bool resp_extend(ProtocolStreamReader &stream);
 
     void write_next();
     void read_next();

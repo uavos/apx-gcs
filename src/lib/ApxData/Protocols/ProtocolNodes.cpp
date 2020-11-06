@@ -188,7 +188,15 @@ void ProtocolNodes::check_finished()
         return;
 
     do {
-        if (!valid())
+        int ldr = 0;
+        // exclude loader nodes
+        for (auto i : _nodes) {
+            if (i->files().size() == 1 && i->files().contains("fw")) {
+                ldr++;
+                cnt--;
+            }
+        }
+        if (!valid() && ldr <= 0)
             break;
         // exclude reconf nodes
         for (auto i : _nodes) {

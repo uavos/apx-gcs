@@ -123,10 +123,10 @@ void Nodes::updateActions()
     bool upgrading = protocol()->upgrading();
     bool busy = protocol()->active() || upgrading;
     bool empty = protocol()->size() <= 0;
-    bool valid = protocol()->valid();
-    bool mod = valid && modified();
+    //bool valid = protocol()->valid();
+    bool mod = modified();
     f_search->setEnabled(enb);
-    f_upload->setEnabled(enb && valid && mod && !upgrading);
+    f_upload->setEnabled(enb && mod && !upgrading);
     f_stop->setEnabled(enb && busy);
     f_reload->setEnabled(enb && !upgrading);
     f_clear->setEnabled(!empty && !upgrading);
@@ -168,8 +168,8 @@ void Nodes::upload()
 {
     if (!protocol()->enabled())
         return;
-    if (!protocol()->valid())
-        return;
+    //    if (!protocol()->valid())
+    //        return;
     if (!modified())
         return;
     for (auto i : m_sn_map) {
