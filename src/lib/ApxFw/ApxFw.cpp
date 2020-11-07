@@ -646,7 +646,7 @@ bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, qu
         errString = "unzip";
         if (static_cast<quint32>(ba.size()) != size)
             break;
-        qDebug() << "File: " << ba.size();
+        qDebug() << "File: " << QString::number(*startAddr, 16) << ba.size();
         *data = ba;
         return ba.size() > 0;
     }

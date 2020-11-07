@@ -50,7 +50,7 @@ void NodeScript::_update_cc_args()
     if (ftasks.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(ftasks.readAll());
         ftasks.close();
-        qDebug() << json;
+        //qDebug() << json;
         foreach (QJsonValue v, json["tasks"].toArray()) {
             if (!v["group"]["isDefault"].toBool())
                 continue;

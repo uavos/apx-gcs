@@ -168,23 +168,26 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
     xbus::pid_s pid;
     pid.read(&stream);
 
-    if (pid.uid > mandala::uid_max) {
-        qWarning() << "wrong pid" << pid.uid << stream.dump();
+    mandala::uid_t uid = pid.uid;
+
+    if (uid > mandala::uid_max) {
+        qWarning() << "wrong pid" << uid << stream.dump();
         return;
     }
 
-    if (mandala::cmd::env::match(pid.uid)) {
-        emit receivedCmdEnvPacket(pid.uid);
+    if (mandala::cmd::env::match(uid)) {
+        emit receivedCmdEnvPacket(uid);
     }
 
-    if (mandala::cmd::env::nmt::match(pid.uid)) {
+    if (mandala::cmd::env::nmt::match(uid)) {
         updateStreamType(NMT);
         nodes->downlink(pid, stream);
         //forward to local nodes too
         if (!isLocal()
-            && (pid.uid == mandala::cmd::env::nmt::search::uid
-                || pid.uid == mandala::cmd::env::nmt::ident::uid
-                || pid.uid == mandala::cmd::env::nmt::file::uid)) {
+            && (mandala::cmd::env::nmt::search::match(uid)
+                || mandala::cmd::env::nmt::ident::match(uid)
+                || mandala::cmd::env::nmt::file::match(uid))) {
+            //return;
             stream.reset();
             vehicles->local->trace_downlink(pid);
             vehicles->local->downlink(stream);
@@ -194,7 +197,7 @@ void ProtocolVehicle::downlink(ProtocolStreamReader &stream)
 
     trace_downlink(pid);
 
-    switch (pid.uid) {
+    switch (uid) {
     default:
         telemetry->downlink(pid, stream);
         return;

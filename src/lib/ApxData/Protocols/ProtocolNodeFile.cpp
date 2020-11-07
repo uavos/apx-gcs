@@ -37,6 +37,8 @@ ProtocolNodeFile::ProtocolNodeFile(ProtocolNode *node, const QString &name)
     memset(&_info, 0, sizeof(_info));
 
     connect(this, &ProtocolNodeFile::error, this, &ProtocolNodeFile::reset);
+
+    connect(this, &Fact::activeChanged, this, [this]() { qDebug() << active(); });
 }
 
 void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset)
@@ -52,6 +54,9 @@ void ProtocolNodeFile::upload(QByteArray data, xbus::node::file::offset_t offset
 }
 void ProtocolNodeFile::write_next()
 {
+    if (!active())
+        return;
+
     if (_op_tcnt == _op_size) {
         request(xbus::node::file::close)->schedule();
         return;
@@ -80,6 +85,9 @@ void ProtocolNodeFile::write_next()
 }
 bool ProtocolNodeFile::resp_write(ProtocolStreamReader &stream)
 {
+    if (!active())
+        return true;
+
     if (stream.available() < sizeof(xbus::node::file::offset_t))
         return false;
     xbus::node::file::offset_t offset;
@@ -161,6 +169,9 @@ void ProtocolNodeFile::download()
 }
 void ProtocolNodeFile::read_next()
 {
+    if (!active())
+        return;
+
     setValue(QString("%1kB/%2kB").arg(_op_tcnt / 1024).arg(_op_size / 1024.0, 0, 'f', 1));
 
     //qDebug() << _op_offset << _op_tcnt << _op_size;
@@ -244,6 +255,8 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
             break;
         ack_req();
         _op_size = _info.size;
+        _op_offset = 0;
+        _op_tcnt = 0;
         if (_op_offset == 0)
             _op_offset = _info.offset;
         if (_op_tcnt == 0) {
@@ -304,6 +317,9 @@ void ProtocolNodeFile::downlink(xbus::node::file::op_e op, ProtocolStreamReader 
         if (!resp_extend(stream))
             return;
         return;
+    case xbus::node::file::abort:
+        qWarning() << "abort response";
+        break;
     }
     // error
     emit error();
@@ -375,6 +391,9 @@ bool ProtocolNodeFile::check_info(ProtocolStreamReader &stream)
 
 bool ProtocolNodeFile::check_op(xbus::node::file::op_e op)
 {
+    if (!active())
+        return true;
+
     if (_op != op) {
         qWarning() << _op << op;
         return false;

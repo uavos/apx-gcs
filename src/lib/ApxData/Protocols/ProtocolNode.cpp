@@ -80,7 +80,8 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
         return;
 
     connect(this, &ProtocolNode::confSaved, this, [this]() {
-        vehicle()->storage->saveNodeConfig(this);
+        if (!vehicle()->isLocal() || _nodes->active())
+            vehicle()->storage->saveNodeConfig(this);
     });
 
     vehicle()->storage->loadNodeInfo(this);
@@ -214,11 +215,13 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             setFiles(fnames);
         }
         emit identReceived();
-        if (ident.flags.bits.files > 1) {
-            vehicle()->storage->saveNodeInfo(this);
-            vehicle()->storage->saveNodeUser(this);
+        if (!vehicle()->isLocal() || _nodes->active()) {
+            if (ident.flags.bits.files > 1) {
+                vehicle()->storage->saveNodeInfo(this);
+                vehicle()->storage->saveNodeUser(this);
+            }
+            _nodes->nodeNotify(this);
         }
-        _nodes->nodeNotify(this);
 
         // continue requests
         if (!dictValid()) {
@@ -231,8 +234,8 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
 
         // file operations
     case mandala::cmd::env::nmt::file::uid: {
-        if (vehicle()->isLocal() && !_nodes->active())
-            return;
+        //if (vehicle()->isLocal() && !_nodes->active())
+        //    return;
 
         if (stream.available() <= sizeof(xbus::node::file::op_e))
             break;
@@ -343,6 +346,13 @@ ProtocolNodeFile *ProtocolNode::file(const QString &fname)
                 f->stop();
         },
         Qt::QueuedConnection);
+    if (fname == "dict") {
+        connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseDictData);
+    } else if (fname == "conf") {
+        connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseConfData);
+    } else if (fname == "script") {
+        connect(f, &ProtocolNodeFile::downloaded, this, &ProtocolNode::parseScriptData);
+    }
     return f;
 }
 
@@ -422,11 +432,6 @@ void ProtocolNode::requestDict()
         return;
     }
     f->stop();
-    connect(f,
-            &ProtocolNodeFile::downloaded,
-            this,
-            &ProtocolNode::parseDictData,
-            Qt::UniqueConnection);
     f->download();
 }
 void ProtocolNode::requestConf()
@@ -444,11 +449,6 @@ void ProtocolNode::requestConf()
         return;
     }
     f->stop();
-    connect(f,
-            &ProtocolNodeFile::downloaded,
-            this,
-            &ProtocolNode::parseConfData,
-            Qt::UniqueConnection);
     f->download();
 }
 void ProtocolNode::requestStatus()
@@ -664,7 +664,8 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
     qDebug() << "dict parsed";
     setDict(dict);
 
-    vehicle()->storage->saveNodeDict(this, m_dict);
+    if (!vehicle()->isLocal() || _nodes->active())
+        vehicle()->storage->saveNodeDict(this, m_dict);
 
     requestConf();
 }
@@ -794,11 +795,6 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
                 break;
             }
             f->stop();
-            connect(f,
-                    &ProtocolNodeFile::downloaded,
-                    this,
-                    &ProtocolNode::parseScriptData,
-                    Qt::UniqueConnection);
             f->download();
             return;
         }
@@ -825,7 +821,8 @@ void ProtocolNode::validate()
     }
 
     // save config
-    vehicle()->storage->saveNodeConfig(this);
+    if (!vehicle()->isLocal() || _nodes->active())
+        vehicle()->storage->saveNodeConfig(this);
 }
 void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
 {

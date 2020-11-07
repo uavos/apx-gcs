@@ -269,7 +269,7 @@ void ProtocolNodes::acknowledgeRequest(const xbus::pid_s &pid, ProtocolStreamRea
 {
     for (auto i : _queue) {
         if (i->equals(pid, stream)) {
-            qDebug() << "ack" << i;
+            //qDebug() << "ack" << i;
             i->finish(true);
             break;
         }
