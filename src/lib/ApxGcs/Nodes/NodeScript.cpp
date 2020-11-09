@@ -80,6 +80,8 @@ void NodeScript::factValueChanged()
     if (_value_s == value)
         return;
 
+    //qDebug() << value;
+
     QStringList st = value.split(',', Qt::KeepEmptyParts);
     QString title = st.value(0);
     QString src = st.value(1);
@@ -96,9 +98,13 @@ void NodeScript::factValueChanged()
 
     st.clear();
     st << _title;
-    st << src;
-    st << code_string;
+    if (!code_string.isEmpty()) {
+        st << src;
+        st << code_string;
+    }
     _value_s = st.join(',');
+
+    //qDebug() << _value_s;
 
     _fact->setValue(_value_s);
     _updateFactText();

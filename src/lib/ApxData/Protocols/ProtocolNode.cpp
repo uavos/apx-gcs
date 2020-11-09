@@ -220,8 +220,8 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
                 vehicle()->storage->saveNodeInfo(this);
                 vehicle()->storage->saveNodeUser(this);
             }
-            _nodes->nodeNotify(this);
         }
+        _nodes->nodeNotify(this);
 
         // continue requests
         if (!dictValid()) {
