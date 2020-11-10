@@ -19,28 +19,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactDelegateArray_H
-#define FactDelegateArray_H
+#pragma once
+
 #include "FactDelegate.h"
 #include "FactDelegateDialog.h"
 #include <QAbstractItemModel>
-//=============================================================================
+
 class FactDelegateArrayModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
     FactDelegateArrayModel(Fact *group, QObject *parent = nullptr);
     QPointer<Fact> group;
-    bool bNodesGroup;
     void emitReset() { emit layoutChanged(); }
 
 private:
     Fact *field(const QModelIndex &index) const;
-
-    //special arrays (nodes)
-    QStringList fnames;
-    QHash<QString, QString> fdescr;
-    QHash<QString, Fact *> map;
 
     //override
     QVariant data(const QModelIndex &index, int role) const;
@@ -52,7 +46,7 @@ private:
     Qt::ItemFlags flags(const QModelIndex &index) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 };
-//=============================================================================
+
 class FactDelegateArray : public FactDelegateDialog
 {
     Q_OBJECT
@@ -63,5 +57,3 @@ private:
     FactDelegateArrayModel *model;
     QTreeView *treeView;
 };
-//=============================================================================
-#endif

@@ -21,7 +21,7 @@
  */
 #include "FactDelegateArray.h"
 #include <Nodes/Nodes.h>
-//=============================================================================
+
 FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
     : FactDelegateDialog(fact, parent)
 {
@@ -37,111 +37,43 @@ FactDelegateArray::FactDelegateArray(Fact *fact, QWidget *parent)
     treeView->header()->setMinimumSectionSize(50);
     treeView->setAutoFillBackground(false);
 
-    model = new FactDelegateArrayModel(fact, this);
+    model = new FactDelegateArrayModel(fact->menu(), this);
     treeView->setModel(model);
     treeView->setItemDelegate(new FactDelegate(this));
 
     setWidget(treeView);
 }
-//=============================================================================
-//=============================================================================
+
 FactDelegateArrayModel::FactDelegateArrayModel(Fact *group, QObject *parent)
     : QAbstractItemModel(parent)
     , group(group)
 {
-    bNodesGroup = qobject_cast<NodeItem *>(group->child(0));
-    connect(group, &Fact::modifiedChanged, this, [=]() { emit layoutChanged(); });
-
-    if (bNodesGroup) {
-        //populate consolidated fnames list
-        int nidx = -1;
-        int fidx = 0;
-        for (auto i : group->facts()) {
-            NodeItem *node = qobject_cast<NodeItem *>(i);
-            if (!node)
-                continue;
-            nidx++;
-            for (auto f : node->fields()) {
-                QString s = f->name();
-                if (f->size()) {
-                    //complex node field
-                    //int cidx=0;
-                    for (int j = 0; j < f->size(); ++j) {
-                        NodeField *nfi = static_cast<NodeField *>(f->child(j));
-                        QString sf;
-                        //if(f->array()>1)sf=QString("%1/%2").arg(s).arg(QString::number(cidx++));
-                        //else
-                        sf = QString("%1/%2").arg(s).arg(nfi->title());
-                        if (!fnames.contains(sf)) {
-                            fnames.insert(fidx, sf);
-                            fdescr.insert(sf, nfi->descr().isEmpty() ? f->descr() : nfi->descr());
-                        }
-                        fidx = fnames.indexOf(sf) + 1;
-                        map.insert(QString("%1:%2").arg(sf).arg(nidx), nfi);
-                    }
-                    continue;
-                }
-                if (!fnames.contains(s)) {
-                    fnames.insert(fidx, s);
-                    fdescr.insert(s, f->descr());
-                }
-                fidx = fnames.indexOf(s) + 1;
-                map.insert(QString("%1:%2").arg(s).arg(nidx), f);
-            }
-        }
-    }
+    connect(group, &Fact::modifiedChanged, this, [this]() { emit layoutChanged(); });
 }
-//=============================================================================
+
 QVariant FactDelegateArrayModel::data(const QModelIndex &index, int role) const
 {
-    //check 'bind' column items
-    bool binded = true;
-    Fact *bind_item = group->child(0);
-    if (bind_item && bind_item->name().endsWith("_bind")) {
-        bind_item = bind_item->child(index.row());
-        if (bind_item && bind_item->value().toInt() == 0)
-            binded = false;
-    }
-
-    if (role == Qt::ForegroundRole) {
-        if (index.column() > 0) {
-            Fact *f = field(index);
-            if (!f)
-                return QVariant();
-            if ((!binded) && (!f->modified())) {
-                return QColor(Qt::darkGray);
-            }
-            return f->data(Fact::FACT_MODEL_COLUMN_VALUE, role);
-        }
-    }
-
     if (index.column() == 0) {
-        while (1) {
-            Fact *f = nullptr;
-            if (!bNodesGroup) {
-                f = group->child(0);
-                if (f)
-                    f = f->child(index.row());
-                if (!f)
-                    break;
-                return f->data(Fact::FACT_MODEL_COLUMN_NAME, role);
-            } else {
-                if (role == Qt::DisplayRole)
-                    return fnames.value(index.row());
-                if (role == Qt::ToolTipRole)
-                    return fdescr.value(fnames.value(index.row()));
-                return QVariant();
-            }
-        }
-        return QVariant();
+        Fact *f = group->child(index.row());
+        if (!f)
+            return QVariant();
+        return f->data(Fact::FACT_MODEL_COLUMN_NAME, role);
     }
 
     Fact *f = field(index);
     if (!f)
         return QVariant();
+
+    if (role == Qt::ForegroundRole && !f->modified()) {
+        Fact *bind_item = group->child(index.row()) ? group->child(index.row())->child(0) : nullptr;
+        if (bind_item && bind_item->name() == "bind" && bind_item->isZero()) {
+            return QColor(Qt::darkGray);
+        }
+    }
+
     return f->data(Fact::FACT_MODEL_COLUMN_VALUE, role);
 }
-//=============================================================================
+
 bool FactDelegateArrayModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role != Qt::EditRole)
@@ -153,44 +85,13 @@ bool FactDelegateArrayModel::setData(const QModelIndex &index, const QVariant &v
         return false;
     emit layoutChanged();
     return true;
-    //connect(f->field,SIGNAL(changed()),this,SIGNAL(layoutChanged()));
 }
-//=============================================================================
+
 Fact *FactDelegateArrayModel::field(const QModelIndex &index) const
 {
-    Fact *f = qobject_cast<Fact *>(static_cast<QObject *>(index.internalPointer()));
-    if (bNodesGroup)
-        return f;
-    //array type
-    if (!f)
-        return nullptr;
-    int item_n = index.row();
-    //check for controls array
-    const QString sctr("_controls_");
-    if (f->name().contains(sctr)) {
-        QString s = f->name();
-        s.remove(0, s.indexOf(sctr) + 1);
-        s = s.left(s.lastIndexOf('_'));
-        //xx_yy_zz nested array
-        if (s.contains('_')) {
-            for (int i = 0; i < group->size(); ++i) {
-                Fact *fi = group->child(i);
-                if (!fi->name().contains(s))
-                    continue;
-                if ((int) item_n >= fi->size())
-                    break; //protect
-                fi = fi->child(item_n);
-                if (fi)
-                    item_n = fi->value().toInt();
-                break;
-            }
-        }
-    }
-    if (item_n >= f->size())
-        return nullptr;
-    return f->child(item_n);
+    return qobject_cast<Fact *>(static_cast<QObject *>(index.internalPointer()));
 }
-//=============================================================================
+
 QModelIndex FactDelegateArrayModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
@@ -199,60 +100,55 @@ QModelIndex FactDelegateArrayModel::index(int row, int column, const QModelIndex
         return QModelIndex();
     if (column < 1)
         return createIndex(row, column);
-    if (map.isEmpty()) {
-        return createIndex(row, column, group->child(column - 1));
-    }
-    return createIndex(row, column, map.value(QString("%1:%2").arg(fnames.at(row)).arg(column - 1)));
+
+    Fact *f = group->child(row);
+    if (!f)
+        return QModelIndex();
+
+    return createIndex(row, column, f->child(column - 1));
 }
-//=============================================================================
+
 QModelIndex FactDelegateArrayModel::parent(const QModelIndex &child) const
 {
     Q_UNUSED(child)
     return QModelIndex();
 }
-//=============================================================================
+
 int FactDelegateArrayModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    if (fnames.isEmpty()) {
-        Fact *f = group->child(0);
-        if (!f)
-            return 0;
-        return f->size();
-    }
-    return fnames.size();
+    return group->size();
 }
-//=============================================================================
+
 int FactDelegateArrayModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    if (!group)
+    if (!group || !group->child(0))
         return 0;
-    return group->size() + 1;
+    return group->child(0)->size() + 1;
 }
-//=============================================================================
+
 QVariant FactDelegateArrayModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(orientation);
-    if (!group)
+    if (!group || !group->child(0))
         return QVariant();
     if (section == 0)
         return QVariant("#");
-    Fact *f = group->child(section - 1);
+    Fact *f = group->child(0)->child(section - 1);
     if (!f)
         return QVariant();
-    if (role == Qt::DisplayRole) {
-        QString s = f->title();
-        if (bNodesGroup)
-            return f->value().toString().isEmpty() ? s : f->value().toString();
-        return s.contains('_') ? s.mid(s.lastIndexOf('_') + 1) : s;
-    }
+
+    if (role == Qt::DisplayRole)
+        return f->title();
+
     if (role == Qt::ToolTipRole)
-        return group->child(section - 1)->descr();
+        return f->descr();
+
     return QVariant();
 }
-//=============================================================================
+
 Qt::ItemFlags FactDelegateArrayModel::flags(const QModelIndex &index) const
 {
     const Qt::ItemFlags f = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
@@ -262,4 +158,3 @@ Qt::ItemFlags FactDelegateArrayModel::flags(const QModelIndex &index) const
         return f0;
     return f;
 }
-//=============================================================================

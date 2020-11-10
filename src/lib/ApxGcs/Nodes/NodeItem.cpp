@@ -259,6 +259,8 @@ void NodeItem::groupArrays(Fact *group)
 
     group->bindProperty(f1, "value", true);
 
+    bool bControls = group->name() == "controls";
+
     int colCnt = group->size();
     for (int row = 0; row < f1->size(); ++row) {
         Fact *fi = f1->child(row);
@@ -278,7 +280,7 @@ void NodeItem::groupArrays(Fact *group)
                 continue;
             Fact *fp;
             bool bChParam = false;
-            if (f_ch && fArray->name().contains("_controls_ch_")) {
+            if (bControls && f_ch && fArray->name().startsWith("ch_")) {
                 fp = fArray->child(f_ch->value().toInt());
                 f_ch_max = fArray->size() - 1;
                 bChParam = true;
@@ -301,7 +303,7 @@ void NodeItem::groupArrays(Fact *group)
                 });
             }
 
-            if (f->name().endsWith("_controls_ch")) {
+            if (bControls && f->name() == "ch") {
                 f_ch = f;
             }
         }

@@ -104,14 +104,15 @@ void DatalinkSerial::setCodec(CodecType v)
     switch (v) {
     default:
         break;
+    case ESC:
     case COBS:
         encoder = new CobsEncoder<buf_size>();
         decoder = new CobsDecoder<buf_size>();
         break;
-    case ESC:
+        /*case ESC:
         encoder = new EscEncoder<buf_size>();
         decoder = new EscDecoder<buf_size>();
-        break;
+        break;*/
     }
 }
 
