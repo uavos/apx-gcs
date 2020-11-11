@@ -64,6 +64,8 @@ public:
     };
     typedef QList<dict_field_s> Dict;
 
+    typedef QMap<xbus::node::conf::fid_t, QVariant> ValuesList;
+
     ProtocolVehicle *vehicle() const;
 
     inline QVariantMap &values() { return _values; }
@@ -100,13 +102,13 @@ private:
 
     quint64 m_lastSeenTime{};
 
-    const dict_field_s *field(xbus::node::conf::fid_t fid) const;
+    const dict_field_s *field(int fidx) const;
     const dict_field_s *field(const QString &fpath) const;
-    xbus::node::conf::fid_t fid(const QString &fpath) const;
+    size_t fidx(const QString &fpath) const;
 
-    QVariant read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid);
+    QVariant read_param(ProtocolStreamReader &stream, size_t fidx);
     bool write_param(ProtocolStreamWriter &stream,
-                     xbus::node::conf::fid_t fid,
+                     xbus::node::conf::type_e type,
                      const QVariant &value);
 
     void validate();
@@ -161,7 +163,7 @@ public slots:
     void requestConf();
     void requestStatus();
 
-    void requestUpdate(const QVariantMap &values);
+    void requestUpdate(const ValuesList &values);
 
     void requestMod(QStringList commands);
     void requestUsr(xbus::node::usr::cmd_t cmd, QByteArray data);

@@ -36,8 +36,7 @@ NodeField::NodeField(Fact *parent,
                      NodeField *parentField)
     : Fact(parent, field.name, field.title)
     , _node(node)
-    , _parentField(parentField)
-    , m_fid(fid)
+    , _fid(fid)
     , _type(field.type)
     , _fpath(field.path)
 {
@@ -58,7 +57,7 @@ NodeField::NodeField(Fact *parent,
             }
             field_item.name.append(QString("_%1").arg(s.toLower()));
             field_item.title = s;
-            NodeField *f = new NodeField(this, node, fid, field_item, this);
+            NodeField *f = new NodeField(this, node, fid | i, field_item, this);
             connect(f, &Fact::valueChanged, this, &NodeField::updateStatus, Qt::QueuedConnection);
         }
         setTreeType(Group);
@@ -194,9 +193,4 @@ QString NodeField::toText(const QVariant &v) const
     if (_type == xbus::node::conf::script)
         return QString();
     return Fact::toText(v);
-}
-
-xbus::node::conf::fid_t NodeField::fid() const
-{
-    return m_fid;
 }

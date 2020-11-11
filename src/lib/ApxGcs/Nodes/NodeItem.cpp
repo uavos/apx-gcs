@@ -152,12 +152,25 @@ void NodeItem::upload()
     if (!modified())
         return;
 
-    QVariantMap values;
+    QList<NodeField *> list;
     for (auto i : m_fields) {
         if (!i->modified())
             continue;
+        if (i->size() > 0) {
+            for (auto j : i->facts()) {
+                if (!j->modified())
+                    continue;
+                list.append(static_cast<NodeField *>(j));
+            }
+            continue;
+        }
+        list.append(static_cast<NodeField *>(i));
+    }
+
+    ProtocolNode::ValuesList values;
+    for (auto i : list) {
         _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->text(), protocol()->sn());
-        values.insert(i->fpath(), i->confValue());
+        values.insert(i->fid(), i->confValue());
     }
     protocol()->requestUpdate(values);
 }
@@ -396,7 +409,10 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
             break;
         default: // data field
             g = i.group ? groups.value(i.group) : this;
-            f = new NodeField(g, this, static_cast<xbus::node::conf::fid_t>(m_fields.size()), i);
+            f = new NodeField(g,
+                              this,
+                              static_cast<xbus::node::conf::fid_t>(m_fields.size() << 8),
+                              i);
             f->setEnabled(false);
             m_fields.append(f);
             if (!m_status_field) {
@@ -420,6 +436,7 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     setEnabled(false);
     backup();
 }
+
 static QVariant jsonToVariant(QJsonValue json)
 {
     switch (json.type()) {

@@ -43,7 +43,6 @@ public:
                        const ProtocolNode::dict_field_s &field,
                        NodeField *parentField = nullptr);
 
-    xbus::node::conf::fid_t fid() const;
     QVariant confValue(void) const;
     void setConfValue(const QVariant &v);
 
@@ -54,11 +53,13 @@ public:
     inline void setHelp(const QString &s) { _help = s; }
     inline QString fpath() const { return _fpath; }
 
+    inline xbus::node::conf::fid_t fid() const { return _fid; }
+    inline xbus::node::conf::type_e type() const { return _type; }
+
 private:
     NodeItem *_node;
-    NodeField *_parentField;
 
-    xbus::node::conf::fid_t m_fid;
+    xbus::node::conf::fid_t _fid;
     xbus::node::conf::type_e _type;
 
     QString _fpath;

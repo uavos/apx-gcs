@@ -459,24 +459,28 @@ void ProtocolNode::requestStatus()
     req->schedule();*/
 }
 
-void ProtocolNode::requestUpdate(const QVariantMap &values)
+void ProtocolNode::requestUpdate(const ValuesList &values)
 {
     _update_requests.clear();
     _nodes->clear_requests();
-    for (auto const &fpath : values.keys()) {
-        const dict_field_s *f = field(fpath);
+
+    // update values property for storage
+    for (auto const &fid : values.keys()) {
+        const dict_field_s *f = field(fid >> 8);
         if (!f) {
-            qWarning() << "missing field" << fpath;
+            qWarning() << "missing field" << fid;
             continue;
         }
-        QVariant value = values.value(fpath);
+
+        QVariant value = values.value(fid);
+
         if (f->type == xbus::node::conf::option) {
-            _values[fpath] = f->units.split(',').value(value.toInt(), value.toString());
+            value = f->units.split(',').value(value.toInt(), value.toString());
         } else if (f->type == xbus::node::conf::real) {
-            _values[fpath] = value.toString();
+            value = value.toString();
         } else if (f->type == xbus::node::conf::script) {
-            if (fpath != _script_fpath) {
-                qWarning() << "script field mismatch:" << fpath << _script_fpath;
+            if (f->path != _script_fpath) {
+                qWarning() << "script field mismatch:" << f->path << _script_fpath;
                 return;
             }
             QByteArray data = scriptFileData(value);
@@ -500,18 +504,32 @@ void ProtocolNode::requestUpdate(const QVariantMap &values)
             f->upload(data);
             value = QVariant::fromValue(_script_hash);
         } else {
-            _values[fpath] = value;
+            continue;
         }
+        if (!f->array) {
+            _values[f->path] = value;
+            continue;
+        }
+        // update list item
+        QVariantList list = _values[f->path].value<QVariantList>();
+        list[fid & 0xFF] = value;
+        _values[f->path] = QVariant::fromValue(list);
+    }
 
-        // request
-        _nodes->setActive(true);
+    // make field update requests
+    _nodes->setActive(true);
+    for (auto const &fid : values.keys()) {
+        const dict_field_s *f = field(fid >> 8);
+        if (!f)
+            continue;
+
+        QVariant value = values.value(fid);
         ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
-        xbus::node::conf::fid_t id = fid(fpath);
-        *req << id;
-        if (!write_param(*req, id, value)) {
+        *req << fid;
+        if (!write_param(*req, f->type, value)) {
             req->deleteLater();
             _nodes->clear_requests();
-            qWarning() << "update request error:" << fpath;
+            qWarning() << "update request error:" << f->path;
             return;
         }
         connect(req, &ProtocolNodeRequest::finished, this, &ProtocolNode::updateRequestsCheckDone);
@@ -536,7 +554,7 @@ void ProtocolNode::updateRequestsCheckDone()
         return;
     // save to node storage request
     ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
-    req->write<xbus::node::conf::fid_t>(0xFFFF);
+    req->write<xbus::node::conf::fid_t>(0xFFFFFFFF);
     connect(req, &ProtocolNodeRequest::finished, this, [this](ProtocolNodeRequest *request) {
         if (request->acknowledged) {
             emit confSaved();
@@ -675,7 +693,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     ProtocolStreamReader stream(data);
     bool err = true;
     QVariantList values;
-    xbus::node::conf::fid_t fid = 0;
+    int fidx = 0;
     do {
         // check node hash
         if (info.hash != m_ident.hash) {
@@ -714,7 +732,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
         while (stream.available() > 0) {
             // stream padding with offset
             size_t d_pos = stream.pos() - pos_s;
-            size_t offset = offsets.at(fid);
+            size_t offset = offsets.at(fidx);
             size_t d_offset = offset - offset_s;
             offset_s = offset;
             if (d_offset > d_pos) {
@@ -729,13 +747,13 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
             }
 
             pos_s = stream.pos();
-            QVariant v = read_param(stream, fid);
+            QVariant v = read_param(stream, fidx);
             //qDebug() << v << stream.pos() << stream.available();
             if (!v.isValid())
                 break;
 
             // check dict and fix field value for some types
-            const dict_field_s &f = m_dict.at(m_dict_fields.at(fid));
+            const dict_field_s &f = m_dict.at(m_dict_fields.at(fidx));
             if (f.type == xbus::node::conf::option) {
                 const QStringList st = f.units.split(',');
                 if (f.array > 0) {
@@ -758,9 +776,9 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
             }
 
             values.append(v);
-            fid++;
+            fidx++;
 
-            if (fid == m_dict_fields.size()) {
+            if (fidx == m_dict_fields.size()) {
                 err = false; //stream.available() ? true : false;
                 break;
             }
@@ -806,7 +824,7 @@ void ProtocolNode::parseConfData(const xbus::node::file::info_s &info, const QBy
     // error
     _script_fpath.clear();
     setValid(false);
-    qWarning() << "conf error" << fid << stream.available() << data.toHex().toUpper();
+    qWarning() << "conf error" << fidx << stream.available() << data.toHex().toUpper();
 }
 void ProtocolNode::validate()
 {
@@ -938,11 +956,11 @@ QByteArray ProtocolNode::scriptFileData(const QVariant &value) const
     return ba.left(stream.pos());
 }
 
-const ProtocolNode::dict_field_s *ProtocolNode::field(xbus::node::conf::fid_t fid) const
+const ProtocolNode::dict_field_s *ProtocolNode::field(int fidx) const
 {
-    if (fid >= m_dict_fields.size())
+    if (fidx < 0 || fidx >= m_dict_fields.size())
         return nullptr;
-    return &m_dict.at(m_dict_fields.at(fid));
+    return &m_dict.at(m_dict_fields.at(fidx));
 }
 const ProtocolNode::dict_field_s *ProtocolNode::field(const QString &fpath) const
 {
@@ -954,13 +972,13 @@ const ProtocolNode::dict_field_s *ProtocolNode::field(const QString &fpath) cons
     }
     return nullptr;
 }
-xbus::node::conf::fid_t ProtocolNode::fid(const QString &fpath) const
+size_t ProtocolNode::fidx(const QString &fpath) const
 {
-    xbus::node::conf::fid_t fid{0};
+    size_t fidx{0};
     for (auto i : m_dict_fields) {
         if (m_dict.at(i).path == fpath)
-            return fid;
-        fid++;
+            return fidx;
+        fidx++;
     }
     return 0;
 }
@@ -1005,9 +1023,9 @@ static QVariant read_param_str(ProtocolStreamReader &stream, size_t array)
     return QVariant::fromValue(QString(s));
 }
 
-QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf::fid_t fid)
+QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, size_t fidx)
 {
-    const dict_field_s *f = field(fid);
+    const dict_field_s *f = field(fidx);
     if (!f)
         return QVariant();
     //qDebug() << f->name << stream.payload().toHex().toUpper();
@@ -1040,69 +1058,44 @@ QVariant ProtocolNode::read_param(ProtocolStreamReader &stream, xbus::node::conf
 }
 
 template<typename _T>
-static bool write_param(ProtocolStreamWriter &stream, size_t array, const QVariant &value)
+static bool write_param(ProtocolStreamWriter &stream, const QVariant &value)
 {
-    if (array > 0) {
-        const QVariantList &list = value.value<QVariantList>();
-        if (static_cast<size_t>(list.size()) != array)
-            return false;
-        for (auto v : list) {
-            if (!stream.write<_T>(v.value<_T>()))
-                return false;
-        }
-        return true;
-    }
     return stream.write<_T>(value.value<_T>());
 }
 
 template<typename _T>
-static bool write_param_str(ProtocolStreamWriter &stream, size_t array, const QVariant &value)
+static bool write_param_str(ProtocolStreamWriter &stream, const QVariant &value)
 {
-    if (array > 0) {
-        const QVariantList &list = value.value<QVariantList>();
-        if (static_cast<size_t>(list.size()) != array)
-            return false;
-        for (auto v : list) {
-            if (!stream.write_string(v.toString().toLatin1().data()))
-                return false;
-        }
-        return true;
-    }
     return stream.write_string(value.toString().toLatin1().data());
 }
 
 bool ProtocolNode::write_param(ProtocolStreamWriter &stream,
-                               xbus::node::conf::fid_t fid,
+                               xbus::node::conf::type_e type,
                                const QVariant &value)
 {
-    const dict_field_s *f = field(fid);
-    if (!f)
-        return false;
-    //qDebug() << f->name << stream.payload().toHex().toUpper();
-    size_t array = f->array;
-    switch (f->type) {
+    switch (type) {
     case xbus::node::conf::group:
     case xbus::node::conf::command:
     case xbus::node::conf::type_max:
         break;
     case xbus::node::conf::option:
-        return ::write_param<xbus::node::conf::option_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::option_t>(stream, value);
     case xbus::node::conf::real:
-        return ::write_param<xbus::node::conf::real_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::real_t>(stream, value);
     case xbus::node::conf::byte:
-        return ::write_param<xbus::node::conf::byte_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::byte_t>(stream, value);
     case xbus::node::conf::word:
-        return ::write_param<xbus::node::conf::word_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::word_t>(stream, value);
     case xbus::node::conf::dword:
-        return ::write_param<xbus::node::conf::dword_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::dword_t>(stream, value);
     case xbus::node::conf::bind:
-        return ::write_param<xbus::node::conf::bind_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::bind_t>(stream, value);
     case xbus::node::conf::string:
-        return ::write_param_str<xbus::node::conf::string_t>(stream, array, value);
+        return ::write_param_str<xbus::node::conf::string_t>(stream, value);
     case xbus::node::conf::text:
-        return ::write_param_str<xbus::node::conf::text_t>(stream, array, value);
+        return ::write_param_str<xbus::node::conf::text_t>(stream, value);
     case xbus::node::conf::script:
-        return ::write_param<xbus::node::conf::script_t>(stream, array, value);
+        return ::write_param<xbus::node::conf::script_t>(stream, value);
     }
     return false;
 }
