@@ -466,9 +466,6 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
         qWarning() << vmap;
         return QString();
     }
-    if (QFileInfo(fileName).absolutePath().startsWith(devDir().absolutePath())) {
-        apxMsgW() << "Development firmware:" << QFileInfo(fileName).completeBaseName();
-    }
     return fileName;
 }
 
@@ -479,6 +476,10 @@ bool ApxFw::loadFirmware(
 
     if (fileName.isEmpty())
         return false;
+
+    if (QFileInfo(fileName).absolutePath().startsWith(devDir().absolutePath())) {
+        apxMsgW() << "Development firmware:" << QFileInfo(fileName).completeBaseName();
+    }
 
     //load fw
     qDebug() << fileName;

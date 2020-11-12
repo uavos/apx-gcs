@@ -368,6 +368,7 @@ void NodeItem::linkGroupValues(Fact *f)
         connect(f, &Fact::textChanged, f->parentFact(), [f]() {
             f->parentFact()->setValue(f->text());
         });
+        f->parentFact()->setValue(f->text());
         return;
     }
 
