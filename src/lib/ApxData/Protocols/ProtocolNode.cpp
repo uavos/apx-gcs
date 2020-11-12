@@ -478,7 +478,28 @@ void ProtocolNode::requestUpdate(const ValuesList &values)
             value = f->units.split(',').value(value.toInt(), value.toString());
         } else if (f->type == xbus::node::conf::real) {
             value = value.toString();
-        } else if (f->type == xbus::node::conf::script) {
+        } else {
+            continue;
+        }
+        if (!f->array) {
+            _values[f->path] = value;
+            continue;
+        }
+        // update list item
+        QVariantList list = _values[f->path].value<QVariantList>();
+        list[fid & 0xFF] = value;
+        _values[f->path] = QVariant::fromValue(list);
+    }
+
+    // make field update requests
+    _nodes->setActive(true);
+    for (auto const &fid : values.keys()) {
+        const dict_field_s *f = field(fid >> 8);
+        if (!f)
+            continue;
+
+        QVariant value = values.value(fid);
+        if (f->type == xbus::node::conf::script) {
             if (f->path != _script_fpath) {
                 qWarning() << "script field mismatch:" << f->path << _script_fpath;
                 return;
@@ -503,27 +524,8 @@ void ProtocolNode::requestUpdate(const ValuesList &values)
             _nodes->setActive(true);
             f->upload(data);
             value = QVariant::fromValue(_script_hash);
-        } else {
-            continue;
         }
-        if (!f->array) {
-            _values[f->path] = value;
-            continue;
-        }
-        // update list item
-        QVariantList list = _values[f->path].value<QVariantList>();
-        list[fid & 0xFF] = value;
-        _values[f->path] = QVariant::fromValue(list);
-    }
 
-    // make field update requests
-    _nodes->setActive(true);
-    for (auto const &fid : values.keys()) {
-        const dict_field_s *f = field(fid >> 8);
-        if (!f)
-            continue;
-
-        QVariant value = values.value(fid);
         ProtocolNodeRequest *req = request(mandala::cmd::env::nmt::upd::uid);
         *req << fid;
         if (!write_param(*req, f->type, value)) {
