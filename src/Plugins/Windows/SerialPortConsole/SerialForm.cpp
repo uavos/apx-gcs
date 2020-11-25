@@ -36,6 +36,10 @@ SerialForm::SerialForm(QWidget *parent)
 {
     ui->setupUi(this);
 
+    QFont f("unexistent");
+    f.setStyleHint(QFont::Monospace);
+    ui->textEdit->setFont(f);
+
     //TODO
     ui->btnForward->setVisible(false);
     ui->eForward->setVisible(false);
@@ -182,24 +186,26 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
 
         s = QString(ba);
         s.remove('\r');
-        s = s.trimmed();
+        //s = s.trimmed();
         break;
     case 1: //HEX
         for (int i = 0; i < ba.size(); i++)
             s += QString("%1 ").arg(static_cast<uint>(ba.at(i)), 2, 16, QChar('0'));
-        s = s.trimmed();
+        s = s.trimmed().append('\n');
 
         if (dumpFile.isOpen()) {
             if (!sTimestamp.isEmpty()) {
                 dumpFile.write(sTimestamp.toUtf8().append(':'));
             }
-            dumpFile.write(s.toUtf8().append('\n'));
+            dumpFile.write(s.toUtf8());
         }
         break;
     }
     if (s.isEmpty())
         return;
-    ui->textEdit->appendPlainText(s);
+    ui->textEdit->moveCursor(QTextCursor::End);
+    ui->textEdit->insertPlainText(s);
+    ui->textEdit->moveCursor(QTextCursor::End);
 }
 //==============================================================================
 //==============================================================================
