@@ -39,7 +39,7 @@ ProtocolNodeRequest::ProtocolNodeRequest(ProtocolNodes *nodes,
     , _pid(pid)
     , _sn(sn)
     , retry_cnt(retry_cnt)
-    , timeout_ms(timeout_ms > 0 ? timeout_ms : 500)
+    , timeout_ms(timeout_ms > 0 ? timeout_ms : 1500)
 {
     //repare stream
     pid.write(this);
