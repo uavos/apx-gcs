@@ -153,8 +153,12 @@ Qt::ItemFlags FactDelegateArrayModel::flags(const QModelIndex &index) const
 {
     const Qt::ItemFlags f = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     const Qt::ItemFlags f0 = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    auto fact = field(index);
     int column = index.column();
-    if (column == 0 || (!field(index)))
+    if (column == 0 || (!fact))
         return f0;
+    if (!fact->enabled())
+        return f0;
+
     return f;
 }

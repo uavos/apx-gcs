@@ -72,6 +72,7 @@ private:
     void updateArrayRowDescr(Fact *fRow);
     void removeEmptyGroups(Fact *f);
     void linkGroupValues(Fact *f);
+    void updateArrayChBinding(Fact *f_element, Fact *f_array, Fact *f_ch);
 
 private slots:
 

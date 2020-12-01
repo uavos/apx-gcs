@@ -294,8 +294,8 @@ void NodeItem::groupArrays(Fact *group)
             Fact *fp;
             bool bChParam = false;
             if (bControls && f_ch && fArray->name().startsWith("ch_")) {
-                fp = fArray->child(f_ch->value().toInt());
-                f_ch_max = fArray->size() - 1;
+                fp = fArray->child(0);
+                f_ch_max = fArray->size();
                 bChParam = true;
             } else {
                 fp = fArray->child(row);
@@ -308,12 +308,14 @@ void NodeItem::groupArrays(Fact *group)
                                fArray->descr(),
                                fp->treeType() | fp->dataType() | ModifiedTrack);
             new NodeViewActions(f, _nodes);
-            f->setBinding(fp);
             connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
             if (bChParam) {
-                connect(f_ch, &Fact::valueChanged, f, [f, fArray, f_ch]() {
-                    f->setBinding(fArray->child(f_ch->value().toInt()));
+                updateArrayChBinding(f, fArray, f_ch);
+                connect(f_ch, &Fact::valueChanged, f, [this, f, fArray, f_ch]() {
+                    updateArrayChBinding(f, fArray, f_ch);
                 });
+            } else {
+                f->setBinding(fp);
             }
 
             if (bControls && f->name() == "ch") {
@@ -334,6 +336,20 @@ void NodeItem::updateArrayRowDescr(Fact *fRow)
         }
     }
     fRow->setDescr(st.join(", "));
+}
+void NodeItem::updateArrayChBinding(Fact *f_element, Fact *f_array, Fact *f_ch)
+{
+    int ch = f_ch->value().toInt();
+    f_element->setBinding(nullptr);
+    if (ch > 0 && ch <= f_array->size()) {
+        f_element->setEnabled(true);
+        f_element->setBinding(f_array->child(ch - 1));
+    } else {
+        f_element->setValue(0);
+        f_element->setText("");
+        f_element->setModified(false);
+        f_element->setEnabled(false);
+    }
 }
 
 void NodeItem::removeEmptyGroups(Fact *f)
