@@ -51,6 +51,9 @@ private:
     QStringList xplaneDirs;
     QProcess pShiva;
 
+    QString target_os;
+    QString sim_executable;
+
     bool extract_apxfw();
 
     void pShivaKill();

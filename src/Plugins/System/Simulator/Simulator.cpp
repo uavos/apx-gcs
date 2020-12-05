@@ -38,6 +38,14 @@ Simulator::Simulator(Fact *parent)
     setIcon("fan");
     //parent->insertIntoSection(FactSystem::ApplicationSection,this);
 
+#if defined(Q_OS_MAC)
+    target_os = "macos";
+#elif defined(Q_OS_LINUX)
+    target_os = "linux";
+#endif
+
+    sim_executable = "sim-" + target_os;
+
     AppLog::add(SimLog().categoryName(), "sim.txt", true);
 
     f_launch = new Fact(this, "launch", tr("Launch"), tr("Start simulation"), Action | Apply, "play");
@@ -77,7 +85,7 @@ Simulator::Simulator(Fact *parent)
 
     //shiva
     //pShiva.setProgram(QCoreApplication::applicationDirPath() + "/shiva");
-    pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/sim"));
+    pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
     connect(&pShiva,
             QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this,
@@ -99,7 +107,7 @@ Simulator::~Simulator()
 
 void Simulator::pShivaKill()
 {
-    if (QProcess::startDetached("killall", QStringList() << "sim") == 0) {
+    if (QProcess::startDetached("killall", QStringList() << sim_executable) == 0) {
         //apxMsgW() << tr("SIL simulation session restart");
     }
 }
@@ -109,13 +117,14 @@ bool Simulator::extract_apxfw()
     ApxFw *apxfw = AppGcs::apxfw();
 
     QByteArray data;
-    apxfw->loadFirmware("sim", "PC", "application", &data, nullptr);
+    apxfw->loadFirmware("sim", "PC", "application-" + target_os, &data, nullptr);
+
     if (data.size() <= 0)
         return false;
 
     QDir dir(AppDirs::firmware().absoluteFilePath("sim"));
     dir.mkpath(".");
-    QFile fsim(dir.absoluteFilePath("sim"));
+    QFile fsim(dir.absoluteFilePath(sim_executable));
     fsim.remove();
     if (!fsim.open(QFile::WriteOnly)) {
         qWarning() << "can't write" << fsim.fileName();
