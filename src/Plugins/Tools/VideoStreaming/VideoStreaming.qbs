@@ -34,6 +34,7 @@ ApxApp.ApxPlugin {
         cpp.frameworkPaths: ["/Library/Frameworks"]
         cpp.frameworks: ["GStreamer"]
         cpp.includePaths: outer.concat(["/Library/Frameworks/GStreamer.framework/Headers"])
+        cpp.libraryPaths: outer.concat(["/Library/Frameworks/GStreamer.framework/Versions/Current/lib"])
     }
 
     Properties {
