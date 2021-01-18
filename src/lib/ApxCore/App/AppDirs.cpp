@@ -20,7 +20,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "AppDirs.h"
-//=============================================================================
+
+#include <app_def.h>
+
 QDir AppDirs::res()
 {
 #ifdef __ANDROID__
@@ -43,12 +45,12 @@ QDir AppDirs::user()
 
 QDir AppDirs::libs()
 {
-    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_LIB_PATH);
+    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_LIBS_PATH);
 }
 
 QDir AppDirs::plugins()
 {
-    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_PLUGIN_PATH);
+    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_PLUGINS_PATH);
 }
 
 QDir AppDirs::userPlugins()

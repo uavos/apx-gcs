@@ -27,7 +27,6 @@
 
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/SvgImageProvider.h>
-#include <version.h>
 
 #include <QApplication>
 #include <QDesktopWidget>

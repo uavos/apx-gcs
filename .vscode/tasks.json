@@ -1,0 +1,37 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "/bin/bash",
+            "args": [
+                "-c",
+                "${command:cmake.tasksBuildCommand}"
+            ],
+            "options": {
+                "cwd": "${command:cmake.buildDirectory}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${command:cmake.buildDirectory}"
+                ]
+            },
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false,
+                "clear": true,
+                "panel": "shared",
+                "group": "build"
+            }
+        }
+    ]
+}

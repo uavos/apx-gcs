@@ -1,0 +1,17 @@
+{
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    // "cmake.buildTask": true,
+    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+    "files.watcherExclude": {
+        "**/build/**": true
+    },
+    "search.exclude": {
+        "${workspaceFolder}/build": true
+    },
+    "cquery.cacheDirectory": "${workspaceFolder}/build/cquery",
+    //
+    "licenser.projectName": "APX Ground Control",
+    "licenser.customHeader": "APX Autopilot project <http://docs.uavos.com>\\n\\nCopyright (c) 2003-@YEAR@, @AUTHOR@\\nAll rights reserved\\n\\nThis file is part of @PROJECT@.\\nRedistribution and use in source and binary forms, with or without\\nmodification, are permitted exclusively under the terms of the\\nLGPLv3 license. You should have received a copy of the license with\\nthis file. If not, please visit: http://docs.uavos.com/gcs.",
+    "licenser.useSingleLineStyle": false,
+    "licenser.license": "Custom"
+}

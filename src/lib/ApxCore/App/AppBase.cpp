@@ -23,7 +23,7 @@
 #include "AppDirs.h"
 #include "AppLog.h"
 
-#include <version.h>
+#include <app_def.h>
 #include <QIcon>
 //=============================================================================
 #ifdef Q_OS_MAC
