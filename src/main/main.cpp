@@ -19,19 +19,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "RunGuard.h"
-#include <App/AppDirs.h>
-#include <App/AppGcs.h>
-#include <App/AppLog.h>
 #include <QApplication>
-#include <QGLWidget>
-#include <QProcessEnvironment>
-#include <QQuickStyle>
-#include <QStyleFactory>
+// #include <QGLWidget>
+// #include <QProcessEnvironment>
+// #include <QQuickStyle>
+// #include <QStyleFactory>
 #include <QtCore>
-#include <QtQuick>
+// #include <QtQuick>
+
+//#include <App/AppDirs.h>
+//#include <App/AppGcs.h>
+//#include <App/AppLog.h>
+
+//#include "RunGuard.h"
+
 //============================================================================
-void checkPaths();
+//void checkPaths();
 //============================================================================
 /*void crash_handler(int sig) {
  fprintf(stdout,"\nCRASH\n");
@@ -92,11 +95,11 @@ int main(int argc, char *argv[])
     f.setDepthBufferSize(8);
     QGLFormat::setDefaultFormat(f);*/
 
-    AppGcs app(argc,
+    /*AppGcs app(argc,
                argv,
                "Ground Control",
                QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
-
+*/
     //check instances
     /*if(!QSettings().value("multipleInstances").toBool()){
     RunGuard guard("instance.gcs.uavos.com");
@@ -117,7 +120,7 @@ int main(int argc, char *argv[])
 
 */
 
-    int rv = app.exec();
+    int rv = true; //app.exec();
     qInstallMessageHandler(nullptr);
     return rv;
 }
@@ -136,7 +139,7 @@ catch (...)
 }*/
 //============================================================================
 //============================================================================
-void linkFiles(QDir src, QDir dest)
+/*void linkFiles(QDir src, QDir dest)
 {
     if (!dest.exists())
         dest.mkpath(".");
@@ -268,5 +271,5 @@ void checkPaths()
     apxConsoleW() << QObject::tr("New storage directory")
                          .append(": ")
                          .append(AppDirs::user().absolutePath());
-}
+}*/
 //============================================================================

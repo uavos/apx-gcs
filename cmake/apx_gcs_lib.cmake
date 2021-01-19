@@ -8,13 +8,16 @@ function(apx_gcs_lib)
             GENSRC
             INCLUDES
             QT
+            QRC
+        ONE_VALUE
+            QRC_PREFIX
 		ARGN ${ARGN})
 # cmake-format: on
 
     # add lib as apx_module
     apx_module(
         TYPE
-        MODULE
+        SHARED
         SRCS
         ${SRCS}
         DEPENDS
@@ -25,24 +28,18 @@ function(apx_gcs_lib)
         ${INCLUDES}
     )
 
-    # qt deps
-    if(QT)
-        foreach(cmp ${QT})
-            find_package(
-                Qt5
-                COMPONENTS ${cmp}
-                REQUIRED
-            )
-            target_link_libraries(${MODULE} PUBLIC Qt5::${cmp})
-        endforeach()
-    endif()
+    apx_gcs_qt(${MODULE} ${QT})
+
+    # set_target_properties(${MODULE} PROPERTIES VERSION ${PROJECT_VERSION})
+    # set_target_properties(${MODULE} PROPERTIES SOVERSION 1)
 
     # guess lib name from path
     string(REPLACE "/" ";" path_list ${CMAKE_CURRENT_LIST_DIR})
     list(GET path_list -1 LIB_NAME)
-
     set_target_properties(${MODULE} PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
-    apx_gcs_bundle(${MODULE} ${LIB_NAME})
+    apx_gcs_qrc(${MODULE} PREFIX ${QRC_PREFIX} SRCS ${QRC})
+
+    # apx_gcs_bundle(${MODULE} ${LIB_NAME})
 
 endfunction()

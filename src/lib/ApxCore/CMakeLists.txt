@@ -17,6 +17,14 @@ apx_gcs_lib(
     "**/*.[ch]*"
     GENSRC
     gensrc_app
+    QRC
+    "${APX_RESOURCES_DIR}/fonts/Apx*.ttf"
+    "${APX_RESOURCES_DIR}/fonts/FreeMono*.ttf"
+    "${APX_RESOURCES_DIR}/fonts/Ubuntu-C.ttf"
+    "${APX_RESOURCES_DIR}/fonts/Bierahinia.ttf"
+    "${APX_RESOURCES_DIR}/styles/style-dark.css"
+    "${APX_RESOURCES_DIR}/icons/material-icons.*"
+    "${APX_RESOURCES_DIR}/icons/uavos-logo.*"
     INCLUDES
     .
     DEPENDS
