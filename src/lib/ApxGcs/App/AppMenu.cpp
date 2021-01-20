@@ -28,11 +28,11 @@
 #include <Fact/FactListModel.h>
 
 #include <Nodes/Nodes.h>
-#include <Nodes/NodesShare.h>
+//#include <Nodes/NodesShare.h>
 
 #include <Datalink/Datalink.h>
 #include <Telemetry/Telemetry.h>
-#include <Telemetry/TelemetryShare.h>
+//#include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicles.h>
 
 #include <QDesktopServices>

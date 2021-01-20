@@ -1,0 +1,13 @@
+apx_lib(
+    SRCS
+    "**/*.[ch]*"
+    RES
+    templates/share
+    INCLUDES
+    .
+    DEPENDS
+    lib.ApxCore
+    QT
+    Sql
+    Xml
+)

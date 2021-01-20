@@ -6,13 +6,17 @@ list(APPEND data "hash:${APX_GIT_HASH}")
 list(APPEND data "time:${APX_GIT_TIME}")
 list(APPEND data "year:${APX_GIT_YEAR}")
 
-list(APPEND data "data_path:${APX_APP_DATA_DIR}")
-list(APPEND data "libs_path:${APX_APP_LIBS_DIR}")
-list(APPEND data "plugins_path:${APX_APP_PLUGINS_DIR}")
+file(RELATIVE_PATH data_path ${CMAKE_CURRENT_SOURCE_DIR}/${APX_INSTALL_BIN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${APX_INSTALL_DATA_DIR})
+file(RELATIVE_PATH libs_path ${CMAKE_CURRENT_SOURCE_DIR}/${APX_INSTALL_BIN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${APX_INSTALL_LIBS_DIR})
+file(RELATIVE_PATH plugins_path ${CMAKE_CURRENT_SOURCE_DIR}/${APX_INSTALL_BIN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${APX_INSTALL_PLUGINS_DIR})
+
+list(APPEND data "data_path:${data_path}")
+list(APPEND data "libs_path:${libs_path}")
+list(APPEND data "plugins_path:${plugins_path}")
 
 apx_gensrc(gensrc_app DATA "${data}")
 
-apx_gcs_lib(
+apx_lib(
     SRCS
     "**/*.[ch]*"
     GENSRC
@@ -38,7 +42,6 @@ apx_gcs_lib(
     QT
     Core
     Qml
-    Gui
     Quick
     OpenGL
     Widgets

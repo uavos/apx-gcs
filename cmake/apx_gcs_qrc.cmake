@@ -1,7 +1,7 @@
 # cmake-format: off
-function(apx_gcs_qrc TARGET)
+function(apx_qrc TARGET)
     apx_parse_function_args(
-        NAME apx_gcs_qrc
+        NAME apx_qrc
         ONE_VALUE
             PREFIX
         MULTI_VALUE

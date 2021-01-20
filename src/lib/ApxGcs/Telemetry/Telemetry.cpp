@@ -24,7 +24,7 @@
 #include "TelemetryPlayer.h"
 #include "TelemetryReader.h"
 #include "TelemetryRecorder.h"
-#include "TelemetryShare.h"
+//#include "TelemetryShare.h"
 
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
@@ -102,8 +102,8 @@ void Telemetry::updateProgress()
     if (!f_reader)
         return;
     int v = f_reader->progress();
-    if (v < 0 && f_share)
-        v = f_share->progress();
+    // if (v < 0 && f_share)
+    //     v = f_share->progress();
     setProgress(v);
     updateDescr();
 }
@@ -113,9 +113,10 @@ void Telemetry::updateDescr()
         return;
     if (f_reader->progress() >= 0) {
         setDescr(tr("Reading").append("..."));
-    } else if (f_share && f_share->progress() >= 0) {
+    } /*else if (f_share && f_share->progress() >= 0) {
         setDescr(f_share->descr());
-    } else
+    } */
+    else
         setDescr(descr_s);
 }
 //=============================================================================

@@ -1,5 +1,5 @@
 # cmake-format: off
-function(apx_gcs_lib)
+function(apx_lib)
     apx_parse_function_args(
         NAME apx_gcs_lib
 		MULTI_VALUE
@@ -9,8 +9,10 @@ function(apx_gcs_lib)
             INCLUDES
             QT
             QRC
+            RES
         ONE_VALUE
             QRC_PREFIX
+            RES_PREFIX
 		ARGN ${ARGN})
 # cmake-format: on
 
@@ -28,7 +30,7 @@ function(apx_gcs_lib)
         ${INCLUDES}
     )
 
-    apx_gcs_qt(${MODULE} ${QT})
+    apx_qt(${MODULE} ${QT})
 
     # set_target_properties(${MODULE} PROPERTIES VERSION ${PROJECT_VERSION})
     # set_target_properties(${MODULE} PROPERTIES SOVERSION 1)
@@ -38,8 +40,21 @@ function(apx_gcs_lib)
     list(GET path_list -1 LIB_NAME)
     set_target_properties(${MODULE} PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
-    apx_gcs_qrc(${MODULE} PREFIX ${QRC_PREFIX} SRCS ${QRC})
+    apx_qrc(${MODULE} PREFIX ${QRC_PREFIX} SRCS ${QRC})
 
-    # apx_gcs_bundle(${MODULE} ${LIB_NAME})
+    apx_install(${MODULE})
+
+    if(RES)
+        if(NOT RES_PREFIX)
+            set(RES_PREFIX ${APX_RESOURCES_DIR})
+        endif()
+        apx_install_res(${RES_PREFIX} ${RES})
+    endif()
+
+    # make module name available in parent scope
+    set(MODULE
+        ${MODULE}
+        PARENT_SCOPE
+    )
 
 endfunction()

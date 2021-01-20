@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-set(package-contact "sa@uavos.com")
-
 # paths used by apx_module
 get_filename_component(APX_SHARED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../lib" ABSOLUTE)
 get_filename_component(APX_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" ABSOLUTE)
@@ -9,11 +7,11 @@ get_filename_component(APX_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" ABSOLUT
 list(APPEND CMAKE_MODULE_PATH ${APX_SHARED_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/shared)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/static)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-get_filename_component(APX_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources" ABSOLUTE)
+get_filename_component(APX_RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources" ABSOLUTE)
 
 # LTO
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
@@ -55,14 +53,6 @@ project(
     LANGUAGES CXX C
 )
 
-set(prefix "${PROJECT_NAME}.app/Contents")
-set(INSTALL_RUNTIME_DIR "${prefix}/MacOS")
-set(INSTALL_RESOURCES_DIR "${prefix}/Resources")
-
-# set(APX_APP_DATA_DIR "Contents/Resources")
-# set(APX_APP_LIBS_DIR "Contents/Frameworks")
-# set(APX_APP_PLUGINS_DIR "Contents/PlugIns")
-
 include(ccache)
 
 set(CMAKE_AUTOMOC ON)
@@ -79,16 +69,58 @@ include(apx_gcs_qt)
 include(apx_gcs_qrc)
 include(apx_gcs_bundle)
 include(apx_gcs_lib)
-include(apx_gcs_app)
+include(apx_gcs_install)
 
 apx_use_module("main")
 
 # app dist package
+
+# install(TARGETS ${PROJECT_NAME}
+#         RUNTIME DESTINATION . COMPONENT Runtime
+# )
+
+set(CPACK_PACKAGE_VENDOR "UAVOS")
+set(CPACK_PACKAGE_CONTACT "sa@uavos.com")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_ICON "${APX_RESOURCES_DIR}/icons/uavos-logo.ico")
 
 set(CPACK_PACKAGE_NAME ${PROJECT_DESCRIPTION})
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CPACK_SYSTEM_NAME)
 set(CPACK_PACKAGE_FILE_NAME ${PROJECT_DESCRIPTION}-${PROJECT_VERSION}-${CPACK_SYSTEM_NAME})
 string(REPLACE " " "_" CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
 
-set(CPACK_GENERATOR "DragNDrop")
+if(APPLE)
+    list(APPEND CPACK_GENERATOR "Bundle")
+
+    set(CPACK_BUNDLE_NAME ${PROJECT_DESCRIPTION})
+    set(CPACK_BUNDLE_PLIST Info.plist)
+    set(CPACK_BUNDLE_ICON "${APX_RESOURCES_DIR}/icons/uavos-logo.icns")
+
+    set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_DESCRIPTION})
+    set(MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT ${APX_COPYRIGHT})
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER com.uavos.apx.${PROJECT_NAME})
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION})
+    set(MACOSX_BUNDLE_EXECUTABLE_NAME ${PROJECT_NAME})
+    set(MACOSX_BUNDLE_ICON_FILE /${PROJECT_DESCRIPTION}.icns)
+
+    configure_file(${APX_RESOURCES_DIR}/macos/Info.plist.in Info.plist)
+
+    # main exe
+    # set(CPACK_BUNDLE_STARTUP_COMMAND "${APX_RESOURCES_DIR}/icons/uavos-logo.icns")
+
+    # list(APPEND CPACK_GENERATOR "DragNDrop")
+    set(CPACK_DMG_FORMAT "UDBZ")
+    set(CPACK_DMG_VOLUME_NAME "${PROJECT_DESCRIPTION}-${PROJECT_VERSION}")
+endif()
+if(UNIX AND NOT APPLE)
+    list(APPEND CPACK_GENERATOR "TBZ2")
+endif()
+if(WIN32)
+    list(APPEND CPACK_GENERATOR "7Z")
+    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+endif()
+
+# set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};gcs;ALL;/")
+
 include(CPack)

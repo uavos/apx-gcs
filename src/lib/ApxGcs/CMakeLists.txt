@@ -1,0 +1,12 @@
+apx_lib(
+    SRCS
+    "**/*.[ch]*"
+    INCLUDES
+    .
+    DEPENDS
+    lib.ApxData
+    lib.ApxFw
+    QT
+    SerialPort
+    Positioning
+)

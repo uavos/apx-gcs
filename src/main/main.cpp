@@ -27,9 +27,9 @@
 #include <QtCore>
 // #include <QtQuick>
 
-//#include <App/AppDirs.h>
-//#include <App/AppGcs.h>
-//#include <App/AppLog.h>
+#include <App/AppDirs.h>
+#include <App/AppGcs.h>
+#include <App/AppLog.h>
 
 //#include "RunGuard.h"
 
@@ -95,11 +95,11 @@ int main(int argc, char *argv[])
     f.setDepthBufferSize(8);
     QGLFormat::setDefaultFormat(f);*/
 
-    /*AppGcs app(argc,
+    AppGcs app(argc,
                argv,
                "Ground Control",
                QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
-*/
+
     //check instances
     /*if(!QSettings().value("multipleInstances").toBool()){
     RunGuard guard("instance.gcs.uavos.com");
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 
 */
 
-    int rv = true; //app.exec();
+    int rv = app.exec();
     qInstallMessageHandler(nullptr);
     return rv;
 }

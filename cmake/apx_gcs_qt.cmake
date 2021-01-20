@@ -1,4 +1,4 @@
-function(apx_gcs_qt TARGET)
+function(apx_qt TARGET)
 
     set(QT ${ARGN})
 
