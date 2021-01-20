@@ -52,3 +52,5 @@ site
 build*
 
 .history
+
+compile_commands.json

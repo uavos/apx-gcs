@@ -1,8 +1,6 @@
 set(target ${PROJECT_NAME})
 
-set(SRCS "main.cpp")
-# apx_srcs(SRCS)
-
+set(SRCS "main.cpp" "qml")
 add_executable(${target} ${SRCS})
 
 set(QT
@@ -16,6 +14,8 @@ set(QT
     # Svg
 )
 apx_qt(${target} ${QT})
+
+apx_qrc(${target} SRCS "qml")
 
 # dependencies
 

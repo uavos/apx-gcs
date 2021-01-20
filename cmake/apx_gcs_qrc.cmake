@@ -13,16 +13,18 @@ function(apx_qrc TARGET)
         return()
     endif()
 
-    get_target_property(OUTPUT_NAME ${TARGET} OUTPUT_NAME)
+    # get_target_property(OUTPUT_NAME ${TARGET} OUTPUT_NAME)
 
-    apx_srcs(SRCS)
+    apx_glob_srcs(${SRCS})
 
-    set(qrc_file "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.qrc")
+    set(qrc_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.qrc")
     file(WRITE ${qrc_file} "<!DOCTYPE RCC><RCC version=\"1.0\">\n")
     file(APPEND ${qrc_file} "<qresource prefix=\"/${PREFIX}\">")
     foreach(qrc_src ${SRCS})
         get_filename_component(qrc_name ${qrc_src} NAME)
-        file(APPEND ${qrc_file} "\n\t<file alias=\"${qrc_name}\">${qrc_src}</file>")
+        file(REAL_PATH ${qrc_src} qrc_src)
+        set(alias ${qrc_name}) # TODO: relative alias
+        file(APPEND ${qrc_file} "\n\t<file alias=\"${alias}\">${qrc_src}</file>")
     endforeach()
     file(APPEND ${qrc_file} "\n</qresource>\n</RCC>")
 
