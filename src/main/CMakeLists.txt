@@ -1,9 +1,10 @@
 set(target ${PROJECT_NAME})
 
-set(SRCS "main.cpp" "qml")
+apx_glob_srcs("main.cpp" "qml")
 add_executable(${target} ${SRCS})
 
-set(QT
+apx_qt(
+    ${target}
     Core
     # Qml
     Gui
@@ -13,9 +14,8 @@ set(QT
     # QuickControls2
     # Svg
 )
-apx_qt(${target} ${QT})
 
-apx_qrc(${target} SRCS "qml")
+apx_qrc(${target} BASE "qml" SRCS "**")
 
 # dependencies
 
@@ -46,7 +46,7 @@ if(APPLE)
     apx_install_res(${APX_RESOURCES_DIR} icons/*.icns)
 
 elseif(UNIX AND NOT APPLE)
-    apx_install_res(${APX_RESOURCES_DIR}/linux .)
+    apx_install_res(${APX_RESOURCES_DIR}/linux **)
 
 elseif(WIN32)
     message(FATAL_ERROR "Not implemented")

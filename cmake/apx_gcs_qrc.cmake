@@ -4,6 +4,7 @@ function(apx_qrc TARGET)
         NAME apx_qrc
         ONE_VALUE
             PREFIX
+            BASE
         MULTI_VALUE
             SRCS
 		ARGN ${ARGN})
@@ -11,6 +12,19 @@ function(apx_qrc TARGET)
 
     if(NOT SRCS)
         return()
+    endif()
+
+    if(BASE)
+        set(srcs)
+        foreach(src ${SRCS})
+            list(APPEND srcs ${BASE}/${src})
+        endforeach()
+        set(SRCS ${srcs})
+        if(NOT BASE MATCHES "^/")
+            set(BASE "${CMAKE_CURRENT_SOURCE_DIR}/${BASE}")
+        endif()
+    else()
+        set(BASE ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
     # get_target_property(OUTPUT_NAME ${TARGET} OUTPUT_NAME)
@@ -23,7 +37,11 @@ function(apx_qrc TARGET)
     foreach(qrc_src ${SRCS})
         get_filename_component(qrc_name ${qrc_src} NAME)
         file(REAL_PATH ${qrc_src} qrc_src)
-        set(alias ${qrc_name}) # TODO: relative alias
+        file(RELATIVE_PATH alias ${BASE} ${qrc_src})
+        if(alias MATCHES "\\.\\.+")
+            message(FATAL_ERROR "QRC alias: ${alias}")
+        endif()
+        # set(alias ${qrc_name}) # TODO: relative alias
         file(APPEND ${qrc_file} "\n\t<file alias=\"${alias}\">${qrc_src}</file>")
     endforeach()
     file(APPEND ${qrc_file} "\n</qresource>\n</RCC>")

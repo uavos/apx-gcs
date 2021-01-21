@@ -2,8 +2,6 @@ apx_lib(
     SRCS
     "**/*.[ch]*"
     "*.[ch]*"
-    RES
-    templates/share
     INCLUDES
     .
     DEPENDS

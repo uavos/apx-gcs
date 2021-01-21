@@ -1,8 +1,6 @@
 apx_lib(
     SRCS
     "**/*.[ch]*"
-    RES
-    templates/share
     INCLUDES
     .
     DEPENDS
@@ -11,3 +9,5 @@ apx_lib(
     Sql
     Xml
 )
+
+apx_install_res(${APX_RESOURCES_DIR} "templates/share")

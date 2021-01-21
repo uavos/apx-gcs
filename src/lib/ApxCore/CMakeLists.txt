@@ -21,14 +21,6 @@ apx_lib(
     "**/*.[ch]*"
     GENSRC
     gensrc_app
-    QRC
-    "${APX_RESOURCES_DIR}/fonts/Apx*.ttf"
-    "${APX_RESOURCES_DIR}/fonts/FreeMono*.ttf"
-    "${APX_RESOURCES_DIR}/fonts/Ubuntu-C.ttf"
-    "${APX_RESOURCES_DIR}/fonts/Bierahinia.ttf"
-    "${APX_RESOURCES_DIR}/styles/style-dark.css"
-    "${APX_RESOURCES_DIR}/icons/material-icons.*"
-    "${APX_RESOURCES_DIR}/icons/uavos-logo.*"
     INCLUDES
     .
     DEPENDS
@@ -48,3 +40,19 @@ apx_lib(
     QuickControls2
     Svg
 )
+
+apx_qrc(
+    ${MODULE}
+    BASE
+    "${APX_RESOURCES_DIR}"
+    SRCS
+    "fonts/Apx*.ttf"
+    "fonts/FreeMono*.ttf"
+    "fonts/Ubuntu-C.ttf"
+    "fonts/Bierahinia.ttf"
+    "styles/style-dark.css"
+    "icons/material-icons.*"
+    "icons/uavos-logo.*"
+)
+
+apx_install_res(${APX_RESOURCES_DIR} scripts)

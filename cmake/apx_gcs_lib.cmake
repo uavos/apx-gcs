@@ -8,11 +8,6 @@ function(apx_lib)
             GENSRC
             INCLUDES
             QT
-            QRC
-            RES
-        ONE_VALUE
-            QRC_PREFIX
-            RES_PREFIX
 		ARGN ${ARGN})
 # cmake-format: on
 
@@ -40,16 +35,7 @@ function(apx_lib)
     list(GET path_list -1 LIB_NAME)
     set_target_properties(${MODULE} PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
-    apx_qrc(${MODULE} PREFIX ${QRC_PREFIX} SRCS ${QRC})
-
     apx_install(${MODULE})
-
-    if(RES)
-        if(NOT RES_PREFIX)
-            set(RES_PREFIX ${APX_RESOURCES_DIR})
-        endif()
-        apx_install_res(${RES_PREFIX} ${RES})
-    endif()
 
     # make module name available in parent scope
     set(MODULE
