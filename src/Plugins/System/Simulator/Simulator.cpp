@@ -201,9 +201,12 @@ void Simulator::launch()
         //install xpl plugins
         QDir d(xplaneDir);
         if (d.cd("Resources") && d.cd("plugins")) {
-            QFileInfoList fiSrcList(
-                QDir(AppDirs::res().absoluteFilePath("xplane"), "*.xpl").entryInfoList());
-            foreach (QFileInfo fi, fiSrcList) {
+            QDir dir = QDir(AppDirs::res().absoluteFilePath("xplane"), "*.xpl");
+            if (dir.isEmpty())
+                dir = QDir(AppDirs::libs().absolutePath(), "*.xpl");
+            if (dir.isEmpty())
+                apxMsgW() << tr("XPL Plugin not found");
+            for (auto const &fi : dir.entryInfoList()) {
                 QString dest = d.absoluteFilePath(fi.fileName());
                 QFileInfo fiDest(dest);
                 //qDebug()<<dest;

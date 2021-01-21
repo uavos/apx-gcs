@@ -45,6 +45,8 @@ AppEngine::AppEngine(QObject *parent)
                                                      "FactListModelActions",
                                                      "Reference only");
 
+    qRegisterMetaType<QAbstractListModel *>("QAbstractListModel*");
+
     jsRegisterFunctions();
 
     // script include file (default)
@@ -54,6 +56,8 @@ AppEngine::AppEngine(QObject *parent)
         QString contents = stream.readAll();
         jsFile.close();
         jsexec(contents);
+    } else {
+        apxConsoleW() << "Resource not found:" << jsFile.fileName();
     }
     // script include file (user commands)
     QFile jsFile2(AppDirs::scripts().filePath("gcs.js"));

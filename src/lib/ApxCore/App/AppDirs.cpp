@@ -29,7 +29,13 @@ QDir AppDirs::res()
     const QString hpath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     return QDir("assets:/data/");
 #else
-    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_DATA_PATH);
+    QDir dir = QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_DATA_PATH);
+    if (dir.exists())
+        return dir;
+    dir = QDir(QCoreApplication::applicationDirPath() + "/../../resources"); // build from sources
+    if (dir.exists())
+        return dir;
+    return QDir();
 #endif
 }
 
@@ -45,12 +51,24 @@ QDir AppDirs::user()
 
 QDir AppDirs::libs()
 {
-    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_LIBS_PATH);
+    QDir dir = QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_LIBS_PATH);
+    if (dir.exists())
+        return dir;
+    dir = QDir(QCoreApplication::applicationDirPath() + "/../lib"); // build from sources
+    if (dir.exists())
+        return dir;
+    return QDir();
 }
 
 QDir AppDirs::plugins()
 {
-    return QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_PLUGINS_PATH);
+    QDir dir = QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_PLUGINS_PATH);
+    if (dir.exists())
+        return dir;
+    dir = QDir(QCoreApplication::applicationDirPath() + "/../plugins"); // build from sources
+    if (dir.exists())
+        return dir;
+    return QDir();
 }
 
 QDir AppDirs::userPlugins()

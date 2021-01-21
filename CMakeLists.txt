@@ -61,17 +61,20 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(
     Qt5
-    COMPONENTS Widgets
+    COMPONENTS Widgets QuickCompiler
     REQUIRED
 )
 
 include(apx_gcs_qt)
 include(apx_gcs_qrc)
-include(apx_gcs_bundle)
+# include(apx_gcs_bundle)
 include(apx_gcs_lib)
+include(apx_gcs_plugin)
 include(apx_gcs_install)
 
 apx_use_module("main")
+
+add_subdirectory("src/Plugins")
 
 # app dist package
 

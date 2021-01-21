@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 //---------------
-#include <version.h>
+#include <app_def.h>
 
 #include <mandala/MandalaBundles.h>
 #include <mandala/MandalaMetaTree.h>

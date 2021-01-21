@@ -3,18 +3,6 @@ set(target ${PROJECT_NAME})
 apx_glob_srcs("main.cpp" "qml")
 add_executable(${target} ${SRCS})
 
-apx_qt(
-    ${target}
-    Core
-    # Qml
-    Gui
-    # Quick
-    OpenGL
-    Widgets
-    # QuickControls2
-    # Svg
-)
-
 apx_qrc(${target} BASE "qml" SRCS "**")
 
 # dependencies

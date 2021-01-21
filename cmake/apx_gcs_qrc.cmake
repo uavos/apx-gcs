@@ -46,7 +46,11 @@ function(apx_qrc TARGET)
     endforeach()
     file(APPEND ${qrc_file} "\n</qresource>\n</RCC>")
 
-    qt_add_resources(rcc ${qrc_file} OPTIONS -no-compress)
+    # if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    #     qt_add_resources(rcc ${qrc_file} OPTIONS -no-compress)
+    # else()
+    qtquick_compiler_add_resources(rcc ${qrc_file} OPTIONS -no-compress)
+    # endif()
     target_sources(${TARGET} PRIVATE ${rcc})
 
 endfunction()
