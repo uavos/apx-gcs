@@ -7,6 +7,8 @@ function(apx_plugin)
             DEPENDS
             GENSRC
             QT
+        OPTIONS
+            QML_NO_PREFIX
 		ARGN ${ARGN})
 # cmake-format: on
 
@@ -43,11 +45,14 @@ function(apx_plugin)
     target_compile_definitions(${target} PRIVATE PLUGIN_NAME=\"${target}\")
 
     # qml
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qml)
+    if((NOT NO_QML) AND (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qml))
+        if(NOT QML_NO_PREFIX)
+            set(qml_prefix ${target})
+        endif()
         apx_qrc(
             ${target}
             PREFIX
-            ${target}
+            ${qml_prefix}
             BASE
             "qml"
             SRCS

@@ -30,5 +30,5 @@ AppPlugin {
 
     uiComponent: "map"
     onConfigure: parent=ui.map
-    onLoaded: ui.map.addMapItemGroup(item)
+    onLoaded: if(ui.map) ui.map.addMapItemGroup(item)
 }

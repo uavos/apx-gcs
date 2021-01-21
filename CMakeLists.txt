@@ -71,6 +71,7 @@ include(apx_gcs_qrc)
 include(apx_gcs_lib)
 include(apx_gcs_plugin)
 include(apx_gcs_install)
+include(apx_gcs_framework)
 
 apx_use_module("main")
 

@@ -303,6 +303,14 @@ QJSValue AppEngine::jsGetProperty(const QString &path)
 //=============================================================================
 QObject *AppEngine::loadQml(const QString &qmlFile, const QVariantMap &opts)
 {
+    QString schk = qmlFile;
+    if (schk.startsWith("qrc:"))
+        schk.remove(0, 3);
+    if (!QFile::exists(schk)) {
+        apxMsgW() << tr("Not found").append(':') << schk;
+        return nullptr;
+    }
+
     QQmlComponent c(this, qmlFile, QQmlComponent::PreferSynchronous);
     QObject *obj = c.beginCreate(rootContext());
     for (auto key : opts.keys()) {

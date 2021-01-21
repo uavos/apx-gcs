@@ -12,7 +12,7 @@ apx_module(
 
 set_target_properties(
     ${MODULE}
-    PROPERTIES OUTPUT_NAME "ApxSIL_${CMAKE_SYSTEM_PROCESSOR}"
+    PROPERTIES OUTPUT_NAME "ApxSIL_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}"
                PREFIX ""
                SUFFIX ".xpl"
 )

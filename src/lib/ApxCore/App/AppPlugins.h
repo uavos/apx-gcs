@@ -42,6 +42,8 @@ public:
 
     Fact *f_enabled;
 
+    const QFileInfo check_tool;
+
 private:
     void loadFiles(const QStringList &fileNames);
 

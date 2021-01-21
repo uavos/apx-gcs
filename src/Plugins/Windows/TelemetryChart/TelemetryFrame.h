@@ -27,7 +27,7 @@
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryPlayer.h>
 #include <Telemetry/TelemetryReader.h>
-#include <Telemetry/TelemetryShare.h>
+//#include <Telemetry/TelemetryShare.h>
 #include <QtCore>
 //=============================================================================
 class TelemetryFrame : public QWidget

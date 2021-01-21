@@ -229,9 +229,8 @@ QString AppPlugin::errorString()
 //=============================================================================
 bool AppPlugin::checkLib(const QString &fname)
 {
-    QFileInfo tool(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("gcs_plugin_test"));
+    QFileInfo tool(plugins->check_tool);
     if (!tool.exists()) {
-        //qWarning() << "missing tool" << tool.absoluteFilePath();
         return true;
     }
 

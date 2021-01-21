@@ -29,12 +29,17 @@ AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     : QObject(parent)
     , QList<AppPlugin *>()
     , f_enabled(f_enabled)
+    , check_tool(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("gcs_plugin_test"))
 {
     if (App::dryRun() || App::segfault()) {
         QSettings spt;
         spt.beginGroup("plugins_test");
         for (auto k : spt.allKeys())
             spt.remove(k);
+    }
+
+    if (!check_tool.exists()) {
+        qWarning() << "missing tool" << check_tool.absoluteFilePath();
     }
 }
 AppPlugins::~AppPlugins()

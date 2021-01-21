@@ -1,4 +1,0 @@
-import ApxApp
-
-ApxApp.ApxPluginQML {
-}
