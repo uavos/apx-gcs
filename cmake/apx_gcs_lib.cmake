@@ -1,5 +1,5 @@
-# cmake-format: off
 function(apx_lib)
+    # cmake-format: off
     apx_parse_function_args(
         NAME apx_gcs_lib
 		MULTI_VALUE

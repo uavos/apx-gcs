@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
 # paths used by apx_module
-get_filename_component(APX_SHARED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../lib" ABSOLUTE)
-get_filename_component(APX_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" ABSOLUTE)
+file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../lib" APX_SHARED_DIR)
+file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src" APX_MODULES_DIR)
 
 list(APPEND CMAKE_MODULE_PATH ${APX_SHARED_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -11,7 +11,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/static)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-get_filename_component(APX_RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources" ABSOLUTE)
+set(APX_PLUGINS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/plugins)
+
+file(REAL_PATH "${CMAKE_SOURCE_DIR}/resources" APX_RESOURCES_DIR)
 
 # LTO
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
@@ -61,70 +63,44 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(
     Qt5
-    COMPONENTS Widgets QuickCompiler
+    COMPONENTS Core QuickCompiler
     REQUIRED
 )
+file(REAL_PATH "${Qt5Core_DIR}/../../.." QT_DIR)
 
 include(apx_gcs_qt)
 include(apx_gcs_qrc)
-# include(apx_gcs_bundle)
 include(apx_gcs_lib)
 include(apx_gcs_plugin)
-include(apx_gcs_install)
 include(apx_gcs_framework)
+include(apx_gcs_install)
+include(apx_gcs_bundle)
+include(apx_gcs_meta)
 
 apx_use_module("main")
 
 add_subdirectory("src/Plugins")
 
-# app dist package
+apx_metadata_generate()
 
-# install(TARGETS ${PROJECT_NAME}
-#         RUNTIME DESTINATION . COMPONENT Runtime
-# )
-
-set(CPACK_PACKAGE_VENDOR "UAVOS")
-set(CPACK_PACKAGE_CONTACT "sa@uavos.com")
-set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_ICON "${APX_RESOURCES_DIR}/icons/uavos-logo.ico")
-
-set(CPACK_PACKAGE_NAME ${PROJECT_DESCRIPTION})
-string(TOLOWER ${CMAKE_SYSTEM_NAME} CPACK_SYSTEM_NAME)
-set(CPACK_PACKAGE_FILE_NAME ${PROJECT_DESCRIPTION}-${PROJECT_VERSION}-${CPACK_SYSTEM_NAME})
-string(REPLACE " " "_" CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-
-if(APPLE)
-    list(APPEND CPACK_GENERATOR "Bundle")
-
-    set(CPACK_BUNDLE_NAME ${PROJECT_DESCRIPTION})
-    set(CPACK_BUNDLE_PLIST Info.plist)
-    set(CPACK_BUNDLE_ICON "${APX_RESOURCES_DIR}/icons/uavos-logo.icns")
-
-    set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_DESCRIPTION})
-    set(MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
-    set(MACOSX_BUNDLE_COPYRIGHT ${APX_COPYRIGHT})
-    set(MACOSX_BUNDLE_GUI_IDENTIFIER com.uavos.apx.${PROJECT_NAME})
-    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION})
-    set(MACOSX_BUNDLE_EXECUTABLE_NAME ${PROJECT_NAME})
-    set(MACOSX_BUNDLE_ICON_FILE /${PROJECT_DESCRIPTION}.icns)
-
-    configure_file(${APX_RESOURCES_DIR}/macos/Info.plist.in Info.plist)
-
-    # main exe
-    # set(CPACK_BUNDLE_STARTUP_COMMAND "${APX_RESOURCES_DIR}/icons/uavos-logo.icns")
-
-    # list(APPEND CPACK_GENERATOR "DragNDrop")
-    set(CPACK_DMG_FORMAT "UDBZ")
-    set(CPACK_DMG_VOLUME_NAME "${PROJECT_DESCRIPTION}-${PROJECT_VERSION}")
-endif()
-if(UNIX AND NOT APPLE)
-    list(APPEND CPACK_GENERATOR "TBZ2")
-endif()
-if(WIN32)
-    list(APPEND CPACK_GENERATOR "7Z")
-    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-endif()
-
-# set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};gcs;ALL;/")
-
-include(CPack)
+apx_install_bundle(
+    PLUGINS
+    audio
+    bearer
+    gamepads
+    generic
+    geoservices
+    iconengines
+    imageformats
+    mediaservice
+    platforms
+    # platformthemes
+    position
+    printsupport
+    sensorgestures
+    sensors
+    sqldrivers/libqsqlite.dylib
+    # styles
+    texttospeech
+    # webview
+)

@@ -5,6 +5,22 @@ add_executable(${target} ${SRCS})
 
 apx_qrc(${target} BASE "qml" SRCS "**")
 
+# app meta data
+apx_metadata(app.name ${PROJECT_DESCRIPTION})
+apx_metadata(app.version ${PROJECT_VERSION})
+apx_metadata(app.runtime ${PROJECT_NAME})
+apx_metadata(app.platform ${CMAKE_SYSTEM_NAME})
+apx_metadata(app.arch ${CMAKE_SYSTEM_PROCESSOR})
+apx_metadata(app.build ${CMAKE_BUILD_TYPE})
+
+apx_metadata(app.path.bundle ${APX_INSTALL_APP_DIR})
+apx_metadata(app.path.bin ${APX_INSTALL_BIN_DIR})
+apx_metadata(app.path.libs ${APX_INSTALL_LIBS_DIR})
+apx_metadata(app.path.plugins ${APX_INSTALL_PLUGINS_DIR})
+apx_metadata(app.path.data ${APX_INSTALL_DATA_DIR})
+apx_metadata(app.path.qt ${QT_DIR})
+apx_metadata(app.path.src ${PROJECT_SOURCE_DIR})
+
 # dependencies
 
 set(DEPENDS lib.ApxGcs)

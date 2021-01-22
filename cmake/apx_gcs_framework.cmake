@@ -5,6 +5,9 @@ if(APPLE)
         target_link_libraries(${target} PUBLIC "-F ${dir}")
         target_link_libraries(${target} PUBLIC "-framework ${fwname}")
         target_include_directories(${target} PUBLIC "${FW_${fwname}}/Headers")
-        message(STATUS "Framework ${fwname} found at ${dir}")
+        message(STATUS "FRAMEWORK: ${fwname} (${dir})")
+
+        set_property(GLOBAL APPEND PROPERTY APX_META_FRAMEWORKS "${FW_${fwname}}")
+
     endmacro()
 endif()

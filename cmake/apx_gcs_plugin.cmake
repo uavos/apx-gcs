@@ -26,7 +26,7 @@ function(apx_plugin)
 
     add_library(${target} MODULE ${SRCS})
 
-    set_target_properties(${target} PROPERTIES OUTPUT_NAME ${target} LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
+    set_target_properties(${target} PROPERTIES OUTPUT_NAME ${target} LIBRARY_OUTPUT_DIRECTORY ${APX_PLUGINS_OUTPUT_DIRECTORY})
 
     apx_qt(${target} ${QT})
 
@@ -79,6 +79,9 @@ function(apx_plugin)
     )
 
     apx_install_plugin(${target})
+
+    # collect plugins list property
+    set_property(GLOBAL APPEND PROPERTY APX_META_PLUGINS ${target})
 
     # make name available in parent scope
     set(MODULE

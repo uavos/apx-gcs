@@ -1,5 +1,7 @@
 apx_plugin(QT Concurrent)
 
+apx_install_res(${APX_RESOURCES_DIR} templates/joystick.json)
+
 if(APPLE)
     apx_add_framework(${MODULE} SDL2)
 
