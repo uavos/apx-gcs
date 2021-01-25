@@ -9,7 +9,8 @@ from subprocess import PIPE, Popen
 
 def run_and_get_output(popen_args):
     """Run process and get all output"""
-    process_output = namedtuple('ProcessOutput', ['stdout', 'stderr', 'retcode'])
+    process_output = namedtuple(
+        'ProcessOutput', ['stdout', 'stderr', 'retcode'])
     try:
         # GlobalConfig.logger.debug('run_and_get_output({0})'.format(repr(popen_args)))
 
@@ -39,8 +40,9 @@ def copytree(src, dst, symlinks=False, ignore=None):
 
 
 def remove(path):
+    # print("rm: {}".format(path))
     if os.path.islink(path):
-        os.remove(path)
+        os.unlink(path)
         return
     if not os.path.exists(path):
         # print 'missing rm: '+path
@@ -55,7 +57,7 @@ def clean_links(path):
     # clean links
     cnt = 0
     for root, dirs, files in os.walk(path):
-        flist = []
+        flist = list()
         if dirs:
             flist.extend(dirs)
         if files:
@@ -66,7 +68,7 @@ def clean_links(path):
                 fp = os.path.join(root, os.readlink(p))
                 if not os.path.exists(fp):
                     cnt = cnt+1
-                    remove(os.path.join(root, p))
+                    remove(p)
     return cnt
 
 
@@ -87,6 +89,7 @@ def clean_dirs(path):
 def clean(path):
     cnt = 1
     while cnt > 0:
+        # print('clean... {}'.format(cnt))
         cnt = clean_dirs(path)
         cnt = cnt + clean_links(path)
 

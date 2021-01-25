@@ -7,7 +7,7 @@ if(APPLE)
         target_include_directories(${target} PUBLIC "${FW_${fwname}}/Headers")
         message(STATUS "FRAMEWORK: ${fwname} (${dir})")
 
-        set_property(GLOBAL APPEND PROPERTY APX_META_FRAMEWORKS "${FW_${fwname}}")
+        set_property(GLOBAL APPEND PROPERTY APX_FRAMEWORKS "${FW_${fwname}}")
 
     endmacro()
 endif()

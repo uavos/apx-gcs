@@ -37,6 +37,23 @@ function(apx_lib)
 
     apx_install(${MODULE})
 
+    get_target_property(lib ${MODULE} OUTPUT_NAME)
+    if(APPLE)
+        set(prefix "lib")
+        set(suffix ".dylib")
+    else()
+        get_target_property(suffix ${MODULE} SUFFIX)
+        get_target_property(prefix ${MODULE} PREFIX)
+        if(prefix STREQUAL prefix-NOTFOUND)
+            set(prefix)
+        endif()
+        if(suffix STREQUAL suffix-NOTFOUND)
+            set(suffix)
+        endif()
+    endif()
+    set(lib "${prefix}${lib}${suffix}")
+    set_property(GLOBAL APPEND PROPERTY APX_LIBS ${lib})
+
     # make module name available in parent scope
     set(MODULE
         ${MODULE}

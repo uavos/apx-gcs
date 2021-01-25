@@ -24,9 +24,15 @@ function(apx_plugin)
     endif()
     apx_glob_srcs(${SRCS})
 
-    add_library(${target} MODULE ${SRCS})
+    add_library(${target} SHARED ${SRCS})
 
-    set_target_properties(${target} PROPERTIES OUTPUT_NAME ${target} LIBRARY_OUTPUT_DIRECTORY ${APX_PLUGINS_OUTPUT_DIRECTORY})
+    set_target_properties(
+        ${target}
+        PROPERTIES APX_PLUGIN TRUE
+                   PREFIX ""
+                   OUTPUT_NAME ${target}
+                   LIBRARY_OUTPUT_DIRECTORY ${APX_PLUGINS_OUTPUT_DIRECTORY}
+    )
 
     apx_qt(${target} ${QT})
 
@@ -64,24 +70,24 @@ function(apx_plugin)
     # set_target_properties(${target} PROPERTIES SOVERSION 1)
 
     # bundle
-    set_target_properties(
-        ${target}
-        PROPERTIES BUNDLE TRUE
-                   MACOSX_BUNDLE_BUNDLE_NAME ${target}
-                   MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-                   MACOSX_BUNDLE_COPYRIGHT ${APX_COPYRIGHT}
-                   MACOSX_BUNDLE_GUI_IDENTIFIER com.uavos.apx.${PROJECT_NAME}.${target}
-                   MACOSX_FRAMEWORK_IDENTIFIER com.uavos.apx.${PROJECT_NAME}.${target}
-                   MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
-                   MACOSX_BUNDLE_LONG_VERSION_STRING ${PROJECT_VERSION}
-                   MACOSX_BUNDLE_EXECUTABLE_NAME ${target}
-                   MACOSX_BUNDLE_INFO_STRING "${target} plugin for ${PROJECT_DESCRIPTION}"
-    )
+    # set_target_properties(
+    #     ${target}
+    #     PROPERTIES BUNDLE TRUE
+    #                MACOSX_BUNDLE_BUNDLE_NAME ${target}
+    #                MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    #                MACOSX_BUNDLE_COPYRIGHT ${APX_COPYRIGHT}
+    #                MACOSX_BUNDLE_GUI_IDENTIFIER com.uavos.apx.${PROJECT_NAME}.${target}
+    #                MACOSX_FRAMEWORK_IDENTIFIER com.uavos.apx.${PROJECT_NAME}.${target}
+    #                MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+    #                MACOSX_BUNDLE_LONG_VERSION_STRING ${PROJECT_VERSION}
+    #                MACOSX_BUNDLE_EXECUTABLE_NAME ${target}
+    #                MACOSX_BUNDLE_INFO_STRING "${target} plugin for ${PROJECT_DESCRIPTION}"
+    # )
 
     apx_install_plugin(${target})
 
     # collect plugins list property
-    set_property(GLOBAL APPEND PROPERTY APX_META_PLUGINS ${target})
+    # set_property(GLOBAL APPEND PROPERTY APX_META_PLUGINS ${target})
 
     # make name available in parent scope
     set(MODULE

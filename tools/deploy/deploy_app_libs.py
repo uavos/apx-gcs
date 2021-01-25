@@ -13,20 +13,24 @@ import osxrelocator
 
 def strip_framework_gstreamer(src, dst):
     name = os.path.split(dst)[1]
-    gst_bin = os.path.join(dst, 'Versions', os.readlink(os.path.join(dst, 'Versions/Current')))
+    gst_bin = os.path.join(dst, 'Versions', os.readlink(
+        os.path.join(dst, 'Versions/Current')))
 
+    # print('GST strip... {}'.format(gst_bin))
     utils.remove(os.path.join(gst_bin, 'bin'))
     utils.remove(os.path.join(gst_bin, 'etc'))
     utils.remove(os.path.join(gst_bin, 'share'))
     utils.remove(os.path.join(gst_bin, 'include'))
     utils.remove(os.path.join(gst_bin, 'lib/gst-validate-launcher'))
     utils.remove_all(dst, ['static', '*.pc', '*.sh', 'girepository-*'])
+    # print('GST strip cleanup...')
     utils.clean(dst)
     # relocate libs
     rel = '@executable_path/../Frameworks/'+name+'/'
     print("Relocating GStreamer...")
     osxrelocator.OSXRelocator(gst_bin, src, rel, recursive=True).relocate()
-    os.symlink('../../../../../Frameworks', os.path.join(gst_bin, 'libexec', 'Frameworks'))
+    os.symlink('../../../../../Frameworks',
+               os.path.join(gst_bin, 'libexec', 'Frameworks'))
 
 
 def copy_framework(src, dst, arch):
@@ -37,8 +41,10 @@ def copy_framework(src, dst, arch):
         return
     utils.remove(dst)
     subprocess.call(['ditto', '-v', '--arch', arch, src, dst])
+    # print('installed')
     # copy_tree(fw, dst,  preserve_symlinks=True, verbose=1)
     utils.strip_framework(dst)
+    # print('fw stripped')
     if 'gstreamer' in name.lower():
         strip_framework_gstreamer(src, dst)
 
@@ -62,7 +68,8 @@ def copy_libs_flat(src, dst, patterns, links=False):
                     if len(fl) > (ext+1):
                         ext = ext+1
                     t = '.'.join(fl[0:ext+1])
-                subprocess.check_call(['cp', '-af', os.path.join(root, f), os.path.join(dst, t)])
+                subprocess.check_call(
+                    ['cp', '-af', os.path.join(root, f), os.path.join(dst, t)])
 
 
 def deploy_libs(path, json, dist):
@@ -70,7 +77,7 @@ def deploy_libs(path, json, dist):
     print('Deploy libraries...')
 
     arch = app['arch']
-    platform = app['platform']
+    platform = app['platform'].lower()
 
     if 'frameworks' in json:
         frameworks = list(json['frameworks'])
@@ -78,14 +85,14 @@ def deploy_libs(path, json, dist):
     else:
         frameworks = []
 
-    if 'libs' in json:
-        libs = list(json['libs'])
+    if 'extlibs' in json:
+        libs = list(json['extlibs'])
         print("Libs: {}".format(len(libs)))
     else:
         libs = []
 
     # install frameworks
-    library_path = os.path.join(path, app['library_path'])
+    library_path = os.path.join(path, app['path']['libs'])
 
     for fw in frameworks:
         if not fw.startswith('/Library/Frameworks'):
@@ -104,9 +111,11 @@ def deploy_libs(path, json, dist):
             for f in os.listdir(dist):
                 if os.path.splitext(f)[1] == '.deb':
                     print('Extracting: '+f)
-                    subprocess.call(['dpkg', '-x', os.path.join(dist, f), dist_tmp])
-            copy_libs_flat(dist_tmp, os.path.join(path, app['bundle_path'], 'lib'), ['*.so', '*.so.*'], True)
-            # app_path = os.path.abspath(os.path.join(path, app['bundle_path']))
+                    subprocess.call(
+                        ['dpkg', '-x', os.path.join(dist, f), dist_tmp])
+            copy_libs_flat(dist_tmp, os.path.join(
+                path, app['path']['bundle'], 'lib'), ['*.so', '*.so.*'], True)
+            # app_path = os.path.abspath(os.path.join(path, app['path']['bundle']))
             # subprocess.call(['cp', '-ar', os.path.join(dist_tmp, 'usr', 'lib'), app_path])
             # subprocess.call(['cp', '-ar', os.path.join(dist_tmp, 'lib'), app_path])
             # subprocess.call(['find', os.path.join(app_path, 'lib', 'x86_64-linux-gnu'), '-exec', 'mv', '-f', '{}', os.path.join(app_path, 'lib/'), ';'])
@@ -120,17 +129,22 @@ def deploy_libs(path, json, dist):
             # remove(os.path.join(app_path, 'lib'))
             # remove(os.path.join(app_path, 'var'))
 
-    if platform == 'macos':
+    if platform == 'darwin':
         print('Relocating executables...')
-        osxrelocator.OSXRelocator(os.path.join(path, app['plugin_path']), '/Library/Frameworks', '@executable_path/../Frameworks', recursive=True).relocate()
-        osxrelocator.OSXRelocator(os.path.join(path, app['bin_path']), '/Library/Frameworks', '@executable_path/../Frameworks', recursive=True).relocate()
+        osxrelocator.OSXRelocator(os.path.join(
+            path, app['path']['plugins']), '/Library/Frameworks', '@executable_path/../Frameworks', recursive=True).relocate()
+        osxrelocator.OSXRelocator(os.path.join(
+            path, app['path']['bin']), '/Library/Frameworks', '@executable_path/../Frameworks', recursive=True).relocate()
 
 
 if __name__ == "__main__":
     # Parse commandline
-    parser = argparse.ArgumentParser(description='Search and copy libs to APX app bundle.')
-    parser.add_argument('--appdata', action='store', required=True, help='APX app metadata json file')
-    parser.add_argument('--dist', action='store', help='Distribution packages path to add to image')
+    parser = argparse.ArgumentParser(
+        description='Search and copy libs to APX app bundle.')
+    parser.add_argument('--appdata', action='store',
+                        required=True, help='APX app metadata json file')
+    parser.add_argument('--dist', action='store',
+                        help='Distribution packages path to add to image')
     args = parser.parse_args()
     with open(args.appdata, 'r') as f:
         json = simplejson.loads(str(f.read()))

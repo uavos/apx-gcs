@@ -58,7 +58,7 @@ AppMenu::AppMenu(Fact *parent)
     f->setOpt("role", QAction::PreferencesRole);
     connect(f, &Fact::triggered, AppRoot::instance(), &Fact::trigger);
 
-    if (!App::installed()) {
+    if (!App::installed() && App::bundle()) {
         f = new Fact(app, "install", tr("Install application"), "", NoFlags, "package-variant");
         f->setOpt("role", QAction::ApplicationSpecificRole);
         connect(f, &Fact::triggered, App::instance(), &App::install);

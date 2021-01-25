@@ -39,7 +39,6 @@ Updater::Updater(Fact *parent)
     f_auto->setDefaultValue(true);
 
     f_check = new Fact(this, "update", tr("Check for updates"), title(), Action | Apply, "update");
-    connect(f_check, &Fact::triggered, this, &Updater::check);
 
     //add menu to app
     Fact *m = new Fact(AppGcs::instance()->f_menu->app, f_check->name());
@@ -48,8 +47,13 @@ Updater::Updater(Fact *parent)
 
     initUpdaterImpl();
 
-    connect(f_auto, &Fact::valueChanged, this, &Updater::updateAuto);
-    updateAuto();
+    if (m_impl) {
+        connect(f_check, &Fact::triggered, this, &Updater::check);
+        connect(f_auto, &Fact::valueChanged, this, &Updater::updateAuto);
+        updateAuto();
+    } else {
+        setEnabled(false);
+    }
 
     App::jsync(this);
 }
@@ -57,8 +61,10 @@ Updater::Updater(Fact *parent)
 void Updater::initUpdaterImpl()
 {
 #ifdef Q_OS_MAC
-    m_impl = std::make_unique<SparkleAutoUpdater>();
-    m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
+    if (App::bundle()) {
+        m_impl = std::make_unique<SparkleAutoUpdater>();
+        m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
+    }
 #endif
 #ifdef Q_OS_LINUX
     m_impl = new AppImageAutoUpdater(this);
@@ -67,18 +73,21 @@ void Updater::initUpdaterImpl()
 //=============================================================================
 void Updater::check()
 {
-    m_impl->checkForUpdates();
+    if (m_impl)
+        m_impl->checkForUpdates();
 }
 //=============================================================================
 void Updater::checkInBackground()
 {
-    m_impl->checkForUpdatesInBackground();
+    if (m_impl)
+        m_impl->checkForUpdatesInBackground();
 }
 //=============================================================================
 void Updater::updateAuto()
 {
     bool v = f_auto->value().toBool();
-    m_impl->setAutomaticallyChecksForUpdates(v);
+    if (m_impl)
+        m_impl->setAutomaticallyChecksForUpdates(v);
     if (v) {
         checkInBackground();
     }

@@ -39,6 +39,8 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET
     CACHE STRING "Minimum OS X deployment version"
 )
 
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
 # set(CMAKE_MACOSX_BUNDLE ON)
 # set(CMAKE_MACOSX_RPATH ON)
 
@@ -83,24 +85,4 @@ add_subdirectory("src/Plugins")
 
 apx_metadata_generate()
 
-apx_install_bundle(
-    PLUGINS
-    audio
-    bearer
-    gamepads
-    generic
-    geoservices
-    iconengines
-    imageformats
-    mediaservice
-    platforms
-    # platformthemes
-    position
-    printsupport
-    sensorgestures
-    sensors
-    sqldrivers/libqsqlite.dylib
-    # styles
-    texttospeech
-    # webview
-)
+apx_install_bundle_libs()

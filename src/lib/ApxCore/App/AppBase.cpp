@@ -144,6 +144,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
 #if defined Q_OS_LINUX
     const QString appImage(qEnvironmentVariable("APPIMAGE"));
     if (!appImage.isEmpty() && QFile::exists(appImage)) {
+        m_bundle = true;
         m_bundlePath = appImage;
         appPaths << appImage;
     }
@@ -152,6 +153,10 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     destPaths << destApp;
     m_installDir = destApp;
 #elif defined Q_OS_MACOS
+    // bundle?
+    m_bundle = appDir.path().endsWith(".app/Contents/MacOS");
+
+    // installed?
     m_installDir = "/Applications";
     QDir bundleDir(appDir);
     bundleDir.cdUp();
@@ -164,6 +169,8 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     //    qDebug() << destPaths;
     //    qDebug() << bundlePath();
     //    qDebug() << installDir();
+
+    // installed?
     QString bundleName = QFileInfo(m_bundlePath).completeBaseName();
     if (!(bundleName.contains('-') || bundleName.contains('.'))) {
         for (auto p : destPaths) {
@@ -178,6 +185,9 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         }
     }
 
+    if (!m_bundle) {
+        apxConsoleW() << tr("Application is not a bundle");
+    }
     if (!m_installed) {
         apxConsoleW() << tr("Application is not installed");
     }
@@ -256,7 +266,7 @@ bool AppBase::install()
         apxMsgW() << tr("Installation path is missing");
         return false;
     }
-    if (!QFile::exists(bundlePath())) {
+    if (!QFile::exists(bundlePath()) || !bundle()) {
         apxMsgW() << tr("Bundle not exist").append(':') << bundlePath();
         return false;
     }

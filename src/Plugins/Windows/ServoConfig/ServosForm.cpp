@@ -20,9 +20,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ServosForm.h"
-#include "ui_ServosForm.h"
 #include <App/AppLog.h>
 #include <Vehicles/Vehicles.h>
+
+#include "ui_ServosForm.h"
 
 //==============================================================================
 ServosForm::ServosForm(QWidget *parent)

@@ -43,7 +43,7 @@ public:
 
 private:
 #ifdef Q_OS_MAC
-    std::unique_ptr<SparkleAutoUpdater> m_impl;
+    std::unique_ptr<SparkleAutoUpdater> m_impl{};
 #endif
 #ifdef Q_OS_LINUX
     AppImageAutoUpdater *m_impl;

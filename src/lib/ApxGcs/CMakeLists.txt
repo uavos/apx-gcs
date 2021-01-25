@@ -7,6 +7,7 @@ apx_lib(
     lib.ApxData
     lib.ApxFw
     QT
+    Widgets
     SerialPort
     Positioning
 )

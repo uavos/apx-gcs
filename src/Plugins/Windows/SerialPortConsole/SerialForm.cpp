@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "SerialForm.h"
-#include "ui_SerialForm.h"
 
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
@@ -29,6 +28,7 @@
 #include <Telemetry/TelemetryRecorder.h>
 #include <Vehicles/Vehicles.h>
 
+#include "ui_SerialForm.h"
 //==============================================================================
 SerialForm::SerialForm(QWidget *parent)
     : QWidget(parent)

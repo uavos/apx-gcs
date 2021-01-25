@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE static bool dryRun() { return _instance->m_dryRun; }
     Q_INVOKABLE static bool segfault() { return _instance->m_segfault; }
 
+    Q_INVOKABLE static bool bundle() { return _instance->m_bundle; }
     Q_INVOKABLE static bool installed() { return _instance->m_installed; }
     Q_INVOKABLE static QString installDir() { return _instance->m_installDir; }
     Q_INVOKABLE static QString bundlePath() { return _instance->m_bundlePath; }
@@ -55,8 +56,8 @@ public:
 private:
     static AppBase *_instance;
 
-    bool m_dryRun;
-    bool m_segfault;
+    bool m_dryRun{};
+    bool m_segfault{};
 
     QString m_version;
     QString m_branch;
@@ -67,7 +68,8 @@ private:
     QString m_hostname;
     QString m_username;
 
-    bool m_installed;
+    bool m_bundle{};
+    bool m_installed{};
     QString m_installDir;
     QString m_bundlePath;
 };

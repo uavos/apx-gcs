@@ -27,19 +27,24 @@
 class SparkleAutoUpdater::Private
 {
 public:
-  SUUpdater* updater;
+    SUUpdater* updater;
+    NSAutoreleasePool* autoReleasePool;
 };
 
 SparkleAutoUpdater::SparkleAutoUpdater()
 {
   d = new Private;
 
-  d->updater = [SUUpdater sharedUpdater];
+  NSApplicationLoad();
+  d->autoReleasePool = [[NSAutoreleasePool alloc] init];
+
+  d->updater = [[SUUpdater sharedUpdater] retain];
   [d->updater retain];
 }
 
 SparkleAutoUpdater::~SparkleAutoUpdater()
 {
+  [d->autoReleasePool release];
   [d->updater release];
   delete d;
 }

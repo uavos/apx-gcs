@@ -1,1 +1,1 @@
-apx_plugin(DEPENDS lib.ApxGcs)
+apx_plugin(SRCS "*.[chu]*" DEPENDS lib.ApxGcs QT Widgets)

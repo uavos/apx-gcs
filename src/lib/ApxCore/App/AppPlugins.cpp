@@ -51,7 +51,8 @@ void AppPlugins::load(const QStringList &names)
 {
     //collect all available plugins filenames
     QStringList allFiles;
-    QStringList filters(QStringList() << "*.so"
+    QStringList filters(QStringList() << "*.gcs"
+                                      << "*.so"
                                       << "*.dylib"
                                       << "*.bundle"
                                       << "*.qml");

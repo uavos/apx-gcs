@@ -188,7 +188,8 @@ void AppPlugin::load()
 {
     if (loader || control)
         return;
-    if (fileName.endsWith(".so") || fileName.endsWith(".dylib") || fileName.endsWith(".bundle")) {
+    if (fileName.endsWith(".gcs") || fileName.endsWith(".so") || fileName.endsWith(".dylib")
+        || fileName.endsWith(".bundle")) {
         loadLib();
     } else if (fileName.endsWith(".qml")) {
         loadQml();
