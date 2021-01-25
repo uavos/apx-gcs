@@ -14,9 +14,9 @@ def deploy_qt(path, json):
     platform = app['platform'].lower()
     print('Deploy Qt...')
 
-    if os.path.exists(os.path.join(path, app['path']['data'], 'qt.conf')) or os.path.exists(os.path.join(path, app['path']['bin'], 'qt.conf')):
-        print('Qt already deployed.')
-        return
+    # if os.path.exists(os.path.join(path, app['path']['data'], 'qt.conf')) or os.path.exists(os.path.join(path, app['path']['bin'], 'qt.conf')):
+    #     print('Qt already deployed.')
+    #     return
 
     deploy_tool = {
         'darwin': 'macdeployqt',
@@ -72,7 +72,7 @@ def deploy_qt(path, json):
         # opts.append('-bundle-non-qt-libs')
         # opts.append('-exclude-libs=')
         # opts.append('-verbose=2')
-    elif platform == 'macos':
+    elif platform == 'darwin':
         opts.append('-appstore-compliant')
         # opts.append('-libpath=/Library/Frameworks')
 
@@ -87,12 +87,15 @@ def deploy_qt(path, json):
         utils.remove_all(
             app_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
         utils.remove_all(os.path.join(app_path, 'qml', 'QtQuick'), ['*.qml'])
-    elif platform == 'macos':
+    elif platform == 'darwin':
         qml_path = os.path.abspath(os.path.join(
             path, app['path']['data'], 'qml'))
         utils.remove_all(
             qml_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
         utils.remove_all(os.path.join(qml_path, 'QtQuick'), ['*.qml'])
+
+    utils.remove_all(os.path.abspath(
+        os.path.join(path, app['path']['libs'])), ['*.prl'])
 
     print('Qt successfully deployed.')
 

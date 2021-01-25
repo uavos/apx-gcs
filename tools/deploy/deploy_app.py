@@ -44,17 +44,17 @@ if __name__ == "__main__":
 
     deploy_libs(path, json, args.dist)
 
-    # print('')
-    # if args.sign:
-    #     print('Signing app bundle ({})...'.format(args.sign))
-    #     if platform == 'macos':
-    #         subprocess.check_call([
-    #             'codesign',
-    #             '--deep',
-    #             '--force',
-    #             '-s',
-    #             args.sign,
-    #             os.path.join(path, app['path']['bundle'])
-    #         ])
+    print('')
+    if args.sign:
+        print('Signing app bundle ({})...'.format(args.sign))
+        if platform == 'darwin':
+            subprocess.check_call([
+                'codesign',
+                '--deep',
+                '--force',
+                '-s',
+                args.sign,
+                os.path.join(path, app['path']['bundle'])
+            ])
 
     print('App bundle prepared.')

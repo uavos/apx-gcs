@@ -80,6 +80,8 @@ function(apx_install_bundle_libs)
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_app.py
                 --app=\"${APX_INSTALL_APP_DIR}\"
                 --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+                --dist=\$ENV{LIBS_DIST_DIR}
+                --sign=\$ENV{CODE_IDENTITY}
             )"
     )
 endfunction()
