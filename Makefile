@@ -6,8 +6,6 @@ CMAKE := cmake
 
 all: package
 
-
-
 configure:
 	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR) -G Ninja
 
@@ -20,6 +18,15 @@ bundle: configure
 release-package: configure
 	$(CMAKE) --build $(BUILD_DIR) --target deploy_package
 
+
+
+install-tools-osx:
+	@brew install ccache clang-format cquery cmake ninja
+	@brew tap PX4/px4
+	@brew install kconfig-frontends
+
+install-tools-python:
+	@pip install networkx simplejson jinja2 pyyaml
 
 
 # update materialdesignicons
