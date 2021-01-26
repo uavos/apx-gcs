@@ -51,7 +51,7 @@ git clone --recurse-submodules git@github.com:uavos/apx-lib.git lib
 
 ### Cmake build
 
-The project uses `cmake` build system. The tools require some `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
+The project uses `cmake` build system. The used tools require some `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
 
 It is required for GCS compilation to have [`apx-lib`](https://github.com/uavos/apx-lib) shared library source available in the parent directory of the project.
 

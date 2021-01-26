@@ -22,8 +22,6 @@ release-package: configure
 
 install-tools-osx:
 	@brew install ccache clang-format cquery cmake ninja
-	@brew tap PX4/px4
-	@brew install kconfig-frontends
 
 install-tools-python:
 	@pip install networkx simplejson jinja2 pyyaml
