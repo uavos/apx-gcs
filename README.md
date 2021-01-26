@@ -15,28 +15,28 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
  - Protocols [abstraction](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxData/Protocols);
 
 ## Included Plugins
- - `AppUpdate` Automatic application update support for macos via [Sparkle](https://sparkle-project.org/) for mac or [AppImage](https://appimage.org) for linux;
- - `CompassCalibration`: Helper widget for hard-iron compass calibration;
+ - `AppUpdate`: automatic application update support for macos via [Sparkle](https://sparkle-project.org/) for mac or [AppImage](https://appimage.org) for linux;
+ - `CompassCalibration`: helper widget for hard-iron compass calibration;
  - `DatalinkInspector`: QML widget for inspecting of datalink packets;
  - `FirmwareLoader`: allows to update firmware of [APX nodes](http://docs.uavos.com/hw/index.html) or upload to stm32 [bootloader](https://www.st.com/resource/en/application_note/cd00264342-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf);
  - `Joystick`: makes [SDL2](https://www.libsdl.org) contols available to the UAV control logic;
- - `Location`: a geo map tiles downloader and offline cache, optimized for UAV applications;
+ - `Location`: geo map tiles downloader and offline cache, optimized for UAV applications;
  - `MandalaTree`: tree view window of UAV state;
  - `MissionPlanner`: [QML map](https://doc.qt.io/qt-5/qml-qtlocation-map.html) with mission editor;
  - `ScriptCompiler`: [WASM](https://webassembly.org) Scripting engine support for onboard MCUs;
- - `SerialPortConsole`: a tool to debug and trace serial data from onboard serial ports ([VCP](http://docs.uavos.com/fw/conf/serial.html));
- - `ServoConfig`: a tool to configure some specific servo drives;
+ - `SerialPortConsole`: tool to debug and trace serial data from onboard serial ports ([VCP](http://docs.uavos.com/fw/conf/serial.html));
+ - `ServoConfig`: tool to configure some specific servo drives;
  - `Shortcuts`: manages keyboard shortcuts and assigned commands to the UAV;
  - `Signals`: QML widget to show live chart of defined UAV physical values for easy tuning;
  - `Simulator`: launches [X-Plane](https://www.x-plane.com) flight simulator with provided specific plugins to communicate to the GCS for SIL/HIL simulation;
- - `Sites`: a MissionPlanner plugin to add named areas to missions;
+ - `Sites`: map view plugin to add named areas to missions and map areas;
  - `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines and emits emergency alarms;
- - `TelemetryChart`: [QWT](https://qwt.sourceforge.io) based window to review telemetry database;
- - `Terminal`: UAV commands termial, generally [JS](https://wiki.qt.io/JavaScript) based;
- - `TreeFacts`: general back-end qobjects data structure tree-view for debugging;
- - `TreeJS`: JavaScript context tree view for debugging and reference;
+ - `TelemetryChart`: [QWT](https://qwt.sourceforge.io) based widget to review telemetry database;
+ - `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript) based;
+ - `TreeFacts`: general back-end qobjects data structure tree-view, used for debugging;
+ - `TreeJS`: JavaScript context tree view, used for debugging and reference;
  - `VehicleConfiguration`: UAV parameters tree view and extended editor;
- - `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with gimbal controls and recording;
+ - `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with UAV gimbal controls and video stream recording;
 
 
 ## Build instructions
