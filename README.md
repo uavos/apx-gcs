@@ -6,9 +6,9 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
 
 ## Key features
 
- - [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE)
- - Based on [QT](https://www.qt.io) framework;
+ - [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
  - Multi-platform;
+ - Based on [QT](https://www.qt.io) framework;
  - QML [frontend](https://github.com/uavos/apx-gcs/blob/main/src/main/qml/Apx/Application/GroundControl.qml);
  - Tree of qobjects at the [back-end](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
  - Application defined by [plugins](https://github.com/uavos/apx-gcs/tree/main/src/Plugins);
@@ -37,8 +37,6 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
  - `TreeJS`: JavaScript context tree view for debugging and reference;
  - `VehicleConfiguration`: UAV parameters tree view and extended editor;
  - `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with gimbal controls and recording;
- - Some extra plugins, not listed here yet;
-
 
 
 ## Build instructions
@@ -51,19 +49,30 @@ git clone --recurse-submodules git@github.com:uavos/apx-gcs.git gcs
 git clone --recurse-submodules git@github.com:uavos/apx-lib.git lib
 ```
 
-### Build project
+### Cmake build
 
-The project uses `cmake` build system with some `python3` scripts to manage source files generation via `jinja` and assemble deploy packages.
+The project uses `cmake` build system. The tools require some `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
 
+It is required for GCS compilation to have [`apx-lib`](https://github.com/uavos/apx-lib) shared library source available in the parent directory of the project.
+
+After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
 ```
 cd gcs
 cmake -H. -Bbuild -G Ninja
 cmake --build build
 ```
 
-To create app bundle use `bundle` target.
+### Building application bundle
 
->See additional targets in `Makefile`.
+To create the GCS application bundle with all libs installed - use [`bundle`](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) target:
+
+```
+cmake --build build --target bundle
+```
+
+This will build either `.app` macos application of [`AppImage`](https://appimage.org) linux bundle, depending on the host platform;
+
+>Take a look at some additional targets in [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile).
 
 ### Output directories
 
