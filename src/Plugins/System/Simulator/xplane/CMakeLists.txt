@@ -32,5 +32,5 @@ elseif(UNIX AND NOT APPLE)
     target_compile_definitions(${MODULE} PRIVATE APL=0 IBM=0 LIN=1)
 
 elseif(WIN32)
-    message(FATAL_ERROR "Not implemented")
+    message(WARNING "Not implemented")
 endif()

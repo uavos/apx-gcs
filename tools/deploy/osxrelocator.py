@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 # cerbero - a multi-platform build system for Open Source software
 # Copyright (C) 2012 Andoni Morales Alastruey <ylatuya@gmail.com>
 #
@@ -73,7 +74,8 @@ class OSXRelocator(object):
         self.change_id(object_file, id)
 
     def change_id(self, object_file, id=None):
-        id = id or object_file.replace(self.lib_prefix.decode('utf-8'), self.new_lib_prefix.decode('utf-8'))
+        id = id or object_file.replace(self.lib_prefix.decode(
+            'utf-8'), self.new_lib_prefix.decode('utf-8'))
         filename = os.path.basename(object_file)
         if not (filename.endswith('so') or filename.endswith('dylib')):
             return

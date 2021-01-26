@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -141,12 +141,18 @@ if __name__ == "__main__":
     # Parse commandline
     parser = argparse.ArgumentParser(
         description='Search and copy libs to APX app bundle.')
-    parser.add_argument('--appdata', action='store',
+    parser.add_argument('--app', action='store',
+                        required=True, help='APX app bundle directory')
+    parser.add_argument('--meta', action='store',
                         required=True, help='APX app metadata json file')
     parser.add_argument('--dist', action='store',
                         help='Distribution packages path to add to image')
     args = parser.parse_args()
-    with open(args.appdata, 'r') as f:
+    with open(args.meta, 'r') as f:
         json = simplejson.loads(str(f.read()))
         f.close()
-        deploy_libs(os.path.dirname(args.appdata), json, args.dist)
+
+    path = os.path.abspath(args.app)
+    dist = args.dist if args.dist else None
+
+    deploy_libs(path, json, dist)

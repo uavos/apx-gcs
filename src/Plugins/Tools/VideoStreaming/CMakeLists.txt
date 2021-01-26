@@ -59,5 +59,5 @@ elseif(UNIX AND NOT APPLE)
     # "gstapp-1.0", "gstrtp-1.0", "gstbase-1.0", "gstreamer-1.0", "gobject-2.0", "glib-2.0"
 
 elseif(WIN32)
-    message(FATAL_ERROR "Not implemented")
+    message(WARNING "Not implemented")
 endif()

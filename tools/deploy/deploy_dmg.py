@@ -1,43 +1,41 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import os
 
 import simplejson
 import dmgbuild
-import biplist
+# import biplist
 
 
-if __name__ == "__main__":
-    # Parse commandline
-    parser = argparse.ArgumentParser(description='Deploy DMG apple disk image for APX app.')
-    parser.add_argument('--appdata', action='store', required=True, help='APX app metadata json file')
-    args = parser.parse_args()
-    with open(args.appdata, 'r') as f:
-        json = simplejson.loads(str(f.read()))
-        f.close()
-    path = os.path.dirname(args.appdata)
+def deploy_dmg(path, json):
     app = json['app']
     app_name = app['name']
-    app_path = os.path.join(path, app['bundle_path'])
+    app_path = os.path.join(path, app['path']['bundle'])
     bundle = os.path.basename(app_path.rstrip('/'))
-    platform = app['platform']
+    platform = app['platform'].lower()
+    arch = app['arch']
+    version = app['version']
 
-    filename = os.path.join(app_name.replace(' ', '_')+'-'+app['version']+'-'+platform+'-'+app['arch']+'.dmg')
-    volume_name = app_name+' ('+app['version']+')'
+    filename = os.path.join(app_name.replace(
+        ' ', '_')+'-'+version+'-'+platform+'-'+arch+'.dmg')
+    volume_name = app_name+' ('+version+')'
 
     print('Deploy image ({})...'.format(filename))
 
     settings = {}
     # get icon from app
-    plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
-    plist = biplist.readPlist(plist_path)
-    icon_name = plist['CFBundleIconFile']
-    icon_root, icon_ext = os.path.splitext(icon_name)
-    if not icon_ext:
-        icon_ext = '.icns'
-    icon_name = icon_root + icon_ext
-    settings['icon'] = os.path.join(app_path, 'Contents', 'Resources')+icon_name
+    # plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
+    # print(plist_path)
+    # plist = biplist.readPlist(plist_path)
+    if 'icon' in app and app['icon']:
+        icon_name = app['icon']
+        icon_root, icon_ext = os.path.splitext(icon_name)
+        if not icon_ext:
+            icon_ext = '.icns'
+        icon_name = icon_root + icon_ext
+        settings['icon'] = os.path.join(
+            app_path, 'Contents', 'Resources')+icon_name
 
     # contents
     files = []
@@ -57,6 +55,24 @@ if __name__ == "__main__":
     settings['compression_level'] = 9
 
     # build image
-    dmgbuild.build_dmg(os.path.join(path, app['packages_path'], filename), volume_name, settings=settings)
+    dmgbuild.build_dmg(os.path.join(path, filename),
+                       volume_name, settings=settings)
 
     print('Application image created.')
+
+
+if __name__ == "__main__":
+    # Parse commandline
+    parser = argparse.ArgumentParser(
+        description='Deploy DMG apple disk image for APX app.')
+    parser.add_argument('--app', action='store',
+                        required=True, help='APX app bundle directory')
+    parser.add_argument('--meta', action='store',
+                        required=True, help='APX app metadata json file')
+    args = parser.parse_args()
+    with open(args.meta, 'r') as f:
+        json = simplejson.loads(str(f.read()))
+        f.close()
+
+    path = os.path.abspath(args.app)
+    deploy_dmg(path, json)

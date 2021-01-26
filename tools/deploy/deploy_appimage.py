@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -6,33 +6,33 @@ import subprocess
 
 import simplejson
 
-if __name__ == "__main__":
-    # Parse commandline
-    parser = argparse.ArgumentParser(description='Deploy linux AppImage for APX app.')
-    parser.add_argument('--appdata', action='store', required=True, help='APX app metadata json file')
-    parser.add_argument('--apprun', action='store', help='AppImage AppRun script')
-    args = parser.parse_args()
-    with open(args.appdata, 'r') as f:
-        json = simplejson.loads(str(f.read()))
-        f.close()
-    path = os.path.dirname(args.appdata)
+
+def deploy_appimage(path, json, apprun):
     app = json['app']
     app_name = app['name']
-    app_path = os.path.abspath(os.path.join(path, app['bundle_path'], '..'))
-    packages_path = os.path.join(path, app['packages_path'])
-    bundle = os.path.basename(app_path)
-    platform = app['platform']
-    zsync_link = 'gh-releases-zsync|uavos|apx-releases|latest|APX_Ground_Control-*-linux-x86_64.AppImage.zsync'
+    app_path = os.path.abspath(os.path.join(path, app['path']['bundle'], '..'))
 
-    filename = os.path.join(app_name.replace(' ', '_')+'-'+app['version']+'-'+platform+'-'+app['arch']+'.AppImage')
-    volume_name = app_name+' ('+app['version']+')'
+    platform = app['platform'].lower()
+    app_arch = app['arch']
+    version = app['version']
+
+    packages_path = path
+
+    app_name_file = app_name.replace(' ', '_')
+
+    zsync_link = 'gh-releases-zsync|uavos|apx-releases|latest|' + \
+        app_name_file+'-*-'+platform+'-'+app_arch+'.AppImage.zsync'
+
+    filename = os.path.join(app_name_file+'-'+version +
+                            '-'+platform+'-'+app_arch+'.AppImage')
+    volume_name = app_name+' ('+version+')'
 
     print('Deploy image ({})...'.format(filename))
 
-    if args.apprun:
+    if apprun:
         apprun = os.path.join(app_path, 'AppRun')
         os.remove(apprun)
-        subprocess.check_call(['cp', '-af', args.apprun, apprun])
+        subprocess.check_call(['cp', '-af', apprun, apprun])
 
     pargs = [
         'env', 'ARCH='+app['arch'],
@@ -50,3 +50,24 @@ if __name__ == "__main__":
     #     print(out.stderr)
     #     exit(out.retcode)
     print('Application image created.')
+
+
+if __name__ == "__main__":
+    # Parse commandline
+    parser = argparse.ArgumentParser(
+        description='Deploy linux AppImage for APX app.')
+    parser.add_argument('--app', action='store',
+                        required=True, help='APX app bundle directory')
+    parser.add_argument('--meta', action='store',
+                        required=True, help='APX app metadata json file')
+    parser.add_argument('--apprun', action='store',
+                        help='AppImage AppRun script')
+    args = parser.parse_args()
+    with open(args.meta, 'r') as f:
+        json = simplejson.loads(str(f.read()))
+        f.close()
+
+    path = os.path.abspath(args.app)
+    apprun = args.apprun if args.apprun else None
+
+    deploy_appimage(path, json, apprun)

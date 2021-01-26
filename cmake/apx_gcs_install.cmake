@@ -21,10 +21,8 @@ elseif(UNIX AND NOT APPLE)
     set(APX_INSTALL_RPATH "\$ORIGIN/../Frameworks")
 
 elseif(WIN32)
-    message(FATAL_ERROR "Not implemented")
+    message(WARNING "Not implemented")
 endif()
-
-# set(CMAKE_INSTALL_RPATH "${APX_INSTALL_RPATH}")
 
 function(apx_install)
     install(
@@ -69,28 +67,3 @@ function(apx_install_res prefix)
     endforeach()
 
 endfunction()
-
-function(apx_install_bundle_libs)
-    install(
-        CODE "\n
-        message(STATUS \"Deploying app...\")\n
-        execute_process(
-            WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}
-            OUTPUT_FILE /dev/stdout
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_app.py
-                --app=\"${APX_INSTALL_APP_DIR}\"
-                --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
-                --dist=\$ENV{LIBS_DIST_DIR}
-                --sign=\$ENV{CODE_IDENTITY}
-            )"
-    )
-endfunction()
-
-# set(bundle_file
-# add_custom_command(
-#     OUTPUT ${json}
-#     COMMAND ${PYTHON_EXECUTABLE} ${APX_SHARED_DIR}/tools/gensrc.py --data "${app_meta_data}" --dest ${json}
-#     DEPENDS ${APX_SHARED_DIR}/tools/gensrc.py ${target}
-#     VERBATIM
-# )
-# add_custom_target(bundle ALL DEPENDS ${json})

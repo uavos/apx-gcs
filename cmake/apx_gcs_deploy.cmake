@@ -1,0 +1,71 @@
+set(APX_DEPLOY_DIR ${CMAKE_CURRENT_BINARY_DIR}/deploy)
+
+if(CMAKE_BUILD_TYPE STREQUAL Release)
+    add_custom_target(
+        deploy_bundle
+        COMMAND ${CMAKE_COMMAND} -E rm -Rf ${APX_DEPLOY_DIR}
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR} --config Release
+        COMMAND ${CMAKE_COMMAND} -E env --unset=DESTDIR ${CMAKE_COMMAND} --install ${CMAKE_CURRENT_BINARY_DIR} --prefix ${APX_DEPLOY_DIR} --strip
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM USES_TERMINAL
+    )
+else()
+    set(APX_DEPLOY_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/release)
+    add_custom_target(
+        deploy_bundle
+        COMMAND ${CMAKE_COMMAND} -E rm -Rf ${APX_DEPLOY_DIR}
+        COMMAND ${CMAKE_COMMAND} -GNinja -B${APX_DEPLOY_BUILD_DIR} -H. -DCMAKE_BUILD_TYPE=Release
+        COMMAND ${CMAKE_COMMAND} --build ${APX_DEPLOY_BUILD_DIR} --config Release
+        COMMAND ${CMAKE_COMMAND} -E env --unset=DESTDIR ${CMAKE_COMMAND} --install ${APX_DEPLOY_BUILD_DIR} --prefix ${APX_DEPLOY_DIR} --strip
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM USES_TERMINAL
+    )
+endif()
+
+add_custom_target(
+    deploy_qt
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_qt.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+    DEPENDS deploy_bundle
+    WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+    VERBATIM USES_TERMINAL
+)
+
+add_custom_target(
+    deploy_libs
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_libs.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json --dist=$ENV{LIBS_DIST_DIR}
+    DEPENDS deploy_qt
+    WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+    VERBATIM USES_TERMINAL
+)
+
+add_custom_target(bundle DEPENDS deploy_libs)
+
+if(APPLE)
+    add_custom_target(
+        deploy_sign
+        COMMAND codesign --deep --force -s $ENV{CODE_IDENTITY} ${APX_INSTALL_APP_DIR}
+        DEPENDS deploy_libs
+        WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+        VERBATIM USES_TERMINAL
+    )
+
+    add_custom_target(
+        deploy_package
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_dmg.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+        DEPENDS deploy_sign
+        WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+        VERBATIM USES_TERMINAL
+    )
+
+elseif(UNIX AND NOT APPLE)
+    add_custom_target(
+        deploy_package
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_appimage.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+        DEPENDS deploy_libs
+        WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+        VERBATIM USES_TERMINAL
+    )
+
+elseif(WIN32)
+    message(WARNING "Not implemented")
+endif()

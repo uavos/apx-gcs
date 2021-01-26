@@ -11,5 +11,5 @@ elseif(UNIX AND NOT APPLE)
     target_link_libraries(${MODULE} PRIVATE ${SDL2_LIBRARIES})
 
 elseif(WIN32)
-    message(FATAL_ERROR "Not implemented")
+    message(WARNING "Not implemented")
 endif()

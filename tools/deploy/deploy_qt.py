@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -104,10 +104,14 @@ if __name__ == "__main__":
     # Parse commandline
     parser = argparse.ArgumentParser(
         description='Deploy Qt libs to APX app bundle with \'XXXdeployqt\' tool.')
-    parser.add_argument('--appdata', action='store',
+    parser.add_argument('--app', action='store',
+                        required=True, help='APX app bundle directory')
+    parser.add_argument('--meta', action='store',
                         required=True, help='APX app metadata json file')
     args = parser.parse_args()
-    with open(args.appdata, 'r') as f:
+    with open(args.meta, 'r') as f:
         json = simplejson.loads(str(f.read()))
         f.close()
-        deploy_qt(os.path.dirname(args.appdata), json)
+
+    path = os.path.abspath(args.app)
+    deploy_qt(path, json)

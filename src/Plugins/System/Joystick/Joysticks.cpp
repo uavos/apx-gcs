@@ -85,6 +85,7 @@ void Joysticks::updateEnabled()
         }
         scan();
         waitEvent();
+        qDebug() << "SDL initialized";
     } else {
         foreach (auto i, f_list->facts()) {
             i->remove();

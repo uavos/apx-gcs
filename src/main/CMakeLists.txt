@@ -17,7 +17,6 @@ foreach(dep ${DEPENDS})
 endforeach()
 
 # install
-# install(TARGETS ${target} RUNTIME DESTINATION ${APX_INSTALL_BIN_DIR})
 apx_install(${target})
 
 apx_install_res(${APX_RESOURCES_DIR} vpn)
@@ -34,9 +33,11 @@ if(APPLE)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Info.plist DESTINATION ${APX_INSTALL_BIN_DIR}/..)
     apx_install_res(${APX_RESOURCES_DIR} icons/*.icns)
 
+    apx_metadata(app.icon ${MACOSX_BUNDLE_ICON_FILE})
+
 elseif(UNIX AND NOT APPLE)
     apx_install_res(${APX_RESOURCES_DIR}/linux **)
 
 elseif(WIN32)
-    message(FATAL_ERROR "Not implemented")
+    message(WARNING "Not implemented")
 endif()

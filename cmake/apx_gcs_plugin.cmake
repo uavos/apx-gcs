@@ -69,25 +69,7 @@ function(apx_plugin)
     # set_target_properties(${target} PROPERTIES VERSION ${PROJECT_VERSION})
     # set_target_properties(${target} PROPERTIES SOVERSION 1)
 
-    # bundle
-    # set_target_properties(
-    #     ${target}
-    #     PROPERTIES BUNDLE TRUE
-    #                MACOSX_BUNDLE_BUNDLE_NAME ${target}
-    #                MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    #                MACOSX_BUNDLE_COPYRIGHT ${APX_COPYRIGHT}
-    #                MACOSX_BUNDLE_GUI_IDENTIFIER com.uavos.apx.${PROJECT_NAME}.${target}
-    #                MACOSX_FRAMEWORK_IDENTIFIER com.uavos.apx.${PROJECT_NAME}.${target}
-    #                MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
-    #                MACOSX_BUNDLE_LONG_VERSION_STRING ${PROJECT_VERSION}
-    #                MACOSX_BUNDLE_EXECUTABLE_NAME ${target}
-    #                MACOSX_BUNDLE_INFO_STRING "${target} plugin for ${PROJECT_DESCRIPTION}"
-    # )
-
     apx_install_plugin(${target})
-
-    # collect plugins list property
-    # set_property(GLOBAL APPEND PROPERTY APX_META_PLUGINS ${target})
 
     # make name available in parent scope
     set(MODULE

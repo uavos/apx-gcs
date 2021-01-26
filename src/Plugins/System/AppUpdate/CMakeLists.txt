@@ -21,5 +21,5 @@ elseif(UNIX AND NOT APPLE)
     )
 
 elseif(WIN32)
-    message(FATAL_ERROR "Not implemented")
+    message(WARNING "Not implemented")
 endif()
