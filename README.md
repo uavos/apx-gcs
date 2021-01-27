@@ -57,6 +57,10 @@ It is required for GCS compilation to have [`apx-lib`](https://github.com/uavos/
 
 For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) `install-tools-XXX` targets.
 
+#### Required libraries
+ - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
+ - [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
+
 After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
 ```
 cd gcs
