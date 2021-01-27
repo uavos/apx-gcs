@@ -2,7 +2,7 @@
 #
 # APX Autopilot project <http://docs.uavos.com>
 #
-# Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
+# Copyright (c) 2003-2021, Aliaksei Stratsilatau <sa@uavos.com>
 # All rights reserved
 #
 # This file is part of APX Ground Control.
@@ -19,9 +19,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-#
-# APX css parser for material design icons css
 #
 
 

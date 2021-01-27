@@ -2,7 +2,7 @@
 ##
 ## APX Autopilot project <http://docs.uavos.com>
 ##
-## Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
+## Copyright (c) 2003-2021, Aliaksei Stratsilatau <sa@uavos.com>
 ## All rights reserved
 ##
 ## This file is part of APX Ground Control.

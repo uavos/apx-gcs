@@ -55,6 +55,8 @@ The project uses `cmake` build system. The used tools require some `python3` scr
 
 It is required for GCS compilation to have [`apx-lib`](https://github.com/uavos/apx-lib) shared library source available in the parent directory of the project.
 
+For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) `install-tools-XXX` targets.
+
 After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
 ```
 cd gcs
