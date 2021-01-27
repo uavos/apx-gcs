@@ -44,14 +44,14 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
 ### Clone the repository
 
 ```
-mkdir apx && cd apx
 git clone --recurse-submodules git@github.com:uavos/apx-gcs.git gcs
-git clone --recurse-submodules git@github.com:uavos/apx-lib.git lib
 ```
+
+GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodule.
 
 ### Cmake build
 
-The project uses `cmake` build system. The used tools require some `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
+The project uses `cmake` build system. Some tools require `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
 
 It is required for GCS compilation to have [`apx-lib`](https://github.com/uavos/apx-lib) shared library source available in the parent directory of the project.
 
@@ -60,6 +60,7 @@ For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Ma
 #### Required libraries
  - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
  - [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
+ - [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
 
 After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
 ```

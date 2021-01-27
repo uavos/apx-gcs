@@ -4,5 +4,6 @@ add_subdirectory("Simulator")
 add_subdirectory("Shortcuts")
 add_subdirectory("ScriptCompiler")
 add_subdirectory("FirmwareLoader")
-add_subdirectory("AppUpdate")
 add_subdirectory("Joystick")
+
+add_subdirectory("AppUpdate")

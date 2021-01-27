@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
 # paths used by apx_module
-get_filename_component(APX_SHARED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../lib" ABSOLUTE)
+get_filename_component(APX_SHARED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shared" ABSOLUTE)
 get_filename_component(APX_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" ABSOLUTE)
 
 list(APPEND CMAKE_MODULE_PATH ${APX_SHARED_DIR}/cmake)
