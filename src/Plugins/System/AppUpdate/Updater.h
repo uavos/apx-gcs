@@ -46,7 +46,7 @@ private:
     std::unique_ptr<SparkleAutoUpdater> m_impl{};
 #endif
 #ifdef Q_OS_LINUX
-    AppImageAutoUpdater *m_impl;
+    AppImageAutoUpdater *m_impl{};
 #endif
     void initUpdaterImpl();
 

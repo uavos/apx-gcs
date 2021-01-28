@@ -60,6 +60,7 @@ Updater::Updater(Fact *parent)
 
 void Updater::initUpdaterImpl()
 {
+    m_impl=nullptr;
     if (!App::bundle())
         return;
 
