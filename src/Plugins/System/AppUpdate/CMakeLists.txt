@@ -7,17 +7,25 @@ if(APPLE)
     apx_add_framework(${MODULE} AppKit)
 
 elseif(UNIX AND NOT APPLE)
-    apx_qrc(${target} PREFIX ${target} SRCS "Linux/*.qml")
+    apx_qrc(
+        ${MODULE}
+        PREFIX
+        ${MODULE}
+        BASE
+        "Linux"
+        SRCS
+        "*.qml"
+    )
 
     target_link_libraries(
         ${MODULE}
-        /usr/local/lib/libappimageupdate.a
-        /usr/local/lib/libappimage_shared.a
-        /usr/local/lib/libcpr.a
-        /usr/local/lib/libzsync2.a
-        /usr/local/lib/libzsync.a
-        /usr/local/lib/librcksum.a
-        -lcurl
+        PRIVATE /usr/local/lib/libappimageupdate.a
+                /usr/local/lib/libappimage_shared.a
+                /usr/local/lib/libcpr.a
+                /usr/local/lib/libzsync2.a
+                /usr/local/lib/libzsync.a
+                /usr/local/lib/librcksum.a
+                -lcurl
     )
 
 elseif(WIN32)

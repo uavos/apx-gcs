@@ -52,7 +52,7 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
 
     //move pan
     panner = new QwtPlotPanner(canvas());
-    panner->setMouseButton(Qt::MidButton);
+    panner->setMouseButton(Qt::MiddleButton);
     panner2 = new QwtPlotPanner(canvas());
     panner2->setMouseButton(Qt::LeftButton, Qt::ShiftModifier);
 
@@ -533,7 +533,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
         //if(fact)units=fact->units();
         s += "<tr><td align=right><font size=+2 color=" + c.name() + ">" + curve->title().text()
              + "</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"
-             + QString().sprintf("%.2f", v) + "</font></td></tr>";
+             + QString("%1").arg(v,0,'f',2) + "</font></td></tr>";
     }
     s += "</table>";
     return QwtText(s);

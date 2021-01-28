@@ -60,12 +60,14 @@ Updater::Updater(Fact *parent)
 
 void Updater::initUpdaterImpl()
 {
+    if (!App::bundle())
+        return;
+
 #ifdef Q_OS_MAC
-    if (App::bundle()) {
-        m_impl = std::make_unique<SparkleAutoUpdater>();
-        m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
-    }
+    m_impl = std::make_unique<SparkleAutoUpdater>();
+    m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
 #endif
+
 #ifdef Q_OS_LINUX
     m_impl = new AppImageAutoUpdater(this);
 #endif

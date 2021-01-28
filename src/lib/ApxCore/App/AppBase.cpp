@@ -137,6 +137,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
 
     // check installation
     m_installed = false;
+    m_bundle = false;
     QStringList destPaths(QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
     QStringList appPaths;
     QDir appDir(QCoreApplication::applicationDirPath());
@@ -322,7 +323,7 @@ bool AppBase::install()
                           QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
                               + "/icons");
         //restart
-        QProcess::startDetached(fiBundleDest.absoluteFilePath());
+        QProcess::startDetached(fiBundleDest.absoluteFilePath(),QStringList());
         exit();
     }
 

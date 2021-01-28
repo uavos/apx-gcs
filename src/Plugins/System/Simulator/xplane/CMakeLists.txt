@@ -30,6 +30,7 @@ if(APPLE)
 
 elseif(UNIX AND NOT APPLE)
     target_compile_definitions(${MODULE} PRIVATE APL=0 IBM=0 LIN=1)
+    target_compile_options(shared.xbus.tcp PRIVATE -fPIC)
 
 elseif(WIN32)
     message(WARNING "Not implemented")

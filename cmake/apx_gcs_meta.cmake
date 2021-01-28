@@ -82,22 +82,24 @@ function(apx_metadata_generate)
         endif()
 
         get_target_property(type ${target} TYPE)
-        get_target_property(is_plugin ${target} APX_PLUGIN)
-
-        if(is_plugin)
-            list(APPEND plugins "${target}")
-        elseif(type STREQUAL EXECUTABLE)
+        if(type STREQUAL EXECUTABLE)
+            # message(STATUS "EXE: ${target}")
             list(APPEND executables "${target}")
+        elseif(type STREQUAL SHARED_LIBRARY)
+            # message(STATUS "LIB: ${target}")
+            get_target_property(is_plugin ${target} APX_PLUGIN)
+            if(is_plugin)
+                list(APPEND plugins "${target}")
+            endif()
         endif()
-
     endforeach()
     list(APPEND app_meta_data "executables:[${executables}]")
     list(APPEND app_meta_data "plugins:[${plugins}]")
 
     add_custom_command(
         OUTPUT ${json}
-        COMMAND ${PYTHON_EXECUTABLE} ${APX_SHARED_DIR}/tools/gensrc.py --data "${app_meta_data}" --dest ${json}
-        DEPENDS ${APX_SHARED_DIR}/tools/gensrc.py ${target}
+        COMMAND ${PYTHON_EXECUTABLE} ${APX_SHARED_TOOLS_DIR}/gensrc.py --data "${app_meta_data}" --dest ${json}
+        DEPENDS ${APX_SHARED_TOOLS_DIR}/gensrc.py ${target}
         VERBATIM
     )
     add_custom_target(${target}.meta ALL DEPENDS ${json})

@@ -52,7 +52,7 @@ bool AppImageAutoUpdater::checkInstalled()
     if (App::installed())
         return true;
     apxMsgW() << tr("Application must be installed for updates to work");
-    trigger();
+    //trigger();
     return false;
 }
 
@@ -149,7 +149,7 @@ void AppImageAutoUpdater::start(bool keepOldVersion)
 
         std::string newFile;
         updater->pathToNewFile(newFile);
-        QProcess::startDetached(QString::fromStdString(newFile));
+        QProcess::startDetached(QString::fromStdString(newFile), QStringList());
         QCoreApplication::exit(0);
 
         setState(NoUpdates);
