@@ -6,4 +6,6 @@ add_subdirectory("ScriptCompiler")
 add_subdirectory("FirmwareLoader")
 add_subdirectory("Joystick")
 
-add_subdirectory("AppUpdate")
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR APPLE)
+    add_subdirectory("AppUpdate")
+endif()
