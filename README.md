@@ -61,6 +61,7 @@ For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Ma
  - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
  - [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
  - [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
+ - [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation target in Makefile;
 
 After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
 ```

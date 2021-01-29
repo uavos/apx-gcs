@@ -26,6 +26,10 @@ install-tools-osx:
 install-tools-python:
 	@pip install networkx simplejson jinja2 pyyaml
 
+install-appimageupdate-linux:
+	@sudo rm -rf /usr/src/AppImageUpdate
+	@sudo git clone --depth=1 --recurse-submodules https://github.com/AppImage/AppImageUpdate.git /usr/src/AppImageUpdate
+	@cd /usr/src/AppImageUpdate && sudo cmake -H. -Bbuild && sudo cmake --build build --target install
 
 # update materialdesignicons
 # https://github.com/Templarian/MaterialDesign-Webfont
