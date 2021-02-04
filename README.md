@@ -4,6 +4,8 @@ GCS - APX Ground Control Software.
 
 This application is part of [APX Autopilot project](http://docs.uavos.com).
 
+[![GSC video](http://img.youtube.com/vi/CSPNkGZuP8M/0.jpg)](https://youtu.be/CSPNkGZuP8M)
+
 ## Key features
 
  - [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
@@ -44,7 +46,7 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
 ### Clone the repository
 
 ```
-git clone --recurse-submodules git@github.com:uavos/apx-gcs.git gcs
+git clone --recurse-submodules git@github.com:uavos/apx-gcs.git
 ```
 
 GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodule.
@@ -52,8 +54,6 @@ GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodul
 ### Cmake build
 
 The project uses `cmake` build system. Some tools require `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
-
-It is required for GCS compilation to have [`apx-lib`](https://github.com/uavos/apx-lib) shared library source available in the parent directory of the project.
 
 For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) `install-tools-XXX` targets.
 
@@ -65,7 +65,7 @@ For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Ma
 
 After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
 ```
-cd gcs
+cd apx-gcs
 cmake -H. -Bbuild -G Ninja
 cmake --build build
 ```
@@ -80,9 +80,21 @@ cmake --build build --target bundle
 
 This will build either `.app` macos application of [`AppImage`](https://appimage.org) linux bundle, depending on the host platform;
 
->Take a look at some additional targets in [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile).
+>Take a look at some additional targets in [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile). Although, the makefile is used mainly to create releases.
 
 ### Output directories
 
  - `build/out` contains runtime binaries;
  - `build/deploy` contains app bundle;
+
+## Links
+
+ * [Changelog](https://uavos.github.io/apx-gcs/CHANGELOG.html) - `GCS` changelog gh pages view;
+ * [uavos/apx-ap](https://github.com/uavos/apx-ap) - APX Autopilot Firmware packages;
+ * [UAVOS Inc. company web site](http://uavos.com) with products and more;
+ * [APX Autopilot documentation](http://docs.uavos.com)
+ * [UAVOS Inc. GitHub Organization](https://github.com/uavos)
+
+#   
+
+>&copy; [Aliaksei Stratsilatau](https://github.com/uavinda)
