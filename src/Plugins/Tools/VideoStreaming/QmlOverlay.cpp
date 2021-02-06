@@ -48,6 +48,9 @@ QmlOverlay::QmlOverlay(QObject *parent)
     m_quickWindow->setColor(QColor(0, 0, 0, 0));
     connect(m_renderControl, &QQuickRenderControl::sceneChanged, this, &QmlOverlay::sceneChanged);
 
+    if (!m_context->isValid())
+        return;
+
     m_context->makeCurrent(m_offscreenSurface);
     m_renderControl->initialize(m_context);
     m_context->doneCurrent();
