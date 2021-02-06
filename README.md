@@ -1,18 +1,24 @@
 # APX Autopilot by UAVOS - Ground Control Software
 
-GCS - APX Ground Control Software.
-
-This application is part of [APX Autopilot project](http://docs.uavos.com).
+![APX GCS CI](https://github.com/uavos/apx-gcs/workflows/APX%20GCS%20CI/badge.svg)
 
 [![GSC video](http://img.youtube.com/vi/CSPNkGZuP8M/0.jpg)](https://youtu.be/CSPNkGZuP8M)
+
+APX Ground Control Software (`GCS`): open-source project, leaded by [UAVOS Company](http://uavos.com).
+
+This repository contains a cross-platform application, which is part of [APX Autopilot project](http://docs.uavos.com).
+
+The purpose of this application is to manage command & control, mission planing, and safety requirements of [Unmanned Vehicle](https://en.wikipedia.org/wiki/UAV) (UAV).
+
+The source code, published in this repository, **is not based** on any known open-source projects related to UAV industry.
 
 ## Key features
 
 - [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
+- Based on [QT framework](https://www.qt.io) and [QML](https://en.wikipedia.org/wiki/QML);
 - Multi-platform;
-- Based on [QT](https://www.qt.io) framework;
-- QML [frontend](https://github.com/uavos/apx-gcs/blob/main/src/main/qml/Apx/Application/GroundControl.qml);
-- Tree of qobjects at the [back-end](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
+- Customizable [frontend](https://github.com/uavos/apx-gcs/blob/main/src/main/qml/Apx/Application/GroundControl.qml);
+- C++ defined JS Tree at the [backend](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
 - Application defined by [plugins](https://github.com/uavos/apx-gcs/tree/main/src/Plugins);
 - Protocols [abstraction](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxData/Protocols);
 
@@ -33,12 +39,12 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
 - `Signals`: QML widget to show live chart of defined UAV physical values for easy tuning;
 - `Simulator`: launches [X-Plane](https://www.x-plane.com) flight simulator with provided specific plugins to communicate to the GCS for SIL/HIL simulation;
 - `Sites`: map view plugin to add named areas to missions and map areas;
-- `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines and emits emergency alarms;
-- `TelemetryChart`: [QWT](https://qwt.sourceforge.io) based widget to review telemetry database;
-- `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript) based;
+- `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines, availebale to the system, and emits emergency alarm sounds;
+- `TelemetryChart`: [QWT](https://qwt.sourceforge.io)-lib based widget to visualize telemetry database;
+- `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript)/QML based;
 - `TreeFacts`: general back-end qobjects data structure tree-view, used for debugging;
 - `TreeJS`: JavaScript context tree view, used for debugging and reference;
-- `VehicleConfiguration`: UAV parameters tree view and extended editor;
+- `VehicleConfiguration`: UAV parameters tree view and extended QTreeView-based editor;
 - `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with UAV gimbal controls and video stream recording;
 
 
@@ -94,14 +100,16 @@ This will build either `.app` macos application of [`AppImage`](https://appimage
 
 ### MacOS
 
-Serial port drivers:
+The modern APX nodes, starting form version 11, support [CDC](https://en.wikipedia.org/wiki/USB_communications_device_class) and are not required to install any drivers on the host side. Although, you may find the following links useful:
 
-- [Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) - used for [mhx](../hw/nodes/mhx.md) and [ghanta](../hw/nodes/ghanta.md)
-- [FTDI USB to Serial port converters](https://www.ftdichip.com/Drivers/VCP.htm)
+- [Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) USB Serial Ports;
+- [FTDI](https://www.ftdichip.com/Drivers/VCP.htm) USB Serial Ports;
+
+MacOS app bundle comes with all frameworks built-in and does not require additional actions to run.
 
 ## Linux
 
-GCS uses serial port to communicate with the radio modem device. User should be a member of `dialout` group to have rights to access modem device. Execute the following command in terminal to add yourself to the group, then reboot.
+`GCS` uses serial port to communicate with the radio modem device. User should be a member of `dialout` group to have rights to access the modem device. Execute the following command to add yourself to the group, then reboot.
 
 ```bash
 sudo usermod -aG dialout $USER
@@ -112,12 +120,6 @@ In order to support video streaming, install GStreamer:
 
 ```bash
 sudo apt install gstreamer1.0-plugins-bad gstreamer1.0-libav -y
-```
-
-To enable support for APX virtual machines and scripting, install 32-bit support on your host system:
-
-```bash
-sudo apt install libc6:i386 libncurses5:i386 libstdc++6:i386 -y
 ```
 
 More information about AppImage standard can be found here: [appimage.org](https://appimage.org)
