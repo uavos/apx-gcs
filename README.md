@@ -58,20 +58,23 @@ git clone --recurse-submodules git@github.com:uavos/apx-gcs.git
 
 GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodule.
 
-### Cmake build
-
-The project uses `cmake` build system. Some tools require `python3` scripts (see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) for required tools) to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
-
-For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) `install-tools-XXX` targets.
-
-#### Required libraries
+### Required libraries
 
 - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
 - [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
 - [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
-- [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation target in Makefile;
+- [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation in [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile);
 
-After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
+### CMAKE build
+
+The project uses `cmake` build system. Some tools require `python3` scripts to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
+
+For the required tools, take a look at [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile) and [GitHub CI](https://github.com/uavos/apx-gcs/blob/main/.github/workflows/apx-gcs-release.yml).
+
+
+#### Building binaries
+
+After cloning the repos and installing required tools, use the following commands to build the `build/out/bin/gcs` runtime:
 
 ```bash
 cd apx-gcs
@@ -79,17 +82,37 @@ cmake -H. -Bbuild -G Ninja
 cmake --build build
 ```
 
-### Building application bundle
+Launch the `GCS` app:
 
-To create the GCS application bundle with all libs installed - use [`bundle`](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) target:
+```bash
+./build/out/bin/gcs
+```
+
+#### Building application bundle with CMake
+
+To create the GCS application bundle - use [`bundle`](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) target:
 
 ```bash
 cmake --build build --target bundle
 ```
 
-This will build either `.app` macos application of [`AppImage`](https://appimage.org) linux bundle, depending on the host platform;
+Depending on the host platform, this will build either `.app` macos application or the [`AppImage`](https://appimage.org) linux bundle.
 
 >Take a look at some additional targets in [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile). Although, the makefile is used mainly to create releases.
+
+### Docker build
+
+The [`Dockerfile`](https://github.com/uavos/apx-gcs/blob/main/Dockerfile) is included in this repository and may be used as a reference for the tools required to build the application for the `linux` platform.
+
+See the [`Docker.mk`](https://github.com/uavos/apx-gcs/blob/main/Docker.mk) file for details.
+
+```bash
+cd apx-gcs
+docker pull uavos/apx-gcs-linux:latest
+make docker-run
+cmake -H. -Bbuild -G Ninja
+cmake --build build
+```
 
 ### Output directories
 
@@ -98,25 +121,27 @@ This will build either `.app` macos application of [`AppImage`](https://appimage
 
 ## Runtime requirements
 
+`GCS` uses serial ports to communicate with the radio modem device. This might require some drivers to be installed on the host platform.
+
 ### MacOS
 
-The modern APX nodes, starting form version 11, support [CDC](https://en.wikipedia.org/wiki/USB_communications_device_class) and are not required to install any drivers on the host side. Although, you may find the following links useful:
+The modern APX nodes, starting form version `11` - support [CDC](https://en.wikipedia.org/wiki/USB_communications_device_class). There is no need to install any drivers on the host side. Although, you may find the following links useful:
 
 - [Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) USB Serial Ports;
 - [FTDI](https://www.ftdichip.com/Drivers/VCP.htm) USB Serial Ports;
 
-MacOS app bundle comes with all frameworks built-in and does not require additional actions to run.
+MacOS app bundle comes with all frameworks built-in and does not require additional actions to perform.
 
-## Linux
+### Linux
 
-`GCS` uses serial port to communicate with the radio modem device. User should be a member of `dialout` group to have rights to access the modem device. Execute the following command to add yourself to the group, then reboot.
+User should be a member of `dialout` group to have rights to access the modem device. Execute the following command to add yourself to the group, then reboot.
 
 ```bash
 sudo usermod -aG dialout $USER
 sudo apt remove modemmanager -y
 ```
 
-In order to support video streaming, install GStreamer:
+AppImage does not include the `GStreamer` library, and in order to support video streaming - install `GStreamer` runtime system-wide:
 
 ```bash
 sudo apt install gstreamer1.0-plugins-bad gstreamer1.0-libav -y
@@ -126,11 +151,11 @@ More information about AppImage standard can be found here: [appimage.org](https
 
 ## Links
 
- * [Changelog](https://github.com/uavos/apx-gcs/blob/main/CHANGELOG.md);
- * [uavos/apx-ap](https://github.com/uavos/apx-ap) - APX Autopilot Firmware packages;
- * [UAVOS Inc. company web site](http://uavos.com) with products and more;
- * [APX Autopilot documentation](http://docs.uavos.com)
- * [UAVOS Inc. GitHub Organization](https://github.com/uavos)
+- [Changelog](https://github.com/uavos/apx-gcs/blob/main/CHANGELOG.md);
+- [uavos/apx-ap](https://github.com/uavos/apx-ap) - APX Autopilot Firmware packages;
+- [UAVOS Inc. company web site](http://uavos.com) with products and more;
+- [APX Autopilot documentation](http://docs.uavos.com)
+- [UAVOS Inc. GitHub Organization](https://github.com/uavos)
 
 #   
 
