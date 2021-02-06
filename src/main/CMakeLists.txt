@@ -36,7 +36,15 @@ if(APPLE)
     apx_metadata(app.icon ${MACOSX_BUNDLE_ICON_FILE})
 
 elseif(UNIX AND NOT APPLE)
-    apx_install_res(${APX_RESOURCES_DIR}/linux **)
+
+    set(SRCS ${APX_RESOURCES_DIR}/linux/**)
+    apx_glob_srcs(${SRCS})
+
+    foreach(src ${SRCS})
+        file(RELATIVE_PATH dir ${APX_RESOURCES_DIR}/linux ${CMAKE_CURRENT_SOURCE_DIR}/${src})
+        get_filename_component(dir ${dir} DIRECTORY)
+        install(FILES ${src} DESTINATION ${APX_INSTALL_APP_DIR}/${dir})
+    endforeach()
 
 elseif(WIN32)
     message(WARNING "Not implemented")

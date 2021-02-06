@@ -15,6 +15,7 @@ function(apx_plugin)
     # guess name from path
     string(REPLACE "/" ";" path_list ${CMAKE_CURRENT_LIST_DIR})
     list(GET path_list -1 target)
+    message(STATUS "PLUGIN: ${target}")
 
     if(NOT SRCS)
         set(SRCS "*.[ch]*")

@@ -1,0 +1,33 @@
+name: APX GCS DOCKER CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Dockerfile"
+
+jobs:
+  docker-gcs-linux:
+    name: Docker apx-gcs-linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: make docker-image
+
+      - name: Push to DockerHub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
+          make docker-push
+
+# GPR GITHUB HOSTED
+# - name: Push to GPR
+#   run: |
+#     docker tag uavos/apx-gcs-linux docker.pkg.github.com/uavos/apx-releases/apx-gcs-linux:latest
+#     docker login docker.pkg.github.com -u publisher -p "${GITHUB_PACKAGE_REGISTRY_TOKEN}"
+#     docker push docker.pkg.github.com/uavos/apx-releases/apx-gcs-linux:latest
+#   env:
+#     GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN_RELEASES }}

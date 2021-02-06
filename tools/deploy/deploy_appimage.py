@@ -51,13 +51,15 @@ def deploy_appimage(path, json, apprun):
     print('Deploy image ({})...'.format(filename))
 
     if apprun:
-        apprun = os.path.join(app_path, 'AppRun')
-        os.remove(apprun)
-        subprocess.check_call(['cp', '-af', apprun, apprun])
+        dest = os.path.join(app_path, 'AppRun')
+        if os.path.exists(dest):
+            os.remove(dest)
+        subprocess.check_call(['cp', '-af', apprun, dest])
+        subprocess.check_call(['chmod', '+x', dest])
 
     pargs = [
         'env', 'ARCH='+app['arch'],
-        os.path.join(app['qt_bin'], 'appimagetool'),
+        'appimagetool',
         '-u', zsync_link,
         # '--comp=xz',
         # '--verbose',

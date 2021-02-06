@@ -61,6 +61,7 @@ elseif(UNIX AND NOT APPLE)
     add_custom_target(
         deploy_package
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_appimage.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+                --apprun=${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/AppRun.sh
         DEPENDS deploy_libs
         WORKING_DIRECTORY ${APX_DEPLOY_DIR}
         VERBATIM USES_TERMINAL

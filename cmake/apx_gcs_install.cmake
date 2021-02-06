@@ -13,12 +13,12 @@ elseif(UNIX AND NOT APPLE)
     set(APX_INSTALL_APP_DIR "usr")
     set(prefix "${APX_INSTALL_APP_DIR}")
     set(APX_INSTALL_BIN_DIR "${prefix}/bin")
-    set(APX_INSTALL_LIBS_DIR "${prefix}/lib/${PROJECT_NAME}")
-    set(APX_INSTALL_PLUGINS_DIR "${prefix}/lib/${PROJECT_NAME}/plugins")
+    set(APX_INSTALL_LIBS_DIR "${prefix}/lib")
+    set(APX_INSTALL_PLUGINS_DIR "${prefix}/share/${PROJECT_NAME}/plugins")
     set(APX_INSTALL_DATA_DIR "${prefix}/share/${PROJECT_NAME}")
 
-    set(APX_INSTALL_PLUGINS_RPATH "\$ORIGIN/../../Frameworks")
-    set(APX_INSTALL_RPATH "\$ORIGIN/../Frameworks")
+    set(APX_INSTALL_RPATH "$ORIGIN;$ORIGIN/..;$ORIGIN/../lib")
+    set(APX_INSTALL_PLUGINS_RPATH "$ORIGIN/../../../lib")
 
 elseif(WIN32)
     message(WARNING "Not implemented")
@@ -51,7 +51,6 @@ function(apx_install_plugin)
 endfunction()
 
 function(apx_install_res prefix)
-
     set(SRCS)
 
     foreach(src ${ARGN})

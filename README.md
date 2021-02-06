@@ -8,44 +8,45 @@ This application is part of [APX Autopilot project](http://docs.uavos.com).
 
 ## Key features
 
- - [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
- - Multi-platform;
- - Based on [QT](https://www.qt.io) framework;
- - QML [frontend](https://github.com/uavos/apx-gcs/blob/main/src/main/qml/Apx/Application/GroundControl.qml);
- - Tree of qobjects at the [back-end](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
- - Application defined by [plugins](https://github.com/uavos/apx-gcs/tree/main/src/Plugins);
- - Protocols [abstraction](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxData/Protocols);
+- [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
+- Multi-platform;
+- Based on [QT](https://www.qt.io) framework;
+- QML [frontend](https://github.com/uavos/apx-gcs/blob/main/src/main/qml/Apx/Application/GroundControl.qml);
+- Tree of qobjects at the [back-end](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
+- Application defined by [plugins](https://github.com/uavos/apx-gcs/tree/main/src/Plugins);
+- Protocols [abstraction](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxData/Protocols);
 
 ## Included Plugins
- - `AppUpdate`: automatic application update support for macos via [Sparkle](https://sparkle-project.org/) for mac or [AppImage](https://appimage.org) for linux;
- - `CompassCalibration`: helper widget for hard-iron compass calibration;
- - `DatalinkInspector`: QML widget for inspecting of datalink packets;
- - `FirmwareLoader`: allows to update firmware of [APX nodes](http://docs.uavos.com/hw/index.html) or upload to stm32 [bootloader](https://www.st.com/resource/en/application_note/cd00264342-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf);
- - `Joystick`: makes [SDL2](https://www.libsdl.org) contols available to the UAV control logic;
- - `Location`: geo map tiles downloader and offline cache, optimized for UAV applications;
- - `MandalaTree`: tree view window of UAV state;
- - `MissionPlanner`: [QML map](https://doc.qt.io/qt-5/qml-qtlocation-map.html) with mission editor;
- - `ScriptCompiler`: [WASM](https://webassembly.org) Scripting engine support for onboard MCUs;
- - `SerialPortConsole`: tool to debug and trace serial data from onboard serial ports ([VCP](http://docs.uavos.com/fw/conf/serial.html));
- - `ServoConfig`: tool to configure some specific servo drives;
- - `Shortcuts`: manages keyboard shortcuts and assigned commands to the UAV;
- - `Signals`: QML widget to show live chart of defined UAV physical values for easy tuning;
- - `Simulator`: launches [X-Plane](https://www.x-plane.com) flight simulator with provided specific plugins to communicate to the GCS for SIL/HIL simulation;
- - `Sites`: map view plugin to add named areas to missions and map areas;
- - `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines and emits emergency alarms;
- - `TelemetryChart`: [QWT](https://qwt.sourceforge.io) based widget to review telemetry database;
- - `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript) based;
- - `TreeFacts`: general back-end qobjects data structure tree-view, used for debugging;
- - `TreeJS`: JavaScript context tree view, used for debugging and reference;
- - `VehicleConfiguration`: UAV parameters tree view and extended editor;
- - `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with UAV gimbal controls and video stream recording;
+
+- `AppUpdate`: automatic application update support for macos via [Sparkle](https://sparkle-project.org/) for mac or [AppImage](https://appimage.org) for linux;
+- `CompassCalibration`: helper widget for hard-iron compass calibration;
+- `DatalinkInspector`: QML widget for inspecting of datalink packets;
+- `FirmwareLoader`: allows to update firmware of [APX nodes](http://docs.uavos.com/hw/index.html) or upload to stm32 [bootloader](https://www.st.com/resource/en/application_note/cd00264342-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf);
+- `Joystick`: makes [SDL2](https://www.libsdl.org) contols available to the UAV control logic;
+- `Location`: geo map tiles downloader and offline cache, optimized for UAV applications;
+- `MandalaTree`: tree view window of UAV state;
+- `MissionPlanner`: [QML map](https://doc.qt.io/qt-5/qml-qtlocation-map.html) with mission editor;
+- `ScriptCompiler`: [WASM](https://webassembly.org) Scripting engine support for onboard MCUs;
+- `SerialPortConsole`: tool to debug and trace serial data from onboard serial ports ([VCP](http://docs.uavos.com/fw/conf/serial.html));
+- `ServoConfig`: tool to configure some specific servo drives;
+- `Shortcuts`: manages keyboard shortcuts and assigned commands to the UAV;
+- `Signals`: QML widget to show live chart of defined UAV physical values for easy tuning;
+- `Simulator`: launches [X-Plane](https://www.x-plane.com) flight simulator with provided specific plugins to communicate to the GCS for SIL/HIL simulation;
+- `Sites`: map view plugin to add named areas to missions and map areas;
+- `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines and emits emergency alarms;
+- `TelemetryChart`: [QWT](https://qwt.sourceforge.io) based widget to review telemetry database;
+- `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript) based;
+- `TreeFacts`: general back-end qobjects data structure tree-view, used for debugging;
+- `TreeJS`: JavaScript context tree view, used for debugging and reference;
+- `VehicleConfiguration`: UAV parameters tree view and extended editor;
+- `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with UAV gimbal controls and video stream recording;
 
 
 ## Build instructions
 
 ### Clone the repository
 
-```
+```bash
 git clone --recurse-submodules git@github.com:uavos/apx-gcs.git
 ```
 
@@ -58,13 +59,15 @@ The project uses `cmake` build system. Some tools require `python3` scripts (see
 For required tools, see [Makefile](https://github.com/uavos/apx-gcs/blob/main/Makefile) `install-tools-XXX` targets.
 
 #### Required libraries
- - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
- - [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
- - [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
- - [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation target in Makefile;
+
+- [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
+- [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
+- [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
+- [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation target in Makefile;
 
 After cloning the repos, use the following commands to build the `build/out/bin/gcs` runtime:
-```
+
+```bash
 cd apx-gcs
 cmake -H. -Bbuild -G Ninja
 cmake --build build
@@ -74,7 +77,7 @@ cmake --build build
 
 To create the GCS application bundle with all libs installed - use [`bundle`](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) target:
 
-```
+```bash
 cmake --build build --target bundle
 ```
 
@@ -84,12 +87,44 @@ This will build either `.app` macos application of [`AppImage`](https://appimage
 
 ### Output directories
 
- - `build/out` contains runtime binaries;
- - `build/deploy` contains app bundle;
+- `build/out` contains runtime binaries;
+- `build/deploy` contains app bundle;
+
+## Runtime requirements
+
+### MacOS
+
+Serial port drivers:
+
+- [Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) - used for [mhx](../hw/nodes/mhx.md) and [ghanta](../hw/nodes/ghanta.md)
+- [FTDI USB to Serial port converters](https://www.ftdichip.com/Drivers/VCP.htm)
+
+## Linux
+
+GCS uses serial port to communicate with the radio modem device. User should be a member of `dialout` group to have rights to access modem device. Execute the following command in terminal to add yourself to the group, then reboot.
+
+```bash
+sudo usermod -aG dialout $USER
+sudo apt remove modemmanager -y
+```
+
+In order to support video streaming, install GStreamer:
+
+```bash
+sudo apt install gstreamer1.0-plugins-bad gstreamer1.0-libav -y
+```
+
+To enable support for APX virtual machines and scripting, install 32-bit support on your host system:
+
+```bash
+sudo apt install libc6:i386 libncurses5:i386 libstdc++6:i386 -y
+```
+
+More information about AppImage standard can be found here: [appimage.org](https://appimage.org)
 
 ## Links
 
- * [Changelog](https://uavos.github.io/apx-gcs/CHANGELOG.html) - `GCS` changelog gh pages view;
+ * [Changelog](https://github.com/uavos/apx-gcs/blob/main/CHANGELOG.md);
  * [uavos/apx-ap](https://github.com/uavos/apx-ap) - APX Autopilot Firmware packages;
  * [UAVOS Inc. company web site](http://uavos.com) with products and more;
  * [APX Autopilot documentation](http://docs.uavos.com)

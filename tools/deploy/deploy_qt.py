@@ -40,66 +40,97 @@ def deploy_qt(path, json):
     #     return
 
     deploy_tool = {
-        'darwin': 'macdeployqt',
-        'linux': 'linuxdeployqt',
-        'windows': 'windeployqt'
+        'darwin': os.path.join(app['path']['qt'], 'bin', 'macdeployqt'),
+        'linux': os.path.join(app['path']['qt'], 'bin', 'linuxdeployqt'),
+        'windows': os.path.join(app['path']['qt'], 'bin', 'windeployqt')
     }
-    deploy_name = {
-        'darwin': app['path']['bundle'],
-        'linux': os.path.join(app['path']['bundle'], "share/applications", app['name']+".desktop"),
-        'windows': app['path']['bundle']
-    }
+
     opts = list()
+    env = list()
     # general opts
-    opts.append(os.path.join(app['path']['qt'], 'bin', deploy_tool[platform]))
-    opts.append(os.path.join(path, deploy_name[platform]))
-    opts.append(
-        '-libpath='+os.path.abspath(os.path.join(path, app['path']['libs'])))
-    opts.append('-qmldir='+app['path']['src'])
+    opts.append(deploy_tool[platform])
 
-    # opts.append('-verbose=3')
+    if platform == 'linux':
+        opts.append(os.path.join(
+            path, app['path']['bundle'], "share/applications", app['name'] + ".desktop"))
 
-    # platform dependednt
-    if 'plugins' in json:
-        plugins_path = os.path.join(path, app['path']['plugins'])
-        for p in json['plugins']:
-            if platform == 'darwin':
+        opts.append('-qmldir='+app['path']['src'])
+
+        if 'plugins' in json:
+            for p in json['plugins']:
+                p = os.path.join(path, app['path']['plugins'], p+'.so')
+                opts.append('-executable='+p)
+
+        if 'executables' in json:
+            for p in json['executables']:
+                p = os.path.join(path, app['path']['bin'], p)
+                opts.append('-executable='+p)
+
+        if 'qtplugins' in json and platform == 'linux':
+            if len(json['qtplugins']) > 0:
+                qtplugins = list()
+                for p in json['qtplugins']:
+                    qtplugins.append(p.split('/')[0])
+                opts.append('-extra-plugins='+','.join(qtplugins))
+
+        opts.append('-unsupported-allow-new-glibc')
+        opts.append('-no-copy-copyright-files')
+        opts.append('-no-translations')
+        opts.append('-qmake='+os.path.join(app['path']['qt'], 'bin/qmake'))
+        # opts.append('-bundle-non-qt-libs')
+        # opts.append('-exclude-libs=')
+        # opts.append('-verbose=2')
+
+        subprocess.check_call(opts)
+
+    elif platform == 'linux2':
+        opts.append('--appdir='+path)
+        opts.append('--deploy-deps-only=' +
+                    os.path.join(path, app['path']['plugins']))
+        opts.append('--plugin=qt')
+        # opts.append('--plugin=gstreamer')
+        opts.append('--output=appimage')
+        opts.append('--custom-apprun='+os.path.join(path,
+                                                    app['path']['data'], 'AppRun.sh'))
+
+        env = os.environ.copy()
+        if 'qtplugins' in json and len(json['qtplugins']) > 0:
+            env['EXTRA_QT_PLUGINS'] = ';'.join(json['qtplugins'])
+
+        env['QML_SOURCES_PATHS'] = app['path']['src']
+
+        subprocess.check_call(opts, env=env)
+
+    elif platform == 'darwin':
+        opts.append(os.path.join(path, app['path']['bundle']))
+        opts.append('-qmldir='+app['path']['src'])
+        opts.append('-appstore-compliant')
+        # opts.append('-libpath=/Library/Frameworks')
+        opts.append(
+            '-libpath='+os.path.abspath(os.path.join(path, app['path']['libs'])))
+        if 'plugins' in json:
+            plugins_path = os.path.join(path, app['path']['plugins'])
+            for p in json['plugins']:
                 if os.path.exists(os.path.join(plugins_path, p+'.bundle')):
                     p = p + '.bundle/Contents/MacOS/' + p
                 else:
                     p = p + '.dylib'
-            p = os.path.join(plugins_path, p)
-            opts.append('-executable='+p)
+                p = os.path.join(plugins_path, p)
+                opts.append('-executable='+p)
 
-    if 'executables' in json:
-        for p in json['executables']:
-            p = os.path.join(path, app['path']['bin'], p)
-            opts.append('-executable='+p)
+        if 'executables' in json:
+            for p in json['executables']:
+                p = os.path.join(path, app['path']['bin'], p)
+                opts.append('-executable=' + p)
+
+        subprocess.check_call(opts)
+
+    # opts.append('-verbose=3')
 
     # if 'libs' in json:
     #     for p in json['libs']:
     #         p = os.path.join(path, app['path']['libs'], p)
     #         opts.append('-executable='+p)
-
-    if 'qtplugins' in json and platform == 'linux':
-        if len(json['qtplugins']) > 0:
-            opts.append('-extra-plugins='+','.join(json['qtplugins']))
-
-    if platform == 'linux':
-        opts.append('-unsupported-allow-new-glibc')
-        opts.append('-no-copy-copyright-files')
-        opts.append('-no-translations')
-        opts.append('-qmake='+os.path.join(app['path']['qt'], 'qmake'))
-        # opts.append('-bundle-non-qt-libs')
-        # opts.append('-exclude-libs=')
-        # opts.append('-verbose=2')
-    elif platform == 'darwin':
-        opts.append('-appstore-compliant')
-        # opts.append('-libpath=/Library/Frameworks')
-
-    # print('{}'.format(opts))
-    # call tool
-    subprocess.check_call(opts)
 
     # clean up
     print('Removing unnecessary components...')

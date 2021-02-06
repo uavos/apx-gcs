@@ -1,0 +1,196 @@
+name: APX GCS CI
+
+on:
+  push:
+    tags:
+      - "release-*"
+
+env:
+  VERSION_QT: 5.15.2
+  VERSION_GST: 1.18.3
+  VERSION_SPARKLE: 1.22.0
+  VERSION_SDL: 2.0.14
+
+jobs:
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    container:
+      image: uavos/apx-gcs-linux:latest
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - run: git fetch --prune --unshallow --tags
+
+      - name: Build package
+        run: make release-package
+
+      # - name: Build test
+      #   run: |
+      #     mkdir -p build/deploy
+      #     echo "TEST"> build/deploy/TEST.AppImage
+      #     echo "TEST"> build/deploy/TEST.AppImage.zsync
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            build/deploy/*.AppImage
+            build/deploy/*.AppImage.zsync
+          name: apx-gcs-linux
+          if-no-files-found: error
+          retention-days: 1
+
+  build-macos:
+    name: Build MacOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - run: git fetch --prune --unshallow --tags
+
+      - name: Install Tools
+        run: |
+          brew install ninja
+          pip3 install networkx simplejson jinja2 pyyaml dmgbuild
+
+      - name: Install Qt
+        run: |
+          curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
+          chmod +x install-qt.sh
+          ./install-qt.sh --version $VERSION_QT --directory Qt \
+              qtbase qtdeclarative qttools \
+              quickcontrols2 serialport multimedia speech svg location \
+              graphicaleffects qtcharts
+          echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
+
+      - name: Install Sparkle
+        working-directory: /tmp
+        run: |
+          curl -L https://github.com/sparkle-project/Sparkle/releases/download/$VERSION_SPARKLE/Sparkle-$VERSION_SPARKLE.tar.bz2 --output sparkle.tar.bz2
+          bunzip2 -k -c sparkle.tar.bz2 | tar xopf -
+          sudo mv Sparkle.framework /Library/Frameworks/
+
+      - name: Install SDL
+        working-directory: /tmp
+        run: |
+          curl -L https://www.libsdl.org/release/SDL2-$VERSION_SDL.dmg --output sdl.dmg
+          hdiutil attach -noverify sdl.dmg
+          sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
+
+      - name: Install GST
+        working-directory: /tmp
+        run: |
+          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-$VERSION_GST-x86_64.pkg --output gst.pkg
+          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-devel-$VERSION_GST-x86_64.pkg --output gst-devel.pkg
+          sudo installer -package gst.pkg -target /
+          sudo installer -package gst-devel.pkg -target /
+          rm -f gst*.pkg
+
+      - name: Install KEYS
+        env:
+          KEYCHAIN: default.keychain
+          KEYCHAIN_PASSWORD: uavos
+          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
+          SIGNING_CERTIFICATE_P12_DATA: ${{ secrets.SIGNING_CERTIFICATE_P12_DATA }}
+          SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
+          security default-keychain -s $KEYCHAIN
+          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
+          security set-keychain-settings $KEYCHAIN
+          security list-keychains -s $KEYCHAIN
+          security import <(echo $SIGNING_CERTIFICATE_P12_DATA | base64 --decode) -f pkcs12 -k $KEYCHAIN -P $SIGNING_CERTIFICATE_PASSWORD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN
+          security add-generic-password -U -a 'ed25519' -D 'private key' -s 'https://sparkle-project.org' -w $SPARKLE_KEY -A $KEYCHAIN
+          security set-generic-password-partition-list -s 'https://sparkle-project.org' -S apple-tool:,apple:,security:,unsigned: -k $KEYCHAIN_PASSWORD $KEYCHAIN
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+
+      - name: Build package
+        env:
+          CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
+        run: make release-package
+
+      # - name: Build test
+      #   run: |
+      #     mkdir -p build/deploy
+      #     echo "TEST"> build/deploy/TEST.dmg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            build/deploy/*.dmg
+          name: apx-gcs-macos
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish Release
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          path: package
+      - name: Collecting files
+        id: package
+        working-directory: package
+        run: |
+          mv -f ./*/* .
+          ls -la *.*
+          VERSION=${{ github.ref }}
+          VERSION=$(echo ${VERSION##*/} | sed 's/^release-//')
+          echo "Version: $VERSION"
+          echo "::set-output name=path::$(pwd)"
+          echo "::set-output name=version::$VERSION"
+
+      - name: Generate release text
+        run: |
+          cp -f docs/releases/release-${{ steps.package.outputs.version }}.md changes.md
+          sed -i 's/^#/###/g' changes.md
+
+      - name: Create Release draft
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_PAT }}
+        with:
+          tag_name: release-${{ steps.package.outputs.version }}
+          release_name: APX Ground Control ${{ steps.package.outputs.version }}
+          body_path: changes.md
+          draft: true
+          prerelease: false
+
+      - name: Publish release
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.CI_PAT}}
+          script: |
+            const fs = require('fs').promises;
+
+            const { repo: { owner, repo }, sha } = context;
+
+            for (let file of await fs.readdir('package', {withFileTypes:true})) {
+              if (!file.isFile())
+                continue;
+              console.log('uploading', file.name);
+              await github.repos.uploadReleaseAsset({
+                owner, repo,
+                release_id: "${{ steps.create_release.outputs.id }}",
+                name: file.name,
+                data: await fs.readFile(`package/${file.name}`)
+              });            
+            }
+
+            github.repos.updateRelease({
+              owner, repo,
+              release_id: "${{ steps.create_release.outputs.id }}",
+              draft: false
+            });

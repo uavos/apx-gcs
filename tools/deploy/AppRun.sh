@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 ##
 ## APX Autopilot project <http://docs.uavos.com>
 ##
@@ -21,5 +21,5 @@
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 HERE="$(dirname "$(readlink -f "${0}")")"
-export LD_LIBRARY_PATH=${HERE}/usr/lib:${HERE}/usr/lib/gcs:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${HERE}/usr/lib:$LD_LIBRARY_PATH
 exec "${HERE}/usr/bin/gcs" "$@"

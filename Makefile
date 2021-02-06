@@ -1,6 +1,6 @@
-# TOP_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 BUILD_DIR := $(if $(BUILD_DIR),$(BUILD_DIR),build)
+TOOLS_DIR := $(realpath $(CURDIR)/tools)
 
 CMAKE := cmake
 
@@ -12,24 +12,15 @@ configure:
 build:
 	@$(CMAKE) --build $(BUILD_DIR)
 
-bundle: configure
+bundle:
 	$(CMAKE) --build $(BUILD_DIR) --target bundle
 
-release-package: configure
+package:
 	$(CMAKE) --build $(BUILD_DIR) --target deploy_package
 
+release-package: configure package
 
 
-install-tools-osx:
-	@brew install ccache clang-format cquery cmake ninja
-
-install-tools-python:
-	@pip install networkx simplejson jinja2 pyyaml
-
-install-appimageupdate-linux:
-	@sudo rm -rf /usr/src/AppImageUpdate
-	@sudo git clone --depth=1 --recurse-submodules https://github.com/AppImage/AppImageUpdate.git /usr/src/AppImageUpdate
-	@cd /usr/src/AppImageUpdate && sudo cmake -H. -Bbuild && sudo cmake --build build --target install
 
 # update materialdesignicons
 # https://github.com/Templarian/MaterialDesign-Webfont
@@ -44,8 +35,14 @@ update-icons:
 		rm -fR MaterialDesign-Webfont-master;\
 		unzip icons.zip
 	@cp -f $(ICONS_BUILD_DIR)/MaterialDesign-Webfont-master/fonts/materialdesignicons-webfont.ttf $(ICONS_PATH).ttf
-	@python tools/make_icons.py --src=$(ICONS_BUILD_DIR)/MaterialDesign-Webfont-master/css/materialdesignicons.css --dest=$(ICONS_PATH).json
+	@python $(TOOLS_DIR)/make_icons.py --src=$(ICONS_BUILD_DIR)/MaterialDesign-Webfont-master/css/materialdesignicons.css --dest=$(ICONS_PATH).json
 
 
 
 .PHONY: update-icons build package configure
+
+
+include Docker.mk
+include Tools.mk
+
+include Release.mk

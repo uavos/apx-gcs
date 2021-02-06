@@ -20,12 +20,12 @@ elseif(UNIX AND NOT APPLE)
     target_link_libraries(
         ${MODULE}
         PRIVATE /usr/local/lib/libappimageupdate.a
-                # /usr/local/lib/libappimage_shared.a
-                # /usr/local/lib/libcpr.a
-                # /usr/local/lib/libzsync2.a
-                # /usr/local/lib/libzsync.a
-                # /usr/local/lib/librcksum.a
-                # -lcurl
+                /usr/local/lib/libappimage_shared.a
+                /usr/local/lib/libcpr.a
+                /usr/local/lib/libzsync2.a
+                /usr/local/lib/libzsync.a
+                /usr/local/lib/librcksum.a
+                -lcurl
     )
 
 elseif(WIN32)
