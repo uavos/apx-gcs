@@ -150,7 +150,7 @@ def deploy_libs(path, json, dist):
             # remove(os.path.join(app_path, 'lib'))
             # remove(os.path.join(app_path, 'var'))
 
-    if platform == 'darwin':
+    if platform == 'macos':
         print('Relocating executables...')
         osxrelocator.OSXRelocator(os.path.join(
             path, app['path']['plugins']), '/Library/Frameworks', '@executable_path/../Frameworks', recursive=True).relocate()

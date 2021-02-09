@@ -25,7 +25,7 @@ endif()
 add_custom_target(
     deploy_qt
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_qt.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
-    DEPENDS deploy_bundle
+    DEPENDS deploy_bundle ${PROJECT_NAME}.meta
     WORKING_DIRECTORY ${APX_DEPLOY_DIR}
     VERBATIM USES_TERMINAL
 )

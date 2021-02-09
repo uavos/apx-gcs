@@ -46,3 +46,6 @@ include Docker.mk
 include Tools.mk
 
 include Release.mk
+
+fix-submodules:
+	git submodule foreach --recursive git checkout main

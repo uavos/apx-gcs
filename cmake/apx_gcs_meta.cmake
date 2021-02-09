@@ -10,10 +10,18 @@ endfunction()
 
 function(apx_metadata_generate)
 
+    if(APPLE)
+        set(platform "macos")
+    elseif(UNIX)
+        set(platform "linux")
+    else()
+        set(platform "win")
+    endif()
+
     apx_metadata(app.name ${PROJECT_DESCRIPTION})
     apx_metadata(app.version ${PROJECT_VERSION})
     apx_metadata(app.runtime ${PROJECT_NAME})
-    apx_metadata(app.platform ${CMAKE_SYSTEM_NAME})
+    apx_metadata(app.platform ${platform})
     apx_metadata(app.arch ${CMAKE_SYSTEM_PROCESSOR})
     apx_metadata(app.build ${CMAKE_BUILD_TYPE})
 

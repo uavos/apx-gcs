@@ -40,7 +40,7 @@ def deploy_qt(path, json):
     #     return
 
     deploy_tool = {
-        'darwin': os.path.join(app['path']['qt'], 'bin', 'macdeployqt'),
+        'macos': os.path.join(app['path']['qt'], 'bin', 'macdeployqt'),
         'linux': os.path.join(app['path']['qt'], 'bin', 'linuxdeployqt'),
         'windows': os.path.join(app['path']['qt'], 'bin', 'windeployqt')
     }
@@ -101,7 +101,7 @@ def deploy_qt(path, json):
 
         subprocess.check_call(opts, env=env)
 
-    elif platform == 'darwin':
+    elif platform == 'macos':
         opts.append(os.path.join(path, app['path']['bundle']))
         opts.append('-qmldir='+app['path']['src'])
         opts.append('-appstore-compliant')
@@ -139,7 +139,7 @@ def deploy_qt(path, json):
         utils.remove_all(
             app_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
         utils.remove_all(os.path.join(app_path, 'qml', 'QtQuick'), ['*.qml'])
-    elif platform == 'darwin':
+    elif platform == 'macos':
         qml_path = os.path.abspath(os.path.join(
             path, app['path']['data'], 'qml'))
         utils.remove_all(
