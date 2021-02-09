@@ -439,21 +439,31 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
     QString fname = QString("%1-%2").arg(nodeName).arg(hw);
     int ccnt = fname.split('-').size() + 1;
     QMap<QVersionNumber, QString> vmap;
+    QString target_os("any");
+#if defined(Q_OS_MAC)
+    target_os = "darwin";
+#elif defined(Q_OS_LINUX)
+    target_os = "linux";
+#endif
     //search fw package
     QDir dir(releaseDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
     foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
         QStringList st(fi.completeBaseName().split('-'));
-        if (st.size() != ccnt)
+        if (st.size() < ccnt)
             continue;
-        vmap[QVersionNumber::fromString(st.last())] = fi.absoluteFilePath();
+        if (st.size() > ccnt && st.at(ccnt) != target_os)
+            continue;
+        vmap[QVersionNumber::fromString(st.at(ccnt - 1))] = fi.absoluteFilePath();
     }
     //search dev files
     dir = QDir(devDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
     foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
         QStringList st(fi.completeBaseName().split('-'));
-        if (st.size() != ccnt)
+        if (st.size() < ccnt)
             continue;
-        vmap[QVersionNumber::fromString(st.last())] = fi.absoluteFilePath();
+        if (st.size() > ccnt && st.at(ccnt) != target_os)
+            continue;
+        vmap[QVersionNumber::fromString(st.at(ccnt - 1))] = fi.absoluteFilePath();
     }
 
     QString fileName;

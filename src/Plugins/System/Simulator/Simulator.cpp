@@ -39,7 +39,7 @@ Simulator::Simulator(Fact *parent)
     //parent->insertIntoSection(FactSystem::ApplicationSection,this);
 
 #if defined(Q_OS_MAC)
-    target_os = "macos";
+    target_os = "darwin";
 #elif defined(Q_OS_LINUX)
     target_os = "linux";
 #endif
@@ -117,7 +117,7 @@ bool Simulator::extract_apxfw()
     ApxFw *apxfw = AppGcs::apxfw();
 
     QByteArray data;
-    apxfw->loadFirmware("sim", "PC", "application-" + target_os, &data, nullptr);
+    apxfw->loadFirmware("sim", "APX", "application-" + target_os, &data, nullptr);
 
     if (data.size() <= 0)
         return false;
