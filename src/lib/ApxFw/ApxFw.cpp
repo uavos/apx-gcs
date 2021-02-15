@@ -27,20 +27,22 @@
 #include "quazip/JlCompress.h"
 
 ApxFw::ApxFw(Fact *parent)
-    : Fact(parent, "apxfw", tr("Firmware releases"), tr("Available firmware packages"), Group | Count)
-    , f_current(nullptr)
-    , f_dev(nullptr)
-    , reply(nullptr)
+    : Fact(parent, "apxfw", tr("Firmware releases"), tr("Available firmware packages"), Group)
 {
     setIcon("alarm-light");
 
+    _versionPrefix = QVersionNumber::fromString(App::version());
+    _versionPrefix = QVersionNumber(_versionPrefix.majorVersion(), _versionPrefix.minorVersion());
+
     m_packagePrefix = "APX_Nodes_Firmware";
+
+    connect(this, &Fact::valueChanged, this, &ApxFw::updateCurrent, Qt::QueuedConnection);
 
     f_sync = new Fact(this, "sync", tr("Sync"), tr("Check for updates"), Action | Apply, "sync");
     connect(f_sync, &Fact::triggered, this, &ApxFw::sync);
 
     net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
-    QTimer::singleShot(2300, this, &ApxFw::sync);
+    QTimer::singleShot(100, this, &ApxFw::sync);
 }
 
 void ApxFw::abort()
@@ -54,34 +56,14 @@ void ApxFw::abort()
 
 void ApxFw::sync()
 {
-    m_releaseFile.clear();
-    if (!AppDirs::firmware().exists())
-        AppDirs::firmware().mkpath(".");
-    //find existing package
-    QDir dir = releaseDir();
-    if (dir.exists() && (!dir.entryList().isEmpty())) {
-        qDebug() << "firmware package available" << dir.absolutePath();
-        makeReleaseFact(dir);
-        return;
-    }
-    if (dir.exists() && (!dir.removeRecursively())) {
-        apxMsgW() << tr("Can't remove directory") << dir.absolutePath();
-        return;
-    }
-    if (!f_dev && !devDir().entryList().isEmpty()) {
-        f_dev = new Fact(this, "dev", "Development", "", Group);
-        f_dev->setValue(QString::number(devDir().entryList().size()));
-        makeReleaseFactDo(f_dev, devDir());
-    }
-
-    //find release archive
-    if (extractRelease(QString("%1-%2.zip").arg(m_packagePrefix).arg(App::version())))
-        return;
+    syncFacts();
+    requestLatestTag();
+    return;
 
     QDateTime t = QDateTime::currentDateTimeUtc();
     QDateTime t0 = QSettings().value(QString("%1_%2").arg(name()).arg(App::version())).toDateTime();
     qint64 tm = 8 * 60 * 60;
-    qint64 tp = t0.secsTo(t);
+    qint64 tp = tm; //t0.secsTo(t);
     if (t0.isValid() && tp < tm) {
         apxMsgW() << QString("Firmware download in %1")
                          .arg(AppRoot::timeToString(static_cast<quint64>(tm - tp), true));
@@ -89,9 +71,7 @@ void ApxFw::sync()
         QString s
             = QSettings().value(QString("%1_%2_latest").arg(name()).arg(App::version())).toString();
         if (!s.isEmpty()) {
-            m_releaseFile = s;
             if (!extractRelease(s)) {
-                m_releaseFile.clear();
             }
         }
         return;
@@ -100,13 +80,89 @@ void ApxFw::sync()
     requestRelease(QString("tags/%1").arg(App::version()));
 }
 
-bool ApxFw::extractRelease(const QString &fname)
+void ApxFw::syncFacts()
 {
+    if (!AppDirs::firmware().exists())
+        AppDirs::firmware().mkpath(".");
+
+    // development files
+    if (f_dev)
+        f_dev->removeAll();
+    if (!devDir().entryList().isEmpty()) {
+        if (!f_dev)
+            f_dev = new Fact(this, "dev", "Development", "", Group);
+        f_dev->setValue(QString::number(devDir().entryList().size()));
+        makeFacts(f_dev, devDir());
+    }
+
+    QDir dir;
+    //find existing package unzipped directory
+    dir = QDir(AppDirs::firmware().absolutePath(),
+               QString("%1-%2*").arg(m_packagePrefix).arg(_versionPrefix.toString()),
+               QDir::NoSort,
+               QDir::Dirs | QDir::NoDotAndDotDot);
+
+    QMap<QVersionNumber, QFileInfo> mapDirs;
+    for (auto fi : dir.entryInfoList()) {
+        mapDirs.insert(QVersionNumber::fromString(fi.fileName().split('-').value(1)), fi);
+    }
+    //find release archives
+    dir = QDir(AppDirs::firmware().absoluteFilePath("releases"),
+               QString("%1-%2*.zip").arg(m_packagePrefix).arg(_versionPrefix.toString()),
+               QDir::NoSort,
+               QDir::Files);
+    QMap<QVersionNumber, QFileInfo> mapPkg;
+    for (auto fi : dir.entryInfoList()) {
+        mapPkg.insert(QVersionNumber::fromString(fi.completeBaseName().split('-').value(1)), fi);
+    }
+    if (!mapPkg.isEmpty()) {
+        QVersionNumber vDirs;
+        if (!mapDirs.isEmpty())
+            vDirs = mapDirs.lastKey();
+        QVersionNumber vPkg;
+        if (!mapPkg.isEmpty())
+            vPkg = mapPkg.lastKey();
+
+        if (vPkg > vDirs) {
+            // extract pkg
+            if (extractRelease(mapPkg.last().absoluteFilePath())) {
+                mapDirs.insert(vPkg, QString("%1-%2").arg(m_packagePrefix).arg(vPkg.toString()));
+            }
+        }
+    }
+
+    if (!mapDirs.isEmpty()) {
+        setValue(mapDirs.lastKey().toString());
+    }
+}
+
+void ApxFw::updateCurrent()
+{
+    if (!f_current) {
+        f_current = new Fact(this, "current", "", "", Group);
+    }
+    bool upd = f_current->size() > 0;
+    f_current->removeAll();
+    if (QVersionNumber::fromString(value().toString()).isNull())
+        return;
+
     QDir dir = releaseDir();
-    QFileInfo fzip(QDir(AppDirs::firmware().absoluteFilePath("releases")).absoluteFilePath(fname));
+    f_current->setTitle(dir.dirName());
+    f_current->setValue(QString::number(dir.entryList().size()));
+    makeFacts(f_current, dir);
+    if (upd)
+        apxMsg() << title().append(':') << tr("updated");
+}
+
+bool ApxFw::extractRelease(const QString &filePath)
+{
+    QFileInfo fzip(filePath);
     if (!fzip.exists())
         return false;
+
+    QDir dir(AppDirs::firmware().absoluteFilePath(fzip.completeBaseName()));
     dir.mkpath(".");
+
     QStringList files = JlCompress::extractDir(fzip.absoluteFilePath(), dir.absolutePath());
     if (files.isEmpty()) {
         apxMsgW() << tr("Can't extract archive") << fzip.absoluteFilePath();
@@ -115,72 +171,51 @@ bool ApxFw::extractRelease(const QString &fname)
         return false;
     }
     qDebug() << "extracted" << files.size() << dir.absolutePath();
-    dir.refresh();
-    makeReleaseFact(dir);
-    apxMsg() << title().append(':') << tr("Firmware available");
+    apxMsg() << title().append(':') << dir.dirName();
 
-    QSettings().setValue(QString("%1_%2_latest").arg(name()).arg(App::version()), fname);
+    QSettings().setValue(QString("%1_%2_latest").arg(name()).arg(App::version()),
+                         value().toString());
     return true;
 }
 
 QDir ApxFw::releaseDir() const
 {
     return QDir(AppDirs::firmware().absoluteFilePath(
-                    QString("%1-%2").arg(m_packagePrefix).arg(releaseVersion())),
-                "*.apxfw");
+                    QString("%1-%2").arg(m_packagePrefix).arg(value().toString())),
+                QString("*.apxfw"),
+                QDir::NoSort,
+                QDir::Files);
 }
 QDir ApxFw::devDir() const
 {
     return QDir(AppDirs::firmware().absoluteFilePath("development"), "*.apxfw");
 }
 
-QString ApxFw::releaseVersion() const
-{
-    QString s = App::version();
-    if (!m_releaseFile.isEmpty()) {
-        s = QFileInfo(m_releaseFile).completeBaseName();
-        s = s.mid(s.lastIndexOf('-') + 1);
-        QVersionNumber v = QVersionNumber::fromString(s);
-        if (!v.isNull())
-            s = v.toString();
-    }
-    return s;
-}
-
-void ApxFw::makeReleaseFact(const QDir &dir)
-{
-    if (!f_current) {
-        f_current = new Fact(this, "current", "", "", Group);
-        clean();
-        f_sync->setEnabled(false);
-    }
-    f_current->setTitle(dir.dirName());
-    f_current->setValue(QString::number(dir.entryList().size()));
-    makeReleaseFactDo(f_current, dir);
-}
-void ApxFw::makeReleaseFactDo(Fact *fact, const QDir &dir)
+void ApxFw::makeFacts(Fact *fact, const QDir &dir)
 {
     //create content tree
     foreach (QFileInfo fi, dir.entryInfoList()) {
         if (fi.suffix() != "apxfw")
             continue;
         QStringList st = fi.completeBaseName().split('-');
-        if (st.size() < 3) {
+        QVersionNumber v = QVersionNumber::fromString(fi.completeBaseName().split('-').value(2));
+        if (st.size() < 3 || v.isNull()) {
             qWarning() << "invalid firmware file" << fi.filePath();
             continue;
         }
+
         Fact *f_ng = fact->child(st.at(0));
         if (!f_ng)
-            f_ng = new Fact(fact, st.at(0), "", "", Group);
+            f_ng = new Fact(fact, st.at(0), "", "", Group | Count | FlatModel);
         Fact *f_hw = f_ng->child(st.at(1));
         if (!f_hw)
-            f_hw = new Fact(f_ng, st.at(1).toLower(), st.at(1), "", Group);
+            f_hw = new Fact(f_ng, st.at(1).toLower(), st.at(1), "", Group | Count | Section);
 
         Fact *f = new Fact(f_hw,
                            fi.completeBaseName().toLower(),
-                           QString("%1: %2").arg(f_ng->title()).arg(f_hw->title()),
-                           fi.completeBaseName());
-        f->setValue("APXFW");
+                           fi.completeBaseName(),
+                           fi.lastModified().toString());
+        f->setValue(v.toString());
     }
 }
 
@@ -190,13 +225,11 @@ void ApxFw::clean()
     //clean up other extracted packages
     foreach (QFileInfo fi,
              QDir(AppDirs::firmware().absolutePath(),
-                  "*",
+                  "APX_*",
                   QDir::NoSort,
                   QDir::Dirs | QDir::NoDotAndDotDot)
                  .entryInfoList()) {
         if (dir.absolutePath() == fi.absoluteFilePath())
-            continue;
-        if (!fi.baseName().startsWith("APX"))
             continue;
         QDir(fi.absoluteFilePath()).removeRecursively();
         qDebug() << "removed" << fi.absoluteFilePath();
@@ -206,10 +239,9 @@ void ApxFw::clean()
     foreach (QFileInfo fi,
              QDir(AppDirs::firmware().absolutePath(), "*.apxfw", QDir::NoSort, QDir::Files)
                  .entryInfoList()) {
-        QString s = fi.completeBaseName();
-        s.remove(0, s.lastIndexOf('-') + 1);
-        if (s.contains('.')) {
-            QVersionNumber fver = QVersionNumber::fromString(s);
+        QStringList st = fi.completeBaseName().split('-');
+        if (st.size() >= 3) {
+            QVersionNumber fver = QVersionNumber::fromString(st.at(2));
             if (ver <= fver)
                 continue;
         }
@@ -220,8 +252,7 @@ void ApxFw::clean()
 
 QNetworkReply *ApxFw::request(const QString &r)
 {
-    return request(
-        QUrl(QString("https://api.github.com/repos/uavos/apx-releases/releases%1").arg(r)));
+    return request(QUrl(QString("https://api.github.com/repos/uavos/apx-ap/releases%1").arg(r)));
 }
 QNetworkReply *ApxFw::request(const QUrl &url)
 {
@@ -261,15 +292,43 @@ QNetworkReply *ApxFw::checkReply(QObject *sender)
     }
     return reply;
 }
-bool ApxFw::isFirmwarePackageFile(const QString &s, const QString &ver)
+bool ApxFw::isFirmwarePackageFile(const QString &s)
 {
-    if (!ver.isEmpty())
-        return s == QString("%1-%2.zip").arg(m_packagePrefix).arg(ver);
     if (!s.startsWith(m_packagePrefix + "-"))
         return false;
     if (!s.endsWith(".zip"))
         return false;
     return true;
+}
+
+void ApxFw::requestLatestTag()
+{
+    abort();
+    setProgress(0);
+    reply = request(QUrl("https://github.com/uavos/apx-ap/releases/latest"));
+    connect(reply, &QNetworkReply::finished, this, &ApxFw::responseLatestTag);
+}
+void ApxFw::responseLatestTag()
+{
+    QNetworkReply *reply = checkReply(sender());
+    if (!reply)
+        return;
+    QString s(reply->url().toString());
+    qDebug() << s;
+    s = s.mid(s.lastIndexOf('/') + 1);
+    QVersionNumber v = QVersionNumber::fromString(s.mid(s.lastIndexOf('-') + 1));
+    if (v.isNull()) {
+        apxMsgW() << tr("APXFW release not found");
+        qWarning() << "apxfw:" << s;
+        return;
+    }
+    if (QVersionNumber::fromString(value().toString()) >= v) {
+        qDebug() << "apxfw:"
+                 << "latest";
+        return;
+    }
+    apxMsg() << title().append(':') << v.toString() << tr("available");
+    requestRelease(QString("tags/%1").arg(s));
 }
 
 void ApxFw::requestRelease(QString req)
@@ -313,12 +372,10 @@ void ApxFw::responseRelease()
             QString s = jo["name"].toString();
             if (!isFirmwarePackageFile(s))
                 continue;
-            m_releaseFile = s;
             if (extractRelease(s)) {
                 apxMsg() << title().append(':') << QFileInfo(s).completeBaseName();
                 return;
             }
-            m_releaseFile.clear();
             url = QUrl(jo["browser_download_url"].toString());
             if (url.isValid())
                 break;
@@ -370,9 +427,6 @@ void ApxFw::responseDownload()
         apxMsgW() << title().append(':') << tr("Unknown response") << s;
         return;
     }
-    if (!isFirmwarePackageFile(s, App::version())) {
-        apxMsg() << title().append(':') << tr("Received") << s;
-    }
 
     QDir dir(AppDirs::firmware().absoluteFilePath("releases"));
     dir.mkpath(".");
@@ -384,57 +438,13 @@ void ApxFw::responseDownload()
     fzip.write(data);
     fzip.close();
     qDebug() << "downloaded" << fzip.fileName();
-    m_releaseFile = s;
-    if (!extractRelease(s)) {
-        m_releaseFile.clear();
-        return;
+    if (extractRelease(fzip.fileName())) {
+        syncFacts();
     }
 }
 
 QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
 {
-    //map deprecated hardware
-    if (nodeName == "gimbal")
-        nodeName = "nav";
-    else if (hw == "AP7" && nodeName == "servo")
-        hw = "HB1";
-    else if (hw == "AP8" && nodeName == "servo")
-        hw = "HB2";
-    else if (hw == "AP9" && nodeName == "servo")
-        hw = "HB3";
-    else if (hw == "AP10" && nodeName == "servo")
-        hw = "HB4";
-    else if (hw == "AP9" && nodeName == "bldc") {
-        hw = "BM1";
-        nodeName = "servo";
-    } else if (hw == "AP9R1" && nodeName == "bldc") {
-        hw = "BM2";
-        nodeName = "servo";
-    } else if (hw == "AP9R1" && nodeName == "cas")
-        hw = "AP9";
-    else if (hw == "AP9R1" && nodeName == "mhx")
-        hw = "AP9";
-    else if (hw == "AP9R1" && nodeName == "ifc")
-        hw = "AP9";
-    else if (hw == "RUS" && nodeName == "ifcs") {
-        hw = "RS1";
-        nodeName = "ifc";
-    } else if (hw == "AP9" && nodeName == "swc") {
-        hw = "SW1";
-        nodeName = "ifc";
-    } else if (hw == "RUS" && nodeName == "swcm") {
-        hw = "SW2";
-        nodeName = "ifc";
-    } else if (hw == "AP10" && nodeName == "ers")
-        hw = "RS1";
-    else if (hw == "AP9" && nodeName == "jsw")
-        hw = "RS1";
-    else if (hw == "AP10" && nodeName == "jsw")
-        hw = "RS2";
-    else if (hw == "AP9" && nodeName == "ghanta")
-        hw = "BR1";
-    else if (hw == "RUS" && nodeName == "ghanta")
-        hw = "RS1";
     //find fw
     QString fname = QString("%1-%2").arg(nodeName).arg(hw);
     int ccnt = fname.split('-').size() + 1;

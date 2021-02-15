@@ -100,7 +100,7 @@ bool QueueItem::loadFirmware(QString hw, QString ver)
     QString stype = type().toUpper();
 
     ApxFw *apxfw = AppGcs::apxfw();
-    QString relVer = apxfw->releaseVersion();
+    QString relVer = apxfw->value().toString();
     if (ver != relVer) {
         ver = QString("%1->%2").arg(ver).arg(relVer);
     }

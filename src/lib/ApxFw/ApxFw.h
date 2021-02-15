@@ -35,39 +35,36 @@ public:
     explicit ApxFw(Fact *parent);
 
     Fact *f_sync;
-    Fact *f_current;
-    Fact *f_dev;
+    Fact *f_current{nullptr};
+    Fact *f_dev{nullptr};
 
     bool loadFirmware(
         QString nodeName, QString hw, QString type, QByteArray *data, quint32 *startAddr);
-
-    QString releaseVersion() const;
 
     QJsonArray loadParameters(QString nodeName, QString hw);
 
 private:
     QNetworkAccessManager net;
 
-    QString m_releaseFile;
+    QVersionNumber _versionPrefix;
 
     QString m_packagePrefix;
 
-    QNetworkReply *reply;
+    QNetworkReply *reply{nullptr};
     QNetworkReply *request(const QString &r);
     QNetworkReply *request(const QUrl &url);
 
     QDir releaseDir() const;
     QDir devDir() const;
 
-    bool extractRelease(const QString &fname);
-    void makeReleaseFact(const QDir &dir);
-    void makeReleaseFactDo(Fact *fact, const QDir &dir);
+    bool extractRelease(const QString &filePath);
+    void makeFacts(Fact *fact, const QDir &dir);
     void clean();
 
     QNetworkReply *checkReply(QObject *sender);
     bool isHttpRedirect(QNetworkReply *reply);
 
-    bool isFirmwarePackageFile(const QString &s, const QString &ver = QString());
+    bool isFirmwarePackageFile(const QString &s);
 
     QString getApxfwFileName(QString nodeName, QString hw);
     bool loadApfwFile(QString fileName, QString section, QByteArray *data, quint32 *startAddr);
@@ -78,6 +75,13 @@ private:
 private slots:
     void abort();
     void sync();
+    void syncFacts();
+
+    void updateCurrent();
+
+    // internet
+    void requestLatestTag();
+    void responseLatestTag();
 
     void requestRelease(QString req);
     void responseRelease();
