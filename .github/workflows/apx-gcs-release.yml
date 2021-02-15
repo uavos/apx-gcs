@@ -166,7 +166,7 @@ jobs:
           release_name: APX Ground Control ${{ steps.package.outputs.version }}
           body_path: changes.md
           draft: true
-          prerelease: false
+          prerelease: true
 
       - name: Publish release
         uses: actions/github-script@v3
