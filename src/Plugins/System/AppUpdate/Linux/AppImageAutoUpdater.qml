@@ -122,7 +122,7 @@ Pane {
             property string ver: updater.latestVersion
             onVerChanged: {
                 if(!ver)return
-                url="https://uavos.github.io/apx-releases/notes/release-"+ver+".html"
+                url="https://uavos.github.io/apx-gcs/releases/release-"+ver+".html"
             }
         }*/
 

@@ -118,7 +118,7 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://uavos.github.io/apx-releases/appcast.xml</string>
+	<string>https://uavos.github.io/apx-gcs/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>RoYj8WHIBhxsrYpkUktfoQmroQF91n/jB5pSZ4lwEM4=</string>
 	<key>SUScheduledCheckInterval</key>

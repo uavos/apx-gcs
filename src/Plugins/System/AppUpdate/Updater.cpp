@@ -66,7 +66,7 @@ void Updater::initUpdaterImpl()
 
 #ifdef Q_OS_MAC
     m_impl = std::make_unique<SparkleAutoUpdater>();
-    m_impl->setFeedURL("https://uavos.github.io/apx-releases/appcast.xml");
+    m_impl->setFeedURL("https://uavos.github.io/apx-gcs/appcast.xml");
 #endif
 
 #ifdef Q_OS_LINUX

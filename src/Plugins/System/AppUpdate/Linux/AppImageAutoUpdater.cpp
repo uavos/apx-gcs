@@ -219,7 +219,7 @@ QNetworkReply *AppImageAutoUpdater::request(QUrl url)
 }
 void AppImageAutoUpdater::requestReleaseNotes()
 {
-    QUrl url("https://api.github.com/repos/uavos/apx-releases/releases/latest");
+    QUrl url("https://api.github.com/repos/uavos/apx-gcs/releases/latest");
     QNetworkReply *reply = request(url);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -236,7 +236,7 @@ void AppImageAutoUpdater::requestReleaseNotes()
         m_latestVersion = sver;
         emit latestVersionChanged();
 
-        QUrl url(QString("https://uavos.github.io/apx-releases/notes/release-%1.md").arg(sver));
+        QUrl url(QString("https://uavos.github.io/apx-gcs/notes/release-%1.md").arg(sver));
         QNetworkReply *reply2 = request(url);
         connect(reply2, &QNetworkReply::finished, this, [this, reply2]() {
             reply2->deleteLater();

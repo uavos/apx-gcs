@@ -111,13 +111,13 @@ AppMenu::AppMenu(Fact *parent)
     connect(f, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl("http://docs.uavos.com"));
     });
-    f = new Fact(help, "changelog", tr("Changelog"), "", NoFlags, "delta");
-    connect(f, &Fact::triggered, this, []() {
-        QDesktopServices::openUrl(QUrl("http://uavos.github.io/apx-releases/CHANGELOG.html"));
-    });
+    // f = new Fact(help, "changelog", tr("Changelog"), "", NoFlags, "delta");
+    // connect(f, &Fact::triggered, this, []() {
+    //     QDesktopServices::openUrl(QUrl("http://uavos.github.io/apx-gcs/CHANGELOG.html"));
+    // });
     f = new Fact(help, "issue", tr("Report a problem"), "", NoFlags, "bug-outline");
     connect(f, &Fact::triggered, this, []() {
-        QDesktopServices::openUrl(QUrl("https://github.com/uavos/apx-releases/issues"));
+        QDesktopServices::openUrl(QUrl("https://github.com/uavos/apx-gcs/issues"));
     });
 
     connect(App::instance(),

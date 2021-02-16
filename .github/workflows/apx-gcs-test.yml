@@ -1,0 +1,73 @@
+name: APX GCS TEST
+
+on:
+  push:
+    branches: [dev]
+
+env:
+  VERSION_SPARKLE: 1.22.0
+
+jobs:
+  test:
+    name: Test
+    runs-on: macos-latest
+    steps:
+      - name: Install Sparkle
+        working-directory: /tmp
+        run: |
+          curl -L https://github.com/sparkle-project/Sparkle/releases/download/$VERSION_SPARKLE/Sparkle-$VERSION_SPARKLE.tar.bz2 --output sparkle.tar.bz2
+          bunzip2 -k -c sparkle.tar.bz2 | tar xopf -
+          sudo mv Sparkle.framework /Library/Frameworks/
+          echo "$(pwd)/bin" >> $GITHUB_PATH
+
+      - name: Install KEYS
+        env:
+          KEYCHAIN: default.keychain
+          KEYCHAIN_PASSWORD: uavos
+          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
+          SIGNING_CERTIFICATE_P12_DATA: ${{ secrets.SIGNING_CERTIFICATE_P12_DATA }}
+          SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
+          security default-keychain -s $KEYCHAIN
+          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
+          security set-keychain-settings $KEYCHAIN
+          security list-keychains -s $KEYCHAIN
+          security import <(echo $SIGNING_CERTIFICATE_P12_DATA | base64 --decode) -f pkcs12 -k $KEYCHAIN -P $SIGNING_CERTIFICATE_PASSWORD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN
+          security add-generic-password -U -a 'ed25519' -D 'private key' -s 'https://sparkle-project.org' -w $SPARKLE_KEY -A $KEYCHAIN
+          security set-generic-password-partition-list -s 'https://sparkle-project.org' -S apple-tool:,apple:,security:,unsigned: -k $KEYCHAIN_PASSWORD $KEYCHAIN
+
+      - name: Download assets
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.CI_PAT}}
+          script: |
+            const cp = require('child_process');
+            const { repo: { owner, repo }, sha } = context;
+
+            let download = async function(uri, filename){
+                let command = `curl -o ${filename} -L '${uri}'`;
+                let result = cp.execSync(command);
+            };
+
+            let releases = await github.repos.listReleases({
+              owner, repo,
+              per_page: 3,
+            });
+
+            for (let release of releases.data) {
+              //console.log('downloading:', release.id);
+              let assets = await github.repos.listReleaseAssets({
+                owner, repo,
+                release_id: release.id,
+              });
+              //console.log('assets', assets);
+              for (let asset of assets.data) {
+                if(!asset.name.endsWith('.dmg'))
+                  continue;
+                console.log('downloading:', asset.name);
+                await download(asset.browser_download_url, asset.name);
+                //console.log(await github.request(asset.url));
+              }
+            }

@@ -41,7 +41,7 @@ def deploy_appimage(path, json, apprun):
 
     app_name_file = app_name.replace(' ', '_')
 
-    zsync_link = 'gh-releases-zsync|uavos|apx-releases|latest|' + \
+    zsync_link = 'gh-releases-zsync|uavos|apx-gcs|latest|' + \
         app_name_file+'-*-'+platform+'-'+app_arch+'.AppImage.zsync'
 
     filename = os.path.join(app_name_file+'-'+version +

@@ -219,8 +219,8 @@ QString AppBase::aboutString()
 
     /*lines << "";
     lines << QString("%1: http://docs.uavos.com/").arg(tr("Documentation"));
-    lines << QString("%1: https://uavos.github.io/apx-releases/CHANGELOG.html").arg(tr("Changelog"));
-    lines << QString("%1: https://github.com/uavos/apx-releases/releases").arg(tr("Releases"));
+    lines << QString("%1: https://uavos.github.io/apx-gcs/CHANGELOG.html").arg(tr("Changelog"));
+    lines << QString("%1: https://github.com/uavos/apx-gcs/releases").arg(tr("Releases"));
 */
     lines << "";
     lines << QString("%1: 2007-%2").arg(tr("Copyright")).arg(git_year());
@@ -323,7 +323,7 @@ bool AppBase::install()
                           QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
                               + "/icons");
         //restart
-        QProcess::startDetached(fiBundleDest.absoluteFilePath(),QStringList());
+        QProcess::startDetached(fiBundleDest.absoluteFilePath(), QStringList());
         exit();
     }
 

@@ -73,6 +73,7 @@ jobs:
           curl -L https://github.com/sparkle-project/Sparkle/releases/download/$VERSION_SPARKLE/Sparkle-$VERSION_SPARKLE.tar.bz2 --output sparkle.tar.bz2
           bunzip2 -k -c sparkle.tar.bz2 | tar xopf -
           sudo mv Sparkle.framework /Library/Frameworks/
+          echo "$(pwd)/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp
