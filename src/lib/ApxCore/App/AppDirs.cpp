@@ -32,9 +32,14 @@ QDir AppDirs::res()
     QDir dir = QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_DATA_PATH);
     if (dir.exists())
         return dir;
-    dir = QDir(QCoreApplication::applicationDirPath() + "/../../resources"); // build from sources
-    if (dir.exists())
-        return dir;
+    QStringList prefix;
+    for (int i = 0; i < 4; ++i) {
+        prefix.append("..");
+        dir = QDir(QCoreApplication::applicationDirPath() + "/" + prefix.join('/')
+                   + "/resources"); // build from sources
+        if (dir.exists())
+            return dir;
+    }
     return QDir();
 #endif
 }

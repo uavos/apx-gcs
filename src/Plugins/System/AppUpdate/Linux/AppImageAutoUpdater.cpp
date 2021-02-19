@@ -236,7 +236,7 @@ void AppImageAutoUpdater::requestReleaseNotes()
         m_latestVersion = sver;
         emit latestVersionChanged();
 
-        QUrl url(QString("https://uavos.github.io/apx-gcs/notes/release-%1.md").arg(sver));
+        QUrl url(QString("https://uavos.github.io/apx-gcs/docs/releases/release-%1.md").arg(sver));
         QNetworkReply *reply2 = request(url);
         connect(reply2, &QNetworkReply::finished, this, [this, reply2]() {
             reply2->deleteLater();

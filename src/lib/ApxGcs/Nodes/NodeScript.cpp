@@ -37,6 +37,8 @@ NodeScript::NodeScript(Fact *fact)
                       .absoluteFilePath(QFileInfo(srcFile.fileName()).baseName() + ".wasm");
     proc.setProcessChannelMode(QProcess::MergedChannels);
 
+    _plugin = App::plugin("ScriptCompiler");
+
     _update_cc_args();
 
     connect(fact, &Fact::valueChanged, this, &NodeScript::factValueChanged, Qt::QueuedConnection);
@@ -45,6 +47,15 @@ NodeScript::NodeScript(Fact *fact)
 }
 void NodeScript::_update_cc_args()
 {
+    // find compiler
+    cc = "wasmcc";
+    if (_plugin) {
+        QString pcc = _plugin->control->property("cc").toString();
+        if (!pcc.isEmpty() && QFile::exists(pcc))
+            cc = pcc;
+    }
+
+    // parse compiler args
     cc_args.clear();
     QFile ftasks(AppDirs::res().filePath("scripts/.vscode/tasks.json"));
     if (ftasks.open(QFile::ReadOnly | QFile::Text)) {
@@ -71,7 +82,7 @@ void NodeScript::_update_cc_args()
             break;
         }
     }
-    //qDebug() << cc_args;
+    qDebug() << cc << cc_args;
 }
 
 void NodeScript::factValueChanged()
@@ -191,20 +202,12 @@ bool NodeScript::_compile(QString src)
     }
     _error = !rv;
     emit compiled();
-    //qDebug()<<"compile"<<rv<<m_outData.size();//<<getLog();
+    qDebug() << "compile" << rv;
     return rv;
 }
 
 bool NodeScript::_compile_wasm()
 {
-    QString cc = "wasmcc";
-    AppPlugin *p = App::plugin("ScriptCompiler");
-    if (p) {
-        QString pcc = p->control->property("cc").toString();
-        if (!pcc.isEmpty() && QFile::exists(pcc))
-            cc = pcc;
-    }
-
     proc.start(cc, cc_args);
     return true;
 }

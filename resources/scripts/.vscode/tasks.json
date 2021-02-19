@@ -1,0 +1,45 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "process",
+			"label": "C/C++: WASM build active file",
+			"command": "${config:wasm.cc}",
+			"args": [
+				"--sysroot=${config:wasm.sysroot}",
+				"${config:wasm.flags}",
+				"-O3",
+				"-nostdlib",
+				"-fvisibility=hidden",
+				"-z",
+				"stack-size=8192",
+				"-Wl,--initial-memory=65536",
+				"-Wl,--export=main",
+				"-Wl,--export-dynamic",
+				"-Wl,--export=__heap_base,--export=__data_end",
+				"-Wl,--no-entry",
+				"-Wl,--strip-all",
+				"-Wl,--allow-undefined-file=${config:wasm.sysroot}/share/defined-symbols.txt",
+				"-o",
+				"${fileDirname}/${fileBasenameNoExtension}.wasm",
+				"${file}"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc",
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"panel": "shared",
+				"clear": true,
+				"reveal": "silent"
+			}
+		}
+	]
+}

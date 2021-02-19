@@ -201,7 +201,10 @@ void MissionStorage::saveItemsToDict(QList<ProtocolMission::Item> &items,
                 continue;
             if (fv == f->f_longitude)
                 continue;
-            e.details.insert(fv->objectName(), fv->text());
+            QString s = fv->text();
+            if (!fv->units().isEmpty() && s.endsWith(fv->units()))
+                s = s.left(s.size() - fv->units().size()).trimmed();
+            e.details.insert(fv->objectName(), s);
         }
         items.append(e);
     }

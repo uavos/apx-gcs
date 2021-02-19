@@ -55,4 +55,17 @@ apx_qrc(
     "icons/uavos-logo.*"
 )
 
+# update mandala UID resources
+set(mandala_uid ${APX_RESOURCES_DIR}/scripts/include/MandalaUid.hpp)
+get_target_property(gensrc_dir mandala_headers INCLUDE_DIRECTORIES)
+set(mandala_uid_src ${gensrc_dir}/mandala/MandalaUid.hpp)
+add_custom_command(
+    OUTPUT ${mandala_uid}
+    DEPENDS shared.mandala
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${mandala_uid_src} ${mandala_uid}
+)
+add_custom_target(${MODULE}.mandala_uid ALL DEPENDS ${mandala_uid})
+add_dependencies(${MODULE} ${MODULE}.mandala_uid)
+
+# install scripts resources
 apx_install_res(${APX_RESOURCES_DIR} scripts)

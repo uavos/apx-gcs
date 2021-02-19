@@ -20,9 +20,7 @@ install(TARGETS ${MODULE} LIBRARY DESTINATION ${APX_INSTALL_DATA_DIR}/xplane)
 
 target_include_directories(${MODULE} PRIVATE SDK/CHeaders/XPLM)
 
-target_compile_definitions(${MODULE} PRIVATE XPLM200)
-
-target_link_libraries(${MODULE} PRIVATE lib.ApxCore) # for app_data.h
+target_compile_definitions(${MODULE} PRIVATE XPLM200 VERSION=\"${APX_GIT_VERSION}\")
 
 if(APPLE)
     target_compile_definitions(${MODULE} PRIVATE APL=1 IBM=0 LIN=0)

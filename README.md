@@ -151,7 +151,7 @@ More information about AppImage standard can be found here: [appimage.org](https
 
 ## Links
 
-- [Changelog](https://github.com/uavos/apx-gcs/blob/main/CHANGELOG.md);
+- [Changelog](https://uavos.github.io/apx-gcs/CHANGELOG.html);
 - [uavos/apx-ap](https://github.com/uavos/apx-ap) - APX Autopilot Firmware packages;
 - [UAVOS Inc. company web site](http://uavos.com) with products and more;
 - [APX Autopilot documentation](http://docs.uavos.com)

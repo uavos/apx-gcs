@@ -2,7 +2,7 @@ name: APX GCS TEST
 
 on:
   push:
-    branches: [dev]
+    branches: [xdev]
 
 env:
   VERSION_SPARKLE: 1.22.0

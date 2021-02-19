@@ -17,6 +17,7 @@ release: release-tags release-push
 release-tags:
 	@echo "Requesting release..."
 	@if ! git diff-index --quiet HEAD ; then echo "Commit changes first"; exit 1; fi
+	@git fetch --tags
 	@if [[ $(shell git rev-list HEAD ^$(GIT_REF_RELEASE) --count) -lt 1 ]]; then echo "** NO CHANGES **" && exit 1; fi
 	
 	@echo "Updating tags..."
@@ -31,6 +32,6 @@ release-tags:
 release-push:
 	@echo "Release push..."
 	git push origin $(GIT_BRANCH)
-	git push -f origin $(GIT_BRANCH) --tags
-	git fetch . $(GIT_BRANCH):release -f
-	git push origin release -f
+	git push origin $(GIT_BRANCH) --tags
+	git fetch . $(GIT_BRANCH):$(GIT_REF_RELEASE) -f
+	git push origin $(GIT_REF_RELEASE) -f

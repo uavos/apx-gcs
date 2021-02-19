@@ -163,7 +163,14 @@ bool FactData::updateValue(const QVariant &v)
             break;
         }
 
-        int enumIndex = enumValue(v);
+        QVariant vx = v;
+        QString s = vx.toString();
+        QString u = units();
+        if (!u.isEmpty() && s.endsWith(u)) {
+            vx = s.left(s.size() - u.size()).trimmed();
+        }
+
+        int enumIndex = enumValue(vx);
         if (enumIndex >= 0) {
             m_value = enumIndex; //enumText(enumIndex);
             break;
@@ -174,18 +181,16 @@ bool FactData::updateValue(const QVariant &v)
         long long vi = 0;
         bool ok = false;
 
-        if (units() == "hex") {
-            QString s = v.toString();
+        if (u == "hex") {
             vi = s.toLongLong(&ok, 16);
             if (!ok)
                 return false;
-        } else if (!_check_int(v)) {
-            QString s = v.toString();
-            if (units() == "time" && s.contains(':')) {
+        } else if (!_check_int(vx)) {
+            if (u == "time" && s.contains(':')) {
                 vi = static_cast<long long>(AppRoot::timeFromString(s));
                 ok = true;
             }
-            if (!ok && units() == "hex") {
+            if (!ok && u == "hex") {
                 vi = s.toLongLong(&ok, 16);
             }
             if (!ok) {
@@ -198,7 +203,7 @@ bool FactData::updateValue(const QVariant &v)
             if (!ok)
                 return false;
         } else {
-            vi = v.toLongLong();
+            vi = vx.toLongLong();
         }
         if (!m_min.isNull()) {
             long long m = m_min.toLongLong();
@@ -217,10 +222,14 @@ bool FactData::updateValue(const QVariant &v)
     case Float: {
         qreal vf;
         if (!_check_type(v, QMetaType::Double)) {
-            const QString &s = v.toString();
-            if (units() == "lat") {
+            QString s = v.toString();
+            QString u = units();
+            if (!u.isEmpty() && s.endsWith(u)) {
+                s = s.left(s.size() - u.size()).trimmed();
+            }
+            if (u == "lat") {
                 vf = AppRoot::latFromString(s);
-            } else if (units() == "lon") {
+            } else if (u == "lon") {
                 vf = AppRoot::lonFromString(s);
             } else {
                 bool ok = false;

@@ -236,6 +236,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
         e.dE = m.details.value("dE").toInt();
         e.approach = m.details.value("approach").toUInt();
         e.write(&stream);
+        //qDebug() << m.details;
     }
 
     fhdr.off.tw = stream.pos() - pos_s;
@@ -421,6 +422,7 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             m.details["approach"] = e.approach;
             m.details["type"] = runwayTypeToString(hdr.option);
             d.runways.append(m);
+            //qDebug() << m.details;
             continue;
         }
         case xbus::mission::TW: {

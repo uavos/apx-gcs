@@ -7,7 +7,7 @@ CMAKE := cmake
 all: package
 
 configure:
-	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR) -G Ninja
+	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR)
 
 build:
 	@$(CMAKE) --build $(BUILD_DIR)

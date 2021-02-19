@@ -23,6 +23,8 @@
 
 #include <Fact/Fact.h>
 
+class AppPlugin;
+
 class NodeScript : public QObject
 {
     Q_OBJECT
@@ -62,7 +64,9 @@ private:
 
     QString _value_s;
 
+    AppPlugin *_plugin{nullptr};
     QStringList cc_args;
+    QString cc;
 
     bool _compile(QString src);
 

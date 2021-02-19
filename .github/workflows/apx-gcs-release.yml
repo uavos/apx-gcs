@@ -8,7 +8,7 @@ on:
 env:
   VERSION_QT: 5.15.2
   VERSION_GST: 1.18.3
-  VERSION_SPARKLE: 1.22.0
+  VERSION_SPARKLE: 1.25.0-rc2
   VERSION_SDL: 2.0.14
 
 jobs:
@@ -30,15 +30,15 @@ jobs:
       # - name: Build test
       #   run: |
       #     mkdir -p build/deploy
-      #     echo "TEST"> build/deploy/TEST.AppImage
-      #     echo "TEST"> build/deploy/TEST.AppImage.zsync
+      #     echo "${{ github.ref }}"> build/deploy/TEST.AppImage
+      #     echo "${{ github.ref }}"> build/deploy/TEST.AppImage.zsync
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           path: |
             build/deploy/*.AppImage
-            build/deploy/*.AppImage.zsync
+            build/deploy/*.zsync
           name: apx-gcs-linux
           if-no-files-found: error
           retention-days: 1
@@ -54,7 +54,6 @@ jobs:
 
       - name: Install Tools
         run: |
-          brew install ninja
           pip3 install networkx simplejson jinja2 pyyaml dmgbuild
 
       - name: Install Qt
@@ -66,14 +65,6 @@ jobs:
               quickcontrols2 serialport multimedia speech svg location \
               graphicaleffects qtcharts
           echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
-
-      - name: Install Sparkle
-        working-directory: /tmp
-        run: |
-          curl -L https://github.com/sparkle-project/Sparkle/releases/download/$VERSION_SPARKLE/Sparkle-$VERSION_SPARKLE.tar.bz2 --output sparkle.tar.bz2
-          bunzip2 -k -c sparkle.tar.bz2 | tar xopf -
-          sudo mv Sparkle.framework /Library/Frameworks/
-          echo "$(pwd)/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp
@@ -90,6 +81,14 @@ jobs:
           sudo installer -package gst.pkg -target /
           sudo installer -package gst-devel.pkg -target /
           rm -f gst*.pkg
+
+      - name: Install Sparkle
+        working-directory: /tmp
+        run: |
+          curl -L https://github.com/sparkle-project/Sparkle/releases/download/$VERSION_SPARKLE/Sparkle-$VERSION_SPARKLE.tar.xz --output sparkle.tar.xz
+          gunzip -k -c sparkle.tar.xz | tar xopf -
+          sudo mv Sparkle.framework /Library/Frameworks/
+          echo "$(pwd)/bin" >> $GITHUB_PATH
 
       - name: Install KEYS
         env:
@@ -108,9 +107,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN
           security add-generic-password -U -a 'ed25519' -D 'private key' -s 'https://sparkle-project.org' -w $SPARKLE_KEY -A $KEYCHAIN
           security set-generic-password-partition-list -s 'https://sparkle-project.org' -S apple-tool:,apple:,security:,unsigned: -k $KEYCHAIN_PASSWORD $KEYCHAIN
-
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
+          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
 
       - name: Build package
         env:
@@ -120,13 +117,61 @@ jobs:
       # - name: Build test
       #   run: |
       #     mkdir -p build/deploy
-      #     echo "TEST"> build/deploy/TEST.dmg
+      #     echo "${{ github.ref }}"> build/deploy/TEST.dmg
+      #     echo "${{ github.ref }}"> appcast.xml
+
+      - name: Download assets
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.CI_PAT}}
+          script: |
+            const cp = require('child_process');
+            const { repo: { owner, repo }, sha } = context;
+
+            let download = async function(uri, filename){
+                let command = `curl -o ${filename} -L '${uri}'`;
+                let result = cp.execSync(command);
+            };
+
+            let releases = await github.repos.listReleases({
+              owner, repo,
+              per_page: 3,
+            });
+
+            for (let release of releases.data) {
+              //console.log('downloading:', release.id);
+              let assets = await github.repos.listReleaseAssets({
+                owner, repo,
+                release_id: release.id,
+              });
+              //console.log('assets', assets);
+              for (let asset of assets.data) {
+                if(!asset.name.endsWith('.dmg'))
+                  continue;
+                console.log('downloading:', asset.name);
+                await download(asset.browser_download_url, 'build/' + asset.name);
+                //console.log(await github.request(asset.url));
+              }
+            }
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+
+      - name: Generate Sparkle appcast
+        run: |
+          mkdir -p build/sparkle
+          mv -f build/*.dmg build/sparkle/
+          cp -f build/deploy/*.dmg build/sparkle/
+          ls -la build/sparkle/*.dmg
+          python tools/deploy/deploy_sparkle.py --assets=build/sparkle --key ${{ secrets.SPARKLE_KEY }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           path: |
             build/deploy/*.dmg
+            build/sparkle/*.delta
+            appcast.*
           name: apx-gcs-macos
           if-no-files-found: error
           retention-days: 1
@@ -144,7 +189,7 @@ jobs:
         id: package
         working-directory: package
         run: |
-          mv -f ./*/* .
+          find . -mindepth 2 -type f -exec mv -f '{}' . ';'
           ls -la *.*
           VERSION=${{ github.ref }}
           VERSION=$(echo ${VERSION##*/} | sed 's/^release-//')
@@ -181,6 +226,8 @@ jobs:
             for (let file of await fs.readdir('package', {withFileTypes:true})) {
               if (!file.isFile())
                 continue;
+              if (file.name.endsWith('.xml'))
+                continue;
               console.log('uploading', file.name);
               await github.repos.uploadReleaseAsset({
                 owner, repo,
@@ -195,3 +242,17 @@ jobs:
               release_id: "${{ steps.create_release.outputs.id }}",
               draft: false
             });
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+
+      - name: Update release branch
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git fetch origin release
+          git checkout release
+          mv -f package/appcast.xml docs/releases/
+          git add docs/releases/appcast.xml
+          git commit -am "Publish ${{ steps.package.outputs.version }}"
+          git push origin release
