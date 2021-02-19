@@ -160,7 +160,7 @@ jobs:
       - name: Generate Sparkle appcast
         run: |
           mkdir -p build/sparkle
-          mv -f build/*.dmg build/sparkle/
+          mv -f build/*.dmg build/sparkle/ || true
           cp -f build/deploy/*.dmg build/sparkle/
           ls -la build/sparkle/*.dmg
           python tools/deploy/deploy_sparkle.py --assets=build/sparkle --key ${{ secrets.SPARKLE_KEY }}
