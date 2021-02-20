@@ -142,8 +142,9 @@ Pane {
             }
             FactButton {
                 Layout.alignment: Qt.AlignHCenter
-                fact: apx.sysmenu.app.install
+                fact: apx.sysmenu.app.install?apx.sysmenu.app.install:null
                 toolTip: application.installDir()
+                visible: fact
             }
         }
 

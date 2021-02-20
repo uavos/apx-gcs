@@ -32,7 +32,6 @@ public:
 
     //constants
     Q_INVOKABLE static QString version() { return _instance->m_version; }
-    Q_INVOKABLE static QString branch() { return _instance->m_branch; }
     Q_INVOKABLE static QString git_hash() { return _instance->m_hash; }
     Q_INVOKABLE static QString git_time() { return _instance->m_time; }
     Q_INVOKABLE static QString git_year() { return _instance->m_year; }

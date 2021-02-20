@@ -201,7 +201,7 @@ QString AppBase::aboutString()
                  .arg(tr("Version"))
                  .arg(QCoreApplication::applicationName())
                  .arg(version());
-    lines << QString("%1: '%2' %3").arg(tr("Branch")).arg(branch()).arg(git_time());
+    lines << QString("%1: %2").arg(tr("Timestamp")).arg(git_time());
     lines << QString("Qt: %1 (%2, %3 bit)")
                  .arg(QLatin1String(qVersion()))
                  .arg(compilerString())
