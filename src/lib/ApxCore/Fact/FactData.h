@@ -42,7 +42,8 @@ class FactData : public FactBase
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
 
-    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    Q_PROPERTY(QString valueText READ valueText WRITE setValueText NOTIFY valueTextChanged)
+    Q_PROPERTY(QString text READ text NOTIFY textChanged)
 
     Q_PROPERTY(const QStringList &enumStrings READ enumStrings WRITE setEnumStrings NOTIFY
                    enumStringsChanged)
@@ -81,6 +82,7 @@ public slots:
 
 protected:
     bool updateValue(const QVariant &v);
+    void updateValueText();
     void updateText();
 
     virtual QString toText(const QVariant &v) const;
@@ -130,6 +132,9 @@ public:
     QString descr(void) const;
     virtual void setDescr(const QString &v);
 
+    QString valueText() const;
+    void setValueText(const QString &v);
+
     QString text() const;
     void setText(const QString &v);
 
@@ -158,6 +163,7 @@ protected:
 
     QString m_title;
     QString m_descr;
+    QString m_valueText;
     QString m_text;
 
     QStringList m_enumStrings;
@@ -182,6 +188,7 @@ signals:
     void titleChanged();
     void descrChanged();
 
+    void valueTextChanged();
     void textChanged();
     void enumStringsChanged();
 

@@ -103,7 +103,7 @@ Runway::Runway(MissionGroup *parent)
 void Runway::updateTitle()
 {
     setValue(
-        f_type->text().left(1).toUpper()
+        f_type->valueText().left(1).toUpper()
         + QString("%1").arg((int) AppRoot::angle360(round(AppRoot::angle360(heading()) / 10.0) * 10)
                                 / 10,
                             2,
@@ -114,7 +114,7 @@ void Runway::updateTitle()
     st.append(value().toString());
     st.append(AppRoot::distanceToString(f_approach->value().toInt()));
     if (!f_hmsl->isZero())
-        st.append("MSL" + f_hmsl->text());
+        st.append("MSL" + f_hmsl->valueText());
     setTitle(st.join(' '));
 }
 

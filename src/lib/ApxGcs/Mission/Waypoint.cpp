@@ -62,8 +62,8 @@ void Waypoint::updateTitle()
 {
     QStringList st;
     st.append(QString::number(num() + 1));
-    st.append(f_type->text().left(1).toUpper());
-    st.append(f_altitude->text() + f_altitude->units());
+    st.append(f_type->valueText().left(1).toUpper());
+    st.append(f_altitude->text());
     setTitle(st.join(' '));
 }
 void Waypoint::updateDescr()

@@ -59,7 +59,6 @@ private:
     bool m_segfault{};
 
     QString m_version;
-    QString m_branch;
     QString m_hash;
     QString m_time;
     QString m_year;

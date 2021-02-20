@@ -78,8 +78,6 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     // app constants
     m_version = VERSION;
     apxConsole() << tr("Version").append(":") << m_version;
-    m_branch = BRANCH;
-    apxConsole() << tr("Branch").append(":") << m_branch;
 
     m_hash = GIT_HASH;
     m_time = GIT_TIME;

@@ -124,7 +124,7 @@ void NodeField::updateStatus()
     if (size() == 3 && _type == xbus::node::conf::real) {
         QStringList st;
         for (int i = 0; i < size(); ++i) {
-            st.append(child(i)->text());
+            st.append(child(i)->valueText());
         }
         setValue(QString("(%1)").arg(st.join(',')));
     }
@@ -133,7 +133,7 @@ void NodeField::updateStatus()
     for (auto i : facts()) {
         if (i->isZero())
             continue;
-        QString s = i->text();
+        QString s = i->valueText();
         if (s.isEmpty())
             continue;
         if (s == "0")

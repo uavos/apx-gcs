@@ -349,6 +349,8 @@ int MandalaFact::getPrecision()
             return 1;
         if (u == "k")
             return 2;
+        if (u == "kg")
+            return 1;
         qWarning() << "default units precision:" << u << path();
     }
     return 6;

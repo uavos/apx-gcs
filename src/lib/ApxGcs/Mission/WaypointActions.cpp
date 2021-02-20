@@ -111,7 +111,7 @@ void WaypointActions::updateActionsValue()
         Fact *f = this->child(i);
         if (f->isZero())
             continue;
-        st.append(QString("%1=%2").arg(f->name()).arg(f->text()));
+        st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
     }
     blockActionsValueChanged = true;
     this->setValue(st.join(','));

@@ -83,15 +83,15 @@ void Area::updateDescr()
     QStringList st;
     QString sts;
     if (!f_hmsl->isZero()) {
-        st.append("MSL" + f_hmsl->text());
+        st.append("MSL" + f_hmsl->valueText());
         sts.append("H");
     }
     if (!f_loops->isZero()) {
-        st.append("L" + f_loops->text());
+        st.append("L" + f_loops->valueText());
         sts.append("L");
     }
     if (!f_time->isZero()) {
-        st.append("T" + f_time->text());
+        st.append("T" + f_time->valueText());
         sts.append("T");
     }
     setDescr(st.join(' '));

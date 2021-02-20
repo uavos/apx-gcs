@@ -460,7 +460,7 @@ void Fact::updateBinding(Fact *src)
             bindProperty(src, "precision", true);
             bindProperty(src, "min", true);
             bindProperty(src, "max", true);
-            bindProperty(src, "text", true);
+            bindProperty(src, "valueText", true);
             bindProperty(src, "enumStrings", true);
             bindProperty(src, "units", true);
         }
@@ -503,11 +503,11 @@ QJsonObject Fact::valuesToJson(bool array) const
         const Fact *f = static_cast<const Fact *>(child(i));
         QJsonValue v;
         if (f->dataType() == Text)
-            v = f->text();
+            v = f->valueText();
         else if (f->enumStrings().isEmpty())
             v = QJsonValue::fromVariant(f->value());
         else
-            v = f->text();
+            v = f->valueText();
         bool noData = f->dataType() == NoFlags || f->dataType() == Count;
         if (f->size() > 0) {
             QJsonObject vo = f->valuesToJson(false);
@@ -517,7 +517,7 @@ QJsonObject Fact::valuesToJson(bool array) const
             jso.insert(f->name(), vo);
             continue;
         }
-        if (noData || f->text().isEmpty())
+        if (noData || f->valueText().isEmpty())
             continue;
         jso.insert(f->name(), v);
     }
@@ -552,7 +552,7 @@ Fact *Fact::mandala() const
 void Fact::setMandala(Fact *v)
 {
     m_mandala = v;
-    updateText();
+    updateValueText();
 }
 QString Fact::mandalaToString(quint16 pid_raw) const
 {

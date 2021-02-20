@@ -82,7 +82,7 @@ void NodeScript::_update_cc_args()
             break;
         }
     }
-    qDebug() << cc << cc_args;
+    //qDebug() << cc << cc_args;
 }
 
 void NodeScript::factValueChanged()
@@ -134,7 +134,7 @@ void NodeScript::_updateFactText()
         if (!_title.isEmpty())
             text = QString("%1 (%2)").arg(_title).arg(text);
     }
-    _fact->setText(text);
+    _fact->setValueText(text);
 }
 
 void NodeScript::setSource(QString title, QString source)
@@ -202,7 +202,7 @@ bool NodeScript::_compile(QString src)
     }
     _error = !rv;
     emit compiled();
-    qDebug() << "compile" << rv;
+    //qDebug() << "compile" << rv;
     return rv;
 }
 

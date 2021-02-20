@@ -137,10 +137,10 @@ QString HttpService::reply_mandala(const QString &req)
             xml.writeAttribute("descr", f->title());
             xml.writeAttribute("uid", QString::number(f->uid()));
             xml.writeAttribute("uid_hex", QString::number(f->uid(), 16).toUpper());
-            xml.writeCharacters(f->text());
+            xml.writeCharacters(f->valueText());
             xml.writeEndElement();
         } else {
-            xml.writeTextElement(f->mpath(), f->text());
+            xml.writeTextElement(f->mpath(), f->valueText());
         }
     }
     //------------------------------
@@ -495,9 +495,9 @@ QString HttpService::reply_chase()
 
     xml.writeStartElement("Camera");
     xml.writeAttribute("id", "camChase");
-    xml.writeTextElement("longitude", c_gps_lon->text());
-    xml.writeTextElement("latitude", c_gps_lat->text());
-    xml.writeTextElement("altitude", c_gps_hmsl->text());
+    xml.writeTextElement("longitude", c_gps_lon->valueText());
+    xml.writeTextElement("latitude", c_gps_lat->valueText());
+    xml.writeTextElement("altitude", c_gps_hmsl->valueText());
     xml.writeTextElement("heading",
                          QString("%1").arg(AppRoot::angle360(c_course->value().toDouble()), 0, 'f'));
     xml.writeTextElement("tilt", QString("%1").arg(c_pitch->value().toDouble() + 90.0));
@@ -538,9 +538,9 @@ QString HttpService::reply_chase_upd()
     xml.writeTextElement("gx:duration", "2.0");
     xml.writeStartElement("Camera");
     xml.writeAttribute("id", "camChase");
-    xml.writeTextElement("longitude", c_gps_lon->text());
-    xml.writeTextElement("latitude", c_gps_lat->text());
-    xml.writeTextElement("altitude", c_gps_hmsl->text());
+    xml.writeTextElement("longitude", c_gps_lon->valueText());
+    xml.writeTextElement("latitude", c_gps_lat->valueText());
+    xml.writeTextElement("altitude", c_gps_hmsl->valueText());
     xml.writeTextElement("heading",
                          QString("%1").arg(AppRoot::angle360(c_course->value().toDouble()), 0, 'f'));
     xml.writeTextElement("tilt", QString("%1").arg(c_pitch->value().toDouble() + 90.0));

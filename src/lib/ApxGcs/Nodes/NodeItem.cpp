@@ -132,7 +132,7 @@ void NodeItem::updateStatus()
         return;
     }
     if (m_status_field) {
-        setValue(m_status_field->text().trimmed());
+        setValue(m_status_field->valueText().trimmed());
     }
 }
 
@@ -169,7 +169,7 @@ void NodeItem::upload()
 
     ProtocolNode::ValuesList values;
     for (auto i : list) {
-        _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->text(), protocol()->sn());
+        _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->valueText(), protocol()->sn());
         values.insert(i->fid(), i->confValue());
     }
     protocol()->requestUpdate(values);
@@ -280,10 +280,10 @@ void NodeItem::groupArrays(Fact *group)
         Fact *fRow = new Fact(action, fi->name(), fi->title(), "", Group | ModifiedGroup);
         new NodeViewActions(fRow, _nodes);
 
-        fRow->bindProperty(fi, "text", true);
+        fRow->bindProperty(fi, "valueText", true);
         fRow->bindProperty(fi, "modified", true);
 
-        connect(fi, &Fact::textChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
+        connect(fi, &Fact::valueTextChanged, this, [this, fRow]() { updateArrayRowDescr(fRow); });
 
         Fact *f_ch = nullptr;
         int f_ch_max = 0;
@@ -308,7 +308,7 @@ void NodeItem::groupArrays(Fact *group)
                                fArray->descr(),
                                fp->treeType() | fp->dataType() | ModifiedTrack);
             new NodeViewActions(f, _nodes);
-            connect(f, &Fact::textChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
+            connect(f, &Fact::valueTextChanged, fRow, [this, fRow]() { updateArrayRowDescr(fRow); });
             if (bChParam) {
                 updateArrayChBinding(f, fArray, f_ch);
                 connect(f_ch, &Fact::valueChanged, f, [this, f, fArray, f_ch]() {
@@ -332,7 +332,7 @@ void NodeItem::updateArrayRowDescr(Fact *fRow)
     QStringList st;
     if (!fRow->isZero()) {
         for (auto i : fRow->facts()) {
-            st.append(i->text());
+            st.append(i->valueText());
         }
     }
     fRow->setDescr(st.join(", "));
@@ -346,7 +346,7 @@ void NodeItem::updateArrayChBinding(Fact *f_element, Fact *f_array, Fact *f_ch)
         f_element->setBinding(f_array->child(ch - 1));
     } else {
         f_element->setValue(0);
-        f_element->setText("");
+        f_element->setValueText("");
         f_element->setModified(false);
         f_element->setEnabled(false);
     }
@@ -381,10 +381,10 @@ void NodeItem::linkGroupValues(Fact *f)
                 break;
             return;
         } while (0);
-        connect(f, &Fact::textChanged, f->parentFact(), [f]() {
-            f->parentFact()->setValue(f->text());
+        connect(f, &Fact::valueTextChanged, f->parentFact(), [f]() {
+            f->parentFact()->setValue(f->valueText());
         });
-        f->parentFact()->setValue(f->text());
+        f->parentFact()->setValue(f->valueText());
         return;
     }
 
@@ -567,8 +567,8 @@ void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
 void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
 {
     QString s = title();
-    if (!text().isEmpty()) {
-        s.append(QString("/%1").arg(text()));
+    if (!valueText().isEmpty()) {
+        s.append(QString("/%1").arg(valueText()));
     }
     _nodes->vehicle->message(msg, flags, s);
     _nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
