@@ -36,7 +36,7 @@ Poi::Poi(MissionGroup *parent)
     f_radius->setUnits("m");
     f_radius->setMin(-10000);
     f_radius->setMax(10000);
-    f_radius->setValue(200);
+    f_radius->setValue(800);
 
     f_loops = new MissionField(this, "loops", tr("Loops"), tr("Loiter loops limit"), Int);
     f_loops->setEnumStrings(QStringList() << "default");

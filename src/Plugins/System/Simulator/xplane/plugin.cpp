@@ -255,6 +255,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     strcpy(outName, "UAVOS Autopilot SIL plugin");
     strcpy(outSig, "www.uavos.com");
     sprintf(outDesc, "Exchange data with autopilot for SIL/HIL simulation (v%s).", VERSION);
+    fflush(stdout);
 
     memset(&xpl, 0, sizeof(xpl));
     memset(&xpl_ref, 0, sizeof(xpl_ref));
