@@ -43,8 +43,6 @@ update-icons:
 
 
 include Docker.mk
-include Tools.mk
-
 include Release.mk
 
 fix-submodules:

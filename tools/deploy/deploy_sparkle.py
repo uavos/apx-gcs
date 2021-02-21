@@ -55,7 +55,7 @@ for item in xml.getroot().iter('item'):
     e.attrib['url'] = dl_url + url[url.rfind('/'):]
     e2 = ElementTree.SubElement(item, 'sparkle:releaseNotesLink')
     ruser, rname = repo.split('/')
-    e2.text = 'https://{0}.github.io/{1}/notes/release-{2}.html'.format(
+    e2.text = 'https://{0}.github.io/{1}/docs/releases/release-{2}.html'.format(
         ruser, rname, ver)
 
     deltas = item.find('{' + ns + '}deltas')
