@@ -139,9 +139,16 @@ bool Simulator::extract_apxfw()
 void Simulator::detectXplane()
 {
     QStringList st;
-    QFileInfoList files(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation),
-                             "x-plane_install*.txt")
-                            .entryInfoList());
+    QFileInfoList files;
+    QStringList locations;
+    locations<<QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+    locations<<QStandardPaths::writableLocation(QStandardPaths::HomeLocation)+"/.x-plane";
+
+    for (auto i : locations) {
+        files = QDir(i, "x-plane_install*.txt").entryInfoList();
+        if(!files.isEmpty())break;
+    }
+
     foreach (QFileInfo fi, files) {
         QString s = fi.baseName();
         int ver = 0;
@@ -280,7 +287,11 @@ void Simulator::launch()
 void Simulator::launchXplane(QString xplaneDir)
 {
     //mount image
-    QFileInfoList fiList(QDir(xplaneDir, "*.img").entryInfoList());
+    QFileInfoList fiList;
+    fiList = QDir(xplaneDir, "*.img").entryInfoList();
+    if (fiList.isEmpty())
+        fiList = QDir(xplaneDir, "*.iso").entryInfoList();
+
     while (!fiList.isEmpty()) {
         QString imgFile = fiList.first().absoluteFilePath();
 #if defined Q_OS_MAC
@@ -294,7 +305,7 @@ void Simulator::launchXplane(QString xplaneDir)
             == 0)
             break;
 #endif
-        apxMsgW() << tr("Failed to mount X-Plane image") << imgFile;
+        apxMsgW() << tr("Failed to mount X-Plane image") << imgFile << "(/media/cdrom)";
         break;
     }
 
@@ -305,6 +316,8 @@ void Simulator::launchXplane(QString xplaneDir)
     xplaneApp = QDir(xplaneApp).filePath("Contents/MacOS/X-Plane");
 #elif defined Q_OS_WIN
     xplaneApp.append(".exe");
+#else
+    xplaneApp.append("-x86_64");
 #endif
     /*QUrl xplaneUrl(QUrl::fromLocalFile(xplaneDir + "/" + xplaneApp));
     if (!QDesktopServices::openUrl(xplaneUrl)) {

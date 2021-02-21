@@ -39,6 +39,11 @@ QDir AppDirs::res()
                    + "/resources"); // build from sources
         if (dir.exists())
             return dir;
+        dir = QDir(QCoreApplication::applicationDirPath() + "/" + prefix.join('/')
+                   + "/apx-gcs/resources"); // build from sources
+
+        if (dir.exists())
+            return dir;
     }
     return QDir();
 #endif
