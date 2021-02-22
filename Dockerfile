@@ -6,8 +6,8 @@ ENV TERM=xterm-color
 ENV DEBIAN_FRONTEND=noninteractive
 
 # basic APT packages
-RUN apt-get update -qq && \
-    apt-get install -qq -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     ca-certificates \
     build-essential rsync curl git make ninja-build pkg-config python3-pip \
     && \
@@ -24,7 +24,7 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}
 ARG VERSION_QT=5.15.2
 
 ARG INSTALL_QT_SRC=https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh
-RUN apt-get install -qq -y --no-install-recommends p7zip-full && rm -Rf /var/cache/apt
+RUN apt-get install -y --no-install-recommends p7zip-full && rm -Rf /var/cache/apt
 RUN curl -L ${INSTALL_QT_SRC} --output /tmp/install-qt.sh && \
 	chmod +x /tmp/install-qt.sh && \
 	/tmp/install-qt.sh --version ${VERSION_QT} --directory /tmp/qt \
@@ -59,18 +59,22 @@ RUN curl -L ${APPIMAGETOOL_SRC} --output /usr/local/bin/appimagetool && \
 # 	chmod +x /usr/local/bin/linuxdeploy-plugin-gstreamer.sh
 
 # libs: appimageupdate
-RUN apt-get install -qq -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
 		xxd wget automake desktop-file-utils librsvg2-dev libfuse-dev patchelf \
-		libcurl4-gnutls-dev libssl-dev libtool libglib2.0-dev libcairo-dev \
+		libcurl4-openssl-dev libssl-dev libtool libglib2.0-dev libcairo-dev \
 		&& rm -Rf /var/cache/apt
 RUN	git clone --depth=1 --recurse-submodules https://github.com/AppImage/AppImageUpdate.git && \
- 	cd AppImageUpdate && cmake -H. -Bbuild && cmake --build build --target install && cd .. && \
+ 	cd AppImageUpdate && \
+	 	sed -i 's/\"HTTP\/1\", 6/\"HTTP\/1\", 4/' lib/zsync2/src/legacy_http.c && \
+		cmake -H. -Bbuild && \
+		cmake --build build --target install && \
+	cd .. && \
 	find AppImageUpdate/build -name '*.a' -exec cp "{}" /usr/local/lib/ \; && \
 	rm -Rf AppImageUpdate
 
 
 # libs: apt
-RUN apt-get install -qq -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
 		libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
 		libodbc1 libpq5 \
 		libcups2 \

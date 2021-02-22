@@ -58,7 +58,7 @@ def deploy_appimage(path, json, apprun):
         subprocess.check_call(['chmod', '+x', dest])
 
     pargs = [
-        'env', 'ARCH='+app['arch'],
+        'env', 'ARCH='+app_arch,
         'appimagetool',
         '-u', zsync_link,
         # '--comp=xz',
