@@ -29,6 +29,7 @@
 #include <QGeoCoordinate>
 #include <QGeoRectangle>
 #include <QtCore>
+
 class MissionListModel;
 class Waypoint;
 class Runway;

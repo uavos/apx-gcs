@@ -154,6 +154,14 @@ void DatabaseSession::updateCapacity()
     emit capacityChanged();
 }
 //=============================================================================
+QStringList DatabaseSession::tableFields(QString tableName) const
+{
+    return _tableFields.value(tableName);
+}
+void DatabaseSession::updateTableFields(const QString tableName, QStringList fields)
+{
+    _tableFields.insert(tableName, fields);
+}
 //=============================================================================
 bool DatabaseSession::transaction(QSqlQuery &query)
 {
@@ -256,6 +264,13 @@ bool DBReqMakeTable::run(QSqlQuery &query)
     query.prepare(QString("PRAGMA table_info('%1')").arg(tableName));
     if (!query.exec())
         return false;
+
+    QStringList fieldsList;
+    for (auto i : fields) {
+        fieldsList.append(i.split(' ').first());
+    }
+    db->updateTableFields(tableName, fieldsList);
+
     if (!query.next()) {
         //not exists - create new table
         const QString &s = QString("CREATE TABLE IF NOT EXISTS %1 (%2) %3")

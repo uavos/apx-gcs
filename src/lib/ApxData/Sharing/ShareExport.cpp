@@ -19,27 +19,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "ShareExport.h"
 
-#include <Fact/Fact.h>
-#include <Sharing/Share.h>
-#include <QtCore>
+#include <App/AppLog.h>
 
-class VehicleMission;
+ShareExport::ShareExport(QString name, QString type, QObject *parent)
+    : QObject(parent)
+    , _name(name)
+    , _type(type)
+{}
 
-class MissionShare : public Share
+bool ShareExport::saveData(QByteArray data, QString fileName)
 {
-    Q_OBJECT
-
-public:
-    explicit MissionShare(VehicleMission *mission,
-                          Fact *parent,
-                          FactBase::Flags flags = FactBase::Flags(Group));
-
-private:
-    VehicleMission *mission;
-
-    QString getDefaultTitle() override;
-    bool exportRequest(ShareExport *format, QString fileName) override;
-    bool importRequest(ShareImport *format, QString fileName) override;
-};
+    if (data.isEmpty())
+        return false;
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        apxMsgW() << tr("Cannot write file").append(":") << fileName
+                  << QString("(%1)").arg(file.errorString());
+        return false;
+    }
+    file.write(data);
+    file.close();
+    return true;
+}

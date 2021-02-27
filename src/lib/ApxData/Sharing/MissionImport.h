@@ -21,25 +21,20 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <Sharing/Share.h>
-#include <QtCore>
+#include <Protocols/ProtocolMission.h>
 
-class VehicleMission;
+#include "ShareImport.h"
 
-class MissionShare : public Share
+class MissionImport : public ShareImport
 {
     Q_OBJECT
-
 public:
-    explicit MissionShare(VehicleMission *mission,
-                          Fact *parent,
-                          FactBase::Flags flags = FactBase::Flags(Group));
+    explicit MissionImport(QObject *parent = nullptr);
+
+    bool convert(const QByteArray &data, ProtocolMission::Mission *d, QVariantMap *info);
+
+    bool load(QString fileName);
 
 private:
-    VehicleMission *mission;
-
-    QString getDefaultTitle() override;
-    bool exportRequest(ShareExport *format, QString fileName) override;
-    bool importRequest(ShareImport *format, QString fileName) override;
+    void read(QJsonObject &json, const QString &name, QList<ProtocolMission::Item> *items);
 };

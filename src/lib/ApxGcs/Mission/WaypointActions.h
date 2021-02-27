@@ -37,10 +37,6 @@ public:
     Fact *f_dshot;
     Fact *f_script;
     Fact *f_poi;
-    Fact *f_loiter;
-    Fact *f_turnR;
-    Fact *f_loops;
-    Fact *f_time;
 
 private:
     bool blockActionsValueChanged;

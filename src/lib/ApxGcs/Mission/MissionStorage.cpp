@@ -32,8 +32,6 @@
 #include <Vehicles/VehicleSelect.h>
 #include <Vehicles/Vehicles.h>
 
-#include "MissionShare.h"
-
 MissionStorage::MissionStorage(VehicleMission *mission)
     : QObject(mission)
     , mission(mission)
@@ -42,10 +40,8 @@ MissionStorage::MissionStorage(VehicleMission *mission)
     connect(mission, &VehicleMission::coordinateChanged, &evtUpdateSite, &DelayedEvent::schedule);
 }
 
-void MissionStorage::saveMission()
+QVariantMap MissionStorage::getDetails()
 {
-    dbHash.clear();
-    //collect details
     QVariantMap details;
     QString title = mission->f_title->text().simplified();
     if (mission->vehicle->protocol()->isIdentified()) {
@@ -70,9 +66,13 @@ void MissionStorage::saveMission()
     details.insert("bottomRightLat", rect.bottomRight().latitude());
     details.insert("bottomRightLon", rect.bottomRight().longitude());
     details.insert("distance", mission->f_waypoints->distance());
+    return details;
+}
 
-    //request
-    DBReqMissionsSave *req = new DBReqMissionsSave(saveToDict(), details);
+void MissionStorage::saveMission()
+{
+    dbHash.clear();
+    DBReqMissionsSave *req = new DBReqMissionsSave(saveToDict(), getDetails());
     connect(req,
             &DBReqMissionsSave::missionHash,
             this,

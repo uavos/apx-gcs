@@ -23,7 +23,7 @@
 #include <App/AppBase.h>
 #include <App/AppLog.h>
 #include <Database/Database.h>
-//=============================================================================
+
 void ShareXml::writeInfo(QDomNode &dom, QString name, QVariantMap info, QStringList filter)
 {
     QDomDocument doc = dom.ownerDocument();
@@ -53,8 +53,7 @@ QVariantMap ShareXml::readInfo(const QDomNode &dom, QString name)
     }
     return info;
 }
-//=============================================================================
-//=============================================================================
+
 bool ShareXmlExport::run(QSqlQuery &query)
 {
     Q_UNUSED(query)
@@ -91,15 +90,14 @@ bool ShareXmlExport::run(QSqlQuery &query)
         emit exported(data, fileName);
     return true;
 }
-//=============================================================================
+
 bool ShareXmlExport::write(QDomNode &dom)
 {
     Q_UNUSED(dom)
     qDebug() << "not implemented";
     return false;
 }
-//=============================================================================
-//=============================================================================
+
 bool ShareXmlImport::run(QSqlQuery &query)
 {
     if ((!fileName.isEmpty()) || data.isEmpty()) {
@@ -116,7 +114,7 @@ bool ShareXmlImport::run(QSqlQuery &query)
     }
     return readData(query);
 }
-//=============================================================================
+
 bool ShareXmlImport::readData(QSqlQuery &query)
 {
     QDomDocument doc;
@@ -153,26 +151,25 @@ bool ShareXmlImport::readData(const QDomNode &dom)
         title = r_title;
     return read(e);
 }
-//=============================================================================
+
 bool ShareXmlImport::read(const QDomNode &dom)
 {
     Q_UNUSED(dom)
     qDebug() << "not implemented";
-    return true;
+    return false;
 }
-//=============================================================================
+
 bool ShareXmlImport::readOldFormat(const QDomNode &dom, int fmt)
 {
     Q_UNUSED(dom)
     Q_UNUSED(fmt)
     qDebug() << "not implemented";
-    return true;
+    return false;
 }
-//=============================================================================
+
 bool ShareXmlImport::save(QSqlQuery &query)
 {
     Q_UNUSED(query)
     qDebug() << "not implemented";
-    return true;
+    return false;
 }
-//=============================================================================

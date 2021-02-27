@@ -25,40 +25,52 @@
 
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-#include <Sharing/MissionsXml.h>
 #include <Vehicles/Vehicle.h>
 
+#include <Sharing/MissionExport.h>
+#include <Sharing/MissionImport.h>
+
+#include <Database/MissionsDB.h>
+
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
-    : Share(parent, tr("Mission"), "mission", AppDirs::missions(), QStringList(), flags)
+    : Share(parent, tr("Mission"), AppDirs::missions(), flags)
     , mission(mission)
 {
-    connect(this, &Share::imported, mission->storage, &MissionStorage::loadMission);
+    connect(this,
+            &Share::imported,
+            mission->storage,
+            [mission](QString fileName, QString hash, QString title) {
+                mission->storage->loadMission(hash);
+            });
+
+    add(new MissionExport(this));
+    add(new MissionImport(this));
 }
 
-QString MissionShare::defaultExportFileName() const
+QString MissionShare::getDefaultTitle()
 {
-    QString fname = mission->site().replace(" ", "");
-    if (!fname.isEmpty())
-        fname.append("-");
-    fname.append(mission->vehicle->title());
+    QString s = mission->site().replace(" ", "");
+    if (!s.isEmpty())
+        s.append("-");
+    s.append(mission->vehicle->title());
     QString subj = mission->f_title->text().simplified();
     if (!subj.isEmpty())
-        fname.append(QString("-%1").arg(subj));
+        s.append(QString("-%1").arg(subj));
     else
-        fname.append(QString("-%1").arg(mission->missionSize()));
-    fname.replace(' ', '-');
-    return fname;
+        s.append(QString("-%1").arg(mission->missionSize()));
+    s.replace(' ', '-');
+    return s;
 }
-ShareXmlExport *MissionShare::exportRequest(QString title, QString fileName)
+bool MissionShare::exportRequest(ShareExport *format, QString fileName)
 {
-    QString hash = mission->storage->dbHash;
-    if (hash.isEmpty()) {
-        apxMsgW() << tr("Missing config in database");
-        return nullptr;
-    }
-    return new MissionsXmlExport(hash, title, fileName);
+    auto f = qobject_cast<MissionExport *>(format);
+    QVariantMap info = mission->storage->getDetails();
+    info.insert("site", mission->site());
+    //info.insert("details", QJsonObject::fromVariantMap(mission->storage->getDetails()));
+    return f->save(fileName, mission->storage->saveToDict(), info);
 }
-ShareXmlImport *MissionShare::importRequest(QString title, QString fileName)
+bool MissionShare::importRequest(ShareImport *format, QString fileName)
 {
-    return new MissionsXmlImport(title, fileName);
+    auto f = qobject_cast<MissionImport *>(format);
+    return f->load(fileName);
 }

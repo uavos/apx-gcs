@@ -149,7 +149,7 @@ bool DatabaseRequest::recordUpdateQuery(QSqlQuery &query,
                                         const QString &table,
                                         const QString &tail) const
 {
-    values = filterNullValues(values);
+    values = filterFields(table, filterNullValues(values));
     if (values.isEmpty())
         return false;
     QString s = QString("UPDATE %1 SET %2=? %3").arg(table).arg(values.keys().join("=?,")).arg(tail);
@@ -165,7 +165,7 @@ bool DatabaseRequest::recordInsertQuery(QSqlQuery &query,
                                         const QString &table,
                                         const QString &tail) const
 {
-    values = filterNullValues(values);
+    values = filterFields(table, filterNullValues(values));
     if (values.isEmpty())
         return false;
     QStringList vlist;
@@ -205,8 +205,18 @@ QVariantMap DatabaseRequest::filterIdValues(QVariantMap values)
     }
     return filterNullValues(values);
 }
+QVariantMap DatabaseRequest::filterFields(QString tableName, QVariantMap values) const
+{
+    QStringList fields = db->tableFields(tableName);
+    for (auto k : values.keys()) {
+        if (fields.contains(k))
+            continue;
+        values.remove(k);
+    }
+    return values;
+}
 //=============================================================================
-QStringList DatabaseRequest::fieldNames(QSqlQuery &query) const
+QStringList DatabaseRequest::fieldNames(QSqlQuery &query)
 {
     QStringList st;
     const QSqlRecord &r = query.record();
@@ -215,7 +225,7 @@ QStringList DatabaseRequest::fieldNames(QSqlQuery &query) const
     }
     return st;
 }
-QVariantList DatabaseRequest::values(QSqlQuery &query, const QStringList &names) const
+QVariantList DatabaseRequest::values(QSqlQuery &query, const QStringList &names)
 {
     QVariantList v;
     for (auto const &n : names) {

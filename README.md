@@ -39,7 +39,7 @@ The source code, published in this repository, **is not based** on any known ope
 - `Signals`: QML widget to show live chart of defined UAV physical values for easy tuning;
 - `Simulator`: launches [X-Plane](https://www.x-plane.com) flight simulator with provided specific plugins to communicate to the GCS for SIL/HIL simulation;
 - `Sites`: map view plugin to add named areas to missions and map areas;
-- `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines, availebale to the system, and emits emergency alarm sounds;
+- `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines, available to the system, and emits emergency alarm sounds;
 - `TelemetryChart`: [QWT](https://qwt.sourceforge.io)-lib based widget to visualize telemetry database;
 - `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript)/QML based;
 - `TreeFacts`: general back-end qobjects data structure tree-view, used for debugging;

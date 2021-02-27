@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Share_H
-#define Share_H
-//=============================================================================
-#include "ShareXml.h"
+#pragma once
+
 #include <Fact/Fact.h>
-#include <QDomDocument>
 #include <QtCore>
-//=============================================================================
+
+class ShareExport;
+class ShareImport;
 class Share : public Fact
 {
     Q_OBJECT
@@ -34,10 +33,7 @@ class Share : public Fact
 public:
     explicit Share(Fact *parent,
                    QString dataTitle,
-                   QString fileType,
                    QDir defaultDir,
-                   //additional export formats
-                   const QStringList &exportFileTypes = QStringList(),
                    FactBase::Flags flags = FactBase::Flags(Group));
 
     Fact *f_export;
@@ -45,29 +41,27 @@ public:
 
 protected:
     QString dataTitle;
-    QString fileType;
     QDir defaultDir;
-    QStringList exportFileTypes;
 
-    virtual QString defaultExportFileName() const;
-    virtual ShareXmlExport *exportRequest(QString title, QString fileName);
+    QList<ShareExport *> _exportFormats;
+    QList<ShareImport *> _importFormats;
 
-    virtual QString defaultImportFileName() const;
-    virtual ShareXmlImport *importRequest(QString title, QString fileName);
+    virtual QString getDefaultTitle() { return QString(); }
+    virtual bool exportRequest(ShareExport *format, QString fileName) { return false; }
+    virtual bool importRequest(ShareImport *format, QString fileName) { return false; }
+
+    void add(ShareExport *format);
+    void add(ShareImport *format);
 
 private slots:
-    void syncTemplates();
-
-    void dbExported(QByteArray data, QString fileName);
-    void dbImported(QString hash, QString title);
+    void _exported(QString fileName);
+    void _imported(QString fileName, QString hash, QString title);
 
 protected slots:
     void exportTriggered();
     void importTriggered();
 
 signals:
-    void imported(QString hash, QString title);
-    void exported(QByteArray data, QString fileName);
+    void imported(QString fileName, QString hash, QString title);
+    void exported(QString fileName);
 };
-//=============================================================================
-#endif

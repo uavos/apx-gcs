@@ -62,11 +62,16 @@ public:
 
     QSqlDatabase sql;
 
+    QStringList tableFields(QString tableName) const;
+    void updateTableFields(const QString tableName, QStringList fields);
+
 private:
     QTimer modifiedTimer;
 
     DelayedEvent evtUpdateInfo;
     int infoQueueSize;
+
+    QHash<QString, QStringList> _tableFields;
 
 protected:
     Database *database;

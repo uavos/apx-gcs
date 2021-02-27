@@ -281,7 +281,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
 
     //update fhdr
     fhdr.size = stream.pos() - pos_s;
-    fhdr.hash = apx::crc32(stream.buffer() + pos_s, fhdr.size);
+    //fhdr.hash = apx::crc32(stream.buffer() + pos_s, fhdr.size);
 
     strncpy(fhdr.title, d.title.toLocal8Bit(), sizeof(fhdr.title));
     fhdr.cnt.wp = d.waypoints.size();
@@ -306,7 +306,7 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
     XbusStreamReader stream(pdata, psize);
 
     xbus::mission::file_hdr_s fhdr{};
-    fhdr.read(&stream); // will update later
+    fhdr.read(&stream);
     d.title = QString(QByteArray(fhdr.title, sizeof(fhdr.title)));
 
     qDebug() << d.title << data.size() << "bytes";

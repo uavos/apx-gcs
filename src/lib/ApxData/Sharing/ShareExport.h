@@ -21,25 +21,24 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <Sharing/Share.h>
+#include <QJsonDocument>
 #include <QtCore>
 
-class VehicleMission;
-
-class MissionShare : public Share
+class ShareExport : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit MissionShare(VehicleMission *mission,
-                          Fact *parent,
-                          FactBase::Flags flags = FactBase::Flags(Group));
+    explicit ShareExport(QString name, QString type, QObject *parent = nullptr);
 
-private:
-    VehicleMission *mission;
+    QString name() const { return _name; }
+    QString type() const { return _type; }
 
-    QString getDefaultTitle() override;
-    bool exportRequest(ShareExport *format, QString fileName) override;
-    bool importRequest(ShareImport *format, QString fileName) override;
+    bool saveData(QByteArray data, QString fileName);
+
+protected:
+    QString _name;
+    QString _type;
+
+signals:
+    void exported(QString fileName);
 };

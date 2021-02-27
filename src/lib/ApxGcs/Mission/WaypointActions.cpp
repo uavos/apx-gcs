@@ -63,24 +63,6 @@ WaypointActions::WaypointActions(Waypoint *parent)
     f_poi = new MissionField(this, "poi", tr("POI"), tr("Linked Point Of Interest"), Int);
     f_poi->setEnumStrings(QStringList() << "off");
     f_poi->setMin(0);
-    f_loiter = new MissionField(this,
-                                "loiter",
-                                tr("Loiter"),
-                                tr("Loiter around POI or waypoint"),
-                                Enum);
-    f_loiter->setEnumStrings(QStringList() << "off"
-                                           << "yes");
-    f_turnR = new MissionField(this, "radius", tr("Radius"), tr("Loiter radius"), Int);
-    f_turnR->setEnumStrings(QStringList() << "default");
-    f_turnR->setUnits("m");
-    f_loops = new MissionField(this, "loops", tr("Loops"), tr("Loiter loops limit"), Int);
-    f_loops->setEnumStrings(QStringList() << "default");
-    f_loops->setMin(0);
-    f_time = new MissionField(this, "time", tr("Time"), tr("Loiter time limit"), Int);
-    f_time->setEnumStrings(QStringList() << "default");
-    f_time->setUnits("time");
-    f_time->setMin(0);
-    f_time->setMax(60 * 60 * 24);
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 

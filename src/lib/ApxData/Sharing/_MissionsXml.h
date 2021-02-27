@@ -19,17 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MissionsXml_H
-#define MissionsXml_H
-//=============================================================================
+#pragma once
+
 #include "ShareXml.h"
 #include <Database/MissionsDB.h>
-//=============================================================================
+
 class MissionsXmlExport : public ShareXmlExport
 {
     Q_OBJECT
 public:
-    explicit MissionsXmlExport(QString hash, QString title, QString fileName);
+    explicit MissionsXmlExport(QString hash, QString fileName);
 
 protected:
     bool run(QSqlQuery &query);
@@ -43,16 +42,15 @@ private:
                const QString &elementName,
                const QList<ProtocolMission::Item> &items);
 };
-//=============================================================================
+
 class MissionsXmlImport : public ShareXmlImport
 {
     Q_OBJECT
 public:
-    explicit MissionsXmlImport(QString title, QString fileName);
+    explicit MissionsXmlImport(QString fileName);
 
 protected:
     bool read(const QDomNode &dom);
-    bool readOldFormat(const QDomNode &dom, int fmt);
     bool save(QSqlQuery &query);
 
 private:
@@ -63,10 +61,4 @@ private:
              const QString &sectionName,
              const QString &elementName,
              QList<ProtocolMission::Item> &items);
-    int readOldFormat(const QDomNode &dom,
-                      const QString &sectionName,
-                      const QString &elementName,
-                      QList<ProtocolMission::Item> &items);
 };
-//=============================================================================
-#endif

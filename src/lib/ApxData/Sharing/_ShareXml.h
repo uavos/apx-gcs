@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ShareXml_H
-#define ShareXml_H
-//=============================================================================
+#pragma once
+
 #include <QDomDocument>
 #include <QtCore>
 
 #include <Database/DatabaseRequest.h>
-//=============================================================================
+
 class ShareXml : public DatabaseRequest
 {
     Q_OBJECT
@@ -56,7 +55,7 @@ public:
                           QStringList filter = QStringList());
     static QVariantMap readInfo(const QDomNode &dom, QString name);
 };
-//=============================================================================
+
 class ShareXmlExport : public ShareXml
 {
     Q_OBJECT
@@ -75,7 +74,7 @@ protected:
 signals:
     void exported(QByteArray data, QString fileName);
 };
-//=============================================================================
+
 class ShareXmlImport : public ShareXml
 {
     Q_OBJECT
@@ -102,6 +101,3 @@ protected:
 signals:
     void imported(QString hash, QString title);
 };
-//=============================================================================
-//=============================================================================
-#endif

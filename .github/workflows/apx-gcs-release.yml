@@ -6,6 +6,7 @@ on:
       - "release-*"
 
 env:
+  BUILD_DIR: build-release
   VERSION_QT: 5.15.2
   VERSION_GST: 1.18.3
   VERSION_SPARKLE: 1.25.0-rc2
@@ -29,16 +30,16 @@ jobs:
 
       # - name: Build test
       #   run: |
-      #     mkdir -p build/deploy
-      #     echo "${{ github.ref }}"> build/deploy/TEST.AppImage
-      #     echo "${{ github.ref }}"> build/deploy/TEST.AppImage.zsync
+      #     mkdir -p $BUILD_DIR/deploy
+      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage
+      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage.zsync
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           path: |
-            build/deploy/*.AppImage
-            build/deploy/*.zsync
+            $BUILD_DIR/deploy/*.AppImage
+            $BUILD_DIR/deploy/*.zsync
           name: apx-gcs-linux
           if-no-files-found: error
           retention-days: 1
@@ -116,8 +117,8 @@ jobs:
 
       # - name: Build test
       #   run: |
-      #     mkdir -p build/deploy
-      #     echo "${{ github.ref }}"> build/deploy/TEST.dmg
+      #     mkdir -p $BUILD_DIR/deploy
+      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.dmg
       #     echo "${{ github.ref }}"> appcast.xml
 
       - name: Download assets
@@ -149,7 +150,7 @@ jobs:
                 if(!asset.name.endsWith('.dmg'))
                   continue;
                 console.log('downloading:', asset.name);
-                await download(asset.browser_download_url, 'build/' + asset.name);
+                await download(asset.browser_download_url, '$BUILD_DIR/' + asset.name);
                 //console.log(await github.request(asset.url));
               }
             }
@@ -159,18 +160,18 @@ jobs:
 
       - name: Generate Sparkle appcast
         run: |
-          mkdir -p build/sparkle
-          mv -f build/*.dmg build/sparkle/ || true
-          cp -f build/deploy/*.dmg build/sparkle/
-          ls -la build/sparkle/*.dmg
-          python tools/deploy/deploy_sparkle.py --assets=build/sparkle --key ${{ secrets.SPARKLE_KEY }}
+          mkdir -p $BUILD_DIR/sparkle
+          mv -f $BUILD_DIR/*.dmg $BUILD_DIR/sparkle/ || true
+          cp -f $BUILD_DIR/deploy/*.dmg $BUILD_DIR/sparkle/
+          ls -la $BUILD_DIR/sparkle/*.dmg
+          python tools/deploy/deploy_sparkle.py --assets=$BUILD_DIR/sparkle --key ${{ secrets.SPARKLE_KEY }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           path: |
-            build/deploy/*.dmg
-            build/sparkle/*.delta
+            $BUILD_DIR/deploy/*.dmg
+            $BUILD_DIR/sparkle/*.delta
             appcast.*
           name: apx-gcs-macos
           if-no-files-found: error

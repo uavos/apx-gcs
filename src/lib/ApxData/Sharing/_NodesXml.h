@@ -52,7 +52,6 @@ public:
 
 protected:
     bool read(const QDomNode &dom);
-    bool readOldFormat(const QDomNode &dom, int fmt);
     bool save(QSqlQuery &query);
 
     //result

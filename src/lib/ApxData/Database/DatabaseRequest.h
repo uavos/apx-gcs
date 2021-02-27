@@ -67,6 +67,8 @@ public:
     static QVariantMap filterNullValues(QVariantMap values);
     static QVariantMap filterIdValues(QVariantMap values);
 
+    QVariantMap filterFields(QString tableName, QVariantMap values) const;
+
 protected:
     DatabaseSession *db;
     QString queryString;
@@ -93,8 +95,8 @@ protected:
                            const QString &table,
                            const QString &tail = QString()) const;
 
-    QStringList fieldNames(QSqlQuery &query) const;
-    QVariantList values(QSqlQuery &query, const QStringList &names) const;
+    static QStringList fieldNames(QSqlQuery &query);
+    static QVariantList values(QSqlQuery &query, const QStringList &names);
     Records queryRecords(QSqlQuery &query) const;
     QVariantMap queryRecord(QSqlQuery &query, QVariantMap info = QVariantMap()) const;
 

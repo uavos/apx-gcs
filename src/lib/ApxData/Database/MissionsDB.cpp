@@ -22,7 +22,7 @@
 #include "MissionsDB.h"
 #include "Database.h"
 #include <App/AppDirs.h>
-//=============================================================================
+
 MissionsDB::MissionsDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, "missions", sessionName, "v2")
 {

@@ -1,5 +1,5 @@
 
-BUILD_DIR := $(if $(BUILD_DIR),$(BUILD_DIR),build)
+BUILD_DIR := $(if $(BUILD_DIR),$(BUILD_DIR),build-release)
 TOOLS_DIR := $(realpath $(CURDIR)/tools)
 
 CMAKE := cmake

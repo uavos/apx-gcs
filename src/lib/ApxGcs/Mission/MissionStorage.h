@@ -27,6 +27,7 @@
 #include <Protocols/ProtocolMission.h>
 #include <QGeoCoordinate>
 #include <QtCore>
+
 class VehicleMission;
 class Vehicle;
 class MissionShare;
@@ -46,6 +47,8 @@ public:
 
     ProtocolMission::Mission saveToDict() const;
     void loadFromDict(ProtocolMission::Mission d);
+
+    QVariantMap getDetails();
 
 private:
     void saveItemsToDict(QList<ProtocolMission::Item> &items, const MissionGroup *g) const;

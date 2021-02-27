@@ -19,30 +19,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ProtocolMission_H
-#define ProtocolMission_H
-#include "ProtocolBase.h"
-#include <Dictionary/DictMission.h>
+#pragma once
+
+#include <QJsonDocument>
 #include <QtCore>
-class ProtocolVehicle;
-//=============================================================================
-class ProtocolMission : public ProtocolBase
+
+class ShareImport : public QObject
 {
     Q_OBJECT
 public:
-    ProtocolMission(ProtocolVehicle *vehicle);
+    explicit ShareImport(QString name, QString type, QObject *parent = nullptr);
 
-private:
-private slots:
-    void missionData(QByteArray data);
+    QString name() const { return _name; }
+    QString type() const { return _type; }
 
-public slots:
-    void downloadMission();
-    void missionDataUpload(DictMission::Mission d);
+    QByteArray loadData(QString fileName);
+
+protected:
+    QString _name;
+    QString _type;
 
 signals:
-    void missionDataReceived(DictMission::Mission d);
-    void missionDataError();
+    void imported(QString fileName, QString hash, QString title);
 };
-//=============================================================================
-#endif
