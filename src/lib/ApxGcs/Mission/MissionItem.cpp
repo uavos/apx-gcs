@@ -115,6 +115,8 @@ void MissionItem::hashData(QCryptographicHash *h) const
     }
 }
 
+void MissionItem::fromJson(const QJsonValue json) {}
+
 int MissionItem::missionItemType() const
 {
     return group->missionItemType();

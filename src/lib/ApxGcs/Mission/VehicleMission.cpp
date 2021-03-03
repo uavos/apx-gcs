@@ -300,9 +300,12 @@ void VehicleMission::test(int n)
     }
 }
 
-void VehicleMission::missionDataReceived(ProtocolMission::Mission d)
+void VehicleMission::missionDataReceived(QJsonValue json)
 {
     clearMission();
+    qDebug() << json;
+
+    /*
     storage->loadFromDict(d);
     if (empty()) {
         vehicle->message(tr("Empty mission received from vehicle"), AppNotify::Warning);
@@ -313,7 +316,7 @@ void VehicleMission::missionDataReceived(ProtocolMission::Mission d)
         vehicle->message(QString("%1: %2").arg(tr("Mission received")).arg(text()),
                          AppNotify::Important);
     }
-    backup();
+    backup();*/
 }
 void VehicleMission::missionDataError()
 {

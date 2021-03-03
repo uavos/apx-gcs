@@ -23,7 +23,7 @@
 #include "Shortcuts.h"
 
 #include <App/App.h>
-//=============================================================================
+
 Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool bUsr)
     : Fact(parent,
            sc ? (bUsr ? "usr#" : "sys#") : tr("add"),
@@ -39,7 +39,7 @@ Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool 
     _key = new Fact(this, "key", tr("Key sequence"), "", Text);
     _key->setOpt("editor", "qrc:/" PLUGIN_NAME "/EditorKey.qml");
 
-    _cmd = new Fact(this, "jscmd", tr("Java script"), "", Text);
+    _cmd = new Fact(this, "scr", tr("Java script"), "", Text);
 
     if (_new) {
         _save = new Fact(this, "save", tr("Save"), "", Action | Apply | CloseOnTrigger);
@@ -82,14 +82,14 @@ Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool 
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Shortcut::defaults()
 {
     _enabled->setValue(true);
     _key->setValue("");
     _cmd->setValue("");
 }
-//=============================================================================
+
 void Shortcut::updateStats()
 {
     if (_new) {
@@ -101,7 +101,7 @@ void Shortcut::updateStats()
         _cmd->setEnabled(bUsr);
     }
 }
-//=============================================================================
+
 void Shortcut::enable()
 {
     _enabled->setValue(true);
@@ -110,20 +110,3 @@ void Shortcut::disable()
 {
     _enabled->setValue(false);
 }
-//=============================================================================
-QJsonObject Shortcut::valuesToJson(bool array) const
-{
-    Q_UNUSED(array)
-    QJsonObject jso;
-    jso.insert("key", _key->value().toString());
-    jso.insert("scr", _cmd->value().toString());
-    jso.insert("enb", _enabled->value().toBool());
-    return jso;
-}
-void Shortcut::valuesFromJson(const QJsonObject &jso)
-{
-    _key->setValue(jso["key"].toVariant());
-    _cmd->setValue(jso["scr"].toVariant());
-    _enabled->setValue(jso["enb"].toVariant());
-}
-//=============================================================================

@@ -26,7 +26,7 @@
 #include <App/AppSettings.h>
 #include <QKeySequence>
 #include <QQmlEngine>
-//=============================================================================
+
 Shortcuts::Shortcuts(Fact *parent)
     : Fact(parent, "shortcuts", tr("Shortcuts"), tr("Keyboard hotkeys"), Group | FlatModel)
 {
@@ -47,7 +47,7 @@ Shortcuts::Shortcuts(Fact *parent)
     f_allonUsr->setSection(sect);
     f_alloffUsr = new Fact(this, "alloff_usr", tr("Disable all"), tr("Turn off all shortcuts"));
     f_alloffUsr->setSection(sect);
-    f_usr = new Fact(this, "user", sect, tr("User defined shortcuts"), Section);
+    f_usr = new Fact(this, "user", sect, tr("User defined shortcuts"), Section | Count);
     f_usr->setSection(sect);
 
     sect = tr("System");
@@ -55,7 +55,7 @@ Shortcuts::Shortcuts(Fact *parent)
     f_allonSys->setSection(sect);
     f_alloffSys = new Fact(this, "alloff_sys", tr("Disable all"), tr("Turn off all shortcuts"));
     f_alloffSys->setSection(sect);
-    f_sys = new Fact(this, "system", sect, tr("System default shortcuts"), Section);
+    f_sys = new Fact(this, "system", sect, tr("System default shortcuts"), Section | Count);
     f_sys->setSection(sect);
 
     load();
@@ -71,7 +71,7 @@ Shortcuts::Shortcuts(Fact *parent)
 
     loadQml("qrc:/" PLUGIN_NAME "/ShortcutsPlugin.qml");
 }
-//=============================================================================
+
 void Shortcuts::updateStats()
 {
     bool bSz = f_sys->size();
@@ -96,95 +96,45 @@ void Shortcuts::updateStats()
         }
     }
 }
-//=============================================================================
+
 void Shortcuts::addTriggered()
 {
     addUserShortcut();
     saveDo();
     f_add->defaults();
 }
-//=============================================================================
+
 void Shortcuts::addUserShortcut()
 {
     new Shortcut(f_usr, this, f_add, true);
 }
-//=============================================================================
+
 void Shortcuts::load()
 {
-    QMap<QString, QJsonObject> msys, musr;
-    QStringList lsys, lusr;
-    QFile fsys(AppDirs::res().filePath("templates/shortcuts.json"));
-    if (fsys.open(QFile::ReadOnly | QFile::Text)) {
-        QJsonDocument json = QJsonDocument::fromJson(fsys.readAll());
-        fsys.close();
-        foreach (QJsonValue v, json["system"].toArray()) {
-            QString key = v["key"].toString();
-            lsys.append(key);
-            QJsonObject jso = v.toObject();
-            jso["enb"] = true; //default
-            msys.insert(key, jso);
-        }
-    }
+    QJsonValue json;
     QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));
     if (fusr.exists() && fusr.open(QFile::ReadOnly | QFile::Text)) {
-        QJsonDocument json = QJsonDocument::fromJson(fusr.readAll());
-        fusr.close();
-        foreach (QJsonValue v, json["system"].toArray()) {
-            QString key = v["key"].toString();
-            if (!msys.contains(key))
-                continue;
-            QJsonObject jso = msys[key];
-            jso["enb"] = v["enb"];
-            msys[key] = jso;
-        }
-        foreach (QJsonValue v, json["user"].toArray()) {
-            QString key = v["key"].toString();
-            lusr.append(key);
-            musr.insert(key, v.toObject());
-        }
+        json = QJsonDocument::fromJson(fusr.readAll()).object();
     }
-
-    foreach (QString key, lsys) {
-        f_add->defaults();
-        f_add->valuesFromJson(msys.value(key));
-        new Shortcut(f_sys, this, f_add, false);
-    }
-
-    foreach (QString key, lusr) {
-        f_add->defaults();
-        f_add->valuesFromJson(musr.value(key));
-        addUserShortcut();
-    }
-    f_add->defaults();
+    fromJson(json);
 }
+
 void Shortcuts::save()
 {
     saveTimer.start();
 }
 void Shortcuts::saveDo()
 {
-    QJsonArray asys;
-    for (auto i : f_sys->facts()) {
-        asys.append(static_cast<Shortcut *>(i)->valuesToJson());
-    }
-    QJsonArray ausr;
-    for (auto i : f_usr->facts()) {
-        ausr.append(static_cast<Shortcut *>(i)->valuesToJson());
-    }
-    //save json file
     QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));
     if (!fusr.open(QFile::WriteOnly | QFile::Text)) {
         apxMsgW() << fusr.errorString();
         return;
     }
-    QJsonObject jso;
-    jso.insert("system", asys);
-    jso.insert("user", ausr);
-    fusr.write(QJsonDocument(jso).toJson());
+    fusr.write(toJsonDocument().toJson());
     fusr.close();
     //qDebug()<<"saved";
 }
-//=============================================================================
+
 QString Shortcuts::keyToPortableString(int key, int modifier) const
 {
     //qDebug()<<key<<modifier;
@@ -193,4 +143,65 @@ QString Shortcuts::keyToPortableString(int key, int modifier) const
     QString s = QKeySequence(key | modifier).toString();
     return s;
 }
-//=============================================================================
+
+QJsonValue Shortcuts::toJson() const
+{
+    QJsonArray asys;
+    for (auto i : f_sys->facts()) {
+        asys.append(static_cast<Shortcut *>(i)->toJson());
+    }
+    QJsonArray ausr;
+    for (auto i : f_usr->facts()) {
+        ausr.append(static_cast<Shortcut *>(i)->toJson());
+    }
+    QJsonObject json;
+    json.insert("system", asys);
+    json.insert("user", ausr);
+    return json;
+}
+
+void Shortcuts::fromJson(const QJsonValue json)
+{
+    f_sys->removeAll();
+    f_usr->removeAll();
+    QMap<QString, QJsonObject> msys, musr;
+    QStringList lsys, lusr;
+    QFile fsys(AppDirs::res().filePath("templates/shortcuts.json"));
+    if (fsys.open(QFile::ReadOnly | QFile::Text)) {
+        QJsonDocument jsys = QJsonDocument::fromJson(fsys.readAll());
+        fsys.close();
+        for (auto v : jsys["system"].toArray()) {
+            QString key = v.toObject()["key"].toString();
+            lsys.append(key);
+            QJsonObject jso = v.toObject();
+            jso["enb"] = true; //default
+            msys.insert(key, jso);
+        }
+    }
+    for (auto v : json["system"].toArray()) {
+        QString key = v.toObject()["key"].toString();
+        if (!msys.contains(key))
+            continue;
+        QJsonObject jso = msys[key];
+        jso["enb"] = v.toObject()["enb"];
+        msys[key] = jso;
+    }
+    for (auto v : json["user"].toArray()) {
+        QString key = v.toObject()["key"].toString();
+        lusr.append(key);
+        musr.insert(key, v.toObject());
+    }
+
+    for (auto key : lsys) {
+        f_add->defaults();
+        f_add->fromJson(msys.value(key));
+        new Shortcut(f_sys, this, f_add, false);
+    }
+
+    for (auto key : lusr) {
+        f_add->defaults();
+        f_add->fromJson(musr.value(key));
+        addUserShortcut();
+    }
+    f_add->defaults();
+}

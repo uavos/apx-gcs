@@ -183,6 +183,30 @@ void MissionStorage::loadFromDict(ProtocolMission::Mission d)
     mission->backup();
     mission->updateSize();
 }
+void MissionStorage::load(const QJsonValue json)
+{
+    mission->f_title->setValue(json["title"].toString());
+
+    mission->blockSizeUpdate = true;
+    loadItems(json, "rw", mission->f_runways);
+    loadItems(json, "wp", mission->f_waypoints);
+    loadItems(json, "tw", mission->f_taxiways);
+    loadItems(json, "pi", mission->f_pois);
+    mission->blockSizeUpdate = false;
+
+    mission->backup();
+    mission->updateSize();
+}
+void MissionStorage::loadItems(const QJsonValue json, QString key, MissionGroup *g)
+{
+    for (auto const i : json.toObject().value(key).toArray()) {
+        const QJsonObject item = i.toObject();
+        MissionItem *f = g->createObject();
+
+        f->f_latitude->setValue(item["lat"]);
+        f->f_longitude->setValue(item["lon"]);
+    }
+}
 
 void MissionStorage::saveItemsToDict(QList<ProtocolMission::Item> &items,
                                      const MissionGroup *g) const

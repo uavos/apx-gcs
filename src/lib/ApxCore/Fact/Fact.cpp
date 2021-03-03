@@ -486,60 +486,96 @@ void Fact::setValues(const QVariantMap &values)
             f->setValue(values.value(key));
     }
 }
-QJsonObject Fact::valuesToJson(bool array) const
+QJsonValue Fact::toJson() const
 {
-    if (array) {
-        QJsonArray jsa;
-        for (int i = 0; i < size(); ++i) {
-            const Fact *f = static_cast<const Fact *>(child(i));
-            jsa.append(f->valuesToJson(false));
-        }
-        QJsonObject jso;
-        jso.insert(name(), jsa);
-        return jso;
-    }
-    QJsonObject jso;
-    for (int i = 0; i < size(); ++i) {
-        const Fact *f = static_cast<const Fact *>(child(i));
-        QJsonValue v;
-        if (f->dataType() == Text)
-            v = f->valueText();
-        else if (f->enumStrings().isEmpty())
-            v = QJsonValue::fromVariant(f->value());
-        else
-            v = f->valueText();
-        bool noData = f->dataType() == NoFlags || f->dataType() == Count;
-        if (f->size() > 0) {
-            QJsonObject vo = f->valuesToJson(false);
-            if (!noData) {
-                vo.insert("value", v);
+    if (treeType() == Action || !visible())
+        return QJsonValue();
+    if (size() > 0) {
+        if (treeType() != NoFlags && dataType() == Count) {
+            QJsonArray array;
+            for (auto i : facts()) {
+                QJsonValue v = i->toJson();
+                if (!v.isNull())
+                    array.append(v);
             }
-            jso.insert(f->name(), vo);
-            continue;
+            if (array.isEmpty())
+                return QJsonValue();
+            return array;
         }
-        if (noData || f->valueText().isEmpty())
-            continue;
-        jso.insert(f->name(), v);
+
+        QJsonObject obj;
+        for (auto i : facts()) {
+            QJsonValue v = i->toJson();
+            if (!v.isNull())
+                obj.insert(i->name(), v);
+        }
+        if (obj.isEmpty())
+            return QJsonValue();
+        return obj;
     }
-    return jso;
+
+    QJsonValue v;
+    do {
+        if (treeType() != NoFlags)
+            break;
+        if (dataType() == NoFlags || dataType() == Count || valueText().isEmpty())
+            break;
+
+        if (dataType() == Text)
+            v = valueText();
+        // else if (enumStrings().isEmpty())
+        //     v = QJsonValue::fromVariant(value());
+        else
+            v = valueText();
+    } while (0);
+
+    return v;
 }
-void Fact::valuesFromJson(const QJsonObject &jso)
+QJsonDocument Fact::toJsonDocument() const
 {
-    foreach (QString key, jso.keys()) {
-        QJsonValue v = jso[key];
-        Fact *f = child(key);
-        if (!f)
-            continue;
-        if (v.isObject()) {
-            f->valuesFromJson(v.toObject());
-            continue;
-        }
-        if (v.isArray()) {
-            continue;
-        }
-        f->setValue(v.toVariant());
-    }
+    QJsonValue v = toJson();
+    if (v.isObject())
+        return QJsonDocument(v.toObject());
+    else if (v.isArray())
+        return QJsonDocument(v.toArray());
+    return QJsonDocument();
 }
+void Fact::fromJson(const QJsonValue json)
+{
+    if (json.isObject()) {
+        QJsonObject obj = json.toObject();
+        for (auto const i : obj.keys()) {
+            QJsonValue v = obj.value(i);
+            Fact *f = child(i);
+            if (!f) {
+                qWarning() << "missing json fact" << i << path();
+                continue;
+            }
+            if (v.isObject()) {
+                f->fromJson(v);
+                continue;
+            }
+            if (v.isArray()) {
+                f->fromJson(v);
+                continue;
+            }
+            f->setValue(v.toVariant());
+        }
+        return;
+    }
+    if (json.isArray()) {
+        // must be implemented in subclasses to create children structure from array
+        return;
+    }
+    if (size() > 0)
+        return;
+    if (treeType() != NoFlags)
+        return;
+    if (dataType() == NoFlags || dataType() == Count)
+        return;
+    setValue(json.toVariant());
+}
+
 //=============================================================================
 Fact *Fact::mandala() const
 {

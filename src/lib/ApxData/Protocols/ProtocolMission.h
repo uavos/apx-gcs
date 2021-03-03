@@ -93,7 +93,7 @@ private:
     ProtocolVehicle *vehicle;
 
     QByteArray pack(const Mission &d);
-    bool unpack(const QByteArray &data, Mission &d);
+    QJsonValue unpack(const QByteArray &data);
 
     static constexpr const char *nfile{"mission"};
 
@@ -112,7 +112,7 @@ public slots:
 signals:
     void available();
     void uploaded();
-    void downloaded(ProtocolMission::Mission d);
+    void downloaded(QJsonValue json);
 };
 
 Q_DECLARE_METATYPE(ProtocolMission::Mission);

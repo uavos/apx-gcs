@@ -37,7 +37,7 @@ DatalinkPorts::DatalinkPorts(Datalink *datalink)
     f_add = new DatalinkPort(this, datalink);
     f_add->setIcon("plus-circle");
 
-    f_list = new Fact(this, "list", tr("Ports"), tr("Configured ports"), Section | Count);
+    f_list = new Fact(this, "ports", tr("Ports"), tr("Configured ports"), Section | Count);
     connect(f_list, &Fact::sizeChanged, this, &DatalinkPorts::updateStatus);
 
     load();
@@ -84,9 +84,9 @@ void DatalinkPorts::load()
     if (file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(file.readAll());
         file.close();
-        foreach (QJsonValue v, json["list"].toArray()) {
+        for (auto const v : json.array()) {
             f_add->clear();
-            f_add->valuesFromJson(v.toObject());
+            f_add->fromJson(v.toObject());
             addPort(new DatalinkPort(this, datalink, f_add));
         }
         f_add->defaults();
@@ -99,7 +99,7 @@ void DatalinkPorts::save()
         apxMsgW() << file.errorString();
         return;
     }
-    file.write(QJsonDocument(f_list->valuesToJson(true)).toJson());
+    file.write(f_list->toJsonDocument().toJson());
     file.close();
 }
 //=============================================================================

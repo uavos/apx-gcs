@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Shortcut_H
-#define Shortcut_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 class Shortcuts;
-//=============================================================================
+
 class Shortcut : public Fact
 {
     Q_OBJECT
@@ -40,9 +39,6 @@ public:
     Fact *_save;
     Fact *_remove;
 
-    QJsonObject valuesToJson(bool array = false) const override;
-    void valuesFromJson(const QJsonObject &jso) override;
-
 private:
     Shortcuts *container;
     bool _new;
@@ -56,5 +52,3 @@ private slots:
 public slots:
     void defaults();
 };
-//=============================================================================
-#endif

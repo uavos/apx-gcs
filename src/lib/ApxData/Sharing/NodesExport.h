@@ -21,20 +21,16 @@
  */
 #pragma once
 
-#include "Shortcuts.h"
-#include <App/AppSettings.h>
-#include <App/PluginInterface.h>
-#include <QtCore>
+#include <Protocols/ProtocolNode.h>
 
-class ShortcutsPlugin : public PluginInterface
+#include "ShareExport.h"
+
+class NodesExport : public ShareExport
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
-    Q_INTERFACES(PluginInterface)
 public:
-    int flags() override { return Feature | System; }
-    QObject *createControl() override
-    {
-        return new Shortcuts(AppSettings::instance()->f_interface);
-    }
+    explicit NodesExport(QObject *parent = nullptr);
+
+    QByteArray convert(const ProtocolNode::Dict &d, QVariantMap info = QVariantMap());
+    bool save(QString fileName, const ProtocolNode::Dict &d, QVariantMap info);
 };

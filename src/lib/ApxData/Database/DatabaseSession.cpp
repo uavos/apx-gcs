@@ -267,6 +267,10 @@ bool DBReqMakeTable::run(QSqlQuery &query)
 
     QStringList fieldsList;
     for (auto i : fields) {
+        if (i.contains('('))
+            continue;
+        if (!i.contains(' '))
+            continue;
         fieldsList.append(i.split(' ').first());
     }
     db->updateTableFields(tableName, fieldsList);

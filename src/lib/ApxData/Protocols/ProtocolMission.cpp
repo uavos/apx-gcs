@@ -111,12 +111,12 @@ void ProtocolMission::fileDownloaded(const xbus::node::file::info_s &info, const
     Q_UNUSED(info)
 
     qDebug() << "downloaded";
-    Mission d{};
-    if (unpack(data, d)) {
-        emit downloaded(d);
+    QJsonValue json = unpack(data);
+    if (json.isNull()) {
+        qWarning() << "error in mission";
         return;
     }
-    qWarning() << "error in mission";
+    emit downloaded(json);
 }
 
 QByteArray ProtocolMission::pack(const Mission &d)
@@ -295,7 +295,7 @@ QByteArray ProtocolMission::pack(const Mission &d)
     return data;
 }
 
-bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
+QJsonValue ProtocolMission::unpack(const QByteArray &data)
 {
     if (data.size() < xbus::mission::file_hdr_s::psize())
         return false;
@@ -307,17 +307,18 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
 
     xbus::mission::file_hdr_s fhdr{};
     fhdr.read(&stream);
-    d.title = QString(QByteArray(fhdr.title, sizeof(fhdr.title)));
+    QString title(QByteArray(fhdr.title, sizeof(fhdr.title)));
 
-    qDebug() << d.title << data.size() << "bytes";
+    qDebug() << title << data.size() << "bytes";
 
     if (fhdr.size != stream.available()) {
         qWarning() << "size" << fhdr.size << stream.available();
-        return false;
+        return QJsonValue();
     }
 
+    QJsonArray wp, rw, tw, pi;
+
     int ecnt = 0, wpcnt = 0, rwcnt = 0;
-    int lastWp = -1;
 
     while (stream.available() > 0) {
         ecnt++;
@@ -335,45 +336,37 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             xbus::mission::wp_s e;
             e.read(&stream);
             wpcnt++;
-            Item m;
-            m.lat = static_cast<qreal>(e.lat);
-            m.lon = static_cast<qreal>(e.lon);
-            m.details["altitude"] = e.alt;
-            m.details["type"] = waypointTypeToString(hdr.option);
-            lastWp = d.waypoints.size();
-            d.waypoints.append(m);
+
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+            item.insert("altitude", e.alt);
+            item.insert("type", waypointTypeToString(hdr.option));
+
+            wp.append(item);
             continue;
         }
         case xbus::mission::ACT: { //wp actions
-            QVariantMap a;
+            QJsonObject a;
             switch (hdr.option) {
             default:
                 break;
             case xbus::mission::ACT_SPEED: {
                 xbus::mission::act_speed_s e;
                 e.read(&stream);
-                a["speed"] = e.speed;
+                a.insert("speed", e.speed);
                 break;
             }
             case xbus::mission::ACT_PI: {
                 xbus::mission::act_pi_s e;
                 e.read(&stream);
-                a["poi"] = e.index + 1;
+                a.insert("poi", e.index + 1);
                 break;
             }
             case xbus::mission::ACT_SCR: {
                 xbus::mission::act_scr_s e;
                 e.read(&stream);
-                a["script"] = QString(QByteArray(e.scr, sizeof(e.scr)));
-                break;
-            }
-            case xbus::mission::ACT_LOITER: {
-                xbus::mission::act_loiter_s e;
-                e.read(&stream);
-                a["loiter"] = 1;
-                a["radius"] = e.radius;
-                a["loops"] = e.loops;
-                a["time"] = e.timeout;
+                a.insert("script", QString(QByteArray(e.scr, sizeof(e.scr))));
                 break;
             }
             case xbus::mission::ACT_SHOT: {
@@ -381,30 +374,34 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
                 e.read(&stream);
                 switch (e.opt) {
                 case 0: //single
-                    a["shot"] = "single";
-                    a["dshot"] = 0;
+                    a.insert("shot", "single");
+                    a.insert("dshot", 0);
                     break;
                 case 1: //start
-                    a["shot"] = "start";
-                    a["dshot"] = e.dist;
+                    a.insert("shot", "start");
+                    a.insert("dshot", e.dist);
                     break;
                 case 2: //stop
-                    a["shot"] = "stop";
-                    a["dshot"] = 0;
+                    a.insert("shot", "stop");
+                    a.insert("dshot", 0);
                     break;
                 }
                 break;
             }
             }
-            if (lastWp < 0) {
+            if (wp.isEmpty()) {
                 apxMsgW() << tr("Orphan actions in mission");
                 continue;
             }
-            QStringList st;
-            foreach (const QString &k, a.keys()) {
-                st.append(QString("%1=%2").arg(k).arg(a.value(k).toString()));
-            }
-            d.waypoints[lastWp].details["actions"] = st.join(',');
+            QJsonObject wpt = wp.last().toObject();
+            if (!wpt.contains("actions"))
+                wpt.insert("actions", QJsonObject());
+            QJsonObject actions = wpt["actions"].toObject();
+            for (auto i : a.keys())
+                actions.insert(i, a[i]);
+            wpt.insert("actions", actions);
+            QJsonValueRef ref = wp[wp.size() - 1];
+            ref = wpt;
             continue;
         }
         case xbus::mission::RW: {
@@ -413,16 +410,17 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
             xbus::mission::rw_s e;
             e.read(&stream);
             rwcnt++;
-            Item m;
-            m.lat = static_cast<qreal>(e.lat);
-            m.lon = static_cast<qreal>(e.lon);
-            m.details["hmsl"] = e.hmsl;
-            m.details["dN"] = e.dN;
-            m.details["dE"] = e.dE;
-            m.details["approach"] = e.approach;
-            m.details["type"] = runwayTypeToString(hdr.option);
-            d.runways.append(m);
-            //qDebug() << m.details;
+
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+            item.insert("hmsl", e.hmsl);
+            item.insert("dN", e.dN);
+            item.insert("dE", e.dE);
+            item.insert("approach", e.approach);
+            item.insert("type", runwayTypeToString(hdr.option));
+
+            rw.append(item);
             continue;
         }
         case xbus::mission::TW: {
@@ -430,10 +428,12 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
                 break;
             xbus::mission::tw_s e;
             e.read(&stream);
-            Item m;
-            m.lat = static_cast<qreal>(e.lat);
-            m.lon = static_cast<qreal>(e.lon);
-            d.taxiways.append(m);
+
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+
+            tw.append(item);
             continue;
         }
         case xbus::mission::PI: {
@@ -441,14 +441,15 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
                 break;
             xbus::mission::pi_s e;
             e.read(&stream);
-            Item m;
-            m.lat = static_cast<qreal>(e.lat);
-            m.lon = static_cast<qreal>(e.lon);
-            m.details["hmsl"] = e.hmsl;
-            m.details["radius"] = e.radius;
-            m.details["loops"] = e.loops;
-            m.details["timeout"] = e.timeout;
-            d.pois.append(m);
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+            item.insert("hmsl", e.hmsl);
+            item.insert("radius", e.radius);
+            item.insert("loops", e.loops);
+            item.insert("timeout", e.timeout);
+
+            pi.append(item);
             continue;
         }
         case xbus::mission::EMG:
@@ -468,5 +469,21 @@ bool ProtocolMission::unpack(const QByteArray &data, Mission &d)
         //error in mission
         return false;
     }
-    return true;
+
+    QJsonObject json;
+    json.insert("title", title);
+
+    QJsonObject items;
+    if (!wp.isEmpty())
+        items.insert("wp", wp);
+    if (!rw.isEmpty())
+        items.insert("rw", rw);
+    if (!tw.isEmpty())
+        items.insert("tw", tw);
+    if (!pi.isEmpty())
+        items.insert("pi", pi);
+
+    json.insert("items", items);
+
+    return json;
 }

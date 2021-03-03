@@ -165,6 +165,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         }
         if (f_connection) {
             f_connection->setEnabled(false);
+            f_connection->setVisible(false);
             connect(this, &Fact::valueChanged, f_connection, [this]() {
                 f_connection->setActivated(value().toBool());
             });

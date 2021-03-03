@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Shortcuts_H
-#define Shortcuts_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 class Shortcut;
 class AppSettings;
-//=============================================================================
+
 class Shortcuts : public Fact
 {
     Q_OBJECT
@@ -45,6 +44,9 @@ public:
     Fact *f_usr;
     Fact *f_sys;
 
+    QJsonValue toJson() const override;
+    void fromJson(const QJsonValue json) override;
+
 private:
     Shortcut *f_add;
 
@@ -62,5 +64,3 @@ public slots:
     void load();
     void save();
 };
-//=============================================================================
-#endif
