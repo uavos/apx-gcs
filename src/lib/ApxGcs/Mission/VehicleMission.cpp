@@ -35,8 +35,11 @@
 #include "Waypoint.h"
 
 #include <App/App.h>
+#include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 #include <QQmlEngine>
+
+#define MISSION_FORMAT "11"
 
 VehicleMission::VehicleMission(Vehicle *parent)
     : Fact(parent, "mission", "Mission", tr("Vehicle mission"), Group | ModifiedGroup, "ship-wheel")
@@ -53,7 +56,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     setOpt("pos", QPointF(0, 1));
 
     storage = new MissionStorage(this);
-    connect(storage, &MissionStorage::loaded, this, [=]() {
+    connect(storage, &MissionStorage::loaded, this, [this]() {
         if (!empty())
             emit missionAvailable();
     });
@@ -66,26 +69,26 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
     //groups of items
     f_runways = new Runways(this,
-                            "runways",
+                            "rw",
                             tr("Runways"),
                             tr("Takeoff and Landing"),
                             vehicle->f_mandala->fact(mandala::cmd::nav::proc::rw::uid));
     f_waypoints = new Waypoints(this,
-                                "waypoints",
+                                "wp",
                                 tr("Waypoints"),
                                 "",
                                 vehicle->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
     f_pois = new Pois(this,
-                      "points",
+                      "pi",
                       tr("Points"),
                       tr("Points of Interest"),
                       vehicle->f_mandala->fact(mandala::cmd::nav::proc::pi::uid));
     f_taxiways = new Taxiways(this,
-                              "taxiways",
+                              "tw",
                               tr("Taxiways"),
                               "",
                               vehicle->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
-    f_areas = new Areas(this, "areas", tr("Area"), tr("Airspace definitions"));
+    f_areas = new Areas(this, "area", tr("Area"), tr("Airspace definitions"));
 
     foreach (MissionGroup *group, groups) {
         connect(group, &Fact::sizeChanged, this, &VehicleMission::updateSize, Qt::QueuedConnection);
@@ -279,6 +282,79 @@ void VehicleMission::clearMission()
     App::jsync(this);
 }
 
+QJsonValue VehicleMission::toJson() const
+{
+    QJsonObject json = Fact::toJson().toObject();
+
+    json.insert("format", MISSION_FORMAT);
+    json.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    json.insert("version", App::version());
+
+    json.insert("title", json[f_title->name()]);
+    json.remove(f_title->name());
+
+    if (!site().isEmpty())
+        json.insert("site", site());
+
+    QGeoCoordinate c = coordinate();
+    json.insert("lat", c.latitude());
+    json.insert("lon", c.longitude());
+
+    QString title = f_title->text().simplified();
+    if (vehicle->protocol()->isIdentified()) {
+        QString s = vehicle->title();
+        json.insert("callsign", s);
+        title.remove(s, Qt::CaseInsensitive);
+    }
+    if (f_runways->size() > 0) {
+        QString s = f_runways->child(0)->text();
+        json.insert("runway", s);
+        title.remove(s, Qt::CaseInsensitive);
+    }
+    title.replace('-', ' ');
+    title.replace('_', ' ');
+    title = title.simplified();
+    f_title->setValue(title);
+
+    //details
+    QGeoRectangle rect = boundingGeoRectangle();
+    json.insert("topLeftLat", rect.topLeft().latitude());
+    json.insert("topLeftLon", rect.topLeft().longitude());
+    json.insert("bottomRightLat", rect.bottomRight().latitude());
+    json.insert("bottomRightLon", rect.bottomRight().longitude());
+    json.insert("distance", (qint64) f_waypoints->distance());
+
+    //generate hash
+    QCryptographicHash h(QCryptographicHash::Sha1);
+    h.addData(QJsonDocument(json.value("rw").toArray()).toJson(QJsonDocument::Compact));
+    h.addData(QJsonDocument(json.value("wp").toArray()).toJson(QJsonDocument::Compact));
+    h.addData(QJsonDocument(json.value("tw").toArray()).toJson(QJsonDocument::Compact));
+    h.addData(QJsonDocument(json.value("pi").toArray()).toJson(QJsonDocument::Compact));
+    QString hash = h.result().toHex().toUpper();
+    json.insert("hash", hash);
+
+    return json;
+}
+void VehicleMission::fromJson(const QJsonValue json)
+{
+    clearMission();
+
+    setSite(json["site"].toString());
+
+    f_title->setValue(json["title"].toString());
+
+    blockSizeUpdate = true;
+    for (auto i : groups) {
+        i->fromJson(json[i->name()]);
+    }
+    blockSizeUpdate = false;
+
+    backup();
+    updateSize();
+
+    App::jsync(this);
+}
+
 void VehicleMission::hashData(QCryptographicHash *h) const
 {
     foreach (MissionGroup *group, groups) {
@@ -303,10 +379,10 @@ void VehicleMission::test(int n)
 void VehicleMission::missionDataReceived(QJsonValue json)
 {
     clearMission();
-    qDebug() << json;
+    //qDebug() << json;
 
-    /*
-    storage->loadFromDict(d);
+    fromJson(json);
+
     if (empty()) {
         vehicle->message(tr("Empty mission received from vehicle"), AppNotify::Warning);
     } else {
@@ -316,7 +392,7 @@ void VehicleMission::missionDataReceived(QJsonValue json)
         vehicle->message(QString("%1: %2").arg(tr("Mission received")).arg(text()),
                          AppNotify::Important);
     }
-    backup();*/
+    backup();
 }
 void VehicleMission::missionDataError()
 {
@@ -328,7 +404,7 @@ void VehicleMission::uploadMission()
 {
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
     vehicle->protocol()->mission->setActive(true);
-    vehicle->protocol()->mission->upload(storage->saveToDict());
+    vehicle->protocol()->mission->upload(toJson());
     f_save->trigger();
 }
 void VehicleMission::downloadMission()

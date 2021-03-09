@@ -27,8 +27,7 @@
 #include <App/AppLog.h>
 #include <Vehicles/Vehicle.h>
 
-#include <Sharing/MissionExport.h>
-#include <Sharing/MissionImport.h>
+#include <Sharing/ShareExport.h>
 
 #include <Database/MissionsDB.h>
 
@@ -43,8 +42,7 @@ MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
                 mission->storage->loadMission(hash);
             });
 
-    add(new MissionExport(this));
-    add(new MissionImport(this));
+    add(new ShareExport("mission", "mission", this));
 }
 
 QString MissionShare::getDefaultTitle()
@@ -63,14 +61,10 @@ QString MissionShare::getDefaultTitle()
 }
 bool MissionShare::exportRequest(ShareExport *format, QString fileName)
 {
-    auto f = qobject_cast<MissionExport *>(format);
-    QVariantMap info = mission->storage->getDetails();
-    info.insert("site", mission->site());
-    //info.insert("details", QJsonObject::fromVariantMap(mission->storage->getDetails()));
-    return f->save(fileName, mission->storage->saveToDict(), info);
+    return format->saveData(mission->toJsonDocument().toJson(), fileName);
 }
 bool MissionShare::importRequest(ShareImport *format, QString fileName)
 {
-    auto f = qobject_cast<MissionImport *>(format);
-    return f->load(fileName);
+    //auto f = qobject_cast<MissionImport *>(format);
+    //return f->load(fileName);
 }

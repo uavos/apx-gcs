@@ -113,7 +113,10 @@ public:
     Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
     //Fact override
-    void hashData(QCryptographicHash *h) const;
+    QJsonValue toJson() const override;
+    void fromJson(const QJsonValue json) override;
+
+    void hashData(QCryptographicHash *h) const override;
 
 private slots:
     void updateStatus();

@@ -43,12 +43,11 @@ QByteArray MissionExport::convert(const ProtocolMission::Mission &d, QVariantMap
     if (items.isNull())
         return QByteArray();
 
-    info.insert("format", MISSION_FORMAT);
-
     info.insert("title", d.title);
     info.insert("lat", d.lat);
     info.insert("lon", d.lon);
 
+    info.insert("format", MISSION_FORMAT);
     info.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     info.insert("version", App::version());
     info.insert("type", _type);

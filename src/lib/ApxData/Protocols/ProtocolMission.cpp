@@ -77,9 +77,9 @@ void ProtocolMission::filesChanged()
     }
 }
 
-void ProtocolMission::upload(Mission d)
+void ProtocolMission::upload(const QJsonValue json)
 {
-    QByteArray data = pack(d);
+    QByteArray data = pack(json);
 
     for (auto n : vehicle->nodes->nodes()) {
         ProtocolNodeFile *f = n->file(nfile);
@@ -119,7 +119,7 @@ void ProtocolMission::fileDownloaded(const xbus::node::file::info_s &info, const
     emit downloaded(json);
 }
 
-QByteArray ProtocolMission::pack(const Mission &d)
+QByteArray ProtocolMission::pack(const QJsonValue json)
 {
     QByteArray data(65535, '\0');
     uint8_t *pdata = reinterpret_cast<uint8_t *>(data.data());
@@ -130,76 +130,60 @@ QByteArray ProtocolMission::pack(const Mission &d)
     size_t pos_s = stream.pos();
 
     fhdr.off.wp = stream.pos() - pos_s;
-    for (int i = 0; i < d.waypoints.size(); ++i) {
-        const ProtocolMission::Item &m = d.waypoints.at(i);
+    for (const QJsonValue wp : json["wp"].toArray()) {
         xbus::mission::hdr_s hdr;
         hdr.type = xbus::mission::WP;
-        hdr.option = ProtocolMission::waypointTypeFromString(m.details.value("type").toString());
+        hdr.option = ProtocolMission::waypointTypeFromString(wp["type"].toString());
         hdr.write(&stream);
         xbus::mission::wp_s e;
-        e.lat = static_cast<float>(m.lat);
-        e.lon = static_cast<float>(m.lon);
-        e.alt = m.details.value("altitude").toInt();
+        e.lat = static_cast<float>(wp["lat"].toDouble());
+        e.lon = static_cast<float>(wp["lon"].toDouble());
+        e.alt = wp["altitude"].toVariant().toUInt();
         e.write(&stream);
-        if (m.details.value("actions").toString().isEmpty())
-            continue;
-        QMap<QString, QString> amap;
-        foreach (const QString &s, m.details.value("actions").toString().split(',')) {
-            int i = s.indexOf('=');
-            if (i <= 0)
-                continue;
-            amap[s.left(i)] = s.mid(i + 1);
-        }
+        fhdr.cnt.wp++;
 
-        if (!amap.value("speed").isEmpty()) {
+        QJsonObject actions = wp["actions"].toObject();
+        if (actions.isEmpty())
+            continue;
+
+        if (actions.contains("speed")) {
             xbus::mission::hdr_s ahdr;
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_SPEED;
             ahdr.write(&stream);
             xbus::mission::act_speed_s a;
-            a.speed = amap.value("speed").toUInt();
+            a.speed = actions.value("speed").toVariant().toUInt();
             a.write(&stream);
         }
-        if (!amap.value("poi").isEmpty()) {
+        if (actions.contains("poi")) {
             xbus::mission::hdr_s ahdr;
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_PI;
             ahdr.write(&stream);
             xbus::mission::act_pi_s a;
-            a.index = amap.value("poi").toUInt() - 1;
+            a.index = actions.value("poi").toVariant().toUInt() - 1;
             a.write(&stream);
         }
-        if (!amap.value("script").isEmpty()) {
+        if (actions.contains("script")) {
             xbus::mission::hdr_s ahdr;
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_SCR;
             ahdr.write(&stream);
             xbus::mission::act_scr_s a;
-            QByteArray src(amap.value("script").toUtf8());
+            QByteArray src(actions.value("script").toString().toUtf8());
             memset(a.scr, 0, sizeof(a.scr));
             memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
             a.scr[sizeof(a.scr) - 1] = 0;
             a.write(&stream);
         }
-        if (!amap.value("loiter").isEmpty()) {
-            xbus::mission::hdr_s ahdr;
-            ahdr.type = xbus::mission::ACT;
-            ahdr.option = xbus::mission::ACT_LOITER;
-            ahdr.write(&stream);
-            xbus::mission::act_loiter_s a;
-            a.radius = amap.value("radius").toInt();
-            a.loops = amap.value("loops").toUInt();
-            a.timeout = AppRoot::timeFromString(amap.value("time"));
-            a.write(&stream);
-        }
-        if (!amap.value("shot").isEmpty()) {
+        if (actions.contains("shot")) {
             xbus::mission::hdr_s ahdr;
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_SHOT;
             ahdr.write(&stream);
             xbus::mission::act_shot_s a;
-            uint dshot = amap.value("dshot").toUInt();
-            const QString shot = amap.value("shot");
+            uint dshot = actions.value("dshot").toVariant().toUInt();
+            const QString shot = actions.value("shot").toString();
             a.opt = 0;
             a.dist = 0;
             if (shot == "start") {
@@ -222,51 +206,51 @@ QByteArray ProtocolMission::pack(const Mission &d)
     }
 
     fhdr.off.rw = stream.pos() - pos_s;
-    for (int i = 0; i < d.runways.size(); ++i) {
-        const Item &m = d.runways.at(i);
+    for (const QJsonValue rw : json["rw"].toArray()) {
         xbus::mission::hdr_s hdr;
         hdr.type = xbus::mission::RW;
-        hdr.option = runwayTypeFromString(m.details.value("type").toString());
+        hdr.option = runwayTypeFromString(rw["type"].toString());
         hdr.write(&stream);
         xbus::mission::rw_s e;
-        e.lat = static_cast<float>(m.lat);
-        e.lon = static_cast<float>(m.lon);
-        e.hmsl = m.details.value("hmsl").toInt();
-        e.dN = m.details.value("dN").toInt();
-        e.dE = m.details.value("dE").toInt();
-        e.approach = m.details.value("approach").toUInt();
+        e.lat = static_cast<float>(rw["lat"].toDouble());
+        e.lon = static_cast<float>(rw["lon"].toDouble());
+        e.hmsl = rw["hmsl"].toVariant().toInt();
+        e.dN = rw["dN"].toVariant().toInt();
+        e.dE = rw["dE"].toVariant().toInt();
+        e.approach = rw["approach"].toVariant().toUInt();
         e.write(&stream);
+        fhdr.cnt.rw++;
         //qDebug() << m.details;
     }
 
     fhdr.off.tw = stream.pos() - pos_s;
-    for (int i = 0; i < d.taxiways.size(); ++i) {
-        const ProtocolMission::Item &m = d.taxiways.at(i);
+    for (const QJsonValue tw : json["tw"].toArray()) {
         xbus::mission::hdr_s hdr;
         hdr.type = xbus::mission::TW;
         hdr.option = 0;
         hdr.write(&stream);
         xbus::mission::tw_s e;
-        e.lat = static_cast<float>(m.lat);
-        e.lon = static_cast<float>(m.lon);
+        e.lat = static_cast<float>(tw["lat"].toDouble());
+        e.lon = static_cast<float>(tw["lon"].toDouble());
         e.write(&stream);
+        fhdr.cnt.tw++;
     }
 
     fhdr.off.pi = stream.pos() - pos_s;
-    for (int i = 0; i < d.pois.size(); ++i) {
-        const ProtocolMission::Item &m = d.pois.at(i);
+    for (const QJsonValue pi : json["pi"].toArray()) {
         xbus::mission::hdr_s hdr;
         hdr.type = xbus::mission::PI;
         hdr.option = 0;
         hdr.write(&stream);
         xbus::mission::pi_s e;
-        e.lat = static_cast<float>(m.lat);
-        e.lon = static_cast<float>(m.lon);
-        e.hmsl = m.details.value("hmsl").toInt();
-        e.radius = m.details.value("radius").toInt();
-        e.loops = m.details.value("loops").toUInt();
-        e.timeout = AppRoot::timeFromString(m.details.value("timeout").toString());
+        e.lat = static_cast<float>(pi["lat"].toDouble());
+        e.lon = static_cast<float>(pi["lon"].toDouble());
+        e.hmsl = pi["hmsl"].toVariant().toInt();
+        e.radius = pi["radius"].toVariant().toInt();
+        e.loops = pi["loops"].toVariant().toUInt();
+        e.timeout = AppRoot::timeFromString(pi["timeout"].toString());
         e.write(&stream);
+        fhdr.cnt.pi++;
     }
 
     if (stream.pos() <= xbus::mission::hdr_s::psize()) {
@@ -281,13 +265,8 @@ QByteArray ProtocolMission::pack(const Mission &d)
 
     //update fhdr
     fhdr.size = stream.pos() - pos_s;
-    //fhdr.hash = apx::crc32(stream.buffer() + pos_s, fhdr.size);
 
-    strncpy(fhdr.title, d.title.toLocal8Bit(), sizeof(fhdr.title));
-    fhdr.cnt.wp = d.waypoints.size();
-    fhdr.cnt.rw = d.runways.size();
-    fhdr.cnt.tw = d.taxiways.size();
-    fhdr.cnt.pi = d.pois.size();
+    strncpy(fhdr.title, json["title"].toString().toLocal8Bit(), sizeof(fhdr.title));
 
     stream.reset();
     fhdr.write(&stream);
@@ -473,17 +452,14 @@ QJsonValue ProtocolMission::unpack(const QByteArray &data)
     QJsonObject json;
     json.insert("title", title);
 
-    QJsonObject items;
     if (!wp.isEmpty())
-        items.insert("wp", wp);
+        json.insert("wp", wp);
     if (!rw.isEmpty())
-        items.insert("rw", rw);
+        json.insert("rw", rw);
     if (!tw.isEmpty())
-        items.insert("tw", tw);
+        json.insert("tw", tw);
     if (!pi.isEmpty())
-        items.insert("pi", pi);
-
-    json.insert("items", items);
+        json.insert("pi", pi);
 
     return json;
 }

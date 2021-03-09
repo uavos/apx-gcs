@@ -48,7 +48,7 @@ RowLayout {
         Material.theme: Material.Light
         onClicked: mission.trigger()
         text: (mission.text)
-              +"\n"+(mission.empty?"":mission.waypoints.descr)
+              +"\n"+(mission.empty?"":mission.wp.descr)
         textScale: 0.45
     }
     ActionButton {

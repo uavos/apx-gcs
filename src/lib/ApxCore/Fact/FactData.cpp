@@ -31,11 +31,7 @@ FactData::FactData(
 {
     connect(this, &FactData::valueChanged, this, &FactData::updateValueText);
     connect(this, &FactData::precisionChanged, this, &FactData::updateValueText);
-    connect(this,
-            &FactData::enumStringsChanged,
-            this,
-            &FactData::updateValueText,
-            Qt::QueuedConnection);
+    connect(this, &FactData::enumStringsChanged, this, &FactData::updateValueText);
     connect(this, &FactData::unitsChanged, this, &FactData::updateValueText);
 
     connect(this, &FactData::valueTextChanged, this, &FactData::updateText);
@@ -52,6 +48,8 @@ FactData::FactData(
     setDescr(descr);
 
     setDataType(Flag(uint(flags) & DataMask));
+
+    updateValueText();
 }
 
 FactBase::Flag FactData::dataType() const
@@ -373,7 +371,7 @@ static double cint(double x)
 QString FactData::toText(const QVariant &v) const
 {
     Flag t = dataType();
-    if ((t != Group) && (!m_enumStrings.isEmpty())) {
+    if ((treeType() != Group) && (!m_enumStrings.isEmpty())) {
         int ev = enumValue(v);
         if (ev >= 0)
             return enumText(ev);

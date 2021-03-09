@@ -53,6 +53,8 @@ public:
 
     Fact *f_activeIndex; //mandala fact to reflect current item index in group
 
+    void fromJson(const QJsonValue json) override;
+
 private:
     QTimer updateTimeTimer;
     QTimer updateDistanceTimer;

@@ -64,7 +64,7 @@ public:
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
 
-    Q_INVOKABLE void fromJson(const QJsonValue json);
+    QJsonValue toJson() const override;
 
 public slots:
     void updatePath();
@@ -73,7 +73,7 @@ public slots:
 protected:
     virtual QGeoPath getPath();
 
-    virtual void hashData(QCryptographicHash *h) const;
+    virtual void hashData(QCryptographicHash *h) const override;
 
     MissionItem *prevItem() const;
     MissionItem *nextItem() const;

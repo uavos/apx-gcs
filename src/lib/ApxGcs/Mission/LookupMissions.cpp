@@ -87,7 +87,6 @@ void LookupMissions::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
     query("SELECT * FROM Missions"
-          " LEFT JOIN MissionDetails ON MissionDetails.missionID=Missions.key"
           " LEFT JOIN (SELECT key, title AS site FROM Sites) AS Sites  ON Missions.siteID=Sites.key"
           " LEFT JOIN (SELECT missionID, COUNT(*) AS cnt FROM Waypoints GROUP BY missionID) AS "
           "Waypoints ON Waypoints.missionID=Missions.key"
@@ -108,7 +107,6 @@ void LookupMissions::dbLookupMissionsByArea(QGeoCoordinate c, QString siteName)
     v << c.longitude();
     v << c.longitude();
     query("SELECT *, ((?-lat)*(?-lat)*?)+((?-lon)*(?-lon)) AS dist FROM Missions"
-          " LEFT JOIN MissionDetails ON MissionDetails.missionID=Missions.key"
           " LEFT JOIN (SELECT key, title AS site FROM Sites) AS Sites  ON Missions.siteID=Sites.key"
           " LEFT JOIN (SELECT missionID, COUNT(*) AS cnt FROM Waypoints GROUP BY missionID) AS "
           "Waypoints ON Waypoints.missionID=Missions.key"

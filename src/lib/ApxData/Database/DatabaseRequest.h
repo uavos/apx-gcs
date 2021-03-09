@@ -68,6 +68,7 @@ public:
     static QVariantMap filterIdValues(QVariantMap values);
 
     QVariantMap filterFields(QString tableName, QVariantMap values) const;
+    QVariantMap filterFields(QString tableName, QJsonObject json) const;
 
 protected:
     DatabaseSession *db;

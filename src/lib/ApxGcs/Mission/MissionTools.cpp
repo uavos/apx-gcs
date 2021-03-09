@@ -122,6 +122,6 @@ void MissionTools::copyVehicleSelected(Vehicle *vehicle)
 {
     if (vehicle == mission->vehicle)
         return;
-    vehicle->f_mission->storage->loadFromDict(mission->storage->saveToDict());
+    vehicle->f_mission->fromJson(mission->toJson());
     Vehicles::instance()->selectVehicle(vehicle);
 }

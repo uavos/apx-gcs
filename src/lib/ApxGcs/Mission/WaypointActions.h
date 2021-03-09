@@ -38,11 +38,13 @@ public:
     Fact *f_script;
     Fact *f_poi;
 
+    QJsonValue toJson() const override;
+
 private:
     bool blockActionsValueChanged;
 
 protected:
-    void hashData(QCryptographicHash *h) const;
+    void hashData(QCryptographicHash *h) const override;
 
 private slots:
     void updateActionsValue();

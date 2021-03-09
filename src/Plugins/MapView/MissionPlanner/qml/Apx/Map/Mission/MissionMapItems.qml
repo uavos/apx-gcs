@@ -58,25 +58,25 @@ MapItemGroup {
 
     MapItemView {
         z: 50
-        model: mission.waypoints.mapModel
+        model: mission.wp.mapModel
         delegate: WaypointItem { }
     }
 
     MapItemView {
         z: 60
-        model: mission.runways.mapModel
+        model: mission.rw.mapModel
         delegate: RunwayItem { }
     }
 
     MapItemView {
         z: 0
-        model: mission.taxiways.mapModel
+        model: mission.tw.mapModel
         delegate: TaxiwayItem { }
     }
 
     MapItemView {
         z: 20
-        model: mission.points.mapModel
+        model: mission.pi.mapModel
         delegate: PointItem { }
     }
 }

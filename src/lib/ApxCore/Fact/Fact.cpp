@@ -521,10 +521,10 @@ QJsonValue Fact::toJson() const
         if (dataType() == NoFlags || dataType() == Count || valueText().isEmpty())
             break;
 
-        if (dataType() == Text)
+        if (dataType() == Text || dataType() == Bool)
             v = valueText();
-        // else if (enumStrings().isEmpty())
-        //     v = QJsonValue::fromVariant(value());
+        else if (enumStrings().isEmpty())
+            v = QJsonValue::fromVariant(value());
         else
             v = valueText();
     } while (0);

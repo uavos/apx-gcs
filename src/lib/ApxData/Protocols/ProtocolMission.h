@@ -40,26 +40,6 @@ class ProtocolMission : public ProtocolBase
 public:
     explicit ProtocolMission(ProtocolVehicle *vehicle);
 
-    struct Item
-    {
-        QString title;
-        qreal lat;
-        qreal lon;
-        QVariantMap details;
-    };
-
-    struct Mission
-    {
-        QString title;
-        qreal lat;
-        qreal lon;
-
-        QList<Item> runways;
-        QList<Item> waypoints;
-        QList<Item> taxiways;
-        QList<Item> pois;
-    };
-
     enum ManeuverType {
         Direct,
         Path,
@@ -92,7 +72,7 @@ public:
 private:
     ProtocolVehicle *vehicle;
 
-    QByteArray pack(const Mission &d);
+    QByteArray pack(const QJsonValue json);
     QJsonValue unpack(const QByteArray &data);
 
     static constexpr const char *nfile{"mission"};
@@ -107,12 +87,10 @@ private slots:
 
 public slots:
     void download();
-    void upload(ProtocolMission::Mission d);
+    void upload(const QJsonValue json);
 
 signals:
     void available();
     void uploaded();
     void downloaded(QJsonValue json);
 };
-
-Q_DECLARE_METATYPE(ProtocolMission::Mission);

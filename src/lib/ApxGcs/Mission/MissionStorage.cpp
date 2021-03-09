@@ -40,39 +40,10 @@ MissionStorage::MissionStorage(VehicleMission *mission)
     connect(mission, &VehicleMission::coordinateChanged, &evtUpdateSite, &DelayedEvent::schedule);
 }
 
-QVariantMap MissionStorage::getDetails()
-{
-    QVariantMap details;
-    QString title = mission->f_title->text().simplified();
-    if (mission->vehicle->protocol()->isIdentified()) {
-        QString s = mission->vehicle->title();
-        details.insert("callsign", s);
-        title.remove(s, Qt::CaseInsensitive);
-    }
-    if (mission->f_runways->size() > 0) {
-        QString s = mission->f_runways->child(0)->text();
-        details.insert("runway", s);
-        title.remove(s, Qt::CaseInsensitive);
-    }
-    title.replace('-', ' ');
-    title.replace('_', ' ');
-    title = title.simplified();
-    mission->f_title->setValue(title);
-
-    //details
-    QGeoRectangle rect = mission->boundingGeoRectangle();
-    details.insert("topLeftLat", rect.topLeft().latitude());
-    details.insert("topLeftLon", rect.topLeft().longitude());
-    details.insert("bottomRightLat", rect.bottomRight().latitude());
-    details.insert("bottomRightLon", rect.bottomRight().longitude());
-    details.insert("distance", mission->f_waypoints->distance());
-    return details;
-}
-
 void MissionStorage::saveMission()
 {
     dbHash.clear();
-    DBReqMissionsSave *req = new DBReqMissionsSave(saveToDict(), getDetails());
+    DBReqMissionsSave *req = new DBReqMissionsSave(mission->toJson());
     connect(req,
             &DBReqMissionsSave::missionHash,
             this,
@@ -132,119 +103,20 @@ void MissionStorage::loadMission(QString hash)
     connect(req, &DBReqMissionsLoad::loaded, this, &MissionStorage::dbLoaded, Qt::QueuedConnection);
     req->exec();
 }
-void MissionStorage::dbLoaded(QVariantMap info, QVariantMap details, ProtocolMission::Mission data)
+void MissionStorage::dbLoaded(QJsonValue json)
 {
-    Q_UNUSED(details)
-    //qDebug()<<"mission loaded"<<m.values.size();
-    mission->clearMission();
-    mission->setSite(info.value("site").toString());
+    dbHash = json["hash"].toString();
+    qDebug() << "mission load:" << dbHash;
 
-    dbHash = info.value("hash").toString();
-    mission->f_title->setValue(data.title);
-
-    loadFromDict(data);
+    mission->fromJson(json);
 
     if (mission->missionSize() > 0) {
         emit loaded();
     }
     QString s(tr("Mission loaded"));
-    if (data.title.isEmpty())
+    QString title = mission->f_title->text();
+    if (title.isEmpty())
         mission->vehicle->message(s);
     else
-        mission->vehicle->message(s.append(": ").append(data.title));
-}
-
-ProtocolMission::Mission MissionStorage::saveToDict() const
-{
-    ProtocolMission::Mission d;
-    saveItemsToDict(d.runways, mission->f_runways);
-    saveItemsToDict(d.waypoints, mission->f_waypoints);
-    saveItemsToDict(d.taxiways, mission->f_taxiways);
-    saveItemsToDict(d.pois, mission->f_pois);
-
-    d.title = mission->f_title->text().simplified();
-
-    QGeoCoordinate c = mission->coordinate();
-    d.lat = c.latitude();
-    d.lon = c.longitude();
-    return d;
-}
-void MissionStorage::loadFromDict(ProtocolMission::Mission d)
-{
-    mission->f_title->setValue(d.title);
-
-    mission->blockSizeUpdate = true;
-    loadItemsFromDict(d.runways, mission->f_runways);
-    loadItemsFromDict(d.waypoints, mission->f_waypoints);
-    loadItemsFromDict(d.taxiways, mission->f_taxiways);
-    loadItemsFromDict(d.pois, mission->f_pois);
-
-    mission->blockSizeUpdate = false;
-    mission->backup();
-    mission->updateSize();
-}
-void MissionStorage::load(const QJsonValue json)
-{
-    mission->f_title->setValue(json["title"].toString());
-
-    mission->blockSizeUpdate = true;
-    loadItems(json, "rw", mission->f_runways);
-    loadItems(json, "wp", mission->f_waypoints);
-    loadItems(json, "tw", mission->f_taxiways);
-    loadItems(json, "pi", mission->f_pois);
-    mission->blockSizeUpdate = false;
-
-    mission->backup();
-    mission->updateSize();
-}
-void MissionStorage::loadItems(const QJsonValue json, QString key, MissionGroup *g)
-{
-    for (auto const i : json.toObject().value(key).toArray()) {
-        const QJsonObject item = i.toObject();
-        MissionItem *f = g->createObject();
-
-        f->f_latitude->setValue(item["lat"]);
-        f->f_longitude->setValue(item["lon"]);
-    }
-}
-
-void MissionStorage::saveItemsToDict(QList<ProtocolMission::Item> &items,
-                                     const MissionGroup *g) const
-{
-    for (int i = 0; i < g->size(); ++i) {
-        MissionItem *f = static_cast<MissionItem *>(g->child(i));
-        ProtocolMission::Item e;
-        e.lat = f->f_latitude->value().toDouble();
-        e.lon = f->f_longitude->value().toDouble();
-        for (int j = 0; j < f->size(); ++j) {
-            MissionItem *fv = static_cast<MissionItem *>(f->child(j));
-            //skip main fields
-            if (fv == f->f_order)
-                continue;
-            if (fv == f->f_latitude)
-                continue;
-            if (fv == f->f_longitude)
-                continue;
-            e.details.insert(fv->objectName(), fv->valueText());
-        }
-        items.append(e);
-    }
-}
-void MissionStorage::loadItemsFromDict(const QList<ProtocolMission::Item> &items,
-                                       MissionGroup *g) const
-{
-    for (int i = 0; i < items.size(); ++i) {
-        const ProtocolMission::Item &e = items.at(i);
-        MissionItem *f = g->createObject();
-        f->f_latitude->setValue(e.lat);
-        f->f_longitude->setValue(e.lon);
-        foreach (QString key, e.details.keys()) {
-            Fact *fv = f->child(key);
-            if (!fv) {
-                qWarning() << "missing value" << g->title() << f->title() << key;
-                continue;
-            }
-            fv->setValue(e.details.value(key));
-        }
-    }
+        mission->vehicle->message(s.append(": ").append(title));
 }

@@ -35,11 +35,20 @@ MissionsDB::MissionsDB(QObject *parent, QString sessionName)
                            << "title TEXT"
                            << "lat REAL"
                            << "lon REAL"
-                           << "siteID INTEGER" //auto assigned
+                           << "siteID INTEGER"
+                           << "topLeftLat REAL"
+                           << "topLeftLon REAL"
+                           << "bottomRightLat REAL"
+                           << "bottomRightLon REAL"
+                           << "distance INTEGER"
+                           << "callsign TEXT"
+                           << "runway TEXT"
                            << "FOREIGN KEY(siteID) REFERENCES Sites(key) ON DELETE SET NULL");
     new DBReqMakeIndex(this, "Missions", "hash", true);
     new DBReqMakeIndex(this, "Missions", "time", false);
     new DBReqMakeIndex(this, "Missions", "title", false);
+    new DBReqMakeIndex(this, "Missions", "callsign", false);
+    new DBReqMakeIndex(this, "Missions", "runway", false);
 
     new DBReqMakeTable(this,
                        "Sites",
@@ -49,21 +58,6 @@ MissionsDB::MissionsDB(QObject *parent, QString sessionName)
                                      << "lon REAL NOT NULL");
     new DBReqMakeIndex(this, "Sites", "title", true);
     new DBReqMakeIndex(this, "Sites", "lat,lon", true);
-
-    new DBReqMakeTable(this,
-                       "MissionDetails",
-                       QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
-                                     << "missionID INTEGER NOT NULL"
-                                     << "topLeftLat REAL"
-                                     << "topLeftLon REAL"
-                                     << "bottomRightLat REAL"
-                                     << "bottomRightLon REAL"
-                                     << "distance INTEGER"
-                                     << "callsign TEXT"
-                                     << "runway TEXT");
-    new DBReqMakeIndex(this, "MissionDetails", "missionID", true);
-    new DBReqMakeIndex(this, "MissionDetails", "callsign", false);
-    new DBReqMakeIndex(this, "MissionDetails", "runway", false);
 
     //mission elements
     new DBReqMakeTable(this,
@@ -130,47 +124,11 @@ MissionsDB::MissionsDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "Pois", "missionID", false);
     new DBReqMakeIndex(this, "Pois", "lat,lon", false);
 }
-//=============================================================================
+
 DBReqMissions::DBReqMissions()
     : DatabaseRequest(Database::instance()->missions)
 {}
-//=============================================================================
-//=============================================================================
-bool DBReqMissionsUpdateDetails::run(QSqlQuery &query)
-{
-    if (!missionID) {
-        qWarning() << "missing missionID";
-        return false;
-    }
-    //find existing mission details
-    query.prepare("SELECT * FROM MissionDetails WHERE missionID=?");
-    query.addBindValue(missionID);
-    if (!query.exec())
-        return false;
 
-    if (query.next()) {
-        //mission details exists
-        qDebug() << "mission details exists";
-        quint64 detailsID = query.value(0).toULongLong();
-        //update existing mission detail record with actual data
-        if (recordUpdateQuery(query, details, "MissionDetails", "WHERE key=?")) {
-            query.addBindValue(detailsID);
-            if (!query.exec())
-                return false;
-            emit dbModified();
-        }
-        return true;
-    }
-    //create new details record
-    details["missionID"] = missionID;
-    if (!recordInsertQuery(query, details, "MissionDetails"))
-        return false;
-    if (!query.exec())
-        return false;
-    emit dbModified();
-    return true;
-}
-//=============================================================================
 bool DBReqMissionsFindSite::run(QSqlQuery &query)
 {
     if (!(std::isnan(lat) || std::isnan(lon) || lat == 0.0 || lon == 0.0)) {
@@ -230,50 +188,46 @@ bool DBReqMissionsRemoveSite::run(QSqlQuery &query)
     emit siteRemoved();
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 bool DBReqMissionsSave::run(QSqlQuery &query)
 {
-    if (rw.values.isEmpty()) {
+    if (json.value("rw").toArray().isEmpty()) {
         qWarning() << "missing runways in mission";
     }
-
-    //generate hash
-    QCryptographicHash h(QCryptographicHash::Sha1);
-    getHash(h, rw);
-    getHash(h, wp);
-    getHash(h, tw);
-    getHash(h, pi);
-    QString hash = h.result().toHex().toUpper();
-    info["hash"] = hash;
-    info["time"] = t;
 
     //find siteID
     if (!reqSite.run(query))
         return false;
+
+    QString title = json.value("title").toString().simplified();
     if (reqSite.siteID) {
-        info["siteID"] = reqSite.siteID;
-        info["title"]
-            = info["title"].toString().remove(reqSite.site, Qt::CaseInsensitive).simplified();
+        title = title.remove(reqSite.site, Qt::CaseInsensitive).simplified();
+    } else {
+        qDebug() << "no site";
     }
-    info = filterNullValues(info);
+
+    QString callsign = json.value("callsign").toString();
+    QVariant siteID = reqSite.siteID ? reqSite.siteID : QVariant();
 
     //find existing mission by hash
+    QString hash = json.value("hash").toString();
     query.prepare("SELECT * FROM Missions WHERE hash=?");
     query.addBindValue(hash);
     if (!query.exec())
         return false;
     if (query.next()) {
         missionID = query.value(0).toULongLong();
-        //update mission info
-        query.prepare("UPDATE Missions SET time=?, title=?, siteID=? WHERE key=?");
+        qDebug() << "mission exists";
+        if (callsign.isEmpty())
+            callsign = query.value("callsign").toString();
+        //update mission access time
+        query.prepare("UPDATE Missions SET time=?, title=?, siteID=?, callsign=? WHERE key=?");
         query.addBindValue(t);
-        query.addBindValue(info.value("title"));
-        query.addBindValue(info.value("siteID"));
+        query.addBindValue(title);
+        query.addBindValue(siteID);
+        query.addBindValue(callsign);
         query.addBindValue(missionID);
         if (!query.exec())
-            return false;
-        if (!DBReqMissionsUpdateDetails::run(query))
             return false;
         emit missionHash(hash);
         return true;
@@ -283,102 +237,73 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     if (!db->transaction(query))
         return false;
 
+    QVariantMap info = filterFields("Missions", json);
+    info["hash"] = hash;
+    info["time"] = t;
+    info["title"] = title;
+    info["callsign"] = callsign;
+    info["siteID"] = siteID;
+
     if (!recordInsertQuery(query, info, "Missions"))
         return false;
     if (!query.exec())
         return false;
     missionID = query.lastInsertId().toULongLong();
-    info["key"] = missionID;
 
     //write items
-    rw.names.append("missionID");
-    for (int i = 0; i < rw.values.size(); ++i) {
-        recordInsertQuery(query, rw, i, "Runways");
-        query.addBindValue(missionID);
-        if (!query.exec())
-            return false;
-    }
-    wp.names.append("missionID");
-    for (int i = 0; i < wp.values.size(); ++i) {
-        recordInsertQuery(query, wp, i, "Waypoints");
-        query.addBindValue(missionID);
-        if (!query.exec())
-            return false;
-    }
-    tw.names.append("missionID");
-    for (int i = 0; i < tw.values.size(); ++i) {
-        recordInsertQuery(query, tw, i, "Taxiways");
-        query.addBindValue(missionID);
-        if (!query.exec())
-            return false;
-    }
-    pi.names.append("missionID");
-    for (int i = 0; i < pi.values.size(); ++i) {
-        recordInsertQuery(query, pi, i, "Pois");
-        query.addBindValue(missionID);
-        if (!query.exec())
-            return false;
-    }
-
-    if (!DBReqMissionsUpdateDetails::run(query))
+    if (!writeItems(query, json.value("rw").toArray(), "Runways"))
         return false;
+    if (!writeItems(query, json.value("wp").toArray(), "Waypoints"))
+        return false;
+    if (!writeItems(query, json.value("tw").toArray(), "Taxiways"))
+        return false;
+    if (!writeItems(query, json.value("pi").toArray(), "Pois"))
+        return false;
+
     if (!db->commit(query))
         return false;
 
     emit missionHash(hash);
     return true;
 }
-void DBReqMissionsSave::makeRecords(const ProtocolMission::Mission &mission)
+bool DBReqMissionsSave::writeItems(QSqlQuery &query, QJsonArray json, QString tableName)
 {
-    info["title"] = mission.title;
-    info["lat"] = mission.lat;
-    info["lon"] = mission.lon;
-    //items
-    makeRecords(mission.runways, rw);
-    makeRecords(mission.waypoints, wp);
-    makeRecords(mission.taxiways, tw);
-    makeRecords(mission.pois, pi);
-}
-void DBReqMissionsSave::makeRecords(const QList<ProtocolMission::Item> &items,
-                                    DatabaseRequest::Records &records)
-{
-    records.names << "num"
-                  << "title"
-                  << "lat"
-                  << "lon";
-    for (int i = 0; i < items.size(); ++i) {
-        const ProtocolMission::Item &f = items.at(i);
+    DatabaseRequest::Records records;
+    records.names = db->tableFields(tableName);
+    records.names.removeOne("key");
+    quint32 num = 0;
+    for (auto j : json) {
+        QJsonObject obj = j.toObject();
         QVariantList r;
-        r.append(i);
-        r.append(f.title);
-        r.append(f.lat);
-        r.append(f.lon);
-        foreach (QString key, f.details.keys()) {
-            if (f.details.value(key).toString().isEmpty())
-                continue;
-            if (!records.names.contains(key))
-                records.names.append(key);
-            int j = records.names.indexOf(key);
-            while (r.size() <= j)
-                r.append(QVariant());
-            r[j] = f.details.value(key);
+        r.append(missionID);
+        r.append(num++);
+        for (int i = 2; i < records.names.size(); ++i) {
+            QJsonValue v = obj[records.names.at(i)];
+            if (v.isObject()) {
+                QStringList st;
+                for (auto k : v.toObject().keys()) {
+                    st.append(k + "=" + v[k].toString());
+                }
+                r.append(st.join(','));
+            } else {
+                r.append(v.toVariant());
+            }
         }
         records.values.append(r);
     }
-    //snap records values size
-    int sz = records.names.size();
     for (int i = 0; i < records.values.size(); ++i) {
-        QVariantList &r = records.values[i];
-        while (r.size() < sz)
-            r.append(QVariant());
+        recordInsertQuery(query, records, i, tableName);
+        if (!query.exec())
+            return false;
     }
+    return true;
 }
-//=============================================================================
+
 bool DBReqMissionsLoad::run(QSqlQuery &query)
 {
     query.prepare(
         "SELECT * FROM Missions"
-        " LEFT JOIN (SELECT key, title AS site FROM Sites) AS Sites  ON Missions.siteID=Sites.key"
+        " LEFT JOIN (SELECT key, title AS site FROM Sites) AS Sites ON Missions.siteID=Sites.key"
         " WHERE hash=?");
     query.addBindValue(hash);
     if (!query.exec())
@@ -386,65 +311,43 @@ bool DBReqMissionsLoad::run(QSqlQuery &query)
     if (!query.next())
         return false;
 
-    quint64 missionID = query.value("key").toULongLong();
-    //mission info
-    info = filterIdValues(queryRecord(query));
-    mission.title = info.value("title").toString();
-    mission.lat = info.value("lat").toDouble();
-    mission.lon = info.value("lon").toDouble();
-
-    //mission details
-    query.prepare("SELECT * FROM MissionDetails"
-                  " WHERE missionID=?");
-    query.addBindValue(missionID);
-    if (!query.exec())
-        return false;
-    if (query.next()) {
-        details = filterIdValues(queryRecord(query));
-    }
+    quint64 missionID = query.value("Missions.key").toULongLong();
+    QJsonObject json = QJsonObject::fromVariantMap(filterIdValues(queryRecord(query)));
 
     query.prepare("SELECT * FROM Runways WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    readItems(query, mission.runways);
+    json.insert("rw", readItems(query));
 
     query.prepare("SELECT * FROM Waypoints WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    readItems(query, mission.waypoints);
+    json.insert("wp", readItems(query));
 
     query.prepare("SELECT * FROM Taxiways WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    readItems(query, mission.taxiways);
+    json.insert("tw", readItems(query));
 
     query.prepare("SELECT * FROM Pois WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    readItems(query, mission.pois);
+    json.insert("pi", readItems(query));
 
-    emit loaded(info, details, mission);
+    emit loaded(json);
     return true;
 }
-void DBReqMissionsLoad::readItems(QSqlQuery &query, QList<ProtocolMission::Item> &items)
+QJsonValue DBReqMissionsLoad::readItems(QSqlQuery &query)
 {
+    QJsonArray array;
     while (query.next()) {
-        ProtocolMission::Item e;
-        e.title = query.value("title").toString();
-        e.lat = query.value("lat").toDouble();
-        e.lon = query.value("lon").toDouble();
-        e.details = queryRecord(query);
-        e.details.remove("key");
-        e.details.remove("missionID");
-        e.details.remove("num");
-        e.details.remove("title");
-        e.details.remove("lat");
-        e.details.remove("lon");
-        items.append(e);
+        QJsonObject obj = QJsonObject::fromVariantMap(filterIdValues(queryRecord(query)));
+        obj.remove("num");
+        array.append(obj);
     }
+    return array.isEmpty() ? QJsonValue() : array;
 }
-//=============================================================================

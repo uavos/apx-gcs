@@ -31,7 +31,7 @@ MissionGroup::MissionGroup(VehicleMission *parent,
                            const QString &title,
                            const QString &descr,
                            Fact *activeIndex)
-    : Fact(parent, name, title, descr, Group | ModifiedGroup)
+    : Fact(parent, name, title, descr, Group | ModifiedGroup | Count)
     , mission(parent)
     , f_activeIndex(activeIndex)
     , _descr(descr)
@@ -181,4 +181,12 @@ void MissionGroup::clearGroup()
     setDistance(0);
     setTime(0);
     setModified(true);
+}
+
+void MissionGroup::fromJson(const QJsonValue json)
+{
+    clearGroup();
+    for (auto i : json.toArray()) {
+        createObject()->fromJson(i);
+    }
 }

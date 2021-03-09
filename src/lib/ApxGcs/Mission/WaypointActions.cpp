@@ -119,3 +119,18 @@ void WaypointActions::actionsValueChanged()
         f->setValue(map.value(s));
     }
 }
+
+QJsonValue WaypointActions::toJson() const
+{
+    QJsonObject obj;
+    for (auto i : facts()) {
+        if (i->isZero())
+            continue;
+        QJsonValue v = i->toJson();
+        if (!v.isNull())
+            obj.insert(i->name(), v);
+    }
+    if (obj.isEmpty())
+        return QJsonValue();
+    return obj;
+}

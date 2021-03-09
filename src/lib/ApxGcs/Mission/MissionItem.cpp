@@ -50,13 +50,13 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(group, &Fact::sizeChanged, this, &MissionItem::updateOrderState);
 
     f_latitude = new MissionField(this,
-                                  "latitude",
+                                  "lat",
                                   tr("Latitude"),
                                   tr("Global postition latitude"),
                                   Float);
     f_latitude->setUnits("lat");
     f_longitude = new MissionField(this,
-                                   "longitude",
+                                   "lon",
                                    tr("Longitude"),
                                    tr("Global postition longitude"),
                                    Float);
@@ -115,7 +115,12 @@ void MissionItem::hashData(QCryptographicHash *h) const
     }
 }
 
-void MissionItem::fromJson(const QJsonValue json) {}
+QJsonValue MissionItem::toJson() const
+{
+    QJsonObject json = Fact::toJson().toObject();
+    json.remove(f_order->name());
+    return json;
+}
 
 int MissionItem::missionItemType() const
 {

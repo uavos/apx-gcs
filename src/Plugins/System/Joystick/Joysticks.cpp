@@ -286,7 +286,7 @@ void Joysticks::loadConfigs()
             foreach (QJsonValue v, json["configs"].toArray()) {
                 QString uid = v["uid"].toString();
                 QString name = v["name"].toString();
-                int index = v["index"].toInt();
+                int index = v["index"].toString().toInt();
                 QString jkey = QString("%1:%2:%3").arg(index).arg(name).arg(uid);
 
                 int cidx = configIndex(v.toObject());

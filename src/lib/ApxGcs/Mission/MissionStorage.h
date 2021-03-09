@@ -45,25 +45,13 @@ public:
     VehicleMission *mission;
     QString dbHash;
 
-    ProtocolMission::Mission saveToDict() const;
-    void loadFromDict(ProtocolMission::Mission d);
-
-    void load(const QJsonValue json);
-
-    QVariantMap getDetails();
-
 private:
-    void saveItemsToDict(QList<ProtocolMission::Item> &items, const MissionGroup *g) const;
-    void loadItemsFromDict(const QList<ProtocolMission::Item> &items, MissionGroup *g) const;
-
-    void loadItems(const QJsonValue json, QString key, MissionGroup *g);
-
     DelayedEvent evtUpdateSite;
 
 private slots:
     //database
     void dbSaved(QString hash);
-    void dbLoaded(QVariantMap info, QVariantMap details, ProtocolMission::Mission data);
+    void dbLoaded(QJsonValue json);
     void dbSiteFound(quint64 siteID, QString site);
     void dbFindSite();
 
