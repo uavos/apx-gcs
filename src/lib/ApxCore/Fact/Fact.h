@@ -74,6 +74,7 @@ public:
     Q_INVOKABLE virtual void fromJson(const QJsonValue json);
 
     Q_INVOKABLE QJsonDocument toJsonDocument() const;
+    Q_INVOKABLE bool fromJsonDocument(QByteArray data);
 
     virtual bool setValue(const QVariant &v) override; //collect stats
 

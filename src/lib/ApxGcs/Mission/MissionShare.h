@@ -40,6 +40,6 @@ private:
     VehicleMission *mission;
 
     QString getDefaultTitle() override;
-    bool exportRequest(ShareExport *format, QString fileName) override;
-    bool importRequest(ShareImport *format, QString fileName) override;
+    bool exportRequest(QString format, QString fileName) override;
+    bool importRequest(QString format, QString fileName) override;
 };

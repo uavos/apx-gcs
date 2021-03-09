@@ -575,7 +575,22 @@ void Fact::fromJson(const QJsonValue json)
         return;
     setValue(json.toVariant());
 }
-
+bool Fact::fromJsonDocument(QByteArray data)
+{
+    QJsonParseError err;
+    QJsonDocument json = QJsonDocument::fromJson(data, &err);
+    if (err.error != QJsonParseError::NoError) {
+        apxMsgW() << err.errorString();
+        return false;
+    }
+    if (json.isObject())
+        fromJson(json.object());
+    else if (json.isArray())
+        fromJson(json.array());
+    else
+        return false;
+    return true;
+}
 //=============================================================================
 Fact *Fact::mandala() const
 {

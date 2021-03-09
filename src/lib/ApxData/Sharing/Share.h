@@ -32,6 +32,7 @@ class Share : public Fact
 
 public:
     explicit Share(Fact *parent,
+                   QString type,
                    QString dataTitle,
                    QDir defaultDir,
                    FactBase::Flags flags = FactBase::Flags(Group));
@@ -39,29 +40,28 @@ public:
     Fact *f_export;
     Fact *f_import;
 
+    QByteArray loadData(QString fileName);
+    bool saveData(QByteArray data, QString fileName);
+
 protected:
     QString dataTitle;
     QDir defaultDir;
 
-    QList<ShareExport *> _exportFormats;
-    QList<ShareImport *> _importFormats;
+    QStringList _exportFormats;
+    QStringList _importFormats;
 
     virtual QString getDefaultTitle() { return QString(); }
-    virtual bool exportRequest(ShareExport *format, QString fileName) { return false; }
-    virtual bool importRequest(ShareImport *format, QString fileName) { return false; }
-
-    void add(ShareExport *format);
-    void add(ShareImport *format);
-
-private slots:
-    void _exported(QString fileName);
-    void _imported(QString fileName, QString hash, QString title);
+    virtual bool exportRequest(QString format, QString fileName) { return false; }
+    virtual bool importRequest(QString format, QString fileName) { return false; }
 
 protected slots:
     void exportTriggered();
     void importTriggered();
 
+    void _exported(QString fileName);
+    void _imported(QString fileName, QString title);
+
 signals:
-    void imported(QString fileName, QString hash, QString title);
+    void imported(QString fileName, QString title);
     void exported(QString fileName);
 };

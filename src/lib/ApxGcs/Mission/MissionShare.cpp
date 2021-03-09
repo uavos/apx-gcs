@@ -27,22 +27,17 @@
 #include <App/AppLog.h>
 #include <Vehicles/Vehicle.h>
 
-#include <Sharing/ShareExport.h>
-
 #include <Database/MissionsDB.h>
 
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
-    : Share(parent, tr("Mission"), AppDirs::missions(), flags)
+    : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
     , mission(mission)
 {
     connect(this,
             &Share::imported,
             mission->storage,
-            [mission](QString fileName, QString hash, QString title) {
-                mission->storage->loadMission(hash);
-            });
-
-    add(new ShareExport("mission", "mission", this));
+            &MissionStorage::saveMission,
+            Qt::QueuedConnection);
 }
 
 QString MissionShare::getDefaultTitle()
@@ -59,12 +54,17 @@ QString MissionShare::getDefaultTitle()
     s.replace(' ', '-');
     return s;
 }
-bool MissionShare::exportRequest(ShareExport *format, QString fileName)
+bool MissionShare::exportRequest(QString format, QString fileName)
 {
-    return format->saveData(mission->toJsonDocument().toJson(), fileName);
+    if (!saveData(mission->toJsonDocument().toJson(), fileName))
+        return false;
+    _exported(fileName);
+    return true;
 }
-bool MissionShare::importRequest(ShareImport *format, QString fileName)
+bool MissionShare::importRequest(QString format, QString fileName)
 {
-    //auto f = qobject_cast<MissionImport *>(format);
-    //return f->load(fileName);
+    if (!mission->fromJsonDocument(loadData(fileName)))
+        return false;
+    _imported(fileName, mission->f_title->text());
+    return true;
 }

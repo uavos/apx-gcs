@@ -27,10 +27,7 @@
 #include <App/AppSettings.h>
 #include <QFileDialog>
 
-#include "ShareExport.h"
-#include "ShareImport.h"
-
-Share::Share(Fact *parent, QString dataTitle, QDir defaultDir, Flags flags)
+Share::Share(Fact *parent, QString type, QString dataTitle, QDir defaultDir, Flags flags)
     : Fact(parent,
            "share",
            tr("Share"),
@@ -40,6 +37,9 @@ Share::Share(Fact *parent, QString dataTitle, QDir defaultDir, Flags flags)
     , dataTitle(dataTitle)
     , defaultDir(defaultDir)
 {
+    _exportFormats << type;
+    _importFormats << type;
+
     f_export = new Fact(this,
                         "exp",
                         tr("Export").append(" ").append(dataTitle),
@@ -61,17 +61,6 @@ Share::Share(Fact *parent, QString dataTitle, QDir defaultDir, Flags flags)
     // });
 }
 
-void Share::add(ShareExport *format)
-{
-    _exportFormats.append(format);
-    connect(format, &ShareExport::exported, this, &Share::_exported, Qt::QueuedConnection);
-}
-void Share::add(ShareImport *format)
-{
-    _importFormats.append(format);
-    connect(format, &ShareImport::imported, this, &Share::_imported, Qt::QueuedConnection);
-}
-
 void Share::exportTriggered()
 {
     if (_exportFormats.isEmpty())
@@ -86,15 +75,15 @@ void Share::exportTriggered()
     dlg.setOption(QFileDialog::DontConfirmOverwrite, false);
     dlg.setViewMode(QFileDialog::Detail);
     QStringList filters;
-    filters << dataTitle + " " + tr("files") + " (*." + fmt->type() + ")";
+    filters << dataTitle + " " + tr("files") + " (*." + fmt + ")";
     for (auto i : _exportFormats.mid(1)) {
-        filters << i->type().toUpper() + " " + tr("format") + " (*." + i->type() + ")";
+        filters << i.toUpper() + " " + tr("format") + " (*." + i + ")";
     }
-    dlg.setDefaultSuffix(fmt->type());
+    dlg.setDefaultSuffix(fmt);
 
     QString ftitle = getDefaultTitle();
     if (!ftitle.isEmpty()) {
-        dlg.selectFile(defaultDir.filePath(ftitle + "." + fmt->type()));
+        dlg.selectFile(defaultDir.filePath(ftitle + "." + fmt));
     }
     dlg.setNameFilters(filters);
 
@@ -103,14 +92,14 @@ void Share::exportTriggered()
 
     QFileInfo fi(dlg.selectedFiles().first());
 
-    fmt = nullptr;
+    fmt.clear();
     for (auto i : _exportFormats) {
-        if (i->type() != fi.suffix())
+        if (i != fi.suffix())
             continue;
         fmt = i;
         break;
     }
-    if (!fmt || !exportRequest(fmt, fi.filePath())) {
+    if (fmt.isEmpty() || !exportRequest(fmt, fi.filePath())) {
         apxMsg() << tr("Can't export").append(':') << fi.fileName();
         return;
     }
@@ -132,9 +121,8 @@ void Share::importTriggered()
     if (!defaultDir.exists())
         defaultDir.mkpath(".");
 
-    QDir dir = QDir(QSettings()
-                        .value(QString("SharePath_%1").arg(fmt->type()), defaultDir.canonicalPath())
-                        .toString());
+    QDir dir = QDir(
+        QSettings().value(QString("SharePath_%1").arg(fmt), defaultDir.canonicalPath()).toString());
     if (!dir.exists())
         dir = defaultDir;
 
@@ -143,22 +131,22 @@ void Share::importTriggered()
     dlg.setFileMode(QFileDialog::ExistingFiles);
     dlg.setViewMode(QFileDialog::Detail);
     QStringList filters;
-    filters << dataTitle + " " + tr("files") + " (*." + fmt->type() + ")";
+    filters << dataTitle + " " + tr("files") + " (*." + fmt + ")";
     for (auto i : _importFormats.mid(1)) {
-        filters << i->type().toUpper() + " " + tr("format") + " (*." + i->type() + ")";
+        filters << i.toUpper() + " " + tr("format") + " (*." + i + ")";
     }
-    dlg.setDefaultSuffix(fmt->type());
+    dlg.setDefaultSuffix(fmt);
 
     QString ftitle = getDefaultTitle();
     if (!ftitle.isEmpty()) {
-        dlg.selectFile(defaultDir.filePath(ftitle + "." + fmt->type()));
+        dlg.selectFile(defaultDir.filePath(ftitle + "." + fmt));
     }
     filters << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
 
     if (!(dlg.exec() && dlg.selectedFiles().size() >= 1))
         return;
-    QSettings().setValue(QString("SharePath_%1").arg(fmt->type()), dlg.directory().absolutePath());
+    QSettings().setValue(QString("SharePath_%1").arg(fmt), dlg.directory().absolutePath());
     emit menuBack();
 
     for (auto fileName : dlg.selectedFiles()) {
@@ -166,23 +154,77 @@ void Share::importTriggered()
         apxMsg() << tr("Importing")
                  << QString("%1: %2...").arg(dataTitle).arg(fi.completeBaseName());
 
-        fmt = nullptr;
+        fmt.clear();
         for (auto i : _importFormats) {
-            if (i->type() != fi.suffix())
+            if (i != fi.suffix())
                 continue;
             fmt = i;
             break;
         }
-        if (!fmt || !importRequest(fmt, fi.filePath())) {
+        if (fmt.isEmpty() || !importRequest(fmt, fi.filePath())) {
             apxMsg() << tr("Can't import").append(':') << fi.fileName();
             continue;
         }
     }
 }
-void Share::_imported(QString fileName, QString hash, QString title)
+void Share::_imported(QString fileName, QString title)
 {
-    Q_UNUSED(hash)
     apxMsg() << QString("%1 %2:").arg(dataTitle).arg(tr("imported"))
              << (title.isEmpty() ? QFileInfo(fileName).completeBaseName() : title);
-    emit imported(fileName, hash, title);
+    emit imported(fileName, title);
 }
+
+QByteArray Share::loadData(QString fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        apxMsgW() << tr("Cannot read file").append(":") << fileName
+                  << QString("(%1)").arg(file.errorString());
+        return QByteArray();
+    }
+    return file.readAll();
+}
+
+bool Share::saveData(QByteArray data, QString fileName)
+{
+    if (data.isEmpty())
+        return false;
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        apxMsgW() << tr("Cannot write file").append(":") << fileName
+                  << QString("(%1)").arg(file.errorString());
+        return false;
+    }
+    file.write(data);
+    file.close();
+    return true;
+}
+
+/*void Share::_syncTemplates()
+{
+    //import default data from resources
+    QSettings sx;
+    sx.beginGroup("templates_update");
+    QStringList importedFiles = sx.value(fileTypes.first()).toStringList();
+    QFileInfoList fiSrcList(QDir(AppDirs::res().absoluteFilePath("templates/share"),
+                                 QString("*.%1").arg(fileTypes.first()))
+                                .entryInfoList());
+
+    bool updated = false;
+    foreach (QFileInfo fi, fiSrcList) {
+        if (importedFiles.contains(fi.completeBaseName()))
+            continue;
+        importedFiles.append(fi.completeBaseName());
+        updated = true;
+
+        qDebug() << "template update:" << fi.absoluteFilePath();
+        ShareXmlImport *req = importRequest(fi.filePath());
+        if (req)
+            req->exec();
+    }
+    if (updated) {
+        importedFiles.sort();
+        importedFiles.removeDuplicates();
+        sx.setValue(fileTypes.first(), importedFiles);
+    }
+}*/
