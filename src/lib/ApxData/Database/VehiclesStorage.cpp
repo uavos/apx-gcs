@@ -35,7 +35,6 @@ VehiclesStorage::VehiclesStorage(ProtocolVehicle *vehicle)
 
 void VehiclesStorage::saveVehicleInfo()
 {
-    return;
     QVariantMap info;
     info.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
     info.insert("uid", _vehicle->uid());
@@ -52,7 +51,6 @@ void VehiclesStorage::saveVehicleInfo()
 
 void VehiclesStorage::loadNodeInfo(ProtocolNode *node)
 {
-    return;
     DBReqVehiclesLoadInfo *req = new DBReqVehiclesLoadInfo(node->sn());
     connect(
         req,
@@ -70,7 +68,6 @@ void VehiclesStorage::loadNodeInfo(ProtocolNode *node)
 }
 void VehiclesStorage::saveNodeInfo(ProtocolNode *node)
 {
-    return;
     QVariantMap info;
     info.insert("sn", node->sn());
     info.insert("time", node->lastSeenTime());
@@ -82,7 +79,6 @@ void VehiclesStorage::saveNodeInfo(ProtocolNode *node)
 }
 void VehiclesStorage::saveNodeUser(ProtocolNode *node)
 {
-    return;
     QVariantMap info;
     info.insert("machineUID", App::machineUID());
     info.insert("username", App::username());
@@ -93,7 +89,6 @@ void VehiclesStorage::saveNodeUser(ProtocolNode *node)
 
 void VehiclesStorage::saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict &dict)
 {
-    return;
     QVariantMap info;
     info.insert("sn", node->sn());
     info.insert("time", node->lastSeenTime());
@@ -109,7 +104,6 @@ void VehiclesStorage::saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict 
 }
 void VehiclesStorage::loadNodeDict(ProtocolNode *node)
 {
-    return;
     DBReqVehiclesLoadDict *req = new DBReqVehiclesLoadDict(node->sn(), node->identHash());
     connect(req,
             &DBReqVehiclesLoadDict::dictInfoFound,
@@ -131,7 +125,6 @@ void VehiclesStorage::loadNodeDict(ProtocolNode *node)
 
 void VehiclesStorage::saveNodeConfig(ProtocolNode *node)
 {
-    return;
     if (!node->valid())
         return;
     if (node->ident().flags.bits.reconf)
@@ -156,7 +149,6 @@ void VehiclesStorage::saveNodeConfig(ProtocolNode *node)
 }
 void VehiclesStorage::loadNodeConfig(ProtocolNode *node, quint64 key)
 {
-    return;
     if (!node->valid())
         return;
 
@@ -194,7 +186,6 @@ QString VehiclesStorage::backupTitle(quint64 time, QString title)
 
 void VehiclesStorage::saveConfiguration(bool force)
 {
-    return;
     QList<quint64> list;
     for (auto i : _vehicle->nodes->nodes()) {
         if (!i->valid() || !i->dbConfigID() || i->dbDictInfo().isEmpty()) {
@@ -247,7 +238,6 @@ void VehiclesStorage::saveConfiguration(bool force)
 
 void VehiclesStorage::loadConfiguration(QString hash)
 {
-    return;
     DBReqVehiclesLoadConfig *req = new DBReqVehiclesLoadConfig(hash);
     if (_vehicle->isReplay()) {
         if ((!_vehicle->nodes->modified()) && _vehicle->nodes->nodes().size() > 0
@@ -266,7 +256,6 @@ void VehiclesStorage::loadConfiguration(QString hash)
 }
 void VehiclesStorage::loadedConfiguration(QVariantMap configInfo, QList<QVariantMap> data)
 {
-    return;
     size_t loadedCnt = data.size();
     QString title = configInfo.value("title").toString();
     if (!_vehicle->isReplay()) {
