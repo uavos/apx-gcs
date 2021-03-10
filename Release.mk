@@ -1,10 +1,12 @@
-GIT_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 GIT_REF_RELEASE := release
 
 GIT_VERSION_CMD = git describe --tags --match="v*.*" 2> /dev/null |sed 's/^v//;s/\-/\./;s/\(.*\)-\(.*\)/\1/'
 GIT_VERSION = $(shell $(GIT_VERSION_CMD))
 GIT_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+
+GIT_PREV = $(shell git describe --abbrev=0 --tags $(shell git rev-list --tags='release-*' --skip=1 --max-count=1))
 
 version: 
 	@echo "Current version: $(shell $(GIT_VERSION_CMD))"
@@ -34,3 +36,11 @@ release-push:
 	git push origin $(GIT_BRANCH) --tags
 	git fetch . $(GIT_BRANCH):$(GIT_REF_RELEASE) -f
 	git push origin $(GIT_REF_RELEASE) -f
+
+release-rollback:
+	@echo "Rollback release to '$(GIT_PREV)'"
+	@if ! git diff-index --quiet HEAD ; then echo "Commit changes first"; exit 1; fi
+	@git checkout release
+	@git reset --hard "$(GIT_PREV)"
+	@git push origin release -f
+	@git checkout $(GIT_BRANCH)
