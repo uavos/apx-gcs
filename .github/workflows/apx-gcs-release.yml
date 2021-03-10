@@ -30,7 +30,7 @@ jobs:
 
       # - name: Build test
       #   run: |
-      #     mkdir -p $BUILD_DIR/deploy
+      #     mkdir -p env.BUILD_DIR/deploy
       #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage
       #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage.zsync
 
@@ -38,8 +38,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: |
-            $BUILD_DIR/deploy/*.AppImage
-            $BUILD_DIR/deploy/*.zsync
+            env.BUILD_DIR/deploy/*.AppImage
+            env.BUILD_DIR/deploy/*.zsync
           name: apx-gcs-linux
           if-no-files-found: error
           retention-days: 1
@@ -150,7 +150,7 @@ jobs:
                 if(!asset.name.endsWith('.dmg'))
                   continue;
                 console.log('downloading:', asset.name);
-                await download(asset.browser_download_url, '$BUILD_DIR/' + asset.name);
+                await download(asset.browser_download_url, 'process.env.BUILD_DIR/' + asset.name);
                 //console.log(await github.request(asset.url));
               }
             }
@@ -170,8 +170,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: |
-            $BUILD_DIR/deploy/*.dmg
-            $BUILD_DIR/sparkle/*.delta
+            env.BUILD_DIR/deploy/*.dmg
+            env.BUILD_DIR/sparkle/*.delta
             appcast.*
           name: apx-gcs-macos
           if-no-files-found: error
