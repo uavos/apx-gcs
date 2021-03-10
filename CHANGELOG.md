@@ -1,3 +1,18 @@
+# [APX Ground Control v11.0.35](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.35) (03/10/21)
+
+> Branch: `main`\
+> Date: `03/10/21 15:00:42`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/626cd9a9a72290a6bcf916e002749acc9f3ad20a...30e7e7b2c7577d6ae18c9a47d2603a3e656851f1)
+
+## New Features
+* mission share formats
+
+## Bug Fixes
+* release notes
+* linux auto updates
+* build cmake issues (closes [`3`](https://github.com/uavos/apx-gcs/issues/3))
+* mission storage and export
+
 # [APX Ground Control v11.0.32](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.32) (03/09/21)
 
 > Branch: `main`\
