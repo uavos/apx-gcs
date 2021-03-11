@@ -195,39 +195,49 @@ ActionButton {
 
     Component {
         id: _valueC
-        Row {
-            height: parent.height
+        Item {
+            id: _valueRow
+            anchors.fill: parent
 
             // value
             Loader {
                 id: _value
                 active: showValue && (!_editor.item)
-                height: parent.height
+                anchors.fill: parent
+                anchors.rightMargin: _next.visible?_next.width:0
                 sourceComponent: Text {
+                    id: textItem
                     text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
                     font.family: font_condenced
                     font.pixelSize: valueSize
                     color: Material.secondaryTextColor
                     verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                    elide: Text.ElideRight
                 }
             }
             Loader {
                 id: _editor
-                height: parent.height
                 asynchronous: true
                 Material.accent: Material.color(Material.Green)
                 source: showEditor?getEditorSource():""
+                anchors.fill: parent
+                anchors.rightMargin: _next.visible?_next.width:0
+                anchors.leftMargin: Math.max(0,_valueRow.width-(item?item.implicitWidth:0))
             }
 
             // next icon
             MaterialIcon {
                 id: _next
-                height: parent.height
+                // height: parent.height
                 visible: showNext
                 size: nextSize
                 verticalAlignment: Text.AlignVCenter
                 name: "chevron-right"
                 color: control.enabled?Material.secondaryTextColor:Material.hintTextColor
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
             }
         }
     }

@@ -83,6 +83,7 @@ ObjectModel {
             //console.log(n.bind)
             var s="import QtQuick 2.0; NumbersItem {"
             s+="light: "+light+";"
+            s+="fixedWidth: "+model.fixedWidth+";"
             if(n.warn)s+="warning: "+n.warn+";"
             if(n.alarm)s+="error: "+n.alarm+";"
 
@@ -107,10 +108,14 @@ ObjectModel {
             s+="}"
             var obj = Qt.createQmlObject(s,model);
 
-            if(model.fixedWidth){
+            obj.model=model
+
+            /*if(model.fixedWidth){
                 obj.model=model
                 obj.minimumWidth=Qt.binding(function(){return model.minimumWidth})
-            }
+            }else{
+                obj.implicitWidth=Qt.binding(function(){return Math.max(obj.defaultWidth, obj.width)})
+            }*/
 
             obj.height=Qt.binding(function(){return itemHeight})
             for(var p in n){

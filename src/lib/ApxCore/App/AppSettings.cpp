@@ -48,6 +48,7 @@ AppSettings::AppSettings(Fact *parent)
     st << "default";
     st.append(App::instance()->languages());
     item->setEnumStrings(st);
+    item->setDefaultValue(st.first());
 
     item = new Fact(f_graphics, "scale", tr("Scale"), tr("UI scale factor"), Float | PersistentValue);
     item->setDefaultValue(1.0);

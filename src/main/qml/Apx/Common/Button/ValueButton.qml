@@ -119,6 +119,7 @@ ActionButton {
         id: _valueC
         Text {
             verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignRight
             text: control.value
             font.family: font_narrow
             font.pixelSize: valueSize

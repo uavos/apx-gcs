@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick 2.12
+import QtQuick.Controls 2.15
 
 Item {
     id: control
@@ -27,14 +28,14 @@ Item {
     property Component textC
     property Component valueC
 
-    implicitWidth: _titleRow.implicitWidth + _valueRow.implicitWidth + 2
+    implicitWidth: _titleRow.implicitWidth + _valueItem.implicitWidth + 2
     implicitHeight: 24
 
     Row {
         id: _titleRow
         spacing: 0
         anchors.fill: parent
-        anchors.rightMargin: Math.min(_valueRow.implicitWidth, _valueRow.width)
+        //anchors.rightMargin: Math.min(_valueItem.implicitWidth, _valueItem.width)
         //clip: true
 
         // icon
@@ -52,23 +53,10 @@ Item {
             sourceComponent: textC
         }
     }
-    Row {
-        id: _valueRow
-        spacing: 0
+    Loader {
+        id: _valueItem
         anchors.fill: parent
-        anchors.leftMargin: (_icon.item || _title.item)?parent.width*0.1:0
-        clip: true
-
-        layoutDirection: Qt.RightToLeft
-        Row {
-            height: parent.height
-
-            // value
-            Loader {
-                id: _value
-                height: parent.height
-                sourceComponent: valueC
-            }
-        }
+        anchors.leftMargin: (_icon.item?_icon.width:0) + (_title.item?_title.width:0)
+        sourceComponent: valueC
     }
 }

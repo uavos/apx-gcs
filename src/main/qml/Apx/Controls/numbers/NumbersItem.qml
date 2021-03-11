@@ -27,11 +27,11 @@ import Apx.Common 1.0
 ValueButton {
     id: control
     property bool light: false
+    property bool fixedWidth: false
 
     alerts: true
     normalColor: light?"#555":normalColor
 
-    //highlighted: true
 
 
     property string title: fact?fact.name:""
@@ -39,10 +39,12 @@ ValueButton {
 
     //ensure width only grows
     Component.onCompleted: {
-        implicitWidth=height
+        if(fixedWidth){
+            implicitWidth=height
+        }else{
+            implicitWidth=defaultWidth
+        }
         updateWidth()
-
-        //_con.enabled=true
     }
 
     /*Connections {
@@ -55,13 +57,17 @@ ValueButton {
 
     function updateWidth()
     {
-        if(implicitWidth<defaultWidth){
-            implicitWidth=Qt.binding(function(){return defaultWidth})
-            //implicitWidth=defaultWidth
+        if(fixedWidth){
+            if(implicitWidth<defaultWidth){
+                implicitWidth=Qt.binding(function(){return defaultWidth})
+            }
+            if(model && model.minimumWidth<defaultWidth)
+                model.minimumWidth=defaultWidth
+        }else{
+            if(implicitWidth<defaultWidth){
+                implicitWidth=defaultWidth
+            }
         }
-
-        if(model && model.minimumWidth<defaultWidth)
-            model.minimumWidth=defaultWidth
     }
 
     onDefaultWidthChanged: timerWidthUpdate.start()
@@ -76,5 +82,8 @@ ValueButton {
 
     //update model minimum width
     property var model
-    onModelChanged: timerWidthUpdate.start()
+    onModelChanged: if(model && fixedWidth){
+        minimumWidth=Qt.binding(function(){return model.minimumWidth})
+        timerWidthUpdate.start()
+    }
 }

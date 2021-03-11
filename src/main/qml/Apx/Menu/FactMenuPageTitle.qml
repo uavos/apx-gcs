@@ -61,10 +61,14 @@ Item {
         anchors.verticalCenter: titleText.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: titleRightMargin+8
+        anchors.left: titleText.right
+        anchors.leftMargin: 8
+        horizontalAlignment: Text.AlignRight
         font: titleText.font
         color: "#aaa"
         visible: text!=""
         text: pageStatus
+        elide: Text.ElideRight
     }
     FastBlur {
         anchors.fill: titleText

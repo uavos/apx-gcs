@@ -35,13 +35,6 @@ ComboBox {
     topPadding: 0
     bottomPadding: 0
 
-//    background.y: 0
-//    background.height: height
-//    contentItem.height: height
-
-    //Layout.fillHeight: true
-    //implicitHeight: bodyHeight
-
     topInset: 0
     bottomInset: 0
 
@@ -77,14 +70,11 @@ ComboBox {
         font: editor.font
         Component.onCompleted: popup.width=Math.max(popup.width, implicitWidth)
     }
-    //popup.width: popup.implicitWidth //.childrenRect.width //control.width*0.7
-    //popup.x: editor.width-popup.width
+
     function updateIndex()
     {
         //currentIndex=find(value)
         editor.currentIndex=fact.enumStrings.indexOf(editor.value)
         //console.log(currentIndex,value,count,find(value))
     }
-
-    //BoundingRect {}
 }
