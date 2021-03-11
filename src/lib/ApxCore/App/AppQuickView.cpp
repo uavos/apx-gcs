@@ -88,10 +88,15 @@ void AppQuickView::restoreState()
     QSettings s;
     s.beginGroup("windows");
     setGeometry(s.value(objectName() + "_geometry", geometry()).toRect());
-    if (s.value(objectName() + "_maximized").toBool())
+    if (s.value(objectName() + "_maximized").toBool()) {
+#if defined(Q_OS_MAC)
         showFullScreen();
-    else
+#else
+        showMaximized();
+#endif
+    } else {
         showNormal();
+    }
 
     raise();
 }
