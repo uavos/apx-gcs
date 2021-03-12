@@ -648,11 +648,11 @@ bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, qu
         }
 
         if (startAddr) {
-            if (!msect.contains("offset")) {
-                errString = "missing offset";
+            if (!msect.contains("origin")) {
+                errString = "missing orogon";
                 break;
             }
-            *startAddr = msect.value("offset").toUInt();
+            *startAddr = msect.value("origin").toUInt();
         }
 
         QByteArray ba = QByteArray::fromBase64(msect.value("data").toString().toUtf8());
