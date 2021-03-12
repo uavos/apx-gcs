@@ -1,3 +1,20 @@
+# [APX Ground Control v11.0.47](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.47) (03/12/21)
+
+> Branch: `main`\
+> Date: `03/12/21 21:38:40`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/356dc7f314153a8402e70f4fe349a072172a1440...4bb8f87b1be031b1ccadbac6f37fb41248016866)
+
+## New Features
+* TECS weighting factor instrument
+
+## Bug Fixes
+* linux fullscreen (closes [`1`](https://github.com/uavos/apx-gcs/issues/1))
+* fact button anchors and text elide (closes [`4`](https://github.com/uavos/apx-gcs/issues/4))
+* fact name restrictions (closes [`5`](https://github.com/uavos/apx-gcs/issues/5))
+* terminal autocomplete (closes [`10`](https://github.com/uavos/apx-gcs/issues/10))
+* js objects write protection (closes [`12`](https://github.com/uavos/apx-gcs/issues/12))
+* apxfw package parsing for firmware updates
+
 # [APX Ground Control v11.0.39](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.39) (03/10/21)
 
 > Branch: `main`\
