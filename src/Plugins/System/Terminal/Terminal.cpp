@@ -223,13 +223,15 @@ QString Terminal::autocomplete(QString cmd)
         QJSValue v = map.value(k);
 
         if (v.isCallable()) {
-            hints << "<font color='white'><b>" + k + "</b></font>";
+            hints.append("<font color='white'><b>" + k + "</b></font>");
         } else if (v.isObject() && v.toVariant().value<Fact *>()) {
-            hints << "<font color='yellow'>" + k + "</font>";
+            hints.append("<font color='green'>" + k + "</font>");
+        } else if (QString(v.toVariant().typeName()) == "QVariantMap") {
+            hints.append("<font color='yellow'>" + k + "</font>");
         } else if (v.isNumber()) {
-            hints << "<font color='cyan'>" + k + "</font>";
+            hints.append("<font color='cyan'>" + k + "</font>");
         } else {
-            hints << "<font color='gray'>" + k + "</font>";
+            hints.append("<font color='gray'>" + k + "</font>");
         }
     }
     hints.removeDuplicates();

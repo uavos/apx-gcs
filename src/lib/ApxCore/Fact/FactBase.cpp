@@ -265,6 +265,34 @@ QString FactBase::path(const FactBase *root, const QChar pathDelimiter) const
     }
     return path(level, pathDelimiter);
 }
+QString FactBase::jsname() const
+{
+    QString s = name();
+    if (s.contains('#')) {
+        // array properties are accessible through fact's 'model'
+        return "#";
+    }
+    return s.simplified()
+        .trimmed()
+        .replace(' ', '_')
+        .replace('.', '_')
+        .replace(':', '_')
+        .replace('/', '_')
+        .replace('\\', '_')
+        .replace('?', '_')
+        .replace('-', '_')
+        .replace('+', '_');
+}
+QString FactBase::jspath() const
+{
+    QStringList st;
+    for (const FactBase *i = this; i; i = i->parentFact()) {
+        st.insert(0, i->jsname());
+        if (i->treeType() == Root)
+            break;
+    }
+    return st.join('.');
+}
 //=============================================================================
 void FactBase::updateNum()
 {

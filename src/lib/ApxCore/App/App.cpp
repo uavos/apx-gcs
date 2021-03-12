@@ -369,6 +369,9 @@ void App::setGlobalProperty(const QString &path, const QJSValue &value)
         v = vp;
     }
     //e->collectGarbage();
+    if (value.isQObject() || value.isObject()) {
+        e->jsProtectPropertyWrite(path);
+    }
 }
 void App::setGlobalProperty(const QString &path, QObject *object)
 {

@@ -120,6 +120,9 @@ public:
     const FactList &facts() const;
     const FactList &actions() const;
 
+    Q_INVOKABLE QString jsname() const;
+    Q_INVOKABLE QString jspath() const;
+
 public slots:
     void deleteFact();
     void deleteChildren();

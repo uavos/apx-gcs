@@ -145,7 +145,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
     updateInfo();
 
     //register JS new vehicles instantly
-    connect(this, &Vehicle::nameChanged, this, [=]() { App::jsync(this); });
+    connect(this, &Vehicle::nameChanged, this, [this]() { App::jsync(this); });
     App::jsync(this);
 }
 Vehicle::~Vehicle()

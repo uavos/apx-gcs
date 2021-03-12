@@ -34,6 +34,10 @@ AppEngine::AppEngine(QObject *parent)
     addImportPath(AppDirs::userPlugins().absolutePath());
     addImportPath("qrc:/");
 
+    _jsTimer.setSingleShot(true);
+    _jsTimer.setInterval(1);
+    connect(&_jsTimer, &QTimer::timeout, this, &AppEngine::_queueExec);
+
     connect(this, &QQmlEngine::warnings, this, &AppEngine::warnings);
 
     // QML types register
@@ -81,11 +85,12 @@ void AppEngine::jsSyncObject(QObject *obj)
 {
     QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
     jsSetProperty(globalObject(), obj->objectName(), newQObject(obj));
+    jsProtectPropertyWrite(obj->objectName());
 }
 //=============================================================================
 void AppEngine::jsSync(Fact *fact)
 {
-    if (fact->name().isEmpty())
+    if (fact->jsname().isEmpty())
         return;
 
     QJSValue v = globalObject();
@@ -94,95 +99,43 @@ void AppEngine::jsSync(Fact *fact)
     const FactList &list = fact->pathList();
     for (int i = list.size() - 1; i > 0; --i) {
         Fact *f = list.at(i);
-        QJSValue vp = v.property(f->name());
+        QJSValue vp = v.property(f->jsname());
         if (vp.isUndefined() || (!vp.isQObject()) || vp.toQObject() != f) {
-            jsSetProperty(v, f->name(), newQObject(f));
+            QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
+            jsSetProperty(v, f->jsname(), newQObject(f));
+            jsProtectPropertyWrite(f->jspath());
         }
         v = vp;
     }
     //set the property and value
     jsSync(fact, v);
-    //collectGarbage();
 }
 //=============================================================================
 QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 {
     //qDebug() << fact->path();
-    if (fact->name().isEmpty())
-        return QJSValue();
-
     QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);
     QJSValue js_fact = newQObject(fact);
 
-    jsSetProperty(parent, fact->name(), js_fact);
-
-    /*if (fact->treeType() == Fact::NoFlags) {
-        QString s = fact->path();
-        //protect write
-        s = (QString("Object.defineProperty(this.%1,'%2',{set:function(v){%1.%2.value=v}})")
-                 .arg(s.left(s.lastIndexOf('.')))
-                 .arg(fact->name()));
-        qDebug() << s;
-        jsexec(s);
-    }*/
+    jsSetProperty(parent, fact->jsname(), js_fact);
+    jsProtectPropertyWrite(fact->jspath());
 
     //sync children
     for (int i = 0; i < fact->size(); ++i)
         jsSync(fact->child(i), js_fact);
     //sync actions
     if (!fact->actions().isEmpty()) {
-        //QJSValue js_actions = newObject();
         for (auto i : fact->actions()) {
             jsSync(i, js_fact);
-            /*QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
-            jsSetProperty(js_actions, f->name(), newQObject(f));
-            if (f->bind() && f->bind()->parentFact() == nullptr) {
-                //action opens fact page with no parent
-                jsSync(f->bind(), js_fact);
-            }*/
         }
-        //js_fact.setProperty("action", js_actions);
     }
     return js_fact;
 }
 //=============================================================================
 void AppEngine::jsSetProperty(QJSValue parent, QString name, QJSValue value)
 {
-    /*
-    int i = 0;
-    nameSuffix = QString();
-    QString suffix;
-    while (1) {
-        FactBase *dup = nullptr;
-        for (auto i : parentFact()->facts()) {
-            if (i == this)
-                continue;
-            if (i->name() == (sr + suffix)) {
-                dup = i;
-                break;
-            }
-        }
-        if (!dup)
-            break;
-        suffix = QString("_%1").arg(++i, 3, 10, QChar('0'));
-    }
-    nameSuffix = suffix;*/
-
-    if (name.contains('#')) {
-        // array properties are accessible through fact's 'model'
+    if (name.isEmpty() || name.contains('#'))
         return;
-    }
-
-    name = name.simplified()
-               .trimmed()
-               .replace(' ', '_')
-               .replace('.', '_')
-               .replace(':', '_')
-               .replace('/', '_')
-               .replace('\\', '_')
-               .replace('?', '_')
-               .replace('-', '_')
-               .replace('+', '_');
 
     if (value.isUndefined() || value.isNull()) {
         // delete property
@@ -200,17 +153,83 @@ void AppEngine::jsSetProperty(QJSValue parent, QString name, QJSValue value)
         parent.deleteProperty(name);
     }
 
+    // if (value.isQObject()) {
+    //     Fact *f = value.toVariant().value<Fact *>();
+    //     if (f) {
+    //         jsProtectPropertyWrite(f->path());
+    //     }
+    // }
+
     parent.setProperty(name, value);
 }
+
+void AppEngine::jsProtectPropertyWrite(const QString path)
+{
+    if (path.isEmpty() || path.contains('#'))
+        return;
+
+    QString scope, name;
+    if (path.contains('.')) {
+        scope = path.left(path.lastIndexOf('.'));
+        name = path.mid(scope.size() + 1);
+    } else {
+        scope = "this";
+        name = path;
+    }
+    QString s = QString("Object.defineProperty(%1,'%2',{enumerable:false,configurable:"
+                        "false,writable:false})")
+                    .arg(scope)
+                    .arg(name);
+    // QString s = QString("%1.__defineSetter__('%2',function(v){print('error: read-only (%3)')})")
+    //                 .arg(scope)
+    //                 .arg(name)
+    //                 .arg(path);
+    jsexec_queued(s);
+}
+
+void AppEngine::jsProtectObjects(const QString path)
+{
+    _protectObjects(path, jsGetProperty(path));
+}
+void AppEngine::_protectObjects(const QString path, QJSValue obj)
+{
+    QJSValueIterator it(obj);
+    while (it.hasNext()) {
+        it.next();
+        _protectObjects(path + '.' + it.name(), it.value());
+    }
+    if (!obj.isObject())
+        return;
+
+    QString s = QString("Object.seal(%1)").arg(path);
+    jsexec_queued(s);
+}
+
 //=============================================================================
-QJSValue AppEngine::jsexec(const QString &s)
+QJSValue AppEngine::jsexec(const QString s)
 {
     QJSValue result;
     result = evaluate(s);
     if (result.isError()) {
-        apxMsgW() << result.toString();
+        apxMsgW() << s << result.toString();
     }
+    //qDebug() << result.toString();
     return result;
+}
+void AppEngine::jsexec_queued(const QString s)
+{
+    if (s.isEmpty() || _jsQueue.contains(s))
+        return;
+    _jsQueue.enqueue(s);
+    _jsTimer.start();
+}
+void AppEngine::_queueExec()
+{
+    if (_jsQueue.isEmpty())
+        return;
+    QString s = _jsQueue.dequeue();
+    jsexec(s);
+    _jsTimer.start();
 }
 //=============================================================================
 void AppEngine::jsRegister(QString fname, QString description, QString body)
@@ -283,7 +302,7 @@ void AppEngine::help()
 {
     QString s;
     s += "<html><table>";
-    foreach (const QString &cmd, js_descr.keys()) {
+    foreach (const QString cmd, js_descr.keys()) {
         s += "<tr><td valign='middle'>";
         s += "<nobr>&nbsp;<font color=cyan>";
         s += cmd;
@@ -329,7 +348,7 @@ QByteArray AppEngine::jsToArray(QJSValue data)
     return ba;
 }
 //=============================================================================
-QJSValue AppEngine::jsGetProperty(const QString &path)
+QJSValue AppEngine::jsGetProperty(const QString path)
 {
     QJSValue v = globalObject();
     for (auto i : path.split('.', Qt::SkipEmptyParts)) {
@@ -342,7 +361,7 @@ QJSValue AppEngine::jsGetProperty(const QString &path)
 }
 //=============================================================================
 //=============================================================================
-QObject *AppEngine::loadQml(const QString &qmlFile, const QVariantMap &opts)
+QObject *AppEngine::loadQml(const QString qmlFile, const QVariantMap &opts)
 {
     QString schk = qmlFile;
     if (schk.startsWith("qrc:"))

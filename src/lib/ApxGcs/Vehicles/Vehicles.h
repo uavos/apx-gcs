@@ -49,7 +49,7 @@ public:
 private:
     static Vehicles *_instance;
 
-    void jsSyncMandalaAccess(Fact *fact, QJSValue parent);
+    void _jsSyncMandalaAccess(Fact *fact, QJSValue parent);
 
 public slots:
     void selectVehicle(Vehicle *v);

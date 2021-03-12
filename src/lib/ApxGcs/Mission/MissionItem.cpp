@@ -95,7 +95,6 @@ MissionItem::MissionItem(MissionGroup *parent,
             &MissionItem::updateSelected);
 
     //title
-    connect(parent, &Fact::numChanged, this, &Fact::nameChanged);
     connect(this, &Fact::numChanged, this, &MissionItem::updateTitle);
     updateTitle();
 

@@ -87,7 +87,10 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
             App::setContextProperty(s, v);
         }
 
-        jsSyncMandalaAccess(f_local->f_mandala, App::instance()->engine()->globalObject());
+        _jsSyncMandalaAccess(f_local->f_mandala, App::instance()->engine()->globalObject());
+        for (auto f : f_local->f_mandala->facts()) {
+            App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());
+        }
     }
 
     //Database register fields
@@ -208,7 +211,7 @@ void Vehicles::selectNext()
     selectVehicle(qobject_cast<Vehicle *>(child(i)));
 }
 
-void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
+void Vehicles::_jsSyncMandalaAccess(Fact *fact, QJSValue parent)
 {
     // direct access to fact values from JS context
     // pure JS objects and data
@@ -225,19 +228,22 @@ void Vehicles::jsSyncMandalaAccess(Fact *fact, QJSValue parent)
         } else {
             v = e->newObject(); //plain JS object
             parent.setProperty(fact->name(), v);
+            e->jsProtectPropertyWrite(m->mpath());
         }
         for (auto i : fact->facts()) {
-            jsSyncMandalaAccess(i, v);
+            _jsSyncMandalaAccess(i, v);
         }
         return;
     }
 
+    if (!m)
+        return;
+
     QString mpath = m->mpath();
-    QString s;
-    s = QString("Object.defineProperty(%1,'%2',{get:function(){return "
-                "apx.vehicles.current.mandala.%1.%2.value}, "
-                "set:function(v){apx.vehicles.current.mandala.%1.%2.value=v}})")
-            .arg(mpath.left(mpath.lastIndexOf('.')))
-            .arg(fact->name());
+    QString s = QString("Object.defineProperty(%1,'%2',{get:function(){return "
+                        "apx.vehicles.current.mandala.%1.%2.value},"
+                        "set:function(v){apx.vehicles.current.mandala.%1.%2.value=v}})")
+                    .arg(m->mpath().left(mpath.lastIndexOf('.')))
+                    .arg(fact->name());
     App::jsexec(s);
 }

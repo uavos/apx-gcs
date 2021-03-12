@@ -34,7 +34,8 @@ public:
     explicit AppEngine(QObject *parent = nullptr);
     ~AppEngine();
 
-    QJSValue jsexec(const QString &s);
+    QJSValue jsexec(const QString s);
+    void jsexec_queued(const QString s);
 
     void jsSyncObject(QObject *obj);
     void jsSync(Fact *fact);
@@ -43,20 +44,26 @@ public:
     Q_INVOKABLE void sleep(quint16 ms);
 
     Q_INVOKABLE QByteArray jsToArray(QJSValue data);
-    QJSValue jsGetProperty(const QString &path);
+    QJSValue jsGetProperty(const QString path);
+    void jsProtectPropertyWrite(const QString path);
+    void jsProtectObjects(const QString path);
 
-    Q_INVOKABLE QObject *loadQml(const QString &qmlFile, const QVariantMap &opts);
+    Q_INVOKABLE QObject *loadQml(const QString qmlFile, const QVariantMap &opts);
 
-protected:
+private:
     QHash<QString, QString> js_descr; //helper commands alias,descr
 
     QJSValue jsSync(Fact *fact, QJSValue parent); //recursive
 
     void jsRegister(QString fname, QString description, QString body);
 
-private:
     void jsRegisterFunctions();
     void jsSetProperty(QJSValue parent, QString name, QJSValue value);
+
+    QQueue<QString> _jsQueue;
+    QTimer _jsTimer;
+    void _queueExec();
+    void _protectObjects(const QString path, QJSValue obj);
 
 private slots:
     void warnings(const QList<QQmlError> &warnings);
