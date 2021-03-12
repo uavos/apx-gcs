@@ -136,7 +136,7 @@ void TelemetryReader::load()
     setTotalSize(0);
     setTotalTime(0);
     setProgress(0);
-    removeAll();
+    deleteChildren();
     DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
     connect(req,
             &DBReqTelemetryFindCache::cacheFound,
@@ -252,7 +252,7 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
     if (telemetryID != lookup->recordId())
         return;
 
-    removeAll();
+    deleteChildren();
     f_reload->setEnabled(true);
 
     times.swap(this->times);

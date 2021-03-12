@@ -19,14 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryPlayer_H
-#define TelemetryPlayer_H
+#pragma once
+
 #include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
 #include <QtCore>
+
 class Vehicle;
 class Telemetry;
-//=============================================================================
+
 class TelemetryPlayer : public Fact
 {
     Q_OBJECT
@@ -87,13 +88,10 @@ private slots:
     void nodesDataLoaded(QString value, QString uid, bool uplink);
     void nodesConfUpdatesLoaded(DatabaseRequest::Records records);
 
-signals:
-    void discardRequests();
-
-public slots:
     void play();
     void stop();
     void rewind();
+
+signals:
+    void discardRequests();
 };
-//=============================================================================
-#endif

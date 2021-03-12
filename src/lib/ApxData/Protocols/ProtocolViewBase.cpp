@@ -42,7 +42,7 @@ void ProtocolViewBaseImpl::setProtocol(Fact *protocol)
     m_protocol = protocol;
 
     if (protocol) {
-        connect(protocol, &Fact::destroyed, this, &Fact::remove);
+        connect(protocol, &Fact::destroyed, this, &Fact::deleteFact);
 
         bindProperty(protocol, "name", true);
         bindProperty(protocol, "title", true);

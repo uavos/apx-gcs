@@ -132,7 +132,7 @@ void AppMenu::updateVehicleTools()
     Vehicle *v = Vehicles::instance()->current();
     if (!v)
         return;
-    vehicleTools->removeAll();
+    vehicleTools->deleteChildren();
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);
         Fact *a = new Fact(vehicleTools, f->name());
@@ -143,7 +143,7 @@ void AppMenu::updateVehicleTools()
 void AppMenu::updateVehicleSelect()
 {
     Fact *v = Vehicles::instance()->f_select;
-    vehicleSelect->removeAll();
+    vehicleSelect->deleteChildren();
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);
         Fact *a = new Fact(vehicleSelect, f->name(), f->title(), f->descr(), Bool);

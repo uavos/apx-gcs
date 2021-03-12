@@ -59,7 +59,7 @@ void QueueJob::itemFinished(Fact *f, QVariantMap result)
     setProgress(0);
     if (hasChild(f)) {
         emit finished(f, result);
-        f->remove();
+        f->deleteFact();
     } else
         f = nullptr;
     if (size() > 0) {
@@ -74,7 +74,7 @@ void QueueJob::itemFinished(Fact *f, QVariantMap result)
 //=============================================================================
 void QueueJob::stop()
 {
-    removeAll();
+    deleteChildren();
     worker->stop();
     setProgress(-1);
 }

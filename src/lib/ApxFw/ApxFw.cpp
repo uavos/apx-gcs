@@ -87,7 +87,7 @@ void ApxFw::syncFacts()
 
     // development files
     if (f_dev)
-        f_dev->removeAll();
+        f_dev->deleteChildren();
     if (!devDir().entryList().isEmpty()) {
         if (!f_dev)
             f_dev = new Fact(this, "dev", "Development", "", Group);
@@ -142,7 +142,7 @@ void ApxFw::updateCurrent()
         f_current = new Fact(this, "current", "", "", Group);
     }
     bool upd = f_current->size() > 0;
-    f_current->removeAll();
+    f_current->deleteChildren();
     if (QVersionNumber::fromString(value().toString()).isNull())
         return;
 

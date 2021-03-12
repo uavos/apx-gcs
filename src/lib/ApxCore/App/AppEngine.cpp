@@ -146,19 +146,61 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
     return js_fact;
 }
 //=============================================================================
-void AppEngine::jsSetProperty(QJSValue parent, const QString &name, QJSValue v)
+void AppEngine::jsSetProperty(QJSValue parent, QString name, QJSValue value)
 {
-    if ((!v.isUndefined()) && parent.hasProperty(name)) {
-        QJSValue vp = parent.property(name);
-        while (!vp.isUndefined()) {
-            if (vp.isQObject() && vp.toQObject() == v.toQObject())
-                return;
-            //qWarning() << "Rewriting property:" << name << v.toString() << vp.toString()
-            //           << "for parent" << parent.toString();
-            break;
+    /*
+    int i = 0;
+    nameSuffix = QString();
+    QString suffix;
+    while (1) {
+        FactBase *dup = nullptr;
+        for (auto i : parentFact()->facts()) {
+            if (i == this)
+                continue;
+            if (i->name() == (sr + suffix)) {
+                dup = i;
+                break;
+            }
         }
+        if (!dup)
+            break;
+        suffix = QString("_%1").arg(++i, 3, 10, QChar('0'));
     }
-    parent.setProperty(name, v);
+    nameSuffix = suffix;*/
+
+    if (name.contains('#')) {
+        // array properties are accessible through fact's 'model'
+        return;
+    }
+
+    name = name.simplified()
+               .trimmed()
+               .replace(' ', '_')
+               .replace('.', '_')
+               .replace(':', '_')
+               .replace('/', '_')
+               .replace('\\', '_')
+               .replace('?', '_')
+               .replace('-', '_')
+               .replace('+', '_');
+
+    if (value.isUndefined() || value.isNull()) {
+        // delete property
+        parent.deleteProperty(name);
+        return;
+    }
+
+    QJSValue p = parent.property(name);
+    if (!p.isUndefined()) {
+        // modify already existing property
+        if (p.strictlyEquals(value))
+            return;
+        qWarning() << "Rewriting property:" << name << value.toString() << p.toString()
+                   << "for parent" << parent.toString();
+        parent.deleteProperty(name);
+    }
+
+    parent.setProperty(name, value);
 }
 //=============================================================================
 QJSValue AppEngine::jsexec(const QString &s)

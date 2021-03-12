@@ -141,7 +141,7 @@ void NodeItem::clear()
     m_status_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
-    removeAll();
+    deleteChildren();
     setModified(false);
 }
 
@@ -362,7 +362,7 @@ void NodeItem::removeEmptyGroups(Fact *f)
     }
     if (f != this && f->size() == 0) {
         //qDebug() << f;
-        f->remove();
+        f->deleteFact();
     }
 }
 

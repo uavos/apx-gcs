@@ -39,7 +39,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
                        Action,
                        "notification-clear-all");
     f_clear->setEnabled(false);
-    connect(f_clear, &Fact::triggered, this, &Fact::removeAll);
+    connect(f_clear, &Fact::triggered, this, &Fact::deleteChildren);
 
     connect(this, &Fact::sizeChanged, this, [=]() { f_clear->setEnabled(size() > 0); });
 
@@ -71,7 +71,7 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
         fact = new Fact(this, "item#", msg, "");
         fact->move(0);
         if (size() > 100)
-            child(size() - 1)->remove();
+            child(size() - 1)->deleteFact();
         fact->setValue(1);
         fact->setProperty("kind", kind);
         switch (kind) {

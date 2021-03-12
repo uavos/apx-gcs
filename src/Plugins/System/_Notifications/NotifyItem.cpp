@@ -34,7 +34,7 @@ NotifyItem::NotifyItem(Fact *fact, Fact *parent)
 //=============================================================================
 void NotifyItem::factRemoved()
 {
-    remove();
+    deleteFact();
 }
 //=============================================================================
 void NotifyItem::updateProgress()

@@ -49,7 +49,7 @@ Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool 
         setSection(bUsr ? shortcuts->f_usr->section() : shortcuts->f_sys->section());
         copyValuesFrom(sc);
         _remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove);
-        connect(_remove, &Fact::triggered, this, &Shortcut::remove);
+        connect(_remove, &Fact::triggered, this, &Shortcut::deleteFact);
         connect(_remove, &Fact::triggered, shortcuts, &Shortcuts::save);
         connect(shortcuts, &Fact::sizeChanged, this, &Shortcut::updateStats);
 

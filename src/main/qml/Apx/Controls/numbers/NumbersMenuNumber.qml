@@ -165,7 +165,7 @@ Fact {
         icon: "delete"
         onTriggered: {
             removeTriggered()
-            number.remove()
+            number.deleteFact()
         }
     }
 }

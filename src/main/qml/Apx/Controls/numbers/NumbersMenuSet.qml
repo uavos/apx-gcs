@@ -77,7 +77,7 @@ Fact {
     function updateSetItems()
     {
         setValues.onSizeChanged.disconnect(updateDescr)
-        setValues.removeAll();
+        setValues.deleteChildren();
         for(var i in values){
             createNumber(values[i])
         }

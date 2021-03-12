@@ -71,7 +71,7 @@ Firmware::Firmware(Fact *parent)
     connect(nodes_protocol(), &Fact::activeChanged, this, [this]() {
         if (!nodes_protocol()->active()) {
             setActive(false);
-            f_queue->removeAll();
+            f_queue->deleteChildren();
         }
     });
     connect(this, &Fact::activeChanged, nodes_protocol(), [this]() {
@@ -167,7 +167,7 @@ void Firmware::requestInitialize(const QString &type,
                                  bool continuous)
 {
     setActive(false);
-    f_queue->removeAll();
+    f_queue->deleteChildren();
 
     new LoaderStm(f_queue, type, name, hw, portName, continuous);
 }
@@ -178,11 +178,11 @@ void Firmware::requestFormat(ProtocolNode *protocol, QString type, QString name,
 
     QueueItem *f = queued(f_available, sn);
     if (f)
-        f->remove();
+        f->deleteFact();
 
     f = queued(f_queue, sn);
     if (f)
-        f->remove();
+        f->deleteFact();
 
     QueueItem *q = new QueueItem(f_queue, protocol, type);
     q->format_name = name;
@@ -243,9 +243,9 @@ void Firmware::loaderFinished(QueueItem *item, bool success)
     emit upgradeFinished(item->protocol() ? item->protocol()->sn() : QString(), item->type());
 
     if (success) {
-        item->remove();
+        item->deleteFact();
     } else {
-        f_queue->removeAll();
+        f_queue->deleteChildren();
     }
 
     if (f_queue->size() == 0) {

@@ -207,8 +207,8 @@ void TelemetryFrame::updateStats()
     quint64 recSize = reader->totalSize();
     if (recSize) {
         QString srcnt = recSize > 1000000 ? QString("%1M").arg(recSize / 1000000)
-                                          : recSize > 1000 ? QString("%1K").arg(recSize / 1000)
-                                                           : QString("%1").arg(recSize);
+                        : recSize > 1000  ? QString("%1K").arg(recSize / 1000)
+                                          : QString("%1").arg(recSize);
         s.append(QString("\t(%1 %2)").arg(srcnt).arg(tr("records")));
     }
     //events stats
@@ -409,7 +409,7 @@ void TelemetryFrame::aReplay_triggered(void)
     }
     toolBarPlayer->setVisible(bShow);
     if (!bShow) {
-        player->stop();
+        player->f_stop->trigger();
         return;
     }
     playerSlider->setMaximum(reader->totalTime());

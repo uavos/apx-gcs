@@ -26,22 +26,19 @@
 FactBase::FactBase(QObject *parent, const QString &name, FactBase::Flags flags)
     : QObject(parent)
 {
-    setName(makeNameUnique(name));
+    setName(name);
     setTreeType(Flag(uint(flags) & TypeMask));
     setOptions(flags & OptsMask);
 }
 FactBase::~FactBase()
 {
     //qDebug() << path() << parent();
-    //removed();
     setParentFact(nullptr);
     for (auto i : m_actions) {
-        i->remove();
-        //i->deleteLater();
+        i->deleteFact();
     }
     for (auto i : m_facts) {
-        i->remove();
-        //i->deleteLater();
+        i->deleteFact();
     }
 }
 
@@ -143,28 +140,6 @@ void FactBase::removeChild(Fact *item)
     updateSize();
     emit itemRemoved(item);
 }
-void FactBase::removeAll()
-{
-    if (m_facts.count() <= 0)
-        return;
-    for (int i = 0; i < m_facts.count(); i++) {
-        FactBase *item = child(i);
-        disconnect(this, nullptr, item, nullptr);
-        item->removeAll();
-    }
-    //qDebug()<<"removeAll"<<this;
-    while (m_facts.count() > 0) {
-        FactBase *item = child(m_facts.count() - 1);
-        disconnect(this, nullptr, item, nullptr);
-        emit itemToBeRemoved(m_facts.count() - 1, item);
-        m_facts.takeLast();
-        m_size = m_facts.count();
-        item->removed();
-        emit itemRemoved(item);
-        item->deleteLater();
-    }
-    emit sizeChanged();
-}
 void FactBase::moveChild(Fact *item, int n, bool safeMode)
 {
     int i = m_facts.indexOf(item);
@@ -190,53 +165,39 @@ void FactBase::moveChild(Fact *item, int n, bool safeMode)
         child(i)->updateNum();
 }
 //=============================================================================
-void FactBase::remove()
+void FactBase::deleteFact()
 {
     setParentFact(nullptr);
     emit removed();
     deleteLater();
+}
+void FactBase::deleteChildren()
+{
+    if (m_facts.count() <= 0)
+        return;
+    for (int i = 0; i < m_facts.count(); i++) {
+        FactBase *item = child(i);
+        disconnect(this, nullptr, item, nullptr);
+        item->deleteChildren();
+    }
+    //qDebug()<<"removeAll"<<this;
+    while (m_facts.count() > 0) {
+        FactBase *item = child(m_facts.count() - 1);
+        disconnect(this, nullptr, item, nullptr);
+        emit itemToBeRemoved(m_facts.count() - 1, item);
+        m_facts.takeLast();
+        m_size = m_facts.count();
+        item->removed();
+        emit itemRemoved(item);
+        item->deleteLater();
+    }
+    emit sizeChanged();
 }
 void FactBase::move(int n, bool safeMode)
 {
     FactBase *p = parentFact();
     if (p)
         p->moveChild(static_cast<Fact *>(this), n, safeMode);
-}
-//=============================================================================
-QString FactBase::makeNameUnique(const QString &s)
-{
-    QString sr = s.simplified()
-                     .replace(' ', '_')
-                     .replace('.', '_')
-                     .replace(':', '_')
-                     .replace('/', '_')
-                     .replace('\\', '_')
-                     .replace('?', '_')
-                     .replace('-', '_')
-                     .replace('+', '_');
-
-    if (!parentFact())
-        return sr;
-
-    int i = 0;
-    nameSuffix = QString();
-    QString suffix;
-    while (1) {
-        FactBase *dup = nullptr;
-        for (auto i : parentFact()->facts()) {
-            if (i == this)
-                continue;
-            if (i->name() == (sr + suffix)) {
-                dup = i;
-                break;
-            }
-        }
-        if (!dup)
-            break;
-        suffix = QString("_%1").arg(++i, 3, 10, QChar('0'));
-    }
-    nameSuffix = suffix;
-    return sr;
 }
 //=============================================================================
 int FactBase::num() const
@@ -263,7 +224,7 @@ int FactBase::indexInParent() const
 Fact *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
 {
     for (auto i : m_facts) {
-        if (i->objectName().compare(name, cs) == 0 || i->name().compare(name, cs) == 0)
+        if (i->name().compare(name, cs) == 0)
             return i;
     }
     return nullptr;
@@ -372,19 +333,14 @@ int FactBase::size(void) const
 }
 QString FactBase::name(void) const
 {
-    if (m_name.contains('#'))
-        return QString(m_name).replace('#', QString::number(num() + 1)) + nameSuffix;
-    return m_name + nameSuffix;
+    return objectName();
 }
-void FactBase::setName(const QString &v)
+void FactBase::setName(QString s)
 {
-    QString s = makeNameUnique(v);
-    if (m_name == s && nameSuffix.isEmpty())
+    s = s.trimmed();
+    if (name() == s)
         return;
-    //emit itemRemoved(this);
-    m_name = s;
-    setObjectName(name());
-    //emit itemAdded(this);
+    setObjectName(s);
     emit nameChanged();
 }
 Fact *FactBase::parentFact() const

@@ -153,7 +153,7 @@ void Nodes::clear()
         return;
     }
     m_sn_map.clear();
-    removeAll();
+    deleteChildren();
     protocol()->clear();
     setModified(false);
 }

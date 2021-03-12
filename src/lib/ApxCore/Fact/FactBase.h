@@ -121,8 +121,8 @@ public:
     const FactList &actions() const;
 
 public slots:
-    void remove();
-    void removeAll();
+    void deleteFact();
+    void deleteChildren();
 
 signals:
     //tree structure change signals for models
@@ -140,9 +140,6 @@ signals:
 private:
     FactList m_facts;
     FactList m_actions;
-
-    QString makeNameUnique(const QString &s);
-    QString nameSuffix;
 
     void addChild(Fact *item);
     void removeChild(Fact *item);
@@ -170,7 +167,7 @@ public:
     void setParentFact(Fact *v);
 
     QString name(void) const;
-    void setName(const QString &v);
+    void setName(QString s);
 
     int size() const;
     int num() const;
@@ -181,7 +178,6 @@ protected:
 
     QPointer<QObject> m_parentFact{nullptr};
 
-    QString m_name;
     int m_size{0};
     int m_num{0};
 

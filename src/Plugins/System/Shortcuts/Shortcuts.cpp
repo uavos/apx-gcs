@@ -162,8 +162,8 @@ QJsonValue Shortcuts::toJson() const
 
 void Shortcuts::fromJson(const QJsonValue json)
 {
-    f_sys->removeAll();
-    f_usr->removeAll();
+    f_sys->deleteChildren();
+    f_usr->deleteChildren();
     QMap<QString, QJsonObject> msys, musr;
     QStringList lsys, lusr;
     QFile fsys(AppDirs::res().filePath("templates/shortcuts.json"));

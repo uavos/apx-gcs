@@ -73,6 +73,5 @@ private slots:
     void nodeNotify(ProtocolNode *protocol);
     void syncDone();
 
-public slots:
     void save();
 };

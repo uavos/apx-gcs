@@ -45,7 +45,7 @@ FactQml *FactQml::atChildren(QQmlListProperty<FactQml> *property, int index)
 }
 void FactQml::clearChildren(QQmlListProperty<FactQml> *property)
 {
-    reinterpret_cast<Fact *>(property->data)->removeAll();
+    reinterpret_cast<Fact *>(property->data)->deleteChildren();
 }
 int FactQml::countChildren(QQmlListProperty<FactQml> *property)
 {

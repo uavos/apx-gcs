@@ -177,7 +177,7 @@ MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
 
 void MissionGroup::clearGroup()
 {
-    removeAll();
+    deleteChildren();
     setDistance(0);
     setTime(0);
     setModified(true);

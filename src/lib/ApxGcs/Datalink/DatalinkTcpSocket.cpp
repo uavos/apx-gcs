@@ -112,7 +112,7 @@ void DatalinkTcpSocket::socketDisconnected()
         socket->deleteLater();
         //parentItem()->removeItem(this,false);
         //deleteLater();
-        remove();
+        deleteFact();
     }
 }
 //=============================================================================

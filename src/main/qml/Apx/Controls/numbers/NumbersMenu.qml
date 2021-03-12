@@ -52,12 +52,12 @@ Fact {
     function close()
     {
         if(!destroyOnClose){
-            setsFact.removeAll()
+            setsFact.deleteChildren()
             loadSettings()
             menuBack()
             return
         }
-        setsFact.removeAll()
+        setsFact.deleteChildren()
         menuBack()
         parentFact=null
     }

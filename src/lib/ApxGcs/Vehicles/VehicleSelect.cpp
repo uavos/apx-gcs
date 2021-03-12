@@ -57,7 +57,7 @@ void VehicleSelect::_vehicleRemoved(Vehicle *vehicle)
     if (!f)
         return;
     map.remove(vehicle);
-    f->remove();
+    f->deleteFact();
     setEnabled(size() > 0);
 }
 

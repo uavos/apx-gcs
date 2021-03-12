@@ -63,7 +63,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     f_longitude->setUnits("lon");
 
     f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove mission item"), Action | Remove);
-    connect(f_remove, &Fact::triggered, this, &Fact::remove);
+    connect(f_remove, &Fact::triggered, this, &Fact::deleteFact);
 
     //active index
     if (group->f_activeIndex) {

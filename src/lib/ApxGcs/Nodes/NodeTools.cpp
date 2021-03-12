@@ -130,8 +130,8 @@ Fact *NodeTools::addCommand(Fact *group, QString name, QString title, xbus::node
 
 void NodeTools::clearCommands()
 {
-    f_usr->removeAll();
-    f_sys->removeAll();
+    f_usr->deleteChildren();
+    f_sys->deleteChildren();
 }
 
 void NodeTools::execUsr(Fact *f)

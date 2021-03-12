@@ -54,10 +54,6 @@ Fact::Fact(QObject *parent,
     connect(this, &Fact::optionsChanged, this, &Fact::onOptionsChanged);
     onOptionsChanged();
 
-    if (m_name.contains('#')) {
-        connect(this, &Fact::numChanged, this, &Fact::nameChanged);
-    }
-
     connect(this, &Fact::parentFactChanged, this, [this]() {
         if (parentFact() && parentFact()->options() & Section)
             setSection(parentFact()->title());
@@ -473,7 +469,7 @@ void Fact::updateBinding(Fact *src)
 //=============================================================================
 Fact *Fact::createAction(Fact *parent)
 {
-    Fact *f = new Fact(parent, m_name, "", "", Action | dataType() | options(), icon());
+    Fact *f = new Fact(parent, name(), "", "", Action | dataType() | options(), icon());
     f->setBinding(this);
     return f;
 }

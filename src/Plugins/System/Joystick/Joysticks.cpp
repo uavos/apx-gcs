@@ -88,10 +88,10 @@ void Joysticks::updateEnabled()
         qDebug() << "SDL initialized";
     } else {
         foreach (auto i, f_list->facts()) {
-            i->remove();
+            i->deleteFact();
             delete i;
         }
-        //f_list->removeAll();
+        //f_list->deleteChildren();
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
         qDebug() << "Joysticks disabled";
     }
