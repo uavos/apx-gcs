@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Terminal_H
-#define Terminal_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
+#include <QQmlEngine>
 #include <QtCore>
-//=============================================================================
+
 class Terminal : public Fact
 {
     Q_OBJECT
@@ -32,13 +32,13 @@ class Terminal : public Fact
 public:
     explicit Terminal(Fact *parent = nullptr);
 
-    Q_INVOKABLE void exec(const QString &cmd);
+    Q_INVOKABLE void exec(QString cmd);
 
     Q_INVOKABLE void historyReset();
-    Q_INVOKABLE QString historyNext(const QString &cmd);
-    Q_INVOKABLE QString historyPrev(const QString &cmd);
+    Q_INVOKABLE QString historyNext(QString cmd);
+    Q_INVOKABLE QString historyPrev(QString cmd);
 
-    Q_INVOKABLE QString autocomplete(const QString &cmd);
+    Q_INVOKABLE QString autocomplete(QString cmd);
 
 private:
     int _enterIndex;
@@ -46,12 +46,12 @@ private:
     int _historyIndex;
     QString _replacedHistory;
 
+    QMap<QString, QJSValue> _get_js_properties(QString scope, QString flt);
+
 public slots:
-    void enter(const QString &line);
+    void enter(QString line);
     void enterResult(bool ok);
 
 signals:
     void newMessage(QtMsgType type, QString category, QString text);
 };
-//=============================================================================
-#endif

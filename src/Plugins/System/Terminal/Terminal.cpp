@@ -25,8 +25,9 @@
 #include <App/AppNotifyListModel.h>
 #include <QDesktopServices>
 #include <QQmlEngine>
+
 #define MAX_HISTORY 50
-//=============================================================================
+
 Terminal::Terminal(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -46,8 +47,8 @@ Terminal::Terminal(Fact *parent)
 
     loadQml("qrc:/" PLUGIN_NAME "/TerminalPlugin.qml");
 }
-//=============================================================================
-void Terminal::exec(const QString &cmd)
+
+void Terminal::exec(QString cmd)
 {
     QString s = cmd.simplified();
     if (s.isEmpty())
@@ -84,13 +85,13 @@ void Terminal::exec(const QString &cmd)
     historyReset();
     enterResult(!v.isError());
 }
-//=============================================================================
+
 void Terminal::historyReset()
 {
     _historyIndex = -1;
     _replacedHistory = "";
 }
-QString Terminal::historyNext(const QString &cmd)
+QString Terminal::historyNext(QString cmd)
 {
     //qDebug()<<_history<<_historyIndex<<cmd;
     if (_historyIndex < 0) {
@@ -115,7 +116,7 @@ QString Terminal::historyNext(const QString &cmd)
     }
     return cmd;
 }
-QString Terminal::historyPrev(const QString &cmd)
+QString Terminal::historyPrev(QString cmd)
 {
     //qDebug()<<_history<<_historyIndex<<cmd;
     if (_historyIndex < 0)
@@ -140,42 +141,34 @@ QString Terminal::historyPrev(const QString &cmd)
     }
     return _history[_historyIndex].trimmed();
 }
-//=============================================================================
-QString Terminal::autocomplete(const QString &cmd)
+
+QString Terminal::autocomplete(QString cmd)
 {
-    QStringList hints;
     QString prefix = cmd;
     QString c = cmd;
-    hints.clear();
+
     c.remove(0, c.lastIndexOf(';') + 1);
     if (c.endsWith(' '))
         c = c.trimmed().append(' ');
     else
         c = c.trimmed();
 
-    QString scope = "this";
-    QJSValue result;
+    QString scope;
+    QMap<QString, QJSValue> map;
+
     QRegExp del("[\\ \\,\\:\\t\\{\\}\\[\\]\\(\\)\\=]");
     if (!(c.contains(del) || prefix.startsWith('!') || c.contains('.'))) {
         //first word input (std command?)
-        result = App::jsexec(QString("(function(){var s='';for(var v in "
-                                     "%1)if(typeof(%1[v])=='function')s+=v+';';return s;})()")
-                                 .arg(scope));
-        QStringList st(result.toString().replace('\n', ',').split(';', Qt::SkipEmptyParts));
-        st = st.filter(QRegExp("^" + c));
-        if (st.size()) {
-            if (st.size() == 1)
-                st.append(prefix.left(prefix.size() - c.size()) + st.takeFirst() + " ");
-        } else {
-            result = App::jsexec(
-                QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
-            st = result.toString().replace('\n', ',').split(';', Qt::SkipEmptyParts);
-            st = st.filter(QRegExp("^" + c));
-            if (st.size() == 1)
-                st.append(prefix.left(prefix.size() - c.size()) + st.takeFirst());
+        map = _get_js_properties(scope, c);
+        for (auto i : map.keys()) {
+            QJSValue v = map.value(i);
+            if (v.isObject())
+                continue;
+            if (v.isCallable())
+                continue;
+            map.remove(i);
         }
-        if (!result.isError())
-            hints = st;
+
     } else {
         //parameter or not a command
         c = c.remove(0, c.lastIndexOf(del) + 1).trimmed();
@@ -184,22 +177,22 @@ QString Terminal::autocomplete(const QString &cmd)
             scope = c.left(c.lastIndexOf('.'));
             c.remove(0, c.lastIndexOf('.') + 1);
         }
-        result = App::jsexec(
-            QString("(function(){var s='';for(var v in %1)s+=v+';';return s;})()").arg(scope));
-        QStringList st(result.toString().replace('\n', ',').split(';', Qt::SkipEmptyParts));
-        //QStringList st(FactSystem::instance()->jsexec(QString("var s='';for(var v in %1)s+=v+';';").arg(scope)).toString().replace('\n',',').split(';',Qt::SkipEmptyParts));
-        st = st.filter(QRegExp("^" + c));
-        if (st.size() == 1)
-            st.append(prefix.left(prefix.size() - c.size()) + st.takeFirst() + (bDot ? "" : " "));
-        if (!result.isError())
-            hints = st;
+
+        map = _get_js_properties(scope, c);
     }
     //hints collected
-    if (hints.isEmpty())
+    if (map.isEmpty())
         return cmd;
-    if (hints.size() == 1)
-        return hints.first();
-    hints.sort();
+    if (map.size() == 1) {
+        QJSValue v = map.first();
+        cmd = prefix.left(prefix.size() - c.size()) + map.keys().first();
+        if (v.isCallable())
+            return cmd + " ";
+        if (v.isObject())
+            return cmd + ".";
+        return cmd;
+    }
+
     //partial autocompletion
     if (c.isEmpty()) {
         c = cmd;
@@ -207,9 +200,10 @@ QString Terminal::autocomplete(const QString &cmd)
         //partial autocompletion
         bool bMatch = true;
         QString s = c;
-        while (bMatch && s.size() < hints.first().size()) {
-            s += hints.first().at(s.size());
-            foreach (const QString &hint, hints) {
+        QString shortest = map.keys().first();
+        while (bMatch && s.size() < shortest.size()) {
+            s += shortest.at(s.size());
+            for (auto hint : map.keys()) {
                 if (hint.startsWith(s))
                     continue;
                 s.chop(1);
@@ -224,26 +218,50 @@ QString Terminal::autocomplete(const QString &cmd)
             c = cmd;
     }
     //hints output formatting
-    for (int i = 0; i < hints.size(); i++) {
-        if (App::jsexec(QString("typeof(%1['%2'])=='function'").arg(scope).arg(hints.at(i)))
-                .toBool()) {
-            hints[i] = "<font color='white'><b>" + hints.at(i) + "</b></font>";
-        } else if (App::jsexec(QString("typeof(%1['%2'])=='object'").arg(scope).arg(hints.at(i)))
-                       .toBool()) {
-            hints[i] = "<font color='yellow'>" + hints.at(i) + "</font>";
-        } else if (App::jsexec(QString("typeof(%1['%2'])=='number'").arg(scope).arg(hints.at(i)))
-                       .toBool()) {
-            hints[i] = "<font color='cyan'>" + hints.at(i) + "</font>";
-        } else
-            hints[i] = "<font color='gray'>" + hints.at(i) + "</font>";
+    QStringList hints;
+    for (auto k : map.keys()) {
+        QJSValue v = map.value(k);
+
+        if (v.isCallable()) {
+            hints << "<font color='white'><b>" + k + "</b></font>";
+        } else if (v.isObject() && v.toVariant().value<Fact *>()) {
+            hints << "<font color='yellow'>" + k + "</font>";
+        } else if (v.isNumber()) {
+            hints << "<font color='cyan'>" + k + "</font>";
+        } else {
+            hints << "<font color='gray'>" + k + "</font>";
+        }
     }
     hints.removeDuplicates();
     hints.sort();
     enter(hints.join(" "));
     return c;
 }
-//=============================================================================
-void Terminal::enter(const QString &line)
+
+QMap<QString, QJSValue> Terminal::_get_js_properties(QString scope, QString flt)
+{
+    QMap<QString, QJSValue> map;
+
+    QJSValue v = App::instance()->engine()->jsGetProperty(scope);
+    if (v.isError()) {
+        qWarning() << v.errorType() << v.toString();
+        return map;
+    }
+
+    QRegExp re("^" + flt);
+    QJSValueIterator it(v);
+    while (it.hasNext()) {
+        it.next();
+        if (!flt.isEmpty() && !it.name().contains(re))
+            continue;
+        map.insert(it.name(), it.value());
+    }
+
+    //qDebug() << scope << v.isError() << v.toString() << st;
+    return map;
+}
+
+void Terminal::enter(QString line)
 {
     App *app = App::instance();
     AppNotify::instance()->notification(line, "", AppNotify::FromInput, nullptr);
@@ -260,4 +278,3 @@ void Terminal::enterResult(bool ok)
     if (!ok)
         app->notifyModel()->updateItem(_enterIndex, AppNotify::Error, AppNotifyListModel::TypeRole);
 }
-//=============================================================================

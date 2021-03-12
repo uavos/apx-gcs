@@ -331,10 +331,9 @@ QByteArray AppEngine::jsToArray(QJSValue data)
 //=============================================================================
 QJSValue AppEngine::jsGetProperty(const QString &path)
 {
-    QStringList list = path.split('.');
     QJSValue v = globalObject();
-    for (int i = 0; i < list.size(); ++i) {
-        QJSValue vp = v.property(list.at(i));
+    for (auto i : path.split('.', Qt::SkipEmptyParts)) {
+        QJSValue vp = v.property(i);
         if (vp.isUndefined())
             return QJSValue();
         v = vp;

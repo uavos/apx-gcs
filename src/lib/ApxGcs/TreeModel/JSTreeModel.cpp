@@ -257,6 +257,10 @@ JSTreeItem::JSTreeItem(JSTreeItem *parent, const QString &name, const QJSValue &
                 descr.append(": ");
             descr.append(value.property("info").toString());
         }
+        if (isQObj)
+            descr.append(" QOBJ");
+        if (isMap)
+            descr.append(" MAP");
     }
 }
 //=============================================================================
