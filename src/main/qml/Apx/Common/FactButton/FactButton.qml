@@ -213,7 +213,7 @@ ActionButton {
                     color: Material.secondaryTextColor
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
-                    elide: Text.ElideRight
+                    elide: Text.ElideMiddle
                 }
             }
             Loader {

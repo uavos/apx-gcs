@@ -68,7 +68,7 @@ Item {
         color: "#aaa"
         visible: text!=""
         text: pageStatus
-        elide: Text.ElideRight
+        elide: Text.ElideMiddle
     }
     FastBlur {
         anchors.fill: titleText
