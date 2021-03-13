@@ -4,6 +4,8 @@ TOOLS_DIR := $(realpath $(CURDIR)/tools)
 
 CMAKE := cmake
 
+APX_PROJECT_TITLE := "APX Ground Control"
+
 all: package
 
 configure:
@@ -43,7 +45,5 @@ update-icons:
 
 
 include Docker.mk
-include Release.mk
-
-fix-submodules:
-	git submodule foreach --recursive git checkout main
+include shared/tools/Release.mk
+include shared/tools/Submodules.mk
