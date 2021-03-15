@@ -125,7 +125,7 @@ void Telemetry::recordFactTriggered(Fact *f)
     const QString &s = f->name();
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
-        vehicle->protocol()->storage->loadConfiguration(uid);
+        //TODO: vehicle->protocol()->storage->loadConfiguration(uid);
     } else if (s.startsWith("mission")) {
         vehicle->f_mission->storage->loadMission(uid);
     } else {

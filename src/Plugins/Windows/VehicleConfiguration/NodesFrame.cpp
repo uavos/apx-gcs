@@ -86,9 +86,9 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
-    QAction *aLookup = new QActionFact(vehicle->f_nodes->f_lookup);
-    toolBar->addAction(aLookup);
-    connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    // QAction *aLookup = new QActionFact(vehicle->f_nodes->f_lookup);
+    // toolBar->addAction(aLookup);
+    // connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
 

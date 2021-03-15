@@ -147,7 +147,6 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
     trace_downlink(stream.toByteArray(stream.pos() + 5, 1)); // fmt
     trace_downlink(stream.toByteArray(stream.pos() + 6, stream.available() - 6));
 
-    //cobs.decode(stream.ptr() + 3, 1);
     //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();
 
     bool upd = decoder.decode(pid, stream);

@@ -79,12 +79,12 @@ ProtocolNode::ProtocolNode(ProtocolNodes *nodes, const QString &sn)
     if (vehicle()->isReplay())
         return;
 
-    connect(this, &ProtocolNode::confSaved, this, [this]() {
-        if (!vehicle()->isLocal() || _nodes->active())
-            vehicle()->storage->saveNodeConfig(this);
-    });
+    // connect(this, &ProtocolNode::confSaved, this, [this]() {
+    //     if (!vehicle()->isLocal() || _nodes->active())
+    //         vehicle()->storage->saveNodeConfig(this);
+    // });
 
-    vehicle()->storage->loadNodeInfo(this);
+    // vehicle()->storage->loadNodeInfo(this);
     requestIdent();
 }
 
@@ -215,17 +215,18 @@ void ProtocolNode::downlink(const xbus::pid_s &pid, ProtocolStreamReader &stream
             setFiles(fnames);
         }
         emit identReceived();
-        if (!vehicle()->isLocal() || _nodes->active()) {
-            if (ident.flags.bits.files > 1) {
-                vehicle()->storage->saveNodeInfo(this);
-                vehicle()->storage->saveNodeUser(this);
-            }
-        }
+        // if (!vehicle()->isLocal() || _nodes->active()) {
+        //     if (ident.flags.bits.files > 1) {
+        //         vehicle()->storage->saveNodeInfo(this);
+        //         vehicle()->storage->saveNodeUser(this);
+        //     }
+        // }
         _nodes->nodeNotify(this);
 
         // continue requests
         if (!dictValid()) {
-            vehicle()->storage->loadNodeDict(this);
+            // vehicle()->storage->loadNodeDict(this);
+            requestDict();
         } else if (!valid()) {
             requestConf();
         }
@@ -684,8 +685,8 @@ void ProtocolNode::parseDictData(const xbus::node::file::info_s &info, const QBy
     qDebug() << "dict parsed";
     setDict(dict);
 
-    if (!vehicle()->isLocal() || _nodes->active())
-        vehicle()->storage->saveNodeDict(this, m_dict);
+    // if (!vehicle()->isLocal() || _nodes->active())
+    //     vehicle()->storage->saveNodeDict(this, m_dict);
 
     requestConf();
 }
@@ -836,13 +837,13 @@ void ProtocolNode::validate()
 
     if (ident().flags.bits.reconf) {
         emit confDefault();
-        vehicle()->storage->loadNodeConfig(this);
+        //vehicle()->storage->loadNodeConfig(this);
         return;
     }
 
     // save config
-    if (!vehicle()->isLocal() || _nodes->active())
-        vehicle()->storage->saveNodeConfig(this);
+    // if (!vehicle()->isLocal() || _nodes->active())
+    //     vehicle()->storage->saveNodeConfig(this);
 }
 void ProtocolNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
 {

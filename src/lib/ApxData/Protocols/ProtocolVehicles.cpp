@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ProtocolVehicles.h"
-#include "ProtocolConverter.h"
 #include "ProtocolVehicle.h"
 
 #include <xbus/XbusPacket.h>
@@ -53,40 +52,14 @@ ProtocolVehicles::ProtocolVehicles(QObject *parent)
     });
 }
 
-void ProtocolVehicles::setConverter(ProtocolConverter *c)
-{
-    if (m_converter) {
-        disconnect(m_converter, nullptr, this, nullptr);
-    }
-    m_converter = c;
-    if (m_converter) {
-        connect(m_converter, &ProtocolConverter::uplink, this, &ProtocolVehicles::uplink);
-        connect(m_converter,
-                &ProtocolConverter::downlink,
-                this,
-                &ProtocolVehicles::process_downlink);
-    }
-}
-ProtocolConverter *ProtocolVehicles::converter() const
-{
-    return m_converter;
-}
-
 void ProtocolVehicles::downlink(const QByteArray packet)
 {
-    if (m_converter)
-        m_converter->convertDownlink(packet);
-    else
-        process_downlink(packet);
+    process_downlink(packet);
 }
 void ProtocolVehicles::process_uplink(const QByteArray packet)
 {
     trace_uplink_packet(packet);
-
-    if (m_converter)
-        m_converter->convertUplink(packet);
-    else
-        emit uplink(packet);
+    emit uplink(packet);
     //qDebug() << packet.toHex().toUpper();
 }
 

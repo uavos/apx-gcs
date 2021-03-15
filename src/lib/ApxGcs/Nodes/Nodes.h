@@ -47,7 +47,7 @@ public:
 
     Fact *f_save;
 
-    LookupConfigs *f_lookup;
+    //LookupConfigs *f_lookup;
     //NodesShare *f_share;
 
     NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }

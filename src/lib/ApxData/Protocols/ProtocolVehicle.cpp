@@ -43,8 +43,6 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
                 .toHex()
                 .toUpper();
 
-    storage = new VehiclesStorage(this);
-
     nodes = new ProtocolNodes(this);
     telemetry = new ProtocolTelemetry(this);
     mission = new ProtocolMission(this);
@@ -69,7 +67,7 @@ ProtocolVehicle::ProtocolVehicle(ProtocolVehicles *vehicles,
     }
 
     if (!isReplay()) {
-        storage->saveVehicleInfo();
+        //TODO: storage->saveVehicleInfo();
     }
 }
 

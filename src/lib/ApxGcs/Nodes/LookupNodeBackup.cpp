@@ -45,7 +45,7 @@ void LookupNodeBackup::loadItem(QVariantMap modelData)
     quint64 nconfID = modelData.value("key", 0).toULongLong();
     if (!nconfID)
         return;
-    node->vehicle()->storage->loadNodeConfig(node, nconfID);
+    //TODO: node->vehicle()->storage->loadNodeConfig(node, nconfID);
 }
 
 bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)

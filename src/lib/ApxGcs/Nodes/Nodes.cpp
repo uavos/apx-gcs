@@ -65,7 +65,7 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     //storage actions
-    f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
+    //TODO: f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
 
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
@@ -143,7 +143,7 @@ void Nodes::search()
 void Nodes::stop()
 {
     qDebug() << sender();
-    vehicle->protocol()->vehicles->stopNmtRequests();
+    //vehicle->protocol()->vehicles->stopNmtRequests();
 }
 
 void Nodes::clear()
@@ -191,7 +191,7 @@ void Nodes::save()
         vehicle->protocol()->storage->saveNodeConfig(i->protocol());
     }*/
 
-    vehicle->protocol()->storage->saveConfiguration();
+    //vehicle->protocol()->storage->saveConfiguration();
 }
 
 void Nodes::shell(QStringList commands)

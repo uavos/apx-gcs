@@ -69,9 +69,9 @@ ProtocolNodes::ProtocolNodes(ProtocolVehicle *vehicle)
             setActive(false);
     });
 
-    connect(vehicle->vehicles, &ProtocolVehicles::stopNmtRequests, this, [this]() {
-        setActive(false);
-    });
+    // connect(vehicle->vehicles, &ProtocolVehicles::stopNmtRequests, this, [this]() {
+    //     setActive(false);
+    // });
 
     if (vehicle->isIdentified())
         syncLater(3000, false);
@@ -217,9 +217,9 @@ void ProtocolNodes::check_finished()
             setActive(false);
         emit syncDone();
 
-        // save config
-        if (!vehicle()->isLocal() || vehicle()->active())
-            vehicle()->storage->saveConfiguration();
+        // // save config
+        // if (!vehicle()->isLocal() || vehicle()->active())
+        //     vehicle()->storage->saveConfiguration();
 
         return;
     } while (0);

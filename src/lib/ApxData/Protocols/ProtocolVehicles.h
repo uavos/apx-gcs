@@ -29,7 +29,6 @@
 #include <QtCore>
 
 class ProtocolVehicle;
-class ProtocolConverter;
 class ProtocolNode;
 class ProtocolNodes;
 
@@ -46,11 +45,7 @@ public:
     ProtocolVehicle *local;
     ProtocolVehicle *replay;
 
-    void setConverter(ProtocolConverter *c);
-    ProtocolConverter *converter() const;
-
 private:
-    ProtocolConverter *m_converter{nullptr};
     ProtocolTrace *m_trace;
 
     QTimer reqTimer;
@@ -79,8 +74,6 @@ public slots:
 signals:
     void vehicleIdentified(ProtocolVehicle *protocol);
     void nodeNotify(ProtocolNode *protocol); // forwarded from all vehicles
-
-    void stopNmtRequests();
 
     // data comm
 public slots:

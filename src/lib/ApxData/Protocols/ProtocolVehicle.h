@@ -27,8 +27,6 @@
 #include "ProtocolTelemetry.h"
 #include "ProtocolVehicles.h"
 
-#include <Database/VehiclesStorage.h>
-
 #include <QtCore>
 
 class ProtocolVehicle : public ProtocolBase
@@ -81,8 +79,6 @@ public:
     ProtocolTelemetry *telemetry;
     ProtocolVehicles *vehicles;
     ProtocolMission *mission;
-
-    VehiclesStorage *storage;
 
     inline quint64 dbKey() const { return m_dbKey; }
     inline QVariantMap dbConfigInfo() const { return m_dbConfigInfo; }
