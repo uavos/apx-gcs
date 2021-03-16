@@ -652,7 +652,12 @@ bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, qu
                 errString = "missing orogon";
                 break;
             }
-            *startAddr = msect.value("origin").toUInt();
+            bool ok;
+            *startAddr = msect.value("origin").toString().toUInt(&ok, 16);
+            if (!ok) {
+                errString = "missing origin convert error";
+                break;
+            }
         }
 
         QByteArray ba = QByteArray::fromBase64(msect.value("data").toString().toUtf8());
