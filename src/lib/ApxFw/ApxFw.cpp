@@ -649,7 +649,7 @@ bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, qu
 
         if (startAddr) {
             if (!msect.contains("origin")) {
-                errString = "missing orogon";
+                errString = "missing origin";
                 break;
             }
             bool ok;
