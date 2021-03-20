@@ -19,17 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PApxTreeBase.h"
-#include "PApx.h"
+#include "Protocols.h"
 
-PApxTreeBase::PApxTreeBase(PApxTreeBase *parent)
-    : QObject(parent)
-    , _parent(parent)
+Protocols::Protocols(Fact *parent)
+    : Fact(parent,
+           "protocols",
+           tr("Protocols"),
+           tr("Data exchange interfaces"),
+           Group | Count,
+           "contain")
 {}
-
-void PApxTreeBase::send_uplink(QByteArray packet)
-{
-    if (_parent) {
-        _parent->send_uplink(packet);
-    }
-}

@@ -19,31 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "PVehicles.h"
 
-#include <Protocols/PBase.h>
-#include <Protocols/PStream.h>
-
-#include <xbus/XbusVehicle.h>
-
-class PApxVehicle;
-
-class PApx : public PBase
-{
-    Q_OBJECT
-
-public:
-    explicit PApx(QObject *parent = nullptr);
-
-    void trace(const xbus::pid_s &pid);
-
-private:
-    QMap<xbus::vehicle::squawk_t, PApxVehicle *> _vehicles;
-
-    uint8_t _txbuf[xbus::size_packet_max];
-    PStreamWriter _ostream{_txbuf, sizeof(_txbuf)};
-
-    void process_downlink(QByteArray packet) override;
-
-    void assign_squawk(const xbus::vehicle::ident_s &ident, const QString &callsign);
-};
+PVehicles::PVehicles(PBase *parent)
+    : PTreeBase(parent, "vehicles", tr("Vehicles"), tr("Multi UAV management"), Group | Count)
+{}

@@ -23,24 +23,37 @@
 
 #include <QtCore>
 
-#include "PTrace.h"
+#include <Fact/Fact.h>
 
-class PBase : public PTrace
+#include "PTreeBase.h"
+#include "PVehicle.h"
+#include "PVehicles.h"
+
+class PVehicles;
+
+class PBase : public PTreeBase
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(PVehicles vehicles READ vehicles CONSTANT)
+
 public:
-    explicit PBase(QString name, QObject *parent = nullptr);
+    explicit PBase(Fact *parent, QString name, QString title, QString descr);
 
-    QString name() const { return _name; }
+    // interface to vehicles root protocol
+    PVehicles *vehicles() const { return m_vehicles; }
 
-    virtual void send_uplink(QByteArray packet);
+    virtual PTrace *trace() const override { return _trace; }
 
-protected:
-    virtual void process_downlink(QByteArray packet) = 0;
+    virtual void send_uplink(QByteArray packet) override;
+    virtual void process_downlink(QByteArray packet) override;
 
 private:
-    QString _name;
+    PTrace *_trace;
+
+protected:
+    PVehicles *m_vehicles{};
 
     // data comm
 public slots:

@@ -19,9 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PApxVehicle.h"
-#include "PApx.h"
+#include "PTreeBase.h"
+#include "PBase.h"
 
-PApxVehicle::PApxVehicle(PApxTreeBase *parent)
-    : PApxTreeBase(parent)
+PTreeBase::PTreeBase(Fact *parent, QString name, QString title, QString descr, Flags flags)
+    : Fact(parent, name, title, descr, flags)
 {}
+
+void PTreeBase::send_uplink(QByteArray packet)
+{
+    if (parent()) {
+        parent()->send_uplink(packet);
+    }
+}

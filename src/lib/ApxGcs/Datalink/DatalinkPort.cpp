@@ -65,6 +65,9 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     f_codec = new Fact(this, "codec", tr("Codec"), tr("Packet framing"), Enum);
     f_codec->setEnumStrings(QMetaEnum::fromType<DatalinkSerial::CodecType>());
 
+    f_protocol = new Fact(this, "protocol", tr("Protocol"), tr("Data encoding"), Text);
+    //f_protocol->setEnumStrings(QMetaEnum::fromType<DatalinkSerial::CodecType>());
+
     //network routing
     f_routing = new Fact(this,
                          "routing",

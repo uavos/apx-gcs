@@ -21,45 +21,40 @@
  */
 #pragma once
 
-#include <QtCore>
+#include <xbus/XbusVehicle.h>
 
-class PTrace : public QObject
+#include "PApx.h"
+#include "PApxRequest.h"
+#include "PApxVehicle.h"
+
+class PApx;
+class PApxVehicle;
+
+class PApxVehicles : public PVehicles
 {
     Q_OBJECT
 
 public:
-    explicit PTrace(QObject *parent = nullptr);
+    explicit PApxVehicles(PApx *parent);
 
-    bool enabled() const { return _enabled; }
-    void enable(bool v);
-
-    void reset();
-
-    virtual void uplink();
-    virtual void downlink(size_t sz = 0);
-    virtual void end();
-
-    void block(QString block);
-    void blocks(QStringList blocks);
-    void data(QByteArray data);
-
-    void tree() { block("+"); } // nested (wrapped) stream mark
-
-    template<typename T>
-    void raw(QString name, const T &r)
-    {
-        if (!_enabled)
-            return;
-        block(name.append(':'));
-        data(QByteArray(reinterpret_cast<const char *>(&r), sizeof(r)));
-    }
+    bool addressed(xbus::vehicle::squawk_t squawk) const { return _squawk_map.contains(squawk); }
 
 private:
-    QStringList _blocks;
+    PApx *_papx;
 
-protected:
-    bool _enabled{true};
+    PApxVehicle *m_local{};
+    QMap<xbus::vehicle::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles
+    QList<xbus::vehicle::squawk_t> _squawk_blacklist;
 
-signals:
-    void packet(QStringList blocks);
+    PApxRequest _req;
+    QTimer _reqTimer;
+    QList<xbus::vehicle::squawk_t> _req_ident;
+
+    void assign_squawk(const xbus::vehicle::ident_s &ident, QString callsign);
+    void request_ident(xbus::vehicle::squawk_t squawk);
+
+    void request_ident_schedule(xbus::vehicle::squawk_t squawk);
+    void request_next(); // delayed requests callback
+
+    void process_downlink(QByteArray packet) override;
 };

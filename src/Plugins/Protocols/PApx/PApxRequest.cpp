@@ -19,30 +19,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PBase.h"
+#include "PApxRequest.h"
 
-PBase::PBase(Fact *parent, QString name, QString title, QString descr)
-    : PTreeBase(parent, name, title, descr, Group)
+PApxRequest::PApxRequest(PTreeBase *parent)
+    : PStreamWriter(_txbuf, sizeof(_txbuf))
+    , _parent(parent)
+{}
+
+void PApxRequest::request(mandala::uid_t uid, xbus::pri_e pri)
 {
-    _trace = new PTrace(this);
+    reset();
+    pid.uid = uid;
+    pid.pri = pri;
+    pid.write(this);
+
+    PTrace *t = _parent->trace();
+    if (t->enabled()) {
+        t->uplink();
+        _parent->findParent<PApx>()->trace_pid(pid);
+    }
 }
 
-void PBase::rx_data(QByteArray packet)
+void PApxRequest::send()
 {
-    //qDebug() << "rx:" << packet.size();
-    trace()->downlink(packet.size());
-    process_downlink(packet);
-    trace()->end();
+    _parent->send_uplink(toByteArray());
+    pid.seq++;
 }
-
-void PBase::send_uplink(QByteArray packet)
+QByteArray PApxRequest::get_packet()
 {
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
-    emit tx_data(packet);
-}
-
-void PBase::process_downlink(QByteArray packet)
-{
-    m_vehicles->process_downlink(packet);
+    pid.seq++;
+    return toByteArray();
 }

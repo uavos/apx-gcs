@@ -19,30 +19,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PBase.h"
+#pragma once
 
-PBase::PBase(Fact *parent, QString name, QString title, QString descr)
-    : PTreeBase(parent, name, title, descr, Group)
-{
-    _trace = new PTrace(this);
-}
+#include <QtCore>
 
-void PBase::rx_data(QByteArray packet)
-{
-    //qDebug() << "rx:" << packet.size();
-    trace()->downlink(packet.size());
-    process_downlink(packet);
-    trace()->end();
-}
+#include "PTrace.h"
 
-void PBase::send_uplink(QByteArray packet)
-{
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
-    emit tx_data(packet);
-}
+#include <Fact/Fact.h>
+#include <Mandala/Mandala.h>
 
-void PBase::process_downlink(QByteArray packet)
+class PTreeBase : public Fact
 {
-    m_vehicles->process_downlink(packet);
-}
+    Q_OBJECT
+
+public:
+    explicit PTreeBase(Fact *parent,
+                       QString name,
+                       QString title,
+                       QString descr = QString(),
+                       Flags flags = Flags(NoFlags));
+
+    template<typename T = PTreeBase>
+    T *parent() const
+    {
+        return qobject_cast<T *>(parentFact());
+    }
+
+    virtual void send_uplink(QByteArray packet);
+    virtual void process_downlink(QByteArray packet) = 0;
+
+    virtual PTrace *trace() const { return parent()->trace(); }
+};

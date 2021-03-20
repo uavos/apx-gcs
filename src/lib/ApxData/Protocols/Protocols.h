@@ -19,30 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PBase.h"
+#pragma once
 
-PBase::PBase(Fact *parent, QString name, QString title, QString descr)
-    : PTreeBase(parent, name, title, descr, Group)
-{
-    _trace = new PTrace(this);
-}
+#include <Fact/Fact.h>
+#include <QtCore>
 
-void PBase::rx_data(QByteArray packet)
+class Protocols : public Fact
 {
-    //qDebug() << "rx:" << packet.size();
-    trace()->downlink(packet.size());
-    process_downlink(packet);
-    trace()->end();
-}
-
-void PBase::send_uplink(QByteArray packet)
-{
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
-    emit tx_data(packet);
-}
-
-void PBase::process_downlink(QByteArray packet)
-{
-    m_vehicles->process_downlink(packet);
-}
+    Q_OBJECT
+public:
+    explicit Protocols(Fact *parent);
+};

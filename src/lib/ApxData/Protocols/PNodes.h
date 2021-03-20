@@ -21,21 +21,12 @@
  */
 #pragma once
 
-#include <Protocols/PBase.h>
-#include <Protocols/PStream.h>
+#include "PVehicle.h"
 
-#include <xbus/XbusVehicle.h>
-
-class PApxTreeBase : public QObject
+class PNodes : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PApxTreeBase(PApxTreeBase *parent);
-
-protected:
-    PApxTreeBase *_parent;
-
-    virtual void send_uplink(QByteArray packet);
-    virtual void process_downlink(QByteArray packet) = 0;
+    explicit PNodes(PVehicle *parent);
 };

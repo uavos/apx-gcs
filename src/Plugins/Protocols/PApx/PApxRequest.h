@@ -21,14 +21,22 @@
  */
 #pragma once
 
-#include "PApxTreeBase.h"
+#include "PApx.h"
 
-class PApx;
+#include <Protocols/PStream.h>
 
-class PApxVehicle : public PApxTreeBase
+class PApxRequest : public PStreamWriter
 {
-    Q_OBJECT
-
 public:
-    explicit PApxVehicle(PApxTreeBase *parent);
+    explicit PApxRequest(PTreeBase *parent);
+
+    void request(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request);
+    void send();
+    QByteArray get_packet();
+
+    xbus::pid_s pid{};
+
+private:
+    uint8_t _txbuf[xbus::size_packet_max];
+    PTreeBase *_parent;
 };

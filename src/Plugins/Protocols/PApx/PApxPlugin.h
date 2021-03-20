@@ -19,30 +19,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PBase.h"
+#pragma once
 
-PBase::PBase(Fact *parent, QString name, QString title, QString descr)
-    : PTreeBase(parent, name, title, descr, Group)
-{
-    _trace = new PTrace(this);
-}
+#include "PApx.h"
 
-void PBase::rx_data(QByteArray packet)
-{
-    //qDebug() << "rx:" << packet.size();
-    trace()->downlink(packet.size());
-    process_downlink(packet);
-    trace()->end();
-}
+#include <App/AppGcs.h>
+#include <App/PluginInterface.h>
+#include <Datalink/Datalink.h>
 
-void PBase::send_uplink(QByteArray packet)
+class PApxPlugin : public PluginInterface
 {
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
-    emit tx_data(packet);
-}
-
-void PBase::process_downlink(QByteArray packet)
-{
-    m_vehicles->process_downlink(packet);
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
+public:
+    int flags() override { return Feature | System; }
+    QObject *createControl() override
+    {
+        return new PApx(AppGcs::instance()->f_datalink->f_protocols);
+    }
+};

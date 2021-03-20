@@ -19,30 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PBase.h"
+#include "PNodes.h"
 
-PBase::PBase(Fact *parent, QString name, QString title, QString descr)
-    : PTreeBase(parent, name, title, descr, Group)
-{
-    _trace = new PTrace(this);
-}
-
-void PBase::rx_data(QByteArray packet)
-{
-    //qDebug() << "rx:" << packet.size();
-    trace()->downlink(packet.size());
-    process_downlink(packet);
-    trace()->end();
-}
-
-void PBase::send_uplink(QByteArray packet)
-{
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
-    emit tx_data(packet);
-}
-
-void PBase::process_downlink(QByteArray packet)
-{
-    m_vehicles->process_downlink(packet);
-}
+PNodes::PNodes(PVehicle *parent)
+    : PTreeBase(parent, "nodes", tr("Nodes"), tr("Vehicle devices"), Group | Count)
+{}

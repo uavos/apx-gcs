@@ -50,6 +50,10 @@ Datalink::Datalink(Fact *parent)
                        "heart-circle-outline");
     f_hbeat->setDefaultValue(true);
 
+    f_stats = new DatalinkStats(this);
+
+    f_protocols = new Protocols(this);
+
     QString sect;
     sect = tr("Connections");
 
@@ -59,8 +63,6 @@ Datalink::Datalink(Fact *parent)
     f_remotes->setSection(sect);
     f_ports = new DatalinkPorts(this);
     f_ports->setSection(sect);
-    f_stats = new DatalinkStats(this);
-    f_stats->setSection(sect);
 
     //heartbeat timer
     connect(f_hbeat, &Fact::valueChanged, this, &Datalink::hbeatChanged);

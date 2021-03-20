@@ -23,6 +23,7 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <QFileDialog>
+
 //=============================================================================
 AppGcs *AppGcs::_instance = nullptr;
 AppGcs::AppGcs(int &argc, char **argv, const QString &name, const QUrl &_url)
@@ -46,10 +47,10 @@ void AppGcs::loadServices()
     //datalink
     f_datalink = new Datalink(f_apx);
 
-    QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ProtocolVehicles::downlink);
-    QObject::connect(protocol, &ProtocolVehicles::uplink, f_datalink, &Datalink::sendPacket);
+    // QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ProtocolVehicles::downlink);
+    // QObject::connect(protocol, &ProtocolVehicles::uplink, f_datalink, &Datalink::sendPacket);
 
-    QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolVehicles::sendHeartbeat);
+    // QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolVehicles::sendHeartbeat);
 
     vehicles->move(f_apx->size());
 

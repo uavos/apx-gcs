@@ -19,29 +19,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "ProtocolConverter.h"
+#pragma once
 
-ProtocolConverter::ProtocolConverter(QObject *parent)
-    : QObject(parent)
-{}
+#include "PBase.h"
+#include "PTreeBase.h"
 
-void ProtocolConverter::convertDownlink(const QByteArray &packet)
-{
-    emit downlink(packet);
-}
+class PVehicle;
 
-void ProtocolConverter::convertUplink(const QByteArray &packet)
-{
-    emit uplink(packet);
-}
+class PBase;
 
-bool ProtocolConverter::convertDownlinkId(quint16 *id)
+class PVehicles : public PTreeBase
 {
-    Q_UNUSED(id)
-    return true;
-}
-bool ProtocolConverter::convertUplinkId(quint16 *id)
-{
-    Q_UNUSED(id)
-    return true;
-}
+    Q_OBJECT
+
+public:
+    explicit PVehicles(PBase *parent);
+
+signals:
+    // signaled when a new vehicle is identified
+    void vehicle_available(PVehicle *vehicle);
+};

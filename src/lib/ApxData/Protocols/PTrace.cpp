@@ -21,71 +21,100 @@
  */
 #include "PTrace.h"
 
+#include <App/AppLog.h>
+
+APX_LOGGING_CATEGORY(log, "PApx")
+
 PTrace::PTrace(QObject *parent)
     : QObject(parent)
-{}
-
-void PTrace::trace_enable(bool v)
 {
-    _trace_enabled = v;
-    trace_reset();
+    AppLog::add(log().categoryName(),
+                QString("Protocol-%1.txt").arg(parent ? parent->objectName() : "any"),
+                false);
 }
 
-void PTrace::trace_uplink(size_t sz)
+void PTrace::enable(bool v)
 {
-    if (!_trace_enabled)
+    _enabled = v;
+    reset();
+}
+
+void PTrace::uplink()
+{
+    if (!_enabled)
+        return;
+
+    if (!_blocks.isEmpty() && _blocks.first() != ">")
+        end();
+
+    _blocks.append(">");
+}
+
+void PTrace::downlink(size_t sz)
+{
+    if (!_enabled)
         return;
 
     if (!_blocks.isEmpty())
-        trace_end();
-
-    _blocks.append(sz ? QString(">%1").arg(sz) : ">");
-}
-
-void PTrace::trace_downlink(size_t sz)
-{
-    if (!_trace_enabled)
-        return;
-
-    if (!_blocks.isEmpty())
-        trace_end();
+        end();
 
     _blocks.append(sz ? QString("<%1").arg(sz) : "<");
 }
 
-void PTrace::trace_end()
+void PTrace::end()
 {
-    if (!_trace_enabled)
+    if (!_enabled)
         return;
 
     if (_blocks.isEmpty())
         return;
 
-    qDebug() << _blocks;
-    emit trace_blocks(_blocks);
-    trace_reset();
+    if (_blocks.first() == ">") {
+        // re-arrange uplink nested blocks
+        for (int i = _blocks.lastIndexOf(">"); i > 0; i = _blocks.lastIndexOf(">")) {
+            QStringList tail = _blocks.mid(i);
+            tail.append("+");
+            tail.append(_blocks.mid(1, i - 1));
+            _blocks = tail;
+        }
+    }
+
+    // qDebug() << _blocks;
+    qInfo(&log) << _blocks;
+    // QMessageLogger(0, 0, 0).info(&log) << _blocks;
+
+    emit packet(_blocks);
+    reset();
 }
 
-void PTrace::trace_reset()
+void PTrace::reset()
 {
     _blocks.clear();
 }
 
-void PTrace::trace_block(QString block)
+void PTrace::block(QString block)
 {
-    if (!_trace_enabled)
+    if (!_enabled)
         return;
 
-    if (_blocks.isEmpty()) {
-        //qWarning() << "orphan trace" << block;
+    if (_blocks.isEmpty())
         return;
-    }
+
     _blocks.append(block);
 }
-
-void PTrace::trace_data(QByteArray data)
+void PTrace::blocks(QStringList blocks)
 {
-    if (!_trace_enabled)
+    if (!_enabled)
+        return;
+    if (_blocks.isEmpty())
+        return;
+
+    _blocks.append(blocks);
+}
+
+void PTrace::data(QByteArray data)
+{
+    if (!_enabled)
         return;
 
     if (data.isEmpty())
@@ -101,5 +130,5 @@ void PTrace::trace_data(QByteArray data)
         s = QString("%1").arg(QString(data.toHex().toUpper()));
     }
 
-    trace_block(s);
+    block(s);
 }

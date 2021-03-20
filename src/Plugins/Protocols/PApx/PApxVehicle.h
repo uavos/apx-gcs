@@ -19,30 +19,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PBase.h"
+#pragma once
 
-PBase::PBase(Fact *parent, QString name, QString title, QString descr)
-    : PTreeBase(parent, name, title, descr, Group)
-{
-    _trace = new PTrace(this);
-}
+#include "PApxVehicles.h"
 
-void PBase::rx_data(QByteArray packet)
-{
-    //qDebug() << "rx:" << packet.size();
-    trace()->downlink(packet.size());
-    process_downlink(packet);
-    trace()->end();
-}
+class PApxVehicles;
 
-void PBase::send_uplink(QByteArray packet)
+class PApxVehicle : public PVehicle
 {
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
-    emit tx_data(packet);
-}
+    Q_OBJECT
 
-void PBase::process_downlink(QByteArray packet)
-{
-    m_vehicles->process_downlink(packet);
-}
+public:
+    explicit PApxVehicle(PApxVehicles *parent,
+                         QString callsign,
+                         QString uid,
+                         VehicleType type,
+                         xbus::vehicle::squawk_t squawk);
+
+    void process_downlink(QByteArray packet) override;
+    void send_uplink(QByteArray packet) override;
+
+    xbus::vehicle::squawk_t squawk() const { return m_squawk; }
+    void setSquawk(xbus::vehicle::squawk_t squawk) { m_squawk = squawk; }
+
+private:
+    PApx *_papx;
+    PApxVehicles *_vehicles;
+
+    xbus::vehicle::squawk_t m_squawk;
+
+    PApxRequest _req;
+};

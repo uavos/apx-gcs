@@ -102,10 +102,10 @@ public:
     Q_INVOKABLE bool hasChild(Fact *child) const;
 
     template<class T>
-    T findParent() const
+    T *findParent() const
     {
         for (FactBase *i = parentFact(); i; i = i->parentFact()) {
-            T p = qobject_cast<T>(i);
+            T *p = qobject_cast<T *>(i);
             if (p)
                 return p;
         }

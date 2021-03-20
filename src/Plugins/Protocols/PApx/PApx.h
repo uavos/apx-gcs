@@ -21,21 +21,21 @@
  */
 #pragma once
 
-#include <QtCore>
+#include <Protocols/PBase.h>
 
-class ProtocolConverter : public QObject
+#include <xbus/XbusVehicle.h>
+
+class PApx : public PBase
 {
     Q_OBJECT
+
 public:
-    explicit ProtocolConverter(QObject *parent = nullptr);
+    explicit PApx(Fact *parent);
 
-    virtual void convertDownlink(const QByteArray &packet);
-    virtual void convertUplink(const QByteArray &packet);
+    void trace_pid(const xbus::pid_s &pid);
 
-    virtual bool convertDownlinkId(quint16 *id);
-    virtual bool convertUplinkId(quint16 *id);
-
-signals:
-    void downlink(QByteArray packet);
-    void uplink(QByteArray packet);
+    static QString squawkText(xbus::vehicle::squawk_t squawk)
+    {
+        return QString("%1").arg(squawk, 4, 16, QChar('0')).toUpper();
+    }
 };

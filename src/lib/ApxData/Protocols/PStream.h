@@ -26,9 +26,6 @@
 #include <xbus/XbusStreamReader.h>
 #include <xbus/XbusStreamWriter.h>
 
-#include <mandala/MandalaTreeBase.h>
-#include <xbus/XbusPacket.h>
-
 class PStreamReader : public XbusStreamReader
 {
 public:
@@ -89,16 +86,4 @@ public:
     {
         return XbusStreamWriter::write(ba.data(), static_cast<size_t>(ba.size()));
     }
-
-    void req(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request)
-    {
-        reset();
-        _req_pid.uid = uid;
-        _req_pid.pri = pri;
-        _req_pid.write(this);
-        _req_pid.seq++;
-    }
-
-private:
-    xbus::pid_s _req_pid{};
 };

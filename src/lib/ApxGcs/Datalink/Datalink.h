@@ -28,7 +28,7 @@
 #include "DatalinkServer.h"
 #include "DatalinkStats.h"
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolConverter.h>
+#include <Protocols/Protocols.h>
 //=============================================================================
 class Datalink : public Fact
 {
@@ -57,6 +57,8 @@ public:
     DatalinkServer *f_server;
     DatalinkRemotes *f_remotes;
     DatalinkPorts *f_ports;
+
+    Protocols *f_protocols;
 
     Fact *f_hbeat;
 
