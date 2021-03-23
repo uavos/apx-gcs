@@ -368,6 +368,23 @@ void FactBase::setName(QString s)
     s = s.trimmed();
     if (name() == s)
         return;
+
+    // check for reserved names
+    const char *r = nullptr;
+    if (metaObject()->indexOfProperty(s.toUtf8()) >= 0) {
+        r = "property";
+    } else if (metaObject()->indexOfMethod(s.toUtf8()) >= 0) {
+        r = "method";
+    } else if (metaObject()->indexOfSignal(s.toUtf8()) >= 0) {
+        r = "signal";
+    } else if (metaObject()->indexOfSlot(s.toUtf8()) >= 0) {
+        r = "slot";
+    }
+    if (r) {
+        qWarning() << QString("Fact name is reserved for %1:").arg(r) << s;
+        // just a warning by now
+    }
+
     setObjectName(s);
     emit nameChanged();
 }
