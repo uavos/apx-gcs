@@ -39,8 +39,10 @@ ComboBox {
     bottomInset: 0
 
     padding: 0
-    leftPadding: padding + (!control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*0.8 + spacing)
-    rightPadding: padding + (control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*0.8 + spacing)
+    property real paddingScale: 0.8
+
+    leftPadding: padding + (!control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
+    rightPadding: padding + (control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
 
     flat: true
 

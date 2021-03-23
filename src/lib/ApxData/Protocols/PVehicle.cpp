@@ -22,10 +22,11 @@
 #include "PVehicle.h"
 
 PVehicle::PVehicle(PVehicles *parent, QString callsign, QString uid, VehicleType type)
-    : PTreeBase(parent, uid, callsign, tr("Multi UAV management"), Group | Count)
-    , m_uid(uid)
+    : PTreeBase(parent, uid, callsign, tr("Vehicle interface"), Group | Count)
     , m_vehicleType(type)
 {
+    qDebug() << "available" << vehicleTypeText() << callsign << uid;
+
     onlineTimer.setSingleShot(true);
     onlineTimer.setInterval(7000);
     connect(&onlineTimer, &QTimer::timeout, this, [this]() { setStreamType(OFFLINE); });

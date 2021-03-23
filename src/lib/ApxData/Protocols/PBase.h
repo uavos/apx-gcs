@@ -36,7 +36,6 @@ class PBase : public PTreeBase
     Q_OBJECT
 
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(PVehicles vehicles READ vehicles CONSTANT)
 
 public:
     explicit PBase(Fact *parent, QString name, QString title, QString descr);

@@ -19,13 +19,74 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <App/App.h>
+
+#include "PBase.h"
 #include "Protocols.h"
 
 Protocols::Protocols(Fact *parent)
-    : Fact(parent,
-           "protocols",
-           tr("Protocols"),
-           tr("Data exchange interfaces"),
-           Group | Count,
-           "contain")
-{}
+    : Fact(parent, "protocols", tr("Protocols"), tr("Data exchange interfaces"), Group, "contain")
+{
+    f_current = new Fact(this,
+                         "current",
+                         tr("Current protocol"),
+                         tr("Active data format"),
+                         Text | PersistentValue);
+
+    f_current->setDefaultValue("papx");
+    connect(this, &Fact::sizeChanged, this, &Protocols::updateNames, Qt::QueuedConnection);
+
+    bindProperty(f_current, "value", true); // just for visual feedback
+    connect(f_current, &Fact::valueChanged, this, &Protocols::updateProtocol, Qt::QueuedConnection);
+
+    connect(App::instance(),
+            &App::loadingFinished,
+            this,
+            &Protocols::updateProtocol,
+            Qt::QueuedConnection);
+}
+
+void Protocols::updateNames()
+{
+    QStringList list;
+    for (auto i : findFacts<PBase>())
+        list.append(i->name());
+    f_current->setEnumStrings(list);
+}
+
+void Protocols::updateProtocol()
+{
+    bool chg = _protocol;
+    if (chg) {
+        disconnect(_protocol, nullptr, this, nullptr);
+        _protocol = nullptr;
+    }
+    const QString s = f_current->text();
+    for (auto i : findFacts<PBase>()) {
+        if (i->name() != s)
+            continue;
+        _protocol = i;
+        break;
+    }
+    if (!_protocol) {
+        apxMsgW() << tr("Can't select protocol").append(':') << s;
+        return;
+    }
+    qDebug() << "Protocol:" << s << _protocol->title();
+    if (chg || s != f_current->defaultValue().toString()) {
+        apxMsg() << tr("Selected protocol").append(':') << s;
+    }
+
+    // connect protocol interface
+    connect(_protocol, &PBase::tx_data, this, &Protocols::tx_data);
+    connect(_protocol->vehicles(),
+            &PVehicles::vehicle_available,
+            this,
+            &Protocols::vehicle_available);
+}
+
+void Protocols::rx_data(QByteArray packet)
+{
+    if (_protocol)
+        _protocol->rx_data(packet);
+}

@@ -67,7 +67,7 @@ public:
 
     explicit PVehicle(PVehicles *parent, QString callsign, QString uid, VehicleType type);
 
-    QString uid() const { return m_uid; }
+    QString uid() const { return name(); }
 
     VehicleType vehicleType(void) const { return m_vehicleType; }
     void setVehicleType(VehicleType v);
@@ -102,8 +102,6 @@ private:
     PMission *m_mission{};
     PTelemetry *m_telemetry{};
     PData *m_data{};
-
-    QString m_uid;
 
     VehicleType m_vehicleType{};
     StreamType m_streamType{};

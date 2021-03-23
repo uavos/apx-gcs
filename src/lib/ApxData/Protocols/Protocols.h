@@ -24,9 +24,31 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
+#include "PVehicle.h"
+#include "PVehicles.h"
+
 class Protocols : public Fact
 {
     Q_OBJECT
 public:
     explicit Protocols(Fact *parent);
+
+private:
+    Fact *f_current;
+
+    PBase *_protocol{};
+
+    void updateNames();
+
+private slots:
+    void updateProtocol();
+
+    // data comm
+public slots:
+    void rx_data(QByteArray packet); //connect rx data stream
+signals:
+    void tx_data(QByteArray packet); //connect tx interface
+
+    // interface provider
+    void vehicle_available(PVehicle *vehicle);
 };

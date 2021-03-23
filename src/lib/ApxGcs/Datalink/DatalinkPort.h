@@ -47,7 +47,6 @@ public:
     Fact *f_url;
     Fact *f_baud;
     Fact *f_codec;
-    Fact *f_protocol;
 
     Fact *f_routing;
     FactList f_rx;

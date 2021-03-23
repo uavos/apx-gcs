@@ -24,6 +24,7 @@
 PBase::PBase(Fact *parent, QString name, QString title, QString descr)
     : PTreeBase(parent, name, title, descr, Group)
 {
+    setValue(name);
     _trace = new PTrace(this);
 }
 

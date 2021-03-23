@@ -31,9 +31,7 @@ PApxVehicle::PApxVehicle(PApxVehicles *parent,
     , _vehicles(parent)
     , m_squawk(squawk)
     , _req(parent)
-{
-    qDebug() << "available" << callsign << PApx::squawkText(squawk) << uid;
-}
+{}
 
 void PApxVehicle::process_downlink(QByteArray packet)
 {

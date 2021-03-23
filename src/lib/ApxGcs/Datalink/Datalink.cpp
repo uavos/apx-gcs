@@ -53,6 +53,8 @@ Datalink::Datalink(Fact *parent)
     f_stats = new DatalinkStats(this);
 
     f_protocols = new Protocols(this);
+    connect(this, &Datalink::packetReceived, f_protocols, &Protocols::rx_data);
+    connect(f_protocols, &Protocols::tx_data, this, &Datalink::sendPacket);
 
     QString sect;
     sect = tr("Connections");

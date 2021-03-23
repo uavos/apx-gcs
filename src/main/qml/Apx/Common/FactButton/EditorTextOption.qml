@@ -28,6 +28,9 @@ EditorOption {
     id: editor
 
     editable: true
+
+    paddingScale: 1
+    
     contentItem: TextInput {
         id: textInput
         verticalAlignment: Text.AlignVCenter

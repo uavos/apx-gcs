@@ -27,7 +27,7 @@ PApxVehicles::PApxVehicles(PApx *parent)
     , _papx(parent)
     , _req(parent)
 {
-    m_local = new PApxVehicle(this, "LOCAL", "", PVehicle::UAV, 0);
+    m_local = new PApxVehicle(this, "LOCAL", "LOCAL", PVehicle::UAV, 0);
 
     // delayed requests timer
     _reqTimer.setInterval(500);
@@ -48,7 +48,7 @@ void PApxVehicles::process_downlink(QByteArray packet)
     xbus::pid_s pid;
     pid.read(&stream);
 
-    parent<PApx>()->trace_pid(pid);
+    findParent<PApx>()->trace_pid(pid);
 
     switch (pid.uid) {
     default:

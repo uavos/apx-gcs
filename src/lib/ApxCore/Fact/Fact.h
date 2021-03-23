@@ -104,12 +104,24 @@ public:
     template<class T>
     T *findParent() const
     {
-        for (FactBase *i = parentFact(); i; i = i->parentFact()) {
+        for (Fact *i = const_cast<Fact *>(this); i; i = i->parentFact()) {
             T *p = qobject_cast<T *>(i);
             if (p)
                 return p;
         }
         return nullptr;
+    }
+
+    template<class T>
+    QList<T *> findFacts() const
+    {
+        QList<T *> list;
+        for (auto i : facts()) {
+            T *p = qobject_cast<T *>(i);
+            if (p)
+                list.append(p);
+        }
+        return list;
     }
 
     virtual QVariant data(int col, int role) const;
