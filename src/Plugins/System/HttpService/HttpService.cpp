@@ -22,13 +22,21 @@
 #include "HttpService.h"
 #include <App/App.h>
 #include <App/AppDirs.h>
+
+#include <App/AppGcs.h>
+#include <Datalink/Datalink.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 HttpService::HttpService(QObject *parent)
     : QObject(parent)
 {
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &HttpService::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
+
+    connect(AppGcs::instance()->f_datalink->f_server,
+            &DatalinkServer::httpRequest,
+            this,
+            &HttpService::httpRequest);
 }
 void HttpService::vehicleSelected(Vehicle *vehicle)
 {
@@ -39,7 +47,7 @@ void HttpService::vehicleSelected(Vehicle *vehicle)
     c_roll = vehicle->f_mandala->fact(mandala::est::nav::att::roll::uid);
     c_pitch = vehicle->f_mandala->fact(mandala::est::nav::att::pitch::uid);
 }
-//=============================================================================
+
 void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)
 {
     if (req.startsWith("/kml")) {
@@ -61,8 +69,7 @@ void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)
         return;
     }
 }
-//=============================================================================
-//=============================================================================
+
 /*void HttpService::readClient()
  {
   QTcpSocket* socket = (QTcpSocket*)sender();
@@ -85,7 +92,7 @@ void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)
     }
   }
 }
-//=============================================================================
+
 QString HttpService::reply(const QString &req)
 {
   if(req.startsWith("/kml"))
@@ -94,9 +101,7 @@ QString HttpService::reply(const QString &req)
     return reply_mandala(req.contains('?')?req.mid(req.indexOf("?")+1):"");
   return QString();
 }*/
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 QString HttpService::reply_mandala(const QString &req)
 {
     QString reply;
@@ -148,8 +153,7 @@ QString HttpService::reply_mandala(const QString &req)
     xml.writeEndDocument();
     return reply;
 }
-//=============================================================================
-//=============================================================================
+
 QString HttpService::reply_google(const QString &req)
 {
     if (req.isEmpty() || req == "/")
@@ -171,7 +175,7 @@ QString HttpService::reply_google(const QString &req)
     }
     return QString();
 }
-//=============================================================================
+
 QString HttpService::reply_kml()
 {
     QString reply;
@@ -219,7 +223,7 @@ QString HttpService::reply_kml()
     xml.writeEndDocument();
     return reply;
 }
-//=============================================================================
+
 QString HttpService::reply_telemetry()
 {
     QString reply;
@@ -417,7 +421,7 @@ QString HttpService::reply_telemetry()
   xml.writeEndDocument();*/
     return reply;
 }
-//=============================================================================
+
 QString HttpService::reply_flightplan()
 {
     QString reply;
@@ -472,7 +476,7 @@ QString HttpService::reply_flightplan()
     xml.writeEndDocument();
     return reply;
 }
-//=============================================================================
+
 QString HttpService::reply_chase()
 {
     QString reply;
@@ -559,4 +563,3 @@ QString HttpService::reply_chase_upd()
     xml.writeEndDocument();
     return reply;
 }
-//=============================================================================

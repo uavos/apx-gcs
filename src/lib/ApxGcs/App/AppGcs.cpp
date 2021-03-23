@@ -38,17 +38,13 @@ void AppGcs::loadServices()
 
     new Database(f_apx);
 
+    f_datalink = new Datalink(f_apx);
+
     protocol = new ProtocolVehicles(f_apx);
 
     Vehicles *vehicles = new Vehicles(f_apx, protocol);
 
     f_apxfw = new ApxFw(f_apx);
-
-    //datalink
-    f_datalink = new Datalink(f_apx);
-
-    // QObject::connect(f_datalink, &Datalink::packetReceived, protocol, &ProtocolVehicles::downlink);
-    // QObject::connect(protocol, &ProtocolVehicles::uplink, f_datalink, &Datalink::sendPacket);
 
     // QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolVehicles::sendHeartbeat);
 

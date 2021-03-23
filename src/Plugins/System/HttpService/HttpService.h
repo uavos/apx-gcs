@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef HTTPSERVICE_H
-#define HTTPSERVICE_H
+#pragma once
+
 #include <Vehicles/Vehicle.h>
 #include <QtCore>
-//=============================================================================
+
 class HttpService : public QObject
 {
     Q_OBJECT
@@ -54,5 +54,3 @@ private slots:
 public slots:
     void httpRequest(QTextStream &stream, QString req, bool *ok);
 };
-//=============================================================================
-#endif

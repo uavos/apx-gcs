@@ -21,51 +21,17 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <QtCore>
-#include <QtNetwork>
-class Datalink;
+#include "HttpService.h"
 
-class DatalinkServer : public Fact
+#include <App/PluginInterface.h>
+#include <QtCore>
+
+class SoundsPlugin : public PluginInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    explicit DatalinkServer(Datalink *datalink);
-
-    Fact *f_listen;
-    Fact *f_extctr;
-    Fact *f_extsrv;
-
-    Fact *f_clients;
-
-    Fact *f_alloff;
-
-private:
-    Datalink *datalink;
-
-    QTcpServer *tcpServer;
-    uint retryBind;
-
-    QUdpSocket *udpAnnounce;
-    QTimer announceTimer;
-    QByteArray announceString;
-
-private slots:
-    void updateStatus();
-    void updateClientsNetworkMode();
-
-    void serverActiveChanged();
-    void tryBindServer();
-
-    void announce(void);
-
-    //tcp server
-    void newConnection();
-
-signals:
-    void bindError();
-    void binded();
-
-    // forwarded from connections for plugins
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
+    int flags() override { return Feature | System; }
+    QObject *createControl() override { return new HttpService(); }
 };
