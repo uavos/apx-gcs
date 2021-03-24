@@ -114,15 +114,11 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
         //mandala update signals
         connect(f_mandala, &Mandala::sendValue, protocol->data(), &PData::sendValue);
-
-        /*connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryData,
+        connect(protocol->data(), &PData::valuesData, f_mandala, &Mandala::valuesData);
+        connect(protocol->telemetry(),
+                &PTelemetry::telemetryData,
                 f_mandala,
                 &Mandala::telemetryData);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::valuesData,
-                f_mandala,
-                &Mandala::valuesData);*/
 
         connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
@@ -144,14 +140,18 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         connect(protocol, &ProtocolVehicle::dbConfigInfoChanged, this, &Vehicle::recordConfig);*/
     }
     // forward
-    //connect(protocol->telemetry, &ProtocolTelemetry::telemetryData, this, &Vehicle::telemetryData);
 
     // counters
-    /*connect(protocol, &ProtocolVehicle::receivedCmdEnvPacket, this, [this](mandala::uid_t uid) {
-        MandalaFact *f = f_mandala->fact(uid);
-        if (f)
-            f->count_rx();
-    });*/
+    if (protocol) {
+        connect(protocol, &PVehicle::packetReceived, this, [this](mandala::uid_t uid) {
+            if (mandala::cmd::env::match(uid)) {
+                MandalaFact *f = f_mandala->fact(uid);
+                if (f)
+                    f->count_rx();
+            }
+        });
+        connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
+    }
 
     // path
     Fact *f = new Fact(f_telemetry,
@@ -168,8 +168,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
     setProperty("test", QVariant::fromValue(f_select));
 
-    //register JS new vehicles instantly
-    //connect(this, &Vehicle::nameChanged, this, [this]() { App::jsync(this); });
     App::jsync(this);
 }
 Vehicle::~Vehicle()
@@ -299,11 +297,6 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
     _protocol->data()->lookTo(qDegreesToRadians(c.latitude()),
                               qDegreesToRadians(c.longitude()),
                               f_ref_hmsl->value().toDouble());
-    // MandalaFact::BundleValues values;
-    // values.insert(mandala::cmd::nav::gimbal::lat::meta.uid, c.latitude());
-    // values.insert(mandala::cmd::nav::gimbal::lon::meta.uid, c.longitude());
-    // values.insert(mandala::cmd::nav::gimbal::hmsl::meta.uid, f_ref_hmsl->value());
-    // f_cmd_gimbal->sendBundle(values);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {

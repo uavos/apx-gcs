@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <Protocols/PBase.h>
+#include <Protocols/Protocols.h>
 
 #include <xbus/XbusVehicle.h>
 

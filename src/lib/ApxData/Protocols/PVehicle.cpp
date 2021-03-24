@@ -86,6 +86,9 @@ void PVehicle::setErrcnt(const uint &v)
         return;
     m_errcnt = v;
     emit errcntChanged();
+    if (!v) {
+        qDebug() << "errcnt reset";
+    }
 }
 void PVehicle::incErrcnt()
 {

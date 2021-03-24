@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include "PVehicle.h"
+#include "PBase.h"
 
 class PVehicle;
 
@@ -31,8 +31,6 @@ class PData : public PTreeBase
 
 public:
     explicit PData(PVehicle *parent);
-
-    typedef QHash<mandala::uid_t, QVariant> Values;
 
 public slots:
     virtual void sendValue(mandala::uid_t uid, QVariant value) { _nimp(__FUNCTION__); }
@@ -45,11 +43,9 @@ public slots:
     virtual void lookTo(qreal lat, qreal lon, qreal hmsl) { _nimp(__FUNCTION__); }
 
 signals:
-    void valuesData(PData::Values values);
+    void valuesData(PBase::Values values);
 
     void calibrationData(mandala::uid_t uid, QByteArray data);
     void serialData(quint8 portID, QByteArray data);
     void jsexecData(QString script);
 };
-
-Q_DECLARE_METATYPE(PData *)

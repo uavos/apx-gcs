@@ -25,6 +25,14 @@
 #include <QtCore>
 
 #include "PBase.h"
+#include "PData.h"
+#include "PNodes.h"
+#include "PTelemetry.h"
+
+#include "PVehicle.h"
+
+class PBase;
+class PVehicle;
 
 class Protocols : public Fact
 {

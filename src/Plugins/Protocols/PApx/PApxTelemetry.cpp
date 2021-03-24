@@ -19,16 +19,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "PApxTelemetry.h"
 
-#include "PBase.h"
+#include <Mandala/Mandala.h>
 
-class PVehicle;
+PApxTelemetry::PApxTelemetry(PApxVehicle *parent)
+    : PTelemetry(parent)
+    , _vehicle(parent)
+    , _req(parent)
+{}
 
-class PNodes : public PTreeBase
+bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
-    Q_OBJECT
-
-public:
-    explicit PNodes(PVehicle *parent);
-};
+    return false;
+}

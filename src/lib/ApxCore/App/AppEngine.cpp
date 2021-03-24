@@ -182,6 +182,7 @@ void AppEngine::jsProtectPropertyWrite(const QString path)
     //                 .arg(scope)
     //                 .arg(name)
     //                 .arg(path);
+    s = QString("try{%1}catch(e){}").arg(s);
     jsexec_queued(s);
 }
 
@@ -200,6 +201,8 @@ void AppEngine::_protectObjects(const QString path, QJSValue obj)
         return;
 
     QString s = QString("Object.seal(%1)").arg(path);
+
+    s = QString("try{%1}catch(e){}").arg(s);
     jsexec_queued(s);
 }
 

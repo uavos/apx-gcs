@@ -26,7 +26,8 @@
 #include "PTrace.h"
 
 #include <Fact/Fact.h>
-#include <Mandala/Mandala.h>
+
+#include <mandala/MandalaMetaTree.h>
 
 class PTreeBase : public Fact
 {

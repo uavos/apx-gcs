@@ -21,6 +21,8 @@
  */
 #include "PData.h"
 
+#include "PVehicle.h"
+
 PData::PData(PVehicle *parent)
     : PTreeBase(parent, "data", tr("Data"), tr("Vehicle C2"))
 {}

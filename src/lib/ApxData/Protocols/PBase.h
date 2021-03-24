@@ -24,15 +24,12 @@
 #include <QtCore>
 
 #include <Fact/Fact.h>
-#include <Mandala/Mandala.h>
 
+#include "PTrace.h"
 #include "PTreeBase.h"
 
-#include "PData.h"
-#include "PNodes.h"
-#include "PVehicle.h"
-
 class PVehicle;
+class PTrace;
 
 class PBase : public PTreeBase
 {
@@ -48,6 +45,8 @@ public:
     virtual void send_uplink(QByteArray packet) override;
 
     virtual void process_downlink(QByteArray packet) = 0;
+
+    typedef QHash<mandala::uid_t, QVariant> Values;
 
 private:
     PTrace *_trace;

@@ -22,6 +22,7 @@
 #include "PApxVehicle.h"
 
 #include "PApxData.h"
+#include "PApxTelemetry.h"
 
 PApxVehicle::PApxVehicle(
     PApx *parent, QString callsign, QString uid, VehicleType type, xbus::vehicle::squawk_t squawk)
@@ -31,6 +32,7 @@ PApxVehicle::PApxVehicle(
     , _req(parent)
 {
     m_data = new PApxData(this);
+    m_telemetry = new PApxTelemetry(this);
     //m_nodes = new PApxNodes(this);
 }
 
@@ -44,6 +46,14 @@ void PApxVehicle::process_downlink(PStreamReader &stream)
     pid.read(&stream);
 
     _papx->trace_pid(pid);
+
+    mandala::uid_t uid = pid.uid;
+
+    if (uid > mandala::uid_max) {
+        qWarning() << "wrong uid" << uid << stream.dump_payload();
+        return;
+    }
+    emit packetReceived(uid);
 }
 
 void PApxVehicle::send_uplink(QByteArray packet)

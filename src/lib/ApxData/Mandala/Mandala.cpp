@@ -146,21 +146,21 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
     return mandala::cmd::env::nmt::meta;
 }
 
-void Mandala::telemetryData(ProtocolTelemetry::TelemetryValues values, quint64 timestamp_ms)
+void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
     m_timestamp = timestamp_ms;
     if (m_timestamp == 0)
         _timestamp_time.start();
 
-    for (auto const &v : values) {
-        MandalaFact *f = fact(v.pid.uid);
+    for (auto const &uid : values.keys()) {
+        MandalaFact *f = fact(uid);
         if (!f)
             continue;
-        f->setValueFromStream(v.value);
+        f->setValueFromStream(values.value(uid));
     }
 }
 
-void Mandala::valuesData(ProtocolTelemetry::TelemetryValues values)
+void Mandala::valuesData(PBase::Values values)
 {
     if (!_timestamp_time.isValid()) {
         m_timestamp = 0;
@@ -173,10 +173,10 @@ void Mandala::valuesData(ProtocolTelemetry::TelemetryValues values)
     }
 
     //qDebug() << values.size();
-    for (auto const &v : values) {
-        MandalaFact *f = fact(v.pid.uid);
+    for (auto const &uid : values.keys()) {
+        MandalaFact *f = fact(uid);
         if (!f)
             continue;
-        f->setValueFromStream(v.value);
+        f->setValueFromStream(values.value(uid));
     }
 }

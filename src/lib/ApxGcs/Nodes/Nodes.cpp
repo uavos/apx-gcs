@@ -222,3 +222,11 @@ void Nodes::shell(QStringList commands)
         i->shell(commands);
     }
 }
+
+void Nodes::setValid(bool v)
+{
+    if (m_valid == v)
+        return;
+    m_valid = v;
+    emit validChanged();
+}

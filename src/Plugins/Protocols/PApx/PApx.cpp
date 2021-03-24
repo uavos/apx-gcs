@@ -22,6 +22,7 @@
 #include "PApx.h"
 
 #include <App/App.h>
+#include <Mandala/Mandala.h>
 
 PApx::PApx(Fact *parent)
     : PBase(parent, "papx", tr("APX Protocol"), tr("Standard data format for APX Autopilot"))
@@ -117,6 +118,7 @@ void PApx::process_downlink(QByteArray packet)
         PApxVehicle *identified = _squawk_map.value(squawk);
 
         if (available) {
+            available->packetReceived(pid.uid);
             if (!identified) {
                 _squawk_map.insert(squawk, available);
                 qDebug() << "re-identified" << available->title();
@@ -147,6 +149,7 @@ void PApx::process_downlink(QByteArray packet)
                     _squawk_map.remove(_squawk_map.key(available));
                 });
                 emit vehicle_available(available);
+                available->packetReceived(pid.uid);
             }
         }
     } break;
@@ -164,6 +167,7 @@ void PApx::process_downlink(QByteArray packet)
         //check if new transponder detected, request IDENT
         PApxVehicle *v = _squawk_map.value(squawk);
         if (v) {
+            v->packetReceived(pid.uid);
             trace()->tree();
             trace()->block(v->title().append(':'));
             v->process_downlink(stream);

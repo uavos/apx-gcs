@@ -65,17 +65,18 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
     //JS register mandala
     //if (App::instance()->engine()) {
 
+    Mandala *m = f_replay->f_mandala;
     //register mandala constants for QML and JS
-    for (auto s : f_replay->f_mandala->constants.keys()) {
-        const QVariant &v = f_replay->f_mandala->constants.value(s);
+    for (auto s : m->constants.keys()) {
+        const QVariant &v = m->constants.value(s);
         //JSEngine layer
         App::setGlobalProperty(s, v);
         //QmlEngine layer
         App::setContextProperty(s, v);
     }
 
-    _jsSyncMandalaAccess(f_replay->f_mandala, App::instance()->engine()->globalObject());
-    for (auto f : f_replay->f_mandala->facts()) {
+    _jsSyncMandalaAccess(m, App::instance()->engine()->globalObject());
+    for (auto f : m->facts()) {
         App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());
     }
     //}
@@ -87,7 +88,7 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
                      << "title"
                      << "units"
                      << "alias";
-    for (auto f : f_replay->f_mandala->uid_map.values()) {
+    for (auto f : m->uid_map.values()) {
         if (f->isSystem())
             continue;
         QVariantList v;
@@ -234,5 +235,6 @@ void Vehicles::_jsSyncMandalaAccess(Fact *fact, QJSValue parent)
                         "set:function(v){apx.vehicles.current.mandala.%1.%2.value=v}})")
                     .arg(m->mpath().left(mpath.lastIndexOf('.')))
                     .arg(fact->name());
+
     App::jsexec(s);
 }

@@ -21,9 +21,10 @@
  */
 #pragma once
 
+#include <Protocols/PData.h>
+
 #include "MandalaFact.h"
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolTelemetry.h>
 #include <mandala/MandalaBundles.h>
 #include <mandala/MandalaMetaTree.h>
 
@@ -54,8 +55,8 @@ private:
     QElapsedTimer _timestamp_time;
 
 public slots:
-    void telemetryData(ProtocolTelemetry::TelemetryValues values, quint64 timestamp_ms);
-    void valuesData(ProtocolTelemetry::TelemetryValues values);
+    void telemetryData(PBase::Values, quint64 timestamp_ms);
+    void valuesData(PBase::Values values);
 
 signals:
     //forwarded to vehicle

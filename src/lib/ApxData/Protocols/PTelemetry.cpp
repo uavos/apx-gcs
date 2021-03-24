@@ -19,16 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "PTelemetry.h"
 
-#include "PBase.h"
+#include "PVehicle.h"
 
-class PVehicle;
-
-class PNodes : public PTreeBase
-{
-    Q_OBJECT
-
-public:
-    explicit PNodes(PVehicle *parent);
-};
+PTelemetry::PTelemetry(PVehicle *parent)
+    : PTreeBase(parent, "telemetry", tr("Telemetry"), tr("Downlink stream decoder"))
+{}

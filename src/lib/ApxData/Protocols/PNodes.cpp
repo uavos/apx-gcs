@@ -21,6 +21,8 @@
  */
 #include "PNodes.h"
 
+#include "PVehicle.h"
+
 PNodes::PNodes(PVehicle *parent)
     : PTreeBase(parent, "nodes", tr("Nodes"), tr("Vehicle devices"), Group | Count)
 {}

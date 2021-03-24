@@ -29,6 +29,7 @@ class Vehicle;
 class Nodes : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(bool valid READ valid WRITE setValid NOTIFY validChanged)
 
 public:
     explicit Nodes(Vehicle *vehicle);
@@ -54,9 +55,14 @@ public:
 
     Q_INVOKABLE void shell(QStringList commands);
 
+    bool valid() const { return m_valid; }
+    void setValid(bool v);
+
 private:
     QMap<QString, NodeItem *> m_sn_map;
     QDateTime m_syncTimestamp;
+
+    bool m_valid{false};
 
 private slots:
     void updateActions();
@@ -71,4 +77,7 @@ private slots:
     void syncDone();
 
     void save();
+
+signals:
+    void validChanged();
 };

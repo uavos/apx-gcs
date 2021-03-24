@@ -21,23 +21,17 @@
  */
 #pragma once
 
-#include "PBase.h"
+#include "PData.h"
+#include "PNodes.h"
+#include "PTelemetry.h"
 
-class PNodes;
 class PMission;
-class PData;
-class PTelemetry;
 
 class PBase;
 
 class PVehicle : public PTreeBase
 {
     Q_OBJECT
-
-    Q_PROPERTY(PData *data READ data CONSTANT)
-    Q_PROPERTY(PNodes *nodes READ nodes CONSTANT)
-    Q_PROPERTY(PMission *mission READ mission CONSTANT)
-    Q_PROPERTY(PTelemetry *telemetry READ telemetry CONSTANT)
 
     Q_PROPERTY(QString uid READ uid CONSTANT)
 
@@ -120,6 +114,9 @@ signals:
     void vehicleTypeChanged();
     void streamTypeChanged();
     void errcntChanged();
+
+    // interface signals
+    void packetReceived(mandala::uid_t uid); // used for counters only
 };
 
 Q_DECLARE_METATYPE(PVehicle *)

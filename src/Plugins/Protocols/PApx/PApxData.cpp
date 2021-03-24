@@ -21,6 +21,8 @@
  */
 #include "PApxData.h"
 
+#include <Mandala/Mandala.h>
+
 PApxData::PApxData(PApxVehicle *parent)
     : PData(parent)
     , _vehicle(parent)

@@ -25,10 +25,13 @@
 
 class PVehicle;
 
-class PNodes : public PTreeBase
+class PTelemetry : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PNodes(PVehicle *parent);
+    explicit PTelemetry(PVehicle *parent);
+
+signals:
+    void telemetryData(PBase::Values values, quint64 timestamp_ms);
 };

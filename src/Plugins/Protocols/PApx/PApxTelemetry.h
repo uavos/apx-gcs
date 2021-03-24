@@ -21,14 +21,22 @@
  */
 #pragma once
 
-#include "PBase.h"
+#include "PApxVehicle.h"
 
-class PVehicle;
+class PApxVehicle;
 
-class PNodes : public PTreeBase
+class PApxTelemetry : public PTelemetry
 {
     Q_OBJECT
 
 public:
-    explicit PNodes(PVehicle *parent);
+    explicit PApxTelemetry(PApxVehicle *parent);
+
+    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+
+private:
+    PApxVehicle *_vehicle;
+    PApxRequest _req;
+
+protected:
 };
