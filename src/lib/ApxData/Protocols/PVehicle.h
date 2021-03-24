@@ -72,6 +72,7 @@ public:
     }
 
     StreamType streamType(void) const { return m_streamType; }
+    void setStreamType(StreamType v); // called by signals of underlying protocols
 
     uint errcnt(void) const { return m_errcnt; }
     void setErrcnt(const uint &v);
@@ -90,8 +91,6 @@ public:
     PTelemetry *telemetry() const { return m_telemetry; }
 
 protected:
-    void setStreamType(StreamType v);
-
     PNodes *m_nodes{};
     PMission *m_mission{};
     PTelemetry *m_telemetry{};

@@ -23,6 +23,9 @@
 
 #include "PApxVehicle.h"
 
+#include <xbus/telemetry/TelemetryDecoder.h>
+#include <xbus/uart/CobsDecoder.h>
+
 class PApxVehicle;
 
 class PApxTelemetry : public PTelemetry
@@ -38,5 +41,24 @@ private:
     PApxVehicle *_vehicle;
     PApxRequest _req;
 
-protected:
+    uint32_t _seq_s{0};
+    uint32_t _seq{0};
+    uint32_t _dt_ms{0};
+    quint64 _timestamp_ms{0};
+    QElapsedTimer _ts_time;
+
+    TelemetryDecoder decoder;
+
+    void request_format(uint8_t part);
+    uint8_t _request_format_part{0};
+    QElapsedTimer _request_format_time;
+
+    bool unpack(uint8_t pseq, PStreamReader &stream);
+    QVariant raw_value(const void *src, mandala::type_id_e type);
+
+private slots:
+    void updateStatus();
+
+public slots:
+    void report();
 };

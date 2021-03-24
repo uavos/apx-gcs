@@ -32,6 +32,12 @@ class PData : public PTreeBase
 public:
     explicit PData(PVehicle *parent);
 
+protected:
+    PVehicle *_vehicle;
+
+private slots:
+    void updateStreamType();
+
 public slots:
     virtual void sendValue(mandala::uid_t uid, QVariant value) { _nimp(__FUNCTION__); }
 

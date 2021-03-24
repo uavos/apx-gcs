@@ -139,10 +139,9 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         });
         connect(protocol, &ProtocolVehicle::dbConfigInfoChanged, this, &Vehicle::recordConfig);*/
     }
-    // forward
 
-    // counters
     if (protocol) {
+        // counters
         connect(protocol, &PVehicle::packetReceived, this, [this](mandala::uid_t uid) {
             if (mandala::cmd::env::match(uid)) {
                 MandalaFact *f = f_mandala->fact(uid);
@@ -150,6 +149,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                     f->count_rx();
             }
         });
+        // forward telemetry stamp to notify plugins
         connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
     }
 

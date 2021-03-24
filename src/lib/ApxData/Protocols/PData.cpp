@@ -25,4 +25,15 @@
 
 PData::PData(PVehicle *parent)
     : PTreeBase(parent, "data", tr("Data"), tr("Vehicle C2"))
-{}
+    , _vehicle(parent)
+{
+    connect(this, &PData::valuesData, this, &PData::updateStreamType);
+    connect(this, &PData::calibrationData, this, &PData::updateStreamType);
+    connect(this, &PData::serialData, this, &PData::updateStreamType);
+    connect(this, &PData::jsexecData, this, &PData::updateStreamType);
+}
+
+void PData::updateStreamType()
+{
+    _vehicle->setStreamType(PVehicle::DATA);
+}

@@ -35,7 +35,6 @@ public:
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
 private:
-    PApxVehicle *_vehicle;
     PApxRequest _req;
 
     template<typename S>
@@ -46,7 +45,18 @@ private:
         trace()->raw(data);
         _req.send();
     }
-    void pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &stream);
+    static void pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &stream);
+
+    template<typename T>
+    static QVariant unpack(PStreamReader &stream)
+    {
+        if (stream.available() < sizeof(T))
+            return QVariant();
+        return QVariant::fromValue(stream.read<T>());
+    }
+    static PBase::Values unpack(const xbus::pid_s &pid,
+                                const mandala::spec_s &spec,
+                                PStreamReader &stream);
 
 protected:
     void sendValue(mandala::uid_t uid, QVariant value) override;

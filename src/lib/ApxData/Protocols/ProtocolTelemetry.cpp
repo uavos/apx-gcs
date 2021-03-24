@@ -149,7 +149,7 @@ void ProtocolTelemetry::downlink(const xbus::pid_s &pid, ProtocolStreamReader &s
 
     //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();
 
-    bool upd = decoder.decode(pid, stream);
+    bool upd = decoder.decode(pid.seq, stream);
     bool valid = decoder.valid();
 
     // manage timestamp wraps
