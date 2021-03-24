@@ -24,7 +24,6 @@
 PBase::PBase(Fact *parent, QString name, QString title, QString descr)
     : PTreeBase(parent, name, title, descr, Group)
 {
-    setValue(name);
     _trace = new PTrace(this);
 }
 
@@ -38,12 +37,7 @@ void PBase::rx_data(QByteArray packet)
 
 void PBase::send_uplink(QByteArray packet)
 {
-    qDebug() << "tx:" << packet.size();
-    trace()->end();
+    //qDebug() << "tx:" << packet.size();
+    trace()->end(packet.size());
     emit tx_data(packet);
-}
-
-void PBase::process_downlink(QByteArray packet)
-{
-    m_vehicles->process_downlink(packet);
 }

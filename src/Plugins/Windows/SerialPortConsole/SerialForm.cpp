@@ -76,8 +76,10 @@ void SerialForm::vehicleSelected(Vehicle *vehicle)
 {
     for (auto c : clist)
         disconnect(c);
-    ProtocolVehicle *protocol = vehicle->protocol();
-    clist.append(connect(protocol, &ProtocolVehicle::serialData, this, &SerialForm::serialData));
+    PVehicle *protocol = vehicle->protocol();
+    if (!protocol)
+        return;
+    clist.append(connect(protocol->data(), &PData::serialData, this, &SerialForm::serialData));
 }
 //==============================================================================
 void SerialForm::btnReset()
@@ -118,7 +120,11 @@ void SerialForm::btnSend()
         ba.append('\r');
     if (ui->cbLF->isChecked())
         ba.append('\n');
-    Vehicles::instance()->current()->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
+
+    PVehicle *protocol = Vehicles::instance()->current()->protocol();
+    if (!protocol)
+        return;
+    protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
 }
 //==============================================================================
 void SerialForm::serialData(uint portNo, QByteArray ba)

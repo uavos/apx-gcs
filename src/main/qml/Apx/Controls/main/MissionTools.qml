@@ -26,7 +26,7 @@ import QtPositioning 5.6
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 import APX.Mission 1.0
 
 import Apx.Common 1.0
@@ -35,7 +35,11 @@ import Apx.Menu 1.0
 //import Apx.Map 1.0
 
 RowLayout {
-    property Mission mission: apx.vehicles.current.mission
+
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
+
+    readonly property Mission mission: vehicle.mission
+
     height: missionButton.height
     //spacing: 10*ui.scale
     //property int itemSize: Math.max(10,missionButton.height)

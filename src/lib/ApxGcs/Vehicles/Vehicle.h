@@ -29,8 +29,7 @@
 #include <Fact/Fact.h>
 #include <Mandala/Mandala.h>
 
-#include <Protocols/ProtocolVehicle.h>
-#include <Protocols/ProtocolViewBase.h>
+#include "Vehicles.h"
 
 class Vehicles;
 class Nodes;
@@ -38,7 +37,7 @@ class VehicleMission;
 class VehicleWarnings;
 class Telemetry;
 
-class Vehicle : public ProtocolViewBase<ProtocolVehicle>
+class Vehicle : public Fact
 {
     Q_OBJECT
     Q_ENUMS(FlightState)
@@ -54,8 +53,16 @@ class Vehicle : public ProtocolViewBase<ProtocolVehicle>
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
     Q_PROPERTY(quint64 totalDistance READ totalDistance NOTIFY totalDistanceChanged)
 
+    Q_PROPERTY(PVehicle *protocol READ protocol CONSTANT)
+    Q_PROPERTY(PVehicle::StreamType streamType READ streamType NOTIFY streamTypeChanged)
+
+    Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
+    Q_PROPERTY(bool isReplay READ isReplay CONSTANT)
+    Q_PROPERTY(bool isIdentified READ isIdentified CONSTANT)
+    Q_PROPERTY(bool isGroundControl READ isGroundControl NOTIFY isGroundControlChanged)
+
 public:
-    explicit Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol);
+    explicit Vehicle(Vehicles *vehicles, PVehicle *protocol);
 
     ~Vehicle() override;
 
@@ -77,7 +84,12 @@ public:
     enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
     Q_ENUM(FlightState)
 
+    QString uid() const { return _protocol ? _protocol->uid() : QString(); }
+    PVehicle *protocol() const { return _protocol; }
+
 private:
+    PVehicle *_protocol;
+
     QTimer updateInfoTimer;
 
     Fact *f_lat;
@@ -105,8 +117,6 @@ private slots:
 private slots:
     void updateActive();
 
-    void jsexecData(QString data);
-
 signals:
     void selected();
 
@@ -128,9 +138,6 @@ signals:
 
     //provided methods
 public slots:
-    void vmexec(QString func);
-    void sendSerial(quint8 portID, QByteArray data);
-
     void flyHere(const QGeoCoordinate &c);
     void lookHere(const QGeoCoordinate &c);
     void setHomePoint(const QGeoCoordinate &c);
@@ -162,6 +169,13 @@ public:
     quint64 totalDistance() const;
     void setTotalDistance(quint64 v);
 
+    bool isLocal() const { return m_is_local; }
+    bool isReplay() const { return m_is_replay; }
+    bool isIdentified() const { return m_is_identified; }
+    bool isGroundControl() const { return m_is_gcs; }
+
+    PVehicle::StreamType streamType() const;
+
 protected:
     QString m_info;
 
@@ -171,6 +185,11 @@ protected:
     QGeoPath m_geoPath;
     quint64 m_totalDistance{0};
 
+    bool m_is_local{};
+    bool m_is_replay{};
+    bool m_is_identified{};
+    bool m_is_gcs{};
+
 signals:
     void infoChanged();
     void followChanged();
@@ -178,4 +197,6 @@ signals:
     void flightStateChanged();
     void geoPathChanged();
     void totalDistanceChanged();
+    void isGroundControlChanged();
+    void streamTypeChanged();
 };

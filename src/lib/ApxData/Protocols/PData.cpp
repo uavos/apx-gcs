@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "PVehicles.h"
+#include "PData.h"
 
-PVehicles::PVehicles(PBase *parent)
-    : PTreeBase(parent, "vehicles", tr("Vehicles"), tr("Multi UAV management"), Group | Count)
+PData::PData(PVehicle *parent)
+    : PTreeBase(parent, "data", tr("Data"), tr("Vehicle C2"))
 {}

@@ -51,8 +51,10 @@ void ServosForm::vehicleSelected(Vehicle *vehicle)
 {
     for (auto c : clist)
         disconnect(c);
-    ProtocolVehicle *protocol = vehicle->protocol();
-    clist.append(connect(protocol, &ProtocolVehicle::serialData, this, &ServosForm::serialData));
+    PVehicle *protocol = vehicle->protocol();
+    if (!protocol)
+        return;
+    clist.append(connect(protocol->data(), &PData::serialData, this, &ServosForm::serialData));
 }
 //==============================================================================
 void ServosForm::btnFind()
@@ -126,7 +128,11 @@ void ServosForm::sendVolz(uint cmd, uint id, uint arg)
     }
     pack[4] = (crc >> 8) & 0xFF;
     pack[5] = crc & 0xFF;
-    Vehicles::instance()->current()->sendSerial(ui->ePortID->value(), pack);
+
+    PVehicle *protocol = Vehicles::instance()->current()->protocol();
+    if (!protocol)
+        return;
+    protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
 }
 //==============================================================================
 void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
@@ -167,6 +173,10 @@ void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
         }
         pack[i] = vx;
     }
-    Vehicles::instance()->current()->sendSerial(ui->ePortID->value(), pack);
+
+    PVehicle *protocol = Vehicles::instance()->current()->protocol();
+    if (!protocol)
+        return;
+    protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
 }
 //==============================================================================

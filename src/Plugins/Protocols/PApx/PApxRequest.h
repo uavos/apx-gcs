@@ -21,8 +21,7 @@
  */
 #pragma once
 
-#include "PApx.h"
-
+#include <Protocols/PBase.h>
 #include <Protocols/PStream.h>
 
 class PApxRequest : public PStreamWriter

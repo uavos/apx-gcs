@@ -21,23 +21,23 @@
  */
 #pragma once
 
-#include "PVehicles.h"
+#include "PBase.h"
 
 class PNodes;
 class PMission;
 class PData;
 class PTelemetry;
 
-class PVehicles;
+class PBase;
 
 class PVehicle : public PTreeBase
 {
     Q_OBJECT
 
-    Q_PROPERTY(PNodes nodes READ nodes CONSTANT)
-    Q_PROPERTY(PMission mission READ mission CONSTANT)
-    Q_PROPERTY(PData data READ data CONSTANT)
-    Q_PROPERTY(PTelemetry telemetry READ telemetry CONSTANT)
+    Q_PROPERTY(PData *data READ data CONSTANT)
+    Q_PROPERTY(PNodes *nodes READ nodes CONSTANT)
+    Q_PROPERTY(PMission *mission READ mission CONSTANT)
+    Q_PROPERTY(PTelemetry *telemetry READ telemetry CONSTANT)
 
     Q_PROPERTY(QString uid READ uid CONSTANT)
 
@@ -47,7 +47,8 @@ class PVehicle : public PTreeBase
 
     Q_ENUMS(StreamType)
     Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
-    Q_PROPERTY(QString streamTypeText READ streamTypeText NOTIFY streamTypeChanged)
+
+    Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
 
 public:
     enum VehicleType {
@@ -65,9 +66,9 @@ public:
     };
     Q_ENUM(StreamType)
 
-    explicit PVehicle(PVehicles *parent, QString callsign, QString uid, VehicleType type);
+    explicit PVehicle(PBase *parent, QString callsign, QString uid, VehicleType type);
 
-    QString uid() const { return name(); }
+    QString uid() const { return m_uid; }
 
     VehicleType vehicleType(void) const { return m_vehicleType; }
     void setVehicleType(VehicleType v);
@@ -77,10 +78,10 @@ public:
     }
 
     StreamType streamType(void) const { return m_streamType; }
-    QString streamTypeText() const
-    {
-        return QMetaEnum::fromType<StreamType>().valueToKey(streamType());
-    }
+
+    uint errcnt(void) const { return m_errcnt; }
+    void setErrcnt(const uint &v);
+    void incErrcnt();
 
     // interface to vehicle nodes with parameters
     PNodes *nodes() const { return m_nodes; }
@@ -97,12 +98,13 @@ public:
 protected:
     void setStreamType(StreamType v);
 
-private:
     PNodes *m_nodes{};
     PMission *m_mission{};
     PTelemetry *m_telemetry{};
     PData *m_data{};
 
+private:
+    QString m_uid;
     VehicleType m_vehicleType{};
     StreamType m_streamType{};
 
@@ -110,7 +112,14 @@ private:
     QElapsedTimer time_telemetry;
     QElapsedTimer time_xpdr;
 
+    uint m_errcnt{0};
+
+    void updateValue();
+
 signals:
     void vehicleTypeChanged();
     void streamTypeChanged();
+    void errcntChanged();
 };
+
+Q_DECLARE_METATYPE(PVehicle *)

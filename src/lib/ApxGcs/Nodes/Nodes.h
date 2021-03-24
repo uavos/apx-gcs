@@ -24,17 +24,14 @@
 #include "LookupConfigs.h"
 #include "NodeItem.h"
 
-#include <Protocols/ProtocolNodes.h>
-#include <Protocols/ProtocolViewBase.h>
-
 class Vehicle;
 
-class Nodes : public ProtocolViewBase<ProtocolNodes>
+class Nodes : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit Nodes(Vehicle *vehicle, ProtocolNodes *protocol);
+    explicit Nodes(Vehicle *vehicle);
 
     Vehicle *vehicle;
 

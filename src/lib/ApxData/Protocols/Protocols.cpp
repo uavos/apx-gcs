@@ -39,11 +39,7 @@ Protocols::Protocols(Fact *parent)
     bindProperty(f_current, "value", true); // just for visual feedback
     connect(f_current, &Fact::valueChanged, this, &Protocols::updateProtocol, Qt::QueuedConnection);
 
-    connect(App::instance(),
-            &App::loadingFinished,
-            this,
-            &Protocols::updateProtocol,
-            Qt::QueuedConnection);
+    connect(App::instance(), &App::loadingFinished, this, &Protocols::updateProtocol);
 }
 
 void Protocols::updateNames()
@@ -56,22 +52,27 @@ void Protocols::updateNames()
 
 void Protocols::updateProtocol()
 {
+    PBase *protocol = nullptr;
+    const QString s = f_current->text();
+    for (auto i : findFacts<PBase>()) {
+        if (i->name() != s)
+            continue;
+        protocol = i;
+        break;
+    }
+    if (!protocol) {
+        apxMsgW() << tr("Can't select protocol").append(':') << s;
+        return;
+    }
+    if (_protocol == protocol)
+        return;
+
     bool chg = _protocol;
     if (chg) {
         disconnect(_protocol, nullptr, this, nullptr);
         _protocol = nullptr;
     }
-    const QString s = f_current->text();
-    for (auto i : findFacts<PBase>()) {
-        if (i->name() != s)
-            continue;
-        _protocol = i;
-        break;
-    }
-    if (!_protocol) {
-        apxMsgW() << tr("Can't select protocol").append(':') << s;
-        return;
-    }
+    _protocol = protocol;
     qDebug() << "Protocol:" << s << _protocol->title();
     if (chg || s != f_current->defaultValue().toString()) {
         apxMsg() << tr("Selected protocol").append(':') << s;
@@ -79,10 +80,7 @@ void Protocols::updateProtocol()
 
     // connect protocol interface
     connect(_protocol, &PBase::tx_data, this, &Protocols::tx_data);
-    connect(_protocol->vehicles(),
-            &PVehicles::vehicle_available,
-            this,
-            &Protocols::vehicle_available);
+    connect(_protocol, &PBase::vehicle_available, this, &Protocols::vehicle_available);
 }
 
 void Protocols::rx_data(QByteArray packet)

@@ -21,21 +21,39 @@
  */
 #pragma once
 
-#include "PBase.h"
-#include "PTreeBase.h"
+#include "PApxVehicle.h"
 
-class PVehicle;
+class PApxVehicle;
 
-class PBase;
-
-class PVehicles : public PTreeBase
+class PApxData : public PData
 {
     Q_OBJECT
 
 public:
-    explicit PVehicles(PBase *parent);
+    explicit PApxData(PApxVehicle *parent);
 
-signals:
-    // signaled when a new vehicle is identified
-    void vehicle_available(PVehicle *vehicle);
+    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+
+private:
+    PApxVehicle *_vehicle;
+    PApxRequest _req;
+
+    template<typename S>
+    void sendBundle(mandala::uid_t uid, const S &data)
+    {
+        _req.request(uid, xbus::pri_final);
+        _req.write(&data, sizeof(S));
+        trace()->raw(data);
+        _req.send();
+    }
+    void pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &stream);
+
+protected:
+    void sendValue(mandala::uid_t uid, QVariant value) override;
+
+    void requestCalibration(mandala::uid_t uid, QByteArray data) override;
+    void requestScript(QString func) override;
+    void sendSerial(quint8 portID, QByteArray data) override;
+
+    void flyTo(qreal lat, qreal lon) override;
 };

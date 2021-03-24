@@ -26,6 +26,7 @@
 #include "TelemetryRecorder.h"
 //#include "TelemetryShare.h"
 
+#include <App/App.h>
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
@@ -44,7 +45,7 @@ Telemetry::Telemetry(Vehicle *parent)
     , f_reader(nullptr)
     , f_share(nullptr)
 {
-    if (vehicle->protocol()->isReplay()) {
+    if (vehicle->isReplay()) {
         setOpt("pos", QPointF(1, 1));
 
         f_lookup = new LookupTelemetry(this);
@@ -76,7 +77,13 @@ Telemetry::Telemetry(Vehicle *parent)
         });
         connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);*/
 
-        connect(vehicle, &Vehicle::selected, f_reader, &TelemetryReader::loadCurrent);
+        connect(App::instance(), &App::loadingFinished, this, [this]() {
+            connect(vehicle,
+                    &Vehicle::selected,
+                    f_reader,
+                    &TelemetryReader::loadCurrent,
+                    Qt::QueuedConnection);
+        });
 
     } else {
         f_recorder = new TelemetryRecorder(vehicle, this);

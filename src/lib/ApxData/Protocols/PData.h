@@ -21,40 +21,35 @@
  */
 #pragma once
 
-#include <xbus/XbusVehicle.h>
+#include "PVehicle.h"
 
-#include "PApx.h"
-#include "PApxRequest.h"
-#include "PApxVehicle.h"
+class PVehicle;
 
-class PApx;
-class PApxVehicle;
-
-class PApxVehicles : public PVehicles
+class PData : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PApxVehicles(PApx *parent);
+    explicit PData(PVehicle *parent);
 
-    bool addressed(xbus::vehicle::squawk_t squawk) const { return _squawk_map.contains(squawk); }
+    typedef QHash<mandala::uid_t, QVariant> Values;
 
-private:
-    PApx *_papx;
+public slots:
+    virtual void sendValue(mandala::uid_t uid, QVariant value) { _nimp(__FUNCTION__); }
 
-    PApxVehicle *m_local{};
-    QMap<xbus::vehicle::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles
-    QList<xbus::vehicle::squawk_t> _squawk_blacklist;
+    virtual void requestCalibration(mandala::uid_t uid, QByteArray data) { _nimp(__FUNCTION__); }
+    virtual void requestScript(QString func) { _nimp(__FUNCTION__); }
+    virtual void sendSerial(quint8 portID, QByteArray data) { _nimp(__FUNCTION__); }
 
-    PApxRequest _req;
-    QTimer _reqTimer;
-    QList<xbus::vehicle::squawk_t> _req_ident;
+    virtual void flyTo(qreal lat, qreal lon) { _nimp(__FUNCTION__); }
+    virtual void lookTo(qreal lat, qreal lon, qreal hmsl) { _nimp(__FUNCTION__); }
 
-    void assign_squawk(const xbus::vehicle::ident_s &ident, QString callsign);
-    void request_ident(xbus::vehicle::squawk_t squawk);
+signals:
+    void valuesData(PData::Values values);
 
-    void request_ident_schedule(xbus::vehicle::squawk_t squawk);
-    void request_next(); // delayed requests callback
-
-    void process_downlink(QByteArray packet) override;
+    void calibrationData(mandala::uid_t uid, QByteArray data);
+    void serialData(quint8 portID, QByteArray data);
+    void jsexecData(QString script);
 };
+
+Q_DECLARE_METATYPE(PData *)

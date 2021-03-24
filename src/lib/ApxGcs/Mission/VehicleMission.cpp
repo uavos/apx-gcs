@@ -169,20 +169,20 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
 
     //protocols
-    connect(vehicle->protocol()->mission,
-            &ProtocolMission::uploaded,
-            this,
-            &VehicleMission::missionUploaded);
+    // connect(vehicle->protocol()->mission,
+    //         &ProtocolMission::uploaded,
+    //         this,
+    //         &VehicleMission::missionUploaded);
 
-    connect(vehicle->protocol()->mission,
-            &ProtocolMission::downloaded,
-            this,
-            &VehicleMission::missionDataReceived);
+    // connect(vehicle->protocol()->mission,
+    //         &ProtocolMission::downloaded,
+    //         this,
+    //         &VehicleMission::missionDataReceived);
 
-    connect(vehicle->protocol()->mission, &ProtocolMission::available, this, [this]() {
-        if (empty())
-            vehicle->protocol()->mission->download();
-    });
+    // connect(vehicle->protocol()->mission, &ProtocolMission::available, this, [this]() {
+    //     if (empty())
+    //         vehicle->protocol()->mission->download();
+    // });
 
     // FIXME: mission protocol
     /*  connect(vehicle->protocol->mission,
@@ -301,7 +301,7 @@ QJsonValue VehicleMission::toJson() const
     json.insert("lon", c.longitude());
 
     QString title = f_title->text().simplified();
-    if (vehicle->protocol()->isIdentified()) {
+    if (vehicle->isIdentified()) {
         QString s = vehicle->title();
         json.insert("callsign", s);
         title.remove(s, Qt::CaseInsensitive);
@@ -403,15 +403,15 @@ void VehicleMission::missionDataError()
 void VehicleMission::uploadMission()
 {
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
-    vehicle->protocol()->mission->setActive(true);
-    vehicle->protocol()->mission->upload(toJson());
+    // vehicle->protocol()->mission->setActive(true);
+    // vehicle->protocol()->mission->upload(toJson());
     f_save->trigger();
 }
 void VehicleMission::downloadMission()
 {
     vehicle->message(QString("%1...").arg(tr("Requesting mission")), AppNotify::Info);
-    vehicle->protocol()->mission->setActive(true);
-    vehicle->protocol()->mission->download();
+    // vehicle->protocol()->mission->setActive(true);
+    // vehicle->protocol()->mission->download();
 }
 
 QGeoCoordinate VehicleMission::startPoint() const

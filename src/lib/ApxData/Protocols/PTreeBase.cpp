@@ -22,6 +22,8 @@
 #include "PTreeBase.h"
 #include "PBase.h"
 
+#include <App/AppLog.h>
+
 PTreeBase::PTreeBase(Fact *parent, QString name, QString title, QString descr, Flags flags)
     : Fact(parent, name, title, descr, flags)
 {}
@@ -31,4 +33,9 @@ void PTreeBase::send_uplink(QByteArray packet)
     if (parent()) {
         parent()->send_uplink(packet);
     }
+}
+
+void PTreeBase::_nimp(QString fname)
+{
+    apxMsgW() << tr("Not implemented").append(':') << fname;
 }

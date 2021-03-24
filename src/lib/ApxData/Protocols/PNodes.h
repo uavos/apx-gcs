@@ -23,6 +23,8 @@
 
 #include "PVehicle.h"
 
+class PVehicle;
+
 class PNodes : public PTreeBase
 {
     Q_OBJECT
@@ -30,3 +32,5 @@ class PNodes : public PTreeBase
 public:
     explicit PNodes(PVehicle *parent);
 };
+
+Q_DECLARE_METATYPE(PNodes *)

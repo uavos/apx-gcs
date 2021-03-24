@@ -21,24 +21,23 @@
  */
 #include "PApxVehicle.h"
 
-PApxVehicle::PApxVehicle(PApxVehicles *parent,
-                         QString callsign,
-                         QString uid,
-                         VehicleType type,
-                         xbus::vehicle::squawk_t squawk)
+#include "PApxData.h"
+
+PApxVehicle::PApxVehicle(
+    PApx *parent, QString callsign, QString uid, VehicleType type, xbus::vehicle::squawk_t squawk)
     : PVehicle(parent, callsign, uid, type)
-    , _papx(findParent<PApx>())
-    , _vehicles(parent)
+    , _papx(parent)
     , m_squawk(squawk)
     , _req(parent)
-{}
-
-void PApxVehicle::process_downlink(QByteArray packet)
 {
-    PStreamReader stream(packet);
+    m_data = new PApxData(this);
+    //m_nodes = new PApxNodes(this);
+}
 
+void PApxVehicle::process_downlink(PStreamReader &stream)
+{
     if (stream.available() < xbus::pid_s::psize()) {
-        qWarning() << "packet" << packet.toHex().toUpper();
+        qWarning() << "packet" << stream.dump_payload();
         return;
     }
     xbus::pid_s pid;
@@ -51,11 +50,11 @@ void PApxVehicle::send_uplink(QByteArray packet)
 {
     if (!m_squawk) {
         //local vehicle
-        parent()->send_uplink(packet);
+        _papx->send_uplink(packet);
         return;
     }
 
-    if (!_vehicles->addressed(m_squawk)) {
+    if (!_papx->addressed(m_squawk)) {
         qWarning() << "not addressed" << PApx::squawkText(m_squawk);
         return;
     }

@@ -83,7 +83,7 @@ Datalink::Datalink(Fact *parent)
         App::sound(m_online ? "connected" : "error");
     });
 
-    connect(this, &Datalink::packetReceived, this, [=]() { setValid(true); });
+    connect(this, &Datalink::packetReceived, this, [this]() { setValid(true); });
 
     App::jsync(this);
 }

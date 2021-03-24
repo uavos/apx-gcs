@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "PApxRequest.h"
+#include "PApx.h"
 
 PApxRequest::PApxRequest(PTreeBase *parent)
     : PStreamWriter(_txbuf, sizeof(_txbuf))
@@ -42,8 +43,7 @@ void PApxRequest::request(mandala::uid_t uid, xbus::pri_e pri)
 
 void PApxRequest::send()
 {
-    _parent->send_uplink(toByteArray());
-    pid.seq++;
+    _parent->send_uplink(get_packet());
 }
 QByteArray PApxRequest::get_packet()
 {

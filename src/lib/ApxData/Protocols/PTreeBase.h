@@ -46,7 +46,9 @@ public:
     }
 
     virtual void send_uplink(QByteArray packet);
-    virtual void process_downlink(QByteArray packet) = 0;
 
     virtual PTrace *trace() const { return parent()->trace(); }
+
+protected:
+    void _nimp(QString fname);
 };

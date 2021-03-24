@@ -61,7 +61,7 @@ void PTrace::downlink(size_t sz)
     _blocks.append(sz ? QString("<%1").arg(sz) : "<");
 }
 
-void PTrace::end()
+void PTrace::end(size_t sz)
 {
     if (!_enabled)
         return;
@@ -76,6 +76,9 @@ void PTrace::end()
             tail.append("+");
             tail.append(_blocks.mid(1, i - 1));
             _blocks = tail;
+        }
+        if (sz > 0) {
+            _blocks[0] = QString(">%1").arg(sz);
         }
     }
 

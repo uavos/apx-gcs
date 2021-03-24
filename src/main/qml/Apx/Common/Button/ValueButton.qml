@@ -26,6 +26,7 @@ import QtQuick.Controls.Material 2.12
 
 import APX.Facts 1.0
 import Apx.Common 1.0
+import APX.Vehicles 1.0 as APX
 
 ActionButton {
     id: control
@@ -62,6 +63,8 @@ ActionButton {
 
     font.family: font_narrow_regular
 
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
+
     color: {
         var c
         if(error)c=errorColor
@@ -83,33 +86,33 @@ ActionButton {
         return s.join(" ")
     }
 
-    property bool doAlerts: alerts && (apx.datalink.valid || apx.vehicles.current.protocol.isReplay)
+    property bool doAlerts: alerts && (apx.datalink.valid || vehicle.isReplay)
 
     property var cv
 
     onWarningChanged: {
         if(!warning)return
-        if(alertsVehicle && cv !== apx.vehicles.current){
-            cv=apx.vehicles.current
+        if(alertsVehicle && cv !== vehicle){
+            cv=vehicle
             return
         }
         if(doAlerts){
-            apx.vehicles.current.warnings.warning(message())
+            vehicle.warnings.warning(message())
         }
     }
     onErrorChanged: {
         if(!error)return
-        if(alertsVehicle && cv !== apx.vehicles.current){
-            cv=apx.vehicles.current
+        if(alertsVehicle && cv !== vehicle){
+            cv=vehicle
             return
         }
         if(doAlerts){
-            apx.vehicles.current.warnings.error(message())
+            vehicle.warnings.error(message())
         }
     }
 
     Component.onCompleted: {
-        cv = apx.vehicles.current
+        cv = vehicle
         background.color=Qt.binding(function(){return Material.buttonColor})
     }
 

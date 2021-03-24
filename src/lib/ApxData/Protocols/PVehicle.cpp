@@ -21,8 +21,13 @@
  */
 #include "PVehicle.h"
 
-PVehicle::PVehicle(PVehicles *parent, QString callsign, QString uid, VehicleType type)
-    : PTreeBase(parent, uid, callsign, tr("Vehicle interface"), Group | Count)
+PVehicle::PVehicle(PBase *parent, QString callsign, QString uid, VehicleType type)
+    : PTreeBase(parent,
+                uid.isEmpty() ? callsign.toLower() : uid,
+                callsign,
+                tr("Vehicle interface"),
+                Group | Count)
+    , m_uid(uid)
     , m_vehicleType(type)
 {
     qDebug() << "available" << vehicleTypeText() << callsign << uid;
@@ -33,6 +38,9 @@ PVehicle::PVehicle(PVehicles *parent, QString callsign, QString uid, VehicleType
 
     time_telemetry.start();
     time_xpdr.start();
+
+    connect(this, &PVehicle::streamTypeChanged, this, &PVehicle::updateValue);
+    updateValue();
 }
 
 void PVehicle::setVehicleType(VehicleType v)
@@ -65,8 +73,27 @@ void PVehicle::setStreamType(StreamType type)
             break;
         }
     }
-    if (m_streamType != type) {
-        m_streamType = type;
-        emit streamTypeChanged();
-    }
+    if (m_streamType == type)
+        return;
+
+    m_streamType = type;
+    emit streamTypeChanged();
+}
+
+void PVehicle::setErrcnt(const uint &v)
+{
+    if (m_errcnt == v)
+        return;
+    m_errcnt = v;
+    emit errcntChanged();
+}
+void PVehicle::incErrcnt()
+{
+    m_errcnt++;
+    emit errcntChanged();
+}
+
+void PVehicle::updateValue()
+{
+    setValue(QMetaEnum::fromType<StreamType>().valueToKey(StreamType()));
 }

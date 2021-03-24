@@ -67,7 +67,6 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     Nodes *fNodes = v->f_nodes;
     treeWidget->setRoot(fNodes);
     lbUavName->setText(v->title());
-    lbUavName->setToolTip(QString("squawk: %1").arg(v->protocol()->squawkText()));
 
     connect(vehicle->f_nodes, &Nodes::modifiedChanged, this, &NodesFrame::updateActions);
 

@@ -24,12 +24,15 @@
 #include <QtCore>
 
 #include <Fact/Fact.h>
+#include <Mandala/Mandala.h>
 
 #include "PTreeBase.h"
-#include "PVehicle.h"
-#include "PVehicles.h"
 
-class PVehicles;
+#include "PData.h"
+#include "PNodes.h"
+#include "PVehicle.h"
+
+class PVehicle;
 
 class PBase : public PTreeBase
 {
@@ -40,23 +43,21 @@ class PBase : public PTreeBase
 public:
     explicit PBase(Fact *parent, QString name, QString title, QString descr);
 
-    // interface to vehicles root protocol
-    PVehicles *vehicles() const { return m_vehicles; }
-
     virtual PTrace *trace() const override { return _trace; }
 
     virtual void send_uplink(QByteArray packet) override;
-    virtual void process_downlink(QByteArray packet) override;
+
+    virtual void process_downlink(QByteArray packet) = 0;
 
 private:
     PTrace *_trace;
-
-protected:
-    PVehicles *m_vehicles{};
 
     // data comm
 public slots:
     void rx_data(QByteArray packet); //connect rx data stream
 signals:
     void tx_data(QByteArray packet); //connect tx interface
+
+    // signaled when a new vehicle is identified to provide interface
+    void vehicle_available(PVehicle *vehicle);
 };

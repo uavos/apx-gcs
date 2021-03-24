@@ -21,22 +21,23 @@
  */
 #pragma once
 
-#include "PApxVehicles.h"
+#include "PApx.h"
 
-class PApxVehicles;
+class PApx;
 
 class PApxVehicle : public PVehicle
 {
     Q_OBJECT
 
 public:
-    explicit PApxVehicle(PApxVehicles *parent,
+    explicit PApxVehicle(PApx *parent,
                          QString callsign,
                          QString uid,
                          VehicleType type,
                          xbus::vehicle::squawk_t squawk);
 
-    void process_downlink(QByteArray packet) override;
+    void process_downlink(PStreamReader &stream);
+
     void send_uplink(QByteArray packet) override;
 
     xbus::vehicle::squawk_t squawk() const { return m_squawk; }
@@ -44,7 +45,6 @@ public:
 
 private:
     PApx *_papx;
-    PApxVehicles *_vehicles;
 
     xbus::vehicle::squawk_t m_squawk;
 

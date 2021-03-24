@@ -70,7 +70,7 @@ Rectangle {
                 showText: false
                 value: vehicle.title
                 active: false
-                warning: vehicle.protocol.streamType<=0
+                warning: vehicle.streamType<=0
                 enabled: true
             }
 

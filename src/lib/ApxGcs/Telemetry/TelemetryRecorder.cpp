@@ -54,10 +54,10 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(vehicle, &Vehicle::recordConfig, this, &TelemetryRecorder::recordConfig);
 
     //write config on each update
-    connect(vehicle->protocol(),
-            &ProtocolVehicle::dbConfigInfoChanged,
-            this,
-            &TelemetryRecorder::recordConfig);
+    // connect(vehicle->protocol(),
+    //         &ProtocolVehicle::dbConfigInfoChanged,
+    //         this,
+    //         &TelemetryRecorder::recordConfig);
 
     //write mission on each upload or download
     connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
@@ -124,7 +124,7 @@ bool TelemetryRecorder::dbCheckRecord()
         if (!title.isEmpty())
             confTitle = title;
         DBReqTelemetryNewRecord *req
-            = new DBReqTelemetryNewRecord(vehicle->protocol()->uid(),
+            = new DBReqTelemetryNewRecord(vehicle->uid(),
                                           vehicle->title(),
                                           confTitle,
                                           recording(),
@@ -336,7 +336,7 @@ void TelemetryRecorder::recordConfig()
     if (!dbCheckRecord())
         return;
 
-    const QVariantMap &info = vehicle->protocol()->dbConfigInfo();
+    /*const QVariantMap &info = vehicle->protocol()->dbConfigInfo();
     QString hash = info.value("hash").toString();
     if (hash.isEmpty())
         return;
@@ -356,7 +356,7 @@ void TelemetryRecorder::recordConfig()
             DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(recTelemetryID, info);
             req->exec();
         }
-    }
+    }*/
 }
 //=============================================================================
 //=============================================================================
@@ -364,8 +364,8 @@ void TelemetryRecorder::recordConfig()
 //=============================================================================
 bool TelemetryRecorder::checkAutoRecord(void)
 {
-    if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
-        return recording();
+    //if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
+    return recording();
 
     Vehicle::FlightState fs = vehicle->flightState();
     if (flightState_s != fs) {

@@ -28,11 +28,15 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
-    : ProtocolViewBase(vehicle, protocol)
+Nodes::Nodes(Vehicle *vehicle)
+    : Fact(vehicle,
+           "nodes",
+           tr("Nodes"),
+           tr("Vehicle components"),
+           Group | Count | FlatModel | ModifiedGroup | ProgressTrack)
     , vehicle(vehicle)
 {
-    setOptions(FlatModel | ModifiedGroup | ProgressTrack);
+    setIcon("puzzle");
 
     f_upload = new Fact(this,
                         "upload",
@@ -62,7 +66,7 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 
     f_status
         = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
-    connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
+    //connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     //storage actions
     //TODO: f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
@@ -78,7 +82,8 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     }
 
     connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
+
+    /*connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::upgradingChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::sizeChanged, this, &Nodes::updateActions);
@@ -88,13 +93,11 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
     connect(protocol, &ProtocolNodes::syncDone, this, &Nodes::syncDone);
 
     // initial request
-    if (vehicle->protocol()->isIdentified()) {
+    if (vehicle->isIdentified()) {
         protocol->requestSearch();
-    }
+    }*/
 
     connect(this, &Fact::triggered, this, &Nodes::search);
-
-    App::jsync(this);
 }
 
 void Nodes::nodeNotify(ProtocolNode *protocol)
@@ -119,7 +122,7 @@ void Nodes::syncDone()
 
 void Nodes::updateActions()
 {
-    bool enb = protocol()->enabled();
+    /*bool enb = protocol()->enabled();
     bool upgrading = protocol()->upgrading();
     bool busy = protocol()->active() || upgrading;
     bool empty = protocol()->size() <= 0;
@@ -130,15 +133,15 @@ void Nodes::updateActions()
     f_stop->setEnabled(enb && busy);
     f_reload->setEnabled(enb && !upgrading);
     f_clear->setEnabled(!empty && !upgrading);
-    f_status->setEnabled(enb && !empty && !upgrading);
+    f_status->setEnabled(enb && !empty && !upgrading);*/
 }
 
 void Nodes::search()
 {
-    if (!protocol()->enabled())
+    /*if (!protocol()->enabled())
         return;
     protocol()->setActive(true);
-    protocol()->requestSearch();
+    protocol()->requestSearch();*/
 }
 void Nodes::stop()
 {
@@ -148,13 +151,13 @@ void Nodes::stop()
 
 void Nodes::clear()
 {
-    if (protocol()->upgrading()) {
+    /*if (protocol()->upgrading()) {
         apxMsgW() << tr("Upgrading in progress");
         return;
     }
     m_sn_map.clear();
     deleteChildren();
-    protocol()->clear();
+    protocol()->clear();*/
     setModified(false);
 }
 
@@ -166,8 +169,8 @@ void Nodes::reload()
 
 void Nodes::upload()
 {
-    if (!protocol()->enabled())
-        return;
+    // if (!protocol()->enabled())
+    //     return;
     //    if (!protocol()->valid())
     //        return;
     if (!modified())
@@ -179,10 +182,10 @@ void Nodes::upload()
 
 void Nodes::save()
 {
-    if (!protocol()->enabled())
-        return;
-    if (!protocol()->valid())
-        return;
+    // if (!protocol()->enabled())
+    //     return;
+    // if (!protocol()->valid())
+    //     return;
 
     //FIXME: save modified config
     /*for (auto i : m_sn_map) {

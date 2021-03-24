@@ -42,7 +42,7 @@ void AppGcs::loadServices()
 
     protocol = new ProtocolVehicles(f_apx);
 
-    Vehicles *vehicles = new Vehicles(f_apx, protocol);
+    Vehicles *vehicles = new Vehicles(f_apx, f_datalink->f_protocols);
 
     f_apxfw = new ApxFw(f_apx);
 

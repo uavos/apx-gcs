@@ -25,6 +25,12 @@
 
 #include <xbus/XbusVehicle.h>
 
+#include "PApxRequest.h"
+#include "PApxVehicle.h"
+
+class PApx;
+class PApxVehicle;
+
 class PApx : public PBase
 {
     Q_OBJECT
@@ -33,9 +39,32 @@ public:
     explicit PApx(Fact *parent);
 
     void trace_pid(const xbus::pid_s &pid);
+    void trace_uid(mandala::uid_t uid);
 
     static QString squawkText(xbus::vehicle::squawk_t squawk)
     {
         return QString("%1").arg(squawk, 4, 16, QChar('0')).toUpper();
     }
+
+    bool addressed(xbus::vehicle::squawk_t squawk) const { return _squawk_map.contains(squawk); }
+
+private:
+    PApxVehicle *m_local{};
+    QMap<xbus::vehicle::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles
+    QList<xbus::vehicle::squawk_t> _squawk_blacklist;
+
+    PApxRequest _req;
+    QTimer _reqTimer;
+    QList<xbus::vehicle::squawk_t> _req_ident;
+
+    void assign_squawk(const xbus::vehicle::ident_s &ident, QString callsign);
+    void request_ident(xbus::vehicle::squawk_t squawk);
+
+    void request_ident_schedule(xbus::vehicle::squawk_t squawk);
+    void request_next(); // delayed requests callback
+
+    void process_downlink(QByteArray packet) override;
+
+private slots:
+    void updateLocal();
 };

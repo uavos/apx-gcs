@@ -37,7 +37,7 @@ public:
 
     virtual void uplink();
     virtual void downlink(size_t sz = 0);
-    virtual void end();
+    virtual void end(size_t sz = 0);
 
     void block(QString block);
     void blocks(QStringList blocks);
@@ -46,11 +46,12 @@ public:
     void tree() { block("+"); } // nested (wrapped) stream mark
 
     template<typename T>
-    void raw(QString name, const T &r)
+    void raw(const T &r, QString name = QString())
     {
         if (!_enabled)
             return;
-        block(name.append(':'));
+        if (!name.isEmpty())
+            block(name.append(':'));
         data(QByteArray(reinterpret_cast<const char *>(&r), sizeof(r)));
     }
 

@@ -24,8 +24,7 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-#include "PVehicle.h"
-#include "PVehicles.h"
+#include "PBase.h"
 
 class Protocols : public Fact
 {

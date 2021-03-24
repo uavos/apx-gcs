@@ -97,19 +97,22 @@ void CompassFrame::vehicleSelected(Vehicle *vehicle)
     for (auto c : clist)
         disconnect(c);
 
-    ProtocolVehicle *protocol = vehicle->protocol();
+    PVehicle *protocol = vehicle->protocol();
+    if (!protocol)
+        return;
+
     clist.append(
-        connect(protocol, &ProtocolVehicle::calibrationData, this, &CompassFrame::calibrationData));
+        connect(protocol->data(), &PData::calibrationData, this, &CompassFrame::calibrationData));
 }
 
 void CompassFrame::requestCalibrationData()
 {
-    ProtocolVehicle *protocol = Vehicles::instance()->current()->protocol();
+    PVehicle *protocol = Vehicles::instance()->current()->protocol();
     if (!protocol)
         return;
     QByteArray ba;
     ba.append((char) cbSelect.currentIndex());
-    protocol->requestCalibrationData(mandala::sns::nav::mag::uid, ba);
+    protocol->data()->requestCalibration(mandala::sns::nav::mag::uid, ba);
 }
 
 void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)

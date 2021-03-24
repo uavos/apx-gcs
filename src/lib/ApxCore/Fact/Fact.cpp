@@ -66,10 +66,6 @@ Fact::Fact(QObject *parent,
 
     //append to parent
     setParentFact(qobject_cast<Fact *>(parent));
-
-    /*if (!name.isEmpty() && name.front().isUpper()) { //.toLower() != name) {
-        qDebug() << path() << name;
-    }*/
 }
 //=============================================================================
 void Fact::onOptionsChanged()
