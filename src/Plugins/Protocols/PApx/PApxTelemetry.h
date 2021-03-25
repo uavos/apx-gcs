@@ -38,7 +38,6 @@ public:
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
 private:
-    PApxVehicle *_vehicle;
     PApxRequest _req;
 
     uint32_t _seq_s{0};

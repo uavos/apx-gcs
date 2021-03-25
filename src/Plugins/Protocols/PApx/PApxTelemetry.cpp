@@ -28,7 +28,6 @@
 
 PApxTelemetry::PApxTelemetry(PApxVehicle *parent)
     : PTelemetry(parent)
-    , _vehicle(parent)
     , _req(parent)
 {
     connect(this, &Fact::enabledChanged, this, &PApxTelemetry::updateStatus);
@@ -124,7 +123,6 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
 
         if (!unpack(pid.seq, stream))
             break;
-
         return true;
     }
     //error

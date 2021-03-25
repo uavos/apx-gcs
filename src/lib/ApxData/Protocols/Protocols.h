@@ -58,4 +58,5 @@ signals:
 
     // interface provider
     void vehicle_available(PVehicle *vehicle);
+    void trace_packet(QStringList blocks);
 };

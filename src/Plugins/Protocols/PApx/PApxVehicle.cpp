@@ -42,6 +42,8 @@ void PApxVehicle::process_downlink(PStreamReader &stream)
         qWarning() << "packet" << stream.dump_payload();
         return;
     }
+    stream.trim();
+
     xbus::pid_s pid;
     pid.read(&stream);
 
@@ -54,6 +56,30 @@ void PApxVehicle::process_downlink(PStreamReader &stream)
         return;
     }
     emit packetReceived(uid);
+
+    if (mandala::cmd::env::nmt::match(uid)) {
+        setStreamType(NMT);
+        /*m_nodes->downlink(pid, stream);
+        //forward to local nodes too
+        if (!isLocal()
+            && (mandala::cmd::env::nmt::search::match(uid)
+                || mandala::cmd::env::nmt::ident::match(uid)
+                || mandala::cmd::env::nmt::file::match(uid))) {
+            //return;
+            stream.reset();
+            vehicles->local->trace_downlink(pid);
+            vehicles->local->downlink(stream);
+        }*/
+        return;
+    }
+
+    if (static_cast<PApxData *>(m_data)->process_downlink(pid, stream)) {
+        return;
+    }
+
+    if (static_cast<PApxTelemetry *>(m_telemetry)->process_downlink(pid, stream)) {
+        return;
+    }
 }
 
 void PApxVehicle::send_uplink(QByteArray packet)

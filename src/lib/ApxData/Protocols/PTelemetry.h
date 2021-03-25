@@ -32,6 +32,12 @@ class PTelemetry : public PTreeBase
 public:
     explicit PTelemetry(PVehicle *parent);
 
+protected:
+    PVehicle *_vehicle;
+
+private slots:
+    void updateStreamType();
+
 signals:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
 };
