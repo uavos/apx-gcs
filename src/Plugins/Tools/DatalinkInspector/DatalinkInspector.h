@@ -19,24 +19,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+#pragma once
 
-Label {
-    id: item
-    color: invert?itemColor:"#000"
-    font.family: font_condenced
-    font.pixelSize: fontSize*0.9
+#include <Fact/Fact.h>
+#include <QtCore>
 
-    property bool invert: false
+#include "PTraceListModel.h"
 
-    property var itemColor: "#aaa"
+class DatalinkInspector : public Fact
+{
+    Q_OBJECT
 
-    background: Rectangle {
-        border.width: 0 // invert?1:0
-        //border.color: itemColor
-        color: invert?"#000":itemColor
-        radius: 2
-    }
-}
+    Q_PROPERTY(PTraceFilterProxyModel *packetsModel READ packetsModel CONSTANT)
+    Q_PROPERTY(PTraceListModel *uidModel READ uidModel CONSTANT)
 
+public:
+    explicit DatalinkInspector(Fact *parent = nullptr);
+
+    PTraceFilterProxyModel *packetsModel() const { return m_proxyModel; }
+    PTraceListModel *uidModel() const { return m_uidModel; }
+
+private:
+    PTraceListModel *m_packetsModel;
+    PTraceListModel *m_uidModel;
+
+    PTraceFilterProxyModel *m_proxyModel;
+
+    QList<uint> _uid_cnt;
+
+    void append_uid(QStringList blocks);
+    void append_uid_item(QString uid);
+
+public slots:
+    void clear();
+
+    void filter(QString uid, bool exclude);
+};

@@ -168,8 +168,8 @@ void PApx::process_downlink(QByteArray packet)
         PApxVehicle *v = _squawk_map.value(squawk);
         if (v) {
             v->packetReceived(pid.uid);
-            trace()->tree();
             trace()->block(v->title().append(':'));
+            trace()->tree();
             v->process_downlink(stream);
         } else {
             trace()->data(stream.payload());

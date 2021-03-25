@@ -69,6 +69,7 @@ void Protocols::updateProtocol()
 
     bool chg = _protocol;
     if (chg) {
+        _protocol->trace()->enable(false);
         disconnect(_protocol, nullptr, this, nullptr);
         _protocol = nullptr;
     }
@@ -88,4 +89,10 @@ void Protocols::rx_data(QByteArray packet)
 {
     if (_protocol)
         _protocol->rx_data(packet);
+}
+
+void Protocols::setTraceEnabled(bool v)
+{
+    if (_protocol)
+        _protocol->trace()->enable(v);
 }

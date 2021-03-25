@@ -237,5 +237,6 @@ void PApxTelemetry::request_format(uint8_t part)
     _request_format_time.start();
     _req.request(mandala::cmd::env::telemetry::format::uid);
     _req << part;
+    trace()->block(QString::number(part));
     _req.send();
 }

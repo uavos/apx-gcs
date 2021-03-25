@@ -21,46 +21,16 @@
  */
 #pragma once
 
+#include "DatalinkInspector.h"
+#include <App/PluginInterface.h>
 #include <QtCore>
 
-class PTrace : public QObject
+class DatalinkInspectorPlugin : public PluginInterface
 {
     Q_OBJECT
-
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    explicit PTrace(QObject *parent = nullptr);
-
-    bool enabled() const { return _enabled; }
-    void enable(bool v);
-
-    void reset();
-
-    virtual void uplink();
-    virtual void downlink(size_t sz = 0);
-    virtual void end(size_t sz = 0);
-
-    void block(QString block);
-    void blocks(QStringList blocks);
-    void data(QByteArray data);
-
-    void tree() { block("+"); } // nested (wrapped) stream mark
-
-    template<typename T>
-    void raw(const T &r, QString name = QString())
-    {
-        if (!_enabled)
-            return;
-        if (!name.isEmpty())
-            block(name.append(':'));
-        data(QByteArray(reinterpret_cast<const char *>(&r), sizeof(r)));
-    }
-
-private:
-    QStringList _blocks;
-
-protected:
-    bool _enabled{false};
-
-signals:
-    void packet(QStringList blocks);
+    int flags() override { return Feature | Tool; }
+    QObject *createControl() override { return new DatalinkInspector(); }
 };

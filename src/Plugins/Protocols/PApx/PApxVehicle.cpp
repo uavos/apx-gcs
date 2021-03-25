@@ -98,6 +98,8 @@ void PApxVehicle::send_uplink(QByteArray packet)
     _req.request(mandala::cmd::env::vehicle::uplink::uid);
 
     _req.write<xbus::vehicle::squawk_t>(m_squawk);
+    trace()->block(PApx::squawkText(m_squawk));
+    trace()->block(title().append(':'));
     _req.append(packet);
 
     _req.send();

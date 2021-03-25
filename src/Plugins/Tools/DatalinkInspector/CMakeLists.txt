@@ -1,3 +1,1 @@
-apx_plugin(SRCS "*.qml")
-
-apx_qrc(${MODULE} PREFIX ${MODULE} SRCS "*.qml")
+apx_plugin(DEPENDS lib.ApxGcs)

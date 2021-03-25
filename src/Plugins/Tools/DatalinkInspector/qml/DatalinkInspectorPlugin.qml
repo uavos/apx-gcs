@@ -19,39 +19,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.2
+import QtQuick 2.12
 
 import Apx.Common 1.0
+import Apx.Application 1.0
 
+AppPlugin {
+    id: plugin
 
-Rectangle {
-    id: control
+    fact: apx.tools.datalinkinspector
 
-    //implicitHeight: layout.implicitHeight
-    //implicitWidth: layout.implicitWidth
-
-    border.width: 0
-    color: "#000"
-
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: 3
-
-        DatalinkInspectorView {
-            id: _view
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            onPid: _filter.pid(text,color)
-        }
-
-        DatalinkInspectorFilter {
-            id: _filter
-            Layout.fillHeight: true
-            onFilter: _view.filter(text,v)
-        }
-
-
+    sourceComponent: DatalinkInspector { }
+    uiComponent: "main"
+    onConfigure: {
+        ui.main.add(plugin, GroundControl.Layout.Main)
     }
 }

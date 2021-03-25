@@ -26,61 +26,16 @@ import QtQuick.Controls 2.12
 ListView {
     id: listView
 
+
     clip: true
-
-    signal pid(var text, var color)
-
-    ListModel {
-        id: _model
-    }
-    Connections {
-        target: apx.protocols.trace
-        function onPacket(uplink, packet) {
-            if(_model.count>1000)
-                _model.remove(0)
-            for(var i in packet){
-                if(filters.indexOf(packet[i].text)>-1){
-                    pid(packet[i].text,"#fff")
-                    return
-                }
-            }
-            var dict = {}
-            dict.uplink = uplink
-            dict.packet = packet
-            _model.append(dict)
-        }
-    }
-
-    property var filters: []
-    function filter(text, v)
-    {
-        if(filters.indexOf(text)>-1){
-            if(!v) filters.splice(filters.indexOf(text))
-        }else if(v) filters.push(text)
-    }
-
-
     spacing: 2
 
-    model: _model
+    model: plugin_fact.packetsModel
+
     delegate: DatalinkInspectorPacket {
         width: listView.width
-        uplink: model.uplink
-        packet: model.packet
-        onPid: listView.pid(text,color)
+        packet: model.blocks
     }
-
-    add: Transition {
-        id: transAdd
-        enabled: ui.smooth
-        NumberAnimation {
-            properties: "x";
-            from: listView.width * (transAdd.ViewTransition.item.uplink?-1:1);
-            duration: 100
-            easing.type: Easing.OutCubic
-        }
-    }
-
 
     ScrollBar.vertical: ScrollBar {
         width: 6

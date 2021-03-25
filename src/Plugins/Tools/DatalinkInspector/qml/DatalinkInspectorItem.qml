@@ -19,46 +19,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 
-#include <Fact/Fact.h>
-#include <QtCore>
+Label {
+    id: item
+    color: invert?itemColor:"#000"
+    font.family: font_condenced
+    font.pixelSize: 12
 
-#include "PBase.h"
-#include "PData.h"
-#include "PNodes.h"
-#include "PTelemetry.h"
+    property bool invert: false
 
-#include "PVehicle.h"
+    property var itemColor: "#aaa"
 
-class PBase;
-class PVehicle;
+    background: Rectangle {
+        border.width: 0 // invert?1:0
+        //border.color: itemColor
+        color: invert?"#000":itemColor
+        radius: 2
+    }
+}
 
-class Protocols : public Fact
-{
-    Q_OBJECT
-public:
-    explicit Protocols(Fact *parent);
-
-    void setTraceEnabled(bool v);
-
-private:
-    Fact *f_current;
-
-    PBase *_protocol{};
-
-    void updateNames();
-
-private slots:
-    void updateProtocol();
-
-    // data comm
-public slots:
-    void rx_data(QByteArray packet); //connect rx data stream
-signals:
-    void tx_data(QByteArray packet); //connect tx interface
-
-    // interface provider
-    void vehicle_available(PVehicle *vehicle);
-    void trace_packet(QStringList blocks);
-};
