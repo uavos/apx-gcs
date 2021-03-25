@@ -35,9 +35,7 @@ public:
 protected:
     PVehicle *_vehicle;
 
-private slots:
-    void updateStreamType();
-
 signals:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
+    void xpdrData(PBase::Values values);
 };

@@ -304,6 +304,7 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
+    apxMsgW() << "Not implemented";
     //    MandalaFact::BundleValues values;
     //    values.insert(mandala::est::nav::ref::lat::meta.uid, c.latitude());
     //    values.insert(mandala::est::nav::ref::lon::meta.uid, c.longitude());
@@ -316,6 +317,7 @@ void Vehicle::sendPositionFix(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
+    apxMsgW() << "Not implemented";
     //    MandalaFact::BundleValues values;
     //    values.insert(mandala::est::nav::pos::lat::meta.uid, c.latitude());
     //    values.insert(mandala::est::nav::pos::lon::meta.uid, c.longitude());

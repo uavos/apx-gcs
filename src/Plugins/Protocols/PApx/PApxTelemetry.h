@@ -55,6 +55,8 @@ private:
     bool unpack(uint8_t pseq, PStreamReader &stream);
     QVariant raw_value(const void *src, mandala::type_id_e type);
 
+    bool unpack_xpdr(PStreamReader &stream);
+
 private slots:
     void updateStatus();
 

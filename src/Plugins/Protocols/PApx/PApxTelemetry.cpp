@@ -76,6 +76,14 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
     switch (pid.uid) {
     default:
         return false;
+    case mandala::cmd::env::telemetry::xpdr::uid:
+        trace()->data(stream.payload());
+        if (pid.pri == xbus::pri_request)
+            return true;
+        if (!unpack_xpdr(stream))
+            break;
+        return true;
+
     case mandala::cmd::env::telemetry::format::uid:
         trace()->data(stream.payload());
         if (pid.pri == xbus::pri_response) {
@@ -239,4 +247,26 @@ void PApxTelemetry::request_format(uint8_t part)
     _req << part;
     trace()->block(QString::number(part));
     _req.send();
+}
+
+bool PApxTelemetry::unpack_xpdr(PStreamReader &stream)
+{
+    if (stream.available() != xbus::vehicle::xpdr_s::psize())
+        return false;
+
+    xbus::vehicle::xpdr_s xpdr;
+    xpdr.read(&stream);
+
+    PBase::Values values;
+
+    values.insert(mandala::est::nav::pos::lat::uid, xpdr.lat);
+    values.insert(mandala::est::nav::pos::lon::uid, xpdr.lon);
+    values.insert(mandala::est::nav::pos::altitude::uid, xpdr.alt);
+
+    values.insert(mandala::est::nav::pos::speed::uid, xpdr.speed);
+    values.insert(mandala::est::nav::pos::course::uid, xpdr.course);
+    values.insert(mandala::cmd::nav::proc::mode::uid, xpdr.mode);
+
+    emit xpdrData(values);
+    return true;
 }

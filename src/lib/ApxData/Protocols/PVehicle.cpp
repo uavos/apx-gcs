@@ -98,5 +98,5 @@ void PVehicle::incErrcnt()
 
 void PVehicle::updateValue()
 {
-    setValue(QMetaEnum::fromType<StreamType>().valueToKey(StreamType()));
+    setValue(QMetaEnum::fromType<StreamType>().valueToKey(streamType()));
 }

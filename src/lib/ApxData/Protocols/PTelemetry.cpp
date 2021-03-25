@@ -27,10 +27,10 @@ PTelemetry::PTelemetry(PVehicle *parent)
     : PTreeBase(parent, "telemetry", tr("Telemetry"), tr("Downlink stream decoder"))
     , _vehicle(parent)
 {
-    connect(this, &PTelemetry::telemetryData, this, &PTelemetry::updateStreamType);
-}
-
-void PTelemetry::updateStreamType()
-{
-    _vehicle->setStreamType(PVehicle::TELEMETRY);
+    connect(this, &PTelemetry::telemetryData, this, [this]() {
+        _vehicle->setStreamType(PVehicle::TELEMETRY);
+    });
+    connect(this, &PTelemetry::xpdrData, this, [this]() {
+        _vehicle->setStreamType(PVehicle::XPDR);
+    });
 }
