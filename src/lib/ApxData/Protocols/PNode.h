@@ -21,21 +21,29 @@
  */
 #pragma once
 
-#include <Protocols/PBase.h>
-#include <Protocols/PStream.h>
+#include "PBase.h"
 
-class PApxRequest : public PStreamWriter
+class PVehicle;
+class PNode;
+class PNodes;
+
+class PNode : public PTreeBase
 {
+    Q_OBJECT
+    Q_PROPERTY(QString uid READ uid CONSTANT)
+
 public:
-    explicit PApxRequest(PTreeBase *parent);
+    explicit PNode(PNodes *parent, QString uid);
 
-    void request(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request);
-    virtual void send();
-    QByteArray get_packet();
-
-    xbus::pid_s pid{};
+    QString uid() const { return m_uid; }
 
 private:
-    uint8_t _txbuf[xbus::size_packet_max];
-    PTreeBase *_parent;
+    QString m_uid;
+
+public slots:
+    virtual void requestIdent() { _nimp(__FUNCTION__); }
+    virtual void requestReboot() { _nimp(__FUNCTION__); }
+
+signals:
+    void identReceived(QJsonValue json);
 };

@@ -35,8 +35,8 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
 
     QString sect = tr("Backups");
 
-    f_backups = new LookupNodeBackup(node->protocol(), this);
-    f_backups->setSection(sect);
+    //f_backups = new LookupNodeBackup(node->_protocol, this);
+    //f_backups->setSection(sect);
 
     f_restore = new Fact(this, "recent", tr("Restore recent"), tr("Restore the most recent backup"));
     f_restore->setIcon("undo");
@@ -65,7 +65,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_updates = new Fact(f_maintenance, "updates", tr("Updates"), tr("Firmware updates"), Group);
     f_updates->setIcon("chip");
 
-    f = new Fact(f_updates, "firmware", tr("Firmware"), tr("Update node firmware"));
+    /*f = new Fact(f_updates, "firmware", tr("Firmware"), tr("Update node firmware"));
     connect(f, &Fact::triggered, this, [this]() {
         node->protocol()->requestUpgrade(node->protocol(), "fw");
     });
@@ -73,7 +73,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f = new Fact(f_updates, "loader", tr("Loader"), tr("Update node loader"));
     connect(f, &Fact::triggered, this, [this]() {
         node->protocol()->requestUpgrade(node->protocol(), "ldr");
-    });
+    });*/
 
     registerOnlineAction(f_updates);
 
@@ -85,10 +85,10 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                   tr("Node status request"),
                                   Group);
     f_status->setIcon("playlist-check");
-    f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
+    /*f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
     connect(f, &Fact::triggered, this, [this]() { node->protocol()->requestStatus(); });
     f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));
-    connect(f, &Fact::triggered, this, [this]() { node->shell(QStringList() << "tasks"); });
+    connect(f, &Fact::triggered, this, [this]() { node->shell(QStringList() << "tasks"); });*/
     registerOnlineAction(f_status);
 
     f_sys = new NodeToolsGroup(f_maintenance,
@@ -140,5 +140,5 @@ void NodeTools::execUsr(Fact *f)
     if (!f->descr().isEmpty())
         msg.append(QString(" (%1)").arg(f->descr()));
     node->message(msg);
-    node->protocol()->requestUsr(static_cast<quint8>(f->property("cmd").toUInt()), QByteArray());
+    //node->protocol()->requestUsr(static_cast<quint8>(f->property("cmd").toUInt()), QByteArray());
 }

@@ -32,24 +32,31 @@
 #include <QFontDatabase>
 #include <QQmlEngine>
 
-NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
-    : ProtocolViewBase(parent, protocol)
+NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
+    : Fact(parent, protocol->name())
     , _nodes(nodes)
+    , _protocol(protocol)
 {
+    bindProperty(protocol, "title", true);
+    bindProperty(protocol, "descr", true);
+    bindProperty(protocol, "value", true);
+    bindProperty(protocol, "progress", true);
+
     setOptions(ProgressTrack | ModifiedGroup);
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
-
-    unbindProperty("value"); //unbind from protocol
 
     new NodeViewActions(this, _nodes);
 
     tools = new NodeTools(this, Action);
 
     //protocol
-    connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
+    connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
+
+    connect(this, &Fact::removed, protocol, &Fact::deleteFact);
+
+    /*connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
 
     // validity
-    connect(protocol, &ProtocolNode::identChanged, this, &NodeItem::clear);
     connect(protocol, &ProtocolNode::dictValidChanged, this, &NodeItem::validateDict);
     connect(protocol, &ProtocolNode::validChanged, this, &NodeItem::validateData);
 
@@ -70,7 +77,9 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
     statusTimer.setSingleShot(true);
     statusTimer.setInterval(10000);
     connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
-    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);
+    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);*/
+
+    protocol->requestIdent();
 }
 
 const QList<NodeField *> &NodeItem::fields() const
@@ -80,10 +89,10 @@ const QList<NodeField *> &NodeItem::fields() const
 
 void NodeItem::validateDict()
 {
-    if (!protocol()->dictValid()) {
+    /*if (!protocol()->dictValid()) {
         clear();
         return;
-    }
+    }*/
     //groupFields();
     //qDebug()<path();
 
@@ -103,7 +112,7 @@ void NodeItem::validateDict()
 }
 void NodeItem::validateData()
 {
-    if (!protocol()->valid())
+    /*if (!protocol()->valid())
         return;
     if (!protocol()->enabled())
         return;
@@ -112,28 +121,28 @@ void NodeItem::validateData()
     } else {
         //setNconfID(0);
         //nodes->storage->saveNodeConfig(this);
-    }
+    }*/
     //qDebug()<<"Node dataValid"<<path();
 }
 
 void NodeItem::updateDescr()
 {
-    statusTimer.stop();
+    /*statusTimer.stop();
     setActive(false); // set by status
     QString s = protocol()->text();
     if (s.isEmpty())
         s = protocol()->descr();
-    setDescr(s);
+    setDescr(s);*/
 }
 void NodeItem::updateStatus()
 {
-    if (protocol()->ident().flags.bits.reconf) {
+    /*if (protocol()->ident().flags.bits.reconf) {
         setValue(tr("no config").toUpper());
         return;
     }
     if (m_status_field) {
         setValue(m_status_field->valueText().trimmed());
-    }
+    }*/
 }
 
 void NodeItem::clear()
@@ -147,7 +156,7 @@ void NodeItem::clear()
 
 void NodeItem::upload()
 {
-    if (!protocol()->valid())
+    /*if (!protocol()->valid())
         return;
     if (!modified())
         return;
@@ -172,7 +181,7 @@ void NodeItem::upload()
         _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->valueText(), protocol()->sn());
         values.insert(i->fid(), i->confValue());
     }
-    protocol()->requestUpdate(values);
+    protocol()->requestUpdate(values);*/
 }
 void NodeItem::confSaved()
 {
@@ -181,7 +190,7 @@ void NodeItem::confSaved()
 
 QVariant NodeItem::data(int col, int role) const
 {
-    switch (role) {
+    /*    switch (role) {
     case Qt::ForegroundRole:
         if (protocol()->valid()) {
             if (col == FACT_MODEL_COLUMN_DESCR)
@@ -214,8 +223,15 @@ QVariant NodeItem::data(int col, int role) const
 #endif
         }
         break;
-    }
+    }*/
     return Fact::data(col, role);
+}
+QString NodeItem::toolTip() const
+{
+    QStringList st;
+    st << "ident:";
+    st.append(QJsonDocument(_ident).toJson());
+    return Fact::toolTip().append("\n").append(st.join('\n'));
 }
 
 void NodeItem::groupArrays()
@@ -397,9 +413,15 @@ void NodeItem::linkGroupValues(Fact *f)
 // Protocols connection
 //=============================================================================
 
-void NodeItem::identReceived()
+void NodeItem::identReceived(QJsonValue json)
 {
-    updateStatus();
+    QJsonObject ident = json.toObject();
+    if (ident == _ident)
+        return;
+
+    qWarning() << "ident updated";
+    _ident = ident;
+    clear();
 }
 
 void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
@@ -446,10 +468,10 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     linkGroupValues(this);
 
     // update descr and help from APXFW package
-    _parameters = AppGcs::apxfw()->loadParameters(title(), protocol()->hardware());
+    /*_parameters = AppGcs::apxfw()->loadParameters(title(), protocol()->hardware());
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
-    }
+    }*/
     setEnabled(false);
     backup();
 }
@@ -542,9 +564,9 @@ void NodeItem::confReceived(const QVariantMap &values)
         f->setConfValue(values.value(f->fpath()));
         f->setEnabled(true);
     }
-    if (!protocol()->valid()) {
+    /*if (!protocol()->valid()) {
         backup();
-    }
+    }*/
 
     updateStatus();
 }
@@ -571,7 +593,7 @@ void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
         s.append(QString("/%1").arg(valueText()));
     }
     _nodes->vehicle->message(msg, flags, s);
-    _nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
+    //_nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
 }
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {

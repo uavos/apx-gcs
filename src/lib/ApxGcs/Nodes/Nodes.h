@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#include <Vehicles/Vehicle.h>
+
 #include "LookupConfigs.h"
 #include "NodeItem.h"
 
@@ -51,7 +53,7 @@ public:
     NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
     QList<NodeItem *> nodes() { return m_sn_map.values(); }
 
-    NodeItem *add(ProtocolNode *protocol);
+    NodeItem *add(PNode *protocol);
 
     Q_INVOKABLE void shell(QStringList commands);
 
@@ -59,6 +61,8 @@ public:
     void setValid(bool v);
 
 private:
+    PNodes *_protocol;
+
     QMap<QString, NodeItem *> m_sn_map;
     QDateTime m_syncTimestamp;
 
@@ -73,7 +77,7 @@ private slots:
     void upload();
     void stop();
 
-    void nodeNotify(ProtocolNode *protocol);
+    void node_available(PNode *node);
     void syncDone();
 
     void save();

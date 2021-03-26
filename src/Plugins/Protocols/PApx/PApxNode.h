@@ -21,21 +21,40 @@
  */
 #pragma once
 
-#include <Protocols/PBase.h>
-#include <Protocols/PStream.h>
+#include "PApxNodeRequest.h"
+#include "PApxVehicle.h"
 
-class PApxRequest : public PStreamWriter
+class PApxVehicle;
+class PApxNodes;
+
+class PApxNode : public PNode
 {
+    Q_OBJECT
+
 public:
-    explicit PApxRequest(PTreeBase *parent);
+    explicit PApxNode(PApxNodes *parent, QString uid);
+    ~PApxNode();
 
-    void request(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request);
-    virtual void send();
-    QByteArray get_packet();
+    void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
-    xbus::pid_s pid{};
+    void schedule_request(PApxNodeRequest *req, mandala::uid_t uid);
+    void delete_request(mandala::uid_t uid);
+    void clear_requests();
+
+    PApxNodes *nodes() const { return _nodes; }
 
 private:
-    uint8_t _txbuf[xbus::size_packet_max];
-    PTreeBase *_parent;
+    PApxNodes *_nodes;
+    PApxRequest _req;
+    QHash<mandala::uid_t, PApxNodeRequest *> _requests;
+
+    void updateProgress();
+
+protected:
+    void requestIdent() override { new PApxNodeRequestIdent(this); }
+    void requestReboot() override { new PApxNodeRequestReboot(this); }
+
+signals:
+    void request_scheduled(PApxNodeRequest *req);
+    void request_finished(PApxNodeRequest *req);
 };

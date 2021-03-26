@@ -21,21 +21,39 @@
  */
 #pragma once
 
-#include <Protocols/PBase.h>
-#include <Protocols/PStream.h>
+#include "PApxVehicle.h"
 
-class PApxRequest : public PStreamWriter
+class PApxVehicle;
+class PApxNode;
+class PApxNodeRequest;
+
+class PApxNodes : public PNodes
 {
+    Q_OBJECT
+
 public:
-    explicit PApxRequest(PTreeBase *parent);
+    explicit PApxNodes(PApxVehicle *parent);
 
-    void request(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request);
-    virtual void send();
-    QByteArray get_packet();
-
-    xbus::pid_s pid{};
+    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
 private:
-    uint8_t _txbuf[xbus::size_packet_max];
-    PTreeBase *_parent;
+    PApxRequest _req;
+    QHash<QString, PApxNode *> _nodes;
+
+    PApxNode *getNode(QString uid, bool createNew = true);
+
+    QTimer _reqTimer;
+    QList<PApxNodeRequest *> _requests;
+    PApxNodeRequest *_request{};
+    uint _retry{};
+
+protected:
+    void requestSearch() override;
+
+private slots:
+    void request_scheduled(PApxNodeRequest *req);
+    void request_finished(PApxNodeRequest *req);
+    void request_timeout();
+    void request_next();
+    void request_current();
 };

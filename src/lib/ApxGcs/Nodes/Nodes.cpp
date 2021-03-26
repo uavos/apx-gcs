@@ -35,6 +35,7 @@ Nodes::Nodes(Vehicle *vehicle)
            tr("Vehicle components"),
            Group | Count | FlatModel | ModifiedGroup | ProgressTrack)
     , vehicle(vehicle)
+    , _protocol(vehicle->protocol() ? vehicle->protocol()->nodes() : nullptr)
 {
     setIcon("puzzle");
 
@@ -97,21 +98,23 @@ Nodes::Nodes(Vehicle *vehicle)
         protocol->requestSearch();
     }*/
 
+    connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
+
     connect(this, &Fact::triggered, this, &Nodes::search);
 }
 
-void Nodes::nodeNotify(ProtocolNode *protocol)
+void Nodes::node_available(PNode *node)
 {
-    add(protocol);
+    add(node);
 }
-NodeItem *Nodes::add(ProtocolNode *protocol)
+NodeItem *Nodes::add(PNode *protocol)
 {
-    NodeItem *node = this->node(protocol->sn());
+    NodeItem *node = this->node(protocol->uid());
     if (node)
         return node;
 
     node = new NodeItem(this, this, protocol);
-    m_sn_map.insert(protocol->sn(), node);
+    m_sn_map.insert(protocol->uid(), node);
 
     return node;
 }
@@ -138,10 +141,9 @@ void Nodes::updateActions()
 
 void Nodes::search()
 {
-    /*if (!protocol()->enabled())
+    if (!_protocol)
         return;
-    protocol()->setActive(true);
-    protocol()->requestSearch();*/
+    _protocol->requestSearch();
 }
 void Nodes::stop()
 {
@@ -154,10 +156,9 @@ void Nodes::clear()
     /*if (protocol()->upgrading()) {
         apxMsgW() << tr("Upgrading in progress");
         return;
-    }
+    }*/
     m_sn_map.clear();
     deleteChildren();
-    protocol()->clear();*/
     setModified(false);
 }
 

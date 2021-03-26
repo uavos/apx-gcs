@@ -33,9 +33,7 @@
 #include <Telemetry/Telemetry.h>
 
 Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
-    : Fact(vehicles,
-           protocol ? protocol->name().append('#') : "replay",
-           protocol ? protocol->title() : "REPLAY")
+    : Fact(vehicles, protocol ? protocol->name() : "replay", protocol ? protocol->title() : "REPLAY")
     , _protocol(protocol)
 {
     setSection(vehicles->title());
@@ -43,6 +41,10 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     if (protocol) {
         bindProperty(protocol, "title", true);
         bindProperty(protocol, "value", true);
+
+        // TODO: vehicle deletion
+        // connect(protocol, &Fact::removed, this, &Fact::deleteFact);
+        connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
         connect(protocol, &PVehicle::streamTypeChanged, this, &Vehicle::streamTypeChanged);
 
@@ -115,10 +117,13 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         //mandala update signals
         connect(f_mandala, &Mandala::sendValue, protocol->data(), &PData::sendValue);
         connect(protocol->data(), &PData::valuesData, f_mandala, &Mandala::valuesData);
+
         connect(protocol->telemetry(),
                 &PTelemetry::telemetryData,
                 f_mandala,
                 &Mandala::telemetryData);
+
+        connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::valuesData);
 
         connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
@@ -169,13 +174,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     setProperty("test", QVariant::fromValue(f_select));
 
     App::jsync(this);
-}
-Vehicle::~Vehicle()
-{
-    if (_protocol)
-        _protocol->deleteFact();
-
-    qDebug() << "vehicle removed";
 }
 
 void Vehicle::updateActive()

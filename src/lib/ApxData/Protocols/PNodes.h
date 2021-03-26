@@ -24,6 +24,7 @@
 #include "PBase.h"
 
 class PVehicle;
+class PNode;
 
 class PNodes : public PTreeBase
 {
@@ -31,4 +32,11 @@ class PNodes : public PTreeBase
 
 public:
     explicit PNodes(PVehicle *parent);
+
+public slots:
+    virtual void requestSearch() { _nimp(__FUNCTION__); }
+
+signals:
+    void node_available(PNode *node);
+    void node_response(PNode *node);
 };

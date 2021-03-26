@@ -23,7 +23,7 @@
 
 PVehicle::PVehicle(PBase *parent, QString callsign, QString uid, VehicleType type)
     : PTreeBase(parent,
-                uid.isEmpty() ? callsign.toLower() : uid,
+                uid.isEmpty() ? callsign.toLower() : uid + "#",
                 callsign,
                 tr("Vehicle interface"),
                 Group | Count)

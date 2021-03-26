@@ -22,6 +22,7 @@
 #include "PApxVehicle.h"
 
 #include "PApxData.h"
+#include "PApxNodes.h"
 #include "PApxTelemetry.h"
 
 PApxVehicle::PApxVehicle(
@@ -33,7 +34,7 @@ PApxVehicle::PApxVehicle(
 {
     m_data = new PApxData(this);
     m_telemetry = new PApxTelemetry(this);
-    //m_nodes = new PApxNodes(this);
+    m_nodes = new PApxNodes(this);
 }
 
 void PApxVehicle::process_downlink(PStreamReader &stream)
@@ -57,11 +58,9 @@ void PApxVehicle::process_downlink(PStreamReader &stream)
     }
     emit packetReceived(uid);
 
-    if (mandala::cmd::env::nmt::match(uid)) {
+    if (static_cast<PApxNodes *>(m_nodes)->process_downlink(pid, stream)) {
         setStreamType(NMT);
-        /*m_nodes->downlink(pid, stream);
-        //forward to local nodes too
-        if (!isLocal()
+        /*if (!isLocal()
             && (mandala::cmd::env::nmt::search::match(uid)
                 || mandala::cmd::env::nmt::ident::match(uid)
                 || mandala::cmd::env::nmt::file::match(uid))) {

@@ -19,23 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "PNode.h"
 
-#include <Protocols/PBase.h>
-#include <Protocols/PStream.h>
+#include "PVehicle.h"
 
-class PApxRequest : public PStreamWriter
-{
-public:
-    explicit PApxRequest(PTreeBase *parent);
-
-    void request(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request);
-    virtual void send();
-    QByteArray get_packet();
-
-    xbus::pid_s pid{};
-
-private:
-    uint8_t _txbuf[xbus::size_packet_max];
-    PTreeBase *_parent;
-};
+PNode::PNode(PNodes *parent, QString uid)
+    : PTreeBase(parent, uid + '#', uid, "", Group)
+    , m_uid(uid)
+{}

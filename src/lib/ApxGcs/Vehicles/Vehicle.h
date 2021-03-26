@@ -64,8 +64,6 @@ class Vehicle : public Fact
 public:
     explicit Vehicle(Vehicles *vehicles, PVehicle *protocol);
 
-    ~Vehicle() override;
-
     Mandala *f_mandala;
     Nodes *f_nodes;
     VehicleMission *f_mission;

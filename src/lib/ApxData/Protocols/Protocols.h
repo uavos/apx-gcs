@@ -26,6 +26,7 @@
 
 #include "PBase.h"
 #include "PData.h"
+#include "PNode.h"
 #include "PNodes.h"
 #include "PTelemetry.h"
 

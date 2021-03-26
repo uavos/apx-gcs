@@ -24,8 +24,7 @@
 #include "NodeField.h"
 #include "NodeTools.h"
 
-#include <Protocols/ProtocolNode.h>
-#include <Protocols/ProtocolViewBase.h>
+#include <Protocols/Protocols.h>
 
 #include <App/AppNotify.h>
 
@@ -33,12 +32,12 @@
 
 class Nodes;
 
-class NodeItem : public ProtocolViewBase<ProtocolNode>
+class NodeItem : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol);
+    explicit NodeItem(Fact *parent, Nodes *nodes, PNode *protocol);
 
     NodeTools *tools;
 
@@ -53,13 +52,19 @@ public:
 
     inline Nodes *nodes() const { return _nodes; }
 
+    PNode *protocol() const { return _protocol; }
+
 protected:
     QTimer statusTimer;
 
     QVariant data(int col, int role) const override;
+    QString toolTip() const override;
 
 private:
     Nodes *_nodes{nullptr};
+    PNode *_protocol;
+
+    QJsonObject _ident;
 
     QList<NodeField *> m_fields;
 
@@ -88,7 +93,7 @@ public slots:
 
     //protocols:
 private slots:
-    void identReceived();
+    void identReceived(QJsonValue json);
     void dictReceived(const ProtocolNode::Dict &dict);
     void confReceived(const QVariantMap &values);
     void confSaved();

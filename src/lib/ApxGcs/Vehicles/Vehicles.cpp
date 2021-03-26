@@ -123,6 +123,8 @@ void Vehicles::vehicle_available(PVehicle *protocol)
 {
     Vehicle *v = new Vehicle(this, protocol);
 
+    connect(v, &Fact::removed, this, [this]() { selectVehicle(nullptr); });
+
     emit vehicleRegistered(v);
 
     if (v->isIdentified()) {
@@ -145,8 +147,10 @@ void Vehicles::vehicle_available(PVehicle *protocol)
 
 void Vehicles::selectVehicle(Vehicle *v)
 {
-    if (!v)
+    if (!v) {
+        selectVehicle(f_replay);
         return;
+    }
 
     if (m_current) {
         m_current->setActive(false);
