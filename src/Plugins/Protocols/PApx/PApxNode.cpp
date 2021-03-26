@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "PApxNode.h"
+#include "PApxNodeFile.h"
 #include "PApxNodes.h"
 
 #include <Mandala/Mandala.h>
@@ -27,7 +28,6 @@
 
 PApxNode::PApxNode(PApxNodes *parent, QString uid)
     : PNode(parent, uid)
-    , _nodes(parent)
     , _req(this)
 {}
 
@@ -49,6 +49,58 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     if (stream.available() == 0)
         return;
 
+    // file ops - make them download data from any source
+    if (uid == mandala::cmd::env::nmt::file::uid) {
+        if (stream.available() <= sizeof(xbus::node::file::op_e))
+            return;
+
+        xbus::node::file::op_e op;
+        stream >> op;
+
+        if (op & xbus::node::file::reply_op_mask)
+            trace()->block("re");
+
+        op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
+        trace()->block(QString::number(op));
+
+        const char *s = stream.read_string(16);
+        if (!s)
+            return;
+
+        trace()->block(QString(s));
+        trace()->data(stream.payload());
+
+        auto f = file(s);
+        if (!f)
+            return;
+
+        f->process_downlink(op, stream);
+    }
+
+    // node messages
+    if (uid == mandala::cmd::env::nmt::msg::uid) {
+        if (stream.available() < (sizeof(xbus::node::msg::type_e) + 1))
+            return;
+
+        xbus::node::msg::type_e t;
+        stream >> t;
+        trace()->block(QString::number(t));
+
+        const char *s = stream.read_string(stream.available());
+        QString msg(QString(s).trimmed());
+        trace()->block(msg);
+
+        if (msg.isEmpty())
+            return;
+
+        msg.replace(":", ": ");
+        msg = msg.simplified();
+
+        emit messageReceived((msg_type_e) t, msg);
+        return;
+    }
+
+    // check for requests responses
     if (pid.pri != xbus::pri_response) {
         // a request from another GCS?
         return;
@@ -107,4 +159,23 @@ void PApxNode::updateProgress()
     if (progress() >= 0)
         return;
     setProgress(0);
+}
+
+void PApxNode::updateFiles(QStringList fnames)
+{
+    if (fnames == _files_map.keys()) {
+        for (auto i : _files_map) {
+            i->reset();
+        }
+        return;
+    }
+
+    for (auto i : _files_map) {
+        i->deleteLater();
+    }
+    _files_map.clear();
+    delete_request(mandala::cmd::env::nmt::file::uid);
+    for (auto i : fnames) {
+        _files_map.insert(i, new PApxNodeFile(this, i));
+    }
 }

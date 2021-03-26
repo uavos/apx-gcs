@@ -50,9 +50,10 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     tools = new NodeTools(this, Action);
 
     //protocol
-    connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
-
     connect(this, &Fact::removed, protocol, &Fact::deleteFact);
+
+    connect(protocol, &PNode::messageReceived, this, &NodeItem::messageReceived);
+    connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
 
     /*connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
 
@@ -571,16 +572,16 @@ void NodeItem::confReceived(const QVariantMap &values)
     updateStatus();
 }
 
-void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
+void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)
 {
     AppNotify::NotifyFlags flags = AppNotify::FromVehicle | AppNotify::Important;
     switch (type) {
     default:
         break;
-    case xbus::node::msg::warn:
+    case PNode::warn:
         flags |= AppNotify::Warning;
         break;
-    case xbus::node::msg::err:
+    case PNode::err:
         flags |= AppNotify::Error;
         break;
     }

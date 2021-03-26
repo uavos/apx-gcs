@@ -21,43 +21,48 @@
  */
 #pragma once
 
+#include <QtCore>
+
 #include "PApxNodeRequest.h"
-#include "PApxVehicle.h"
 
-class PApxVehicle;
-class PApxNodes;
-class PApxNodeFile;
+class PApxNode;
 
-class PApxNode : public PNode
+class PApxNodeFile : public PTreeBase
 {
+    // listens and collects file data from read/write requests
+
     Q_OBJECT
-
 public:
-    explicit PApxNode(PApxNodes *parent, QString uid);
-    ~PApxNode();
+    explicit PApxNodeFile(PApxNode *node, const QString &name);
 
-    void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+    // called by nodes
+    void process_downlink(xbus::node::file::op_e op, PStreamReader &stream);
 
-    void schedule_request(PApxNodeRequest *req, mandala::uid_t uid);
-    void delete_request(mandala::uid_t uid);
-    void clear_requests();
-
-    void updateFiles(QStringList fnames);
-    PApxNodeFile *file(QString name) const { return _files_map.value(name); }
+    void reset();
 
 private:
-    PApxRequest _req;
-    QHash<mandala::uid_t, PApxNodeRequest *> _requests;
+    PApxNode *_node;
 
-    QMap<QString, PApxNodeFile *> _files_map;
+    xbus::node::file::info_s _info{};
+
+    QByteArray _data;
+
+    xbus::node::file::offset_t _offset{};
+    xbus::node::file::size_t _size{};
+    xbus::node::file::size_t _tcnt{};
+    xbus::node::hash_t _hash{};
+
+    bool check_info(PStreamReader &stream);
 
     void updateProgress();
 
-protected:
-    void requestIdent() override { new PApxNodeRequestIdent(this); }
-    void requestReboot() override { new PApxNodeRequestReboot(this); }
+private slots:
+    void requestInfo() { new PApxNodeRequestFile(_node, name(), xbus::node::file::info); }
 
 signals:
-    void request_scheduled(PApxNodeRequest *req);
-    void request_finished(PApxNodeRequest *req);
+    void finished();
+    void error();
+    void interrupted();
+
+    void downloaded(const xbus::node::file::info_s &info, const QByteArray data);
 };

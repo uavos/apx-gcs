@@ -109,7 +109,7 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
     _requests.append(req);
     if (_request)
         return;
-    request_next();
+    QTimer::singleShot(0, this, &PApxNodes::request_next);
 }
 void PApxNodes::request_finished(PApxNodeRequest *req)
 {

@@ -24,6 +24,6 @@
 #include "PVehicle.h"
 
 PNode::PNode(PNodes *parent, QString uid)
-    : PTreeBase(parent, uid + '#', uid, "", Group)
+    : PTreeBase(parent, "node#", "node", "", Group)
     , m_uid(uid)
 {}

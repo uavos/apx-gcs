@@ -98,7 +98,7 @@ private slots:
     void confReceived(const QVariantMap &values);
     void confSaved();
 
-    void messageReceived(xbus::node::msg::type_e type, QString msg);
+    void messageReceived(PNode::msg_type_e type, QString msg);
     void statusReceived(const xbus::node::status::status_s &status);
 
 signals:

@@ -27,8 +27,8 @@
 DatalinkInspector::DatalinkInspector(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
-           tr("DatalinkInspector"),
-           tr("System terminal"),
+           tr("Datalink Inspector"),
+           tr("Analyze datalink packets"),
            Group,
            "teamviewer")
 {

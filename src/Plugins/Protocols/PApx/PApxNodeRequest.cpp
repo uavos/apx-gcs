@@ -57,6 +57,7 @@ void PApxNodeRequest::make_request(PApxRequest &req)
     memcpy(guid, src.data(), sz);
     req.write(guid, sizeof(guid));
     _node->trace()->block(_node->title().append(':'));
+    _node->trace()->tree();
 
     request(req);
 }
@@ -105,6 +106,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     fnames.sort();
 
     _node->setTitle(sname);
+    _node->updateFiles(fnames);
 
     // node descr
     QStringList descr;
@@ -132,4 +134,12 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     _node->identReceived(json);
 
     return true;
+}
+
+void PApxNodeRequestFile::request(PApxRequest &req)
+{
+    req << _op;
+    trace()->block(QString::number(_op));
+    req.write_string(_name.toUtf8());
+    trace()->block(_name);
 }

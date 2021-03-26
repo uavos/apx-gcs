@@ -78,3 +78,19 @@ public:
     {}
     bool response(PStreamReader &stream) override;
 };
+
+class PApxNodeRequestFile : public PApxNodeRequest
+{
+public:
+    explicit PApxNodeRequestFile(PApxNode *node, QString name, xbus::node::file::op_e op)
+        : PApxNodeRequest(node, mandala::cmd::env::nmt::file::uid)
+        , _name(name)
+        , _op(op)
+    {}
+
+private:
+    QString _name;
+    xbus::node::file::op_e _op;
+
+    virtual void request(PApxRequest &req) override;
+};

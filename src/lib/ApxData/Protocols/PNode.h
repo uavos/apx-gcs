@@ -37,13 +37,22 @@ public:
 
     QString uid() const { return m_uid; }
 
+    enum msg_type_e {
+        info,
+        warn,
+        err,
+    };
+
 private:
     QString m_uid;
 
 public slots:
     virtual void requestIdent() { _nimp(__FUNCTION__); }
+    virtual void requestDict() { _nimp(__FUNCTION__); }
+
     virtual void requestReboot() { _nimp(__FUNCTION__); }
 
 signals:
+    void messageReceived(PNode::msg_type_e type, QString msg);
     void identReceived(QJsonValue json);
 };
