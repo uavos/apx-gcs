@@ -35,6 +35,7 @@ class Nodes;
 class NodeItem : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
 
 public:
     explicit NodeItem(Fact *parent, Nodes *nodes, PNode *protocol);
@@ -53,6 +54,8 @@ public:
     inline Nodes *nodes() const { return _nodes; }
 
     PNode *protocol() const { return _protocol; }
+
+    bool valid() const { return m_valid; }
 
 protected:
     QTimer statusTimer;
@@ -79,6 +82,8 @@ private:
     void linkGroupValues(Fact *f);
     void updateArrayChBinding(Fact *f_element, Fact *f_array, Fact *f_ch);
 
+    bool m_valid{};
+
 private slots:
 
     void validateDict();
@@ -104,4 +109,6 @@ private slots:
 signals:
     void saveValues();
     void shell(QStringList commands);
+
+    void validChanged();
 };

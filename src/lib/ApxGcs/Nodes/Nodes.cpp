@@ -116,6 +116,8 @@ NodeItem *Nodes::add(PNode *protocol)
     node = new NodeItem(this, this, protocol);
     m_sn_map.insert(protocol->uid(), node);
 
+    connect(node, &NodeItem::validChanged, this, &Nodes::updateValid);
+
     return node;
 }
 void Nodes::syncDone()
@@ -139,6 +141,21 @@ void Nodes::updateActions()
     f_status->setEnabled(enb && !empty && !upgrading);*/
 }
 
+void Nodes::updateValid()
+{
+    bool v = !nodes().isEmpty();
+    for (auto i : nodes()) {
+        if (i->valid())
+            continue;
+        v = false;
+        break;
+    }
+    if (m_valid == v)
+        return;
+    m_valid = v;
+    emit validChanged();
+}
+
 void Nodes::search()
 {
     if (!_protocol)
@@ -157,6 +174,10 @@ void Nodes::clear()
         apxMsgW() << tr("Upgrading in progress");
         return;
     }*/
+    if (m_valid) {
+        m_valid = false;
+        emit validChanged();
+    }
     m_sn_map.clear();
     deleteChildren();
     setModified(false);
@@ -222,12 +243,4 @@ void Nodes::shell(QStringList commands)
     for (auto i : nodes()) {
         i->shell(commands);
     }
-}
-
-void Nodes::setValid(bool v)
-{
-    if (m_valid == v)
-        return;
-    m_valid = v;
-    emit validChanged();
 }

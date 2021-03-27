@@ -131,7 +131,7 @@ void PApxNode::schedule_request(PApxNodeRequest *req)
         // the most recent for the uid is the only valid
         if (uid == mandala::cmd::env::nmt::ident::uid)
             return;
-        qDebug() << "dup";
+        qDebug() << "dup" << Mandala::meta(uid).path;
         delete_request(uid);
     }
     _requests.insert(uid, req);
@@ -142,7 +142,7 @@ void PApxNode::reschedule_request(PApxNodeRequest *req)
 {
     mandala::uid_t uid = req->uid();
     if (!_requests.contains(uid)) {
-        qDebug() << "not exists";
+        qDebug() << "not exists" << Mandala::meta(uid).path;
         delete_request(uid);
         return;
     }
@@ -483,4 +483,7 @@ QVariant PApxNode::_read_param(PStreamReader &stream, size_t fidx)
     return QVariant();
 }
 
-void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data) {}
+void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    //
+}

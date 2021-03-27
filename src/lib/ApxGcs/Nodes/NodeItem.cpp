@@ -150,6 +150,11 @@ void NodeItem::updateStatus()
 
 void NodeItem::clear()
 {
+    if (m_valid) {
+        m_valid = false;
+        emit validChanged();
+    }
+
     m_status_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
@@ -193,30 +198,30 @@ void NodeItem::confSaved()
 
 QVariant NodeItem::data(int col, int role) const
 {
-    /*    switch (role) {
+    switch (role) {
     case Qt::ForegroundRole:
-        if (protocol()->valid()) {
+        if (valid()) {
             if (col == FACT_MODEL_COLUMN_DESCR)
                 return QColor(Qt::darkGray);
             if (col == FACT_MODEL_COLUMN_VALUE)
                 return QColor(Qt::yellow).lighter(180);
-        }
-        if (!protocol()->dictValid())
+        } else {
             return QColor(255, 200, 200);
-        if (!protocol()->valid())
-            return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
-        break;
-    case Qt::BackgroundRole:
-        if (protocol()->valid()) {
-            return QColor(0x10, 0x20, 0x30);
         }
-        if (!protocol()->dictValid())
+        //if (!protocol()->valid())
+        return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
+        //break;
+    case Qt::BackgroundRole:
+        if (valid()) {
+            return QColor(0x10, 0x20, 0x30);
+        } else {
             return QVariant();
-        if (!protocol()->valid())
-            return QVariant();
-        if (protocol()->ident().flags.bits.reconf)
-            return QColor(Qt::darkGray).darker(200);
-        return QColor(0x20, 0x40, 0x60);
+        }
+        // if (!protocol()->valid())
+        //     return QVariant();
+        // if (protocol()->ident().flags.bits.reconf)
+        //     return QColor(Qt::darkGray).darker(200);
+        // return QColor(0x20, 0x40, 0x60);
     case Qt::FontRole:
         if (col == Fact::FACT_MODEL_COLUMN_DESCR) {
 #ifdef Q_OS_MAC
@@ -226,7 +231,7 @@ QVariant NodeItem::data(int col, int role) const
 #endif
         }
         break;
-    }*/
+    }
     return Fact::data(col, role);
 }
 QString NodeItem::toolTip() const
@@ -566,17 +571,38 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
 
 void NodeItem::confReceived(QVariantMap values)
 {
-    //qDebug() << values;
-    setEnabled(true);
-    for (auto f : m_fields) {
-        if (!values.contains(f->fpath()))
-            continue;
-        f->setConfValue(values.value(f->fpath()));
-        //f->setEnabled(true);
+    if (m_fields.isEmpty()) {
+        qWarning() << "missing dict:" << title();
+        return;
     }
-    /*if (!protocol()->valid()) {
+
+    QStringList fields;
+    for (auto f : m_fields) {
+        QString fpath = f->fpath();
+        if (!values.contains(fpath)) {
+            qWarning() << "missing data for:" << fpath;
+            continue;
+        }
+        fields.append(fpath);
+        f->setConfValue(values.value(fpath));
+    }
+
+    for (auto fpath : values.keys()) {
+        if (!fields.contains(fpath)) {
+            qWarning() << "missing field for:" << fpath;
+        }
+    }
+    if (fields.size() == m_fields.size()) {
+        setEnabled(true);
+    } else {
+        apxMsgW() << tr("Inconsistent parameters");
+    }
+
+    if (!m_valid) {
         backup();
-    }*/
+        m_valid = true;
+        emit validChanged();
+    }
 
     updateStatus();
 }
