@@ -52,13 +52,21 @@ private:
 
     QMap<QString, PApxNodeFile *> _files_map;
 
-    QJsonObject _ident;
+    // stored dict
+    xbus::node::hash_t _dict_hash{};
+    QList<xbus::node::conf::type_e> _field_types;
+    QList<size_t> _field_arrays;
+    QStringList _field_names;
 
     void updateProgress();
+
+    QVariant _read_param(PStreamReader &stream, size_t fidx);
 
 protected:
     void requestIdent() override { new PApxNodeRequestIdent(this); }
     void requestDict() override { new PApxNodeRequestFileRead(this, "dict"); }
+    void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
+    void requestScript() override { new PApxNodeRequestFileRead(this, "script"); }
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
 

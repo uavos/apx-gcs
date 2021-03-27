@@ -127,7 +127,7 @@ void NodeField::updateStatus()
     for (auto i : facts()) {
         if (i->isZero())
             continue;
-        QString s = i->valueText();
+        auto s = i->valueText();
         if (s.isEmpty())
             continue;
         if (s == "0")

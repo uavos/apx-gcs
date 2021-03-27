@@ -55,6 +55,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(protocol, &PNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
+    connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
 
     /*connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
 
@@ -460,7 +461,6 @@ void NodeItem::dictReceived(QJsonValue json)
             tools->addCommand(g, name, title, cmd_cnt++);
         } else { // data field
             NodeField *f = new NodeField(g, this, field, m_fields.size());
-            //f->setEnabled(false);
             m_fields.append(f);
             if (!m_status_field) {
                 if (type == "string") {
@@ -480,8 +480,10 @@ void NodeItem::dictReceived(QJsonValue json)
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
     }
-    // setEnabled(false);
+    //setEnabled(false);
     backup();
+
+    _protocol->requestConf();
 }
 
 static QVariant jsonToVariant(QJsonValue json)
@@ -562,7 +564,7 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
     return false;
 }
 
-void NodeItem::confReceived(const QVariantMap &values)
+void NodeItem::confReceived(QVariantMap values)
 {
     //qDebug() << values;
     setEnabled(true);
@@ -570,7 +572,7 @@ void NodeItem::confReceived(const QVariantMap &values)
         if (!values.contains(f->fpath()))
             continue;
         f->setConfValue(values.value(f->fpath()));
-        f->setEnabled(true);
+        //f->setEnabled(true);
     }
     /*if (!protocol()->valid()) {
         backup();

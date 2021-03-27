@@ -32,7 +32,7 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
 {
     // store ident to parse dict
     connect(this, &PNode::identReceived, this, [this](QJsonValue json) {
-        _ident = json.toObject();
+        _dict_hash = json.toObject().value("hash").toInt();
     });
 }
 
@@ -214,13 +214,15 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
 
     bool err = true;
     QJsonArray fields;
+    _field_types.clear();
+    _field_names.clear();
+    _field_arrays.clear();
 
     do {
         // check node hash
-        xbus::node::hash_t hash = _ident.value("hash").toInt();
-        if (info.hash != hash) {
+        if (info.hash != _dict_hash) {
             qWarning() << "node hash error:" << QString::number(info.hash, 16)
-                       << QString::number(hash, 16);
+                       << QString::number(_dict_hash, 16);
             break;
         }
 
@@ -235,14 +237,17 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
                 stream.read<uint8_t>());
 
             QString type = xbus::node::conf::type_to_str(type_id);
+            auto array = stream.read<uint8_t>();
 
             field.insert("type", type);
-            field.insert("array", stream.read<uint8_t>());
+            field.insert("array", array);
 
             uint8_t group = stream.read<uint8_t>();
 
             QStringList st;
             QString name, title;
+
+            bool is_writable = false;
 
             switch (type_id) {
             case xbus::node::conf::group:
@@ -269,6 +274,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
                 name = st.at(0);
                 if (!st.at(1).isEmpty())
                     field.insert("units", st.at(1));
+                is_writable = true;
             }
             if (name.isEmpty())
                 break;
@@ -296,9 +302,16 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
                 path.clear(); //mark error
                 break;
             }
-            field.insert("name", path.join('.'));
+            name = path.join('.');
+            field.insert("name", name);
 
             fields.append(field);
+
+            if (is_writable) {
+                _field_types.append(type_id);
+                _field_names.append(name);
+                _field_arrays.append(array);
+            }
 
             //qDebug() << field << st << stream.available();
 
@@ -312,6 +325,9 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
 
     if (err) {
         qWarning() << "dict error" << data.toHex().toUpper();
+        _field_types.clear();
+        _field_names.clear();
+        _field_arrays.clear();
         return;
     }
     qDebug() << "dict parsed";
@@ -320,6 +336,151 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     emit dictReceived(fields);
 }
 
-void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data) {}
+void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    PStreamReader stream(data);
+
+    bool err = true;
+    QVariantMap values;
+    int fidx = 0;
+
+    do {
+        // read offsets
+        QList<size_t> offsets;
+        while (stream.available() >= 2) {
+            uint16_t v;
+            stream >> v;
+            if (!v)
+                break;
+            offsets.append(v);
+        }
+
+        // read Parameters::Data struct
+        size_t pos_s = stream.pos();
+
+        // read and check prepended hash
+        xbus::node::hash_t hash;
+        stream >> hash;
+
+        if (hash != _dict_hash) {
+            qWarning() << "data hash error:" << QString::number(hash, 16)
+                       << QString::number(_dict_hash, 16);
+            break;
+        }
+
+        size_t offset_s = 0;
+        while (stream.available() > 0) {
+            // stream padding with offset
+            size_t d_pos = stream.pos() - pos_s;
+            size_t offset = offsets.at(fidx);
+            size_t d_offset = offset - offset_s;
+            offset_s = offset;
+            if (d_offset > d_pos) {
+                d_pos = d_offset - d_pos;
+                //qDebug() << "padding:" << d_pos;
+                if (stream.available() < d_pos)
+                    break;
+                stream.reset(stream.pos() + d_pos);
+            } else if (d_offset < d_pos) {
+                qWarning() << "padding negative:" << d_offset << d_pos << offsets;
+                break;
+            }
+
+            pos_s = stream.pos();
+            QVariant v = _read_param(stream, fidx);
+            //qDebug() << v << stream.pos() << stream.available();
+            if (!v.isValid())
+                break;
+
+            values.insert(_field_names.value(fidx), v);
+            fidx++;
+
+            if (fidx == _field_types.size()) {
+                err = false; //stream.available() ? true : false;
+                break;
+            }
+        }
+
+    } while (0);
+
+    if (err) {
+        qWarning() << "conf error" << fidx << stream.available() << data.toHex().toUpper();
+        return;
+    }
+
+    // conf file parsed
+    emit confReceived(values);
+}
+template<typename T, typename Tout = T>
+static QVariant _read_param(PStreamReader &stream, size_t array)
+{
+    if (stream.available() < (sizeof(T) * (array ? array : 1)))
+        return QVariant();
+    if (array > 0) {
+        QVariantList list;
+        while (array--) {
+            list.append(QVariant::fromValue(stream.read<T, Tout>()));
+        }
+        //qDebug() << list;
+        return QVariant::fromValue(list);
+    }
+    return QVariant::fromValue(stream.read<T, Tout>());
+}
+template<typename _T>
+static QVariant _read_param_str(PStreamReader &stream, size_t array)
+{
+    if (stream.available() < (sizeof(_T) * (array ? array : 1)))
+        return QVariant();
+    if (array > 0) {
+        QVariantList list;
+        while (array--) {
+            size_t pos_s = stream.pos();
+            const char *s = stream.read_string(sizeof(_T));
+            if (!s)
+                return QVariant();
+            stream.reset(pos_s + sizeof(_T));
+            list.append(QVariant::fromValue(QString(s)));
+        }
+        return QVariant::fromValue(list);
+    }
+    size_t pos_s = stream.pos();
+    const char *s = stream.read_string(sizeof(_T));
+    if (!s)
+        return QVariant();
+    stream.reset(pos_s + sizeof(_T));
+    return QVariant::fromValue(QString(s));
+}
+
+QVariant PApxNode::_read_param(PStreamReader &stream, size_t fidx)
+{
+    auto array = _field_arrays.value(fidx);
+    auto type = _field_types.value(fidx);
+
+    switch (type) {
+    case xbus::node::conf::group:
+    case xbus::node::conf::command:
+    case xbus::node::conf::type_max:
+        break;
+    case xbus::node::conf::option:
+        return ::_read_param<xbus::node::conf::option_t, quint16>(stream, array);
+    case xbus::node::conf::real:
+        return ::_read_param<xbus::node::conf::real_t>(stream, array);
+    case xbus::node::conf::byte:
+        return ::_read_param<xbus::node::conf::byte_t, quint16>(stream, array);
+    case xbus::node::conf::word:
+        return ::_read_param<xbus::node::conf::word_t>(stream, array);
+    case xbus::node::conf::dword:
+        return ::_read_param<xbus::node::conf::dword_t>(stream, array);
+    case xbus::node::conf::bind:
+        return ::_read_param<xbus::node::conf::bind_t>(stream, array);
+    case xbus::node::conf::string:
+        return ::_read_param_str<xbus::node::conf::string_t>(stream, array);
+    case xbus::node::conf::text:
+        return ::_read_param_str<xbus::node::conf::text_t>(stream, array);
+    case xbus::node::conf::script:
+        return ::_read_param<xbus::node::conf::script_t>(stream, array);
+    }
+    return QVariant();
+}
 
 void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data) {}

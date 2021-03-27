@@ -95,7 +95,7 @@ public slots:
 private slots:
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
-    void confReceived(const QVariantMap &values);
+    void confReceived(QVariantMap values);
     void confSaved();
 
     void messageReceived(PNode::msg_type_e type, QString msg);

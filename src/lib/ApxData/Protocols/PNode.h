@@ -49,6 +49,8 @@ private:
 public slots:
     virtual void requestIdent() { _nimp(__FUNCTION__); }
     virtual void requestDict() { _nimp(__FUNCTION__); }
+    virtual void requestConf() { _nimp(__FUNCTION__); }
+    virtual void requestScript() { _nimp(__FUNCTION__); }
 
     virtual void requestReboot() { _nimp(__FUNCTION__); }
 
@@ -56,4 +58,5 @@ signals:
     void messageReceived(PNode::msg_type_e type, QString msg);
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
+    void confReceived(QVariantMap values);
 };
