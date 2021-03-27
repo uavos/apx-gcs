@@ -37,12 +37,15 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     , _nodes(nodes)
     , _protocol(protocol)
 {
+    setIcon("sitemap");
+
     bindProperty(protocol, "title", true);
     bindProperty(protocol, "descr", true);
     bindProperty(protocol, "value", true);
     bindProperty(protocol, "progress", true);
 
     setOptions(ProgressTrack | ModifiedGroup);
+
     qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
     new NodeViewActions(this, _nodes);
@@ -57,15 +60,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
 
-    /*connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
-
-    // validity
-    connect(protocol, &ProtocolNode::dictValidChanged, this, &NodeItem::validateDict);
-    connect(protocol, &ProtocolNode::validChanged, this, &NodeItem::validateData);
-
-    connect(protocol, &ProtocolNode::descrChanged, this, &NodeItem::updateDescr);
-    connect(protocol, &ProtocolNode::valueChanged, this, &NodeItem::updateDescr);
-
+    /*
     // responses mapping
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
@@ -199,6 +194,10 @@ void NodeItem::confSaved()
 QVariant NodeItem::data(int col, int role) const
 {
     switch (role) {
+    case Qt::DisplayRole:
+        if (col == FACT_MODEL_COLUMN_NAME)
+            return title().toUpper();
+        break;
     case Qt::ForegroundRole:
         if (valid()) {
             if (col == FACT_MODEL_COLUMN_DESCR)
@@ -222,15 +221,19 @@ QVariant NodeItem::data(int col, int role) const
         // if (protocol()->ident().flags.bits.reconf)
         //     return QColor(Qt::darkGray).darker(200);
         // return QColor(0x20, 0x40, 0x60);
-    case Qt::FontRole:
-        if (col == Fact::FACT_MODEL_COLUMN_DESCR) {
+    case Qt::FontRole: {
 #ifdef Q_OS_MAC
-            return QFont("Menlo");
+        QFont font("Menlo");
 #else
-            return QFont("FreeMono");
+        QFont font("FreeMono");
 #endif
+        if (col == Fact::FACT_MODEL_COLUMN_DESCR)
+            return font;
+        if (col == FACT_MODEL_COLUMN_NAME) {
+            font.setBold(true);
+            return font;
         }
-        break;
+    } break;
     }
     return Fact::data(col, role);
 }
@@ -386,7 +389,6 @@ void NodeItem::removeEmptyGroups(Fact *f)
     }
     if (f != this && f->size() == 0) {
         //qDebug() << f;
-        //f->setVisible(false);
         f->deleteFact();
     }
 }
