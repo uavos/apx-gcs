@@ -52,6 +52,8 @@ private:
 
     QMap<QString, PApxNodeFile *> _files_map;
 
+    QJsonObject _ident;
+
     void updateProgress();
 
 protected:
@@ -59,6 +61,11 @@ protected:
     void requestDict() override { new PApxNodeRequestFileRead(this, "dict"); }
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
+
+private slots:
+    void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);
 
 signals:
     void request_scheduled(PApxNodeRequest *req);

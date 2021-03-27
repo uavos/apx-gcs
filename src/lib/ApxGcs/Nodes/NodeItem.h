@@ -94,7 +94,7 @@ public slots:
     //protocols:
 private slots:
     void identReceived(QJsonValue json);
-    void dictReceived(const ProtocolNode::Dict &dict);
+    void dictReceived(QJsonValue json);
     void confReceived(const QVariantMap &values);
     void confSaved();
 

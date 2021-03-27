@@ -54,6 +54,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     connect(protocol, &PNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
+    connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
 
     /*connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
 
@@ -379,6 +380,7 @@ void NodeItem::removeEmptyGroups(Fact *f)
     }
     if (f != this && f->size() == 0) {
         //qDebug() << f;
+        //f->setVisible(false);
         f->deleteFact();
     }
 }
@@ -427,38 +429,41 @@ void NodeItem::identReceived(QJsonValue json)
     _protocol->requestDict();
 }
 
-void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
+void NodeItem::dictReceived(QJsonValue json)
 {
-    //qDebug() << dict.size();
-
     clear();
 
-    QMap<int, Fact *> groups;
     xbus::node::usr::cmd_t cmd_cnt = 0;
-    Fact *g = this;
-    NodeField *f;
-    for (auto const &i : dict) {
-        switch (i.type) {
-        case xbus::node::conf::group:
-            g = i.group ? groups.value(i.group) : this;
-            g = new Fact(g, i.name, i.title, "", Group | ModifiedGroup);
+    for (auto i : json.toArray()) {
+        QJsonObject field = i.toObject();
+        QString name = field.value("name").toString();
+        QString title = field.value("title").toString();
+        QString type = field.value("type").toString();
+
+        // find group fact
+        Fact *g = this;
+        QStringList path = name.split('.');
+        while (path.size() > 1) {
+            g = g->child(path.takeFirst());
+            if (g)
+                continue;
+            qWarning() << "missing group" << name;
+            g = this;
+            break;
+        }
+        name = path.first();
+
+        if (type == "group") {
+            g = new Fact(g, name, title, "", Group | ModifiedGroup);
             new NodeViewActions(g, _nodes);
-            groups.insert(groups.size() + 1, g);
-            break;
-        case xbus::node::conf::command:
-            g = i.group ? groups.value(i.group) : this;
-            tools->addCommand(g, i.name, i.title, cmd_cnt++);
-            break;
-        default: // data field
-            g = i.group ? groups.value(i.group) : this;
-            f = new NodeField(g,
-                              this,
-                              static_cast<xbus::node::conf::fid_t>(m_fields.size() << 8),
-                              i);
-            f->setEnabled(false);
+        } else if (type == "command") {
+            tools->addCommand(g, name, title, cmd_cnt++);
+        } else { // data field
+            NodeField *f = new NodeField(g, this, field, m_fields.size());
+            //f->setEnabled(false);
             m_fields.append(f);
             if (!m_status_field) {
-                if (i.type == xbus::node::conf::string) {
+                if (type == "string") {
                     m_status_field = f;
                     connect(m_status_field, &Fact::valueChanged, this, &NodeItem::updateStatus);
                 }
@@ -471,11 +476,11 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     linkGroupValues(this);
 
     // update descr and help from APXFW package
-    /*_parameters = AppGcs::apxfw()->loadParameters(title(), protocol()->hardware());
+    _parameters = AppGcs::apxfw()->loadParameters(title(), _ident.value("hardware").toString());
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
-    }*/
-    setEnabled(false);
+    }
+    // setEnabled(false);
     backup();
 }
 

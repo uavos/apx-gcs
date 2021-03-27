@@ -42,51 +42,72 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
 {
     // collect and build file content from received read/write parts and emit signal with data
 
-    bool is_request = op & xbus::node::file::reply_op_mask;
+    bool is_response = op & xbus::node::file::reply_op_mask;
     op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
 
     switch (op) {
     default:
         break;
     case xbus::node::file::info:
+        if (!is_response)
+            return;
         if (!check_info(stream))
             break; // info changed
         return;
 
     case xbus::node::file::ropen:
+    case xbus::node::file::wopen:
+        if (!is_response)
+            return;
         check_info(stream);
         if (!(_info.flags.bits.readable && _info.flags.bits.oread))
             break;
 
         reset();
         _size = _info.size;
+        _offset = _info.offset;
         return;
-    case xbus::node::file::wopen:
-        if (!check_info(stream))
-            break;
-        if (!(_info.flags.bits.writable && _info.flags.bits.owrite))
-            break;
 
-        reset();
-        _size = _info.size;
-        return;
     case xbus::node::file::close:
+        if (!is_response)
+            return;
         if (!check_info(stream))
             break;
-        reset();
-        return;
+        if (!_size)
+            break;
+        // check downloaded data
+        if (_hash != _info.hash || _tcnt != _size || _data.size() != _tcnt) {
+            qWarning() << "download error:" << name() << _data.size();
+            qWarning() << "hash: " << QString::number(_hash, 16) << QString::number(_info.hash, 16);
+        } else {
+            qDebug() << "download ok:" << name() << _size << "bytes" << QString::number(_hash, 16);
+        }
+
+        emit downloaded(_info, _data);
+        break;
+
     case xbus::node::file::read:
+        if (!is_response)
+            return;
         if (!_info.flags.bits.oread)
             break;
-        // if (!resp_read(stream))
-        //     break;
+        if (!_size)
+            break;
+        if (!read(stream))
+            break;
         return;
+
     case xbus::node::file::write:
+        if (is_response)
+            return;
         if (!_info.flags.bits.owrite)
             break;
-        // if (!resp_write(stream))
-        //     break;
+        if (!_size)
+            break;
+        if (!read(stream))
+            break;
         return;
+
     case xbus::node::file::extend:
         return;
     case xbus::node::file::abort:
@@ -97,10 +118,36 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
     reset();
 }
 
+bool PApxNodeFile::read(PStreamReader &stream)
+{
+    if (stream.available() <= sizeof(xbus::node::file::offset_t))
+        return false;
+
+    xbus::node::file::offset_t offset;
+    stream >> offset;
+    if (offset != _offset) { //just skip non-sequental
+        return true;
+    }
+
+    size_t size = stream.available();
+    _offset += size;
+    _tcnt += size;
+
+    //qDebug() << "rd:" << offset;
+
+    if (_tcnt > _size)
+        return false;
+
+    _hash = apx::crc32(stream.ptr(), size, _hash);
+
+    _data.append(stream.payload());
+    return true;
+}
+
 void PApxNodeFile::reset()
 {
     _size = _tcnt = _offset = 0;
-    _hash = 0;
+    _hash = 0xFFFFFFFF;
 
     _data.clear();
 

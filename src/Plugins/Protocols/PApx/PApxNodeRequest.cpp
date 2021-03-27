@@ -128,6 +128,8 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     json.insert("name", sname);
     json.insert("version", sversion);
     json.insert("hardware", shardware);
+    json.insert("hash", (qint64) ident.hash);
+    json.insert("format", (qint64) ident.format);
 
     json.insert("reconf", ident.flags.bits.reconf ? true : false);
     json.insert("busy", ident.flags.bits.busy ? true : false);
@@ -182,6 +184,12 @@ bool PApxNodeRequestFileRead::response(PStreamReader &stream)
 
     op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
 
+    if (op == xbus::node::file::abort) {
+        qWarning() << "transfer aborted by node";
+        reset();
+        return true;
+    }
+
     if (op != _op)
         return false;
 
@@ -209,7 +217,7 @@ bool PApxNodeRequestFileRead::response(PStreamReader &stream)
                 qWarning() << "hash: " << QString::number(_hash, 16)
                            << QString::number(_info.hash, 16);
             } else {
-                qDebug() << "read ok:" << _name << QString::number(_hash, 16);
+                //qDebug() << "read ok:" << _name << QString::number(_hash, 16);
             }
         }
         reset();

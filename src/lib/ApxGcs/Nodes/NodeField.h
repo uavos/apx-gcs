@@ -39,9 +39,9 @@ class NodeField : public Fact
 public:
     explicit NodeField(Fact *parent,
                        NodeItem *node,
-                       xbus::node::conf::fid_t fid,
-                       const ProtocolNode::dict_field_s &field,
-                       NodeField *parentField = nullptr);
+                       QJsonObject json,
+                       size_t id,
+                       NodeField *arrayParent = nullptr);
 
     QVariant confValue(void) const;
     void setConfValue(const QVariant &v);
@@ -53,14 +53,12 @@ public:
     inline void setHelp(const QString &s) { _help = s; }
     inline QString fpath() const { return _fpath; }
 
-    inline xbus::node::conf::fid_t fid() const { return _fid; }
-    inline xbus::node::conf::type_e type() const { return _type; }
-
 private:
     NodeItem *_node;
 
-    xbus::node::conf::fid_t _fid;
-    xbus::node::conf::type_e _type;
+    QString _type;
+    size_t _id;
+    size_t _array; // array index
 
     QString _fpath;
     QString _help;

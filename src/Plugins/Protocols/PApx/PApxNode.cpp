@@ -29,7 +29,12 @@
 PApxNode::PApxNode(PApxNodes *parent, QString uid)
     : PNode(parent, uid)
     , _req(this)
-{}
+{
+    // store ident to parse dict
+    connect(this, &PNode::identReceived, this, [this](QJsonValue json) {
+        _ident = json.toObject();
+    });
+}
 
 PApxNode::~PApxNode()
 {
@@ -51,6 +56,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
     // file ops - make them download data from any source
     if (uid == mandala::cmd::env::nmt::file::uid) {
+        // accept both pid requests and responses
         size_t spos = stream.pos();
 
         if (stream.available() <= sizeof(xbus::node::file::op_e))
@@ -189,6 +195,131 @@ void PApxNode::updateFiles(QStringList fnames)
     _files_map.clear();
     delete_request(mandala::cmd::env::nmt::file::uid);
     for (auto i : fnames) {
-        _files_map.insert(i, new PApxNodeFile(this, i));
+        PApxNodeFile *f = new PApxNodeFile(this, i);
+        _files_map.insert(i, f);
+
+        if (i == "dict") {
+            connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseDictData);
+        } else if (i == "conf") {
+            connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseConfData);
+        } else if (i == "script") {
+            connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseScriptData);
+        }
     }
 }
+
+void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    PStreamReader stream(data);
+
+    bool err = true;
+    QJsonArray fields;
+
+    do {
+        // check node hash
+        xbus::node::hash_t hash = _ident.value("hash").toInt();
+        if (info.hash != hash) {
+            qWarning() << "node hash error:" << QString::number(info.hash, 16)
+                       << QString::number(hash, 16);
+            break;
+        }
+
+        QStringList names;
+        QList<int> groups;
+        QList<int> group_idx;
+
+        while (stream.available() > 4) {
+            QJsonObject field;
+
+            xbus::node::conf::type_e type_id = static_cast<xbus::node::conf::type_e>(
+                stream.read<uint8_t>());
+
+            QString type = xbus::node::conf::type_to_str(type_id);
+
+            field.insert("type", type);
+            field.insert("array", stream.read<uint8_t>());
+
+            uint8_t group = stream.read<uint8_t>();
+
+            QStringList st;
+            QString name, title;
+
+            switch (type_id) {
+            case xbus::node::conf::group:
+                st = stream.read_strings(2);
+                if (st.isEmpty() || st.at(0).isEmpty())
+                    break;
+                //qDebug() << "group" << field.insert(group << st;
+                name = st.at(0);
+                title = st.at(1);
+                group_idx.append(fields.size());
+                break;
+            case xbus::node::conf::command:
+                st = stream.read_strings(2);
+                if (st.isEmpty() || st.at(0).isEmpty())
+                    break;
+                name = st.at(0);
+                title = st.at(1);
+                break;
+            default:
+                st = stream.read_strings(2, stream.available());
+                if (st.isEmpty() || st.at(0).isEmpty())
+                    break;
+                //qDebug() << "field" << field.insert(type << field.insert(array << field.insert(group << st;
+                name = st.at(0);
+                if (!st.at(1).isEmpty())
+                    field.insert("units", st.at(1));
+            }
+            if (name.isEmpty())
+                break;
+
+            groups.append(group);
+            names.append(name);
+
+            if (title.isEmpty())
+                title = name;
+            field.insert("title", title);
+
+            // guess path prepended with groups
+            QStringList path;
+            path.append(name);
+            for (auto i = group; i > 0;) {
+                i--;
+                if (i < group_idx.size()) {
+                    int gidx = group_idx.at(i);
+                    path.prepend(names.at(gidx));
+                    i = groups.at(gidx);
+                    continue;
+                }
+                qWarning() << "missing group:" << type << field.value("array").toInt() << group
+                           << st;
+                path.clear(); //mark error
+                break;
+            }
+            field.insert("name", path.join('.'));
+
+            fields.append(field);
+
+            //qDebug() << field << st << stream.available();
+
+            if (stream.available() == 0) {
+                err = false;
+                break;
+            }
+        }
+
+    } while (0);
+
+    if (err) {
+        qWarning() << "dict error" << data.toHex().toUpper();
+        return;
+    }
+    qDebug() << "dict parsed";
+    //printf("%s", QJsonDocument(fields).toJson().data());
+
+    emit dictReceived(fields);
+}
+
+void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data) {}
+
+void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data) {}
