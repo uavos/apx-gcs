@@ -51,6 +51,8 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
     // file ops - make them download data from any source
     if (uid == mandala::cmd::env::nmt::file::uid) {
+        size_t spos = stream.pos();
+
         if (stream.available() <= sizeof(xbus::node::file::op_e))
             return;
 
@@ -59,9 +61,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
         if (op & xbus::node::file::reply_op_mask)
             trace()->block("re");
-
-        op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
-        trace()->block(QString::number(op));
+        trace()->block(QString::number(op & ~xbus::node::file::reply_op_mask));
 
         const char *s = stream.read_string(16);
         if (!s)
@@ -75,6 +75,8 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             return;
 
         f->process_downlink(op, stream);
+
+        stream.reset(spos);
     }
 
     // node messages
@@ -116,17 +118,28 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     }
 }
 
-void PApxNode::schedule_request(PApxNodeRequest *req, mandala::uid_t uid)
+void PApxNode::schedule_request(PApxNodeRequest *req)
 {
+    mandala::uid_t uid = req->uid();
     if (_requests.contains(uid)) {
         // the most recent for the uid is the only valid
-        if (_requests.contains(mandala::cmd::env::nmt::ident::uid))
+        if (uid == mandala::cmd::env::nmt::ident::uid)
             return;
         qDebug() << "dup";
         delete_request(uid);
     }
     _requests.insert(uid, req);
     updateProgress();
+    emit request_scheduled(req);
+}
+void PApxNode::reschedule_request(PApxNodeRequest *req)
+{
+    mandala::uid_t uid = req->uid();
+    if (!_requests.contains(uid)) {
+        qDebug() << "not exists";
+        delete_request(uid);
+        return;
+    }
     emit request_scheduled(req);
 }
 

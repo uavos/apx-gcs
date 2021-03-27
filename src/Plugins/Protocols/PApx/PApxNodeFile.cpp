@@ -41,7 +41,10 @@ PApxNodeFile::PApxNodeFile(PApxNode *node, const QString &name)
 void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &stream)
 {
     // collect and build file content from received read/write parts and emit signal with data
-    //qDebug() << name() << op << stream.available();
+
+    bool is_request = op & xbus::node::file::reply_op_mask;
+    op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
+
     switch (op) {
     default:
         break;

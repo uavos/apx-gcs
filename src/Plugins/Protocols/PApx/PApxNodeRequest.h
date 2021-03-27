@@ -35,7 +35,7 @@ public:
     explicit PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeout_ms = 1000);
     virtual ~PApxNodeRequest() {}
 
-    void make_request(PApxRequest &req);
+    bool make_request(PApxRequest &req);
     bool check_response(PStreamReader &stream) { return response(stream); }
     void discard();
 
@@ -50,7 +50,7 @@ protected:
     mandala::uid_t _uid;
     uint _timeout_ms;
 
-    virtual void request(PApxRequest &req) {}
+    virtual bool request(PApxRequest &req) { return true; }
     virtual bool response(PStreamReader &stream) { return true; }
 
     PTrace *trace() const;
@@ -67,7 +67,7 @@ public:
 
 private:
     xbus::node::reboot::type_e _type;
-    void request(PApxRequest &req) override { req << _type; }
+    bool request(PApxRequest &req) override;
 };
 
 class PApxNodeRequestIdent : public PApxNodeRequest
@@ -88,9 +88,31 @@ public:
         , _op(op)
     {}
 
-private:
+protected:
     QString _name;
     xbus::node::file::op_e _op;
 
-    virtual void request(PApxRequest &req) override;
+    virtual bool request(PApxRequest &req) override;
+};
+
+class PApxNodeRequestFileRead : public PApxNodeRequestFile
+{
+public:
+    // generates requests tree to download a file form node
+    // data is collected by PApxNodeFile
+    explicit PApxNodeRequestFileRead(PApxNode *node, QString name)
+        : PApxNodeRequestFile(node, name, xbus::node::file::ropen)
+    {}
+
+private:
+    xbus::node::file::info_s _info{};
+    xbus::node::file::offset_t _offset{};
+    xbus::node::file::size_t _tcnt{};
+    xbus::node::hash_t _hash{};
+
+    void reset();
+    void read_next();
+
+    bool request(PApxRequest &req) override;
+    bool response(PStreamReader &stream) override;
 };

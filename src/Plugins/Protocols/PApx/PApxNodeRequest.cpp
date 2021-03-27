@@ -31,7 +31,7 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
     , _uid(uid)
     , _timeout_ms(timeout_ms)
 {
-    node->schedule_request(this, uid);
+    node->schedule_request(this);
 }
 
 PTrace *PApxNodeRequest::trace() const
@@ -43,7 +43,7 @@ void PApxNodeRequest::discard()
     _node->delete_request(uid());
 }
 
-void PApxNodeRequest::make_request(PApxRequest &req)
+bool PApxNodeRequest::make_request(PApxRequest &req)
 {
     req.request(_uid);
     QByteArray src(QByteArray::fromHex(_node->uid().toUtf8()));
@@ -59,7 +59,13 @@ void PApxNodeRequest::make_request(PApxRequest &req)
     _node->trace()->block(_node->title().append(':'));
     _node->trace()->tree();
 
-    request(req);
+    return request(req);
+}
+
+bool PApxNodeRequestReboot::request(PApxRequest &req)
+{
+    req << _type;
+    return true;
 }
 
 bool PApxNodeRequestIdent::response(PStreamReader &stream)
@@ -136,10 +142,124 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     return true;
 }
 
-void PApxNodeRequestFile::request(PApxRequest &req)
+bool PApxNodeRequestFile::request(PApxRequest &req)
 {
     req << _op;
     trace()->block(QString::number(_op));
     req.write_string(_name.toUtf8());
     trace()->block(_name);
+    return true;
+}
+
+bool PApxNodeRequestFileRead::request(PApxRequest &req)
+{
+    PApxNodeRequestFile::request(req);
+
+    switch (_op) {
+    default:
+        return false;
+    case xbus::node::file::ropen:
+        break;
+    case xbus::node::file::close:
+        break;
+    case xbus::node::file::read:
+        req.write<xbus::node::file::offset_t>(_offset);
+        break;
+    }
+    return true;
+}
+bool PApxNodeRequestFileRead::response(PStreamReader &stream)
+{
+    //qDebug() << "re:" << _op << stream.available();
+    if (stream.available() <= sizeof(xbus::node::file::op_e))
+        return false;
+
+    xbus::node::file::op_e op;
+    stream >> op;
+
+    if (!(op & xbus::node::file::reply_op_mask))
+        return false;
+
+    op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
+
+    if (op != _op)
+        return false;
+
+    const char *s = stream.read_string(16);
+    if (!s || QString(s) != _name)
+        return false;
+
+    //qDebug() << _name << op << _op;
+
+    switch (op) {
+    default:
+        return false;
+    case xbus::node::file::ropen:
+        if (stream.available() != xbus::node::file::info_s::psize())
+            return false;
+        reset();
+        _info.read(&stream);
+        _offset = _info.offset;
+        read_next();
+        return false;
+    case xbus::node::file::close:
+        if (_info.size > 0) {
+            if (_hash != _info.hash) {
+                qWarning() << "read error:" << _name;
+                qWarning() << "hash: " << QString::number(_hash, 16)
+                           << QString::number(_info.hash, 16);
+            } else {
+                qDebug() << "read ok:" << _name << QString::number(_hash, 16);
+            }
+        }
+        reset();
+        break;
+    case xbus::node::file::read: {
+        if (stream.available() <= sizeof(xbus::node::file::offset_t))
+            return false;
+
+        xbus::node::file::offset_t offset;
+        stream >> offset;
+        if (offset != _offset) { //just skip non-sequental
+            qWarning() << "offset:" << offset << _offset;
+            return true;
+        }
+
+        //qDebug() << "rd:" << offset;
+
+        size_t size = stream.available();
+        _offset += size;
+        _tcnt += size;
+
+        if (_tcnt > _info.size) {
+            qWarning() << "overflow:" << _tcnt << _info.size;
+            return true;
+        }
+        _hash = apx::crc32(stream.ptr(), size, _hash);
+        read_next();
+        return false;
+    }
+    }
+
+    return true;
+}
+void PApxNodeRequestFileRead::reset()
+{
+    _op = xbus::node::file::ropen;
+    _info = {};
+    _offset = 0;
+    _tcnt = 0;
+    _hash = 0xFFFFFFFF;
+}
+void PApxNodeRequestFileRead::read_next()
+{
+    if (_tcnt == _info.size) {
+        //all data read
+        //qDebug() << "done";
+        _op = xbus::node::file::close;
+        _node->reschedule_request(this);
+        return;
+    }
+    _op = xbus::node::file::read;
+    _node->reschedule_request(this);
 }

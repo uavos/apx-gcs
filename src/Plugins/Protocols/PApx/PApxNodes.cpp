@@ -105,7 +105,14 @@ void PApxNodes::requestSearch()
 
 void PApxNodes::request_scheduled(PApxNodeRequest *req)
 {
-    qDebug() << Mandala::meta(req->uid()).path;
+    //qDebug() << Mandala::meta(req->uid()).path;
+    if (_requests.contains(req)) {
+        // rescheduled request
+        if (_request != req) // not current
+            return;
+        request_current();
+        return;
+    }
     _requests.append(req);
     if (_request)
         return;
@@ -113,14 +120,15 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
 }
 void PApxNodes::request_finished(PApxNodeRequest *req)
 {
-    qDebug() << Mandala::meta(req->uid()).path;
+    //qDebug() << Mandala::meta(req->uid()).path;
     _requests.removeOne(req);
     if (_request && _request != req)
         return;
     _request = nullptr;
 
     _reqTimer.stop();
-    request_next();
+    if (!_requests.isEmpty())
+        request_next();
 }
 
 void PApxNodes::request_next()
@@ -142,9 +150,13 @@ void PApxNodes::request_next()
 
 void PApxNodes::request_current()
 {
-    qDebug() << Mandala::meta(_request->uid()).path;
-    _request->make_request(_req);
+    //qDebug() << Mandala::meta(_request->uid()).path;
+    if (!_request->make_request(_req)) {
+        _request->discard();
+        return;
+    }
     _req.send();
+    _reqTimer.stop();
     _reqTimer.start(_request->timeout_ms() ? _request->timeout_ms() : 100);
 }
 
@@ -155,6 +167,7 @@ void PApxNodes::request_timeout()
 
     if (!_request->timeout_ms()) {
         _request->discard();
+        return;
     }
 
     if (!_retry) {

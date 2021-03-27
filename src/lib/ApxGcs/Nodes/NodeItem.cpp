@@ -423,6 +423,8 @@ void NodeItem::identReceived(QJsonValue json)
     qWarning() << "ident updated";
     _ident = ident;
     clear();
+
+    _protocol->requestDict();
 }
 
 void NodeItem::dictReceived(const ProtocolNode::Dict &dict)

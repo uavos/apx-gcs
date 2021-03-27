@@ -38,9 +38,10 @@ public:
 
     void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
-    void schedule_request(PApxNodeRequest *req, mandala::uid_t uid);
+    void schedule_request(PApxNodeRequest *req);
     void delete_request(mandala::uid_t uid);
     void clear_requests();
+    void reschedule_request(PApxNodeRequest *req);
 
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
@@ -55,6 +56,8 @@ private:
 
 protected:
     void requestIdent() override { new PApxNodeRequestIdent(this); }
+    void requestDict() override { new PApxNodeRequestFileRead(this, "dict"); }
+
     void requestReboot() override { new PApxNodeRequestReboot(this); }
 
 signals:
