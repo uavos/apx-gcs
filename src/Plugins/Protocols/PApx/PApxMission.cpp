@@ -33,7 +33,15 @@
 PApxMission::PApxMission(PApxVehicle *parent)
     : PMission(parent)
     , _vehicle(parent)
-{}
+{
+    // notify mission available on ident update if files found
+    connect(parent->nodes(), &PNodes::node_available, this, [this](PNode *node) {
+        connect(node, &PNode::identReceived, this, [this, node]() {
+            if (static_cast<PApxNode *>(node)->file("mission"))
+                emit missionAvailable();
+        });
+    });
+}
 
 void PApxMission::requestMission()
 {
@@ -41,7 +49,11 @@ void PApxMission::requestMission()
         auto f = node->file("mission");
         if (!f)
             continue;
-        connect(f, &PApxNodeFile::downloaded, this, &PApxMission::parseMissionData);
+        connect(f,
+                &PApxNodeFile::downloaded,
+                this,
+                &PApxMission::parseMissionData,
+                Qt::UniqueConnection);
         new PApxNodeRequestFileRead(node, "mission");
         return;
     }

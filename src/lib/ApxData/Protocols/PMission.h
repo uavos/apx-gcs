@@ -38,4 +38,5 @@ public slots:
 
 signals:
     void missionReceived(QJsonValue json);
+    void missionAvailable();
 };

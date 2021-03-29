@@ -180,20 +180,10 @@ VehicleMission::VehicleMission(Vehicle *parent)
                 this,
                 &VehicleMission::missionReceived);
 
-        // connect(vehicle->protocol()->mission(), &PMission::missionAvailable, this, [this]() {
-        //     if (empty())
-        //         vehicle->protocol()->mission()->requestMission();
-        // });
-
-        // FIXME: mission protocol
-        /*  connect(vehicle->protocol->mission,
-                &ProtocolMission::missionDataError,
-                this,
-                &VehicleMission::missionDataError);
-
-        if (!vehicle->isLocal()) {
-            QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
-        }*/
+        connect(vehicle->protocol()->mission(), &PMission::missionAvailable, this, [this]() {
+            if (empty())
+                vehicle->protocol()->mission()->requestMission();
+        });
     }
 
     //reset and update
@@ -395,11 +385,6 @@ void VehicleMission::missionReceived(QJsonValue json)
                          AppNotify::Important);
     }
     backup();
-}
-void VehicleMission::missionDataError()
-{
-    vehicle->message(tr("Error in mission data from vehicle"), AppNotify::Error);
-    clearMission();
 }
 
 void VehicleMission::uploadMission()

@@ -142,7 +142,6 @@ signals:
     //protocols
 private slots:
     void missionReceived(QJsonValue json);
-    void missionDataError();
 
     //---------------------------------------
     // PROPERTIES
