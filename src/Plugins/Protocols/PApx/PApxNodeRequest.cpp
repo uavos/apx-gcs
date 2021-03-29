@@ -328,7 +328,7 @@ bool PApxNodeRequestFileWrite::request_file(PApxRequest &req)
 
     const QByteArray &ba = _data.mid(static_cast<int>(_tcnt), static_cast<int>(sz));
     if (static_cast<int>(sz) != ba.size()) {
-        qWarning() << "block: " << sz << ba.size();
+        qWarning() << "block size: " << sz << ba.size();
         return false;
     }
     sz = req.write(ba.data(), sz);
@@ -368,5 +368,5 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
         return false;
 
     next();
-    return true;
+    return false;
 }
