@@ -23,40 +23,24 @@
 
 #include "PApxVehicle.h"
 
-class PApxVehicle;
-class PApxNode;
-class PApxNodeRequest;
+#include <xbus/XbusNode.h>
 
-class PApxNodes : public PNodes
+class PApxVehicle;
+
+class PApxMission : public PMission
 {
     Q_OBJECT
 
 public:
-    explicit PApxNodes(PApxVehicle *parent);
-
-    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
-
-    QList<PApxNode *> nodes() const { return _nodes.values(); }
+    explicit PApxMission(PApxVehicle *parent);
 
 private:
-    PApxRequest _req;
-    QHash<QString, PApxNode *> _nodes;
+    PApxVehicle *_vehicle;
 
-    PApxNode *getNode(QString uid, bool createNew = true);
+    static QJsonValue unpack(PStreamReader &stream);
 
-    QTimer _reqTimer;
-    QList<PApxNodeRequest *> _requests;
-    PApxNodeRequest *_request{};
-    uint _retry{};
-
-protected:
-    void requestSearch() override;
+    void requestMission() override;
 
 private slots:
-    // reauests sequencer
-    void request_scheduled(PApxNodeRequest *req);
-    void request_finished(PApxNodeRequest *req);
-    void request_timeout();
-    void request_next();
-    void request_current();
+    void parseMissionData(const xbus::node::file::info_s &info, const QByteArray data);
 };

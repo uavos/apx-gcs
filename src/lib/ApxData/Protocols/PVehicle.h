@@ -22,6 +22,7 @@
 #pragma once
 
 #include "PData.h"
+#include "PMission.h"
 #include "PNodes.h"
 #include "PTelemetry.h"
 
@@ -85,10 +86,14 @@ public:
     // interface to telemetry downstream
     PTelemetry *telemetry() const { return m_telemetry; }
 
+    // interface to telemetry downstream
+    PMission *mission() const { return m_mission; }
+
 protected:
     PNodes *m_nodes{};
-    PTelemetry *m_telemetry{};
     PData *m_data{};
+    PTelemetry *m_telemetry{};
+    PMission *m_mission{};
 
 private:
     QString m_uid;
@@ -109,12 +114,8 @@ signals:
     void errcntChanged();
 
     // PVehicle interface
-public slots:
-    virtual void requestMission() { _nimp(__FUNCTION__); }
 signals:
     void packetReceived(mandala::uid_t uid); // used for counters only
-    void missionReceived(QJsonValue json);
-    void missionAvailable();
 };
 
 Q_DECLARE_METATYPE(PVehicle *)

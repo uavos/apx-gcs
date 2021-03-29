@@ -19,44 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "PMission.h"
 
-#include "PApxVehicle.h"
+#include "PVehicle.h"
 
-class PApxVehicle;
-class PApxNode;
-class PApxNodeRequest;
-
-class PApxNodes : public PNodes
-{
-    Q_OBJECT
-
-public:
-    explicit PApxNodes(PApxVehicle *parent);
-
-    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
-
-    QList<PApxNode *> nodes() const { return _nodes.values(); }
-
-private:
-    PApxRequest _req;
-    QHash<QString, PApxNode *> _nodes;
-
-    PApxNode *getNode(QString uid, bool createNew = true);
-
-    QTimer _reqTimer;
-    QList<PApxNodeRequest *> _requests;
-    PApxNodeRequest *_request{};
-    uint _retry{};
-
-protected:
-    void requestSearch() override;
-
-private slots:
-    // reauests sequencer
-    void request_scheduled(PApxNodeRequest *req);
-    void request_finished(PApxNodeRequest *req);
-    void request_timeout();
-    void request_next();
-    void request_current();
-};
+PMission::PMission(PVehicle *parent)
+    : PTreeBase(parent, "mission", tr("Mission"), tr("Mission interface"))
+{}

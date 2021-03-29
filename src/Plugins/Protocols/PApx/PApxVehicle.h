@@ -49,6 +49,4 @@ private:
     xbus::vehicle::squawk_t m_squawk;
 
     PApxRequest _req;
-
-    void requestMission() override;
 };

@@ -22,6 +22,7 @@
 #include "PApxVehicle.h"
 
 #include "PApxData.h"
+#include "PApxMission.h"
 #include "PApxNodes.h"
 #include "PApxTelemetry.h"
 
@@ -35,15 +36,7 @@ PApxVehicle::PApxVehicle(
     m_data = new PApxData(this);
     m_telemetry = new PApxTelemetry(this);
     m_nodes = new PApxNodes(this);
-
-    connect(static_cast<PApxNodes *>(m_nodes),
-            &PApxNodes::missionReceived,
-            this,
-            &PVehicle::missionReceived);
-    connect(static_cast<PApxNodes *>(m_nodes),
-            &PApxNodes::missionAvailable,
-            this,
-            &PVehicle::missionAvailable);
+    m_mission = new PApxMission(this);
 }
 
 void PApxVehicle::process_downlink(PStreamReader &stream)
@@ -111,9 +104,4 @@ void PApxVehicle::send_uplink(QByteArray packet)
     _req.append(packet);
 
     _req.send();
-}
-
-void PApxVehicle::requestMission()
-{
-    static_cast<PApxNodes *>(m_nodes)->requestMission();
 }

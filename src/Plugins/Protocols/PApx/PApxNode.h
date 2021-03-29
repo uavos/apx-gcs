@@ -82,12 +82,9 @@ private slots:
     void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);
-    void parseMissionData(const xbus::node::file::info_s &info, const QByteArray data);
 
 signals:
     void request_scheduled(PApxNodeRequest *req);
     void request_finished(PApxNodeRequest *req);
-
-    void missionReceived(QJsonValue json); // forward to vehicle
-    void missionAvailable();               // forward to vehicle
+    void files_updated();
 };

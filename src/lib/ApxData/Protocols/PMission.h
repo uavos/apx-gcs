@@ -21,42 +21,21 @@
  */
 #pragma once
 
-#include "PApxVehicle.h"
+#include "PBase.h"
 
-class PApxVehicle;
-class PApxNode;
-class PApxNodeRequest;
+class PVehicle;
 
-class PApxNodes : public PNodes
+class PMission : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PApxNodes(PApxVehicle *parent);
+    explicit PMission(PVehicle *parent);
 
-    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+public slots:
+    virtual void requestMission() { _nimp(__FUNCTION__); }
+    virtual void updateMission(QJsonValue json) { _nimp(__FUNCTION__); }
 
-    QList<PApxNode *> nodes() const { return _nodes.values(); }
-
-private:
-    PApxRequest _req;
-    QHash<QString, PApxNode *> _nodes;
-
-    PApxNode *getNode(QString uid, bool createNew = true);
-
-    QTimer _reqTimer;
-    QList<PApxNodeRequest *> _requests;
-    PApxNodeRequest *_request{};
-    uint _retry{};
-
-protected:
-    void requestSearch() override;
-
-private slots:
-    // reauests sequencer
-    void request_scheduled(PApxNodeRequest *req);
-    void request_finished(PApxNodeRequest *req);
-    void request_timeout();
-    void request_next();
-    void request_current();
+signals:
+    void missionReceived(QJsonValue json);
 };
