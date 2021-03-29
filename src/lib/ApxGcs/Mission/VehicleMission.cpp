@@ -174,15 +174,12 @@ VehicleMission::VehicleMission(Vehicle *parent)
     //         this,
     //         &VehicleMission::missionUploaded);
 
-    // connect(vehicle->protocol()->mission,
-    //         &ProtocolMission::downloaded,
-    //         this,
-    //         &VehicleMission::missionDataReceived);
+    connect(vehicle->protocol(), &PVehicle::missionReceived, this, &VehicleMission::missionReceived);
 
-    // connect(vehicle->protocol()->mission, &ProtocolMission::available, this, [this]() {
-    //     if (empty())
-    //         vehicle->protocol()->mission->download();
-    // });
+    connect(vehicle->protocol(), &PVehicle::missionAvailable, this, [this]() {
+        if (empty())
+            vehicle->protocol()->requestMission();
+    });
 
     // FIXME: mission protocol
     /*  connect(vehicle->protocol->mission,
@@ -376,7 +373,7 @@ void VehicleMission::test(int n)
     }
 }
 
-void VehicleMission::missionDataReceived(QJsonValue json)
+void VehicleMission::missionReceived(QJsonValue json)
 {
     clearMission();
     //qDebug() << json;

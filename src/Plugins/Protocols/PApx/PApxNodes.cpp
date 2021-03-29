@@ -92,6 +92,8 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
     connect(node, &Fact::removed, this, [this, node]() { _nodes.remove(_nodes.key(node)); });
     connect(node, &PApxNode::request_scheduled, this, &PApxNodes::request_scheduled);
     connect(node, &PApxNode::request_finished, this, &PApxNodes::request_finished);
+    connect(node, &PApxNode::missionReceived, this, &PApxNodes::missionReceived);
+    connect(node, &PApxNode::missionAvailable, this, &PApxNodes::missionAvailable);
 
     emit node_available(node);
     return node;
@@ -134,7 +136,7 @@ void PApxNodes::request_finished(PApxNodeRequest *req)
 void PApxNodes::request_next()
 {
     if (_request) {
-        qDebug() << "still pending";
+        qDebug() << "pending";
         return;
     }
 
@@ -187,4 +189,13 @@ void PApxNodes::request_timeout()
                      .arg(PApxNodeRequest::retries);
 
     request_current();
+}
+
+void PApxNodes::requestMission()
+{
+    for (auto i : _nodes) {
+        if (!i->file("mission"))
+            continue;
+        new PApxNodeRequestFileRead(i, "mission");
+    }
 }

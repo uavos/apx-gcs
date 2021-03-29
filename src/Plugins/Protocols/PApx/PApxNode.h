@@ -39,7 +39,7 @@ public:
     void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
     void schedule_request(PApxNodeRequest *req);
-    void delete_request(mandala::uid_t uid);
+    void delete_request(PApxNodeRequest *req);
     void clear_requests();
     void reschedule_request(PApxNodeRequest *req);
 
@@ -55,7 +55,7 @@ public:
 
 private:
     PApxRequest _req;
-    QHash<mandala::uid_t, PApxNodeRequest *> _requests;
+    QList<PApxNodeRequest *> _requests;
 
     QMap<QString, PApxNodeFile *> _files_map;
 
@@ -82,8 +82,12 @@ private slots:
     void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseMissionData(const xbus::node::file::info_s &info, const QByteArray data);
 
 signals:
     void request_scheduled(PApxNodeRequest *req);
     void request_finished(PApxNodeRequest *req);
+
+    void missionReceived(QJsonValue json); // forward to vehicle
+    void missionAvailable();               // forward to vehicle
 };

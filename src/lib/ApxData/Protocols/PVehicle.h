@@ -25,8 +25,6 @@
 #include "PNodes.h"
 #include "PTelemetry.h"
 
-class PMission;
-
 class PBase;
 
 class PVehicle : public PTreeBase
@@ -81,9 +79,6 @@ public:
     // interface to vehicle nodes with parameters
     PNodes *nodes() const { return m_nodes; }
 
-    // interface to vehicle mission
-    PMission *mission() const { return m_mission; }
-
     // interface to C2
     PData *data() const { return m_data; }
 
@@ -92,7 +87,6 @@ public:
 
 protected:
     PNodes *m_nodes{};
-    PMission *m_mission{};
     PTelemetry *m_telemetry{};
     PData *m_data{};
 
@@ -114,8 +108,13 @@ signals:
     void streamTypeChanged();
     void errcntChanged();
 
-    // interface signals
+    // PVehicle interface
+public slots:
+    virtual void requestMission() { _nimp(__FUNCTION__); }
+signals:
     void packetReceived(mandala::uid_t uid); // used for counters only
+    void missionReceived(QJsonValue json);
+    void missionAvailable();
 };
 
 Q_DECLARE_METATYPE(PVehicle *)

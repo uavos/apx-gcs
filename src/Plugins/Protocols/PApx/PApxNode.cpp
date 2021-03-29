@@ -25,6 +25,7 @@
 
 #include <Mandala/Mandala.h>
 
+#include <xbus/XbusMission.h>
 #include <xbus/XbusNode.h>
 #include <xbus/XbusScript.h>
 
@@ -117,11 +118,12 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     }
 
     // check for pending request's response
-    auto req = _requests.value(uid);
-    if (req) {
+    for (auto req : _requests) {
+        if (req->uid() != uid)
+            continue;
         // there's a request waiting for the packet's uid
         if (req->check_response(stream)) {
-            delete_request(uid);
+            delete_request(req);
         }
     }
 }
@@ -129,35 +131,35 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 void PApxNode::schedule_request(PApxNodeRequest *req)
 {
     mandala::uid_t uid = req->uid();
-    if (_requests.contains(uid)) {
-        // the most recent for the uid is the only valid
-        if (uid == mandala::cmd::env::nmt::ident::uid)
-            return;
-        qDebug() << "dup" << Mandala::meta(uid).path;
-        delete_request(uid);
+    // check duplicates
+    for (auto i : _requests) {
+        if (i->equals(req)) {
+            // the most recent for the uid is the only valid
+            if (uid == mandala::cmd::env::nmt::ident::uid)
+                return;
+            qDebug() << "dup" << Mandala::meta(uid).path;
+            delete_request(i);
+        }
     }
-    _requests.insert(uid, req);
+    _requests.append(req);
     updateProgress();
     emit request_scheduled(req);
 }
 void PApxNode::reschedule_request(PApxNodeRequest *req)
 {
     mandala::uid_t uid = req->uid();
-    if (!_requests.contains(uid)) {
+    if (!_requests.contains(req)) {
         qDebug() << "not exists" << Mandala::meta(uid).path;
-        delete_request(uid);
+        delete_request(req);
         return;
     }
     emit request_scheduled(req);
 }
 
-void PApxNode::delete_request(mandala::uid_t uid)
+void PApxNode::delete_request(PApxNodeRequest *req)
 {
-    auto req = _requests.value(uid);
-    if (!req)
-        return;
     emit request_finished(req);
-    _requests.remove(uid);
+    _requests.removeAll(req);
     delete req;
     updateProgress();
 }
@@ -195,7 +197,10 @@ void PApxNode::updateFiles(QStringList fnames)
         i->deleteLater();
     }
     _files_map.clear();
-    delete_request(mandala::cmd::env::nmt::file::uid);
+    for (auto i : _requests) {
+        if (i->uid() == mandala::cmd::env::nmt::file::uid)
+            delete_request(i);
+    }
     for (auto i : fnames) {
         PApxNodeFile *f = new PApxNodeFile(this, i);
         _files_map.insert(i, f);
@@ -206,6 +211,8 @@ void PApxNode::updateFiles(QStringList fnames)
             connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseConfData);
         } else if (i == "script") {
             connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseScriptData);
+        } else if (i == "mission") {
+            connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseMissionData);
         }
     }
 }
@@ -460,6 +467,9 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
 
     // conf file parsed
     emit confReceived(values);
+
+    if (file("mission"))
+        emit missionAvailable();
 }
 template<typename T, typename Tout = T>
 static QVariant _read_param(PStreamReader &stream)
@@ -591,4 +601,203 @@ void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByte
     qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
 
     emit scriptReceived(title, src, code);
+}
+
+void PApxNode::parseMissionData(const xbus::node::file::info_s &info, const QByteArray data)
+{
+    //qDebug() << "mission data" << info.size << data.size();
+    if (data.size() < xbus::mission::file_hdr_s::psize()) {
+        emit missionReceived(QJsonValue());
+        return;
+    }
+
+    //unpack mission
+    uint16_t psize = static_cast<uint16_t>(data.size());
+    const uint8_t *pdata = reinterpret_cast<const uint8_t *>(data.data());
+    XbusStreamReader stream(pdata, psize);
+
+    xbus::mission::file_hdr_s fhdr{};
+    fhdr.read(&stream);
+    QString title(QByteArray(fhdr.title, sizeof(fhdr.title)));
+
+    qDebug() << title << data.size() << "bytes";
+
+    if (fhdr.size != stream.available()) {
+        qWarning() << "size" << fhdr.size << stream.available();
+        return;
+    }
+
+    QJsonArray wp, rw, tw, pi;
+
+    int ecnt = 0, wpcnt = 0, rwcnt = 0;
+
+    while (stream.available() > 0) {
+        ecnt++;
+        xbus::mission::hdr_s hdr;
+        hdr.read(&stream);
+
+        switch (hdr.type) {
+        case xbus::mission::STOP:
+            stream.reset(psize); //finish
+            ecnt--;
+            continue;
+        case xbus::mission::WP: {
+            if (stream.available() < xbus::mission::wp_s::psize())
+                break;
+            xbus::mission::wp_s e;
+            e.read(&stream);
+            wpcnt++;
+
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+            item.insert("altitude", e.alt);
+            QString type = "direct";
+            if (hdr.option == 1)
+                type = "path";
+            item.insert("type", type);
+
+            wp.append(item);
+            continue;
+        }
+        case xbus::mission::ACT: { //wp actions
+            QJsonObject a;
+            switch (hdr.option) {
+            default:
+                break;
+            case xbus::mission::ACT_SPEED: {
+                xbus::mission::act_speed_s e;
+                e.read(&stream);
+                a.insert("speed", e.speed);
+                break;
+            }
+            case xbus::mission::ACT_PI: {
+                xbus::mission::act_pi_s e;
+                e.read(&stream);
+                a.insert("poi", e.index + 1);
+                break;
+            }
+            case xbus::mission::ACT_SCR: {
+                xbus::mission::act_scr_s e;
+                e.read(&stream);
+                a.insert("script", QString(QByteArray(e.scr, sizeof(e.scr))));
+                break;
+            }
+            case xbus::mission::ACT_SHOT: {
+                xbus::mission::act_shot_s e;
+                e.read(&stream);
+                switch (e.opt) {
+                case 0: //single
+                    a.insert("shot", "single");
+                    a.insert("dshot", 0);
+                    break;
+                case 1: //start
+                    a.insert("shot", "start");
+                    a.insert("dshot", e.dist);
+                    break;
+                case 2: //stop
+                    a.insert("shot", "stop");
+                    a.insert("dshot", 0);
+                    break;
+                }
+                break;
+            }
+            }
+            if (wp.isEmpty()) {
+                qWarning() << "Orphan actions in mission";
+                continue;
+            }
+            QJsonObject wpt = wp.last().toObject();
+            if (!wpt.contains("actions"))
+                wpt.insert("actions", QJsonObject());
+            QJsonObject actions = wpt["actions"].toObject();
+            for (auto i : a.keys())
+                actions.insert(i, a[i]);
+            wpt.insert("actions", actions);
+            QJsonValueRef ref = wp[wp.size() - 1];
+            ref = wpt;
+            continue;
+        }
+        case xbus::mission::RW: {
+            if (stream.available() < xbus::mission::rw_s::psize())
+                break;
+            xbus::mission::rw_s e;
+            e.read(&stream);
+            rwcnt++;
+
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+            item.insert("hmsl", e.hmsl);
+            item.insert("dN", e.dN);
+            item.insert("dE", e.dE);
+            item.insert("approach", e.approach);
+            QString type = "left";
+            if (hdr.option == 1)
+                type = "right";
+            item.insert("type", type);
+
+            rw.append(item);
+            continue;
+        }
+        case xbus::mission::TW: {
+            if (stream.available() < xbus::mission::tw_s::psize())
+                break;
+            xbus::mission::tw_s e;
+            e.read(&stream);
+
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+
+            tw.append(item);
+            continue;
+        }
+        case xbus::mission::PI: {
+            if (stream.available() < xbus::mission::pi_s::psize())
+                break;
+            xbus::mission::pi_s e;
+            e.read(&stream);
+            QJsonObject item;
+            item.insert("lat", static_cast<qreal>(e.lat));
+            item.insert("lon", static_cast<qreal>(e.lon));
+            item.insert("hmsl", e.hmsl);
+            item.insert("radius", e.radius);
+            item.insert("loops", e.loops);
+            item.insert("timeout", e.timeout);
+
+            pi.append(item);
+            continue;
+        }
+        case xbus::mission::EMG:
+        case xbus::mission::DIS: {
+            uint16_t sz = stream.available();
+            size_t pointsCnt = hdr.option;
+            if (sz < xbus::mission::area_s::psize(pointsCnt))
+                break;
+            //TODO - implement areas in GCS
+            for (size_t i = 0; i < pointsCnt; ++i) {
+                xbus::mission::area_s p;
+                p.read(&stream);
+            }
+            continue;
+        }
+        }
+        //error in mission
+        return;
+    }
+
+    QJsonObject json;
+    json.insert("title", title);
+
+    if (!wp.isEmpty())
+        json.insert("wp", wp);
+    if (!rw.isEmpty())
+        json.insert("rw", rw);
+    if (!tw.isEmpty())
+        json.insert("tw", tw);
+    if (!pi.isEmpty())
+        json.insert("pi", pi);
+
+    emit missionReceived(json);
 }

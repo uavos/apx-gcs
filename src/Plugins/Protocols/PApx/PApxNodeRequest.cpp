@@ -41,7 +41,7 @@ PTrace *PApxNodeRequest::trace() const
 }
 void PApxNodeRequest::discard()
 {
-    _node->delete_request(uid());
+    _node->delete_request(this);
 }
 
 bool PApxNodeRequest::make_request(PApxRequest &req)

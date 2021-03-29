@@ -35,6 +35,8 @@ public:
     explicit PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeout_ms = 1000);
     virtual ~PApxNodeRequest() {}
 
+    bool equals(PApxNodeRequest *req) { return uid() == req->uid() && cid() == req->cid(); }
+
     bool make_request(PApxRequest &req);
     bool check_response(PStreamReader &stream) { return response(stream); }
     void discard();
@@ -42,6 +44,8 @@ public:
     uint timeout_ms() const { return _timeout_ms; }
     PApxNode *node() const { return _node; }
     mandala::uid_t uid() const { return _uid; }
+
+    virtual QString cid() const { return QString(); } // compare ID to check duplicates
 
     static constexpr uint retries = 5;
 
@@ -92,6 +96,7 @@ protected:
     QString _name;
     xbus::node::file::op_e _op;
 
+    virtual QString cid() const override { return _name; }
     virtual bool request(PApxRequest &req) override;
 };
 
@@ -102,7 +107,9 @@ public:
     // data is collected by PApxNodeFile
     explicit PApxNodeRequestFileRead(PApxNode *node, QString name)
         : PApxNodeRequestFile(node, name, xbus::node::file::ropen)
-    {}
+    {
+        qDebug() << "downloading:" << name;
+    }
 
 private:
     xbus::node::file::info_s _info{};

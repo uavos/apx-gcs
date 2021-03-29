@@ -36,6 +36,8 @@ public:
 
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
+    void requestMission();
+
 private:
     PApxRequest _req;
     QHash<QString, PApxNode *> _nodes;
@@ -56,4 +58,8 @@ private slots:
     void request_timeout();
     void request_next();
     void request_current();
+
+signals:
+    void missionReceived(QJsonValue json); // forward to vehicle
+    void missionAvailable();               // forward to vehicle
 };
