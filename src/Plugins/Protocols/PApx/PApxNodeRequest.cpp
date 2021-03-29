@@ -145,134 +145,6 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     return true;
 }
 
-bool PApxNodeRequestFile::request(PApxRequest &req)
-{
-    req << _op;
-    trace()->block(QString::number(_op));
-    req.write_string(_name.toUtf8());
-    trace()->block(_name);
-    return true;
-}
-
-bool PApxNodeRequestFileRead::request(PApxRequest &req)
-{
-    PApxNodeRequestFile::request(req);
-
-    switch (_op) {
-    default:
-        return false;
-    case xbus::node::file::ropen:
-        break;
-    case xbus::node::file::close:
-        break;
-    case xbus::node::file::read:
-        req.write<xbus::node::file::offset_t>(_offset);
-        break;
-    }
-    return true;
-}
-bool PApxNodeRequestFileRead::response(PStreamReader &stream)
-{
-    //qDebug() << "re:" << _op << stream.available();
-    if (stream.available() <= sizeof(xbus::node::file::op_e))
-        return false;
-
-    xbus::node::file::op_e op;
-    stream >> op;
-
-    if (!(op & xbus::node::file::reply_op_mask))
-        return false;
-
-    op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
-
-    if (op == xbus::node::file::abort) {
-        qWarning() << "transfer aborted by node";
-        reset();
-        return true;
-    }
-
-    if (op != _op)
-        return false;
-
-    const char *s = stream.read_string(16);
-    if (!s || QString(s) != _name)
-        return false;
-
-    //qDebug() << _name << op << _op;
-
-    switch (op) {
-    default:
-        return false;
-    case xbus::node::file::ropen:
-        if (stream.available() != xbus::node::file::info_s::psize())
-            return false;
-        reset();
-        _info.read(&stream);
-        _offset = _info.offset;
-        read_next();
-        return false;
-    case xbus::node::file::close:
-        if (_info.size == _tcnt && _info.size > 0) {
-            if (_hash != _info.hash) {
-                qWarning() << "read error:" << _name;
-                qWarning() << "hash: " << QString::number(_hash, 16)
-                           << QString::number(_info.hash, 16);
-            } else {
-                //qDebug() << "read ok:" << _name << QString::number(_hash, 16);
-            }
-        }
-        reset();
-        break;
-    case xbus::node::file::read: {
-        if (stream.available() <= sizeof(xbus::node::file::offset_t))
-            return false;
-
-        xbus::node::file::offset_t offset;
-        stream >> offset;
-        if (offset != _offset) { //just skip non-sequental
-            qWarning() << "offset:" << offset << _offset;
-            return true;
-        }
-
-        //qDebug() << "rd:" << offset;
-
-        size_t size = stream.available();
-        _offset += size;
-        _tcnt += size;
-
-        if (_tcnt > _info.size) {
-            qWarning() << "overflow:" << _tcnt << _info.size;
-            return true;
-        }
-        _hash = apx::crc32(stream.ptr(), size, _hash);
-        read_next();
-        return false;
-    }
-    }
-
-    return true;
-}
-void PApxNodeRequestFileRead::reset()
-{
-    _op = xbus::node::file::ropen;
-    _info = {};
-    _offset = 0;
-    _tcnt = 0;
-    _hash = 0xFFFFFFFF;
-}
-void PApxNodeRequestFileRead::read_next()
-{
-    if (_tcnt == _info.size) {
-        //all data read
-        //qDebug() << "done";
-        _op = xbus::node::file::close;
-        _node->reschedule_request(this);
-        return;
-    }
-    _op = xbus::node::file::read;
-    _node->reschedule_request(this);
-}
-
 bool PApxNodeRequestUpdate::request(PApxRequest &req)
 {
     if (_index >= _values.size()) {
@@ -326,4 +198,175 @@ bool PApxNodeRequestUpdate::response(PStreamReader &stream)
 
     _node->reschedule_request(this);
     return false;
+}
+
+bool PApxNodeRequestFile::request(PApxRequest &req)
+{
+    req << _op;
+    trace()->block(QString::number(_op));
+    req.write_string(_name.toUtf8());
+    trace()->block(_name);
+
+    if (_op == xbus::node::file::close)
+        return true;
+    if (_op == _op_init)
+        return true;
+    if (_op != _op_file)
+        return false;
+
+    req.write<xbus::node::file::offset_t>(_offset);
+    return request_file(req);
+}
+void PApxNodeRequestFile::reset()
+{
+    _op = _op_init;
+    _info = {};
+    _offset = 0;
+    _tcnt = 0;
+    _hash = 0xFFFFFFFF;
+}
+bool PApxNodeRequestFile::response(PStreamReader &stream)
+{
+    //qDebug() << "re:" << _op << stream.available();
+    if (stream.available() <= sizeof(xbus::node::file::op_e))
+        return false;
+
+    xbus::node::file::op_e op;
+    stream >> op;
+
+    if (!(op & xbus::node::file::reply_op_mask))
+        return false;
+
+    op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
+
+    if (op == xbus::node::file::abort) {
+        qWarning() << "transfer aborted by node";
+        reset();
+        return false;
+    }
+
+    if (op != _op)
+        return false;
+
+    const char *s = stream.read_string(16);
+    if (!s || QString(s) != _name)
+        return false;
+
+    //qDebug() << _name << op << _op;
+    if (op == _op_init) {
+        if (stream.available() != xbus::node::file::info_s::psize())
+            return false;
+        reset();
+        _info.read(&stream);
+        _offset = _info.offset;
+        next();
+        return false;
+    }
+    if (op == xbus::node::file::close) {
+        if (_info.size == _tcnt && _info.size > 0) {
+            if (_hash != _info.hash) {
+                qWarning() << "transfer error:" << _name;
+                qWarning() << "hash: " << QString::number(_hash, 16)
+                           << QString::number(_info.hash, 16);
+            } else {
+                //qDebug() << "transfer ok:" << _name << QString::number(_hash, 16);
+            }
+        }
+        reset();
+        return true;
+    }
+    if (op != _op_file)
+        return false;
+
+    if (stream.available() <= sizeof(xbus::node::file::offset_t))
+        return false;
+
+    xbus::node::file::offset_t offset;
+    stream >> offset;
+    if (offset != _offset) { //just skip non-sequental
+        qWarning() << "offset:" << offset << _offset;
+        return false;
+    }
+
+    return response_file(offset, stream);
+}
+void PApxNodeRequestFile::next()
+{
+    if (_tcnt == _info.size) {
+        //all data read
+        //qDebug() << "done";
+        _op = xbus::node::file::close;
+        _node->reschedule_request(this);
+        return;
+    }
+    _op = _op_file;
+    _node->reschedule_request(this);
+}
+
+bool PApxNodeRequestFileRead::response_file(xbus::node::file::offset_t offset, PStreamReader &stream)
+{
+    size_t size = stream.available();
+    _offset += size;
+    _tcnt += size;
+
+    if (_tcnt > _info.size) {
+        qWarning() << "overflow:" << _tcnt << _info.size;
+        return true;
+    }
+    _hash = apx::crc32(stream.ptr(), size, _hash);
+    next();
+    return false;
+}
+
+bool PApxNodeRequestFileWrite::request_file(PApxRequest &req)
+{
+    // write data part
+    size_t tail = _info.size - _tcnt;
+    size_t sz = 256;
+    if (sz > tail)
+        sz = tail;
+
+    const QByteArray &ba = _data.mid(static_cast<int>(_tcnt), static_cast<int>(sz));
+    if (static_cast<int>(sz) != ba.size()) {
+        qWarning() << "block: " << sz << ba.size();
+        return false;
+    }
+    sz = req.write(ba.data(), sz);
+    _hash = apx::crc32(ba.data(), sz);
+    return true;
+}
+bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
+                                             PStreamReader &stream)
+{
+    if (stream.available() < sizeof(xbus::node::file::size_t))
+        return false;
+
+    xbus::node::file::size_t size;
+    stream >> size;
+    if (size == 0) {
+        qWarning() << "size: " << size;
+        return false;
+    }
+
+    if (stream.available() < sizeof(xbus::node::hash_t))
+        return false;
+
+    xbus::node::hash_t hash;
+    stream >> hash;
+
+    if (hash != _hash) {
+        qWarning() << "hash: " << QString::number(hash, 16) << QString::number(_hash, 16);
+        return true; // stop uploading
+    }
+
+    if (stream.available() > 0)
+        return true; // stop uploading
+
+    _offset += size;
+    _tcnt += size;
+    if (_tcnt > _info.size)
+        return false;
+
+    next();
+    return true;
 }

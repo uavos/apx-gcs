@@ -83,47 +83,6 @@ public:
     bool response(PStreamReader &stream) override;
 };
 
-class PApxNodeRequestFile : public PApxNodeRequest
-{
-public:
-    explicit PApxNodeRequestFile(PApxNode *node, QString name, xbus::node::file::op_e op)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::file::uid)
-        , _name(name)
-        , _op(op)
-    {}
-
-protected:
-    QString _name;
-    xbus::node::file::op_e _op;
-
-    virtual QString cid() const override { return _name; }
-    virtual bool request(PApxRequest &req) override;
-};
-
-class PApxNodeRequestFileRead : public PApxNodeRequestFile
-{
-public:
-    // generates requests tree to download a file form node
-    // data is collected by PApxNodeFile
-    explicit PApxNodeRequestFileRead(PApxNode *node, QString name)
-        : PApxNodeRequestFile(node, name, xbus::node::file::ropen)
-    {
-        qDebug() << "downloading:" << name;
-    }
-
-private:
-    xbus::node::file::info_s _info{};
-    xbus::node::file::offset_t _offset{};
-    xbus::node::file::size_t _tcnt{};
-    xbus::node::hash_t _hash{};
-
-    void reset();
-    void read_next();
-
-    bool request(PApxRequest &req) override;
-    bool response(PStreamReader &stream) override;
-};
-
 class PApxNodeRequestUpdate : public PApxNodeRequest
 {
 public:
@@ -139,4 +98,76 @@ private:
 
     bool request(PApxRequest &req) override;
     bool response(PStreamReader &stream) override;
+};
+
+class PApxNodeRequestFile : public PApxNodeRequest
+{
+public:
+    explicit PApxNodeRequestFile(PApxNode *node,
+                                 QString name,
+                                 xbus::node::file::op_e op_init,
+                                 xbus::node::file::op_e op_file = xbus::node::file::info)
+        : PApxNodeRequest(node, mandala::cmd::env::nmt::file::uid)
+        , _name(name)
+        , _op_init(op_init)
+        , _op_file(op_file)
+        , _op(op_init)
+    {}
+
+protected:
+    QString _name;
+    xbus::node::file::op_e _op_init;
+    xbus::node::file::op_e _op_file;
+    xbus::node::file::op_e _op;
+
+    xbus::node::file::info_s _info{};
+    xbus::node::file::offset_t _offset{};
+    xbus::node::file::size_t _tcnt{};
+    xbus::node::hash_t _hash{};
+
+    void reset();
+    void next();
+
+    virtual QString cid() const override { return _name; }
+    bool request(PApxRequest &req) override final;
+    bool response(PStreamReader &stream) override final;
+
+    virtual bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream)
+    {
+        return true;
+    }
+    virtual bool request_file(PApxRequest &req) { return true; }
+};
+
+class PApxNodeRequestFileRead : public PApxNodeRequestFile
+{
+public:
+    // generates requests tree to download a file form node
+    // data is collected by PApxNodeFile
+    explicit PApxNodeRequestFileRead(PApxNode *node, QString name)
+        : PApxNodeRequestFile(node, name, xbus::node::file::ropen, xbus::node::file::read)
+    {
+        qDebug() << "downloading:" << name;
+    }
+
+private:
+    bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream) override;
+};
+
+class PApxNodeRequestFileWrite : public PApxNodeRequestFile
+{
+public:
+    // generates requests tree to upload a file form node
+    explicit PApxNodeRequestFileWrite(PApxNode *node, QString name, QByteArray data)
+        : PApxNodeRequestFile(node, name, xbus::node::file::wopen, xbus::node::file::write)
+        , _data(data)
+    {
+        qDebug() << "uploading:" << name;
+    }
+
+private:
+    QByteArray _data;
+
+    bool request_file(PApxRequest &req) override;
+    bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream) override;
 };

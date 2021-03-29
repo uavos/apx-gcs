@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include "PApxNodeFile.h"
 #include "PApxVehicle.h"
 
 #include <xbus/XbusNode.h>
@@ -37,9 +38,15 @@ public:
 private:
     PApxVehicle *_vehicle;
 
-    static QJsonValue unpack(PStreamReader &stream);
+    static constexpr const auto file_name{"mission"};
+
+    static QJsonValue _unpack(PStreamReader &stream);
+    static QByteArray _pack(QJsonValue json);
+
+    PApxNodeFile *_file() const;
 
     void requestMission() override;
+    void updateMission(QJsonValue json) override;
 
 private slots:
     void parseMissionData(const xbus::node::file::info_s &info, const QByteArray data);

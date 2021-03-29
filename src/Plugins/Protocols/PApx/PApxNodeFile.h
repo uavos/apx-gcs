@@ -40,6 +40,8 @@ public:
 
     void reset();
 
+    PApxNode *node() const { return _node; }
+
 private:
     PApxNode *_node;
 
