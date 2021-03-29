@@ -52,6 +52,8 @@ private:
     xbus::node::file::size_t _tcnt{};
     xbus::node::hash_t _hash{};
 
+    bool _opened{};
+
     bool read(PStreamReader &stream);
     bool check_info(PStreamReader &stream);
 

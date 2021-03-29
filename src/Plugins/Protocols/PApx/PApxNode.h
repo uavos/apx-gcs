@@ -65,6 +65,8 @@ private:
     QList<size_t> _field_arrays;
     QStringList _field_names;
 
+    xbus::node::conf::script_t _script_value{};
+
     void updateProgress();
 
 protected:

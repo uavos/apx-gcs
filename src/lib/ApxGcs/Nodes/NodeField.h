@@ -52,6 +52,7 @@ public:
 
     inline void setHelp(const QString &s) { _help = s; }
     inline QString fpath() const { return _fpath; }
+    inline QString type() const { return _type; }
 
 private:
     NodeItem *_node;

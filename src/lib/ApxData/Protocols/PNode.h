@@ -57,8 +57,11 @@ public slots:
 
 signals:
     void messageReceived(PNode::msg_type_e type, QString msg);
+
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
     void confReceived(QVariantMap values);
+    void scriptReceived(QString title, QByteArray src, QByteArray code);
+
     void confSaved(); // when requestUpdate accepted and saved
 };

@@ -57,6 +57,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
+    connect(protocol, &PNode::scriptReceived, this, &NodeItem::scriptReceived);
     connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
 
     /*
@@ -83,17 +84,17 @@ const QList<NodeField *> &NodeItem::fields() const
     return m_fields;
 }
 
-void NodeItem::validateDict()
+/*void NodeItem::validateDict()
 {
-    /*if (!protocol()->dictValid()) {
+    if (!protocol()->dictValid()) {
         clear();
         return;
-    }*/
+    }
     //groupFields();
     //qDebug()<path();
 
     //fields map
-    /*for (int i = 0; i < allFields.size(); ++i) {
+    for (int i = 0; i < allFields.size(); ++i) {
         NodeField *f = allFields.at(i);
         //expand complex numbers
         bool bComplex = f->size() > 0;
@@ -104,21 +105,18 @@ void NodeItem::validateDict()
             }
         } else
             allFieldsByName.insert(f->name(), f);
-    }*/
-}
+    }
+}*/
 void NodeItem::validateData()
 {
-    /*if (!protocol()->valid())
+    if (m_valid)
         return;
-    if (!protocol()->enabled())
-        return;
-    if (protocol()->ident().flags.bits.reconf) {
-        //nodes->storage->restoreNodeConfig(this);
-    } else {
-        //setNconfID(0);
-        //nodes->storage->saveNodeConfig(this);
-    }*/
-    //qDebug()<<"Node dataValid"<<path();
+    backup();
+    m_valid = true;
+    emit validChanged();
+
+    updateStatus();
+    qDebug() << "Node data valid:" << path();
 }
 
 void NodeItem::updateDescr()
@@ -136,8 +134,8 @@ void NodeItem::updateStatus()
         setValue(tr("no config").toUpper());
         return;
     }
-    if (m_status_field) {
-        setValue(m_status_field->valueText().trimmed());
+    if (_status_field) {
+        setValue(_status_field->valueText().trimmed());
     }
 }
 
@@ -148,7 +146,8 @@ void NodeItem::clear()
         emit validChanged();
     }
 
-    m_status_field = nullptr;
+    _status_field = nullptr;
+    _script_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
     deleteChildren();
@@ -468,10 +467,10 @@ void NodeItem::dictReceived(QJsonValue json)
         } else { // data field
             NodeField *f = new NodeField(g, this, field, m_fields.size());
             m_fields.append(f);
-            if (!m_status_field) {
+            if (!_status_field) {
                 if (type == "string") {
-                    m_status_field = f;
-                    connect(m_status_field, &Fact::valueChanged, this, &NodeItem::updateStatus);
+                    _status_field = f;
+                    connect(_status_field, &Fact::valueChanged, this, &NodeItem::updateStatus);
                 }
             }
         }
@@ -585,9 +584,15 @@ void NodeItem::confReceived(QVariantMap values)
             continue;
         }
         fields.append(fpath);
+        if (f->type() == "script") {
+            _script_field = f;
+            continue;
+        }
+
         f->setConfValue(values.value(fpath));
     }
 
+    // report missing fields
     for (auto fpath : values.keys()) {
         if (!fields.contains(fpath)) {
             qWarning() << "missing field for:" << fpath;
@@ -598,14 +603,32 @@ void NodeItem::confReceived(QVariantMap values)
     } else {
         apxMsgW() << tr("Inconsistent parameters");
     }
-
-    if (!m_valid) {
-        backup();
-        m_valid = true;
-        emit validChanged();
+    if (_script_field) {
+        _protocol->requestScript();
+        return;
     }
 
-    updateStatus();
+    validateData();
+}
+void NodeItem::scriptReceived(QString title, QByteArray src, QByteArray code)
+{
+    if (!_script_field) {
+        apxConsoleW() << "missing script field";
+        clear();
+        return;
+    }
+
+    if (src.isEmpty() && code.isEmpty()) {
+        _script_field->setConfValue(QVariant());
+    } else {
+        QStringList st;
+        st << title;
+        st << qCompress(src, 9).toHex().toUpper();
+        st << qCompress(code, 9).toHex().toUpper();
+        _script_field->setConfValue(st.join(','));
+    }
+
+    validateData();
 }
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)

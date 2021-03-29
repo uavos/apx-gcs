@@ -74,7 +74,9 @@ private:
     QJsonArray _parameters;
     void updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json);
 
-    NodeField *m_status_field{nullptr};
+    NodeField *_status_field{nullptr};
+    NodeField *_script_field{nullptr};
+
     void groupArrays();
     void groupArrays(Fact *group);
     void updateArrayRowDescr(Fact *fRow);
@@ -85,8 +87,6 @@ private:
     bool m_valid{};
 
 private slots:
-
-    void validateDict();
     void validateData();
 
     void updateDescr();
@@ -101,6 +101,7 @@ private slots:
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
     void confReceived(QVariantMap values);
+    void scriptReceived(QString title, QByteArray src, QByteArray code);
     void confSaved();
 
     void messageReceived(PNode::msg_type_e type, QString msg);

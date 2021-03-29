@@ -212,7 +212,7 @@ bool PApxNodeRequestFileRead::response(PStreamReader &stream)
         read_next();
         return false;
     case xbus::node::file::close:
-        if (_info.size > 0) {
+        if (_info.size == _tcnt && _info.size > 0) {
             if (_hash != _info.hash) {
                 qWarning() << "read error:" << _name;
                 qWarning() << "hash: " << QString::number(_hash, 16)

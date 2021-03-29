@@ -66,6 +66,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
         reset();
         _size = _info.size;
         _offset = _info.offset;
+        _opened = true;
         return;
 
     case xbus::node::file::close:
@@ -73,13 +74,18 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             return;
         if (!check_info(stream))
             break;
-        if (!_size)
+        if (!_opened)
             break;
-        // check downloaded data
-        if (_hash != _info.hash || _tcnt != _size || _data.size() != _tcnt) {
-            qWarning() << "download error:" << name() << _data.size();
-            qWarning() << "hash: " << QString::number(_hash, 16) << QString::number(_info.hash, 16);
+        if (_size == 0 && _info.size == 0 && _data.size() == 0) {
+            qDebug() << "download ok:" << name() << "empty";
         } else {
+            // check downloaded data
+            if (_hash != _info.hash || _tcnt != _size || _data.size() != _tcnt) {
+                qWarning() << "download error:" << name() << _data.size();
+                qWarning() << "hash: " << QString::number(_hash, 16)
+                           << QString::number(_info.hash, 16);
+                break;
+            }
             qDebug() << "download ok:" << name() << _size << "bytes" << QString::number(_hash, 16);
         }
 
@@ -91,7 +97,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             return;
         if (!_info.flags.bits.oread)
             break;
-        if (!_size)
+        if (!_size || !_opened)
             break;
         if (!read(stream))
             break;
@@ -102,7 +108,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             return;
         if (!_info.flags.bits.owrite)
             break;
-        if (!_size)
+        if (!_size || !_opened)
             break;
         if (!read(stream))
             break;
@@ -150,6 +156,8 @@ void PApxNodeFile::reset()
     _hash = 0xFFFFFFFF;
 
     _data.clear();
+
+    _opened = false;
 
     setValue(QVariant());
     setProgress(-1);
