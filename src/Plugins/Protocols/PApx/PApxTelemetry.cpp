@@ -270,3 +270,9 @@ bool PApxTelemetry::unpack_xpdr(PStreamReader &stream)
     emit xpdrData(values);
     return true;
 }
+
+void PApxTelemetry::requestTelemetry()
+{
+    _req.request(mandala::cmd::env::telemetry::data::uid);
+    _req.send();
+}

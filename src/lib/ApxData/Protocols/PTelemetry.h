@@ -35,6 +35,8 @@ public:
 protected:
     PVehicle *_vehicle;
 
+public slots:
+    virtual void requestTelemetry() { _nimp(__FUNCTION__); }
 signals:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
     void xpdrData(PBase::Values values);

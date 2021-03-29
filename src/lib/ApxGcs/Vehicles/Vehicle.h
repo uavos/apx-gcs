@@ -72,6 +72,8 @@ public:
 
     Fact *f_select;
 
+    QTimer telemetryReqTimer;
+
     quint64 dbKey{0}; //from db
 
     QString fileTitle() const; //name based on Vehicle title and nodes shiva comment

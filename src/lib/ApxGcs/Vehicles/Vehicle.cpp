@@ -158,6 +158,20 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
     }
 
+    if (isIdentified()) {
+        telemetryReqTimer.setInterval(1000);
+        connect(&telemetryReqTimer,
+                &QTimer::timeout,
+                protocol->telemetry(),
+                &PTelemetry::requestTelemetry);
+        connect(this, &Fact::activeChanged, this, [this]() {
+            if (active())
+                telemetryReqTimer.start();
+            else
+                telemetryReqTimer.stop();
+        });
+    }
+
     // path
     Fact *f = new Fact(f_telemetry,
                        "rpath",

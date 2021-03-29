@@ -57,6 +57,8 @@ private:
 
     bool unpack_xpdr(PStreamReader &stream);
 
+    void requestTelemetry() override;
+
 private slots:
     void updateStatus();
 
