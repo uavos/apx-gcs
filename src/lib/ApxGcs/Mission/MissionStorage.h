@@ -24,7 +24,6 @@
 #include <ApxMisc/DelayedEvent.h>
 #include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolMission.h>
 #include <QGeoCoordinate>
 #include <QtCore>
 

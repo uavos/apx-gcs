@@ -26,7 +26,6 @@
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <Protocols/ProtocolNode.h>
 #include <Vehicles/Vehicles.h>
 
 NodeField::NodeField(

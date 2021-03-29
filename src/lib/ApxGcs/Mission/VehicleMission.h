@@ -23,7 +23,6 @@
 
 #include "MissionGroup.h"
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolMission.h>
 #include <Vehicles/Vehicles.h>
 
 #include <QGeoCoordinate>

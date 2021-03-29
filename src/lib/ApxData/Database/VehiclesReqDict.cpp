@@ -193,7 +193,7 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
     query.addBindValue(dictID);
     if (!query.exec())
         return false;
-    QHash<QString, xbus::node::conf::type_e> types;
+    /*QHash<QString, xbus::node::conf::type_e> types;
     for (uint8_t i = 0; i < xbus::node::conf::type_max; ++i) {
         QString s(xbus::node::conf::type_to_str(static_cast<xbus::node::conf::type_e>(i)));
         if (s.isEmpty())
@@ -215,11 +215,11 @@ bool DBReqVehiclesLoadDict::run(QSqlQuery &query)
 
     //qDebug()<<t0.elapsed()<<"ms";
     emit dictInfoFound(info);
-    emit dictLoaded(info, dict);
+    emit dictLoaded(info, dict);*/
     return true;
 }
 
-void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
+/*void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
 {
     records.names << "name"
                   << "title"
@@ -241,7 +241,7 @@ void DBReqVehiclesSaveDict::makeRecords(const ProtocolNode::Dict &dict)
         v << i.group;
         records.values.append(v);
     }
-}
+}*/
 bool DBReqVehiclesSaveDict::run(QSqlQuery &query)
 {
     if (info.contains("nodeID"))

@@ -22,7 +22,6 @@
 #pragma once
 
 #include <Database/DatabaseSession.h>
-#include <Protocols/ProtocolMission.h>
 #include <QtCore>
 
 class MissionsDB : public DatabaseSession

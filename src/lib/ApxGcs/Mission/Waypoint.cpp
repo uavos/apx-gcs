@@ -34,7 +34,8 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_altitude->setUnits("m");
 
     f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
-    f_type->setEnumStrings(QMetaEnum::fromType<ProtocolMission::ManeuverType>());
+    f_type->setEnumStrings(QStringList() << "direct"
+                                         << "track");
 
     //actions
     f_actions = new WaypointActions(this);
@@ -116,7 +117,7 @@ QGeoPath Waypoint::getPath()
             pt = prev->coordinate();
             if (prev->geoPath().path().size() > 1) {
                 crs = prev->course();
-                wptLine = f_type->value().toInt() == ProtocolMission::Path;
+                wptLine = f_type->text().toLower() == "track";
             } else
                 wptLine = true;
         }

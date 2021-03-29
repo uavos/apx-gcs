@@ -22,7 +22,6 @@
 #pragma once
 
 #include "VehiclesDB.h"
-#include <Protocols/ProtocolNode.h>
 #include <QtCore>
 
 class DBReqVehiclesLoadInfo : public DBReqVehicles
@@ -97,25 +96,25 @@ public:
     bool run(QSqlQuery &query);
     //result
     QVariantMap info;
-    ProtocolNode::Dict dict;
+    //ProtocolNode::Dict dict;
 
 private:
     quint64 dictID;
     QString hash;
 signals:
     void dictInfoFound(QVariantMap dictInfo);
-    void dictLoaded(QVariantMap info, const ProtocolNode::Dict &dict);
+    //void dictLoaded(QVariantMap info, const ProtocolNode::Dict &dict);
 };
 
 class DBReqVehiclesSaveDict : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqVehiclesSaveDict(QVariantMap info, const ProtocolNode::Dict &dict)
+    explicit DBReqVehiclesSaveDict(QVariantMap info, QJsonValue json)
         : DBReqVehicles(info.value("sn").toString())
         , info(info)
     {
-        makeRecords(dict);
+        //makeRecords(dict);
     }
     bool run(QSqlQuery &query);
     //result
@@ -123,7 +122,7 @@ public:
 
 private:
     Records records;
-    void makeRecords(const ProtocolNode::Dict &dict);
+    //void makeRecords(const ProtocolNode::Dict &dict);
 signals:
     void dictInfoFound(QVariantMap dictInfo);
 };

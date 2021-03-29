@@ -23,37 +23,38 @@
 
 #include <QtCore>
 
-#include <Fact/Fact.h>
+class ProtocolVehicle;
 
-class ProtocolViewBaseImpl : public Fact
+class VehiclesStorage : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Fact *protocol READ protocol_fact NOTIFY protocolChanged)
-
 public:
-    explicit ProtocolViewBaseImpl(QObject *parent, Fact *protocol);
+    explicit VehiclesStorage(ProtocolVehicle *vehicle);
 
-    Fact *protocol_fact() const;
+    void saveVehicleInfo();
+
+    /*void loadNodeInfo(ProtocolNode *node);
+    void saveNodeInfo(ProtocolNode *node);
+
+    void saveNodeUser(ProtocolNode *node);
+
+    void saveNodeDict(ProtocolNode *node, const ProtocolNode::Dict &dict);
+    void loadNodeDict(ProtocolNode *node);
+
+    void saveNodeConfig(ProtocolNode *node);
+    void loadNodeConfig(ProtocolNode *node, quint64 key = 0);
+    */
+
+    void saveConfiguration(bool force = false);
+    void loadConfiguration(QString hash);
+
+    static QString backupTitle(quint64 time, QString title);
 
 private:
-    Fact *m_protocol{nullptr};
-    void setProtocol(Fact *protocol);
+    ProtocolVehicle *_vehicle;
 
-protected:
-    virtual QString toolTip() const override;
-    virtual void hashData(QCryptographicHash *h) const override;
+    size_t importConfiguration(QList<QVariantMap> data);
 
-signals:
-    void protocolChanged();
-};
-
-template<class _T>
-class ProtocolViewBase : public ProtocolViewBaseImpl
-{
-public:
-    explicit ProtocolViewBase(QObject *parent, _T *protocol)
-        : ProtocolViewBaseImpl(parent, protocol)
-    {}
-
-    _T *protocol() const { return qobject_cast<_T *>(protocol_fact()); }
+private slots:
+    void loadedConfiguration(QVariantMap configInfo, QList<QVariantMap> data);
 };

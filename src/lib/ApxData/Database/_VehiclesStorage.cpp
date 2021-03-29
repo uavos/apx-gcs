@@ -19,12 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "VehiclesStorage.h"
 #include "VehiclesReqDict.h"
 #include "VehiclesReqNconf.h"
 #include "VehiclesReqVehicle.h"
-
-#include <Protocols/ProtocolVehicle.h>
+#include "VehiclesStorage.h"
 
 #include <App/App.h>
 

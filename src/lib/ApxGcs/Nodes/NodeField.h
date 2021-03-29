@@ -24,8 +24,6 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-#include <Protocols/ProtocolNode.h>
-
 #include "NodeScript.h"
 
 class NodeItem;

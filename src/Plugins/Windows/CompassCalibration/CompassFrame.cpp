@@ -23,6 +23,8 @@
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
 
+#include <Protocols/PStream.h>
+
 CompassFrame::CompassFrame(QWidget *parent)
     : QWidget(parent)
 {
@@ -120,7 +122,7 @@ void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
     if (uid != mandala::sns::nav::mag::uid)
         return;
 
-    ProtocolStreamReader stream(data);
+    PStreamReader stream(data);
     if (stream.available() != (sizeof(uint8_t) + 3 * sizeof(float)))
         return;
 

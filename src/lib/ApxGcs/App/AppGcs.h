@@ -32,7 +32,6 @@
 #include <Database/Database.h>
 #include <Datalink/Datalink.h>
 
-#include <Protocols/ProtocolVehicles.h>
 #include <Vehicles/Vehicles.h>
 
 #include <ApxFw.h>
@@ -54,7 +53,6 @@ public:
     };
     Q_ENUM(FileType)
 
-    ProtocolVehicles *protocol;
     Datalink *f_datalink;
     AppMenu *f_menu;
 

@@ -121,7 +121,7 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
             item.insert("altitude", e.alt);
             QString type = "direct";
             if (hdr.option == 1)
-                type = "path";
+                type = "track";
             item.insert("type", type);
 
             wp.append(item);
@@ -283,7 +283,7 @@ QByteArray PApxMission::_pack(QJsonValue json)
         xbus::mission::hdr_s hdr;
         hdr.type = xbus::mission::WP;
         hdr.option = 0;
-        if (wp["type"].toString().toLower() == "path")
+        if (wp["type"].toString().toLower() == "track")
             hdr.option = 1;
         hdr.write(&stream);
         xbus::mission::wp_s e;

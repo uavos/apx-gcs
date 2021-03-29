@@ -279,7 +279,7 @@ bool DBReqVehiclesLoadConfig::run(QSqlQuery &query)
         return true;
     }
     //qDebug()<<list.size();
-    for (int i = 0; i < list.size(); ++i) {
+    /*for (int i = 0; i < list.size(); ++i) {
         QVariantMap dataItem;
         QPair<quint64, quint64> p = list.at(i);
         {
@@ -309,7 +309,7 @@ bool DBReqVehiclesLoadConfig::run(QSqlQuery &query)
                 return false;
         }
         data.append(dataItem);
-    }
+    }*/
     if (data.isEmpty())
         return true;
     //emit configInfoFound(configInfo);

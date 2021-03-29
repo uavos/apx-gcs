@@ -26,6 +26,8 @@
 #include <App/App.h>
 #include <xbus/XbusNode.h>
 
+#include <crc.h>
+
 PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeout_ms)
     : _node(node)
     , _uid(uid)

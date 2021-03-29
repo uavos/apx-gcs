@@ -219,8 +219,9 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
             st.removeDuplicates();
             m->setToolTip(st.join(','));
         }
-        //add sub items
-        DatabaseLookup *dbq = qobject_cast<DatabaseLookup *>(fact);
+        //TODO: add sub items
+
+        /*DatabaseLookup *dbq = qobject_cast<DatabaseLookup *>(fact);
         if (dbq) {
             if (!m->actions().isEmpty()) {
                 m->setEnabled(false);
@@ -246,7 +247,7 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
                 connect(a, &QAction::triggered, [dbq, modelData]() { dbq->triggerItem(modelData); });
             }
             return;
-        }
+        }*/
         for (int i = 0; i < fact->size(); ++i) {
             addNodeTools(m, fact->child(i), nodeName);
         }

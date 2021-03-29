@@ -23,10 +23,10 @@
 
 #include <Vehicles/Vehicle.h>
 
-#include "LookupConfigs.h"
 #include "NodeItem.h"
 
 class Vehicle;
+class LookupConfigs;
 
 class Nodes : public Fact
 {

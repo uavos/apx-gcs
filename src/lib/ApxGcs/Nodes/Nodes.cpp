@@ -28,6 +28,8 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
+// #include "LookupConfigs.h"
+
 Nodes::Nodes(Vehicle *vehicle)
     : Fact(vehicle,
            "nodes",

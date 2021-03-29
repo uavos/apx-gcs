@@ -21,7 +21,6 @@
  */
 #pragma once
 
-#include <Protocols/ProtocolTelemetry.h>
 #include <mandala/MandalaMetaBase.h>
 
 #include <Fact/Fact.h>
