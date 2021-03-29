@@ -51,6 +51,7 @@ public slots:
     virtual void requestDict() { _nimp(__FUNCTION__); }
     virtual void requestConf() { _nimp(__FUNCTION__); }
     virtual void requestScript() { _nimp(__FUNCTION__); }
+    virtual void requestUpdate(QVariantMap values) { _nimp(__FUNCTION__); }
 
     virtual void requestReboot() { _nimp(__FUNCTION__); }
 
@@ -59,4 +60,5 @@ signals:
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
     void confReceived(QVariantMap values);
+    void confSaved(); // when requestUpdate accepted and saved
 };

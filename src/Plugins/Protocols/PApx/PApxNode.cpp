@@ -208,6 +208,29 @@ void PApxNode::updateFiles(QStringList fnames)
     }
 }
 
+bool PApxNode::find_field(QString name,
+                          xbus::node::conf::fid_t *fid,
+                          xbus::node::conf::type_e *type) const
+{
+    xbus::node::conf::fid_t v{};
+    QRegExp re("_(\\d+)$");
+    auto a = re.indexIn(name);
+    if (a > 1) {
+        name = name.left(a);
+        v = re.cap(1).toInt();
+        qDebug() << "array" << fid;
+    }
+    auto i = _field_names.indexOf(name);
+    if (i < 0) {
+        qWarning() << "missing field:" << name;
+        return false;
+    }
+    v |= i << 8;
+    *fid = v;
+    *type = _field_types.at(i);
+    return true;
+}
+
 void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
 {
     PStreamReader stream(data);
@@ -387,12 +410,31 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
             }
 
             pos_s = stream.pos();
-            QVariant v = _read_param(stream, fidx);
+
+            // read value
+            auto array = _field_arrays.value(fidx);
+            auto type = _field_types.value(fidx);
+            QVariant value;
+
+            if (array > 0) {
+                QVariantList list;
+                for (auto i = 0; i < array; ++i) {
+                    QVariant v = read_param(stream, type);
+                    if (!v.isValid())
+                        break;
+                    list.append(v);
+                }
+                if (list.size() == array)
+                    value = QVariant::fromValue(list);
+            } else {
+                value = read_param(stream, type);
+            }
+
             //qDebug() << v << stream.pos() << stream.available();
-            if (!v.isValid())
+            if (!value.isValid())
                 break;
 
-            values.insert(_field_names.value(fidx), v);
+            values.insert(_field_names.value(fidx), value);
             fidx++;
 
             if (fidx == _field_types.size()) {
@@ -412,37 +454,17 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
     emit confReceived(values);
 }
 template<typename T, typename Tout = T>
-static QVariant _read_param(PStreamReader &stream, size_t array)
+static QVariant _read_param(PStreamReader &stream)
 {
-    if (stream.available() < (sizeof(T) * (array ? array : 1)))
+    if (stream.available() < sizeof(T))
         return QVariant();
-    if (array > 0) {
-        QVariantList list;
-        while (array--) {
-            list.append(QVariant::fromValue(stream.read<T, Tout>()));
-        }
-        //qDebug() << list;
-        return QVariant::fromValue(list);
-    }
     return QVariant::fromValue(stream.read<T, Tout>());
 }
 template<typename _T>
-static QVariant _read_param_str(PStreamReader &stream, size_t array)
+static QVariant _read_param_str(PStreamReader &stream)
 {
-    if (stream.available() < (sizeof(_T) * (array ? array : 1)))
+    if (stream.available() < sizeof(_T))
         return QVariant();
-    if (array > 0) {
-        QVariantList list;
-        while (array--) {
-            size_t pos_s = stream.pos();
-            const char *s = stream.read_string(sizeof(_T));
-            if (!s)
-                return QVariant();
-            stream.reset(pos_s + sizeof(_T));
-            list.append(QVariant::fromValue(QString(s)));
-        }
-        return QVariant::fromValue(list);
-    }
     size_t pos_s = stream.pos();
     const char *s = stream.read_string(sizeof(_T));
     if (!s)
@@ -451,36 +473,74 @@ static QVariant _read_param_str(PStreamReader &stream, size_t array)
     return QVariant::fromValue(QString(s));
 }
 
-QVariant PApxNode::_read_param(PStreamReader &stream, size_t fidx)
+QVariant PApxNode::read_param(PStreamReader &stream, xbus::node::conf::type_e type)
 {
-    auto array = _field_arrays.value(fidx);
-    auto type = _field_types.value(fidx);
-
     switch (type) {
     case xbus::node::conf::group:
     case xbus::node::conf::command:
     case xbus::node::conf::type_max:
         break;
     case xbus::node::conf::option:
-        return ::_read_param<xbus::node::conf::option_t, quint16>(stream, array);
+        return ::_read_param<xbus::node::conf::option_t, quint16>(stream);
     case xbus::node::conf::real:
-        return ::_read_param<xbus::node::conf::real_t>(stream, array);
+        return ::_read_param<xbus::node::conf::real_t>(stream);
     case xbus::node::conf::byte:
-        return ::_read_param<xbus::node::conf::byte_t, quint16>(stream, array);
+        return ::_read_param<xbus::node::conf::byte_t, quint16>(stream);
     case xbus::node::conf::word:
-        return ::_read_param<xbus::node::conf::word_t>(stream, array);
+        return ::_read_param<xbus::node::conf::word_t>(stream);
     case xbus::node::conf::dword:
-        return ::_read_param<xbus::node::conf::dword_t>(stream, array);
+        return ::_read_param<xbus::node::conf::dword_t>(stream);
     case xbus::node::conf::bind:
-        return ::_read_param<xbus::node::conf::bind_t>(stream, array);
+        return ::_read_param<xbus::node::conf::bind_t>(stream);
     case xbus::node::conf::string:
-        return ::_read_param_str<xbus::node::conf::string_t>(stream, array);
+        return ::_read_param_str<xbus::node::conf::string_t>(stream);
     case xbus::node::conf::text:
-        return ::_read_param_str<xbus::node::conf::text_t>(stream, array);
+        return ::_read_param_str<xbus::node::conf::text_t>(stream);
     case xbus::node::conf::script:
-        return ::_read_param<xbus::node::conf::script_t>(stream, array);
+        return ::_read_param<xbus::node::conf::script_t>(stream);
     }
     return QVariant();
+}
+
+template<typename _T>
+static bool _write_param(PStreamWriter &stream, QVariant value)
+{
+    return stream.write<_T>(value.value<_T>());
+}
+
+template<typename _T>
+static bool _write_param_str(PStreamWriter &stream, QVariant value)
+{
+    return stream.write_string(value.toString().toLatin1().data());
+}
+
+bool PApxNode::write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value)
+{
+    switch (type) {
+    case xbus::node::conf::group:
+    case xbus::node::conf::command:
+    case xbus::node::conf::type_max:
+        break;
+    case xbus::node::conf::option:
+        return ::_write_param<xbus::node::conf::option_t>(stream, value);
+    case xbus::node::conf::real:
+        return ::_write_param<xbus::node::conf::real_t>(stream, value);
+    case xbus::node::conf::byte:
+        return ::_write_param<xbus::node::conf::byte_t>(stream, value);
+    case xbus::node::conf::word:
+        return ::_write_param<xbus::node::conf::word_t>(stream, value);
+    case xbus::node::conf::dword:
+        return ::_write_param<xbus::node::conf::dword_t>(stream, value);
+    case xbus::node::conf::bind:
+        return ::_write_param<xbus::node::conf::bind_t>(stream, value);
+    case xbus::node::conf::string:
+        return ::_write_param_str<xbus::node::conf::string_t>(stream, value);
+    case xbus::node::conf::text:
+        return ::_write_param_str<xbus::node::conf::text_t>(stream, value);
+    case xbus::node::conf::script:
+        return ::_write_param<xbus::node::conf::script_t>(stream, value);
+    }
+    return false;
 }
 
 void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)

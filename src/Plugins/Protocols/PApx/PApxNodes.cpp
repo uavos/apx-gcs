@@ -105,7 +105,7 @@ void PApxNodes::requestSearch()
 
 void PApxNodes::request_scheduled(PApxNodeRequest *req)
 {
-    //qDebug() << Mandala::meta(req->uid()).path;
+    // qDebug() << Mandala::meta(req->uid()).path;
     if (_requests.contains(req)) {
         // rescheduled request
         if (_request != req) // not current
@@ -120,7 +120,7 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
 }
 void PApxNodes::request_finished(PApxNodeRequest *req)
 {
-    //qDebug() << Mandala::meta(req->uid()).path;
+    // qDebug() << Mandala::meta(req->uid()).path;
     _requests.removeOne(req);
     if (_request && _request != req)
         return;
@@ -150,8 +150,9 @@ void PApxNodes::request_next()
 
 void PApxNodes::request_current()
 {
-    //qDebug() << Mandala::meta(_request->uid()).path;
+    // qDebug() << Mandala::meta(_request->uid()).path;
     if (!_request->make_request(_req)) {
+        // qDebug() << "discarded";
         _request->discard();
         return;
     }

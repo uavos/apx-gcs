@@ -24,13 +24,11 @@
 #include "NodeTools.h"
 #include "NodeViewActions.h"
 #include "Nodes.h"
-#include <QtSql>
 
 #include <App/AppGcs.h>
 #include <Vehicles/VehicleWarnings.h>
 #include <Vehicles/Vehicles.h>
 #include <QFontDatabase>
-#include <QQmlEngine>
 
 NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     : Fact(parent, protocol->name())
@@ -41,7 +39,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     bindProperty(protocol, "title", true);
     bindProperty(protocol, "descr", true);
-    bindProperty(protocol, "value", true);
+    //bindProperty(protocol, "value", true);
     bindProperty(protocol, "progress", true);
 
     setOptions(ProgressTrack | ModifiedGroup);
@@ -59,13 +57,13 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
+    connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
 
     /*
     // responses mapping
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
-    connect(protocol, &ProtocolNode::confSaved, this, &NodeItem::confSaved);
     connect(protocol, &ProtocolNode::confDefault, this, &NodeItem::restoreDefaults);
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
@@ -134,13 +132,13 @@ void NodeItem::updateDescr()
 }
 void NodeItem::updateStatus()
 {
-    /*if (protocol()->ident().flags.bits.reconf) {
+    if (_ident.value("reconf").toBool()) {
         setValue(tr("no config").toUpper());
         return;
     }
     if (m_status_field) {
         setValue(m_status_field->valueText().trimmed());
-    }*/
+    }
 }
 
 void NodeItem::clear()
@@ -159,12 +157,12 @@ void NodeItem::clear()
 
 void NodeItem::upload()
 {
-    /*if (!protocol()->valid())
+    if (!valid())
         return;
     if (!modified())
         return;
 
-    QList<NodeField *> list;
+    QList<NodeField *> fields;
     for (auto i : m_fields) {
         if (!i->modified())
             continue;
@@ -172,22 +170,23 @@ void NodeItem::upload()
             for (auto j : i->facts()) {
                 if (!j->modified())
                     continue;
-                list.append(static_cast<NodeField *>(j));
+                fields.append(static_cast<NodeField *>(j));
             }
             continue;
         }
-        list.append(static_cast<NodeField *>(i));
+        fields.append(static_cast<NodeField *>(i));
     }
 
-    ProtocolNode::ValuesList values;
-    for (auto i : list) {
-        _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->valueText(), protocol()->sn());
-        values.insert(i->fid(), i->confValue());
+    QVariantMap values;
+    for (auto i : fields) {
+        values.insert(i->fpath(), i->confValue());
+        //_nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->valueText(), protocol()->sn());
     }
-    protocol()->requestUpdate(values);*/
+    _protocol->requestUpdate(values);
 }
 void NodeItem::confSaved()
 {
+    qDebug() << modified();
     backup();
 }
 
@@ -199,16 +198,16 @@ QVariant NodeItem::data(int col, int role) const
             return title().toUpper();
         break;
     case Qt::ForegroundRole:
-        if (valid()) {
-            if (col == FACT_MODEL_COLUMN_DESCR)
-                return QColor(Qt::darkGray);
-            if (col == FACT_MODEL_COLUMN_VALUE)
-                return QColor(Qt::yellow).lighter(180);
-        } else {
+        if (!valid()) {
             return QColor(255, 200, 200);
         }
-        //if (!protocol()->valid())
-        return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
+        if (col == FACT_MODEL_COLUMN_DESCR)
+            return QColor(Qt::darkGray);
+        if (col == FACT_MODEL_COLUMN_VALUE)
+            return QColor(Qt::yellow).lighter(180);
+        if (!modified())
+            return QColor(255, 255, 200);
+        break;
         //break;
     case Qt::BackgroundRole:
         if (valid()) {

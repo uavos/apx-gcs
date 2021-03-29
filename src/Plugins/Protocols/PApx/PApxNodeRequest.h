@@ -116,3 +116,20 @@ private:
     bool request(PApxRequest &req) override;
     bool response(PStreamReader &stream) override;
 };
+
+class PApxNodeRequestUpdate : public PApxNodeRequest
+{
+public:
+    explicit PApxNodeRequestUpdate(PApxNode *node, QVariantMap values)
+        : PApxNodeRequest(node, mandala::cmd::env::nmt::upd::uid)
+        , _values(values)
+    {}
+
+private:
+    QVariantMap _values;
+    size_t _index{};
+    xbus::node::conf::fid_t _fid{};
+
+    bool request(PApxRequest &req) override;
+    bool response(PStreamReader &stream) override;
+};

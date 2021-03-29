@@ -46,6 +46,13 @@ public:
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
 
+    bool find_field(QString name,
+                    xbus::node::conf::fid_t *fid,
+                    xbus::node::conf::type_e *type) const;
+
+    static QVariant read_param(PStreamReader &stream, xbus::node::conf::type_e type);
+    static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value);
+
 private:
     PApxRequest _req;
     QHash<mandala::uid_t, PApxNodeRequest *> _requests;
@@ -60,13 +67,12 @@ private:
 
     void updateProgress();
 
-    QVariant _read_param(PStreamReader &stream, size_t fidx);
-
 protected:
     void requestIdent() override { new PApxNodeRequestIdent(this); }
     void requestDict() override { new PApxNodeRequestFileRead(this, "dict"); }
     void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
     void requestScript() override { new PApxNodeRequestFileRead(this, "script"); }
+    void requestUpdate(QVariantMap values) override { new PApxNodeRequestUpdate(this, values); }
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
 

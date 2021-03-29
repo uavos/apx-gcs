@@ -31,7 +31,8 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
     , _uid(uid)
     , _timeout_ms(timeout_ms)
 {
-    node->schedule_request(this);
+    // schedule delayed to avoid consequent requests duplicate deletions by uid
+    QTimer::singleShot(1, node, [this]() { _node->schedule_request(this); });
 }
 
 PTrace *PApxNodeRequest::trace() const
@@ -270,4 +271,59 @@ void PApxNodeRequestFileRead::read_next()
     }
     _op = xbus::node::file::read;
     _node->reschedule_request(this);
+}
+
+bool PApxNodeRequestUpdate::request(PApxRequest &req)
+{
+    if (_index >= _values.size()) {
+        // all written - request to save
+        _fid = 0xFFFFFFFF;
+        req << _fid;
+        trace()->block("SAVE");
+        return true;
+    }
+
+    auto name = _values.keys().at(_index);
+    xbus::node::conf::type_e type;
+    if (!_node->find_field(name, &_fid, &type)) {
+        qWarning() << "no field:" << name;
+        return false;
+    }
+
+    req << _fid;
+    trace()->block(QString::number(_fid >> 8));
+    trace()->block(QString::number(_fid & 0xFF));
+
+    QVariant value = _values.value(name);
+    _node->write_param(req, type, value);
+    trace()->block(value.toString());
+
+    _index++;
+
+    return true;
+}
+bool PApxNodeRequestUpdate::response(PStreamReader &stream)
+{
+    if (stream.available() != sizeof(xbus::node::conf::fid_t))
+        return false;
+    trace()->data(stream.payload());
+
+    xbus::node::conf::fid_t fid;
+    stream >> fid;
+
+    // qDebug() << fid << _fid;
+
+    if (fid != _fid) {
+        // qWarning() << "fid:" << fid << _fid;
+        return false;
+    }
+
+    if (_index >= _values.size() && _fid == 0xFFFFFFFF) {
+        // qDebug() << "saved";
+        _node->confSaved();
+        return true;
+    }
+
+    _node->reschedule_request(this);
+    return false;
 }
