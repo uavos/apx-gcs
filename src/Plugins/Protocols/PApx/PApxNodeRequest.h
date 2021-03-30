@@ -57,7 +57,7 @@ protected:
     virtual bool request(PApxRequest &req) { return true; }
     virtual bool response(PStreamReader &stream) { return true; }
 
-    PTrace *trace() const;
+    PTrace *trace();
 };
 
 class PApxNodeRequestReboot : public PApxNodeRequest

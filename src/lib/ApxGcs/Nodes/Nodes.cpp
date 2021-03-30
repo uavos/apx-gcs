@@ -107,6 +107,9 @@ Nodes::Nodes(Vehicle *vehicle)
     connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
 
     connect(this, &Fact::triggered, this, &Nodes::search);
+
+    if (vehicle->isIdentified())
+        _protocol->requestSearch();
 }
 
 void Nodes::node_available(PNode *node)

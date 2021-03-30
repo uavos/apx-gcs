@@ -44,7 +44,7 @@ PApxNodeRequest::~PApxNodeRequest()
     _node->request_deleted(this);
 }
 
-PTrace *PApxNodeRequest::trace() const
+PTrace *PApxNodeRequest::trace()
 {
     return _node->trace();
 }
@@ -66,8 +66,8 @@ bool PApxNodeRequest::make_request(PApxRequest &req)
     memset(guid, 0, sizeof(guid));
     memcpy(guid, src.data(), sz);
     req.write(guid, sizeof(guid));
-    _node->trace()->block(_node->title().append(':'));
-    _node->trace()->tree();
+    trace()->block(_node->title().append(':'));
+    trace()->tree();
 
     return request(req);
 }
@@ -436,5 +436,5 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
 }
 void PApxNodeRequestFileWrite::done()
 {
-    _node->file_written(_name);
+    _node->file_uploaded(_name);
 }

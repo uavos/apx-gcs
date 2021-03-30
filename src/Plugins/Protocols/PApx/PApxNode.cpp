@@ -229,7 +229,7 @@ void PApxNode::updateFiles(QStringList fnames)
         }
     }
 }
-void PApxNode::file_written(QString name)
+void PApxNode::file_uploaded(QString name)
 {
     if (name == "mission") {
         findParent<PApxVehicle>()->mission()->missionUpdated();

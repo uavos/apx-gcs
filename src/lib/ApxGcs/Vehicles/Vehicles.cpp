@@ -54,9 +54,6 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
     f_select->setTreeType(Action);
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);
 
-    // f_local = new Vehicle(this, protocols->fact("LOCAL"));
-    // f_select->addVehicle(f_local);
-
     f_replay = new Vehicle(this, nullptr);
     f_select->addVehicle(f_replay);
 

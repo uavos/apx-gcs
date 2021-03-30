@@ -40,6 +40,7 @@ PApxNodes::PApxNodes(PApxVehicle *parent)
     _reqNext.setSingleShot(true);
     connect(&_reqNext, &QTimer::timeout, this, &PApxNodes::request_current);
 
+    // inactive vehicle has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
     updateActive();
 }

@@ -48,7 +48,7 @@ public:
 
     virtual void send_uplink(QByteArray packet);
 
-    virtual PTrace *trace() const { return parent()->trace(); }
+    virtual PTrace *trace();
 
 protected:
     void _nimp(QString fname);

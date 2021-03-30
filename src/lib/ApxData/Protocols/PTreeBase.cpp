@@ -39,3 +39,9 @@ void PTreeBase::_nimp(QString fname)
 {
     apxMsgW() << tr("Not implemented").append(':') << fname;
 }
+
+PTrace *PTreeBase::trace()
+{
+    return parent() ? parent()->trace()
+                    : new PTrace(this); //TODO: find a better way for trace function
+}

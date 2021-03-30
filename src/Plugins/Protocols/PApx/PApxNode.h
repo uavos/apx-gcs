@@ -54,7 +54,7 @@ public:
     static QVariant read_param(PStreamReader &stream, xbus::node::conf::type_e type);
     static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value);
 
-    void file_written(QString name);
+    void file_uploaded(QString name);
 
     static QByteArray pack_script(QVariant value);
 

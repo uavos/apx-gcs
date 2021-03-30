@@ -585,7 +585,7 @@ void NodeItem::confUpdated(QVariantMap values)
         if (!values.contains(fpath))
             continue;
         f->setConfValue(values.value(fpath));
-        apxMsgW() << tr("Field modified").append(':') << fpath << "=" << f->text();
+        apxMsgW() << tr("Field modified").append(':') << fpath.append(':') << f->text();
     }
 }
 

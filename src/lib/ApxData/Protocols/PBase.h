@@ -40,7 +40,7 @@ class PBase : public PTreeBase
 public:
     explicit PBase(Fact *parent, QString name, QString title, QString descr);
 
-    virtual PTrace *trace() const override { return _trace; }
+    virtual PTrace *trace() override { return _trace; }
 
     virtual void send_uplink(QByteArray packet) override;
 
