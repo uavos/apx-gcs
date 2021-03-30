@@ -42,7 +42,7 @@ public:
                        NodeField *arrayParent = nullptr);
 
     QVariant confValue(void) const;
-    void setConfValue(const QVariant &v);
+    void setConfValue(QVariant v);
 
     //Fact override
     virtual QString toolTip() const override;
@@ -65,5 +65,5 @@ private:
     NodeScript *_script{};
 
 private slots:
-    void updateStatus();
+    void updateArrayStatus();
 };

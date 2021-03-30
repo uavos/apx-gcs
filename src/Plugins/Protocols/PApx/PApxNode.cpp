@@ -28,6 +28,8 @@
 #include <xbus/XbusNode.h>
 #include <xbus/XbusScript.h>
 
+#include <crc.h>
+
 PApxNode::PApxNode(PApxNodes *parent, QString uid)
     : PNode(parent, uid)
     , _req(this)
@@ -85,6 +87,27 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         f->process_downlink(op, stream);
 
         stream.reset(spos);
+    }
+
+    // field updates from remote gcs
+    if (uid == mandala::cmd::env::nmt::upd::uid && pid.pri == xbus::pri_request) {
+        if (stream.available() != sizeof(xbus::node::conf::fid_t))
+            return;
+
+        xbus::node::conf::fid_t fid;
+        stream >> fid;
+        trace()->block(QString::number(fid >> 8));
+        trace()->block(QString::number(fid & 0xFF));
+        trace()->data(stream.payload());
+        size_t fidx = fid >> 8;
+        if (fidx >= _field_types.size())
+            return;
+        QString name = _field_names.at(fidx);
+        QVariant value = read_param(stream, _field_types.at(fidx));
+        QVariantMap values;
+        values.insert(name, value);
+        emit confUpdated(values);
+        return;
     }
 
     // node messages
@@ -146,13 +169,11 @@ void PApxNode::schedule_request(PApxNodeRequest *req)
 }
 void PApxNode::reschedule_request(PApxNodeRequest *req)
 {
-    mandala::uid_t uid = req->uid();
-    if (!_requests.contains(req)) {
-        qDebug() << "not exists" << Mandala::meta(uid).path;
-        delete_request(req);
-        return;
-    }
     emit request_scheduled(req);
+}
+void PApxNode::extend_request(PApxNodeRequest *req, size_t time_ms)
+{
+    emit request_extended(req, time_ms);
 }
 
 void PApxNode::delete_request(PApxNodeRequest *req)
@@ -212,7 +233,12 @@ void PApxNode::updateFiles(QStringList fnames)
             connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseScriptData);
         }
     }
-    emit files_updated();
+}
+void PApxNode::file_written(QString name)
+{
+    if (name == "mission") {
+        findParent<PApxVehicle>()->mission()->missionUpdated();
+    }
 }
 
 bool PApxNode::find_field(QString name,
@@ -247,7 +273,10 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
+
+    _values.clear();
     _script_value = {};
+    _script_field.clear();
 
     do {
         // check node hash
@@ -359,7 +388,6 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
         _field_types.clear();
         _field_names.clear();
         _field_arrays.clear();
-        _script_value = {};
         return;
     }
     qDebug() << "dict parsed";
@@ -371,6 +399,8 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
 void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data)
 {
     PStreamReader stream(data);
+
+    _values.clear();
 
     bool err = true;
     QVariantMap values;
@@ -443,13 +473,17 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
             if (!value.isValid())
                 break;
 
+            QString name = _field_names.value(fidx);
+
             if (type == xbus::node::conf::script) {
                 _script_value = value.value<xbus::node::conf::script_t>();
+                _script_field = name;
+                value = QVariant();
             }
 
-            values.insert(_field_names.value(fidx), value);
-            fidx++;
+            values.insert(name, value);
 
+            fidx++;
             if (fidx == _field_types.size()) {
                 err = false; //stream.available() ? true : false;
                 break;
@@ -464,7 +498,14 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
     }
 
     // conf file parsed
-    emit confReceived(values);
+    if (_script_field.isEmpty()) {
+        emit confReceived(values);
+        return;
+    }
+
+    // store values and download script
+    _values = values;
+    new PApxNodeRequestFileRead(this, "script");
 }
 template<typename T, typename Tout = T>
 static QVariant _read_param(PStreamReader &stream)
@@ -566,34 +607,79 @@ void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByte
         return;
     }
 
-    if (info.size == 0) {
-        // empty script
-        emit scriptReceived(QString(), QByteArray(), QByteArray());
+    if (_script_field.isEmpty()) {
+        qWarning() << "missing script field";
         return;
     }
 
-    PStreamReader stream(data);
+    QVariant value;
+    if (info.size > 0) {
+        PStreamReader stream(data);
+        xbus::script::file_hdr_s hdr{};
+        if (stream.available() < hdr.psize()) {
+            qWarning() << "hdr size" << stream.available();
+            return;
+        }
+        hdr.read(&stream);
+
+        if (stream.available() != (hdr.code_size + hdr.src_size)) {
+            qWarning() << "size" << stream.available() << hdr.code_size << hdr.src_size;
+            return;
+        }
+        const QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
+        const QByteArray src = qUncompress(
+            stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
+        if (src.isEmpty() || code.isEmpty()) {
+            qWarning() << "empty" << stream.available() << src.size() << code.size();
+            return;
+        }
+        QString title = QString(QByteArray(hdr.title, sizeof(hdr.title)));
+
+        qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
+
+        QStringList st;
+        st << title;
+        st << qCompress(src, 9).toHex().toUpper();
+        st << qCompress(code, 9).toHex().toUpper();
+        value = st.join(',');
+    }
+
+    _values.insert(_script_field, value);
+    emit confReceived(_values);
+    _values.clear();
+}
+
+void PApxNode::requestUpdate(QVariantMap values)
+{
+    if (values.contains(_script_field)) {
+        QByteArray data = pack_script(values.value(_script_field));
+        _script_value = apx::crc32(data.data(), data.size());
+        values.insert(_script_field, _script_value);
+        new PApxNodeRequestFileWrite(this, "script", data);
+    }
+
+    new PApxNodeRequestUpdate(this, values);
+}
+QByteArray PApxNode::pack_script(QVariant value)
+{
+    QStringList st = value.toString().split(',', Qt::KeepEmptyParts);
+
+    if (st.size() != 3)
+        return QByteArray();
+
+    QString title = st.at(0);
+    QByteArray src = QByteArray::fromHex(st.at(1).toLocal8Bit());
+    QByteArray code = qUncompress(QByteArray::fromHex(st.at(2).toLocal8Bit()));
+
+    QByteArray data(xbus::script::max_file_size, '\0');
+    PStreamWriter stream(data.data(), data.size());
+
     xbus::script::file_hdr_s hdr{};
-    if (stream.available() < hdr.psize()) {
-        qWarning() << "hdr size" << stream.available();
-        return;
-    }
-    hdr.read(&stream);
-
-    if (stream.available() != (hdr.code_size + hdr.src_size)) {
-        qWarning() << "size" << stream.available() << hdr.code_size << hdr.src_size;
-        return;
-    }
-    const QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
-    const QByteArray src = qUncompress(
-        stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
-    if (src.isEmpty() || code.isEmpty()) {
-        qWarning() << "empty" << stream.available() << src.size() << code.size();
-        return;
-    }
-    QString title = QString(QByteArray(hdr.title, sizeof(hdr.title)));
-
-    qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
-
-    emit scriptReceived(title, src, code);
+    hdr.code_size = code.size();
+    hdr.src_size = src.size();
+    strncpy(hdr.title, title.toUtf8(), sizeof(xbus::script::title_t));
+    hdr.write(&stream);
+    stream.append(code);
+    stream.append(src);
+    return stream.toByteArray();
 }

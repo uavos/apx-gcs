@@ -92,6 +92,7 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
     connect(node, &Fact::removed, this, [this, node]() { _nodes.remove(_nodes.key(node)); });
     connect(node, &PApxNode::request_scheduled, this, &PApxNodes::request_scheduled);
     connect(node, &PApxNode::request_finished, this, &PApxNodes::request_finished);
+    connect(node, &PApxNode::request_extended, this, &PApxNodes::request_extended);
 
     emit node_available(node);
     return node;
@@ -129,6 +130,13 @@ void PApxNodes::request_finished(PApxNodeRequest *req)
     _reqTimer.stop();
     if (!_requests.isEmpty())
         request_next();
+}
+void PApxNodes::request_extended(PApxNodeRequest *req, size_t time_ms)
+{
+    if (_request != req)
+        return;
+    _reqTimer.stop();
+    _reqTimer.start(time_ms);
 }
 
 void PApxNodes::request_next()
@@ -175,7 +183,13 @@ void PApxNodes::request_timeout()
         apxMsgW() << tr("NMT request dropped").append(':') << _request->node()->title()
                   << Mandala::meta(_request->uid()).name;
 
-        _request->discard();
+        // clear all node requests
+        for (auto req : _requests) {
+            if (req->node() == _request->node())
+                _requests.removeOne(req);
+        }
+        _request->node()->clear_requests();
+
         return;
     }
 

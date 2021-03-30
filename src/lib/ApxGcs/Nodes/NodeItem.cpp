@@ -57,8 +57,10 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
-    connect(protocol, &PNode::scriptReceived, this, &NodeItem::scriptReceived);
+    connect(protocol, &PNode::confUpdated, this, &NodeItem::confUpdated);
     connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
+
+    connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
 
     /*
     // responses mapping
@@ -69,7 +71,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
 
-    connect(this, &NodeItem::shell, protocol, &ProtocolNode::requestMod);
 
     statusTimer.setSingleShot(true);
     statusTimer.setInterval(10000);
@@ -79,34 +80,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     protocol->requestIdent();
 }
 
-const QList<NodeField *> &NodeItem::fields() const
-{
-    return m_fields;
-}
-
-/*void NodeItem::validateDict()
-{
-    if (!protocol()->dictValid()) {
-        clear();
-        return;
-    }
-    //groupFields();
-    //qDebug()<path();
-
-    //fields map
-    for (int i = 0; i < allFields.size(); ++i) {
-        NodeField *f = allFields.at(i);
-        //expand complex numbers
-        bool bComplex = f->size() > 0;
-        if (bComplex) {
-            for (int i2 = 0; i2 < f->size(); ++i2) {
-                NodeField *f2 = static_cast<NodeField *>(f->child(i2));
-                allFieldsByName.insert(f2->name(), f2);
-            }
-        } else
-            allFieldsByName.insert(f->name(), f);
-    }
-}*/
 void NodeItem::validateData()
 {
     if (m_valid)
@@ -147,7 +120,6 @@ void NodeItem::clear()
     }
 
     _status_field = nullptr;
-    _script_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
     deleteChildren();
@@ -584,13 +556,11 @@ void NodeItem::confReceived(QVariantMap values)
             continue;
         }
         fields.append(fpath);
-        if (f->type() == "script") {
-            _script_field = f;
-            continue;
-        }
-
         f->setConfValue(values.value(fpath));
     }
+
+    if (valid())
+        return;
 
     // report missing fields
     for (auto fpath : values.keys()) {
@@ -598,37 +568,25 @@ void NodeItem::confReceived(QVariantMap values)
             qWarning() << "missing field for:" << fpath;
         }
     }
-    if (fields.size() == m_fields.size()) {
-        setEnabled(true);
-    } else {
+    if (fields.size() != m_fields.size()) {
         apxMsgW() << tr("Inconsistent parameters");
-    }
-    if (_script_field) {
-        _protocol->requestScript();
         return;
     }
 
     validateData();
+    setEnabled(true);
 }
-void NodeItem::scriptReceived(QString title, QByteArray src, QByteArray code)
+void NodeItem::confUpdated(QVariantMap values)
 {
-    if (!_script_field) {
-        apxConsoleW() << "missing script field";
-        clear();
+    if (!valid())
         return;
+    for (auto f : m_fields) {
+        QString fpath = f->fpath();
+        if (!values.contains(fpath))
+            continue;
+        f->setConfValue(values.value(fpath));
+        apxMsgW() << tr("Field modified").append(':') << fpath << "=" << f->text();
     }
-
-    if (src.isEmpty() && code.isEmpty()) {
-        _script_field->setConfValue(QVariant());
-    } else {
-        QStringList st;
-        st << title;
-        st << qCompress(src, 9).toHex().toUpper();
-        st << qCompress(code, 9).toHex().toUpper();
-        _script_field->setConfValue(st.join(','));
-    }
-
-    validateData();
 }
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)

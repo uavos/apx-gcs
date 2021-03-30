@@ -62,11 +62,15 @@ NodeField::NodeField(
             item.insert("title", s);
             item.insert("array", i);
             NodeField *f = new NodeField(this, node, item, id, this);
-            connect(f, &Fact::valueChanged, this, &NodeField::updateStatus, Qt::QueuedConnection);
+            connect(f,
+                    &Fact::valueChanged,
+                    this,
+                    &NodeField::updateArrayStatus,
+                    Qt::QueuedConnection);
         }
         setTreeType(Group);
         setOption(ModifiedGroup);
-        updateStatus();
+        updateArrayStatus();
         return;
     }
 
@@ -110,9 +114,9 @@ NodeField::NodeField(
     }
 }
 
-void NodeField::updateStatus()
+void NodeField::updateArrayStatus()
 {
-    //arrays only
+    // called for arrays only
 
     if (size() == 3 && _type == "real") {
         QStringList st;
@@ -149,12 +153,13 @@ QVariant NodeField::confValue(void) const
         }
         return list;
     }
+
     if (_type == "real")
         return QString::number(value().toFloat());
 
     return value();
 }
-void NodeField::setConfValue(const QVariant &v)
+void NodeField::setConfValue(QVariant v)
 {
     bool isList = _check_type(v, QMetaType::QVariantList);
     if (size() > 0) {
@@ -164,13 +169,16 @@ void NodeField::setConfValue(const QVariant &v)
             if (values.size() > size())
                 return;
             for (int i = 0; i < values.size(); ++i) {
-                child(i)->setValue(values.at(i));
+                static_cast<NodeField *>(child(i))->setConfValue(values.at(i));
             }
             return;
         }
         qWarning() << path() << v;
         return;
     }
+    if (_type == "real")
+        v = QString::number(v.toFloat());
+
     setValue(v);
 }
 

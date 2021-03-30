@@ -50,18 +50,19 @@ public slots:
     virtual void requestIdent() { _nimp(__FUNCTION__); }
     virtual void requestDict() { _nimp(__FUNCTION__); }
     virtual void requestConf() { _nimp(__FUNCTION__); }
-    virtual void requestScript() { _nimp(__FUNCTION__); }
     virtual void requestUpdate(QVariantMap values) { _nimp(__FUNCTION__); }
 
     virtual void requestReboot() { _nimp(__FUNCTION__); }
+    virtual void requestShell(QStringList commands) { _nimp(__FUNCTION__); }
+    virtual void requestUsr(quint8 cmd, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:
     void messageReceived(PNode::msg_type_e type, QString msg);
 
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
-    void confReceived(QVariantMap values);
-    void scriptReceived(QString title, QByteArray src, QByteArray code);
+    void confReceived(QVariantMap values); // the whole set of parameters received
+    void confUpdated(QVariantMap values);  // some parameters updated externally
 
     void confSaved(); // when requestUpdate accepted and saved
 };

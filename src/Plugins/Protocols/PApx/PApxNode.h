@@ -42,6 +42,7 @@ public:
     void delete_request(PApxNodeRequest *req);
     void clear_requests();
     void reschedule_request(PApxNodeRequest *req);
+    void extend_request(PApxNodeRequest *req, size_t time_ms);
 
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
@@ -52,6 +53,10 @@ public:
 
     static QVariant read_param(PStreamReader &stream, xbus::node::conf::type_e type);
     static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value);
+
+    void file_written(QString name);
+
+    static QByteArray pack_script(QVariant value);
 
 private:
     PApxRequest _req;
@@ -65,7 +70,9 @@ private:
     QList<size_t> _field_arrays;
     QStringList _field_names;
 
+    QVariantMap _values;
     xbus::node::conf::script_t _script_value{};
+    QString _script_field;
 
     void updateProgress();
 
@@ -73,10 +80,14 @@ protected:
     void requestIdent() override { new PApxNodeRequestIdent(this); }
     void requestDict() override { new PApxNodeRequestFileRead(this, "dict"); }
     void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
-    void requestScript() override { new PApxNodeRequestFileRead(this, "script"); }
-    void requestUpdate(QVariantMap values) override { new PApxNodeRequestUpdate(this, values); }
+    void requestUpdate(QVariantMap values) override;
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
+    void requestShell(QStringList commands) override { new PApxNodeRequestShell(this, commands); }
+    void requestUsr(quint8 cmd, QByteArray data) override
+    {
+        new PApxNodeRequestUsr(this, cmd, data);
+    }
 
 private slots:
     void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
@@ -86,5 +97,5 @@ private slots:
 signals:
     void request_scheduled(PApxNodeRequest *req);
     void request_finished(PApxNodeRequest *req);
-    void files_updated();
+    void request_extended(PApxNodeRequest *req, size_t time_ms);
 };

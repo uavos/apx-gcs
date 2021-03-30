@@ -73,6 +73,32 @@ private:
     xbus::node::reboot::type_e _type;
     bool request(PApxRequest &req) override;
 };
+class PApxNodeRequestShell : public PApxNodeRequest
+{
+public:
+    explicit PApxNodeRequestShell(PApxNode *node, QStringList commands)
+        : PApxNodeRequest(node, mandala::cmd::env::nmt::mod::uid, 0)
+        , _commands(commands)
+    {}
+
+private:
+    QStringList _commands;
+    bool request(PApxRequest &req) override;
+};
+class PApxNodeRequestUsr : public PApxNodeRequest
+{
+public:
+    explicit PApxNodeRequestUsr(PApxNode *node, quint8 cmd, QByteArray data)
+        : PApxNodeRequest(node, mandala::cmd::env::nmt::usr::uid, 0)
+        , _cmd(cmd)
+        , _data(data)
+    {}
+
+private:
+    quint8 _cmd;
+    QByteArray _data;
+    bool request(PApxRequest &req) override;
+};
 
 class PApxNodeRequestIdent : public PApxNodeRequest
 {
@@ -137,6 +163,8 @@ protected:
         return true;
     }
     virtual bool request_file(PApxRequest &req) { return true; }
+
+    virtual void done() {}
 };
 
 class PApxNodeRequestFileRead : public PApxNodeRequestFile
@@ -170,4 +198,5 @@ private:
 
     bool request_file(PApxRequest &req) override;
     bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream) override;
+    void done() override;
 };

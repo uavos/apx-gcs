@@ -25,6 +25,7 @@
 
 #include <App/App.h>
 #include <xbus/XbusNode.h>
+#include <xbus/XbusScript.h>
 
 #include <crc.h>
 
@@ -33,6 +34,8 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
     , _uid(uid)
     , _timeout_ms(timeout_ms)
 {
+    if (!uid)
+        return;
     // schedule delayed to avoid consequent requests duplicate deletions by uid
     QTimer::singleShot(1, node, [this]() { _node->schedule_request(this); });
 }
@@ -68,6 +71,23 @@ bool PApxNodeRequest::make_request(PApxRequest &req)
 bool PApxNodeRequestReboot::request(PApxRequest &req)
 {
     req << _type;
+    return true;
+}
+
+bool PApxNodeRequestShell::request(PApxRequest &req)
+{
+    xbus::node::mod::op_e op = xbus::node::mod::sh;
+    req << op;
+    for (auto const &s : _commands) {
+        req.write_string(s.toUtf8().data());
+    }
+    return true;
+}
+
+bool PApxNodeRequestUsr::request(PApxRequest &req)
+{
+    req.write<quint8>(_cmd);
+    req.append(_data);
     return true;
 }
 
@@ -192,10 +212,12 @@ bool PApxNodeRequestUpdate::response(PStreamReader &stream)
         return false;
     }
 
-    if (_index >= _values.size() && _fid == 0xFFFFFFFF) {
-        // qDebug() << "saved";
-        _node->confSaved();
-        return true;
+    if (_index >= _values.size()) {
+        if (_fid == 0xFFFFFFFF) {
+            // qDebug() << "saved";
+            _node->confSaved();
+            return true;
+        }
     }
 
     _node->reschedule_request(this);
@@ -246,6 +268,32 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
         reset();
         return false;
     }
+    if (op == xbus::node::file::extend) {
+        if (_op != xbus::node::file::write || !_info.flags.bits.owrite)
+            return false;
+        if (stream.available() < sizeof(xbus::node::file::offset_t))
+            return false;
+        xbus::node::file::offset_t offset;
+        stream >> offset;
+        if (offset != _offset) {
+            qWarning() << "ext offset: " << QString::number(offset, 16)
+                       << QString::number(_offset, 16);
+            // response offset mismatch - don't interrupt
+            return false;
+        }
+
+        if (stream.available() != sizeof(xbus::node::file::timeout_t))
+            return false;
+        xbus::node::file::timeout_t time;
+        stream >> time;
+        if (time == 0) {
+            qWarning() << "ext time: " << time;
+            return false;
+        }
+        _node->extend_request(this, time);
+
+        return false;
+    }
 
     if (op != _op)
         return false;
@@ -265,14 +313,16 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
         return false;
     }
     if (op == xbus::node::file::close) {
-        if (_info.size == _tcnt && _info.size > 0) {
-            if (_hash != _info.hash) {
+        if (_info.size == _tcnt) {
+            if (_info.size > 0 && _hash != _info.hash && _op_file == xbus::node::file::read) {
                 qWarning() << "transfer error:" << _name;
                 qWarning() << "hash: " << QString::number(_hash, 16)
                            << QString::number(_info.hash, 16);
-            } else {
-                //qDebug() << "transfer ok:" << _name << QString::number(_hash, 16);
+                reset();
+                return false;
             }
+            //qDebug() << "transfer ok:" << _name << QString::number(_hash, 16);
+            done();
         }
         reset();
         return true;
@@ -358,11 +408,11 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
 
     if (hash != _hash) {
         qWarning() << "hash: " << QString::number(hash, 16) << QString::number(_hash, 16);
-        return true; // stop uploading
+        return false;
     }
 
     if (stream.available() > 0)
-        return true; // stop uploading
+        return false;
 
     _offset += size;
     _tcnt += size;
@@ -371,4 +421,8 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
 
     next();
     return false;
+}
+void PApxNodeRequestFileWrite::done()
+{
+    _node->file_written(_name);
 }

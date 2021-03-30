@@ -170,10 +170,10 @@ VehicleMission::VehicleMission(Vehicle *parent)
 
     //protocols
     if (vehicle->protocol()) {
-        // connect(vehicle->protocol()->mission,
-        //         &ProtocolMission::uploaded,
-        //         this,
-        //         &VehicleMission::missionUploaded);
+        connect(vehicle->protocol()->mission(),
+                &PMission::missionUpdated,
+                this,
+                &VehicleMission::missionUploaded);
 
         connect(vehicle->protocol()->mission(),
                 &PMission::missionReceived,

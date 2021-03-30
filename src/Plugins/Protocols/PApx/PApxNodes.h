@@ -56,6 +56,8 @@ private slots:
     // reauests sequencer
     void request_scheduled(PApxNodeRequest *req);
     void request_finished(PApxNodeRequest *req);
+    void request_extended(PApxNodeRequest *req, size_t time_ms);
+
     void request_timeout();
     void request_next();
     void request_current();

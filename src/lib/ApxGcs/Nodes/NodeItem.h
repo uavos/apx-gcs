@@ -42,20 +42,16 @@ public:
 
     NodeTools *tools;
 
-    //int loadConfigValues(QVariantMap values);
-    bool loadConfigValue(const QString &name, const QString &value);
+    const QList<NodeField *> &fields() const { return m_fields; }
+    Nodes *nodes() const { return _nodes; }
+    PNode *protocol() const { return _protocol; }
+    bool valid() const { return m_valid; }
 
-    const QList<NodeField *> &fields() const;
+    bool loadConfigValue(const QString &name, const QString &value);
 
     Q_INVOKABLE void message(QString msg,
                              AppNotify::NotifyFlags flags = AppNotify::FromVehicle
                                                             | AppNotify::Important);
-
-    inline Nodes *nodes() const { return _nodes; }
-
-    PNode *protocol() const { return _protocol; }
-
-    bool valid() const { return m_valid; }
 
 protected:
     QTimer statusTimer;
@@ -64,7 +60,7 @@ protected:
     QString toolTip() const override;
 
 private:
-    Nodes *_nodes{nullptr};
+    Nodes *_nodes;
     PNode *_protocol;
 
     QJsonObject _ident;
@@ -75,7 +71,6 @@ private:
     void updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json);
 
     NodeField *_status_field{nullptr};
-    NodeField *_script_field{nullptr};
 
     void groupArrays();
     void groupArrays(Fact *group);
@@ -101,7 +96,7 @@ private slots:
     void identReceived(QJsonValue json);
     void dictReceived(QJsonValue json);
     void confReceived(QVariantMap values);
-    void scriptReceived(QString title, QByteArray src, QByteArray code);
+    void confUpdated(QVariantMap values);
     void confSaved();
 
     void messageReceived(PNode::msg_type_e type, QString msg);

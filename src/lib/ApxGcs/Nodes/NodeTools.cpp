@@ -142,5 +142,5 @@ void NodeTools::execUsr(Fact *f)
     if (!f->descr().isEmpty())
         msg.append(QString(" (%1)").arg(f->descr()));
     node->message(msg);
-    //node->protocol()->requestUsr(static_cast<quint8>(f->property("cmd").toUInt()), QByteArray());
+    node->protocol()->requestUsr(static_cast<quint8>(f->property("cmd").toUInt()), QByteArray());
 }
