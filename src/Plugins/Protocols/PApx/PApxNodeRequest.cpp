@@ -39,6 +39,10 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
     // schedule delayed to avoid consequent requests duplicate deletions by uid
     QTimer::singleShot(1, node, [this]() { _node->schedule_request(this); });
 }
+PApxNodeRequest::~PApxNodeRequest()
+{
+    _node->request_deleted(this);
+}
 
 PTrace *PApxNodeRequest::trace() const
 {
@@ -239,6 +243,7 @@ bool PApxNodeRequestFile::request(PApxRequest &req)
         return false;
 
     req.write<xbus::node::file::offset_t>(_offset);
+
     return request_file(req);
 }
 void PApxNodeRequestFile::reset()
@@ -366,6 +371,10 @@ bool PApxNodeRequestFileRead::response_file(xbus::node::file::offset_t offset, P
         return true;
     }
     _hash = apx::crc32(stream.ptr(), size, _hash);
+
+    size_t v = _info.size > 0 ? _tcnt * 100 / _info.size : 0;
+    _node->setProgress(static_cast<int>(v));
+
     next();
     return false;
 }
@@ -418,6 +427,9 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
     _tcnt += size;
     if (_tcnt > _info.size)
         return false;
+
+    size_t v = _data.size() > 0 ? _tcnt * 100 / _data.size() : 0;
+    _node->setProgress(static_cast<int>(v));
 
     next();
     return false;

@@ -84,13 +84,17 @@ Nodes::Nodes(Vehicle *vehicle)
         a->setOption(ShowDisabled);
     }
 
-    connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
+    connect(&_updateActions, &DelayedEvent::triggered, this, &Nodes::updateActions);
+    connect(this, &Fact::modifiedChanged, &_updateActions, &DelayedEvent::schedule);
+    if (_protocol) {
+        connect(_protocol, &PNodes::busyChanged, &_updateActions, &DelayedEvent::schedule);
+    }
+
+    updateActions();
 
     /*connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::upgradingChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::sizeChanged, this, &Nodes::updateActions);
-    updateActions();
 
     connect(protocol, &ProtocolNodes::nodeNotify, this, &Nodes::nodeNotify);
     connect(protocol, &ProtocolNodes::syncDone, this, &Nodes::syncDone);
@@ -120,6 +124,7 @@ NodeItem *Nodes::add(PNode *protocol)
 
     connect(node, &NodeItem::validChanged, this, &Nodes::updateValid);
 
+    updateActions();
     return node;
 }
 void Nodes::syncDone()
@@ -129,10 +134,10 @@ void Nodes::syncDone()
 
 void Nodes::updateActions()
 {
-    /*bool enb = protocol()->enabled();
-    bool upgrading = protocol()->upgrading();
-    bool busy = protocol()->active() || upgrading;
-    bool empty = protocol()->size() <= 0;
+    bool enb = true;        //protocol()->enabled();
+    bool upgrading = false; //protocol()->upgrading();
+    bool busy = _protocol ? _protocol->busy() || upgrading : false;
+    bool empty = nodes().size() <= 0;
     //bool valid = protocol()->valid();
     bool mod = modified();
     f_search->setEnabled(enb);
@@ -140,7 +145,7 @@ void Nodes::updateActions()
     f_stop->setEnabled(enb && busy);
     f_reload->setEnabled(enb && !upgrading);
     f_clear->setEnabled(!empty && !upgrading);
-    f_status->setEnabled(enb && !empty && !upgrading);*/
+    f_status->setEnabled(enb && !empty && !upgrading);
 }
 
 void Nodes::updateValid()
@@ -166,7 +171,8 @@ void Nodes::search()
 }
 void Nodes::stop()
 {
-    qDebug() << sender();
+    //qDebug() << sender();
+    _protocol->cancelRequests();
     //vehicle->protocol()->vehicles->stopNmtRequests();
 }
 

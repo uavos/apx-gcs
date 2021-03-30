@@ -32,6 +32,7 @@
 
 PApxNode::PApxNode(PApxNodes *parent, QString uid)
     : PNode(parent, uid)
+    , _nodes(parent)
     , _req(this)
 {
     // store ident to parse dict
@@ -42,7 +43,7 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
 
 PApxNode::~PApxNode()
 {
-    clear_requests();
+    _nodes->cancel_requests(this);
 }
 
 void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
@@ -179,17 +180,11 @@ void PApxNode::extend_request(PApxNodeRequest *req, size_t time_ms)
 void PApxNode::delete_request(PApxNodeRequest *req)
 {
     emit request_finished(req);
-    _requests.removeAll(req);
     delete req;
-    updateProgress();
 }
-void PApxNode::clear_requests()
+void PApxNode::request_deleted(PApxNodeRequest *req)
 {
-    for (auto req : _requests) {
-        emit request_finished(req);
-        delete req;
-    }
-    _requests.clear();
+    _requests.removeOne(req);
     updateProgress();
 }
 
@@ -655,7 +650,7 @@ void PApxNode::requestUpdate(QVariantMap values)
         QByteArray data = pack_script(values.value(_script_field));
         _script_value = apx::crc32(data.data(), data.size());
         values.insert(_script_field, _script_value);
-        new PApxNodeRequestFileWrite(this, "script", data);
+        new PApxNodeRequestFileWrite(this, "script2", data);
     }
 
     new PApxNodeRequestUpdate(this, values);

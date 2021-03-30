@@ -26,3 +26,11 @@
 PNodes::PNodes(PVehicle *parent)
     : PTreeBase(parent, "nodes", tr("Nodes"), tr("Vehicle devices"), Group | Count)
 {}
+
+void PNodes::setBusy(bool v)
+{
+    if (m_busy == v)
+        return;
+    m_busy = v;
+    emit busyChanged();
+}

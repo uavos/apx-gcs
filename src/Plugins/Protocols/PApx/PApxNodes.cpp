@@ -28,12 +28,28 @@
 
 #include <App/AppLog.h>
 
+#define PAPX_REQ_DELAY_MS 0
+
 PApxNodes::PApxNodes(PApxVehicle *parent)
     : PNodes(parent)
     , _req(parent)
 {
-    _reqTimer.setSingleShot(true);
-    connect(&_reqTimer, &QTimer::timeout, this, &PApxNodes::request_timeout);
+    _reqTimeout.setSingleShot(true);
+    connect(&_reqTimeout, &QTimer::timeout, this, &PApxNodes::request_timeout);
+
+    _reqNext.setSingleShot(true);
+    connect(&_reqNext, &QTimer::timeout, this, &PApxNodes::request_current);
+
+    connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
+    updateActive();
+}
+void PApxNodes::updateActive()
+{
+    _reqNext.setInterval(parent()->active() ? PAPX_REQ_DELAY_MS : 1000);
+    if (_reqNext.isActive()) {
+        _reqNext.stop();
+        _reqNext.start();
+    }
 }
 
 bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
@@ -111,13 +127,15 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
         // rescheduled request
         if (_request != req) // not current
             return;
-        request_current();
+        _reqTimeout.stop();
+        _reqNext.start();
         return;
     }
     _requests.append(req);
+    setBusy(true);
     if (_request)
         return;
-    QTimer::singleShot(0, this, &PApxNodes::request_next);
+    request_next();
 }
 void PApxNodes::request_finished(PApxNodeRequest *req)
 {
@@ -127,16 +145,19 @@ void PApxNodes::request_finished(PApxNodeRequest *req)
         return;
     _request = nullptr;
 
-    _reqTimer.stop();
-    if (!_requests.isEmpty())
-        request_next();
+    _reqTimeout.stop();
+    if (_requests.isEmpty()) {
+        setBusy(false);
+        return;
+    }
+    request_next();
 }
 void PApxNodes::request_extended(PApxNodeRequest *req, size_t time_ms)
 {
     if (_request != req)
         return;
-    _reqTimer.stop();
-    _reqTimer.start(time_ms);
+    _reqTimeout.stop();
+    _reqTimeout.start(time_ms);
 }
 
 void PApxNodes::request_next()
@@ -153,11 +174,13 @@ void PApxNodes::request_next()
 
     _request = _requests.first();
     _retry = PApxNodeRequest::retries;
-    request_current();
+    _reqNext.start();
 }
 
 void PApxNodes::request_current()
 {
+    if (!_request)
+        return;
     // qDebug() << Mandala::meta(_request->uid()).path;
     if (!_request->make_request(_req)) {
         // qDebug() << "discarded";
@@ -165,8 +188,8 @@ void PApxNodes::request_current()
         return;
     }
     _req.send();
-    _reqTimer.stop();
-    _reqTimer.start(_request->timeout_ms() ? _request->timeout_ms() : 100);
+    _reqTimeout.stop();
+    _reqTimeout.start(_request->timeout_ms() ? _request->timeout_ms() : 100);
 }
 
 void PApxNodes::request_timeout()
@@ -188,7 +211,7 @@ void PApxNodes::request_timeout()
             if (req->node() == _request->node())
                 _requests.removeOne(req);
         }
-        _request->node()->clear_requests();
+        cancel_requests(_request->node());
 
         return;
     }
@@ -200,5 +223,25 @@ void PApxNodes::request_timeout()
                      .arg(PApxNodeRequest::retries - _retry)
                      .arg(PApxNodeRequest::retries);
 
-    request_current();
+    _reqNext.start();
+}
+void PApxNodes::cancel_requests(PApxNode *node)
+{
+    if (_request && (!node || _request->node() == node)) {
+        _reqTimeout.stop();
+        _request = nullptr;
+    }
+    for (auto req : _requests) {
+        if (node && req->node() != node)
+            continue;
+        _requests.removeOne(req);
+        delete req;
+    }
+    if (_requests.isEmpty()) {
+        setBusy(false);
+        return;
+    }
+
+    if (!_request)
+        request_next();
 }

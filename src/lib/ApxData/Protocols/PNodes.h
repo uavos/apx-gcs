@@ -29,14 +29,26 @@ class PNode;
 class PNodes : public PTreeBase
 {
     Q_OBJECT
+    Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
 
 public:
     explicit PNodes(PVehicle *parent);
 
+    bool busy() const { return m_busy; }
+
+private:
+    bool m_busy{};
+
+protected:
+    void setBusy(bool v);
+
 public slots:
     virtual void requestSearch() { _nimp(__FUNCTION__); }
+    virtual void cancelRequests() { _nimp(__FUNCTION__); }
 
 signals:
     void node_available(PNode *node);
     void node_response(PNode *node);
+
+    void busyChanged();
 };

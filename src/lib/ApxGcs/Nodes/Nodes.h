@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <ApxMisc/DelayedEvent.h>
 #include <Vehicles/Vehicle.h>
 
 #include "NodeItem.h"
@@ -66,6 +67,8 @@ private:
     QDateTime m_syncTimestamp;
 
     bool m_valid{};
+
+    DelayedEvent _updateActions{100, true};
 
 private slots:
     void updateActions();

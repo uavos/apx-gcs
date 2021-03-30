@@ -41,6 +41,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     if (protocol) {
         bindProperty(protocol, "title", true);
         bindProperty(protocol, "value", true);
+        bindProperty(protocol, "active", false);
 
         // TODO: vehicle deletion
         // connect(protocol, &Fact::removed, this, &Fact::deleteFact);

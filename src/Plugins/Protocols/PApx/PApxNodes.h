@@ -38,19 +38,24 @@ public:
 
     QList<PApxNode *> nodes() const { return _nodes.values(); }
 
+    void cancel_requests(PApxNode *node);
+
 private:
     PApxRequest _req;
     QHash<QString, PApxNode *> _nodes;
 
     PApxNode *getNode(QString uid, bool createNew = true);
 
-    QTimer _reqTimer;
+    QTimer _reqTimeout;
+    QTimer _reqNext;
+
     QList<PApxNodeRequest *> _requests;
     PApxNodeRequest *_request{};
     uint _retry{};
 
 protected:
     void requestSearch() override;
+    void cancelRequests() override { cancel_requests(nullptr); }
 
 private slots:
     // reauests sequencer
@@ -61,4 +66,6 @@ private slots:
     void request_timeout();
     void request_next();
     void request_current();
+
+    void updateActive();
 };

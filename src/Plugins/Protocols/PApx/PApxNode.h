@@ -40,9 +40,9 @@ public:
 
     void schedule_request(PApxNodeRequest *req);
     void delete_request(PApxNodeRequest *req);
-    void clear_requests();
     void reschedule_request(PApxNodeRequest *req);
     void extend_request(PApxNodeRequest *req, size_t time_ms);
+    void request_deleted(PApxNodeRequest *req);
 
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
@@ -59,6 +59,7 @@ public:
     static QByteArray pack_script(QVariant value);
 
 private:
+    PApxNodes *_nodes;
     PApxRequest _req;
     QList<PApxNodeRequest *> _requests;
 

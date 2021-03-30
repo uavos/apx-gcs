@@ -33,7 +33,7 @@ class PApxNodeRequest
 {
 public:
     explicit PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeout_ms = 1000);
-    virtual ~PApxNodeRequest() {}
+    virtual ~PApxNodeRequest();
 
     bool equals(PApxNodeRequest *req) { return uid() == req->uid() && cid() == req->cid(); }
 
