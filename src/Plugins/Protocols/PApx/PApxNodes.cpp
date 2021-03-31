@@ -66,8 +66,10 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         return true;
     }
 
-    if (stream.available() < sizeof(xbus::node::guid_t))
+    if (stream.available() < sizeof(xbus::node::guid_t)) {
+        qDebug() << "missing guid" << stream.available();
         return true;
+    }
 
     QByteArray uid_ba(sizeof(xbus::node::guid_t), '\0');
     stream.read(uid_ba.data(), sizeof(xbus::node::guid_t));

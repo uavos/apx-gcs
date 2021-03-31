@@ -27,6 +27,8 @@
 
 #include <xbus/XbusPacket.h>
 #include <xbus/XbusVehicle.h>
+
+#include <Protocols/PStream.h>
 //=============================================================================
 DatalinkConnection::DatalinkConnection(Fact *parent,
                                        const QString &name,
@@ -124,22 +126,22 @@ void DatalinkConnection::closed()
 //=============================================================================
 bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
 {
-    uint16_t psize = static_cast<uint16_t>(packet.size());
-    const uint8_t *pdata = reinterpret_cast<const uint8_t *>(packet.data());
-    XbusStreamReader stream(pdata, psize);
+    PStreamReader stream(packet);
+
     if (stream.available() < xbus::pid_s::psize())
         return true;
+
     xbus::pid_s pid;
     pid.read(&stream);
 
-    static constexpr const mandala::uid_t allowed[] = {
-        mandala::cmd::env::nmt::uid,
-        mandala::cmd::env::vehicle::ident::uid,
-        mandala::cmd::env::vehicle::downlink::uid,
-    };
-    for (auto i : allowed)
-        if (pid.uid == i)
-            return false;
+    auto uid = pid.uid;
+
+    if (mandala::cmd::env::nmt::match(uid))
+        return false;
+    if (mandala::cmd::env::vehicle::ident::match(uid))
+        return false;
+    if (mandala::cmd::env::vehicle::downlink::match(uid))
+        return false;
 
     return true;
 }

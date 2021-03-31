@@ -30,7 +30,7 @@ PTrace::PTrace(QObject *parent)
 {
     AppLog::add(log().categoryName(),
                 QString("Protocol-%1.txt").arg(parent ? parent->objectName() : "any"),
-                false);
+                true);
 }
 
 void PTrace::enable(bool v)

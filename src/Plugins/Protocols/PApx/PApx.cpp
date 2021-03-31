@@ -58,8 +58,6 @@ void PApx::process_downlink(QByteArray packet)
     xbus::pid_s pid;
     pid.read(&stream);
 
-    findParent<PApx>()->trace_pid(pid);
-
     switch (pid.uid) {
     default:
         stream.reset();
@@ -67,6 +65,7 @@ void PApx::process_downlink(QByteArray packet)
         return;
 
     case mandala::cmd::env::vehicle::ident::uid: {
+        findParent<PApx>()->trace_pid(pid);
         if (pid.pri == xbus::pri_request)
             return;
 
@@ -154,6 +153,7 @@ void PApx::process_downlink(QByteArray packet)
         }
     } break;
     case mandala::cmd::env::vehicle::downlink::uid: {
+        findParent<PApx>()->trace_pid(pid);
         if (pid.pri == xbus::pri_request)
             return;
 

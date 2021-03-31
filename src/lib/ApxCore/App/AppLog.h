@@ -75,16 +75,21 @@ public:
 
     void message(QtMsgType type, const QMessageLogContext &context, const QString &message);
 
-    static void add(const QString &categoryName, const QString &fileName, bool debug);
+    enum Options {
+        Display,
+    };
+
+    static void add(const QString &categoryName, const QString &fileName, bool silent);
     static bool display(const QMessageLogContext &context);
 
 private:
     static AppLog *_instance;
     static QMutex _mutex;
     QMap<QString, QTextStream *> streams; //category -> file
-    QList<QTextStream *> debugStreams;    //no print to global log
 
-    QTextStream *logStream;
+    QList<QString> silentCategories; //no print to stdout
+
+    QTextStream *appLogStream;
 
     //notifications support
 signals:
