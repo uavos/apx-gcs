@@ -544,6 +544,8 @@ QVariant Fact::toVariant() const
 }
 void Fact::fromVariant(const QVariant &var)
 {
+    if (var.isNull())
+        return;
     if (var.canConvert(QMetaType::QVariantMap)) {
         auto iterable = var.value<QAssociativeIterable>();
         for (auto it = iterable.begin(); it != iterable.end(); ++it) {

@@ -314,6 +314,7 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
         reset();
         _info.read(&stream);
         _offset = _info.offset;
+        opened();
         next();
         return false;
     }
@@ -379,6 +380,10 @@ bool PApxNodeRequestFileRead::response_file(xbus::node::file::offset_t offset, P
     return false;
 }
 
+void PApxNodeRequestFileWrite::opened()
+{
+    _info.size = _data.size();
+}
 bool PApxNodeRequestFileWrite::request_file(PApxRequest &req)
 {
     // write data part

@@ -158,6 +158,8 @@ protected:
     bool request(PApxRequest &req) override final;
     bool response(PStreamReader &stream) override final;
 
+    virtual void opened() {}
+
     virtual bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream)
     {
         return true;
@@ -190,12 +192,13 @@ public:
         : PApxNodeRequestFile(node, name, xbus::node::file::wopen, xbus::node::file::write)
         , _data(data)
     {
-        qDebug() << "uploading:" << name;
+        qDebug() << "uploading:" << name << data.size();
     }
 
 private:
     QByteArray _data;
 
+    void opened() override;
     bool request_file(PApxRequest &req) override;
     bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream) override;
     void done() override;

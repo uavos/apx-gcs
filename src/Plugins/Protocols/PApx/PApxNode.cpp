@@ -647,9 +647,14 @@ void PApxNode::requestUpdate(QVariantMap values)
 {
     if (values.contains(_script_field)) {
         QByteArray data = pack_script(values.value(_script_field));
-        _script_value = apx::crc32(data.data(), data.size());
+        if (data.isEmpty()) {
+            _script_value = {};
+            qDebug() << "empty script";
+        } else {
+            _script_value = apx::crc32(data.data(), data.size());
+        }
         values.insert(_script_field, _script_value);
-        new PApxNodeRequestFileWrite(this, "script2", data);
+        new PApxNodeRequestFileWrite(this, "script", data);
     }
 
     new PApxNodeRequestUpdate(this, values);
@@ -659,7 +664,7 @@ QByteArray PApxNode::pack_script(QVariant value)
     QStringList st = value.toString().split(',', Qt::KeepEmptyParts);
 
     if (st.size() != 3)
-        return QByteArray();
+        return {};
 
     QString title = st.at(0);
     QByteArray src = QByteArray::fromHex(st.at(1).toLocal8Bit());
