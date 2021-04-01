@@ -36,8 +36,8 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
     , _req(this)
 {
     // store ident to parse dict
-    connect(this, &PNode::identReceived, this, [this](QJsonValue json) {
-        _dict_hash = json.toObject().value("hash").toInt();
+    connect(this, &PNode::identReceived, this, [this](QVariantMap ident) {
+        _dict_hash = ident.value("hash").value<xbus::node::hash_t>();
     });
 }
 
@@ -264,7 +264,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     PStreamReader stream(data);
 
     bool err = true;
-    QJsonArray fields;
+    QVariantList fields;
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
@@ -286,7 +286,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
         QList<int> group_idx;
 
         while (stream.available() > 4) {
-            QJsonObject field;
+            QVariantMap field;
 
             xbus::node::conf::type_e type_id = static_cast<xbus::node::conf::type_e>(
                 stream.read<uint8_t>());
@@ -386,7 +386,6 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
         return;
     }
     qDebug() << "dict parsed";
-    //printf("%s", QJsonDocument(fields).toJson().data());
 
     emit dictReceived(fields);
 }

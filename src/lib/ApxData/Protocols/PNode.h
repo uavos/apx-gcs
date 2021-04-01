@@ -57,12 +57,21 @@ public slots:
     virtual void requestUsr(quint8 cmd, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:
+    // a message from hardware
     void messageReceived(PNode::msg_type_e type, QString msg);
 
-    void identReceived(QJsonValue json);
-    void dictReceived(QJsonValue json);
-    void confReceived(QVariantMap values); // the whole set of parameters received
-    void confUpdated(QVariantMap values);  // some parameters updated externally
+    // hash of node identity, title, version, hardware, etc
+    void identReceived(QVariantMap ident);
 
-    void confSaved(); // when requestUpdate accepted and saved
+    // list of QVariantMap describing fields {name, type, array, etc}
+    void dictReceived(QVariantList dict);
+
+    // the whole set of parameters received
+    void confReceived(QVariantMap values);
+
+    // some parameters updated externally
+    void confUpdated(QVariantMap values);
+
+    // when requestUpdate accepted and saved
+    void confSaved();
 };

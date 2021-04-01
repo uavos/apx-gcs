@@ -28,19 +28,18 @@
 #include <App/AppRoot.h>
 #include <Vehicles/Vehicles.h>
 
-NodeField::NodeField(
-    Fact *parent, NodeItem *node, QJsonObject json, size_t id, NodeField *arrayParent)
+NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent)
     : Fact(parent)
     , _node(node)
-    , _type(json.value("type").toString())
+    , _type(m.value("type").toString())
     , _id(id)
-    , _fpath(json.value("name").toString())
+    , _fpath(m.value("name").toString())
 {
     setName(_fpath.split('.').last());
-    setTitle(json.value("title").toString());
+    setTitle(m.value("title").toString());
 
-    QString funits = json.value("units").toString();
-    _array = json.value("array").toInt();
+    QString funits = m.value("units").toString();
+    _array = m.value("array").toInt();
 
     new NodeViewActions(this, node->nodes());
 
@@ -50,7 +49,7 @@ NodeField::NodeField(
         if (st.size() != _array)
             st.clear();
         for (auto i = 0; i < _array; ++i) {
-            QJsonObject item = json;
+            QVariantMap item = m;
             QString s;
             if (st.isEmpty())
                 s = QString::number(i + 1);

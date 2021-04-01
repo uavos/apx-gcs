@@ -211,7 +211,7 @@ QString NodeItem::toolTip() const
 {
     QStringList st;
     st << "ident:";
-    st.append(QJsonDocument(_ident).toJson());
+    st.append(QJsonDocument::fromVariant(_ident).toJson());
     return Fact::toolTip().append("\n").append(st.join('\n'));
 }
 
@@ -394,10 +394,9 @@ void NodeItem::linkGroupValues(Fact *f)
 // Protocols connection
 //=============================================================================
 
-void NodeItem::identReceived(QJsonValue json)
+void NodeItem::identReceived(QVariantMap ident)
 {
-    QJsonObject ident = json.toObject();
-    if (ident == _ident)
+    if (_ident == ident)
         return;
 
     qWarning() << "ident updated";
@@ -407,13 +406,13 @@ void NodeItem::identReceived(QJsonValue json)
     _protocol->requestDict();
 }
 
-void NodeItem::dictReceived(QJsonValue json)
+void NodeItem::dictReceived(QVariantList dict)
 {
     clear();
 
     xbus::node::usr::cmd_t cmd_cnt = 0;
-    for (auto i : json.toArray()) {
-        QJsonObject field = i.toObject();
+    for (auto const &i : dict) {
+        auto field = i.value<QVariantMap>();
         QString name = field.value("name").toString();
         QString title = field.value("title").toString();
         QString type = field.value("type").toString();

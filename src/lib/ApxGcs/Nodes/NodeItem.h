@@ -63,7 +63,7 @@ private:
     Nodes *_nodes;
     PNode *_protocol;
 
-    QJsonObject _ident;
+    QVariantMap _ident;
 
     QList<NodeField *> m_fields;
 
@@ -93,8 +93,8 @@ public slots:
 
     //protocols:
 private slots:
-    void identReceived(QJsonValue json);
-    void dictReceived(QJsonValue json);
+    void identReceived(QVariantMap ident);
+    void dictReceived(QVariantList dict);
     void confReceived(QVariantMap values);
     void confUpdated(QVariantMap values);
     void confSaved();

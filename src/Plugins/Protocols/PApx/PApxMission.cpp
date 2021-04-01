@@ -52,12 +52,12 @@ void PApxMission::requestMission()
     new PApxNodeRequestFileRead(f->node(), file_name);
 }
 
-void PApxMission::updateMission(QJsonValue json)
+void PApxMission::updateMission(QVariant var)
 {
     auto f = _file();
     if (!f)
         return;
-    new PApxNodeRequestFileWrite(f->node(), file_name, _pack(json));
+    new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var));
 }
 
 void PApxMission::parseMissionData(const xbus::node::file::info_s &info, const QByteArray data)
@@ -77,11 +77,11 @@ PApxNodeFile *PApxMission::_file() const
     apxMsgW() << tr("Mission source unavailable");
     return nullptr;
 }
-QJsonValue PApxMission::_unpack(PStreamReader &stream)
+QVariant PApxMission::_unpack(PStreamReader &stream)
 {
     //unpack mission
     if (stream.available() < xbus::mission::file_hdr_s::psize())
-        return QJsonValue();
+        return {};
 
     xbus::mission::file_hdr_s fhdr{};
     fhdr.read(&stream);
@@ -91,10 +91,10 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
 
     if (fhdr.size != stream.available()) {
         qWarning() << "data size" << fhdr.size << stream.available();
-        return QJsonValue();
+        return {};
     }
 
-    QJsonArray wp, rw, tw, pi;
+    QVariantList wp, rw, tw, pi;
 
     int ecnt = 0, wpcnt = 0, rwcnt = 0;
 
@@ -115,7 +115,7 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
             e.read(&stream);
             wpcnt++;
 
-            QJsonObject item;
+            QVariantMap item;
             item.insert("lat", static_cast<qreal>(e.lat));
             item.insert("lon", static_cast<qreal>(e.lon));
             item.insert("altitude", e.alt);
@@ -128,7 +128,7 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
             continue;
         }
         case xbus::mission::ACT: { //wp actions
-            QJsonObject a;
+            QVariantMap a;
             switch (hdr.option) {
             default:
                 break;
@@ -174,15 +174,13 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
                 qWarning() << "Orphan actions in mission";
                 continue;
             }
-            QJsonObject wpt = wp.last().toObject();
-            if (!wpt.contains("actions"))
-                wpt.insert("actions", QJsonObject());
-            QJsonObject actions = wpt["actions"].toObject();
+            // append actions to the last waypoint
+            auto wpt = wp.last().value<QVariantMap>();
+            auto actions = wpt.value("actions").value<QVariantMap>();
             for (auto i : a.keys())
                 actions.insert(i, a[i]);
             wpt.insert("actions", actions);
-            QJsonValueRef ref = wp[wp.size() - 1];
-            ref = wpt;
+            wp[wp.size() - 1] = wpt;
             continue;
         }
         case xbus::mission::RW: {
@@ -192,7 +190,7 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
             e.read(&stream);
             rwcnt++;
 
-            QJsonObject item;
+            QVariantMap item;
             item.insert("lat", static_cast<qreal>(e.lat));
             item.insert("lon", static_cast<qreal>(e.lon));
             item.insert("hmsl", e.hmsl);
@@ -213,7 +211,7 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
             xbus::mission::tw_s e;
             e.read(&stream);
 
-            QJsonObject item;
+            QVariantMap item;
             item.insert("lat", static_cast<qreal>(e.lat));
             item.insert("lon", static_cast<qreal>(e.lon));
 
@@ -225,7 +223,7 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
                 break;
             xbus::mission::pi_s e;
             e.read(&stream);
-            QJsonObject item;
+            QVariantMap item;
             item.insert("lat", static_cast<qreal>(e.lat));
             item.insert("lon", static_cast<qreal>(e.lon));
             item.insert("hmsl", e.hmsl);
@@ -251,25 +249,27 @@ QJsonValue PApxMission::_unpack(PStreamReader &stream)
         }
         }
         //error in mission
-        return QJsonValue();
+        return {};
     }
 
-    QJsonObject json;
-    json.insert("title", title);
+    QVariantMap m;
+    m.insert("title", title);
 
     if (!wp.isEmpty())
-        json.insert("wp", wp);
+        m.insert("wp", wp);
     if (!rw.isEmpty())
-        json.insert("rw", rw);
+        m.insert("rw", rw);
     if (!tw.isEmpty())
-        json.insert("tw", tw);
+        m.insert("tw", tw);
     if (!pi.isEmpty())
-        json.insert("pi", pi);
-    return json;
+        m.insert("pi", pi);
+    return m;
 }
 
-QByteArray PApxMission::_pack(QJsonValue json)
+QByteArray PApxMission::_pack(const QVariant &var)
 {
+    auto m = var.value<QVariantMap>();
+
     QByteArray data(65535, '\0');
     uint8_t *pdata = reinterpret_cast<uint8_t *>(data.data());
     XbusStreamWriter stream(pdata, data.size());
@@ -279,131 +279,139 @@ QByteArray PApxMission::_pack(QJsonValue json)
     size_t pos_s = stream.pos();
 
     fhdr.off.wp = stream.pos() - pos_s;
-    for (const QJsonValue wp : json["wp"].toArray()) {
-        xbus::mission::hdr_s hdr;
-        hdr.type = xbus::mission::WP;
-        hdr.option = 0;
-        if (wp["type"].toString().toLower() == "track")
-            hdr.option = 1;
-        hdr.write(&stream);
-        xbus::mission::wp_s e;
-        e.lat = static_cast<float>(wp["lat"].toDouble());
-        e.lon = static_cast<float>(wp["lon"].toDouble());
-        e.alt = wp["altitude"].toVariant().toUInt();
-        e.write(&stream);
-        fhdr.cnt.wp++;
+    if (m.value("wp").canConvert<QVariantList>())
+        for (auto const &i : m.value("wp").value<QSequentialIterable>()) {
+            auto wp = i.value<QVariantMap>();
+            xbus::mission::hdr_s hdr;
+            hdr.type = xbus::mission::WP;
+            hdr.option = 0;
+            if (wp.value("type").toString().toLower() == "track")
+                hdr.option = 1;
+            hdr.write(&stream);
+            xbus::mission::wp_s e;
+            e.lat = wp.value("lat").toFloat();
+            e.lon = wp.value("lon").toFloat();
+            e.alt = wp.value("altitude").toUInt();
+            e.write(&stream);
+            fhdr.cnt.wp++;
 
-        QJsonObject actions = wp["actions"].toObject();
-        if (actions.isEmpty())
-            continue;
+            auto actions = wp.value("actions").value<QVariantMap>();
+            if (actions.isEmpty())
+                continue;
 
-        if (actions.contains("speed")) {
-            xbus::mission::hdr_s ahdr;
-            ahdr.type = xbus::mission::ACT;
-            ahdr.option = xbus::mission::ACT_SPEED;
-            ahdr.write(&stream);
-            xbus::mission::act_speed_s a;
-            a.speed = actions.value("speed").toVariant().toUInt();
-            a.write(&stream);
-        }
-        if (actions.contains("poi")) {
-            xbus::mission::hdr_s ahdr;
-            ahdr.type = xbus::mission::ACT;
-            ahdr.option = xbus::mission::ACT_PI;
-            ahdr.write(&stream);
-            xbus::mission::act_pi_s a;
-            a.index = actions.value("poi").toVariant().toUInt() - 1;
-            a.write(&stream);
-        }
-        if (actions.contains("script")) {
-            xbus::mission::hdr_s ahdr;
-            ahdr.type = xbus::mission::ACT;
-            ahdr.option = xbus::mission::ACT_SCR;
-            ahdr.write(&stream);
-            xbus::mission::act_scr_s a;
-            QByteArray src(actions.value("script").toString().toUtf8());
-            memset(a.scr, 0, sizeof(a.scr));
-            memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
-            a.scr[sizeof(a.scr) - 1] = 0;
-            a.write(&stream);
-        }
-        if (actions.contains("shot")) {
-            xbus::mission::hdr_s ahdr;
-            ahdr.type = xbus::mission::ACT;
-            ahdr.option = xbus::mission::ACT_SHOT;
-            ahdr.write(&stream);
-            xbus::mission::act_shot_s a;
-            uint dshot = actions.value("dshot").toVariant().toUInt();
-            const QString shot = actions.value("shot").toString();
-            a.opt = 0;
-            a.dist = 0;
-            if (shot == "start") {
-                if (dshot == 0) {
-                    apxMsgW() << tr("Auto shot distance is zero");
-                    break;
-                }
-                a.opt = 1;
-                if (dshot > ((1 << 12) - 1))
-                    dshot = ((1 << 12) - 1);
-                a.dist = static_cast<int16_t>(dshot);
-            } else if (shot == "stop") {
-                a.opt = 2;
-                a.dist = 0;
-            } else if (shot != "single") {
-                apxMsgW() << tr("Unknown shot mode") << shot;
+            if (actions.contains("speed")) {
+                xbus::mission::hdr_s ahdr;
+                ahdr.type = xbus::mission::ACT;
+                ahdr.option = xbus::mission::ACT_SPEED;
+                ahdr.write(&stream);
+                xbus::mission::act_speed_s a;
+                a.speed = actions.value("speed").toUInt();
+                a.write(&stream);
             }
-            a.write(&stream);
+            if (actions.contains("poi")) {
+                xbus::mission::hdr_s ahdr;
+                ahdr.type = xbus::mission::ACT;
+                ahdr.option = xbus::mission::ACT_PI;
+                ahdr.write(&stream);
+                xbus::mission::act_pi_s a;
+                a.index = actions.value("poi").toUInt() - 1;
+                a.write(&stream);
+            }
+            if (actions.contains("script")) {
+                xbus::mission::hdr_s ahdr;
+                ahdr.type = xbus::mission::ACT;
+                ahdr.option = xbus::mission::ACT_SCR;
+                ahdr.write(&stream);
+                xbus::mission::act_scr_s a;
+                QByteArray src(actions.value("script").toString().toUtf8());
+                memset(a.scr, 0, sizeof(a.scr));
+                memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
+                a.scr[sizeof(a.scr) - 1] = 0;
+                a.write(&stream);
+            }
+            if (actions.contains("shot")) {
+                xbus::mission::hdr_s ahdr;
+                ahdr.type = xbus::mission::ACT;
+                ahdr.option = xbus::mission::ACT_SHOT;
+                ahdr.write(&stream);
+                xbus::mission::act_shot_s a;
+                uint dshot = actions.value("dshot").toUInt();
+                const QString shot = actions.value("shot").toString();
+                a.opt = 0;
+                a.dist = 0;
+                if (shot == "start") {
+                    if (dshot == 0) {
+                        apxMsgW() << tr("Auto shot distance is zero");
+                        break;
+                    }
+                    a.opt = 1;
+                    if (dshot > ((1 << 12) - 1))
+                        dshot = ((1 << 12) - 1);
+                    a.dist = static_cast<int16_t>(dshot);
+                } else if (shot == "stop") {
+                    a.opt = 2;
+                    a.dist = 0;
+                } else if (shot != "single") {
+                    apxMsgW() << tr("Unknown shot mode") << shot;
+                }
+                a.write(&stream);
+            }
         }
-    }
 
     fhdr.off.rw = stream.pos() - pos_s;
-    for (const QJsonValue rw : json["rw"].toArray()) {
-        xbus::mission::hdr_s hdr;
-        hdr.type = xbus::mission::RW;
-        if (rw["type"].toString().toLower() == "right")
-            hdr.option = 1;
-        hdr.write(&stream);
-        xbus::mission::rw_s e;
-        e.lat = static_cast<float>(rw["lat"].toDouble());
-        e.lon = static_cast<float>(rw["lon"].toDouble());
-        e.hmsl = rw["hmsl"].toVariant().toInt();
-        e.dN = rw["dN"].toVariant().toInt();
-        e.dE = rw["dE"].toVariant().toInt();
-        e.approach = rw["approach"].toVariant().toUInt();
-        e.write(&stream);
-        fhdr.cnt.rw++;
-        //qDebug() << m.details;
-    }
+    if (m.value("rw").canConvert<QVariantList>())
+        for (auto const &i : m.value("rw").value<QSequentialIterable>()) {
+            auto rw = i.value<QVariantMap>();
+            xbus::mission::hdr_s hdr;
+            hdr.type = xbus::mission::RW;
+            if (rw["type"].toString().toLower() == "right")
+                hdr.option = 1;
+            hdr.write(&stream);
+            xbus::mission::rw_s e;
+            e.lat = rw.value("lat").toFloat();
+            e.lon = rw.value("lon").toFloat();
+            e.hmsl = rw.value("hmsl").toInt();
+            e.dN = rw.value("dN").toInt();
+            e.dE = rw.value("dE").toInt();
+            e.approach = rw.value("approach").toUInt();
+            e.write(&stream);
+            fhdr.cnt.rw++;
+            //qDebug() << m.details;
+        }
 
     fhdr.off.tw = stream.pos() - pos_s;
-    for (const QJsonValue tw : json["tw"].toArray()) {
-        xbus::mission::hdr_s hdr;
-        hdr.type = xbus::mission::TW;
-        hdr.option = 0;
-        hdr.write(&stream);
-        xbus::mission::tw_s e;
-        e.lat = static_cast<float>(tw["lat"].toDouble());
-        e.lon = static_cast<float>(tw["lon"].toDouble());
-        e.write(&stream);
-        fhdr.cnt.tw++;
-    }
+    if (m.value("tw").canConvert<QVariantList>())
+        for (auto const &i : m.value("tw").value<QSequentialIterable>()) {
+            auto tw = i.value<QVariantMap>();
+            xbus::mission::hdr_s hdr;
+            hdr.type = xbus::mission::TW;
+            hdr.option = 0;
+            hdr.write(&stream);
+            xbus::mission::tw_s e;
+            e.lat = tw.value("lat").toFloat();
+            e.lon = tw.value("lon").toFloat();
+            e.write(&stream);
+            fhdr.cnt.tw++;
+        }
 
     fhdr.off.pi = stream.pos() - pos_s;
-    for (const QJsonValue pi : json["pi"].toArray()) {
-        xbus::mission::hdr_s hdr;
-        hdr.type = xbus::mission::PI;
-        hdr.option = 0;
-        hdr.write(&stream);
-        xbus::mission::pi_s e;
-        e.lat = static_cast<float>(pi["lat"].toDouble());
-        e.lon = static_cast<float>(pi["lon"].toDouble());
-        e.hmsl = pi["hmsl"].toVariant().toInt();
-        e.radius = pi["radius"].toVariant().toInt();
-        e.loops = pi["loops"].toVariant().toUInt();
-        e.timeout = AppRoot::timeFromString(pi["timeout"].toString());
-        e.write(&stream);
-        fhdr.cnt.pi++;
-    }
+    if (m.value("pi").canConvert<QVariantList>())
+        for (auto const &i : m.value("pi").value<QSequentialIterable>()) {
+            auto pi = i.value<QVariantMap>();
+            xbus::mission::hdr_s hdr;
+            hdr.type = xbus::mission::PI;
+            hdr.option = 0;
+            hdr.write(&stream);
+            xbus::mission::pi_s e;
+            e.lat = pi.value("lat").toFloat();
+            e.lon = pi.value("lon").toFloat();
+            e.hmsl = pi.value("hmsl").toInt();
+            e.radius = pi.value("radius").toInt();
+            e.loops = pi.value("loops").toUInt();
+            e.timeout = AppRoot::timeFromString(pi.value("timeout").toString());
+            e.write(&stream);
+            fhdr.cnt.pi++;
+        }
 
     if (stream.pos() <= xbus::mission::hdr_s::psize()) {
         qDebug() << "Upload empty mission";
@@ -418,7 +426,7 @@ QByteArray PApxMission::_pack(QJsonValue json)
     //update fhdr
     fhdr.size = stream.pos() - pos_s;
 
-    strncpy(fhdr.title, json["title"].toString().toLocal8Bit(), sizeof(fhdr.title));
+    strncpy(fhdr.title, m.value("title").toString().toLocal8Bit(), sizeof(fhdr.title));
 
     stream.reset();
     fhdr.write(&stream);

@@ -35,11 +35,8 @@ class NodeField : public Fact
     Q_PROPERTY(NodeScript *script MEMBER _script);
 
 public:
-    explicit NodeField(Fact *parent,
-                       NodeItem *node,
-                       QJsonObject json,
-                       size_t id,
-                       NodeField *arrayParent = nullptr);
+    explicit NodeField(
+        Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent = nullptr);
 
     QVariant confValue(void) const;
     void setConfValue(QVariant v);

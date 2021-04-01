@@ -120,6 +120,6 @@ void MissionTools::copyVehicleSelected(Vehicle *vehicle)
 {
     if (vehicle == mission->vehicle)
         return;
-    vehicle->f_mission->fromJson(mission->toJson());
+    vehicle->f_mission->fromVariant(mission->toVariant());
     Vehicles::instance()->selectVehicle(vehicle);
 }

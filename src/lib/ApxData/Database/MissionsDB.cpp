@@ -191,7 +191,7 @@ bool DBReqMissionsRemoveSite::run(QSqlQuery &query)
 
 bool DBReqMissionsSave::run(QSqlQuery &query)
 {
-    if (json.value("rw").toArray().isEmpty()) {
+    if (data.value("rw").value<QVariantList>().isEmpty()) {
         qWarning() << "missing runways in mission";
     }
 
@@ -199,18 +199,18 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     if (!reqSite.run(query))
         return false;
 
-    QString title = json.value("title").toString().simplified();
+    QString title = data.value("title").toString().simplified();
     if (reqSite.siteID) {
         title = title.remove(reqSite.site, Qt::CaseInsensitive).simplified();
     } else {
         qDebug() << "no site";
     }
 
-    QString callsign = json.value("callsign").toString();
+    QString callsign = data.value("callsign").toString();
     QVariant siteID = reqSite.siteID ? reqSite.siteID : QVariant();
 
     //find existing mission by hash
-    QString hash = json.value("hash").toString();
+    QString hash = data.value("hash").toString();
     query.prepare("SELECT * FROM Missions WHERE hash=?");
     query.addBindValue(hash);
     if (!query.exec())
@@ -237,7 +237,7 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     if (!db->transaction(query))
         return false;
 
-    QVariantMap info = filterFields("Missions", json);
+    QVariantMap info = filterFields("Missions", data);
     info["hash"] = hash;
     info["time"] = t;
     info["title"] = title;
@@ -251,13 +251,13 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     missionID = query.lastInsertId().toULongLong();
 
     //write items
-    if (!writeItems(query, json.value("rw").toArray(), "Runways"))
+    if (!writeItems(query, data.value("rw"), "Runways"))
         return false;
-    if (!writeItems(query, json.value("wp").toArray(), "Waypoints"))
+    if (!writeItems(query, data.value("wp"), "Waypoints"))
         return false;
-    if (!writeItems(query, json.value("tw").toArray(), "Taxiways"))
+    if (!writeItems(query, data.value("tw"), "Taxiways"))
         return false;
-    if (!writeItems(query, json.value("pi").toArray(), "Pois"))
+    if (!writeItems(query, data.value("pi"), "Pois"))
         return false;
 
     if (!db->commit(query))
@@ -266,27 +266,28 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     emit missionHash(hash);
     return true;
 }
-bool DBReqMissionsSave::writeItems(QSqlQuery &query, QJsonArray json, QString tableName)
+bool DBReqMissionsSave::writeItems(QSqlQuery &query, const QVariant &var, QString tableName)
 {
     DatabaseRequest::Records records;
     records.names = db->tableFields(tableName);
     records.names.removeOne("key");
     quint32 num = 0;
-    for (auto j : json) {
-        QJsonObject obj = j.toObject();
+    for (auto j : var.value<QVariantList>()) {
+        auto obj = j.value<QVariantMap>();
         QVariantList r;
         r.append(missionID);
         r.append(num++);
         for (int i = 2; i < records.names.size(); ++i) {
-            QJsonValue v = obj[records.names.at(i)];
-            if (v.isObject()) {
+            auto v = obj.value(records.names.at(i));
+            if (v.canConvert<QVariantMap>()) {
                 QStringList st;
-                for (auto k : v.toObject().keys()) {
-                    st.append(k + "=" + v[k].toString());
+                auto vobj = v.value<QVariantMap>();
+                for (auto k : vobj.keys()) {
+                    st.append(k + "=" + vobj.value(k).toString());
                 }
                 r.append(st.join(','));
             } else {
-                r.append(v.toVariant());
+                r.append(v);
             }
         }
         records.values.append(r);
@@ -312,42 +313,44 @@ bool DBReqMissionsLoad::run(QSqlQuery &query)
         return false;
 
     quint64 missionID = query.value("Missions.key").toULongLong();
-    QJsonObject json = QJsonObject::fromVariantMap(filterIdValues(queryRecord(query)));
+    auto m = filterIdValues(queryRecord(query));
 
     query.prepare("SELECT * FROM Runways WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    json.insert("rw", readItems(query));
+    m.insert("rw", readItems(query));
 
     query.prepare("SELECT * FROM Waypoints WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    json.insert("wp", readItems(query));
+    m.insert("wp", readItems(query));
 
     query.prepare("SELECT * FROM Taxiways WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    json.insert("tw", readItems(query));
+    m.insert("tw", readItems(query));
 
     query.prepare("SELECT * FROM Pois WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    json.insert("pi", readItems(query));
+    m.insert("pi", readItems(query));
 
-    emit loaded(json);
+    emit loaded(m);
     return true;
 }
-QJsonValue DBReqMissionsLoad::readItems(QSqlQuery &query)
+QVariant DBReqMissionsLoad::readItems(QSqlQuery &query)
 {
-    QJsonArray array;
+    QVariantList array;
     while (query.next()) {
-        QJsonObject obj = QJsonObject::fromVariantMap(filterIdValues(queryRecord(query)));
+        auto obj = filterIdValues(queryRecord(query));
         obj.remove("num");
         array.append(obj);
     }
-    return array.isEmpty() ? QJsonValue() : array;
+    if (array.isEmpty())
+        return {};
+    return array;
 }

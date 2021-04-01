@@ -50,7 +50,7 @@ private:
 private slots:
     //database
     void dbSaved(QString hash);
-    void dbLoaded(QJsonValue json);
+    void dbLoaded(QVariant var);
     void dbSiteFound(quint64 siteID, QString site);
     void dbFindSite();
 

@@ -70,8 +70,8 @@ public:
     //Group fact values (settings)
     Q_INVOKABLE void setValues(const QVariantMap &values);
 
-    Q_INVOKABLE virtual QJsonValue toJson() const;
-    Q_INVOKABLE virtual void fromJson(const QJsonValue json);
+    Q_INVOKABLE virtual QVariant toVariant() const;
+    Q_INVOKABLE virtual void fromVariant(const QVariant &var);
 
     Q_INVOKABLE QJsonDocument toJsonDocument() const;
     Q_INVOKABLE bool fromJsonDocument(QByteArray data);

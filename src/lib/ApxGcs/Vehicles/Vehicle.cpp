@@ -60,6 +60,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 emit isGroundControlChanged();
             });
         }
+        //connect(protocol,&PVehicle::titleChanged,this,
     } else {
         m_is_replay = true;
     }
@@ -199,9 +200,19 @@ void Vehicle::updateActive()
     setFollow(false);
 }
 
-void Vehicle::dbSetVehicleKey(quint64 key)
+QVariant Vehicle::toVariant() const
 {
-    dbKey = key;
+    if (isReplay())
+        return {};
+
+    QVariantMap m;
+
+    m.insert("uid", _protocol->uid());
+    m.insert("callsign", title());
+    m.insert("class", _protocol->vehicleTypeText());
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+
+    return m;
 }
 
 void Vehicle::updateInfo()
@@ -382,7 +393,7 @@ QString Vehicle::confTitle() const
     s = byName.value("nav");
     if (!s.isEmpty())
         return s;
-    s = byName.value("mhx");
+    s = byName.value("com");
     if (!s.isEmpty())
         return s;
     s = byName.value("ifc");

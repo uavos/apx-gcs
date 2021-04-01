@@ -19,25 +19,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "VehicleStorage.h"
+#include "Vehicle.h"
 
-#include "PBase.h"
+#include <Database/VehiclesReqVehicle.h>
 
-class PVehicle;
+VehicleStorage::VehicleStorage(Vehicle *vehicle)
+    : QObject(vehicle)
+    , _vehicle(vehicle)
+{}
 
-class PMission : public PTreeBase
+void VehicleStorage::saveVehicleInfo()
 {
-    Q_OBJECT
+    auto m = _vehicle->toVariant().value<QVariantMap>();
+    if (m.isEmpty())
+        return;
 
-public:
-    explicit PMission(PVehicle *parent);
-
-public slots:
-    virtual void requestMission() { _nimp(__FUNCTION__); }
-    virtual void updateMission(QVariant var) { _nimp(__FUNCTION__); }
-
-signals:
-    void missionReceived(QVariant var);
-    void missionAvailable();
-    void missionUpdated();
-};
+    DBReqSaveVehicleInfo *req = new DBReqSaveVehicleInfo(m);
+    connect(
+        req,
+        &DBReqSaveVehicleInfo::foundID,
+        this,
+        [this](quint64 key) { _dbKey = key; },
+        Qt::QueuedConnection);
+    req->exec();
+}

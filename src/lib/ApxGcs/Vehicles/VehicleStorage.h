@@ -21,23 +21,20 @@
  */
 #pragma once
 
-#include "PBase.h"
+#include <QtCore>
 
-class PVehicle;
+class Vehicle;
 
-class PMission : public PTreeBase
+class VehicleStorage : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit PMission(PVehicle *parent);
+    explicit VehicleStorage(Vehicle *vehicle);
+
+private:
+    Vehicle *_vehicle;
+    quint64 _dbKey{}; //from db
 
 public slots:
-    virtual void requestMission() { _nimp(__FUNCTION__); }
-    virtual void updateMission(QVariant var) { _nimp(__FUNCTION__); }
-
-signals:
-    void missionReceived(QVariant var);
-    void missionAvailable();
-    void missionUpdated();
+    void saveVehicleInfo();
 };

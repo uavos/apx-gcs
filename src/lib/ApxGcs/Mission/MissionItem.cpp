@@ -114,11 +114,14 @@ void MissionItem::hashData(QCryptographicHash *h) const
     }
 }
 
-QJsonValue MissionItem::toJson() const
+QVariant MissionItem::toVariant() const
 {
-    QJsonObject json = Fact::toJson().toObject();
-    json.remove(f_order->name());
-    return json;
+    QVariant v = Fact::toVariant();
+    if (v.isNull())
+        return {};
+    auto h = v.value<QVariantMap>();
+    h.remove(f_order->name());
+    return h;
 }
 
 int MissionItem::missionItemType() const

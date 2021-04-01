@@ -50,10 +50,10 @@ public:
 
 private:
     QString hash;
-    QJsonValue readItems(QSqlQuery &query);
+    QVariant readItems(QSqlQuery &query);
 
 signals:
-    void loaded(QJsonValue json);
+    void loaded(QVariant data);
 };
 
 class DBReqMissionsFindSite : public DBReqMissions
@@ -82,11 +82,11 @@ class DBReqMissionsSave : public DBReqMissions
 {
     Q_OBJECT
 public:
-    explicit DBReqMissionsSave(QJsonValue json, quint64 t = 0)
+    explicit DBReqMissionsSave(QVariant var, quint64 t = 0)
         : DBReqMissions()
-        , json(json.toObject())
+        , data(var.value<QVariantMap>())
         , t(t ? t : QDateTime::currentDateTime().toMSecsSinceEpoch())
-        , reqSite(json["lat"].toVariant().toDouble(), json["lon"].toVariant().toDouble())
+        , reqSite(data.value("lat").toDouble(), data.value("lon").toDouble())
     {
         connect(&reqSite, &DBReqMissionsFindSite::siteFound, this, &DBReqMissionsSave::siteFound);
     }
@@ -94,11 +94,11 @@ public:
 
 private:
     quint64 missionID;
-    QJsonObject json;
+    QVariantMap data;
     quint64 t;
     DBReqMissionsFindSite reqSite;
 
-    bool writeItems(QSqlQuery &query, QJsonArray json, QString tableName);
+    bool writeItems(QSqlQuery &query, const QVariant &var, QString tableName);
 
 signals:
     void missionHash(QString hash);

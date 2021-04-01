@@ -60,9 +60,7 @@ void PApx::process_downlink(QByteArray packet)
 
     switch (pid.uid) {
     default:
-        stream.reset();
-        m_local->process_downlink(stream);
-        return;
+        break;
 
     case mandala::cmd::env::vehicle::ident::uid: {
         findParent<PApx>()->trace_pid(pid);
@@ -70,14 +68,14 @@ void PApx::process_downlink(QByteArray packet)
             return;
 
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
-            break;
+            return;
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         QString squawkText = PApx::squawkText(squawk);
 
         trace()->block(squawkText);
 
         if (stream.available() <= xbus::vehicle::ident_s::psize())
-            break;
+            return;
 
         trace()->data(stream.payload());
 
@@ -86,14 +84,14 @@ void PApx::process_downlink(QByteArray packet)
 
         const char *s = stream.read_string(stream.available());
         if (!s || stream.available() > 0)
-            break;
+            return;
 
         QString callsign = QString(s).trimmed();
 
         if ((!squawk) || callsign.isEmpty()) {
             //received zero SQUAWK
             assign_squawk(ident, callsign);
-            break;
+            return;
         }
 
         QString uid = QByteArray(reinterpret_cast<const char *>(ident.uid),
@@ -127,7 +125,7 @@ void PApx::process_downlink(QByteArray packet)
                 _squawk_map.remove(_squawk_map.key(available));
                 _squawk_map.remove(_squawk_map.key(identified));
                 assign_squawk(ident, callsign);
-                break;
+                return;
             }
             // update matched by uid info from ident
             available->setTitle(callsign);
@@ -139,7 +137,7 @@ void PApx::process_downlink(QByteArray packet)
                 qWarning() << "change squawk: " << PApx::squawkText(squawk);
                 _squawk_map.remove(squawk);
                 assign_squawk(ident, callsign);
-                break;
+                return;
             } else {
                 // add new vehicle
                 available = new PApxVehicle(this, callsign, uid, type, squawk);
@@ -151,7 +149,9 @@ void PApx::process_downlink(QByteArray packet)
                 available->packetReceived(pid.uid);
             }
         }
-    } break;
+        return;
+    }
+
     case mandala::cmd::env::vehicle::downlink::uid: {
         findParent<PApx>()->trace_pid(pid);
         if (pid.pri == xbus::pri_request)
@@ -159,11 +159,11 @@ void PApx::process_downlink(QByteArray packet)
 
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
         if (stream.available() == 0)
-            break;
+            return;
         trace()->block(PApx::squawkText(squawk));
 
         if (!squawk)
-            break; //broadcast?
+            return; //broadcast?
         //check if new transponder detected, request IDENT
         PApxVehicle *v = _squawk_map.value(squawk);
         if (v) {
@@ -175,8 +175,13 @@ void PApx::process_downlink(QByteArray packet)
             trace()->data(stream.payload());
             request_ident_schedule(squawk);
         }
-    } break;
+        return;
     }
+    }
+
+    // is not vehicle wrapped format - forward to local
+    stream.reset();
+    m_local->process_downlink(stream);
 }
 
 void PApx::request_ident_schedule(xbus::vehicle::squawk_t squawk)

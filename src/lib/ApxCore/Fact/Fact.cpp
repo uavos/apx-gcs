@@ -478,94 +478,9 @@ void Fact::setValues(const QVariantMap &values)
             f->setValue(values.value(key));
     }
 }
-QJsonValue Fact::toJson() const
-{
-    if (treeType() == Action || !visible())
-        return QJsonValue();
-    if (size() > 0) {
-        if (treeType() != NoFlags && dataType() == Count) {
-            QJsonArray array;
-            for (auto i : facts()) {
-                QJsonValue v = i->toJson();
-                if (!v.isNull())
-                    array.append(v);
-            }
-            if (array.isEmpty())
-                return QJsonValue();
-            return array;
-        }
-
-        QJsonObject obj;
-        for (auto i : facts()) {
-            QJsonValue v = i->toJson();
-            if (!v.isNull())
-                obj.insert(i->name(), v);
-        }
-        if (obj.isEmpty())
-            return QJsonValue();
-        return obj;
-    }
-
-    QJsonValue v;
-    do {
-        if (treeType() != NoFlags)
-            break;
-        if (dataType() == NoFlags || dataType() == Count || valueText().isEmpty())
-            break;
-
-        if (dataType() == Text || dataType() == Bool)
-            v = valueText();
-        else if (enumStrings().isEmpty())
-            v = QJsonValue::fromVariant(value());
-        else
-            v = valueText();
-    } while (0);
-
-    return v;
-}
 QJsonDocument Fact::toJsonDocument() const
 {
-    QJsonValue v = toJson();
-    if (v.isObject())
-        return QJsonDocument(v.toObject());
-    else if (v.isArray())
-        return QJsonDocument(v.toArray());
-    return QJsonDocument();
-}
-void Fact::fromJson(const QJsonValue json)
-{
-    if (json.isObject()) {
-        QJsonObject obj = json.toObject();
-        for (auto const i : obj.keys()) {
-            QJsonValue v = obj.value(i);
-            Fact *f = child(i);
-            if (!f) {
-                qWarning() << "missing json fact" << i << path();
-                continue;
-            }
-            if (v.isObject()) {
-                f->fromJson(v);
-                continue;
-            }
-            if (v.isArray()) {
-                f->fromJson(v);
-                continue;
-            }
-            f->setValue(v.toVariant());
-        }
-        return;
-    }
-    if (json.isArray()) {
-        // must be implemented in subclasses to create children structure from array
-        return;
-    }
-    if (size() > 0)
-        return;
-    if (treeType() != NoFlags)
-        return;
-    if (dataType() == NoFlags || dataType() == Count)
-        return;
-    setValue(json.toVariant());
+    return QJsonDocument::fromVariant(toVariant());
 }
 bool Fact::fromJsonDocument(QByteArray data)
 {
@@ -575,13 +490,92 @@ bool Fact::fromJsonDocument(QByteArray data)
         apxMsgW() << err.errorString();
         return false;
     }
-    if (json.isObject())
-        fromJson(json.object());
-    else if (json.isArray())
-        fromJson(json.array());
-    else
-        return false;
-    return true;
+    if (json.isObject() || json.isArray()) {
+        fromVariant(json.toVariant());
+        return true;
+    }
+    return false;
+}
+
+QVariant Fact::toVariant() const
+{
+    if (treeType() == Action || !visible())
+        return {};
+    if (size() > 0) {
+        if (treeType() != NoFlags && dataType() == Count) {
+            QVariantList a;
+            for (auto i : facts()) {
+                QVariant v = i->toVariant();
+                if (!v.isNull())
+                    a.append(v);
+            }
+            if (a.isEmpty())
+                return {};
+            return a;
+        }
+
+        QVariantMap h;
+        for (auto i : facts()) {
+            QVariant v = i->toVariant();
+            if (!v.isNull())
+                h.insert(i->name(), v);
+        }
+        if (h.isEmpty())
+            return {};
+        return h;
+    }
+
+    QVariant v;
+    do {
+        if (treeType() != NoFlags)
+            break;
+        if (dataType() == NoFlags || dataType() == Count || valueText().isEmpty())
+            break;
+
+        if (dataType() == Text || dataType() == Bool)
+            v = valueText();
+        else if (enumStrings().isEmpty())
+            v = value();
+        else
+            v = valueText();
+    } while (0);
+
+    return v;
+}
+void Fact::fromVariant(const QVariant &var)
+{
+    if (var.canConvert(QMetaType::QVariantMap)) {
+        auto iterable = var.value<QAssociativeIterable>();
+        for (auto it = iterable.begin(); it != iterable.end(); ++it) {
+            Fact *f = child(it.key().toString());
+            if (!f) {
+                qWarning() << "missing json fact" << it.key() << path();
+                continue;
+            }
+            const QVariant &v = it.value();
+            if (v.canConvert(QMetaType::QVariantMap)) {
+                f->fromVariant(v);
+                continue;
+            }
+            if (v.canConvert(QMetaType::QVariantList)) {
+                f->fromVariant(v);
+                continue;
+            }
+            f->setValue(v);
+        }
+        return;
+    }
+    if (var.canConvert(QMetaType::QVariantList)) {
+        // must be implemented in subclasses to create children structure from array
+        return;
+    }
+    if (size() > 0)
+        return;
+    if (treeType() != NoFlags)
+        return;
+    if (dataType() == NoFlags || dataType() == Count)
+        return;
+    setValue(var);
 }
 //=============================================================================
 Fact *Fact::mandala() const

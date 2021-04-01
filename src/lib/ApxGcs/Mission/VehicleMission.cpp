@@ -274,70 +274,69 @@ void VehicleMission::clearMission()
     App::jsync(this);
 }
 
-QJsonValue VehicleMission::toJson() const
+QVariant VehicleMission::toVariant() const
 {
-    QJsonObject json = Fact::toJson().toObject();
+    auto h = Fact::toVariant().value<QVariantMap>();
 
-    json.insert("format", MISSION_FORMAT);
-    json.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
-    json.insert("version", App::version());
+    h.insert("format", MISSION_FORMAT);
+    h.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    h.insert("version", App::version());
 
-    json.insert("title", json[f_title->name()]);
-    json.remove(f_title->name());
+    h.insert("title", h.value(f_title->name()));
+    h.remove(f_title->name());
 
     if (!site().isEmpty())
-        json.insert("site", site());
+        h.insert("site", site());
 
     QGeoCoordinate c = coordinate();
-    json.insert("lat", c.latitude());
-    json.insert("lon", c.longitude());
+    h.insert("lat", c.latitude());
+    h.insert("lon", c.longitude());
 
     QString title = f_title->text().simplified();
     if (vehicle->isIdentified()) {
         QString s = vehicle->title();
-        json.insert("callsign", s);
+        h.insert("callsign", s);
         title.remove(s, Qt::CaseInsensitive);
     }
     if (f_runways->size() > 0) {
         QString s = f_runways->child(0)->text();
-        json.insert("runway", s);
+        h.insert("runway", s);
         title.remove(s, Qt::CaseInsensitive);
     }
     title.replace('-', ' ');
     title.replace('_', ' ');
     title = title.simplified();
-    f_title->setValue(title);
 
     //details
     QGeoRectangle rect = boundingGeoRectangle();
-    json.insert("topLeftLat", rect.topLeft().latitude());
-    json.insert("topLeftLon", rect.topLeft().longitude());
-    json.insert("bottomRightLat", rect.bottomRight().latitude());
-    json.insert("bottomRightLon", rect.bottomRight().longitude());
-    json.insert("distance", (qint64) f_waypoints->distance());
+    h.insert("topLeftLat", rect.topLeft().latitude());
+    h.insert("topLeftLon", rect.topLeft().longitude());
+    h.insert("bottomRightLat", rect.bottomRight().latitude());
+    h.insert("bottomRightLon", rect.bottomRight().longitude());
+    h.insert("distance", f_waypoints->distance());
 
     //generate hash
-    QCryptographicHash h(QCryptographicHash::Sha1);
-    h.addData(QJsonDocument(json.value("rw").toArray()).toJson(QJsonDocument::Compact));
-    h.addData(QJsonDocument(json.value("wp").toArray()).toJson(QJsonDocument::Compact));
-    h.addData(QJsonDocument(json.value("tw").toArray()).toJson(QJsonDocument::Compact));
-    h.addData(QJsonDocument(json.value("pi").toArray()).toJson(QJsonDocument::Compact));
-    QString hash = h.result().toHex().toUpper();
-    json.insert("hash", hash);
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    hash.addData(QJsonDocument::fromVariant(h.value("rw")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(h.value("wp")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(h.value("tw")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(h.value("pi")).toJson(QJsonDocument::Compact));
+    h.insert("hash", hash.result().toHex().toUpper());
 
-    return json;
+    return h;
 }
-void VehicleMission::fromJson(const QJsonValue json)
+void VehicleMission::fromVariant(const QVariant &var)
 {
     clearMission();
 
-    setSite(json["site"].toString());
+    auto m = var.value<QVariantMap>();
+    setSite(m.value("site").toString());
 
-    f_title->setValue(json["title"].toString());
+    f_title->setValue(m.value("title").toString());
 
     blockSizeUpdate = true;
     for (auto i : groups) {
-        i->fromJson(json[i->name()]);
+        i->fromVariant(m.value(i->name()));
     }
     blockSizeUpdate = false;
 
@@ -368,12 +367,12 @@ void VehicleMission::test(int n)
     }
 }
 
-void VehicleMission::missionReceived(QJsonValue json)
+void VehicleMission::missionReceived(QVariant var)
 {
     clearMission();
     //qDebug() << json;
 
-    fromJson(json);
+    fromVariant(var);
 
     if (empty()) {
         vehicle->message(tr("Empty mission received from vehicle"), AppNotify::Warning);
@@ -391,7 +390,7 @@ void VehicleMission::uploadMission()
 {
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
     // vehicle->protocol()->mission->setActive(true);
-    vehicle->protocol()->mission()->updateMission(toJson());
+    vehicle->protocol()->mission()->updateMission(toVariant());
     f_save->trigger();
 }
 void VehicleMission::downloadMission()

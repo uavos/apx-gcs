@@ -74,8 +74,6 @@ public:
 
     QTimer telemetryReqTimer;
 
-    quint64 dbKey{0}; //from db
-
     QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
     QString confTitle() const;
 
@@ -86,6 +84,9 @@ public:
 
     QString uid() const { return _protocol ? _protocol->uid() : QString(); }
     PVehicle *protocol() const { return _protocol; }
+
+    //Fact override
+    QVariant toVariant() const override;
 
 private:
     PVehicle *_protocol;
@@ -111,8 +112,6 @@ private slots:
     void updateCoordinate();
     void updateFlightState();
     void updateGeoPath();
-
-    void dbSetVehicleKey(quint64 key);
 
 private slots:
     void updateActive();

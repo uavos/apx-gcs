@@ -150,23 +150,23 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
         descr.append("LOADER");
     _node->setDescr(descr.join(' '));
 
-    QJsonObject json;
-    json.insert("uid", _node->uid());
-    json.insert("name", sname);
-    json.insert("version", sversion);
-    json.insert("hardware", shardware);
-    json.insert("hash", (qint64) ident.hash);
-    json.insert("format", (qint64) ident.format);
+    QVariantMap m;
+    m.insert("uid", _node->uid());
+    m.insert("name", sname);
+    m.insert("version", sversion);
+    m.insert("hardware", shardware);
+    m.insert("hash", ident.hash);
+    m.insert("format", ident.format);
 
-    json.insert("reconf", ident.flags.bits.reconf ? true : false);
-    json.insert("busy", ident.flags.bits.busy ? true : false);
+    m.insert("reconf", ident.flags.bits.reconf ? true : false);
+    m.insert("busy", ident.flags.bits.busy ? true : false);
 
-    QJsonArray array;
+    QVariantList array;
     for (auto i : fnames)
         array.append(i);
-    json.insert("files", array);
+    m.insert("files", array);
 
-    _node->identReceived(json);
+    _node->identReceived(m);
 
     return true;
 }
