@@ -37,7 +37,7 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
 {
     // store ident to parse dict
     connect(this, &PNode::identReceived, this, [this](QVariantMap ident) {
-        _dict_hash = ident.value("hash").value<xbus::node::hash_t>();
+        _dict_hash = ident.value("hash").toString();
     });
 }
 
@@ -259,6 +259,11 @@ bool PApxNode::find_field(QString name,
     return true;
 }
 
+QString PApxNode::hashToText(xbus::node::hash_t hash)
+{
+    return QString("%1").arg(hash, sizeof(hash) * 2, 16, QChar('0')).toUpper();
+}
+
 void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
 {
     PStreamReader stream(data);
@@ -268,6 +273,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
+    _field_units.clear();
 
     _values.clear();
     _script_value = {};
@@ -275,9 +281,9 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
 
     do {
         // check node hash
-        if (info.hash != _dict_hash) {
-            qWarning() << "node hash error:" << QString::number(info.hash, 16)
-                       << QString::number(_dict_hash, 16);
+        QString hash = hashToText(info.hash);
+        if (hash != _dict_hash) {
+            qWarning() << "node hash error:" << hash << _dict_hash;
             break;
         }
 
@@ -295,12 +301,14 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
             auto array = stream.read<uint8_t>();
 
             field.insert("type", type);
-            field.insert("array", array);
+
+            if (array > 0)
+                field.insert("array", array);
 
             uint8_t group = stream.read<uint8_t>();
 
             QStringList st;
-            QString name, title;
+            QString name, title, units;
 
             bool is_writable = false;
 
@@ -327,8 +335,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
                     break;
                 //qDebug() << "field" << field.insert(type << field.insert(array << field.insert(group << st;
                 name = st.at(0);
-                if (!st.at(1).isEmpty())
-                    field.insert("units", st.at(1));
+                units = st.at(1);
                 is_writable = true;
             }
             if (name.isEmpty())
@@ -340,6 +347,13 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
             if (title.isEmpty())
                 title = name;
             field.insert("title", title);
+
+            if (units.isEmpty() && type_id == xbus::node::conf::option) {
+                units = "off,on";
+            }
+
+            if (!units.isEmpty())
+                field.insert("units", units);
 
             // guess path prepended with groups
             QStringList path;
@@ -366,6 +380,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
                 _field_types.append(type_id);
                 _field_names.append(name);
                 _field_arrays.append(array);
+                _field_units.append(units);
             }
 
             //qDebug() << field << st << stream.available();
@@ -383,6 +398,7 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
         _field_types.clear();
         _field_names.clear();
         _field_arrays.clear();
+        _field_units.clear();
         return;
     }
     qDebug() << "dict parsed";
@@ -415,12 +431,13 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
         size_t pos_s = stream.pos();
 
         // read and check prepended hash
-        xbus::node::hash_t hash;
-        stream >> hash;
+        xbus::node::hash_t vhash;
+        stream >> vhash;
+
+        auto hash = hashToText(vhash);
 
         if (hash != _dict_hash) {
-            qWarning() << "data hash error:" << QString::number(hash, 16)
-                       << QString::number(_dict_hash, 16);
+            qWarning() << "data hash error:" << hash << _dict_hash;
             break;
         }
 
@@ -455,12 +472,16 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
                     QVariant v = read_param(stream, type);
                     if (!v.isValid())
                         break;
+                    if (type == xbus::node::conf::option)
+                        v = optionToText(v, fidx);
                     list.append(v);
                 }
                 if (list.size() == array)
-                    value = QVariant::fromValue(list);
+                    value = list;
             } else {
                 value = read_param(stream, type);
+                if (type == xbus::node::conf::option)
+                    value = optionToText(value, fidx);
             }
 
             //qDebug() << v << stream.pos() << stream.available();
@@ -589,6 +610,23 @@ bool PApxNode::write_param(PStreamWriter &stream, xbus::node::conf::type_e type,
         return ::_write_param<xbus::node::conf::script_t>(stream, value);
     }
     return false;
+}
+
+QVariant PApxNode::optionToText(QVariant value, size_t fidx)
+{
+    auto v = value.value<xbus::node::conf::option_t>();
+    auto units = _field_units.value(fidx).split(',');
+    return units.value(v, value.toString());
+}
+QVariant PApxNode::textToOption(QVariant value, size_t fidx)
+{
+    auto s = value.toString();
+    auto units = _field_units.value(fidx).split(',');
+    if (units.contains(s)) {
+        xbus::node::conf::option_t opt = units.indexOf(s);
+        return opt;
+    }
+    return value;
 }
 
 void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)

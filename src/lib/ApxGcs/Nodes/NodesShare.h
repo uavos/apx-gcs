@@ -19,28 +19,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "VehicleStorage.h"
-#include "Vehicle.h"
+#pragma once
 
-#include <Database/VehiclesReqVehicle.h>
+#include <Fact/Fact.h>
+#include <Sharing/Share.h>
+#include <QtCore>
 
-VehicleStorage::VehicleStorage(Vehicle *vehicle)
-    : QObject(vehicle)
-    , _vehicle(vehicle)
-{}
+class Nodes;
 
-void VehicleStorage::saveVehicleInfo()
+class NodesShare : public Share
 {
-    auto m = _vehicle->toVariant().value<QVariantMap>();
-    if (m.isEmpty())
-        return;
+    Q_OBJECT
 
-    auto *req = new DBReqSaveVehicleInfo(m);
-    connect(
-        req,
-        &DBReqSaveVehicleInfo::foundID,
-        this,
-        [this](quint64 key) { _dbKey = key; },
-        Qt::QueuedConnection);
-    req->exec();
-}
+public:
+    explicit NodesShare(Nodes *nodes, Fact *parent, FactBase::Flags flags = FactBase::Flags(Action));
+
+private:
+    Nodes *_nodes;
+
+    QString getDefaultTitle() override;
+    bool exportRequest(QString format, QString fileName) override;
+    bool importRequest(QString format, QString fileName) override;
+};

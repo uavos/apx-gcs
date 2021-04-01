@@ -57,6 +57,10 @@ public:
     void file_uploaded(QString name);
 
     static QByteArray pack_script(QVariant value);
+    static QString hashToText(xbus::node::hash_t hash);
+
+    QVariant optionToText(QVariant value, size_t fidx);
+    QVariant textToOption(QVariant value, size_t fidx);
 
 private:
     PApxNodes *_nodes;
@@ -66,10 +70,11 @@ private:
     QMap<QString, PApxNodeFile *> _files_map;
 
     // stored dict
-    xbus::node::hash_t _dict_hash{};
+    QString _dict_hash;
     QList<xbus::node::conf::type_e> _field_types;
     QList<size_t> _field_arrays;
     QStringList _field_names;
+    QStringList _field_units;
 
     QVariantMap _values;
     xbus::node::conf::script_t _script_value{};

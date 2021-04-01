@@ -25,6 +25,7 @@
 #include <Vehicles/Vehicle.h>
 
 #include "NodeItem.h"
+#include "NodesShare.h"
 
 class Vehicle;
 class LookupConfigs;
@@ -49,7 +50,7 @@ public:
     Fact *f_save;
 
     //LookupConfigs *f_lookup;
-    //NodesShare *f_share;
+    NodesShare *f_share;
 
     NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
     QList<NodeItem *> nodes() { return m_sn_map.values(); }
@@ -59,6 +60,8 @@ public:
     Q_INVOKABLE void shell(QStringList commands);
 
     bool valid() const { return m_valid; }
+
+    QString getConfigTitle();
 
 private:
     PNodes *_protocol;

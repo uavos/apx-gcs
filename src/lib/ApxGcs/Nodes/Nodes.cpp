@@ -28,6 +28,8 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
+#include <algorithm>
+
 // #include "LookupConfigs.h"
 
 Nodes::Nodes(Vehicle *vehicle)
@@ -77,7 +79,7 @@ Nodes::Nodes(Vehicle *vehicle)
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
 
-    //FIXME: share f_share = new NodesShare(this, this);
+    f_share = new NodesShare(this, this);
 
     foreach (FactBase *a, actions()) {
         a->setOption(IconOnly);
@@ -88,6 +90,7 @@ Nodes::Nodes(Vehicle *vehicle)
     connect(this, &Fact::modifiedChanged, &_updateActions, &DelayedEvent::schedule);
     if (_protocol) {
         connect(_protocol, &PNodes::busyChanged, &_updateActions, &DelayedEvent::schedule);
+        connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
     }
 
     updateActions();
@@ -103,8 +106,6 @@ Nodes::Nodes(Vehicle *vehicle)
     if (vehicle->isIdentified()) {
         protocol->requestSearch();
     }*/
-
-    connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
 
     connect(this, &Fact::triggered, this, &Nodes::search);
 
@@ -254,4 +255,43 @@ void Nodes::shell(QStringList commands)
     for (auto i : nodes()) {
         i->shell(commands);
     }
+}
+
+QString Nodes::getConfigTitle()
+{
+    QMap<QString, QString> map, shiva;
+
+    for (auto node : nodes()) {
+        auto s = node->valueText();
+        if (s.isEmpty())
+            continue;
+        map.insert(node->title(), s);
+        for (auto field : node->fields()) {
+            if (field->name() != "shiva")
+                continue;
+            shiva.insert(node->title(), s);
+            break;
+        }
+    }
+    if (map.isEmpty())
+        return {};
+    if (!shiva.isEmpty())
+        map = shiva;
+
+    QString s;
+    s = map.value("nav");
+    if (!s.isEmpty())
+        return s;
+    s = map.value("com");
+    if (!s.isEmpty())
+        return s;
+    s = map.value("ifc");
+    if (!s.isEmpty())
+        return s;
+
+    auto st = map.values();
+    std::sort(st.begin(), st.end(), [](const auto &s1, const auto &s2) {
+        return s1.size() > s2.size();
+    });
+    return st.first();
 }

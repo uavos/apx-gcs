@@ -91,11 +91,9 @@ void NodesFrame::vehicleSelected(Vehicle *v)
 
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
 
-    /* FIXME: share
     QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
     toolBar->addAction(aShare);
     connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
-*/
 
     aUndo = toolBar->addAction(MaterialIcon("undo"),
                                tr("Revert"),

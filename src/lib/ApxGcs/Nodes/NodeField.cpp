@@ -38,18 +38,18 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
     setName(_fpath.split('.').last());
     setTitle(m.value("title").toString());
 
-    QString funits = m.value("units").toString();
+    auto funits = m.value("units").toString();
     _array = m.value("array").toInt();
 
     new NodeViewActions(this, node->nodes());
 
     if (_array && !arrayParent) {
         // create array sub fields
-        QStringList st = funits.split(',');
-        if (st.size() != _array)
+        auto st = funits.split(',');
+        if (st.size() != _array || _type == "option")
             st.clear();
         for (auto i = 0; i < _array; ++i) {
-            QVariantMap item = m;
+            auto item = m;
             QString s;
             if (st.isEmpty())
                 s = QString::number(i + 1);
@@ -60,7 +60,7 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
             item.insert("name", QString("%1_%2").arg(_fpath).arg(s.toLower()));
             item.insert("title", s);
             item.insert("array", i);
-            NodeField *f = new NodeField(this, node, item, id, this);
+            auto *f = new NodeField(this, node, item, id, this);
             connect(f,
                     &Fact::valueChanged,
                     this,
@@ -95,12 +95,7 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
         setUnits("mandala");
     } else if (_type == "option") {
         setDataType(Enum);
-        if (funits.isEmpty()) {
-            setEnumStrings(QStringList() << "off"
-                                         << "on");
-        } else {
-            setEnumStrings(funits.split(','));
-        }
+        setEnumStrings(funits.split(','));
         setUnits(QString());
     } else if (_type == "text" || _type == "string") {
         setDataType(Text);
@@ -142,45 +137,6 @@ void NodeField::updateArrayStatus()
         setValue(QString("[%1]").arg(size()));
 }
 
-QVariant NodeField::confValue(void) const
-{
-    if (size() > 0) {
-        //expanded field
-        QVariantList list;
-        for (auto i : facts()) {
-            list.append(static_cast<NodeField *>(i)->confValue());
-        }
-        return list;
-    }
-
-    if (_type == "real")
-        return QString::number(value().toFloat());
-
-    return value();
-}
-void NodeField::setConfValue(QVariant v)
-{
-    bool isList = _check_type(v, QMetaType::QVariantList);
-    if (size() > 0) {
-        //expanded field - i.e. array
-        if (isList) {
-            const QVariantList &values = v.value<QVariantList>();
-            if (values.size() > size())
-                return;
-            for (int i = 0; i < values.size(); ++i) {
-                static_cast<NodeField *>(child(i))->setConfValue(values.at(i));
-            }
-            return;
-        }
-        qWarning() << path() << v;
-        return;
-    }
-    if (_type == "real")
-        v = QString::number(v.toFloat());
-
-    setValue(v);
-}
-
 QString NodeField::toolTip() const
 {
     if (!_help.isEmpty()) {
@@ -193,4 +149,48 @@ QString NodeField::toText(const QVariant &v) const
     if (_type == "script")
         return QString();
     return Fact::toText(v);
+}
+
+QVariant NodeField::toVariant() const
+{
+    if (size() > 0) {
+        //expanded field
+        QVariantList list;
+        for (auto i : facts()) {
+            list.append(static_cast<NodeField *>(i)->toVariant());
+        }
+        return list;
+    }
+
+    if (_type == "script")
+        return value();
+
+    if (_type == "real")
+        return QString::number(value().toFloat());
+
+    return valueText();
+}
+void NodeField::fromVariant(const QVariant &var)
+{
+    if (size() > 0) {
+        //expanded field - i.e. array
+        if (var.canConvert<QVariantList>()) {
+            QVariantList values = var.value<QVariantList>();
+            for (int i = 0; i < values.size(); ++i) {
+                if (i >= size())
+                    break;
+                child(i)->fromVariant(values.at(i));
+            }
+            return;
+        }
+        qWarning() << path() << var;
+        return;
+    }
+
+    if (_type == "real") {
+        setValue(QString::number(var.toFloat()));
+        return;
+    }
+
+    setValue(var);
 }

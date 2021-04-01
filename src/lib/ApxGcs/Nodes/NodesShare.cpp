@@ -19,28 +19,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "VehicleStorage.h"
-#include "Vehicle.h"
+#include "NodesShare.h"
+#include "Nodes.h"
 
-#include <Database/VehiclesReqVehicle.h>
+#include <App/AppDirs.h>
+#include <App/AppLog.h>
 
-VehicleStorage::VehicleStorage(Vehicle *vehicle)
-    : QObject(vehicle)
-    , _vehicle(vehicle)
+NodesShare::NodesShare(Nodes *nodes, Fact *parent, Flags flags)
+    : Share(parent, "nodes", tr("Nodes"), AppDirs::configs(), flags)
+    , _nodes(nodes)
 {}
 
-void VehicleStorage::saveVehicleInfo()
+QString NodesShare::getDefaultTitle()
 {
-    auto m = _vehicle->toVariant().value<QVariantMap>();
-    if (m.isEmpty())
-        return;
-
-    auto *req = new DBReqSaveVehicleInfo(m);
-    connect(
-        req,
-        &DBReqSaveVehicleInfo::foundID,
-        this,
-        [this](quint64 key) { _dbKey = key; },
-        Qt::QueuedConnection);
-    req->exec();
+    QStringList st;
+    st << _nodes->vehicle->title();
+    st << _nodes->getConfigTitle();
+    return st.join('-');
+}
+bool NodesShare::exportRequest(QString format, QString fileName)
+{
+    if (!saveData(_nodes->toJsonDocument().toJson(), fileName))
+        return false;
+    _exported(fileName);
+    return true;
+}
+bool NodesShare::importRequest(QString format, QString fileName)
+{
+    if (!_nodes->fromJsonDocument(loadData(fileName)))
+        return false;
+    _imported(fileName);
+    return true;
 }

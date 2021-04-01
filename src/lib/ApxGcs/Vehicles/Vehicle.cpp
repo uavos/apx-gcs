@@ -38,6 +38,8 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 {
     setSection(vehicles->title());
 
+    _storage = new VehicleStorage(this);
+
     if (protocol) {
         bindProperty(protocol, "title", true);
         bindProperty(protocol, "value", true);
@@ -116,7 +118,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 &Vehicle::updateGeoPath,
                 Qt::QueuedConnection);
 
-        //mandala update signals
+        // mandala update
         connect(f_mandala, &Mandala::sendValue, protocol->data(), &PData::sendValue);
         connect(protocol->data(), &PData::valuesData, f_mandala, &Mandala::valuesData);
 
@@ -129,7 +131,12 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
         connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
-        //recorder
+        // storage
+        connect(this, &Vehicle::titleChanged, _storage, &VehicleStorage::saveVehicleInfo);
+        connect(this, &Vehicle::isGroundControlChanged, _storage, &VehicleStorage::saveVehicleInfo);
+        _storage->saveVehicleInfo();
+
+        // recorder
         //FIXME: XPDR
         //connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
 
@@ -364,7 +371,7 @@ QString Vehicle::fileTitle() const
 QString Vehicle::confTitle() const
 {
     //if (protocol()->nodes->size() <= 0)
-    return QString();
+    //return QString();
 
     QMap<QString, QString> byName;
     QString shiva;

@@ -155,7 +155,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     m.insert("name", sname);
     m.insert("version", sversion);
     m.insert("hardware", shardware);
-    m.insert("hash", ident.hash);
+    m.insert("hash", _node->hashToText(ident.hash));
     m.insert("format", ident.format);
 
     m.insert("reconf", ident.flags.bits.reconf ? true : false);
@@ -193,6 +193,8 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
     trace()->block(QString::number(_fid & 0xFF));
 
     QVariant value = _values.value(name);
+    if (type == xbus::node::conf::option)
+        value = _node->textToOption(value, _fid >> 8);
     _node->write_param(req, type, value);
     trace()->block(value.toString());
 

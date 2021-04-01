@@ -23,24 +23,51 @@
 
 #include "VehiclesDB.h"
 
-class DBReqSaveVehicleInfo : public DBReqVehicles
+class DBReqVehiclesNode : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqSaveVehicleInfo(QVariantMap info)
+    explicit DBReqVehiclesNode(QString uid)
         : DBReqVehicles()
+        , _uid(uid)
+    {}
+
+    virtual bool run(QSqlQuery &query) override;
+
+    quint64 nodeID{};
+
+protected:
+    QString _uid;
+
+signals:
+    void foundID(quint64 key);
+};
+
+class DBReqVehiclesSaveNodeInfo : public DBReqVehiclesNode
+{
+    Q_OBJECT
+public:
+    explicit DBReqVehiclesSaveNodeInfo(QVariantMap info)
+        : DBReqVehiclesNode(info.value("uid").toString())
         , info(info)
-        , t(QDateTime::currentDateTime().toMSecsSinceEpoch())
     {}
 
     bool run(QSqlQuery &query) override;
 
-    quint64 vehicleID{};
-
 private:
     QVariantMap info;
-    quint64 t;
+};
+
+class DBReqVehiclesLoadNodeInfo : public DBReqVehiclesNode
+{
+    Q_OBJECT
+public:
+    explicit DBReqVehiclesLoadNodeInfo(QString uid)
+        : DBReqVehiclesNode(uid)
+    {}
+
+    bool run(QSqlQuery &query) override;
 
 signals:
-    void foundID(quint64 key);
+    void infoLoaded(QVariantMap info);
 };

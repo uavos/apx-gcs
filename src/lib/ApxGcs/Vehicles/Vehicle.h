@@ -29,6 +29,7 @@
 #include <Fact/Fact.h>
 #include <Mandala/Mandala.h>
 
+#include "VehicleStorage.h"
 #include "Vehicles.h"
 
 class Vehicles;
@@ -90,6 +91,7 @@ public:
 
 private:
     PVehicle *_protocol;
+    VehicleStorage *_storage;
 
     QTimer updateInfoTimer;
 

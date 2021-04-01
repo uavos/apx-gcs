@@ -28,7 +28,7 @@
 
 #include <App/AppNotify.h>
 
-#include <QtCore>
+#include "NodeStorage.h"
 
 class Nodes;
 
@@ -42,16 +42,28 @@ public:
 
     NodeTools *tools;
 
-    const QList<NodeField *> &fields() const { return m_fields; }
-    Nodes *nodes() const { return _nodes; }
-    PNode *protocol() const { return _protocol; }
-    bool valid() const { return m_valid; }
+    auto uid() const { return _protocol ? _protocol->uid() : _ident.value("uid").toString(); }
+    auto protocol() const { return _protocol; }
+
+    auto const &fields() const { return m_fields; }
+    auto nodes() const { return _nodes; }
+    auto valid() const { return m_valid; }
+    auto ident() const { return _ident; }
 
     bool loadConfigValue(const QString &name, const QString &value);
 
     Q_INVOKABLE void message(QString msg,
                              AppNotify::NotifyFlags flags = AppNotify::FromVehicle
                                                             | AppNotify::Important);
+
+    // variant conversions
+    QVariant get_info() const;
+    QVariant get_dict() const;
+    QVariant get_values() const;
+
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
 protected:
     QTimer statusTimer;
@@ -62,8 +74,10 @@ protected:
 private:
     Nodes *_nodes;
     PNode *_protocol;
+    NodeStorage *_storage;
 
     QVariantMap _ident;
+    QVariantList _dict;
 
     QList<NodeField *> m_fields;
 
@@ -83,8 +97,6 @@ private:
 
 private slots:
     void validateData();
-
-    void updateDescr();
     void updateStatus();
 
 public slots:
@@ -92,7 +104,6 @@ public slots:
     void clear();
 
     //protocols:
-private slots:
     void identReceived(QVariantMap ident);
     void dictReceived(QVariantList dict);
     void confReceived(QVariantMap values);

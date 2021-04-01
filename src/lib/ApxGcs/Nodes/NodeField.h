@@ -38,23 +38,25 @@ public:
     explicit NodeField(
         Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent = nullptr);
 
-    QVariant confValue(void) const;
-    void setConfValue(QVariant v);
-
     //Fact override
     virtual QString toolTip() const override;
     virtual QString toText(const QVariant &v) const override;
 
     inline void setHelp(const QString &s) { _help = s; }
-    inline QString fpath() const { return _fpath; }
-    inline QString type() const { return _type; }
+    inline auto fpath() const { return _fpath; }
+    inline auto type() const { return _type; }
+    inline auto array() const { return _array; }
+
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
 private:
     NodeItem *_node;
 
     QString _type;
     size_t _id;
-    size_t _array; // array index
+    int _array; // array index or array size
 
     QString _fpath;
     QString _help;

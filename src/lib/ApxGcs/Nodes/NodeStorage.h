@@ -19,28 +19,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "VehicleStorage.h"
-#include "Vehicle.h"
+#pragma once
 
-#include <Database/VehiclesReqVehicle.h>
+#include <QtCore>
 
-VehicleStorage::VehicleStorage(Vehicle *vehicle)
-    : QObject(vehicle)
-    , _vehicle(vehicle)
-{}
+class NodeItem;
 
-void VehicleStorage::saveVehicleInfo()
+class NodeStorage : public QObject
 {
-    auto m = _vehicle->toVariant().value<QVariantMap>();
-    if (m.isEmpty())
-        return;
+    Q_OBJECT
+public:
+    explicit NodeStorage(NodeItem *node);
 
-    auto *req = new DBReqSaveVehicleInfo(m);
-    connect(
-        req,
-        &DBReqSaveVehicleInfo::foundID,
-        this,
-        [this](quint64 key) { _dbKey = key; },
-        Qt::QueuedConnection);
-    req->exec();
-}
+private:
+    NodeItem *_node;
+    quint64 _dbKey{}; //from db
+
+private slots:
+    void foundID(quint64 key);
+    void infoLoaded(QVariantMap info);
+
+public slots:
+    void saveNodeInfo();
+    void loadNodeInfo();
+};
