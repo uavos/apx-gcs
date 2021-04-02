@@ -127,6 +127,9 @@ private:
     quint64 _time;
 
     quint64 getValueID(QSqlQuery &query, const QVariant &v);
+
+signals:
+    void configSaved(quint64 configID);
 };
 
 class DBReqLoadNodeConfig : public DBReqNode

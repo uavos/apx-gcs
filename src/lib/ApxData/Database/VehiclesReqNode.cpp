@@ -48,17 +48,12 @@ bool DBReqSaveNodeInfo::run(QSqlQuery &query)
         nodeID = query.lastInsertId().toULongLong();
         qDebug() << "new node" << _info.value("name").toString();
         emit foundID(nodeID);
-    } else {
-        //node already registered
-        //qDebug()<<"node exists"<<info.value("name").toString();
-        if (_info.value("time").toULongLong() <= query.value("time").toULongLong()) {
-            //info["time"]=query.value("time"); //imported
-            return true; //no updates
-        }
     }
+
     //set time to null on never seen nodes
     if (!_info.value("time").toULongLong())
         _info.remove("time");
+
     //uptime node info
     query.prepare("UPDATE Nodes SET time=?, name=?, version=?, hardware=? WHERE key=?");
     query.addBindValue(_info.value("time"));
@@ -68,6 +63,53 @@ bool DBReqSaveNodeInfo::run(QSqlQuery &query)
     query.addBindValue(nodeID);
     if (!query.exec())
         return false;
+
+    // update node user
+    auto time = _info.value("time").toULongLong();
+    if (!time)
+        return true;
+
+    auto user = _info.value("user").value<QVariantMap>();
+
+    // find existing record
+    query.prepare("SELECT * FROM NodeUsers WHERE nodeID=?");
+    query.addBindValue(nodeID);
+    if (!query.exec())
+        return false;
+    if (query.next()) {
+        //update record
+        auto key = query.value(0).toULongLong();
+        if (time <= query.value("time").toULongLong())
+            return true; //imported
+
+        query.prepare("UPDATE NodeUsers"
+                      " SET time=?,machineUID=?,hostname=?,username=?"
+                      " WHERE key=?");
+        query.addBindValue(time);
+        query.addBindValue(user.value("machineUID"));
+        query.addBindValue(user.value("hostname"));
+        query.addBindValue(user.value("username"));
+        query.addBindValue(key);
+        if (!query.exec())
+            return false;
+        //qDebug()<<"node user exists";
+        return true;
+    }
+    //register user for node
+    query.prepare("INSERT INTO NodeUsers"
+                  "(nodeID,time,firstTime,machineUID,hostname,username)"
+                  " VALUES(?,?,?,?,?,?)");
+    query.addBindValue(nodeID);
+    query.addBindValue(time);
+    query.addBindValue(time);
+    query.addBindValue(user.value("machineUID"));
+    query.addBindValue(user.value("hostname"));
+    query.addBindValue(user.value("username"));
+    if (!query.exec())
+        return false;
+    qDebug() << "new node user" << user.value("username").toString()
+             << user.value("hostname").toString();
+
     return true;
 }
 
@@ -271,8 +313,10 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
     if (!DBReqNode::run(query))
         return false;
 
-    if (!nodeID)
+    if (!nodeID) {
+        qWarning() << "no node in db";
         return false;
+    }
 
     query.prepare("SELECT * FROM NodeDicts "
                   "WHERE nodeID=? AND hash=? "
@@ -333,8 +377,10 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
             query.addBindValue(nconfHistoryID);
             if (!query.exec())
                 return false;
+            qDebug() << "config exists" << title;
             //all ok
             emit dbModified();
+            emit configSaved(nconfID);
             return true;
         }
         //continue to new history record
@@ -425,7 +471,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
             }
         }
         if (dcnt <= 0) {
-            qWarning() << "nothing to save";
+            qWarning() << "nothing to save" << title;
             return false;
         }
         qDebug() << "node config created" << title;
@@ -442,6 +488,8 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
     emit dbModified();
 
     qDebug() << "node config updated" << title;
+
+    emit configSaved(nconfID);
     return true;
 }
 quint64 DBReqSaveNodeConfig::getValueID(QSqlQuery &query, const QVariant &v)

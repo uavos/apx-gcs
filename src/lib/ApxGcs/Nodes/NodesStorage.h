@@ -19,29 +19,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef NodesShare_H
-#define NodesShare_H
-//=============================================================================
-#include <Fact/Fact.h>
-#include <Sharing/Share.h>
+#pragma once
+
 #include <QtCore>
 
 class Nodes;
-//=============================================================================
-class NodesShare : public Share
+
+class NodesStorage : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit NodesShare(Nodes *nodes, Fact *parent);
+    explicit NodesStorage(Nodes *nodes);
 
 private:
-    Nodes *nodes;
+    Nodes *_nodes;
 
-protected:
-    QString defaultExportFileName() const;
-    ShareXmlExport *exportRequest(QString title, QString fileName);
-    ShareXmlImport *importRequest(QString title, QString fileName);
+public slots:
+    void saveNodesConfig();
 };
-//=============================================================================
-#endif

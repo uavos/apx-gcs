@@ -26,6 +26,7 @@
 
 #include "NodeItem.h"
 #include "NodesShare.h"
+#include "NodesStorage.h"
 
 class Vehicle;
 class LookupConfigs;
@@ -50,6 +51,7 @@ public:
     Fact *f_save;
 
     //LookupConfigs *f_lookup;
+    NodesStorage *storage;
     NodesShare *f_share;
 
     NodeItem *node(const QString &uid) const;

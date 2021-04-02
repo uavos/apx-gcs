@@ -19,34 +19,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "NodesStorage.h"
+#include "Nodes.h"
 
-#include <QtCore>
+#include <Database/VehiclesReqVehicle.h>
 
-class NodeItem;
+NodesStorage::NodesStorage(Nodes *nodes)
+    : QObject(nodes)
+    , _nodes(nodes)
+{}
 
-class NodeStorage : public QObject
+void NodesStorage::saveNodesConfig()
 {
-    Q_OBJECT
-public:
-    explicit NodeStorage(NodeItem *node);
+    qDebug() << _nodes->valid();
+    if (!_nodes->valid())
+        return;
 
-    auto configID() const { return _configID; }
+    if (_nodes->nodes().isEmpty())
+        return;
 
-private:
-    NodeItem *_node;
-    quint64 _configID{};
+    QList<quint64> nconfIDs;
+    for (auto i : _nodes->nodes()) {
+        if (!i->valid())
+            return;
+        auto nconfID = i->storage->configID();
+        if (!nconfID)
+            return;
+        nconfIDs.append(nconfID);
+    }
+    auto vuid = _nodes->vehicle->uid();
+    auto title = _nodes->getConfigTitle();
 
-private slots:
-    void updateConfigID(quint64 configID);
-
-public slots:
-    void saveNodeInfo();
-    void saveNodeDict();
-    void saveNodeConfig();
-
-    void loadNodeConfig(QString hash = QString());
-
-signals:
-    void configSaved();
-};
+    auto *req = new DBReqSaveVehicleConfig(vuid, nconfIDs, title);
+    req->exec();
+}

@@ -396,6 +396,7 @@ QVariantMap NodeItem::get_info() const
     m.insert("name", _ident.value("name"));
     m.insert("version", _ident.value("version"));
     m.insert("hardware", _ident.value("hardware"));
+    m.insert("user", _ident.value("user"));
     if (_lastSeenTime)
         m.insert("time", _lastSeenTime);
     return m;
@@ -472,10 +473,19 @@ void NodeItem::identReceived(QVariantMap ident)
     if (ident.isEmpty())
         return;
 
+    if (!ident.contains("user")) {
+        QVariantMap user;
+        user.insert("machineUID", App::machineUID());
+        user.insert("username", App::username());
+        user.insert("hostname", App::hostname());
+        ident.insert("user", user);
+    }
+
     if (_ident == ident)
         return;
 
     qWarning() << "ident updated";
+
     _ident = ident;
     clear();
 
@@ -557,7 +567,7 @@ void NodeItem::dictReceived(QVariantMap dict)
     backup();
 
     if (_protocol) {
-        if (!dict.value("cached").toBool())
+        if (!_dict.value("cached").toBool())
             storage->saveNodeDict();
         _protocol->requestConf();
     }
@@ -675,6 +685,9 @@ void NodeItem::confReceived(QVariantMap values)
 
     validateData();
     setEnabled(true);
+
+    if (_protocol)
+        storage->saveNodeConfig();
 }
 void NodeItem::confUpdated(QVariantMap values)
 {

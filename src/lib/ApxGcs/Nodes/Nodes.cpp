@@ -74,6 +74,7 @@ Nodes::Nodes(Vehicle *vehicle)
     //connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     //storage actions
+    storage = new NodesStorage(this);
     //TODO: f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
 
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
@@ -136,6 +137,7 @@ NodeItem *Nodes::add(PNode *protocol)
     m_nodes.append(node);
 
     connect(node, &NodeItem::validChanged, this, &Nodes::updateValid);
+    connect(node->storage, &NodeStorage::configSaved, storage, &NodesStorage::saveNodesConfig);
 
     updateValid();
     updateActions();
@@ -165,7 +167,7 @@ void Nodes::updateActions()
 void Nodes::updateValid()
 {
     bool v = !nodes().isEmpty();
-    for (auto i : nodes()) {
+    for (auto i : m_nodes) {
         if (i->valid())
             continue;
         v = false;
@@ -175,6 +177,10 @@ void Nodes::updateValid()
         return;
     m_valid = v;
     emit validChanged();
+
+    if (!m_valid)
+        return;
+    qDebug() << "nodes valid" << vehicle->title();
 }
 
 void Nodes::search()
@@ -349,4 +355,31 @@ void Nodes::fromVariant(const QVariant &var)
         updateActions();
         return;
     }
+
+    // import to existing nodes
+    if (!valid()) {
+        apxMsgW() << tr("Inconsistent nodes");
+        return;
+    }
+
+    // imprt by UID
+    QList<NodeItem *> nlist = m_nodes;
+    QVariantList vlist;
+    for (auto i : nodes) {
+        auto node = i.value<QVariantMap>();
+        auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
+        NodeItem *f = this->node(uid);
+        if (f) {
+            f->fromVariant(node);
+            nlist.removeOne(f);
+        } else {
+            vlist.append(node);
+        }
+    }
+    apxMsg() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
+    if (vlist.isEmpty() && nlist.isEmpty()) {
+        return;
+    }
+    // try to import by guessing nodes
+    apxConsoleW() << tr("Importing %1 nodes").arg(vlist.size());
 }

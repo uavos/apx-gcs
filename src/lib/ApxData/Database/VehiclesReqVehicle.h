@@ -44,3 +44,32 @@ private:
 signals:
     void foundID(quint64 key);
 };
+
+class DBReqSaveVehicleConfig : public DBReqVehicles
+{
+    Q_OBJECT
+public:
+    explicit DBReqSaveVehicleConfig(QString vuid,
+                                    QList<quint64> nconfIDs,
+                                    QString title,
+                                    QString notes = QString(),
+                                    quint64 time = 0)
+        : DBReqVehicles()
+        , _vuid(vuid)
+        , _nconfIDs(nconfIDs)
+        , _title(title)
+        , _notes(notes)
+        , _time(time ? time : static_cast<quint64>(QDateTime::currentDateTime().toMSecsSinceEpoch()))
+    {}
+    bool run(QSqlQuery &query);
+
+private:
+    QString _vuid;
+    QList<quint64> _nconfIDs;
+    QString _title;
+    QString _notes;
+    quint64 _time;
+
+signals:
+    void configSaved(quint64 confID);
+};
