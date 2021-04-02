@@ -76,6 +76,8 @@ private:
     QStringList _field_names;
     QStringList _field_units;
 
+    bool _skip_cache{};
+
     QVariantMap _values;
     xbus::node::conf::script_t _script_value{};
     QString _script_field;
@@ -84,7 +86,7 @@ private:
 
 protected:
     void requestIdent() override { new PApxNodeRequestIdent(this); }
-    void requestDict() override { new PApxNodeRequestFileRead(this, "dict"); }
+    void requestDict() override;
     void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
     void requestUpdate(QVariantMap values) override;
 
@@ -96,6 +98,12 @@ protected:
     }
 
 private slots:
+    void infoCacheLoaded(QVariantMap info);
+
+    void requestDictDownload() { new PApxNodeRequestFileRead(this, "dict"); }
+    void dictCacheLoaded(QVariantMap dict);
+    void dictCacheMissing(QString hash);
+
     void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
     void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);

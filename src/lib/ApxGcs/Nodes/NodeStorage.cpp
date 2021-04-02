@@ -29,44 +29,36 @@ NodeStorage::NodeStorage(NodeItem *node)
     , _node(node)
 {}
 
-void NodeStorage::foundID(quint64 key)
-{
-    _dbKey = key;
-}
-
 void NodeStorage::saveNodeInfo()
 {
-    auto m = _node->get_info().value<QVariantMap>();
-    if (m.isEmpty())
+    auto info = _node->get_info();
+    if (info.isEmpty())
         return;
 
-    auto *req = new DBReqVehiclesSaveNodeInfo(m);
-    connect(req,
-            &DBReqVehiclesSaveNodeInfo::foundID,
-            this,
-            &NodeStorage::foundID,
-            Qt::QueuedConnection);
+    auto *req = new DBReqSaveNodeInfo(info);
     req->exec();
 }
 
-void NodeStorage::loadNodeInfo()
+void NodeStorage::saveNodeDict()
 {
-    auto *req = new DBReqVehiclesLoadNodeInfo(_node->uid());
-    connect(req,
-            &DBReqVehiclesLoadNodeInfo::foundID,
-            this,
-            &NodeStorage::foundID,
-            Qt::QueuedConnection);
-    connect(req,
-            &DBReqVehiclesLoadNodeInfo::infoLoaded,
-            this,
-            &NodeStorage::infoLoaded,
-            Qt::QueuedConnection);
+    auto dict = _node->get_dict();
+    if (dict.isEmpty()) {
+        qWarning() << "no dict data";
+        return;
+    }
+
+    auto *req = new DBReqSaveNodeDict(_node->uid(), dict);
     req->exec();
 }
-void NodeStorage::infoLoaded(QVariantMap info)
+
+void NodeStorage::saveNodeConfig()
 {
-    if (!_node->ident().isEmpty())
+    auto dict = _node->get_dict();
+    if (dict.isEmpty()) {
+        qWarning() << "no dict data";
         return;
-    _node->setTitle(info.value("name").toString());
+    }
+
+    // auto *req = new DBReqSaveNodeDict(_node->uid(), dict);
+    // req->exec();
 }

@@ -57,9 +57,9 @@ public:
                                                             | AppNotify::Important);
 
     // variant conversions
-    QVariant get_info() const;
-    QVariant get_dict() const;
-    QVariant get_values() const;
+    QVariantMap get_info() const;
+    QVariantMap get_dict() const;
+    QVariantMap get_values() const;
 
     //Fact override
     QVariant toVariant() const override;
@@ -77,7 +77,7 @@ private:
     NodeStorage *_storage;
 
     QVariantMap _ident;
-    QVariantList _dict;
+    QVariantMap _dict;
 
     QList<NodeField *> m_fields;
 
@@ -107,7 +107,7 @@ public slots:
 
     //protocols:
     void identReceived(QVariantMap ident);
-    void dictReceived(QVariantList dict);
+    void dictReceived(QVariantMap dict);
     void confReceived(QVariantMap values);
     void confUpdated(QVariantMap values);
     void confSaved();

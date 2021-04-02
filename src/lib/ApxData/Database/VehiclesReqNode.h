@@ -23,11 +23,11 @@
 
 #include "VehiclesDB.h"
 
-class DBReqVehiclesNode : public DBReqVehicles
+class DBReqNode : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqVehiclesNode(QString uid)
+    explicit DBReqNode(QString uid)
         : DBReqVehicles()
         , _uid(uid)
     {}
@@ -43,31 +43,67 @@ signals:
     void foundID(quint64 key);
 };
 
-class DBReqVehiclesSaveNodeInfo : public DBReqVehiclesNode
+class DBReqSaveNodeInfo : public DBReqNode
 {
     Q_OBJECT
 public:
-    explicit DBReqVehiclesSaveNodeInfo(QVariantMap info)
-        : DBReqVehiclesNode(info.value("uid").toString())
-        , info(info)
+    explicit DBReqSaveNodeInfo(QVariantMap info)
+        : DBReqNode(info.value("uid").toString())
+        , _info(info)
     {}
 
     bool run(QSqlQuery &query) override;
 
 private:
-    QVariantMap info;
+    QVariantMap _info;
 };
 
-class DBReqVehiclesLoadNodeInfo : public DBReqVehiclesNode
+class DBReqLoadNodeInfo : public DBReqNode
 {
     Q_OBJECT
 public:
-    explicit DBReqVehiclesLoadNodeInfo(QString uid)
-        : DBReqVehiclesNode(uid)
+    explicit DBReqLoadNodeInfo(QString uid)
+        : DBReqNode(uid)
     {}
 
     bool run(QSqlQuery &query) override;
 
 signals:
     void infoLoaded(QVariantMap info);
+};
+
+class DBReqSaveNodeDict : public DBReqNode
+{
+    Q_OBJECT
+public:
+    explicit DBReqSaveNodeDict(QString uid, QVariantMap dict)
+        : DBReqNode(uid)
+        , _dict(dict)
+    {}
+
+    bool run(QSqlQuery &query);
+
+private:
+    QVariantMap _dict;
+};
+
+class DBReqLoadNodeDict : public DBReqNode
+{
+    Q_OBJECT
+public:
+    //load cache
+    explicit DBReqLoadNodeDict(QString uid, QString hash)
+        : DBReqNode(uid)
+        , _hash(hash)
+    {}
+
+    bool run(QSqlQuery &query);
+
+private:
+    QString _hash;
+    QVariantList _dict;
+
+signals:
+    void dictLoaded(QVariantMap dict);
+    void dictMissing(QString hash);
 };

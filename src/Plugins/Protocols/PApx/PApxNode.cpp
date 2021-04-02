@@ -30,6 +30,8 @@
 
 #include <crc.h>
 
+#include <Database/VehiclesReqNode.h>
+
 PApxNode::PApxNode(PApxNodes *parent, QString uid)
     : PNode(parent, uid)
     , _nodes(parent)
@@ -39,11 +41,27 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
     connect(this, &PNode::identReceived, this, [this](QVariantMap ident) {
         _dict_hash = ident.value("hash").toString();
     });
+
+    // get node info guess from cache
+    auto *req = new DBReqLoadNodeInfo(uid);
+    connect(req,
+            &DBReqLoadNodeInfo::infoLoaded,
+            this,
+            &PApxNode::infoCacheLoaded,
+            Qt::QueuedConnection);
+    req->exec();
 }
 
 PApxNode::~PApxNode()
 {
     _nodes->cancel_requests(this);
+}
+
+void PApxNode::infoCacheLoaded(QVariantMap info)
+{
+    if (!_dict_hash.isEmpty())
+        return;
+    setTitle(info.value("name").toString());
 }
 
 void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
@@ -264,6 +282,90 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
     return QString("%1").arg(hash, sizeof(hash) * 2, 16, QChar('0')).toUpper();
 }
 
+void PApxNode::requestDict()
+{
+    if (_skip_cache) {
+        _skip_cache = false;
+        requestDictDownload();
+        return;
+    }
+
+    auto *req = new DBReqLoadNodeDict(uid(), _dict_hash);
+    connect(req,
+            &DBReqLoadNodeDict::dictLoaded,
+            this,
+            &PApxNode::dictCacheLoaded,
+            Qt::QueuedConnection);
+    connect(req,
+            &DBReqLoadNodeDict::dictMissing,
+            this,
+            &PApxNode::dictCacheMissing,
+            Qt::QueuedConnection);
+
+    connect(
+        req,
+        &DatabaseRequest::finished,
+        this,
+        [this](DatabaseRequest::Status status) {
+            if (status)
+                requestDictDownload();
+        },
+        Qt::QueuedConnection);
+
+    req->exec();
+}
+void PApxNode::dictCacheLoaded(QVariantMap dict)
+{
+    auto hash = dict.value("hash").toString();
+    if (_dict_hash != hash) {
+        qWarning() << "wrong hash" << _dict_hash << hash;
+        return;
+    }
+    if (dict.isEmpty()) {
+        qWarning() << "no dict data";
+        requestDictDownload();
+        return;
+    }
+    qDebug() << "dict from cache";
+
+    _field_types.clear();
+    _field_names.clear();
+    _field_arrays.clear();
+    _field_units.clear();
+
+    _values.clear();
+    _script_value = {};
+    _script_field.clear();
+
+    for (auto i : dict.value("fields").value<QVariantList>()) {
+        auto field = i.value<QVariantMap>();
+        auto type = field.value("type").toString();
+        xbus::node::conf::type_e type_id{};
+        for (uint8_t t = xbus::node::conf::type_field; t < xbus::node::conf::type_max; ++t) {
+            QString s = xbus::node::conf::type_to_str((xbus::node::conf::type_e) t);
+            if (s != type)
+                continue;
+            type_id = (xbus::node::conf::type_e) t;
+            break;
+        }
+        if (!type_id)
+            continue;
+        _field_types.append(type_id);
+        _field_names.append(field.value("name").toString());
+        _field_arrays.append(field.value("array").toUInt());
+        _field_units.append(field.value("units").toString());
+    }
+
+    emit dictReceived(dict);
+}
+void PApxNode::dictCacheMissing(QString hash)
+{
+    if (_dict_hash != hash) {
+        qWarning() << "wrong hash" << _dict_hash << hash;
+        return;
+    }
+    requestDictDownload();
+}
 void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
 {
     PStreamReader stream(data);
@@ -403,7 +505,12 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     }
     qDebug() << "dict parsed";
 
-    emit dictReceived(fields);
+    QVariantMap dict;
+    dict.insert("hash", _dict_hash);
+    dict.insert("cached", false);
+    dict.insert("fields", fields);
+
+    emit dictReceived(dict);
 }
 
 void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data)
@@ -500,7 +607,7 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
 
             fidx++;
             if (fidx == _field_types.size()) {
-                err = false; //stream.available() ? true : false;
+                err = stream.available() > 8 ? true : false;
                 break;
             }
         }
@@ -509,6 +616,8 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
 
     if (err) {
         qWarning() << "conf error" << fidx << stream.available() << data.toHex().toUpper();
+        _skip_cache = true;
+        requestDict();
         return;
     }
 

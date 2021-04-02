@@ -84,13 +84,11 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
                            << "dictID INTEGER NOT NULL"
                            << "fieldID INTEGER NOT NULL"
                            << "fidx INTEGER"
-                           << "gidx INTEGER"
                            << "FOREIGN KEY(dictID) REFERENCES NodeDicts(key) ON DELETE CASCADE"
                            << "FOREIGN KEY(fieldID) REFERENCES NodeDictDataFields(key)");
     new DBReqMakeIndex(this, "NodeDictData", "dictID", false);
     new DBReqMakeIndex(this, "NodeDictData", "fieldID", false);
     new DBReqMakeIndex(this, "NodeDictData", "fidx", false);
-    new DBReqMakeIndex(this, "NodeDictData", "gidx", false);
 
     //Node configs
     new DBReqMakeTable(this,

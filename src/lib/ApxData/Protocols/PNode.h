@@ -64,7 +64,7 @@ signals:
     void identReceived(QVariantMap ident);
 
     // list of QVariantMap describing fields {name, type, array, etc}
-    void dictReceived(QVariantList dict);
+    void dictReceived(QVariantMap dict);
 
     // the whole set of parameters received
     void confReceived(QVariantMap values);

@@ -33,13 +33,9 @@ public:
 
 private:
     NodeItem *_node;
-    quint64 _dbKey{}; //from db
-
-private slots:
-    void foundID(quint64 key);
-    void infoLoaded(QVariantMap info);
 
 public slots:
     void saveNodeInfo();
-    void loadNodeInfo();
+    void saveNodeDict();
+    void saveNodeConfig();
 };

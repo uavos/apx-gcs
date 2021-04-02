@@ -54,8 +54,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         bindProperty(protocol, "descr");
         bindProperty(protocol, "progress", true);
 
-        _storage->loadNodeInfo();
-
         connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
         connect(protocol, &PNode::messageReceived, this, &NodeItem::messageReceived);
@@ -393,23 +391,22 @@ void NodeItem::linkGroupValues(Fact *f)
     }
 }
 
-QVariant NodeItem::get_info() const
+QVariantMap NodeItem::get_info() const
 {
     QVariantMap m;
     m.insert("uid", _ident.value("uid"));
     m.insert("name", _ident.value("name"));
     m.insert("version", _ident.value("version"));
     m.insert("hardware", _ident.value("hardware"));
-    m.insert("hash", _ident.value("hash"));
     if (_lastSeenTime)
         m.insert("time", _lastSeenTime);
     return m;
 }
-QVariant NodeItem::get_dict() const
+QVariantMap NodeItem::get_dict() const
 {
     return _dict;
 }
-QVariant NodeItem::get_values() const
+QVariantMap NodeItem::get_values() const
 {
     QVariantMap m;
     for (auto f : m_fields) {
@@ -432,7 +429,7 @@ void NodeItem::fromVariant(const QVariant &var)
         return;
 
     auto info = m.value("info").value<QVariantMap>();
-    auto dict = m.value("dict").value<QVariantList>();
+    auto dict = m.value("dict").value<QVariantMap>();
     auto values = m.value("values").value<QVariantMap>();
 
     if (!valid()) {
@@ -489,7 +486,7 @@ void NodeItem::identReceived(QVariantMap ident)
     setDescr(descr.join(' '));
 }
 
-void NodeItem::dictReceived(QVariantList dict)
+void NodeItem::dictReceived(QVariantMap dict)
 {
     if (dict.isEmpty())
         return;
@@ -499,9 +496,12 @@ void NodeItem::dictReceived(QVariantList dict)
 
     clear();
     _dict = dict;
+    _dict.remove("cached");
+
+    auto fields = dict.value("fields").value<QVariantList>();
 
     xbus::node::usr::cmd_t cmd_cnt = 0;
-    for (auto const &i : dict) {
+    for (auto const &i : fields) {
         auto field = i.value<QVariantMap>();
         QString name = field.value("name").toString();
         QString title = field.value("title").toString();
@@ -546,11 +546,13 @@ void NodeItem::dictReceived(QVariantList dict)
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
     }
-    //setEnabled(false);
     backup();
 
-    if (_protocol)
+    if (_protocol) {
+        if (!dict.value("cached").toBool())
+            _storage->saveNodeDict();
         _protocol->requestConf();
+    }
 }
 
 static QVariant jsonToVariant(QJsonValue json)
