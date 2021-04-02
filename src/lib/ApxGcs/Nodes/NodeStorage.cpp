@@ -53,12 +53,22 @@ void NodeStorage::saveNodeDict()
 
 void NodeStorage::saveNodeConfig()
 {
-    auto dict = _node->get_dict();
-    if (dict.isEmpty()) {
-        qWarning() << "no dict data";
+    auto hash = _node->get_dict().value("hash").toString();
+    if (hash.isEmpty()) {
+        qWarning() << "no dict hash";
         return;
     }
+    auto *req = new DBReqSaveNodeConfig(_node->uid(), hash, _node->get_values());
+    req->exec();
+}
 
-    // auto *req = new DBReqSaveNodeDict(_node->uid(), dict);
-    // req->exec();
+void NodeStorage::loadNodeConfig(QString hash)
+{
+    auto *req = new DBReqLoadNodeConfig(_node->uid(), hash);
+    connect(req,
+            &DBReqLoadNodeConfig::configLoaded,
+            _node,
+            &NodeItem::importValues,
+            Qt::QueuedConnection);
+    req->exec();
 }

@@ -24,11 +24,10 @@
 #include <Database/Database.h>
 #include <Database/VehiclesDB.h>
 
-#include <Database/VehiclesStorage.h>
-#include <Protocols/ProtocolNode.h>
-#include <Protocols/ProtocolVehicle.h>
+#include "NodeItem.h"
+#include "NodeStorage.h"
 
-LookupNodeBackup::LookupNodeBackup(ProtocolNode *node, Fact *parent)
+LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
     : DatabaseLookup(parent,
                      "backups",
                      tr("Backups"),
@@ -42,10 +41,10 @@ LookupNodeBackup::LookupNodeBackup(ProtocolNode *node, Fact *parent)
 
 void LookupNodeBackup::loadItem(QVariantMap modelData)
 {
-    quint64 nconfID = modelData.value("key", 0).toULongLong();
-    if (!nconfID)
+    auto hash = modelData.value("hash").toString();
+    if (hash.isEmpty())
         return;
-    //TODO: node->vehicle()->storage->loadNodeConfig(node, nconfID);
+    node->storage->loadNodeConfig(hash);
 }
 
 bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
@@ -56,10 +55,7 @@ bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
     QString title = item->value("title").toString();
     item->insert("title", time);
     item->insert("value", title);
-    item->insert("descr",
-                 version == node->version()
-                     ? tr("Current release")
-                     : QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
+    item->insert("descr", QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
     return true;
 }
 
@@ -72,5 +68,5 @@ void LookupNodeBackup::defaultLookup()
           " WHERE Nodes.sn=? AND (NodeConfigs.title LIKE ?)"
           " ORDER BY NodeConfigs.time DESC"
           " LIMIT 50",
-          QVariantList() << node->sn() << s);
+          QVariantList() << node->uid() << s);
 }

@@ -38,4 +38,6 @@ public slots:
     void saveNodeInfo();
     void saveNodeDict();
     void saveNodeConfig();
+
+    void loadNodeConfig(QString hash = QString());
 };

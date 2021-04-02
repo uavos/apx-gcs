@@ -107,3 +107,42 @@ signals:
     void dictLoaded(QVariantMap dict);
     void dictMissing(QString hash);
 };
+
+class DBReqSaveNodeConfig : public DBReqNode
+{
+    Q_OBJECT
+public:
+    explicit DBReqSaveNodeConfig(QString uid, QString hash, QVariantMap values, quint64 time = 0)
+        : DBReqNode(uid)
+        , _hash(hash)
+        , _values(values)
+        , _time(time ? time : QDateTime::currentDateTime().toMSecsSinceEpoch())
+    {}
+
+    bool run(QSqlQuery &query);
+
+private:
+    QString _hash;
+    QVariantMap _values;
+    quint64 _time;
+
+    quint64 getValueID(QSqlQuery &query, const QVariant &v);
+};
+
+class DBReqLoadNodeConfig : public DBReqNode
+{
+    Q_OBJECT
+public:
+    explicit DBReqLoadNodeConfig(QString uid, QString hash) // latest if no hash
+        : DBReqNode(uid)
+        , _hash(hash)
+    {}
+
+    bool run(QSqlQuery &query);
+
+protected:
+    QString _hash;
+
+signals:
+    void configLoaded(QVariantMap values);
+};

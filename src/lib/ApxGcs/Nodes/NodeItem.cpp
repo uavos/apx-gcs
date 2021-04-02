@@ -43,10 +43,8 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     new NodeViewActions(this, _nodes);
 
+    storage = new NodeStorage(this);
     tools = new NodeTools(this, Action);
-
-    // storage
-    _storage = new NodeStorage(this);
 
     //protocol
     if (protocol) {
@@ -440,18 +438,28 @@ void NodeItem::fromVariant(const QVariant &var)
         return;
     }
 
-    // import config values
-    size_t rcnt = 0;
+    importValues(values);
+}
+
+void NodeItem::importValues(QVariantMap values)
+{
+    QStringList st = values.keys();
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath))
             continue;
         f->fromVariant(values.value(fpath));
-        rcnt++;
+        st.removeOne(fpath);
     }
-    if (rcnt != values.size()) {
+    if (st.size() > 0) {
+        for (auto i : st) {
+            qWarning() << "missing field:" << i;
+        }
+        auto rcnt = values.size() - st.size();
         message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
                 AppNotify::FromApp | AppNotify::Warning);
+    } else {
+        message(tr("Imported config"), AppNotify::FromApp);
     }
 }
 
@@ -473,7 +481,7 @@ void NodeItem::identReceived(QVariantMap ident)
 
     if (_protocol) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        _storage->saveNodeInfo();
+        storage->saveNodeInfo();
         _protocol->requestDict();
         return;
     }
@@ -550,7 +558,7 @@ void NodeItem::dictReceived(QVariantMap dict)
 
     if (_protocol) {
         if (!dict.value("cached").toBool())
-            _storage->saveNodeDict();
+            storage->saveNodeDict();
         _protocol->requestConf();
     }
 }

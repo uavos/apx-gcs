@@ -25,17 +25,17 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-class ProtocolNode;
+class NodeItem;
 
 class LookupNodeBackup : public DatabaseLookup
 {
     Q_OBJECT
 
 public:
-    explicit LookupNodeBackup(ProtocolNode *node, Fact *parent);
+    explicit LookupNodeBackup(NodeItem *node, Fact *parent);
 
 private:
-    ProtocolNode *node;
+    NodeItem *node;
 
 protected:
     bool fixItemDataThr(QVariantMap *item) override;

@@ -40,6 +40,7 @@ class NodeItem : public Fact
 public:
     explicit NodeItem(Fact *parent, Nodes *nodes, PNode *protocol);
 
+    NodeStorage *storage;
     NodeTools *tools;
 
     auto uid() const { return _protocol ? _protocol->uid() : _ident.value("uid").toString(); }
@@ -74,7 +75,6 @@ protected:
 private:
     Nodes *_nodes;
     PNode *_protocol;
-    NodeStorage *_storage;
 
     QVariantMap _ident;
     QVariantMap _dict;
@@ -104,6 +104,8 @@ private slots:
 public slots:
     void upload();
     void clear();
+
+    void importValues(QVariantMap values);
 
     //protocols:
     void identReceived(QVariantMap ident);
