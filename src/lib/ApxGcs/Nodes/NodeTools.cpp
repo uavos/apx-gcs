@@ -103,13 +103,15 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_maintenance->setSection(f_sys->title());
 
     // reboot
-    f = new Fact(f_maintenance, "reboot", tr("Reboot node"), tr("Node system reset"));
-    f->setIcon("reload");
-    f->setSection(f_sys->title());
-    connect(f, &Fact::triggered, this, [this, f]() {
-        node->message(f->title().append(": ").append(node->title()));
-        node->protocol()->requestReboot();
-    });
+    if (node->protocol()) {
+        f = new Fact(f_maintenance, "reboot", tr("Reboot node"), tr("Node system reset"));
+        f->setIcon("reload");
+        f->setSection(f_sys->title());
+        connect(f, &Fact::triggered, this, [this, f]() {
+            node->message(f->title().append(": ").append(node->title()));
+            node->protocol()->requestReboot();
+        });
+    }
 }
 
 Fact *NodeTools::addCommand(Fact *group, QString name, QString title, xbus::node::usr::cmd_t cmd)
@@ -141,6 +143,13 @@ void NodeTools::execUsr(Fact *f)
     QString msg = tr("User command").append(": ").append(f->title());
     if (!f->descr().isEmpty())
         msg.append(QString(" (%1)").arg(f->descr()));
+
+    if (!node->protocol()) {
+        msg.append(QString(" (%1)").arg(tr("ignored")));
+        node->message(msg);
+        return;
+    }
+
     node->message(msg);
     node->protocol()->requestUsr(static_cast<quint8>(f->property("cmd").toUInt()), QByteArray());
 }

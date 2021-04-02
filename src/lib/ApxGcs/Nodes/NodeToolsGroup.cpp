@@ -87,5 +87,6 @@ Fact *NodeToolsGroup::addCommand(Fact *group,
 
 void NodeToolsGroup::registerOnlineAction(Fact *fact)
 {
-    fact->bindProperty(node->protocol(), "enabled");
+    if (node->protocol())
+        fact->bindProperty(node->protocol(), "enabled");
 }

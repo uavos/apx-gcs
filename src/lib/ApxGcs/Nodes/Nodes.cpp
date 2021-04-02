@@ -113,6 +113,15 @@ Nodes::Nodes(Vehicle *vehicle)
         _protocol->requestSearch();
 }
 
+NodeItem *Nodes::node(const QString &uid) const
+{
+    for (auto i : nodes()) {
+        if (i->uid() == uid)
+            return i;
+    }
+    return nullptr;
+}
+
 void Nodes::node_available(PNode *node)
 {
     add(node);
@@ -124,10 +133,11 @@ NodeItem *Nodes::add(PNode *protocol)
         return node;
 
     node = new NodeItem(this, this, protocol);
-    m_sn_map.insert(protocol->uid(), node);
+    m_nodes.append(node);
 
     connect(node, &NodeItem::validChanged, this, &Nodes::updateValid);
 
+    updateValid();
     updateActions();
     return node;
 }
@@ -190,7 +200,7 @@ void Nodes::clear()
         m_valid = false;
         emit validChanged();
     }
-    m_sn_map.clear();
+    m_nodes.clear();
     deleteChildren();
     setModified(false);
 }
@@ -209,7 +219,7 @@ void Nodes::upload()
     //        return;
     if (!modified())
         return;
-    for (auto i : m_sn_map) {
+    for (auto i : nodes()) {
         i->upload();
     }
 }
@@ -294,4 +304,49 @@ QString Nodes::getConfigTitle()
         return s1.size() > s2.size();
     });
     return st.first();
+}
+
+QVariant Nodes::toVariant() const
+{
+    QVariantMap m;
+    m.insert("vehicle", vehicle->toVariant());
+
+    QVariantList list;
+    for (auto i : nodes()) {
+        list.append(i->toVariant());
+    }
+    m.insert("nodes", list);
+
+    return m;
+}
+void Nodes::fromVariant(const QVariant &var)
+{
+    auto m = var.value<QVariantMap>();
+    if (m.isEmpty())
+        return;
+
+    auto nodes = m.value("nodes").value<QVariantList>();
+    if (nodes.isEmpty()) {
+        apxConsoleW() << tr("Missing nodes in data set");
+        return;
+    }
+
+    if (vehicle->isReplay()) {
+        clear();
+
+        for (auto i : nodes) {
+            auto node = i.value<QVariantMap>();
+            auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
+            NodeItem *f = this->node(uid);
+            if (!f) {
+                f = new NodeItem(this, this, nullptr);
+                m_nodes.append(f);
+            }
+            f->fromVariant(node);
+        }
+
+        updateValid();
+        updateActions();
+        return;
+    }
 }

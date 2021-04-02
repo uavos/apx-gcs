@@ -81,6 +81,8 @@ private:
 
     QList<NodeField *> m_fields;
 
+    qint64 _lastSeenTime{};
+
     QJsonArray _parameters;
     void updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json);
 

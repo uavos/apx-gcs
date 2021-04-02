@@ -31,7 +31,7 @@
 #include <QFontDatabase>
 
 NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
-    : Fact(parent, protocol->name())
+    : Fact(parent, "node#")
     , _nodes(nodes)
     , _protocol(protocol)
 {
@@ -45,11 +45,16 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     tools = new NodeTools(this, Action);
 
+    // storage
+    _storage = new NodeStorage(this);
+
     //protocol
     if (protocol) {
         bindProperty(protocol, "title");
         bindProperty(protocol, "descr");
         bindProperty(protocol, "progress", true);
+
+        _storage->loadNodeInfo();
 
         connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
@@ -62,10 +67,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
         connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
     }
-
-    // storage
-    _storage = new NodeStorage(this);
-    _storage->loadNodeInfo();
 
     /*
     // responses mapping
@@ -130,6 +131,8 @@ void NodeItem::upload()
         return;
     if (!modified())
         return;
+    if (!_protocol)
+        return;
 
     QList<NodeField *> fields;
     for (auto i : m_fields) {
@@ -174,6 +177,8 @@ QVariant NodeItem::data(int col, int role) const
             return QColor(Qt::darkGray);
         if (col == FACT_MODEL_COLUMN_VALUE)
             return QColor(Qt::yellow).lighter(180);
+        if (!_protocol)
+            return QColor(Qt::darkGray);
         if (!modified())
             return QColor(255, 255, 200);
         break;
@@ -395,16 +400,14 @@ QVariant NodeItem::get_info() const
     m.insert("name", _ident.value("name"));
     m.insert("version", _ident.value("version"));
     m.insert("hardware", _ident.value("hardware"));
-    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    m.insert("hash", _ident.value("hash"));
+    if (_lastSeenTime)
+        m.insert("time", _lastSeenTime);
     return m;
 }
 QVariant NodeItem::get_dict() const
 {
-    QVariantMap m;
-    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
-    m.insert("hash", _ident.value("hash"));
-    m.insert("fields", _dict);
-    return m;
+    return _dict;
 }
 QVariant NodeItem::get_values() const
 {
@@ -427,6 +430,32 @@ void NodeItem::fromVariant(const QVariant &var)
     QVariantMap m = var.value<QVariantMap>();
     if (m.isEmpty())
         return;
+
+    auto info = m.value("info").value<QVariantMap>();
+    auto dict = m.value("dict").value<QVariantList>();
+    auto values = m.value("values").value<QVariantMap>();
+
+    if (!valid()) {
+        // construct the whole node
+        identReceived(info);
+        dictReceived(dict);
+        confReceived(values);
+        return;
+    }
+
+    // import config values
+    size_t rcnt = 0;
+    for (auto f : m_fields) {
+        QString fpath = f->fpath();
+        if (!values.contains(fpath))
+            continue;
+        f->fromVariant(values.value(fpath));
+        rcnt++;
+    }
+    if (rcnt != values.size()) {
+        message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
+                AppNotify::FromApp | AppNotify::Warning);
+    }
 }
 
 //=============================================================================
@@ -446,6 +475,7 @@ void NodeItem::identReceived(QVariantMap ident)
     clear();
 
     if (_protocol) {
+        _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         _storage->saveNodeInfo();
         _protocol->requestDict();
         return;

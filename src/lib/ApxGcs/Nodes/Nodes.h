@@ -52,8 +52,8 @@ public:
     //LookupConfigs *f_lookup;
     NodesShare *f_share;
 
-    NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
-    QList<NodeItem *> nodes() { return m_sn_map.values(); }
+    NodeItem *node(const QString &uid) const;
+    QList<NodeItem *> nodes() const { return m_nodes; }
 
     NodeItem *add(PNode *protocol);
 
@@ -63,10 +63,14 @@ public:
 
     QString getConfigTitle();
 
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
+
 private:
     PNodes *_protocol;
 
-    QMap<QString, NodeItem *> m_sn_map;
+    QList<NodeItem *> m_nodes;
     QDateTime m_syncTimestamp;
 
     bool m_valid{};
