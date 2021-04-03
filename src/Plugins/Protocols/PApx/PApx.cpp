@@ -70,7 +70,7 @@ void PApx::process_downlink(QByteArray packet)
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
             return;
         const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
-        QString squawkText = PApx::squawkText(squawk);
+        auto squawkText = PApx::squawkText(squawk);
 
         trace()->block(squawkText);
 
@@ -86,7 +86,7 @@ void PApx::process_downlink(QByteArray packet)
         if (!s || stream.available() > 0)
             return;
 
-        QString callsign = QString(s).trimmed();
+        auto callsign = QString(s).trimmed();
 
         if ((!squawk) || callsign.isEmpty()) {
             //received zero SQUAWK
@@ -165,7 +165,7 @@ void PApx::process_downlink(QByteArray packet)
         if (!squawk)
             return; //broadcast?
         //check if new transponder detected, request IDENT
-        PApxVehicle *v = _squawk_map.value(squawk);
+        auto *v = _squawk_map.value(squawk);
         if (v) {
             v->packetReceived(pid.uid);
             trace()->block(v->title().append(':'));

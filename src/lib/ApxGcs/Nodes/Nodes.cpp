@@ -73,11 +73,7 @@ Nodes::Nodes(Vehicle *vehicle)
         = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
     //connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
-    //storage actions
-    f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
-    connect(f_save, &Fact::triggered, this, &Nodes::save);
-
-    foreach (FactBase *a, actions()) {
+    for (auto a : actions()) {
         a->setOption(IconOnly);
         a->setOption(ShowDisabled);
     }
@@ -94,18 +90,6 @@ Nodes::Nodes(Vehicle *vehicle)
     if (_protocol) {
         bindProperty(_protocol, "value", true);
     }
-
-    /*connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::upgradingChanged, this, &Nodes::updateActions);
-
-    connect(protocol, &ProtocolNodes::nodeNotify, this, &Nodes::nodeNotify);
-    connect(protocol, &ProtocolNodes::syncDone, this, &Nodes::syncDone);
-
-    // initial request
-    if (vehicle->isIdentified()) {
-        protocol->requestSearch();
-    }*/
 
     connect(this, &Fact::triggered, this, &Nodes::search);
 
@@ -221,32 +205,11 @@ void Nodes::reload()
 
 void Nodes::upload()
 {
-    // if (!protocol()->enabled())
-    //     return;
-    //    if (!protocol()->valid())
-    //        return;
     if (!modified())
         return;
     for (auto i : nodes()) {
         i->upload();
     }
-}
-
-void Nodes::save()
-{
-    // if (!protocol()->enabled())
-    //     return;
-    // if (!protocol()->valid())
-    //     return;
-
-    //FIXME: save modified config
-    /*for (auto i : m_sn_map) {
-        if (!i->modified())
-            continue;
-        vehicle->protocol()->storage->saveNodeConfig(i->protocol());
-    }*/
-
-    //vehicle->protocol()->storage->saveConfiguration();
 }
 
 void Nodes::shell(QStringList commands)
@@ -374,4 +337,5 @@ void Nodes::fromVariant(const QVariant &var)
     }
     // try to import by guessing nodes
     apxConsoleW() << tr("Importing %1 nodes").arg(vlist.size());
+    // TODO: import nodes substitutions
 }

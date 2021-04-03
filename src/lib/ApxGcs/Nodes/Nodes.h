@@ -46,8 +46,6 @@ public:
     Fact *f_clear;
     Fact *f_status;
 
-    Fact *f_save;
-
     NodeItem *node(const QString &uid) const;
     QList<NodeItem *> nodes() const { return m_nodes; }
 
@@ -85,8 +83,6 @@ private slots:
 
     void node_available(PNode *node);
     void syncDone();
-
-    void save();
 
 signals:
     void validChanged();

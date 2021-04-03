@@ -91,8 +91,6 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(aLookup);
     connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
-    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
-
     QAction *aShare = new QActionFact(vehicle->f_share);
     toolBar->addAction(aShare);
     connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
