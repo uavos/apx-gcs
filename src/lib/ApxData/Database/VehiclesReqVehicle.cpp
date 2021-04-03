@@ -162,7 +162,7 @@ bool DBReqSaveVehicleConfig::run(QSqlQuery &query)
         if (!query.exec())
             return false;
         emit dbModified();
-        emit configSaved(configID);
+        emit configSaved(hash, _title);
         return true;
     }
 
@@ -191,7 +191,7 @@ bool DBReqSaveVehicleConfig::run(QSqlQuery &query)
     db->commit(query);
     emit dbModified();
     qDebug() << "new vehicle config" << _title;
-    emit configSaved(configID);
+    emit configSaved(hash, _title);
     return true;
 }
 

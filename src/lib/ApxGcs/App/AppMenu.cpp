@@ -65,11 +65,14 @@ AppMenu::AppMenu(Fact *parent)
     }
 
     file = new Fact(this, "file", tr("File"), "", Group, "file");
-    f = new Fact(file, "telemetry");
-    f->setOpt("shortcut", QKeySequence::Open);
-    //f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
-    //f = new Fact(file, "nodes");
-    // FIXME: f->bind(Vehicles::instance()->f_replay->f_nodes->f_share->f_import);
+    // TODO: menu import telemetry
+    // f = new Fact(file, "telemetry");
+    // f->setOpt("shortcut", QKeySequence::Open);
+    // f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
+
+    f = new Fact(file, "nodes");
+    f->setBinding(Vehicles::instance()->f_replay->f_share->f_import);
+
     f = new Fact(file, "datalink");
     f->setBinding(AppGcs::instance()->f_datalink);
     f->setSection(tr("Communication"));
@@ -147,6 +150,7 @@ void AppMenu::updateVehicleSelect()
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);
         Fact *a = new Fact(vehicleSelect, f->name(), f->title(), f->descr(), Bool);
+        a->setIcon(f->icon());
         a->setValue(f->active());
         connect(f, &Fact::activeChanged, a, [a, f]() { a->setValue(f->active()); });
         connect(a, &Fact::triggered, f, &Fact::trigger);

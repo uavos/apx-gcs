@@ -64,6 +64,11 @@ void VehicleStorage::saveVehicleConfig()
     auto title = nodes->getConfigTitle();
 
     auto *req = new DBReqSaveVehicleConfig(vuid, nconfIDs, title);
+    connect(req,
+            &DBReqSaveVehicleConfig::configSaved,
+            this,
+            &VehicleStorage::configSaved,
+            Qt::QueuedConnection);
     req->exec();
 }
 

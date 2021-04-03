@@ -71,7 +71,7 @@ private:
     quint64 _time;
 
 signals:
-    void configSaved(quint64 confID);
+    void configSaved(QString hash, QString title);
 };
 
 class DBReqLoadVehicleConfig : public DBReqVehicles

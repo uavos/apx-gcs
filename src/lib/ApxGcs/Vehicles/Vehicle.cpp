@@ -79,7 +79,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
-    f_telemetry = new Telemetry(this);
 
     setMandala(f_mandala);
 
@@ -113,7 +112,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
     connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
 
-    if (!isReplay()) {
+    if (protocol) {
         connect(this,
                 &Vehicle::coordinateChanged,
                 this,
@@ -138,25 +137,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         connect(this, &Vehicle::isGroundControlChanged, _storage, &VehicleStorage::saveVehicleInfo);
         _storage->saveVehicleInfo();
 
-        // recorder
-        //FIXME: XPDR
-        //connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
-
-        /*connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryData,
-                this,
-                &Vehicle::recordDownlink);
-        connect(protocol->telemetry, &ProtocolTelemetry::valuesData, this, &Vehicle::recordDownlink);
-
-        connect(f_mandala, &Mandala::sendValue, this, &Vehicle::recordUplink);
-
-        connect(protocol, &ProtocolVehicle::serialData, this, [this](uint portNo, QByteArray data) {
-            emit recordSerialData(static_cast<quint8>(portNo), data, false);
-        });
-        connect(protocol, &ProtocolVehicle::dbConfigInfoChanged, this, &Vehicle::recordConfig);*/
-    }
-
-    if (protocol) {
         // counters
         connect(protocol, &PVehicle::packetReceived, this, [this](mandala::uid_t uid) {
             if (mandala::cmd::env::match(uid)) {
@@ -165,8 +145,10 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                     f->count_rx();
             }
         });
+
         // forward telemetry stamp to notify plugins
         connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
+        connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &Vehicle::telemetryData);
     }
 
     if (isIdentified()) {
@@ -182,6 +164,10 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 telemetryReqTimer.stop();
         });
     }
+
+    // telemetry data recorder/player
+    // will connect to protocol by itself and must be created after vehicle's protocol connections
+    f_telemetry = new Telemetry(this);
 
     // path
     Fact *f = new Fact(f_telemetry,

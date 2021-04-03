@@ -44,4 +44,7 @@ public slots:
     void loadVehicleConfig(QString hash);
 
     void importVehicleConfig(QVariantMap config);
+
+signals:
+    void configSaved(QString hash, QString title);
 };

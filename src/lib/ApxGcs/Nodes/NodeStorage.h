@@ -37,15 +37,14 @@ private:
     NodeItem *_node;
     quint64 _configID{};
 
-private slots:
-    void updateConfigID(quint64 configID);
-
 public slots:
     void saveNodeInfo();
     void saveNodeDict();
     void saveNodeConfig();
 
     void loadNodeConfig(QString hash = QString()); // will load most recent by default
+
+    void updateConfigID(quint64 configID);
 
 signals:
     void configSaved();

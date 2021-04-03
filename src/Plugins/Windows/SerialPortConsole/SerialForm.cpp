@@ -40,7 +40,6 @@ SerialForm::SerialForm(QWidget *parent)
     f.setStyleHint(QFont::Monospace);
     ui->textEdit->setFont(f);
 
-    //TODO
     ui->btnForward->setVisible(false);
     ui->eForward->setVisible(false);
 
@@ -49,7 +48,6 @@ SerialForm::SerialForm(QWidget *parent)
     connect(ui->btnForward, SIGNAL(pressed()), this, SLOT(btnForward()));
     connect(ui->eTxText, SIGNAL(returnPressed()), this, SLOT(btnSend()));
 
-    //restoreGeometry(QSettings().value(objectName()).toByteArray());
     ui->ePortID->setValue(QSettings().value(objectName() + "_port").toInt());
 
     ui->eForward->setText(QSettings().value(objectName() + "_fwdDev").toString());

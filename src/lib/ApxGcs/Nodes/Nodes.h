@@ -86,4 +86,6 @@ private slots:
 
 signals:
     void validChanged();
+
+    void fieldUploadReport(NodeItem *node, QString name, QString value);
 };

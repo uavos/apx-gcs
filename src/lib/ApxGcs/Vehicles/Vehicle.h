@@ -132,16 +132,6 @@ signals:
     //forward from protocols
     void telemetryData();
 
-    //forward for recorder
-    void recordDownlink();
-    void recordUplink(xbus::pid_s pid, QVariant value);
-
-    //events
-    void recordNodeMessage(QString subsystem, QString text, QString sn);
-    void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
-    void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
-    void recordConfig();
-
     void geoPathAppend(QGeoCoordinate p);
 
     //provided methods

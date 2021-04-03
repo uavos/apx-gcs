@@ -128,7 +128,7 @@ void Firmware::nodeNotify(ProtocolNode *protocol)
     if (queued(f_available, sn))
         return;
 
-    // FIXME: queue for auto update
+    // TODO: queue for auto update
     new QueueItem(f_available, protocol, QString());
 }
 

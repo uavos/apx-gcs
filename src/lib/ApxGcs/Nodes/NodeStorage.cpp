@@ -53,7 +53,7 @@ void NodeStorage::saveNodeDict()
 
 void NodeStorage::saveNodeConfig()
 {
-    _configID = 0;
+    _configID = 0; // invalidate for vehicle config
     auto hash = _node->get_dict().value("hash").toString();
     if (hash.isEmpty()) {
         qWarning() << "no dict hash";
@@ -70,7 +70,8 @@ void NodeStorage::saveNodeConfig()
 void NodeStorage::updateConfigID(quint64 configID)
 {
     _configID = configID;
-    emit configSaved();
+    if (configID)
+        emit configSaved();
 }
 
 void NodeStorage::loadNodeConfig(QString hash)

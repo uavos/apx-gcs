@@ -113,6 +113,7 @@ void NodeItem::clear()
         emit validChanged();
     }
 
+    storage->updateConfigID(0);
     _dict.clear();
     _status_field = nullptr;
     tools->clearCommands();
@@ -129,6 +130,8 @@ void NodeItem::upload()
         return;
     if (!_protocol)
         return;
+
+    storage->updateConfigID(0);
 
     QList<NodeField *> fields;
     for (auto i : m_fields) {
@@ -148,7 +151,7 @@ void NodeItem::upload()
     QVariantMap values;
     for (auto i : fields) {
         values.insert(i->fpath(), i->toVariant());
-        //_nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->valueText(), protocol()->sn());
+        _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
 }
