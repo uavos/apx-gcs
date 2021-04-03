@@ -177,9 +177,11 @@ void Nodes::search()
 }
 void Nodes::stop()
 {
-    //qDebug() << sender();
+    if (!_protocol)
+        return;
+
     _protocol->cancelRequests();
-    //vehicle->protocol()->vehicles->stopNmtRequests();
+    //TODO:: globally stop requests
 }
 
 void Nodes::clear()
@@ -199,12 +201,18 @@ void Nodes::clear()
 
 void Nodes::reload()
 {
+    if (vehicle->isReplay())
+        return;
+
     clear();
     search();
 }
 
 void Nodes::upload()
 {
+    if (!_protocol)
+        return;
+
     if (!modified())
         return;
     for (auto i : nodes()) {
@@ -214,6 +222,9 @@ void Nodes::upload()
 
 void Nodes::shell(QStringList commands)
 {
+    if (!_protocol)
+        return;
+
     if (!commands.isEmpty()) {
         QString name = commands.first();
         NodeItem *n = nullptr;

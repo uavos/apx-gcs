@@ -269,6 +269,10 @@ void TelemetryRecorder::recordDownlink()
         return;
     for (int i = 0; i < values.size(); ++i) {
         quint64 fieldID = values.at(i).first;
+        if (!fieldID) {
+            // TODO: why this can happen? I made this check to try to fix fireign key db error
+            continue;
+        }
         double v = values.at(i).second;
         DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
                                                                    t,

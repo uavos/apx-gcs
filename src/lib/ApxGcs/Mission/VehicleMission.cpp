@@ -180,10 +180,12 @@ VehicleMission::VehicleMission(Vehicle *parent)
                 this,
                 &VehicleMission::missionReceived);
 
-        connect(vehicle->protocol()->mission(), &PMission::missionAvailable, this, [this]() {
-            if (empty())
-                vehicle->protocol()->mission()->requestMission();
-        });
+        if (vehicle->isIdentified()) {
+            connect(vehicle->protocol()->mission(), &PMission::missionAvailable, this, [this]() {
+                if (empty())
+                    vehicle->protocol()->mission()->requestMission();
+            });
+        }
     }
 
     //reset and update
@@ -389,14 +391,12 @@ void VehicleMission::missionReceived(QVariant var)
 void VehicleMission::uploadMission()
 {
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
-    // vehicle->protocol()->mission->setActive(true);
     vehicle->protocol()->mission()->updateMission(toVariant());
     f_save->trigger();
 }
 void VehicleMission::downloadMission()
 {
     vehicle->message(QString("%1...").arg(tr("Requesting mission")), AppNotify::Info);
-    // vehicle->protocol()->mission->setActive(true);
     vehicle->protocol()->mission()->requestMission();
 }
 
