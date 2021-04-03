@@ -72,13 +72,13 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
     connect(f_select, &Fact::triggered, this, [this, vehicles]() { vehicles->selectVehicle(this); });
 
-    f_lookup = new LookupVehicleConfig(this, this);
-    f_share = new VehicleShare(this, this);
-
     f_mandala = new Mandala(this);
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
+
+    f_lookup = new LookupVehicleConfig(this, this);
+    f_share = new VehicleShare(this, this);
 
     setMandala(f_mandala);
 

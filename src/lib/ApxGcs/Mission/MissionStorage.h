@@ -29,7 +29,6 @@
 
 class VehicleMission;
 class Vehicle;
-class MissionShare;
 class MissionGroup;
 class LookupMissions;
 

@@ -31,7 +31,8 @@ VehicleShare::VehicleShare(Vehicle *vehicle, Fact *parent, Flags flags)
     : Share(parent, "vehicle", tr("Vehicle configuration"), AppDirs::configs(), flags)
     , _vehicle(vehicle)
 {
-    //TODO: update actions
+    connect(vehicle->f_nodes, &Nodes::validChanged, this, &VehicleShare::updateActions);
+    updateActions();
 }
 
 QString VehicleShare::getDefaultTitle()
@@ -59,4 +60,9 @@ bool VehicleShare::importRequest(QString format, QString fileName)
 
     _imported(fileName);
     return true;
+}
+
+void VehicleShare::updateActions()
+{
+    f_export->setEnabled(_vehicle->f_nodes->valid());
 }

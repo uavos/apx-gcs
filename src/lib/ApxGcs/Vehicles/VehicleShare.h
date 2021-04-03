@@ -42,4 +42,7 @@ private:
     QString getDefaultTitle() override;
     bool exportRequest(QString format, QString fileName) override;
     bool importRequest(QString format, QString fileName) override;
+
+private slots:
+    void updateActions();
 };

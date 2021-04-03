@@ -106,6 +106,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
     f_clear = new Fact(this, "clear", tr("Clear"), tr("Clear mission"), Action | Remove | IconOnly);
     connect(f_clear, &Fact::triggered, this, &VehicleMission::clearMission);
 
+    f_share = new MissionShare(this, this, Action | IconOnly);
+
     //tools actions
     f_tools = new MissionTools(this, Action | IconOnly);
 
@@ -118,9 +120,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
                       Action | Apply | IconOnly,
                       "content-save");
     connect(f_save, &Fact::triggered, storage, &MissionStorage::saveMission);
-
-    f_share = new MissionShare(this, f_tools, Action | IconOnly);
-    //connect(f_share->f_export, &Fact::triggered, f_save, &Fact::trigger);
+    connect(f_share->f_export, &Fact::triggered, f_save, &Fact::trigger);
 
     //App::jsync(f_tools);
 

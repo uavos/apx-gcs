@@ -31,7 +31,7 @@
 
 MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
     : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
-    , mission(mission)
+    , _mission(mission)
 {
     connect(this,
             &Share::imported,
@@ -39,34 +39,40 @@ MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
             &MissionStorage::saveMission,
             Qt::QueuedConnection);
 
-    //TODO: update actions
+    connect(mission, &VehicleMission::emptyChanged, this, &MissionShare::updateActions);
+    updateActions();
 }
 
 QString MissionShare::getDefaultTitle()
 {
-    QString s = mission->site().replace(" ", "");
+    QString s = _mission->site().replace(" ", "");
     if (!s.isEmpty())
         s.append("-");
-    s.append(mission->vehicle->title());
-    QString subj = mission->f_title->text().simplified();
+    s.append(_mission->vehicle->title());
+    QString subj = _mission->f_title->text().simplified();
     if (!subj.isEmpty())
         s.append(QString("-%1").arg(subj));
     else
-        s.append(QString("-%1").arg(mission->missionSize()));
+        s.append(QString("-%1").arg(_mission->missionSize()));
     s.replace(' ', '-');
     return s;
 }
 bool MissionShare::exportRequest(QString format, QString fileName)
 {
-    if (!saveData(mission->toJsonDocument().toJson(), fileName))
+    if (!saveData(_mission->toJsonDocument().toJson(), fileName))
         return false;
     _exported(fileName);
     return true;
 }
 bool MissionShare::importRequest(QString format, QString fileName)
 {
-    if (!mission->fromJsonDocument(loadData(fileName)))
+    if (!_mission->fromJsonDocument(loadData(fileName)))
         return false;
-    _imported(fileName, mission->f_title->text());
+    _imported(fileName, _mission->f_title->text());
     return true;
+}
+
+void MissionShare::updateActions()
+{
+    f_export->setEnabled(!_mission->empty());
 }
