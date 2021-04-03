@@ -45,7 +45,7 @@ public slots:
     void saveNodeDict();
     void saveNodeConfig();
 
-    void loadNodeConfig(QString hash = QString());
+    void loadNodeConfig(QString hash = QString()); // will load most recent by default
 
 signals:
     void configSaved();

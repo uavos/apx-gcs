@@ -37,7 +37,7 @@ Nodes::Nodes(Vehicle *vehicle)
            "nodes",
            tr("Nodes"),
            tr("Vehicle components"),
-           Group | Count | FlatModel | ModifiedGroup | ProgressTrack)
+           Group | FlatModel | ModifiedGroup | ProgressTrack)
     , vehicle(vehicle)
     , _protocol(vehicle->protocol() ? vehicle->protocol()->nodes() : nullptr)
 {
@@ -74,13 +74,8 @@ Nodes::Nodes(Vehicle *vehicle)
     //connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     //storage actions
-    storage = new NodesStorage(this);
-    //TODO: f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
-
     f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
     connect(f_save, &Fact::triggered, this, &Nodes::save);
-
-    f_share = new NodesShare(this, this);
 
     foreach (FactBase *a, actions()) {
         a->setOption(IconOnly);
@@ -95,6 +90,10 @@ Nodes::Nodes(Vehicle *vehicle)
     }
 
     updateActions();
+
+    if (_protocol) {
+        bindProperty(_protocol, "value", true);
+    }
 
     /*connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
     connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
@@ -137,7 +136,10 @@ NodeItem *Nodes::add(PNode *protocol)
     m_nodes.append(node);
 
     connect(node, &NodeItem::validChanged, this, &Nodes::updateValid);
-    connect(node->storage, &NodeStorage::configSaved, storage, &NodesStorage::saveNodesConfig);
+    connect(node->storage,
+            &NodeStorage::configSaved,
+            vehicle->storage(),
+            &VehicleStorage::saveVehicleConfig);
 
     updateValid();
     updateActions();
@@ -314,26 +316,16 @@ QString Nodes::getConfigTitle()
 
 QVariant Nodes::toVariant() const
 {
-    QVariantMap m;
-    m.insert("vehicle", vehicle->toVariant());
-
     QVariantList list;
     for (auto i : nodes()) {
         list.append(i->toVariant());
     }
-    m.insert("nodes", list);
-
-    return m;
+    return list;
 }
 void Nodes::fromVariant(const QVariant &var)
 {
-    auto m = var.value<QVariantMap>();
-    if (m.isEmpty())
-        return;
-
-    auto nodes = m.value("nodes").value<QVariantList>();
+    auto nodes = var.value<QVariantList>();
     if (nodes.isEmpty()) {
-        apxConsoleW() << tr("Missing nodes in data set");
         return;
     }
 
@@ -358,7 +350,7 @@ void Nodes::fromVariant(const QVariant &var)
 
     // import to existing nodes
     if (!valid()) {
-        apxMsgW() << tr("Inconsistent nodes");
+        apxConsoleW() << tr("Inconsistent nodes");
         return;
     }
 
@@ -376,7 +368,7 @@ void Nodes::fromVariant(const QVariant &var)
             vlist.append(node);
         }
     }
-    apxMsg() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
+    apxConsole() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
     if (vlist.isEmpty() && nlist.isEmpty()) {
         return;
     }

@@ -19,34 +19,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "LookupConfigs.h"
+#include "LookupVehicleConfig.h"
 
 #include <Database/Database.h>
 #include <Database/VehiclesDB.h>
 
-#include <Database/VehiclesStorage.h>
+#include <Vehicles/Vehicle.h>
 
-LookupConfigs::LookupConfigs(VehiclesStorage *storage, Fact *parent)
+#include "Vehicle.h"
+
+LookupVehicleConfig::LookupVehicleConfig(Vehicle *vehicle, Fact *parent)
     : DatabaseLookup(parent,
                      "load",
                      tr("Load configuration"),
                      tr("Load configuration from database"),
                      Database::instance()->vehicles,
                      Action)
-    , storage(storage)
+    , _vehicle(vehicle)
 {
-    connect(this, &DatabaseLookup::itemTriggered, this, &LookupConfigs::loadItem);
+    connect(this, &DatabaseLookup::itemTriggered, this, &LookupVehicleConfig::loadItem);
 }
 
-void LookupConfigs::loadItem(QVariantMap modelData)
+void LookupVehicleConfig::loadItem(QVariantMap modelData)
 {
     QString hash = modelData.value("hash").toString();
     if (hash.isEmpty())
         return;
-    storage->loadConfiguration(hash);
+    _vehicle->storage()->loadVehicleConfig(hash);
 }
 
-bool LookupConfigs::fixItemDataThr(QVariantMap *item)
+bool LookupVehicleConfig::fixItemDataThr(QVariantMap *item)
 {
     QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
                        .toString("yyyy MMM dd hh:mm:ss");
@@ -59,7 +61,7 @@ bool LookupConfigs::fixItemDataThr(QVariantMap *item)
     return true;
 }
 
-void LookupConfigs::defaultLookup()
+void LookupVehicleConfig::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
     query("SELECT * FROM VehicleConfigs"

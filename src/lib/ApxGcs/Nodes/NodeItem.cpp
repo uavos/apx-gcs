@@ -156,6 +156,7 @@ void NodeItem::confSaved()
 {
     qDebug() << modified();
     backup();
+    storage->saveNodeConfig();
 }
 
 QVariant NodeItem::data(int col, int role) const

@@ -33,8 +33,15 @@ public:
 
 private:
     Vehicle *_vehicle;
-    quint64 _dbKey{}; //from db
+
+private slots:
+    void configLoaded(QVariantMap config);
 
 public slots:
     void saveVehicleInfo();
+
+    void saveVehicleConfig();
+    void loadVehicleConfig(QString hash);
+
+    void importVehicleConfig(QVariantMap config);
 };

@@ -23,13 +23,23 @@
 
 bool DBReqNode::run(QSqlQuery &query)
 {
-    query.prepare("SELECT * FROM Nodes WHERE sn = ?");
-    query.addBindValue(_uid);
-    if (!query.exec())
-        return false;
-    if (query.next()) {
-        nodeID = query.value(0).toULongLong();
-        emit foundID(nodeID);
+    if (!nodeID) {
+        query.prepare("SELECT * FROM Nodes WHERE sn=?");
+        query.addBindValue(_uid);
+        if (!query.exec())
+            return false;
+        if (query.next()) {
+            nodeID = query.value(0).toULongLong();
+            emit foundID(nodeID);
+        }
+    } else {
+        query.prepare("SELECT * FROM Nodes WHERE key=?");
+        query.addBindValue(nodeID);
+        if (!query.exec())
+            return false;
+        if (query.next()) {
+            _uid = query.value("sn").toString();
+        }
     }
     return true;
 }
@@ -39,6 +49,9 @@ bool DBReqSaveNodeInfo::run(QSqlQuery &query)
     if (!DBReqNode::run(query))
         return false;
 
+    auto time = _info.value("time").toULongLong();
+    auto name = _info.value("name").toString();
+
     if (!nodeID) {
         //register node
         query.prepare("INSERT INTO Nodes(sn) VALUES(?)");
@@ -46,18 +59,20 @@ bool DBReqSaveNodeInfo::run(QSqlQuery &query)
         if (!query.exec())
             return false;
         nodeID = query.lastInsertId().toULongLong();
-        qDebug() << "new node" << _info.value("name").toString();
+        qDebug() << "new node" << name;
         emit foundID(nodeID);
+    } else {
+        // check for imported node in the past vs recently seen
+        if (time <= query.value("time").toULongLong()) {
+            qDebug() << "node import skipped" << name;
+            return true;
+        }
     }
-
-    //set time to null on never seen nodes
-    if (!_info.value("time").toULongLong())
-        _info.remove("time");
 
     //uptime node info
     query.prepare("UPDATE Nodes SET time=?, name=?, version=?, hardware=? WHERE key=?");
-    query.addBindValue(_info.value("time"));
-    query.addBindValue(_info.value("name"));
+    query.addBindValue(time ? time : QVariant());
+    query.addBindValue(name);
     query.addBindValue(_info.value("version"));
     query.addBindValue(_info.value("hardware"));
     query.addBindValue(nodeID);
@@ -65,7 +80,6 @@ bool DBReqSaveNodeInfo::run(QSqlQuery &query)
         return false;
 
     // update node user
-    auto time = _info.value("time").toULongLong();
     if (!time)
         return true;
 
@@ -121,14 +135,26 @@ bool DBReqLoadNodeInfo::run(QSqlQuery &query)
     if (!nodeID)
         return true;
 
-    query.prepare("SELECT * FROM Nodes WHERE key=?");
+    _info.insert("uid", _uid);
+    _info.insert("time", query.value("time"));
+    _info.insert("name", query.value("name"));
+    _info.insert("version", query.value("version"));
+    _info.insert("hardware", query.value("hardware"));
+
+    // read user
+    query.prepare("SELECT * FROM NodeUsers WHERE nodeID=?");
     query.addBindValue(nodeID);
     if (!query.exec())
         return false;
-    if (!query.next())
-        return true;
+    if (query.next()) {
+        QVariantMap user;
+        user.insert("machineUID", query.value("machineUID"));
+        user.insert("hostname", query.value("hostname"));
+        user.insert("username", query.value("username"));
+        _info.insert("user", user);
+    }
 
-    emit infoLoaded(queryRecord(query));
+    emit infoLoaded(_info);
     return true;
 }
 
@@ -251,35 +277,49 @@ bool DBReqSaveNodeDict::run(QSqlQuery &query)
 
 bool DBReqLoadNodeDict::run(QSqlQuery &query)
 {
-    if (!DBReqNode::run(query))
-        return false;
+    if (!_dictID) {
+        if (!DBReqNode::run(query))
+            return false;
 
-    if (!nodeID)
-        return false;
+        if (!nodeID)
+            return false;
 
-    query.prepare("SELECT * FROM NodeDicts "
-                  "WHERE nodeID=? AND hash=? "
-                  "ORDER BY time DESC, key DESC "
-                  "LIMIT 1");
-    query.addBindValue(nodeID);
-    query.addBindValue(_hash);
+        query.prepare("SELECT * FROM NodeDicts "
+                      "WHERE nodeID=? AND hash=? "
+                      "ORDER BY time DESC, key DESC "
+                      "LIMIT 1");
+        query.addBindValue(nodeID);
+        query.addBindValue(_hash);
 
-    if (!query.exec())
-        return false;
+        if (!query.exec())
+            return false;
 
-    if (!query.next()) {
-        qDebug() << "no dict in db";
-        emit dictMissing(_hash);
-        return true;
+        if (!query.next()) {
+            qDebug() << "no dict in db";
+            emit dictMissing(_hash);
+            return true;
+        }
+        _dictID = query.value(0).toULongLong();
+    } else {
+        query.prepare("SELECT * FROM NodeDicts WHERE key=?");
+        query.addBindValue(_dictID);
+
+        if (!query.exec())
+            return false;
+
+        if (!query.next()) {
+            qDebug() << "no dict in db by key" << _dictID;
+            return true;
+        }
+        _hash = query.value("hash").toString();
     }
-    auto dictID = query.value(0).toULongLong();
 
     //read fields
     query.prepare("SELECT * FROM NodeDictData "
                   "INNER JOIN NodeDictDataFields ON NodeDictData.fieldID=NodeDictDataFields.key "
                   "WHERE dictID=? "
                   "ORDER BY fidx ASC");
-    query.addBindValue(dictID);
+    query.addBindValue(_dictID);
     if (!query.exec())
         return false;
 
@@ -299,12 +339,11 @@ bool DBReqLoadNodeDict::run(QSqlQuery &query)
         fields.append(field);
     }
 
-    QVariantMap dict;
-    dict.insert("hash", _hash);
-    dict.insert("fields", fields);
-    dict.insert("cached", true);
+    _dict.insert("hash", _hash);
+    _dict.insert("fields", fields);
+    _dict.insert("cached", true);
 
-    emit dictLoaded(dict);
+    emit dictLoaded(_dict);
     return true;
 }
 
@@ -352,17 +391,15 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
     if (!query.exec())
         return false;
 
-    quint64 nconfID = {};
-
     if (query.next()) {
-        nconfID = query.value(0).toULongLong();
+        _configID = query.value(0).toULongLong();
         //same node config exist - uptime
         //qDebug()<<"node config exists";
         //find latest config in history
         query.prepare("SELECT * FROM NodeConfigHistory"
                       " WHERE nconfID=? AND time<=?"
                       " ORDER BY time DESC LIMIT 1");
-        query.addBindValue(nconfID);
+        query.addBindValue(_configID);
         query.addBindValue(_time);
         if (!query.exec())
             return false;
@@ -380,7 +417,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
             qDebug() << "config exists" << title;
             //all ok
             emit dbModified();
-            emit configSaved(nconfID);
+            emit configSaved(_configID);
             return true;
         }
         //continue to new history record
@@ -400,7 +437,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
         if (!query.exec())
             return false;
 
-        nconfID = query.lastInsertId().toULongLong();
+        _configID = query.lastInsertId().toULongLong();
 
         //collect field IDs
         QHash<QString, quint64> fieldsMap;
@@ -445,7 +482,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
                     //insert new record
                     query.prepare("INSERT INTO NodeConfigData(nconfID,fieldID,subidx,valueID) "
                                   "VALUES(?,?,?,?)");
-                    query.addBindValue(nconfID);
+                    query.addBindValue(_configID);
                     query.addBindValue(fieldID);
                     query.addBindValue(subidx);
                     query.addBindValue(valueID);
@@ -462,7 +499,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
 
                 //insert new record
                 query.prepare("INSERT INTO NodeConfigData(nconfID,fieldID,valueID) VALUES(?,?,?)");
-                query.addBindValue(nconfID);
+                query.addBindValue(_configID);
                 query.addBindValue(fieldID);
                 query.addBindValue(valueID);
                 if (!query.exec())
@@ -479,7 +516,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
 
     //create new node config history record
     query.prepare("INSERT INTO NodeConfigHistory(nconfID,time) VALUES(?,?)");
-    query.addBindValue(nconfID);
+    query.addBindValue(_configID);
     query.addBindValue(_time);
     if (!query.exec())
         return false;
@@ -489,7 +526,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
 
     qDebug() << "node config updated" << title;
 
-    emit configSaved(nconfID);
+    emit configSaved(_configID);
     return true;
 }
 quint64 DBReqSaveNodeConfig::getValueID(QSqlQuery &query, const QVariant &v)
@@ -514,28 +551,30 @@ quint64 DBReqSaveNodeConfig::getValueID(QSqlQuery &query, const QVariant &v)
 
 bool DBReqLoadNodeConfig::run(QSqlQuery &query)
 {
-    if (!DBReqNode::run(query))
-        return false;
+    if (!_configID) {
+        if (!DBReqNode::run(query))
+            return false;
 
-    if (!nodeID)
-        return false;
+        if (!nodeID)
+            return false;
 
-    if (_hash.isEmpty()) {
-        // load latest
-        query.prepare("SELECT * FROM NodeConfigs WHERE nodeID = ? ORDER BY time DESC LIMIT 1");
-        query.addBindValue(nodeID);
-    } else {
-        query.prepare("SELECT * FROM NodeConfigs"
-                      " WHERE nodeID=? AND hash=?");
-        query.addBindValue(nodeID);
-        query.addBindValue(_hash);
+        if (_hash.isEmpty()) {
+            // load latest
+            query.prepare("SELECT * FROM NodeConfigs WHERE nodeID = ? ORDER BY time DESC LIMIT 1");
+            query.addBindValue(nodeID);
+        } else {
+            query.prepare("SELECT * FROM NodeConfigs"
+                          " WHERE nodeID=? AND hash=?");
+            query.addBindValue(nodeID);
+            query.addBindValue(_hash);
+        }
+        if (!query.exec())
+            return false;
+        if (!query.next())
+            return _hash.isEmpty();
+
+        _configID = query.value(0).toULongLong();
     }
-    if (!query.exec())
-        return false;
-    if (!query.next())
-        return _hash.isEmpty();
-
-    auto nconfID = query.value(0).toULongLong();
 
     //build values table
     query.prepare(
@@ -544,26 +583,25 @@ bool DBReqLoadNodeConfig::run(QSqlQuery &query)
         " INNER JOIN NodeDictDataFields ON NodeDictData.fieldID=NodeDictDataFields.key"
         " INNER JOIN NodeConfigDataValues ON NodeConfigData.valueID=NodeConfigDataValues.key"
         " WHERE NodeConfigData.nconfID=? ORDER BY name,subidx");
-    query.addBindValue(nconfID);
+    query.addBindValue(_configID);
     if (!query.exec())
         return false;
 
-    QVariantMap values;
     while (query.next()) {
         QString s = query.value(0).toString();
-        if (values.contains(s) && !values.value(s).canConvert<QVariantList>()) {
+        if (_values.contains(s) && !_values.value(s).canConvert<QVariantList>()) {
             qWarning() << "duplicate field" << s;
         }
         const QVariant &v = query.value(2);
         if (query.value(1).isNull()) {
-            values.insert(s, v);
+            _values.insert(s, v);
             continue;
         }
-        QVariantList list = values.contains(s) ? values.value(s).value<QVariantList>()
-                                               : QVariantList();
+        QVariantList list = _values.contains(s) ? _values.value(s).value<QVariantList>()
+                                                : QVariantList();
         list.append(v);
-        values.insert(s, list);
+        _values.insert(s, list);
     }
-    emit configLoaded(values);
+    emit configLoaded(_values);
     return true;
 }

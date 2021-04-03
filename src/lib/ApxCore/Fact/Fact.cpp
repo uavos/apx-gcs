@@ -484,17 +484,24 @@ QJsonDocument Fact::toJsonDocument() const
 }
 bool Fact::fromJsonDocument(QByteArray data)
 {
+    auto var = parseJsonDocument(data);
+    if (var.isNull())
+        return false;
+    fromVariant(var);
+    return true;
+}
+QVariant Fact::parseJsonDocument(QByteArray data)
+{
     QJsonParseError err;
-    QJsonDocument json = QJsonDocument::fromJson(data, &err);
+    auto json = QJsonDocument::fromJson(data, &err);
     if (err.error != QJsonParseError::NoError) {
         apxMsgW() << err.errorString();
-        return false;
+        return {};
     }
     if (json.isObject() || json.isArray()) {
-        fromVariant(json.toVariant());
-        return true;
+        return json.toVariant();
     }
-    return false;
+    return {};
 }
 
 QVariant Fact::toVariant() const

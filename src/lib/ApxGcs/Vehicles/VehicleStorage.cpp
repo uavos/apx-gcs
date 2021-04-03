@@ -22,6 +22,8 @@
 #include "VehicleStorage.h"
 #include "Vehicle.h"
 
+#include <Nodes/Nodes.h>
+
 #include <Database/VehiclesReqVehicle.h>
 
 VehicleStorage::VehicleStorage(Vehicle *vehicle)
@@ -36,11 +38,54 @@ void VehicleStorage::saveVehicleInfo()
         return;
 
     auto *req = new DBReqSaveVehicleInfo(m);
-    connect(
-        req,
-        &DBReqSaveVehicleInfo::foundID,
-        this,
-        [this](quint64 key) { _dbKey = key; },
-        Qt::QueuedConnection);
+    req->exec();
+}
+
+void VehicleStorage::saveVehicleConfig()
+{
+    auto nodes = _vehicle->f_nodes;
+
+    if (!nodes->valid())
+        return;
+
+    if (nodes->nodes().isEmpty())
+        return;
+
+    QList<quint64> nconfIDs;
+    for (auto i : nodes->nodes()) {
+        if (!i->valid())
+            return;
+        auto nconfID = i->storage->configID();
+        if (!nconfID)
+            return;
+        nconfIDs.append(nconfID);
+    }
+    auto vuid = _vehicle->uid();
+    auto title = nodes->getConfigTitle();
+
+    auto *req = new DBReqSaveVehicleConfig(vuid, nconfIDs, title);
+    req->exec();
+}
+
+void VehicleStorage::loadVehicleConfig(QString hash)
+{
+    auto *req = new DBReqLoadVehicleConfig(hash);
+    connect(req,
+            &DBReqLoadVehicleConfig::configLoaded,
+            this,
+            &VehicleStorage::configLoaded,
+            Qt::QueuedConnection);
+    req->exec();
+}
+void VehicleStorage::configLoaded(QVariantMap config)
+{
+    auto title = config.value("title").toString();
+    _vehicle->fromVariant(config);
+    _vehicle->message(tr("Vehicle configuration loaded").append(": ").append(title));
+}
+
+void VehicleStorage::importVehicleConfig(QVariantMap config)
+{
+    auto *req = new DBReqImportVehicleConfig(config);
     req->exec();
 }

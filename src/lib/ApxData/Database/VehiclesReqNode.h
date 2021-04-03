@@ -31,6 +31,10 @@ public:
         : DBReqVehicles()
         , _uid(uid)
     {}
+    explicit DBReqNode(quint64 nodeID)
+        : DBReqVehicles()
+        , nodeID(nodeID)
+    {}
 
     virtual bool run(QSqlQuery &query) override;
 
@@ -65,8 +69,16 @@ public:
     explicit DBReqLoadNodeInfo(QString uid)
         : DBReqNode(uid)
     {}
+    explicit DBReqLoadNodeInfo(quint64 nodeID)
+        : DBReqNode(nodeID)
+    {}
 
     bool run(QSqlQuery &query) override;
+
+    auto info() const { return _info; }
+
+private:
+    QVariantMap _info;
 
 signals:
     void infoLoaded(QVariantMap info);
@@ -91,17 +103,25 @@ class DBReqLoadNodeDict : public DBReqNode
 {
     Q_OBJECT
 public:
-    //load cache
     explicit DBReqLoadNodeDict(QString uid, QString hash)
         : DBReqNode(uid)
         , _hash(hash)
     {}
 
+    explicit DBReqLoadNodeDict(quint64 dictID)
+        : DBReqNode(QString())
+        , _dictID(dictID)
+    {}
+
     bool run(QSqlQuery &query);
+
+    auto dict() const { return _dict; }
 
 private:
     QString _hash;
-    QVariantList _dict;
+    quint64 _dictID{};
+
+    QVariantMap _dict;
 
 signals:
     void dictLoaded(QVariantMap dict);
@@ -121,10 +141,13 @@ public:
 
     bool run(QSqlQuery &query);
 
+    auto configID() const { return _configID; }
+
 private:
     QString _hash;
     QVariantMap _values;
     quint64 _time;
+    quint64 _configID{};
 
     quint64 getValueID(QSqlQuery &query, const QVariant &v);
 
@@ -140,11 +163,20 @@ public:
         : DBReqNode(uid)
         , _hash(hash)
     {}
+    explicit DBReqLoadNodeConfig(quint64 configID)
+        : DBReqNode(QString())
+        , _configID(configID)
+    {}
 
     bool run(QSqlQuery &query);
 
+    auto values() const { return _values; }
+
 protected:
     QString _hash;
+    quint64 _configID{};
+
+    QVariantMap _values;
 
 signals:
     void configLoaded(QVariantMap values);

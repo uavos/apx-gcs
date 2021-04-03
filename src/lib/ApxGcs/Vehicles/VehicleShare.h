@@ -21,19 +21,25 @@
  */
 #pragma once
 
+#include <Fact/Fact.h>
+#include <Sharing/Share.h>
 #include <QtCore>
 
-class Nodes;
+class Vehicle;
 
-class NodesStorage : public QObject
+class VehicleShare : public Share
 {
     Q_OBJECT
+
 public:
-    explicit NodesStorage(Nodes *nodes);
+    explicit VehicleShare(Vehicle *vehicle,
+                          Fact *parent,
+                          FactBase::Flags flags = FactBase::Flags(Action | IconOnly));
 
 private:
-    Nodes *_nodes;
+    Vehicle *_vehicle;
 
-public slots:
-    void saveNodesConfig();
+    QString getDefaultTitle() override;
+    bool exportRequest(QString format, QString fileName) override;
+    bool importRequest(QString format, QString fileName) override;
 };

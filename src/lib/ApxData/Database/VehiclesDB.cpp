@@ -177,42 +177,6 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "VehicleConfigData", "configID", false);
 }
 
-DBReqVehicles::DBReqVehicles(QString sn)
+DBReqVehicles::DBReqVehicles()
     : DatabaseRequest(Database::instance()->vehicles)
-    , sn(sn)
-    , nodeID(0)
 {}
-bool DBReqVehicles::run(QSqlQuery &query)
-{
-    query.prepare("SELECT * FROM Nodes WHERE sn = ?");
-    query.addBindValue(sn);
-    if (!query.exec())
-        return false;
-    if (query.next()) {
-        nodeID = query.value(0).toULongLong();
-    }
-    return true;
-}
-QHash<QString, quint64> DBReqVehicles::getFieldsByName(QSqlQuery &query, quint64 dictID) const
-{
-    QHash<QString, quint64> map;
-    query.prepare("SELECT * FROM NodeDictData "
-                  "INNER JOIN NodeDictDataFields ON NodeDictData.fieldID=NodeDictDataFields.key "
-                  "WHERE dictID=? AND type!='command' AND type!='group'");
-    query.addBindValue(dictID);
-    if (!query.exec())
-        return map;
-    while (query.next()) {
-        QString s = query.value("name").toString();
-        if (map.contains(s)) {
-            qWarning() << "duplicate field name";
-            map.clear();
-            break;
-        }
-        map.insert(s, query.value(0).toULongLong());
-    }
-    if (map.isEmpty()) {
-        qWarning() << "missing fields in dictionary" << dictID;
-    }
-    return map;
-}

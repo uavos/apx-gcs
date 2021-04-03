@@ -29,8 +29,8 @@ class DBReqSaveVehicleInfo : public DBReqVehicles
 public:
     explicit DBReqSaveVehicleInfo(QVariantMap info)
         : DBReqVehicles()
-        , info(info)
-        , t(QDateTime::currentDateTime().toMSecsSinceEpoch())
+        , _info(info)
+        , _time(QDateTime::currentDateTime().toMSecsSinceEpoch())
     {}
 
     bool run(QSqlQuery &query) override;
@@ -38,8 +38,8 @@ public:
     quint64 vehicleID{};
 
 private:
-    QVariantMap info;
-    quint64 t;
+    QVariantMap _info;
+    quint64 _time;
 
 signals:
     void foundID(quint64 key);
@@ -72,4 +72,35 @@ private:
 
 signals:
     void configSaved(quint64 confID);
+};
+
+class DBReqLoadVehicleConfig : public DBReqVehicles
+{
+    Q_OBJECT
+public:
+    explicit DBReqLoadVehicleConfig(QString hash)
+        : DBReqVehicles()
+        , _hash(hash)
+    {}
+    bool run(QSqlQuery &query);
+
+private:
+    QString _hash;
+
+signals:
+    void configLoaded(QVariantMap config);
+};
+
+class DBReqImportVehicleConfig : public DBReqVehicles
+{
+    Q_OBJECT
+public:
+    explicit DBReqImportVehicleConfig(QVariantMap config)
+        : DBReqVehicles()
+        , _config(config)
+    {}
+    bool run(QSqlQuery &query);
+
+private:
+    QVariantMap _config;
 };

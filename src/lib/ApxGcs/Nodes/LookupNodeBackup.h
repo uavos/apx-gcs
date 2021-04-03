@@ -35,7 +35,7 @@ public:
     explicit LookupNodeBackup(NodeItem *node, Fact *parent);
 
 private:
-    NodeItem *node;
+    NodeItem *_node;
 
 protected:
     bool fixItemDataThr(QVariantMap *item) override;

@@ -80,9 +80,9 @@ Rectangle {
                 showText: false
                 showIcon: true
                 //valueScale: 0.6
-                value: vehicle.nodes.protocol?vehicle.nodes.protocol.size:0
-                warning: vehicle.nodes.protocol?vehicle.nodes.protocol.size<=0:false
-                active: fact.modified || fact.progress>=0 || (!vehicle.nodes.valid)
+                value: fact.value?fact.value:0
+                warning: !value
+                active: fact.modified || fact.progress>=0 || (!fact.valid)
                 enabled: true
             }
 

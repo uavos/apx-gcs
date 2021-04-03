@@ -29,7 +29,10 @@
 #include <Fact/Fact.h>
 #include <Mandala/Mandala.h>
 
+#include "LookupVehicleConfig.h"
+#include "VehicleShare.h"
 #include "VehicleStorage.h"
+
 #include "Vehicles.h"
 
 class Vehicles;
@@ -72,6 +75,8 @@ public:
     VehicleWarnings *f_warnings;
 
     Fact *f_select;
+    LookupVehicleConfig *f_lookup;
+    VehicleShare *f_share;
 
     QTimer telemetryReqTimer;
 
@@ -83,11 +88,13 @@ public:
     enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
     Q_ENUM(FlightState)
 
-    QString uid() const { return _protocol ? _protocol->uid() : QString(); }
-    PVehicle *protocol() const { return _protocol; }
+    auto uid() const { return _protocol ? _protocol->uid() : QString(); }
+    auto protocol() const { return _protocol; }
+    auto storage() const { return _storage; }
 
     //Fact override
     QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
 private:
     PVehicle *_protocol;

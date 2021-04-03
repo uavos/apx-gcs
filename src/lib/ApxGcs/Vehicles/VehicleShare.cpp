@@ -19,35 +19,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "NodesShare.h"
-#include "Nodes.h"
+#include "VehicleShare.h"
+#include "Vehicle.h"
+
+#include <Nodes/Nodes.h>
 
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
-NodesShare::NodesShare(Nodes *nodes, Fact *parent, Flags flags)
-    : Share(parent, "nodes", tr("Nodes"), AppDirs::configs(), flags)
-    , _nodes(nodes)
+VehicleShare::VehicleShare(Vehicle *vehicle, Fact *parent, Flags flags)
+    : Share(parent, "vehicle", tr("Vehicle configuration"), AppDirs::configs(), flags)
+    , _vehicle(vehicle)
 {}
 
-QString NodesShare::getDefaultTitle()
+QString VehicleShare::getDefaultTitle()
 {
     QStringList st;
-    st << _nodes->vehicle->title();
-    st << _nodes->getConfigTitle();
+    st << _vehicle->title();
+    st << _vehicle->f_nodes->getConfigTitle();
     return st.join('-');
 }
-bool NodesShare::exportRequest(QString format, QString fileName)
+bool VehicleShare::exportRequest(QString format, QString fileName)
 {
-    if (!saveData(_nodes->toJsonDocument().toJson(), fileName))
+    if (!saveData(_vehicle->toJsonDocument().toJson(), fileName))
         return false;
     _exported(fileName);
     return true;
 }
-bool NodesShare::importRequest(QString format, QString fileName)
+bool VehicleShare::importRequest(QString format, QString fileName)
 {
-    if (!_nodes->fromJsonDocument(loadData(fileName)))
+    auto var = parseJsonDocument(loadData(fileName));
+    if (var.isNull())
         return false;
+
+    _vehicle->fromVariant(var);
+    _vehicle->storage()->importVehicleConfig(var.value<QVariantMap>());
+
     _imported(fileName);
     return true;
 }

@@ -43,7 +43,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     if (protocol) {
         bindProperty(protocol, "title", true);
         bindProperty(protocol, "value", true);
-        bindProperty(protocol, "active", false);
+        bindProperty(protocol, "active");
 
         // TODO: vehicle deletion
         // connect(protocol, &Fact::removed, this, &Fact::deleteFact);
@@ -72,6 +72,9 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     f_select
         = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
     connect(f_select, &Fact::triggered, this, [this, vehicles]() { vehicles->selectVehicle(this); });
+
+    f_lookup = new LookupVehicleConfig(this, this);
+    f_share = new VehicleShare(this, this);
 
     f_mandala = new Mandala(this);
     f_nodes = new Nodes(this);
@@ -214,12 +217,29 @@ QVariant Vehicle::toVariant() const
 
     QVariantMap m;
 
-    m.insert("uid", _protocol->uid());
-    m.insert("callsign", title());
-    m.insert("class", _protocol->vehicleTypeText());
-    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    QVariantMap vehicle;
+    vehicle.insert("uid", _protocol->uid());
+    vehicle.insert("callsign", title());
+    vehicle.insert("class", _protocol->vehicleTypeText());
+    vehicle.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    m.insert("vehicle", vehicle);
+    m.insert("nodes", f_nodes->toVariant());
+    m.insert("title", f_nodes->getConfigTitle());
 
     return m;
+}
+void Vehicle::fromVariant(const QVariant &var)
+{
+    auto m = var.value<QVariantMap>();
+    if (m.isEmpty())
+        return;
+
+    auto nodes = m.value("nodes").value<QVariantList>();
+    if (nodes.isEmpty()) {
+        apxConsoleW() << tr("Missing nodes in data set");
+    } else {
+        f_nodes->fromVariant(nodes);
+    }
 }
 
 void Vehicle::updateInfo()

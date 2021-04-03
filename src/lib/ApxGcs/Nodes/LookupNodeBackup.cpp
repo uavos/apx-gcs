@@ -33,7 +33,7 @@ LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
                      tr("Backups"),
                      tr("Restore parameters from backup"),
                      Database::instance()->vehicles)
-    , node(node)
+    , _node(node)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupNodeBackup::loadItem);
     QTimer::singleShot(500, this, &DatabaseLookup::defaultLookup);
@@ -44,7 +44,7 @@ void LookupNodeBackup::loadItem(QVariantMap modelData)
     auto hash = modelData.value("hash").toString();
     if (hash.isEmpty())
         return;
-    node->storage->loadNodeConfig(hash);
+    _node->storage->loadNodeConfig(hash);
 }
 
 bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
@@ -68,5 +68,5 @@ void LookupNodeBackup::defaultLookup()
           " WHERE Nodes.sn=? AND (NodeConfigs.title LIKE ?)"
           " ORDER BY NodeConfigs.time DESC"
           " LIMIT 50",
-          QVariantList() << node->uid() << s);
+          QVariantList() << _node->uid() << s);
 }
