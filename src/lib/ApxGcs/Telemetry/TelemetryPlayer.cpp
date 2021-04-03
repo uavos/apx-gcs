@@ -256,13 +256,13 @@ void TelemetryPlayer::missionDataLoaded(QString value, QString uid, bool uplink)
 {
     Q_UNUSED(value)
     Q_UNUSED(uplink)
-    //TODO: vehicle->f_mission->storage->loadMission(uid);
+    vehicle->f_mission->storage->loadMission(uid);
 }
 void TelemetryPlayer::nodesDataLoaded(QString value, QString uid, bool uplink)
 {
     Q_UNUSED(value)
     Q_UNUSED(uplink)
-    //TODO: vehicle->protocol()->storage->loadConfiguration(uid);
+    vehicle->storage()->loadVehicleConfig(uid);
 }
 void TelemetryPlayer::nodesConfUpdatesLoaded(DatabaseRequest::Records records)
 {
@@ -381,7 +381,7 @@ void TelemetryPlayer::next()
                 if (evt == "mission") {
                     vehicle->f_mission->storage->loadMission(uid);
                 } else if (evt == "nodes") {
-                    //TODO: vehicle->protocol()->storage->loadConfiguration(uid);
+                    vehicle->storage()->loadVehicleConfig(uid);
                 } else if (evt == "conf") {
                     loadConfValue(uid, sv);
                     QString fn = sv.left(sv.indexOf('='));

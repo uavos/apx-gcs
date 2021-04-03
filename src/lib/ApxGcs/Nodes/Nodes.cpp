@@ -293,7 +293,17 @@ void Nodes::fromVariant(const QVariant &var)
     }
 
     if (vehicle->isReplay()) {
-        clear();
+        // check if nodes set is the same
+        size_t match_cnt = 0;
+        for (auto i : nodes) {
+            auto uid
+                = i.value<QVariantMap>().value("info").value<QVariantMap>().value("uid").toString();
+            if (this->node(uid))
+                match_cnt++;
+        }
+
+        if (match_cnt != m_nodes.size())
+            clear();
 
         for (auto i : nodes) {
             auto node = i.value<QVariantMap>();

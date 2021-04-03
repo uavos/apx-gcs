@@ -62,7 +62,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 emit isGroundControlChanged();
             });
         }
-        //connect(protocol,&PVehicle::titleChanged,this,
     } else {
         m_is_replay = true;
     }

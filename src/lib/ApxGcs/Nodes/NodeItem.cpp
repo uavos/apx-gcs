@@ -461,7 +461,7 @@ void NodeItem::importValues(QVariantMap values)
         message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
                 AppNotify::FromApp | AppNotify::Warning);
     } else {
-        message(tr("Imported config"), AppNotify::FromApp);
+        //message(tr("Imported config"), AppNotify::FromApp);
     }
 }
 
