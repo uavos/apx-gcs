@@ -87,7 +87,7 @@ quint64 Mandala::timestamp() const
 
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
-    if (uid == 0xFFFF)
+    if (uid == 0xFFFF || mandala::is_bundle(uid))
         return nullptr;
     MandalaFact *f = uid_map.value(uid);
     if (f)

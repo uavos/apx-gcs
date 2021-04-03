@@ -45,9 +45,6 @@ public slots:
     virtual void requestScript(QString func) { _nimp(__FUNCTION__); }
     virtual void sendSerial(quint8 portID, QByteArray data) { _nimp(__FUNCTION__); }
 
-    virtual void flyTo(qreal lat, qreal lon) { _nimp(__FUNCTION__); }
-    virtual void lookTo(qreal lat, qreal lon, qreal hmsl) { _nimp(__FUNCTION__); }
-
 signals:
     void valuesData(PBase::Values values);
 

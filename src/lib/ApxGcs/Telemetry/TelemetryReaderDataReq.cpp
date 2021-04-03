@@ -132,6 +132,11 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
             //extrapolate unchanged value tail-1ms
             pts->append(QPointF(tf, pts->last().y()));
         }
+        if (pts->isEmpty() && v != 0.0 && t != 0) {
+            //extrapolate/predict initial value at start
+            pts->append(QPointF(0, 0));
+            pts->append(QPointF(tf, 0));
+        }
         pts->append(QPointF(tf, v));
 
         //path update

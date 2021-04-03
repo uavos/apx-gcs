@@ -32,7 +32,7 @@
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
-//=============================================================================
+
 TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     : Fact(parent, "player", tr("Player"), tr("Telemetry data player"), Group)
     , telemetry(telemetry)
@@ -90,7 +90,7 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     updateStatus();
     updateActions();
 }
-//==============================================================================
+
 void TelemetryPlayer::updateActions()
 {
     bool enb = cacheID;
@@ -99,12 +99,12 @@ void TelemetryPlayer::updateActions()
     f_stop->setEnabled(enb && (playing));
     f_rewind->setEnabled(enb);
 }
-//==============================================================================
+
 void TelemetryPlayer::updateStatus()
 {
     setValue(AppRoot::timeToString(f_time->value().toULongLong() / 1000, true));
 }
-//==============================================================================
+
 void TelemetryPlayer::reset()
 {
     stop();
@@ -120,7 +120,7 @@ void TelemetryPlayer::setCacheId(quint64 v)
     cacheID = v;
     updateActions();
 }
-//=============================================================================
+
 void TelemetryPlayer::updateSpeed()
 {
     _speed = f_speed->value().toDouble();
@@ -146,7 +146,7 @@ void TelemetryPlayer::updateTime()
         play();
     }
 }
-//=============================================================================
+
 void TelemetryPlayer::play()
 {
     if (active())
@@ -155,13 +155,17 @@ void TelemetryPlayer::play()
         return;
     vehicle->f_select->trigger();
     setActive(true);
+
+    //reste mandala
+    vehicle->f_mandala->restoreDefaults();
+
     playTime0 = _time;
     playTime.start();
 
     //fill facts map
     if (factsMap.isEmpty()) {
         TelemetryDB::TelemetryFieldsMap map = Database::instance()->telemetry->fieldsMap();
-        foreach (quint64 key, map.keys()) {
+        for (auto key : map.keys()) {
             Fact *f = vehicle->f_mandala->findChild(map.value(key));
             if (f)
                 factsMap.insert(key, f);
@@ -170,7 +174,7 @@ void TelemetryPlayer::play()
 
     //collect data samples for t0
     double t = _time / 1000.0;
-    foreach (quint64 fieldID, telemetry->f_reader->fieldData.keys()) {
+    for (auto fieldID : telemetry->f_reader->fieldData.keys()) {
         Fact *f = factsMap.value(fieldID);
         if (!f)
             continue;
@@ -197,8 +201,7 @@ void TelemetryPlayer::rewind()
             play();
     }
 }
-//==============================================================================
-//==============================================================================
+
 void TelemetryPlayer::dbRequestEvents(quint64 t)
 {
     {
@@ -295,7 +298,7 @@ void TelemetryPlayer::loadConfValue(const QString &sn, QString s)
         return;
     node->loadConfigValue(spath, sv);
 }
-//==============================================================================
+
 void TelemetryPlayer::next()
 {
     if (!active())
@@ -430,8 +433,7 @@ void TelemetryPlayer::next()
     } else
         next();
 }
-//==============================================================================
-//=============================================================================
+
 double TelemetryPlayer::sampleValue(quint64 fieldID, double t)
 {
     dataPosMap[fieldID] = 0;
@@ -487,4 +489,3 @@ double TelemetryPlayer::sampleValue(quint64 fieldID, double t)
         }
     }
 }
-//=============================================================================

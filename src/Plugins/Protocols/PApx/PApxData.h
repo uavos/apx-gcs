@@ -38,7 +38,7 @@ private:
     PApxRequest _req;
 
     template<typename S>
-    void sendBundle(mandala::uid_t uid, const S &data)
+    void sendBundleT(mandala::uid_t uid, const S &data)
     {
         _req.request(uid, xbus::pri_final);
         _req.write(&data, sizeof(S));
@@ -58,12 +58,12 @@ private:
                                 const mandala::spec_s &spec,
                                 PStreamReader &stream);
 
+    void sendBundle(mandala::uid_t uid, QVariant value);
+
 protected:
     void sendValue(mandala::uid_t uid, QVariant value) override;
 
     void requestCalibration(mandala::uid_t uid, QByteArray data) override;
     void requestScript(QString func) override;
     void sendSerial(quint8 portID, QByteArray data) override;
-
-    void flyTo(qreal lat, qreal lon) override;
 };

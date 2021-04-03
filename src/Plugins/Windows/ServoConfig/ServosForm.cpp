@@ -129,10 +129,8 @@ void ServosForm::sendVolz(uint cmd, uint id, uint arg)
     pack[4] = (crc >> 8) & 0xFF;
     pack[5] = crc & 0xFF;
 
-    PVehicle *protocol = Vehicles::instance()->current()->protocol();
-    if (!protocol)
-        return;
-    protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
+    auto vehicle = Vehicles::instance()->current();
+    vehicle->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
 }
 //==============================================================================
 void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)

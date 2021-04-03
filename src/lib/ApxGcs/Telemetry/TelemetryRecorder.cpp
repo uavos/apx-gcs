@@ -29,7 +29,7 @@
 #include <Vehicles/Vehicle.h>
 
 #include <Nodes/Nodes.h>
-//=============================================================================
+
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
@@ -49,17 +49,23 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
 
     connect(vehicle, &Vehicle::telemetryData, this, &TelemetryRecorder::recordDownlink);
     connect(protocol->data(), &PData::valuesData, this, &TelemetryRecorder::recordDownlink);
-    connect(vehicle->f_mandala, &Mandala::sendValue, this, &TelemetryRecorder::recordUplink);
+    connect(vehicle, &Vehicle::sendValue, this, &TelemetryRecorder::recordUplink);
 
+    // record serial port data
     connect(protocol->data(), &PData::serialData, this, [this](quint8 portID, QByteArray data) {
         recordSerialData(portID, data, false);
     });
+    connect(vehicle, &Vehicle::sendSerial, this, [this](quint8 portID, QByteArray data) {
+        recordSerialData(portID, data, true);
+    });
 
+    // record config on each upload or save
     connect(vehicle->storage(),
             &VehicleStorage::configSaved,
             this,
             &TelemetryRecorder::recordConfig);
 
+    // record text messages
     connect(vehicle->f_nodes,
             &Nodes::fieldUploadReport,
             this,
@@ -70,7 +76,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             this,
             &TelemetryRecorder::recordNotification);
 
-    //write mission on each upload or download
+    // record mission on each upload or download
     connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
         connect(this->_vehicle->f_mission->storage,
                 &MissionStorage::saved,
@@ -84,6 +90,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
                 &TelemetryRecorder::recordMissionUplink);
     });
 
+    // display
     connect(this, &TelemetryRecorder::timeChanged, this, &TelemetryRecorder::updateStatus);
 
     recTelemetryID = 0;
@@ -106,7 +113,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
 
     updateStatus();
 }
-//=============================================================================
+
 void TelemetryRecorder::updateStatus()
 {
     setValue(AppRoot::timeToString(time(), true));
@@ -116,13 +123,12 @@ void TelemetryRecorder::restartRecording()
     recStopTimer.stop();
     reset();
 }
-//=============================================================================
+
 void TelemetryRecorder::invalidateCache()
 {
     Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
 }
-//=============================================================================
-//=============================================================================
+
 bool TelemetryRecorder::dbCheckRecord()
 {
     checkAutoRecord();
@@ -164,6 +170,7 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
     reqNewRecord = nullptr;
     configHash.clear();  //force write
     missionHash.clear(); //force write
+    recValues.clear();
     recordMission(false);
     recordConfig(chash, "init");
     recordDownlink();
@@ -180,7 +187,7 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
     DBReqTelemetryWriteSharedInfo *req = new DBReqTelemetryWriteSharedInfo(telemetryID, info);
     req->exec();
 }
-//=============================================================================
+
 quint64 TelemetryRecorder::getDataTimestamp()
 {
     quint64 vts = _vehicle->f_mandala->timestamp();
@@ -197,7 +204,7 @@ quint64 TelemetryRecorder::getDataTimestamp()
     m_currentTimestamp = t;
     return t;
 }
-//=============================================================================
+
 void TelemetryRecorder::updateFactsMap()
 {
     //fill facts map
@@ -210,7 +217,7 @@ void TelemetryRecorder::updateFactsMap()
             factsMap.insert(i, f);
     }
 }
-//=============================================================================
+
 void TelemetryRecorder::writeEvent(const QString &name,
                                    const QString &value,
                                    const QString &uid,
@@ -229,8 +236,7 @@ void TelemetryRecorder::writeEvent(const QString &name,
     } else
         reqPendingList.append(req);
 }
-//=============================================================================
-//=============================================================================
+
 void TelemetryRecorder::recordDownlink()
 {
     //write all updated facts
@@ -276,15 +282,19 @@ void TelemetryRecorder::recordDownlink()
             reqPendingList.append(req);
     }
 }
-//=============================================================================
+
 void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
 {
     bool bID = dbCheckRecord();
     updateFactsMap();
 
     Fact *f = _vehicle->f_mandala->fact(uid);
-    if (!f)
+    if (!f) {
+        auto name = _vehicle->f_mandala->meta(uid).path;
+        auto vtext = value.toStringList().join(',');
+        writeEvent("cmd", QString("%1/%2").arg(_vehicle->title()).arg(name), vtext, true);
         return;
+    }
     DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
                                                                getDataTimestamp(),
                                                                factsMap.key(f),
@@ -296,9 +306,9 @@ void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
     } else
         reqPendingList.append(req);
 }
-//=============================================================================
+
 // write data slots
-//=============================================================================
+
 void TelemetryRecorder::recordNotification(QString msg,
                                            QString subsystem,
                                            AppNotify::NotifyFlags flags,
@@ -320,7 +330,7 @@ void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool u
 {
     writeEvent("serial", data.toHex().toUpper(), QString::number(portNo), uplink);
 }
-//=============================================================================
+
 void TelemetryRecorder::recordMissionDownlink()
 {
     disconnect(_vehicle->f_mission->storage,
@@ -373,10 +383,7 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
         }
     }
 }
-//=============================================================================
-//=============================================================================
 
-//=============================================================================
 bool TelemetryRecorder::checkAutoRecord(void)
 {
     //if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
@@ -398,7 +405,7 @@ bool TelemetryRecorder::checkAutoRecord(void)
     }
     return recording();
 }
-//=============================================================================
+
 bool TelemetryRecorder::recording() const
 {
     return f_enable->value().toBool();
@@ -414,12 +421,12 @@ void TelemetryRecorder::reset(void)
     recValues.clear();
     setTime(0, true);
 }
-//=============================================================================
+
 quint64 TelemetryRecorder::currentTimstamp() const
 {
     return m_currentTimestamp;
 }
-//=============================================================================
+
 quint64 TelemetryRecorder::time() const
 {
     return m_time;
@@ -441,4 +448,3 @@ void TelemetryRecorder::timeUpdate(void)
 {
     emit timeChanged();
 }
-//=============================================================================

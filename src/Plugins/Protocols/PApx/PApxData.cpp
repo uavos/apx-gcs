@@ -127,14 +127,6 @@ void PApxData::sendSerial(quint8 portID, QByteArray data)
     _req.send();
 }
 
-void PApxData::flyTo(qreal lat, qreal lon)
-{
-    mandala::bundle::cmd_pos_s data{};
-    data.lat = lat;
-    data.lon = lon;
-    sendBundle<mandala::bundle::cmd_pos_s>(mandala::cmd::nav::pos::uid, data);
-}
-
 void PApxData::pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &stream)
 {
     switch (type) {
@@ -160,6 +152,11 @@ void PApxData::pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &s
 
 void PApxData::sendValue(mandala::uid_t uid, QVariant value)
 {
+    if (mandala::is_bundle(uid)) {
+        sendBundle(uid, value);
+        return;
+    }
+
     _req.request(uid, value.isNull() ? xbus::pri_request : xbus::pri_final);
     mandala::spec_s spec{};
     spec.type = Mandala::meta(uid).type_id;
@@ -242,4 +239,20 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
     }
 
     return values;
+}
+
+void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
+{
+    switch (uid) {
+    default:
+        break;
+    case mandala::cmd::nav::pos::uid: {
+        QVariantList v = value.value<QVariantList>();
+        if (v.size() != 2)
+            break;
+        sendBundleT<mandala::bundle::cmd_pos_s>(uid, {v.at(0).toDouble(), v.at(0).toDouble()});
+        return;
+    }
+    }
+    _nimp(__FUNCTION__);
 }

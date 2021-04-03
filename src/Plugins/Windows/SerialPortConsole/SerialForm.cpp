@@ -119,10 +119,8 @@ void SerialForm::btnSend()
     if (ui->cbLF->isChecked())
         ba.append('\n');
 
-    PVehicle *protocol = Vehicles::instance()->current()->protocol();
-    if (!protocol)
-        return;
-    protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
+    auto vehicle = Vehicles::instance()->current();
+    vehicle->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
 }
 //==============================================================================
 void SerialForm::serialData(uint portNo, QByteArray ba)

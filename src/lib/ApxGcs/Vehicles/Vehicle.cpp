@@ -120,7 +120,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 Qt::QueuedConnection);
 
         // mandala update
-        connect(f_mandala, &Mandala::sendValue, protocol->data(), &PData::sendValue);
+        connect(f_mandala, &Mandala::sendValue, this, &Vehicle::sendValue);
         connect(protocol->data(), &PData::valuesData, f_mandala, &Mandala::valuesData);
 
         connect(protocol->telemetry(),
@@ -149,6 +149,9 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         // forward telemetry stamp to notify plugins
         connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
         connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &Vehicle::telemetryData);
+        // forward serial TX for plugins
+        connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
+        connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);
     }
 
     if (isIdentified()) {
@@ -322,7 +325,10 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    _protocol->data()->flyTo(qDegreesToRadians(c.latitude()), qDegreesToRadians(c.longitude()));
+    QVariantList value;
+    value << qDegreesToRadians(c.latitude());
+    value << qDegreesToRadians(c.longitude());
+    emit sendValue(mandala::cmd::nav::pos::uid, value);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
@@ -330,9 +336,10 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
         return;
     if (!c.isValid())
         return;
-    _protocol->data()->lookTo(qDegreesToRadians(c.latitude()),
-                              qDegreesToRadians(c.longitude()),
-                              f_ref_hmsl->value().toDouble());
+    QVariantList value;
+    value << qDegreesToRadians(c.latitude());
+    value << qDegreesToRadians(c.longitude());
+    emit sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
