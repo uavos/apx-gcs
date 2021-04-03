@@ -30,7 +30,9 @@
 VehicleShare::VehicleShare(Vehicle *vehicle, Fact *parent, Flags flags)
     : Share(parent, "vehicle", tr("Vehicle configuration"), AppDirs::configs(), flags)
     , _vehicle(vehicle)
-{}
+{
+    //TODO: update actions
+}
 
 QString VehicleShare::getDefaultTitle()
 {

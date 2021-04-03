@@ -28,11 +28,10 @@
 #include <Fact/FactListModel.h>
 
 #include <Nodes/Nodes.h>
-//#include <Nodes/NodesShare.h>
 
 #include <Datalink/Datalink.h>
 #include <Telemetry/Telemetry.h>
-//#include <Telemetry/TelemetryShare.h>
+#include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicles.h>
 
 #include <QDesktopServices>
@@ -65,10 +64,10 @@ AppMenu::AppMenu(Fact *parent)
     }
 
     file = new Fact(this, "file", tr("File"), "", Group, "file");
-    // TODO: menu import telemetry
-    // f = new Fact(file, "telemetry");
-    // f->setOpt("shortcut", QKeySequence::Open);
-    // f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
+
+    f = new Fact(file, "telemetry");
+    f->setOpt("shortcut", QKeySequence::Open);
+    f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
 
     f = new Fact(file, "nodes");
     f->setBinding(Vehicles::instance()->f_replay->f_share->f_import);

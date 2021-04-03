@@ -21,16 +21,28 @@
  */
 #pragma once
 
-#include <Protocols/ProtocolNode.h>
+#include <Fact/Fact.h>
+#include <Sharing/Share.h>
+#include <QtCore>
 
-#include "ShareExport.h"
+class Telemetry;
 
-class NodesExport : public ShareExport
+class TelemetryShare : public Share
 {
     Q_OBJECT
-public:
-    explicit NodesExport(QObject *parent = nullptr);
 
-    QByteArray convert(const ProtocolNode::Dict &d, QVariantMap info = QVariantMap());
-    bool save(QString fileName, const ProtocolNode::Dict &d, QVariantMap info);
+public:
+    explicit TelemetryShare(Telemetry *telemetry,
+                            Fact *parent,
+                            FactBase::Flags flags = FactBase::Flags(Action | IconOnly));
+
+private:
+    Telemetry *_telemetry;
+
+    QString getDefaultTitle() override;
+    bool exportRequest(QString format, QString fileName) override;
+    bool importRequest(QString format, QString fileName) override;
+
+signals:
+    void importJobDone(quint64 id);
 };

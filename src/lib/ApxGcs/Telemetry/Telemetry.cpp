@@ -24,7 +24,7 @@
 #include "TelemetryPlayer.h"
 #include "TelemetryReader.h"
 #include "TelemetryRecorder.h"
-//#include "TelemetryShare.h"
+#include "TelemetryShare.h"
 
 #include <App/App.h>
 #include <Mission/MissionStorage.h>
@@ -70,12 +70,11 @@ Telemetry::Telemetry(Vehicle *parent)
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         bindProperty(f_player, "active", true);
 
-        //TODO: share
-        /*f_share = new TelemetryShare(this, this);
+        f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
             f_lookup->jumpToRecord(id);
         });
-        connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);*/
+        connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
 
         connect(App::instance(), &App::loadingFinished, this, [this]() {
             connect(vehicle,

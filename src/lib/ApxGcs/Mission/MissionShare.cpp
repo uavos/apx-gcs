@@ -38,6 +38,8 @@ MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
             mission->storage,
             &MissionStorage::saveMission,
             Qt::QueuedConnection);
+
+    //TODO: update actions
 }
 
 QString MissionShare::getDefaultTitle()
