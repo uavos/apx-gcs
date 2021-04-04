@@ -22,7 +22,9 @@
 #include "TelemetryShare.h"
 #include "LookupTelemetry.h"
 #include "Telemetry.h"
+
 #include "TelemetryExport.h"
+#include "TelemetryImport.h"
 
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
@@ -35,12 +37,10 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
             flags)
     , _telemetry(telemetry)
 {
+    _exportFormats << "csv";
+
     QString sect = tr("Queue");
-    qimp = new QueueJob(this,
-                        "qimp",
-                        tr("Import queue"),
-                        "",
-                        new TelemetryExport()); //TODO: telemetry import
+    qimp = new QueueJob(this, "qimp", tr("Import queue"), "", new TelemetryImport());
     qimp->setIcon("import");
     qimp->setSection(sect);
     connect(qimp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
@@ -102,9 +102,9 @@ bool TelemetryShare::exportRequest(QString format, QString fileName)
 }
 bool TelemetryShare::importRequest(QString format, QString fileName)
 {
-    // TODO: telemetry import
-
-    _imported(fileName);
+    //add to queue
+    auto title = QFileInfo(fileName).completeBaseName();
+    new Fact(qimp, title, title, fileName);
     return true;
 }
 

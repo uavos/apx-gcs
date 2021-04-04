@@ -33,8 +33,11 @@ public:
     typedef QMap<quint64, QString> TelemetryFieldsMap;
     typedef QMap<QString, QString> TelemetryFieldsAliases;
 
-    TelemetryFieldsMap &fieldsMap();
+    TelemetryFieldsMap fieldsMap();
     void setFieldsMap(const TelemetryFieldsMap &v);
+
+    TelemetryFieldsAliases fieldsAliases();
+    void setFieldsAliases(const TelemetryFieldsAliases &v);
 
     void markCacheInvalid(quint64 telemetryID);
     QList<quint64> invalidCacheList();
@@ -49,6 +52,7 @@ private:
     QMutex pMutex; //property access mutex
 
     TelemetryFieldsMap m_fieldsMap;
+    TelemetryFieldsAliases m_fieldsAliases;
 
     QList<quint64> m_invalidCacheList;
     quint64 latestInvalidCacheID;

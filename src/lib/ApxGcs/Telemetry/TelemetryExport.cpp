@@ -116,7 +116,7 @@ bool TelemetryExport::writeXml(QFile *file_p,
     stream.writeStartDocument();
     stream.writeStartElement("telemetry");
     stream.writeAttribute("href", "http://www.uavos.com/");
-    stream.writeAttribute("format", "1");
+    stream.writeAttribute("format", "11");
 
     stream.writeTextElement("title", title);
     stream.writeTextElement("timestamp",

@@ -19,18 +19,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryXmlImport_H
-#define TelemetryXmlImport_H
-//=============================================================================
+#pragma once
+
 #include <ApxMisc/QueueWorker.h>
 #include <Database/DatabaseRequest.h>
-//=============================================================================
-class TelemetryXmlImport : public QueueWorker
+
+class TelemetryImport : public QueueWorker
 {
     Q_OBJECT
 
 public:
-    explicit TelemetryXmlImport();
+    explicit TelemetryImport();
 
 protected:
     void exec(Fact *f);
@@ -49,11 +48,12 @@ private:
 
     quint64 read(QString fileName);
     quint64 read(QXmlStreamReader &xml);
-    quint64 readOldFormat(QXmlStreamReader &xml);
 
     QVariantMap readSection(QXmlStreamReader &xml);
-
     QByteArray readXmlPart(QXmlStreamReader &xml);
+
+    void readConfigs(QXmlStreamReader &xml);
+    void readMissions(QXmlStreamReader &xml);
 
     //database
     quint64 dbReadSharedHashId(QString hash);
@@ -65,17 +65,6 @@ private:
                      const QString &value,
                      const QString &uid,
                      bool uplink);
-    void dbSaveMission(quint64 time_ms,
-                       quint64 timestamp,
-                       const QString &title,
-                       const QByteArray &data,
-                       bool uplink);
-    void dbSaveNodes(quint64 time_ms,
-                     quint64 timestamp,
-                     const QString &title,
-                     const QByteArray &data);
 
     bool dbCommitRecord();
 };
-//=============================================================================
-#endif
