@@ -84,8 +84,11 @@ public:
     {}
     bool run(QSqlQuery &query);
 
+    auto config() const { return _config; }
+
 private:
     QString _hash;
+    QVariantMap _config;
 
 signals:
     void configLoaded(QVariantMap config);

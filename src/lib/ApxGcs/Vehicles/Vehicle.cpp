@@ -224,7 +224,7 @@ void Vehicle::fromVariant(const QVariant &var)
 
     auto nodes = m.value("nodes").value<QVariantList>();
     if (nodes.isEmpty()) {
-        apxConsoleW() << tr("Missing nodes in data set");
+        apxMsgW() << tr("Missing nodes in data set");
     } else {
         f_nodes->fromVariant(nodes);
     }

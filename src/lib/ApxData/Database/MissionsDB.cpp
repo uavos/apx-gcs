@@ -313,33 +313,33 @@ bool DBReqMissionsLoad::run(QSqlQuery &query)
         return false;
 
     quint64 missionID = query.value("Missions.key").toULongLong();
-    auto m = filterIdValues(queryRecord(query));
+    _mission = filterIdValues(queryRecord(query));
 
     query.prepare("SELECT * FROM Runways WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    m.insert("rw", readItems(query));
+    _mission.insert("rw", readItems(query));
 
     query.prepare("SELECT * FROM Waypoints WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    m.insert("wp", readItems(query));
+    _mission.insert("wp", readItems(query));
 
     query.prepare("SELECT * FROM Taxiways WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    m.insert("tw", readItems(query));
+    _mission.insert("tw", readItems(query));
 
     query.prepare("SELECT * FROM Pois WHERE missionID=? ORDER BY num ASC");
     query.addBindValue(missionID);
     if (!query.exec())
         return false;
-    m.insert("pi", readItems(query));
+    _mission.insert("pi", readItems(query));
 
-    emit loaded(m);
+    emit loaded(_mission);
     return true;
 }
 QVariant DBReqMissionsLoad::readItems(QSqlQuery &query)

@@ -22,8 +22,10 @@
 #include "TelemetryShare.h"
 #include "LookupTelemetry.h"
 #include "Telemetry.h"
+#include "TelemetryExport.h"
 
 #include <App/AppDirs.h>
+#include <App/AppLog.h>
 
 TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     : Share(parent,
@@ -33,7 +35,44 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
             flags)
     , _telemetry(telemetry)
 {
-    //TODO: update actions
+    QString sect = tr("Queue");
+    qimp = new QueueJob(this,
+                        "qimp",
+                        tr("Import queue"),
+                        "",
+                        new TelemetryExport()); //TODO: telemetry import
+    qimp->setIcon("import");
+    qimp->setSection(sect);
+    connect(qimp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
+    connect(qimp, &Fact::valueChanged, this, &TelemetryShare::updateStatus);
+
+    connect(qimp, &QueueJob::finished, this, [this](Fact *, QVariantMap result) {
+        if (result.value("key").toULongLong()) {
+            emit imported("", result.value("title").toString());
+        }
+    });
+    connect(qimp, &QueueJob::jobDone, this, [this](QVariantMap latestResult) {
+        emit importJobDone(latestResult.value("key").toULongLong());
+    });
+
+    qexp = new QueueJob(this, "qexp", tr("Export queue"), "", new TelemetryExport());
+    qexp->setIcon("export");
+    qexp->setSection(sect);
+    connect(qexp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
+
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop conversion"), Action | Stop);
+    connect(f_stop, &Fact::triggered, qimp, &QueueJob::stop);
+    connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);
+
+    connect(telemetry->f_lookup,
+            &LookupTelemetry::recordIdChanged,
+            this,
+            &TelemetryShare::updateActions);
+
+    descr_s = descr();
+    updateProgress();
+    updateStatus();
+    updateActions();
 }
 
 QString TelemetryShare::getDefaultTitle()
@@ -48,21 +87,55 @@ QString TelemetryShare::getDefaultTitle()
 }
 bool TelemetryShare::exportRequest(QString format, QString fileName)
 {
-    // if (!saveData(_telemetry->toJsonDocument().toJson(), fileName))
-    //     return false;
+    quint64 key = _telemetry->f_lookup->recordId();
+    if (!key) {
+        apxMsgW() << tr("Missing data in database");
+        return false;
+    }
+    auto title = QFileInfo(fileName).completeBaseName();
+    //add to queue
+    Fact *f = new Fact(nullptr, title, title, fileName);
+    f->setValue(key);
+    f->setParentFact(qexp);
 
-    _exported(fileName);
     return true;
 }
 bool TelemetryShare::importRequest(QString format, QString fileName)
 {
-    auto var = parseJsonDocument(loadData(fileName));
-    if (var.isNull())
-        return false;
-
-    //_telemetry->fromVariant(var);
-    //_telemetry->storage()->importTelemetryConfig(var.value<QVariantMap>());
+    // TODO: telemetry import
 
     _imported(fileName);
     return true;
+}
+
+void TelemetryShare::updateActions()
+{
+    f_export->setEnabled(_telemetry->f_lookup->recordId());
+}
+void TelemetryShare::updateProgress()
+{
+    int v = -1;
+    if (qexp->size() > 0)
+        v = qexp->progress();
+    else
+        v = qimp->progress();
+    setProgress(v);
+    f_stop->setEnabled(v >= 0);
+    updateDescr();
+}
+void TelemetryShare::updateStatus()
+{
+    setValue(qimp->value());
+}
+void TelemetryShare::updateDescr()
+{
+    QString s;
+    if (qimp->progress() >= 0)
+        s = tr("Importing");
+    else if (qexp->progress() >= 0)
+        s = tr("Exporting");
+    if (s.isEmpty())
+        setDescr(descr_s);
+    else
+        setDescr(s.append(QString("... %1").arg(value().toString())));
 }

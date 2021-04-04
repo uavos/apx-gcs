@@ -114,7 +114,7 @@ void AppPlugin::loadLib()
             d->load();
         }
         if (!ok) {
-            apxConsoleW() << tr("Dependency not found").append(":") << depends;
+            apxMsgW() << tr("Dependency not found").append(":") << depends;
         }
         apxConsole() << tr("Initializing").append(":") << name;
     }

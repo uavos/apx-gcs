@@ -41,7 +41,6 @@ function(apx_qrc TARGET)
         if(alias MATCHES "\\.\\.+")
             message(FATAL_ERROR "QRC alias: ${alias}")
         endif()
-        # set(alias ${qrc_name}) # TODO: relative alias
         file(APPEND ${qrc_file} "\n\t<file alias=\"${alias}\">${qrc_src}</file>")
     endforeach()
     file(APPEND ${qrc_file} "\n</qresource>\n</RCC>")

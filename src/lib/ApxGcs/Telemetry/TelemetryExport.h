@@ -19,18 +19,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryXmlExport_H
-#define TelemetryXmlExport_H
-//=============================================================================
+#pragma once
+
 #include <ApxMisc/QueueWorker.h>
 #include <Database/TelemetryReqRead.h>
-//=============================================================================
-class TelemetryXmlExport : public QueueWorker
+
+class TelemetryExport : public QueueWorker
 {
     Q_OBJECT
 
 public:
-    explicit TelemetryXmlExport();
+    explicit TelemetryExport();
 
 protected:
     void exec(Fact *f);
@@ -45,11 +44,10 @@ private:
     bool writeCSV(QFile *file_p, DBReqTelemetryReadData &req);
 
     bool writeXml(QFile *file_p,
-                  DBReqTelemetryReadData &req,
+                  const DBReqTelemetryReadData &req,
                   const QString &title,
                   const QString &sharedHash,
-                  const QVariantMap &info,
-                  const QVariantMap &stats);
+                  const QVariantMap &info);
     void writeDownlink(QXmlStreamWriter &stream, quint64 time, const QStringList &values);
     void writeUplink(QXmlStreamWriter &stream,
                      quint64 time,
@@ -62,5 +60,3 @@ private:
                     const QString &uid,
                     bool uplink);
 };
-//=============================================================================
-#endif

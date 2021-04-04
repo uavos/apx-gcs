@@ -25,6 +25,8 @@
 #include <Sharing/Share.h>
 #include <QtCore>
 
+#include <ApxMisc/QueueJob.h>
+
 class Telemetry;
 
 class TelemetryShare : public Share
@@ -36,12 +38,24 @@ public:
                             Fact *parent,
                             FactBase::Flags flags = FactBase::Flags(Action | IconOnly));
 
+    Fact *f_stop;
+
 private:
     Telemetry *_telemetry;
+
+    QueueJob *qimp;
+    QueueJob *qexp;
+    QString descr_s;
 
     QString getDefaultTitle() override;
     bool exportRequest(QString format, QString fileName) override;
     bool importRequest(QString format, QString fileName) override;
+
+private slots:
+    void updateActions();
+    void updateProgress();
+    void updateStatus();
+    void updateDescr();
 
 signals:
     void importJobDone(quint64 id);

@@ -48,8 +48,12 @@ public:
     {}
     bool run(QSqlQuery &query);
 
+    auto mission() const { return _mission; }
+
 private:
     QString hash;
+    QVariantMap _mission;
+
     QVariant readItems(QSqlQuery &query);
 
 signals:

@@ -380,15 +380,25 @@ bool DBReqTelemetryReadData::run(QSqlQuery &query)
     query.addBindValue(telemetryID);
     if (!query.exec())
         return false;
-    quint64 count = 0;
+
     if (!query.next())
         return false;
 
+    quint64 count = 0;
     count += query.value("downlink").toULongLong();
     count += query.value("uplink").toULongLong();
     count += query.value("events").toULongLong();
 
     info = filterIdValues(queryRecord(query));
+
+    //collect fields map
+    query.prepare("SELECT key, name FROM TelemetryFields");
+    if (!query.exec())
+        return false;
+    while (query.next()) {
+        quint64 fid = query.value(0).toULongLong();
+        fieldNames.insert(fid, query.value(1).toString());
+    }
 
     //data
     query.prepare("SELECT * FROM TelemetryCache"
@@ -400,19 +410,22 @@ bool DBReqTelemetryReadData::run(QSqlQuery &query)
         return false;
     cacheID = query.value(0).toULongLong();
 
-    query.prepare("SELECT time,type,name,value,uid FROM TelemetryCacheData"
-                  " WHERE cacheID=?");
+    const QStringList rows = QStringList() << "time"
+                                           << "type"
+                                           << "name"
+                                           << "value"
+                                           << "uid";
+    query.prepare(QString("SELECT %1 FROM TelemetryCacheData"
+                          " WHERE cacheID=?")
+                      .arg(rows.join(',')));
     query.addBindValue(cacheID);
     if (!query.exec())
         return false;
 
     quint64 row = 0;
     int vp_s = 0;
-    records.names << "time"
-                  << "type"
-                  << "name"
-                  << "value"
-                  << "uid";
+    records.names = rows;
+    QSet<quint64> usedFields;
     //qDebug()<<t0.elapsed()<<"ms";
     while (query.next()) {
         if (discarded())
@@ -423,19 +436,18 @@ bool DBReqTelemetryReadData::run(QSqlQuery &query)
             emit progress(telemetryID, vp);
         }
         row++;
+        if (query.value(1).toUInt() <= 1) {
+            usedFields.insert(query.value(2).toULongLong());
+        }
         records.values.append(QVariantList() << query.value(0) << query.value(1) << query.value(2)
                                              << query.value(3) << query.value(4));
     }
     if (discarded())
         return true;
 
-    //collect fields map
-    query.prepare("SELECT key, name FROM TelemetryFields");
-    if (!query.exec())
-        return false;
-    while (query.next()) {
-        quint64 fid = query.value(0).toULongLong();
-        fieldNames.insert(fid, query.value(1).toString());
+    for (auto k : fieldNames.keys()) {
+        if (!usedFields.contains(k))
+            fieldNames.remove(k);
     }
 
     emit dataLoaded(telemetryID, cacheID, records, fieldNames);

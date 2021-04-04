@@ -64,7 +64,8 @@ Firmware::Firmware(Fact *parent)
                        "auto-upload");
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
-    //TODO: connect(f_stop, &Fact::triggered, nodes_protocol(), []() {
+    //TODO: stop globally
+    // connect(f_stop, &Fact::triggered, nodes_protocol(), []() {
     //     AppGcs::instance()->protocol->stopNmtRequests();
     // });
 

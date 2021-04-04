@@ -30,8 +30,6 @@
 
 #include <algorithm>
 
-// #include "LookupConfigs.h"
-
 Nodes::Nodes(Vehicle *vehicle)
     : Fact(vehicle,
            "nodes",
@@ -181,11 +179,12 @@ void Nodes::stop()
         return;
 
     _protocol->cancelRequests();
-    //TODO:: globally stop requests
+    //TODO: globally stop requests
 }
 
 void Nodes::clear()
 {
+    // TODO: upgrading nodes clear protection
     /*if (protocol()->upgrading()) {
         apxMsgW() << tr("Upgrading in progress");
         return;
@@ -334,7 +333,7 @@ void Nodes::fromVariant(const QVariant &var)
 
     // import to existing nodes
     if (!valid()) {
-        apxConsoleW() << tr("Inconsistent nodes");
+        apxMsgW() << tr("Inconsistent nodes");
         return;
     }
 
@@ -352,11 +351,11 @@ void Nodes::fromVariant(const QVariant &var)
             vlist.append(node);
         }
     }
-    apxConsole() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
+    apxMsg() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
     if (vlist.isEmpty() && nlist.isEmpty()) {
         return;
     }
     // try to import by guessing nodes
-    apxConsoleW() << tr("Importing %1 nodes").arg(vlist.size());
+    apxMsgW() << tr("Importing %1 nodes").arg(vlist.size());
     // TODO: import nodes substitutions
 }

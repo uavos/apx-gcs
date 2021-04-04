@@ -268,14 +268,13 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
         nodes.append(node);
     }
 
-    QVariantMap config;
-    config.insert("nodes", nodes);
+    _config.insert("nodes", nodes);
     if (!title.isEmpty())
-        config.insert("title", title);
+        _config.insert("title", title);
     if (!notes.isEmpty())
-        config.insert("notes", notes);
+        _config.insert("notes", notes);
 
-    emit configLoaded(config);
+    emit configLoaded(_config);
     return true;
 }
 

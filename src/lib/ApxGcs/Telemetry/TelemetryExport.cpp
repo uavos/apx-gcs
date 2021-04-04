@@ -19,29 +19,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "TelemetryXmlExport.h"
-#include "MissionsXml.h"
-#include "NodesXml.h"
+#include "TelemetryExport.h"
+
 #include <App/AppBase.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <Database/Database.h>
+#include <Database/MissionsDB.h>
 #include <Database/TelemetryReqRead.h>
-#include <Fact/Fact.h>
-//=============================================================================
-TelemetryXmlExport::TelemetryXmlExport()
+#include <Database/VehiclesReqVehicle.h>
+
+TelemetryExport::TelemetryExport()
     : QueueWorker()
 {}
-//=============================================================================
-void TelemetryXmlExport::exec(Fact *f)
+
+void TelemetryExport::exec(Fact *f)
 {
     QueueWorker::exec(f);
     _fileName = f->descr();
     _telemetryID = f->value().toULongLong();
     start();
 }
-//=============================================================================
-void TelemetryXmlExport::run()
+
+void TelemetryExport::run()
 {
     QueueWorker::run();
     QString title = QFileInfo(_fileName).fileName();
@@ -55,8 +55,8 @@ void TelemetryXmlExport::run()
     else
         apxMsgW() << tr("Export error").append(":") << title;
 }
-//=============================================================================
-bool TelemetryXmlExport::write(quint64 telemetryID, QString fileName)
+
+bool TelemetryExport::write(quint64 telemetryID, QString fileName)
 {
     {
         DBReqTelemetryMakeStats req(telemetryID);
@@ -69,7 +69,6 @@ bool TelemetryXmlExport::write(quint64 telemetryID, QString fileName)
         return false;
 
     QVariantMap info = req.info;
-    QVariantMap stats = req.stats;
 
     if (req.records.values.size() <= 0) {
         apxMsgW() << tr("Nothing to export");
@@ -94,7 +93,7 @@ bool TelemetryXmlExport::write(quint64 telemetryID, QString fileName)
     if (ftype == "csv") {
         ok = writeCSV(&file, req);
     } else {
-        ok = writeXml(&file, req, QFileInfo(fileName).completeBaseName(), sharedHash, info, stats);
+        ok = writeXml(&file, req, QFileInfo(fileName).completeBaseName(), sharedHash, info);
     }
     file.close();
     if (ok) {
@@ -104,15 +103,12 @@ bool TelemetryXmlExport::write(quint64 telemetryID, QString fileName)
     }
     return ok;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
-bool TelemetryXmlExport::writeXml(QFile *file_p,
-                                  DBReqTelemetryReadData &req,
-                                  const QString &title,
-                                  const QString &sharedHash,
-                                  const QVariantMap &info,
-                                  const QVariantMap &stats)
+
+bool TelemetryExport::writeXml(QFile *file_p,
+                               const DBReqTelemetryReadData &req,
+                               const QString &title,
+                               const QString &sharedHash,
+                               const QVariantMap &info)
 {
     QXmlStreamWriter stream(file_p);
     stream.setAutoFormatting(true);
@@ -139,36 +135,83 @@ bool TelemetryXmlExport::writeXml(QFile *file_p,
 
     //telemetry record info
     stream.writeStartElement("info");
-    foreach (QString key, info.keys()) {
+    for (auto key : info.keys()) {
         if (key == "trash")
             continue;
         stream.writeTextElement(key, info.value(key).toString());
-    }
-    stream.writeEndElement();
-    //telemetry stats
-    stream.writeStartElement("stats");
-    foreach (QString key, stats.keys()) {
-        stream.writeTextElement(key, stats.value(key).toString());
     }
     stream.writeEndElement();
 
     //fields list
     QList<quint64> fidList;
     QStringList fieldNames;
-    foreach (quint64 key, req.fieldNames.keys()) {
+    for (auto key : req.fieldNames.keys()) {
         fidList.append(key);
         fieldNames.append(req.fieldNames.value(key));
     }
     stream.writeTextElement("fields", fieldNames.join(','));
 
-    //write data
-    stream.setAutoFormattingIndent(0);
-    stream.writeStartElement("data");
     const int iTime = req.records.names.indexOf("time");
     const int iType = req.records.names.indexOf("type");
     const int iName = req.records.names.indexOf("name");
     const int iValue = req.records.names.indexOf("value");
     const int iUID = req.records.names.indexOf("uid");
+
+    // vehicle configs and missions
+    QSet<QString> configs, missions;
+    for (auto const &r : req.records.values) {
+        const auto type = r.at(iType).toUInt();
+        if (type < 2)
+            continue;
+        auto name = r.at(iName).toString();
+        auto hash = r.at(iUID).toString();
+        if (hash.isEmpty())
+            continue;
+        if (name == "mission") {
+            missions.insert(hash);
+        } else if (name == "nodes") {
+            configs.insert(hash);
+        }
+    }
+    if (!configs.isEmpty()) {
+        stream.writeStartElement("configs");
+        for (auto const &hash : configs) {
+            DBReqLoadVehicleConfig req(hash);
+            if (!req.execSynchronous()) {
+                apxMsgW() << tr("Can't export config") << hash;
+                continue;
+            }
+            QByteArray data = QJsonDocument::fromVariant(req.config()).toJson(QJsonDocument::Compact);
+
+            stream.writeStartElement("vehicle");
+            stream.writeAttribute("hash", hash);
+            stream.writeCharacters(qCompress(data, 9).toBase64());
+            stream.writeEndElement();
+        }
+        stream.writeEndElement();
+    }
+    if (!missions.isEmpty()) {
+        stream.writeStartElement("missions");
+        for (auto const &hash : missions) {
+            DBReqMissionsLoad req(hash);
+            if (!req.execSynchronous()) {
+                apxMsgW() << tr("Can't export mission") << hash;
+                continue;
+            }
+            QByteArray data = QJsonDocument::fromVariant(req.mission())
+                                  .toJson(QJsonDocument::Compact);
+
+            stream.writeStartElement("mission");
+            stream.writeAttribute("hash", hash);
+            stream.writeCharacters(qCompress(data, 9).toBase64());
+            stream.writeEndElement();
+        }
+        stream.writeEndElement();
+    }
+
+    //write data
+    stream.setAutoFormattingIndent(0);
+    stream.writeStartElement("data");
 
     bool ok = true;
     QStringList values;
@@ -177,9 +220,9 @@ bool TelemetryXmlExport::writeXml(QFile *file_p,
     int progress_s = 0;
     const int cnt = req.records.values.size();
     for (int i = 0; ok && i < cnt; ++i) {
-        const QVariantList &r = req.records.values.at(i);
-        const quint64 time = r.at(iTime).toULongLong();
-        const uint type = r.at(iType).toUInt();
+        const auto &r = req.records.values.at(i);
+        const auto time = r.at(iTime).toULongLong();
+        const auto type = r.at(iType).toUInt();
         //progress
         int v_p = i * 100 / cnt;
         if (progress_s != v_p) {
@@ -224,7 +267,8 @@ bool TelemetryXmlExport::writeXml(QFile *file_p,
             QString name = r.at(iName).toString();
             QString uid = r.at(iUID).toString();
             writeEvent(stream, time, name, r.at(iValue).toString(), uid, type == 3);
-            if (name == "mission") {
+            // TODO: export nodes/mission if file
+            /*if (name == "mission") {
                 MissionsXmlExport req(uid, title, "");
                 ok = req.execSynchronous();
                 if (req.data.isEmpty()) {
@@ -242,7 +286,7 @@ bool TelemetryXmlExport::writeXml(QFile *file_p,
                     stream.device()->write("\n");
                     stream.device()->write(req.data);
                 }
-            }
+            }*/
         } break;
         }
     }
@@ -254,20 +298,20 @@ bool TelemetryXmlExport::writeXml(QFile *file_p,
 
     return ok;
 }
-//=============================================================================
-void TelemetryXmlExport::writeDownlink(QXmlStreamWriter &stream,
-                                       quint64 time,
-                                       const QStringList &values)
+
+void TelemetryExport::writeDownlink(QXmlStreamWriter &stream,
+                                    quint64 time,
+                                    const QStringList &values)
 {
     stream.writeStartElement("D");
     stream.writeAttribute("t", QString::number(time));
     stream.writeCharacters(values.join(','));
     stream.writeEndElement();
 }
-void TelemetryXmlExport::writeUplink(QXmlStreamWriter &stream,
-                                     quint64 time,
-                                     const QString &name,
-                                     const QString &value)
+void TelemetryExport::writeUplink(QXmlStreamWriter &stream,
+                                  quint64 time,
+                                  const QString &name,
+                                  const QString &value)
 {
     stream.writeStartElement("U");
     stream.writeAttribute("t", QString::number(time));
@@ -275,12 +319,12 @@ void TelemetryXmlExport::writeUplink(QXmlStreamWriter &stream,
     stream.writeCharacters(value);
     stream.writeEndElement();
 }
-void TelemetryXmlExport::writeEvent(QXmlStreamWriter &stream,
-                                    quint64 time,
-                                    const QString &name,
-                                    const QString &value,
-                                    const QString &uid,
-                                    bool uplink)
+void TelemetryExport::writeEvent(QXmlStreamWriter &stream,
+                                 quint64 time,
+                                 const QString &name,
+                                 const QString &value,
+                                 const QString &uid,
+                                 bool uplink)
 {
     stream.writeStartElement("E");
     stream.writeAttribute("t", QString::number(time));
@@ -292,9 +336,8 @@ void TelemetryXmlExport::writeEvent(QXmlStreamWriter &stream,
     stream.writeCharacters(value);
     stream.writeEndElement();
 }
-//=============================================================================
-//=============================================================================
-bool TelemetryXmlExport::writeCSV(QFile *file_p, DBReqTelemetryReadData &req)
+
+bool TelemetryExport::writeCSV(QFile *file_p, DBReqTelemetryReadData &req)
 {
     QTextStream stream(file_p);
 
@@ -369,5 +412,3 @@ bool TelemetryXmlExport::writeCSV(QFile *file_p, DBReqTelemetryReadData &req)
     stream.flush();
     return true;
 }
-//=============================================================================
-//=============================================================================
