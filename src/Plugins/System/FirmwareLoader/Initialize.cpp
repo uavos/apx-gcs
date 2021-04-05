@@ -84,9 +84,9 @@ void Initialize::startTriggered()
         type = "ldr";
     else
         type = "fw";
-    m_firmware->requestInitialize(type,
-                                  f_node->text(),
+    m_firmware->requestInitialize(f_node->text(),
                                   f_hw->text(),
+                                  type,
                                   f_port->text(),
                                   f_continuous->value().toBool());
 }

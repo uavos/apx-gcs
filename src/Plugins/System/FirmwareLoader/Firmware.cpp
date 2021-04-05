@@ -56,12 +56,13 @@ Firmware::Firmware(Fact *parent)
                            Section | Count);
     f_available->setIcon("star-circle");
 
-    f_start = new Fact(this,
+    // TODO: auto upgrade all nodes
+    /*f_start = new Fact(this,
                        "start",
                        tr("Upgrade"),
                        tr("Auto upgrade all nodes"),
                        Action,
-                       "auto-upload");
+                       "auto-upload");*/
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
     //TODO: stop globally
@@ -69,15 +70,15 @@ Firmware::Firmware(Fact *parent)
     //     AppGcs::instance()->protocol->stopNmtRequests();
     // });
 
-    connect(nodes_protocol(), &Fact::activeChanged, this, [this]() {
+    /*connect(nodes_protocol(), &Fact::activeChanged, this, [this]() {
         if (!nodes_protocol()->active()) {
             setActive(false);
             f_queue->deleteChildren();
         }
     });
-    connect(this, &Fact::activeChanged, nodes_protocol(), [this]() {
-        nodes_protocol()->setUpgrading(active());
-    });
+    */
+
+    connect(Vehicles::instance(), &Vehicles::vehicleRegistered, this, &Firmware::vehicleRegistered);
 
     connect(
         f_queue,
@@ -99,38 +100,46 @@ Firmware::Firmware(Fact *parent)
     connect(f_available, &Fact::sizeChanged, this, &Firmware::updateStatus);
     connect(this, &Fact::activeChanged, this, &Firmware::updateStatus);
     updateStatus();
-
-    connect(AppGcs::instance()->protocol,
-            &ProtocolVehicles::nodeNotify,
-            this,
-            &Firmware::nodeNotify);
 }
 
-ProtocolNodes *Firmware::nodes_protocol()
+void Firmware::vehicleRegistered(Vehicle *vehicle)
 {
-    return AppGcs::instance()->protocol->local->nodes;
+    connect(vehicle->f_nodes, &Nodes::requestUpgrade, this, &Firmware::upgradeRequested);
+    connect(vehicle->f_nodes, &Nodes::nodeNotify, this, &Firmware::nodeNotify);
+
+    connect(this, &Fact::activeChanged, vehicle->f_nodes, [this, vehicle]() {
+        vehicle->f_nodes->setUpgrading(active());
+    });
 }
-
-void Firmware::nodeNotify(ProtocolNode *protocol)
+void Firmware::nodeNotify(NodeItem *node)
 {
-    if (!protocol->identValid())
+    if (node->ident().isEmpty())
         return;
 
-    connect(protocol,
-            &ProtocolNode::requestUpgrade,
-            this,
-            &Firmware::requestUpgrade,
-            Qt::UniqueConnection);
+    auto uid = node->uid();
 
-    QString sn = protocol->sn();
+    // update nodes map
+    QStringList st;
+    st << node->title();
+    st << node->descr();
+    st << node->value().toString();
+    st.removeAll("");
+    QString s = st.join(' ');
+    if (_nodesMap.value(uid) != s) {
+        _nodesMap.insert(uid, s);
+        nodesMapUpdated(_nodesMap);
+    }
 
-    if (queued(f_queue, sn))
+    if (queued(f_queue, uid))
         return;
-    if (queued(f_available, sn))
+    if (queued(f_available, uid))
         return;
 
-    // TODO: queue for auto update
-    new QueueItem(f_available, protocol, QString());
+    new QueueItem(f_available,
+                  node->uid(),
+                  node->title(),
+                  node->ident().value("hardware").toString(),
+                  QString());
 }
 
 void Firmware::updateStatus()
@@ -139,7 +148,7 @@ void Firmware::updateStatus()
 
     //actions
     f_stop->setEnabled(act);
-    f_start->setEnabled(!act && f_available->size() > 0);
+    //f_start->setEnabled(!act && f_available->size() > 0);
     if (act) {
         setValue(QString("[%1]").arg(f_queue->size()));
     } else {
@@ -147,50 +156,45 @@ void Firmware::updateStatus()
     }
 }
 
-QueueItem *Firmware::queued(Fact *list, const QString &sn)
+QueueItem *Firmware::queued(Fact *list, const QString &uid)
 {
     for (auto i : list->facts()) {
         QueueItem *f = static_cast<QueueItem *>(i);
-        if (f->match(sn))
+        if (f->match(uid))
             return f;
     }
     return nullptr;
 }
 
-void Firmware::requestUpgrade(ProtocolNode *protocol, QString type)
+void Firmware::upgradeRequested(NodeItem *node, QString type)
 {
-    requestFormat(protocol, type, QString(), QString());
+    requestUpgrade(node->uid(), node->title(), node->ident().value("hardware").toString(), type);
 }
-void Firmware::requestInitialize(const QString &type,
-                                 const QString &name,
-                                 const QString &hw,
-                                 const QString &portName,
-                                 bool continuous)
+
+void Firmware::requestUpgrade(QString uid, QString name, QString hw, QString type)
+{
+    qDebug() << uid << type << name;
+
+    auto *f = queued(f_available, uid);
+    if (f)
+        f->deleteFact();
+
+    f = queued(f_queue, uid);
+    if (f)
+        f->deleteFact();
+
+    new QueueItem(f_queue, uid, name, hw, type);
+
+    if (!active())
+        next();
+}
+void Firmware::requestInitialize(
+    QString name, QString hw, QString type, QString portName, bool continuous)
 {
     setActive(false);
     f_queue->deleteChildren();
 
-    new LoaderStm(f_queue, type, name, hw, portName, continuous);
-}
-void Firmware::requestFormat(ProtocolNode *protocol, QString type, QString name, QString hw)
-{
-    QString sn = protocol->sn();
-    qDebug() << sn << type << protocol->title();
-
-    QueueItem *f = queued(f_available, sn);
-    if (f)
-        f->deleteFact();
-
-    f = queued(f_queue, sn);
-    if (f)
-        f->deleteFact();
-
-    QueueItem *q = new QueueItem(f_queue, protocol, type);
-    q->format_name = name;
-    q->format_hw = hw;
-
-    if (!active())
-        next();
+    new LoaderStm(f_queue, name, hw, type, portName, continuous);
 }
 
 void Firmware::next()
@@ -230,18 +234,17 @@ void Firmware::next()
         return;
 
     setActive(true);
-    nodes_protocol()->setActive(true);
-    emit upgradeStarted(item->protocol() ? item->protocol()->sn() : QString(), item->type());
+    emit upgradeStarted(item->uid(), item->type());
 
-    connect(item, &QueueItem::finished, this, &Firmware::loaderFinished);
+    connect(item, &QueueItem::finished, this, &Firmware::itemFinished);
 
     item->move(0);
     item->start();
 }
 
-void Firmware::loaderFinished(QueueItem *item, bool success)
+void Firmware::itemFinished(QueueItem *item, bool success)
 {
-    emit upgradeFinished(item->protocol() ? item->protocol()->sn() : QString(), item->type());
+    emit upgradeFinished(item->uid(), item->type());
 
     if (success) {
         item->deleteFact();
@@ -250,7 +253,6 @@ void Firmware::loaderFinished(QueueItem *item, bool success)
     }
 
     if (f_queue->size() == 0) {
-        nodes_protocol()->setActive(false);
         setActive(false);
     }
 

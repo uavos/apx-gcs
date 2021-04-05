@@ -232,6 +232,10 @@ bool PApxNodeRequestUpdate::response(PStreamReader &stream)
 
 bool PApxNodeRequestFile::request(PApxRequest &req)
 {
+    if (!_node->file(_name)) {
+        qWarning() << "no file" << _name;
+        return false;
+    }
     req << _op;
     trace()->block(QString::number(_op));
     req.write_string(_name.toUtf8());

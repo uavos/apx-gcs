@@ -25,78 +25,36 @@
 #include <App/AppGcs.h>
 #include <App/AppNotify.h>
 
-QueueItem::QueueItem(Fact *parent, ProtocolNode *protocol, QString type)
-    : ProtocolViewBase(parent, protocol)
-    , m_type(type)
+QueueItem::QueueItem(Fact *parent, QString uid, QString name, QString hw, QString type)
+    : Fact(parent, "item#", QString("%1:%2").arg(name).arg(hw))
+    , _uid(uid)
+    , _name(name)
+    , _hw(hw)
 {
     setTreeType(NoFlags);
-    //setTitle(QString("%1 (%2)").arg(title()).arg(type));
-    /*if (type == Firmware::LD)
-        setIcon("alert-circle");
-    else
-        setIcon("chip");*/
+    setType(type);
 }
 
-bool QueueItem::match(const QString &sn) const
+bool QueueItem::match(const QString &uid) const
 {
-    return protocol() && protocol()->sn() == sn;
-}
-QString QueueItem::type() const
-{
-    return m_type;
+    return _uid == uid;
 }
 void QueueItem::setType(QString v)
 {
-    m_type = v;
+    _type = v;
+    setDescr(_type.toUpper());
 }
 
 void QueueItem::start()
 {
     qDebug() << title();
 
-    Firmware::nodes_protocol()->clear_requests();
-
     setValue(tr("Initializing update").append("..."));
-
-    if (!protocol()) {
-        upload();
-        return;
-    }
-
-    // always refresh ident
-    protocol()->setIdentValid(false);
-    if (type() == "fw") {
-        _clist.append(connect(protocol(), &ProtocolNode::loaderAvailable, this, &QueueItem::upload));
-        protocol()->requestRebootLoader();
-        return;
-    }
-
-    _clist.append(connect(protocol(),
-                          &ProtocolNode::filesAvailable,
-                          this,
-                          &QueueItem::upload,
-                          Qt::UniqueConnection));
-    connect(Firmware::nodes_protocol(),
-            &Fact::activeChanged,
-            this,
-            &QueueItem::cleanUploadConnections,
-            Qt::UniqueConnection);
-    protocol()->requestIdent();
-}
-void QueueItem::cleanUploadConnections()
-{
-    for (auto c : _clist)
-        disconnect(c);
-    _clist.clear();
+    upload();
 }
 
 bool QueueItem::loadFirmware(QString hw, QString ver)
 {
-    QString fw = format_name.isEmpty() ? title() : format_name;
-
-    if (!format_hw.isEmpty())
-        hw = format_hw;
-
     QString stype = type().toUpper();
 
     ApxFw *apxfw = AppGcs::apxfw();
@@ -105,7 +63,7 @@ bool QueueItem::loadFirmware(QString hw, QString ver)
         ver = QString("%1->%2").arg(ver).arg(relVer);
     }
 
-    QString s = QString("%1 %2 (%3)").arg(fw).arg(hw).arg(ver);
+    QString s = QString("%1 %2 (%3)").arg(_name).arg(_hw).arg(ver);
     s = QString("%1 (%2): %3").arg(tr("Firmware upload")).arg(stype).arg(s);
     AppNotify::instance()->report(s, AppNotify::FromApp | AppNotify::Important);
 
@@ -120,24 +78,25 @@ bool QueueItem::loadFirmware(QString hw, QString ver)
     else
         apxMsgW() << "unknown type:" << type();
 
-    return apxfw->loadFirmware(fw, hw, rel_type, &_data, &_offset);
+    return apxfw->loadFirmware(_name, _hw, rel_type, &_data, &_offset);
 }
 
 void QueueItem::upload()
 {
-    cleanUploadConnections();
+    // TODO: upload a node file
+    /*cleanUploadConnections();
     Firmware::nodes_protocol()->clear_requests();
 
     if (!loadFirmware(protocol()->hardware(), protocol()->version())) {
         finish(false);
         return;
     }
-    ProtocolNodeFile *f = file(type());
+    PNodeFile *f = file(type());
     if (!f) {
         finish(false);
         return;
     }
-    f->upload(_data, _offset);
+    f->upload(_data, _offset);*/
 }
 
 void QueueItem::finish(bool success)
@@ -154,9 +113,9 @@ void QueueItem::finish(bool success)
     emit finished(this, success);
 }
 
-ProtocolNodeFile *QueueItem::file(const QString &fname)
+/*PNodeFile *QueueItem::file(const QString &fname)
 {
-    ProtocolNodeFile *file = protocol()->file(fname);
+    PNodeFile *file = protocol()->file(fname);
     if (!file) {
         AppNotify::instance()
             ->report(QString("%1: %2/%3").arg(tr("Node file is unavailable")).arg(title()).arg(fname),
@@ -169,11 +128,11 @@ ProtocolNodeFile *QueueItem::file(const QString &fname)
     }
     file_p = file;
 
-    connect(file_p, &ProtocolNodeFile::uploaded, this, [this]() { finish(true); });
-    connect(file_p, &ProtocolNodeFile::error, this, [this]() { finish(false); });
-    connect(file_p, &ProtocolNodeFile::interrupted, this, [this]() { finish(false); });
+    connect(file_p, &PNodeFile::uploaded, this, [this]() { finish(true); });
+    connect(file_p, &PNodeFile::error, this, [this]() { finish(false); });
+    connect(file_p, &PNodeFile::interrupted, this, [this]() { finish(false); });
 
-    connect(file_p, &ProtocolNodeFile::valueChanged, this, [this]() { setValue(file_p->value()); });
+    connect(file_p, &PNodeFile::valueChanged, this, [this]() { setValue(file_p->value()); });
 
     return file;
-}
+}*/

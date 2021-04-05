@@ -106,26 +106,22 @@ NodeItem *Nodes::node(const QString &uid) const
 
 void Nodes::node_available(PNode *node)
 {
-    add(node);
-}
-NodeItem *Nodes::add(PNode *protocol)
-{
-    NodeItem *node = this->node(protocol->uid());
-    if (node)
-        return node;
+    if (this->node(node->uid()))
+        return;
 
-    node = new NodeItem(this, this, protocol);
-    m_nodes.append(node);
+    // register new online node
+    auto f = new NodeItem(this, this, node);
+    m_nodes.append(f);
 
-    connect(node, &NodeItem::validChanged, this, &Nodes::updateValid);
-    connect(node->storage,
+    connect(f, &NodeItem::validChanged, this, &Nodes::updateValid);
+    connect(f->storage,
             &NodeStorage::configSaved,
             vehicle->storage(),
             &VehicleStorage::saveVehicleConfig);
 
     updateValid();
     updateActions();
-    return node;
+    nodeNotify(f);
 }
 void Nodes::syncDone()
 {
@@ -134,18 +130,17 @@ void Nodes::syncDone()
 
 void Nodes::updateActions()
 {
-    bool enb = true;        //protocol()->enabled();
-    bool upgrading = false; //protocol()->upgrading();
-    bool busy = _protocol ? _protocol->busy() || upgrading : false;
+    bool enb = _protocol;
+    bool upg = upgrading();
+    bool bsy = busy();
     bool empty = nodes().size() <= 0;
-    //bool valid = protocol()->valid();
     bool mod = modified();
     f_search->setEnabled(enb);
-    f_upload->setEnabled(enb && mod && !upgrading);
-    f_stop->setEnabled(enb && busy);
-    f_reload->setEnabled(enb && !upgrading);
-    f_clear->setEnabled(!empty && !upgrading);
-    f_status->setEnabled(enb && !empty && !upgrading);
+    f_upload->setEnabled(enb && mod && !upg);
+    f_stop->setEnabled(enb && bsy);
+    f_reload->setEnabled(enb && !upg);
+    f_clear->setEnabled(!empty && !upg);
+    f_status->setEnabled(enb && !empty && !upg);
 }
 
 void Nodes::updateValid()
@@ -166,6 +161,13 @@ void Nodes::updateValid()
         return;
     qDebug() << "nodes valid" << vehicle->title();
 }
+void Nodes::setUpgrading(bool v)
+{
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
+}
 
 void Nodes::search()
 {
@@ -184,11 +186,10 @@ void Nodes::stop()
 
 void Nodes::clear()
 {
-    // TODO: upgrading nodes clear protection
-    /*if (protocol()->upgrading()) {
+    if (upgrading()) {
         apxMsgW() << tr("Upgrading in progress");
         return;
-    }*/
+    }
     if (m_valid) {
         m_valid = false;
         emit validChanged();

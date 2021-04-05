@@ -22,8 +22,11 @@
 #pragma once
 
 #include "QueueItem.h"
+
 #include <App/AppGcs.h>
-#include <Fact/Fact.h>
+#include <Nodes/NodeItem.h>
+#include <Nodes/Nodes.h>
+#include <Vehicles/Vehicles.h>
 
 class Releases;
 class FirmwareTools;
@@ -44,32 +47,32 @@ public:
 
     FirmwareTools *f_tools;
 
-    static ProtocolNodes *nodes_protocol();
+    Q_INVOKABLE void requestUpgrade(QString uid, QString name, QString hw, QString type);
 
-    Q_INVOKABLE void requestUpgrade(ProtocolNode *protocol, QString type);
-
-    Q_INVOKABLE void requestInitialize(const QString &type,
-                                       const QString &name,
-                                       const QString &hw,
-                                       const QString &portName,
-                                       bool continuous);
-
-    Q_INVOKABLE void requestFormat(ProtocolNode *protocol, QString type, QString name, QString hw);
+    Q_INVOKABLE void requestInitialize(
+        QString name, QString hw, QString type, QString portName, bool continuous);
 
 private:
     static Firmware *_instance;
 
-    QueueItem *queued(Fact *list, const QString &sn);
+    QMap<QString, QString> _nodesMap;
+
+    QueueItem *queued(Fact *list, const QString &uid);
 
 private slots:
-    void nodeNotify(ProtocolNode *protocol);
+    void vehicleRegistered(Vehicle *vehicle);
+    void upgradeRequested(NodeItem *node, QString type); // captured by plugins
+
+    void nodeNotify(NodeItem *node);
 
     void updateStatus();
 
     void next();
-    void loaderFinished(QueueItem *item, bool success);
+    void itemFinished(QueueItem *item, bool success);
 
 signals:
-    void upgradeStarted(QString sn, QString type);
-    void upgradeFinished(QString sn, QString type);
+    void upgradeStarted(QString uid, QString type);
+    void upgradeFinished(QString uid, QString type);
+
+    void nodesMapUpdated(QMap<QString, QString> nodes);
 };

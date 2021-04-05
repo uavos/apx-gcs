@@ -67,15 +67,11 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_updates = new Fact(f_maintenance, "updates", tr("Updates"), tr("Firmware updates"), Group);
     f_updates->setIcon("chip");
 
-    /*f = new Fact(f_updates, "firmware", tr("Firmware"), tr("Update node firmware"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestUpgrade(node->protocol(), "fw");
-    });
+    f = new Fact(f_updates, "firmware", tr("Firmware"), tr("Update node firmware"));
+    connect(f, &Fact::triggered, this, [this]() { node->nodes()->requestUpgrade(node, "fw"); });
 
     f = new Fact(f_updates, "loader", tr("Loader"), tr("Update node loader"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestUpgrade(node->protocol(), "ldr");
-    });*/
+    connect(f, &Fact::triggered, this, [this]() { node->nodes()->requestUpgrade(node, "ldr"); });
 
     registerOnlineAction(f_updates);
 
@@ -87,6 +83,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                   tr("Node status request"),
                                   Group);
     f_status->setIcon("playlist-check");
+    //TODO: stats node command menu
     /*f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
     connect(f, &Fact::triggered, this, [this]() { node->protocol()->requestStatus(); });
     f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));

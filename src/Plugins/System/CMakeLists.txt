@@ -3,7 +3,7 @@ add_subdirectory("Sounds")
 add_subdirectory("Simulator")
 add_subdirectory("Shortcuts")
 add_subdirectory("ScriptCompiler")
-# add_subdirectory("FirmwareLoader")
+add_subdirectory("FirmwareLoader")
 add_subdirectory("Joystick")
 add_subdirectory("HttpService")
 

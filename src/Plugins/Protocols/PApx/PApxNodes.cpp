@@ -135,7 +135,6 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
         return;
     }
     _requests.append(req);
-    setBusy(true);
     if (_request)
         return;
     request_next();
@@ -150,7 +149,6 @@ void PApxNodes::request_finished(PApxNodeRequest *req)
 
     _reqTimeout.stop();
     if (_requests.isEmpty()) {
-        setBusy(false);
         return;
     }
     request_next();
@@ -241,7 +239,6 @@ void PApxNodes::cancel_requests(PApxNode *node)
         delete req;
     }
     if (_requests.isEmpty()) {
-        setBusy(false);
         return;
     }
 

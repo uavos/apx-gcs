@@ -93,6 +93,9 @@ void NodeItem::validateData()
 
     updateStatus();
     qDebug() << "Node data valid:" << path();
+
+    if (_protocol)
+        _nodes->nodeNotify(this);
 }
 
 void NodeItem::updateStatus()
@@ -497,6 +500,7 @@ void NodeItem::identReceived(QVariantMap ident)
     if (_protocol) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         storage->saveNodeInfo();
+        _nodes->nodeNotify(this);
         _protocol->requestDict();
         return;
     }

@@ -33,10 +33,10 @@ public:
     Fact *f_dev;
 
 private:
-    QStringList snList;
+    QMap<QString, QString> _nodes;
 
 private slots:
-    void nodeNotify(ProtocolNode *protocol);
+    void nodesMapUpdated(QMap<QString, QString> nodes);
 
     void startTriggered();
 };

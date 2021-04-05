@@ -33,6 +33,7 @@ class Nodes : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
+    Q_PROPERTY(bool upgrading READ upgrading NOTIFY upgradingChanged)
 
 public:
     explicit Nodes(Vehicle *vehicle);
@@ -49,8 +50,6 @@ public:
     NodeItem *node(const QString &uid) const;
     QList<NodeItem *> nodes() const { return m_nodes; }
 
-    NodeItem *add(PNode *protocol);
-
     Q_INVOKABLE void shell(QStringList commands);
 
     bool valid() const { return m_valid; }
@@ -61,6 +60,9 @@ public:
     QVariant toVariant() const override;
     void fromVariant(const QVariant &var) override;
 
+    auto upgrading() const { return m_upgrading; }
+    void setUpgrading(bool v);
+
 private:
     PNodes *_protocol;
 
@@ -68,6 +70,7 @@ private:
     QDateTime m_syncTimestamp;
 
     bool m_valid{};
+    bool m_upgrading{};
 
     DelayedEvent _updateActions{100, true};
 
@@ -86,6 +89,9 @@ private slots:
 
 signals:
     void validChanged();
+    void upgradingChanged();
 
+    void nodeNotify(NodeItem *node); // notify on changes etc fo plugins
     void fieldUploadReport(NodeItem *node, QString name, QString value);
+    void requestUpgrade(NodeItem *node, QString type); // captured by plugins
 };
