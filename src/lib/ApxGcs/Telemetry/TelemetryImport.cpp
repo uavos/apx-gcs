@@ -119,10 +119,8 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
                 sharedHashExplicit = xml.readElementText();
             else if (tag == "fields")
                 fields = xml.readElementText().split(',', Qt::SkipEmptyParts);
-            else if (tag == "configs")
-                readConfigs(xml);
-            else if (tag == "missions")
-                readMissions(xml);
+            else if (tag == "packages")
+                readPackages(xml);
             else if (tag == "data")
                 break;
             else
@@ -276,14 +274,38 @@ QByteArray TelemetryImport::readXmlPart(QXmlStreamReader &xml)
     return xmlPart;
 }
 
-void TelemetryImport::readConfigs(QXmlStreamReader &xml)
+void TelemetryImport::readPackages(QXmlStreamReader &xml)
 {
-    // TODO: xml to configs
-}
-
-void TelemetryImport::readMissions(QXmlStreamReader &xml)
-{
-    // TODO: xml to missions
+    while (xml.readNextStartElement()) {
+        auto tag = xml.name().toString();
+        auto data = xml.readElementText().toUtf8();
+        if (data.isEmpty()) {
+            qWarning() << "data empty";
+            continue;
+        }
+        data = QByteArray::fromBase64(data);
+        if (data.isEmpty()) {
+            qWarning() << "data base64 decode error";
+            continue;
+        }
+        data = qUncompress(data);
+        if (data.isEmpty()) {
+            qWarning() << "data uncompress error";
+            continue;
+        }
+        auto var = Fact::parseJsonDocument(data);
+        if (var.isNull()) {
+            qWarning() << "data parse error";
+            continue;
+        }
+        if (tag == "vehicle") {
+            DBReqImportVehicleConfig req(var.value<QVariantMap>());
+            req.execSynchronous();
+        } else if (tag == "mission") {
+            DBReqMissionsSave req(var.value<QVariantMap>());
+            req.execSynchronous();
+        }
+    }
 }
 
 quint64 TelemetryImport::dbReadSharedHashId(QString hash)

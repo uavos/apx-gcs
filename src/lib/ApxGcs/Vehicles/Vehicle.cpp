@@ -155,6 +155,8 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     }
 
     if (isIdentified()) {
+        _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+
         telemetryReqTimer.setInterval(1000);
         connect(&telemetryReqTimer,
                 &QTimer::timeout,
@@ -185,8 +187,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
     updateInfo();
 
-    setProperty("test", QVariant::fromValue(f_select));
-
     App::jsync(this);
 }
 
@@ -198,6 +198,16 @@ void Vehicle::updateActive()
     setFollow(false);
 }
 
+QVariantMap Vehicle::get_info() const
+{
+    QVariantMap vehicle;
+    vehicle.insert("uid", _protocol->uid());
+    vehicle.insert("callsign", title());
+    vehicle.insert("class", _protocol->vehicleTypeText());
+    if (_lastSeenTime)
+        vehicle.insert("time", _lastSeenTime);
+    return vehicle;
+}
 QVariant Vehicle::toVariant() const
 {
     if (isReplay())
@@ -205,14 +215,10 @@ QVariant Vehicle::toVariant() const
 
     QVariantMap m;
 
-    QVariantMap vehicle;
-    vehicle.insert("uid", _protocol->uid());
-    vehicle.insert("callsign", title());
-    vehicle.insert("class", _protocol->vehicleTypeText());
-    vehicle.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
-    m.insert("vehicle", vehicle);
+    m.insert("vehicle", get_info());
     m.insert("nodes", f_nodes->toVariant());
     m.insert("title", f_nodes->getConfigTitle());
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
 
     return m;
 }
@@ -232,6 +238,9 @@ void Vehicle::fromVariant(const QVariant &var)
 
 void Vehicle::updateInfo()
 {
+    if (isIdentified()) {
+        _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    }
     QStringList st;
     //st<<callsign();
     if (!isReplay()) {

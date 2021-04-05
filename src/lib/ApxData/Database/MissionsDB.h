@@ -86,21 +86,19 @@ class DBReqMissionsSave : public DBReqMissions
 {
     Q_OBJECT
 public:
-    explicit DBReqMissionsSave(QVariant var, quint64 t = 0)
+    explicit DBReqMissionsSave(QVariant var)
         : DBReqMissions()
-        , data(var.value<QVariantMap>())
-        , t(t ? t : QDateTime::currentDateTime().toMSecsSinceEpoch())
-        , reqSite(data.value("lat").toDouble(), data.value("lon").toDouble())
+        , _data(var.value<QVariantMap>())
+        , _reqSite(_data.value("lat").toDouble(), _data.value("lon").toDouble())
     {
-        connect(&reqSite, &DBReqMissionsFindSite::siteFound, this, &DBReqMissionsSave::siteFound);
+        connect(&_reqSite, &DBReqMissionsFindSite::siteFound, this, &DBReqMissionsSave::siteFound);
     }
     bool run(QSqlQuery &query);
 
 private:
-    quint64 missionID;
-    QVariantMap data;
-    quint64 t;
-    DBReqMissionsFindSite reqSite;
+    quint64 _missionID;
+    QVariantMap _data;
+    DBReqMissionsFindSite _reqSite;
 
     bool writeItems(QSqlQuery &query, const QVariant &var, QString tableName);
 

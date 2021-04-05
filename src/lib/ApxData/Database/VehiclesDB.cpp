@@ -145,7 +145,8 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
                                      << "class TEXT"
                                      << "time INTEGER DEFAULT 0" //time seen
     );
-    new DBReqMakeIndex(this, "Vehicles", "uid", true);
+    new DBReqMakeIndex(this, "Vehicles", "uid,callsign,class", true);
+    new DBReqMakeIndex(this, "Vehicles", "uid", false);
     new DBReqMakeIndex(this, "Vehicles", "callsign", false);
     new DBReqMakeIndex(this, "Vehicles", "class", false);
     new DBReqMakeIndex(this, "Vehicles", "time", false);

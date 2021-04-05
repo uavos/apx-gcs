@@ -52,8 +52,7 @@ private:
     QVariantMap readSection(QXmlStreamReader &xml);
     QByteArray readXmlPart(QXmlStreamReader &xml);
 
-    void readConfigs(QXmlStreamReader &xml);
-    void readMissions(QXmlStreamReader &xml);
+    void readPackages(QXmlStreamReader &xml);
 
     //database
     quint64 dbReadSharedHashId(QString hash);

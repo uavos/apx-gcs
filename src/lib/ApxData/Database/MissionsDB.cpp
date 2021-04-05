@@ -191,42 +191,44 @@ bool DBReqMissionsRemoveSite::run(QSqlQuery &query)
 
 bool DBReqMissionsSave::run(QSqlQuery &query)
 {
-    if (data.value("rw").value<QVariantList>().isEmpty()) {
+    if (_data.value("rw").value<QVariantList>().isEmpty()) {
         qWarning() << "missing runways in mission";
     }
 
     //find siteID
-    if (!reqSite.run(query))
+    if (!_reqSite.run(query))
         return false;
 
-    QString title = data.value("title").toString().simplified();
-    if (reqSite.siteID) {
-        title = title.remove(reqSite.site, Qt::CaseInsensitive).simplified();
+    QString title = _data.value("title").toString().simplified();
+    if (_reqSite.siteID) {
+        title = title.remove(_reqSite.site, Qt::CaseInsensitive).simplified();
     } else {
         qDebug() << "no site";
     }
 
-    QString callsign = data.value("callsign").toString();
-    QVariant siteID = reqSite.siteID ? reqSite.siteID : QVariant();
+    QVariant siteID = _reqSite.siteID ? _reqSite.siteID : QVariant();
+
+    auto callsign = _data.value("callsign").toString();
+    auto time = _data.value("time").toString();
 
     //find existing mission by hash
-    QString hash = data.value("hash").toString();
+    QString hash = _data.value("hash").toString();
     query.prepare("SELECT * FROM Missions WHERE hash=?");
     query.addBindValue(hash);
     if (!query.exec())
         return false;
     if (query.next()) {
-        missionID = query.value(0).toULongLong();
+        _missionID = query.value(0).toULongLong();
         qDebug() << "mission exists";
         if (callsign.isEmpty())
             callsign = query.value("callsign").toString();
         //update mission access time
         query.prepare("UPDATE Missions SET time=?, title=?, siteID=?, callsign=? WHERE key=?");
-        query.addBindValue(t);
+        query.addBindValue(time);
         query.addBindValue(title);
         query.addBindValue(siteID);
         query.addBindValue(callsign);
-        query.addBindValue(missionID);
+        query.addBindValue(_missionID);
         if (!query.exec())
             return false;
         emit missionHash(hash);
@@ -237,9 +239,9 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
     if (!db->transaction(query))
         return false;
 
-    QVariantMap info = filterFields("Missions", data);
+    QVariantMap info = filterFields("Missions", _data);
     info["hash"] = hash;
-    info["time"] = t;
+    info["time"] = time;
     info["title"] = title;
     info["callsign"] = callsign;
     info["siteID"] = siteID;
@@ -248,16 +250,16 @@ bool DBReqMissionsSave::run(QSqlQuery &query)
         return false;
     if (!query.exec())
         return false;
-    missionID = query.lastInsertId().toULongLong();
+    _missionID = query.lastInsertId().toULongLong();
 
     //write items
-    if (!writeItems(query, data.value("rw"), "Runways"))
+    if (!writeItems(query, _data.value("rw"), "Runways"))
         return false;
-    if (!writeItems(query, data.value("wp"), "Waypoints"))
+    if (!writeItems(query, _data.value("wp"), "Waypoints"))
         return false;
-    if (!writeItems(query, data.value("tw"), "Taxiways"))
+    if (!writeItems(query, _data.value("tw"), "Taxiways"))
         return false;
-    if (!writeItems(query, data.value("pi"), "Pois"))
+    if (!writeItems(query, _data.value("pi"), "Pois"))
         return false;
 
     if (!db->commit(query))
@@ -275,7 +277,7 @@ bool DBReqMissionsSave::writeItems(QSqlQuery &query, const QVariant &var, QStrin
     for (auto j : var.value<QVariantList>()) {
         auto obj = j.value<QVariantMap>();
         QVariantList r;
-        r.append(missionID);
+        r.append(_missionID);
         r.append(num++);
         for (int i = 2; i < records.names.size(); ++i) {
             auto v = obj.value(records.names.at(i));
@@ -312,7 +314,8 @@ bool DBReqMissionsLoad::run(QSqlQuery &query)
     if (!query.next())
         return false;
 
-    quint64 missionID = query.value("Missions.key").toULongLong();
+    auto missionID = query.value("Missions.key").toULongLong();
+
     _mission = filterIdValues(queryRecord(query));
 
     query.prepare("SELECT * FROM Runways WHERE missionID=? ORDER BY num ASC");

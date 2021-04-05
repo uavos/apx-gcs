@@ -423,6 +423,7 @@ QVariant NodeItem::toVariant() const
     m.insert("info", get_info());
     m.insert("dict", get_dict());
     m.insert("values", get_values());
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
     return m;
 }
 void NodeItem::fromVariant(const QVariant &var)
@@ -519,6 +520,10 @@ void NodeItem::dictReceived(QVariantMap dict)
     clear();
     _dict = dict;
     _dict.remove("cached");
+
+    if (!_dict.value("time").toULongLong()) {
+        _dict.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    }
 
     auto fields = dict.value("fields").value<QVariantList>();
 

@@ -278,31 +278,31 @@ void VehicleMission::clearMission()
 
 QVariant VehicleMission::toVariant() const
 {
-    auto h = Fact::toVariant().value<QVariantMap>();
+    auto m = Fact::toVariant().value<QVariantMap>();
 
-    h.insert("format", MISSION_FORMAT);
-    h.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
-    h.insert("version", App::version());
+    m.insert("format", MISSION_FORMAT);
+    m.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m.insert("version", App::version());
 
-    h.insert("title", h.value(f_title->name()));
-    h.remove(f_title->name());
+    m.insert("title", m.value(f_title->name()));
+    m.remove(f_title->name());
 
     if (!site().isEmpty())
-        h.insert("site", site());
+        m.insert("site", site());
 
     QGeoCoordinate c = coordinate();
-    h.insert("lat", c.latitude());
-    h.insert("lon", c.longitude());
+    m.insert("lat", c.latitude());
+    m.insert("lon", c.longitude());
 
     QString title = f_title->text().simplified();
     if (vehicle->isIdentified()) {
         QString s = vehicle->title();
-        h.insert("callsign", s);
+        m.insert("callsign", s);
         title.remove(s, Qt::CaseInsensitive);
     }
     if (f_runways->size() > 0) {
         QString s = f_runways->child(0)->text();
-        h.insert("runway", s);
+        m.insert("runway", s);
         title.remove(s, Qt::CaseInsensitive);
     }
     title.replace('-', ' ');
@@ -311,21 +311,22 @@ QVariant VehicleMission::toVariant() const
 
     //details
     QGeoRectangle rect = boundingGeoRectangle();
-    h.insert("topLeftLat", rect.topLeft().latitude());
-    h.insert("topLeftLon", rect.topLeft().longitude());
-    h.insert("bottomRightLat", rect.bottomRight().latitude());
-    h.insert("bottomRightLon", rect.bottomRight().longitude());
-    h.insert("distance", f_waypoints->distance());
+    m.insert("topLeftLat", rect.topLeft().latitude());
+    m.insert("topLeftLon", rect.topLeft().longitude());
+    m.insert("bottomRightLat", rect.bottomRight().latitude());
+    m.insert("bottomRightLon", rect.bottomRight().longitude());
+    m.insert("distance", f_waypoints->distance());
 
     //generate hash
     QCryptographicHash hash(QCryptographicHash::Sha1);
-    hash.addData(QJsonDocument::fromVariant(h.value("rw")).toJson(QJsonDocument::Compact));
-    hash.addData(QJsonDocument::fromVariant(h.value("wp")).toJson(QJsonDocument::Compact));
-    hash.addData(QJsonDocument::fromVariant(h.value("tw")).toJson(QJsonDocument::Compact));
-    hash.addData(QJsonDocument::fromVariant(h.value("pi")).toJson(QJsonDocument::Compact));
-    h.insert("hash", hash.result().toHex().toUpper());
+    hash.addData(QJsonDocument::fromVariant(m.value("rw")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(m.value("wp")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(m.value("tw")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(m.value("pi")).toJson(QJsonDocument::Compact));
+    m.insert("hash", hash.result().toHex().toUpper());
 
-    return h;
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    return m;
 }
 void VehicleMission::fromVariant(const QVariant &var)
 {

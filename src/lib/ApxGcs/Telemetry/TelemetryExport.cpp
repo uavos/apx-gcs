@@ -173,41 +173,34 @@ bool TelemetryExport::writeXml(QFile *file_p,
             configs.insert(hash);
         }
     }
-    if (!configs.isEmpty()) {
-        stream.writeStartElement("configs");
-        for (auto const &hash : configs) {
-            DBReqLoadVehicleConfig req(hash);
-            if (!req.execSynchronous()) {
-                apxMsgW() << tr("Can't export config") << hash;
-                continue;
-            }
-            QByteArray data = QJsonDocument::fromVariant(req.config()).toJson(QJsonDocument::Compact);
-
-            stream.writeStartElement("vehicle");
-            stream.writeAttribute("hash", hash);
-            stream.writeCharacters(qCompress(data, 9).toBase64());
-            stream.writeEndElement();
+    stream.writeStartElement("packages");
+    for (auto const &hash : configs) {
+        DBReqLoadVehicleConfig req(hash);
+        if (!req.execSynchronous()) {
+            apxMsgW() << tr("Can't export config") << hash;
+            continue;
         }
+        QByteArray data = QJsonDocument::fromVariant(req.config()).toJson(QJsonDocument::Compact);
+
+        stream.writeStartElement("vehicle");
+        stream.writeAttribute("hash", hash);
+        stream.writeCharacters(qCompress(data, 9).toBase64());
         stream.writeEndElement();
     }
-    if (!missions.isEmpty()) {
-        stream.writeStartElement("missions");
-        for (auto const &hash : missions) {
-            DBReqMissionsLoad req(hash);
-            if (!req.execSynchronous()) {
-                apxMsgW() << tr("Can't export mission") << hash;
-                continue;
-            }
-            QByteArray data = QJsonDocument::fromVariant(req.mission())
-                                  .toJson(QJsonDocument::Compact);
-
-            stream.writeStartElement("mission");
-            stream.writeAttribute("hash", hash);
-            stream.writeCharacters(qCompress(data, 9).toBase64());
-            stream.writeEndElement();
+    for (auto const &hash : missions) {
+        DBReqMissionsLoad req(hash);
+        if (!req.execSynchronous()) {
+            apxMsgW() << tr("Can't export mission") << hash;
+            continue;
         }
+        QByteArray data = QJsonDocument::fromVariant(req.mission()).toJson(QJsonDocument::Compact);
+
+        stream.writeStartElement("mission");
+        stream.writeAttribute("hash", hash);
+        stream.writeCharacters(qCompress(data, 9).toBase64());
         stream.writeEndElement();
     }
+    stream.writeEndElement();
 
     //write data
     stream.setAutoFormattingIndent(0);

@@ -33,7 +33,7 @@ VehicleStorage::VehicleStorage(Vehicle *vehicle)
 
 void VehicleStorage::saveVehicleInfo()
 {
-    auto m = _vehicle->toVariant().value<QVariantMap>();
+    auto m = _vehicle->get_info();
     if (m.isEmpty())
         return;
 

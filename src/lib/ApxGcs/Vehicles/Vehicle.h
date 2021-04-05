@@ -92,6 +92,9 @@ public:
     auto protocol() const { return _protocol; }
     auto storage() const { return _storage; }
 
+    // variant conversions
+    QVariantMap get_info() const;
+
     //Fact override
     QVariant toVariant() const override;
     void fromVariant(const QVariant &var) override;
@@ -99,6 +102,8 @@ public:
 private:
     PVehicle *_protocol;
     VehicleStorage *_storage;
+
+    qint64 _lastSeenTime{};
 
     QTimer updateInfoTimer;
 

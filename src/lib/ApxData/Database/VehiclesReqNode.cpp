@@ -168,7 +168,7 @@ bool DBReqSaveNodeDict::run(QSqlQuery &query)
 
     auto hash = _dict.value("hash").toString();
 
-    auto time = query.value("time");
+    auto time = _dict.value("time").toULongLong();
     auto name = query.value("name");
     auto version = query.value("version");
     auto hardware = query.value("hardware");
@@ -313,6 +313,7 @@ bool DBReqLoadNodeDict::run(QSqlQuery &query)
         }
         _hash = query.value("hash").toString();
     }
+    auto time = query.value("time").toULongLong();
 
     //read fields
     query.prepare("SELECT * FROM NodeDictData "
@@ -341,6 +342,7 @@ bool DBReqLoadNodeDict::run(QSqlQuery &query)
 
     _dict.insert("hash", _hash);
     _dict.insert("fields", fields);
+    _dict.insert("time", time);
     _dict.insert("cached", true);
 
     emit dictLoaded(_dict);
@@ -374,7 +376,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
     auto dictID = query.value(0).toULongLong();
 
     //grab title from node's comment
-    QString title = _values.value("label").toString();
+    auto title = _values.value("label").toString();
     title = title.simplified().trimmed();
 
     //generate hash
@@ -574,7 +576,19 @@ bool DBReqLoadNodeConfig::run(QSqlQuery &query)
             return _hash.isEmpty();
 
         _configID = query.value(0).toULongLong();
+    } else {
+        query.prepare("SELECT * FROM NodeConfigs WHERE key=?");
+        query.addBindValue(_configID);
+
+        if (!query.exec())
+            return false;
+        if (!query.next()) {
+            qWarning() << "configID not found" << _configID;
+            return false;
+        }
     }
+
+    _time = query.value("time").toULongLong();
 
     //build values table
     query.prepare(

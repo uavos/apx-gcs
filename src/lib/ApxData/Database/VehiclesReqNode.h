@@ -171,10 +171,12 @@ public:
     bool run(QSqlQuery &query);
 
     auto values() const { return _values; }
+    auto time() const { return _time; }
 
 protected:
     QString _hash;
     quint64 _configID{};
+    quint64 _time{};
 
     QVariantMap _values;
 

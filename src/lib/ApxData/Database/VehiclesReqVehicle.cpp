@@ -37,7 +37,7 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
     }
 
     //find the latest existing record by UID
-    if (vuid.isNull()) {
+    if (vuid.isEmpty()) {
         query.prepare("SELECT * FROM Vehicles WHERE uid IS NULL ORDER BY time DESC LIMIT 1");
     } else {
         query.prepare("SELECT * FROM Vehicles WHERE uid=? ORDER BY time DESC LIMIT 1");
@@ -100,8 +100,12 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
 bool DBReqSaveVehicleConfig::run(QSqlQuery &query)
 {
     // seaarch vehicle
-    query.prepare("SELECT * FROM Vehicles WHERE uid=? ORDER BY time DESC LIMIT 1");
-    query.addBindValue(_vuid);
+    if (_vuid.isEmpty()) {
+        query.prepare("SELECT * FROM Vehicles WHERE uid IS NULL ORDER BY time DESC LIMIT 1");
+    } else {
+        query.prepare("SELECT * FROM Vehicles WHERE uid=? ORDER BY time DESC LIMIT 1");
+        query.addBindValue(_vuid);
+    }
     if (!query.exec())
         return false;
     if (!query.next()) {
@@ -208,7 +212,10 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
     auto configID = query.value(0).toULongLong();
     auto title = query.value("title").toString();
     auto notes = query.value("notes").toString();
+    auto time = query.value("time").toULongLong();
+    auto vehicleID = query.value("vehicleID").toString();
 
+    // get config data
     query.prepare("SELECT * FROM VehicleConfigData"
                   " INNER JOIN NodeConfigs ON VehicleConfigData.nconfID=NodeConfigs.key"
                   " INNER JOIN NodeDicts ON NodeConfigs.dictID=NodeDicts.key"
@@ -260,6 +267,7 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
             bool ok = req->run(query);
             if (ok) {
                 node.insert("values", req->values());
+                node.insert("time", req->time());
             }
             delete req;
             if (!ok)
@@ -267,12 +275,28 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
         }
         nodes.append(node);
     }
-
     _config.insert("nodes", nodes);
     if (!title.isEmpty())
         _config.insert("title", title);
     if (!notes.isEmpty())
         _config.insert("notes", notes);
+    _config.insert("time", time);
+
+    // get vehicle info
+    query.prepare("SELECT * FROM Vehicles WHERE key=?");
+    query.addBindValue(vehicleID);
+    if (!query.exec())
+        return false;
+    if (!query.next()) {
+        qWarning() << "missing vehicle" << vehicleID;
+    } else {
+        QVariantMap vehicle;
+        vehicle.insert("uid", query.value("uid").toString());
+        vehicle.insert("callsign", query.value("callsign").toString());
+        vehicle.insert("class", query.value("class").toString());
+        vehicle.insert("time", query.value("time").toString());
+        _config.insert("vehicle", filterNullValues(vehicle));
+    }
 
     emit configLoaded(_config);
     return true;
@@ -302,7 +326,6 @@ bool DBReqImportVehicleConfig::run(QSqlQuery &query)
         if (info.isEmpty())
             continue;
         auto uid = info.value("uid").toString();
-        auto time = info.value("time").toULongLong();
 
         req = new DBReqSaveNodeInfo(info);
         if (!req->run(query))
@@ -326,6 +349,7 @@ bool DBReqImportVehicleConfig::run(QSqlQuery &query)
         auto values = node.value("values").value<QVariantMap>();
         if (values.isEmpty())
             continue;
+        auto time = node.value("time").toULongLong();
 
         req = new DBReqSaveNodeConfig(uid, hash, values, time);
         if (!req->run(query))
@@ -341,21 +365,20 @@ bool DBReqImportVehicleConfig::run(QSqlQuery &query)
     }
 
     // vehicle config
-    if (!vehicle.isEmpty()) {
-        if (nconfIDs.isEmpty()) {
-            qWarning() << "missing nodes in import";
-        } else {
-            auto vuid = vehicle.value("uid").toString();
-            auto time = vehicle.value("time").toULongLong();
-            auto title = _config.value("title").toString();
-            QString notes("imported");
+    auto vuid = vehicle.value("uid").toString();
+    auto title = _config.value("title").toString();
+    auto time = _config.value("time").toULongLong();
 
-            req = new DBReqSaveVehicleConfig(vuid, nconfIDs, title, notes, time);
-            bool ok = req->run(query);
-            delete req;
-            if (!ok)
-                return false;
-        }
+    if (nconfIDs.isEmpty()) {
+        qWarning() << "missing nodes in import";
+    } else {
+        QString notes("imported");
+
+        req = new DBReqSaveVehicleConfig(vuid, nconfIDs, title, notes, time);
+        bool ok = req->run(query);
+        delete req;
+        if (!ok)
+            return false;
     }
 
     return true;
