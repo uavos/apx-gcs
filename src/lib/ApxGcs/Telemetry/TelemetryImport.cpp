@@ -219,11 +219,17 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
             }
             if (tag == "D") {
                 QStringList st = xml.readElementText().split(',', Qt::KeepEmptyParts);
-                for (int i = 0; i < st.size(); ++i) {
-                    const QString &s = st.at(i);
-                    if (s.isEmpty())
+                uint i = 0;
+                for (auto const &s : st) {
+                    if (s.isEmpty()) {
+                        i++;
                         continue;
-                    quint64 fieldID = recFieldsMap.at(i);
+                    }
+                    if (s.startsWith('#')) {
+                        i += s.mid(1).toUInt();
+                        continue;
+                    }
+                    quint64 fieldID = recFieldsMap.at(i++);
                     if (fieldID) {
                         dbSaveData(t, fieldID, s.toDouble(), false);
                     }

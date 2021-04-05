@@ -260,26 +260,6 @@ bool TelemetryExport::writeXml(QFile *file_p,
             QString name = r.at(iName).toString();
             QString uid = r.at(iUID).toString();
             writeEvent(stream, time, name, r.at(iValue).toString(), uid, type == 3);
-            // TODO: export nodes/mission if file
-            /*if (name == "mission") {
-                MissionsXmlExport req(uid, title, "");
-                ok = req.execSynchronous();
-                if (req.data.isEmpty()) {
-                    apxMsgW() << tr("Can't export") << name;
-                } else {
-                    stream.device()->write("\n");
-                    stream.device()->write(req.data);
-                }
-            } else if (name == "nodes") {
-                NodesXmlExport req(uid, title, "");
-                ok = req.execSynchronous();
-                if (req.data.isEmpty()) {
-                    apxMsgW() << tr("Can't export") << name;
-                } else {
-                    stream.device()->write("\n");
-                    stream.device()->write(req.data);
-                }
-            }*/
         } break;
         }
     }
@@ -298,7 +278,26 @@ void TelemetryExport::writeDownlink(QXmlStreamWriter &stream,
 {
     stream.writeStartElement("D");
     stream.writeAttribute("t", QString::number(time));
-    stream.writeCharacters(values.join(','));
+    // combine zero values
+    uint n = 0;
+    QStringList st;
+    for (auto const &v : values) {
+        if (v.isEmpty()) {
+            n++;
+            continue;
+        }
+        if (n > 2) {
+            st.append("#" + QString::number(n));
+            n = 0;
+        } else if (n > 0) {
+            while (n--) {
+                st.append(QString());
+            }
+            n = 0;
+        }
+        st.append(v);
+    }
+    stream.writeCharacters(st.join(','));
     stream.writeEndElement();
 }
 void TelemetryExport::writeUplink(QXmlStreamWriter &stream,
