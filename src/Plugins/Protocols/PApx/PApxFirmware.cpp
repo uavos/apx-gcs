@@ -24,6 +24,8 @@
 #include "PApxNode.h"
 #include "PApxNodes.h"
 
+#include <App/App.h>
+
 PApxFirmware::PApxFirmware(PApx *parent)
     : PFirmware(parent)
     , _nodes(static_cast<PApxNodes *>(parent->local()->nodes()))
@@ -41,30 +43,75 @@ void PApxFirmware::upgradeFirmware(QString uid, QString name, QByteArray data, q
     _data = data;
     _offset = offset;
 
-    _node = _nodes->getNode(uid);
-    connect(_node, &PNode::identReceived, this, &PApxFirmware::identReceived, Qt::UniqueConnection);
-    _node->requestIdent();
+    setValue(tr("Initializing..."));
+
+    start();
 }
 
-void PApxFirmware::identReceived(QVariantMap ident)
+void PApxFirmware::start()
 {
-    if (!_node || _node->uid() != _uid)
+    if (_uid.isEmpty())
+        return;
+
+    _node = _nodes->getNode(_uid);
+
+    if (_name == "ldr") {
+        rebootFinished();
+    } else {
+        auto req = new PApxNodeRequestReboot(_node, xbus::node::reboot::loader);
+        req->silent = true;
+        connect(req, &PApxNodeRequest::finished, this, &PApxFirmware::rebootFinished);
+    }
+}
+
+void PApxFirmware::rebootFinished()
+{
+    if (!_node)
+        return;
+
+    auto req = new PApxNodeRequestIdent(_node);
+    req->silent = true;
+    connect(req, &PApxNodeRequest::finished, this, &PApxFirmware::identFinished);
+}
+void PApxFirmware::identFinished()
+{
+    if (!_node)
         return;
 
     if (_node->file(_name)) {
         auto req = new PApxNodeRequestFileWrite(_node, _name, _data, _offset);
         connect(req, &PApxNodeRequest::finished, this, &PApxFirmware::fileFinished);
         connect(req, &PApxNodeRequestFile::uploaded, this, &PApxFirmware::fileUploaded);
+        connect(req, &PApxNodeRequestFile::progress, this, &PApxFirmware::fileProgress);
+    } else {
+        start();
     }
 }
 
 void PApxFirmware::fileUploaded()
 {
+    if (!_node)
+        return;
     _success = true;
 }
 
 void PApxFirmware::fileFinished()
 {
+    if (!_node)
+        return;
+
     emit upgradeFinished(_uid, _success);
+
+    setValue(QVariant());
     _success = false;
+    _node = {};
+}
+
+void PApxFirmware::fileProgress(int percent)
+{
+    setProgress(percent);
+    int tcnt = percent * _data.size() / 100;
+    setValue(QString("%1/%2")
+                 .arg(AppRoot::capacityToString(tcnt, 1))
+                 .arg(AppRoot::capacityToString(_data.size())));
 }

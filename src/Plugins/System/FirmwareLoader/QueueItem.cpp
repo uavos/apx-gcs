@@ -97,6 +97,8 @@ void QueueItem::upload()
         finish(false);
         return;
     }
+    bindProperty(p, "progress", true);
+    bindProperty(p, "value", true);
     p->upgradeFirmware(_uid, _type, _data, _offset);
     connect(p, &PFirmware::upgradeFinished, this, &QueueItem::upgradeFinished);
 }

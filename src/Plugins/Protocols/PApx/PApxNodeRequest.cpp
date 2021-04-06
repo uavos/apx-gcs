@@ -273,6 +273,10 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
     if (!(op & xbus::node::file::reply_op_mask))
         return false;
 
+    const char *s = stream.read_string(16);
+    if (!s || QString(s) != _name)
+        return false;
+
     op = static_cast<xbus::node::file::op_e>(op & ~xbus::node::file::reply_op_mask);
 
     if (op == xbus::node::file::abort) {
@@ -308,10 +312,6 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
     }
 
     if (op != _op)
-        return false;
-
-    const char *s = stream.read_string(16);
-    if (!s || QString(s) != _name)
         return false;
 
     //qDebug() << _name << op << _op;
@@ -352,7 +352,7 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
     xbus::node::file::offset_t offset;
     stream >> offset;
     if (offset != _offset) { //just skip non-sequental
-        qWarning() << "offset:" << offset << _offset;
+        qWarning() << "offset:" << QString::number(offset, 16) << QString::number(_offset, 16);
         return false;
     }
 
@@ -385,6 +385,7 @@ bool PApxNodeRequestFileRead::response_file(xbus::node::file::offset_t offset, P
 
     size_t v = _info.size > 0 ? _tcnt * 100 / _info.size : 0;
     _node->setProgress(static_cast<int>(v));
+    emit progress(v);
 
     next();
     return false;
@@ -446,6 +447,7 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
 
     size_t v = _data.size() > 0 ? _tcnt * 100 / _data.size() : 0;
     _node->setProgress(static_cast<int>(v));
+    emit progress(v);
 
     next();
     return false;

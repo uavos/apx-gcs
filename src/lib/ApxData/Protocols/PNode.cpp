@@ -54,10 +54,9 @@ void PNode::upgradeStarted(QString uid, QString name)
         return;
     setUpgrading(true);
 
-    setProgress(0);
-
     auto p = findParent<PBase>()->firmware();
     bindProperty(p, "value", true);
+    bindProperty(p, "progress", true);
 }
 void PNode::upgradeFinished(QString uid, bool success)
 {
@@ -65,8 +64,7 @@ void PNode::upgradeFinished(QString uid, bool success)
         return;
     _upgradingDoneTimer.start();
 
-    setProgress(-1);
-
     auto p = findParent<PBase>()->firmware();
     unbindProperties(p);
+    setValue(QVariant());
 }

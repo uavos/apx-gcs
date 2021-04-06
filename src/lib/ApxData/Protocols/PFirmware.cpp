@@ -35,10 +35,13 @@ void PFirmware::setUpgrading(bool v)
         return;
     m_upgrading = v;
     emit upgradingChanged();
+    if (!v)
+        setProgress(-1);
 }
 
 void PFirmware::upgradeFirmware(QString uid, QString name, QByteArray data, quint32 offset)
 {
+    setProgress(0);
     setUpgrading(true);
     emit upgradeStarted(uid, name);
 }

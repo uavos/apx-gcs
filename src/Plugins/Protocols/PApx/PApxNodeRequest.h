@@ -50,6 +50,8 @@ public:
 
     static constexpr uint retries = 5;
 
+    bool silent{};
+
 protected:
     PApxNode *_node;
     mandala::uid_t _uid;
@@ -174,6 +176,7 @@ protected:
 signals:
     void downladed();
     void uploaded();
+    void progress(int percent);
 };
 
 class PApxNodeRequestFileRead : public PApxNodeRequestFile

@@ -42,11 +42,15 @@ PApxNodes::PApxNodes(PApxVehicle *parent)
 
     // inactive vehicle has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
+    connect(this, &PNodes::upgradingChanged, this, &PApxNodes::updateActive);
     updateActive();
 }
 void PApxNodes::updateActive()
 {
-    _reqNext.setInterval(parent()->active() ? PAPX_REQ_DELAY_MS : 1000);
+    bool v = parent()->active() || (upgrading() && findParent<PApx>()->local() == parent());
+
+    _reqNext.setInterval(v ? PAPX_REQ_DELAY_MS : 1000);
+
     if (_reqNext.isActive()) {
         _reqNext.stop();
         _reqNext.start();
@@ -204,8 +208,10 @@ void PApxNodes::request_timeout()
     }
 
     if (!_retry) {
-        apxMsgW() << tr("NMT request dropped").append(':') << _request->node()->title()
-                  << Mandala::meta(_request->uid()).name;
+        if (!_request->silent) {
+            apxMsgW() << tr("NMT request dropped").append(':') << _request->node()->title()
+                      << Mandala::meta(_request->uid()).name;
+        }
 
         // clear all node requests
         for (auto req : _requests) {
@@ -218,11 +224,13 @@ void PApxNodes::request_timeout()
     }
 
     _retry--;
-    apxMsgW() << tr("NMT timeout").append(':') << _request->node()->title()
-              << Mandala::meta(_request->uid()).name
-              << QString("(%1/%2)")
-                     .arg(PApxNodeRequest::retries - _retry)
-                     .arg(PApxNodeRequest::retries);
+    if (!_request->silent) {
+        apxMsgW() << tr("NMT timeout").append(':') << _request->node()->title()
+                  << Mandala::meta(_request->uid()).name
+                  << QString("(%1/%2)")
+                         .arg(PApxNodeRequest::retries - _retry)
+                         .arg(PApxNodeRequest::retries);
+    }
 
     _reqNext.start();
 }

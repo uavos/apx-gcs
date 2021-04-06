@@ -49,7 +49,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     //protocol
     if (protocol) {
         bindProperty(protocol, "title");
-        bindProperty(protocol, "descr");
+        bindProperty(protocol, "descr", true);
         bindProperty(protocol, "progress", true);
 
         connect(this, &Fact::removed, protocol, &Fact::deleteFact);
@@ -62,8 +62,16 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
 
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateUpgrading);
+        connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateStatus);
 
         connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
+
+        connect(protocol, &Fact::valueChanged, this, [this]() {
+            if (_protocol->value().isNull())
+                setDescr(_protocol->descr());
+            else
+                setDescr(_protocol->value().toString());
+        });
     }
 
     /*
@@ -102,6 +110,10 @@ void NodeItem::validateData()
 
 void NodeItem::updateStatus()
 {
+    if (_protocol && _protocol->upgrading()) {
+        FactData::setValue(QVariant());
+        return;
+    }
     if (_ident.value("reconf").toBool()) {
         setValue(tr("no config").toUpper());
         return;
@@ -499,7 +511,7 @@ void NodeItem::identReceived(QVariantMap ident)
         ident.insert("user", user);
     }
 
-    if (_ident == ident)
+    if (_ident == ident && valid())
         return;
 
     qWarning() << "ident updated";
@@ -511,7 +523,8 @@ void NodeItem::identReceived(QVariantMap ident)
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         storage->saveNodeInfo();
         _nodes->nodeNotify(this);
-        _protocol->requestDict();
+        if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
+            _protocol->requestDict();
         return;
     }
 
@@ -592,7 +605,8 @@ void NodeItem::dictReceived(QVariantMap dict)
     if (_protocol) {
         if (!_dict.value("cached").toBool())
             storage->saveNodeDict();
-        _protocol->requestConf();
+        if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
+            _protocol->requestConf();
     }
 }
 
@@ -709,7 +723,7 @@ void NodeItem::confReceived(QVariantMap values)
     validateData();
     setEnabled(true);
 
-    if (_protocol)
+    if (_protocol && !_ident.value("reconf").toBool())
         storage->saveNodeConfig();
 }
 void NodeItem::confUpdated(QVariantMap values)

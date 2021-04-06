@@ -46,9 +46,13 @@ private:
 
     bool _success{};
 
+    void start();
+
 private slots:
-    void identReceived(QVariantMap ident);
+    void rebootFinished();
+    void identFinished();
 
     void fileUploaded();
     void fileFinished();
+    void fileProgress(int percent);
 };
