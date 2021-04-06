@@ -21,6 +21,8 @@
  */
 #include "PApx.h"
 
+#include "PApxFirmware.h"
+
 #include <App/App.h>
 #include <Mandala/Mandala.h>
 
@@ -38,6 +40,7 @@ PApx::PApx(Fact *parent)
 void PApx::updateLocal()
 {
     m_local = new PApxVehicle(this, "LOCAL", "", PVehicle::UAV, 0);
+    m_firmware = new PApxFirmware(this);
     emit vehicle_available(m_local);
 }
 

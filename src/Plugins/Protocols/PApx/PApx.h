@@ -48,6 +48,8 @@ public:
 
     bool addressed(xbus::vehicle::squawk_t squawk) const { return _squawk_map.contains(squawk); }
 
+    auto local() const { return m_local; }
+
 private:
     PApxVehicle *m_local{};
     QMap<xbus::vehicle::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles

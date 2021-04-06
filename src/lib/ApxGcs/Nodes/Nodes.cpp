@@ -80,6 +80,7 @@ Nodes::Nodes(Vehicle *vehicle)
     connect(this, &Fact::modifiedChanged, &_updateActions, &DelayedEvent::schedule);
     if (_protocol) {
         connect(_protocol, &PNodes::busyChanged, &_updateActions, &DelayedEvent::schedule);
+        connect(_protocol, &PNodes::upgradingChanged, &_updateActions, &DelayedEvent::schedule);
         connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
     }
 
@@ -143,6 +144,11 @@ void Nodes::updateActions()
     f_status->setEnabled(enb && !empty && !upg);
 }
 
+bool Nodes::upgrading() const
+{
+    return _protocol && _protocol->upgrading();
+}
+
 void Nodes::updateValid()
 {
     bool v = !nodes().isEmpty();
@@ -160,13 +166,6 @@ void Nodes::updateValid()
     if (!m_valid)
         return;
     qDebug() << "nodes valid" << vehicle->title();
-}
-void Nodes::setUpgrading(bool v)
-{
-    if (m_upgrading == v)
-        return;
-    m_upgrading = v;
-    emit upgradingChanged();
 }
 
 void Nodes::search()

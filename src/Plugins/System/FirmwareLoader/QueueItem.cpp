@@ -49,19 +49,16 @@ void QueueItem::start()
 {
     qDebug() << title();
 
-    setValue(tr("Initializing update").append("..."));
+    //setValue(tr("Initializing update").append("..."));
     upload();
 }
 
-bool QueueItem::loadFirmware(QString hw, QString ver)
+bool QueueItem::loadFirmware(QString hw)
 {
     QString stype = type().toUpper();
 
     ApxFw *apxfw = AppGcs::apxfw();
-    QString relVer = apxfw->value().toString();
-    if (ver != relVer) {
-        ver = QString("%1->%2").arg(ver).arg(relVer);
-    }
+    QString ver = apxfw->value().toString();
 
     QString s = QString("%1 %2 (%3)").arg(_name).arg(_hw).arg(ver);
     s = QString("%1 (%2): %3").arg(tr("Firmware upload")).arg(stype).arg(s);
@@ -81,22 +78,33 @@ bool QueueItem::loadFirmware(QString hw, QString ver)
     return apxfw->loadFirmware(_name, _hw, rel_type, &_data, &_offset);
 }
 
+PFirmware *QueueItem::protocol() const
+{
+    auto p = AppGcs::instance()->f_datalink->f_protocols->current();
+    if (!p)
+        return {};
+    return p->firmware();
+}
+
 void QueueItem::upload()
 {
-    // TODO: upload a node file
-    /*cleanUploadConnections();
-    Firmware::nodes_protocol()->clear_requests();
+    if (!loadFirmware(_hw)) {
+        finish(false);
+        return;
+    }
+    auto p = protocol();
+    if (!p) {
+        finish(false);
+        return;
+    }
+    p->upgradeFirmware(_uid, _type, _data, _offset);
+    connect(p, &PFirmware::upgradeFinished, this, &QueueItem::upgradeFinished);
+}
 
-    if (!loadFirmware(protocol()->hardware(), protocol()->version())) {
-        finish(false);
-        return;
-    }
-    PNodeFile *f = file(type());
-    if (!f) {
-        finish(false);
-        return;
-    }
-    f->upload(_data, _offset);*/
+void QueueItem::upgradeFinished(QString uid, bool success)
+{
+    disconnect(protocol(), nullptr, this, nullptr);
+    finish(success);
 }
 
 void QueueItem::finish(bool success)
@@ -112,27 +120,3 @@ void QueueItem::finish(bool success)
     //qDebug() << success;
     emit finished(this, success);
 }
-
-/*PNodeFile *QueueItem::file(const QString &fname)
-{
-    PNodeFile *file = protocol()->file(fname);
-    if (!file) {
-        AppNotify::instance()
-            ->report(QString("%1: %2/%3").arg(tr("Node file is unavailable")).arg(title()).arg(fname),
-                     AppNotify::FromApp | AppNotify::Error);
-        return nullptr;
-    }
-
-    if (file_p) {
-        disconnect(file_p, nullptr, this, nullptr);
-    }
-    file_p = file;
-
-    connect(file_p, &PNodeFile::uploaded, this, [this]() { finish(true); });
-    connect(file_p, &PNodeFile::error, this, [this]() { finish(false); });
-    connect(file_p, &PNodeFile::interrupted, this, [this]() { finish(false); });
-
-    connect(file_p, &PNodeFile::valueChanged, this, [this]() { setValue(file_p->value()); });
-
-    return file;
-}*/

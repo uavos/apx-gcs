@@ -107,9 +107,9 @@ void Firmware::vehicleRegistered(Vehicle *vehicle)
     connect(vehicle->f_nodes, &Nodes::requestUpgrade, this, &Firmware::upgradeRequested);
     connect(vehicle->f_nodes, &Nodes::nodeNotify, this, &Firmware::nodeNotify);
 
-    connect(this, &Fact::activeChanged, vehicle->f_nodes, [this, vehicle]() {
-        vehicle->f_nodes->setUpgrading(active());
-    });
+    // connect(this, &Fact::activeChanged, vehicle->f_nodes, [this, vehicle]() {
+    //     vehicle->f_nodes->setUpgrading(active());
+    // });
 }
 void Firmware::nodeNotify(NodeItem *node)
 {

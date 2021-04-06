@@ -21,36 +21,34 @@
  */
 #pragma once
 
-#include "PBase.h"
+#include <QtCore>
 
-class PVehicle;
-class PNode;
+#include <Fact/Fact.h>
 
-class PNodes : public PTreeBase
+#include "PTrace.h"
+#include "PTreeBase.h"
+
+class PBase;
+
+class PFirmware : public PTreeBase
 {
     Q_OBJECT
+
     Q_PROPERTY(bool upgrading READ upgrading NOTIFY upgradingChanged)
 
 public:
-    explicit PNodes(PVehicle *parent);
+    explicit PFirmware(PBase *parent);
 
-    // set to true if any child node is upgrading
     auto upgrading() const { return m_upgrading; }
+    void setUpgrading(bool v);
+
+    virtual void upgradeFirmware(QString uid, QString name, QByteArray data, quint32 offset);
 
 private:
     bool m_upgrading{};
 
-private slots:
-    void updateUpgrading();
-
-public slots:
-    virtual void requestSearch() { _nimp(__FUNCTION__); }
-    virtual void cancelRequests() { _nimp(__FUNCTION__); }
-
 signals:
-    void node_available(PNode *node);
-    void node_response(PNode *node);
-
-    //properties
     void upgradingChanged();
+    void upgradeStarted(QString uid, QString name);
+    void upgradeFinished(QString uid, bool success);
 };

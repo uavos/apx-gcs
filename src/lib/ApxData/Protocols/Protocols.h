@@ -26,6 +26,7 @@
 
 #include "PBase.h"
 #include "PData.h"
+#include "PFirmware.h"
 #include "PNode.h"
 #include "PNodes.h"
 #include "PTelemetry.h"
@@ -42,6 +43,8 @@ public:
     explicit Protocols(Fact *parent);
 
     void setTraceEnabled(bool v);
+
+    auto current() const { return _protocol; }
 
 private:
     Fact *f_current;

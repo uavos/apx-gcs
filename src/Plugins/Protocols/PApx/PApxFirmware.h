@@ -21,36 +21,34 @@
  */
 #pragma once
 
-#include "PBase.h"
+#include "PApx.h"
 
-class PVehicle;
-class PNode;
+class PApxNodes;
+class PApxNode;
 
-class PNodes : public PTreeBase
+class PApxFirmware : public PFirmware
 {
     Q_OBJECT
-    Q_PROPERTY(bool upgrading READ upgrading NOTIFY upgradingChanged)
 
 public:
-    explicit PNodes(PVehicle *parent);
+    explicit PApxFirmware(PApx *parent);
 
-    // set to true if any child node is upgrading
-    auto upgrading() const { return m_upgrading; }
+    void upgradeFirmware(QString uid, QString name, QByteArray data, quint32 offset) override;
 
 private:
-    bool m_upgrading{};
+    PApxNodes *_nodes;
+    PApxNode *_node{};
+
+    QString _uid;
+    QString _name;
+    QByteArray _data;
+    quint32 _offset;
+
+    bool _success{};
 
 private slots:
-    void updateUpgrading();
+    void identReceived(QVariantMap ident);
 
-public slots:
-    virtual void requestSearch() { _nimp(__FUNCTION__); }
-    virtual void cancelRequests() { _nimp(__FUNCTION__); }
-
-signals:
-    void node_available(PNode *node);
-    void node_response(PNode *node);
-
-    //properties
-    void upgradingChanged();
+    void fileUploaded();
+    void fileFinished();
 };

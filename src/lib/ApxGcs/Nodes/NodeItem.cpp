@@ -61,6 +61,8 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::confUpdated, this, &NodeItem::confUpdated);
         connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
 
+        connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateUpgrading);
+
         connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
     }
 
@@ -106,6 +108,14 @@ void NodeItem::updateStatus()
     }
     if (_status_field) {
         setValue(_status_field->valueText().trimmed());
+    }
+}
+void NodeItem::updateUpgrading()
+{
+    if (_protocol->upgrading()) {
+        clear();
+    } else {
+        _protocol->requestIdent();
     }
 }
 

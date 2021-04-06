@@ -57,7 +57,8 @@ void PApxMission::updateMission(QVariant var)
     auto f = _file();
     if (!f)
         return;
-    new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var));
+    auto req = new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var));
+    connect(req, &PApxNodeRequestFile::uploaded, this, &PMission::missionUpdated);
 }
 
 void PApxMission::parseMissionData(const xbus::node::file::info_s &info, const QByteArray data)

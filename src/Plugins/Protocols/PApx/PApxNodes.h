@@ -40,11 +40,11 @@ public:
 
     void cancel_requests(PApxNode *node);
 
+    PApxNode *getNode(QString uid, bool createNew = true);
+
 private:
     PApxRequest _req;
     QHash<QString, PApxNode *> _nodes;
-
-    PApxNode *getNode(QString uid, bool createNew = true);
 
     QTimer _reqTimeout;
     QTimer _reqNext;

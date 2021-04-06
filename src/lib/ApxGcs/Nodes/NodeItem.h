@@ -100,6 +100,7 @@ private:
 private slots:
     void validateData();
     void updateStatus();
+    void updateUpgrading();
 
 public slots:
     void upload();

@@ -31,6 +31,7 @@ class PNode : public PTreeBase
 {
     Q_OBJECT
     Q_PROPERTY(QString uid READ uid CONSTANT)
+    Q_PROPERTY(bool upgrading READ upgrading NOTIFY upgradingChanged)
 
 public:
     explicit PNode(PNodes *parent, QString uid);
@@ -43,8 +44,18 @@ public:
         err,
     };
 
+    auto upgrading() const { return m_upgrading; }
+
 private:
     QString m_uid;
+    bool m_upgrading{};
+
+    QTimer _upgradingDoneTimer;
+    void setUpgrading(bool v);
+
+private slots:
+    void upgradeStarted(QString uid, QString name);
+    void upgradeFinished(QString uid, bool success);
 
 public slots:
     virtual void requestIdent() { _nimp(__FUNCTION__); }
@@ -74,4 +85,7 @@ signals:
 
     // when requestUpdate accepted and saved
     void confSaved();
+
+    //properties
+    void upgradingChanged();
 };

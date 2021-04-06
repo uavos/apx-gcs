@@ -54,13 +54,24 @@ public:
     static QVariant read_param(PStreamReader &stream, xbus::node::conf::type_e type);
     static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value);
 
-    void file_uploaded(QString name);
-
     static QByteArray pack_script(QVariant value);
     static QString hashToText(xbus::node::hash_t hash);
 
     QVariant optionToText(QVariant value, size_t fidx);
     QVariant textToOption(QVariant value, size_t fidx);
+
+    // requests
+    void requestIdent() override { new PApxNodeRequestIdent(this); }
+    void requestDict() override;
+    void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
+    void requestUpdate(QVariantMap values) override;
+
+    void requestReboot() override { new PApxNodeRequestReboot(this); }
+    void requestShell(QStringList commands) override { new PApxNodeRequestShell(this, commands); }
+    void requestUsr(quint8 cmd, QByteArray data) override
+    {
+        new PApxNodeRequestUsr(this, cmd, data);
+    }
 
 private:
     PApxNodes *_nodes;
@@ -83,19 +94,6 @@ private:
     QString _script_field;
 
     void updateProgress();
-
-protected:
-    void requestIdent() override { new PApxNodeRequestIdent(this); }
-    void requestDict() override;
-    void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
-    void requestUpdate(QVariantMap values) override;
-
-    void requestReboot() override { new PApxNodeRequestReboot(this); }
-    void requestShell(QStringList commands) override { new PApxNodeRequestShell(this, commands); }
-    void requestUsr(quint8 cmd, QByteArray data) override
-    {
-        new PApxNodeRequestUsr(this, cmd, data);
-    }
 
 private slots:
     void infoCacheLoaded(QVariantMap info);

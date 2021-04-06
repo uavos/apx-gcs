@@ -29,13 +29,12 @@
 #include "PTreeBase.h"
 
 class PVehicle;
+class PFirmware;
 class PTrace;
 
 class PBase : public PTreeBase
 {
     Q_OBJECT
-
-    Q_PROPERTY(QString name READ name CONSTANT)
 
 public:
     explicit PBase(Fact *parent, QString name, QString title, QString descr);
@@ -48,8 +47,14 @@ public:
 
     typedef QHash<mandala::uid_t, QVariant> Values;
 
+    // interface to node firmware loader
+    PFirmware *firmware() const { return m_firmware; }
+
 private:
     PTrace *_trace;
+
+protected:
+    PFirmware *m_firmware{};
 
     // data comm
 public slots:

@@ -197,6 +197,7 @@ void PApxNode::extend_request(PApxNodeRequest *req, size_t time_ms)
 
 void PApxNode::delete_request(PApxNodeRequest *req)
 {
+    req->finished();
     emit request_finished(req);
     delete req;
 }
@@ -245,12 +246,6 @@ void PApxNode::updateFiles(QStringList fnames)
         } else if (i == "script") {
             connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseScriptData);
         }
-    }
-}
-void PApxNode::file_uploaded(QString name)
-{
-    if (name == "mission") {
-        findParent<PApxVehicle>()->mission()->missionUpdated();
     }
 }
 

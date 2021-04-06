@@ -30,7 +30,8 @@
 #include <crc.h>
 
 PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeout_ms)
-    : _node(node)
+    : QObject()
+    , _node(node)
     , _uid(uid)
     , _timeout_ms(timeout_ms)
 {
@@ -277,7 +278,7 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
     if (op == xbus::node::file::abort) {
         qWarning() << "transfer aborted by node";
         reset();
-        return false;
+        return true;
     }
     if (op == xbus::node::file::extend) {
         if (_op != xbus::node::file::write || !_info.flags.bits.owrite)
@@ -334,7 +335,10 @@ bool PApxNodeRequestFile::response(PStreamReader &stream)
                 return false;
             }
             //qDebug() << "transfer ok:" << _name << QString::number(_hash, 16);
-            done();
+            if (_op_file == xbus::node::file::read)
+                emit downladed();
+            else
+                emit uploaded();
         }
         reset();
         return true;
@@ -389,6 +393,7 @@ bool PApxNodeRequestFileRead::response_file(xbus::node::file::offset_t offset, P
 void PApxNodeRequestFileWrite::opened()
 {
     _info.size = _data.size();
+    _offset = _woffset;
 }
 bool PApxNodeRequestFileWrite::request_file(PApxRequest &req)
 {
@@ -444,8 +449,4 @@ bool PApxNodeRequestFileWrite::response_file(xbus::node::file::offset_t offset,
 
     next();
     return false;
-}
-void PApxNodeRequestFileWrite::done()
-{
-    _node->file_uploaded(_name);
 }

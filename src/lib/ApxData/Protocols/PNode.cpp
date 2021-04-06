@@ -21,9 +21,52 @@
  */
 #include "PNode.h"
 
+#include "PFirmware.h"
 #include "PVehicle.h"
 
 PNode::PNode(PNodes *parent, QString uid)
     : PTreeBase(parent, "node#", "node", "", Group)
     , m_uid(uid)
-{}
+{
+    auto p = findParent<PBase>()->firmware();
+    if (p) {
+        connect(p, &PFirmware::upgradeStarted, this, &PNode::upgradeStarted);
+        connect(p, &PFirmware::upgradeFinished, this, &PNode::upgradeFinished);
+
+        _upgradingDoneTimer.setSingleShot(true);
+        _upgradingDoneTimer.setInterval(1000);
+        connect(&_upgradingDoneTimer, &QTimer::timeout, this, [this]() { setUpgrading(false); });
+    }
+}
+
+void PNode::setUpgrading(bool v)
+{
+    _upgradingDoneTimer.stop();
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
+}
+
+void PNode::upgradeStarted(QString uid, QString name)
+{
+    if (uid != m_uid)
+        return;
+    setUpgrading(true);
+
+    setProgress(0);
+
+    auto p = findParent<PBase>()->firmware();
+    bindProperty(p, "value", true);
+}
+void PNode::upgradeFinished(QString uid, bool success)
+{
+    if (uid != m_uid)
+        return;
+    _upgradingDoneTimer.start();
+
+    setProgress(-1);
+
+    auto p = findParent<PBase>()->firmware();
+    unbindProperties(p);
+}

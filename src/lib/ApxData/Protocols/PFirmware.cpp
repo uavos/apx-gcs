@@ -19,38 +19,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "PFirmware.h"
 
 #include "PBase.h"
 
-class PVehicle;
-class PNode;
-
-class PNodes : public PTreeBase
+PFirmware::PFirmware(PBase *parent)
+    : PTreeBase(parent, "firmware", tr("Firmware"), tr("Node upgrade interface"))
 {
-    Q_OBJECT
-    Q_PROPERTY(bool upgrading READ upgrading NOTIFY upgradingChanged)
+    connect(this, &PFirmware::upgradeFinished, this, [this]() { setUpgrading(false); });
+}
 
-public:
-    explicit PNodes(PVehicle *parent);
+void PFirmware::setUpgrading(bool v)
+{
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
+}
 
-    // set to true if any child node is upgrading
-    auto upgrading() const { return m_upgrading; }
-
-private:
-    bool m_upgrading{};
-
-private slots:
-    void updateUpgrading();
-
-public slots:
-    virtual void requestSearch() { _nimp(__FUNCTION__); }
-    virtual void cancelRequests() { _nimp(__FUNCTION__); }
-
-signals:
-    void node_available(PNode *node);
-    void node_response(PNode *node);
-
-    //properties
-    void upgradingChanged();
-};
+void PFirmware::upgradeFirmware(QString uid, QString name, QByteArray data, quint32 offset)
+{
+    setUpgrading(true);
+    emit upgradeStarted(uid, name);
+}

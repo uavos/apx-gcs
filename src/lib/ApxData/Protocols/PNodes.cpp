@@ -21,8 +21,31 @@
  */
 #include "PNodes.h"
 
+#include "PNode.h"
 #include "PVehicle.h"
 
 PNodes::PNodes(PVehicle *parent)
     : PTreeBase(parent, "nodes", tr("Nodes"), tr("Vehicle devices"), Group | Count)
-{}
+{
+    connect(this, &PNodes::node_available, this, [this](PNode *node) {
+        connect(node, &PNode::upgradingChanged, this, &PNodes::updateUpgrading);
+    });
+}
+
+void PNodes::updateUpgrading()
+{
+    bool v = false;
+    for (auto i : facts()) {
+        auto node = qobject_cast<PNode *>(i);
+        if (!node)
+            continue;
+        if (node->upgrading()) {
+            v = true;
+            break;
+        }
+    }
+    if (m_upgrading == v)
+        return;
+    m_upgrading = v;
+    emit upgradingChanged();
+}

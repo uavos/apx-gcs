@@ -23,7 +23,7 @@
 
 #include <Fact/Fact.h>
 
-class Releases;
+class PFirmware;
 
 class QueueItem : public Fact
 {
@@ -49,10 +49,12 @@ protected:
     QByteArray _data;
     quint32 _offset;
 
-    bool loadFirmware(QString hw, QString ver = QString());
+    bool loadFirmware(QString hw);
+    PFirmware *protocol() const;
 
 protected slots:
     virtual void upload();
+    void upgradeFinished(QString uid, bool success);
 
 public slots:
     void start();

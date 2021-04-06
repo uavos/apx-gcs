@@ -29,8 +29,9 @@
 class PApxNode;
 class PApxNodes;
 
-class PApxNodeRequest
+class PApxNodeRequest : public QObject
 {
+    Q_OBJECT
 public:
     explicit PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeout_ms = 1000);
     virtual ~PApxNodeRequest();
@@ -58,6 +59,9 @@ protected:
     virtual bool response(PStreamReader &stream) { return true; }
 
     PTrace *trace();
+
+signals:
+    void finished();
 };
 
 class PApxNodeRequestReboot : public PApxNodeRequest
@@ -128,6 +132,7 @@ private:
 
 class PApxNodeRequestFile : public PApxNodeRequest
 {
+    Q_OBJECT
 public:
     explicit PApxNodeRequestFile(PApxNode *node,
                                  QString name,
@@ -166,7 +171,9 @@ protected:
     }
     virtual bool request_file(PApxRequest &req) { return true; }
 
-    virtual void done() {}
+signals:
+    void downladed();
+    void uploaded();
 };
 
 class PApxNodeRequestFileRead : public PApxNodeRequestFile
@@ -188,18 +195,22 @@ class PApxNodeRequestFileWrite : public PApxNodeRequestFile
 {
 public:
     // generates requests tree to upload a file form node
-    explicit PApxNodeRequestFileWrite(PApxNode *node, QString name, QByteArray data)
+    explicit PApxNodeRequestFileWrite(PApxNode *node,
+                                      QString name,
+                                      QByteArray data,
+                                      size_t offset = 0)
         : PApxNodeRequestFile(node, name, xbus::node::file::wopen, xbus::node::file::write)
         , _data(data)
+        , _woffset(offset)
     {
         qDebug() << "uploading:" << name << data.size();
     }
 
 private:
     QByteArray _data;
+    size_t _woffset;
 
     void opened() override;
     bool request_file(PApxRequest &req) override;
     bool response_file(xbus::node::file::offset_t offset, PStreamReader &stream) override;
-    void done() override;
 };
