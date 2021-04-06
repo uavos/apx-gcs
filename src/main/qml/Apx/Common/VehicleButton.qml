@@ -26,13 +26,14 @@ import QtQuick.Layouts 1.3
 //import QtLocation 5.9
 import QtPositioning 5.6
 
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 
 import "Button"
 
 ButtonBase {
     id: control
-    property var vehicle
+    
+    property APX.Vehicle vehicle
 
     size: 48 * ui_scale
     font.pixelSize: Math.max(7, height * 0.33 - 2)

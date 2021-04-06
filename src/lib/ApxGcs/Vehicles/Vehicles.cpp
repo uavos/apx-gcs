@@ -31,34 +31,20 @@
 APX_LOGGING_CATEGORY(VehiclesLog, "core.vehicles")
 Vehicles *Vehicles::_instance = nullptr;
 
-Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
-    : ProtocolViewBase(parent, protocol)
+Vehicles::Vehicles(Fact *parent, Protocols *protocols)
+    : Fact(parent, "vehicles", tr("Vehicles"), tr("Discovered vehicles"), Section)
 {
     _instance = this;
 
-    setName("vehicles");
-    setTitle(tr("Vehicles"));
-    setDescr(tr("Discovered vehicles"));
-    setOption(Section);
-
     qmlRegisterUncreatableType<Vehicles>("APX.Vehicles", 1, 0, "Vehicles", "Reference only");
     qmlRegisterUncreatableType<Vehicle>("APX.Vehicles", 1, 0, "Vehicle", "Reference only");
-    qmlRegisterUncreatableType<ProtocolVehicle>("APX.Vehicles",
-                                                1,
-                                                0,
-                                                "ProtocolVehicle",
-                                                "Reference only");
     qmlRegisterUncreatableType<VehicleWarnings>("APX.Vehicles",
                                                 1,
                                                 0,
                                                 "VehicleWarnings",
                                                 "Reference only");
 
-    qmlRegisterUncreatableType<ProtocolTraceItem>("APX.Protocols",
-                                                  1,
-                                                  0,
-                                                  "Protocols",
-                                                  "Reference only");
+    qmlRegisterUncreatableType<PVehicle>("APX.Vehicles", 1, 0, "PVehicle", "Reference only");
 
     f_select = new VehicleSelect(this,
                                  "select",
@@ -68,30 +54,29 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
     f_select->setTreeType(Action);
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);
 
-    f_local = new Vehicle(this, protocol->local);
-    f_select->addVehicle(f_local);
-
-    f_replay = new Vehicle(this, protocol->replay);
+    f_replay = new Vehicle(this, nullptr);
     f_select->addVehicle(f_replay);
 
+    AppRoot::instance()->setMandala(f_replay->mandala());
+
     //JS register mandala
-    if (App::instance()->engine()) {
-        App::jsync(this);
+    //if (App::instance()->engine()) {
 
-        //register mandala constants for QML and JS
-        for (auto s : f_local->f_mandala->constants.keys()) {
-            const QVariant &v = f_local->f_mandala->constants.value(s);
-            //JSEngine layer
-            App::setGlobalProperty(s, v);
-            //QmlEngine layer
-            App::setContextProperty(s, v);
-        }
-
-        _jsSyncMandalaAccess(f_local->f_mandala, App::instance()->engine()->globalObject());
-        for (auto f : f_local->f_mandala->facts()) {
-            App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());
-        }
+    Mandala *m = f_replay->f_mandala;
+    //register mandala constants for QML and JS
+    for (auto s : m->constants.keys()) {
+        const QVariant &v = m->constants.value(s);
+        //JSEngine layer
+        App::setGlobalProperty(s, v);
+        //QmlEngine layer
+        App::setContextProperty(s, v);
     }
+
+    _jsSyncMandalaAccess(m, App::instance()->engine()->globalObject());
+    for (auto f : m->facts()) {
+        App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());
+    }
+    //}
 
     //Database register fields
     DatabaseRequest::Records recMandala;
@@ -100,7 +85,7 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
                      << "title"
                      << "units"
                      << "alias";
-    for (auto f : f_local->f_mandala->uid_map.values()) {
+    for (auto f : m->uid_map.values()) {
         if (f->isSystem())
             continue;
         QVariantList v;
@@ -125,36 +110,44 @@ Vehicles::Vehicles(Fact *parent, ProtocolVehicles *protocol)
         Qt::QueuedConnection);
     req->exec();
 
-    selectVehicle(f_local);
+    selectVehicle(f_replay);
 
     //connect protocols
-    connect(protocol, &ProtocolVehicles::vehicleIdentified, this, &Vehicles::vehicleIdentified);
+    connect(protocols, &Protocols::vehicle_available, this, &Vehicles::vehicle_available);
 }
 
-void Vehicles::vehicleIdentified(ProtocolVehicle *protocol)
+void Vehicles::vehicle_available(PVehicle *protocol)
 {
     Vehicle *v = new Vehicle(this, protocol);
 
+    connect(v, &Fact::removed, this, [this]() { selectVehicle(nullptr); });
+
     emit vehicleRegistered(v);
 
-    QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->title());
-    if (protocol->squawk() > 0)
-        msg.append(QString(" (%1)").arg(protocol->squawkText()));
-    v->message(msg, AppNotify::Important);
+    if (v->isIdentified()) {
+        QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->title());
+        v->message(msg, AppNotify::Important);
+    }
 
-    // select identified vehicle
-    while (protocol->isIdentified()) {
-        if (current()->protocol()->isIdentified() && !current()->protocol()->isGroundControl())
-            break;
+    if (!current() || v->isLocal()) {
         selectVehicle(v);
-        break;
+    } else {
+        // select identified vehicle
+        while (v->isIdentified()) {
+            if (current()->isIdentified() && !current()->isGroundControl())
+                break;
+            selectVehicle(v);
+            break;
+        }
     }
 }
 
 void Vehicles::selectVehicle(Vehicle *v)
 {
-    if (!v)
+    if (!v) {
+        selectVehicle(f_replay);
         return;
+    }
 
     if (m_current) {
         m_current->setActive(false);
@@ -167,8 +160,6 @@ void Vehicles::selectVehicle(Vehicle *v)
     m_current = v;
 
     QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->title());
-    if (v->protocol()->squawk() > 0)
-        msg.append(QString(" (%1)").arg(v->protocol()->squawkText()));
     v->message(msg, AppNotify::Important);
 
     //update JSengine
@@ -245,5 +236,6 @@ void Vehicles::_jsSyncMandalaAccess(Fact *fact, QJSValue parent)
                         "set:function(v){apx.vehicles.current.mandala.%1.%2.value=v}})")
                     .arg(m->mpath().left(mpath.lastIndexOf('.')))
                     .arg(fact->name());
+
     App::jsexec(s);
 }

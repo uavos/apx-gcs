@@ -50,6 +50,12 @@ Datalink::Datalink(Fact *parent)
                        "heart-circle-outline");
     f_hbeat->setDefaultValue(true);
 
+    f_stats = new DatalinkStats(this);
+
+    f_protocols = new Protocols(this);
+    connect(this, &Datalink::packetReceived, f_protocols, &Protocols::rx_data);
+    connect(f_protocols, &Protocols::tx_data, this, &Datalink::sendPacket);
+
     QString sect;
     sect = tr("Connections");
 
@@ -59,8 +65,6 @@ Datalink::Datalink(Fact *parent)
     f_remotes->setSection(sect);
     f_ports = new DatalinkPorts(this);
     f_ports->setSection(sect);
-    f_stats = new DatalinkStats(this);
-    f_stats->setSection(sect);
 
     //heartbeat timer
     connect(f_hbeat, &Fact::valueChanged, this, &Datalink::hbeatChanged);
@@ -79,7 +83,7 @@ Datalink::Datalink(Fact *parent)
         App::sound(m_online ? "connected" : "error");
     });
 
-    connect(this, &Datalink::packetReceived, this, [=]() { setValid(true); });
+    connect(this, &Datalink::packetReceived, this, [this]() { setValid(true); });
 
     App::jsync(this);
 }

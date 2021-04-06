@@ -27,31 +27,60 @@
 #include <App/AppLog.h>
 
 #include <Database/VehiclesReqVehicle.h>
+#include <Mandala/Mandala.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Telemetry/Telemetry.h>
 
-Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
-    : ProtocolViewBase(vehicles, protocol)
+Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
+    : Fact(vehicles, protocol ? protocol->name() : "replay", protocol ? protocol->title() : "REPLAY")
+    , _protocol(protocol)
 {
     setSection(vehicles->title());
 
-    protocol->bindProperty(this, "active", true);
+    _storage = new VehicleStorage(this);
+
+    if (protocol) {
+        bindProperty(protocol, "title", true);
+        bindProperty(protocol, "value", true);
+        bindProperty(protocol, "active");
+
+        // TODO: vehicle deletion
+        // connect(protocol, &Fact::removed, this, &Fact::deleteFact);
+        connect(this, &Fact::removed, protocol, &Fact::deleteFact);
+
+        connect(protocol, &PVehicle::streamTypeChanged, this, &Vehicle::streamTypeChanged);
+
+        if (protocol->uid().isEmpty()) {
+            m_is_local = true;
+            setName("local");
+        } else {
+            m_is_identified = true;
+            m_is_gcs = protocol->vehicleType() == PVehicle::GCS;
+            connect(protocol, &PVehicle::vehicleTypeChanged, this, [this]() {
+                m_is_gcs = _protocol->vehicleType() == PVehicle::GCS;
+                emit isGroundControlChanged();
+            });
+        }
+    } else {
+        m_is_replay = true;
+    }
+
+    setIcon(m_is_identified ? "drone" : "chip");
 
     f_select
         = new Fact(this, "select", tr("Select"), tr("Make this vehicle active"), Action, "select");
     connect(f_select, &Fact::triggered, this, [this, vehicles]() { vehicles->selectVehicle(this); });
 
     f_mandala = new Mandala(this);
-    f_nodes = new Nodes(this, protocol->nodes);
+    f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
-    f_telemetry = new Telemetry(this);
+
+    f_lookup = new LookupVehicleConfig(this, this);
+    f_share = new VehicleShare(this, this);
 
     setMandala(f_mandala);
-    if (protocol->isLocal()) {
-        AppRoot::instance()->setMandala(mandala());
-    }
 
     //Mandala facts binfing
     f_lat = f_mandala->fact(mandala::est::nav::pos::lat::uid);
@@ -83,53 +112,67 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
 
     connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
 
-    if (!protocol->isReplay()) {
+    if (protocol) {
         connect(this,
                 &Vehicle::coordinateChanged,
                 this,
                 &Vehicle::updateGeoPath,
                 Qt::QueuedConnection);
 
-        //mandala update signals
-        connect(f_mandala, &Mandala::sendValue, protocol->telemetry, &ProtocolTelemetry::sendValue);
+        // mandala update
+        connect(f_mandala, &Mandala::sendValue, this, &Vehicle::sendValue);
+        connect(protocol->data(), &PData::valuesData, f_mandala, &Mandala::valuesData);
 
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryData,
+        connect(protocol->telemetry(),
+                &PTelemetry::telemetryData,
                 f_mandala,
                 &Mandala::telemetryData);
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::valuesData,
-                f_mandala,
-                &Mandala::valuesData);
 
-        connect(protocol, &ProtocolVehicle::jsexecData, this, &Vehicle::jsexecData);
+        connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::valuesData);
 
-        //recorder
-        //FIXME: XPDR
-        //connect(protocol, &ProtocolVehicle::xpdrData, this, &Vehicle::recordDownlink);
+        connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
-        connect(protocol->telemetry,
-                &ProtocolTelemetry::telemetryData,
-                this,
-                &Vehicle::recordDownlink);
-        connect(protocol->telemetry, &ProtocolTelemetry::valuesData, this, &Vehicle::recordDownlink);
+        // storage
+        connect(this, &Vehicle::titleChanged, _storage, &VehicleStorage::saveVehicleInfo);
+        connect(this, &Vehicle::isGroundControlChanged, _storage, &VehicleStorage::saveVehicleInfo);
+        _storage->saveVehicleInfo();
 
-        connect(f_mandala, &Mandala::sendValue, this, &Vehicle::recordUplink);
-
-        connect(protocol, &ProtocolVehicle::serialData, this, [this](uint portNo, QByteArray data) {
-            emit recordSerialData(static_cast<quint8>(portNo), data, false);
+        // counters
+        connect(protocol, &PVehicle::packetReceived, this, [this](mandala::uid_t uid) {
+            if (mandala::cmd::env::match(uid)) {
+                MandalaFact *f = f_mandala->fact(uid);
+                if (f)
+                    f->count_rx();
+            }
         });
-        connect(protocol, &ProtocolVehicle::dbConfigInfoChanged, this, &Vehicle::recordConfig);
-    }
-    // forward
-    connect(protocol->telemetry, &ProtocolTelemetry::telemetryData, this, &Vehicle::telemetryData);
 
-    // counters
-    connect(protocol, &ProtocolVehicle::receivedCmdEnvPacket, this, [this](mandala::uid_t uid) {
-        MandalaFact *f = f_mandala->fact(uid);
-        if (f)
-            f->count_rx();
-    });
+        // forward telemetry stamp to notify plugins
+        connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
+        connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &Vehicle::telemetryData);
+        // forward serial TX for plugins
+        connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
+        connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);
+    }
+
+    if (isIdentified()) {
+        _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+
+        telemetryReqTimer.setInterval(1000);
+        connect(&telemetryReqTimer,
+                &QTimer::timeout,
+                protocol->telemetry(),
+                &PTelemetry::requestTelemetry);
+        connect(this, &Fact::activeChanged, this, [this]() {
+            if (active())
+                telemetryReqTimer.start();
+            else
+                telemetryReqTimer.stop();
+        });
+    }
+
+    // telemetry data recorder/player
+    // will connect to protocol by itself and must be created after vehicle's protocol connections
+    f_telemetry = new Telemetry(this);
 
     // path
     Fact *f = new Fact(f_telemetry,
@@ -144,13 +187,7 @@ Vehicle::Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol)
 
     updateInfo();
 
-    //register JS new vehicles instantly
-    connect(this, &Vehicle::nameChanged, this, [this]() { App::jsync(this); });
     App::jsync(this);
-}
-Vehicle::~Vehicle()
-{
-    qDebug() << "vehicle removed";
 }
 
 void Vehicle::updateActive()
@@ -161,16 +198,52 @@ void Vehicle::updateActive()
     setFollow(false);
 }
 
-void Vehicle::dbSetVehicleKey(quint64 key)
+QVariantMap Vehicle::get_info() const
 {
-    dbKey = key;
+    QVariantMap vehicle;
+    vehicle.insert("uid", _protocol->uid());
+    vehicle.insert("callsign", title());
+    vehicle.insert("class", _protocol->vehicleTypeText());
+    if (_lastSeenTime)
+        vehicle.insert("time", _lastSeenTime);
+    return vehicle;
+}
+QVariant Vehicle::toVariant() const
+{
+    if (isReplay())
+        return {};
+
+    QVariantMap m;
+
+    m.insert("vehicle", get_info());
+    m.insert("nodes", f_nodes->toVariant());
+    m.insert("title", f_nodes->getConfigTitle());
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+
+    return m;
+}
+void Vehicle::fromVariant(const QVariant &var)
+{
+    auto m = var.value<QVariantMap>();
+    if (m.isEmpty())
+        return;
+
+    auto nodes = m.value("nodes").value<QVariantList>();
+    if (nodes.isEmpty()) {
+        apxMsgW() << tr("Missing nodes in data set");
+    } else {
+        f_nodes->fromVariant(nodes);
+    }
 }
 
 void Vehicle::updateInfo()
 {
+    if (isIdentified()) {
+        _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    }
     QStringList st;
     //st<<callsign();
-    if (!protocol()->isReplay()) {
+    if (!isReplay()) {
         QString s;
         int alt = f_hmsl->value().toInt();
         if (std::abs(alt) >= 50)
@@ -255,45 +328,35 @@ QGeoRectangle Vehicle::geoPathRect() const
     return geoPath().boundingGeoRectangle();
 }
 
-void Vehicle::jsexecData(QString data)
-{
-    App::jsexec(data);
-}
-void Vehicle::vmexec(QString func)
-{
-    protocol()->vmexec(func);
-}
-void Vehicle::sendSerial(quint8 portID, QByteArray data)
-{
-    protocol()->sendSerial(portID, data);
-}
-
 void Vehicle::flyHere(const QGeoCoordinate &c)
 {
-    if (protocol()->isReplay())
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
-    protocol()->flyTo(qDegreesToRadians(c.latitude()), qDegreesToRadians(c.longitude()));
+    QVariantList value;
+    value << qDegreesToRadians(c.latitude());
+    value << qDegreesToRadians(c.longitude());
+    emit sendValue(mandala::cmd::nav::pos::uid, value);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
 {
-    if (protocol()->isReplay())
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
-    //    MandalaFact::BundleValues values;
-    //    values.insert(mandala::cmd::nav::gimbal::lat::meta.uid, c.latitude());
-    //    values.insert(mandala::cmd::nav::gimbal::lon::meta.uid, c.longitude());
-    //    values.insert(mandala::cmd::nav::gimbal::hmsl::meta.uid, f_ref_hmsl->value());
-    //    f_cmd_gimbal->sendBundle(values);
+    QVariantList value;
+    value << qDegreesToRadians(c.latitude());
+    value << qDegreesToRadians(c.longitude());
+    emit sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
 {
-    if (protocol()->isReplay())
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
+    apxMsgW() << "Not implemented";
     //    MandalaFact::BundleValues values;
     //    values.insert(mandala::est::nav::ref::lat::meta.uid, c.latitude());
     //    values.insert(mandala::est::nav::ref::lon::meta.uid, c.longitude());
@@ -302,10 +365,11 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
 }
 void Vehicle::sendPositionFix(const QGeoCoordinate &c)
 {
-    if (protocol()->isReplay())
+    if (isReplay())
         return;
     if (!c.isValid())
         return;
+    apxMsgW() << "Not implemented";
     //    MandalaFact::BundleValues values;
     //    values.insert(mandala::est::nav::pos::lat::meta.uid, c.latitude());
     //    values.insert(mandala::est::nav::pos::lon::meta.uid, c.longitude());
@@ -327,8 +391,8 @@ QString Vehicle::fileTitle() const
 }
 QString Vehicle::confTitle() const
 {
-    if (protocol()->nodes->size() <= 0)
-        return QString();
+    //if (protocol()->nodes->size() <= 0)
+    //return QString();
 
     QMap<QString, QString> byName;
     QString shiva;
@@ -357,7 +421,7 @@ QString Vehicle::confTitle() const
     s = byName.value("nav");
     if (!s.isEmpty())
         return s;
-    s = byName.value("mhx");
+    s = byName.value("com");
     if (!s.isEmpty())
         return s;
     s = byName.value("ifc");
@@ -485,4 +549,9 @@ void Vehicle::setTotalDistance(quint64 v)
         return;
     m_totalDistance = v;
     emit totalDistanceChanged();
+}
+
+PVehicle::StreamType Vehicle::streamType() const
+{
+    return protocol() ? protocol()->streamType() : PVehicle::OFFLINE;
 }

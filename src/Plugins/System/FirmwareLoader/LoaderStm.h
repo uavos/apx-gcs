@@ -33,16 +33,11 @@ class LoaderStm : public QueueItem
     Q_OBJECT
 
 public: //186
-    explicit LoaderStm(Fact *parent,
-                       const QString &type,
-                       const QString &name,
-                       const QString &hw,
-                       const QString &portName,
-                       bool continuous);
+    explicit LoaderStm(
+        Fact *parent, QString name, QString hw, QString type, QString portName, bool continuous);
     ~LoaderStm() override;
 
 private:
-    QString hw;
     QString portName;
     bool continuous;
 

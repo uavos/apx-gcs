@@ -22,13 +22,12 @@
 #include "DatalinkServer.h"
 #include "Datalink.h"
 #include "DatalinkTcpSocket.h"
-#include "HttpService.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
 
 #include <tcp_ports.h>
-//=============================================================================
+
 DatalinkServer::DatalinkServer(Datalink *datalink)
     : Fact(datalink,
            "server",
@@ -83,22 +82,19 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     announceTimer.setInterval(2000);
     connect(&announceTimer, &QTimer::timeout, this, &DatalinkServer::announce);
 
-    //http service
-    http = new HttpService(this);
-
     connect(f_listen, &Fact::valueChanged, this, &DatalinkServer::serverActiveChanged);
 
     updateStatus();
     QTimer::singleShot(500, this, &DatalinkServer::serverActiveChanged);
 }
-//=============================================================================
+
 void DatalinkServer::updateStatus()
 {
     int cnt = f_clients->size();
     f_alloff->setEnabled(cnt > 0);
     setValue(cnt > 0 ? QString::number(cnt) : "");
 }
-//=============================================================================
+
 void DatalinkServer::serverActiveChanged()
 {
     bool active = f_listen->value().toBool();
@@ -115,7 +111,7 @@ void DatalinkServer::serverActiveChanged()
     retryBind = 0;
     tryBindServer();
 }
-//=============================================================================
+
 void DatalinkServer::announce(void)
 {
     if (active()) {
@@ -123,8 +119,7 @@ void DatalinkServer::announce(void)
         //qDebug()<<"announce";
     }
 }
-//=============================================================================
-//=============================================================================
+
 void DatalinkServer::tryBindServer()
 {
     if (!f_listen->value().toBool())
@@ -147,7 +142,7 @@ void DatalinkServer::tryBindServer()
     emit binded();
     announceTimer.start();
 }
-//=============================================================================
+
 void DatalinkServer::newConnection()
 {
     while (tcpServer->hasPendingConnections()) {
@@ -168,12 +163,12 @@ void DatalinkServer::newConnection()
         updateClientsNetworkMode();
         c->setTitle(socket->peerAddress().toString());
         connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
-        connect(c, &DatalinkTcpSocket::httpRequest, http, &HttpService::httpRequest);
+        connect(c, &DatalinkTcpSocket::httpRequest, this, &DatalinkServer::httpRequest);
         datalink->addConnection(c);
         c->setActivated(true);
     }
 }
-//=============================================================================
+
 void DatalinkServer::updateClientsNetworkMode()
 {
     quint16 rxNetwork = Datalink::CLIENTS | Datalink::LOCAL;
@@ -193,5 +188,3 @@ void DatalinkServer::updateClientsNetworkMode()
         c->setBlockService(rxNetwork && (!extsrv));
     }
 }
-//=============================================================================
-//=============================================================================

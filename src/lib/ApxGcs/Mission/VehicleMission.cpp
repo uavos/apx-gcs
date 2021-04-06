@@ -106,6 +106,8 @@ VehicleMission::VehicleMission(Vehicle *parent)
     f_clear = new Fact(this, "clear", tr("Clear"), tr("Clear mission"), Action | Remove | IconOnly);
     connect(f_clear, &Fact::triggered, this, &VehicleMission::clearMission);
 
+    f_share = new MissionShare(this, this, Action | IconOnly);
+
     //tools actions
     f_tools = new MissionTools(this, Action | IconOnly);
 
@@ -118,9 +120,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
                       Action | Apply | IconOnly,
                       "content-save");
     connect(f_save, &Fact::triggered, storage, &MissionStorage::saveMission);
-
-    f_share = new MissionShare(this, f_tools, Action | IconOnly);
-    //connect(f_share->f_export, &Fact::triggered, f_save, &Fact::trigger);
+    connect(f_share->f_export, &Fact::triggered, f_save, &Fact::trigger);
 
     //App::jsync(f_tools);
 
@@ -169,30 +169,24 @@ VehicleMission::VehicleMission(Vehicle *parent)
     });
 
     //protocols
-    connect(vehicle->protocol()->mission,
-            &ProtocolMission::uploaded,
-            this,
-            &VehicleMission::missionUploaded);
-
-    connect(vehicle->protocol()->mission,
-            &ProtocolMission::downloaded,
-            this,
-            &VehicleMission::missionDataReceived);
-
-    connect(vehicle->protocol()->mission, &ProtocolMission::available, this, [this]() {
-        if (empty())
-            vehicle->protocol()->mission->download();
-    });
-
-    // FIXME: mission protocol
-    /*  connect(vehicle->protocol->mission,
-                &ProtocolMission::missionDataError,
+    if (vehicle->protocol()) {
+        connect(vehicle->protocol()->mission(),
+                &PMission::missionUpdated,
                 this,
-                &VehicleMission::missionDataError);
+                &VehicleMission::missionUploaded);
 
-        if (!vehicle->isLocal()) {
-            QTimer::singleShot(2000, vehicle->protocol->mission, &ProtocolMission::downloadMission);
-        }*/
+        connect(vehicle->protocol()->mission(),
+                &PMission::missionReceived,
+                this,
+                &VehicleMission::missionReceived);
+
+        if (vehicle->isIdentified()) {
+            connect(vehicle->protocol()->mission(), &PMission::missionAvailable, this, [this]() {
+                if (empty())
+                    vehicle->protocol()->mission()->requestMission();
+            });
+        }
+    }
 
     //reset and update
     clearMission();
@@ -282,70 +276,70 @@ void VehicleMission::clearMission()
     App::jsync(this);
 }
 
-QJsonValue VehicleMission::toJson() const
+QVariant VehicleMission::toVariant() const
 {
-    QJsonObject json = Fact::toJson().toObject();
+    auto m = Fact::toVariant().value<QVariantMap>();
 
-    json.insert("format", MISSION_FORMAT);
-    json.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
-    json.insert("version", App::version());
+    m.insert("format", MISSION_FORMAT);
+    m.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m.insert("version", App::version());
 
-    json.insert("title", json[f_title->name()]);
-    json.remove(f_title->name());
+    m.insert("title", m.value(f_title->name()));
+    m.remove(f_title->name());
 
     if (!site().isEmpty())
-        json.insert("site", site());
+        m.insert("site", site());
 
     QGeoCoordinate c = coordinate();
-    json.insert("lat", c.latitude());
-    json.insert("lon", c.longitude());
+    m.insert("lat", c.latitude());
+    m.insert("lon", c.longitude());
 
     QString title = f_title->text().simplified();
-    if (vehicle->protocol()->isIdentified()) {
+    if (vehicle->isIdentified()) {
         QString s = vehicle->title();
-        json.insert("callsign", s);
+        m.insert("callsign", s);
         title.remove(s, Qt::CaseInsensitive);
     }
     if (f_runways->size() > 0) {
         QString s = f_runways->child(0)->text();
-        json.insert("runway", s);
+        m.insert("runway", s);
         title.remove(s, Qt::CaseInsensitive);
     }
     title.replace('-', ' ');
     title.replace('_', ' ');
     title = title.simplified();
-    f_title->setValue(title);
 
     //details
     QGeoRectangle rect = boundingGeoRectangle();
-    json.insert("topLeftLat", rect.topLeft().latitude());
-    json.insert("topLeftLon", rect.topLeft().longitude());
-    json.insert("bottomRightLat", rect.bottomRight().latitude());
-    json.insert("bottomRightLon", rect.bottomRight().longitude());
-    json.insert("distance", (qint64) f_waypoints->distance());
+    m.insert("topLeftLat", rect.topLeft().latitude());
+    m.insert("topLeftLon", rect.topLeft().longitude());
+    m.insert("bottomRightLat", rect.bottomRight().latitude());
+    m.insert("bottomRightLon", rect.bottomRight().longitude());
+    m.insert("distance", f_waypoints->distance());
 
     //generate hash
-    QCryptographicHash h(QCryptographicHash::Sha1);
-    h.addData(QJsonDocument(json.value("rw").toArray()).toJson(QJsonDocument::Compact));
-    h.addData(QJsonDocument(json.value("wp").toArray()).toJson(QJsonDocument::Compact));
-    h.addData(QJsonDocument(json.value("tw").toArray()).toJson(QJsonDocument::Compact));
-    h.addData(QJsonDocument(json.value("pi").toArray()).toJson(QJsonDocument::Compact));
-    QString hash = h.result().toHex().toUpper();
-    json.insert("hash", hash);
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    hash.addData(QJsonDocument::fromVariant(m.value("rw")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(m.value("wp")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(m.value("tw")).toJson(QJsonDocument::Compact));
+    hash.addData(QJsonDocument::fromVariant(m.value("pi")).toJson(QJsonDocument::Compact));
+    m.insert("hash", hash.result().toHex().toUpper());
 
-    return json;
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    return m;
 }
-void VehicleMission::fromJson(const QJsonValue json)
+void VehicleMission::fromVariant(const QVariant &var)
 {
     clearMission();
 
-    setSite(json["site"].toString());
+    auto m = var.value<QVariantMap>();
+    setSite(m.value("site").toString());
 
-    f_title->setValue(json["title"].toString());
+    f_title->setValue(m.value("title").toString());
 
     blockSizeUpdate = true;
     for (auto i : groups) {
-        i->fromJson(json[i->name()]);
+        i->fromVariant(m.value(i->name()));
     }
     blockSizeUpdate = false;
 
@@ -376,12 +370,12 @@ void VehicleMission::test(int n)
     }
 }
 
-void VehicleMission::missionDataReceived(QJsonValue json)
+void VehicleMission::missionReceived(QVariant var)
 {
     clearMission();
     //qDebug() << json;
 
-    fromJson(json);
+    fromVariant(var);
 
     if (empty()) {
         vehicle->message(tr("Empty mission received from vehicle"), AppNotify::Warning);
@@ -394,24 +388,17 @@ void VehicleMission::missionDataReceived(QJsonValue json)
     }
     backup();
 }
-void VehicleMission::missionDataError()
-{
-    vehicle->message(tr("Error in mission data from vehicle"), AppNotify::Error);
-    clearMission();
-}
 
 void VehicleMission::uploadMission()
 {
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
-    vehicle->protocol()->mission->setActive(true);
-    vehicle->protocol()->mission->upload(toJson());
+    vehicle->protocol()->mission()->updateMission(toVariant());
     f_save->trigger();
 }
 void VehicleMission::downloadMission()
 {
     vehicle->message(QString("%1...").arg(tr("Requesting mission")), AppNotify::Info);
-    vehicle->protocol()->mission->setActive(true);
-    vehicle->protocol()->mission->download();
+    vehicle->protocol()->mission()->requestMission();
 }
 
 QGeoCoordinate VehicleMission::startPoint() const

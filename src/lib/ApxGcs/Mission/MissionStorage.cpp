@@ -43,7 +43,7 @@ MissionStorage::MissionStorage(VehicleMission *mission)
 void MissionStorage::saveMission()
 {
     dbHash.clear();
-    DBReqMissionsSave *req = new DBReqMissionsSave(mission->toJson());
+    DBReqMissionsSave *req = new DBReqMissionsSave(mission->toVariant());
     connect(req,
             &DBReqMissionsSave::missionHash,
             this,
@@ -103,12 +103,13 @@ void MissionStorage::loadMission(QString hash)
     connect(req, &DBReqMissionsLoad::loaded, this, &MissionStorage::dbLoaded, Qt::QueuedConnection);
     req->exec();
 }
-void MissionStorage::dbLoaded(QJsonValue json)
+void MissionStorage::dbLoaded(QVariant var)
 {
-    dbHash = json["hash"].toString();
+    auto m = var.value<QVariantMap>();
+    dbHash = m.value("hash").toString();
     qDebug() << "mission load:" << dbHash;
 
-    mission->fromJson(json);
+    mission->fromVariant(var);
 
     if (mission->missionSize() > 0) {
         emit loaded();

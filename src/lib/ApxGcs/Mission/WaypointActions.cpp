@@ -119,17 +119,17 @@ void WaypointActions::actionsValueChanged()
     }
 }
 
-QJsonValue WaypointActions::toJson() const
+QVariant WaypointActions::toVariant() const
 {
-    QJsonObject obj;
+    QVariantMap m;
     for (auto i : facts()) {
         if (i->isZero())
             continue;
-        QJsonValue v = i->toJson();
+        QVariant v = i->toVariant();
         if (!v.isNull())
-            obj.insert(i->name(), v);
+            m.insert(i->name(), v);
     }
-    if (obj.isEmpty())
-        return QJsonValue();
-    return obj;
+    if (m.isEmpty())
+        return {};
+    return m;
 }

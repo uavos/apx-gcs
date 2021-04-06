@@ -21,20 +21,21 @@
  */
 #pragma once
 
-#include "LookupConfigs.h"
+#include <ApxMisc/DelayedEvent.h>
+#include <Vehicles/Vehicle.h>
+
 #include "NodeItem.h"
 
-#include <Protocols/ProtocolNodes.h>
-#include <Protocols/ProtocolViewBase.h>
-
 class Vehicle;
+class LookupConfigs;
 
-class Nodes : public ProtocolViewBase<ProtocolNodes>
+class Nodes : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
 
 public:
-    explicit Nodes(Vehicle *vehicle, ProtocolNodes *protocol);
+    explicit Nodes(Vehicle *vehicle);
 
     Vehicle *vehicle;
 
@@ -45,24 +46,33 @@ public:
     Fact *f_clear;
     Fact *f_status;
 
-    Fact *f_save;
-
-    LookupConfigs *f_lookup;
-    //NodesShare *f_share;
-
-    NodeItem *node(const QString &sn) { return m_sn_map.value(sn, nullptr); }
-    QList<NodeItem *> nodes() { return m_sn_map.values(); }
-
-    NodeItem *add(ProtocolNode *protocol);
+    NodeItem *node(const QString &uid) const;
+    QList<NodeItem *> nodes() const { return m_nodes; }
 
     Q_INVOKABLE void shell(QStringList commands);
 
+    bool valid() const { return m_valid; }
+    bool upgrading() const;
+
+    QString getConfigTitle();
+
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
+
 private:
-    QMap<QString, NodeItem *> m_sn_map;
+    PNodes *_protocol;
+
+    QList<NodeItem *> m_nodes;
     QDateTime m_syncTimestamp;
+
+    bool m_valid{};
+
+    DelayedEvent _updateActions{100, true};
 
 private slots:
     void updateActions();
+    void updateValid();
 
     void search();
     void clear();
@@ -70,8 +80,13 @@ private slots:
     void upload();
     void stop();
 
-    void nodeNotify(ProtocolNode *protocol);
+    void node_available(PNode *node);
     void syncDone();
 
-    void save();
+signals:
+    void validChanged();
+
+    void nodeNotify(NodeItem *node); // notify on changes etc fo plugins
+    void fieldUploadReport(NodeItem *node, QString name, QString value);
+    void requestUpgrade(NodeItem *node, QString type); // captured by plugins
 };

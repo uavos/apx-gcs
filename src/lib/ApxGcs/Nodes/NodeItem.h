@@ -24,49 +24,70 @@
 #include "NodeField.h"
 #include "NodeTools.h"
 
-#include <Protocols/ProtocolNode.h>
-#include <Protocols/ProtocolViewBase.h>
+#include <Protocols/Protocols.h>
 
 #include <App/AppNotify.h>
 
-#include <QtCore>
+#include "NodeStorage.h"
 
 class Nodes;
 
-class NodeItem : public ProtocolViewBase<ProtocolNode>
+class NodeItem : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
 
 public:
-    explicit NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol);
+    explicit NodeItem(Fact *parent, Nodes *nodes, PNode *protocol);
 
+    NodeStorage *storage;
     NodeTools *tools;
 
-    //int loadConfigValues(QVariantMap values);
-    bool loadConfigValue(const QString &name, const QString &value);
+    auto uid() const { return _protocol ? _protocol->uid() : _ident.value("uid").toString(); }
+    auto protocol() const { return _protocol; }
 
-    const QList<NodeField *> &fields() const;
+    auto const &fields() const { return m_fields; }
+    auto nodes() const { return _nodes; }
+    auto valid() const { return m_valid; }
+    auto ident() const { return _ident; }
+
+    bool loadConfigValue(const QString &name, const QString &value);
 
     Q_INVOKABLE void message(QString msg,
                              AppNotify::NotifyFlags flags = AppNotify::FromVehicle
                                                             | AppNotify::Important);
 
-    inline Nodes *nodes() const { return _nodes; }
+    // variant conversions
+    QVariantMap get_info() const;
+    QVariantMap get_dict() const;
+    QVariantMap get_values() const;
+
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
 protected:
     QTimer statusTimer;
 
     QVariant data(int col, int role) const override;
+    QString toolTip() const override;
 
 private:
-    Nodes *_nodes{nullptr};
+    Nodes *_nodes;
+    PNode *_protocol;
+
+    QVariantMap _ident;
+    QVariantMap _dict;
 
     QList<NodeField *> m_fields;
+
+    qint64 _lastSeenTime{};
 
     QJsonArray _parameters;
     void updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json);
 
-    NodeField *m_status_field{nullptr};
+    NodeField *_status_field{nullptr};
+
     void groupArrays();
     void groupArrays(Fact *group);
     void updateArrayRowDescr(Fact *fRow);
@@ -74,29 +95,32 @@ private:
     void linkGroupValues(Fact *f);
     void updateArrayChBinding(Fact *f_element, Fact *f_array, Fact *f_ch);
 
+    bool m_valid{};
+
 private slots:
-
-    void validateDict();
     void validateData();
-
-    void updateDescr();
     void updateStatus();
+    void updateUpgrading();
 
 public slots:
     void upload();
     void clear();
 
+    void importValues(QVariantMap values);
+
     //protocols:
-private slots:
-    void identReceived();
-    void dictReceived(const ProtocolNode::Dict &dict);
-    void confReceived(const QVariantMap &values);
+    void identReceived(QVariantMap ident);
+    void dictReceived(QVariantMap dict);
+    void confReceived(QVariantMap values);
+    void confUpdated(QVariantMap values);
     void confSaved();
 
-    void messageReceived(xbus::node::msg::type_e type, QString msg);
+    void messageReceived(PNode::msg_type_e type, QString msg);
     void statusReceived(const xbus::node::status::status_s &status);
 
 signals:
     void saveValues();
     void shell(QStringList commands);
+
+    void validChanged();
 };

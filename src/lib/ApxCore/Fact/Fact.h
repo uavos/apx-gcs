@@ -70,11 +70,12 @@ public:
     //Group fact values (settings)
     Q_INVOKABLE void setValues(const QVariantMap &values);
 
-    Q_INVOKABLE virtual QJsonValue toJson() const;
-    Q_INVOKABLE virtual void fromJson(const QJsonValue json);
+    Q_INVOKABLE virtual QVariant toVariant() const;
+    Q_INVOKABLE virtual void fromVariant(const QVariant &var);
 
     Q_INVOKABLE QJsonDocument toJsonDocument() const;
     Q_INVOKABLE bool fromJsonDocument(QByteArray data);
+    Q_INVOKABLE static QVariant parseJsonDocument(QByteArray data);
 
     virtual bool setValue(const QVariant &v) override; //collect stats
 
@@ -102,14 +103,26 @@ public:
     Q_INVOKABLE bool hasChild(Fact *child) const;
 
     template<class T>
-    T findParent() const
+    T *findParent() const
     {
-        for (FactBase *i = parentFact(); i; i = i->parentFact()) {
-            T p = qobject_cast<T>(i);
+        for (Fact *i = const_cast<Fact *>(this); i; i = i->parentFact()) {
+            T *p = qobject_cast<T *>(i);
             if (p)
                 return p;
         }
         return nullptr;
+    }
+
+    template<class T>
+    QList<T *> findFacts() const
+    {
+        QList<T *> list;
+        for (auto i : facts()) {
+            T *p = qobject_cast<T *>(i);
+            if (p)
+                list.append(p);
+        }
+        return list;
     }
 
     virtual QVariant data(int col, int role) const;

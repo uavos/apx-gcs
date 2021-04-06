@@ -86,7 +86,7 @@ void DatalinkPorts::load()
         file.close();
         for (auto const v : json.array()) {
             f_add->clear();
-            f_add->fromJson(v.toObject());
+            f_add->fromVariant(v.toObject().toVariantMap());
             addPort(new DatalinkPort(this, datalink, f_add));
         }
         f_add->defaults();

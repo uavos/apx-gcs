@@ -24,121 +24,111 @@
 #include "NodeTools.h"
 #include "NodeViewActions.h"
 #include "Nodes.h"
-#include <QtSql>
 
 #include <App/AppGcs.h>
 #include <Vehicles/VehicleWarnings.h>
 #include <Vehicles/Vehicles.h>
 #include <QFontDatabase>
-#include <QQmlEngine>
 
-NodeItem::NodeItem(Fact *parent, Nodes *nodes, ProtocolNode *protocol)
-    : ProtocolViewBase(parent, protocol)
+NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
+    : Fact(parent, "node#")
     , _nodes(nodes)
+    , _protocol(protocol)
 {
-    setOptions(ProgressTrack | ModifiedGroup);
-    qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
+    setIcon("sitemap");
 
-    unbindProperty("value"); //unbind from protocol
+    setOptions(ProgressTrack | ModifiedGroup);
+
+    qmlRegisterUncreatableType<NodeItem>("APX.Node", 1, 0, "Node", "Reference only");
 
     new NodeViewActions(this, _nodes);
 
+    storage = new NodeStorage(this);
     tools = new NodeTools(this, Action);
 
     //protocol
-    connect(protocol, &QObject::destroyed, this, [this]() { deleteLater(); });
+    if (protocol) {
+        bindProperty(protocol, "title");
+        bindProperty(protocol, "descr");
+        bindProperty(protocol, "progress", true);
 
-    // validity
-    connect(protocol, &ProtocolNode::identChanged, this, &NodeItem::clear);
-    connect(protocol, &ProtocolNode::dictValidChanged, this, &NodeItem::validateDict);
-    connect(protocol, &ProtocolNode::validChanged, this, &NodeItem::validateData);
+        connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
-    connect(protocol, &ProtocolNode::descrChanged, this, &NodeItem::updateDescr);
-    connect(protocol, &ProtocolNode::valueChanged, this, &NodeItem::updateDescr);
+        connect(protocol, &PNode::messageReceived, this, &NodeItem::messageReceived);
+        connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
+        connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
+        connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
+        connect(protocol, &PNode::confUpdated, this, &NodeItem::confUpdated);
+        connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
 
+        connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateUpgrading);
+
+        connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
+    }
+
+    /*
     // responses mapping
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
     connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
     connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
-    connect(protocol, &ProtocolNode::confSaved, this, &NodeItem::confSaved);
     connect(protocol, &ProtocolNode::confDefault, this, &NodeItem::restoreDefaults);
     connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
     connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
 
-    connect(this, &NodeItem::shell, protocol, &ProtocolNode::requestMod);
 
     statusTimer.setSingleShot(true);
     statusTimer.setInterval(10000);
     connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
-    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);
+    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);*/
+
+    if (protocol)
+        protocol->requestIdent();
 }
 
-const QList<NodeField *> &NodeItem::fields() const
-{
-    return m_fields;
-}
-
-void NodeItem::validateDict()
-{
-    if (!protocol()->dictValid()) {
-        clear();
-        return;
-    }
-    //groupFields();
-    //qDebug()<path();
-
-    //fields map
-    /*for (int i = 0; i < allFields.size(); ++i) {
-        NodeField *f = allFields.at(i);
-        //expand complex numbers
-        bool bComplex = f->size() > 0;
-        if (bComplex) {
-            for (int i2 = 0; i2 < f->size(); ++i2) {
-                NodeField *f2 = static_cast<NodeField *>(f->child(i2));
-                allFieldsByName.insert(f2->name(), f2);
-            }
-        } else
-            allFieldsByName.insert(f->name(), f);
-    }*/
-}
 void NodeItem::validateData()
 {
-    if (!protocol()->valid())
+    if (m_valid)
         return;
-    if (!protocol()->enabled())
-        return;
-    if (protocol()->ident().flags.bits.reconf) {
-        //nodes->storage->restoreNodeConfig(this);
-    } else {
-        //setNconfID(0);
-        //nodes->storage->saveNodeConfig(this);
-    }
-    //qDebug()<<"Node dataValid"<<path();
+    backup();
+    m_valid = true;
+    emit validChanged();
+
+    updateStatus();
+    qDebug() << "Node data valid:" << path();
+
+    if (_protocol)
+        _nodes->nodeNotify(this);
 }
 
-void NodeItem::updateDescr()
-{
-    statusTimer.stop();
-    setActive(false); // set by status
-    QString s = protocol()->text();
-    if (s.isEmpty())
-        s = protocol()->descr();
-    setDescr(s);
-}
 void NodeItem::updateStatus()
 {
-    if (protocol()->ident().flags.bits.reconf) {
+    if (_ident.value("reconf").toBool()) {
         setValue(tr("no config").toUpper());
         return;
     }
-    if (m_status_field) {
-        setValue(m_status_field->valueText().trimmed());
+    if (_status_field) {
+        setValue(_status_field->valueText().trimmed());
+    }
+}
+void NodeItem::updateUpgrading()
+{
+    if (_protocol->upgrading()) {
+        clear();
+    } else {
+        _protocol->requestIdent();
     }
 }
 
 void NodeItem::clear()
 {
-    m_status_field = nullptr;
+    if (m_valid) {
+        m_valid = false;
+        emit validChanged();
+    }
+
+    storage->updateConfigID(0);
+    _dict.clear();
+    _status_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
     deleteChildren();
@@ -147,12 +137,16 @@ void NodeItem::clear()
 
 void NodeItem::upload()
 {
-    if (!protocol()->valid())
+    if (!valid())
         return;
     if (!modified())
         return;
+    if (!_protocol)
+        return;
 
-    QList<NodeField *> list;
+    storage->updateConfigID(0);
+
+    QList<NodeField *> fields;
     for (auto i : m_fields) {
         if (!i->modified())
             continue;
@@ -160,62 +154,81 @@ void NodeItem::upload()
             for (auto j : i->facts()) {
                 if (!j->modified())
                     continue;
-                list.append(static_cast<NodeField *>(j));
+                fields.append(static_cast<NodeField *>(j));
             }
             continue;
         }
-        list.append(static_cast<NodeField *>(i));
+        fields.append(static_cast<NodeField *>(i));
     }
 
-    ProtocolNode::ValuesList values;
-    for (auto i : list) {
-        _nodes->vehicle->recordConfigUpdate(title(), i->fpath(), i->valueText(), protocol()->sn());
-        values.insert(i->fid(), i->confValue());
+    QVariantMap values;
+    for (auto i : fields) {
+        values.insert(i->fpath(), i->toVariant());
+        _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
-    protocol()->requestUpdate(values);
+    _protocol->requestUpdate(values);
 }
 void NodeItem::confSaved()
 {
+    qDebug() << modified();
     backup();
+    storage->saveNodeConfig();
 }
 
 QVariant NodeItem::data(int col, int role) const
 {
     switch (role) {
+    case Qt::DisplayRole:
+        if (col == FACT_MODEL_COLUMN_NAME)
+            return title().toUpper();
+        break;
     case Qt::ForegroundRole:
-        if (protocol()->valid()) {
-            if (col == FACT_MODEL_COLUMN_DESCR)
-                return QColor(Qt::darkGray);
-            if (col == FACT_MODEL_COLUMN_VALUE)
-                return QColor(Qt::yellow).lighter(180);
-        }
-        if (!protocol()->dictValid())
+        if (!valid()) {
             return QColor(255, 200, 200);
-        if (!protocol()->valid())
-            return col == FACT_MODEL_COLUMN_NAME ? QColor(255, 255, 200) : QColor(Qt::darkGray);
+        }
+        if (col == FACT_MODEL_COLUMN_DESCR)
+            return QColor(Qt::darkGray);
+        if (col == FACT_MODEL_COLUMN_VALUE)
+            return QColor(Qt::yellow).lighter(180);
+        if (!_protocol)
+            return QColor(Qt::darkGray);
+        if (!modified())
+            return QColor(255, 255, 200);
         break;
+        //break;
     case Qt::BackgroundRole:
-        if (protocol()->valid()) {
+        if (valid()) {
             return QColor(0x10, 0x20, 0x30);
+        } else {
+            return QVariant();
         }
-        if (!protocol()->dictValid())
-            return QVariant();
-        if (!protocol()->valid())
-            return QVariant();
-        if (protocol()->ident().flags.bits.reconf)
-            return QColor(Qt::darkGray).darker(200);
-        return QColor(0x20, 0x40, 0x60);
-    case Qt::FontRole:
-        if (col == Fact::FACT_MODEL_COLUMN_DESCR) {
+        // if (!protocol()->valid())
+        //     return QVariant();
+        // if (protocol()->ident().flags.bits.reconf)
+        //     return QColor(Qt::darkGray).darker(200);
+        // return QColor(0x20, 0x40, 0x60);
+    case Qt::FontRole: {
 #ifdef Q_OS_MAC
-            return QFont("Menlo");
+        QFont font("Menlo");
 #else
-            return QFont("FreeMono");
+        QFont font("FreeMono");
 #endif
+        if (col == Fact::FACT_MODEL_COLUMN_DESCR)
+            return font;
+        if (col == FACT_MODEL_COLUMN_NAME) {
+            font.setBold(true);
+            return font;
         }
-        break;
+    } break;
     }
     return Fact::data(col, role);
+}
+QString NodeItem::toolTip() const
+{
+    QStringList st;
+    st << "ident:";
+    st.append(QJsonDocument::fromVariant(_ident).toJson());
+    return Fact::toolTip().append("\n").append(st.join('\n'));
 }
 
 void NodeItem::groupArrays()
@@ -393,49 +406,173 @@ void NodeItem::linkGroupValues(Fact *f)
     }
 }
 
+QVariantMap NodeItem::get_info() const
+{
+    QVariantMap m;
+    m.insert("uid", _ident.value("uid"));
+    m.insert("name", _ident.value("name"));
+    m.insert("version", _ident.value("version"));
+    m.insert("hardware", _ident.value("hardware"));
+    m.insert("user", _ident.value("user"));
+    if (_lastSeenTime)
+        m.insert("time", _lastSeenTime);
+    return m;
+}
+QVariantMap NodeItem::get_dict() const
+{
+    return _dict;
+}
+QVariantMap NodeItem::get_values() const
+{
+    QVariantMap m;
+    for (auto f : m_fields) {
+        m.insert(f->fpath(), f->toVariant());
+    }
+    return m;
+}
+QVariant NodeItem::toVariant() const
+{
+    QVariantMap m;
+    m.insert("info", get_info());
+    m.insert("dict", get_dict());
+    m.insert("values", get_values());
+    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    return m;
+}
+void NodeItem::fromVariant(const QVariant &var)
+{
+    QVariantMap m = var.value<QVariantMap>();
+    if (m.isEmpty())
+        return;
+
+    auto info = m.value("info").value<QVariantMap>();
+    auto dict = m.value("dict").value<QVariantMap>();
+    auto values = m.value("values").value<QVariantMap>();
+
+    if (!valid()) {
+        // construct the whole node
+        identReceived(info);
+        dictReceived(dict);
+        confReceived(values);
+        return;
+    }
+
+    importValues(values);
+}
+
+void NodeItem::importValues(QVariantMap values)
+{
+    QStringList st = values.keys();
+    for (auto f : m_fields) {
+        QString fpath = f->fpath();
+        if (!values.contains(fpath))
+            continue;
+        f->fromVariant(values.value(fpath));
+        st.removeOne(fpath);
+    }
+    if (st.size() > 0) {
+        for (auto i : st) {
+            qWarning() << "missing field:" << i;
+        }
+        auto rcnt = values.size() - st.size();
+        message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
+                AppNotify::FromApp | AppNotify::Warning);
+    } else {
+        //message(tr("Imported config"), AppNotify::FromApp);
+    }
+}
+
 //=============================================================================
 // Protocols connection
 //=============================================================================
 
-void NodeItem::identReceived()
+void NodeItem::identReceived(QVariantMap ident)
 {
-    updateStatus();
-}
+    if (ident.isEmpty())
+        return;
 
-void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
-{
-    //qDebug() << dict.size();
+    if (!ident.contains("user")) {
+        QVariantMap user;
+        user.insert("machineUID", App::machineUID());
+        user.insert("username", App::username());
+        user.insert("hostname", App::hostname());
+        ident.insert("user", user);
+    }
 
+    if (_ident == ident)
+        return;
+
+    qWarning() << "ident updated";
+
+    _ident = ident;
     clear();
 
-    QMap<int, Fact *> groups;
+    if (_protocol) {
+        _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        storage->saveNodeInfo();
+        _nodes->nodeNotify(this);
+        _protocol->requestDict();
+        return;
+    }
+
+    setTitle(_ident.value("name").toString());
+    QStringList descr;
+    descr.append(_ident.value("hardware").toString());
+    descr.append(_ident.value("version").toString());
+    descr.append("OFFLINE");
+    setDescr(descr.join(' '));
+}
+
+void NodeItem::dictReceived(QVariantMap dict)
+{
+    if (dict.isEmpty())
+        return;
+
+    if (valid())
+        return;
+
+    clear();
+    _dict = dict;
+    _dict.remove("cached");
+
+    if (!_dict.value("time").toULongLong()) {
+        _dict.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    }
+
+    auto fields = dict.value("fields").value<QVariantList>();
+
     xbus::node::usr::cmd_t cmd_cnt = 0;
-    Fact *g = this;
-    NodeField *f;
-    for (auto const &i : dict) {
-        switch (i.type) {
-        case xbus::node::conf::group:
-            g = i.group ? groups.value(i.group) : this;
-            g = new Fact(g, i.name, i.title, "", Group | ModifiedGroup);
+    for (auto const &i : fields) {
+        auto field = i.value<QVariantMap>();
+        QString name = field.value("name").toString();
+        QString title = field.value("title").toString();
+        QString type = field.value("type").toString();
+
+        // find group fact
+        Fact *g = this;
+        QStringList path = name.split('.');
+        while (path.size() > 1) {
+            g = g->child(path.takeFirst());
+            if (g)
+                continue;
+            qWarning() << "missing group" << name;
+            g = this;
+            break;
+        }
+        name = path.first();
+
+        if (type == "group") {
+            g = new Fact(g, name, title, "", Group | ModifiedGroup);
             new NodeViewActions(g, _nodes);
-            groups.insert(groups.size() + 1, g);
-            break;
-        case xbus::node::conf::command:
-            g = i.group ? groups.value(i.group) : this;
-            tools->addCommand(g, i.name, i.title, cmd_cnt++);
-            break;
-        default: // data field
-            g = i.group ? groups.value(i.group) : this;
-            f = new NodeField(g,
-                              this,
-                              static_cast<xbus::node::conf::fid_t>(m_fields.size() << 8),
-                              i);
-            f->setEnabled(false);
+        } else if (type == "command") {
+            tools->addCommand(g, name, title, cmd_cnt++);
+        } else { // data field
+            NodeField *f = new NodeField(g, this, field, m_fields.size());
             m_fields.append(f);
-            if (!m_status_field) {
-                if (i.type == xbus::node::conf::string) {
-                    m_status_field = f;
-                    connect(m_status_field, &Fact::valueChanged, this, &NodeItem::updateStatus);
+            if (!_status_field) {
+                if (type == "string") {
+                    _status_field = f;
+                    connect(_status_field, &Fact::valueChanged, this, &NodeItem::updateStatus);
                 }
             }
         }
@@ -446,12 +583,17 @@ void NodeItem::dictReceived(const ProtocolNode::Dict &dict)
     linkGroupValues(this);
 
     // update descr and help from APXFW package
-    _parameters = AppGcs::apxfw()->loadParameters(title(), protocol()->hardware());
+    _parameters = AppGcs::apxfw()->loadParameters(title(), _ident.value("hardware").toString());
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
     }
-    setEnabled(false);
     backup();
+
+    if (_protocol) {
+        if (!_dict.value("cached").toBool())
+            storage->saveNodeDict();
+        _protocol->requestConf();
+    }
 }
 
 static QVariant jsonToVariant(QJsonValue json)
@@ -526,39 +668,73 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
     for (auto f : m_fields) {
         if (f->fpath() != name)
             continue;
-        f->setConfValue(value);
+        f->fromVariant(value);
         return true;
     }
     return false;
 }
 
-void NodeItem::confReceived(const QVariantMap &values)
+void NodeItem::confReceived(QVariantMap values)
 {
-    //qDebug() << values;
-    setEnabled(true);
-    for (auto f : m_fields) {
-        if (!values.contains(f->fpath()))
-            continue;
-        f->setConfValue(values.value(f->fpath()));
-        f->setEnabled(true);
-    }
-    if (!protocol()->valid()) {
-        backup();
+    if (m_fields.isEmpty()) {
+        qWarning() << "missing dict:" << title();
+        return;
     }
 
-    updateStatus();
+    QStringList fields;
+    for (auto f : m_fields) {
+        QString fpath = f->fpath();
+        if (!values.contains(fpath)) {
+            qWarning() << "missing data for:" << fpath;
+            continue;
+        }
+        fields.append(fpath);
+        f->fromVariant(values.value(fpath));
+    }
+
+    if (valid())
+        return;
+
+    // report missing fields
+    for (auto fpath : values.keys()) {
+        if (!fields.contains(fpath)) {
+            qWarning() << "missing field for:" << fpath;
+        }
+    }
+    if (fields.size() != m_fields.size()) {
+        apxMsgW() << tr("Inconsistent parameters");
+        return;
+    }
+
+    validateData();
+    setEnabled(true);
+
+    if (_protocol)
+        storage->saveNodeConfig();
+}
+void NodeItem::confUpdated(QVariantMap values)
+{
+    if (!valid())
+        return;
+    for (auto f : m_fields) {
+        QString fpath = f->fpath();
+        if (!values.contains(fpath))
+            continue;
+        f->fromVariant(values.value(fpath));
+        apxMsgW() << tr("Field modified").append(':') << fpath.append(':') << f->text();
+    }
 }
 
-void NodeItem::messageReceived(xbus::node::msg::type_e type, QString msg)
+void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)
 {
     AppNotify::NotifyFlags flags = AppNotify::FromVehicle | AppNotify::Important;
     switch (type) {
     default:
         break;
-    case xbus::node::msg::warn:
+    case PNode::warn:
         flags |= AppNotify::Warning;
         break;
-    case xbus::node::msg::err:
+    case PNode::err:
         flags |= AppNotify::Error;
         break;
     }
@@ -571,7 +747,7 @@ void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
         s.append(QString("/%1").arg(valueText()));
     }
     _nodes->vehicle->message(msg, flags, s);
-    _nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
+    //_nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
 }
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {

@@ -183,10 +183,12 @@ void MissionGroup::clearGroup()
     setModified(true);
 }
 
-void MissionGroup::fromJson(const QJsonValue json)
+void MissionGroup::fromVariant(const QVariant &var)
 {
     clearGroup();
-    for (auto i : json.toArray()) {
-        createObject()->fromJson(i);
+    if (var.isNull())
+        return;
+    for (auto const &i : var.value<QSequentialIterable>()) {
+        createObject()->fromVariant(i);
     }
 }

@@ -741,7 +741,7 @@ int LoadCentralDirectoryRecord(zip64_internal* pziinit)
     if (zip64local_getLong64(&pziinit->z_filefunc, pziinit->filestream,&offset_central_dir)!=ZIP_OK)
       err=ZIP_ERRNO;
 
-    /* TODO.. */
+    /* xTODO.. */
     /* read the comment from the standard central header. */
     size_comment = 0;
   }

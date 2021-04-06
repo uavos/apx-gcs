@@ -23,12 +23,14 @@ import QtQuick 2.6
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 import "."
 import "../common"
 
 Item {
     id: pfd
+
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
@@ -607,7 +609,7 @@ Item {
             anchors.left: left_window.right
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
-            visible: !apx.vehicles.current.protocol.isReplay && !apx.datalink.online
+            visible: !vehicle.isReplay && !apx.datalink.online
             font.pixelSize: apx.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -620,8 +622,8 @@ Item {
             anchors.bottom: parent.verticalCenter
             anchors.left: left_window.right
             anchors.right: right_window.left
-            text: apx.vehicles.current.protocol.text
-            visible: !apx.vehicles.current.protocol.isReplay && apx.datalink.valid && (apx.vehicles.current.protocol.streamType!==ProtocolVehicle.TELEMETRY)
+            text: vehicle.text
+            visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
             font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
             font.family: font_narrow

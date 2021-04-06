@@ -180,7 +180,6 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     }
 
     // keep the aspect ratio
-    // TODO: how to configure it? as a part of image path?
     xScale = yScale = qMin(xScale, yScale);
 
     if (!element.isEmpty()) {

@@ -83,9 +83,16 @@ AppEngine::~AppEngine()
 //=============================================================================
 void AppEngine::jsSyncObject(QObject *obj)
 {
-    QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
-    jsSetProperty(globalObject(), obj->objectName(), newQObject(obj));
+    jsSetProperty(globalObject(), obj->objectName(), jsCreateObject(obj));
     jsProtectPropertyWrite(obj->objectName());
+}
+QJSValue AppEngine::jsCreateObject(QObject *obj)
+{
+    QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
+    // Fact *f = qobject_cast<Fact *>(obj);
+    // if (f)
+    //     return f->jsobject();
+    return newQObject(obj);
 }
 //=============================================================================
 void AppEngine::jsSync(Fact *fact)
@@ -101,8 +108,7 @@ void AppEngine::jsSync(Fact *fact)
         Fact *f = list.at(i);
         QJSValue vp = v.property(f->jsname());
         if (vp.isUndefined() || (!vp.isQObject()) || vp.toQObject() != f) {
-            QQmlEngine::setObjectOwnership(f, QQmlEngine::CppOwnership);
-            jsSetProperty(v, f->jsname(), newQObject(f));
+            jsSetProperty(v, f->jsname(), jsCreateObject(f));
             jsProtectPropertyWrite(f->jspath());
         }
         v = vp;
@@ -114,8 +120,7 @@ void AppEngine::jsSync(Fact *fact)
 QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 {
     //qDebug() << fact->path();
-    QQmlEngine::setObjectOwnership(fact, QQmlEngine::CppOwnership);
-    QJSValue js_fact = newQObject(fact);
+    QJSValue js_fact = jsCreateObject(fact);
 
     jsSetProperty(parent, fact->jsname(), js_fact);
     jsProtectPropertyWrite(fact->jspath());
@@ -153,13 +158,6 @@ void AppEngine::jsSetProperty(QJSValue parent, QString name, QJSValue value)
         parent.deleteProperty(name);
     }
 
-    // if (value.isQObject()) {
-    //     Fact *f = value.toVariant().value<Fact *>();
-    //     if (f) {
-    //         jsProtectPropertyWrite(f->path());
-    //     }
-    // }
-
     parent.setProperty(name, value);
 }
 
@@ -184,6 +182,7 @@ void AppEngine::jsProtectPropertyWrite(const QString path)
     //                 .arg(scope)
     //                 .arg(name)
     //                 .arg(path);
+    s = QString("try{%1}catch(e){}").arg(s);
     jsexec_queued(s);
 }
 
@@ -202,6 +201,8 @@ void AppEngine::_protectObjects(const QString path, QJSValue obj)
         return;
 
     QString s = QString("Object.seal(%1)").arg(path);
+
+    s = QString("try{%1}catch(e){}").arg(s);
     jsexec_queued(s);
 }
 
@@ -372,16 +373,28 @@ QObject *AppEngine::loadQml(const QString qmlFile, const QVariantMap &opts)
     }
 
     QQmlComponent c(this, qmlFile, QQmlComponent::PreferSynchronous);
-    QObject *obj = c.beginCreate(rootContext());
-    for (auto key : opts.keys()) {
-        QQmlProperty::write(obj, key.toUtf8(), opts.value(key));
-    }
-    c.completeCreate();
-    if (c.isError()) {
-        apxMsgW() << c.errorString();
-        return nullptr;
-    }
-    return obj;
+    do {
+        if (c.isError())
+            break;
+
+        QObject *obj = c.beginCreate(rootContext());
+        if (c.isError())
+            break;
+
+        for (auto key : opts.keys()) {
+            QQmlProperty::write(obj, key.toUtf8(), opts.value(key));
+        }
+
+        if (c.isError())
+            break;
+        c.completeCreate();
+        if (c.isError())
+            break;
+
+        return obj;
+    } while (0);
+    apxMsgW() << c.errorString();
+    return nullptr;
 }
 //=============================================================================
 void AppEngine::warnings(const QList<QQmlError> &warnings)

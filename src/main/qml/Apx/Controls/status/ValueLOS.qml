@@ -24,7 +24,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls.Material 2.2
 import QtPositioning 5.12
 
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 import Apx.Common 1.0
 
 ValueButton {
@@ -42,7 +42,9 @@ ValueButton {
     value: v>1000000?"--":apx.distanceToString(v)
 
 
-    property int err: apx.vehicles.current.protocol.errcnt
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property int err: vehicle.protocol?vehicle.protocol.errcnt:0
+    
     Timer {
         id: errTimer
         interval: 5000
@@ -52,19 +54,19 @@ ValueButton {
     Connections {
         target: apx.vehicles
         function onVehicleSelected() {
-            cv = apx.vehicles.current
+            cv = vehicle
         }
     }
     property var cv
     Component.onCompleted: {
-        cv = apx.vehicles.current
+        cv = vehicle
         visible=bvisible
     }
 
     onErrChanged: {
-        if(apx.vehicles.current.errcnt<=0) return
-        if(cv !== apx.vehicles.current){
-            cv = apx.vehicles.current
+        if(err<=0) return
+        if(cv !== vehicle){
+            cv = vehicle
             return
         }
         errTimer.restart()

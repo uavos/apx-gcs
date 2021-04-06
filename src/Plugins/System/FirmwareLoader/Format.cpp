@@ -40,49 +40,32 @@ Format::Format(Firmware *firmware, Fact *parent)
 
     connect(f_start, &Fact::triggered, this, &Format::startTriggered);
 
-    connect(firmware->nodes_protocol(), &ProtocolNodes::nodeNotify, this, &Format::nodeNotify);
-
-    connect(this, &Fact::triggered, firmware->nodes_protocol(), &ProtocolNodes::requestSearch);
+    connect(firmware, &Firmware::nodesMapUpdated, this, &Format::nodesMapUpdated);
 
     f_start->setEnabled(false);
 }
 
-void Format::nodeNotify(ProtocolNode *protocol)
+void Format::nodesMapUpdated(QMap<QString, QString> nodes)
 {
-    QStringList n;
-    n << protocol->title();
-    n << protocol->descr();
-    n << protocol->value().toString();
-    n.removeAll("");
-    QString sTitle = n.join(' ');
+    auto uid_sel = _nodes.key(f_dev->valueText());
+    _nodes = nodes;
 
-    QStringList st = f_dev->enumStrings();
-
-    int idx = snList.indexOf(protocol->sn());
-    int v_s = f_dev->value().toInt();
-    if (idx < 0) {
-        snList << protocol->sn();
-        st << sTitle;
-    } else {
-        st.replace(idx, sTitle);
-    }
-    f_dev->setEnumStrings(st);
-    f_dev->setValue(v_s);
+    f_dev->setEnumStrings(_nodes.values());
+    f_dev->setValue(_nodes.value(uid_sel));
     f_start->setEnabled(true);
 }
 
 void Format::startTriggered()
 {
-    QString sn = snList.value(f_dev->value().toInt());
+    auto uid = _nodes.key(f_dev->valueText());
     QString type;
     if (f_fw->value().toInt() == 0)
         type = "ldr";
     else
         type = "fw";
 
-    if (sn.isEmpty())
+    if (uid.isEmpty())
         return;
 
-    ProtocolNode *node = Firmware::nodes_protocol()->getNode(sn, true);
-    m_firmware->requestFormat(node, type, f_node->text(), f_hw->text());
+    m_firmware->requestUpgrade(uid, f_node->text(), f_hw->text(), type);
 }

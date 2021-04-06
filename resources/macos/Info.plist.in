@@ -44,7 +44,7 @@
 			<string>APX Telemetry data</string>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.xml</string>
+				<string>public.text</string>
 			</array>
 			<key>UTTypeIdentifier</key>
 			<string>com.uavos.telemetry</string>
@@ -63,15 +63,15 @@
 			<string>APX Configuration data</string>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.xml</string>
+				<string>public.text</string>
 			</array>
 			<key>UTTypeIdentifier</key>
-			<string>com.uavos.nodes</string>
+			<string>com.uavos.vehicle</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>nodes</string>
+					<string>vehicle</string>
 				</array>
 			</dict>
 		</dict>
@@ -105,7 +105,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.uavos.telemetry</string>
-				<string>com.uavos.nodes</string>
+				<string>com.uavos.vehicle</string>
 				<string>com.uavos.apxfw</string>
 			</array>
 		</dict>

@@ -44,9 +44,9 @@ public:
     Q_INVOKABLE void blockSerialPorts();
     Q_INVOKABLE void unblockSerialPorts();
 
-private:
     Datalink *datalink;
 
+private:
     QList<DatalinkPort *> serialPorts() const;
     QList<DatalinkPort *> blockedPorts;
 

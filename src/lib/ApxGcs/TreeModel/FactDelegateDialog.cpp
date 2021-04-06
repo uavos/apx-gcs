@@ -44,12 +44,12 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
     //toolBar->setIconSize(QSize(14,14));
     //toolBar->layout()->setMargin(0);
 
-    Nodes *nodes = fact->findParent<Nodes *>();
+    Nodes *nodes = fact->findParent<Nodes>();
     if (nodes) {
         aUpload = new QAction(MaterialIcon("upload"), tr("Upload"), this);
         connect(aUpload, &QAction::triggered, nodes, [nodes]() { nodes->f_upload->trigger(); });
         connect(nodes->f_upload, &Fact::enabledChanged, this, [=]() {
-            Nodes *nodes = fact->findParent<Nodes *>();
+            Nodes *nodes = fact->findParent<Nodes>();
             aUpload->setEnabled(nodes && nodes->f_upload->enabled());
         });
         aUpload->setEnabled(nodes->f_upload->enabled());
@@ -57,7 +57,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
         toolBar->widgetForAction(aUpload)->setObjectName("greenAction");
     }
 
-    NodeItem *node = fact->findParent<NodeItem *>();
+    NodeItem *node = fact->findParent<NodeItem>();
     if (node) {
         setWindowTitle(
             QString("%1-%2: %3").arg(node->title()).arg(node->value().toString()).arg(windowTitle()));

@@ -26,7 +26,7 @@ import QtPositioning 5.6
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 import APX.Mission 1.0
 
 import Apx.Common 1.0
@@ -35,9 +35,11 @@ import Apx.Controls 1.0
 
 ColumnLayout {
     spacing: 4
-    property Vehicle vehicle: apx.vehicles.current
-    property Mission mission: vehicle.mission
-    property bool empty: mission?mission.empty:true
+    
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    
+    readonly property Mission mission: vehicle.mission
+    readonly property bool empty: mission?mission.empty:true
 
     function focusOnMap(fact)
     {

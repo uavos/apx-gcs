@@ -26,7 +26,7 @@
 #include <Database/TelemetryReqWrite.h>
 
 #include <App/AppRoot.h>
-//=============================================================================
+
 LookupTelemetry::LookupTelemetry(Fact *parent)
     : DatabaseLookup(parent,
                      "lookup",
@@ -101,7 +101,6 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
     //refresh on load
     QTimer::singleShot(3000, this, &LookupTelemetry::defaultLookup);
 }
-//==============================================================================
 void LookupTelemetry::updateActions()
 {
     quint64 num = recordNum();
@@ -119,7 +118,6 @@ void LookupTelemetry::updateStatus()
 {
     setValue(QString("%1/%2").arg(recordNum()).arg(recordsCount()));
 }
-//==============================================================================
 void LookupTelemetry::loadItem(QVariantMap modelData)
 {
     quint64 key = modelData.value("key", 0).toUInt();
@@ -129,7 +127,7 @@ void LookupTelemetry::loadItem(QVariantMap modelData)
     setRecordId(key);
     emit recordTriggered(recordId());
 }
-//=============================================================================
+
 void LookupTelemetry::jumpToRecord(quint64 v)
 {
     quint64 id = recordId();
@@ -137,7 +135,7 @@ void LookupTelemetry::jumpToRecord(quint64 v)
     if (id != recordId())
         emit recordTriggered(recordId());
 }
-//=============================================================================
+
 bool LookupTelemetry::fixItemDataThr(QVariantMap *item)
 {
     QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
@@ -167,7 +165,7 @@ bool LookupTelemetry::fixItemDataThr(QVariantMap *item)
     item->insert("active", item->value("key").toULongLong() == recordId());
     return true;
 }
-//=============================================================================
+
 QString LookupTelemetry::filterQuery() const
 {
     return "( callsign LIKE ? OR notes LIKE ? OR comment LIKE ? )";
@@ -181,8 +179,7 @@ QString LookupTelemetry::filterTrash() const
 {
     return "trash IS NULL";
 }
-//=============================================================================
-//=============================================================================
+
 void LookupTelemetry::defaultLookup()
 {
     //qDebug()<<filter();
@@ -207,7 +204,7 @@ void LookupTelemetry::dbResultsLookup(DatabaseRequest::Records records)
 {
     setRecordsCount(records.values.isEmpty() ? 0 : records.values.first().first().toULongLong());
 }
-//=============================================================================
+
 void LookupTelemetry::dbLoadInfo()
 {
     quint64 key = recordId();
@@ -235,7 +232,7 @@ void LookupTelemetry::dbResultsInfo(DatabaseRequest::Records records)
     info.remove("telemetryID");
     setRecordInfo(info);
 }
-//=============================================================================
+
 void LookupTelemetry::dbFindNum()
 {
     quint64 key = recordId();
@@ -306,8 +303,7 @@ void LookupTelemetry::dbResultsNumNext(DatabaseRequest::Records records)
     }
     setRecordNum(num);
 }
-//=============================================================================
-//=============================================================================
+
 void LookupTelemetry::dbLoadLatest()
 {
     emit discardRequests();
@@ -337,7 +333,7 @@ void LookupTelemetry::dbResultsLatest(DatabaseRequest::Records records)
     setRecordId(r.at(0).toULongLong());
     emit recordTriggered(recordId());
 }
-//=============================================================================
+
 void LookupTelemetry::dbLoadPrev()
 {
     emit discardRequests();
@@ -407,7 +403,7 @@ void LookupTelemetry::dbRemove()
     //else connect(req,&DBReqRemove::finished,this,&TelemetryReader::rescan,Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
+
 void LookupTelemetry::dbResultsPrevNext(DatabaseRequest::Records records)
 {
     if (records.values.isEmpty())
@@ -428,10 +424,7 @@ void LookupTelemetry::dbResultsPrevNext(DatabaseRequest::Records records)
         return;
     }
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 quint64 LookupTelemetry::recordsCount() const
 {
     return m_recordsCount;
@@ -491,4 +484,3 @@ void LookupTelemetry::setRecordInfo(const QVariantMap &v)
     m_recordInfo = v;
     emit recordInfoChanged();
 }
-//=============================================================================

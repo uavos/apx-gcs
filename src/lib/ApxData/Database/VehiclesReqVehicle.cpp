@@ -20,27 +20,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "VehiclesReqVehicle.h"
-#include "VehiclesReqDict.h"
-#include "VehiclesReqNconf.h"
+#include "VehiclesReqNode.h"
 
 bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
 {
-    QString uid = info.value("uid").toString();
-    QVariant vuid;
-    if (uid == QString(uid.size(), QChar('0')))
-        uid.clear();
-    if (uid.isEmpty()) {
-        info.remove("squawk");
-    } else {
-        vuid = uid;
-        if (info.value("class").isNull())
-            info["class"] = "UAV";
+    auto time = _info.value("time").toULongLong();
+    auto callsign = _info.value("callsign").toString();
+    auto vclass = _info.value("class").toString();
+
+    auto vuid = _info.value("uid").toString();
+    if (vuid == QString(vuid.size(), QChar('0')))
+        vuid.clear();
+    if (!vuid.isEmpty()) {
+        if (vclass.isEmpty())
+            vclass = "UAV";
     }
-    if (!info.value("time").toULongLong())
-        info["time"] = t;
 
     //find the latest existing record by UID
-    if (vuid.isNull()) {
+    if (vuid.isEmpty()) {
         query.prepare("SELECT * FROM Vehicles WHERE uid IS NULL ORDER BY time DESC LIMIT 1");
     } else {
         query.prepare("SELECT * FROM Vehicles WHERE uid=? ORDER BY time DESC LIMIT 1");
@@ -48,11 +45,13 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
     }
     if (!query.exec())
         return false;
+
     while (query.next()) {
-        quint64 latestTime = query.value("time").toULongLong();
+        auto latestTime = query.value("time").toULongLong();
         //merge ident from previous registrations
-        if (info.value("callsign").toString().isEmpty())
-            info["callsign"] = query.value("callsign");
+        if (callsign.isEmpty())
+            callsign = query.value("callsign").toString();
+
         if (vuid.isNull()) {
             //only one record with null uid (LOCAL)
             vehicleID = query.value(0).toULongLong();
@@ -60,21 +59,22 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
             //find exact matching unique record
             query.prepare("SELECT * FROM Vehicles WHERE uid=? AND callsign=? AND class=?");
             query.addBindValue(vuid);
-            query.addBindValue(info.value("callsign"));
-            query.addBindValue(info.value("class"));
+            query.addBindValue(callsign);
+            query.addBindValue(vclass);
             if (!query.exec())
                 return false;
             if (!query.next())
                 break; //create new
             vehicleID = query.value(0).toULongLong();
-            qDebug() << "vehicle exists" << info.value("callsign").toString();
+            qDebug() << "vehicle exists" << callsign;
         }
+
         //same vehicle found - update data if newer
-        if (latestTime >= info.value("time").toULongLong())
+        if (latestTime >= time)
             return true;
-        query.prepare("UPDATE Vehicles SET time=?, squawk=? WHERE key=?");
-        query.addBindValue(info.value("time"));
-        query.addBindValue(info.value("squawk"));
+
+        query.prepare("UPDATE Vehicles SET time=? WHERE key=?");
+        query.addBindValue(time);
         query.addBindValue(vehicleID);
         if (!query.exec())
             return false;
@@ -83,14 +83,13 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
     }
 
     //register new vehicle record
-    qDebug() << "new vehicle" << info.value("callsign").toString();
+    qDebug() << "new vehicle" << callsign;
 
-    query.prepare("INSERT INTO Vehicles(uid,callsign,class,time,squawk) VALUES(?,?,?,?,?)");
+    query.prepare("INSERT INTO Vehicles(uid,callsign,class,time) VALUES(?,?,?,?)");
     query.addBindValue(vuid);
-    query.addBindValue(info.value("callsign"));
-    query.addBindValue(info.value("class"));
-    query.addBindValue(info.value("time"));
-    query.addBindValue(info.value("squawk"));
+    query.addBindValue(callsign);
+    query.addBindValue(vclass);
+    query.addBindValue(time);
     if (!query.exec())
         return false;
     vehicleID = query.lastInsertId().toULongLong();
@@ -98,19 +97,30 @@ bool DBReqSaveVehicleInfo::run(QSqlQuery &query)
     return true;
 }
 
-bool DBReqVehiclesSaveConfig::run(QSqlQuery &query)
+bool DBReqSaveVehicleConfig::run(QSqlQuery &query)
 {
-    configInfo.insert("time", t);
-    if (vehicleID)
-        configInfo.insert("vehicleID", vehicleID);
-
-    //generate hash and find title
-    QCryptographicHash h(QCryptographicHash::Sha1);
-    //add hash from each node config and sort nodes by sn
-    QStringList stKeys;
-    for (int i = 0; i < nconfList.size(); ++i) {
-        stKeys.append(QString::number(nconfList.at(i)));
+    // seaarch vehicle
+    if (_vuid.isEmpty()) {
+        query.prepare("SELECT * FROM Vehicles WHERE uid IS NULL ORDER BY time DESC LIMIT 1");
+    } else {
+        query.prepare("SELECT * FROM Vehicles WHERE uid=? ORDER BY time DESC LIMIT 1");
+        query.addBindValue(_vuid);
     }
+    if (!query.exec())
+        return false;
+    if (!query.next()) {
+        qWarning() << "no vehicle" << _vuid;
+        return true;
+    }
+    auto vehicleID = query.value(0).toULongLong();
+
+    //generate hash
+    //add hash from each node config and sort nodes by uid
+    QCryptographicHash h(QCryptographicHash::Sha1);
+    QStringList stKeys;
+    for (auto i : _nconfIDs)
+        stKeys.append(QString::number(i));
+
     query.prepare("SELECT * FROM NodeConfigs "
                   "INNER JOIN Nodes ON NodeConfigs.nodeID=Nodes.key "
                   "INNER JOIN NodeDicts ON NodeConfigs.dictID=NodeDicts.key "
@@ -121,74 +131,19 @@ bool DBReqVehiclesSaveConfig::run(QSqlQuery &query)
     if (!query.exec())
         return false;
 
-    QMap<QString, QString> titleByName;
-    QString titleShiva;
-    QString titleLongest;
-    QString titleAnyName;
-
     int kcnt = 0;
     while (query.next()) {
         kcnt++;
-        //qDebug()<<hash<<kcnt;
         h.addData(query.value("NodeConfigs.hash").toString().toUtf8());
         h.addData(query.value("Nodes.sn").toString().toUtf8());
-        //find title
-        QString name = query.value("NodeDicts.name").toString();
-        QString s = query.value("NodeConfigs.title").toString();
-        if (titleAnyName.isEmpty())
-            titleAnyName = name;
-        if (s.isEmpty())
-            continue;
-        int sz = s.size();
-        if (titleByName.value(name).size() < sz)
-            titleByName[name] = s;
-        if (name.endsWith(".shiva")) {
-            if (titleShiva.size() < sz)
-                titleShiva = s;
-        }
-        if (titleLongest.size() < sz)
-            titleLongest = s;
     }
     if (kcnt <= 0) {
         qWarning() << "nothing to save";
         return true;
     }
     QString hash = h.result().toHex().toUpper();
-    configInfo["hash"] = hash;
-    //title
-    QString title;
-    while (1) {
-        title = titleShiva;
-        if (!title.isEmpty())
-            break;
-        title = titleByName.value("nav");
-        if (!title.isEmpty())
-            break;
-        title = titleByName.value("mhx");
-        if (!title.isEmpty())
-            break;
-        title = titleByName.value("ifc");
-        if (!title.isEmpty())
-            break;
-        title = titleLongest;
-        if (!title.isEmpty())
-            break;
-        title = titleAnyName;
-        break;
-    }
-    configInfo["title"] = title;
-
-    QString s = title.simplified();
-    notes = notes.remove(s, Qt::CaseInsensitive).simplified();
-    if (s.contains(notes))
-        notes.clear();
-    if (!notes.isEmpty())
-        configInfo.insert("notes", notes);
-
-    //qDebug()<<hash<<kcnt<<title;
 
     //find latest config by hash
-    quint64 configID = 0;
     query.prepare("SELECT * FROM VehicleConfigs"
                   " LEFT JOIN Vehicles ON VehicleConfigs.vehicleID=Vehicles.key"
                   " WHERE hash=?");
@@ -196,23 +151,22 @@ bool DBReqVehiclesSaveConfig::run(QSqlQuery &query)
     if (!query.exec())
         return false;
     if (query.next()) {
-        configInfo.remove("key");
-        configInfo = queryRecord(query, configInfo);
+        // config found
+        auto configID = query.value(0).toULongLong();
         //uptime time and actual values
-        qDebug() << "config exists" << configInfo.value("callsign").toString() << title;
-        if (query.value("VehicleConfigs.time").toULongLong()
-            < configInfo.value("time").toULongLong()) {
-            query.prepare("UPDATE VehicleConfigs SET time=?, vehicleID=?, notes=? WHERE key=?");
-            query.addBindValue(configInfo.value("time"));
-            query.addBindValue(configInfo.value("vehicleID"));
-            query.addBindValue(configInfo.value("notes"));
-            query.addBindValue(configInfo.value("key"));
-            if (!query.exec())
-                return false;
-            emit dbModified();
-            emit configUpdated();
-        }
-        emit configInfoFound(configInfo);
+        qDebug() << "vehicle config exists" << query.value("callsign").toString() << _title;
+        if (_time <= query.value("VehicleConfigs.time").toULongLong())
+            return true;
+
+        query.prepare("UPDATE VehicleConfigs SET time=?, vehicleID=?, notes=? WHERE key=?");
+        query.addBindValue(_time);
+        query.addBindValue(vehicleID);
+        query.addBindValue(_notes);
+        query.addBindValue(configID);
+        if (!query.exec())
+            return false;
+        emit dbModified();
+        emit configSaved(hash, _title);
         return true;
     }
 
@@ -221,45 +175,47 @@ bool DBReqVehiclesSaveConfig::run(QSqlQuery &query)
 
     query.prepare("INSERT INTO VehicleConfigs(hash,time,title,vehicleID,notes) VALUES(?,?,?,?,?)");
     query.addBindValue(hash);
-    query.addBindValue(configInfo.value("time"));
-    query.addBindValue(configInfo.value("title"));
-    query.addBindValue(configInfo.value("vehicleID"));
-    query.addBindValue(configInfo.value("notes"));
+    query.addBindValue(_time);
+    query.addBindValue(_title);
+    query.addBindValue(vehicleID);
+    query.addBindValue(_notes);
     if (!query.exec())
         return false;
-    configID = query.lastInsertId().toULongLong();
-    configInfo["key"] = configID;
+    auto configID = query.lastInsertId().toULongLong();
 
     //save vehicle config bundle
-    for (int i = 0; i < nconfList.size(); ++i) {
+    for (auto i : _nconfIDs) {
         query.prepare("INSERT INTO VehicleConfigData(configID,nconfID) VALUES(?,?)");
         query.addBindValue(configID);
-        query.addBindValue(nconfList.at(i));
+        query.addBindValue(i);
         if (!query.exec())
             return false;
     }
 
     db->commit(query);
     emit dbModified();
-    emit configInfoFound(configInfo);
-    qDebug() << "new config" << title;
-    emit configCreated();
+    qDebug() << "new vehicle config" << _title;
+    emit configSaved(hash, _title);
     return true;
 }
 
-bool DBReqVehiclesLoadConfig::run(QSqlQuery &query)
+bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM VehicleConfigs WHERE hash=?");
-    query.addBindValue(hash);
+    query.addBindValue(_hash);
     if (!query.exec())
         return false;
     if (!query.next()) {
-        qWarning() << "missing hash" << hash;
+        qWarning() << "missing config" << _hash;
         return false;
     }
-    configInfo = queryRecord(query);
-    quint64 configID = query.value("key").toULongLong();
+    auto configID = query.value(0).toULongLong();
+    auto title = query.value("title").toString();
+    auto notes = query.value("notes").toString();
+    auto time = query.value("time").toULongLong();
+    auto vehicleID = query.value("vehicleID").toString();
 
+    // get config data
     query.prepare("SELECT * FROM VehicleConfigData"
                   " INNER JOIN NodeConfigs ON VehicleConfigData.nconfID=NodeConfigs.key"
                   " INNER JOIN NodeDicts ON NodeConfigs.dictID=NodeDicts.key"
@@ -268,51 +224,162 @@ bool DBReqVehiclesLoadConfig::run(QSqlQuery &query)
     query.addBindValue(configID);
     if (!query.exec())
         return false;
-    QList<QPair<quint64, quint64>> list;
+
+    // get list of nodes IDs
+    QList<std::array<quint64, 3>> list;
     while (query.next()) {
-        quint64 dictID = query.value("dictID").toULongLong();
-        quint64 nconfID = query.value("nconfID").toULongLong();
-        list.append(QPair<quint64, quint64>(dictID, nconfID));
+        auto nodeID = query.value("nodeID").toULongLong();
+        auto dictID = query.value("dictID").toULongLong();
+        auto nconfID = query.value("nconfID").toULongLong();
+        list.append({nodeID, dictID, nconfID});
     }
     if (list.isEmpty()) {
         qWarning() << "missing vehicle config" << configID;
         return true;
     }
+
     //qDebug()<<list.size();
-    for (int i = 0; i < list.size(); ++i) {
-        QVariantMap dataItem;
-        QPair<quint64, quint64> p = list.at(i);
+    QVariantList nodes;
+    for (auto p : list) {
+        QVariantMap node;
         {
-            DBReqVehiclesLoadDict *req = new DBReqVehiclesLoadDict(p.first);
-            //connect(req,&DBReqLoadNodeDict::dictLoaded,this,&DBReqVehiclesLoadConfig::dictLoaded);
+            auto req = new DBReqLoadNodeInfo(p[0]);
             bool ok = req->run(query);
             if (ok) {
-                dataItem.insert("dictInfo", QVariant::fromValue(req->info));
-                dataItem.insert("dict", QVariant::fromValue(req->dict));
+                node.insert("info", req->info());
             }
             delete req;
             if (!ok)
                 return false;
         }
         {
-            //collect configs to list for import
-            DBReqVehiclesLoadNconf *req = new DBReqVehiclesLoadNconf(p.second);
-            //connect(req,&DBReqVehiclesLoadNconf::configLoaded,this,&DBReqVehiclesLoadConfig::configLoaded);
+            auto req = new DBReqLoadNodeDict(p[1]);
             bool ok = req->run(query);
             if (ok) {
-                dataItem.insert("nconfInfo", QVariant::fromValue(req->info));
-                dataItem.insert("values", QVariant::fromValue(req->values));
-                dataItem.insert("nconfID", p.second);
+                node.insert("dict", req->dict());
             }
             delete req;
             if (!ok)
                 return false;
         }
-        data.append(dataItem);
+        {
+            auto req = new DBReqLoadNodeConfig(p[2]);
+            bool ok = req->run(query);
+            if (ok) {
+                node.insert("values", req->values());
+                node.insert("time", req->time());
+            }
+            delete req;
+            if (!ok)
+                return false;
+        }
+        nodes.append(node);
     }
-    if (data.isEmpty())
+    _config.insert("nodes", nodes);
+    if (!title.isEmpty())
+        _config.insert("title", title);
+    if (!notes.isEmpty())
+        _config.insert("notes", notes);
+    _config.insert("time", time);
+
+    // get vehicle info
+    query.prepare("SELECT * FROM Vehicles WHERE key=?");
+    query.addBindValue(vehicleID);
+    if (!query.exec())
+        return false;
+    if (!query.next()) {
+        qWarning() << "missing vehicle" << vehicleID;
+    } else {
+        QVariantMap vehicle;
+        vehicle.insert("uid", query.value("uid").toString());
+        vehicle.insert("callsign", query.value("callsign").toString());
+        vehicle.insert("class", query.value("class").toString());
+        vehicle.insert("time", query.value("time").toString());
+        _config.insert("vehicle", filterNullValues(vehicle));
+    }
+
+    emit configLoaded(_config);
+    return true;
+}
+
+bool DBReqImportVehicleConfig::run(QSqlQuery &query)
+{
+    // import vehicle
+    auto vehicle = _config.value("vehicle").value<QVariantMap>();
+    if (!vehicle.isEmpty()) {
+        auto req = new DBReqSaveVehicleInfo(vehicle);
+        auto ok = req->run(query);
+        delete req;
+        if (!ok)
+            return false;
+    }
+
+    // import nodes
+    QList<quint64> nconfIDs;
+    DatabaseRequest *req = {};
+    auto nodes = _config.value("nodes").value<QVariantList>();
+    for (auto i : nodes) {
+        auto node = i.value<QVariantMap>();
+
+        // node info
+        auto info = node.value("info").value<QVariantMap>();
+        if (info.isEmpty())
+            continue;
+        auto uid = info.value("uid").toString();
+
+        req = new DBReqSaveNodeInfo(info);
+        if (!req->run(query))
+            break;
+        delete req;
+        req = {};
+
+        // node dict
+        auto dict = node.value("dict").value<QVariantMap>();
+        if (dict.isEmpty())
+            continue;
+        auto hash = dict.value("hash").toString();
+
+        req = new DBReqSaveNodeDict(uid, dict);
+        if (!req->run(query))
+            break;
+        delete req;
+        req = {};
+
+        // node config
+        auto values = node.value("values").value<QVariantMap>();
+        if (values.isEmpty())
+            continue;
+        auto time = node.value("time").toULongLong();
+
+        req = new DBReqSaveNodeConfig(uid, hash, values, time);
+        if (!req->run(query))
+            break;
+        nconfIDs.append(static_cast<DBReqSaveNodeConfig *>(req)->configID());
+        delete req;
+        req = {};
+    }
+    if (req) {
+        delete req;
+        qWarning() << "failed to import vehicle config";
         return true;
-    //emit configInfoFound(configInfo);
-    emit loaded(configInfo, data);
+    }
+
+    // vehicle config
+    auto vuid = vehicle.value("uid").toString();
+    auto title = _config.value("title").toString();
+    auto time = _config.value("time").toULongLong();
+
+    if (nconfIDs.isEmpty()) {
+        qWarning() << "missing nodes in import";
+    } else {
+        QString notes("imported");
+
+        req = new DBReqSaveVehicleConfig(vuid, nconfIDs, title, notes, time);
+        bool ok = req->run(query);
+        delete req;
+        if (!ok)
+            return false;
+    }
+
     return true;
 }

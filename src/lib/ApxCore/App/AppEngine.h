@@ -40,6 +40,8 @@ public:
     void jsSyncObject(QObject *obj);
     void jsSync(Fact *fact);
 
+    QJSValue jsCreateObject(QObject *obj);
+
     Q_INVOKABLE void help();
     Q_INVOKABLE void sleep(quint16 ms);
 
@@ -54,11 +56,10 @@ private:
     QHash<QString, QString> js_descr; //helper commands alias,descr
 
     QJSValue jsSync(Fact *fact, QJSValue parent); //recursive
+    void jsSetProperty(QJSValue parent, QString name, QJSValue value);
 
     void jsRegister(QString fname, QString description, QString body);
-
     void jsRegisterFunctions();
-    void jsSetProperty(QJSValue parent, QString name, QJSValue value);
 
     QQueue<QString> _jsQueue;
     QTimer _jsTimer;

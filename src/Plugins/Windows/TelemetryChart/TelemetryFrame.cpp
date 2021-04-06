@@ -25,6 +25,7 @@
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
 #include <Telemetry/LookupTelemetry.h>
+#include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 #include <QColor>
@@ -117,8 +118,8 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBar->addSeparator();
 
     toolBar->addAction(new QActionFact(reader->f_reload));
-    //toolBar->addAction(new QActionFact(share->f_export));
-    //toolBar->addAction(new QActionFact(share->f_import));
+    toolBar->addAction(new QActionFact(share->f_export));
+    toolBar->addAction(new QActionFact(share->f_import));
     toolBar->addSeparator();
     toolBar->addAction(new QActionFact(lookup->f_remove));
     toolBar->addSeparator();

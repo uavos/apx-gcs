@@ -21,27 +21,27 @@
  */
 #pragma once
 
+#include <Protocols/Protocols.h>
+
 #include "Vehicle.h"
 #include "VehicleSelect.h"
 
 #include <App/AppEngine.h>
 
-#include <Protocols/ProtocolVehicles.h>
-#include <Protocols/ProtocolViewBase.h>
+class Vehicle;
 
-class Vehicles : public ProtocolViewBase<ProtocolVehicles>
+class Vehicles : public Fact
 {
     Q_OBJECT
 
     Q_PROPERTY(Vehicle *current READ current NOTIFY currentChanged)
 
 public:
-    explicit Vehicles(Fact *parent, ProtocolVehicles *protocol);
+    explicit Vehicles(Fact *parent, Protocols *protocols);
 
     static Vehicles *instance() { return _instance; }
 
     static constexpr const int list_padding = 2;
-    Vehicle *f_local;
     Vehicle *f_replay;
 
     VehicleSelect *f_select;
@@ -63,7 +63,7 @@ signals:
 
     //data connection
 private slots:
-    void vehicleIdentified(ProtocolVehicle *protocol);
+    void vehicle_available(PVehicle *protocol);
 
     //---------------------------------------
     // PROPERTIES

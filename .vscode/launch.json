@@ -8,7 +8,7 @@
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/gcs",
+            "program": "${workspaceFolder}/build/out/bin/gcs",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
