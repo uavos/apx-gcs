@@ -31,20 +31,21 @@ class NodeModules : public Fact
     Q_OBJECT
 
 public:
-    explicit NodeModules(NodeItem *node, NodeModules *parent = nullptr, QString name = QString());
+    explicit NodeModules(Fact *parent, NodeItem *node, QString name = QString());
 
 private:
     NodeItem *_node;
 
+    bool _is_root{};
     bool _done_ls{};
 
-    bool is_root() const;
     QStringList mpath() const;
 
     void updateFacts(QStringList names);
 
 private slots:
     void update();
+    void reload();
 
     void modReceived(QStringList data);
 

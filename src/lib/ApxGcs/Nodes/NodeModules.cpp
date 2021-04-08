@@ -23,41 +23,42 @@
 #include "NodeItem.h"
 #include "Nodes.h"
 
-NodeModules::NodeModules(NodeItem *node, NodeModules *parent, QString name)
-    : Fact()
+NodeModules::NodeModules(Fact *parent, NodeItem *node, QString name)
+    : Fact(parent, name.isEmpty() ? "modules" : name, "", "", Group)
     , _node(node)
+    , _is_root(name.isEmpty())
 {
-    if (parent)
-        setParentFact(parent);
-    else
-        setParentFact(node);
-
-    setName(name.isEmpty() ? "modules" : name);
-
-    setFlags(Group | Count);
-
     connect(this, &NodeModules::requestMod, node->protocol(), &PNode::requestMod);
     connect(this, &Fact::triggered, this, &NodeModules::update);
 
-    if (is_root()) {
-        setTitle(tr("modules"));
-        setDescr(tr("Node modules"));
+    auto f = new Fact(this, "refresh", tr("Refresh"), "", Action, "reload");
+    connect(f, &Fact::triggered, this, &NodeModules::reload);
+
+    if (_is_root) {
+        setIcon("sitemap");
+        setTitle(tr("Node modules"));
+        setDescr(tr("Internal submodules status"));
+        setDataType(Count);
 
         connect(node->protocol(), &PNode::modReceived, this, &NodeModules::modReceived);
         return;
     }
 
-    QTimer::singleShot(100 * num() + 100, this, &NodeModules::update);
+    update();
 }
 
-bool NodeModules::is_root() const
+void NodeModules::reload()
 {
-    return parentFact() == _node;
+    update();
+    for (auto i : facts()) {
+        static_cast<NodeModules *>(i)->reload();
+    }
 }
+
 QStringList NodeModules::mpath() const
 {
     QStringList st;
-    for (auto i = this; i && !i->is_root(); i = qobject_cast<NodeModules *>(i->parentFact())) {
+    for (auto i = this; i && !i->_is_root; i = qobject_cast<NodeModules *>(i->parentFact())) {
         st.prepend(i->name());
     }
     return st;
@@ -103,10 +104,12 @@ void NodeModules::modReceived(QStringList data)
     }
 
     if (cmd == "status") {
-        QString s = reply.join(',').replace('\t', ' ');
-        if (s.isEmpty())
-            return;
-        setDataType(NoFlags);
+        QString s = reply.join('|').replace('\t', ' ').replace('\n', '|').simplified();
+        if (m->size() > 0) {
+            if (s.isEmpty())
+                return;
+            m->unbindProperties(m->child(0));
+        }
         m->setValue(s);
         return;
     }
@@ -115,17 +118,15 @@ void NodeModules::modReceived(QStringList data)
 void NodeModules::updateFacts(QStringList names)
 {
     if (names.isEmpty()) {
-        setFlags(NoFlags);
+        setTreeType(NoFlags);
     } else {
         for (auto s : names) {
             if (child(s))
                 continue;
-            new NodeModules(_node, this, s);
+            new NodeModules(this, _node, s);
         }
-        if (size() == 1) {
+        if (size() > 0 && !_is_root) {
             auto f = child(0);
-            setDataType(NoFlags);
-            // setTitle(QString("%1/%2").arg(name()).arg(f->name()));
             setDescr(f->name());
             bindProperty(f, "value", true);
         }

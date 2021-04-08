@@ -21,7 +21,6 @@
  */
 #include "NodeItem.h"
 #include "NodeField.h"
-#include "NodeModules.h"
 #include "NodeTools.h"
 #include "NodeViewActions.h"
 #include "Nodes.h"
@@ -611,8 +610,6 @@ void NodeItem::dictReceived(QVariantMap dict)
             storage->saveNodeDict();
         if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
             _protocol->requestConf();
-
-        new NodeModules(this);
     }
 }
 

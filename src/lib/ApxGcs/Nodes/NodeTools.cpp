@@ -21,6 +21,7 @@
  */
 #include "NodeTools.h"
 #include "NodeItem.h"
+#include "NodeModules.h"
 #include "Nodes.h"
 
 #include <App/App.h>
@@ -99,8 +100,11 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
 
     f_maintenance->setSection(f_sys->title());
 
-    // reboot
+    // online tools
     if (node->protocol()) {
+        f = new NodeModules(this, node);
+        f->setSection(f_sys->title());
+
         f = new Fact(f_maintenance, "reboot", tr("Reboot node"), tr("Node system reset"));
         f->setIcon("reload");
         f->setSection(f_sys->title());
