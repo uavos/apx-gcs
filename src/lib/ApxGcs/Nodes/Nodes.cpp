@@ -224,7 +224,7 @@ void Nodes::shell(QStringList commands)
     if (!_protocol)
         return;
 
-    if (!commands.isEmpty()) {
+    if (commands.size() > 1) {
         QString name = commands.first();
         NodeItem *n = nullptr;
         for (auto i : nodes()) {

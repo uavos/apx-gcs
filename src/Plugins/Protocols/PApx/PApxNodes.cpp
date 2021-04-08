@@ -62,6 +62,15 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     if (!mandala::cmd::env::nmt::match(pid.uid))
         return false;
 
+    // if upgrading - forward all to loacal
+    if (upgrading()) {
+        auto local = findParent<PApx>()->local();
+        if (local != parent()) {
+            auto nodes = static_cast<PApxNodes *>(local->nodes());
+            return nodes->process_downlink(pid, stream);
+        }
+    }
+
     while (pid.pri != xbus::pri_response) {
         if (pid.uid == mandala::cmd::env::nmt::msg::uid)
             break;
@@ -134,6 +143,7 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
         // rescheduled request
         if (_request != req) // not current
             return;
+        _retry = PApxNodeRequest::retries;
         _reqTimeout.stop();
         _reqNext.start();
         return;

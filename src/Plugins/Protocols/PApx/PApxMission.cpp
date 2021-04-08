@@ -253,8 +253,10 @@ QVariant PApxMission::_unpack(PStreamReader &stream)
         return {};
     }
 
+    if (ecnt <= 0)
+        return {};
+
     QVariantMap m;
-    m.insert("title", title);
 
     if (!wp.isEmpty())
         m.insert("wp", wp);
@@ -264,6 +266,11 @@ QVariant PApxMission::_unpack(PStreamReader &stream)
         m.insert("tw", tw);
     if (!pi.isEmpty())
         m.insert("pi", pi);
+
+    if (m.isEmpty())
+        return {};
+
+    m.insert("title", title);
     return m;
 }
 

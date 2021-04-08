@@ -56,6 +56,7 @@ Share::Share(Fact *parent, QString type, QString dataTitle, QDir defaultDir, Fla
                         "import");
     connect(f_import, &Fact::triggered, this, &Share::importTriggered, Qt::QueuedConnection);
 
+    // TODO: import default templates
     // connect(App::instance(), &App::loadingFinished, this, [this]() {
     //     QTimer::singleShot(1000, this, &Share::_syncTemplates);
     // });

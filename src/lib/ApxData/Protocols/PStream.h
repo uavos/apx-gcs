@@ -49,7 +49,7 @@ public:
     inline QByteArray payload() const { return toByteArray(pos(), available()); }
     inline QByteArray all() const { return toByteArray(0, available()); }
 
-    QStringList read_strings(size_t cnt, size_t max_sz = 64)
+    QStringList read_strings(size_t cnt = 0, size_t max_sz = 64)
     {
         QStringList st;
         for (size_t i = 0; cnt == 0 || i < cnt; ++i) {

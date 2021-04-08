@@ -21,6 +21,7 @@
  */
 #include "NodeItem.h"
 #include "NodeField.h"
+#include "NodeModules.h"
 #include "NodeTools.h"
 #include "NodeViewActions.h"
 #include "Nodes.h"
@@ -64,7 +65,10 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateUpgrading);
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateStatus);
 
-        connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
+        connect(this, &NodeItem::shell, protocol, [this](QStringList commands) {
+            commands.prepend("sh");
+            _protocol->requestMod(commands);
+        });
 
         connect(protocol, &Fact::valueChanged, this, [this]() {
             if (_protocol->value().isNull())
@@ -192,7 +196,7 @@ QVariant NodeItem::data(int col, int role) const
     switch (role) {
     case Qt::DisplayRole:
         if (col == FACT_MODEL_COLUMN_NAME)
-            return title().toUpper();
+            return title();
         break;
     case Qt::ForegroundRole:
         if (!valid()) {
@@ -607,6 +611,8 @@ void NodeItem::dictReceived(QVariantMap dict)
             storage->saveNodeDict();
         if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
             _protocol->requestConf();
+
+        new NodeModules(this);
     }
 }
 
