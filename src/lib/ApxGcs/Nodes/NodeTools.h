@@ -21,10 +21,10 @@
  */
 #pragma once
 
-#include "LookupNodeBackup.h"
 #include "NodeToolsGroup.h"
 
 class NodeItem;
+class LookupNodeBackup;
 
 class NodeTools : public NodeToolsGroup
 {

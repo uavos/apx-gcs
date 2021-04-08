@@ -44,8 +44,8 @@ public:
     Fact *f_usr;
     Fact *f_sys;
 
-    QJsonValue toJson() const override;
-    void fromJson(const QJsonValue json) override;
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
 private:
     Shortcut *f_add;

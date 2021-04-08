@@ -22,7 +22,6 @@
 #pragma once
 
 #include "VehiclesDB.h"
-#include <QtCore>
 
 class DBReqSaveVehicleInfo : public DBReqVehicles
 {
@@ -30,65 +29,81 @@ class DBReqSaveVehicleInfo : public DBReqVehicles
 public:
     explicit DBReqSaveVehicleInfo(QVariantMap info)
         : DBReqVehicles()
-        , vehicleID(0)
-        , info(info)
-        , t(QDateTime::currentDateTime().toMSecsSinceEpoch())
+        , _info(info)
+        , _time(QDateTime::currentDateTime().toMSecsSinceEpoch())
     {}
-    bool run(QSqlQuery &query);
-    //result
-    quint64 vehicleID;
-    QVariantMap info;
+
+    bool run(QSqlQuery &query) override;
+
+    quint64 vehicleID{};
 
 private:
-    quint64 t;
+    QVariantMap _info;
+    quint64 _time;
+
 signals:
     void foundID(quint64 key);
 };
 
-class DBReqVehiclesSaveConfig : public DBReqVehicles
+class DBReqSaveVehicleConfig : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqVehiclesSaveConfig(QList<quint64> nconfList,
-                                     quint64 vehicleID,
-                                     QString notes,
-                                     quint64 t = 0)
+    explicit DBReqSaveVehicleConfig(QString vuid,
+                                    QList<quint64> nconfIDs,
+                                    QString title,
+                                    QString notes = QString(),
+                                    quint64 time = 0)
         : DBReqVehicles()
-        , nconfList(nconfList)
-        , vehicleID(vehicleID)
-        , notes(notes)
-        , t(t ? t : static_cast<quint64>(QDateTime::currentDateTime().toMSecsSinceEpoch()))
+        , _vuid(vuid)
+        , _nconfIDs(nconfIDs)
+        , _title(title)
+        , _notes(notes)
+        , _time(time ? time : static_cast<quint64>(QDateTime::currentDateTime().toMSecsSinceEpoch()))
     {}
     bool run(QSqlQuery &query);
-    //result
-    QVariantMap configInfo;
 
 private:
-    QList<quint64> nconfList;
-    quint64 vehicleID;
-    QString notes;
-    quint64 t;
+    QString _vuid;
+    QList<quint64> _nconfIDs;
+    QString _title;
+    QString _notes;
+    quint64 _time;
+
 signals:
-    void configInfoFound(QVariantMap info);
-    void configUpdated();
-    void configCreated();
+    void configSaved(QString hash, QString title);
 };
 
-class DBReqVehiclesLoadConfig : public DBReqVehicles
+class DBReqLoadVehicleConfig : public DBReqVehicles
 {
     Q_OBJECT
 public:
-    explicit DBReqVehiclesLoadConfig(QString hash)
+    explicit DBReqLoadVehicleConfig(QString hash)
         : DBReqVehicles()
-        , hash(hash)
+        , _hash(hash)
     {}
     bool run(QSqlQuery &query);
-    //result
-    QVariantMap configInfo;
-    QList<QVariantMap> data;
+
+    auto config() const { return _config; }
 
 private:
-    QString hash;
+    QString _hash;
+    QVariantMap _config;
+
 signals:
-    void loaded(QVariantMap configInfo, QList<QVariantMap> data);
+    void configLoaded(QVariantMap config);
+};
+
+class DBReqImportVehicleConfig : public DBReqVehicles
+{
+    Q_OBJECT
+public:
+    explicit DBReqImportVehicleConfig(QVariantMap config)
+        : DBReqVehicles()
+        , _config(config)
+    {}
+    bool run(QSqlQuery &query);
+
+private:
+    QVariantMap _config;
 };

@@ -29,14 +29,9 @@
 #define SLDR_ACK 0x79
 #define SLDR_NACK 0x1F
 
-LoaderStm::LoaderStm(Fact *parent,
-                     const QString &type,
-                     const QString &name,
-                     const QString &hw,
-                     const QString &portName,
-                     bool continuous)
-    : QueueItem(parent, nullptr, type)
-    , hw(hw)
+LoaderStm::LoaderStm(
+    Fact *parent, QString name, QString hw, QString type, QString portName, bool continuous)
+    : QueueItem(parent, "", name, hw, type)
     , portName(portName)
     , continuous(continuous)
 {
@@ -56,7 +51,7 @@ LoaderStm::~LoaderStm()
 
 void LoaderStm::upload()
 {
-    if (!loadFirmware(hw)) {
+    if (!loadFirmware(_hw)) {
         finish(false);
         return;
     }

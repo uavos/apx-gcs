@@ -26,7 +26,7 @@ import QtQuick.Layouts 1.3
 //import QtLocation 5.9
 import QtPositioning 5.6
 
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 
 
 Item {
@@ -34,7 +34,7 @@ Item {
 
     readonly property int dotSize: 8
 
-    property var vehicle
+    property APX.Vehicle vehicle
 
     property font font: Qt.application.font
     property bool showDots: true
@@ -43,15 +43,15 @@ Item {
     property color colorBG: {
         var c="#555"
         if(bGCU) c="#3779C5"
-        if(vehicle.protocol.streamType===ProtocolVehicle.TELEMETRY)c="#377964"
-        if(vehicle.protocol.streamType===ProtocolVehicle.XPDR)c="#376479"
+        if(vehicle.streamType===APX.PVehicle.TELEMETRY)c="#377964"
+        if(vehicle.streamType===APX.PVehicle.XPDR)c="#376479"
         if(!vehicle.active)c=Qt.darker(c,1.9)
         return c
     }
 
     //Fact bindings
-    readonly property bool bGCU: vehicle.protocol.isGroundControl
-    readonly property bool bLOCAL: vehicle.protocol.isLocal
+    readonly property bool bGCU: vehicle.isGroundControl
+    readonly property bool bLOCAL: vehicle.isLocal
 
 
     //internal

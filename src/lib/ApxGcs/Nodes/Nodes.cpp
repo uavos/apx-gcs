@@ -28,11 +28,18 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
-    : ProtocolViewBase(vehicle, protocol)
+#include <algorithm>
+
+Nodes::Nodes(Vehicle *vehicle)
+    : Fact(vehicle,
+           "nodes",
+           tr("Nodes"),
+           tr("Vehicle components"),
+           Group | FlatModel | ModifiedGroup | ProgressTrack)
     , vehicle(vehicle)
+    , _protocol(vehicle->protocol() ? vehicle->protocol()->nodes() : nullptr)
 {
-    setOptions(FlatModel | ModifiedGroup | ProgressTrack);
+    setIcon("puzzle");
 
     f_upload = new Fact(this,
                         "upload",
@@ -62,55 +69,60 @@ Nodes::Nodes(Vehicle *vehicle, ProtocolNodes *protocol)
 
     f_status
         = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
-    connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
+    //connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
-    //storage actions
-    f_lookup = new LookupConfigs(vehicle->protocol()->storage, this);
-
-    f_save = new Fact(this, "save", tr("Save"), tr("Save configuration"), Action, "content-save");
-    connect(f_save, &Fact::triggered, this, &Nodes::save);
-
-    //FIXME: share f_share = new NodesShare(this, this);
-
-    foreach (FactBase *a, actions()) {
+    for (auto a : actions()) {
         a->setOption(IconOnly);
         a->setOption(ShowDisabled);
     }
 
-    connect(this, &Fact::modifiedChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::enabledChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::activeChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::upgradingChanged, this, &Nodes::updateActions);
-    connect(protocol, &ProtocolNodes::sizeChanged, this, &Nodes::updateActions);
+    connect(&_updateActions, &DelayedEvent::triggered, this, &Nodes::updateActions);
+    connect(this, &Fact::modifiedChanged, &_updateActions, &DelayedEvent::schedule);
+    if (_protocol) {
+        connect(_protocol, &PNodes::busyChanged, &_updateActions, &DelayedEvent::schedule);
+        connect(_protocol, &PNodes::upgradingChanged, &_updateActions, &DelayedEvent::schedule);
+        connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
+    }
+
     updateActions();
 
-    connect(protocol, &ProtocolNodes::nodeNotify, this, &Nodes::nodeNotify);
-    connect(protocol, &ProtocolNodes::syncDone, this, &Nodes::syncDone);
-
-    // initial request
-    if (vehicle->protocol()->isIdentified()) {
-        protocol->requestSearch();
+    if (_protocol) {
+        bindProperty(_protocol, "value", true);
     }
 
     connect(this, &Fact::triggered, this, &Nodes::search);
 
-    App::jsync(this);
+    if (vehicle->isIdentified())
+        _protocol->requestSearch();
 }
 
-void Nodes::nodeNotify(ProtocolNode *protocol)
+NodeItem *Nodes::node(const QString &uid) const
 {
-    add(protocol);
+    for (auto i : nodes()) {
+        if (i->uid() == uid)
+            return i;
+    }
+    return nullptr;
 }
-NodeItem *Nodes::add(ProtocolNode *protocol)
+
+void Nodes::node_available(PNode *node)
 {
-    NodeItem *node = this->node(protocol->sn());
-    if (node)
-        return node;
+    if (this->node(node->uid()))
+        return;
 
-    node = new NodeItem(this, this, protocol);
-    m_sn_map.insert(protocol->sn(), node);
+    // register new online node
+    auto f = new NodeItem(this, this, node);
+    m_nodes.append(f);
 
-    return node;
+    connect(f, &NodeItem::validChanged, this, &Nodes::updateValid);
+    connect(f->storage,
+            &NodeStorage::configSaved,
+            vehicle->storage(),
+            &VehicleStorage::saveVehicleConfig);
+
+    updateValid();
+    updateActions();
+    nodeNotify(f);
 }
 void Nodes::syncDone()
 {
@@ -119,83 +131,99 @@ void Nodes::syncDone()
 
 void Nodes::updateActions()
 {
-    bool enb = protocol()->enabled();
-    bool upgrading = protocol()->upgrading();
-    bool busy = protocol()->active() || upgrading;
-    bool empty = protocol()->size() <= 0;
-    //bool valid = protocol()->valid();
+    bool enb = _protocol;
+    bool upg = upgrading();
+    bool bsy = busy();
+    bool empty = nodes().size() <= 0;
     bool mod = modified();
     f_search->setEnabled(enb);
-    f_upload->setEnabled(enb && mod && !upgrading);
-    f_stop->setEnabled(enb && busy);
-    f_reload->setEnabled(enb && !upgrading);
-    f_clear->setEnabled(!empty && !upgrading);
-    f_status->setEnabled(enb && !empty && !upgrading);
+    f_upload->setEnabled(enb && mod && !upg);
+    f_stop->setEnabled(enb && bsy);
+    f_reload->setEnabled(enb && !upg);
+    f_clear->setEnabled(!empty && !upg);
+    f_status->setEnabled(enb && !empty && !upg);
+}
+
+bool Nodes::upgrading() const
+{
+    return _protocol && _protocol->upgrading();
+}
+
+void Nodes::updateValid()
+{
+    bool v = !nodes().isEmpty();
+    for (auto i : m_nodes) {
+        if (i->valid())
+            continue;
+        v = false;
+        break;
+    }
+    if (m_valid == v)
+        return;
+    m_valid = v;
+    emit validChanged();
+
+    if (!m_valid)
+        return;
+    qDebug() << "nodes valid" << vehicle->title();
 }
 
 void Nodes::search()
 {
-    if (!protocol()->enabled())
+    if (!_protocol)
         return;
-    protocol()->setActive(true);
-    protocol()->requestSearch();
+    _protocol->requestSearch();
 }
 void Nodes::stop()
 {
-    qDebug() << sender();
-    vehicle->protocol()->vehicles->stopNmtRequests();
+    if (!_protocol)
+        return;
+
+    _protocol->cancelRequests();
+    //TODO: globally stop requests
 }
 
 void Nodes::clear()
 {
-    if (protocol()->upgrading()) {
+    if (upgrading()) {
         apxMsgW() << tr("Upgrading in progress");
         return;
     }
-    m_sn_map.clear();
+    if (m_valid) {
+        m_valid = false;
+        emit validChanged();
+    }
+    m_nodes.clear();
     deleteChildren();
-    protocol()->clear();
     setModified(false);
 }
 
 void Nodes::reload()
 {
+    if (vehicle->isReplay())
+        return;
+
     clear();
     search();
 }
 
 void Nodes::upload()
 {
-    if (!protocol()->enabled())
+    if (!_protocol)
         return;
-    //    if (!protocol()->valid())
-    //        return;
+
     if (!modified())
         return;
-    for (auto i : m_sn_map) {
+    for (auto i : nodes()) {
         i->upload();
     }
 }
 
-void Nodes::save()
-{
-    if (!protocol()->enabled())
-        return;
-    if (!protocol()->valid())
-        return;
-
-    //FIXME: save modified config
-    /*for (auto i : m_sn_map) {
-        if (!i->modified())
-            continue;
-        vehicle->protocol()->storage->saveNodeConfig(i->protocol());
-    }*/
-
-    vehicle->protocol()->storage->saveConfiguration();
-}
-
 void Nodes::shell(QStringList commands)
 {
+    if (!_protocol)
+        return;
+
     if (!commands.isEmpty()) {
         QString name = commands.first();
         NodeItem *n = nullptr;
@@ -218,4 +246,116 @@ void Nodes::shell(QStringList commands)
     for (auto i : nodes()) {
         i->shell(commands);
     }
+}
+
+QString Nodes::getConfigTitle()
+{
+    QMap<QString, QString> map, shiva;
+
+    for (auto node : nodes()) {
+        auto s = node->valueText();
+        if (s.isEmpty())
+            continue;
+        map.insert(node->title(), s);
+        for (auto field : node->fields()) {
+            if (field->name() != "shiva")
+                continue;
+            shiva.insert(node->title(), s);
+            break;
+        }
+    }
+    if (map.isEmpty())
+        return {};
+    if (!shiva.isEmpty())
+        map = shiva;
+
+    QString s;
+    s = map.value("nav");
+    if (!s.isEmpty())
+        return s;
+    s = map.value("com");
+    if (!s.isEmpty())
+        return s;
+    s = map.value("ifc");
+    if (!s.isEmpty())
+        return s;
+
+    auto st = map.values();
+    std::sort(st.begin(), st.end(), [](const auto &s1, const auto &s2) {
+        return s1.size() > s2.size();
+    });
+    return st.first();
+}
+
+QVariant Nodes::toVariant() const
+{
+    QVariantList list;
+    for (auto i : nodes()) {
+        list.append(i->toVariant());
+    }
+    return list;
+}
+void Nodes::fromVariant(const QVariant &var)
+{
+    auto nodes = var.value<QVariantList>();
+    if (nodes.isEmpty()) {
+        return;
+    }
+
+    if (vehicle->isReplay()) {
+        // check if nodes set is the same
+        size_t match_cnt = 0;
+        for (auto i : nodes) {
+            auto uid
+                = i.value<QVariantMap>().value("info").value<QVariantMap>().value("uid").toString();
+            if (this->node(uid))
+                match_cnt++;
+        }
+
+        if (match_cnt != m_nodes.size())
+            clear();
+
+        for (auto i : nodes) {
+            auto node = i.value<QVariantMap>();
+            auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
+            NodeItem *f = this->node(uid);
+            if (!f) {
+                f = new NodeItem(this, this, nullptr);
+                m_nodes.append(f);
+            }
+            f->fromVariant(node);
+        }
+
+        updateValid();
+        updateActions();
+        return;
+    }
+
+    // import to existing nodes
+    if (!valid()) {
+        apxMsgW() << tr("Inconsistent nodes");
+        return;
+    }
+
+    // imprt by UID
+    QList<NodeItem *> nlist = m_nodes;
+    QVariantList vlist;
+    for (auto i : nodes) {
+        auto node = i.value<QVariantMap>();
+        auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
+        NodeItem *f = this->node(uid);
+        if (f) {
+            f->fromVariant(node);
+            nlist.removeOne(f);
+        } else {
+            vlist.append(node);
+        }
+    }
+    apxMsg() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
+    if (vlist.isEmpty() && nlist.isEmpty()) {
+        return;
+    }
+    // try to import by guessing nodes
+    apxMsgW() << tr("Importing %1 nodes").arg(vlist.size());
+    // TODO: import nodes substitutions
 }

@@ -98,10 +98,13 @@ void NodeScript::factValueChanged()
     QString src = st.value(1);
     _title = title;
 
-    QByteArray src_ba = QByteArray::fromHex(src.toLocal8Bit());
-    _source = qUncompress(src_ba);
-
-    _compile(_source);
+    if (!src.isEmpty()) {
+        QByteArray src_ba = QByteArray::fromHex(src.toLocal8Bit());
+        _source = qUncompress(src_ba);
+        _compile(_source);
+    } else {
+        _code.clear();
+    }
 
     QString code_string;
     if (!code().isEmpty())

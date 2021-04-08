@@ -19,15 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatalinkServer_H
-#define DatalinkServer_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
 class Datalink;
-class HttpService;
-//=============================================================================
+
 class DatalinkServer : public Fact
 {
     Q_OBJECT
@@ -48,8 +46,6 @@ private:
     QTcpServer *tcpServer;
     uint retryBind;
 
-    HttpService *http;
-
     QUdpSocket *udpAnnounce;
     QTimer announceTimer;
     QByteArray announceString;
@@ -69,6 +65,7 @@ private slots:
 signals:
     void bindError();
     void binded();
+
+    // forwarded from connections for plugins
+    void httpRequest(QTextStream &stream, QString req, bool *ok);
 };
-//=============================================================================
-#endif

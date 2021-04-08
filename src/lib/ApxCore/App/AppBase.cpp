@@ -125,7 +125,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     } else {
         m_segfault = sx.value("segfault").toString() != version();
         if (m_segfault) {
-            apxConsoleW() << tr("Application didn't exit properly");
+            apxMsgW() << tr("Application didn't exit properly");
         }
     }
     sx.remove("segfault");

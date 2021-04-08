@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick 2.2
-import APX.Vehicles 1.0
+import APX.Vehicles 1.0 as APX
 import "../common"
 import "."
 //import QtGraphicalEffects 1.0
@@ -32,6 +32,8 @@ Item {
     anchors.fill: parent
     anchors.centerIn: parent
 
+
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
 
     readonly property real m_roll: mandala.est.att.roll.value
     readonly property real m_pitch: mandala.est.att.pitch.value
@@ -68,7 +70,7 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: ui.effects?((apx.datalink.valid && !(apx.vehicles.current.protocol.streamType===ProtocolVehicle.XPDR||apx.vehicles.current.protocol.streamType===ProtocolVehicle.TELEMETRY))?0.7:1):1
+    opacity: ui.effects?((apx.datalink.valid && !(vehicle.streamType===APX.PVehicle.XPDR||vehicle.streamType===APX.PVehicle.TELEMETRY))?0.7:1):1
 
     Item{
         id: horizon_bg

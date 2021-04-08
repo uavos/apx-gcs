@@ -24,8 +24,6 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-#include <Protocols/ProtocolNode.h>
-
 #include "NodeScript.h"
 
 class NodeItem;
@@ -37,30 +35,28 @@ class NodeField : public Fact
     Q_PROPERTY(NodeScript *script MEMBER _script);
 
 public:
-    explicit NodeField(Fact *parent,
-                       NodeItem *node,
-                       xbus::node::conf::fid_t fid,
-                       const ProtocolNode::dict_field_s &field,
-                       NodeField *parentField = nullptr);
-
-    QVariant confValue(void) const;
-    void setConfValue(const QVariant &v);
+    explicit NodeField(
+        Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent = nullptr);
 
     //Fact override
     virtual QString toolTip() const override;
     virtual QString toText(const QVariant &v) const override;
 
     inline void setHelp(const QString &s) { _help = s; }
-    inline QString fpath() const { return _fpath; }
+    inline auto fpath() const { return _fpath; }
+    inline auto type() const { return _type; }
+    inline auto array() const { return _array; }
 
-    inline xbus::node::conf::fid_t fid() const { return _fid; }
-    inline xbus::node::conf::type_e type() const { return _type; }
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
 private:
     NodeItem *_node;
 
-    xbus::node::conf::fid_t _fid;
-    xbus::node::conf::type_e _type;
+    QString _type;
+    size_t _id;
+    int _array; // array index or array size
 
     QString _fpath;
     QString _help;
@@ -68,5 +64,5 @@ private:
     NodeScript *_script{};
 
 private slots:
-    void updateStatus();
+    void updateArrayStatus();
 };

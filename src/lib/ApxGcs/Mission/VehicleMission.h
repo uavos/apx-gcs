@@ -23,7 +23,6 @@
 
 #include "MissionGroup.h"
 #include <Fact/Fact.h>
-#include <Protocols/ProtocolMission.h>
 #include <Vehicles/Vehicles.h>
 
 #include <QGeoCoordinate>
@@ -113,8 +112,8 @@ public:
     Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
     //Fact override
-    QJsonValue toJson() const override;
-    void fromJson(const QJsonValue json) override;
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
 
     void hashData(QCryptographicHash *h) const override;
 
@@ -141,8 +140,7 @@ signals:
 
     //protocols
 private slots:
-    void missionDataReceived(QJsonValue json);
-    void missionDataError();
+    void missionReceived(QVariant var);
 
     //---------------------------------------
     // PROPERTIES

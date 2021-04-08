@@ -60,24 +60,29 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             case mandala::type_real:
                 setDataType(Float);
                 setPrecision(getPrecision());
+                setDefaultValue(0.f);
                 break;
             case mandala::type_dword:
                 setDataType(Int);
                 setMin(0);
                 setMax(QVariant::fromValue(0xFFFFFFFFll));
+                setDefaultValue(0);
                 break;
             case mandala::type_word:
                 setDataType(Int);
                 setMin(0);
                 setMax(QVariant::fromValue(0xFFFFu));
+                setDefaultValue(0);
                 break;
             case mandala::type_byte:
                 setDataType(Int);
                 setMin(0);
                 setMax(255);
+                setDefaultValue(0);
                 break;
             case mandala::type_option: {
                 setDataType(Enum);
+                setDefaultValue(0);
                 QStringList st = units().split(',');
                 setUnits(QString());
                 setEnumStrings(st);

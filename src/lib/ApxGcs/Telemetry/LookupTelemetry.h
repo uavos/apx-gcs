@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LookupTelemetry_H
-#define LookupTelemetry_H
+#pragma once
+
 #include <Database/DatabaseLookup.h>
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class LookupTelemetry : public DatabaseLookup
 {
     Q_OBJECT
@@ -112,5 +112,3 @@ signals:
     void recordTimestampChanged();
     void recordInfoChanged();
 };
-//=============================================================================
-#endif

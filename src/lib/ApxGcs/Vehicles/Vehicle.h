@@ -29,8 +29,11 @@
 #include <Fact/Fact.h>
 #include <Mandala/Mandala.h>
 
-#include <Protocols/ProtocolVehicle.h>
-#include <Protocols/ProtocolViewBase.h>
+#include "LookupVehicleConfig.h"
+#include "VehicleShare.h"
+#include "VehicleStorage.h"
+
+#include "Vehicles.h"
 
 class Vehicles;
 class Nodes;
@@ -38,7 +41,7 @@ class VehicleMission;
 class VehicleWarnings;
 class Telemetry;
 
-class Vehicle : public ProtocolViewBase<ProtocolVehicle>
+class Vehicle : public Fact
 {
     Q_OBJECT
     Q_ENUMS(FlightState)
@@ -54,10 +57,16 @@ class Vehicle : public ProtocolViewBase<ProtocolVehicle>
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
     Q_PROPERTY(quint64 totalDistance READ totalDistance NOTIFY totalDistanceChanged)
 
-public:
-    explicit Vehicle(Vehicles *vehicles, ProtocolVehicle *protocol);
+    Q_PROPERTY(PVehicle *protocol READ protocol CONSTANT)
+    Q_PROPERTY(PVehicle::StreamType streamType READ streamType NOTIFY streamTypeChanged)
 
-    ~Vehicle() override;
+    Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
+    Q_PROPERTY(bool isReplay READ isReplay CONSTANT)
+    Q_PROPERTY(bool isIdentified READ isIdentified CONSTANT)
+    Q_PROPERTY(bool isGroundControl READ isGroundControl NOTIFY isGroundControlChanged)
+
+public:
+    explicit Vehicle(Vehicles *vehicles, PVehicle *protocol);
 
     Mandala *f_mandala;
     Nodes *f_nodes;
@@ -66,8 +75,10 @@ public:
     VehicleWarnings *f_warnings;
 
     Fact *f_select;
+    LookupVehicleConfig *f_lookup;
+    VehicleShare *f_share;
 
-    quint64 dbKey{0}; //from db
+    QTimer telemetryReqTimer;
 
     QString fileTitle() const; //name based on Vehicle title and nodes shiva comment
     QString confTitle() const;
@@ -77,7 +88,23 @@ public:
     enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
     Q_ENUM(FlightState)
 
+    auto uid() const { return _protocol ? _protocol->uid() : QString(); }
+    auto protocol() const { return _protocol; }
+    auto storage() const { return _storage; }
+
+    // variant conversions
+    QVariantMap get_info() const;
+
+    //Fact override
+    QVariant toVariant() const override;
+    void fromVariant(const QVariant &var) override;
+
 private:
+    PVehicle *_protocol;
+    VehicleStorage *_storage;
+
+    qint64 _lastSeenTime{};
+
     QTimer updateInfoTimer;
 
     Fact *f_lat;
@@ -100,12 +127,8 @@ private slots:
     void updateFlightState();
     void updateGeoPath();
 
-    void dbSetVehicleKey(quint64 key);
-
 private slots:
     void updateActive();
-
-    void jsexecData(QString data);
 
 signals:
     void selected();
@@ -113,24 +136,13 @@ signals:
 signals:
     //forward from protocols
     void telemetryData();
-
-    //forward for recorder
-    void recordDownlink();
-    void recordUplink(xbus::pid_s pid, QVariant value);
-
-    //events
-    void recordNodeMessage(QString subsystem, QString text, QString sn);
-    void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
-    void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
-    void recordConfig();
+    void sendSerial(quint8 portID, QByteArray data);
+    void sendValue(mandala::uid_t uid, QVariant value);
 
     void geoPathAppend(QGeoCoordinate p);
 
     //provided methods
 public slots:
-    void vmexec(QString func);
-    void sendSerial(quint8 portID, QByteArray data);
-
     void flyHere(const QGeoCoordinate &c);
     void lookHere(const QGeoCoordinate &c);
     void setHomePoint(const QGeoCoordinate &c);
@@ -162,6 +174,13 @@ public:
     quint64 totalDistance() const;
     void setTotalDistance(quint64 v);
 
+    bool isLocal() const { return m_is_local; }
+    bool isReplay() const { return m_is_replay; }
+    bool isIdentified() const { return m_is_identified; }
+    bool isGroundControl() const { return m_is_gcs; }
+
+    PVehicle::StreamType streamType() const;
+
 protected:
     QString m_info;
 
@@ -171,6 +190,11 @@ protected:
     QGeoPath m_geoPath;
     quint64 m_totalDistance{0};
 
+    bool m_is_local{};
+    bool m_is_replay{};
+    bool m_is_identified{};
+    bool m_is_gcs{};
+
 signals:
     void infoChanged();
     void followChanged();
@@ -178,4 +202,6 @@ signals:
     void flightStateChanged();
     void geoPathChanged();
     void totalDistanceChanged();
+    void isGroundControlChanged();
+    void streamTypeChanged();
 };

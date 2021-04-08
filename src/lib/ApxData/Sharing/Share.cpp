@@ -169,8 +169,10 @@ void Share::importTriggered()
 }
 void Share::_imported(QString fileName, QString title)
 {
-    apxMsg() << QString("%1 %2:").arg(dataTitle).arg(tr("imported"))
-             << (title.isEmpty() ? QFileInfo(fileName).completeBaseName() : title);
+    if (title.isEmpty())
+        title = QFileInfo(fileName).completeBaseName();
+
+    apxMsg() << QString("%1 %2:").arg(dataTitle).arg(tr("imported")) << title;
     emit imported(fileName, title);
 }
 

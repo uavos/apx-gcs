@@ -26,102 +26,93 @@
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <Protocols/ProtocolNode.h>
 #include <Vehicles/Vehicles.h>
 
-NodeField::NodeField(Fact *parent,
-                     NodeItem *node,
-                     xbus::node::conf::fid_t fid,
-                     const ProtocolNode::dict_field_s &field,
-                     NodeField *parentField)
-    : Fact(parent, field.name, field.title)
+NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent)
+    : Fact(parent)
     , _node(node)
-    , _fid(fid)
-    , _type(field.type)
-    , _fpath(field.path)
+    , _type(m.value("type").toString())
+    , _id(id)
+    , _fpath(m.value("name").toString())
 {
+    setName(_fpath.split('.').last());
+    setTitle(m.value("title").toString());
+
+    auto funits = m.value("units").toString();
+    _array = m.value("array").toInt();
+
     new NodeViewActions(this, node->nodes());
 
-    if (field.array && !parentField) {
-        QStringList st = field.units.split(',');
-        if (st.size() != field.array)
+    if (_array && !arrayParent) {
+        // create array sub fields
+        auto st = funits.split(',');
+        if (st.size() != _array || _type == "option")
             st.clear();
-        for (int i = 0; i < field.array; ++i) {
-            ProtocolNode::dict_field_s field_item = field;
+        for (auto i = 0; i < _array; ++i) {
+            auto item = m;
             QString s;
             if (st.isEmpty())
                 s = QString::number(i + 1);
             else {
                 s = st.at(i);
-                field_item.units.clear();
+                item.remove("units");
             }
-            field_item.name.append(QString("_%1").arg(s.toLower()));
-            field_item.title = s;
-            NodeField *f = new NodeField(this, node, fid | i, field_item, this);
-            connect(f, &Fact::valueChanged, this, &NodeField::updateStatus, Qt::QueuedConnection);
+            item.insert("name", QString("%1_%2").arg(_fpath).arg(s.toLower()));
+            item.insert("title", s);
+            item.insert("array", i);
+            auto *f = new NodeField(this, node, item, id, this);
+            connect(f,
+                    &Fact::valueChanged,
+                    this,
+                    &NodeField::updateArrayStatus,
+                    Qt::QueuedConnection);
         }
         setTreeType(Group);
         setOption(ModifiedGroup);
-        updateStatus();
+        updateArrayStatus();
         return;
     }
 
     setOption(ModifiedTrack);
-    setUnits(field.units);
+    setUnits(funits);
 
-    switch (field.type) {
-    default:
-        qDebug() << "Unknown node field data type" << field.type << name() << descr();
-        break;
-    case xbus::node::conf::real:
+    if (_type == "real") {
         setDataType(Float);
         setPrecision(6);
-        break;
-    case xbus::node::conf::byte:
+    } else if (_type == "byte") {
         setMax(255);
         setMin(0);
         setDataType(Int);
-        break;
-    case xbus::node::conf::word:
+    } else if (_type == "word") {
         setMax(65535);
         setMin(0);
         setDataType(Int);
-        break;
-    case xbus::node::conf::dword:
+    } else if (_type == "dword") {
         setMin(0);
         setDataType(Int);
-        break;
-    case xbus::node::conf::bind:
+    } else if (_type == "bind") {
         setDataType(Int);
         setUnits("mandala");
-        break;
-    case xbus::node::conf::option:
+    } else if (_type == "option") {
         setDataType(Enum);
-        if (field.units.isEmpty()) {
-            setEnumStrings(QStringList() << "off"
-                                         << "on");
-        } else {
-            setEnumStrings(field.units.split(','));
-        }
+        setEnumStrings(funits.split(','));
         setUnits(QString());
-        break;
-    case xbus::node::conf::text:
-    case xbus::node::conf::string:
+    } else if (_type == "text" || _type == "string") {
         setDataType(Text);
-        break;
-    case xbus::node::conf::script:
+    } else if (_type == "script") {
         setDataType(Text);
         setUnits("script");
         _script = new NodeScript(this);
-        break;
+    } else {
+        qDebug() << "Unknown node field data type" << _type << name() << descr();
     }
 }
 
-void NodeField::updateStatus()
+void NodeField::updateArrayStatus()
 {
-    //arrays only
+    // called for arrays only
 
-    if (size() == 3 && _type == xbus::node::conf::real) {
+    if (size() == 3 && _type == "real") {
         QStringList st;
         for (int i = 0; i < size(); ++i) {
             st.append(child(i)->valueText());
@@ -133,7 +124,7 @@ void NodeField::updateStatus()
     for (auto i : facts()) {
         if (i->isZero())
             continue;
-        QString s = i->valueText();
+        auto s = i->valueText();
         if (s.isEmpty())
             continue;
         if (s == "0")
@@ -146,41 +137,6 @@ void NodeField::updateStatus()
         setValue(QString("[%1]").arg(size()));
 }
 
-QVariant NodeField::confValue(void) const
-{
-    if (size() > 0) {
-        //expanded field
-        QVariantList list;
-        for (auto i : facts()) {
-            list.append(static_cast<NodeField *>(i)->confValue());
-        }
-        return list;
-    }
-    if (_type == xbus::node::conf::real)
-        return QString::number(value().toFloat());
-
-    return value();
-}
-void NodeField::setConfValue(const QVariant &v)
-{
-    bool isList = _check_type(v, QMetaType::QVariantList);
-    if (size() > 0) {
-        //expanded field - i.e. array
-        if (isList) {
-            const QVariantList &values = v.value<QVariantList>();
-            if (values.size() > size())
-                return;
-            for (int i = 0; i < values.size(); ++i) {
-                child(i)->setValue(values.at(i));
-            }
-            return;
-        }
-        qWarning() << path() << v;
-        return;
-    }
-    setValue(v);
-}
-
 QString NodeField::toolTip() const
 {
     if (!_help.isEmpty()) {
@@ -190,7 +146,51 @@ QString NodeField::toolTip() const
 }
 QString NodeField::toText(const QVariant &v) const
 {
-    if (_type == xbus::node::conf::script)
+    if (_type == "script")
         return QString();
     return Fact::toText(v);
+}
+
+QVariant NodeField::toVariant() const
+{
+    if (size() > 0) {
+        //expanded field
+        QVariantList list;
+        for (auto i : facts()) {
+            list.append(static_cast<NodeField *>(i)->toVariant());
+        }
+        return list;
+    }
+
+    if (_type == "script")
+        return value();
+
+    if (_type == "real")
+        return QString::number(value().toFloat());
+
+    return valueText();
+}
+void NodeField::fromVariant(const QVariant &var)
+{
+    if (size() > 0) {
+        //expanded field - i.e. array
+        if (var.canConvert<QVariantList>()) {
+            QVariantList values = var.value<QVariantList>();
+            for (int i = 0; i < values.size(); ++i) {
+                if (i >= size())
+                    break;
+                child(i)->fromVariant(values.at(i));
+            }
+            return;
+        }
+        qWarning() << path() << var;
+        return;
+    }
+
+    if (_type == "real") {
+        setValue(QString::number(var.toFloat()));
+        return;
+    }
+
+    setValue(var);
 }

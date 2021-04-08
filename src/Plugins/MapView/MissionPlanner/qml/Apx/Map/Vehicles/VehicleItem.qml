@@ -33,7 +33,7 @@ import APX.Vehicles 1.0 as APX
 MapQuickItem {  //to be used inside MapComponent only
     id: vehicleItem
 
-    readonly property var vehicle: modelData
+    readonly property APX.Vehicle vehicle: modelData
 
     //Fact bindings
     readonly property var vm: vehicle.mandala
@@ -60,8 +60,8 @@ MapQuickItem {  //to be used inside MapComponent only
 
     visible: vehicle.visible
 
-    readonly property bool bGCU: vehicle.protocol.isGroundControl
-    readonly property bool bLOCAL: vehicle.protocol.isLocal
+    readonly property bool bGCU: vehicle.isGroundControl
+    readonly property bool bLOCAL: vehicle.isLocal
 
 
     Connections {

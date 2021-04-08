@@ -27,6 +27,8 @@
 #include <Database/Database.h>
 #include <Vehicles/Vehicles.h>
 
+#include "LookupNodeBackup.h"
+
 NodeTools::NodeTools(NodeItem *anode, Flags flags)
     : NodeToolsGroup(anode, anode, "tools", tr("Tools"), tr("Node tools"), flags | FlatModel)
 {
@@ -35,14 +37,14 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
 
     QString sect = tr("Backups");
 
-    f_backups = new LookupNodeBackup(node->protocol(), this);
+    f_backups = new LookupNodeBackup(node, this);
     f_backups->setSection(sect);
 
     f_restore = new Fact(this, "recent", tr("Restore recent"), tr("Restore the most recent backup"));
     f_restore->setIcon("undo");
     f_restore->setSection(sect);
-    connect(f_restore, &Fact::triggered, node->protocol()->vehicle()->storage, [this]() {
-        node->protocol()->vehicle()->storage->loadNodeConfig(node->protocol());
+    connect(f_restore, &Fact::triggered, node->storage, [this]() {
+        node->storage->loadNodeConfig();
     });
 
     //sections
@@ -66,14 +68,10 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_updates->setIcon("chip");
 
     f = new Fact(f_updates, "firmware", tr("Firmware"), tr("Update node firmware"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestUpgrade(node->protocol(), "fw");
-    });
+    connect(f, &Fact::triggered, this, [this]() { node->nodes()->requestUpgrade(node, "fw"); });
 
     f = new Fact(f_updates, "loader", tr("Loader"), tr("Update node loader"));
-    connect(f, &Fact::triggered, this, [this]() {
-        node->protocol()->requestUpgrade(node->protocol(), "ldr");
-    });
+    connect(f, &Fact::triggered, this, [this]() { node->nodes()->requestUpgrade(node, "ldr"); });
 
     registerOnlineAction(f_updates);
 
@@ -85,10 +83,11 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                   tr("Node status request"),
                                   Group);
     f_status->setIcon("playlist-check");
-    f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
+    //TODO: stats node command menu
+    /*f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
     connect(f, &Fact::triggered, this, [this]() { node->protocol()->requestStatus(); });
     f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));
-    connect(f, &Fact::triggered, this, [this]() { node->shell(QStringList() << "tasks"); });
+    connect(f, &Fact::triggered, this, [this]() { node->shell(QStringList() << "tasks"); });*/
     registerOnlineAction(f_status);
 
     f_sys = new NodeToolsGroup(f_maintenance,
@@ -101,13 +100,15 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_maintenance->setSection(f_sys->title());
 
     // reboot
-    f = new Fact(f_maintenance, "reboot", tr("Reboot node"), tr("Node system reset"));
-    f->setIcon("reload");
-    f->setSection(f_sys->title());
-    connect(f, &Fact::triggered, this, [this, f]() {
-        node->message(f->title().append(": ").append(node->title()));
-        node->protocol()->requestReboot();
-    });
+    if (node->protocol()) {
+        f = new Fact(f_maintenance, "reboot", tr("Reboot node"), tr("Node system reset"));
+        f->setIcon("reload");
+        f->setSection(f_sys->title());
+        connect(f, &Fact::triggered, this, [this, f]() {
+            node->message(f->title().append(": ").append(node->title()));
+            node->protocol()->requestReboot();
+        });
+    }
 }
 
 Fact *NodeTools::addCommand(Fact *group, QString name, QString title, xbus::node::usr::cmd_t cmd)
@@ -139,6 +140,13 @@ void NodeTools::execUsr(Fact *f)
     QString msg = tr("User command").append(": ").append(f->title());
     if (!f->descr().isEmpty())
         msg.append(QString(" (%1)").arg(f->descr()));
+
+    if (!node->protocol()) {
+        msg.append(QString(" (%1)").arg(tr("ignored")));
+        node->message(msg);
+        return;
+    }
+
     node->message(msg);
     node->protocol()->requestUsr(static_cast<quint8>(f->property("cmd").toUInt()), QByteArray());
 }

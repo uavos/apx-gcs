@@ -38,12 +38,17 @@ ComboBox {
     topInset: 0
     bottomInset: 0
 
+    padding: 0
+    property real paddingScale: 0.8
+
+    leftPadding: padding + (!control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
+    rightPadding: padding + (control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
+
     flat: true
 
     font.family: font_condenced
     font.pixelSize: control.valueSize
 
-    contentItem.implicitWidth: contentItem.contentWidth+indicator.width/2 //+editor.height/2
     background.implicitWidth: contentItem.implicitWidth
 
     model: fact.enumStrings
@@ -60,7 +65,7 @@ ComboBox {
     Connections {
         target: listView
         function onMovementStarted() {
-            editor.popup.close()
+            control.popup.close()
         }
     }
     delegate: ItemDelegate {
@@ -71,10 +76,21 @@ ComboBox {
         Component.onCompleted: popup.width=Math.max(popup.width, implicitWidth)
     }
 
+    contentItem: Text {
+        leftPadding: height/4
+        rightPadding: 0 //control.indicator.width + control.spacing
+
+        text: editor.displayText
+        font: editor.font
+        color: editor.enabled ? editor.Material.foreground : editor.Material.hintTextColor
+        verticalAlignment: Text.AlignVCenter
+        elide: Text.ElideMiddle
+    }
+
     function updateIndex()
     {
         //currentIndex=find(value)
-        editor.currentIndex=fact.enumStrings.indexOf(editor.value)
+        editor.currentIndex=fact.enumStrings.indexOf(control.value)
         //console.log(currentIndex,value,count,find(value))
     }
 }

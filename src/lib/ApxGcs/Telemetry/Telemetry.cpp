@@ -24,8 +24,9 @@
 #include "TelemetryPlayer.h"
 #include "TelemetryReader.h"
 #include "TelemetryRecorder.h"
-//#include "TelemetryShare.h"
+#include "TelemetryShare.h"
 
+#include <App/App.h>
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
@@ -44,7 +45,7 @@ Telemetry::Telemetry(Vehicle *parent)
     , f_reader(nullptr)
     , f_share(nullptr)
 {
-    if (vehicle->protocol()->isReplay()) {
+    if (vehicle->isReplay()) {
         setOpt("pos", QPointF(1, 1));
 
         f_lookup = new LookupTelemetry(this);
@@ -69,14 +70,19 @@ Telemetry::Telemetry(Vehicle *parent)
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         bindProperty(f_player, "active", true);
 
-        //FIXME: share
-        /*f_share = new TelemetryShare(this, this);
+        f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
             f_lookup->jumpToRecord(id);
         });
-        connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);*/
+        connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
 
-        connect(vehicle, &Vehicle::selected, f_reader, &TelemetryReader::loadCurrent);
+        connect(App::instance(), &App::loadingFinished, this, [this]() {
+            connect(vehicle,
+                    &Vehicle::selected,
+                    f_reader,
+                    &TelemetryReader::loadCurrent,
+                    Qt::QueuedConnection);
+        });
 
     } else {
         f_recorder = new TelemetryRecorder(vehicle, this);
@@ -102,8 +108,8 @@ void Telemetry::updateProgress()
     if (!f_reader)
         return;
     int v = f_reader->progress();
-    // if (v < 0 && f_share)
-    //     v = f_share->progress();
+    if (v < 0 && f_share)
+        v = f_share->progress();
     setProgress(v);
     updateDescr();
 }
@@ -113,10 +119,9 @@ void Telemetry::updateDescr()
         return;
     if (f_reader->progress() >= 0) {
         setDescr(tr("Reading").append("..."));
-    } /*else if (f_share && f_share->progress() >= 0) {
+    } else if (f_share && f_share->progress() >= 0) {
         setDescr(f_share->descr());
-    } */
-    else
+    } else
         setDescr(descr_s);
 }
 //=============================================================================
@@ -125,7 +130,7 @@ void Telemetry::recordFactTriggered(Fact *f)
     const QString &s = f->name();
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
-        vehicle->protocol()->storage->loadConfiguration(uid);
+        vehicle->storage()->loadVehicleConfig(uid);
     } else if (s.startsWith("mission")) {
         vehicle->f_mission->storage->loadMission(uid);
     } else {
@@ -136,7 +141,8 @@ void Telemetry::recordFactTriggered(Fact *f)
 //=============================================================================
 void Telemetry::recordLoaded()
 {
-    //vehicle->f_select->trigger();
+    if (!Vehicles::instance()->current()->isIdentified())
+        vehicle->f_select->trigger();
 
     vehicle->setGeoPath(f_reader->geoPath);
 

@@ -32,7 +32,7 @@ QMutex AppLog::_mutex;
 //=============================================================================
 AppLog::AppLog(QObject *parent)
     : QObject(parent)
-    , logStream(nullptr)
+    , appLogStream(nullptr)
 {
     _instance = this;
 
@@ -43,7 +43,7 @@ AppLog::AppLog(QObject *parent)
         apxMsgW() << "Cant write log file" << f->fileName();
         f->deleteLater();
     } else {
-        logStream = new QTextStream(f);
+        appLogStream = new QTextStream(f);
     }
 
 #if (defined QT_DEBUG) || 1
@@ -65,11 +65,11 @@ AppLog::~AppLog()
 {
     qInstallMessageHandler(messageHandlerChain);
 
-    if (logStream) {
-        logStream->flush();
-        logStream->device()->close();
-        delete logStream;
-        logStream = nullptr;
+    if (appLogStream) {
+        appLogStream->flush();
+        appLogStream->device()->close();
+        delete appLogStream;
+        appLogStream = nullptr;
     }
 
     foreach (QTextStream *stream, streams.values()) {
@@ -81,12 +81,11 @@ AppLog::~AppLog()
 //=============================================================================
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    messageHandlerChain(type, context, message);
     AppLog::instance()->message(type, context, message);
 }
 //============================================================================
 //============================================================================
-void AppLog::add(const QString &categoryName, const QString &fileName, bool debug)
+void AppLog::add(const QString &categoryName, const QString &fileName, bool silent)
 {
     QDir dir(QFileInfo(AppDirs::logs().absoluteFilePath(fileName)).absoluteDir());
     if (!dir.exists())
@@ -101,12 +100,15 @@ void AppLog::add(const QString &categoryName, const QString &fileName, bool debu
     QTextStream *stream = new QTextStream(f);
     QMutexLocker lock(&AppLog::_mutex);
     AppLog::_instance->streams.insert(categoryName, stream);
-    if (debug)
-        AppLog::_instance->debugStreams.append(stream);
+    if (silent)
+        AppLog::_instance->silentCategories.append(categoryName);
 }
 //=============================================================================
 void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
+    if (!silentCategories.contains(context.category))
+        messageHandlerChain(type, context, message);
+
     QMutexLocker lock(&_mutex);
 
     QString msg = qFormatLogMessage(type, context, message);
@@ -117,7 +119,12 @@ void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QS
     if (stream) {
         *stream << qPrintable(msg);
         stream->flush();
+    } else if (appLogStream) {
+        *appLogStream << qPrintable(msg);
+        appLogStream->flush();
     }
+    if (silentCategories.contains(context.category))
+        return;
 
     emit consoleMessage(message);
 
@@ -133,13 +140,6 @@ void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QS
             emit warningMessage(message);
             break;
         }
-    }
-
-    if (debugStreams.contains(stream))
-        return;
-    if (logStream) {
-        *logStream << qPrintable(msg);
-        logStream->flush();
     }
 }
 //=============================================================================

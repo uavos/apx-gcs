@@ -25,9 +25,12 @@ import QtQuick.Layouts 1.3
 import QtQml.Models 2.11
 
 import Apx.Common 1.0
+import APX.Vehicles 1.0 as APX
 
 RowLayout {
     id: control
+
+    readonly property APX.Vehicle vehicle: apx.vehicles.current
 
     //warnings fact
     WarningMessage {
@@ -96,7 +99,7 @@ RowLayout {
     Loader {
         Layout.fillHeight: true
         asynchronous: true
-        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (apx.vehicles.current.protocol.isLocal || apx.tools.simulator.stop.enabled)
+        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (vehicle.isLocal || apx.tools.simulator.stop.enabled)
         sourceComponent: Component {
             IconButton {
                 iconName: apx.tools.simulator.icon
@@ -116,7 +119,7 @@ RowLayout {
 
     Loader {
         Layout.alignment: Qt.AlignRight|Qt.AlignTop
-        active: apx.vehicles.current.protocol.isReplay
+        active: vehicle.isReplay
         visible: active
         sourceComponent: Component { TelemetryReader { } }
     }

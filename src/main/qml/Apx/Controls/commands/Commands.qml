@@ -70,7 +70,7 @@ Rectangle {
                 showText: false
                 value: vehicle.title
                 active: false
-                warning: vehicle.protocol.streamType<=0
+                warning: vehicle.streamType<=0
                 enabled: true
             }
 
@@ -80,9 +80,9 @@ Rectangle {
                 showText: false
                 showIcon: true
                 //valueScale: 0.6
-                value: vehicle.nodes.protocol.size
-                warning: vehicle.nodes.protocol.size<=0
-                active: fact.modified || fact.progress>=0 || (!vehicle.nodes.protocol.valid)
+                value: fact.value?fact.value:0
+                warning: !value
+                active: fact.modified || fact.progress>=0 || (!fact.valid)
                 enabled: true
             }
 

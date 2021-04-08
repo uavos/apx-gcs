@@ -59,7 +59,7 @@ protected slots:
     void importTriggered();
 
     void _exported(QString fileName);
-    void _imported(QString fileName, QString title);
+    void _imported(QString fileName, QString title = QString());
 
 signals:
     void imported(QString fileName, QString title);

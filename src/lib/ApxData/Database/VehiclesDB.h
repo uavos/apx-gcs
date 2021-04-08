@@ -34,13 +34,5 @@ class DBReqVehicles : public DatabaseRequest
 {
     Q_OBJECT
 public:
-    explicit DBReqVehicles(QString sn = QString());
-
-protected:
-    QString sn;
-    quint64 nodeID;
-
-    QHash<QString, quint64> getFieldsByName(QSqlQuery &query, quint64 dictID) const;
-
-    virtual bool run(QSqlQuery &query);
+    explicit DBReqVehicles();
 };

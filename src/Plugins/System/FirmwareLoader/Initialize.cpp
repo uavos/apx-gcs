@@ -21,9 +21,10 @@
  */
 #include "Initialize.h"
 #include "Firmware.h"
+
 #include <App/AppGcs.h>
 #include <QSerialPortInfo>
-//=============================================================================
+
 Initialize::Initialize(Firmware *firmware, Fact *parent)
     : FirmwareSelect(firmware,
                      parent,
@@ -43,7 +44,7 @@ Initialize::Initialize(Firmware *firmware, Fact *parent)
     connect(this, &Fact::triggered, this, &Initialize::updatePortEnums);
     updatePortEnums();
 }
-//=============================================================================
+
 void Initialize::updatePortEnums()
 {
     QStringList st;
@@ -75,8 +76,7 @@ void Initialize::updatePortEnums()
             f_port->setValue(vusb);
     }
 }
-//=============================================================================
-//=============================================================================
+
 void Initialize::startTriggered()
 {
     QString type;
@@ -84,11 +84,9 @@ void Initialize::startTriggered()
         type = "ldr";
     else
         type = "fw";
-    m_firmware->requestInitialize(type,
-                                  f_node->text(),
+    m_firmware->requestInitialize(f_node->text(),
                                   f_hw->text(),
+                                  type,
                                   f_port->text(),
                                   f_continuous->value().toBool());
 }
-//=============================================================================
-//=============================================================================

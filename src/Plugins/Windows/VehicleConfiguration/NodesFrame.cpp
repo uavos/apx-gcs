@@ -26,6 +26,8 @@
 #include <ApxMisc/QActionFact.h>
 #include <Nodes/Nodes.h>
 #include <QAction>
+
+#include <Database/DatabaseLookup.h>
 //=============================================================================
 NodesFrame::NodesFrame(QWidget *parent)
     : QWidget(parent)
@@ -67,7 +69,6 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     Nodes *fNodes = v->f_nodes;
     treeWidget->setRoot(fNodes);
     lbUavName->setText(v->title());
-    lbUavName->setToolTip(QString("squawk: %1").arg(v->protocol()->squawkText()));
 
     connect(vehicle->f_nodes, &Nodes::modifiedChanged, this, &NodesFrame::updateActions);
 
@@ -86,17 +87,13 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
-    QAction *aLookup = new QActionFact(vehicle->f_nodes->f_lookup);
+    QAction *aLookup = new QActionFact(vehicle->f_lookup);
     toolBar->addAction(aLookup);
     connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
-    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_save));
-
-    /* FIXME: share
-    QAction *aShare = new QActionFact(vehicle->f_nodes->f_share);
+    QAction *aShare = new QActionFact(vehicle->f_share);
     toolBar->addAction(aShare);
     connect(aShare, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
-*/
 
     aUndo = toolBar->addAction(MaterialIcon("undo"),
                                tr("Revert"),
@@ -220,7 +217,8 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
             st.removeDuplicates();
             m->setToolTip(st.join(','));
         }
-        //add sub items
+        // add sub items
+
         DatabaseLookup *dbq = qobject_cast<DatabaseLookup *>(fact);
         if (dbq) {
             if (!m->actions().isEmpty()) {

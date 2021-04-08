@@ -211,6 +211,8 @@ void App::loadApp()
 
     plugins->load(oPlugins);
 
+    jsync(f_apx);
+
     apxConsole() << QObject::tr("Loading finished");
     emit loadingFinished();
 }
@@ -315,8 +317,7 @@ void App::registerUiComponent(QObject *item, QString name)
     if (!m_engine)
         return;
     //qDebug()<<item<<name;
-    QQmlEngine::setObjectOwnership(item, QQmlEngine::CppOwnership);
-    QJSValue obj = m_engine->newQObject(item);
+    QJSValue obj = m_engine->jsCreateObject(item);
     setGlobalProperty(QString("ui.%1").arg(name), obj);
     emit uiComponentLoaded(name, obj);
 }
@@ -378,8 +379,7 @@ void App::setGlobalProperty(const QString &path, QObject *object)
     AppEngine *e = _instance->engine();
     if (!e)
         return;
-    QQmlEngine::setObjectOwnership(object, QQmlEngine::CppOwnership);
-    setGlobalProperty(path, e->newQObject(object));
+    setGlobalProperty(path, e->jsCreateObject(object));
 }
 void App::setContextProperty(const QString name, const QVariant &value)
 {

@@ -168,7 +168,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "TelemetryCacheData", "type", false);
 }
 //=============================================================================
-TelemetryDB::TelemetryFieldsMap &TelemetryDB::fieldsMap()
+TelemetryDB::TelemetryFieldsMap TelemetryDB::fieldsMap()
 {
     QMutexLocker lock(&pMutex);
     return m_fieldsMap;
@@ -177,6 +177,16 @@ void TelemetryDB::setFieldsMap(const TelemetryFieldsMap &v)
 {
     QMutexLocker lock(&pMutex);
     m_fieldsMap = v;
+}
+TelemetryDB::TelemetryFieldsAliases TelemetryDB::fieldsAliases()
+{
+    QMutexLocker lock(&pMutex);
+    return m_fieldsAliases;
+}
+void TelemetryDB::setFieldsAliases(const TelemetryFieldsAliases &v)
+{
+    QMutexLocker lock(&pMutex);
+    m_fieldsAliases = v;
 }
 
 void TelemetryDB::markCacheInvalid(quint64 telemetryID)
@@ -390,6 +400,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     }
 
     static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
+    static_cast<TelemetryDB *>(db)->setFieldsAliases(faliases);
 
     return true;
 }

@@ -21,45 +21,40 @@
  */
 #pragma once
 
-#include <Protocols/ProtocolNode.h>
-#include <Protocols/ProtocolViewBase.h>
+#include <Fact/Fact.h>
 
-class Releases;
+class PFirmware;
 
-class QueueItem : public ProtocolViewBase<ProtocolNode>
+class QueueItem : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit QueueItem(Fact *parent, ProtocolNode *protocol, QString type);
+    explicit QueueItem(Fact *parent, QString uid, QString name, QString hw, QString type);
 
-    bool match(const QString &sn) const;
-    QString type() const;
+    bool match(const QString &uid) const;
+
+    auto uid() const { return _uid; }
+    auto type() const { return _type; }
     void setType(QString v);
 
     void finish(bool success);
 
-    QString format_name;
-    QString format_hw;
-
 protected:
-    QString m_type;
+    QString _uid;
+    QString _name;
+    QString _hw;
+    QString _type;
 
     QByteArray _data;
     quint32 _offset;
 
-    ProtocolNodeFile *file_p{nullptr};
-    ProtocolNodeFile *file(const QString &fname);
-
-    bool loadFirmware(QString hw, QString ver = QString());
-
-    QList<QMetaObject::Connection> _clist;
-
-private slots:
-    void cleanUploadConnections();
+    bool loadFirmware(QString hw);
+    PFirmware *protocol() const;
 
 protected slots:
     virtual void upload();
+    void upgradeFinished(QString uid, bool success);
 
 public slots:
     void start();

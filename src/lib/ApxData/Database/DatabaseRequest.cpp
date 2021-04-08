@@ -215,16 +215,6 @@ QVariantMap DatabaseRequest::filterFields(QString tableName, QVariantMap values)
     }
     return values;
 }
-QVariantMap DatabaseRequest::filterFields(QString tableName, QJsonObject json) const
-{
-    QVariantMap values;
-    QStringList fields = db->tableFields(tableName);
-    for (auto k : db->tableFields(tableName)) {
-        if (json.contains(k))
-            values.insert(k, json.value(k).toVariant());
-    }
-    return values;
-}
 //=============================================================================
 QStringList DatabaseRequest::fieldNames(QSqlQuery &query)
 {

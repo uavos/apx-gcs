@@ -22,7 +22,6 @@
 #pragma once
 
 #include <Database/DatabaseSession.h>
-#include <Protocols/ProtocolMission.h>
 #include <QtCore>
 
 class MissionsDB : public DatabaseSession
@@ -49,12 +48,16 @@ public:
     {}
     bool run(QSqlQuery &query);
 
+    auto mission() const { return _mission; }
+
 private:
     QString hash;
-    QJsonValue readItems(QSqlQuery &query);
+    QVariantMap _mission;
+
+    QVariant readItems(QSqlQuery &query);
 
 signals:
-    void loaded(QJsonValue json);
+    void loaded(QVariant data);
 };
 
 class DBReqMissionsFindSite : public DBReqMissions
@@ -83,23 +86,21 @@ class DBReqMissionsSave : public DBReqMissions
 {
     Q_OBJECT
 public:
-    explicit DBReqMissionsSave(QJsonValue json, quint64 t = 0)
+    explicit DBReqMissionsSave(QVariant var)
         : DBReqMissions()
-        , json(json.toObject())
-        , t(t ? t : QDateTime::currentDateTime().toMSecsSinceEpoch())
-        , reqSite(json["lat"].toVariant().toDouble(), json["lon"].toVariant().toDouble())
+        , _data(var.value<QVariantMap>())
+        , _reqSite(_data.value("lat").toDouble(), _data.value("lon").toDouble())
     {
-        connect(&reqSite, &DBReqMissionsFindSite::siteFound, this, &DBReqMissionsSave::siteFound);
+        connect(&_reqSite, &DBReqMissionsFindSite::siteFound, this, &DBReqMissionsSave::siteFound);
     }
     bool run(QSqlQuery &query);
 
 private:
-    quint64 missionID;
-    QJsonObject json;
-    quint64 t;
-    DBReqMissionsFindSite reqSite;
+    quint64 _missionID;
+    QVariantMap _data;
+    DBReqMissionsFindSite _reqSite;
 
-    bool writeItems(QSqlQuery &query, QJsonArray json, QString tableName);
+    bool writeItems(QSqlQuery &query, const QVariant &var, QString tableName);
 
 signals:
     void missionHash(QString hash);

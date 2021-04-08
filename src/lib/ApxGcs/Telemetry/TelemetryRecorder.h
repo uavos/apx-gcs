@@ -19,14 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryRecorder_H
-#define TelemetryRecorder_H
+#pragma once
+
 #include <Database/TelemetryReqWrite.h>
 #include <Fact/Fact.h>
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
+
 class Recorder;
-//=============================================================================
+class NodeItem;
+
 class TelemetryRecorder : public Fact
 {
     Q_OBJECT
@@ -38,7 +40,7 @@ public:
     quint64 currentTimstamp() const;
 
 private:
-    Vehicle *vehicle;
+    Vehicle *_vehicle;
 
     Fact *f_enable;
 
@@ -87,16 +89,19 @@ private slots:
     void recordMissionDownlink();
     void recordMissionUplink();
     void recordMission(bool uplink);
-    void recordConfig();
+    void recordConfig(QString hash, QString title);
 
 public slots:
     //exported slots for recording
     void recordDownlink();
-    void recordUplink(xbus::pid_s pid, QVariant value);
+    void recordUplink(mandala::uid_t uid, QVariant value);
     //events
-    void recordNodeMessage(QString subsystem, QString text, QString sn);
-    void recordConfigUpdate(QString nodeName, QString fieldName, QString value, QString sn);
+    void recordConfigUpdate(NodeItem *node, QString name, QString value);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
+    void recordNotification(QString msg,
+                            QString subsystem,
+                            AppNotify::NotifyFlags flags,
+                            Fact *fact);
 
     //PROPERTIES
 public:
@@ -116,5 +121,3 @@ signals:
 public slots:
     void reset(void);
 };
-//=============================================================================
-#endif
