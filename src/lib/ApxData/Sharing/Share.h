@@ -44,8 +44,9 @@ public:
     bool saveData(QByteArray data, QString fileName);
 
 protected:
-    QString dataTitle;
-    QDir defaultDir;
+    QString _dataTitle;
+    QDir _defaultDir;
+    QDir _templatesDir;
 
     QStringList _exportFormats;
     QStringList _importFormats;
@@ -60,6 +61,8 @@ protected slots:
 
     void _exported(QString fileName);
     void _imported(QString fileName, QString title = QString());
+
+    virtual void syncTemplates() {}
 
 signals:
     void imported(QString fileName, QString title);

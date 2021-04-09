@@ -139,3 +139,24 @@ void TelemetryShare::updateDescr()
     else
         setDescr(s.append(QString("... %1").arg(value().toString())));
 }
+
+void TelemetryShare::syncTemplates()
+{
+    for (auto fi : _templatesDir.entryInfoList()) {
+        auto hash = fi.completeBaseName();
+        auto req = new DBReqTelemetryRecover(hash);
+        connect(req,
+                &DBReqTelemetryRecover::unavailable,
+                this,
+                &TelemetryShare::syncTemplate,
+                Qt::QueuedConnection);
+        req->exec();
+    }
+}
+
+void TelemetryShare::syncTemplate(QString hash)
+{
+    auto fname = _templatesDir.absoluteFilePath(
+        QString("%1.%2").arg(hash).arg(_importFormats.first()));
+    importRequest(_importFormats.first(), fname);
+}

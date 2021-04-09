@@ -118,11 +118,13 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block(QString::number(fid >> 8));
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
-        size_t fidx = fid >> 8;
+        auto fidx = fid >> 8;
         if (fidx >= _field_types.size())
             return;
-        QString name = _field_names.at(fidx);
-        QVariant value = read_param(stream, _field_types.at(fidx));
+        auto aidx = fid & 0xFF;
+        // TODO: read updates of arrays
+        auto name = _field_names.at(fidx);
+        auto value = read_param(stream, _field_types.at(fidx));
         QVariantMap values;
         values.insert(name, value);
         emit confUpdated(values);
@@ -138,7 +140,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         stream >> t;
         trace()->block(QString::number(t));
 
-        const char *s = stream.read_string(stream.available());
+        auto s = stream.read_string(stream.available());
         QString msg(QString(s).trimmed());
         trace()->block(msg);
 

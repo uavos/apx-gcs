@@ -30,6 +30,8 @@
 
 #include <Nodes/Nodes.h>
 
+// TODO: auto record on takeoff
+
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)

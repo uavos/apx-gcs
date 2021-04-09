@@ -51,11 +51,15 @@ private:
     bool exportRequest(QString format, QString fileName) override;
     bool importRequest(QString format, QString fileName) override;
 
+    void syncTemplates() override;
+
 private slots:
     void updateActions();
     void updateProgress();
     void updateStatus();
     void updateDescr();
+
+    void syncTemplate(QString hash);
 
 signals:
     void importJobDone(quint64 id);

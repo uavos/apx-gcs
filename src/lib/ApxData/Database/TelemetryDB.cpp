@@ -167,7 +167,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "TelemetryCacheData", "time", false);
     new DBReqMakeIndex(this, "TelemetryCacheData", "type", false);
 }
-//=============================================================================
+
 TelemetryDB::TelemetryFieldsMap TelemetryDB::fieldsMap()
 {
     QMutexLocker lock(&pMutex);
@@ -210,7 +210,7 @@ void TelemetryDB::clearInvalidCacheList()
     m_invalidCacheList.clear();
     latestInvalidCacheID = 0;
 }
-//=============================================================================
+
 void TelemetryDB::emptyTrash()
 {
     DBReqTelemetryEmptyTrash *req = new DBReqTelemetryEmptyTrash();
@@ -259,8 +259,7 @@ void TelemetryDB::getStats()
         Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
-//=============================================================================
+
 DBReqTelemetry::DBReqTelemetry()
     : DatabaseRequest(Database::instance()->telemetry)
 {}
@@ -269,8 +268,7 @@ bool DBReqTelemetry::run(QSqlQuery &query)
     Q_UNUSED(query)
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 {
     connect(
@@ -404,7 +402,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryEmptyTrash::run(QSqlQuery &query)
 {
     db->disable();
@@ -457,7 +455,7 @@ bool DBReqTelemetryEmptyTrash::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
-//=============================================================================
+
 bool DBReqTelemetryEmptyCache::run(QSqlQuery &query)
 {
     db->disable();
@@ -509,7 +507,7 @@ bool DBReqTelemetryEmptyCache::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
-//=============================================================================
+
 bool DBReqTelemetryStats::run(QSqlQuery &query)
 {
     query.prepare("SELECT COUNT(*) FROM Telemetry");
@@ -532,4 +530,25 @@ bool DBReqTelemetryStats::run(QSqlQuery &query)
     emit totals(cntTotal, cntTrash);
     return true;
 }
-//=============================================================================
+
+bool DBReqTelemetryRecover::run(QSqlQuery &query)
+{
+    query.prepare("SELECT * FROM Telemetry WHERE hash=?");
+    query.addBindValue(_hash);
+    if (!query.exec())
+        return false;
+    if (!query.next()) {
+        emit unavailable(_hash);
+        return true;
+    }
+    auto telemetryID = query.value(0).toULongLong();
+    auto trash = query.value("trash").toBool();
+    if (trash) {
+        query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
+        query.addBindValue(telemetryID);
+        if (!query.exec())
+            return false;
+    }
+    emit available(telemetryID, _hash);
+    return true;
+}

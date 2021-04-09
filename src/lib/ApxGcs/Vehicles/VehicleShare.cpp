@@ -55,9 +55,14 @@ bool VehicleShare::importRequest(QString format, QString fileName)
     if (var.isNull())
         return false;
 
-    _vehicle->fromVariant(var);
     _vehicle->storage()->importVehicleConfig(var.value<QVariantMap>());
 
+    if (QFileInfo(fileName).absoluteDir().absolutePath() == _templatesDir.absolutePath()) {
+        // imported
+        return true;
+    }
+
+    _vehicle->fromVariant(var);
     _imported(fileName);
     return true;
 }
@@ -65,4 +70,33 @@ bool VehicleShare::importRequest(QString format, QString fileName)
 void VehicleShare::updateActions()
 {
     f_export->setEnabled(_vehicle->f_nodes->valid());
+}
+
+void VehicleShare::syncTemplates()
+{
+    auto format = _importFormats.first();
+    QSettings sx;
+    sx.beginGroup("templates_update");
+    auto importedFiles = sx.value(format).toMap();
+
+    bool updated = false;
+    for (auto fi : _templatesDir.entryInfoList()) {
+        auto name = fi.completeBaseName();
+        auto t_res = fi.lastModified().toMSecsSinceEpoch();
+        if (importedFiles.contains(name)) {
+            auto t_imp = importedFiles.value(name).toULongLong();
+            if (t_res <= t_imp)
+                continue;
+        }
+
+        qDebug() << "template update:" << fi.fileName();
+        if (!importRequest(format, fi.absoluteFilePath()))
+            continue;
+
+        importedFiles.insert(name, t_res);
+        updated = true;
+    }
+    if (updated) {
+        sx.setValue(format, importedFiles);
+    }
 }
