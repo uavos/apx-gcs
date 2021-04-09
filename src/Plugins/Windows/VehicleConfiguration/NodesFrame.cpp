@@ -198,6 +198,9 @@ void NodesFrame::aDefaults_triggered(void)
 void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
 {
     if (fact->menu()) {
+        if (fact->name() == "modules")
+            return;
+
         //fact is group
         QMenu *m = nullptr;
         for (auto i : menu->findChildren<QMenu *>()) {

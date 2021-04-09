@@ -64,7 +64,10 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateUpgrading);
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateStatus);
 
-        connect(this, &NodeItem::shell, protocol, &PNode::requestShell);
+        connect(this, &NodeItem::shell, protocol, [this](QStringList commands) {
+            commands.prepend("sh");
+            _protocol->requestMod(commands);
+        });
 
         connect(protocol, &Fact::valueChanged, this, [this]() {
             if (_protocol->value().isNull())
@@ -192,7 +195,7 @@ QVariant NodeItem::data(int col, int role) const
     switch (role) {
     case Qt::DisplayRole:
         if (col == FACT_MODEL_COLUMN_NAME)
-            return title().toUpper();
+            return title();
         break;
     case Qt::ForegroundRole:
         if (!valid()) {

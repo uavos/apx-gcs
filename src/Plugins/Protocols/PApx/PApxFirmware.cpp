@@ -54,6 +54,7 @@ void PApxFirmware::start()
         return;
 
     _node = _nodes->getNode(_uid);
+    emit upgradeStarted(_uid, _name);
 
     if (_name == "ldr") {
         rebootFinished();

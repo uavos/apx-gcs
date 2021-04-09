@@ -64,7 +64,7 @@ public slots:
     virtual void requestUpdate(QVariantMap values) { _nimp(__FUNCTION__); }
 
     virtual void requestReboot() { _nimp(__FUNCTION__); }
-    virtual void requestShell(QStringList commands) { _nimp(__FUNCTION__); }
+    virtual void requestMod(QStringList data) { _nimp(__FUNCTION__); }
     virtual void requestUsr(quint8 cmd, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:
@@ -85,6 +85,9 @@ signals:
 
     // when requestUpdate accepted and saved
     void confSaved();
+
+    // when requestMod results available
+    void modReceived(QStringList data);
 
     //properties
     void upgradingChanged();

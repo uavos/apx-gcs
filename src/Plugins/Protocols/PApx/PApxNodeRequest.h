@@ -39,7 +39,7 @@ public:
     bool equals(PApxNodeRequest *req) { return uid() == req->uid() && cid() == req->cid(); }
 
     bool make_request(PApxRequest &req);
-    bool check_response(PStreamReader &stream) { return response(stream); }
+    bool check_response(PStreamReader &stream);
     void discard();
 
     uint timeout_ms() const { return _timeout_ms; }
@@ -79,17 +79,21 @@ private:
     xbus::node::reboot::type_e _type;
     bool request(PApxRequest &req) override;
 };
-class PApxNodeRequestShell : public PApxNodeRequest
+class PApxNodeRequestMod : public PApxNodeRequest
 {
 public:
-    explicit PApxNodeRequestShell(PApxNode *node, QStringList commands)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::mod::uid, 0)
-        , _commands(commands)
+    explicit PApxNodeRequestMod(PApxNode *node, QStringList data)
+        : PApxNodeRequest(node, mandala::cmd::env::nmt::mod::uid)
+        , _data(data)
     {}
 
 private:
-    QStringList _commands;
+    QStringList _data;
+    xbus::node::mod::op_e _op;
+    QString cid() const override { return _data.join('.'); }
+
     bool request(PApxRequest &req) override;
+    bool response(PStreamReader &stream) override;
 };
 class PApxNodeRequestUsr : public PApxNodeRequest
 {

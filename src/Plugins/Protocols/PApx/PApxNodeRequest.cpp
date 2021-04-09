@@ -72,6 +72,13 @@ bool PApxNodeRequest::make_request(PApxRequest &req)
 
     return request(req);
 }
+bool PApxNodeRequest::check_response(PStreamReader &stream)
+{
+    auto pos_s = stream.pos();
+    auto ret = response(stream);
+    stream.reset(pos_s);
+    return ret;
+}
 
 bool PApxNodeRequestReboot::request(PApxRequest &req)
 {
@@ -79,13 +86,74 @@ bool PApxNodeRequestReboot::request(PApxRequest &req)
     return true;
 }
 
-bool PApxNodeRequestShell::request(PApxRequest &req)
+bool PApxNodeRequestMod::request(PApxRequest &req)
 {
-    xbus::node::mod::op_e op = xbus::node::mod::sh;
-    req << op;
-    for (auto const &s : _commands) {
+    if (_data.isEmpty())
+        return false;
+
+    auto data = _data;
+    QString cmd = data.takeFirst();
+    if (cmd == "sh") {
+        _op = xbus::node::mod::sh;
+        _timeout_ms = 0;
+    } else if (cmd == "ls") {
+        _op = xbus::node::mod::ls;
+    } else if (cmd == "status") {
+        _op = xbus::node::mod::status;
+    } else {
+        qWarning() << "wrong mod request" << _data;
+        return false;
+    }
+    req << _op;
+
+    for (auto const &s : data) {
         req.write_string(s.toUtf8().data());
     }
+    trace()->blocks(data);
+    return true;
+}
+bool PApxNodeRequestMod::response(PStreamReader &stream)
+{
+    if (stream.available() < sizeof(xbus::node::mod::op_e)) {
+        qWarning() << "size" << stream.available();
+        return false;
+    }
+    xbus::node::mod::op_e op;
+    stream >> op;
+    trace()->block(QString::number(op));
+
+    if (op != _op)
+        return false;
+
+    auto data = stream.read_strings();
+    trace()->blocks(data);
+
+    if (data.isEmpty()) {
+        qWarning() << "no strings";
+        return false;
+    }
+    if (!data.contains(":")) {
+        qWarning() << "bad strings" << data;
+        return false;
+    }
+    auto req = data.mid(0, data.indexOf(":"));
+    auto dreq = _data.mid(1);
+    if (req != dreq) {
+        qWarning() << "data mismatch" << data << dreq;
+        return false;
+    }
+    switch (op) {
+    default:
+        break;
+    case xbus::node::mod::ls:
+        data.prepend("ls");
+        break;
+    case xbus::node::mod::status:
+        data.prepend("status");
+        break;
+    }
+    _node->modReceived(data);
+
     return true;
 }
 
@@ -196,6 +264,8 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
     QVariant value = _values.value(name);
     if (type == xbus::node::conf::option)
         value = _node->textToOption(value, _fid >> 8);
+    else if (type == xbus::node::conf::bind)
+        value = _node->stringToMandala(value.toString());
     _node->write_param(req, type, value);
     trace()->block(value.toString());
 

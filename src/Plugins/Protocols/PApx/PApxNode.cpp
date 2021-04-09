@@ -257,9 +257,13 @@ bool PApxNode::find_field(QString name,
     QRegExp re("_(\\d+)$");
     auto a = re.indexIn(name);
     if (a > 1) {
+        auto i = re.cap(1).toInt() - 1;
+        if (i < 0) {
+            qWarning() << "array" << name;
+            return false;
+        }
         name = name.left(a);
-        v = re.cap(1).toInt();
-        qDebug() << "array" << fid;
+        v = i;
     }
     auto i = _field_names.indexOf(name);
     if (i < 0) {
@@ -566,6 +570,7 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
             // read value
             auto array = _field_arrays.value(fidx);
             auto type = _field_types.value(fidx);
+            auto units = _field_units.value(fidx);
             QVariant value;
 
             if (array > 0) {
@@ -576,6 +581,8 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
                         break;
                     if (type == xbus::node::conf::option)
                         v = optionToText(v, fidx);
+                    else if (type == xbus::node::conf::bind)
+                        v = mandalaToString(v.toUInt());
                     list.append(v);
                 }
                 if (list.size() == array)
@@ -584,6 +591,8 @@ void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteAr
                 value = read_param(stream, type);
                 if (type == xbus::node::conf::option)
                     value = optionToText(value, fidx);
+                else if (type == xbus::node::conf::bind)
+                    value = mandalaToString(value.toUInt());
             }
 
             //qDebug() << v << stream.pos() << stream.available();
