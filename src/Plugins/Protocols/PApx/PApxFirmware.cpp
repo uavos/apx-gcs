@@ -56,6 +56,8 @@ void PApxFirmware::start()
     _node = _nodes->getNode(_uid);
     emit upgradeStarted(_uid, _name);
 
+    qDebug() << _name << _uid;
+
     if (_name == "ldr") {
         rebootFinished();
     } else {
@@ -70,12 +72,16 @@ void PApxFirmware::rebootFinished()
     if (!_node)
         return;
 
+    qDebug() << _name << _uid;
+
     auto req = new PApxNodeRequestIdent(_node);
     req->silent = true;
     connect(req, &PApxNodeRequest::finished, this, &PApxFirmware::identFinished);
 }
 void PApxFirmware::identFinished()
 {
+    qDebug() << _name << _uid << _node;
+
     if (!_node)
         return;
 
@@ -93,6 +99,9 @@ void PApxFirmware::fileUploaded()
 {
     if (!_node)
         return;
+
+    qDebug() << _name << _uid;
+
     _success = true;
 }
 
@@ -100,6 +109,8 @@ void PApxFirmware::fileFinished()
 {
     if (!_node)
         return;
+
+    qDebug() << _name << _uid;
 
     emit upgradeFinished(_uid, _success);
 

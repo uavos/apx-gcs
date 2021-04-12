@@ -416,7 +416,6 @@ void Fact::updateBinding(Fact *src)
         return;
 
     if (m_binding) {
-        disconnect(m_binding, nullptr, this, nullptr);
         unbindProperties(m_binding);
         m_binding->unbindProperties(this);
     }

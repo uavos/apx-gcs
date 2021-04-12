@@ -69,7 +69,8 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     mandala::uid_t uid = pid.uid;
 
     if (uid == mandala::cmd::env::nmt::search::uid) {
-        requestIdent();
+        if (!upgrading())
+            requestIdent();
         return;
     }
 
@@ -178,9 +179,11 @@ void PApxNode::schedule_request(PApxNodeRequest *req)
     for (auto i : _requests) {
         if (i->equals(req)) {
             // the most recent for the uid is the only valid
-            if (uid == mandala::cmd::env::nmt::ident::uid)
+            if (uid == mandala::cmd::env::nmt::ident::uid || i->active()) {
+                delete_request(req);
                 return;
-            qDebug() << "dup" << Mandala::meta(uid).path;
+            }
+            qDebug() << "dup" << req->title();
             delete_request(i);
         }
     }
@@ -199,6 +202,7 @@ void PApxNode::extend_request(PApxNodeRequest *req, size_t time_ms)
 
 void PApxNode::delete_request(PApxNodeRequest *req)
 {
+    //qDebug() << "finished" << req->title();
     req->finished();
     emit request_finished(req);
     delete req;

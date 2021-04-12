@@ -64,4 +64,7 @@ signals:
 
     // signaled when a new vehicle is identified to provide interface
     void vehicle_available(PVehicle *vehicle);
+
+    // central signal to cancel all requests
+    void cancelRequests();
 };

@@ -36,7 +36,8 @@ public:
 
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
-    QList<PApxNode *> nodes() const { return _nodes.values(); }
+    auto nodes() const { return _nodes.values(); }
+    auto local() const { return _local; }
 
     void cancel_requests(PApxNode *node);
 
@@ -45,6 +46,7 @@ public:
 private:
     PApxRequest _req;
     QHash<QString, PApxNode *> _nodes;
+    bool _local;
 
     QTimer _reqTimeout;
     QTimer _reqNext;
@@ -55,7 +57,6 @@ private:
 
 protected:
     void requestSearch() override;
-    void cancelRequests() override { cancel_requests(nullptr); }
 
 private slots:
     // reauests sequencer

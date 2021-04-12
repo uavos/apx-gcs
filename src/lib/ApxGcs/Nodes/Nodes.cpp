@@ -179,8 +179,7 @@ void Nodes::stop()
     if (!_protocol)
         return;
 
-    _protocol->cancelRequests();
-    //TODO: globally stop requests
+    _protocol->root()->cancelRequests();
 }
 
 void Nodes::clear()
@@ -203,6 +202,12 @@ void Nodes::reload()
     if (vehicle->isReplay())
         return;
 
+    if (upgrading()) {
+        apxMsgW() << tr("Upgrading in progress");
+        return;
+    }
+
+    stop();
     clear();
     search();
 }

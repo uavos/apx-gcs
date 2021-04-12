@@ -33,12 +33,15 @@
 PApxNodes::PApxNodes(PApxVehicle *parent)
     : PNodes(parent)
     , _req(parent)
+    , _local(parent->uid().isEmpty())
 {
     _reqTimeout.setSingleShot(true);
     connect(&_reqTimeout, &QTimer::timeout, this, &PApxNodes::request_timeout);
 
     _reqNext.setSingleShot(true);
     connect(&_reqNext, &QTimer::timeout, this, &PApxNodes::request_current);
+
+    connect(root(), &PBase::cancelRequests, this, [this]() { cancel_requests(nullptr); });
 
     // inactive vehicle has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
@@ -47,7 +50,7 @@ PApxNodes::PApxNodes(PApxVehicle *parent)
 }
 void PApxNodes::updateActive()
 {
-    bool v = parent()->active() || (upgrading() && findParent<PApx>()->local() == parent());
+    bool v = parent()->active() || (upgrading() && _local);
 
     _reqNext.setInterval(v ? PAPX_REQ_DELAY_MS : 1000);
 
@@ -62,13 +65,13 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     if (!mandala::cmd::env::nmt::match(pid.uid))
         return false;
 
-    // if upgrading - forward all to loacal
-    if (upgrading()) {
+    // if upgrading - forward all to local
+    if (upgrading() && !_local) {
         auto local = findParent<PApx>()->local();
-        if (local != parent()) {
-            auto nodes = static_cast<PApxNodes *>(local->nodes());
-            return nodes->process_downlink(pid, stream);
-        }
+        trace()->block("LOCAL");
+        trace()->tree();
+        auto nodes = static_cast<PApxNodes *>(local->nodes());
+        return nodes->process_downlink(pid, stream);
     }
 
     while (pid.pri != xbus::pri_response) {
@@ -138,7 +141,7 @@ void PApxNodes::requestSearch()
 
 void PApxNodes::request_scheduled(PApxNodeRequest *req)
 {
-    // qDebug() << Mandala::meta(req->uid()).path;
+    // qDebug() << req->title();
     if (_requests.contains(req)) {
         // rescheduled request
         if (_request != req) // not current
@@ -155,7 +158,7 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
 }
 void PApxNodes::request_finished(PApxNodeRequest *req)
 {
-    // qDebug() << Mandala::meta(req->uid()).path;
+    // qDebug() << req->title();
     _requests.removeOne(req);
     if (_request && _request != req)
         return;
@@ -196,7 +199,7 @@ void PApxNodes::request_current()
 {
     if (!_request)
         return;
-    // qDebug() << Mandala::meta(_request->uid()).path;
+    // qDebug() << _request->title();
     if (!_request->make_request(_req)) {
         // qDebug() << "discarded";
         _request->discard();
@@ -220,7 +223,7 @@ void PApxNodes::request_timeout()
     if (!_retry) {
         if (!_request->silent) {
             apxMsgW() << tr("NMT request dropped").append(':') << _request->node()->title()
-                      << Mandala::meta(_request->uid()).name;
+                      << _request->title();
         }
 
         // clear all node requests
@@ -229,14 +232,12 @@ void PApxNodes::request_timeout()
                 _requests.removeOne(req);
         }
         cancel_requests(_request->node());
-
         return;
     }
 
     _retry--;
     if (!_request->silent) {
-        apxMsgW() << tr("NMT timeout").append(':') << _request->node()->title()
-                  << Mandala::meta(_request->uid()).name
+        apxMsgW() << tr("NMT timeout").append(':') << _request->node()->title() << _request->title()
                   << QString("(%1/%2)")
                          .arg(PApxNodeRequest::retries - _retry)
                          .arg(PApxNodeRequest::retries);
@@ -246,6 +247,7 @@ void PApxNodes::request_timeout()
 }
 void PApxNodes::cancel_requests(PApxNode *node)
 {
+    qDebug() << node;
     if (_request && (!node || _request->node() == node)) {
         _reqTimeout.stop();
         _request = nullptr;
@@ -254,6 +256,7 @@ void PApxNodes::cancel_requests(PApxNode *node)
         if (node && req->node() != node)
             continue;
         _requests.removeOne(req);
+        req->finished();
         delete req;
     }
     if (_requests.isEmpty()) {
