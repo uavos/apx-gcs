@@ -530,8 +530,16 @@ void NodeItem::identReceived(QVariantMap ident)
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         storage->saveNodeInfo();
         _nodes->nodeNotify(this);
-        if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
+
+        // try to request dict automatically
+        do {
+            if (_nodes->vehicle->isLocal() && !_nodes->vehicle->active())
+                break;
+            if (_nodes->upgrading())
+                break;
+
             _protocol->requestDict();
+        } while (0);
         return;
     }
 

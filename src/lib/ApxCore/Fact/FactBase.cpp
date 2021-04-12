@@ -272,16 +272,33 @@ QString FactBase::jsname() const
         // array properties are accessible through fact's 'model'
         return "#";
     }
-    return s.simplified()
-        .trimmed()
-        .replace(' ', '_')
-        .replace('.', '_')
-        .replace(':', '_')
-        .replace('/', '_')
-        .replace('\\', '_')
-        .replace('?', '_')
-        .replace('-', '_')
-        .replace('+', '_');
+    s = s.simplified()
+            .trimmed()
+            .replace(' ', '_')
+            .replace('.', '_')
+            .replace(':', '_')
+            .replace('/', '_')
+            .replace('\\', '_')
+            .replace('?', '_')
+            .replace('-', '_')
+            .replace('+', '_');
+
+    // check for reserved names
+    const char *r = nullptr, *n = s.toUtf8();
+    if (metaObject()->indexOfProperty(n) >= 0) {
+        r = "property";
+    } else if (metaObject()->indexOfMethod(n) >= 0) {
+        r = "method";
+    } else if (metaObject()->indexOfSignal(n) >= 0) {
+        r = "signal";
+    } else if (metaObject()->indexOfSlot(n) >= 0) {
+        r = "slot";
+    }
+    if (r) {
+        qWarning() << QString("Name is reserved for %1: %2 (%3)").arg(r).arg(s).arg(path());
+        // just a warning by now
+    }
+    return s;
 }
 QString FactBase::jspath() const
 {
@@ -368,22 +385,6 @@ void FactBase::setName(QString s)
     s = s.trimmed();
     if (name() == s)
         return;
-
-    // check for reserved names
-    const char *r = nullptr;
-    if (metaObject()->indexOfProperty(s.toUtf8()) >= 0) {
-        r = "property";
-    } else if (metaObject()->indexOfMethod(s.toUtf8()) >= 0) {
-        r = "method";
-    } else if (metaObject()->indexOfSignal(s.toUtf8()) >= 0) {
-        r = "signal";
-    } else if (metaObject()->indexOfSlot(s.toUtf8()) >= 0) {
-        r = "slot";
-    }
-    if (r) {
-        qWarning() << QString("Fact name is reserved for %1:").arg(r) << s;
-        // just a warning by now
-    }
 
     setObjectName(s);
     emit nameChanged();

@@ -247,7 +247,7 @@ void PApxNodes::request_timeout()
 }
 void PApxNodes::cancel_requests(PApxNode *node)
 {
-    qDebug() << node;
+    //qDebug() << node;
     if (_request && (!node || _request->node() == node)) {
         _reqTimeout.stop();
         _request = nullptr;

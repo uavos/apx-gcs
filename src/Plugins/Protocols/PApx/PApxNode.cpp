@@ -152,6 +152,11 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         msg = msg.simplified();
 
         emit messageReceived((msg_type_e) t, msg);
+
+        if (!_nodes->local() && !_nodes->upgrading()
+            && msg.contains(QString("node: %1: initialized").arg(title()))) {
+            requestIdent();
+        }
         return;
     }
 
@@ -289,6 +294,9 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
 
 void PApxNode::requestDict()
 {
+    if (!file("dict"))
+        return;
+
     if (_skip_cache) {
         _skip_cache = false;
         requestDictDownload();

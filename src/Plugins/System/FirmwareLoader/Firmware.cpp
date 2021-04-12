@@ -65,18 +65,7 @@ Firmware::Firmware(Fact *parent)
                        "auto-upload");*/
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
-    //TODO: stop globally
-    // connect(f_stop, &Fact::triggered, nodes_protocol(), []() {
-    //     AppGcs::instance()->protocol->stopNmtRequests();
-    // });
-
-    /*connect(nodes_protocol(), &Fact::activeChanged, this, [this]() {
-        if (!nodes_protocol()->active()) {
-            setActive(false);
-            f_queue->deleteChildren();
-        }
-    });
-    */
+    connect(f_stop, &Fact::triggered, this, &Firmware::stop);
 
     connect(Vehicles::instance(), &Vehicles::vehicleRegistered, this, &Firmware::vehicleRegistered);
 
@@ -106,10 +95,6 @@ void Firmware::vehicleRegistered(Vehicle *vehicle)
 {
     connect(vehicle->f_nodes, &Nodes::requestUpgrade, this, &Firmware::upgradeRequested);
     connect(vehicle->f_nodes, &Nodes::nodeNotify, this, &Firmware::nodeNotify);
-
-    // connect(this, &Fact::activeChanged, vehicle->f_nodes, [this, vehicle]() {
-    //     vehicle->f_nodes->setUpgrading(active());
-    // });
 }
 void Firmware::nodeNotify(NodeItem *node)
 {
@@ -154,6 +139,12 @@ void Firmware::updateStatus()
     } else {
         setValue("");
     }
+}
+
+void Firmware::stop()
+{
+    QueueItem::protocol()->root()->cancelRequests();
+    f_queue->deleteChildren();
 }
 
 QueueItem *Firmware::queued(Fact *list, const QString &uid)
