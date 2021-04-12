@@ -348,19 +348,160 @@ void Nodes::fromVariant(const QVariant &var)
     for (auto i : nodes) {
         auto node = i.value<QVariantMap>();
         auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
-        NodeItem *f = this->node(uid);
-        if (f) {
-            f->fromVariant(node);
-            nlist.removeOne(f);
+        NodeItem *n = this->node(uid);
+        if (n) {
+            n->fromVariant(node);
+            nlist.removeOne(n);
         } else {
             vlist.append(node);
         }
     }
     apxMsg() << tr("Configuration loaded for %1 nodes").arg(m_nodes.size());
-    if (vlist.isEmpty() && nlist.isEmpty()) {
-        return;
+
+    do {
+        if (vlist.isEmpty() || nlist.isEmpty())
+            break;
+
+        // try to import by guessing nodes
+        apxMsgW() << tr("Importing %1 nodes").arg(vlist.size()).append("...");
+
+        // consume vlist and nlist items
+
+        // find by name-label match
+        for (int i = 0; i < vlist.size(); ++i) {
+            if (nlist.isEmpty())
+                break;
+            auto node = vlist.at(i).value<QVariantMap>();
+            auto info = node.value("info").value<QVariantMap>();
+            auto name = info.value("name").toString();
+            auto label = node.value("values").value<QVariantMap>().value("label").toString();
+
+            for (auto n : nlist) {
+                if (n->title() != name && n->label() != label)
+                    continue;
+                n->fromVariant(node);
+                nlist.removeOne(n);
+                vlist.removeAt(i);
+                break;
+            }
+        }
+        if (vlist.isEmpty() || nlist.isEmpty())
+            break;
+
+        // find by name match
+        for (int i = 0; i < vlist.size(); ++i) {
+            if (nlist.isEmpty())
+                break;
+            auto node = vlist.at(i).value<QVariantMap>();
+            auto info = node.value("info").value<QVariantMap>();
+            auto name = info.value("name").toString();
+            auto label = node.value("values").value<QVariantMap>().value("label").toString();
+
+            for (auto n : nlist) {
+                if (n->title() != name)
+                    continue;
+                n->fromVariant(node);
+                nlist.removeOne(n);
+                vlist.removeAt(i);
+                break;
+            }
+        }
+        if (vlist.isEmpty() || nlist.isEmpty())
+            break;
+
+        // try import shiva config
+        do {
+            QVariantList shivas; // find import shivas
+            for (int i = 0; i < vlist.size(); ++i) {
+                auto node = vlist.at(i).value<QVariantMap>();
+                auto sh = node.value("values").value<QVariantMap>().value("shiva.mode");
+                if (!sh.toBool())
+                    continue;
+                // enabled shivas only
+                shivas.append(node); // enables shiva only
+            }
+            if (shivas.isEmpty())
+                break;
+            QMap<QString, NodeItem *> nshiva;
+            // find available to import shivas with priority to enabled ones
+            for (auto n : nlist) {
+                auto mode = n->findChild("shiva.mode");
+                if (!mode)
+                    continue; // no shiva in node config
+                auto on = mode->value().toUInt();
+                auto n_prev = nshiva.value(n->title());
+                if (n_prev) {
+                    auto on_prev = n_prev->findChild("shiva.mode")->value().toUInt();
+                    if (on_prev > 0 && on_prev < on)
+                        continue; // mode priority is higher
+                }
+                nshiva.insert(n->title(), n);
+            }
+            if (nshiva.isEmpty())
+                break;
+
+            for (auto shiva : shivas) {
+                // look for nodes by priority
+                NodeItem *n = {};
+                // search for enabled nav
+                n = nshiva.value("nav");
+                if (n) {
+                    auto on = n->findChild("shiva.mode")->value().toUInt();
+                    if (!on)
+                        n = {};
+                }
+                if (!n) { // search for any enabled
+                    for (auto i : nshiva.values()) {
+                        bool on = i->findChild("shiva.mode")->value().toUInt();
+                        if (!on)
+                            continue;
+                        n = i;
+                        break;
+                    }
+                }
+                if (!n) { // search for any nav
+                    n = nshiva.value("nav");
+                }
+                if (!n) { // search for any available
+                    n = nshiva.values().first();
+                }
+                if (!n)
+                    continue;
+
+                apxMsg() << tr("Importing autopilot config for %1").arg(n->title());
+
+                n->fromVariant(shiva);
+                nlist.removeOne(n);
+                vlist.removeOne(shiva);
+            }
+        } while (0); // shiva import
+
+    } while (0);
+
+    if (!vlist.isEmpty()) {
+        apxMsg() << tr("Ignored configuration for %1 nodes").arg(vlist.size());
+        QStringList st;
+        for (auto i : vlist) {
+            auto node = i.value<QVariantMap>();
+            auto info = node.value("info").value<QVariantMap>();
+            auto name = info.value("name").toString();
+            auto label = node.value("values").value<QVariantMap>().value("label").toString();
+            QString s = name;
+            if (!label.isEmpty())
+                s.append(QString("-%1").arg(label));
+            st.append(s);
+        }
+        apxMsg() << tr("Ignored import nodes: %1").arg(st.join(','));
     }
-    // try to import by guessing nodes
-    apxMsgW() << tr("Importing %1 nodes").arg(vlist.size());
-    // TODO: import nodes substitutions
+    if (!nlist.isEmpty()) {
+        apxMsg() << tr("Missing configuration for %1 nodes").arg(nlist.size());
+        QStringList st;
+        for (auto i : nlist) {
+            QString s = i->title();
+            if (!i->label().isEmpty())
+                s.append(QString("-%1").arg(i->label()));
+            st.append(s);
+        }
+        apxMsg() << tr("Extra nodes: %1").arg(st.join(','));
+    }
 }

@@ -121,9 +121,7 @@ void NodeItem::updateStatus()
         setValue(tr("no config").toUpper());
         return;
     }
-    if (_status_field) {
-        setValue(_status_field->valueText().trimmed());
-    }
+    setValue(label());
 }
 void NodeItem::updateUpgrading()
 {
