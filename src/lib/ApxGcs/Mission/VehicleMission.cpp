@@ -35,6 +35,7 @@
 #include "Waypoint.h"
 
 #include <App/App.h>
+#include <Nodes/Nodes.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 #include <QQmlEngine>
@@ -383,8 +384,15 @@ void VehicleMission::missionReceived(QVariant var)
         emit missionAvailable();
         emit missionDownloaded();
         storage->saveMission();
-        vehicle->message(QString("%1: %2").arg(tr("Mission received")).arg(text()),
-                         AppNotify::Important);
+        QString s = QString("%1: %2").arg(tr("Mission received")).arg(text());
+        auto node_uid = var.value<QVariantMap>().value("node_uid").toString();
+        if (!node_uid.isEmpty()) {
+            auto node = vehicle->f_nodes->node(node_uid);
+            if (node) {
+                s.append(QString(" (%1)").arg(node->title()));
+            }
+        }
+        vehicle->message(s, AppNotify::Important);
     }
     backup();
 }

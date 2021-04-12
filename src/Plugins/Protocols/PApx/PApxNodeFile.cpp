@@ -89,7 +89,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             qDebug() << "download ok:" << name() << _size << "bytes" << QString::number(_hash, 16);
         }
 
-        emit downloaded(_info, _data);
+        emit downloaded(_node, _info, _data);
         break;
 
     case xbus::node::file::read:

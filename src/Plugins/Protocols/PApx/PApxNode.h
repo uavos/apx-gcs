@@ -102,9 +102,11 @@ private slots:
     void dictCacheLoaded(QVariantMap dict);
     void dictCacheMissing(QString hash);
 
-    void parseDictData(const xbus::node::file::info_s &info, const QByteArray data);
-    void parseConfData(const xbus::node::file::info_s &info, const QByteArray data);
-    void parseScriptData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseDictData(PApxNode *_node, const xbus::node::file::info_s &info, const QByteArray data);
+    void parseConfData(PApxNode *_node, const xbus::node::file::info_s &info, const QByteArray data);
+    void parseScriptData(PApxNode *_node,
+                         const xbus::node::file::info_s &info,
+                         const QByteArray data);
 
 signals:
     void request_scheduled(PApxNodeRequest *req);

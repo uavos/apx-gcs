@@ -379,8 +379,12 @@ void PApxNode::dictCacheMissing(QString hash)
     }
     requestDictDownload();
 }
-void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxNode::parseDictData(PApxNode *_node,
+                             const xbus::node::file::info_s &info,
+                             const QByteArray data)
 {
+    Q_UNUSED(_node)
+
     PStreamReader stream(data);
 
     bool err = true;
@@ -526,8 +530,12 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     emit dictReceived(dict);
 }
 
-void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxNode::parseConfData(PApxNode *_node,
+                             const xbus::node::file::info_s &info,
+                             const QByteArray data)
 {
+    Q_UNUSED(_node)
+
     PStreamReader stream(data);
 
     _values.clear();
@@ -756,8 +764,12 @@ QVariant PApxNode::textToOption(QVariant value, size_t fidx)
     return value;
 }
 
-void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxNode::parseScriptData(PApxNode *_node,
+                               const xbus::node::file::info_s &info,
+                               const QByteArray data)
 {
+    Q_UNUSED(_node)
+
     //qDebug() << "script data" << info.size << data.size();
     // check script hash
     if (info.hash != _script_value) {
