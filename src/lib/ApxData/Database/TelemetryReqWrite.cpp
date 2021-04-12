@@ -42,6 +42,10 @@ bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
 //=============================================================================
 bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 {
+    if (!telemetryID) {
+        qWarning() << "missing telemetryID";
+        return false;
+    }
     if (!fieldID) {
         qWarning() << "missing fieldID";
         return false;
@@ -59,8 +63,10 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
     query.addBindValue(fieldID);
     query.addBindValue(t);
     query.addBindValue(value);
-    if (!query.exec())
+    if (!query.exec()) {
+        qWarning() << telemetryID << fieldID;
         return false;
+    }
     return true;
 }
 //=============================================================================

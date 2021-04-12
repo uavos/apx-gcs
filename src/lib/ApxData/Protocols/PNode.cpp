@@ -60,6 +60,7 @@ void PNode::upgradeStarted(QString uid, QString name)
 }
 void PNode::upgradeFinished(QString uid, bool success)
 {
+    qDebug() << uid << success;
     if (uid != m_uid)
         return;
     _upgradingDoneTimer.start();

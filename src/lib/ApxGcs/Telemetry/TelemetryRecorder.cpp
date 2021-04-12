@@ -128,6 +128,8 @@ void TelemetryRecorder::restartRecording()
 
 void TelemetryRecorder::invalidateCache()
 {
+    if (!recTelemetryID)
+        return;
     Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
 }
 
@@ -165,6 +167,8 @@ bool TelemetryRecorder::dbCheckRecord()
 void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
 {
     if (!reqNewRecord)
+        return;
+    if (!telemetryID)
         return;
     //qDebug() << telemetryID << reqPendingList.size();
     auto chash = configHash;
@@ -225,14 +229,15 @@ void TelemetryRecorder::writeEvent(const QString &name,
                                    const QString &uid,
                                    bool uplink)
 {
-    bool bID = dbCheckRecord();
+    dbCheckRecord();
+
     DBReqTelemetryWriteEvent *req = new DBReqTelemetryWriteEvent(recTelemetryID,
                                                                  getDataTimestamp(),
                                                                  name,
                                                                  value,
                                                                  uid,
                                                                  uplink);
-    if (bID) {
+    if (recTelemetryID) {
         req->exec();
         invalidateCache();
     } else
@@ -242,8 +247,9 @@ void TelemetryRecorder::writeEvent(const QString &name,
 void TelemetryRecorder::recordDownlink()
 {
     //write all updated facts
-    bool bID = dbCheckRecord();
+    dbCheckRecord();
     quint64 t = getDataTimestamp();
+
     //collect changed facts
     QList<QPair<quint64, double>> values;
     int iv = -1;
@@ -271,17 +277,13 @@ void TelemetryRecorder::recordDownlink()
         return;
     for (int i = 0; i < values.size(); ++i) {
         quint64 fieldID = values.at(i).first;
-        if (!fieldID) {
-            // TODO: why this can happen? I made this check to try to fix fireign key db error
-            continue;
-        }
         double v = values.at(i).second;
         DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
                                                                    t,
                                                                    fieldID,
                                                                    v,
                                                                    false);
-        if (bID) {
+        if (recTelemetryID) {
             req->exec();
             invalidateCache();
         } else
@@ -291,7 +293,7 @@ void TelemetryRecorder::recordDownlink()
 
 void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
 {
-    bool bID = dbCheckRecord();
+    dbCheckRecord();
     updateFactsMap();
 
     Fact *f = _vehicle->f_mandala->fact(uid);
@@ -306,7 +308,7 @@ void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
                                                                factsMap.key(f),
                                                                value.toDouble(),
                                                                true);
-    if (bID) {
+    if (recTelemetryID) {
         req->exec();
         invalidateCache();
     } else
