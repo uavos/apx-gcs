@@ -187,8 +187,10 @@ void TelemetryPlot::resetData()
 //=============================================================================
 void TelemetryPlot::restoreSettings()
 {
-    if (!QSettings().contains("plots")) {
-        QStringList st;
+    QStringList st;
+    QSettings sx;
+    sx.beginGroup("plots");
+    if (sx.childKeys().isEmpty()) {
         st << "est.att.roll"
            << "cmd.att.roll"
            << "est.att.pitch"
@@ -197,26 +199,29 @@ void TelemetryPlot::restoreSettings()
         st << "est.air.airspeed"
            << "cmd.pos.airspeed";
         st << "est.pos.vspeed";
-        QSettings().setValue("plots", st);
+    } else {
+        st = sx.childKeys();
     }
-    QStringList sps = QSettings().value("plots").toStringList();
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
-        showCurve(itemToInfo(curve), (curve == calc) ? false : sps.contains(curve->title().text()));
+        showCurve(itemToInfo(curve), (curve == calc) ? false : st.contains(curve->title().text()));
     }
 }
 //=============================================================================
 void TelemetryPlot::saveSettings()
 {
-    QStringList sps;
+    QSettings sx;
+    sx.beginGroup("plots");
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
-        QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
+        auto curve = static_cast<QwtPlotCurve *>(items.at(i));
+        auto s = curve->title().text();
         if (curve->isVisible())
-            sps.append(curve->title().text());
+            sx.setValue(s, true);
+        else
+            sx.remove(s);
     }
-    QSettings().setValue("plots", sps);
 }
 //=============================================================================
 void TelemetryPlot::showCurves(bool on, const QStringList &names, bool toggle)
@@ -533,7 +538,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
         //if(fact)units=fact->units();
         s += "<tr><td align=right><font size=+2 color=" + c.name() + ">" + curve->title().text()
              + "</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"
-             + QString("%1").arg(v,0,'f',2) + "</font></td></tr>";
+             + QString("%1").arg(v, 0, 'f', 2) + "</font></td></tr>";
     }
     s += "</table>";
     return QwtText(s);
