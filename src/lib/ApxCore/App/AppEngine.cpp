@@ -251,16 +251,12 @@ void AppEngine::jsRegisterFunctions()
     jsRegister("send(n)",
                QObject::tr("send var n to UAV"),
                "apx.vehicles.current.mandala.fact(n).send();");
-    jsRegister("nodes()", QObject::tr("rescan bus nodes"), "apx.vehicles.current.nodes.request();");
-    jsRegister("nstat()",
-               QObject::tr("print nodes status"),
-               "print('nodes statistics:');apx.vehicles.current.nodes.nstat();");
     jsRegister("serial(p,v)",
                QObject::tr("send data v to serial port ID p"),
                "apx.vehicles.current.sendSerial(p,v);");
     jsRegister("vmexec(f)",
-               QObject::tr("execute function on VMs"),
-               "apx.vehicles.current.vmexec(f);");
+               QObject::tr("execute function of onboard scripts"),
+               "apx.vehicles.current.requestScript(f);");
     jsRegister("sleep(n)", QObject::tr("sleep n milliseconds"), "application.engine.sleep(n);");
     jsRegister("next()", QObject::tr("switch to next vehicle"), "apx.vehicles.selectNext();");
     jsRegister("prev()", QObject::tr("switch to previous vehicle"), "apx.vehicles.selectPrev();");
@@ -283,16 +279,15 @@ void AppEngine::jsRegisterFunctions()
         "func(a)",
         QObject::tr("print functions for scope a"),
         "if(arguments.length==0)a=this;for(var i in a)if(typeof(a[i])=='function')print(i);");
-    //predefined commands
-    jsRegister("ahrs()", QObject::tr("reset AHRS"), "req('roll');");
+
+    //predefined commands for variables
+    jsRegister("hmsl()", QObject::tr("reset local GPS altitude"), "est.ref.hmsl=est.pos.hmsl;");
+
     jsRegister("zrc()",
                QObject::tr("reset pilot controls"),
-               "rc_roll=0;rc_pitch=0;rc_throttle=0;rc_yaw=0;");
-    jsRegister("zps()", QObject::tr("reset barometric altitude on ground"), "altps_gnd=0;");
-    jsRegister("ned()",
-               QObject::tr("reset local GPS coordinates"),
-               "home_lat=gps_lat;home_lon=gps_lon;home_hmsl=gps_hmsl;");
-    jsRegister("hmsl()", QObject::tr("reset local GPS altitude"), "home_hmsl=gps_hmsl;");
+               "cmd.rc.roll=0;cmd.rc.pitch=0;cmd.rc.thr=0;cmd.rc.yaw=0;");
+
+    jsRegister("inair(v)", QObject::tr("Set in-air status"), "cmd.ahrs.inair=v;");
 
     jsRegister("sh(clist)",
                QObject::tr("Node shell commands"),

@@ -23,7 +23,7 @@
         "buttons": [
           {
             "id": 1,
-            "scr": "btn_STAGE()"
+            "scr": "btn_NEXT()"
           },
           {
             "id": 2,
@@ -96,7 +96,7 @@
         "buttons": [
           {
             "id": 1,
-            "scr": "btn_STAGE()"
+            "scr": "btn_NEXT()"
           },
           {
             "id": 2,
@@ -240,7 +240,7 @@
     {
       "title": "OFF",
       "name": "",
-      "config": { }
+      "config": {}
     }
   ]
 }

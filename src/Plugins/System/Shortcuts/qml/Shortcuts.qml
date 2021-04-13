@@ -43,7 +43,7 @@ Loader {
                 context: Qt.ApplicationShortcut
                 enabled: modelData.enb.value
                 sequence: modelData.key.text
-                onActivated: application.jsexec(modelData.jscmd.text)
+                onActivated: application.jsexec(modelData.scr.text)
             }
         }
     }
@@ -56,7 +56,7 @@ Loader {
                 context: Qt.ApplicationShortcut
                 enabled: modelData.enb.value
                 sequence: modelData.key.text
-                onActivated: application.jsexec(modelData.jscmd.text)
+                onActivated: application.jsexec(modelData.scr.text)
             }
         }
     }

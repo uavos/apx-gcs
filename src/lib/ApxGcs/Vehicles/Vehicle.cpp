@@ -152,6 +152,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         // forward serial TX for plugins
         connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
         connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);
+        connect(this, &Vehicle::requestScript, protocol->data(), &PData::requestScript);
     }
 
     if (isIdentified()) {
