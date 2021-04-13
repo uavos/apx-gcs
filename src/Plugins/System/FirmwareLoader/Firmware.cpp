@@ -145,6 +145,8 @@ void Firmware::stop()
 {
     QueueItem::protocol()->root()->cancelRequests();
     f_queue->deleteChildren();
+    setActive(false);
+    updateStatus();
 }
 
 QueueItem *Firmware::queued(Fact *list, const QString &uid)
