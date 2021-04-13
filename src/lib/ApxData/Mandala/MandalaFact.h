@@ -61,6 +61,9 @@ private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
 
+    bool _convert_value{};
+    qreal _conversion_factor{1.};
+
     QElapsedTimer sendTime;
     QTimer sendTimer;
 
