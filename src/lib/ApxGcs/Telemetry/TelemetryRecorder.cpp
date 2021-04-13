@@ -30,8 +30,6 @@
 
 #include <Nodes/Nodes.h>
 
-// TODO: auto record on takeoff
-
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
@@ -394,8 +392,8 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
 
 bool TelemetryRecorder::checkAutoRecord(void)
 {
-    //if (vehicle->protocol()->streamType() != ProtocolVehicle::TELEMETRY)
-    return recording();
+    if (_vehicle->streamType() != PVehicle::TELEMETRY)
+        return recording();
 
     Vehicle::FlightState fs = _vehicle->flightState();
     if (flightState_s != fs) {
