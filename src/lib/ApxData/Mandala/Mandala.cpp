@@ -24,7 +24,6 @@
 #include <App/App.h>
 #include <App/AppRoot.h>
 #include <mandala/MandalaMetaBase.h>
-#include <mandala/backport/MandalaBackport.h>
 
 Mandala::Mandala(Fact *parent)
     : Fact(parent,
@@ -68,15 +67,6 @@ Mandala::Mandala(Fact *parent)
         }
         MandalaFact *f = new MandalaFact(this, group, d);
         uid_map.insert(f->uid(), f);
-        //find aliases
-        for (auto i : mandala::backport::items) {
-            if (d.uid != i.meta.uid)
-                continue;
-            if (i.meta.uid == mandala::backport::meta_void.uid)
-                continue;
-            f->addAlias(i.alias);
-            break;
-        }
     }
 }
 
@@ -103,14 +93,6 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
         return f;
     if (mpath.contains('.')) {
         f = static_cast<MandalaFact *>(findChild(mpath));
-    } else {
-        for (auto i : uid_map) {
-            if (i->alias() != mpath)
-                continue;
-            f = i;
-            qDebug() << "Fact by alias:" << mpath;
-            break;
-        }
     }
     if (!f && !silent) {
         apxMsgW() << "Mandala fact not found:" << mpath;

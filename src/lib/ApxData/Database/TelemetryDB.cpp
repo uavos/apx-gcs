@@ -280,7 +280,6 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 
     const QStringList &n = records.names;
     int i_name = n.indexOf("name");
-    int i_alias = n.indexOf("alias");
 
     TelemetryDB::TelemetryFieldsMap fmap;
     TelemetryDB::TelemetryFieldsAliases faliases;
@@ -296,16 +295,14 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     bool mod = false;
     for (auto const &f : records.values) {
         QString f_name = f.at(i_name).toString();
-        QString f_alias = f.at(i_alias).toString();
 
         quint64 key = 0;
         bool upd = false;
         for (auto const &r : db_records.values) {
             const QString &name = r.at(i_r_name).toString();
-            if (name == f_name || name == f_alias) {
+            if (name == f_name) {
                 key = r.at(0).toULongLong();
                 fmap.insert(key, f_name);
-                faliases.insert(f_alias, f_name);
                 //check entire row match
                 for (int i = 1; i < r.size(); ++i) {
                     if (r.at(i).toString() == f.value(n.indexOf(rn.at(i))).toString()) {
@@ -333,7 +330,6 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
                 return false;
             key = query.lastInsertId().toULongLong();
             fmap.insert(key, f_name);
-            faliases.insert(f_alias, f_name);
         } else {
             apxConsole() << "update telemetry field:" << f_name;
         }

@@ -47,8 +47,6 @@ public:
     Q_INVOKABLE Fact *classFact() const;
     Q_INVOKABLE QString mpath() const;
 
-    void addAlias(const QString &a);
-    Q_INVOKABLE QString alias() const;
     Q_INVOKABLE mandala::uid_t offset() const;
 
     //stream
@@ -62,7 +60,6 @@ public:
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
-    QString m_alias;
 
     QElapsedTimer sendTime;
     QTimer sendTimer;

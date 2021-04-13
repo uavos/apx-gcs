@@ -83,8 +83,7 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
     recMandala.names << "id"
                      << "name"
                      << "title"
-                     << "units"
-                     << "alias";
+                     << "units";
     for (auto f : m->uid_map.values()) {
         if (f->isSystem())
             continue;
@@ -93,7 +92,6 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
         v << f->mpath();
         v << f->meta().title;
         v << f->meta().units;
-        v << f->alias();
         recMandala.values.append(v);
     }
 

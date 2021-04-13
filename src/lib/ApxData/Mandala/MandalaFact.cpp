@@ -113,16 +113,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
     }
 }
 
-void MandalaFact::addAlias(const QString &a)
-{
-    m_alias = a;
-}
-
-QString MandalaFact::alias() const
-{
-    return m_alias;
-}
-
 bool MandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
@@ -214,8 +204,6 @@ QVariant MandalaFact::data(int col, int role) const
             return name();
         if (col == FACT_MODEL_COLUMN_DESCR) {
             QString s = title();
-            if (!alias().isEmpty())
-                s += QString(" {%1}").arg(alias());
             if (!m_meta.descr[0])
                 s += QString(" %1").arg(m_meta.descr);
             return s;
@@ -269,8 +257,6 @@ bool MandalaFact::showThis(QRegExp re) const
         return false;
     if (!(options() & FilterSearchAll))
         return false;
-    if (alias().contains(re))
-        return true;
     if (mpath().contains(re))
         return true;
     if (m_meta.descr[0] && QString(m_meta.descr).contains(re))
