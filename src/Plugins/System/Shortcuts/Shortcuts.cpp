@@ -172,28 +172,30 @@ void Shortcuts::fromVariant(const QVariant &var)
             auto key = v.toObject()["key"].toString();
             lsys.append(key);
             auto jso = v.toObject().toVariantMap();
-            jso["enb"] = true; //default
+            jso.insert("enb", true); //default
             msys.insert(key, jso);
         }
     }
     QVariantMap m = var.value<QVariantMap>();
-    if (m.value("system").canConvert<QVariantList>())
-        for (auto const &v : m.value("system").value<QSequentialIterable>()) {
-            auto mi = v.value<QVariantMap>();
-            auto key = mi.value("key").toString();
-            if (!msys.contains(key))
-                continue;
-            auto jso = msys[key];
-            jso["enb"] = mi.value("enb");
-            msys[key] = jso;
-        }
-    if (m.value("user").canConvert<QVariantList>())
-        for (auto const &v : m.value("user").value<QSequentialIterable>()) {
-            auto mi = v.value<QVariantMap>();
-            auto key = mi.value("key").toString();
-            lusr.append(key);
-            musr.insert(key, mi);
-        }
+    for (auto i : m.value("system").value<QVariantList>()) {
+        auto m = i.value<QVariantMap>();
+        if (m.isEmpty())
+            continue;
+        auto key = m.value("key").toString();
+        if (!msys.contains(key))
+            continue;
+        auto sys = msys.value(key);
+        sys.insert("enb", m.value("enb"));
+        msys.insert(key, sys);
+    }
+    for (auto i : m.value("user").value<QVariantList>()) {
+        auto m = i.value<QVariantMap>();
+        if (m.isEmpty())
+            continue;
+        auto key = m.value("key").toString();
+        lusr.append(key);
+        musr.insert(key, m);
+    }
 
     for (auto key : lsys) {
         f_add->defaults();
