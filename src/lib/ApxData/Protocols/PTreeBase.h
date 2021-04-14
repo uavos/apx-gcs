@@ -29,6 +29,8 @@
 
 #include <mandala/MandalaMetaTree.h>
 
+class PBase;
+
 class PTreeBase : public Fact
 {
     Q_OBJECT
@@ -45,6 +47,8 @@ public:
     {
         return qobject_cast<T *>(parentFact());
     }
+
+    auto root() const { return findParent<PBase>(); }
 
     virtual void send_uplink(QByteArray packet);
 

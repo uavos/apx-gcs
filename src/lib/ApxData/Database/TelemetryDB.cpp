@@ -167,7 +167,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "TelemetryCacheData", "time", false);
     new DBReqMakeIndex(this, "TelemetryCacheData", "type", false);
 }
-//=============================================================================
+
 TelemetryDB::TelemetryFieldsMap TelemetryDB::fieldsMap()
 {
     QMutexLocker lock(&pMutex);
@@ -210,7 +210,7 @@ void TelemetryDB::clearInvalidCacheList()
     m_invalidCacheList.clear();
     latestInvalidCacheID = 0;
 }
-//=============================================================================
+
 void TelemetryDB::emptyTrash()
 {
     DBReqTelemetryEmptyTrash *req = new DBReqTelemetryEmptyTrash();
@@ -259,8 +259,7 @@ void TelemetryDB::getStats()
         Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
-//=============================================================================
+
 DBReqTelemetry::DBReqTelemetry()
     : DatabaseRequest(Database::instance()->telemetry)
 {}
@@ -269,8 +268,7 @@ bool DBReqTelemetry::run(QSqlQuery &query)
     Q_UNUSED(query)
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 {
     connect(
@@ -282,7 +280,6 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 
     const QStringList &n = records.names;
     int i_name = n.indexOf("name");
-    int i_alias = n.indexOf("alias");
 
     TelemetryDB::TelemetryFieldsMap fmap;
     TelemetryDB::TelemetryFieldsAliases faliases;
@@ -298,16 +295,14 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     bool mod = false;
     for (auto const &f : records.values) {
         QString f_name = f.at(i_name).toString();
-        QString f_alias = f.at(i_alias).toString();
 
         quint64 key = 0;
         bool upd = false;
         for (auto const &r : db_records.values) {
             const QString &name = r.at(i_r_name).toString();
-            if (name == f_name || name == f_alias) {
+            if (name == f_name) {
                 key = r.at(0).toULongLong();
                 fmap.insert(key, f_name);
-                faliases.insert(f_alias, f_name);
                 //check entire row match
                 for (int i = 1; i < r.size(); ++i) {
                     if (r.at(i).toString() == f.value(n.indexOf(rn.at(i))).toString()) {
@@ -335,7 +330,6 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
                 return false;
             key = query.lastInsertId().toULongLong();
             fmap.insert(key, f_name);
-            faliases.insert(f_alias, f_name);
         } else {
             apxConsole() << "update telemetry field:" << f_name;
         }
@@ -404,7 +398,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryEmptyTrash::run(QSqlQuery &query)
 {
     db->disable();
@@ -457,7 +451,7 @@ bool DBReqTelemetryEmptyTrash::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
-//=============================================================================
+
 bool DBReqTelemetryEmptyCache::run(QSqlQuery &query)
 {
     db->disable();
@@ -509,7 +503,7 @@ bool DBReqTelemetryEmptyCache::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
-//=============================================================================
+
 bool DBReqTelemetryStats::run(QSqlQuery &query)
 {
     query.prepare("SELECT COUNT(*) FROM Telemetry");
@@ -532,4 +526,25 @@ bool DBReqTelemetryStats::run(QSqlQuery &query)
     emit totals(cntTotal, cntTrash);
     return true;
 }
-//=============================================================================
+
+bool DBReqTelemetryRecover::run(QSqlQuery &query)
+{
+    query.prepare("SELECT * FROM Telemetry WHERE hash=?");
+    query.addBindValue(_hash);
+    if (!query.exec())
+        return false;
+    if (!query.next()) {
+        emit unavailable(_hash);
+        return true;
+    }
+    auto telemetryID = query.value(0).toULongLong();
+    auto trash = query.value("trash").toBool();
+    if (trash) {
+        query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
+        query.addBindValue(telemetryID);
+        if (!query.exec())
+            return false;
+    }
+    emit available(telemetryID, _hash);
+    return true;
+}

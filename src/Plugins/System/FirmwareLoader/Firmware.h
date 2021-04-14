@@ -70,6 +70,8 @@ private slots:
     void next();
     void itemFinished(QueueItem *item, bool success);
 
+    void stop();
+
 signals:
     void upgradeStarted(QString uid, QString type);
     void upgradeFinished(QString uid, QString type);

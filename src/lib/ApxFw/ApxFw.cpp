@@ -58,26 +58,6 @@ void ApxFw::sync()
 {
     syncFacts();
     requestLatestTag();
-    return;
-
-    QDateTime t = QDateTime::currentDateTimeUtc();
-    QDateTime t0 = QSettings().value(QString("%1_%2").arg(name()).arg(App::version())).toDateTime();
-    qint64 tm = 8 * 60 * 60;
-    qint64 tp = tm; //t0.secsTo(t);
-    if (t0.isValid() && tp < tm) {
-        apxMsgW() << QString("Firmware download in %1")
-                         .arg(AppRoot::timeToString(static_cast<quint64>(tm - tp), true));
-
-        QString s
-            = QSettings().value(QString("%1_%2_latest").arg(name()).arg(App::version())).toString();
-        if (!s.isEmpty()) {
-            if (!extractRelease(s)) {
-            }
-        }
-        return;
-    }
-
-    requestRelease(QString("tags/%1").arg(App::version()));
 }
 
 void ApxFw::syncFacts()
@@ -173,8 +153,6 @@ bool ApxFw::extractRelease(const QString &filePath)
     qDebug() << "extracted" << files.size() << dir.absolutePath();
     apxMsg() << title().append(':') << dir.dirName();
 
-    QSettings().setValue(QString("%1_%2_latest").arg(name()).arg(App::version()),
-                         value().toString());
     return true;
 }
 

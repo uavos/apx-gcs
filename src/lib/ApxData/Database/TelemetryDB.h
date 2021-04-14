@@ -135,3 +135,22 @@ protected:
 signals:
     void totals(quint64 total, quint64 trash);
 };
+
+// check if telemetry is available in database and untrash it
+class DBReqTelemetryRecover : public DBReqTelemetry
+{
+    Q_OBJECT
+public:
+    explicit DBReqTelemetryRecover(QString hash)
+        : DBReqTelemetry()
+        , _hash(hash)
+    {}
+
+private:
+    QString _hash;
+    bool run(QSqlQuery &query);
+
+signals:
+    void available(quint64 telemetryID, QString hash);
+    void unavailable(QString hash);
+};

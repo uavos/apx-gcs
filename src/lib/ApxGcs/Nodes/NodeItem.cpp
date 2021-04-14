@@ -92,7 +92,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
     connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);*/
 
-    if (protocol)
+    if (protocol && !_nodes->upgrading() && !_nodes->vehicle->isLocal())
         protocol->requestIdent();
 }
 
@@ -121,15 +121,17 @@ void NodeItem::updateStatus()
         setValue(tr("no config").toUpper());
         return;
     }
-    if (_status_field) {
-        setValue(_status_field->valueText().trimmed());
-    }
+    setValue(label());
 }
 void NodeItem::updateUpgrading()
 {
     if (_protocol->upgrading()) {
+        //qDebug() << "UPGRADING:" << title() << _nodes->vehicle->title();
         clear();
-    } else {
+        return;
+    }
+    //qDebug() << "UPGRADING FINISHED:" << title() << _nodes->vehicle->title();
+    if (!_nodes->vehicle->isLocal()) {
         _protocol->requestIdent();
     }
 }
@@ -517,17 +519,25 @@ void NodeItem::identReceived(QVariantMap ident)
     if (_ident == ident && valid())
         return;
 
-    qWarning() << "ident updated";
+    qWarning() << "ident updated" << title() << _nodes->vehicle->title();
 
     _ident = ident;
     clear();
 
-    if (_protocol) {
+    if (_protocol && !_protocol->upgrading()) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         storage->saveNodeInfo();
         _nodes->nodeNotify(this);
-        if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
+
+        // try to request dict automatically
+        do {
+            if (_nodes->vehicle->isLocal() && !_nodes->vehicle->active())
+                break;
+            if (_nodes->upgrading())
+                break;
+
             _protocol->requestDict();
+        } while (0);
         return;
     }
 

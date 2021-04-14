@@ -45,6 +45,8 @@ public:
     uint timeout_ms() const { return _timeout_ms; }
     PApxNode *node() const { return _node; }
     mandala::uid_t uid() const { return _uid; }
+    QString title() const { return Mandala::meta(uid()).name; }
+    auto active() const { return _active; }
 
     virtual QString cid() const { return QString(); } // compare ID to check duplicates
 
@@ -56,6 +58,7 @@ protected:
     PApxNode *_node;
     mandala::uid_t _uid;
     uint _timeout_ms;
+    bool _active{};
 
     virtual bool request(PApxRequest &req) { return true; }
     virtual bool response(PStreamReader &stream) { return true; }

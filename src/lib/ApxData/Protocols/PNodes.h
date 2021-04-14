@@ -45,7 +45,6 @@ private slots:
 
 public slots:
     virtual void requestSearch() { _nimp(__FUNCTION__); }
-    virtual void cancelRequests() { _nimp(__FUNCTION__); }
 
 signals:
     void node_available(PNode *node);

@@ -34,6 +34,7 @@ void PFirmware::setUpgrading(bool v)
     if (m_upgrading == v)
         return;
     m_upgrading = v;
+    setActive(v);
     emit upgradingChanged();
     if (!v)
         setProgress(-1);

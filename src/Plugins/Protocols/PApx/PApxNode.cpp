@@ -69,7 +69,8 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     mandala::uid_t uid = pid.uid;
 
     if (uid == mandala::cmd::env::nmt::search::uid) {
-        requestIdent();
+        if (!upgrading())
+            requestIdent();
         return;
     }
 
@@ -118,11 +119,13 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block(QString::number(fid >> 8));
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
-        size_t fidx = fid >> 8;
+        auto fidx = fid >> 8;
         if (fidx >= _field_types.size())
             return;
-        QString name = _field_names.at(fidx);
-        QVariant value = read_param(stream, _field_types.at(fidx));
+        auto aidx = fid & 0xFF;
+        // TODO: read updates of arrays
+        auto name = _field_names.at(fidx);
+        auto value = read_param(stream, _field_types.at(fidx));
         QVariantMap values;
         values.insert(name, value);
         emit confUpdated(values);
@@ -138,7 +141,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         stream >> t;
         trace()->block(QString::number(t));
 
-        const char *s = stream.read_string(stream.available());
+        auto s = stream.read_string(stream.available());
         QString msg(QString(s).trimmed());
         trace()->block(msg);
 
@@ -149,6 +152,11 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         msg = msg.simplified();
 
         emit messageReceived((msg_type_e) t, msg);
+
+        if (!_nodes->local() && !_nodes->upgrading()
+            && msg.contains(QString("node: %1: initialized").arg(title()))) {
+            requestIdent();
+        }
         return;
     }
 
@@ -176,9 +184,11 @@ void PApxNode::schedule_request(PApxNodeRequest *req)
     for (auto i : _requests) {
         if (i->equals(req)) {
             // the most recent for the uid is the only valid
-            if (uid == mandala::cmd::env::nmt::ident::uid)
+            if (uid == mandala::cmd::env::nmt::ident::uid || i->active()) {
+                delete_request(req);
                 return;
-            qDebug() << "dup" << Mandala::meta(uid).path;
+            }
+            qDebug() << "dup" << req->title();
             delete_request(i);
         }
     }
@@ -197,6 +207,7 @@ void PApxNode::extend_request(PApxNodeRequest *req, size_t time_ms)
 
 void PApxNode::delete_request(PApxNodeRequest *req)
 {
+    //qDebug() << "finished" << req->title();
     req->finished();
     emit request_finished(req);
     delete req;
@@ -283,6 +294,9 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
 
 void PApxNode::requestDict()
 {
+    if (!file("dict"))
+        return;
+
     if (_skip_cache) {
         _skip_cache = false;
         requestDictDownload();
@@ -365,8 +379,12 @@ void PApxNode::dictCacheMissing(QString hash)
     }
     requestDictDownload();
 }
-void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxNode::parseDictData(PApxNode *_node,
+                             const xbus::node::file::info_s &info,
+                             const QByteArray data)
 {
+    Q_UNUSED(_node)
+
     PStreamReader stream(data);
 
     bool err = true;
@@ -512,8 +530,12 @@ void PApxNode::parseDictData(const xbus::node::file::info_s &info, const QByteAr
     emit dictReceived(dict);
 }
 
-void PApxNode::parseConfData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxNode::parseConfData(PApxNode *_node,
+                             const xbus::node::file::info_s &info,
+                             const QByteArray data)
 {
+    Q_UNUSED(_node)
+
     PStreamReader stream(data);
 
     _values.clear();
@@ -742,8 +764,12 @@ QVariant PApxNode::textToOption(QVariant value, size_t fidx)
     return value;
 }
 
-void PApxNode::parseScriptData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxNode::parseScriptData(PApxNode *_node,
+                               const xbus::node::file::info_s &info,
+                               const QByteArray data)
 {
+    Q_UNUSED(_node)
+
     //qDebug() << "script data" << info.size << data.size();
     // check script hash
     if (info.hash != _script_value) {

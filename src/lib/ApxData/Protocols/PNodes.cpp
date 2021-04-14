@@ -47,5 +47,6 @@ void PNodes::updateUpgrading()
     if (m_upgrading == v)
         return;
     m_upgrading = v;
+    setActive(v);
     emit upgradingChanged();
 }

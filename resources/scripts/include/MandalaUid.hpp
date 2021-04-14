@@ -1280,7 +1280,8 @@ namespace cmd
             enum { upd = 0x7f6 };
             enum { mod = 0x7f7 };
             enum { usr = 0x7f8 };
-            enum { debug = 0x7f9 };
+            enum { tree = 0x7f9 };
+            enum { debug = 0x7fa };
         };
     };
 };

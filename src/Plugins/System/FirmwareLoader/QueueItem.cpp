@@ -34,6 +34,13 @@ QueueItem::QueueItem(Fact *parent, QString uid, QString name, QString hw, QStrin
     setTreeType(NoFlags);
     setType(type);
 }
+PFirmware *QueueItem::protocol()
+{
+    auto p = AppGcs::instance()->f_datalink->f_protocols->current();
+    if (!p)
+        return {};
+    return p->firmware();
+}
 
 bool QueueItem::match(const QString &uid) const
 {
@@ -48,8 +55,6 @@ void QueueItem::setType(QString v)
 void QueueItem::start()
 {
     qDebug() << title();
-
-    //setValue(tr("Initializing update").append("..."));
     upload();
 }
 
@@ -76,14 +81,6 @@ bool QueueItem::loadFirmware(QString hw)
         apxMsgW() << "unknown type:" << type();
 
     return apxfw->loadFirmware(_name, _hw, rel_type, &_data, &_offset);
-}
-
-PFirmware *QueueItem::protocol() const
-{
-    auto p = AppGcs::instance()->f_datalink->f_protocols->current();
-    if (!p)
-        return {};
-    return p->firmware();
 }
 
 void QueueItem::upload()

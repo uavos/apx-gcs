@@ -33,6 +33,7 @@ public:
                                  Fact *src,
                                  const QString &name,
                                  FactPropertyBinding *src_binding);
+    ~FactPropertyBinding();
 
     bool match(Fact *src, const QString &name);
 
@@ -44,6 +45,8 @@ private:
     Fact *_dst;
     QString _name;
     QPointer<FactPropertyBinding> _src_binding;
+
+    QList<QMetaObject::Connection> _clist;
 
     QMetaProperty _psrc;
     QMetaProperty _pdst;

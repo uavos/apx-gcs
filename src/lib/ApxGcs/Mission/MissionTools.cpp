@@ -44,7 +44,7 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
                  tr("Adjust all waypoints altitude"),
                  Group);
     f->setIcon("altimeter");
-    f_altadjust = new Fact(f, "value", tr("Value to add"), "", Int);
+    f_altadjust = new Fact(f, "delta", tr("Value to add"), "", Int);
     f_altadjust->setUnits("m");
     f_altadjust->setIcon(f->icon());
     connect(f_altadjust, &Fact::valueChanged, this, [this]() {
@@ -61,7 +61,7 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     f = new Fact(this, "altset", tr("Altitude set"), tr("Set all waypoints altitude"), Group);
     f->setIcon("format-align-middle");
     connect(f, &Fact::triggered, this, &MissionTools::updateMaxAltitude);
-    f_altset = new Fact(f, "value", tr("Altitude value"), "", Int);
+    f_altset = new Fact(f, "altitude", tr("Altitude value"), "", Int);
     f_altset->setUnits("m");
     f_altset->setIcon(f->icon());
     f_altset->setMin(0);

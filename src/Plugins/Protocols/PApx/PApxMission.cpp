@@ -57,15 +57,21 @@ void PApxMission::updateMission(QVariant var)
     auto f = _file();
     if (!f)
         return;
-    auto req = new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var));
+    auto req = new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var.value<QVariantMap>()));
     connect(req, &PApxNodeRequestFile::uploaded, this, &PMission::missionUpdated);
 }
 
-void PApxMission::parseMissionData(const xbus::node::file::info_s &info, const QByteArray data)
+void PApxMission::parseMissionData(PApxNode *_node,
+                                   const xbus::node::file::info_s &info,
+                                   const QByteArray data)
 {
     //qDebug() << "mission data" << info.size << data.size();
     PStreamReader stream(data);
-    emit missionReceived(_unpack(stream));
+    auto m = _unpack(stream);
+    if (!m.isEmpty()) {
+        m.insert("node_uid", _node->uid());
+    }
+    emit missionReceived(m);
 }
 
 PApxNodeFile *PApxMission::_file() const
@@ -78,7 +84,7 @@ PApxNodeFile *PApxMission::_file() const
     apxMsgW() << tr("Mission source unavailable");
     return nullptr;
 }
-QVariant PApxMission::_unpack(PStreamReader &stream)
+QVariantMap PApxMission::_unpack(PStreamReader &stream)
 {
     //unpack mission
     if (stream.available() < xbus::mission::file_hdr_s::psize())
@@ -274,10 +280,8 @@ QVariant PApxMission::_unpack(PStreamReader &stream)
     return m;
 }
 
-QByteArray PApxMission::_pack(const QVariant &var)
+QByteArray PApxMission::_pack(const QVariantMap &m)
 {
-    auto m = var.value<QVariantMap>();
-
     QByteArray data(65535, '\0');
     uint8_t *pdata = reinterpret_cast<uint8_t *>(data.data());
     XbusStreamWriter stream(pdata, data.size());

@@ -1,3 +1,58 @@
+# [APX Ground Control v11.0.128](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.128) (04/13/21)
+
+> Branch: `main`\
+> Date: `04/13/21 21:32:54`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/c3f6d7a0f344b37c066d7e8f94c174ea7484ec40...11ea326501522f894ff58a4f5a03b5537a1997de)
+
+## New Features
+* long text display elide options
+* Datalink Inspector plugin
+* telemetry files share
+* node modules tool
+* default templates import: telemetry and configs
+* AP configuration import substitutions
+* takeoff condition detector for auto recording
+
+## Bug Fixes
+* apxfw package parsing
+* error string description
+* reserved fact names (closes [`9`](https://github.com/uavos/apx-gcs/issues/9))
+* telemetry recorder reset by time shift
+* telemetry chart remember shown curves
+* js scripting commands and shortcuts
+* shortcuts plugin failure
+
+## Performance Enhancements
+* http service as plugin
+* mandala units conversion for radians
+
+# [APX Ground Control v11.0.126](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.126) (04/13/21)
+
+> Branch: `main`\
+> Date: `04/13/21 17:34:19`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/c3f6d7a0f344b37c066d7e8f94c174ea7484ec40...9a69088d88eca14e0d0cc47cebdb6e8df1c8969d)
+
+## New Features
+* long text display elide options
+* Datalink Inspector plugin
+* telemetry files share
+* node modules tool
+* default templates import: telemetry and configs
+* AP configuration import substitutions
+* takeoff condition detector for auto recording
+
+## Bug Fixes
+* apxfw package parsing
+* error string description
+* reserved fact names (closes [`9`](https://github.com/uavos/apx-gcs/issues/9))
+* telemetry recorder reset by time shift
+* telemetry chart remember shown curves
+* js scripting commands and shortcuts
+
+## Performance Enhancements
+* http service as plugin
+* mandala units conversion for radians
+
 # [APX Ground Control v11.0.49](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.49) (03/13/21)
 
 > Branch: `main`\

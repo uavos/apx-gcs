@@ -36,6 +36,8 @@ PNode::PNode(PNodes *parent, QString uid)
         _upgradingDoneTimer.setSingleShot(true);
         _upgradingDoneTimer.setInterval(1000);
         connect(&_upgradingDoneTimer, &QTimer::timeout, this, [this]() { setUpgrading(false); });
+    } else {
+        qWarning() << "missing PApxFirmware";
     }
 }
 
@@ -45,6 +47,7 @@ void PNode::setUpgrading(bool v)
     if (m_upgrading == v)
         return;
     m_upgrading = v;
+    setActive(v);
     emit upgradingChanged();
 }
 
@@ -60,11 +63,15 @@ void PNode::upgradeStarted(QString uid, QString name)
 }
 void PNode::upgradeFinished(QString uid, bool success)
 {
+    //qDebug() << uid << success;
     if (uid != m_uid)
         return;
-    _upgradingDoneTimer.start();
+    // _upgradingDoneTimer.start();
 
     auto p = findParent<PBase>()->firmware();
     unbindProperties(p);
     setValue(QVariant());
+    setProgress(-1);
+
+    setUpgrading(false);
 }

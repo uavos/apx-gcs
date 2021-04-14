@@ -40,6 +40,8 @@ public:
 
     void finish(bool success);
 
+    static PFirmware *protocol();
+
 protected:
     QString _uid;
     QString _name;
@@ -50,7 +52,6 @@ protected:
     quint32 _offset;
 
     bool loadFirmware(QString hw);
-    PFirmware *protocol() const;
 
 protected slots:
     virtual void upload();

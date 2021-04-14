@@ -49,10 +49,10 @@ FactPropertyBinding::FactPropertyBinding(Fact *parent,
     //qDebug() << fact_src->path() << "->" << fact_dst->path() << name;
     if (!_pdst.isWritable()) {
         qWarning() << "readonly property:" << _dst->path() << name;
-        connect(_src,
-                _psrc.notifySignal().methodSignature().prepend('2'),
-                _dst,
-                _pdst.notifySignal().methodSignature().prepend('2'));
+        _clist.append(connect(_src,
+                              _psrc.notifySignal().methodSignature().prepend('2'),
+                              _dst,
+                              _pdst.notifySignal().methodSignature().prepend('2')));
         return;
     }
 
@@ -67,6 +67,11 @@ FactPropertyBinding::FactPropertyBinding(Fact *parent,
         _src_binding->_src_binding = this;
 
     propertyChanged();
+}
+FactPropertyBinding::~FactPropertyBinding()
+{
+    for (auto c : _clist)
+        disconnect(c);
 }
 
 void FactPropertyBinding::propertyChanged()

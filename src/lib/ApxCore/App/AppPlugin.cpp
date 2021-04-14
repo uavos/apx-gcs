@@ -237,15 +237,15 @@ bool AppPlugin::checkLib(const QString &fname)
 
     QSettings spt;
     spt.beginGroup("plugins_test");
-    QCryptographicHash hash(QCryptographicHash::Sha1);
+    QCryptographicHash h(QCryptographicHash::Sha1);
     QFileInfo fi(fname);
-    hash.addData(fname.toUtf8());
-    hash.addData(fi.filePath().toUtf8());
-    hash.addData(fi.lastModified().toString().toUtf8());
-    hash.addData(tool.filePath().toUtf8());
-    hash.addData(tool.lastModified().toString().toUtf8());
-    QString sptKey = hash.result().toHex().toUpper();
-    if (spt.value(sptKey).toString() == name) {
+    h.addData(fname.toUtf8());
+    h.addData(fi.filePath().toUtf8());
+    h.addData(fi.lastModified().toString().toUtf8());
+    h.addData(tool.filePath().toUtf8());
+    h.addData(tool.lastModified().toString().toUtf8());
+    QString hash = h.result().toHex().toUpper();
+    if (spt.value(name).toString() == hash) {
         //qDebug() << "already checked" << name << sptKey;
         return true;
     }
@@ -265,7 +265,7 @@ bool AppPlugin::checkLib(const QString &fname)
         f_enabled->setTitle(QString("%1 (%2)").arg(f_enabled->title()).arg(tr("error").toUpper()));
         return false;
     }
-    spt.setValue(sptKey, name);
+    spt.setValue(name, hash);
     // qDebug() << "checked" << name << sptKey;
     return true;
 }

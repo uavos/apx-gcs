@@ -42,6 +42,7 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
 }
 PApxNodeRequest::~PApxNodeRequest()
 {
+    //qDebug() << title();
     _node->request_deleted(this);
 }
 
@@ -56,6 +57,8 @@ void PApxNodeRequest::discard()
 
 bool PApxNodeRequest::make_request(PApxRequest &req)
 {
+    _active = true;
+
     req.request(_uid);
     QByteArray src(QByteArray::fromHex(_node->uid().toUtf8()));
     size_t sz = static_cast<size_t>(src.size());

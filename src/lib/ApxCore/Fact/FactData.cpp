@@ -35,6 +35,7 @@ FactData::FactData(
     connect(this, &FactData::unitsChanged, this, &FactData::updateValueText);
 
     connect(this, &FactData::valueTextChanged, this, &FactData::updateText);
+    connect(this, &FactData::unitsChanged, this, &FactData::updateText);
 
     connect(this, &FactData::dataTypeChanged, this, &FactData::valueChanged);
 

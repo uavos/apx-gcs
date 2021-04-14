@@ -40,8 +40,8 @@ private:
 
     static constexpr const auto file_name{"mission"};
 
-    static QVariant _unpack(PStreamReader &stream);
-    static QByteArray _pack(const QVariant &var);
+    static QVariantMap _unpack(PStreamReader &stream);
+    static QByteArray _pack(const QVariantMap &m);
 
     PApxNodeFile *_file() const;
 
@@ -49,5 +49,7 @@ private:
     void updateMission(QVariant var) override;
 
 private slots:
-    void parseMissionData(const xbus::node::file::info_s &info, const QByteArray data);
+    void parseMissionData(PApxNode *_node,
+                          const xbus::node::file::info_s &info,
+                          const QByteArray data);
 };

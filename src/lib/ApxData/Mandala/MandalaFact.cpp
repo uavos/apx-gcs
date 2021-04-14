@@ -61,6 +61,11 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 setDataType(Float);
                 setPrecision(getPrecision());
                 setDefaultValue(0.f);
+                if (units().startsWith("rad")) {
+                    _convert_value = true;
+                    _conversion_factor = qRadiansToDegrees(1.);
+                    setUnits(units().replace("rad", "deg"));
+                }
                 break;
             case mandala::type_dword:
                 setDataType(Int);
@@ -102,6 +107,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             }
 
             setOpt("color", getColor());
+
             sendTime.start();
             sendTimer.setInterval(100);
             sendTimer.setSingleShot(true);
@@ -111,16 +117,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         }
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
     }
-}
-
-void MandalaFact::addAlias(const QString &a)
-{
-    m_alias = a;
-}
-
-QString MandalaFact::alias() const
-{
-    return m_alias;
 }
 
 bool MandalaFact::setValue(const QVariant &v)
@@ -149,35 +145,18 @@ bool MandalaFact::setValueLocal(const QVariant &v)
 void MandalaFact::setValueFromStream(const QVariant &v)
 {
     //qDebug() << v;
-    bool conv = false;
-    double k = 1.;
-    do {
-        if (units().startsWith("deg")) {
-            k = qRadiansToDegrees(1.);
-            conv = true;
-            break;
-        }
-    } while (0);
-    if (conv)
-        setValueLocal(QVariant::fromValue(v.toDouble() * k));
+    if (_convert_value)
+        setValueLocal(QVariant::fromValue(v.toDouble() * _conversion_factor));
     else
         setValueLocal(v);
-    //if (!modified())
-    //    qDebug() << mpath();
-    //setModified(true);
     count_rx();
 }
 QVariant MandalaFact::getValueForStream() const
 {
-    double k = 1.;
-    do {
-        if (units().startsWith("deg")) {
-            k = qDegreesToRadians(1.);
-            break;
-        }
+    if (_convert_value)
+        return value().toDouble() / _conversion_factor;
+    else
         return value();
-    } while (0);
-    return k * value().toDouble();
 }
 
 void MandalaFact::count_rx()
@@ -214,8 +193,6 @@ QVariant MandalaFact::data(int col, int role) const
             return name();
         if (col == FACT_MODEL_COLUMN_DESCR) {
             QString s = title();
-            if (!alias().isEmpty())
-                s += QString(" {%1}").arg(alias());
             if (!m_meta.descr[0])
                 s += QString(" %1").arg(m_meta.descr);
             return s;
@@ -269,8 +246,6 @@ bool MandalaFact::showThis(QRegExp re) const
         return false;
     if (!(options() & FilterSearchAll))
         return false;
-    if (alias().contains(re))
-        return true;
     if (mpath().contains(re))
         return true;
     if (m_meta.descr[0] && QString(m_meta.descr).contains(re))
@@ -300,7 +275,7 @@ QString MandalaFact::mpath() const
 
 int MandalaFact::getPrecision()
 {
-    if (name().contains("lat") || name().contains("lon"))
+    if (name() == "lat" || name() == "lon")
         return 6;
     const QString &u = units().toLower();
     if (!u.isEmpty()) {
@@ -309,10 +284,12 @@ int MandalaFact::getPrecision()
         if (u == "su")
             return 2;
         if (u == "deg")
+            return 2;
+        if (u == "rad")
             return 1;
-        if (u == "deg/s")
+        if (u == "rad/s")
             return 1;
-        if (u == "deg/s^2")
+        if (u == "rad/s^2")
             return 2;
         if (u == "rad^2")
             return 2;

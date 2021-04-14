@@ -152,6 +152,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         // forward serial TX for plugins
         connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
         connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);
+        connect(this, &Vehicle::requestScript, protocol->data(), &PData::requestScript);
     }
 
     if (isIdentified()) {
@@ -286,8 +287,9 @@ void Vehicle::updateCoordinate()
 void Vehicle::updateFlightState()
 {
     if ((f_mode->value().toUInt() == mandala::proc_mode_LANDING)
-        && (f_stage->value().toUInt() >= 250)) {
+        && (f_stage->value().toUInt() >= 7)) {
         setFlightState(FS_LANDED);
+        // TODO: better landed condition detector
     } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
                && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);

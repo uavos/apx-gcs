@@ -5,10 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb) Launch",
+            "name": "gcs",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/out/bin/gcs",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "rel app",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/Applications/APX Ground Control.app/Contents/MacOS/gcs",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",

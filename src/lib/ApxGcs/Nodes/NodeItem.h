@@ -51,6 +51,8 @@ public:
     auto valid() const { return m_valid; }
     auto ident() const { return _ident; }
 
+    QString label() const { return _status_field ? _status_field->valueText().trimmed() : ""; }
+
     bool loadConfigValue(const QString &name, const QString &value);
 
     Q_INVOKABLE void message(QString msg,

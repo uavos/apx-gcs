@@ -69,5 +69,5 @@ signals:
     void error();
     void interrupted();
 
-    void downloaded(const xbus::node::file::info_s &info, const QByteArray data);
+    void downloaded(PApxNode *_node, const xbus::node::file::info_s &info, const QByteArray data);
 };
