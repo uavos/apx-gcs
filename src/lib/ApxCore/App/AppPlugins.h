@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppPlugins_H
-#define AppPlugins_H
-//=============================================================================
+#pragma once
+
 #include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <QtCore>
 
 #include "AppPlugin.h"
-//=============================================================================
+
 class AppPlugins : public QObject, public QList<AppPlugin *>
 {
     Q_OBJECT
@@ -49,6 +48,9 @@ private:
 
     void fixDuplicates(QStringList &list, const QString &userPluginsPath) const;
 
+public slots:
+    void updateStatus();
+
 signals:
     void loaded();
 
@@ -56,5 +58,3 @@ signals:
     void loadedWindow(AppPlugin *plugin);
     void loadedControl(AppPlugin *plugin);
 };
-//=============================================================================
-#endif

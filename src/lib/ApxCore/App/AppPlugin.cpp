@@ -27,7 +27,7 @@
 #include <App/AppLog.h>
 
 #include <QCryptographicHash>
-//=============================================================================
+
 AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     : QObject(plugins)
     , plugins(plugins)
@@ -47,12 +47,13 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     App::jsync(plugins->f_enabled);
     f_enabled = f;
     connect(f, &Fact::valueChanged, this, &AppPlugin::enabledChanged);
+    connect(f, &Fact::valueChanged, plugins, &AppPlugins::updateStatus);
 }
 AppPlugin::~AppPlugin()
 {
     unload();
 }
-//=============================================================================
+
 void AppPlugin::loadLib()
 {
     QString fname = fileName;
@@ -62,6 +63,9 @@ void AppPlugin::loadLib()
     //load lib
     apxConsole() << tr("Loading").append(":") << name;
     QCoreApplication::processEvents();
+
+    QSettings sx_blacklist;
+    sx_blacklist.beginGroup("plugins_blacklist");
 
     if (!checkLib(fname))
         return;
@@ -96,8 +100,20 @@ void AppPlugin::loadLib()
         }
         return;
     }
-    p = reinterpret_cast<PluginInterface *>(instance);
+    if (sx_blacklist.value(name).toString() == _hash) {
+        apxMsgW() << tr("Plugin blacklisted").append(':') << name << "(" + fname + ")";
+        return;
+    }
+
+    sx_blacklist.setValue(name, _hash);
+    sx_blacklist.sync();
+
+    p = qobject_cast<PluginInterface *>(instance);
     interface = p;
+
+    if (!interface)
+        return;
+
     if (!f_enabled->value().toBool())
         return;
 
@@ -168,6 +184,9 @@ void AppPlugin::loadLib()
     }
     f_enabled->setTitle(title);
     f_enabled->setDescr(descr);
+
+    sx_blacklist.remove(name);
+    sx_blacklist.sync();
 }
 void AppPlugin::loadQml()
 {
@@ -183,7 +202,7 @@ void AppPlugin::loadQml()
     }
     plugins->loadedControl(this);
 }
-//=============================================================================
+
 void AppPlugin::load()
 {
     if (loader || control)
@@ -210,7 +229,7 @@ void AppPlugin::unload()
     loader = nullptr;
     control = nullptr;*/
 }
-//=============================================================================
+
 void AppPlugin::enabledChanged()
 {
     Fact *f = qobject_cast<Fact *>(sender());
@@ -220,23 +239,28 @@ void AppPlugin::enabledChanged()
         load();
     } else {
         //unload();
+
+        // remove from blacklist
+        QSettings sx_blacklist;
+        sx_blacklist.beginGroup("plugins_blacklist");
+        if (sx_blacklist.value(name).toString() == _hash) {
+            apxMsgW() << tr("Plugin blacklist removed").append(':') << name;
+        }
+        sx_blacklist.remove(name);
+        sx_blacklist.sync();
     }
 }
-//=============================================================================
-QString AppPlugin::errorString()
-{
-    return m_errorString;
-}
-//=============================================================================
+
 bool AppPlugin::checkLib(const QString &fname)
 {
     QFileInfo tool(plugins->check_tool);
     if (!tool.exists()) {
+        qWarning() << "no tool:" << tool.absoluteFilePath();
         return true;
     }
 
-    QSettings spt;
-    spt.beginGroup("plugins_test");
+    QSettings sx;
+    sx.beginGroup("plugins_test");
     QCryptographicHash h(QCryptographicHash::Sha1);
     QFileInfo fi(fname);
     h.addData(fname.toUtf8());
@@ -244,11 +268,15 @@ bool AppPlugin::checkLib(const QString &fname)
     h.addData(fi.lastModified().toString().toUtf8());
     h.addData(tool.filePath().toUtf8());
     h.addData(tool.lastModified().toString().toUtf8());
-    QString hash = h.result().toHex().toUpper();
-    if (spt.value(name).toString() == hash) {
-        //qDebug() << "already checked" << name << sptKey;
+    _hash = h.result().toHex().toUpper();
+    if (sx.value(name).toString() == _hash) {
+        // qDebug() << "already checked" << name << hash;
         return true;
     }
+
+    sx.remove(name);
+
+    // qDebug() << "checking:" << tool.absoluteFilePath();
 
     QCoreApplication::processEvents();
     QCoreApplication::processEvents();
@@ -259,14 +287,13 @@ bool AppPlugin::checkLib(const QString &fname)
     if (!proc.waitForFinished())
         return false;
     if (proc.exitCode() != 0) {
-        m_errorString = proc.readAllStandardError();
+        _errorString = proc.readAllStandardError();
         apxMsgW() << "Error loading plugin:" << name;
-        apxMsgW() << m_errorString;
+        apxMsgW() << _errorString;
         f_enabled->setTitle(QString("%1 (%2)").arg(f_enabled->title()).arg(tr("error").toUpper()));
         return false;
     }
-    spt.setValue(name, hash);
-    // qDebug() << "checked" << name << sptKey;
+    sx.setValue(name, _hash);
+    // qDebug() << "checked" << name << hash;
     return true;
 }
-//=============================================================================

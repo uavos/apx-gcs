@@ -66,7 +66,7 @@ void AppRoot::createTools()
                                  "plugins",
                                  tr("Plugins"),
                                  tr("Application PligIns"),
-                                 Group | Count);
+                                 Group);
     App::jsync(f_settings);
 }
 //=============================================================================

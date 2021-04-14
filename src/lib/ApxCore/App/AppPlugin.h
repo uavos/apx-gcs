@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppPlugin_H
-#define AppPlugin_H
-//=============================================================================
+#pragma once
+
 #include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <QtCore>
 class AppPlugins;
-//=============================================================================
+
 class AppPlugin : public QObject
 {
     Q_OBJECT
@@ -49,10 +48,11 @@ public:
 
     QString section;
 
-    QString errorString();
+    QString errorString() const { return _errorString; }
 
 private:
-    QString m_errorString;
+    QString _errorString;
+    QString _hash;
 
     void loadLib();
     void loadQml();
@@ -62,5 +62,3 @@ private:
 private slots:
     void enabledChanged();
 };
-//=============================================================================
-#endif

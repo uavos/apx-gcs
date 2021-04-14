@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtCore>
+
 //============================================================================
 int main(int argc, char *argv[])
 {
@@ -35,11 +36,15 @@ int main(int argc, char *argv[])
 
     const QStringList args = parser.positionalArguments();
 
+    // qDebug() << args;
+
     for (auto fname : args) {
         QLibrary lib(fname);
+        // qDebug() << "TEST:" << fname;
         if (!lib.load()) {
             const char *err = lib.errorString().toUtf8();
             qFatal("%s", err);
+            return -1;
         }
     }
 
