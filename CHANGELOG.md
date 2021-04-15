@@ -1,3 +1,19 @@
+# [APX Ground Control v11.0.134](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.134) (04/15/21)
+
+> Branch: `main`\
+> Date: `04/15/21 16:02:57`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/645a51fc17097c91c21a8d2795657e946a4165f6...d4898dc000ad37a40b180c0b031c4549151ca31e)
+
+## New Features
+* OTA firmware upgrade
+* vehicles deletion function
+
+## Bug Fixes
+* variant data formats parsers
+
+## Performance Enhancements
+* plugins load crash protection blacklist
+
 # [APX Ground Control v11.0.128](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.128) (04/13/21)
 
 > Branch: `main`\
