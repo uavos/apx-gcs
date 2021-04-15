@@ -174,7 +174,7 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
 
     // report and validate
     if (enabled() && !valid) {
-        apxMsgW() << tr("Telemetry stream reset");
+        apxMsgW() << tr("Telemetry stream reset for %1").arg(parent()->title());
     }
 
     if (!enabled() && valid) {

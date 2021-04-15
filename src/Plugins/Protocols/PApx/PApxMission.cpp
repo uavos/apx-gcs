@@ -291,139 +291,135 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     size_t pos_s = stream.pos();
 
     fhdr.off.wp = stream.pos() - pos_s;
-    if (m.value("wp").canConvert<QVariantList>())
-        for (auto const &i : m.value("wp").value<QSequentialIterable>()) {
-            auto wp = i.value<QVariantMap>();
-            xbus::mission::hdr_s hdr;
-            hdr.type = xbus::mission::WP;
-            hdr.option = 0;
-            if (wp.value("type").toString().toLower() == "track")
-                hdr.option = 1;
-            hdr.write(&stream);
-            xbus::mission::wp_s e;
-            e.lat = wp.value("lat").toFloat();
-            e.lon = wp.value("lon").toFloat();
-            e.alt = wp.value("altitude").toUInt();
-            e.write(&stream);
-            fhdr.cnt.wp++;
+    for (auto i : m.value("wp").value<QVariantList>()) {
+        auto wp = i.value<QVariantMap>();
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::WP;
+        hdr.option = 0;
+        if (wp.value("type").toString().toLower() == "track")
+            hdr.option = 1;
+        hdr.write(&stream);
+        xbus::mission::wp_s e;
+        e.lat = wp.value("lat").toFloat();
+        e.lon = wp.value("lon").toFloat();
+        e.alt = wp.value("altitude").toUInt();
+        e.write(&stream);
+        fhdr.cnt.wp++;
 
-            auto actions = wp.value("actions").value<QVariantMap>();
-            if (actions.isEmpty())
-                continue;
+        auto actions = wp.value("actions").value<QVariantMap>();
+        if (actions.isEmpty())
+            continue;
 
-            if (actions.contains("speed")) {
-                xbus::mission::hdr_s ahdr;
-                ahdr.type = xbus::mission::ACT;
-                ahdr.option = xbus::mission::ACT_SPEED;
-                ahdr.write(&stream);
-                xbus::mission::act_speed_s a;
-                a.speed = actions.value("speed").toUInt();
-                a.write(&stream);
-            }
-            if (actions.contains("poi")) {
-                xbus::mission::hdr_s ahdr;
-                ahdr.type = xbus::mission::ACT;
-                ahdr.option = xbus::mission::ACT_PI;
-                ahdr.write(&stream);
-                xbus::mission::act_pi_s a;
-                a.index = actions.value("poi").toUInt() - 1;
-                a.write(&stream);
-            }
-            if (actions.contains("script")) {
-                xbus::mission::hdr_s ahdr;
-                ahdr.type = xbus::mission::ACT;
-                ahdr.option = xbus::mission::ACT_SCR;
-                ahdr.write(&stream);
-                xbus::mission::act_scr_s a;
-                QByteArray src(actions.value("script").toString().toUtf8());
-                memset(a.scr, 0, sizeof(a.scr));
-                memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
-                a.scr[sizeof(a.scr) - 1] = 0;
-                a.write(&stream);
-            }
-            if (actions.contains("shot")) {
-                xbus::mission::hdr_s ahdr;
-                ahdr.type = xbus::mission::ACT;
-                ahdr.option = xbus::mission::ACT_SHOT;
-                ahdr.write(&stream);
-                xbus::mission::act_shot_s a;
-                uint dshot = actions.value("dshot").toUInt();
-                const QString shot = actions.value("shot").toString();
-                a.opt = 0;
-                a.dist = 0;
-                if (shot == "start") {
-                    if (dshot == 0) {
-                        apxMsgW() << tr("Auto shot distance is zero");
-                        break;
-                    }
-                    a.opt = 1;
-                    if (dshot > ((1 << 12) - 1))
-                        dshot = ((1 << 12) - 1);
-                    a.dist = static_cast<int16_t>(dshot);
-                } else if (shot == "stop") {
-                    a.opt = 2;
-                    a.dist = 0;
-                } else if (shot != "single") {
-                    apxMsgW() << tr("Unknown shot mode") << shot;
-                }
-                a.write(&stream);
-            }
+        if (actions.contains("speed")) {
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_SPEED;
+            ahdr.write(&stream);
+            xbus::mission::act_speed_s a;
+            a.speed = actions.value("speed").toUInt();
+            a.write(&stream);
         }
+        if (actions.contains("poi")) {
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_PI;
+            ahdr.write(&stream);
+            xbus::mission::act_pi_s a;
+            a.index = actions.value("poi").toUInt() - 1;
+            a.write(&stream);
+        }
+        if (actions.contains("script")) {
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_SCR;
+            ahdr.write(&stream);
+            xbus::mission::act_scr_s a;
+            QByteArray src(actions.value("script").toString().toUtf8());
+            memset(a.scr, 0, sizeof(a.scr));
+            memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
+            a.scr[sizeof(a.scr) - 1] = 0;
+            a.write(&stream);
+        }
+        if (actions.contains("shot")) {
+            xbus::mission::hdr_s ahdr;
+            ahdr.type = xbus::mission::ACT;
+            ahdr.option = xbus::mission::ACT_SHOT;
+            ahdr.write(&stream);
+            xbus::mission::act_shot_s a;
+            uint dshot = actions.value("dshot").toUInt();
+            const QString shot = actions.value("shot").toString();
+            a.opt = 0;
+            a.dist = 0;
+            if (shot == "start") {
+                if (dshot == 0) {
+                    apxMsgW() << tr("Auto shot distance is zero");
+                    break;
+                }
+                a.opt = 1;
+                if (dshot > ((1 << 12) - 1))
+                    dshot = ((1 << 12) - 1);
+                a.dist = static_cast<int16_t>(dshot);
+            } else if (shot == "stop") {
+                a.opt = 2;
+                a.dist = 0;
+            } else if (shot != "single") {
+                apxMsgW() << tr("Unknown shot mode") << shot;
+            }
+            a.write(&stream);
+        }
+    }
 
     fhdr.off.rw = stream.pos() - pos_s;
-    if (m.value("rw").canConvert<QVariantList>())
-        for (auto const &i : m.value("rw").value<QSequentialIterable>()) {
-            auto rw = i.value<QVariantMap>();
-            xbus::mission::hdr_s hdr;
-            hdr.type = xbus::mission::RW;
-            if (rw["type"].toString().toLower() == "right")
-                hdr.option = 1;
-            hdr.write(&stream);
-            xbus::mission::rw_s e;
-            e.lat = rw.value("lat").toFloat();
-            e.lon = rw.value("lon").toFloat();
-            e.hmsl = rw.value("hmsl").toInt();
-            e.dN = rw.value("dN").toInt();
-            e.dE = rw.value("dE").toInt();
-            e.approach = rw.value("approach").toUInt();
-            e.write(&stream);
-            fhdr.cnt.rw++;
-            //qDebug() << m.details;
-        }
+    for (auto i : m.value("rw").value<QVariantList>()) {
+        auto rw = i.value<QVariantMap>();
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::RW;
+        if (rw["type"].toString().toLower() == "right")
+            hdr.option = 1;
+        hdr.write(&stream);
+        xbus::mission::rw_s e;
+        e.lat = rw.value("lat").toFloat();
+        e.lon = rw.value("lon").toFloat();
+        e.hmsl = rw.value("hmsl").toInt();
+        e.dN = rw.value("dN").toInt();
+        e.dE = rw.value("dE").toInt();
+        e.approach = rw.value("approach").toUInt();
+        e.write(&stream);
+        fhdr.cnt.rw++;
+        //qDebug() << m.details;
+    }
 
     fhdr.off.tw = stream.pos() - pos_s;
-    if (m.value("tw").canConvert<QVariantList>())
-        for (auto const &i : m.value("tw").value<QSequentialIterable>()) {
-            auto tw = i.value<QVariantMap>();
-            xbus::mission::hdr_s hdr;
-            hdr.type = xbus::mission::TW;
-            hdr.option = 0;
-            hdr.write(&stream);
-            xbus::mission::tw_s e;
-            e.lat = tw.value("lat").toFloat();
-            e.lon = tw.value("lon").toFloat();
-            e.write(&stream);
-            fhdr.cnt.tw++;
-        }
+    for (auto i : m.value("tw").value<QVariantList>()) {
+        auto tw = i.value<QVariantMap>();
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::TW;
+        hdr.option = 0;
+        hdr.write(&stream);
+        xbus::mission::tw_s e;
+        e.lat = tw.value("lat").toFloat();
+        e.lon = tw.value("lon").toFloat();
+        e.write(&stream);
+        fhdr.cnt.tw++;
+    }
 
     fhdr.off.pi = stream.pos() - pos_s;
-    if (m.value("pi").canConvert<QVariantList>())
-        for (auto const &i : m.value("pi").value<QSequentialIterable>()) {
-            auto pi = i.value<QVariantMap>();
-            xbus::mission::hdr_s hdr;
-            hdr.type = xbus::mission::PI;
-            hdr.option = 0;
-            hdr.write(&stream);
-            xbus::mission::pi_s e;
-            e.lat = pi.value("lat").toFloat();
-            e.lon = pi.value("lon").toFloat();
-            e.hmsl = pi.value("hmsl").toInt();
-            e.radius = pi.value("radius").toInt();
-            e.loops = pi.value("loops").toUInt();
-            e.timeout = AppRoot::timeFromString(pi.value("timeout").toString());
-            e.write(&stream);
-            fhdr.cnt.pi++;
-        }
+    for (auto i : m.value("pi").value<QVariantList>()) {
+        auto pi = i.value<QVariantMap>();
+        xbus::mission::hdr_s hdr;
+        hdr.type = xbus::mission::PI;
+        hdr.option = 0;
+        hdr.write(&stream);
+        xbus::mission::pi_s e;
+        e.lat = pi.value("lat").toFloat();
+        e.lon = pi.value("lon").toFloat();
+        e.hmsl = pi.value("hmsl").toInt();
+        e.radius = pi.value("radius").toInt();
+        e.loops = pi.value("loops").toUInt();
+        e.timeout = AppRoot::timeFromString(pi.value("timeout").toString());
+        e.write(&stream);
+        fhdr.cnt.pi++;
+    }
 
     if (stream.pos() <= xbus::mission::hdr_s::psize()) {
         qDebug() << "Upload empty mission";

@@ -188,7 +188,7 @@ void MissionGroup::fromVariant(const QVariant &var)
     clearGroup();
     if (var.isNull())
         return;
-    for (auto const &i : var.value<QSequentialIterable>()) {
+    for (auto i : var.value<QVariantList>()) {
         createObject()->fromVariant(i);
     }
 }

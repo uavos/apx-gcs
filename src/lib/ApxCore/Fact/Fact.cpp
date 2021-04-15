@@ -553,14 +553,14 @@ void Fact::fromVariant(const QVariant &var)
     if (var.isNull())
         return;
     if (var.canConvert(QMetaType::QVariantMap)) {
-        auto iterable = var.value<QAssociativeIterable>();
-        for (auto it = iterable.begin(); it != iterable.end(); ++it) {
-            Fact *f = child(it.key().toString());
+        auto m = var.value<QVariantMap>();
+        for (auto key : m.keys()) {
+            Fact *f = child(key);
             if (!f) {
-                qWarning() << "missing json fact" << it.key() << path();
+                qWarning() << "missing json fact" << key << path();
                 continue;
             }
-            const QVariant &v = it.value();
+            auto v = m.value(key);
             if (v.canConvert(QMetaType::QVariantMap)) {
                 f->fromVariant(v);
                 continue;
