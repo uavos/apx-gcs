@@ -67,8 +67,8 @@ Nodes::Nodes(Vehicle *vehicle)
                        "notification-clear-all");
     connect(f_clear, &Fact::triggered, this, &Nodes::clear);
 
-    f_status
-        = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
+    // f_status
+    //     = new Fact(this, "status", tr("Status"), tr("Request status"), Action, "chart-bar-stacked");
     //connect(f_status, &Fact::triggered, protocol, [protocol]() { protocol->requestStatus(); });
 
     for (auto a : actions()) {
@@ -78,8 +78,9 @@ Nodes::Nodes(Vehicle *vehicle)
 
     connect(&_updateActions, &DelayedEvent::triggered, this, &Nodes::updateActions);
     connect(this, &Fact::modifiedChanged, &_updateActions, &DelayedEvent::schedule);
+    connect(this, &Fact::sizeChanged, &_updateActions, &DelayedEvent::schedule);
+    connect(this, &Fact::busyChanged, &_updateActions, &DelayedEvent::schedule);
     if (_protocol) {
-        connect(_protocol, &PNodes::busyChanged, &_updateActions, &DelayedEvent::schedule);
         connect(_protocol, &PNodes::upgradingChanged, &_updateActions, &DelayedEvent::schedule);
         connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
     }
@@ -141,7 +142,7 @@ void Nodes::updateActions()
     f_stop->setEnabled(enb && bsy);
     f_reload->setEnabled(enb && !upg);
     f_clear->setEnabled(!empty && !upg);
-    f_status->setEnabled(enb && !empty && !upg);
+    // f_status->setEnabled(enb && !empty && !upg);
 }
 
 bool Nodes::upgrading() const

@@ -44,7 +44,7 @@ public:
     Fact *f_stop;
     Fact *f_reload;
     Fact *f_clear;
-    Fact *f_status;
+    //Fact *f_status;
 
     NodeItem *node(const QString &uid) const;
     QList<NodeItem *> nodes() const { return m_nodes; }

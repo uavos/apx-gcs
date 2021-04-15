@@ -38,7 +38,7 @@ public:
 
     NodeToolsGroup *f_usr;
     NodeToolsGroup *f_sys;
-    NodeToolsGroup *f_status;
+    //NodeToolsGroup *f_status;
     NodeToolsGroup *f_maintenance;
 
     LookupNodeBackup *f_backups;
