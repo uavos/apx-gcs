@@ -34,7 +34,7 @@ LookupVehicleConfig::LookupVehicleConfig(Vehicle *vehicle, Fact *parent)
                      tr("Load configuration"),
                      tr("Load configuration from database"),
                      Database::instance()->vehicles,
-                     Action)
+                     Action | IconOnly)
     , _vehicle(vehicle)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupVehicleConfig::loadItem);

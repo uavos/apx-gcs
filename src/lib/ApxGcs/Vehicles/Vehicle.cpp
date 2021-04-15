@@ -45,8 +45,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         bindProperty(protocol, "value", true);
         bindProperty(protocol, "active");
 
-        // TODO vehicle deletion
-        // connect(protocol, &Fact::removed, this, &Fact::deleteFact);
+        // vehicle deletion
         connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
         connect(protocol, &PVehicle::streamTypeChanged, this, &Vehicle::streamTypeChanged);
@@ -76,6 +75,18 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
+
+    if (isIdentified()) {
+        auto f_remove = new Fact(this,
+                                 "remove",
+                                 tr("Remove"),
+                                 tr("Remove vehicle"),
+                                 Action | Remove | IconOnly);
+        connect(f_remove, &Fact::triggered, this, &Vehicle::deleteVehicle);
+        connect(this, &Vehicle::deleteVehicle, vehicles, [this, vehicles]() {
+            vehicles->deleteVehicle(this);
+        });
+    }
 
     f_lookup = new LookupVehicleConfig(this, this);
     f_share = new VehicleShare(this, this);

@@ -168,6 +168,7 @@ void FactBase::moveChild(Fact *item, int n, bool safeMode)
 void FactBase::deleteFact()
 {
     setParentFact(nullptr);
+    deleteChildren();
     emit removed();
     deleteLater();
 }

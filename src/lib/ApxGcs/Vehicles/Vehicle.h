@@ -142,6 +142,8 @@ signals:
 
     void geoPathAppend(QGeoCoordinate p);
 
+    void deleteVehicle();
+
     //provided methods
 public slots:
     void flyHere(const QGeoCoordinate &c);

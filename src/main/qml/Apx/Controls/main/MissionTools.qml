@@ -71,7 +71,7 @@ RowLayout {
         visible: (!mission.saved) && (!mission.empty)
     }
     ActionButton {
-        fact: mission.tools.load
+        fact: mission.load
         showText: false
         visible: (mission.empty)
     }
