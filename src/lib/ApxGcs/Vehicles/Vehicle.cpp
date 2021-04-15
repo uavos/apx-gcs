@@ -45,7 +45,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         bindProperty(protocol, "value", true);
         bindProperty(protocol, "active");
 
-        // TODO: vehicle deletion
+        // TODO vehicle deletion
         // connect(protocol, &Fact::removed, this, &Fact::deleteFact);
         connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
@@ -289,7 +289,7 @@ void Vehicle::updateFlightState()
     if ((f_mode->value().toUInt() == mandala::proc_mode_LANDING)
         && (f_stage->value().toUInt() >= 7)) {
         setFlightState(FS_LANDED);
-        // TODO: better landed condition detector
+        // TODO better landed condition detector, considering independently the state of the vehicle
     } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
                && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);

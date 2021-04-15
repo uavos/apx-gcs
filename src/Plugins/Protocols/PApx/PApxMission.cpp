@@ -247,7 +247,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             size_t pointsCnt = hdr.option;
             if (sz < xbus::mission::area_s::psize(pointsCnt))
                 break;
-            //TODO - implement areas in GCS
+            //TODO implement areas in GCS
             for (size_t i = 0; i < pointsCnt; ++i) {
                 xbus::mission::area_s p;
                 p.read(&stream);

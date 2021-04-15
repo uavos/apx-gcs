@@ -41,10 +41,11 @@ Item {
 
     property color colorFG: vehicle.active?"#fff":"#aaa"
     property color colorBG: {
-        var c="#555"
+        var c
         if(bGCU) c="#3779C5"
-        if(vehicle.streamType===APX.PVehicle.TELEMETRY)c="#377964"
-        if(vehicle.streamType===APX.PVehicle.XPDR)c="#376479"
+        else if(vehicle.streamType===APX.PVehicle.TELEMETRY)c="#377964"
+        else if(vehicle.streamType===APX.PVehicle.XPDR)c="#376479"
+        else c="#555" // offline
         if(!vehicle.active)c=Qt.darker(c,1.9)
         return c
     }
@@ -131,6 +132,8 @@ Item {
             font.bold: control.font.bold
             text: vehicle.info
             color: colorFG
+
+            visible: !bLOCAL
 
             onImplicitWidthChanged: timerWidthUpdate.start()
             property Timer timerWidthUpdate: Timer {

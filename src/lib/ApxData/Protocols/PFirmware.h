@@ -47,6 +47,17 @@ public:
 private:
     bool m_upgrading{};
 
+protected:
+    QString _uid;
+    QString _name;
+    QByteArray _data;
+    quint32 _offset;
+
+    bool _success{};
+
+protected slots:
+    virtual void finish();
+
 signals:
     void upgradingChanged();
     void upgradeStarted(QString uid, QString name);

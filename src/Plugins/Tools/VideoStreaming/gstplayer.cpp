@@ -19,6 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Credits to Pavel Mikhadzionak <pmv@uavos.com>
+
 #include "gstplayer.h"
 
 #include <Vehicles/Vehicle.h>
@@ -32,6 +35,8 @@
 #include <QtQml>
 
 using namespace std::placeholders;
+
+// TODO streaming server to forward onboard video stream to clients (TVs)
 
 GstPlayer::GstPlayer(Fact *parent)
     : Fact(parent,

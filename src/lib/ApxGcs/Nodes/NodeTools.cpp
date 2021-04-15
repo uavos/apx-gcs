@@ -84,7 +84,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
                                   tr("Node status request"),
                                   Group);
     f_status->setIcon("playlist-check");
-    //TODO: stats node command menu
+    //TODO stats node command menu
     /*f = new Fact(f_status, "stats", tr("Statistics"), tr("Request counters"));
     connect(f, &Fact::triggered, this, [this]() { node->protocol()->requestStatus(); });
     f = new Fact(f_status, "mem", tr("Memory"), tr("Request memory usage"));

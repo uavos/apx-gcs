@@ -30,10 +30,16 @@ PApxData::PApxData(PApxVehicle *parent)
 
 bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
+    bool is_request = pid.pri == xbus::pri_request;
     do {
         if (pid.uid < mandala::cmd::env::uid) {
-            if (stream.available() <= mandala::spec_s::psize())
+            if (is_request)
+                return true;
+            // regular packed variable
+            if (stream.available() <= mandala::spec_s::psize()) {
+                qWarning() << "size" << stream.available();
                 break;
+            }
 
             mandala::spec_s spec;
             spec.read(&stream);
@@ -75,6 +81,8 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             qWarning() << "Empty jsexec data received" << stream.dump_payload();
             break;
         case mandala::cmd::env::stream::calib::uid:
+            if (is_request)
+                return true;
             if (stream.available() > sizeof(mandala::uid_t)) {
                 mandala::uid_t uid;
                 stream >> uid;

@@ -25,6 +25,8 @@
 #include <App/PluginInterface.h>
 #include <QtCore>
 
+#include <App/AppGcs.h>
+
 class FirmwarePlugin : public PluginInterface
 {
     Q_OBJECT
@@ -32,5 +34,5 @@ class FirmwarePlugin : public PluginInterface
     Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | Tool; }
-    QObject *createControl() override { return new Firmware(nullptr); }
+    QObject *createControl() override { return new Firmware(AppGcs::instance()->f_apxfw); }
 };

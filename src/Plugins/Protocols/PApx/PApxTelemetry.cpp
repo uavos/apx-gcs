@@ -178,7 +178,7 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
     }
 
     if (!enabled() && valid) {
-        apxMsg() << tr("Telemetry stream valid");
+        apxMsg() << tr("Telemetry stream valid from %1").arg(parent()->title());
         // TelemetryFormat format;
         // for (size_t i = 0; i < decoder.slots_cnt(); ++i) {
         //     format.append(decoder.dec_slots().fields[i].pid);

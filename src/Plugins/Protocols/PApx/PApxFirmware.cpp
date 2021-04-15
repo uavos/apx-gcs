@@ -36,15 +36,7 @@ void PApxFirmware::upgradeFirmware(QString uid, QString name, QByteArray data, q
     qDebug() << uid << name << QString::number(offset, 16);
     PFirmware::upgradeFirmware(uid, name, data, offset);
 
-    _success = false;
-
-    _uid = uid;
-    _name = name;
-    _data = data;
-    _offset = offset;
-
-    setValue(tr("Initializing..."));
-
+    _retry = 0;
     start();
 }
 
@@ -87,11 +79,14 @@ void PApxFirmware::identFinished()
 
     if (_node->file(_name)) {
         auto req = new PApxNodeRequestFileWrite(_node, _name, _data, _offset);
-        connect(req, &PApxNodeRequest::finished, this, &PApxFirmware::fileFinished);
+        connect(req, &PApxNodeRequest::finished, this, &PApxFirmware::finish);
         connect(req, &PApxNodeRequestFile::uploaded, this, &PApxFirmware::fileUploaded);
         connect(req, &PApxNodeRequestFile::progress, this, &PApxFirmware::fileProgress);
-    } else {
+    } else if (++_retry <= 5) {
+        apxMsg() << tr("Upgrade retry %1/%2...").arg(_retry).arg(5);
         start();
+    } else {
+        finish();
     }
 }
 
@@ -105,20 +100,6 @@ void PApxFirmware::fileUploaded()
     _success = true;
 }
 
-void PApxFirmware::fileFinished()
-{
-    if (!_node)
-        return;
-
-    qDebug() << _name << _uid;
-
-    emit upgradeFinished(_uid, _success);
-
-    setValue(QVariant());
-    _success = false;
-    _node = {};
-}
-
 void PApxFirmware::fileProgress(int percent)
 {
     setProgress(percent);
@@ -126,4 +107,15 @@ void PApxFirmware::fileProgress(int percent)
     setValue(QString("%1/%2")
                  .arg(AppRoot::capacityToString(tcnt, 1))
                  .arg(AppRoot::capacityToString(_data.size())));
+}
+
+void PApxFirmware::finish()
+{
+    if (!_node)
+        return;
+
+    _node = {};
+    _retry = 0;
+
+    PFirmware::finish();
 }

@@ -19,6 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Credits to Pavel Mikhadzionak <pmv@uavos.com>
+
 #ifndef GSTPLAYER_H
 #define GSTPLAYER_H
 

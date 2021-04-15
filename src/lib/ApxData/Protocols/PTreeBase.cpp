@@ -42,6 +42,6 @@ void PTreeBase::_nimp(QString fname)
 
 PTrace *PTreeBase::trace()
 {
-    return parent() ? parent()->trace()
-                    : new PTrace(this); //TODO: find a better way for trace function
+    // TODO find a better way for trace function (I still don't like the implementation though)
+    return parent() ? parent()->trace() : new PTrace(this);
 }

@@ -33,7 +33,7 @@ TextButton {
     property var values: []
     onActivated: signals.facts=Qt.binding(function(){return values})
 
-    //toolTip: getToolTip(values)
+    toolTip: getToolTip(values)
 
     function getToolTip(facts)
     {

@@ -45,6 +45,13 @@ PApxNodeRequest::~PApxNodeRequest()
     //qDebug() << title();
     _node->request_deleted(this);
 }
+QString PApxNodeRequest::title() const
+{
+    return QString("%1/%2/%3")
+        .arg(_node->parent()->parent()->title())
+        .arg(_node->title())
+        .arg(Mandala::meta(uid()).name);
+}
 
 PTrace *PApxNodeRequest::trace()
 {
@@ -117,6 +124,9 @@ bool PApxNodeRequestMod::request(PApxRequest &req)
 }
 bool PApxNodeRequestMod::response(PStreamReader &stream)
 {
+    if (!_active)
+        return false;
+
     if (stream.available() < sizeof(xbus::node::mod::op_e)) {
         qWarning() << "size" << stream.available();
         return false;
@@ -129,7 +139,6 @@ bool PApxNodeRequestMod::response(PStreamReader &stream)
         return false;
 
     auto data = stream.read_strings();
-    trace()->blocks(data);
 
     if (data.isEmpty()) {
         qWarning() << "no strings";
@@ -142,7 +151,8 @@ bool PApxNodeRequestMod::response(PStreamReader &stream)
     auto req = data.mid(0, data.indexOf(":"));
     auto dreq = _data.mid(1);
     if (req != dreq) {
-        qWarning() << "data mismatch" << data << dreq;
+        // probably data from another request?
+        //qWarning() << "data mismatch" << data << dreq;
         return false;
     }
     switch (op) {
@@ -155,6 +165,7 @@ bool PApxNodeRequestMod::response(PStreamReader &stream)
         data.prepend("status");
         break;
     }
+    trace()->blocks(data);
     _node->modReceived(data);
 
     return true;
@@ -278,6 +289,9 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
 }
 bool PApxNodeRequestUpdate::response(PStreamReader &stream)
 {
+    if (!_active)
+        return false;
+
     if (stream.available() != sizeof(xbus::node::conf::fid_t))
         return false;
     trace()->data(stream.payload());
@@ -336,6 +350,9 @@ void PApxNodeRequestFile::reset()
 }
 bool PApxNodeRequestFile::response(PStreamReader &stream)
 {
+    if (!_active)
+        return false;
+
     //qDebug() << "re:" << _op << stream.available();
     if (stream.available() <= sizeof(xbus::node::file::op_e))
         return false;

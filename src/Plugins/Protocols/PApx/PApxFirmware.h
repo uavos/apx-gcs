@@ -39,12 +39,7 @@ private:
     PApxNodes *_nodes;
     PApxNode *_node{};
 
-    QString _uid;
-    QString _name;
-    QByteArray _data;
-    quint32 _offset;
-
-    bool _success{};
+    uint _retry{};
 
     void start();
 
@@ -53,6 +48,7 @@ private slots:
     void identFinished();
 
     void fileUploaded();
-    void fileFinished();
     void fileProgress(int percent);
+
+    void finish() override;
 };

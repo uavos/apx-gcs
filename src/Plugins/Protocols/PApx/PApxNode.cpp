@@ -123,7 +123,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         if (fidx >= _field_types.size())
             return;
         auto aidx = fid & 0xFF;
-        // TODO: read updates of arrays
+        // TODO read updates of arrays
         auto name = _field_names.at(fidx);
         auto value = read_param(stream, _field_types.at(fidx));
         QVariantMap values;
