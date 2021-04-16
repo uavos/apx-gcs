@@ -122,6 +122,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateFlightState);
 
     connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
+    connect(f_nodes, &Nodes::upgradingChanged, this, &Vehicle::updateActive);
 
     if (protocol) {
         connect(this,
@@ -174,12 +175,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 &QTimer::timeout,
                 protocol->telemetry(),
                 &PTelemetry::requestTelemetry);
-        connect(this, &Fact::activeChanged, this, [this]() {
-            if (active())
-                telemetryReqTimer.start();
-            else
-                telemetryReqTimer.stop();
-        });
     }
 
     // telemetry data recorder/player
@@ -204,10 +199,19 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
 void Vehicle::updateActive()
 {
-    f_select->setEnabled(!active());
-    if (active())
+    bool sel = active();
+
+    f_select->setEnabled(!sel);
+    if (sel)
         emit selected();
     setFollow(false);
+
+    if (isIdentified()) {
+        if (sel && !f_nodes->upgrading())
+            telemetryReqTimer.start();
+        else
+            telemetryReqTimer.stop();
+    }
 }
 
 QVariantMap Vehicle::get_info() const

@@ -85,6 +85,7 @@ private slots:
 
 signals:
     void validChanged();
+    void upgradingChanged();
 
     void nodeNotify(NodeItem *node); // notify on changes etc fo plugins
     void fieldUploadReport(NodeItem *node, QString name, QString value);

@@ -80,8 +80,10 @@ Nodes::Nodes(Vehicle *vehicle)
     connect(this, &Fact::modifiedChanged, &_updateActions, &DelayedEvent::schedule);
     connect(this, &Fact::sizeChanged, &_updateActions, &DelayedEvent::schedule);
     connect(this, &Fact::busyChanged, &_updateActions, &DelayedEvent::schedule);
+    connect(this, &Nodes::upgradingChanged, &_updateActions, &DelayedEvent::schedule);
+
     if (_protocol) {
-        connect(_protocol, &PNodes::upgradingChanged, &_updateActions, &DelayedEvent::schedule);
+        connect(_protocol, &PNodes::upgradingChanged, this, &Nodes::upgradingChanged);
         connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
     }
 
