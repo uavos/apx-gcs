@@ -30,8 +30,6 @@
 #include <Vehicles/Vehicles.h>
 #include <QFontDatabase>
 
-//TODO alive counter ~3 on search and ident response
-
 NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     : Fact(parent, "node#")
     , _nodes(nodes)
@@ -78,6 +76,9 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
                 setDescr(_protocol->value().toString());
         });
     }
+
+    // models decorations update
+    connect(this, &NodeItem::aliveChanged, this, &Fact::enabledChanged);
 
     /*
     // responses mapping
@@ -136,6 +137,19 @@ void NodeItem::updateUpgrading()
     if (!_nodes->vehicle->isLocal()) {
         _protocol->requestIdent();
     }
+}
+void NodeItem::updateAlive(bool alive)
+{
+    uint v = m_alive;
+    if (alive) {
+        v = alive_cnt;
+    } else if (m_alive > 0)
+        v = m_alive - 1;
+
+    if (m_alive == v)
+        return;
+    m_alive = v;
+    emit aliveChanged();
 }
 
 void NodeItem::clear()
@@ -211,9 +225,17 @@ QVariant NodeItem::data(int col, int role) const
             return QColor(Qt::yellow).lighter(180);
         if (!_protocol)
             return QColor(Qt::darkGray);
-        if (!modified())
+
+        if (modified())
+            break;
+
+        if (alive() == alive_cnt)
             return QColor(255, 255, 200);
-        break;
+
+        if (alive() == 0)
+            return QColor(255, 200, 200).darker(200);
+
+        return QColor(255, 255, 255).darker(100 + (alive_cnt - alive()) * 30);
         //break;
     case Qt::BackgroundRole:
         if (valid()) {

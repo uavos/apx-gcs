@@ -304,7 +304,7 @@ void Vehicle::updateFlightState()
     if ((f_mode->value().toUInt() == mandala::proc_mode_LANDING)
         && (f_stage->value().toUInt() >= 7)) {
         setFlightState(FS_LANDED);
-        // TODO better landed condition detector, considering independently the state of the vehicle
+        // TODO improve landed condition detector, independently checking the state of the vehicle
     } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
                && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);

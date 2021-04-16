@@ -85,6 +85,7 @@ Nodes::Nodes(Vehicle *vehicle)
     if (_protocol) {
         connect(_protocol, &PNodes::upgradingChanged, this, &Nodes::upgradingChanged);
         connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
+        connect(_protocol, &PNodes::node_response, this, &Nodes::node_response);
     }
 
     updateActions();
@@ -127,6 +128,14 @@ void Nodes::node_available(PNode *node)
     updateActions();
     nodeNotify(f);
 }
+void Nodes::node_response(PNode *node)
+{
+    auto f = this->node(node->uid());
+    if (!f)
+        return;
+    f->updateAlive(true);
+}
+
 void Nodes::syncDone()
 {
     m_syncTimestamp = QDateTime::currentDateTimeUtc();
@@ -175,6 +184,8 @@ void Nodes::search()
 {
     if (!_protocol)
         return;
+    for (auto i : nodes())
+        i->updateAlive(false);
     _protocol->requestSearch();
 }
 void Nodes::stop()

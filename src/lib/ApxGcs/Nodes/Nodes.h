@@ -81,6 +81,8 @@ private slots:
     void stop();
 
     void node_available(PNode *node);
+    void node_response(PNode *node);
+
     void syncDone();
 
 signals:
