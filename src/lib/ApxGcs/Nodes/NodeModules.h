@@ -49,6 +49,9 @@ private slots:
 
     void modReceived(QStringList data);
 
+public slots:
+    void clear();
+
 signals:
     void requestMod(QStringList data);
 };

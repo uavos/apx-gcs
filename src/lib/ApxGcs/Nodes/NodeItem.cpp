@@ -30,6 +30,8 @@
 #include <Vehicles/Vehicles.h>
 #include <QFontDatabase>
 
+//TODO alive counter ~3 on search and ident response
+
 NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     : Fact(parent, "node#")
     , _nodes(nodes)

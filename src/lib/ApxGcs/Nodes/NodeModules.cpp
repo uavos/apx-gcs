@@ -41,10 +41,18 @@ NodeModules::NodeModules(Fact *parent, NodeItem *node, QString name)
         setDataType(Count);
 
         connect(node->protocol(), &PNode::modReceived, this, &NodeModules::modReceived);
+
+        connect(node, &NodeItem::validChanged, this, &NodeModules::clear);
         return;
     }
 
     update();
+}
+
+void NodeModules::clear()
+{
+    deleteChildren();
+    _done_ls = false;
 }
 
 void NodeModules::reload()
@@ -117,23 +125,30 @@ void NodeModules::modReceived(QStringList data)
 
 void NodeModules::updateFacts(QStringList names)
 {
-    if (names.isEmpty()) {
-        setTreeType(NoFlags);
-    } else {
-        for (auto s : names) {
-            if (child(s))
-                continue;
-            new NodeModules(this, _node, s);
-        }
-        if (size() > 0 && !_is_root) {
-            auto f = child(0);
-            setDescr(f->name());
-            bindProperty(f, "value", true);
-        }
-    }
     if (_done_ls)
         return;
     _done_ls = true;
+
+    if (names.isEmpty()) {
+        setTreeType(NoFlags);
+    } else {
+        setTreeType(Group);
+        for (auto s : names) {
+            new NodeModules(this, _node, s);
+        }
+        if (size() > 0) {
+            QStringList st;
+            for (auto i : facts())
+                st.append(i->name());
+            setDescr(st.join(','));
+
+            if (!_is_root) {
+                auto f = child(0);
+                bindProperty(f, "value", true);
+            }
+        }
+    }
+
     // update values
     update();
 }
