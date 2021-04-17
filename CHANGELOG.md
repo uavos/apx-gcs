@@ -1,3 +1,19 @@
+# [APX Ground Control v11.0.141](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.141) (04/17/21)
+
+> Branch: `main`\
+> Date: `04/17/21 16:15:32`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/6400f69dddc848ba57d054b139a188b1259f6c76...29870d2ec82ee4301f7ca367f397182292c17c82)
+
+## New Features
+* Node modules tool reset function
+* EFIS cursor on controlled areas
+* node `alive` property
+* Vehicle identity conflicts resolution
+
+## Performance Enhancements
+* disable telemetry on upgrading
+* node modules addressing through indexes
+
 # [APX Ground Control v11.0.134](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.134) (04/15/21)
 
 > Branch: `main`\
