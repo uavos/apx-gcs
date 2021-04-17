@@ -65,8 +65,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateStatus);
 
         connect(this, &NodeItem::shell, protocol, [this](QStringList commands) {
-            commands.prepend("sh");
-            _protocol->requestMod(commands);
+            _protocol->requestMod(PNode::sh, QByteArray(), commands);
         });
 
         connect(protocol, &Fact::valueChanged, this, [this]() {
@@ -79,21 +78,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     // models decorations update
     connect(this, &NodeItem::aliveChanged, this, &Fact::enabledChanged);
-
-    /*
-    // responses mapping
-    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
-    connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
-    connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
-    connect(protocol, &ProtocolNode::confDefault, this, &NodeItem::restoreDefaults);
-    connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
-    connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
-
-
-    statusTimer.setSingleShot(true);
-    statusTimer.setInterval(10000);
-    connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
-    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);*/
 
     if (protocol && !_nodes->upgrading() && !_nodes->vehicle->isLocal())
         protocol->requestIdent();

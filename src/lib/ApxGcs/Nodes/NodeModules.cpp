@@ -63,64 +63,67 @@ void NodeModules::reload()
     }
 }
 
-QStringList NodeModules::mpath() const
+QByteArray NodeModules::madr() const
 {
-    QStringList st;
+    QByteArray adr;
     for (auto i = this; i && !i->_is_root; i = qobject_cast<NodeModules *>(i->parentFact())) {
-        st.prepend(i->name());
+        adr.prepend(static_cast<char>(i->num()));
     }
-    return st;
+    return adr;
 }
 
 void NodeModules::update()
 {
     //qDebug() << path();
     if (!_done_ls) {
-        QStringList data;
-        data.append("ls");
-        data.append(mpath());
-        requestMod(data);
+        requestMod(PNode::ls, madr(), QStringList());
         return;
     }
     // request module status
-    QStringList data;
-    data.append("status");
-    data.append(mpath());
-    requestMod(data);
+    requestMod(PNode::status, madr(), QStringList());
 }
 
-void NodeModules::modReceived(QStringList data)
+void NodeModules::modReceived(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data)
 {
-    if (data.isEmpty())
-        return;
-
-    auto cmd = data.takeFirst();
-
     // called in root module only
-    auto mpath = data.mid(0, data.indexOf(":"));
-    auto reply = data.mid(mpath.size() + 1);
-
-    auto m = mpath.isEmpty() ? this : qobject_cast<NodeModules *>(findChild(mpath.join('.')));
+    auto m = findModule(adr);
     if (!m) {
-        qWarning() << "missing fact" << mpath << data;
+        qWarning() << "missing module" << adr.toHex().toUpper() << data;
         return;
     }
 
-    if (cmd == "ls") {
-        m->updateFacts(reply);
+    switch (cmd) {
+    default:
+        qWarning() << "unknown cmd" << cmd << m->path() << data;
         return;
-    }
-
-    if (cmd == "status") {
-        QString s = reply.join('|').replace('\t', ' ').replace('\n', '|').simplified();
+    case PNode::ls:
+        m->updateFacts(data);
+        break;
+    case PNode::status: {
+        QString s = data.join('|').replace('\t', ' ').replace('\n', '|').simplified();
         if (m->size() > 0) {
             if (s.isEmpty())
                 return;
             m->unbindProperties(m->child(0));
         }
         m->setValue(s);
-        return;
+        break;
     }
+    }
+}
+NodeModules *NodeModules::findModule(QByteArray adr)
+{
+    if (adr.isEmpty())
+        return this;
+    auto n = static_cast<uint8_t>(adr.at(0));
+    for (auto i : facts()) {
+        auto m = qobject_cast<NodeModules *>(i);
+        if (!m)
+            continue;
+        if (!n--)
+            return m->findModule(adr.mid(1));
+    }
+    return {};
 }
 
 void NodeModules::updateFacts(QStringList names)

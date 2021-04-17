@@ -43,6 +43,11 @@ public:
         warn,
         err,
     };
+    enum mod_cmd_e {
+        sh,
+        ls,
+        status,
+    };
 
     auto upgrading() const { return m_upgrading; }
 
@@ -64,7 +69,10 @@ public slots:
     virtual void requestUpdate(QVariantMap values) { _nimp(__FUNCTION__); }
 
     virtual void requestReboot() { _nimp(__FUNCTION__); }
-    virtual void requestMod(QStringList data) { _nimp(__FUNCTION__); }
+    virtual void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data)
+    {
+        _nimp(__FUNCTION__);
+    }
     virtual void requestUsr(quint8 cmd, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:
@@ -87,7 +95,7 @@ signals:
     void confSaved();
 
     // when requestMod results available
-    void modReceived(QStringList data);
+    void modReceived(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data);
 
     //properties
     void upgradingChanged();
