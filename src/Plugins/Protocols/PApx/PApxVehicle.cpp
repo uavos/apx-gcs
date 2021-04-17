@@ -26,17 +26,32 @@
 #include "PApxNodes.h"
 #include "PApxTelemetry.h"
 
-PApxVehicle::PApxVehicle(
-    PApx *parent, QString callsign, QString uid, VehicleType type, xbus::vehicle::squawk_t squawk)
-    : PVehicle(parent, callsign, uid, type)
+PApxVehicle::PApxVehicle(PApx *parent,
+                         QString callsign,
+                         VehicleType type,
+                         const xbus::vehicle::uid_t *uid_raw,
+                         xbus::vehicle::squawk_t squawk)
+    : PVehicle(parent, callsign, uidText(uid_raw), type)
     , _papx(parent)
-    , m_squawk(squawk)
+    , _squawk(squawk)
     , _req(parent)
 {
+    if (uid_raw)
+        memcpy(_vuid, uid_raw, sizeof(xbus::vehicle::uid_t));
+
     m_data = new PApxData(this);
     m_telemetry = new PApxTelemetry(this);
     m_nodes = new PApxNodes(this);
     m_mission = new PApxMission(this);
+}
+
+QString PApxVehicle::uidText(const xbus::vehicle::uid_t *uid_raw)
+{
+    if (!uid_raw)
+        return {};
+    return QByteArray(reinterpret_cast<const char *>(uid_raw), sizeof(xbus::vehicle::uid_t))
+        .toHex()
+        .toUpper();
 }
 
 void PApxVehicle::process_downlink(PStreamReader &stream)
@@ -85,23 +100,33 @@ void PApxVehicle::process_downlink(PStreamReader &stream)
 
 void PApxVehicle::send_uplink(QByteArray packet)
 {
-    if (!m_squawk) {
+    if (!_squawk) {
         //local vehicle
         _papx->send_uplink(packet);
         return;
     }
 
-    if (!_papx->addressed(m_squawk)) {
-        qWarning() << "not addressed" << PApx::squawkText(m_squawk);
+    if (!_papx->addressed(_squawk)) {
+        qWarning() << "not addressed" << PApx::squawkText(_squawk);
         return;
     }
 
     _req.request(mandala::cmd::env::vehicle::uplink::uid);
 
-    _req.write<xbus::vehicle::squawk_t>(m_squawk);
-    trace()->block(PApx::squawkText(m_squawk));
+    _req.write<xbus::vehicle::squawk_t>(_squawk);
+    trace()->block(PApx::squawkText(_squawk));
     trace()->block(title().append(':'));
     _req.append(packet);
 
     _req.send();
+}
+
+bool PApxVehicle::check_vuid(uint8_t n, uint8_t seq) const
+{
+    // seq=[0,1,2,3]
+    seq &= 3;
+    for (uint8_t i = 0; i < sizeof(xbus::vehicle::uid_t); i += 4)
+        if (_vuid[i + seq] == n)
+            return true;
+    return false;
 }

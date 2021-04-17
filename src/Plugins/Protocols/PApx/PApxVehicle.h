@@ -32,21 +32,27 @@ class PApxVehicle : public PVehicle
 public:
     explicit PApxVehicle(PApx *parent,
                          QString callsign,
-                         QString uid,
                          VehicleType type,
+                         const xbus::vehicle::uid_t *uid_raw,
                          xbus::vehicle::squawk_t squawk);
 
     void process_downlink(PStreamReader &stream);
 
     void send_uplink(QByteArray packet) override;
 
-    xbus::vehicle::squawk_t squawk() const { return m_squawk; }
-    void setSquawk(xbus::vehicle::squawk_t squawk) { m_squawk = squawk; }
+    auto squawk() const { return _squawk; }
+    void setSquawk(xbus::vehicle::squawk_t squawk) { _squawk = squawk; }
+
+    static QString uidText(const xbus::vehicle::uid_t *uid_raw);
+
+    auto const &vuid() const { return _vuid; }
+    bool check_vuid(uint8_t n, uint8_t seq) const;
 
 private:
     PApx *_papx;
 
-    xbus::vehicle::squawk_t m_squawk;
+    xbus::vehicle::squawk_t _squawk;
+    xbus::vehicle::uid_t _vuid{};
 
     PApxRequest _req;
 };

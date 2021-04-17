@@ -59,7 +59,7 @@ private:
     QTimer _reqTimer;
     QList<xbus::vehicle::squawk_t> _req_ident;
 
-    void assign_squawk(const xbus::vehicle::ident_s &ident, QString callsign);
+    void assign_squawk(const xbus::vehicle::uid_t &uid);
     void request_ident(xbus::vehicle::squawk_t squawk);
 
     void request_ident_schedule(xbus::vehicle::squawk_t squawk);
