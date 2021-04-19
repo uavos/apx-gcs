@@ -76,6 +76,9 @@ bool ScriptCompiler::lookup()
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
                           AppDirs::scripts().absoluteFilePath("include"));
 
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
+                          AppDirs::scripts().absoluteFilePath("examples"));
+
         setEnabled(true);
         emit available();
         return true;
