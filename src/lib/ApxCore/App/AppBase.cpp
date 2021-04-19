@@ -71,7 +71,13 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     QCoreApplication::setOrganizationDomain("uavos.com");
     QCoreApplication::setApplicationName(name);
     QCoreApplication::setApplicationVersion(VERSION);
+
     QSettings::setDefaultFormat(QSettings::IniFormat);
+    //prefs
+    QDir prefs_dir(AppDirs::prefs());
+    if (!prefs_dir.exists())
+        prefs_dir.mkpath(".");
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, prefs_dir.absolutePath());
 
     QApplication::setWindowIcon(QIcon("qrc:///icons/uavos-logo.icns"));
 
@@ -109,7 +115,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     m_username = sname;
 
     // check dry run
-    QSettings sx; // TODO central QSettings file source path (QSettings::etPath)
+    QSettings sx;
     QString lastVer = sx.value("version").toString();
     m_dryRun = lastVer != version();
     if (m_dryRun) {

@@ -34,9 +34,7 @@ AppPrefs::AppPrefs(QObject *parent)
     QDir dir(AppDirs::prefs());
     if (!dir.exists())
         dir.mkpath(".");
-    m_settings = new QSettings(dir.absoluteFilePath(QCoreApplication::applicationName() + ".ini"),
-                               QSettings::IniFormat,
-                               this);
+    m_settings = new QSettings(this);
 }
 //=============================================================================
 void AppPrefs::saveFile(const QString &name, const QString &v)
