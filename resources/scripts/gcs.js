@@ -11,7 +11,10 @@
  * this file. If not, please visit: http://docs.uavos.com/gcs.
  */
 
+// some helper functions also provided by tree objects
+
 // basic helpers
+
 function limit(v, min, max) {
     return v > max ? max : (v < min ? min : v);
 }

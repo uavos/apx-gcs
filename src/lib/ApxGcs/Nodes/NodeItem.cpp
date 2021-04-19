@@ -617,6 +617,7 @@ void NodeItem::dictReceived(QVariantMap dict)
     linkGroupValues(this);
 
     // update descr and help from APXFW package
+    // TODO cache node field descr in database
     _parameters = AppGcs::apxfw()->loadParameters(title(), _ident.value("hardware").toString());
     for (auto v : _parameters) {
         updateMetadataAPXFW(this, this, v);
