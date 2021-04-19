@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppEngine_H
-#define AppEngine_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QJSEngine>
 #include <QtCore>
 #include <QtQml>
-//=============================================================================
+
 class AppEngine : public QQmlApplicationEngine
 {
     Q_OBJECT
@@ -42,7 +41,6 @@ public:
 
     QJSValue jsCreateObject(QObject *obj);
 
-    Q_INVOKABLE void help();
     Q_INVOKABLE void sleep(quint16 ms);
 
     Q_INVOKABLE QByteArray jsToArray(QJSValue data);
@@ -53,13 +51,8 @@ public:
     Q_INVOKABLE QObject *loadQml(const QString qmlFile, const QVariantMap &opts);
 
 private:
-    QHash<QString, QString> js_descr; //helper commands alias,descr
-
     QJSValue jsSync(Fact *fact, QJSValue parent); //recursive
     void jsSetProperty(QJSValue parent, QString name, QJSValue value);
-
-    void jsRegister(QString fname, QString description, QString body);
-    void jsRegisterFunctions();
 
     QQueue<QString> _jsQueue;
     QTimer _jsTimer;
@@ -69,5 +62,3 @@ private:
 private slots:
     void warnings(const QList<QQmlError> &warnings);
 };
-//=============================================================================
-#endif
