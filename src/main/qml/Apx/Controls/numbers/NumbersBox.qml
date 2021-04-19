@@ -47,11 +47,11 @@ Rectangle {
         itemHeight: control.itemSize
         fixedWidth: true
         defaults: [
-            {"bind":"user1","prec":"2","title":"u1"},
-            {"bind":"user2","prec":"2","title":"u2"},
-            {"bind":"user3","prec":"2","title":"u3"},
-            {"bind":"user4","prec":"2","title":"u4"},
-            {"bind":"(Math.abs(cmd.rc.roll.value)+Math.abs(cmd.rc.pitch.value))/2","title":"RC","prec":"2","warn":"value>0.2","alarm":"value>0.5"},
+            {"bind":"est.usr.u1","prec":"2"},
+            {"bind":"est.usr.u2","prec":"2"},
+            {"bind":"est.usr.u3","prec":"2"},
+            {"bind":"est.usr.u4","prec":"2"},
+            {"bind":"(Math.abs(cmd.rc.roll)+Math.abs(cmd.rc.pitch))/2","title":"RC","prec":"2","warn":"value>0.2","alarm":"value>0.5"},
         ]
     }
 

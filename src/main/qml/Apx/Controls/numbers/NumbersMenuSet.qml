@@ -94,6 +94,7 @@ Fact {
     }
     function updateDescr()
     {
+        if(!setFact) return
         descr=""
         var s=[]
         for(var i=0;i<setValues.size;++i){

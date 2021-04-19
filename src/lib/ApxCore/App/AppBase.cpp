@@ -109,7 +109,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     m_username = sname;
 
     // check dry run
-    QSettings sx;
+    QSettings sx; // TODO central QSettings file source path (QSettings::etPath)
     QString lastVer = sx.value("version").toString();
     m_dryRun = lastVer != version();
     if (m_dryRun) {

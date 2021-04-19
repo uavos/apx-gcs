@@ -43,9 +43,6 @@ ObjectModel {
 
 
     property var defaults: [
-        //{"bind": "mode"},
-        //{"bind": "rc_roll", "title": "RCR", "prec": 0},
-        //{"bind": "yaw", "title": "Y", "prec": 1},
     ]
 
     function loadSettings()

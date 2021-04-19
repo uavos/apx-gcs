@@ -69,11 +69,11 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
 
     setWidget(w);
 
-    scriptCompiler = qobject_cast<NodeScript *>(fact->property("script").value<QObject *>());
-    connect(scriptCompiler, &NodeScript::compiled, this, &FactDelegateScript::updateLog);
+    nodeScript = qobject_cast<NodeScript *>(fact->property("script").value<QObject *>());
+    connect(nodeScript, &NodeScript::compiled, this, &FactDelegateScript::updateLog);
     updateLog();
 
-    editor->addKeywords(scriptCompiler->constants.keys());
+    editor->addKeywords(nodeScript->constants.keys());
 
     connect(fact,
             &Fact::valueChanged,
@@ -88,11 +88,11 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
 }
 void FactDelegateScript::updateEditorText()
 {
-    QString s = scriptCompiler->source();
+    QString s = nodeScript->source();
     if (editor->toPlainText() != s) {
         editor->setPlainText(s);
     }
-    s = scriptCompiler->title();
+    s = nodeScript->title();
     if (eTitle->text() != s) {
         eTitle->setText(s);
     }
@@ -103,7 +103,7 @@ void FactDelegateScript::updateFactValue()
     QString s = editor->toPlainText();
     if (s.simplified().isEmpty())
         s.clear();
-    scriptCompiler->setSource(eTitle->text(), s);
+    nodeScript->setSource(eTitle->text(), s);
 }
 
 bool FactDelegateScript::aboutToUpload(void)
@@ -132,7 +132,7 @@ void FactDelegateScript::aSave_triggered(void)
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
     QString fname = dlg.selectedFiles().first();
-    scriptCompiler->saveToFile(fname);
+    nodeScript->saveToFile(fname);
 }
 
 void FactDelegateScript::aLoad_triggered(void)
@@ -147,7 +147,7 @@ void FactDelegateScript::aLoad_triggered(void)
     if (!(dlg.exec() && dlg.selectedFiles().size() == 1))
         return;
     QString fname = dlg.selectedFiles().first();
-    scriptCompiler->loadFromFile(fname);
+    nodeScript->loadFromFile(fname);
 }
 
 void FactDelegateScript::updateLog()
@@ -155,7 +155,7 @@ void FactDelegateScript::updateLog()
     logList->clear();
     //label->setText(field->data(NodesItem::tc_value,Qt::DisplayRole).toString());
     uint icnt = 0;
-    for (auto s : scriptCompiler->log().split("\n", Qt::SkipEmptyParts)) {
+    for (auto s : nodeScript->log().split("\n", Qt::SkipEmptyParts)) {
         if (s.startsWith("Pawn"))
             continue;
         if (s.contains("error") || s.contains("warning")) {
@@ -170,10 +170,10 @@ void FactDelegateScript::updateLog()
         }
     }
     if (!icnt) {
-        if (!scriptCompiler->code().isEmpty())
+        if (!nodeScript->code().isEmpty())
             new QListWidgetItem(tr("Success"), logList);
     }
-    if (scriptCompiler->code().isEmpty())
+    if (nodeScript->code().isEmpty())
         new QListWidgetItem(tr("Empty script"), logList);
 }
 

@@ -72,16 +72,15 @@ private:
 
     bool _compile_wasm();
 
-    void _updateFactText();
-
-    void _update_cc_args();
-
     QFileSystemWatcher *_watcher{};
     void _updateWatcher(QString fileName);
 
 private slots:
     void factValueChanged();
     void fileChanged(const QString &path);
+
+    void _update_cc_args();
+    void _updateFactText();
 
 public slots:
     void setSource(QString title, QString source);
