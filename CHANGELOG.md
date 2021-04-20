@@ -1,3 +1,24 @@
+# [APX Ground Control v11.0.154](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.154) (04/20/21)
+
+> Branch: `main`\
+> Date: `04/20/21 17:00:50`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b8006770cebb6185cf73e9c895ef55a5cadbc2cb...3d9a84a53047e9c81dec890fceb4f8e4b14e0c61)
+
+## New Features
+* WASM examples
+* Datalink ESC uart codec
+* AHRS validity flags on EFIS
+* GYRO and ACC validity flags on EFIS
+* airbrakes buttons on landing instrument
+
+## Bug Fixes
+* fresh install errors fix
+
+## Performance Enhancements
+* central settings file source path
+* move all js functions to `gsc.js` file
+* database for node parameters meta data
+
 # [APX Ground Control v11.0.141](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.141) (04/17/21)
 
 > Branch: `main`\
