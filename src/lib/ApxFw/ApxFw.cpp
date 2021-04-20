@@ -837,8 +837,6 @@ void ApxFw::updateNodesMeta(QDir dir)
 
 void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path)
 {
-    // TODO yaml parameters replace title with descr for fields
-
     if (!json.isObject())
         return;
 

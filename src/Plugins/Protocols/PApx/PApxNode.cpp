@@ -154,7 +154,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         emit messageReceived((msg_type_e) t, msg);
 
         if (!_nodes->local() && !_nodes->upgrading()
-            && msg.contains(QString("node: %1: initialized").arg(title()))) {
+            && msg.contains(QString("node: %1: initialized").arg(title()), Qt::CaseInsensitive)) {
             requestIdent();
         }
         return;

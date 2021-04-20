@@ -120,13 +120,13 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         auto descr = m.value("descr").toString();
         auto def = m.value("def");
 
-        f->setDescr(descr);
+        f->setDescr(descr.simplified());
 
-        NodeField *nf = qobject_cast<NodeField *>(f);
-        if (nf) {
-            nf->setHelp(descr);
-            if (!def.isNull())
+        if (!def.isNull()) {
+            NodeField *nf = qobject_cast<NodeField *>(f);
+            if (nf) {
                 nf->setDefaultValue(def);
+            }
         }
     }
     if (cnt > 0)
