@@ -45,6 +45,8 @@ RowLayout {
 
     property real value: fact.value*mult
 
+    property string info: fact.title+" ("+fact.descr+")"
+
     TextButton {
         id: titleItem
         Layout.minimumWidth: titleWidth
@@ -52,7 +54,7 @@ RowLayout {
         color: highlighted?undefined:"#000"
         highlighted: value!==0
         onTriggered: fact.value=0
-        toolTip: qsTr("Reset")+" "+fact.descr
+        toolTip: qsTr("Reset")+" "+info
     }
 
     Label {
@@ -83,7 +85,7 @@ RowLayout {
             timer.start()
         }
         onReleased: timer.stop()
-        toolTip: qsTr("Decrease")+" "+fact.descr
+        toolTip: qsTr("Decrease")+" "+info
     }
     TextButton {
         size: control.size
@@ -95,7 +97,7 @@ RowLayout {
             timer.start()
         }
         onReleased: timer.stop()
-        toolTip: qsTr("Increase")+" "+fact.descr
+        toolTip: qsTr("Increase")+" "+info
     }
     Timer {
         id: timer

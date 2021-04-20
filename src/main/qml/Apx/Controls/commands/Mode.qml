@@ -41,7 +41,7 @@ ListView {
     delegate: ToolButton {
         size: listView.height
         text: modelData
-        toolTip: f_mode.descr+": "+modelData
+        toolTip: f_mode.title+": "+modelData
         iconName: listView.modeIcon(modelData)
         onTriggered: {
             f_mode.value=modelData

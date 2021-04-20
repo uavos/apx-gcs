@@ -38,7 +38,9 @@ RowLayout {
     property int titleWidth: size*2
     property int valueWidth: titleWidth
 
-    property string toolTip: fact?fact.descr:""
+    property string toolTip: info
+
+    property string info: fact.title+" ("+fact.descr+")"
 
     spacing: 0
 
