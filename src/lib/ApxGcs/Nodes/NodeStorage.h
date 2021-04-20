@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <Fact/Fact.h>
 #include <QtCore>
 
 class NodeItem;
@@ -37,6 +38,11 @@ private:
     NodeItem *_node;
     quint64 _configID{};
 
+    QStringList get_names(Fact *f, QStringList path = QStringList());
+
+private slots:
+    void metaDataLoaded(QVariantMap meta);
+
 public slots:
     void saveNodeInfo();
     void saveNodeDict();
@@ -45,6 +51,8 @@ public slots:
     void loadNodeConfig(QString hash = QString()); // will load most recent by default
 
     void updateConfigID(quint64 configID);
+
+    void loadNodeMeta();
 
 signals:
     void configSaved();

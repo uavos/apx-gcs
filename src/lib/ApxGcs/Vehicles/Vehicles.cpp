@@ -60,7 +60,7 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
                             tr("Remove all vehicles"),
                             Action,
                             "notification-clear-all");
-    connect(f_clear, &Fact::triggered, this, &Vehicles::clear);
+    connect(f_clear, &Fact::triggered, this, &Vehicles::clearAll);
 
     f_replay = new Vehicle(this, nullptr);
     f_select->addVehicle(f_replay);
@@ -248,7 +248,7 @@ void Vehicles::deleteVehicle(Vehicle *v)
     // delay actual delete operation
     QTimer::singleShot(1000, this, [v]() { v->deleteFact(); });
 }
-void Vehicles::clear()
+void Vehicles::clearAll()
 {
     for (auto i : facts()) {
         auto f = static_cast<Vehicle *>(i);

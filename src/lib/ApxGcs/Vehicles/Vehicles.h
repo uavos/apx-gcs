@@ -57,7 +57,7 @@ public slots:
     void selectNext();
 
     void deleteVehicle(Vehicle *v);
-    void clear();
+    void clearAll();
 
 signals:
     void vehicleRegistered(Vehicle *vehicle);

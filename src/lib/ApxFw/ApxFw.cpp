@@ -26,6 +26,8 @@
 
 #include "quazip/JlCompress.h"
 
+#include <Database/VehiclesReqNode.h>
+
 ApxFw::ApxFw(Fact *parent)
     : Fact(parent, "apxfw", tr("Firmware releases"), tr("Available firmware packages"), Group)
 {
@@ -73,6 +75,7 @@ void ApxFw::syncFacts()
             f_dev = new Fact(this, "dev", "Development", "", Group);
         f_dev->setValue(QString::number(devDir().entryList().size()));
         makeFacts(f_dev, devDir());
+        updateNodesMeta(devDir());
     }
 
     QDir dir;
@@ -153,6 +156,8 @@ bool ApxFw::extractRelease(const QString &filePath)
     qDebug() << "extracted" << files.size() << dir.absolutePath();
     apxMsg() << title().append(':') << dir.dirName();
 
+    updateNodesMeta(dir);
+
     return true;
 }
 
@@ -169,12 +174,13 @@ QDir ApxFw::devDir() const
     return QDir(AppDirs::firmware().absoluteFilePath("development"), "*.apxfw");
 }
 
-void ApxFw::makeFacts(Fact *fact, const QDir &dir)
+void ApxFw::makeFacts(Fact *fact, QDir dir)
 {
     //create content tree
-    foreach (QFileInfo fi, dir.entryInfoList()) {
+    for (auto fi : dir.entryInfoList()) {
         if (fi.suffix() != "apxfw")
             continue;
+
         QStringList st = fi.completeBaseName().split('-');
         QVersionNumber v = QVersionNumber::fromString(fi.completeBaseName().split('-').value(2));
         if (st.size() < 3 || v.isNull()) {
@@ -771,4 +777,127 @@ QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
     } while (0);
     apxMsgW() << tr("Parameters package error") << nodeName << hw;
     return QJsonArray();
+}
+
+void ApxFw::updateNodesMeta(QDir dir)
+{
+    QVariantMap meta;
+
+    for (auto fi : dir.entryInfoList(QStringList() << "*.apxfw", QDir::Files)) {
+        if (fi.suffix() != "apxfw")
+            continue;
+
+        auto st = fi.completeBaseName().split('-');
+        auto version = QVersionNumber::fromString(fi.completeBaseName().split('-').value(2))
+                           .toString();
+        if (st.size() < 3 || version.isEmpty()) {
+            qWarning() << "invalid firmware file" << fi.filePath();
+            continue;
+        }
+
+        QFile file(fi.absoluteFilePath());
+        if (!file.exists() || !file.open(QFile::ReadOnly | QFile::Text))
+            continue;
+
+        QJsonDocument json = QJsonDocument::fromJson(file.readAll());
+        file.close();
+
+        QJsonObject params = json["parameters"].toObject();
+        if (params.isEmpty())
+            continue;
+        QByteArray ba = QByteArray::fromBase64(params["data"].toString().toUtf8());
+        if (ba.isEmpty())
+            continue;
+
+        quint32 size = params["size"].toInt();
+
+        ba.prepend(static_cast<char>(size));
+        ba.prepend(static_cast<char>(size >> 8));
+        ba.prepend(static_cast<char>(size >> 16));
+        ba.prepend(static_cast<char>(size >> 24));
+        ba = qUncompress(ba);
+        if (ba.isEmpty())
+            continue;
+
+        json = QJsonDocument::fromJson(ba);
+        if (!json.isArray())
+            continue;
+
+        for (auto i : json.array()) {
+            updateNodesMeta(meta, version, i, QStringList());
+        }
+    }
+    if (meta.isEmpty())
+        return;
+
+    // push to DB
+    auto *req = new DBReqSaveNodeMeta(meta);
+    req->exec();
+}
+
+void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path)
+{
+    // TODO yaml parameters replace title with descr for fields
+
+    if (!json.isObject())
+        return;
+
+    auto jso = json.toObject();
+    if (!jso.contains("name"))
+        return;
+    auto name = jso.value("name").toString();
+    if (name.isEmpty())
+        return;
+    path << name;
+    name = path.join('.');
+
+    bool is_group = jso.contains("content");
+
+    auto m = meta.value(name).value<QVariantMap>();
+
+    auto descr = jso.value("descr").toString();
+    auto title = jso.value("title").toString();
+
+    if (!is_group) {
+        if (descr.isEmpty()) {
+            descr = title;
+        } else if (!title.isEmpty()) {
+            descr.prepend(title + "\n");
+        }
+    }
+
+    descr = descr.trimmed();
+
+    if (descr.isEmpty())
+        descr = m.value("descr").toString();
+
+    m.insert("version", version);
+    m.insert("descr", descr);
+
+    // default values
+    if (jso.contains("default")) {
+        auto def = jso.value("default");
+        if (def.isObject()) {
+            auto jsdef = def.toObject();
+            for (auto key : jsdef.keys()) {
+                auto kname = name + "." + key;
+                auto km = meta.value(kname).value<QVariantMap>();
+                auto v = jsdef.value(key).toVariant();
+                km.insert("def", v);
+                meta.insert(kname, km);
+            }
+        } else {
+            auto v = def.toVariant();
+            m.insert("def", v);
+        }
+    }
+    meta.insert(name, m);
+
+    // parse child objects
+    if (!is_group)
+        return;
+
+    for (auto v : jso.value("content").toArray()) {
+        updateNodesMeta(meta, version, v, path);
+    }
 }

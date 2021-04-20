@@ -90,9 +90,6 @@ private:
 
     qint64 _lastSeenTime{};
 
-    QJsonArray _parameters;
-    void updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json);
-
     NodeField *_status_field{nullptr};
 
     void groupArrays();

@@ -84,3 +84,51 @@ void NodeStorage::loadNodeConfig(QString hash)
             Qt::QueuedConnection);
     req->exec();
 }
+
+void NodeStorage::loadNodeMeta()
+{
+    auto *req = new DBReqLoadNodeMeta(get_names(_node));
+    connect(req,
+            &DBReqLoadNodeMeta::metaDataLoaded,
+            this,
+            &NodeStorage::metaDataLoaded,
+            Qt::QueuedConnection);
+    req->exec();
+}
+QStringList NodeStorage::get_names(Fact *f, QStringList path)
+{
+    QStringList names;
+    for (auto i : f->facts()) {
+        auto p = path;
+        p << i->name();
+        names.append(p.join('.'));
+        names.append(get_names(i, p));
+    }
+    return names;
+}
+void NodeStorage::metaDataLoaded(QVariantMap meta)
+{
+    uint cnt = 0;
+    for (auto name : meta.keys()) {
+        auto f = _node->findChild(name);
+        if (!f)
+            continue;
+
+        cnt++;
+
+        auto m = meta.value(name).value<QVariantMap>();
+        auto descr = m.value("descr").toString();
+        auto def = m.value("def");
+
+        f->setDescr(descr);
+
+        NodeField *nf = qobject_cast<NodeField *>(f);
+        if (nf) {
+            nf->setHelp(descr);
+            if (!def.isNull())
+                nf->setDefaultValue(def);
+        }
+    }
+    if (cnt > 0)
+        qDebug() << "meta data loaded:" << cnt;
+}
