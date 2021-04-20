@@ -215,11 +215,11 @@ QVariant MandalaFact::data(int col, int role) const
                 QStringList st;
                 for (auto n : vlist)
                     st.append(QString::number(n));
-                int capacity = 1 << mandala::uid_bits[m_meta.level + 2];
+                int capacity = (1 << mandala::uid_bits[m_meta.level + 2]) - 1;
                 return QString("[%1/%2]").arg(st.join('/')).arg(capacity);
             }
             if (m_meta.level == 2) {
-                int capacity = 1 << mandala::uid_bits[m_meta.level + 1];
+                int capacity = (1 << mandala::uid_bits[m_meta.level + 1]) - 1;
                 return QString("[%1/%2]").arg(size()).arg(capacity);
             }
         }
