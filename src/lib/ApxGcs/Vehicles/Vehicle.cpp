@@ -352,8 +352,8 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
     if (!c.isValid())
         return;
     QVariantList value;
-    value << qDegreesToRadians(c.latitude());
-    value << qDegreesToRadians(c.longitude());
+    value << c.latitude();
+    value << c.longitude();
     emit sendValue(mandala::cmd::nav::pos::uid, value);
 }
 void Vehicle::lookHere(const QGeoCoordinate &c)
@@ -363,8 +363,8 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
     if (!c.isValid())
         return;
     QVariantList value;
-    value << qDegreesToRadians(c.latitude());
-    value << qDegreesToRadians(c.longitude());
+    value << c.latitude();
+    value << c.longitude();
     emit sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
 void Vehicle::setHomePoint(const QGeoCoordinate &c)
