@@ -97,8 +97,10 @@ Item {
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
+    readonly property var f_att_valid: mandala.est.att.valid
     readonly property var f_att_rest: mandala.est.att.rest
     readonly property var f_pos_status: mandala.est.pos.status
+    readonly property var f_pos_valid: mandala.est.pos.valid
     readonly property var f_pos_hsrc: mandala.est.pos.hsrc
     readonly property var f_lpos_status: mandala.est.lpos.status
     readonly property var f_air_stall: mandala.est.air.stall
@@ -188,16 +190,6 @@ Item {
             fact: f_mode
             type: CleanText.Clean
         }
-        // system mode
-        /*CleanText {
-            anchors.top: _modeText.bottom
-            anchors.horizontalCenter: _modeText.horizontalCenter
-            anchors.topMargin: pfdScene.flagHeight*0.1
-            visible: ui.test || ( fact.value < sys_mode_airborne && f_att_status.value > att_status_unknown)
-            height: pfdScene.txtHeight*0.5
-            fact: f_sys_mode
-            type: f_att_rest.value > 0?CleanText.Green:CleanText.Normal
-        }*/
 
 
 
@@ -582,6 +574,20 @@ Item {
                 status_show: att_status_busy
                 status_reset: att_status_unknown
                 text: qsTr("AHRS")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_att_valid
+                show: ui.test || (status!==att_valid_yes && f_att_status.value>0)
+                failure: true
+                text: qsTr("ATT")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_pos_valid
+                show: ui.test || (status!==pos_valid_yes && f_pos_status.value>0)
+                failure: true
+                text: qsTr("POS")
             }
             StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2
