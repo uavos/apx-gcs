@@ -97,15 +97,17 @@ Item {
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
-    readonly property var f_att_valid: mandala.est.att.valid
     readonly property var f_att_rest: mandala.est.att.rest
     readonly property var f_pos_status: mandala.est.pos.status
-    readonly property var f_pos_valid: mandala.est.pos.valid
     readonly property var f_pos_hsrc: mandala.est.pos.hsrc
     readonly property var f_lpos_status: mandala.est.lpos.status
     readonly property var f_air_stall: mandala.est.air.stall
     readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
 
+    readonly property var f_att_valid: mandala.est.att.valid
+    readonly property var f_pos_valid: mandala.est.pos.valid
+    readonly property var f_gyro_valid: mandala.est.gyro.valid
+    readonly property var f_acc_valid: mandala.est.acc.valid
 
     readonly property bool isValid: f_att_status.value > 0
 
@@ -588,6 +590,20 @@ Item {
                 show: ui.test || (status!==pos_valid_yes && f_pos_status.value>0)
                 failure: true
                 text: qsTr("POS")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_gyro_valid
+                show: ui.test || (status!==gyro_valid_yes && f_att_status.value>0)
+                failure: true
+                text: qsTr("GYRO")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_acc_valid
+                show: ui.test || (status!==acc_valid_yes && f_att_status.value>0)
+                failure: true
+                text: qsTr("ACC")
             }
             StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2
