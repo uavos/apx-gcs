@@ -28,7 +28,7 @@ The source code, published in this repository, **is not based** on any known ope
 - `CompassCalibration`: helper widget for hard-iron compass calibration;
 - `DatalinkInspector`: QML widget for inspecting of datalink packets;
 - `FirmwareLoader`: allows to update firmware of [APX nodes](http://docs.uavos.com/hw/index.html) or upload to stm32 [bootloader](https://www.st.com/resource/en/application_note/cd00264342-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf);
-- `Joystick`: makes [SDL2](https://www.libsdl.org) contols available to the UAV control logic;
+- `Joystick`: makes [SDL2](https://www.libsdl.org) controls available to the UAV control logic;
 - `Location`: geo map tiles downloader and offline cache, optimized for UAV applications;
 - `MandalaTree`: tree view window of UAV state;
 - `MissionPlanner`: [QML map](https://doc.qt.io/qt-5/qml-qtlocation-map.html) with mission editor;

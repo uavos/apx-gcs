@@ -28,6 +28,9 @@
 
 #include <Database/VehiclesReqNode.h>
 
+// TODO collect and display changelog based on minimum node version
+// see https://doc.qt.io/qt-5/qtwebengine-webenginewidgets-markdowneditor-example.html
+
 ApxFw::ApxFw(Fact *parent)
     : Fact(parent, "apxfw", tr("Firmware releases"), tr("Available firmware packages"), Group)
 {
