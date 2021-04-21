@@ -39,6 +39,7 @@ apx_lib(
     Widgets
     QuickControls2
     Svg
+    Positioning
 )
 
 apx_qrc(

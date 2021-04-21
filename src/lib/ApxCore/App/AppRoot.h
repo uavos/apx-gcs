@@ -19,13 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppRoot_H
-#define AppRoot_H
-//=============================================================================
+#pragma once
+
 #include "AppPlugins.h"
 #include "AppSettings.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
+#include <QGeoCoordinate>
+
 class AppRoot : public Fact
 {
     Q_OBJECT
@@ -75,11 +76,11 @@ public:
 
     Q_INVOKABLE static QPointF seriesBounds(const QVariantList &series);
 
+    Q_INVOKABLE static QGeoCoordinate coordinate(double lat, double lon, double alt = 0);
+
 public:
     Q_INVOKABLE static void sound(const QString &v);
 
 signals:
     void factTriggered(Fact *fact, QVariantMap opts);
 };
-//=============================================================================
-#endif

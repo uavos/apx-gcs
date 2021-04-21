@@ -146,10 +146,10 @@ signals:
 
     //provided methods
 public slots:
-    void flyHere(const QGeoCoordinate &c);
-    void lookHere(const QGeoCoordinate &c);
-    void setHomePoint(const QGeoCoordinate &c);
-    void sendPositionFix(const QGeoCoordinate &c);
+    void flyHere(QGeoCoordinate c);
+    void lookHere(QGeoCoordinate c);
+    void setHomePoint(QGeoCoordinate c);
+    void sendPositionFix(QGeoCoordinate c);
 
     void resetGeoPath();
 

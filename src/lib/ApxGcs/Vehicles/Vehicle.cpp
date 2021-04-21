@@ -345,7 +345,7 @@ QGeoRectangle Vehicle::geoPathRect() const
     return geoPath().boundingGeoRectangle();
 }
 
-void Vehicle::flyHere(const QGeoCoordinate &c)
+void Vehicle::flyHere(QGeoCoordinate c)
 {
     if (isReplay())
         return;
@@ -356,7 +356,7 @@ void Vehicle::flyHere(const QGeoCoordinate &c)
     value << c.longitude();
     emit sendValue(mandala::cmd::nav::pos::uid, value);
 }
-void Vehicle::lookHere(const QGeoCoordinate &c)
+void Vehicle::lookHere(QGeoCoordinate c)
 {
     if (isReplay())
         return;
@@ -367,7 +367,7 @@ void Vehicle::lookHere(const QGeoCoordinate &c)
     value << c.longitude();
     emit sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
-void Vehicle::setHomePoint(const QGeoCoordinate &c)
+void Vehicle::setHomePoint(QGeoCoordinate c)
 {
     if (isReplay())
         return;
@@ -380,7 +380,7 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
     //    values.insert(mandala::est::nav::ref::hmsl::meta.uid, f_ref_hmsl->value());
     //    f_ref->sendBundle(values);
 }
-void Vehicle::sendPositionFix(const QGeoCoordinate &c)
+void Vehicle::sendPositionFix(QGeoCoordinate c)
 {
     if (isReplay())
         return;

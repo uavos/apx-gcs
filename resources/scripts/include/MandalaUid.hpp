@@ -330,6 +330,10 @@ typedef enum {
     att_status_critical = 4,
     att_status_failure = 5,
 
+    // est.nav.att.valid
+    att_valid_no = 0,
+    att_valid_yes = 1,
+
     // est.nav.att.mag
     att_mag_unknown = 0,
     att_mag_3D = 1,
@@ -350,12 +354,24 @@ typedef enum {
     pos_status_critical = 4,
     pos_status_failure = 5,
 
+    // est.nav.pos.valid
+    pos_valid_no = 0,
+    pos_valid_yes = 1,
+
     // est.nav.pos.hsrc
     pos_hsrc_none = 0,
     pos_hsrc_baro = 1,
     pos_hsrc_gps = 2,
     pos_hsrc_range = 3,
     pos_hsrc_vision = 4,
+
+    // est.nav.gyro.valid
+    gyro_valid_no = 0,
+    gyro_valid_yes = 1,
+
+    // est.nav.acc.valid
+    acc_valid_no = 0,
+    acc_valid_yes = 1,
 
     // est.nav.lpos.status
     lpos_status_unknown = 0,
@@ -943,39 +959,43 @@ namespace est
         namespace att
         {
             enum { status = 0x401 };
-            enum { roll = 0x402 };
-            enum { pitch = 0x403 };
-            enum { yaw = 0x404 };
-            enum { mag = 0x405 };
-            enum { rest = 0x406 };
+            enum { valid = 0x402 };
+            enum { roll = 0x403 };
+            enum { pitch = 0x404 };
+            enum { yaw = 0x405 };
+            enum { mag = 0x406 };
+            enum { rest = 0x407 };
         };
         namespace pos
         {
             enum { status = 0x411 };
-            enum { lat = 0x412 };
-            enum { lon = 0x413 };
-            enum { hmsl = 0x414 };
-            enum { agl = 0x415 };
-            enum { course = 0x416 };
-            enum { speed = 0x417 };
-            enum { altitude = 0x418 };
-            enum { vspeed = 0x419 };
-            enum { hsrc = 0x41a };
+            enum { valid = 0x412 };
+            enum { lat = 0x413 };
+            enum { lon = 0x414 };
+            enum { hmsl = 0x415 };
+            enum { agl = 0x416 };
+            enum { course = 0x417 };
+            enum { speed = 0x418 };
+            enum { altitude = 0x419 };
+            enum { vspeed = 0x41a };
+            enum { hsrc = 0x41b };
         };
         namespace gyro
         {
-            enum { x = 0x421 };
-            enum { y = 0x422 };
-            enum { z = 0x423 };
-            enum { ax = 0x424 };
-            enum { ay = 0x425 };
-            enum { az = 0x426 };
+            enum { valid = 0x421 };
+            enum { x = 0x422 };
+            enum { y = 0x423 };
+            enum { z = 0x424 };
+            enum { ax = 0x425 };
+            enum { ay = 0x426 };
+            enum { az = 0x427 };
         };
         namespace acc
         {
-            enum { x = 0x431 };
-            enum { y = 0x432 };
-            enum { z = 0x433 };
+            enum { valid = 0x431 };
+            enum { x = 0x432 };
+            enum { y = 0x433 };
+            enum { z = 0x434 };
         };
         namespace lpos
         {

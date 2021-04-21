@@ -134,6 +134,12 @@ function zrc() {
 }
 zrc.info = "reset pilot controls";
 
+function flyTo(lat, lon) {
+    apx.vehicles.current.flyHere(apx.coordinate(lat, lon))
+}
+flyTo.info = "Set commanded position";
+
+
 
 function inair(v) {
     cmd.ahrs.inair = v;
