@@ -91,34 +91,6 @@ void AppPlugins::load(const QStringList &names)
         allFiles.append(pluginsDir.absoluteFilePath(fileName));
     }
 
-    /*allFiles.append("qrc:///app/EFIS.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "EFIS");
-
-    allFiles.append("qrc:///app/PFD.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "PFD");
-
-    allFiles.append("qrc:///app/HDG.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "HDG");*/
-
-    //allFiles.append("qrc:///Apx/Controls/video/Video.qml");
-    //(void)QT_TRANSLATE_NOOP("Plugins","Video");
-
-    //allFiles.append("qrc:///controls/menu/MenuSys.qml");
-    //(void)QT_TRANSLATE_NOOP("Plugins","Facts");
-
-    //allFiles.append("qrc:///instruments/engine/Rotax914.qml");
-
-    //allFiles.append("qrc:///Apx/Controls/signals/Signals.qml");
-    //allFiles.append("qrc:///Apx/Controls/state/State.qml");
-    //allFiles.append("qrc:///Apx/Controls/terminal/Terminal.qml");
-
-    //allFiles.append("qrc:///app/MenuSys.qml");
-
-    //allFiles.append("qrc:///app/GroundControl.qml");
-
-    //allFiles.append("qrc:///app/Map.qml");
-    //allFiles.append("qrc:///Apx/Map/ApxMap.qml");
-
     //parse command line arguments (plugins to load)
     if (!names.isEmpty()) {
         QStringList st;

@@ -47,3 +47,4 @@ update-icons:
 include Docker.mk
 include shared/tools/Release.mk
 include shared/tools/Submodules.mk
+include docs/Docs.mk

@@ -133,7 +133,7 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     } else {
         //check for overrided layout file
         QString fname = AppDirs::userPlugins().absoluteFilePath(
-            QString("%1.qml").arg(QCoreApplication::applicationName().remove(' ')));
+            QString("main/%1.qml").arg(QCoreApplication::applicationName().remove(' ')));
         QFileInfo fi(fname);
         if (fi.exists()) {
             apxMsg() << tr("Using customized layout").append(':') << fi.fileName();

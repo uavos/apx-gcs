@@ -4,7 +4,7 @@
 
 [![GSC video](http://img.youtube.com/vi/CSPNkGZuP8M/0.jpg)](https://youtu.be/CSPNkGZuP8M)
 
-APX Ground Control Software (`GCS`): open-source project, leaded by [UAVOS Company](http://uavos.com).
+APX Ground Control Software (`GCS`) is open-source project, leaded by [UAVOS Company](http://uavos.com).
 
 This repository contains a cross-platform application, which is part of [APX Autopilot project](http://docs.uavos.com).
 
@@ -12,41 +12,7 @@ The purpose of this application is to manage command & control, mission planing,
 
 The source code, published in this repository, **is not based** on any known open-source projects related to UAV industry.
 
-## Key features
-
-- [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
-- Based on [QT framework](https://www.qt.io) and [QML](https://en.wikipedia.org/wiki/QML);
-- Multi-platform;
-- Customizable [frontend](https://github.com/uavos/apx-gcs/blob/main/src/main/qml/Apx/Application/GroundControl.qml);
-- C++ defined JS Tree at the [backend](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
-- Application defined by [plugins](https://github.com/uavos/apx-gcs/tree/main/src/Plugins);
-- Protocols [abstraction](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxData/Protocols);
-
-## Included Plugins
-
-- `AppUpdate`: automatic application update support for macos via [Sparkle](https://sparkle-project.org/) for mac or [AppImage](https://appimage.org) for linux;
-- `CompassCalibration`: helper widget for hard-iron compass calibration;
-- `DatalinkInspector`: QML widget for inspecting of datalink packets;
-- `FirmwareLoader`: allows to update firmware of [APX nodes](http://docs.uavos.com/hw/index.html) or upload to stm32 [bootloader](https://www.st.com/resource/en/application_note/cd00264342-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf);
-- `Joystick`: makes [SDL2](https://www.libsdl.org) controls available to the UAV control logic;
-- `Location`: geo map tiles downloader and offline cache, optimized for UAV applications;
-- `MandalaTree`: tree view window of UAV state;
-- `MissionPlanner`: [QML map](https://doc.qt.io/qt-5/qml-qtlocation-map.html) with mission editor;
-- `ScriptCompiler`: [WASM](https://webassembly.org) Scripting engine support for onboard MCUs;
-- `SerialPortConsole`: tool to debug and trace serial data from onboard serial ports ([VCP](http://docs.uavos.com/fw/conf/serial.html));
-- `ServoConfig`: tool to configure some specific servo drives;
-- `Shortcuts`: manages keyboard shortcuts and assigned commands to the UAV;
-- `Signals`: QML widget to show live chart of defined UAV physical values for easy tuning;
-- `Simulator`: launches [X-Plane](https://www.x-plane.com) flight simulator with provided specific plugins to communicate to the GCS for SIL/HIL simulation;
-- `Sites`: map view plugin to add named areas to missions and map areas;
-- `Sounds`: reads out autopilot warnings and messages with defined voice and [TTS](https://en.wikipedia.org/wiki/Speech_synthesis) engines, available to the system, and emits emergency alarm sounds;
-- `TelemetryChart`: [QWT](https://qwt.sourceforge.io)-lib based widget to visualize telemetry database;
-- `Terminal`: UAV commands termial, [JavaScript](https://wiki.qt.io/JavaScript)/QML based;
-- `TreeFacts`: general back-end qobjects data structure tree-view, used for debugging;
-- `TreeJS`: JavaScript context tree view, used for debugging and reference;
-- `VehicleConfiguration`: UAV parameters tree view and extended QTreeView-based editor;
-- `VideoStreaming`: [GStreamer](https://gstreamer.freedesktop.org) based video streaming low-latency plugin with UAV gimbal controls and video stream recording;
-
+More information about GCS application and its internals can be found here: [docs.uavos.com](http://docs.uavos.com)
 
 ## Build instructions
 
@@ -70,7 +36,6 @@ GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodul
 The project uses `cmake` build system. Some tools require `python3` scripts to manage source files generation via [`jinja`](https://jinja.palletsprojects.com) and assemble deploy [packages](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) for the specified platform.
 
 For the required tools, take a look at [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile) and [GitHub CI](https://github.com/uavos/apx-gcs/blob/main/.github/workflows/apx-gcs-release.yml).
-
 
 #### Building binaries
 
