@@ -61,4 +61,4 @@ Add the following link to Google Earth:
 
 `http://127.0.0.1:9280/kml`
 
-![GoogleEarth Visualization](img/googleearth.png)
+![GoogleEarth Visualization](assets/googleearth.png)

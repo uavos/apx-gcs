@@ -1,4 +1,4 @@
-set(docs_bin ${CMAKE_CURRENT_BINARY_DIR})
+set(docs_bin ${CMAKE_CURRENT_BINARY_DIR}/out)
 
 set(docs_dest ${docs_bin}/_docs/gcs)
 set(docs_data ${docs_bin}/_data/gcs.yml)

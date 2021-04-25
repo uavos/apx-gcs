@@ -3,7 +3,7 @@
 
 # Simulation
 
-To get started with **Software in the loop simulation** (no hardware) you can follow these instructions:
+To get started with **Software in the loop simulation** (no hardware) you can follow the following instructions:
 
 - [Install Ground Control](install) application;
 - Install [X-plane Flight Simulator](http://www.x-plane.com/);
@@ -34,7 +34,7 @@ To get started with **Software in the loop simulation** (no hardware) you can fo
 
 ## Notes
 
-- X-plane and simulated autopilot exchange data via x-plane **plugin** and TCP/IP network. The plugin and aircraft models are installed automatically by the GCS when you launch the simulation from the menu.
+- X-plane and [simulated autopilot](/hw/sim) exchange data via x-plane [plugin](https://github.com/uavos/apx-gcs/tree/main/src/Plugins/System/Simulator/xplane) and TCP/IP network. The plugin binary and aircraft models resorces are installed automatically by the GCS when you launch the simulation from the GCS menu.
 
 ## Telemetry sample replay
 
