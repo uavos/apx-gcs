@@ -24,7 +24,7 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-//=============================================================================
+
 AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     : QObject(parent)
     , QList<AppPlugin *>()
@@ -32,10 +32,10 @@ AppPlugins::AppPlugins(Fact *f_enabled, QObject *parent)
     , check_tool(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("gcs_plugin_test"))
 {
     if (App::dryRun() || App::segfault()) {
-        QSettings spt;
-        spt.beginGroup("plugins_test");
-        for (auto k : spt.allKeys())
-            spt.remove(k);
+        QSettings sx;
+        sx.beginGroup("plugins_test");
+        for (auto k : sx.allKeys())
+            sx.remove(k);
     }
 
     if (!check_tool.exists()) {
@@ -46,7 +46,7 @@ AppPlugins::~AppPlugins()
 {
     unload();
 }
-//=============================================================================
+
 void AppPlugins::load(const QStringList &names)
 {
     //collect all available plugins filenames
@@ -90,34 +90,6 @@ void AppPlugins::load(const QStringList &names)
         //apxDebug()<<fileName;
         allFiles.append(pluginsDir.absoluteFilePath(fileName));
     }
-
-    /*allFiles.append("qrc:///app/EFIS.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "EFIS");
-
-    allFiles.append("qrc:///app/PFD.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "PFD");
-
-    allFiles.append("qrc:///app/HDG.qml");
-    (void) QT_TRANSLATE_NOOP("Plugins", "HDG");*/
-
-    //allFiles.append("qrc:///Apx/Controls/video/Video.qml");
-    //(void)QT_TRANSLATE_NOOP("Plugins","Video");
-
-    //allFiles.append("qrc:///controls/menu/MenuSys.qml");
-    //(void)QT_TRANSLATE_NOOP("Plugins","Facts");
-
-    //allFiles.append("qrc:///instruments/engine/Rotax914.qml");
-
-    //allFiles.append("qrc:///Apx/Controls/signals/Signals.qml");
-    //allFiles.append("qrc:///Apx/Controls/state/State.qml");
-    //allFiles.append("qrc:///Apx/Controls/terminal/Terminal.qml");
-
-    //allFiles.append("qrc:///app/MenuSys.qml");
-
-    //allFiles.append("qrc:///app/GroundControl.qml");
-
-    //allFiles.append("qrc:///app/Map.qml");
-    //allFiles.append("qrc:///Apx/Map/ApxMap.qml");
 
     //parse command line arguments (plugins to load)
     if (!names.isEmpty()) {
@@ -171,8 +143,9 @@ void AppPlugins::load(const QStringList &names)
     }
 
     emit loaded();
+    updateStatus();
 }
-//=============================================================================
+
 void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath) const
 {
     foreach (QString p, list) {
@@ -192,7 +165,7 @@ void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath
         }
     }
 }
-//=============================================================================
+
 void AppPlugins::loadFiles(const QStringList &fileNames)
 {
     QStringList loadedNames;
@@ -211,13 +184,13 @@ void AppPlugins::loadFiles(const QStringList &fileNames)
         append(plugin);
     }
 }
-//=============================================================================
+
 void AppPlugins::unload()
 {
     qDeleteAll(*this);
     clear();
 }
-//=============================================================================
+
 AppPlugin *AppPlugins::plugin(QString name)
 {
     for (auto p : *this) {
@@ -225,4 +198,17 @@ AppPlugin *AppPlugins::plugin(QString name)
             return p;
     }
     return nullptr;
+}
+
+void AppPlugins::updateStatus()
+{
+    if (!f_enabled)
+        return;
+    size_t cnt = 0, ecnt = 0;
+    for (auto f : *this) {
+        cnt++;
+        if (f->f_enabled->value().toBool())
+            ecnt++;
+    }
+    f_enabled->setValue(QString("%1/%2").arg(ecnt).arg(cnt));
 }

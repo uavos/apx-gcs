@@ -1,3 +1,77 @@
+# [APX Ground Control v11.0.156](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.156) (04/20/21)
+
+> Branch: `main`\
+> Date: `04/20/21 17:42:53`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b8006770cebb6185cf73e9c895ef55a5cadbc2cb...1dea988aed478483b83b23c9fdd60279d669d0ed)
+
+## New Features
+* WASM examples
+* Datalink ESC uart codec
+* AHRS validity flags on EFIS
+* GYRO and ACC validity flags on EFIS
+* airbrakes buttons on landing instrument
+
+## Bug Fixes
+* fresh install errors fix
+
+## Performance Enhancements
+* central settings file source path
+* move all js functions to `gsc.js` file
+* database for node parameters meta data
+
+# [APX Ground Control v11.0.154](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.154) (04/20/21)
+
+> Branch: `main`\
+> Date: `04/20/21 17:00:50`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b8006770cebb6185cf73e9c895ef55a5cadbc2cb...3d9a84a53047e9c81dec890fceb4f8e4b14e0c61)
+
+## New Features
+* WASM examples
+* Datalink ESC uart codec
+* AHRS validity flags on EFIS
+* GYRO and ACC validity flags on EFIS
+* airbrakes buttons on landing instrument
+
+## Bug Fixes
+* fresh install errors fix
+
+## Performance Enhancements
+* central settings file source path
+* move all js functions to `gsc.js` file
+* database for node parameters meta data
+
+# [APX Ground Control v11.0.141](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.141) (04/17/21)
+
+> Branch: `main`\
+> Date: `04/17/21 16:15:32`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/6400f69dddc848ba57d054b139a188b1259f6c76...29870d2ec82ee4301f7ca367f397182292c17c82)
+
+## New Features
+* Node modules tool reset function
+* EFIS cursor on controlled areas
+* node `alive` property
+* Vehicle identity conflicts resolution
+
+## Performance Enhancements
+* disable telemetry on upgrading
+* node modules addressing through indexes
+
+# [APX Ground Control v11.0.134](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.134) (04/15/21)
+
+> Branch: `main`\
+> Date: `04/15/21 16:02:57`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/645a51fc17097c91c21a8d2795657e946a4165f6...d4898dc000ad37a40b180c0b031c4549151ca31e)
+
+## New Features
+* OTA firmware upgrade
+* vehicles deletion function
+
+## Bug Fixes
+* variant data formats parsers
+
+## Performance Enhancements
+* plugins load crash protection blacklist
+
 # [APX Ground Control v11.0.128](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.128) (04/13/21)
 
 > Branch: `main`\

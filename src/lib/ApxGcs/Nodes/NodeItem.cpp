@@ -65,8 +65,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateStatus);
 
         connect(this, &NodeItem::shell, protocol, [this](QStringList commands) {
-            commands.prepend("sh");
-            _protocol->requestMod(commands);
+            _protocol->requestMod(PNode::sh, QByteArray(), commands);
         });
 
         connect(protocol, &Fact::valueChanged, this, [this]() {
@@ -77,20 +76,8 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         });
     }
 
-    /*
-    // responses mapping
-    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::identReceived);
-    connect(protocol, &ProtocolNode::dictReceived, this, &NodeItem::dictReceived);
-    connect(protocol, &ProtocolNode::confReceived, this, &NodeItem::confReceived);
-    connect(protocol, &ProtocolNode::confDefault, this, &NodeItem::restoreDefaults);
-    connect(protocol, &ProtocolNode::messageReceived, this, &NodeItem::messageReceived);
-    connect(protocol, &ProtocolNode::statusReceived, this, &NodeItem::statusReceived);
-
-
-    statusTimer.setSingleShot(true);
-    statusTimer.setInterval(10000);
-    connect(&statusTimer, &QTimer::timeout, this, &NodeItem::updateDescr);
-    connect(protocol, &ProtocolNode::identReceived, this, &NodeItem::updateDescr);*/
+    // models decorations update
+    connect(this, &NodeItem::aliveChanged, this, &Fact::enabledChanged);
 
     if (protocol && !_nodes->upgrading() && !_nodes->vehicle->isLocal())
         protocol->requestIdent();
@@ -134,6 +121,19 @@ void NodeItem::updateUpgrading()
     if (!_nodes->vehicle->isLocal()) {
         _protocol->requestIdent();
     }
+}
+void NodeItem::updateAlive(bool alive)
+{
+    uint v = m_alive;
+    if (alive) {
+        v = alive_cnt;
+    } else if (m_alive > 0)
+        v = m_alive - 1;
+
+    if (m_alive == v)
+        return;
+    m_alive = v;
+    emit aliveChanged();
 }
 
 void NodeItem::clear()
@@ -209,9 +209,17 @@ QVariant NodeItem::data(int col, int role) const
             return QColor(Qt::yellow).lighter(180);
         if (!_protocol)
             return QColor(Qt::darkGray);
-        if (!modified())
+
+        if (modified())
+            break;
+
+        if (alive() == alive_cnt)
             return QColor(255, 255, 200);
-        break;
+
+        if (alive() == 0)
+            return QColor(255, 200, 200).darker(200);
+
+        return QColor(255, 255, 255).darker(100 + (alive_cnt - alive()) * 30);
         //break;
     case Qt::BackgroundRole:
         if (valid()) {
@@ -608,11 +616,9 @@ void NodeItem::dictReceived(QVariantMap dict)
     groupArrays();
     linkGroupValues(this);
 
-    // update descr and help from APXFW package
-    _parameters = AppGcs::apxfw()->loadParameters(title(), _ident.value("hardware").toString());
-    for (auto v : _parameters) {
-        updateMetadataAPXFW(this, this, v);
-    }
+    // update descr and help from meta DB cache
+    storage->loadNodeMeta();
+
     backup();
 
     if (_protocol) {
@@ -638,56 +644,6 @@ static QVariant jsonToVariant(QJsonValue json)
     }
     }
     return json.toVariant();
-}
-
-void NodeItem::updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json)
-{
-    if (!json.isObject())
-        return;
-    QJsonObject obj = json.toObject();
-    if (!obj.contains("name"))
-        return;
-    QString name = obj["name"].toString();
-    Fact *fx = group->child(name, Qt::CaseSensitive);
-    if (!fx)
-        return;
-
-    QString title = obj["title"].toString();
-    QString descr = obj["descr"].toString();
-
-    NodeField *nf = qobject_cast<NodeField *>(fx);
-    if (nf) {
-        nf->setHelp(descr);
-        descr = title;
-    }
-    fx->setDescr(descr);
-
-    // default values
-    if (obj.contains("default")) {
-        QJsonValue def = obj["default"];
-        if (nf) {
-            fx->setDefaultValue(jsonToVariant(def));
-        } else if (def.isObject()) {
-            QJsonObject def_obj = def.toObject();
-            for (auto key : def_obj.keys()) {
-                Fact *f = fx->findChild(key);
-                if (!f) {
-                    qWarning() << "Unsupported defaults object format" << def << fx->path();
-                    continue;
-                }
-                f->setDefaultValue(jsonToVariant(def_obj[key]));
-            }
-        } else {
-            qWarning() << "Unsupported defaults format" << def << fx->path();
-        }
-    }
-
-    // parse child objects
-    if (!obj.contains("content"))
-        return;
-    for (auto v : obj["content"].toArray()) {
-        updateMetadataAPXFW(root, fx, v);
-    }
 }
 
 bool NodeItem::loadConfigValue(const QString &name, const QString &value)

@@ -45,8 +45,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         bindProperty(protocol, "value", true);
         bindProperty(protocol, "active");
 
-        // TODO: vehicle deletion
-        // connect(protocol, &Fact::removed, this, &Fact::deleteFact);
+        // vehicle deletion
         connect(this, &Fact::removed, protocol, &Fact::deleteFact);
 
         connect(protocol, &PVehicle::streamTypeChanged, this, &Vehicle::streamTypeChanged);
@@ -76,6 +75,18 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     f_nodes = new Nodes(this);
     f_mission = new VehicleMission(this);
     f_warnings = new VehicleWarnings(this);
+
+    if (isIdentified()) {
+        auto f_remove = new Fact(this,
+                                 "remove",
+                                 tr("Remove"),
+                                 tr("Remove vehicle"),
+                                 Action | Remove | IconOnly);
+        connect(f_remove, &Fact::triggered, this, &Vehicle::deleteVehicle);
+        connect(this, &Vehicle::deleteVehicle, vehicles, [this, vehicles]() {
+            vehicles->deleteVehicle(this);
+        });
+    }
 
     f_lookup = new LookupVehicleConfig(this, this);
     f_share = new VehicleShare(this, this);
@@ -111,6 +122,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     connect(f_stage, &Fact::valueChanged, this, &Vehicle::updateFlightState);
 
     connect(this, &Fact::activeChanged, this, &Vehicle::updateActive);
+    connect(f_nodes, &Nodes::upgradingChanged, this, &Vehicle::updateActive);
 
     if (protocol) {
         connect(this,
@@ -163,12 +175,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 &QTimer::timeout,
                 protocol->telemetry(),
                 &PTelemetry::requestTelemetry);
-        connect(this, &Fact::activeChanged, this, [this]() {
-            if (active())
-                telemetryReqTimer.start();
-            else
-                telemetryReqTimer.stop();
-        });
     }
 
     // telemetry data recorder/player
@@ -193,10 +199,19 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
 
 void Vehicle::updateActive()
 {
-    f_select->setEnabled(!active());
-    if (active())
+    bool sel = active();
+
+    f_select->setEnabled(!sel);
+    if (sel)
         emit selected();
     setFollow(false);
+
+    if (isIdentified()) {
+        if (sel && !f_nodes->upgrading())
+            telemetryReqTimer.start();
+        else
+            telemetryReqTimer.stop();
+    }
 }
 
 QVariantMap Vehicle::get_info() const
@@ -289,7 +304,7 @@ void Vehicle::updateFlightState()
     if ((f_mode->value().toUInt() == mandala::proc_mode_LANDING)
         && (f_stage->value().toUInt() >= 7)) {
         setFlightState(FS_LANDED);
-        // TODO: better landed condition detector
+        // TODO improve landed condition detector, independently checking the state of the vehicle
     } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
                && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
@@ -330,29 +345,29 @@ QGeoRectangle Vehicle::geoPathRect() const
     return geoPath().boundingGeoRectangle();
 }
 
-void Vehicle::flyHere(const QGeoCoordinate &c)
+void Vehicle::flyHere(QGeoCoordinate c)
 {
     if (isReplay())
         return;
     if (!c.isValid())
         return;
     QVariantList value;
-    value << qDegreesToRadians(c.latitude());
-    value << qDegreesToRadians(c.longitude());
+    value << c.latitude();
+    value << c.longitude();
     emit sendValue(mandala::cmd::nav::pos::uid, value);
 }
-void Vehicle::lookHere(const QGeoCoordinate &c)
+void Vehicle::lookHere(QGeoCoordinate c)
 {
     if (isReplay())
         return;
     if (!c.isValid())
         return;
     QVariantList value;
-    value << qDegreesToRadians(c.latitude());
-    value << qDegreesToRadians(c.longitude());
+    value << c.latitude();
+    value << c.longitude();
     emit sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
-void Vehicle::setHomePoint(const QGeoCoordinate &c)
+void Vehicle::setHomePoint(QGeoCoordinate c)
 {
     if (isReplay())
         return;
@@ -365,7 +380,7 @@ void Vehicle::setHomePoint(const QGeoCoordinate &c)
     //    values.insert(mandala::est::nav::ref::hmsl::meta.uid, f_ref_hmsl->value());
     //    f_ref->sendBundle(values);
 }
-void Vehicle::sendPositionFix(const QGeoCoordinate &c)
+void Vehicle::sendPositionFix(QGeoCoordinate c)
 {
     if (isReplay())
         return;

@@ -1,1 +1,3 @@
+set_property(GLOBAL APPEND PROPERTY APX_PLUGINS_DOCS ${CMAKE_CURRENT_LIST_DIR}/README.md)
+
 add_subdirectory("PApx")

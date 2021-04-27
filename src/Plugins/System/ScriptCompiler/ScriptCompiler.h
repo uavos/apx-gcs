@@ -61,4 +61,7 @@ private slots:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
     void extractFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+signals:
+    void available();
 };

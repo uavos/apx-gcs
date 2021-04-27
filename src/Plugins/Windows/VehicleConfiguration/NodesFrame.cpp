@@ -84,7 +84,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_search));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_reload));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_stop));
-    toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
+    // toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
     QAction *aLookup = new QActionFact(vehicle->f_lookup);
@@ -112,7 +112,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     }
     connect(vehicle->f_nodes->f_search, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_reload, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
-    connect(vehicle->f_nodes->f_status, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
+    // connect(vehicle->f_nodes->f_status, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_clear, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
     updateActions();

@@ -147,6 +147,8 @@ Fact {
             set.title="#"+(setsFact.size+1)
             set.values=[]
             var c=createFact(setsFact, "NumbersMenuSet.qml", set)
+            c.selected.connect(select)
+            c.selected.connect(saveSettings)
             c.trigger()
         }
     }

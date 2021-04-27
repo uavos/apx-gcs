@@ -137,13 +137,6 @@ void NodeField::updateArrayStatus()
         setValue(QString("[%1]").arg(size()));
 }
 
-QString NodeField::toolTip() const
-{
-    if (!_help.isEmpty()) {
-        return Fact::toolTip() + "\n\n" + _help;
-    }
-    return Fact::toolTip();
-}
 QString NodeField::toText(const QVariant &v) const
 {
     if (_type == "script")

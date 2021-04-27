@@ -58,7 +58,7 @@ private:
     QDir devDir() const;
 
     bool extractRelease(const QString &filePath);
-    void makeFacts(Fact *fact, const QDir &dir);
+    void makeFacts(Fact *fact, QDir dir);
     void clean();
 
     QNetworkReply *checkReply(QObject *sender);
@@ -71,6 +71,9 @@ private:
 
     bool loadHexFile(QString fileName, QByteArray *data, quint32 *startAddr);
     bool loadFileMHX(QString ver, QByteArray *data);
+
+    void updateNodesMeta(QDir dir);
+    void updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path);
 
 private slots:
     void abort();

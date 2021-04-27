@@ -341,7 +341,7 @@ bool DatalinkTcpSocket::checkServerRequestHeader()
                               .arg("/mandala")
                               .arg("Mandala XML data and commands");
                 stream << QString("<br>More info here: <a href=%1>%1</a>")
-                              .arg("http://docs.uavos.com/sw/comm");
+                              .arg("https://docs.uavos.com/");
             }
             stream.flush();
             socket->close();

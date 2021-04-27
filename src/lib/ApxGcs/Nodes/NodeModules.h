@@ -24,6 +24,8 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
+#include <Protocols/Protocols.h>
+
 class NodeItem;
 
 class NodeModules : public Fact
@@ -39,16 +41,21 @@ private:
     bool _is_root{};
     bool _done_ls{};
 
-    QStringList mpath() const;
+    QByteArray madr() const;
 
     void updateFacts(QStringList names);
+
+    NodeModules *findModule(QByteArray adr);
 
 private slots:
     void update();
     void reload();
 
-    void modReceived(QStringList data);
+    void modReceived(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data);
+
+public slots:
+    void clear();
 
 signals:
-    void requestMod(QStringList data);
+    void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data);
 };

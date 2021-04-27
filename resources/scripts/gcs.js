@@ -11,6 +11,10 @@
  * this file. If not, please visit: http://docs.uavos.com/gcs.
  */
 
+// some helper functions also provided by tree objects
+
+// basic helpers
+
 function limit(v, min, max) {
     return v > max ? max : (v < min ? min : v);
 }
@@ -25,6 +29,130 @@ function jhyst(v, h, max) {
     if (v <= -h) return (v + h) * (max / (max - h))
 }
 jhyst.info = "joystick hysterezis (v,h)"
+
+function trigger(v, a, b) {
+    if (v == a) return b; else return a;
+}
+trigger.info = "trigger value of v to a or b";
+
+function bound(v) {
+    while (v >= 180) v -= 360;
+    while (v < -180) v += 360;
+    return v;
+}
+bound.info = "wrap angle -180..+180";
+
+
+// system console
+function req(n) {
+    apx.vehicles.current.mandala.fact(n).request();
+}
+req.info = "request var n from UAV";
+
+function send(n) {
+    apx.vehicles.current.mandala.fact(n).send();
+}
+send.info = "send var n to UAV";
+
+function serial(p, v) {
+    apx.vehicles.current.sendSerial(p, v);
+}
+serial.info = "send data v to serial port ID p";
+
+function vmexec(f) {
+    apx.vehicles.current.requestScript(f);
+}
+vmexec.info = "execute function of onboard scripts";
+
+function sleep(n) {
+    application.engine.sleep(n);
+}
+sleep.info = "sleep n milliseconds";
+
+function next() {
+    apx.vehicles.selectNext();
+}
+next.info = "switch to next vehicle";
+
+function prev() {
+    apx.vehicles.selectPrev();
+}
+prev.info = "switch to previous vehicle";
+
+// objects tree helper functions
+function ls(a, b) {
+    for (var i in a)
+        if (typeof (a[i]) == b || !b)
+            print(i + " - " + typeof (a[i]));
+}
+ls.info = "print members of type b for scope a";
+
+function vars(a) {
+    if (arguments.length == 0)
+        a = this;
+    for (var i in a)
+        if (typeof (a[i]) == 'number')
+            print(i + "=" + a[i]);
+}
+vars.info = "print variables for scope a";
+
+function func(a) {
+    if (arguments.length == 0)
+        a = this;
+    for (var i in a)
+        if (typeof (a[i]) == 'function')
+            print(i)
+}
+func.info = "print functions for scope a";
+
+function help(name) {
+    for (var i in this) {
+        if (typeof (this[i]) != 'function')
+            continue
+        var f = this[i]
+        if (!f.info)
+            continue
+        if (name && f != name)
+            continue
+        print(i + "\t" + f.info)
+    }
+}
+help.info = "print help";
+
+
+//predefined commands for variables
+function hmsl() {
+    est.ref.hmsl = est.pos.hmsl;
+}
+hmsl.info = "reset local GPS altitude";
+
+function zrc() {
+    cmd.rc.roll = 0;
+    cmd.rc.pitch = 0;
+    cmd.rc.thr = 0;
+    cmd.rc.yaw = 0;
+}
+zrc.info = "reset pilot controls";
+
+function flyTo(lat, lon) {
+    apx.vehicles.current.flyHere(apx.coordinate(lat, lon))
+}
+flyTo.info = "Set commanded position";
+
+
+
+function inair(v) {
+    cmd.ahrs.inair = v;
+}
+inair.info = "Set in-air status";
+
+function sh(clist) {
+    apx.vehicles.current.nodes.shell(clist)
+}
+sh.info = "Node shell commands";
+
+
+
 
 
 // Joystick movements

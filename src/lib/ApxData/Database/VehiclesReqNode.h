@@ -183,3 +183,36 @@ protected:
 signals:
     void configLoaded(QVariantMap values);
 };
+
+class DBReqSaveNodeMeta : public DBReqVehicles
+{
+    Q_OBJECT
+public:
+    explicit DBReqSaveNodeMeta(QVariantMap meta)
+        : DBReqVehicles()
+        , _meta(meta)
+    {}
+
+    bool run(QSqlQuery &query);
+
+private:
+    QVariantMap _meta;
+};
+class DBReqLoadNodeMeta : public DBReqVehicles
+{
+    Q_OBJECT
+public:
+    explicit DBReqLoadNodeMeta(QStringList names)
+        : DBReqVehicles()
+        , _names(names)
+    {}
+
+    bool run(QSqlQuery &query);
+
+private:
+    QVariantMap _meta;
+    QStringList _names;
+
+signals:
+    void metaDataLoaded(QVariantMap meta);
+};

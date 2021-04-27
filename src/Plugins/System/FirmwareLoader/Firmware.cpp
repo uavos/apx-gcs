@@ -56,7 +56,7 @@ Firmware::Firmware(Fact *parent)
                            Section | Count);
     f_available->setIcon("star-circle");
 
-    // TODO: auto upgrade all nodes
+    // TODO auto upgrade all nodes
     /*f_start = new Fact(this,
                        "start",
                        tr("Upgrade"),

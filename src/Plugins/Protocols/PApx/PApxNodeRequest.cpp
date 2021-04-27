@@ -45,6 +45,13 @@ PApxNodeRequest::~PApxNodeRequest()
     //qDebug() << title();
     _node->request_deleted(this);
 }
+QString PApxNodeRequest::title() const
+{
+    return QString("%1/%2/%3")
+        .arg(_node->parent()->parent()->title())
+        .arg(_node->title())
+        .arg(Mandala::meta(uid()).name);
+}
 
 PTrace *PApxNodeRequest::trace()
 {
@@ -91,71 +98,89 @@ bool PApxNodeRequestReboot::request(PApxRequest &req)
 
 bool PApxNodeRequestMod::request(PApxRequest &req)
 {
-    if (_data.isEmpty())
+    switch (_cmd) {
+    default:
+        qWarning() << "wrong mod request" << _cmd << _adr.toHex().toUpper() << _data;
         return false;
-
-    auto data = _data;
-    QString cmd = data.takeFirst();
-    if (cmd == "sh") {
+    case PNode::sh:
         _op = xbus::node::mod::sh;
         _timeout_ms = 0;
-    } else if (cmd == "ls") {
+        break;
+    case PNode::ls:
         _op = xbus::node::mod::ls;
-    } else if (cmd == "status") {
+        break;
+    case PNode::status:
         _op = xbus::node::mod::status;
-    } else {
-        qWarning() << "wrong mod request" << _data;
-        return false;
+        break;
     }
-    req << _op;
 
-    for (auto const &s : data) {
-        req.write_string(s.toUtf8().data());
+    req << _op;
+    trace()->block(QString::number(_op));
+
+    if (!_adr.isEmpty()) {
+        req.append(_adr);
+        trace()->data(_adr);
     }
-    trace()->blocks(data);
+
+    if (!_data.isEmpty()) {
+        for (auto const &s : _data) {
+            req.write_string(s.toUtf8().data());
+        }
+        trace()->blocks(_data);
+    }
     return true;
 }
 bool PApxNodeRequestMod::response(PStreamReader &stream)
 {
+    if (!_active)
+        return false;
+
     if (stream.available() < sizeof(xbus::node::mod::op_e)) {
         qWarning() << "size" << stream.available();
         return false;
     }
     xbus::node::mod::op_e op;
     stream >> op;
-    trace()->block(QString::number(op));
 
     if (op != _op)
         return false;
 
+    trace()->block(QString::number(op));
+
+    PNode::mod_cmd_e cmd;
+
+    switch (op) {
+    default:
+        return false;
+    case xbus::node::mod::ls:
+        cmd = PNode::ls;
+        break;
+    case xbus::node::mod::status:
+        cmd = PNode::status;
+        break;
+    }
+    // read module adr
+    QByteArray adr;
+    uint8_t n = 0;
+    while (stream.available() > 0) {
+        stream >> n;
+        adr.append(static_cast<char>(n));
+        if (n == 0xFF)
+            break;
+    }
+    if (n != 0xFF || adr.isEmpty()) {
+        qWarning() << "bad adr";
+        return false;
+    }
+    adr.chop(1);
+    if (adr != _adr) // reply for other request
+        return false;
+    trace()->data(adr);
+
     auto data = stream.read_strings();
     trace()->blocks(data);
 
-    if (data.isEmpty()) {
-        qWarning() << "no strings";
-        return false;
-    }
-    if (!data.contains(":")) {
-        qWarning() << "bad strings" << data;
-        return false;
-    }
-    auto req = data.mid(0, data.indexOf(":"));
-    auto dreq = _data.mid(1);
-    if (req != dreq) {
-        qWarning() << "data mismatch" << data << dreq;
-        return false;
-    }
-    switch (op) {
-    default:
-        break;
-    case xbus::node::mod::ls:
-        data.prepend("ls");
-        break;
-    case xbus::node::mod::status:
-        data.prepend("status");
-        break;
-    }
-    _node->modReceived(data);
+    _node->modReceived(cmd, adr, data);
 
     return true;
 }
@@ -278,6 +303,9 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
 }
 bool PApxNodeRequestUpdate::response(PStreamReader &stream)
 {
+    if (!_active)
+        return false;
+
     if (stream.available() != sizeof(xbus::node::conf::fid_t))
         return false;
     trace()->data(stream.payload());
@@ -336,6 +364,9 @@ void PApxNodeRequestFile::reset()
 }
 bool PApxNodeRequestFile::response(PStreamReader &stream)
 {
+    if (!_active)
+        return false;
+
     //qDebug() << "re:" << _op << stream.available();
     if (stream.available() <= sizeof(xbus::node::file::op_e))
         return false;

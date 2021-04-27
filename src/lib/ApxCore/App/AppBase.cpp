@@ -71,7 +71,13 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     QCoreApplication::setOrganizationDomain("uavos.com");
     QCoreApplication::setApplicationName(name);
     QCoreApplication::setApplicationVersion(VERSION);
+
     QSettings::setDefaultFormat(QSettings::IniFormat);
+    //prefs
+    QDir prefs_dir(AppDirs::prefs());
+    if (!prefs_dir.exists())
+        prefs_dir.mkpath(".");
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, prefs_dir.absolutePath());
 
     QApplication::setWindowIcon(QIcon("qrc:///icons/uavos-logo.icns"));
 

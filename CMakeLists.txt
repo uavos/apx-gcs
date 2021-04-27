@@ -83,3 +83,5 @@ apx_use_module("main")
 add_subdirectory("src/Plugins")
 
 apx_metadata_generate()
+
+add_subdirectory("docs")

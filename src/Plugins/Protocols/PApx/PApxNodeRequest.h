@@ -24,6 +24,7 @@
 #include "PApxRequest.h"
 
 #include <Mandala/Mandala.h>
+#include <Protocols/PNode.h>
 #include <xbus/XbusNode.h>
 
 class PApxNode;
@@ -45,7 +46,7 @@ public:
     uint timeout_ms() const { return _timeout_ms; }
     PApxNode *node() const { return _node; }
     mandala::uid_t uid() const { return _uid; }
-    QString title() const { return Mandala::meta(uid()).name; }
+    QString title() const;
     auto active() const { return _active; }
 
     virtual QString cid() const { return QString(); } // compare ID to check duplicates
@@ -85,15 +86,23 @@ private:
 class PApxNodeRequestMod : public PApxNodeRequest
 {
 public:
-    explicit PApxNodeRequestMod(PApxNode *node, QStringList data)
+    explicit PApxNodeRequestMod(PApxNode *node,
+                                PNode::mod_cmd_e cmd,
+                                QByteArray adr,
+                                QStringList data)
         : PApxNodeRequest(node, mandala::cmd::env::nmt::mod::uid)
+        , _cmd(cmd)
+        , _adr(adr)
         , _data(data)
     {}
 
 private:
+    PNode::mod_cmd_e _cmd;
+    QByteArray _adr;
     QStringList _data;
+
     xbus::node::mod::op_e _op;
-    QString cid() const override { return _data.join('.'); }
+    QString cid() const override { return QString(_adr.toHex()).append(_data.join('.')); }
 
     bool request(PApxRequest &req) override;
     bool response(PStreamReader &stream) override;

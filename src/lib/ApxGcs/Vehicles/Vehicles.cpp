@@ -32,7 +32,7 @@ APX_LOGGING_CATEGORY(VehiclesLog, "core.vehicles")
 Vehicles *Vehicles::_instance = nullptr;
 
 Vehicles::Vehicles(Fact *parent, Protocols *protocols)
-    : Fact(parent, "vehicles", tr("Vehicles"), tr("Discovered vehicles"), Section)
+    : Fact(parent, "vehicles", tr("Vehicles"), tr("Discovered vehicles"), Group | Count, "drone")
 {
     _instance = this;
 
@@ -53,6 +53,14 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
     f_select->setIcon("select");
     f_select->setTreeType(Action);
     connect(f_select, &VehicleSelect::vehicleSelected, this, &Vehicles::selectVehicle);
+
+    auto f_clear = new Fact(this,
+                            "clear",
+                            tr("Clear"),
+                            tr("Remove all vehicles"),
+                            Action,
+                            "notification-clear-all");
+    connect(f_clear, &Fact::triggered, this, &Vehicles::clearAll);
 
     f_replay = new Vehicle(this, nullptr);
     f_select->addVehicle(f_replay);
@@ -117,8 +125,6 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
 void Vehicles::vehicle_available(PVehicle *protocol)
 {
     Vehicle *v = new Vehicle(this, protocol);
-
-    connect(v, &Fact::removed, this, [this]() { selectVehicle(nullptr); });
 
     emit vehicleRegistered(v);
 
@@ -198,6 +204,58 @@ void Vehicles::selectNext()
         i++;
 
     selectVehicle(qobject_cast<Vehicle *>(child(i)));
+}
+
+void Vehicles::deleteVehicle(Vehicle *v)
+{
+    if (!v)
+        return;
+
+    if (!v->isIdentified()) {
+        v->message(tr("Vehicle can't be deleted"));
+        return;
+    }
+
+    // select another vehicle
+    if (v->active()) {
+        for (auto i : facts()) {
+            auto f = static_cast<Vehicle *>(i);
+            if (f->active() || f == v)
+                continue;
+            if (!f->isIdentified())
+                continue;
+            selectVehicle(f);
+            break;
+        }
+        if (v->active()) {
+            for (auto i : facts()) {
+                auto f = static_cast<Vehicle *>(i);
+                if (f->active() || f == v)
+                    continue;
+                if (!f->isLocal())
+                    continue;
+                selectVehicle(f);
+                break;
+            }
+        }
+        if (v->active())
+            return;
+    }
+    v->message(tr("Vehicle deleted"));
+    // remove from models
+    v->setParentFact(nullptr);
+    v->menuBack();
+    // delay actual delete operation
+    QTimer::singleShot(1000, this, [v]() { v->deleteFact(); });
+}
+void Vehicles::clearAll()
+{
+    for (auto i : facts()) {
+        auto f = static_cast<Vehicle *>(i);
+        if (!f->isIdentified())
+            continue;
+        deleteVehicle(f);
+    }
 }
 
 void Vehicles::_jsSyncMandalaAccess(Fact *fact, QJSValue parent)

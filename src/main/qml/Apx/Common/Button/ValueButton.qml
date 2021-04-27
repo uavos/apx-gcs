@@ -80,8 +80,10 @@ ActionButton {
 
     function message() {
         var s=[]
-        s.push(title+":")
-        if(descr)s.push(descr)
+        if(text)
+            s.push(text+":")
+        if(descr)
+            s.push(descr)
         s.push("("+value+")")
         return s.join(" ")
     }

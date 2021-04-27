@@ -131,7 +131,7 @@ MapView {
                 Layout.fillWidth: true
                 settingsName: "map"
                 defaults: [
-                    {"bind": "altitude", "title": "ALT", "prec": "0"},
+                    {"bind": "est.pos.altitude", "title": "ALT", "prec": "0"},
                 ]
             }
         }

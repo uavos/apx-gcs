@@ -25,7 +25,7 @@
 #include <ApxMisc/FactQml.h>
 #include <Fact/FactListModel.h>
 #include <Fact/FactListModelActions.h>
-//=============================================================================
+
 AppEngine::AppEngine(QObject *parent)
     : QQmlApplicationEngine(parent)
 {
@@ -50,8 +50,6 @@ AppEngine::AppEngine(QObject *parent)
                                                      "Reference only");
 
     qRegisterMetaType<QAbstractListModel *>("QAbstractListModel*");
-
-    jsRegisterFunctions();
 
     // script include file (default)
     QFile jsFile(AppDirs::res().filePath("scripts/gcs.js"));
@@ -80,7 +78,7 @@ AppEngine::~AppEngine()
 {
     qDebug() << "enigne destroyed";
 }
-//=============================================================================
+
 void AppEngine::jsSyncObject(QObject *obj)
 {
     jsSetProperty(globalObject(), obj->objectName(), jsCreateObject(obj));
@@ -94,7 +92,7 @@ QJSValue AppEngine::jsCreateObject(QObject *obj)
     //     return f->jsobject();
     return newQObject(obj);
 }
-//=============================================================================
+
 void AppEngine::jsSync(Fact *fact)
 {
     if (fact->jsname().isEmpty())
@@ -116,7 +114,7 @@ void AppEngine::jsSync(Fact *fact)
     //set the property and value
     jsSync(fact, v);
 }
-//=============================================================================
+
 QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
 {
     //qDebug() << fact->path();
@@ -136,7 +134,7 @@ QJSValue AppEngine::jsSync(Fact *fact, QJSValue parent) //recursive
     }
     return js_fact;
 }
-//=============================================================================
+
 void AppEngine::jsSetProperty(QJSValue parent, QString name, QJSValue value)
 {
     if (name.isEmpty() || name.contains('#'))
@@ -206,7 +204,6 @@ void AppEngine::_protectObjects(const QString path, QJSValue obj)
     jsexec_queued(s);
 }
 
-//=============================================================================
 QJSValue AppEngine::jsexec(const QString s)
 {
     QJSValue result;
@@ -232,92 +229,14 @@ void AppEngine::_queueExec()
     jsexec(s);
     _jsTimer.start();
 }
-//=============================================================================
-void AppEngine::jsRegister(QString fname, QString description, QString body)
-{
-    jsexec(QString("function %1 { %2;};").arg(fname).arg(body));
-    jsexec(QString("%1.info=\"%2\";").arg(fname.left(fname.indexOf('('))).arg(description));
-    js_descr[fname] = description;
-}
-//=============================================================================
-//=============================================================================
-void AppEngine::jsRegisterFunctions()
-{
-    //system functions and objects
-    jsRegister("help()", QObject::tr("print commands help"), "application.engine.help();");
-    jsRegister("req(n)",
-               QObject::tr("request var n from UAV"),
-               "apx.vehicles.current.mandala.fact(n).request();");
-    jsRegister("send(n)",
-               QObject::tr("send var n to UAV"),
-               "apx.vehicles.current.mandala.fact(n).send();");
-    jsRegister("serial(p,v)",
-               QObject::tr("send data v to serial port ID p"),
-               "apx.vehicles.current.sendSerial(p,v);");
-    jsRegister("vmexec(f)",
-               QObject::tr("execute function of onboard scripts"),
-               "apx.vehicles.current.requestScript(f);");
-    jsRegister("sleep(n)", QObject::tr("sleep n milliseconds"), "application.engine.sleep(n);");
-    jsRegister("next()", QObject::tr("switch to next vehicle"), "apx.vehicles.selectNext();");
-    jsRegister("prev()", QObject::tr("switch to previous vehicle"), "apx.vehicles.selectPrev();");
 
-    //some helper functions
-    jsRegister("trigger(v,a,b)",
-               QObject::tr("trigger value of v to a or b"),
-               "if(v==a)return b; else return a;");
-    jsRegister("bound(v)",
-               QObject::tr("wrap angle -180..+180"),
-               "while(v>=180)v-=360;while(v<-180)v+=360;return v;");
-    jsRegister("ls(a,b)",
-               QObject::tr("print members of type b for scope a"),
-               "for(var i in a)if(typeof(a[i])==b || !b)print(i+\" - \"+typeof(a[i]));");
-    jsRegister("vars(a)",
-               QObject::tr("print variables for scope a"),
-               "if(arguments.length==0)a=this;for(var i in "
-               "a)if(typeof(a[i])=='number')print(i+\"=\"+a[i]);");
-    jsRegister(
-        "func(a)",
-        QObject::tr("print functions for scope a"),
-        "if(arguments.length==0)a=this;for(var i in a)if(typeof(a[i])=='function')print(i);");
-
-    //predefined commands for variables
-    jsRegister("hmsl()", QObject::tr("reset local GPS altitude"), "est.ref.hmsl=est.pos.hmsl;");
-
-    jsRegister("zrc()",
-               QObject::tr("reset pilot controls"),
-               "cmd.rc.roll=0;cmd.rc.pitch=0;cmd.rc.thr=0;cmd.rc.yaw=0;");
-
-    jsRegister("inair(v)", QObject::tr("Set in-air status"), "cmd.ahrs.inair=v;");
-
-    jsRegister("sh(clist)",
-               QObject::tr("Node shell commands"),
-               "apx.vehicles.current.nodes.shell(clist)");
-}
-//=============================================================================
-void AppEngine::help()
-{
-    QString s;
-    s += "<html><table>";
-    foreach (const QString cmd, js_descr.keys()) {
-        s += "<tr><td valign='middle'>";
-        s += "<nobr>&nbsp;<font color=cyan>";
-        s += cmd;
-        s += "</font></nobr></td><td>"; // width='100%'>";
-        s += "<font color=gray> &nbsp;" + js_descr.value(cmd) + "</font>";
-        s += "</td></tr>";
-    }
-    s += "</table>";
-    apxMsg() << s;
-}
-//=============================================================================
 void AppEngine::sleep(quint16 ms)
 {
     QEventLoop loop;
     QTimer::singleShot(ms, &loop, SLOT(quit()));
     loop.exec();
 }
-//=============================================================================
-//=============================================================================
+
 QByteArray AppEngine::jsToArray(QJSValue data)
 {
     //qDebug()<<portID<<data.toString()<<data.isArray()<<data.toVariant().toByteArray().toHex();
@@ -343,7 +262,7 @@ QByteArray AppEngine::jsToArray(QJSValue data)
         return QByteArray();
     return ba;
 }
-//=============================================================================
+
 QJSValue AppEngine::jsGetProperty(const QString path)
 {
     QJSValue v = globalObject();
@@ -355,8 +274,7 @@ QJSValue AppEngine::jsGetProperty(const QString path)
     }
     return v;
 }
-//=============================================================================
-//=============================================================================
+
 QObject *AppEngine::loadQml(const QString qmlFile, const QVariantMap &opts)
 {
     QString schk = qmlFile;
@@ -391,11 +309,10 @@ QObject *AppEngine::loadQml(const QString qmlFile, const QVariantMap &opts)
     apxMsgW() << c.errorString();
     return nullptr;
 }
-//=============================================================================
+
 void AppEngine::warnings(const QList<QQmlError> &warnings)
 {
     for (auto w : warnings) {
         apxMsgW() << w;
     }
 }
-//=============================================================================

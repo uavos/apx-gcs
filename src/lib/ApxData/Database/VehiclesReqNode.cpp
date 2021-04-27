@@ -619,3 +619,91 @@ bool DBReqLoadNodeConfig::run(QSqlQuery &query)
     emit configLoaded(_values);
     return true;
 }
+
+bool DBReqSaveNodeMeta::run(QSqlQuery &query)
+{
+    uint ncnt = 0, ucnt = 0;
+    for (auto name : _meta.keys()) {
+        query.prepare("SELECT * FROM NodeDictMeta WHERE name=?");
+        query.addBindValue(name);
+        if (!query.exec())
+            return false;
+
+        auto m = _meta.value(name).value<QVariantMap>();
+        auto version = m.value("version").toString();
+        auto descr = m.value("descr").toString();
+        auto def = m.value("def").toString();
+
+        if (!query.next()) {
+            query.prepare("INSERT INTO NodeDictMeta(name,version,descr,def) VALUES(?,?,?,?)");
+            query.addBindValue(name);
+            query.addBindValue(version);
+            query.addBindValue(descr);
+            query.addBindValue(def);
+            if (!query.exec())
+                return false;
+            ncnt++;
+            continue;
+        }
+
+        // update existing
+        auto qversion = query.value("version").toString();
+        auto qdescr = query.value("descr").toString();
+        auto qdef = query.value("def").toString();
+
+        if (version.isEmpty())
+            version = qversion;
+
+        bool older = QVersionNumber::fromString(version) < QVersionNumber::fromString(qversion);
+
+        if (older)
+            version = qversion;
+
+        if (descr.isEmpty() || older)
+            descr = qdescr;
+        if (def.isEmpty() || older)
+            def = qdef;
+
+        // update record
+        if (qversion == version && qdescr == descr && qdef == def)
+            continue; // not changed
+
+        auto key = query.value(0).toULongLong();
+        query.prepare("UPDATE NodeDictMeta SET version=?, descr=?, def=? WHERE key=?");
+        query.addBindValue(version);
+        query.addBindValue(descr);
+        query.addBindValue(def);
+        query.addBindValue(key);
+        if (!query.exec())
+            return false;
+        ucnt++;
+    }
+
+    if (ncnt)
+        qDebug() << "new meta:" << ncnt;
+    if (ucnt)
+        qDebug() << "updated meta:" << ucnt;
+
+    return true;
+}
+bool DBReqLoadNodeMeta::run(QSqlQuery &query)
+{
+    for (auto name : _names) {
+        query.prepare("SELECT * FROM NodeDictMeta WHERE name=?");
+        query.addBindValue(name);
+        if (!query.exec())
+            return false;
+        if (!query.next())
+            continue;
+
+        QVariantMap m;
+        m.insert("descr", query.value("descr"));
+        m.insert("def", query.value("def"));
+        _meta.insert(name, m);
+    }
+
+    if (!_meta.isEmpty())
+        emit metaDataLoaded(_meta);
+
+    return true;
+}

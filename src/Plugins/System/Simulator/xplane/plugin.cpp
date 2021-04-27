@@ -39,7 +39,7 @@
 #include <tcp_ports.h>
 #include <xbus/tcp/tcp_server.h>
 
-static xbus::tcp::Server tcp;
+static xbus::tcp::Server *tcp = {};
 
 static bool enabled;
 
@@ -87,19 +87,25 @@ static uint8_t packet_buf[xbus::size_packet_max];
 
 static void send_bundle()
 {
+    if (!tcp)
+        return;
+
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     sim_pid.write(&stream);
     stream.write(&sim_bundle, sizeof(sim_bundle));
 
-    tcp.write_packet(stream.buffer(), stream.pos());
+    tcp->write_packet(stream.buffer(), stream.pos());
     sim_pid.seq++;
 }
 
 static void request_controls()
 {
+    if (!tcp)
+        return;
+
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     cfg_pid.write(&stream);
-    tcp.write_packet(stream.buffer(), stream.pos());
+    tcp->write_packet(stream.buffer(), stream.pos());
     cfg_pid.seq++;
 }
 
@@ -249,8 +255,12 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     printf("--------------------------------------\n");
     fflush(stdout);
 
-    tcp.set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
-    tcp.connect();
+    if (!tcp) {
+        tcp = new xbus::tcp::Server();
+    }
+
+    tcp->set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
+    tcp->connect();
 
     strcpy(outName, "UAVOS Autopilot SIL plugin");
     strcpy(outSig, "www.uavos.com");
@@ -313,14 +323,14 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
-    if (!(enabled && tcp.is_connected())) {
+    if (!(enabled && tcp && tcp->is_connected())) {
         xpl_channels = 0;
         return 1.f;
     }
 
     do {
         while (1) {
-            size_t cnt = tcp.read_packet(packet_buf, sizeof(packet_buf));
+            size_t cnt = tcp->read_packet(packet_buf, sizeof(packet_buf));
             if (!cnt)
                 break;
             parse_rx(packet_buf, cnt);
@@ -342,10 +352,20 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 
 PLUGIN_API void XPluginStop(void)
 {
+    if (tcp) {
+        delete tcp;
+        tcp = {};
+    }
+
     enabled = false;
 }
 PLUGIN_API void XPluginDisable(void)
 {
+    if (tcp) {
+        delete tcp;
+        tcp = {};
+    }
+
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 0);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 0);

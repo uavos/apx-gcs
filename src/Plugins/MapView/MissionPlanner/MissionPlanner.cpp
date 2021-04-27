@@ -58,11 +58,13 @@ MissionPlanner::MissionPlanner(Fact *parent)
     f = new Fact(f_vehicle, "look", tr("Look here"), "", CloseOnTrigger, "eye");
     connect(f, &Fact::triggered, this, [=]() { vehicle()->lookHere(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "home", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
-    connect(f, &Fact::triggered, this, [=]() { vehicle()->setHomePoint(clickCoordinate()); });
+    // TODO set home action
+    // f = new Fact(f_vehicle, "home", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
+    // connect(f, &Fact::triggered, this, [=]() { vehicle()->setHomePoint(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "fix", tr("Send position fix"), "", CloseOnTrigger, "crosshairs-gps");
-    connect(f, &Fact::triggered, this, [=]() { vehicle()->sendPositionFix(clickCoordinate()); });
+    // TODO pos fix action
+    // f = new Fact(f_vehicle, "fix", tr("Send position fix"), "", CloseOnTrigger, "crosshairs-gps");
+    // connect(f, &Fact::triggered, this, [=]() { vehicle()->sendPositionFix(clickCoordinate()); });
 
     new MapPrefs(this);
 

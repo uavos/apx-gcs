@@ -30,8 +30,10 @@ TextButton {
     id: control
     property var fact
 
+    property string info: fact.title+" ("+fact.descr+")"
+
     text: fact.title
-    toolTip: fact.descr
+    toolTip: info
 
     size: buttonHeight
 }

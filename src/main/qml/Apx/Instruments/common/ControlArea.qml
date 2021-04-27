@@ -51,6 +51,8 @@ MouseArea {
     property double mvar_s: 0
     property double pos_s: 0
 
+    cursorShape: Qt.PointingHandCursor
+
     drag.target: mouse_ptr
     drag.axis: Drag.XAndYAxis
     drag.minimumX: -mouse_ptr.width/2

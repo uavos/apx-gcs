@@ -44,7 +44,7 @@ public:
     Fact *f_stop;
     Fact *f_reload;
     Fact *f_clear;
-    Fact *f_status;
+    //Fact *f_status;
 
     NodeItem *node(const QString &uid) const;
     QList<NodeItem *> nodes() const { return m_nodes; }
@@ -81,10 +81,13 @@ private slots:
     void stop();
 
     void node_available(PNode *node);
+    void node_response(PNode *node);
+
     void syncDone();
 
 signals:
     void validChanged();
+    void upgradingChanged();
 
     void nodeNotify(NodeItem *node); // notify on changes etc fo plugins
     void fieldUploadReport(NodeItem *node, QString name, QString value);

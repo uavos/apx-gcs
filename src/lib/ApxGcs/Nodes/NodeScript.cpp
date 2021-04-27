@@ -50,10 +50,19 @@ void NodeScript::_update_cc_args()
     // find compiler
     cc = "wasmcc";
     if (_plugin) {
-        QString pcc = _plugin->control->property("cc").toString();
+        cc.clear();
+        auto c = _plugin->control;
+        if (!c->property("enabled").toBool()) {
+            // connect(c, SIGNAL("available"), this, SLOT("_update_cc_args"));
+            return;
+        }
+        QString pcc = c->property("cc").toString();
         if (!pcc.isEmpty() && QFile::exists(pcc))
             cc = pcc;
     }
+
+    if (cc.isEmpty())
+        return;
 
     // parse compiler args
     cc_args.clear();
@@ -87,6 +96,12 @@ void NodeScript::_update_cc_args()
 
 void NodeScript::factValueChanged()
 {
+    if (cc.isEmpty()) {
+        _updateFactText();
+        apxMsgW() << tr("Script compiler is missing");
+        return;
+    }
+
     QString value = _fact->value().toString();
     if (_value_s == value)
         return;
@@ -127,7 +142,9 @@ void NodeScript::factValueChanged()
 void NodeScript::_updateFactText()
 {
     QString text;
-    if (error())
+    if (cc.isEmpty())
+        text = "no compiler";
+    else if (error())
         text = tr("error");
     else if (code().isEmpty())
         text = tr("empty");
@@ -153,6 +170,9 @@ void NodeScript::setSource(QString title, QString source)
 
 bool NodeScript::_compile(QString src)
 {
+    if (cc.isEmpty())
+        return true;
+
     qDebug() << "compiling:" << _title << src.size();
     _code.clear();
     _error = false;

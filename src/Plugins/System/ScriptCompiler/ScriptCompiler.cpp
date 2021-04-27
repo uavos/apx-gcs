@@ -26,7 +26,7 @@
 ScriptCompiler::ScriptCompiler(QObject *parent)
     : Fact(parent, "script", tr("Script compiler"), "", NoFlags, "cog-sync")
 {
-    m_version = "11.0";
+    m_version = "12.0";
 
 #if defined(Q_OS_MAC)
     m_platform = "macos";
@@ -76,7 +76,11 @@ bool ScriptCompiler::lookup()
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
                           AppDirs::scripts().absoluteFilePath("include"));
 
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
+                          AppDirs::scripts().absoluteFilePath("examples"));
+
         setEnabled(true);
+        emit available();
         return true;
     } while (0);
 

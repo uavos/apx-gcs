@@ -35,6 +35,12 @@ function(apx_plugin)
 
     apx_qt(${target} ${QT})
 
+    set_property(GLOBAL APPEND PROPERTY APX_PLUGINS ${target})
+
+    # docs
+    file(GLOB docs ${CMAKE_CURRENT_SOURCE_DIR}/*.md)
+    set_property(GLOBAL APPEND PROPERTY APX_PLUGINS_DOCS ${docs})
+
     # depends
 
     list(APPEND DEPENDS "lib.ApxCore")

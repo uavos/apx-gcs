@@ -27,6 +27,7 @@ PFirmware::PFirmware(PBase *parent)
     : PTreeBase(parent, "firmware", tr("Firmware"), tr("Node upgrade interface"))
 {
     connect(this, &PFirmware::upgradeFinished, this, [this]() { setUpgrading(false); });
+    connect(root(), &PBase::cancelRequests, this, &PFirmware::finish, Qt::QueuedConnection);
 }
 
 void PFirmware::setUpgrading(bool v)
@@ -42,7 +43,26 @@ void PFirmware::setUpgrading(bool v)
 
 void PFirmware::upgradeFirmware(QString uid, QString name, QByteArray data, quint32 offset)
 {
+    _success = false;
+
+    _uid = uid;
+    _name = name;
+    _data = data;
+    _offset = offset;
+
     setProgress(0);
     setUpgrading(true);
     emit upgradeStarted(uid, name);
+
+    setValue(tr("Initializing..."));
+}
+
+void PFirmware::finish()
+{
+    qDebug() << _name << _uid;
+
+    emit upgradeFinished(_uid, _success);
+
+    setValue(QVariant());
+    _success = false;
 }

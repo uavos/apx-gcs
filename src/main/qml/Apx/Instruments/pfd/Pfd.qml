@@ -104,6 +104,10 @@ Item {
     readonly property var f_air_stall: mandala.est.air.stall
     readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
 
+    readonly property var f_att_valid: mandala.est.att.valid
+    readonly property var f_pos_valid: mandala.est.pos.valid
+    readonly property var f_gyro_valid: mandala.est.gyro.valid
+    readonly property var f_acc_valid: mandala.est.acc.valid
 
     readonly property bool isValid: f_att_status.value > 0
 
@@ -188,16 +192,6 @@ Item {
             fact: f_mode
             type: CleanText.Clean
         }
-        // system mode
-        /*CleanText {
-            anchors.top: _modeText.bottom
-            anchors.horizontalCenter: _modeText.horizontalCenter
-            anchors.topMargin: pfdScene.flagHeight*0.1
-            visible: ui.test || ( fact.value < sys_mode_airborne && f_att_status.value > att_status_unknown)
-            height: pfdScene.txtHeight*0.5
-            fact: f_sys_mode
-            type: f_att_rest.value > 0?CleanText.Green:CleanText.Normal
-        }*/
 
 
 
@@ -582,6 +576,34 @@ Item {
                 status_show: att_status_busy
                 status_reset: att_status_unknown
                 text: qsTr("AHRS")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_att_valid
+                show: ui.test || (status!==att_valid_yes && f_att_status.value>0)
+                failure: true
+                text: qsTr("ATT")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_pos_valid
+                show: ui.test || (status!==pos_valid_yes && f_pos_status.value>0)
+                failure: true
+                text: qsTr("POS")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_gyro_valid
+                show: ui.test || (status!==gyro_valid_yes && f_att_status.value>0)
+                failure: true
+                text: qsTr("GYRO")
+            }
+            StatusFlag {
+                height: pfdScene.flagHeight
+                fact: f_acc_valid
+                show: ui.test || (status!==acc_valid_yes && f_att_status.value>0)
+                failure: true
+                text: qsTr("ACC")
             }
             StatusFlag {
                 anchors.topMargin: pfdScene.flagHeight*2

@@ -94,7 +94,7 @@ ColumnLayout {
             height: active?MenuStyle.itemSize:0
             sourceComponent: Component {
                 FactButton {
-                    fact: modelData;
+                    fact: modelData?modelData:null;
                     noEdit: mandalaFact?true:false
                     height: MenuStyle.itemSize
                     onTriggered: {

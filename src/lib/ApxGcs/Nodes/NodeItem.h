@@ -36,6 +36,7 @@ class NodeItem : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
+    Q_PROPERTY(uint alive READ alive NOTIFY aliveChanged)
 
 public:
     explicit NodeItem(Fact *parent, Nodes *nodes, PNode *protocol);
@@ -43,12 +44,14 @@ public:
     NodeStorage *storage;
     NodeTools *tools;
 
+    auto valid() const { return m_valid; }
+    auto alive() const { return m_alive; }
+
     auto uid() const { return _protocol ? _protocol->uid() : _ident.value("uid").toString(); }
     auto protocol() const { return _protocol; }
 
     auto const &fields() const { return m_fields; }
     auto nodes() const { return _nodes; }
-    auto valid() const { return m_valid; }
     auto ident() const { return _ident; }
 
     QString label() const { return _status_field ? _status_field->valueText().trimmed() : ""; }
@@ -68,6 +71,8 @@ public:
     QVariant toVariant() const override;
     void fromVariant(const QVariant &var) override;
 
+    void updateAlive(bool alive);
+
 protected:
     QTimer statusTimer;
 
@@ -85,9 +90,6 @@ private:
 
     qint64 _lastSeenTime{};
 
-    QJsonArray _parameters;
-    void updateMetadataAPXFW(Fact *root, Fact *group, QJsonValue json);
-
     NodeField *_status_field{nullptr};
 
     void groupArrays();
@@ -98,6 +100,9 @@ private:
     void updateArrayChBinding(Fact *f_element, Fact *f_array, Fact *f_ch);
 
     bool m_valid{};
+
+    static constexpr const uint alive_cnt{3};
+    uint m_alive{};
 
 private slots:
     void validateData();
@@ -125,4 +130,5 @@ signals:
     void shell(QStringList commands);
 
     void validChanged();
+    void aliveChanged();
 };

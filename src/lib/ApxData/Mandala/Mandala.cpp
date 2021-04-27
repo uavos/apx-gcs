@@ -25,6 +25,11 @@
 #include <App/AppRoot.h>
 #include <mandala/MandalaMetaBase.h>
 
+// TODO PLUGIN: gource-like real-time visualization of Mandala:
+// See: https://www.youtube.com/watch?v=NjUuAuBcoqs&ab_channel=Gource
+// See: https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
+// Intended to monitor by human mind the current state of the vehicle and its behavior in real-time.
+
 Mandala::Mandala(Fact *parent)
     : Fact(parent,
            "mandala",

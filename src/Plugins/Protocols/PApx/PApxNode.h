@@ -67,7 +67,10 @@ public:
     void requestUpdate(QVariantMap values) override;
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
-    void requestMod(QStringList data) override { new PApxNodeRequestMod(this, data); }
+    void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data) override
+    {
+        new PApxNodeRequestMod(this, cmd, adr, data);
+    }
     void requestUsr(quint8 cmd, QByteArray data) override
     {
         new PApxNodeRequestUsr(this, cmd, data);

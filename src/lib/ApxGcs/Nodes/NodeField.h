@@ -39,10 +39,8 @@ public:
         Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent = nullptr);
 
     //Fact override
-    virtual QString toolTip() const override;
     virtual QString toText(const QVariant &v) const override;
 
-    inline void setHelp(const QString &s) { _help = s; }
     inline auto fpath() const { return _fpath; }
     inline auto type() const { return _type; }
     inline auto array() const { return _array; }
@@ -59,7 +57,6 @@ private:
     int _array; // array index or array size
 
     QString _fpath;
-    QString _help;
 
     NodeScript *_script{};
 

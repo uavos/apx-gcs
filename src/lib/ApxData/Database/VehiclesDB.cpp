@@ -90,6 +90,15 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "NodeDictData", "fieldID", false);
     new DBReqMakeIndex(this, "NodeDictData", "fidx", false);
 
+    new DBReqMakeTable(this,
+                       "NodeDictMeta",
+                       QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
+                                     << "name TEXT NOT NULL"
+                                     << "version TEXT"
+                                     << "descr TEXT"
+                                     << "def TEXT");
+    new DBReqMakeIndex(this, "NodeDictMeta", "name", true);
+
     //Node configs
     new DBReqMakeTable(this,
                        "NodeConfigs",

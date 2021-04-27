@@ -24,7 +24,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <QtCore>
-//=============================================================================
+
 AppRoot *AppRoot::_instance = nullptr;
 AppRoot::AppRoot(QObject *parent)
     : Fact(parent, "apx", tr("Application"), QCoreApplication::applicationName(), Root | FlatModel)
@@ -35,12 +35,12 @@ AppRoot::AppRoot(QObject *parent)
 
     createTools();
 }
-//=============================================================================
+
 void AppRoot::sound(const QString &v)
 {
     App::sound(v);
 }
-//=============================================================================
+
 void AppRoot::createTools()
 {
     //plugins management facts
@@ -66,10 +66,10 @@ void AppRoot::createTools()
                                  "plugins",
                                  tr("Plugins"),
                                  tr("Application PligIns"),
-                                 Group | Count);
+                                 Group);
     App::jsync(f_settings);
 }
-//=============================================================================
+
 void AppRoot::addToolPlugin(AppPlugin *plugin)
 {
     Fact *f = qobject_cast<Fact *>(plugin->control);
@@ -82,14 +82,14 @@ void AppRoot::addToolPlugin(AppPlugin *plugin)
     f_tools->setVisible(true);
     App::jsync(f_tools);
 }
-//=============================================================================
+
 void AppRoot::addWindowPlugin(AppPlugin *plugin)
 {
     new AppWindow(f_windows, plugin);
     f_windows->setVisible(true);
     App::jsync(f_windows);
 }
-//=============================================================================
+
 void AppRoot::addControlPlugin(AppPlugin *plugin)
 {
     Fact *f = qobject_cast<Fact *>(plugin->control);
@@ -99,7 +99,7 @@ void AppRoot::addControlPlugin(AppPlugin *plugin)
     f_controls->setVisible(true);
     App::jsync(f_controls);
 }
-//=============================================================================
+
 void AppRoot::updateProgress(Fact *fact)
 {
     if (fact && !progressList.contains(fact)) {
@@ -124,10 +124,9 @@ void AppRoot::updateProgress(Fact *fact)
     m_progress = v;
     emit progressChanged();
 }
-//=============================================================================
-//=============================================================================
+
 // utils library
-//=============================================================================
+
 QString AppRoot::latToString(double v)
 {
     double a = std::abs(v);
@@ -296,7 +295,7 @@ quint64 AppRoot::timeFromString(QString s)
     }
     return t;
 }
-//=============================================================================
+
 QString AppRoot::capacityToString(quint64 v, int prec)
 {
     QString s, su;
@@ -316,7 +315,7 @@ QString AppRoot::capacityToString(quint64 v, int prec)
     s.append(su);
     return s;
 }
-//=============================================================================
+
 double AppRoot::limit(double v, double min, double max)
 {
     if (v < min)
@@ -345,7 +344,7 @@ double AppRoot::angle90(double v)
     const double dspan = span * 2.0;
     return v - std::floor(v / dspan + 0.5) * dspan;
 }
-//=============================================================================
+
 QPointF AppRoot::rotate(const QPointF &p, double a)
 {
     const double psi_r = qDegreesToRadians(a);
@@ -353,7 +352,7 @@ QPointF AppRoot::rotate(const QPointF &p, double a)
     double sin_theta = std::sin(psi_r);
     return QPointF(p.x() * cos_theta + p.y() * sin_theta, p.y() * cos_theta - p.x() * sin_theta);
 }
-//=============================================================================
+
 QPointF AppRoot::seriesBounds(const QVariantList &series)
 {
     //qDebug()<<v;
@@ -371,4 +370,8 @@ QPointF AppRoot::seriesBounds(const QVariantList &series)
     }
     return QPointF(min, max);
 }
-//=============================================================================
+
+QGeoCoordinate AppRoot::coordinate(double lat, double lon, double alt)
+{
+    return QGeoCoordinate(lat, lon, alt);
+}

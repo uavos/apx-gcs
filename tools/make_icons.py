@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # APX Autopilot project <http://docs.uavos.com>
 #
@@ -29,9 +29,12 @@ import simplejson
 
 
 # Parse commandline
-parser = argparse.ArgumentParser(description='Material Design Icons CSS parser for the APX system.')
-parser.add_argument('--src', action='store', required=True, help='source CSS file path')
-parser.add_argument('--dest', action='store', required=True, help='destination JSON file path')
+parser = argparse.ArgumentParser(
+    description='Material Design Icons CSS parser for the APX system.')
+parser.add_argument('--src', action='store', required=True,
+                    help='source CSS file path')
+parser.add_argument('--dest', action='store', required=True,
+                    help='destination JSON file path')
 args = parser.parse_args()
 
 

@@ -96,23 +96,27 @@ VehicleMission::VehicleMission(Vehicle *parent)
     }
 
     //actions
-    f_request
-        = new Fact(this, "request", tr("Request"), tr("Download from vehicle"), Action, "download");
-    connect(f_request, &Fact::triggered, this, &VehicleMission::downloadMission);
-
     f_upload
         = new Fact(this, "upload", tr("Upload"), tr("Upload to vehicle"), Action | Apply, "upload");
     connect(f_upload, &Fact::triggered, this, &VehicleMission::uploadMission);
 
+    f_request = new Fact(this,
+                         "request",
+                         tr("Request"),
+                         tr("Download from vehicle"),
+                         Action | IconOnly,
+                         "download");
+    connect(f_request, &Fact::triggered, this, &VehicleMission::downloadMission);
+
     f_clear = new Fact(this, "clear", tr("Clear"), tr("Clear mission"), Action | Remove | IconOnly);
     connect(f_clear, &Fact::triggered, this, &VehicleMission::clearMission);
+
+    f_lookup = new LookupMissions(this, this, Action | IconOnly);
 
     f_share = new MissionShare(this, this, Action | IconOnly);
 
     //tools actions
     f_tools = new MissionTools(this, Action | IconOnly);
-
-    f_lookup = new LookupMissions(this, f_tools, Action);
 
     f_save = new Fact(f_tools,
                       "save",

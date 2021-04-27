@@ -34,6 +34,7 @@ RowLayout {
     readonly property var f_adj: mandala.cmd.proc.adj
 
     readonly property var f_flaps: mandala.ctr.wing.flaps
+    readonly property var f_airbrk: mandala.ctr.wing.airbrk
     readonly property var f_brake: mandala.ctr.str.brake
     readonly property var f_thr: mandala.cmd.rc.thr
 
@@ -47,6 +48,7 @@ RowLayout {
         CtrNum { title: "THR"; fact: f_thr; min: 0; max: 100; mult: 100; stepSize: 1; }
         CtrNum { title: "FLP"; fact: f_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
         CtrNum { title: "ADJ"; fact: f_adj; }
+        CtrNum { title: "ABR"; fact: f_airbrk; min: 0; max: 100; mult: 100; stepSize: 10; visible: f_mode.value===proc_mode_LANDING}
     }
     CtrFlow {
         Layout.fillWidth: true
@@ -56,7 +58,7 @@ RowLayout {
         controls: {
             "TAXI": [btnCANCEL,btnATAXI,btnBRK_TAXI],
             "TAKEOFF": [btnCANCEL,btnNEXT,btnBRK],
-            "LANDING": [btnCANCEL,btnNEXT,btnBRK],
+            "LANDING": [btnCANCEL,btnNEXT,btnBRK,btnAIRBRK],
             "WPT": [btnINC,btnDEC],
             "STBY": [btnRESET],
             "UAV": [btnNEXT,btnCANCEL],
@@ -69,6 +71,15 @@ RowLayout {
         CtrButton {
             text: "FLAPS"
             fact: f_flaps
+            onTriggered: fact.value=highlighted?0:1
+            highlighted: fact.value>0
+        }
+    }
+    Component {
+        id: btnAIRBRK
+        CtrButton {
+            text: "AIRBR"
+            fact: f_airbrk
             onTriggered: fact.value=highlighted?0:1
             highlighted: fact.value>0
         }

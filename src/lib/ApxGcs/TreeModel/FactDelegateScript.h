@@ -37,7 +37,7 @@ protected:
     bool aboutToClose(void);
 
 private:
-    NodeScript *scriptCompiler;
+    NodeScript *nodeScript;
 
     QAction *aCompile;
     QAction *aLoad;
