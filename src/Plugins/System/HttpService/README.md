@@ -49,7 +49,7 @@ For example, assuming you run GCS on the local machine, the following requests a
 * [http://127.0.0.1:9280/mandala?cmd.proc.mode=proc_mode_TAKEOFF](http://127.0.0.1:9280/mandala?cmd.proc.mode=proc_mode_TAKEOFF) - this will change current mode to TAKEOFF procedure;
 * [http://127.0.0.1:9280/mandala?scr=cmd.proc.mode=proc_mode_EMG](http://127.0.0.1:9280/mandala?scr=cmd.proc.mode=proc_mode_EMG) - will execute a JS script to change current mode to manual control;
 * [http://127.0.0.1:9280/mandala?scr=ctr.str.brake=trigger(ctr.str.brake,0,1)](http://127.0.0.1:9280/mandala?scr=ctr.str.brake=trigger(ctr.str.brake,0,1)) - toggle parking brakes by script;
-* [http://127.0.0.1:9280/mandala?scr=btn_BRAKE()](http://127.0.0.1:9280/mandala?scr=btn_BRAKE()) - toggle parking brakes by calling function defined in `gcs.js`;
+* [http://127.0.0.1:9280/mandala?scr=btn_BRAKE()](http://127.0.0.1:9280/mandala?scr=btn_BRAKE()) - toggle parking brakes by calling function defined in [`gcs.js`](https://github.com/uavos/apx-gcs/blob/main/resources/scripts/gcs.js);
 
 ## Google Earth Visualization
 

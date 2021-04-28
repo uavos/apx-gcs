@@ -14,7 +14,7 @@ The purpose of this application is to manage command & control, mission planing,
 - [Open Source](https://github.com/uavos/apx-gcs/blob/main/LICENSE);
 - Based on [QT framework](https://www.qt.io) and [QML](https://en.wikipedia.org/wiki/QML);
 - Multi-platform;
-- C++ defined JS Tree at the [backend](fact);
+- C++ defined JS Tree at the [backend](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
 - Application defined by [plugins](plugins);
 - Protocols [abstraction](protocols);
 
