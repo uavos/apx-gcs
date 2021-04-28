@@ -104,7 +104,8 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
     saveEvent.setInterval(1000);
     connect(&saveEvent, &DelayedEvent::triggered, this, &Joystick::save);
     connect(f_title, &Fact::valueChanged, &saveEvent, &DelayedEvent::schedule);
-    for (auto f : FactList() << f_axes << f_buttons << f_hats) {
+    FactList f_list{f_axes, f_buttons, f_hats};
+    for (auto f : f_list) {
         for (int i = 0; i < f->size(); ++i) {
             connect(f->child(i), &Fact::valueChanged, &saveEvent, &DelayedEvent::schedule);
             for (int j = 0; j < f->child(i)->size(); ++j) {
@@ -202,20 +203,20 @@ void Joystick::loadConfig(const QJsonObject &config)
     f_title->setValue(config["title"]);
     const QJsonObject &conf = config["config"].toObject();
     foreach (QJsonValue v, conf["axes"].toArray()) {
-        int i = v["id"].toString().toInt() - 1;
+        int i = v["id"].toInt() - 1;
         JoystickAxis *f = static_cast<JoystickAxis *>(f_axes->child(i));
         if (f)
             f->loadConfig(v.toObject());
     }
     foreach (QJsonValue v, conf["buttons"].toArray()) {
-        int i = v["id"].toString().toInt() - 1;
+        int i = v["id"].toInt() - 1;
         Fact *f = f_buttons->child(i);
         if (!f)
             continue;
         f->setValue(v["scr"]);
     }
     foreach (QJsonValue v, conf["hats"].toArray()) {
-        int i = v["id"].toString().toInt() - 1;
+        int i = v["id"].toInt() - 1;
         Fact *f = f_hats->child(i);
         if (!f)
             continue;
@@ -231,7 +232,8 @@ QJsonObject Joystick::saveConfig()
     config.insert("index", device_index);
     config.insert("uid", uid);
     QJsonObject conf;
-    for (auto f : FactList() << f_axes << f_buttons << f_hats) {
+    FactList f_list{f_axes, f_buttons, f_hats};
+    for (auto f : f_list) {
         QJsonArray a;
         for (int i = 0; i < f->size(); ++i) {
             QString s = f->child(i)->text().simplified();
