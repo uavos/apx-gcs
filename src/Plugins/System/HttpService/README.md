@@ -11,7 +11,7 @@ Server capabilities include:
 * Control any particular Mandala variable;
 * Execute JavaScript commands;
 * Reply requested Mandala variable value;
-* [Google Earth](http://earth.google.com) real-time flight visualization and analyzis of telemetry data;
+* [Google Earth](http://earth.google.com) real-time flight visualization and analysis of telemetry data;
 
 To see the server welcome message - start the GCS and open this link in browser: [`http://127.0.0.1:9280`](http://127.0.0.1:9280)
 
@@ -27,7 +27,7 @@ Datalink server has the capability to establish connection through internet with
 
 Two or more GCS interfaces could be connected to one or more datalink modems. the connection requires **static ip**, thus VPN connection is recommended.
 
-To request for online support for tuning or troubleshooting, [contact us](/contacts.md) to receive credentials to access our network.
+To request for online support for tuning or troubleshooting, [contact us](/contacts) to receive credentials to access our network.
 
 ## Mandala control
 
