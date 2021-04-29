@@ -23,6 +23,8 @@ import QtQuick 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 
+import Apx.Common 1.0
+
 RowLayout {
     id: control
 
@@ -33,7 +35,7 @@ RowLayout {
     //model data
     property alias packet: _repeater.model
 
-    spacing: 2
+    spacing: Style.spacing/2
 
     /*Label {
         Layout.alignment: Qt.AlignLeft|Qt.AlignVCenter

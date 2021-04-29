@@ -30,6 +30,8 @@
 // See: https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
 // Intended to monitor by human mind the current state of the vehicle and its behavior in real-time.
 
+//TODO schedule delayed event on mandala QML context update
+
 Mandala::Mandala(Fact *parent)
     : Fact(parent,
            "mandala",

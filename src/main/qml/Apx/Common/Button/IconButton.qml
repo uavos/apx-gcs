@@ -36,7 +36,7 @@ TextButton {
     property color disabledIconColor: Material.iconDisabledColor
 
     property real iconScale: 0.9
-    property int iconSize: Math.max(7, control.height * iconScale - 2)
+    property real iconSize: Math.max(7, control.height * iconScale - 2)
 
     property color currentIconColor: enabled?iconColor:disabledIconColor
 

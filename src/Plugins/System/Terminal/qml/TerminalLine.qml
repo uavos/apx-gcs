@@ -81,7 +81,7 @@ RowLayout {
         background: Rectangle {
             border.width: 0
             color: "#223"
-            radius: 2
+            radius: height/10
         }
     }
 }

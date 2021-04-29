@@ -23,21 +23,21 @@ pragma Singleton
 import QtQuick 2.12
 
 QtObject {
-    property color cBlue:   "#3779C5"
-    property color cYellow: "#ffff00"
-    property color cGreen:  "#377964"
-    property color cNormal: "#376479"
-    property color cRed:    "#793764"
+    readonly property color cBlue:   "#3779C5"
+    readonly property color cYellow: "#ffff00"
+    readonly property color cGreen:  "#377964"
+    readonly property color cNormal: "#376479"
+    readonly property color cRed:    "#793764"
 
-    property color cLineCyan:   "#00FFFF"
-    property color cLineGreen:  "#00C800"
-    property color cLineRed:    "#FF4C00"
-    property color cLineYellow: "#FFC800"
-    property color cLineBlue:   "#9696FF"
+    readonly property color cLineCyan:   "#00FFFF"
+    readonly property color cLineGreen:  "#00C800"
+    readonly property color cLineRed:    "#FF4C00"
+    readonly property color cLineYellow: "#FFC800"
+    readonly property color cLineBlue:   "#9696FF"
 
 
-    property color cWaypoint: "#ffff00"
-    property color cRunway:   "#3779C5"
-    property color cTaxiway:  "#376479"
-    property color cPoint:    "#3779C5"
+    readonly property color cWaypoint: "#ffff00"
+    readonly property color cRunway:   "#3779C5"
+    readonly property color cTaxiway:  "#376479"
+    readonly property color cPoint:    "#3779C5"
 }

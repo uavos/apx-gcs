@@ -35,7 +35,7 @@ ButtonBase {
     property color currentTextColor: enabled?textColor:disabledTextColor
 
     property real textScale: 0.6
-    readonly property int textSize: Math.max(7, control.height * textScale - 2)
+    readonly property real textSize: Math.max(7, control.height * textScale - 2)
 
     font.pixelSize: textSize
 

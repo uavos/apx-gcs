@@ -297,8 +297,8 @@ MapQuickItem {  //to be used inside MapComponent only
                 z: image.z-5
                 vehicle: vehicleItem.vehicle
                 colorFG: "#fff"
-                font.pixelSize: Math.max(8,image.height/3)
-                font.bold: true
+                // font.pixelSize: Math.max(8,image.height/3)
+                // font.bold: true
                 showDots: false
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: bInfoShowRight?0:(image.height/2+height/2)

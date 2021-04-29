@@ -44,24 +44,26 @@ Rectangle {
     onWidthChanged: implicitHeight=width
     onHeightChanged: implicitWidth=height
 
-    readonly property int margins: 3
+    readonly property real margins: width/200
 
     property APX.Vehicle vehicle: apx.vehicles.current
 
     //sizes
-    readonly property int buttonHeight: width*0.1//,32)
+    readonly property real buttonHeight: width/10
+    readonly property real buttonSpacing: buttonHeight/10
 
-    property int size: Math.max(50,width)*0.08
+    property real size: Math.max(50,width)*0.08
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: root.margins
-        spacing: buttonHeight/4
+        spacing: buttonSpacing*2
 
 
         RowLayout {
             Layout.alignment: Qt.AlignTop|Qt.AlignLeft
             height: buttonHeight
+            spacing: buttonSpacing*2
 
             ValueButton {
                 size: buttonHeight
@@ -149,7 +151,7 @@ Rectangle {
         //menus
         MenuButtons {
             Layout.fillWidth: true
-            Layout.preferredHeight: buttonHeight
+            Layout.preferredHeight: buttonHeight*1.2
         }
 
     }

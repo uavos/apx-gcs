@@ -535,6 +535,11 @@ double App::scale() const
 }
 void App::setScale(double v)
 {
+    if (v > 2)
+        v = 2;
+    else if (v < 0.5)
+        v = 0.5;
+
     if (m_scale == v)
         return;
     m_scale = v;

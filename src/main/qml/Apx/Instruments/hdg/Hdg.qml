@@ -113,7 +113,6 @@ Item {
             border.width: 1
             border.color: "white"
             color: "transparent"
-            //radius: 1
             Text {
                 id: hdg_text
                 anchors.fill: parent

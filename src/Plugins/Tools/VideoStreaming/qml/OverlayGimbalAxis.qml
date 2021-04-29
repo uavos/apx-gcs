@@ -91,7 +91,7 @@ Item {
             color: Material.color(Material.Green)
             width: w*3
             height: w*1.5
-            radius: 3
+            radius: height/5
             x: cx
             y: cx
             property real v: control.reverse?-control.value:control.value

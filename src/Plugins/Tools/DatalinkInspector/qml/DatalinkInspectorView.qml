@@ -22,13 +22,13 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 
+import Apx.Common 1.0
 
 ListView {
     id: listView
 
-
     clip: true
-    spacing: 2
+    spacing: Style.spacing/2
 
     model: plugin_fact.packetsModel
 
@@ -38,7 +38,7 @@ ListView {
     }
 
     ScrollBar.vertical: ScrollBar {
-        width: 6
+        width: Style.buttonSize/4
         active: !listView.atYEnd
     }
     boundsBehavior: Flickable.StopAtBounds

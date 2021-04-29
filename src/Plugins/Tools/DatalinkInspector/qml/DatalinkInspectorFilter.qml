@@ -22,6 +22,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 
+import Apx.Common 1.0
 
 ListView {
     id: listView
@@ -32,12 +33,13 @@ ListView {
 
     signal filter(var uid, var exclude)
 
-    spacing: 2
+    spacing: Style.spacing
 
     model: plugin_fact.uidModel
 
     delegate: DatalinkInspectorItem {
         text: model.blocks.join(' ')
+        size: Style.buttonSize*0.5
         //itemColor: model.color
         MouseArea {
             anchors.fill: parent

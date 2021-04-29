@@ -65,7 +65,8 @@ ComboBox {
     Connections {
         target: listView
         function onMovementStarted() {
-            control.popup.close()
+            if(control.popup)
+                control.popup.close()
         }
     }
     delegate: ItemDelegate {

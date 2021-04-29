@@ -30,7 +30,7 @@ Rectangle {
     implicitHeight: textInput.contentHeight+4
     implicitWidth: Math.max(textInput.contentWidth+4,height*2)
 
-    radius: 3
+    radius: height/10
     color: "#50000000"
     border.width: 0
 

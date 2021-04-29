@@ -13,7 +13,7 @@ typedef enum {
     gyro_src_primary = 2,
     gyro_src_secondary = 3,
     gyro_src_failsafe = 4,
-    gyro_src_auxilary = 5,
+    gyro_src_auxillary = 5,
 
     // sns.nav.acc.src
     acc_src_unknown = 0,
@@ -21,7 +21,7 @@ typedef enum {
     acc_src_primary = 2,
     acc_src_secondary = 3,
     acc_src_failsafe = 4,
-    acc_src_auxilary = 5,
+    acc_src_auxillary = 5,
 
     // sns.nav.mag.src
     mag_src_unknown = 0,
@@ -29,7 +29,7 @@ typedef enum {
     mag_src_primary = 2,
     mag_src_secondary = 3,
     mag_src_failsafe = 4,
-    mag_src_auxilary = 5,
+    mag_src_auxillary = 5,
 
     // sns.nav.gps.src
     gps_src_unknown = 0,
@@ -37,7 +37,7 @@ typedef enum {
     gps_src_primary = 2,
     gps_src_secondary = 3,
     gps_src_failsafe = 4,
-    gps_src_auxilary = 5,
+    gps_src_auxillary = 5,
 
     // sns.nav.gps.fix
     gps_fix_none = 0,
@@ -59,7 +59,7 @@ typedef enum {
     baro_src_primary = 2,
     baro_src_secondary = 3,
     baro_src_failsafe = 4,
-    baro_src_auxilary = 5,
+    baro_src_auxillary = 5,
 
     // sns.nav.baro.status
     baro_status_unknown = 0,
@@ -74,7 +74,7 @@ typedef enum {
     pitot_src_primary = 2,
     pitot_src_secondary = 3,
     pitot_src_failsafe = 4,
-    pitot_src_auxilary = 5,
+    pitot_src_auxillary = 5,
 
     // sns.nav.pitot.status
     pitot_status_unknown = 0,
@@ -518,7 +518,7 @@ typedef enum {
 
     // cmd.nav.cam.mode
     cam_mode_off = 0,
-    cam_mode_signle = 1,
+    cam_mode_single = 1,
     cam_mode_distance = 2,
     cam_mode_time = 3,
 
@@ -1292,16 +1292,16 @@ namespace cmd
         };
         namespace nmt
         {
-            enum { search = 0x7f1 };
-            enum { ident = 0x7f2 };
-            enum { file = 0x7f3 };
-            enum { reboot = 0x7f4 };
-            enum { msg = 0x7f5 };
-            enum { upd = 0x7f6 };
-            enum { mod = 0x7f7 };
-            enum { usr = 0x7f8 };
-            enum { tree = 0x7f9 };
-            enum { debug = 0x7fa };
+            enum { search = 0x781 };
+            enum { ident = 0x782 };
+            enum { file = 0x783 };
+            enum { reboot = 0x784 };
+            enum { msg = 0x785 };
+            enum { upd = 0x786 };
+            enum { mod = 0x787 };
+            enum { usr = 0x788 };
+            enum { tree = 0x789 };
+            enum { debug = 0x78a };
         };
     };
 };

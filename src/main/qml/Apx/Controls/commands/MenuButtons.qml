@@ -31,9 +31,9 @@ ListView {
     id: listView
     orientation: ListView.Horizontal
     model: model.model
-    spacing: 4
+    spacing: buttonSpacing
 
-    implicitHeight: 32
+    implicitHeight: buttonHeight
     implicitWidth: 100
 
     delegate: IconButton {

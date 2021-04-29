@@ -94,7 +94,7 @@ Item {
         id: numBG
         anchors.fill: parent
         anchors.bottomMargin: 2
-        radius: 3
+        radius: height/10
         color: numValue.color
         opacity: numValue.blink?1:0
         Behavior on opacity { enabled: ui.smooth; PropertyAnimation {duration: 100} }

@@ -31,12 +31,12 @@ ListView {
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
-    implicitHeight: 32
+    implicitHeight: buttonHeight
 
     property var modes: []
 
     orientation: ListView.Horizontal
-    spacing: 8
+    spacing: buttonSpacing
     model: modes
     delegate: ToolButton {
         size: listView.height

@@ -31,10 +31,9 @@ import APX.Mission 1.0
 
 import Apx.Common 1.0
 import Apx.Controls 1.0
-//import Apx.Map 1.0
 
 ColumnLayout {
-    spacing: 4
+    spacing: Style.spacing*2
     
     readonly property APX.Vehicle vehicle: apx.vehicles.current
     
@@ -52,18 +51,20 @@ ColumnLayout {
         model: mission.listModel
         implicitWidth: contentItem.childrenRect.width
         orientation: ListView.Vertical
-        spacing: 4 * ui.scale
+        spacing: Style.spacing/2
         clip: true
         snapMode: ListView.SnapToItem
         visible: !empty
 
 
         delegate: RowLayout{
+            spacing: Style.spacing
+
             FactButton {
                 id: missionItem
 
-                size: 24 * ui.scale
-                //titleSize: textSize * 0.8
+                size: Style.buttonSize*0.7
+
                 descrSize: textSize * 0.7
                 descrColor: textColor
                 descrFontFamily: font.family

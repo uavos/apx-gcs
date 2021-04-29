@@ -125,6 +125,8 @@ Item {
 
     RowLayout {
         id: buttons
+        spacing: Style.spacing
+        
         ActionButton {
             id: add
             fact: factAdd

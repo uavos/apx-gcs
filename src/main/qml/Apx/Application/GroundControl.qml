@@ -98,7 +98,6 @@ Item {
                 state: groundControl.state
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                //Layout.maximumHeight: instrumentsHeight
                 Layout.preferredHeight: instrumentsHeight
             }
             Rectangle { visible: instrumentsLayout.visible; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
@@ -108,7 +107,7 @@ Item {
                 state: groundControl.state
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.minimumHeight: 200*ui.scale
+                Layout.minimumHeight: instrumentsHeight
             }
         }
     }

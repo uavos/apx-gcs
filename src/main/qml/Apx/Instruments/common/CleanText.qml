@@ -90,7 +90,7 @@ Item {
         visible: !frame
         color: bgColor
         opacity: hide_bg?0:1
-        radius: 2
+        radius: height/10
     }
 
     implicitWidth: _body.implicitWidth + 4
@@ -126,7 +126,7 @@ Item {
         anchors.leftMargin: _prefixItems.width
         visible: frame
         color: "transparent"
-        radius: 2
+        radius: height/10
         border.width: 1
         border.color: bgColor
     }

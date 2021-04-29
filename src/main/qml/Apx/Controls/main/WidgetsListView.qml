@@ -32,7 +32,7 @@ ListView {
     id: control
     implicitWidth: contentWidth
     implicitHeight: contentItem.childrenRect.height
-    spacing: 3
+    spacing: Style.spacing
     model: pluginsModel
     visible: count>0
     orientation: ListView.Horizontal

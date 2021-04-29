@@ -24,6 +24,8 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
 
+import ".."
+
 Button {
     id: control
 
@@ -31,11 +33,12 @@ Button {
 
     property var color
 
-    property int size: 32 * ui_scale
+    readonly property real defaultSize: Style.buttonSize
 
-    property int minimumWidth: 0
+    property real size: defaultSize
 
-    property real ui_scale: ui.scale
+    property real minimumWidth: 0
+
 
     signal triggered()
     signal activated()
@@ -58,7 +61,7 @@ Button {
     implicitHeight: size
     implicitWidth: defaultWidth
 
-    property int defaultWidth: Math.max(height, Math.max(minimumWidth, implicitContentWidth + leftPadding+rightPadding))
+    property real defaultWidth: Math.max(height, Math.max(minimumWidth, implicitContentWidth + leftPadding+rightPadding))
 
     // colors
     highlighted: activeFocus

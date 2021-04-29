@@ -22,11 +22,16 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 
+import Apx.Common 1.0
+
 Label {
     id: item
+
+    property real size: Style.buttonSize*0.4
+
     color: invert?itemColor:"#000"
     font.family: font_condenced
-    font.pixelSize: 12
+    font.pixelSize: size
 
     property bool invert: false
 
@@ -36,7 +41,7 @@ Label {
         border.width: 0 // invert?1:0
         //border.color: itemColor
         color: invert?"#000":itemColor
-        radius: 2
+        radius: height/10
     }
 }
 

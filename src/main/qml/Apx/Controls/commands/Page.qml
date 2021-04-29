@@ -26,9 +26,4 @@ import QtQuick.Controls 2.4
 Item {
     id: page
     clip: true
-
-    //contentWidth: childrenRect.width
-    //contentHeight: childrenRect.height
-
-    /**/
 }

@@ -37,11 +37,11 @@ RowLayout {
     property int precision: 0
     property real mult: 1
 
-    property int size: buttonHeight
-    property int titleWidth: size*1.8
-    property int valueWidth: size
+    property real size: buttonHeight
+    property real titleWidth: size*1.8
+    property real valueWidth: size
 
-    spacing: 4
+    spacing: buttonSpacing
 
     property real value: fact.value*mult
 
@@ -63,7 +63,7 @@ RowLayout {
         font.pixelSize: control.size*0.8
         text: value.toFixed(precision)
         horizontalAlignment: Text.AlignHCenter
-        Rectangle {
+        /*Rectangle {
             x: -parent.x
             y: -parent.y
             width: control.width-1
@@ -72,7 +72,7 @@ RowLayout {
             border.color: "#222"
             color: "transparent"
             radius: 6
-        }
+        }*/
     }
 
     TextButton {

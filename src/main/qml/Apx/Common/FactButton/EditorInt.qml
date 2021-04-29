@@ -29,13 +29,19 @@ SpinBox {
     to: (typeof fact.max!=='undefined')?fact.max*div:1000000000
     value: fact.value*div
 
+    readonly property real precision: fact.precision
+
     property int wgrow: implicitWidth
     onImplicitWidthChanged: {
         if(implicitWidth<wgrow)implicitWidth=wgrow
         else wgrow=implicitWidth
     }
 
-    stepSize: (fact.units==="m" && div==1 && (value>=10))?10:1
+    stepSize: (fact.units==="m" && div==1 && (value>=10))
+                ? 10
+                : precision>1
+                    ? precision
+                    : 1
 
     font.family: font_condenced
     font.pixelSize: control.valueSize
@@ -76,7 +82,7 @@ SpinBox {
                 anchors.centerIn: parent
                 width: parent.width+10
                 height: parent.height
-                radius: 3
+                radius: height/10
                 color: "#000"
                 border.width: 0
                 opacity: 0.3

@@ -32,7 +32,6 @@ import APX.Mission 1.0
 import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Menu 1.0
-//import Apx.Map 1.0
 
 RowLayout {
 
@@ -41,10 +40,8 @@ RowLayout {
     readonly property Mission mission: vehicle.mission
 
     height: missionButton.height
-    //spacing: 10*ui.scale
-    //property int itemSize: Math.max(10,missionButton.height)
-    //property int iconFontSize: itemSize*0.8
-    //property int titleFontSize: itemSize*0.8
+    spacing: Style.spacing
+
     TextButton {
         id: missionButton
         minimumWidth: height*3

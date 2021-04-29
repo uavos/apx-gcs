@@ -38,7 +38,6 @@ MissionObject {
 
     property bool largeDataSet: mission.missionSize>100
     shadow: interacting || active || (!largeDataSet)
-    radius: shadow?2:0
 
     //Fact bindings
     property real f_distance: fact?fact.distance:0

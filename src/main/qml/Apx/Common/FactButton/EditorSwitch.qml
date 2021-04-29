@@ -26,7 +26,7 @@ import QtQuick.Controls.Material 2.12
 Switch {
     id: editor
 
-    scale: ui_scale
+    scale: ui.scale*0.8
 
     implicitWidth: (implicitIndicatorWidth + leftPadding + rightPadding) * scale
 

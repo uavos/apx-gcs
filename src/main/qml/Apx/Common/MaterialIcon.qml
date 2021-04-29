@@ -24,11 +24,13 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
 
+import "."
+
 Text {
     id: control
 
     property string name
-    property int size: 32
+    property real size: Style.buttonSize
 
     readonly property string value: application.materialIconChar(name)
 

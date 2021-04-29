@@ -33,7 +33,7 @@ MapView {
 
     readonly property bool showWind: mandala.est.wind.status.value > 0 || mandala.est.wind.speed.value > 0
 
-    readonly property real margins: 10
+    readonly property real margins: Style.spacing
 
     //initial animation
     PropertyAnimation {
@@ -81,7 +81,7 @@ MapView {
             z: 100
             anchors.left: parent.left
             anchors.top: parent.top
-            spacing: margins
+            spacing: Style.spacing*2
             MissionTools {
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             }
@@ -96,6 +96,7 @@ MapView {
             anchors.bottom: info.top
             anchors.topMargin: margins
             anchors.bottomMargin: margins
+            spacing: Style.spacing
             MissionListView {
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 Layout.fillHeight: true
@@ -107,6 +108,7 @@ MapView {
             anchors.left: parent.left
             anchors.bottom: bottom.bottom
             anchors.bottomMargin: status.implicitHeight+margins
+            spacing: Style.spacing
             Loader {
                 id: wind
                 active: showWind
@@ -120,11 +122,13 @@ MapView {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
+            spacing: Style.spacing
 
             RowLayout {
                 id: status
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignLeft|Qt.AlignBottom
+                spacing: Style.spacing
                 MapInfo { }
             }
             NumbersBar {

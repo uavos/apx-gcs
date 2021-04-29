@@ -19,21 +19,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.11
-import QtQuick.Layouts 1.3
-import QtQml.Models 2.12
+pragma Singleton
+import QtQuick 2.12
 
-Page {
-    ListView {
-        id: listView
-        width: parent.width
-        height: parent.height
-        spacing: buttonSpacing*2
-        model: ObjectModel {
-            CtrSlider { title: "R"; fact: mandala.cmd.rc.roll; width: listView.width }
-            CtrSlider { title: "P"; fact: mandala.cmd.rc.pitch; width: listView.width }
-            CtrSlider { title: "T"; fact: mandala.cmd.rc.thr; from: 0; width: listView.width }
-            CtrSlider { title: "Y"; fact: mandala.cmd.rc.yaw; width: listView.width }
-        }
-    }
+QtObject {
+    id: singleton
+
+    readonly property real scale: ui.scale
+
+    readonly property real minButtonSize: 20
+    readonly property real scaledButtonSize: 24 * scale
+
+    readonly property real buttonSize: Math.max(minButtonSize, scaledButtonSize)
+
+    readonly property real spacing: buttonSize/8
+    readonly property real fontSize: buttonSize * 0.6
 }

@@ -58,7 +58,7 @@ Item {
         anchors.fill: control;
         color: "transparent"
         border.width: 2
-        radius: height*0.1
+        radius: height/10
         border.color: active?"#8f8":replay?"#478fff":"#fff"
     }
 

@@ -22,6 +22,8 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.15
 
+import ".."
+
 Item {
     id: control
     property Component iconC
@@ -29,14 +31,12 @@ Item {
     property Component valueC
 
     implicitWidth: _titleRow.implicitWidth + _valueItem.implicitWidth + 2
-    implicitHeight: 24
+    implicitHeight: Style.buttonSize
 
     Row {
         id: _titleRow
         spacing: 0
         anchors.fill: parent
-        //anchors.rightMargin: Math.min(_valueItem.implicitWidth, _valueItem.width)
-        //clip: true
 
         // icon
         Loader {

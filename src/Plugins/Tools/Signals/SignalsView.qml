@@ -200,37 +200,5 @@ Item {
         else speed=0
         //console.log(speed)
     }
-
-    /*ToolTip {
-        delay: 1000
-        timeout: 5000
-        visible: text && (mouseArea.containsMouse)
-        text: getToolTip(facts)
-        background: Rectangle {
-            color: "#000"
-            border.width: 0
-            radius: 5
-        }
-    }
-
-
-    function getToolTip(facts)
-    {
-        var s=[]
-        for(var i=0;i<facts.length;++i){
-            var fact=facts[i]
-            s.push("<font color='"+fact.color+"'>"+fact.descr+"</font>")
-        }
-        return s.join("<br>")
-    }
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        onDoubleClicked: changeSpeed()
-        //onPressAndHold: drawer.open()
-    }*/
-
 }
 

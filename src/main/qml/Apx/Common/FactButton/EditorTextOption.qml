@@ -55,7 +55,7 @@ EditorOption {
         anchors.rightMargin: -10
         width: contentItem.contentWidth-anchors.rightMargin*2
         height: contentItem.height
-        radius: 3
+        radius: height/10
         color: "#000"
         border.width: 0
         opacity: 0.3

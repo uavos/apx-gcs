@@ -23,8 +23,9 @@ import QtQuick 2.12
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
-//import QtLocation 5.9
 import QtPositioning 5.6
+
+import Apx.Common 1.0
 
 import APX.Vehicles 1.0 as APX
 
@@ -32,11 +33,10 @@ import APX.Vehicles 1.0 as APX
 Item {
     id: control
 
-    readonly property int dotSize: 8
+    readonly property real dotSize: height/10
 
     property APX.Vehicle vehicle
 
-    property font font: Qt.application.font
     property bool showDots: true
 
     property color colorFG: vehicle.active?"#fff":"#aaa"
@@ -78,7 +78,7 @@ Item {
     //right side info
     ColumnLayout {
         visible: showDots
-        spacing: 3
+        spacing: Style.spacing
         anchors.fill: parent
 
         //recording red point
@@ -89,7 +89,7 @@ Item {
             border.width: 0
             implicitWidth: dotSize
             implicitHeight: dotSize
-            radius: 4
+            radius: height/2
             color: "#C0FF8080"
         }
         //mission available
@@ -100,7 +100,7 @@ Item {
             border.width: 0
             implicitWidth: dotSize
             implicitHeight: dotSize
-            radius: width/2
+            radius: height/2
             color: "#C080FFFF"
         }
         Item {
@@ -115,8 +115,7 @@ Item {
             Layout.minimumWidth: font.pixelSize
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font.family: control.font.family
-            font.pixelSize: control.font.pixelSize
+            font.pixelSize: Style.fontSize
             font.bold: true
             text: callsign
             color: colorFG
@@ -127,9 +126,7 @@ Item {
             Layout.minimumWidth: font.pixelSize
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font.family: control.font.family
-            font.pixelSize: control.font.pixelSize * 0.7
-            font.bold: control.font.bold
+            font.pixelSize: Style.fontSize * 0.7
             text: vehicle.info
             color: colorFG
 

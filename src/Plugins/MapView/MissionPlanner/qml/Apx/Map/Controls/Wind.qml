@@ -30,11 +30,11 @@ Item {
     readonly property real m_wspd: mandala.est.wind.speed.value
     readonly property real m_whdg: mandala.est.wind.heading.value
 
-    implicitWidth: 100
+    implicitWidth: Style.buttonSize*3
     implicitHeight: implicitWidth
 
     readonly property int spacing: 0
-    readonly property int fontSize: 28*ui.scale
+    readonly property real fontSize: Style.buttonSize*0.8
 
     //internal
     readonly property int arrowSize: height-textItem.height-spacing

@@ -214,7 +214,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignRight
         Layout.bottomMargin: control.spacing
 
-        spacing: 5
+        spacing: Style.spacing
         visible: repeater.count>0
 
         property alias model: repeater.model

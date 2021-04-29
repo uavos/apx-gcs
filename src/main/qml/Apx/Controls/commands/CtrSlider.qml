@@ -34,9 +34,9 @@ RowLayout {
     property alias to: ctr.to
     property alias stepSize: ctr.stepSize
 
-    property int size: ctr.implicitHandleHeight*2.2*ui.scale
-    property int titleWidth: size*2
-    property int valueWidth: titleWidth
+    property real size: buttonHeight //ctr.implicitHandleHeight*2.2*ui.scale
+    property real titleWidth: size*1.5
+    property real valueWidth: titleWidth
 
     property string toolTip: info
 

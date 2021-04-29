@@ -2,9 +2,10 @@ module Apx.Common
 
 Apx 1.0 helpers.js
 
+singleton Style 1.0 Style.qml
+
 FactObject      1.0 FactObject.qml
 
-CleanButton     1.0 CleanButton.qml
 TextButton      1.0 Button/TextButton.qml
 IconButton      1.0 Button/IconButton.qml
 ToolButton      1.0 Button/ToolButton.qml
