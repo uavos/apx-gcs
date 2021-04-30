@@ -24,7 +24,7 @@ To use [Visual Studio Code](https://code.visualstudio.com/) as IDE, follow these
 * GCS will watch the saved script file for changes and update the node parameter automatically;
 
 >When GCS script editor saves a script to a file or loads from a file - such file is watched for modifications by the GCS and the node configuration parameter is updated accordingly upon changes of the file's content are detected.
-
+>
 >The node parameter, which have the `script` as its content will be compiled by the GCS on it's value changes. You may need to `upload` the vehicle parameters to bring the compiled script to run onboard;
 
 ## LLVM `sysroot`
@@ -35,7 +35,7 @@ Every script should have the following statement to interact with the APX node r
 #include <apx.h>
 ```
 
-This will include the `apx.h` file from `sysroot/include` folder, which declares all APX node [intrefaces](/fw). See the example called `ApxTest.cpp` for use cases.
+This will include the `apx.h` file from `sysroot/include` folder, which declares all APX node [interfaces](/fw). See the example called `ApxTest.cpp` for use cases.
 
 The provided `clang` WASM compiler is invoked by the GCS with the option `--sysroot=<path to sysroot>`, according to [this configuration](https://github.com/uavos/apx-gcs/blob/main/resources/scripts/.vscode/tasks.json).
 

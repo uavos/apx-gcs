@@ -11,7 +11,7 @@ Server capabilities include:
 * Control any particular Mandala variable;
 * Execute JavaScript commands;
 * Reply requested Mandala variable value;
-* [Google Earth](http://earth.google.com) real-time flight visualization and analyzis of telemetry data;
+* [Google Earth](http://earth.google.com) real-time flight visualization and analysis of telemetry data;
 
 To see the server welcome message - start the GCS and open this link in browser: [`http://127.0.0.1:9280`](http://127.0.0.1:9280)
 
@@ -27,7 +27,7 @@ Datalink server has the capability to establish connection through internet with
 
 Two or more GCS interfaces could be connected to one or more datalink modems. the connection requires **static ip**, thus VPN connection is recommended.
 
-To request for online support for tuning or troubleshooting, [contact us](/contacts.md) to receive credentials to access our network.
+To request for online support for tuning or troubleshooting, [contact us](/contacts) to receive credentials to access our network.
 
 ## Mandala control
 
@@ -49,7 +49,7 @@ For example, assuming you run GCS on the local machine, the following requests a
 * [http://127.0.0.1:9280/mandala?cmd.proc.mode=proc_mode_TAKEOFF](http://127.0.0.1:9280/mandala?cmd.proc.mode=proc_mode_TAKEOFF) - this will change current mode to TAKEOFF procedure;
 * [http://127.0.0.1:9280/mandala?scr=cmd.proc.mode=proc_mode_EMG](http://127.0.0.1:9280/mandala?scr=cmd.proc.mode=proc_mode_EMG) - will execute a JS script to change current mode to manual control;
 * [http://127.0.0.1:9280/mandala?scr=ctr.str.brake=trigger(ctr.str.brake,0,1)](http://127.0.0.1:9280/mandala?scr=ctr.str.brake=trigger(ctr.str.brake,0,1)) - toggle parking brakes by script;
-* [http://127.0.0.1:9280/mandala?scr=btn_BRAKE()](http://127.0.0.1:9280/mandala?scr=btn_BRAKE()) - toggle parking brakes by calling function defined in `gcs.js`;
+* [http://127.0.0.1:9280/mandala?scr=btn_BRAKE()](http://127.0.0.1:9280/mandala?scr=btn_BRAKE()) - toggle parking brakes by calling function defined in [`gcs.js`](https://github.com/uavos/apx-gcs/blob/main/resources/scripts/gcs.js);
 
 ## Google Earth Visualization
 

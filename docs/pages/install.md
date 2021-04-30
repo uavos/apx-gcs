@@ -3,7 +3,7 @@
 
 # Installation
 
-The [Ground Control](index) (GCS) application binary packeges are available for different platforms from the [apx-gcs](https://github.com/uavos/apx-gcs) github repository releases.
+The [Ground Control](index) (GCS) application binary packages are available for different platforms from the [apx-gcs](https://github.com/uavos/apx-gcs) github repository releases.
 
 To get emails with announcements about new versions, visit [contacts](/contacts) page and subscribe. Although, the installed software will check for updates automatically.
 
