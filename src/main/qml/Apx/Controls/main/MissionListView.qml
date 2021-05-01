@@ -59,59 +59,10 @@ ColumnLayout {
 
         delegate: RowLayout{
             spacing: Style.spacing
-
-            /*FactButton {
-                id: missionItem
-
-                size: Style.buttonSize*0.7
-
-                descrSize: textSize * 0.7
-                descrColor: textColor
-
-                fact: modelData
-                toolTip: fact?fact.descr:""
-                value: ""
-                descr: {
-                    if(!fact)return ""
-                    return fact.descr.split(',').map(function(s){
-                        var i=s.indexOf('=')
-                        if(i<0)return s
-                        return s.slice(0,Math.min(3,i)).toUpperCase()
-                    }).join(' ')
-                }
-                showIcon: false
-                showEditor: false
-                showValue: false
-                showNext: (fact && fact.selected)?true:false
-
-                active: false
-
-                noFactTrigger: true
-                onTriggered: {
-                    if(fact.selected)fact.trigger()
-                    else fact.selected=true
-                }
-
-                color: {
-                    switch(fact.missionItemType){
-                    default: return Material.primaryColor
-                    case Mission.RunwayType:
-                        return Material.color(Material.Blue, Material.Shade900) //Style.cListRunway
-                    case Mission.WaypointType:
-                        return Material.color(Material.BlueGrey, Material.Shade500) //Style.cListWaypoint
-                    case Mission.PoiType:
-                        return Material.color(Material.Teal, Material.Shade700) //Style.cListPoint
-                    case Mission.TaxiwayType:
-                        return Material.color(Material.Grey, Material.Shade800) //Style.cListTaxiway
-                    }
-                }
-            }*/
             TextButton {
                 id: missionItem
 
                 size: Style.buttonSize*0.7
-                // textScale: 0.5
-                // lineHeight: 0.75
 
                 toolTip: modelData?modelData.descr:""
                 
@@ -119,15 +70,8 @@ ColumnLayout {
                     if(!modelData)return ""
                     var a=[]
                     a.push(modelData.title)
-                    // a.push(modelData.value)
                     if(modelData.descr)
-                        a.push('>')
-                    // a.push(modelData.descr.split(',').map(function(s){
-                    //     var i=s.indexOf('=')
-                    //     if(i<0)return s
-                    //     return s.slice(0,Math.min(3,i)).toUpperCase()
-                    // }))
-                    
+                        a.push('>')                    
                     return a.join(' ')
                 }
 
@@ -135,6 +79,11 @@ ColumnLayout {
                     if(modelData.selected)modelData.trigger()
                     else modelData.selected=true
                 }
+
+                textColor: modelData.modified
+                    ? Material.color(Material.Yellow)
+                    : Material.primaryTextColor
+
 
                 color: {
                     switch(modelData.missionItemType){
