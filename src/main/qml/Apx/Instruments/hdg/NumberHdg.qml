@@ -110,7 +110,7 @@ Item {
         verticalAlignment: Text.AlignTop
         //text:  "<pre>"+label+"</pre>"
         text:  label
-        font.pixelSize: parent.height*labelScale
+        font.pointSize: parent.height*labelScale
         font.family: labelFont
         color: labelColor
     }
@@ -123,9 +123,8 @@ Item {
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         text: numValue.text
-        font.pixelSize: parent.height
+        font.pointSize: parent.height
         font.family: valueFont
-        //font.bold: (valueFont !== font_narrow)
         color: valueColor
     }
     ToolTipArea {

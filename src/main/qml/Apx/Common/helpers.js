@@ -25,14 +25,12 @@
 
 
 
-function roundNumber(number, digits)
-{
+function roundNumber(number, digits) {
     var multiple = Math.pow(10, digits);
     return Math.round(number * multiple) / multiple;
 }
 
-function formatTime(sec)
-{
+function formatTime(sec) {
     var value = sec
     var seconds = value % 60
     value /= 60
@@ -41,25 +39,24 @@ function formatTime(sec)
     value /= 60
     value = (value > 1) ? Math.round(value) : 0
     var hours = value
-    if (hours > 0) value = hours + "h:"+ minutes + "m"
+    if (hours > 0) value = hours + "h:" + minutes + "m"
     else value = minutes + "min"
     return value
 }
 
-function formatDistance(meters)
-{
+function formatDistance(meters) {
     var dist = Math.round(meters)
-    if (dist > 1000 ){
-        if (dist > 100000){
+    if (dist > 1000) {
+        if (dist > 100000) {
             dist = Math.round(dist / 1000)
         }
-        else{
+        else {
             dist = Math.round(dist / 100)
             dist = dist / 10
         }
         dist = dist + " km"
     }
-    else{
+    else {
         dist = dist + " m"
     }
     return dist
@@ -67,10 +64,11 @@ function formatDistance(meters)
 
 // Converts from degrees to radians.
 function radians(degrees) {
-  return degrees * Math.PI / 180;
+    return degrees * Math.PI / 180;
 };
 
 // Converts from radians to degrees.
 function degrees(radians) {
-  return radians * 180 / Math.PI;
+    return radians * 180 / Math.PI;
 };
+

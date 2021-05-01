@@ -23,23 +23,23 @@ import QtQuick 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 
+import Apx.Common 1.0
+
 import APX.Facts 1.0
 
 Rectangle {
     id: control
     border.width: 0
     color: "#000"
-    implicitWidth: 300
-    implicitHeight: 250
+    implicitWidth: 600
+    implicitHeight: 300
 
-    readonly property int margins: 3
-    property int fontSize: 12
-
-    //property var terminal: apx.tools.terminal
+    property real lineSize: Style.buttonSize*0.4
+    property real lineSpace: 0
 
     ColumnLayout {
         spacing: 0
-        anchors.margins: 3
+        anchors.margins: Style.spacing
         anchors.fill: parent
 
 
@@ -53,10 +53,11 @@ Rectangle {
 
             clip: true
 
+            spacing: lineSpace
+
             model: application.notifyModel
             delegate: TerminalLine {
                 width: listView.width
-                fontSize: control.fontSize
                 text: model.text
                 subsystem: model.subsystem
                 source: model.source
@@ -79,7 +80,7 @@ Rectangle {
 
 
             ScrollBar.vertical: ScrollBar {
-                width: 6
+                width: Style.spacing*2
                 active: !listView.atYEnd
             }
             boundsBehavior: Flickable.StopAtBounds
@@ -115,7 +116,6 @@ Rectangle {
 
             footer: TerminalExec {
                 width: parent.width
-                fontSize: control.fontSize
                 onFocused: listView.scrollToEnd()
             }
 

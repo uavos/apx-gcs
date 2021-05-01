@@ -59,8 +59,7 @@ RowLayout {
 
     Label {
         Layout.minimumWidth: valueWidth
-        font.family: font_narrow
-        font.pixelSize: control.size*0.8
+        font: apx.font_narrow(control.size*0.8)
         text: value.toFixed(precision)
         horizontalAlignment: Text.AlignHCenter
         /*Rectangle {

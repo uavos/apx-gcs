@@ -375,3 +375,48 @@ QGeoCoordinate AppRoot::coordinate(double lat, double lon, double alt)
 {
     return QGeoCoordinate(lat, lon, alt);
 }
+
+QFont AppRoot::font(QString family, qreal size, bool shaping)
+{
+    QFont f(family);
+    f.setPointSizeF(size < 5 ? 5 : size);
+    f.setKerning(false);
+
+    f.setHintingPreference(QFont::PreferNoHinting);
+
+    int s{};
+    s |= QFont::PreferMatch;
+    s |= QFont::NoAntialias;
+    s |= QFont::NoSubpixelAntialias;
+    s |= QFont::NoFontMerging;
+    s |= QFont::ForceOutline;
+    if (!shaping)
+        s |= QFont::PreferNoShaping;
+
+    f.setStyleStrategy(QFont::StyleStrategy(s));
+    return f;
+}
+
+QFont AppRoot::font_narrow(qreal size)
+{
+    return font("ApxNarrow", size * 1.05);
+}
+
+QFont AppRoot::font_icons(qreal size)
+{
+    return font("Material Design Icons", size, true);
+}
+
+QFont AppRoot::font_condenced(qreal size, bool bold)
+{
+    auto f = font("Ubuntu Condensed", size);
+    f.setBold(bold);
+    return f;
+}
+
+QFont AppRoot::font_fixed(qreal size)
+{
+    auto f = App::getMonospaceFont();
+    f.setPointSizeF(size < 5 ? 5 : size);
+    return f;
+}

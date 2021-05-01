@@ -23,6 +23,7 @@ import QtQuick 2.12
 import QtLocation 5.12
 import QtPositioning 5.12
 
+import Apx.Common 1.0
 import Apx.Map.Common 1.0
 
 MapItemGroup {
@@ -87,8 +88,7 @@ MapItemGroup {
 
         sourceItem: Text {
             id: text
-            font.family: font_condenced
-            //font.pixelSize: control.size
+            font: apx.font_narrow(Style.fontSize)
             text: apx.distanceToString(targetCoordinate.distanceTo(uavCoordinate))
             color: circle.color
         }

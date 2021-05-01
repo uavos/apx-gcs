@@ -30,8 +30,7 @@ Label {
     property real size: Style.buttonSize*0.4
 
     color: invert?itemColor:"#000"
-    font.family: font_condenced
-    font.pixelSize: size
+    font: apx.font_condenced(size)
 
     property bool invert: false
 

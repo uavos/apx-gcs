@@ -403,12 +403,16 @@ void VehicleMission::missionReceived(QVariant var)
 
 void VehicleMission::uploadMission()
 {
+    if (!vehicle->protocol())
+        return;
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
     vehicle->protocol()->mission()->updateMission(toVariant());
     f_save->trigger();
 }
 void VehicleMission::downloadMission()
 {
+    if (!vehicle->protocol())
+        return;
     vehicle->message(QString("%1...").arg(tr("Requesting mission")), AppNotify::Info);
     vehicle->protocol()->mission()->requestMission();
 }

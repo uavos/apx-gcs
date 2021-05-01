@@ -34,7 +34,7 @@ RowLayout {
     property alias to: ctr.to
     property alias stepSize: ctr.stepSize
 
-    property real size: buttonHeight //ctr.implicitHandleHeight*2.2*ui.scale
+    property real size: buttonHeight
     property real titleWidth: size*1.5
     property real valueWidth: titleWidth
 
@@ -81,8 +81,7 @@ RowLayout {
 
     Label {
         Layout.minimumWidth: valueWidth
-        font.family: font_narrow
-        font.pixelSize: control.size*0.8
+        font: apx.font_narrow(control.size*0.8)
         text: fact.value.toFixed(2)
         horizontalAlignment: Text.AlignRight
     }

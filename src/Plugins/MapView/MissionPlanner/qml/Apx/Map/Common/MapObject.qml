@@ -159,7 +159,6 @@ MapQuickItem {  //to be used inside MapComponent only
                     width: textItem.width*textItem.scale+10
                     height: textItem.height*textItem.scale+10
                     antialiasing: true
-                    //smooth: ui.antialiasing
                     border.width: 2
                     border.color: "#FFFFFF"
                     radius: shadow?height/10:0
@@ -171,12 +170,7 @@ MapQuickItem {  //to be used inside MapComponent only
         MapText {
             id: textItem
             horizontalAlignment: Text.AlignHCenter
-            //scale: hoverScale*map.itemsScaleFactor*missionItemsScaleFactor
-            //opacity: (dragging && ui.effects)?0.6:1
             text: title
-            font.pixelSize: map.fontSize * 0.8
-            margins: 1
-            font.bold: false
             square: true
             visible: shadowLoader.status!=Loader.Ready
         }

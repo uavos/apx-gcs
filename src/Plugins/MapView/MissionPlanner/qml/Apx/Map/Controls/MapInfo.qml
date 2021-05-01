@@ -31,8 +31,8 @@ RowLayout {
 
     // mouse coordinate
     Text {
-        Layout.preferredWidth: height*8
-        font.family: font_narrow
+        // Layout.preferredWidth: height*8
+        font: apx.font_narrow(Style.fontSize)
         color: "#fff"
         property var c: map.mouseCoordinate
         text: apx.latToString(c.latitude)+" "+apx.lonToString(c.longitude)
@@ -41,6 +41,7 @@ RowLayout {
     //tiles downloader
     BusyIndicator {
         id: busy
+
         property var fact: apx.tools?apx.tools.location:null
         property string text: fact?fact.text:""
         property int progress: fact?fact.progress:-1
@@ -48,15 +49,15 @@ RowLayout {
         padding: 1
         implicitHeight: control.size
         implicitWidth: implicitHeight
+
         running: progress>=0
         Text {
             anchors.fill: parent
             color: "#60FFFFFF"
             text: busy.text
-            font.bold: true
+            font: apx.font_narrow(height*0.6)
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            font.pixelSize: Math.max(8,height*0.6)
         }
         MouseArea {
             anchors.fill: parent
@@ -141,7 +142,8 @@ RowLayout {
             anchors.left: icon.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            font.family: font_condenced
+            verticalAlignment: Text.AlignVCenter
+            font: apx.font_narrow(Style.fontSize)
             color: "#fff"
             text: pathItem.text
         }

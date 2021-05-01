@@ -39,7 +39,7 @@ Flow {
     property alias defaults: numbersModel.defaults
     property alias model: numbersModel
 
-    property int itemSize: 28*ui.scale
+    property real itemSize: Style.buttonSize
 
 
     Loader {

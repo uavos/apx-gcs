@@ -47,11 +47,11 @@ ColumnLayout {
             factMenu.factButtonTriggered(fact)
     }
     property int maximumHeight: ui.window.height
-                                -MenuStyle.titleSize
+                                -titleSize
                                 -(actionsItem.visible?actionsItem.implicitHeight+spacing:0)
                                 -(listView.headerItem?listView.headerItem.implicitHeight:0)
                                 -(listView.footerItem?listView.footerItem.implicitHeight:0)
-                                -32
+                                -Style.buttonSize*2
 
 
     //filter support
@@ -96,7 +96,7 @@ ColumnLayout {
                 FactButton {
                     fact: modelData?modelData:null;
                     noEdit: mandalaFact?true:false
-                    height: MenuStyle.itemSize
+                    size: MenuStyle.itemSize
                     onTriggered: {
                         listView.currentIndex=index
                         control.factButtonTriggered(modelData)
@@ -115,9 +115,8 @@ ColumnLayout {
             width: listView.width
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: listView.sectionSize
             color: MenuStyle.cTitleSep
-            font.family: font_narrow
+            font: apx.font_narrow(listView.sectionSize)
             text: section
         }
 
@@ -134,7 +133,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: MenuStyle.titleFontSize
+                        font.pointSize: Style.fontSize
                         placeholderText: qsTr("Search")+"..."
                         selectByMouse: true
                         text: listView.model.filter

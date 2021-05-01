@@ -53,7 +53,7 @@ Item {
         font.bold: true
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter
-        font.pixelSize: Math.max(8,height)
+        font.pointSize: Math.max(8,height)
     }
 
     MouseArea {

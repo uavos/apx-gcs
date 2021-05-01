@@ -431,18 +431,6 @@ void App::loadFonts()
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-
-    m_engine->rootContext()->setContextProperty("font_narrow", "ApxNarrow");
-    m_engine->rootContext()->setContextProperty("font_narrow_regular", "ApxCondenced");
-    m_engine->rootContext()->setContextProperty("font_mono", "FreeMono");
-    m_engine->rootContext()->setContextProperty("font_condenced", "Ubuntu Condensed");
-    //m_engine->rootContext()->setContextProperty("font_condenced", "ApxCondenced");
-#ifdef Q_OS_MAC
-    m_engine->rootContext()->setContextProperty("font_fixed", "Menlo");
-#else
-    m_engine->rootContext()->setContextProperty("font_fixed", "FreeMono");
-    qApp->setFont(QFont("Arial"));
-#endif
 }
 bool App::isFixedPitch(const QFont &font)
 {

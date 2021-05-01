@@ -66,8 +66,7 @@ Item {
                     anchors.verticalCenterOffset: -(index)*strip.numStep
                     text: (showZero===false && strip.dspValue<5 && strip.dspValue>-5 && (index%10)===0)?"":Math.abs(index) % 10
                     color: stripRect.color
-                    font.family: font_narrow
-                    font.pixelSize: strip.numSize
+                    font: apx.font_narrow(strip.numSize)
                 }
             }
             Repeater {
@@ -77,8 +76,7 @@ Item {
                     anchors.verticalCenterOffset: (index+1)*strip.numStep
                     text: (showZero===false && strip.dspValue<5 && strip.dspValue>-5 && ((index+1)%10)===0)?"":Math.abs(index+1) % 10
                     color: stripRect.colorNeg
-                    font.family: font_narrow
-                    font.pixelSize: strip.numSize
+                    font: apx.font_narrow(strip.numSize)
                 }
             }
         }

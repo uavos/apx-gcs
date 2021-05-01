@@ -74,10 +74,13 @@ ColumnLayout {
     }
 
 
-    property int padding: 4
+    property real padding: Style.spacing
     clip: true
 
+    property alias titleSize: titleItem.height
+
     Loader {
+        id: titleItem
         active: valid
         asynchronous: true
         source: "FactMenuPageTitle.qml"

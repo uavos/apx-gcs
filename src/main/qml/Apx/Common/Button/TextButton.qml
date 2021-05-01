@@ -24,6 +24,8 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
 
+import ".."
+
 ButtonBase {
     id: control
 
@@ -34,16 +36,17 @@ ButtonBase {
 
     property color currentTextColor: enabled?textColor:disabledTextColor
 
-    property real textScale: 0.6
-    readonly property real textSize: Math.max(7, control.height * textScale - 2)
+    property real textScale: 0.7
+    property real textSize: Math.max(7, control.height * textScale)
 
-    font.pixelSize: textSize
+    property real lineHeight: 1
 
     contentComponent: Component {
         id: _textC
         Text {
             visible: showText && text
-            font: control.font
+            font: apx.font_narrow(textSize)
+            lineHeight: control.lineHeight
             text: control.text
             color: control.currentTextColor
 

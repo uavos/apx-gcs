@@ -61,7 +61,7 @@ ActionButton {
     property real valueScale: 1
     property real valueSize: height * valueScale
 
-    font.family: font_narrow_regular
+    font: apx.font_narrow(textSize)
 
     readonly property APX.Vehicle vehicle: apx.vehicles.current
 
@@ -125,21 +125,52 @@ ActionButton {
         Text {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
-            text: control.value
-            font.family: font_narrow
-            font.pixelSize: valueSize
+            text: control.value.toUpperCase()
+            font: apx.font_narrow(valueSize)
             color: valueColor
-            font.capitalization: Font.AllUppercase
         }
     }
     property Component valueC: _valueC
 
 
     contentComponent: Component {
-        ValueContent {
-            iconC: (control.showIcon && control.iconName)?control.iconC:null
-            textC: (control.showText && control.text)?control.textC:null
-            valueC: (control.showValue)?control.valueC:null
+        Item {
+            implicitWidth: _titleRow.implicitWidth + _valueItem.implicitWidth + Style.spacing
+            implicitHeight: Style.buttonSize
+
+            property real iconWidth: _icon.item?_icon.width:0
+            property real titleWidth: _title.item?_title.width:0
+
+            Row {
+                id: _titleRow
+                spacing: 0
+                anchors.fill: parent
+
+                // icon
+                Loader {
+                    id: _icon
+                    height: parent.height
+                    width: item?height:0
+                    active: control.showIcon && control.iconName
+                    sourceComponent: control.iconC
+                }
+
+                // title
+                Loader {
+                    id: _title
+                    height: parent.height
+                    active: control.showText && control.text
+                    sourceComponent: control.textC
+                }
+            }
+            
+            Loader {
+                id: _valueItem
+                anchors.fill: parent
+                anchors.leftMargin: iconWidth + titleWidth + Style.spacing
+                active: control.showValue
+                sourceComponent: control.valueC
+            }
         }
     }
 

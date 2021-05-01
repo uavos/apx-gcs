@@ -39,8 +39,6 @@ StackView {
     property bool showTitle: true
     property bool autoResize: false
 
-    property int titleRightMargin: 0
-
     property bool effects: ui.effects
 
     property int maxEnumListSize: 5
@@ -62,8 +60,10 @@ StackView {
     signal factButtonTriggered(var fact)
     signal factOpened(var fact)
     signal stackEmpty()
+    signal closeTriggered()
 
     property bool showBtnBack: depth>1
+    property bool showBtnClose: false
 
 
     //mandala select support

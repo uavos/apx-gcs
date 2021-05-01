@@ -32,7 +32,7 @@ Rectangle {
 
     property bool square: false
 
-    property real margins: 2
+    property real margins: 0
     property real rightMargin: 0
     property real minWidth: 0
     property real minHeight: font.pointSize+mapText.margins*2+1
@@ -52,8 +52,7 @@ Rectangle {
         x: mapText.margins
         y: mapText.margins
         color: "white"
-        font.pixelSize: map.fontSize
-        font.bold: true
+        font: apx.font_narrow(map.fontSize)
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         width: Math.max(minWidth-mapText.margins*2-1-rightMargin,square?Math.max(contentWidth,contentHeight):implicitWidth)

@@ -32,6 +32,7 @@ import APX.Facts 1.0
 import Apx.Common 1.0
 
 import "../Button"
+import ".."
 
 ActionButton {
     id: control
@@ -155,6 +156,8 @@ ActionButton {
     }
 
 
+    textSize: 0.55 * control.height
+
     property real titleSize: textSize * 1
     property real descrSize: textSize * 0.56
 
@@ -165,89 +168,117 @@ ActionButton {
 
     property color descrColor: Material.secondaryTextColor
 
-    property string descrFontFamily: font_condenced
-
-    textC: Component {
+    contentComponent: Component {
         Item {
+
+            //BoundingRect{}
+
             id: titleLayout
-            implicitWidth: Math.max(titleText.implicitWidth, descrText.visible?descrText.implicitWidth:0)
+            // anchors.fill: parent
+
+            readonly property bool showIcon: control.showIcon && control.iconName
+            readonly property bool showText: control.showText && control.text
+
+            implicitWidth: (showIcon?_icon.implicitWidth:0)
+                         + (showText?_titleText.implicitWidth+Style.spacing:0)
+                         + (showNext?_next.implicitWidth+Style.spacing:0)
+                         + (_value.item?_value.implicitWidth+Style.spacing:0)
+                         + (_editor.item?_editor.implicitWidth+Style.spacing:0)
+                         + Style.spacing
+
+            Loader {
+                id: _icon
+                active: showIcon
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                sourceComponent: control.iconC
+            }
+
             Text {
-                id: titleText
-                anchors.fill: parent
-                verticalAlignment: descrText.visible?Text.AlignTop:Text.AlignVCenter
+                id: _titleText
+                anchors.left: _icon.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: Style.spacing
+                visible: showText
+                verticalAlignment: _descrText.visible?Text.AlignTop:Text.AlignVCenter
                 font.family: control.font.family
-                font.pixelSize: titleSize
+                font.pointSize: titleSize
                 text: control.text
                 color: control.enabled?textColor:disabledTextColor
             }
             Text {
-                id: descrText
-                anchors.fill: parent
-                visible: showDescr && text
+                id: _descrText
+                anchors.left: _icon.right
+                anchors.right: _next.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: Style.spacing
+                anchors.rightMargin: _value.valueWidth + _editor.editorWidth
+                visible: _titleText.visible && showDescr && text
                 verticalAlignment: Text.AlignBottom
-                font.family: descrFontFamily
-                font.pixelSize: descrSize
+                font: apx.font_condenced(descrSize)
                 text: control.descr
                 color: control.enabled?descrColor:disabledTextColor
-            }
-        }
-    }
-
-    Component {
-        id: _valueC
-        Item {
-            id: _valueRow
-            anchors.fill: parent
-
-            // value
-            Loader {
-                id: _value
-                active: showValue && (!_editor.item)
-                anchors.fill: parent
-                anchors.rightMargin: _next.visible?_next.width:0
-                sourceComponent: Text {
-                    id: textItem
-                    text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
-                    font.family: font_condenced
-                    font.pixelSize: valueSize
-                    color: Material.secondaryTextColor
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignRight
-                    elide: Text.ElideMiddle
-                }
-            }
-            Loader {
-                id: _editor
-                asynchronous: true
-                Material.accent: Material.color(Material.Green)
-                source: showEditor?getEditorSource():""
-                anchors.fill: parent
-                anchors.rightMargin: _next.visible?_next.width:0
-                anchors.leftMargin: Math.max(0,_valueRow.width-(item?item.implicitWidth:0))
+                elide: Text.ElideMiddle
+                clip: true
             }
 
             // next icon
             MaterialIcon {
                 id: _next
-                // height: parent.height
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 visible: showNext
                 size: nextSize
                 verticalAlignment: Text.AlignVCenter
                 name: "chevron-right"
                 color: control.enabled?Material.secondaryTextColor:Material.hintTextColor
+            }
+
+            // value
+            Item {
+                anchors.left: _titleText.right
+                anchors.right: _next.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.right: parent.right
-            }
-        }
-    }
-    property Component valueC: _valueC
 
-    contentComponent: Component {
-        ValueContent {
-            iconC: (control.showIcon && control.iconName)?control.iconC:null
-            textC: (control.showText && control.text)?control.textC:null
-            valueC: control.valueC
+                Loader {
+                    id: _value
+                    active: showValue && (!_editor.item)
+                    anchors.fill: parent
+                    readonly property real valueWidth: item
+                            ? (item.truncated
+                                ? item.width
+                                : implicitWidth
+                            )
+                            : 0
+                    sourceComponent: Text {
+                        id: textItem
+                        text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
+                        font: apx.font_condenced(valueSize)
+                        color: Material.secondaryTextColor
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignRight
+                        elide: Text.ElideMiddle
+                    }
+                }
+                Loader {
+                    id: _editor
+                    asynchronous: true
+                    active: source
+                    Material.accent: Material.color(Material.Green)
+                    source: showEditor?getEditorSource():""
+                    anchors.fill: parent
+                    // anchors.leftMargin: Style.spacing
+                    anchors.leftMargin: Math.max(0,parent.width-(item?item.implicitWidth:0))
+
+                    readonly property real editorWidth: item?item.implicitWidth:0
+                }
+            }
+
         }
     }
 

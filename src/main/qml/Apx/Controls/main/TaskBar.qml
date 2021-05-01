@@ -37,7 +37,6 @@ RowLayout {
     //warnings fact
     WarningMessage {
         Layout.fillHeight: true
-        //implicitWidth: height
     }
 
     //widgets
@@ -47,7 +46,9 @@ RowLayout {
     }
     function addWidgetControl(plugin, index){widgetsView.add(plugin,index)}
 
-
+    FactButton {
+        fact: apx.settings.graphics.scale
+    }
 
 
     //tools list from plugins

@@ -39,7 +39,7 @@ RowLayout {
         id: text
         Layout.fillHeight: true
         Layout.fillWidth: true
-        font.family: font_condenced
+        font: apx.font_narrow(Style.fontSize)
         color: "#fff"
         property var c: map.mouseCoordinate
         property var c0: map.mouseClickCoordinate

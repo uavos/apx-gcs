@@ -46,8 +46,7 @@ Item {
 
     property string displayText: (control.prefix ? control.prefix + " " + control.text : control.text).toUpperCase()
 
-    property string font: font_narrow
-    property int fontSize: Math.max(4, fix_font?(height*1.1):height)
+    property bool narrow: true
 
     property bool show: true
     property bool frame: false
@@ -74,8 +73,6 @@ Item {
                 return "black"
         }
     }
-
-    readonly property bool fix_font: font === font_narrow
 
     Component.onCompleted: {
         if(!fact)
@@ -115,9 +112,9 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: control.displayText
-            font.pixelSize: fontSize
-            font.family: control.font
-            font.bold: (control.font !== font_narrow)
+            font: control.narrow
+                ? apx.font_narrow(control.height)
+                : apx.font_condenced(control.height,true)
             color: textColor
         }
     }

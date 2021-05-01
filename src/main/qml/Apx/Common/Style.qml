@@ -30,6 +30,8 @@ QtObject {
     readonly property real minButtonSize: 20
     readonly property real scaledButtonSize: 24 * scale
 
+    readonly property real widthRatio: 12
+
     readonly property real buttonSize: Math.max(minButtonSize, scaledButtonSize)
 
     readonly property real spacing: buttonSize/8

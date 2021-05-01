@@ -46,8 +46,7 @@ ComboBox {
 
     flat: true
 
-    font.family: font_condenced
-    font.pixelSize: control.valueSize
+    font: apx.font_condenced(control.valueSize)
 
     background.implicitWidth: contentItem.implicitWidth
 

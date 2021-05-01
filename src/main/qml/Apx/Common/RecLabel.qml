@@ -48,8 +48,7 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: 5
         anchors.rightMargin: 5
-        font.family: font_narrow
-        font.pixelSize: Math.max(8,control.height)
+        font: apx.font_narrow(control.height)
         verticalAlignment: Text.AlignVCenter
         color: ((!replay) && active && fact.time>=(4*60*60))?"#FF9800":"#fff"
         text: fact.text

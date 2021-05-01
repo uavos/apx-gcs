@@ -34,7 +34,7 @@ ButtonBase {
     
     property APX.Vehicle vehicle
 
-    size: defaultSize * 1.5
+    size: Style.buttonSize * 1.6
 
     highlighted: vehicle.active
     visible: vehicle.visible
@@ -43,6 +43,7 @@ ButtonBase {
 
     contentItem: VehicleLabel {
         id: _label
+        fontSize: control.size*0.31
         vehicle: control.vehicle
     }
 

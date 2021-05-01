@@ -62,16 +62,13 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         text: m_wspd.toFixed(1)
-        font.family: font_narrow
-        font.pixelSize: fontSize
-        font.bold: true
+        font: apx.font_narrow(fontSize)
     }
     Text {
         id: textHdg
         color: control.color
         text: (Math.round(apx.angle360(image.v+180)/5)*5).toFixed(0)
-        font.family: font_narrow
-        font.pixelSize: fontSize*0.6
+        font: apx.font_narrow(fontSize*0.6)
         rotation: image.rotation
         anchors.centerIn: image
     }

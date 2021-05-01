@@ -80,8 +80,7 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: scaleImage.horizontalCenter
         text: Apx.formatDistance(control.value)
-        font.pixelSize: control.height*0.7
-        font.family: font_condenced
+        font: apx.font_narrow(control.height*0.7)
     }
 
     Timer {

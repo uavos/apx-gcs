@@ -119,9 +119,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 text: ("00"+apx.angle360(m_yaw).toFixed()).slice(-3)
-                font.pixelSize: parent.height
-                font.family: font_mono
-                font.bold: true
+                font: apx.font_narrow(parent.height)
                 color: "white"
 
             }
@@ -361,7 +359,7 @@ Item {
                     property string sETA: (thrs?thrs+":":"")+("0"+tmin).slice(-2)+":"+("0"+tsec).slice(-2)
                     height: hdg.txtHeight
                     text: valid?sETA:"--:--"
-                    font.pixelSize: hdg.txtHeight*0.8
+                    font.pointSize: hdg.txtHeight*0.8
                     font.family: dme_text.valueFont
                     color: dme_text.labelColor
                     ToolTipArea { text: f_eta.descr }

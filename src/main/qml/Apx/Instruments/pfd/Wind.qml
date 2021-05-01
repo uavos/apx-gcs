@@ -60,8 +60,7 @@ Item {
             rotation: -parent.rotation
             text: m_wspd.toFixed(m_wspd>=10?0:1)
             color: wind_window.color
-            font.family: font_narrow
-            font.pixelSize: parent.height*0.5
+            font: apx.font_narrow(parent.height*0.5)
         }
     }
 }

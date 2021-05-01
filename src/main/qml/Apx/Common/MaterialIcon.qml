@@ -34,8 +34,8 @@ Text {
 
     readonly property string value: application.materialIconChar(name)
 
-    font.family: "Material Design Icons"
-    font.pixelSize: control.size
+    font: apx.font_icons(control.size)
+
     text: (name && visible) ?  value : ""
     color: "#fff"
     textFormat: Text.PlainText

@@ -27,7 +27,7 @@ import QtPositioning    5.12
 MapBase {
     id: map
 
-    readonly property real fontSize: Qt.application.font.pixelSize*ui.scale
+    readonly property real fontSize: Qt.application.font.pointSize*ui.scale
 
     property var mapPlugin: apx.tools.missionplanner
 

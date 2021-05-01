@@ -33,7 +33,9 @@ import APX.Vehicles 1.0 as APX
 Item {
     id: control
 
-    readonly property real dotSize: height/10
+    property real fontSize: Style.fontSize
+    property real fontSizeInfo: fontSize*0.6
+    readonly property real dotSize: fontSize/2
 
     property APX.Vehicle vehicle
 
@@ -59,10 +61,9 @@ Item {
     property string callsign: vehicle.title
 
 
-    property int paddingRight: dotSize+3
+    property real paddingRight: dotSize+3
 
-    implicitWidth: textLayout.implicitWidth+paddingRight
-    implicitHeight: textLayout.implicitHeight
+    implicitWidth: textLayout.width+paddingRight
 
     Connections {
         target: textLayout
@@ -85,6 +86,7 @@ Item {
         Rectangle {
             Layout.fillHeight: false
             Layout.alignment: Qt.AlignRight | Qt.AlignTop
+            Layout.topMargin: Style.spacing
             visible: vehicle.telemetry.active
             border.width: 0
             implicitWidth: dotSize
@@ -96,6 +98,7 @@ Item {
         Rectangle {
             Layout.fillHeight: false
             Layout.alignment: Qt.AlignRight | Qt.AlignTop
+            Layout.topMargin: Style.spacing
             visible: vehicle && vehicle.mission.missionSize>0
             border.width: 0
             implicitWidth: dotSize
@@ -112,10 +115,9 @@ Item {
         id: textLayout
         spacing: 0
         Label {
-            Layout.minimumWidth: font.pixelSize
-            verticalAlignment: Text.AlignVCenter
+            Layout.minimumWidth: font.pointSize
             horizontalAlignment: Text.AlignLeft
-            font.pixelSize: Style.fontSize
+            font.pointSize: control.fontSize
             font.bold: true
             text: callsign
             color: colorFG
@@ -123,20 +125,23 @@ Item {
         Label {
             id: infoText
             Layout.fillHeight: true
-            Layout.minimumWidth: font.pixelSize
+            Layout.minimumWidth: font.pointSize
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font.pixelSize: Style.fontSize * 0.7
+            font.pointSize: control.fontSizeInfo
             text: vehicle.info
             color: colorFG
 
             visible: !bLOCAL
 
-            onImplicitWidthChanged: timerWidthUpdate.start()
+            onImplicitWidthChanged: {
+                if(vehicle.isIdentified)
+                    timerWidthUpdate.start()
+            }
             property Timer timerWidthUpdate: Timer {
                 interval: 100
                 onTriggered: {
-                    infoText.width=Math.max(infoText.width,implicitWidth)
+                    infoText.Layout.minimumWidth=Math.max(infoText.Layout.minimumWidth,implicitWidth)
                 }
             }
         }

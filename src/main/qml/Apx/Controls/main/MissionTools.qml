@@ -33,7 +33,7 @@ import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Menu 1.0
 
-RowLayout {
+Row {
 
     readonly property APX.Vehicle vehicle: apx.vehicles.current
 
@@ -50,7 +50,8 @@ RowLayout {
         onClicked: mission.trigger()
         text: (mission.text)
               +"\n"+(mission.empty?"":mission.wp.descr)
-        textScale: 0.45
+        textScale: 0.5
+        lineHeight: 0.75
     }
     ActionButton {
         fact: mission.request

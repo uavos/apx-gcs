@@ -29,7 +29,7 @@ RowLayout {
     id: control
 
     //prefs
-    property int fontSize: 12
+    spacing: lineSpace
 
     //model data
     property string text
@@ -65,8 +65,7 @@ RowLayout {
         focus: false
         color: control.color
         font.bold: control.bold
-        font.pixelSize: fontSize
-        //font.family: font_fixed
+        font.pointSize: lineSize
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
@@ -76,8 +75,8 @@ RowLayout {
         visible: text //&& control.x==0
         text: control.subsystem
         color: "#aaa"
-        font.family: font_condenced
-        font.pixelSize: fontSize*0.9
+        font: apx.font_condenced(lineSize*0.9)
+
         background: Rectangle {
             border.width: 0
             color: "#223"

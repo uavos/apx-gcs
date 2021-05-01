@@ -38,6 +38,7 @@ Button {
     property real size: defaultSize
 
     property real minimumWidth: 0
+    property real maximumWidth: Style.widthRatio*size
 
 
     signal triggered()
@@ -61,7 +62,7 @@ Button {
     implicitHeight: size
     implicitWidth: defaultWidth
 
-    property real defaultWidth: Math.max(height, Math.max(minimumWidth, implicitContentWidth + leftPadding+rightPadding))
+    property real defaultWidth: Math.min(maximumWidth, Math.max(height, Math.max(minimumWidth, implicitContentWidth + leftPadding+rightPadding)))
 
     // colors
     highlighted: activeFocus

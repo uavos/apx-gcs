@@ -60,14 +60,13 @@ ColumnLayout {
         delegate: RowLayout{
             spacing: Style.spacing
 
-            FactButton {
+            /*FactButton {
                 id: missionItem
 
                 size: Style.buttonSize*0.7
 
                 descrSize: textSize * 0.7
                 descrColor: textColor
-                descrFontFamily: font.family
 
                 fact: modelData
                 toolTip: fact?fact.descr:""
@@ -95,6 +94,50 @@ ColumnLayout {
 
                 color: {
                     switch(fact.missionItemType){
+                    default: return Material.primaryColor
+                    case Mission.RunwayType:
+                        return Material.color(Material.Blue, Material.Shade900) //Style.cListRunway
+                    case Mission.WaypointType:
+                        return Material.color(Material.BlueGrey, Material.Shade500) //Style.cListWaypoint
+                    case Mission.PoiType:
+                        return Material.color(Material.Teal, Material.Shade700) //Style.cListPoint
+                    case Mission.TaxiwayType:
+                        return Material.color(Material.Grey, Material.Shade800) //Style.cListTaxiway
+                    }
+                }
+            }*/
+            TextButton {
+                id: missionItem
+
+                size: Style.buttonSize*0.7
+                // textScale: 0.5
+                // lineHeight: 0.75
+
+                toolTip: modelData?modelData.descr:""
+                
+                text: {
+                    if(!modelData)return ""
+                    var a=[]
+                    a.push(modelData.title)
+                    // a.push(modelData.value)
+                    if(modelData.descr)
+                        a.push('>')
+                    // a.push(modelData.descr.split(',').map(function(s){
+                    //     var i=s.indexOf('=')
+                    //     if(i<0)return s
+                    //     return s.slice(0,Math.min(3,i)).toUpperCase()
+                    // }))
+                    
+                    return a.join(' ')
+                }
+
+                onTriggered: {
+                    if(modelData.selected)modelData.trigger()
+                    else modelData.selected=true
+                }
+
+                color: {
+                    switch(modelData.missionItemType){
                     default: return Material.primaryColor
                     case Mission.RunwayType:
                         return Material.color(Material.Blue, Material.Shade900) //Style.cListRunway

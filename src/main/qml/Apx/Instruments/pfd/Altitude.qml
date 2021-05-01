@@ -126,9 +126,7 @@ ControlArea {
                         styleColor: "transparent"
 
                         color: "#A0FFFFFF"
-                        font.family: font_condenced
-                        font.bold: true
-                        font.pixelSize: altitude_window.num2scaleHeight / 1.5
+                        font: apx.font_condenced(altitude_window.num2scaleHeight / 1.5,true)
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -215,10 +213,9 @@ ControlArea {
             anchors.right: parent.left
             anchors.verticalCenter: parent.verticalCenter
             anchors.rightMargin: 4
-            font.pixelSize: parent.height
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.family: font_narrow
+            font: apx.font_narrow(parent.height)
         }
         ToolTipArea {text: f_hmsl.descr}
     }
@@ -240,10 +237,9 @@ ControlArea {
             color: "yellow"
             anchors.right: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            font.pixelSize: parent.height
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.family: font_narrow
+            font: apx.font_narrow(parent.height)
         }
         ToolTipArea {text: f_agl.descr}
     }
