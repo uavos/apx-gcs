@@ -48,6 +48,8 @@ FactTreeView::FactTreeView(QWidget *parent)
     setUniformRowHeights(true);
     setAnimated(false);
     setIndentation(10);
+
+    setFont(QGuiApplication::font());
 }
 //=============================================================================
 //=============================================================================

@@ -233,14 +233,10 @@ QVariant NodeItem::data(int col, int role) const
         //     return QColor(Qt::darkGray).darker(200);
         // return QColor(0x20, 0x40, 0x60);
     case Qt::FontRole: {
-#ifdef Q_OS_MAC
-        QFont font("Menlo");
-#else
-        QFont font("FreeMono");
-#endif
         if (col == Fact::FACT_MODEL_COLUMN_DESCR)
-            return font;
+            return App::getMonospaceFont();
         if (col == FACT_MODEL_COLUMN_NAME) {
+            auto font = App::getMonospaceFont();
             font.setBold(true);
             return font;
         }

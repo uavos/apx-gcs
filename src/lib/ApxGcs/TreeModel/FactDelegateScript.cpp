@@ -21,6 +21,7 @@
  */
 #include "FactDelegateScript.h"
 #include "SourceEdit.h"
+#include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <ApxMisc/MaterialIcon.h>
@@ -64,6 +65,7 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     splitter->addWidget(editor);
 
     logList = new QListWidget(w);
+    logList->setFont(App::getMonospaceFont());
     connect(logList, &QListWidget::itemClicked, this, &FactDelegateScript::logView_itemClicked);
     splitter->addWidget(logList);
 

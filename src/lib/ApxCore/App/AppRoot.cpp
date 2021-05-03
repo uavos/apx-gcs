@@ -399,7 +399,7 @@ QFont AppRoot::font(QString family, qreal size, bool shaping)
 
 QFont AppRoot::font_narrow(qreal size)
 {
-    return font("ApxNarrow", size * 1.05);
+    return font("ApxNarrow", size);
 }
 
 QFont AppRoot::font_icons(qreal size)

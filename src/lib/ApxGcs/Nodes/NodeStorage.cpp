@@ -120,6 +120,9 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         auto descr = m.value("descr").toString();
         auto def = m.value("def");
 
+        descr = descr.left(descr.indexOf('\n'));
+        descr = descr.left(descr.indexOf('.'));
+
         f->setDescr(descr.simplified());
 
         if (!def.isNull()) {

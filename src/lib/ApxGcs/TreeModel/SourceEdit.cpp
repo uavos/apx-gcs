@@ -20,21 +20,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "SourceEdit.h"
+#include <App/App.h>
 #include <QTextBlock>
 #include <QTextDocumentFragment>
 //=============================================================================
 SourceEdit::SourceEdit(QWidget *parent)
     : QPlainTextEdit(parent)
 {
-    QFont f(font());
-#ifdef Q_OS_MAC
-    f.setFamily("Andale Mono");
-#else
-    f.setFamily("Monospace");
-#endif
-    f.setPointSize(f.pointSize() * 1.2);
-    f.setFixedPitch(true);
-    f.setKerning(false);
+    QFont f(App::getMonospaceFont());
     setFont(f);
     document()->setDefaultFont(f);
     m_font = f;

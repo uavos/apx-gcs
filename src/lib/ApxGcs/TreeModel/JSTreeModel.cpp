@@ -23,6 +23,7 @@
 #include <Fact/Fact.h>
 #include <QColor>
 #include <QFontDatabase>
+#include <QGuiApplication>
 #include <QJSValueIterator>
 //=============================================================================
 JSTreeModel::JSTreeModel(QJSEngine *e)
@@ -105,7 +106,8 @@ QVariant JSTreeModel::data(const QModelIndex &index, int role) const
     case Qt::BackgroundRole:
         return QVariant();
     case Qt::FontRole: {
-        QFont font(QFontDatabase::systemFont(QFontDatabase::GeneralFont)); //qApp->font());
+        // QFont font(QFontDatabase::systemFont(QFontDatabase::GeneralFont));
+        QFont font(QGuiApplication::font());
         if (col == JS_MODEL_COLUMN_DESCR)
             return QVariant();
         if (value.isQObject() && col == JS_MODEL_COLUMN_NAME)

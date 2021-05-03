@@ -114,6 +114,8 @@ private slots:
 
     void updateSurfaceFormat();
 
+    void updateFontSize();
+
 public slots:
     void registerUiComponent(QObject *item, QString name);
 

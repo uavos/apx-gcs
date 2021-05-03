@@ -109,6 +109,9 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     appInstances = new AppInstances(this);
 
     //styles
+    updateFontSize();
+    connect(this, &App::scaleChanged, this, &App::updateFontSize);
+
     QQuickStyle::setStyle("Material");
     QFile styleSheet(":styles/style-dark.css");
     if (styleSheet.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -440,25 +443,41 @@ bool App::isFixedPitch(const QFont &font)
 }
 QFont App::getMonospaceFont()
 {
-    QFont font("FreeMono");
-    if (isFixedPitch(font))
-        return font;
-    font.setFamily("Menlo");
-    if (isFixedPitch(font))
-        return font;
+    QFont font(QGuiApplication::font());
     font.setStyleHint(QFont::Monospace);
-    if (isFixedPitch(font))
-        return font;
-    font.setStyleHint(QFont::TypeWriter);
-    if (isFixedPitch(font))
-        return font;
-    font.setFamily("monospace");
-    if (isFixedPitch(font))
-        return font;
-    font.setFamily("courier");
-    if (isFixedPitch(font))
-        return font;
+    font.setFixedPitch(true);
+    font.setKerning(false);
+
+    do {
+#ifdef Q_OS_MAC
+        font.setFamily("Menlo");
+#else
+        font.setFamily("FreeMono");
+#endif
+        // font.setFamily("unexistent");
+        if (isFixedPitch(font))
+            break;
+        font.setStyleHint(QFont::Monospace);
+        if (isFixedPitch(font))
+            break;
+        font.setStyleHint(QFont::TypeWriter);
+        if (isFixedPitch(font))
+            break;
+        font.setFamily("monospace");
+        if (isFixedPitch(font))
+            break;
+        font.setFamily("courier");
+        if (isFixedPitch(font))
+            break;
+        return QGuiApplication::font();
+    } while (0);
     return font;
+}
+void App::updateFontSize()
+{
+    QFont f(App::font());
+    f.setPointSizeF(10 * scale());
+    setFont(f);
 }
 //=============================================================================
 QString App::materialIconChar(const QString &name)
