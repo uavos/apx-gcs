@@ -33,7 +33,7 @@ IconButton {
         id: _toolC
         Row {
             id: _row
-            spacing: 2
+            spacing: Style.spacing
             Loader {
                 active: control.showIcon
                 height: parent.height

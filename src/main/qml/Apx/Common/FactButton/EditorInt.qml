@@ -23,11 +23,15 @@ import QtQuick 2.6
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 
+import Apx.Common 1.0
+
 SpinBox {
     id: editor
     from: (typeof fact.min!=='undefined')?fact.min*div:-1000000000
     to: (typeof fact.max!=='undefined')?fact.max*div:1000000000
     value: fact.value*div
+
+    readonly property real precision: fact.precision
 
     property int wgrow: implicitWidth
     onImplicitWidthChanged: {
@@ -35,15 +39,18 @@ SpinBox {
         else wgrow=implicitWidth
     }
 
-    stepSize: (fact.units==="m" && div==1 && (value>=10))?10:1
+    stepSize: (fact.units==="m" && div==1 && (value>=10))
+                ? 10
+                : precision>1
+                    ? precision
+                    : 1
 
-    font.family: font_condenced
-    font.pixelSize: control.valueSize
+    font: apx.font_condenced(control.valueSize)
 
     up.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
     down.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
     contentItem: Item{
-        implicitWidth: textInput.contentWidth
+        implicitWidth: textInput.width
         TextInput {
             id: textInput
             anchors.centerIn: parent
@@ -53,6 +60,8 @@ SpinBox {
             text: fact.text
 
             activeFocusOnTab: true
+
+            width: Math.max(contentWidth, height*3)
 
             selectByMouse: true
             onEditingFinished: {
@@ -74,9 +83,9 @@ SpinBox {
                 z: parent.z-1
                 visible: fact.enabled
                 anchors.centerIn: parent
-                width: parent.width+10
+                width: parent.width+Style.spacing*2
                 height: parent.height
-                radius: 3
+                radius: height/10
                 color: "#000"
                 border.width: 0
                 opacity: 0.3
@@ -85,6 +94,7 @@ SpinBox {
     }
 
 
+    padding: 0 
     spacing: 0
     topPadding: 0
     bottomPadding: 0
@@ -96,6 +106,12 @@ SpinBox {
 
     leftPadding: 0
     rightPadding: 0
+    leftInset: 0
+    rightInset: 0
+
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            contentItem.implicitWidth +
+                            height * 2 + Style.spacing*4)
 
 
     property real div: 1

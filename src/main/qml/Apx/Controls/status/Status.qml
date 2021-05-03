@@ -92,10 +92,10 @@ Rectangle {
         id: layout
         width: parent.width
         ColumnLayout {
-            spacing: 1
+            spacing: 0
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: 3
+            Layout.margins: Style.spacing
 
             ValueRss {
                 Layout.fillWidth: true

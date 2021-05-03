@@ -33,9 +33,9 @@ Rectangle {
     implicitWidth: list.implicitWidth+margins*2
     implicitHeight: 200
 
-    property int margins: 3
+    property real margins: Style.spacing
 
-    property real itemSize: 20*ui.scale
+    property real itemSize: Style.buttonSize*0.7
     property bool showEditButton: true
 
     property alias settingsName: numbersModel.settingsName

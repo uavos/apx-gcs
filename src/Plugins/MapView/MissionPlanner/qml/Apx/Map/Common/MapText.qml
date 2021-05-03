@@ -32,10 +32,10 @@ Rectangle {
 
     property bool square: false
 
-    property int margins: 2
-    property int rightMargin: 0
-    property int minWidth: 0
-    property int minHeight: font.pointSize+mapText.margins*2+1
+    property real margins: 0
+    property real rightMargin: 0
+    property real minWidth: 0
+    property real minHeight: font.pointSize+mapText.margins*2+1
 
     Behavior on implicitWidth { enabled: ui.smooth; NumberAnimation {duration: 100; } }
     Behavior on implicitHeight { enabled: ui.smooth; NumberAnimation {duration: 100; } }
@@ -45,15 +45,14 @@ Rectangle {
     //smooth: ui.antialiasing
     implicitWidth: (square?textItem.width:textItem.contentWidth)+mapText.margins*2+1+rightMargin
     implicitHeight: textItem.height+mapText.margins*2+1
-    radius: 3
+    radius: height/10
     //clip: true
     Text {
         id: textItem
         x: mapText.margins
         y: mapText.margins
         color: "white"
-        font.pixelSize: map.fontSize
-        font.bold: true
+        font: apx.font_narrow(map.fontSize)
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         width: Math.max(minWidth-mapText.margins*2-1-rightMargin,square?Math.max(contentWidth,contentHeight):implicitWidth)

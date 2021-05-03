@@ -46,8 +46,7 @@ ComboBox {
 
     flat: true
 
-    font.family: font_condenced
-    font.pixelSize: control.valueSize
+    font: apx.font_condenced(control.valueSize)
 
     background.implicitWidth: contentItem.implicitWidth
 
@@ -65,7 +64,8 @@ ComboBox {
     Connections {
         target: listView
         function onMovementStarted() {
-            control.popup.close()
+            if(control.popup)
+                control.popup.close()
         }
     }
     delegate: ItemDelegate {

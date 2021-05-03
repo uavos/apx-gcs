@@ -23,7 +23,6 @@ import QtQuick 2.5
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
-//import QtLocation 5.9
 import QtPositioning 5.6
 
 import APX.Vehicles 1.0 as APX
@@ -35,8 +34,7 @@ ButtonBase {
     
     property APX.Vehicle vehicle
 
-    size: 48 * ui_scale
-    font.pixelSize: Math.max(7, height * 0.33 - 2)
+    size: Style.buttonSize * 1.6
 
     highlighted: vehicle.active
     visible: vehicle.visible
@@ -45,7 +43,7 @@ ButtonBase {
 
     contentItem: VehicleLabel {
         id: _label
-        font: control.font
+        fontSize: control.size*0.31
         vehicle: control.vehicle
     }
 

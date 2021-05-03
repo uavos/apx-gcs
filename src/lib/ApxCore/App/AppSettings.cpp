@@ -50,17 +50,18 @@ AppSettings::AppSettings(Fact *parent)
     item->setEnumStrings(st);
     item->setDefaultValue(st.first());
 
-    item = new Fact(f_graphics, "scale", tr("Scale"), tr("UI scale factor"), Float | PersistentValue);
-    item->setDefaultValue(1.0);
-    //item->setPrecision(1);
-    item->setMin(0.5);
-    item->setMax(2.0);
+    item = new Fact(f_graphics, "scale", tr("Scale"), tr("UI scale factor"), Int | PersistentValue);
+    item->setUnits("%");
+    item->setDefaultValue(100);
+    item->setPrecision(10);
+    item->setMin(50);
+    item->setMax(200);
     scaleEvent.setInterval(1000);
     connect(item, &Fact::valueChanged, &scaleEvent, &DelayedEvent::schedule);
     connect(&scaleEvent, &DelayedEvent::triggered, this, [item]() {
-        App::instance()->setScale(item->value().toDouble());
+        App::instance()->setScale(item->value().toUInt() / 100.);
     });
-    App::instance()->setScale(item->value().toDouble());
+    App::instance()->setScale(item->value().toUInt() / 100.);
 
     item = new Fact(f_graphics,
                     "opengl",

@@ -108,11 +108,12 @@ Item {
         }
     }
 
-    ColumnLayout {
+    Column {
         anchors.left: parent.left
         anchors.top: parent.bottom
-        anchors.topMargin: 8
+        anchors.topMargin: Style.buttonSize/4
         visible: selGroup
+        spacing: Style.spacing*2
         Repeater {
             model: selectedGroup ? selectedGroup.model : null
             delegate: ActionButton {
@@ -123,8 +124,10 @@ Item {
         }
     }
 
-    RowLayout {
+    Row {
         id: buttons
+        spacing: Style.spacing*2
+        
         ActionButton {
             id: add
             fact: factAdd

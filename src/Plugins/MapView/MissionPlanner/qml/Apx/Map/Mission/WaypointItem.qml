@@ -38,7 +38,6 @@ MissionObject {
 
     property bool largeDataSet: mission.missionSize>100
     shadow: interacting || active || (!largeDataSet)
-    radius: shadow?2:0
 
     //Fact bindings
     property real f_distance: fact?fact.distance:0
@@ -80,9 +79,6 @@ MissionObject {
                     textColor: "white"
                     color: Style.cNormal
                     text: apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
-                    font.pixelSize: map.fontSize
-                    font.family: font_mono
-                    font.bold: false
                 }
             }
         },
@@ -94,9 +90,6 @@ MissionObject {
                     textColor: "white"
                     color: Style.cNormal
                     text: (f_time>=120?apx.timeToString(f_time)+"/":"")+apx.timeToString(f_totalTime)
-                    font.pixelSize: map.fontSize
-                    font.family: font_mono
-                    font.bold: false
                 }
             }
         }
@@ -110,7 +103,6 @@ MissionObject {
                     textColor: "white"
                     color: Style.cGreen
                     text: f_altitude.toFixed()+"m"
-                    font.pixelSize: map.fontSize
                 }
             }
         }
@@ -124,8 +116,6 @@ MissionObject {
                     textColor: "white"
                     color: Style.cRed
                     text: actionsText
-                    font.pixelSize: map.fontSize * 0.8
-                    font.bold: false
                 }
             }
         }

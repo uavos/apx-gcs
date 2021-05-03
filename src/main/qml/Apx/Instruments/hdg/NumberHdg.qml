@@ -94,7 +94,7 @@ Item {
         id: numBG
         anchors.fill: parent
         anchors.bottomMargin: 2
-        radius: 3
+        radius: height/10
         color: numValue.color
         opacity: numValue.blink?1:0
         Behavior on opacity { enabled: ui.smooth; PropertyAnimation {duration: 100} }
@@ -110,7 +110,7 @@ Item {
         verticalAlignment: Text.AlignTop
         //text:  "<pre>"+label+"</pre>"
         text:  label
-        font.pixelSize: parent.height*labelScale
+        font.pointSize: parent.height*labelScale
         font.family: labelFont
         color: labelColor
     }
@@ -123,9 +123,8 @@ Item {
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         text: numValue.text
-        font.pixelSize: parent.height
+        font.pointSize: parent.height
         font.family: valueFont
-        //font.bold: (valueFont !== font_narrow)
         color: valueColor
     }
     ToolTipArea {

@@ -25,12 +25,14 @@ import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
 import QtQml 2.12
 
+import Apx.Common 1.0
+
 Rectangle {
     id: editor
-    implicitHeight: textInput.contentHeight+4
-    implicitWidth: Math.max(textInput.contentWidth+4,height*2)
+    implicitHeight: textInput.contentHeight+Style.spacing
+    implicitWidth: Math.max(textInput.contentWidth+Style.spacing,height*2)
 
-    radius: 3
+    radius: height/10
     color: "#50000000"
     border.width: 0
 
@@ -45,8 +47,7 @@ Rectangle {
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
 
-        font.family: font_condenced
-        font.pixelSize: control.valueSize
+        font: apx.font_condenced(control.valueSize)
 
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text

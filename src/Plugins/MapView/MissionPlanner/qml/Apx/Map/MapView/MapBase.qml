@@ -137,7 +137,7 @@ Map {
         height: width
         anchors.centerIn: parent
         visible: follow
-        radius: width/2
+        radius: height/2
     }
 
     //Item follow

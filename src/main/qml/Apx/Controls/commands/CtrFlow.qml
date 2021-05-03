@@ -24,7 +24,7 @@ import QtQuick.Layouts 1.3
 
 ColumnLayout {
     id: flow
-    spacing: 8
+    spacing: buttonSpacing
     Repeater {
         property var list: flow.controls[flow.key]
         model: list?list:flow.defaultControls

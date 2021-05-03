@@ -31,10 +31,9 @@ import APX.Mission 1.0
 
 import Apx.Common 1.0
 import Apx.Controls 1.0
-//import Apx.Map 1.0
 
 ColumnLayout {
-    spacing: 4
+    spacing: Style.spacing*2
     
     readonly property APX.Vehicle vehicle: apx.vehicles.current
     
@@ -52,48 +51,42 @@ ColumnLayout {
         model: mission.listModel
         implicitWidth: contentItem.childrenRect.width
         orientation: ListView.Vertical
-        spacing: 4 * ui.scale
+        spacing: Style.spacing/2
         clip: true
         snapMode: ListView.SnapToItem
         visible: !empty
 
 
         delegate: RowLayout{
-            FactButton {
+            spacing: Style.spacing
+            TextButton {
                 id: missionItem
 
-                size: 24 * ui.scale
-                //titleSize: textSize * 0.8
-                descrSize: textSize * 0.7
-                descrColor: textColor
-                descrFontFamily: font.family
+                size: Style.buttonSize*0.7
 
-                fact: modelData
-                toolTip: fact?fact.descr:""
-                value: ""
-                descr: {
-                    if(!fact)return ""
-                    return fact.descr.split(',').map(function(s){
-                        var i=s.indexOf('=')
-                        if(i<0)return s
-                        return s.slice(0,Math.min(3,i)).toUpperCase()
-                    }).join(' ')
+                toolTip: modelData?modelData.descr:""
+                
+                text: {
+                    if(!modelData)return ""
+                    var a=[]
+                    a.push(modelData.title)
+                    if(modelData.descr)
+                        a.push('>')                    
+                    return a.join(' ')
                 }
-                showIcon: false
-                showEditor: false
-                showValue: false
-                showNext: (fact && fact.selected)?true:false
 
-                active: false
-
-                noFactTrigger: true
                 onTriggered: {
-                    if(fact.selected)fact.trigger()
-                    else fact.selected=true
+                    if(modelData.selected)modelData.trigger()
+                    else modelData.selected=true
                 }
+
+                textColor: modelData.modified
+                    ? Material.color(Material.Yellow)
+                    : Material.primaryTextColor
+
 
                 color: {
-                    switch(fact.missionItemType){
+                    switch(modelData.missionItemType){
                     default: return Material.primaryColor
                     case Mission.RunwayType:
                         return Material.color(Material.Blue, Material.Shade900) //Style.cListRunway

@@ -24,6 +24,8 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls.Material 2.12
 import "."
 
+import Apx.Common 1.0
+
 StatusFlag {
     id: control
 
@@ -44,7 +46,7 @@ StatusFlag {
     type_warning: CleanText.Normal
     show: true
 
-    font: font_narrow
+    narrow: true
 
     blinkingFG: false
 
@@ -54,8 +56,7 @@ StatusFlag {
             Layout.fillHeight: true
             verticalAlignment: Text.AlignTop
             text: control.title
-            font.pixelSize: Math.max(Math.min(12,control.height), control.height*0.6)
-            font.family: font_narrow
+            font: apx.font_narrow(Math.max(Math.min(12,control.height), control.height*0.6))
             color: "#80DEEA"
         }
     ]

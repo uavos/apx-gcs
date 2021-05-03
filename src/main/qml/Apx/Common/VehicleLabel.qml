@@ -23,8 +23,9 @@ import QtQuick 2.12
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
-//import QtLocation 5.9
 import QtPositioning 5.6
+
+import Apx.Common 1.0
 
 import APX.Vehicles 1.0 as APX
 
@@ -32,11 +33,12 @@ import APX.Vehicles 1.0 as APX
 Item {
     id: control
 
-    readonly property int dotSize: 8
+    property real fontSize: Style.fontSize
+    property real fontSizeInfo: fontSize*0.6
+    readonly property real dotSize: fontSize/2
 
     property APX.Vehicle vehicle
 
-    property font font: Qt.application.font
     property bool showDots: true
 
     property color colorFG: vehicle.active?"#fff":"#aaa"
@@ -59,10 +61,9 @@ Item {
     property string callsign: vehicle.title
 
 
-    property int paddingRight: dotSize+3
+    property real paddingRight: dotSize+3
 
-    implicitWidth: textLayout.implicitWidth+paddingRight
-    implicitHeight: textLayout.implicitHeight
+    implicitWidth: textLayout.width+paddingRight
 
     Connections {
         target: textLayout
@@ -78,29 +79,31 @@ Item {
     //right side info
     ColumnLayout {
         visible: showDots
-        spacing: 3
+        spacing: Style.spacing
         anchors.fill: parent
 
         //recording red point
         Rectangle {
             Layout.fillHeight: false
             Layout.alignment: Qt.AlignRight | Qt.AlignTop
+            Layout.topMargin: Style.spacing
             visible: vehicle.telemetry.active
             border.width: 0
             implicitWidth: dotSize
             implicitHeight: dotSize
-            radius: 4
+            radius: height/2
             color: "#C0FF8080"
         }
         //mission available
         Rectangle {
             Layout.fillHeight: false
             Layout.alignment: Qt.AlignRight | Qt.AlignTop
+            Layout.topMargin: Style.spacing
             visible: vehicle && vehicle.mission.missionSize>0
             border.width: 0
             implicitWidth: dotSize
             implicitHeight: dotSize
-            radius: width/2
+            radius: height/2
             color: "#C080FFFF"
         }
         Item {
@@ -112,11 +115,9 @@ Item {
         id: textLayout
         spacing: 0
         Label {
-            Layout.minimumWidth: font.pixelSize
-            verticalAlignment: Text.AlignVCenter
+            Layout.minimumWidth: font.pointSize
             horizontalAlignment: Text.AlignLeft
-            font.family: control.font.family
-            font.pixelSize: control.font.pixelSize
+            font.pointSize: control.fontSize
             font.bold: true
             text: callsign
             color: colorFG
@@ -124,22 +125,23 @@ Item {
         Label {
             id: infoText
             Layout.fillHeight: true
-            Layout.minimumWidth: font.pixelSize
+            Layout.minimumWidth: font.pointSize
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font.family: control.font.family
-            font.pixelSize: control.font.pixelSize * 0.7
-            font.bold: control.font.bold
+            font.pointSize: control.fontSizeInfo
             text: vehicle.info
             color: colorFG
 
             visible: !bLOCAL
 
-            onImplicitWidthChanged: timerWidthUpdate.start()
+            onImplicitWidthChanged: {
+                if(vehicle.isIdentified)
+                    timerWidthUpdate.start()
+            }
             property Timer timerWidthUpdate: Timer {
                 interval: 100
                 onTriggered: {
-                    infoText.width=Math.max(infoText.width,implicitWidth)
+                    infoText.Layout.minimumWidth=Math.max(infoText.Layout.minimumWidth,implicitWidth)
                 }
             }
         }

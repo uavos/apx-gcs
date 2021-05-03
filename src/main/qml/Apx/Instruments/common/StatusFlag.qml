@@ -37,7 +37,7 @@ BlinkingText {
     property int type_default: CleanText.White
     property int type_warning: CleanText.Yellow
 
-    font: font_condenced
+    narrow: false
 
     width: height/0.35
 

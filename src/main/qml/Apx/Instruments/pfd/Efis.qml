@@ -77,16 +77,4 @@ Item{
         source: "../nav/Nav.qml"
     }
 
-    /*Btn {
-        anchors.top: pfd.top
-        anchors.topMargin: 3
-        anchors.right: pfd.right
-        anchors.rightMargin: 3
-        height: 32
-        width: height
-        text: qsTr("+")
-        onClicked: popupMenu.open()
-    }*/
-
-
 }

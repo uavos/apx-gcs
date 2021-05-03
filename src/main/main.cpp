@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
 #ifdef Q_OS_MAC
     //qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "false");
-    //qputenv("QT_SCALE_FACTOR", "1");
+    // qputenv("QT_SCALE_FACTOR", "0.5");
 
     //QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     //QApplication::setAttribute(Qt::AA_NativeWindows);
@@ -58,13 +58,19 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
 
     //high DPI scaling
-    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, false);
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, false);
-    //QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_Use96Dpi);
+
+    // automatic scaling based on the monitor's pixel density
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+    // turns off all scaling
+    // QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    // QApplication::setAttribute(Qt::AA_Use96Dpi);
 
     //performance graphics
-    QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    //QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
     //QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 

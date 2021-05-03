@@ -24,6 +24,7 @@ import QtLocation 5.9
 import QtPositioning 5.6
 import QtQml 2.12
 
+import Apx.Common 1.0
 
 MapItemGroup {
     id: places
@@ -52,20 +53,4 @@ MapItemGroup {
             map.showCoordinate(QtPositioning.coordinate(modelData.lat,modelData.lon))
         }
     }
-
-
-    //CURRENT SITE LABEL
-    Text {
-        id: siteText
-        parent: map //ui.main
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: map.height*0.15
-        visible: text && ui.missionPlanner.showNavigation
-        font.pixelSize: 24
-        font.bold: true
-        color: "#fff"
-        text: apx.vehicles.current.mission.site
-    }
-
 }

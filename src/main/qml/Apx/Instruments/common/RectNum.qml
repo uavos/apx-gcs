@@ -44,9 +44,7 @@ Rectangle {
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
         text:  value
-        font.pixelSize: height
-        font.family: font_mono
-        font.bold: true
+        font: apx.font_narrow(height)
         color: _control.enabled?"magenta":"gray"
     }
     ToolTipArea {

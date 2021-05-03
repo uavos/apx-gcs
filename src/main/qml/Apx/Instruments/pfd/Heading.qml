@@ -114,9 +114,7 @@ Item {
                     color:(num===0||num===90||num===180||num===270)?"#B0FFFFFF":
                           "#80FFFFFF"
                     //color: "white"
-                    font.family: font_condenced
-                    font.bold: true
-                    font.pixelSize: parent.height*0.6
+                    font: apx.font_condenced(parent.height*0.6,true)
                     //anchors.fill: parent
                     anchors.top: parent.top
                     //anchors.right: parent.right
@@ -205,9 +203,7 @@ Item {
                 verticalAlignment: Text.AlignTop
                 property int v: value
                 text: ("00"+apx.angle360(v).toFixed()).slice(-3)
-                font.pixelSize: parent.height*0.75
-                font.family: font_mono
-                font.bold: true
+                font: apx.font_condenced(parent.height*0.7,true)
                 color: nomag?"yellow":"white"
 
             }

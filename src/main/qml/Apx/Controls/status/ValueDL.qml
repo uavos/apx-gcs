@@ -55,22 +55,22 @@ ValueButton {
     readonly property color cCyan: light?"#fff":Material.color(Material.Cyan)
     readonly property color cGrey: Material.color(Material.Grey)
 
+    valueScale: 0.85
+    
     valueC: Component {
         Row {
             spacing: 0
             layoutDirection: Qt.RightToLeft
             Text {
                 height: parent.height
-                font.family: font_narrow
-                font.pixelSize: valueSize
+                font: apx.font_narrow(valueSize)
                 verticalAlignment: Text.AlignVCenter
                 text: "0%1".arg(apx.datalink.stats.uplink.cnt.value % 100).slice(-2)+" "
                 color: apx.datalink.hbeat.value?cGreen:cGrey
             }
             Text {
                 height: parent.height
-                font.family: font_narrow
-                font.pixelSize: valueSize
+                font: apx.font_narrow(valueSize)
                 verticalAlignment: Text.AlignVCenter
                 property int value: errcnt%10
                 text: value+" "
@@ -85,8 +85,7 @@ ValueButton {
             }
             Text {
                 height: parent.height
-                font.family: font_narrow
-                font.pixelSize: valueSize
+                font: apx.font_narrow(valueSize)
                 verticalAlignment: Text.AlignVCenter
                 text: "0%1".arg(apx.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
                 color: apx.datalink.online?(vehicle.streamType===APX.PVehicle.TELEMETRY?cGreen:cCyan):cRed

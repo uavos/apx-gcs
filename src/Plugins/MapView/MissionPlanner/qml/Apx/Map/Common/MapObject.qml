@@ -32,7 +32,6 @@ MapQuickItem {  //to be used inside MapComponent only
     property bool shadow: true
 
     property int implicitZ: 0
-    property int radius: 2
 
     property var implicitCoordinate
 
@@ -160,10 +159,9 @@ MapQuickItem {  //to be used inside MapComponent only
                     width: textItem.width*textItem.scale+10
                     height: textItem.height*textItem.scale+10
                     antialiasing: true
-                    //smooth: ui.antialiasing
                     border.width: 2
                     border.color: "#FFFFFF"
-                    radius: 5
+                    radius: shadow?height/10:0
                     color: "#50FFFFFF"
                     opacity: ui.effects?0.6:1
                 }
@@ -172,13 +170,7 @@ MapQuickItem {  //to be used inside MapComponent only
         MapText {
             id: textItem
             horizontalAlignment: Text.AlignHCenter
-            //scale: hoverScale*map.itemsScaleFactor*missionItemsScaleFactor
-            //opacity: (dragging && ui.effects)?0.6:1
             text: title
-            font.pixelSize: map.fontSize * 0.8
-            margins: 1
-            radius: mapObject.radius
-            font.bold: false
             square: true
             visible: shadowLoader.status!=Loader.Ready
         }
@@ -189,12 +181,6 @@ MapQuickItem {  //to be used inside MapComponent only
             asynchronous: true
             sourceComponent: Component {
                 DropShadow {
-                    //anchors.fill: textItem
-                    //scale: hoverScale*map.itemsScaleFactor*missionItemsScaleFactor
-                    //horizontalOffset: 3
-                    //verticalOffset: 3
-                    //radius: 8
-                    //spread: 0.1
                     samples: ui.effects?15:0
                     color: (dragging||hover)?"#8f8":"#a0000000"
                     source: textItem

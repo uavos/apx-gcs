@@ -30,11 +30,11 @@ Item {
     readonly property real m_wspd: mandala.est.wind.speed.value
     readonly property real m_whdg: mandala.est.wind.heading.value
 
-    implicitWidth: 100
+    implicitWidth: Style.buttonSize*3
     implicitHeight: implicitWidth
 
     readonly property int spacing: 0
-    readonly property int fontSize: 28*ui.scale
+    readonly property real fontSize: Style.buttonSize*0.8
 
     //internal
     readonly property int arrowSize: height-textItem.height-spacing
@@ -62,16 +62,13 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         text: m_wspd.toFixed(1)
-        font.family: font_narrow
-        font.pixelSize: fontSize
-        font.bold: true
+        font: apx.font_narrow(fontSize)
     }
     Text {
         id: textHdg
         color: control.color
         text: (Math.round(apx.angle360(image.v+180)/5)*5).toFixed(0)
-        font.family: font_narrow
-        font.pixelSize: fontSize*0.6
+        font: apx.font_narrow(fontSize*0.6)
         rotation: image.rotation
         anchors.centerIn: image
     }

@@ -50,7 +50,7 @@ Item {
             }
         }
 
-        spacing: 10*ui.scale
+        spacing: Style.spacing*2
         clip: true
 
         Component {

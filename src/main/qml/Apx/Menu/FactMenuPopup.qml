@@ -100,18 +100,8 @@ Popup {
             function onProgressChanged(){ popup.pinned=true }
         }
         onStackEmpty: popup.close()
-        titleRightMargin: btnClose.width
-        IconButton {
-            id: btnClose
-            z: 10
-            anchors.right: factMenu.right
-            anchors.top: factMenu.top
-            anchors.margins: 5
-            iconName: "close"
-            color: popup.pinned?Material.BlueGrey:undefined
-            size: MenuStyle.titleSize*0.8
-            onClicked: popup.close()
-        }
+        showBtnClose: true
+        onCloseTriggered: popup.close()
     }
 
     //draggable window

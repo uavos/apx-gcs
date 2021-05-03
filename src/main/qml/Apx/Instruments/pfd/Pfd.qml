@@ -632,11 +632,9 @@ Item {
             anchors.right: right_window.left
             text: qsTr("OFFLINE")
             visible: !vehicle.isReplay && !apx.datalink.online
-            font.pixelSize: apx.datalink.valid?(parent.height*0.5*0.35):10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.family: font_narrow
-            font.bold: true
+            font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10)
         }
         Text {
             id: xpdrData
@@ -646,10 +644,8 @@ Item {
             anchors.right: right_window.left
             text: vehicle.text
             visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
-            font.pixelSize: parent.height*0.5*0.25
             horizontalAlignment: Text.AlignHCenter
-            font.family: font_narrow
-            font.bold: true
+            font: apx.font_narrow(parent.height*0.5*0.25)
         }
 
         Item{

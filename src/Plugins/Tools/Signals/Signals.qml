@@ -35,7 +35,6 @@ Rectangle {
 
     border.width: 0
     color: "#000"
-    //radius: 5
 
     ColumnLayout {
         id: layout

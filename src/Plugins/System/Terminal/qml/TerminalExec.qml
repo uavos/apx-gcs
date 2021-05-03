@@ -23,12 +23,10 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 
-//import APX.Terminal 1.0
-
 
 Rectangle{
     id: consoleExec
-    property int fontSize: 12
+
     implicitHeight: cmdText.implicitHeight
     implicitWidth: cmdText.implicitWidth
     border.width: 0
@@ -51,9 +49,8 @@ Rectangle{
         id: cmdText
         width: parent.width
         color: "white"
-        //font.family: font_condenced
         font.bold: true
-        font.pixelSize: fontSize
+        font.pointSize: lineSize
         wrapMode: Text.WrapAnywhere
         selectByMouse: true
         focus: true
@@ -67,7 +64,7 @@ Rectangle{
             border.width: 0
             color: "#80ffffff"
             width: height*0.4
-            height: fontSize
+            height: lineSize
             visible: cmdText.activeFocus
         }
 

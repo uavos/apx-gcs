@@ -67,8 +67,7 @@ Item {
                 anchors.right: parent.left
                 text: value
                 color: "white"
-                font.family: font_narrow
-                font.pixelSize: parent.width
+                font: apx.font_narrow(parent.width)
             }
         }
     }
@@ -100,8 +99,7 @@ Item {
                 anchors.top: parent.bottom
                 text: value
                 color: "white"
-                font.family: font_narrow
-                font.pixelSize: parent.height
+                font: apx.font_narrow(parent.height)
             }
         }
     }

@@ -32,19 +32,16 @@ import APX.Mission 1.0
 import Apx.Common 1.0
 import Apx.Controls 1.0
 import Apx.Menu 1.0
-//import Apx.Map 1.0
 
-RowLayout {
+Row {
 
     readonly property APX.Vehicle vehicle: apx.vehicles.current
 
     readonly property Mission mission: vehicle.mission
 
     height: missionButton.height
-    //spacing: 10*ui.scale
-    //property int itemSize: Math.max(10,missionButton.height)
-    //property int iconFontSize: itemSize*0.8
-    //property int titleFontSize: itemSize*0.8
+    spacing: Style.spacing
+
     TextButton {
         id: missionButton
         minimumWidth: height*3
@@ -53,7 +50,8 @@ RowLayout {
         onClicked: mission.trigger()
         text: (mission.text)
               +"\n"+(mission.empty?"":mission.wp.descr)
-        textScale: 0.45
+        textScale: 0.5
+        lineHeight: 0.75
     }
     ActionButton {
         fact: mission.request

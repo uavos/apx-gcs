@@ -52,8 +52,6 @@ Dialog {
             color: Material.foreground
             text: application.aboutString()
             font: dialog.font
-            //font.family: font_condenced
-            //textFormat: TextEdit.RichText
             wrapMode: TextEdit.Wrap
             selectByMouse: true
             selectByKeyboard: true

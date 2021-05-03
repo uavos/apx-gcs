@@ -30,6 +30,8 @@ import Apx.Instruments 1.0
 
 import Qt.labs.settings 1.0
 
+import "../Common"
+
 Item {
     id: control
 
@@ -46,7 +48,7 @@ Item {
     implicitWidth: 600
     implicitHeight: 500
 
-    readonly property real margins: 10
+    readonly property real margins: Style.spacing*2
 
 
 

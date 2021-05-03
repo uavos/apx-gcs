@@ -32,8 +32,7 @@ Item {
     Text {
         id: textItem
         anchors.fill: parent
-        font.family: font_narrow
-        font.pixelSize: Math.max(8,control.height)
+        font: apx.font_narrow(control.height)
         verticalAlignment: Text.AlignVCenter
         color: "#fff"
         text: ("0"+hours.toFixed()).slice(-2)+(seconds&1?":":".")+("0"+minutes.toFixed()).slice(-2) //+":"+("0"+seconds.toFixed()).slice(-2)

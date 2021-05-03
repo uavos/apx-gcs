@@ -40,11 +40,12 @@ RowLayout {
 
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
 
-    //spacing: buttonHeight/4
+    spacing: buttonSpacing*4
+
     ColumnLayout {
         Layout.fillHeight: true
         Layout.alignment: Qt.AlignTop|Qt.AlignLeft
-        spacing: 3
+        spacing: buttonSpacing
         CtrNum { title: "THR"; fact: f_thr; min: 0; max: 100; mult: 100; stepSize: 1; }
         CtrNum { title: "FLP"; fact: f_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
         CtrNum { title: "ADJ"; fact: f_adj; }

@@ -30,39 +30,44 @@ import Apx.Common 1.0
 
 Item {
     id: control
-    implicitHeight: factMenu.MenuStyle.itemSize
-    implicitWidth: factMenu.MenuStyle.itemWidth
     clip: true
+
+    implicitHeight: buttonSize + Style.spacing * 2
+    implicitWidth: factMenu.MenuStyle.itemWidth
+
+    property real buttonSize: Style.buttonSize
+
     Text {
         id: titleText
         z: 10
         anchors.top: parent.top
         anchors.left: showBtnBack?btnBack.right:parent.left
-        anchors.leftMargin: 8
-        font.pixelSize: Math.max(8,parent.height*(titleDescr.visible?0.65:0.8))
-        font.family: font_narrow
+        anchors.leftMargin: Style.spacing*2
+        anchors.topMargin: -Style.spacing
+        font: apx.font_narrow(parent.height*(titleDescr.visible?0.65:0.8))
         color: "white"
         visible: text!=""
         text: pageTitle
     }
     Text {
         id: titleDescr
-        anchors.bottom: parent.bottom
+        anchors.top: titleText.bottom
         anchors.left: titleText.left
-        anchors.bottomMargin: 1
-        font.pixelSize: Math.max(8,parent.height*0.35)
-        font.family: font_condenced
+        anchors.right: showBtnClose?btnClose.left:parent.right
+        anchors.rightMargin: (statusText.truncated?statusText.width:statusText.implicitWidth)+Style.spacing*2
+        anchors.topMargin: -Style.spacing*2
+        font: apx.font_condenced(parent.height*0.35)
         color: "#aaa"
         visible: text!=""
         text: pageDescr
+        elide: Text.ElideRight
     }
     Text {
         id: statusText
-        anchors.verticalCenter: titleText.verticalCenter
-        anchors.right: parent.right
-        anchors.rightMargin: titleRightMargin+8
+        anchors.right: showBtnClose?btnClose.left:parent.right
+        anchors.rightMargin: Style.spacing*2
         anchors.left: titleText.right
-        anchors.leftMargin: 8
+        anchors.leftMargin: Style.spacing*2
         horizontalAlignment: Text.AlignRight
         font: titleText.font
         color: "#aaa"
@@ -77,21 +82,34 @@ Item {
         radius: ui.antialiasing?titleText.height/2:0
         visible: factMenu && factMenu.effects && titleText.visible
     }
+
+    // Buttons
     IconButton {
         id: btnBack
         visible: showBtnBack
         anchors.left: parent.left
-        anchors.leftMargin: 2
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: -2
+        anchors.top: parent.top
         iconName: "chevron-left"
-        size: parent.height*0.8
+        size: buttonSize
         onClicked: back()
         color: "#478fff"
     }
+    IconButton {
+        id: btnClose
+        z: 10
+        visible: showBtnClose
+        anchors.right: parent.right
+        anchors.top: parent.top
+        iconName: "close"
+        color: (popup && popup.pinned)?Material.BlueGrey:undefined
+        size: buttonSize
+        onClicked: closeTriggered()
+    }
+
+    // Bottom bar and progress
     Rectangle {
         id: bottomBar
-        height: 2
+        height: Style.spacing
         color: MenuStyle.cTitleSep
         border.width: 0
         Component.onCompleted: {

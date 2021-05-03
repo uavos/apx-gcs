@@ -23,6 +23,8 @@ import QtQuick 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 
+import Apx.Common 1.0
+
 RowLayout {
     id: control
 
@@ -33,16 +35,7 @@ RowLayout {
     //model data
     property alias packet: _repeater.model
 
-    spacing: 2
-
-    /*Label {
-        Layout.alignment: Qt.AlignLeft|Qt.AlignVCenter
-        Layout.fillHeight: true
-        text: uplink?">":"<"
-        color: uplink?"#fff":"cyan"
-        font.family: font_condenced
-        font.pixelSize: fontSize
-    }*/
+    spacing: Style.spacing/2
 
     function get_color(text)
     {
@@ -51,12 +44,6 @@ RowLayout {
         if(text.startsWith("$")) return "#ffa"
         if(text.startsWith("+")) return "#aaf"
         if(text.endsWith(":")) return "#afa"
-        /*switch(type){
-        case Protocols.PACKET: return uplink?"#aaa":"cyan"
-        case Protocols.NMT: return "#faa"
-        case Protocols.PID: return "#ffa"
-        case Protocols.GUID: return "#a88"
-        }*/
         return "#aaa"
     }
     function get_text(text)

@@ -31,7 +31,7 @@ RowLayout {
     readonly property var f_mode: mandala.cmd.proc.mode
 
 
-    property int buttonHeight: root.buttonHeight*0.9
+    property real buttonHeight: root.buttonHeight*0.9
 
     SwipeView {
         id: pagesView
@@ -66,7 +66,7 @@ RowLayout {
         Layout.alignment: Qt.AlignTop
         implicitHeight: contentHeight
         implicitWidth: buttonHeight
-        spacing: 3
+        spacing: buttonSpacing
         clip: true
         model: pagesModel
         delegate: TextButton {
@@ -91,5 +91,6 @@ RowLayout {
         id: pagesModel
         ListElement { name: "UV"; mode: "UAV" }
         ListElement { name: "RC"; mode: "EMG,RPV" }
+        ListElement { name: "FL"; mode: "" }
     }
 }

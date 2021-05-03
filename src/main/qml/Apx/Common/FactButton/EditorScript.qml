@@ -80,7 +80,7 @@ Dialog {
                 text: value
                 textFormat: TextEdit.PlainText
                 wrapMode: Text.NoWrap
-                font.family: font_fixed
+                font: apx.font_fixed(Style.fontSize)
                 Material.background: "#000"
             }
         }

@@ -32,10 +32,11 @@ RowLayout {
 
     readonly property APX.Vehicle vehicle: apx.vehicles.current
 
+    spacing: Style.spacing*2
+
     //warnings fact
     WarningMessage {
         Layout.fillHeight: true
-        //implicitWidth: height
     }
 
     //widgets
@@ -45,7 +46,9 @@ RowLayout {
     }
     function addWidgetControl(plugin, index){widgetsView.add(plugin,index)}
 
-
+    FactButton {
+        fact: apx.settings.graphics.scale
+    }
 
 
     //tools list from plugins
@@ -75,7 +78,7 @@ RowLayout {
     ListView {
         Layout.fillHeight: true
         implicitWidth: contentWidth
-        spacing: 4
+        spacing: Style.spacing
         orientation: ListView.Horizontal
         model: toolsModel
     }
