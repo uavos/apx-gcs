@@ -30,17 +30,50 @@ RowLayout {
     readonly property int size: 20
 
     // mouse coordinate
-    Text {
-        // Layout.preferredWidth: height*8
-        font: apx.font_narrow(Style.fontSize)
-        color: "#fff"
-        property var c: map.mouseCoordinate
-        text: apx.latToString(c.latitude)+" "+apx.lonToString(c.longitude)
+    Item {
+        id: site
+        Layout.alignment: Qt.AlignBottom
+
+        implicitWidth: loaderSite.implicitWidth
+        implicitHeight: loaderSite.implicitHeight
+        
+        Loader {
+            id: loaderSite
+            anchors.fill: parent
+            asynchronous: true
+            property int viewIndex: 0
+            sourceComponent: components[viewIndex%components.length]
+            property var components: [ siteC, posC ]
+            Component {
+                id: posC
+                Text {
+                    font: apx.font_narrow(Style.fontSize)
+                    color: "#fff"
+                    property var c: map.mouseCoordinate
+                    text: apx.latToString(c.latitude)+" "+apx.lonToString(c.longitude)
+                }
+            }
+            Component {
+                id: siteC
+                Text {
+                    font: apx.font_narrow(Style.fontSize)
+                    color: "#fff"
+                    text: apx.vehicles.current.mission.site
+                }
+            }
+        }
+        ToolTipArea {
+            cursorShape: Qt.PointingHandCursor
+            onClicked: loaderSite.viewIndex=loaderSite.viewIndex+1
+            text: qsTr("Switch views")
+        }
     }
 
     //tiles downloader
     BusyIndicator {
         id: busy
+
+        Layout.alignment: Qt.AlignBottom
 
         property var fact: apx.tools?apx.tools.location:null
         property string text: fact?fact.text:""
@@ -68,6 +101,8 @@ RowLayout {
     }
 
     ValueButton {
+        Layout.alignment: Qt.AlignBottom
+
         size: control.size
         fact: apx.tools?apx.tools.location.offline:null
         showText: false
@@ -82,47 +117,41 @@ RowLayout {
 
     // map scale and distance measure
     Item {
-        implicitWidth: loader.implicitWidth
-        implicitHeight: loader.implicitHeight
+        id: scale
+        Layout.alignment: Qt.AlignBottom
+
+        implicitWidth: loaderScale.implicitWidth
+        implicitHeight: loaderScale.implicitHeight
+        
         Loader {
-            id: loader
+            id: loaderScale
             asynchronous: true
-            property int idx: 0
-            sourceComponent: scale
+            property int viewIndex: 0
+            sourceComponent: components[viewIndex%components.length]
+            property var components: [ scaleC, distC ]
+
             Component {
-                id: scale
+                id: scaleC
                 MapScale { width: 100 }
             }
 
             Component {
-                id: dist
+                id: distC
                 MapDistance { width: 100 }
-            }
-            function advance()
-            {
-                active=false
-                switch(++idx){
-                default:
-                    sourceComponent=scale
-                    idx=0
-                    break
-                case 1:
-                    sourceComponent=dist
-                    break
-                }
-                active=true
             }
         }
         ToolTipArea {
             cursorShape: Qt.PointingHandCursor
-            onClicked: loader.advance()
-            text: qsTr("Distance measurement tool")
+            onClicked: loaderScale.viewIndex=loaderScale.viewIndex+1
+            text: qsTr("Switch views")
         }
     }
 
     // travel path
     Item {
         id: pathItem
+        Layout.alignment: Qt.AlignBottom
+
         implicitHeight: control.size
         implicitWidth: Math.max(icon.width+textItem.implicitWidth, height*4)
 
@@ -153,8 +182,5 @@ RowLayout {
             onClicked: apx.vehicles.current.telemetry.rpath.trigger()
         }
     }
-
-
-
 
 }

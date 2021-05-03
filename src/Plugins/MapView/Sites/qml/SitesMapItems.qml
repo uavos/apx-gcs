@@ -53,20 +53,4 @@ MapItemGroup {
             map.showCoordinate(QtPositioning.coordinate(modelData.lat,modelData.lon))
         }
     }
-
-
-    //CURRENT SITE LABEL
-    Text {
-        id: siteText
-        parent: map //ui.main
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: map.height*0.15
-        visible: text && ui.missionPlanner.showNavigation
-        font.pointSize: Style.buttonSize
-        font.bold: true
-        color: "#fff"
-        text: apx.vehicles.current.mission.site
-    }
-
 }
