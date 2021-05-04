@@ -1,3 +1,24 @@
+# [APX Ground Control v11.0.186](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.186) (05/04/21)
+
+> Branch: `main`\
+> Date: `05/04/21 17:41:59`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/810d295fafd4f5180bf7acea4f162f2bdf78ea47...abc3f9e8ff6d3fe1a27bb3ac8909f2605e9b131d)
+
+## New Features
+* flyTo JS helper and coordinate type conversion
+* docs update
+
+## Bug Fixes
+* flyHere command fix
+* xplane crash on exit with APX plugin loaded (closes [`13`](https://github.com/uavos/apx-gcs/issues/13))
+* docs link in HTTP service
+* GCS crashes when connecting joystick
+* telemetry byte values unpack handling
+
+## Performance Enhancements
+* UI fonts and scale factors refactoring
+* JS calculations optimizations
+
 # [APX Ground Control v11.0.156](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.156) (04/20/21)
 
 > Branch: `main`\
