@@ -46,9 +46,9 @@ RowLayout {
     }
     function addWidgetControl(plugin, index){widgetsView.add(plugin,index)}
 
-    FactButton {
-        fact: apx.settings.graphics.scale
-    }
+    // FactButton {
+    //     fact: apx.settings.graphics.scale
+    // }
 
 
     //tools list from plugins

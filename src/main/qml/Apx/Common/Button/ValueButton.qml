@@ -36,7 +36,7 @@ ActionButton {
 
     showIcon: false
 
-    textScale: 1
+    textScale: 0.8
 
     property bool showValue: true
 
@@ -61,8 +61,8 @@ ActionButton {
     property real valueScale: 1
     property real valueSize: height * valueScale
 
-    font: apx.font_narrow(textSize)
-
+    textBold: false
+    
     readonly property APX.Vehicle vehicle: apx.vehicles.current
 
     color: {

@@ -33,10 +33,10 @@ public:
     MaterialIcon(const QString &name, const QColor &color = QColor(Qt::white));
 
     static QString getChar(const QString &name);
+    static void updateMap();
 
 private:
     static QHash<QString, QString> map;
-    static void updateMap();
 
     QIcon icon(const QString &name, const QColor &color) const;
 };

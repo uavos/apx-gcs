@@ -134,9 +134,10 @@ QVariant Fact::data(int col, int role) const
     case Qt::BackgroundRole:
         return QVariant();
     case Qt::FontRole: {
-        QFont font(QFontDatabase::systemFont(QFontDatabase::GeneralFont)); //qApp->font());
+        // QFont font(QFontDatabase::systemFont(QFontDatabase::GeneralFont));
+        QFont font(QGuiApplication::font());
         if (col == Fact::FACT_MODEL_COLUMN_DESCR)
-            return QVariant();
+            return font;
         if (treeType() && col == Fact::FACT_MODEL_COLUMN_NAME)
             font.setBold(true);
         return font;

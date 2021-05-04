@@ -46,7 +46,7 @@ StatusFlag {
     type_warning: CleanText.Normal
     show: true
 
-    narrow: true
+    bold: false
 
     blinkingFG: false
 
@@ -56,7 +56,7 @@ StatusFlag {
             Layout.fillHeight: true
             verticalAlignment: Text.AlignTop
             text: control.title
-            font: apx.font_narrow(Math.max(Math.min(12,control.height), control.height*0.6))
+            font: apx.font_narrow(control.height*0.7,true) //Math.max(Math.min(12,control.height), control.height*0.6))
             color: "#80DEEA"
         }
     ]

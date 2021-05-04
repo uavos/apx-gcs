@@ -33,13 +33,13 @@ ListView {
 
     signal filter(var uid, var exclude)
 
-    spacing: Style.spacing
+    spacing: Style.spacing/2
 
     model: plugin_fact.uidModel
 
     delegate: DatalinkInspectorItem {
         text: model.blocks.join(' ')
-        size: Style.buttonSize*0.5
+        size: Style.buttonSize*0.4
         //itemColor: model.color
         MouseArea {
             anchors.fill: parent

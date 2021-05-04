@@ -258,7 +258,7 @@ ActionButton {
                     sourceComponent: Text {
                         id: textItem
                         text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
-                        font: apx.font_condenced(valueSize)
+                        font: apx.font_narrow(valueSize)
                         color: Material.secondaryTextColor
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight

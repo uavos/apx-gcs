@@ -48,9 +48,7 @@ apx_qrc(
     "${APX_RESOURCES_DIR}"
     SRCS
     "fonts/Apx*.ttf"
-    "fonts/FreeMono*.ttf"
-    "fonts/Ubuntu-C.ttf"
-    "fonts/Bierahinia.ttf"
+    "fonts/Roboto*.ttf"
     "styles/style-dark.css"
     "icons/material-icons.*"
     "icons/uavos-logo.*"

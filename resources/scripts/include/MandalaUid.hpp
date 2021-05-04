@@ -1292,16 +1292,16 @@ namespace cmd
         };
         namespace nmt
         {
-            enum { search = 0x781 };
-            enum { ident = 0x782 };
-            enum { file = 0x783 };
-            enum { reboot = 0x784 };
-            enum { msg = 0x785 };
-            enum { upd = 0x786 };
-            enum { mod = 0x787 };
-            enum { usr = 0x788 };
-            enum { tree = 0x789 };
-            enum { debug = 0x78a };
+            enum { search = 0x7f1 };
+            enum { ident = 0x7f2 };
+            enum { file = 0x7f3 };
+            enum { reboot = 0x7f4 };
+            enum { msg = 0x7f5 };
+            enum { upd = 0x7f6 };
+            enum { mod = 0x7f7 };
+            enum { usr = 0x7f8 };
+            enum { tree = 0x7f9 };
+            enum { debug = 0x7fa };
         };
     };
 };

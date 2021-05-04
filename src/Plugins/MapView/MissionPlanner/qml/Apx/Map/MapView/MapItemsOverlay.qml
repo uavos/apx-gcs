@@ -23,11 +23,12 @@ import QtQuick          2.12
 import QtLocation       5.12
 import QtPositioning    5.12
 
+import Apx.Common 1.0
 
 MapBase {
     id: map
 
-    readonly property real fontSize: Qt.application.font.pointSize*ui.scale
+    readonly property real fontSize: Style.fontSize
 
     property var mapPlugin: apx.tools.missionplanner
 

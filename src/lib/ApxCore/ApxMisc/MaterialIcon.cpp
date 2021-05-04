@@ -65,11 +65,6 @@ QString MaterialIcon::getChar(const QString &name)
 void MaterialIcon::updateMap()
 {
     QFile res;
-    res.setFileName(":/icons/material-icons.ttf");
-    if (res.open(QIODevice::ReadOnly)) {
-        QFontDatabase::addApplicationFontFromData(res.readAll());
-        res.close();
-    }
     res.setFileName(":/icons/material-icons.json");
     if (res.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(res.readAll());

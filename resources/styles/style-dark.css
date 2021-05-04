@@ -161,12 +161,12 @@ QComboBox QAbstractItemView {
 
 QPushButton, QToolButton {
     min-height: 10px;
-    max-height: 20px;
+    max-height: 18px;
     border: 1px solid #465158;
-    margin: 1px;
+    margin: 0px;
     border-radius: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 0px;
+    padding-right: 0px;
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #777, stop: 1 #333);
 }
 QPushButton:checked, QToolButton:checked {
@@ -269,11 +269,6 @@ CompassFrame QLabel {
     font-size: 16pt;
 }
 
-FlightPlan QLabel {
-    color: #fff;
-    /*font-size: 11pt;*/
-}
-
 ClickableLabel:hover {
     background-color: #555;
 }
@@ -307,10 +302,6 @@ QLabel:disabled {
     border-color: #444;
 }
 
-QMessageBox QLabel {
-    font-size: 14pt;
-}
-
 QMessageBox {
     min-width: 400px;
     min-height: 300px;
@@ -319,7 +310,6 @@ QMessageBox {
 QInputDialog QPlainTextEdit {
     min-width: 600px;
     min-height: 300px;
-    font-size: 12pt;
 }
 
 QLineEdit {
@@ -370,13 +360,6 @@ QMenuBar::item:selected {
 QMenuBar::item:disabled {
     border: none;
     background: none;
-}
-
-QPlainTextEdit {
-    border: 1px solid #777;
-    border-radius: 2px;
-    font-family: "Monospace";
-    /*font: large;*/
 }
 
 QProgressBar {
@@ -555,11 +538,6 @@ QTabWidget::pane {
     border-radius: 2px;
     position: absolute;
     top: -0.5em;
-}
-
-QToolButton {
-    padding-left: 3px;
-    padding-right: 3px;
 }
 
 QToolTip {

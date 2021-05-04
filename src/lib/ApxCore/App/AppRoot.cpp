@@ -376,18 +376,22 @@ QGeoCoordinate AppRoot::coordinate(double lat, double lon, double alt)
     return QGeoCoordinate(lat, lon, alt);
 }
 
-QFont AppRoot::font(QString family, qreal size, bool shaping)
+QFont AppRoot::get_font(QString family, qreal size, bool bold, bool shaping)
 {
-    QFont f(family);
-    f.setPointSizeF(size < 5 ? 5 : size);
-    f.setKerning(false);
+    if (size < 5)
+        size = 5;
 
+    QFont f(family);
+    f.setPointSizeF(size);
+    f.setBold(bold);
+
+    f.setKerning(false);
     f.setHintingPreference(QFont::PreferNoHinting);
 
     int s{};
     s |= QFont::PreferMatch;
-    s |= QFont::NoAntialias;
-    s |= QFont::NoSubpixelAntialias;
+    // s |= QFont::NoAntialias;
+    // s |= QFont::NoSubpixelAntialias;
     s |= QFont::NoFontMerging;
     s |= QFont::ForceOutline;
     if (!shaping)
@@ -397,21 +401,24 @@ QFont AppRoot::font(QString family, qreal size, bool shaping)
     return f;
 }
 
-QFont AppRoot::font_narrow(qreal size)
+QFont AppRoot::font(qreal size, bool bold)
 {
-    return font("ApxNarrow", size * 1.05);
+    return get_font("Roboto", size, bold);
 }
 
-QFont AppRoot::font_icons(qreal size)
+QFont AppRoot::font_narrow(qreal size, bool bold)
 {
-    return font("Material Design Icons", size, true);
+    return get_font("ApxNarrow", size, bold);
 }
 
 QFont AppRoot::font_condenced(qreal size, bool bold)
 {
-    auto f = font("Ubuntu Condensed", size);
-    f.setBold(bold);
-    return f;
+    return get_font("Roboto Condensed", size, bold);
+}
+
+QFont AppRoot::font_icons(qreal size)
+{
+    return get_font("Material Design Icons", size, false, true);
 }
 
 QFont AppRoot::font_fixed(qreal size)

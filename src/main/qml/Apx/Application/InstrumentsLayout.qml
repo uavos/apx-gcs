@@ -174,9 +174,9 @@ RowLayout {
             ListView {
                 id: listView
                 Layout.alignment: Qt.AlignRight
-                Layout.margins: 3
+                Layout.margins: Style.spacing
                 implicitWidth: contentWidth
-                spacing: 3
+                spacing: Style.spacing
                 model: pluginsModel
                 visible: count>1
                 orientation: ListView.Horizontal

@@ -22,6 +22,7 @@
 #include "FactListModel.h"
 #include "Fact.h"
 
+#include <App/App.h>
 #include <algorithm>
 //=============================================================================
 FactListModel::FactListModel(Fact *fact)
@@ -77,7 +78,12 @@ QVariant FactListModel::data(const QModelIndex &index, int role) const
         return QVariant();
     Fact *item = qobject_cast<Fact *>(_items.at(index.row()));
     //if(!item)qDebug()<<"INVALID"<<fact;
-    return item ? item->data(index.column(), role) : QVariant();
+    QVariant ret = item ? item->data(index.column(), role) : QVariant();
+    if (role == Qt::FontRole) {
+        auto font = ret.value<QFont>();
+        font.setPointSizeF(App::font().pointSizeF());
+    }
+    return ret;
 }
 //=============================================================================
 bool FactListModel::setData(const QModelIndex &index, const QVariant &value, int role)

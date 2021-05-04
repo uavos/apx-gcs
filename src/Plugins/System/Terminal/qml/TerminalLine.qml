@@ -64,8 +64,7 @@ RowLayout {
         Layout.fillWidth: true
         focus: false
         color: control.color
-        font.bold: control.bold
-        font.pointSize: lineSize
+        font: apx.font(lineSize,control.bold)
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
@@ -75,7 +74,7 @@ RowLayout {
         visible: text //&& control.x==0
         text: control.subsystem
         color: "#aaa"
-        font: apx.font_condenced(lineSize*0.9)
+        font: apx.font_narrow(lineSize*0.9)
 
         background: Rectangle {
             border.width: 0

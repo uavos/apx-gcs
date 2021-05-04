@@ -44,7 +44,7 @@ Item {
             PropertyChanges {
                 target: frame
                 visible: plugin.active
-                implicitWidth: 300
+                implicitWidth: Style.buttonSize*8
                 implicitHeight: implicitWidth*3/4
             }
             PropertyChanges {

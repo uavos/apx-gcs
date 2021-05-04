@@ -401,36 +401,41 @@ void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
     QFile res;
-    res.setFileName(":/fonts/ApxNarrow.ttf");
+    res.setFileName(":/fonts/ApxNarrow-Regular.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/ApxCondenced.ttf");
+    res.setFileName(":/fonts/ApxNarrow-Bold.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/FreeMono.ttf");
+    res.setFileName(":/fonts/Roboto-Regular.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/FreeMonoBold.ttf");
+    res.setFileName(":/fonts/Roboto-Bold.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/Ubuntu-C.ttf");
+    res.setFileName(":/fonts/RobotoCondensed-Regular.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/Bierahinia.ttf");
+    res.setFileName(":/icons/material-icons.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
+
+    setFont(QFont("Roboto"));
+
+    connect(this, &App::scaleChanged, this, &App::updateAppFont);
+    updateAppFont();
 }
 bool App::isFixedPitch(const QFont &font)
 {
@@ -440,25 +445,43 @@ bool App::isFixedPitch(const QFont &font)
 }
 QFont App::getMonospaceFont()
 {
-    QFont font("FreeMono");
-    if (isFixedPitch(font))
-        return font;
-    font.setFamily("Menlo");
-    if (isFixedPitch(font))
-        return font;
+    QFont font(QGuiApplication::font());
     font.setStyleHint(QFont::Monospace);
-    if (isFixedPitch(font))
-        return font;
-    font.setStyleHint(QFont::TypeWriter);
-    if (isFixedPitch(font))
-        return font;
-    font.setFamily("monospace");
-    if (isFixedPitch(font))
-        return font;
-    font.setFamily("courier");
-    if (isFixedPitch(font))
-        return font;
+    font.setFixedPitch(true);
+    font.setKerning(false);
+
+    do {
+#ifdef Q_OS_MAC
+        font.setFamily("Menlo");
+#else
+        font.setFamily("FreeMono");
+#endif
+        if (isFixedPitch(font))
+            break;
+        font.setStyleHint(QFont::Monospace);
+        if (isFixedPitch(font))
+            break;
+        font.setStyleHint(QFont::TypeWriter);
+        if (isFixedPitch(font))
+            break;
+        font.setFamily("monospace");
+        if (isFixedPitch(font))
+            break;
+        font.setFamily("courier");
+        if (isFixedPitch(font))
+            break;
+        font.setFamily("unexistent");
+        if (isFixedPitch(font))
+            break;
+        return QGuiApplication::font();
+    } while (0);
     return font;
+}
+void App::updateAppFont()
+{
+    auto f = font();
+    f.setPointSizeF(12 * scale());
+    setFont(f);
 }
 //=============================================================================
 QString App::materialIconChar(const QString &name)

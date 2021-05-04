@@ -61,8 +61,9 @@ ValueButton {
             if(implicitWidth<defaultWidth){
                 implicitWidth=Qt.binding(function(){return defaultWidth})
             }
-            if(model && model.minimumWidth<defaultWidth)
+            if(model && model.minimumWidth<defaultWidth){
                 model.minimumWidth=defaultWidth
+            }
         }else{
             if(implicitWidth<defaultWidth){
                 implicitWidth=defaultWidth

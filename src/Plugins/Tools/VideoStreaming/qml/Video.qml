@@ -37,7 +37,7 @@ Control {
 
     focus: true
 
-    implicitWidth: 400
+    implicitWidth: Style.buttonSize*10
     implicitHeight: implicitWidth*3/4
 
     Component.onCompleted: {
@@ -101,7 +101,7 @@ Control {
         ColumnLayout {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
-            anchors.margins: 3
+            anchors.margins: Style.spacing
             spacing: 5
             IconButton {
                 visible: running

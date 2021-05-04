@@ -31,15 +31,15 @@ Rectangle {
 
     property var plugin_fact: apx.tools.datalinkinspector
 
-    implicitWidth: 800
-    implicitHeight: 300
+    implicitWidth: Style.buttonSize*25
+    implicitHeight: Style.buttonSize*10
 
     border.width: 0
     color: "#000"
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 3
+        anchors.margins: Style.spacing
 
         DatalinkInspectorView {
             id: _view

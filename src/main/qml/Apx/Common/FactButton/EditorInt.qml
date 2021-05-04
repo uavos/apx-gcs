@@ -45,7 +45,7 @@ SpinBox {
                     ? precision
                     : 1
 
-    font: apx.font_condenced(control.valueSize)
+    font: apx.font_narrow(control.valueSize)
 
     up.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
     down.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()

@@ -38,7 +38,7 @@ Column {
 
 
     property double txtHeight
-    spacing: 4
+    spacing: txtHeight/8
     //anchors.fill: parent
     StatusFlag {
         id: flaps
@@ -77,7 +77,7 @@ Column {
         }
     }
     Row {
-        spacing: 1
+        spacing: txtHeight/8
         height: txtHeight
         StatusFlag {
             id: ers_flag
