@@ -49,8 +49,7 @@ Rectangle{
         id: cmdText
         width: parent.width
         color: "white"
-        font.bold: true
-        font.pointSize: lineSize
+        font: apx.font(lineSize,true)
         wrapMode: Text.WrapAnywhere
         selectByMouse: true
         focus: true

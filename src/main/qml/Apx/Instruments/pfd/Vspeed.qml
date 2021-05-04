@@ -36,6 +36,8 @@ ControlArea {
     readonly property var f_vse: mandala.est.air.vse
     readonly property real m_vse: f_vse.value
 
+    readonly property real textSize: vsi_scale.height*0.1
+
 
     mvar: mandala.cmd.rc.thr   //ControlArea
     //speed: 0.8
@@ -146,10 +148,10 @@ ControlArea {
         anchors.horizontalCenter: vsi_scale.right
         anchors.horizontalCenterOffset: -vsi_scale.width*0.1
         anchors.top: vsi_scale.bottom
-        anchors.topMargin: -12
+        anchors.topMargin: -textSize/2
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        font: apx.font_narrow(vsi_scale.height*0.1)
+        font: apx.font_narrow(textSize)
     }
 
     Text {
@@ -158,7 +160,7 @@ ControlArea {
         color: "white"
         anchors.horizontalCenter: vsi_scale.right
         anchors.bottom: vsi_scale.top
-        anchors.bottomMargin: -12
+        anchors.bottomMargin: -textSize/2
         anchors.horizontalCenterOffset: vsi_text_low.anchors.horizontalCenterOffset
         font: vsi_text_low.font
         horizontalAlignment: Text.AlignHCenter

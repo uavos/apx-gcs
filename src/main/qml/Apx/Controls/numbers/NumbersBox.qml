@@ -30,10 +30,9 @@ Rectangle {
     id: control
     border.width: 0
     color: "#000"
-    implicitWidth: list.implicitWidth+margins*2
+    implicitWidth: list.implicitWidth
     implicitHeight: 200
 
-    property real margins: Style.spacing
 
     property real itemSize: Style.buttonSize*0.7
     property bool showEditButton: true
@@ -58,7 +57,6 @@ Rectangle {
     ListView {
         id: list
         anchors.fill: parent
-        anchors.margins: control.margins
         implicitWidth: contentItem.childrenRect.width //numbersModel.minimumWidth
         clip: true
         spacing: 0

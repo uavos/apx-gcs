@@ -47,7 +47,7 @@ Rectangle {
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
 
-        font: apx.font_condenced(control.valueSize)
+        font: apx.font_narrow(control.valueSize)
 
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text

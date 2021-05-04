@@ -38,6 +38,7 @@ ButtonBase {
 
     property real textScale: 0.7
     property real textSize: Math.max(7, control.height * textScale)
+    property bool textBold: false
 
     property real lineHeight: 1
 
@@ -45,8 +46,8 @@ ButtonBase {
         id: _textC
         Text {
             visible: showText && text
-            font: apx.font_narrow(textSize)
             lineHeight: control.lineHeight
+            font: apx.font_narrow(textSize,textBold)
             text: control.text
             color: control.currentTextColor
 

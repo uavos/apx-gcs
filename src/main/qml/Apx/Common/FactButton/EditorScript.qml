@@ -22,8 +22,6 @@
 import QtQuick 2.5;
 import QtQuick.Layouts 1.3
 
-import Qt.labs.settings 1.0
-import QtQml.Models 2.11
 import QtQuick.Controls 2.4
 import QtQuick.Controls.Material 2.4
 
@@ -64,29 +62,21 @@ Dialog {
 
     property alias editedText: textArea.text
 
-    //contentWidth: layout.implicitWidth
-    contentHeight: layout.implicitHeight
-    contentItem:
-    ColumnLayout {
-        id: layout
-        ScrollView {
-            Layout.topMargin: header.height
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            TextArea {
-                id: textArea
-                selectByMouse: true
-                selectByKeyboard: true
-                text: value
-                textFormat: TextEdit.PlainText
-                wrapMode: Text.NoWrap
-                font: apx.font_fixed(Style.fontSize)
-                Material.background: "#000"
+    contentItem: ScrollView {
+        implicitHeight: Style.buttonSize*25
+        implicitWidth: Style.buttonSize*25
+        TextArea {
+            id: textArea
+            selectByMouse: true
+            selectByKeyboard: true
+            text: value
+            textFormat: TextEdit.PlainText
+            wrapMode: Text.NoWrap
+            font: apx.font_fixed(Style.buttonSize*0.4)
+            background: Rectangle {
+                border.color: "#aaa"
+                color: "#000"
             }
-        }
-        Item {
-            Layout.fillWidth: true
-            Layout.bottomMargin: footer.height
         }
     }
 

@@ -110,7 +110,7 @@ ControlArea {
                         styleColor: "transparent"
 
                         color: "#A0FFFFFF"
-                        font: apx.font_condenced(speed_window.num2scaleHeight / 1.5,true)
+                        font: apx.font_narrow(speed_window.num2scaleHeight / 1.5,true)
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                     }

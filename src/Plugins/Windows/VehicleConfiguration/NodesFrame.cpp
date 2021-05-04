@@ -43,6 +43,7 @@ NodesFrame::NodesFrame(QWidget *parent)
 
     vlayout->addWidget(toolBar);
     lbUavName = new QLabel(this);
+    lbUavName->setFont(App::font());
     vlayout->addWidget(lbUavName);
 
     treeWidget = new FactTreeWidget(AppRoot::instance(), true, false, this);

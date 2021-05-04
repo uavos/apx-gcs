@@ -71,7 +71,7 @@ Item {
     Loader {
         active: control.loaded && showNumbers
         anchors.fill: interactive?(loaded && apx.tools.videostreaming.tune.view_mode.value>0?control:videoFrame):control
-        anchors.margins: 10
+        anchors.margins: Style.buttonSize/2
         sourceComponent: OverlayNumbers {
             id: numbers
             interactive: control.interactive

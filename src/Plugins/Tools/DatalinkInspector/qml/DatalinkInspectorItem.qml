@@ -27,7 +27,7 @@ import Apx.Common 1.0
 Label {
     id: item
 
-    property real size: Style.buttonSize*0.4
+    property real size: Style.buttonSize*0.35
 
     color: invert?itemColor:"#000"
     font: apx.font_condenced(size)

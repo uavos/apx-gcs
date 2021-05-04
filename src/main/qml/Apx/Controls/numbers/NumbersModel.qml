@@ -27,14 +27,15 @@ import QtQuick.Controls 2.4
 import QtQuick.Controls.Material 2.4
 
 import Apx.Menu 1.0
+import Apx.Common 1.0
 
 import APX.Facts 1.0
 
 ObjectModel {
     id: model
 
-    property int minimumWidth: 0
-    property int itemHeight: 32
+    property real minimumWidth: 0
+    property real itemHeight: Style.buttonSize
 
     property bool light: false
     property bool fixedWidth: false
@@ -74,7 +75,7 @@ ObjectModel {
     {
         clearObjList()
         model.clear()
-        model.minimumWidth=itemHeight*4
+        model.minimumWidth=itemHeight*3
         for(var i in list){
             var n=list[i]
             //console.log(n.bind)

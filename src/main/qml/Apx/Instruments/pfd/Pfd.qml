@@ -137,7 +137,7 @@ Item {
         height: parent.height
         anchors.centerIn: parent
 
-        readonly property real txtHeight: apx.limit(left_window.width*0.2,0,parent.height*0.1)
+        readonly property real txtHeight: Math.min(left_window.width*0.21,parent.height*0.102)
         readonly property real flagHeight: txtHeight*0.65
         readonly property real topFramesMargin: (width-width*0.6)*0.6*0.2
 
@@ -234,7 +234,7 @@ Item {
 
             Column {
                 id: modeFlags
-                spacing: 2
+                spacing: pfdScene.txtHeight/8
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
                 anchors.left: parent.left
@@ -356,7 +356,7 @@ Item {
             }
 
             Row {
-                spacing: 2
+                spacing: pfdScene.txtHeight/10
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
                 anchors.right: parent.right
@@ -426,7 +426,7 @@ Item {
                 enabled: m_reg_alt
             }
             Row {
-                spacing: 2
+                spacing: pfdScene.txtHeight/10
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
 
@@ -454,10 +454,10 @@ Item {
 
         Column {
             anchors.top: parent.top
-            anchors.topMargin: 4
+            anchors.topMargin: spacing
             anchors.left: left_window.right
-            anchors.leftMargin: 4
-            spacing: 4
+            anchors.leftMargin: spacing
+            spacing: pfdScene.txtHeight/8
 
             StatusFlag { // pos control mode
                 height: pfdScene.flagHeight
@@ -512,11 +512,11 @@ Item {
         }
         // left bottom central
         Column {
-            spacing: 4
+            spacing: pfdScene.txtHeight/8
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 2
+            anchors.bottomMargin: spacing
             anchors.left: left_window.right
-            anchors.leftMargin: 4
+            anchors.leftMargin: spacing
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_ktas
@@ -543,7 +543,7 @@ Item {
 
         // right bottom central
         Column {
-            spacing: 4
+            spacing: pfdScene.txtHeight/8
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 2
             anchors.right: right_window.left
@@ -559,9 +559,9 @@ Item {
 
         // central
         Column {
-            spacing: 4
-            anchors.bottom: parent.verticalCenter
-            anchors.bottomMargin: 2
+            spacing: pfdScene.txtHeight/8
+            anchors.verticalCenter: parent.verticalCenter
+            // anchors.bottomMargin: 2
             anchors.horizontalCenter: horizon.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             StatusFlag {

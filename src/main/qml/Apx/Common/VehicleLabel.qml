@@ -115,20 +115,19 @@ Item {
         id: textLayout
         spacing: 0
         Label {
-            Layout.minimumWidth: font.pointSize
+            Layout.minimumWidth: control.fontSize
             horizontalAlignment: Text.AlignLeft
-            font.pointSize: control.fontSize
-            font.bold: true
+            font: apx.font(control.fontSize,true)
             text: callsign
             color: colorFG
         }
         Label {
             id: infoText
             Layout.fillHeight: true
-            Layout.minimumWidth: font.pointSize
+            Layout.minimumWidth: control.fontSizeInfo
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font.pointSize: control.fontSizeInfo
+            font: apx.font(control.fontSizeInfo)
             text: vehicle.info
             color: colorFG
 

@@ -64,10 +64,9 @@ Rectangle {
 
     border.width: 0
     color: "#000"
-    implicitWidth: itemHeight*4
+    implicitWidth: itemHeight*3
     implicitHeight: layout.implicitHeight
 
-    readonly property int margins: 3
     readonly property real itemHeight: height/15//*ui.scale
 
     property bool isLanding:
@@ -79,7 +78,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: 3
+        anchors.margins: Style.spacing
         property int v: apx.progress
         to: 100
         value: v
@@ -91,11 +90,11 @@ Rectangle {
     ColumnLayout{
         id: layout
         width: parent.width
+        spacing: 0
         ColumnLayout {
             spacing: 0
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: Style.spacing
 
             ValueRss {
                 Layout.fillWidth: true

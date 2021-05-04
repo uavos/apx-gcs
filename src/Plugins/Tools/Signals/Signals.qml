@@ -56,7 +56,7 @@ Rectangle {
         RowLayout {
             id: bottomArea
             Layout.fillWidth: true
-            Layout.margins: 3
+            Layout.margins: Style.spacing
             spacing: 3
             Layout.maximumHeight: 24*ui.scale
             SignalButton {

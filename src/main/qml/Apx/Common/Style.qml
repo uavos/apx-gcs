@@ -28,7 +28,7 @@ QtObject {
     readonly property real scale: ui.scale
 
     readonly property real minButtonSize: 20
-    readonly property real scaledButtonSize: 24 * scale
+    readonly property real scaledButtonSize: 26 * scale
 
     readonly property real widthRatio: 12
 

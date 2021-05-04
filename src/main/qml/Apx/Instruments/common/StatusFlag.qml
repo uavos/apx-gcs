@@ -37,9 +37,7 @@ BlinkingText {
     property int type_default: CleanText.White
     property int type_warning: CleanText.Yellow
 
-    narrow: false
-
-    width: height/0.35
+    width: height*2.2
 
     show: ui.test || status >= status_show
     blinking: failure

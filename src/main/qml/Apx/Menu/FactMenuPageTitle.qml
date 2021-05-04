@@ -56,7 +56,7 @@ Item {
         anchors.right: showBtnClose?btnClose.left:parent.right
         anchors.rightMargin: (statusText.truncated?statusText.width:statusText.implicitWidth)+Style.spacing*2
         anchors.topMargin: -Style.spacing*2
-        font: apx.font_condenced(parent.height*0.35)
+        font: apx.font_narrow(parent.height*0.35)
         color: "#aaa"
         visible: text!=""
         text: pageDescr

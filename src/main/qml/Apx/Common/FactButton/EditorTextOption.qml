@@ -35,7 +35,7 @@ EditorOption {
         id: textInput
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignRight
-        font: apx.font_condenced(control.valueSize)
+        font: apx.font_narrow(control.valueSize)
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text
         selectByMouse: true

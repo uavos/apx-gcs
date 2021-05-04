@@ -49,10 +49,10 @@ Item {
     property bool interactive: false
     property bool alive: true
 
-    property int numberItemSize: Math.min(22,Math.max(12,height/15))
-    property int overlayItemSize: numberItemSize
+    property real numberItemSize: Math.min(22,Math.max(12,height/15))
+    property real overlayItemSize: numberItemSize
 
-    property int margins: Math.max(1,numberItemSize*0.1)
+    property real margins: Math.max(1,numberItemSize*0.1)
 
     Component.onCompleted: {
         if(!interactive)return
@@ -95,7 +95,6 @@ Item {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.margins: control.margins
-        margins: 0
         showEditButton: false
         itemSize: numberItemSize
         //model.minimumWidth: 500

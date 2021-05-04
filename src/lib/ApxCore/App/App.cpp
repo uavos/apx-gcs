@@ -109,9 +109,6 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     appInstances = new AppInstances(this);
 
     //styles
-    updateFontSize();
-    connect(this, &App::scaleChanged, this, &App::updateFontSize);
-
     QQuickStyle::setStyle("Material");
     QFile styleSheet(":styles/style-dark.css");
     if (styleSheet.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -404,36 +401,41 @@ void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
     QFile res;
-    res.setFileName(":/fonts/ApxNarrow.ttf");
+    res.setFileName(":/fonts/ApxNarrow-Regular.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/ApxCondenced.ttf");
+    res.setFileName(":/fonts/ApxNarrow-Bold.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/FreeMono.ttf");
+    res.setFileName(":/fonts/Roboto-Regular.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/FreeMonoBold.ttf");
+    res.setFileName(":/fonts/Roboto-Bold.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/Ubuntu-C.ttf");
+    res.setFileName(":/fonts/RobotoCondensed-Regular.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
-    res.setFileName(":/fonts/Bierahinia.ttf");
+    res.setFileName(":/icons/material-icons.ttf");
     if (res.open(QIODevice::ReadOnly)) {
         QFontDatabase::addApplicationFontFromData(res.readAll());
         res.close();
     }
+
+    setFont(QFont("Roboto"));
+
+    connect(this, &App::scaleChanged, this, &App::updateAppFont);
+    updateAppFont();
 }
 bool App::isFixedPitch(const QFont &font)
 {
@@ -454,7 +456,6 @@ QFont App::getMonospaceFont()
 #else
         font.setFamily("FreeMono");
 #endif
-        // font.setFamily("unexistent");
         if (isFixedPitch(font))
             break;
         font.setStyleHint(QFont::Monospace);
@@ -469,14 +470,17 @@ QFont App::getMonospaceFont()
         font.setFamily("courier");
         if (isFixedPitch(font))
             break;
+        font.setFamily("unexistent");
+        if (isFixedPitch(font))
+            break;
         return QGuiApplication::font();
     } while (0);
     return font;
 }
-void App::updateFontSize()
+void App::updateAppFont()
 {
-    QFont f(App::font());
-    f.setPointSizeF(10 * scale());
+    auto f = font();
+    f.setPointSizeF(12 * scale());
     setFont(f);
 }
 //=============================================================================

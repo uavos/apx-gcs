@@ -46,7 +46,7 @@ Item {
 
     property string displayText: (control.prefix ? control.prefix + " " + control.text : control.text).toUpperCase()
 
-    property bool narrow: true
+    property bool bold: true
 
     property bool show: true
     property bool frame: false
@@ -112,9 +112,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: control.displayText
-            font: control.narrow
-                ? apx.font_narrow(control.height)
-                : apx.font_condenced(control.height,true)
+            font: apx.font_narrow(control.height, control.bold)
             color: textColor
         }
     }

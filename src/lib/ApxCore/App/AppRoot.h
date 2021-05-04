@@ -25,6 +25,7 @@
 #include "AppSettings.h"
 #include <Fact/Fact.h>
 
+#include <QFont>
 #include <QGeoCoordinate>
 
 class AppRoot : public Fact
@@ -78,9 +79,13 @@ public:
 
     Q_INVOKABLE static QGeoCoordinate coordinate(double lat, double lon, double alt = 0);
 
-    Q_INVOKABLE static QFont font(QString family, qreal size, bool shaping = false);
-    Q_INVOKABLE static QFont font_narrow(qreal size);
+    Q_INVOKABLE static QFont get_font(QString family,
+                                      qreal size,
+                                      bool bold = false,
+                                      bool shaping = false);
     Q_INVOKABLE static QFont font_icons(qreal size);
+    Q_INVOKABLE static QFont font(qreal size, bool bold = false);
+    Q_INVOKABLE static QFont font_narrow(qreal size, bool bold = false);
     Q_INVOKABLE static QFont font_condenced(qreal size, bool bold = false);
     Q_INVOKABLE static QFont font_fixed(qreal size);
 
