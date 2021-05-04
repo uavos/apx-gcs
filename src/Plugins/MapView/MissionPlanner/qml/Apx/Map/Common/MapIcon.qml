@@ -33,7 +33,7 @@ MapQuickItem {
     property alias color: icon.color
     property alias size: icon.size
 
-    visible: coordinate.isValid && coordinate!=QtPositioning.coordinate(0,0,0)
+    visible: coordinateValid
 
     //constants
     anchorPoint.x: icon.implicitWidth/2
@@ -42,5 +42,17 @@ MapQuickItem {
     sourceItem: MaterialIcon {
         id: icon
         size: 32
+    }
+
+
+    property bool coordinateValid: false
+    Connections {
+        target: control
+        function onCoordinateChanged() {
+            if(coordinate.isValid && coordinate!==QtPositioning.coordinate(0,0,0)){
+                enabled=false
+                coordinateValid=true
+            }
+        }
     }
 }

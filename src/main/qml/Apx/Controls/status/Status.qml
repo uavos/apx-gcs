@@ -64,7 +64,7 @@ Rectangle {
 
     border.width: 0
     color: "#000"
-    implicitWidth: itemHeight*3
+    implicitWidth: itemHeight*3.2
     implicitHeight: layout.implicitHeight
 
     readonly property real itemHeight: height/15//*ui.scale
