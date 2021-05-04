@@ -230,11 +230,11 @@ QVariant PApxTelemetry::raw_value(const void *src, mandala::type_id_e type)
     case mandala::type_dword:
         return QVariant::fromValue(xbus::telemetry::raw_value<mandala::dword_t>(src, type));
     case mandala::type_word:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::word_t>(src, type));
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::word_t>(src, type));
     case mandala::type_byte:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::byte_t>(src, type));
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::byte_t>(src, type));
     case mandala::type_option:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::option_t>(src, type));
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::option_t>(src, type));
     }
 }
 
