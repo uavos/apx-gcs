@@ -634,7 +634,7 @@ Item {
             visible: !vehicle.isReplay && !apx.datalink.online
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10)
+            font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10,true)
         }
         Text {
             id: xpdrData
@@ -645,7 +645,7 @@ Item {
             text: vehicle.text
             visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
             horizontalAlignment: Text.AlignHCenter
-            font: apx.font_narrow(parent.height*0.5*0.25)
+            font: apx.font_narrow(parent.height*0.5*0.25,true)
         }
 
         Item{
