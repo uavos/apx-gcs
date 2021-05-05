@@ -135,6 +135,7 @@ Item {
 
             visible: showInfo && !bLOCAL
 
+            // make sure implicit width always increase, never decrease
             onImplicitWidthChanged: {
                 if(vehicle.isIdentified)
                     timerWidthUpdate.start()
