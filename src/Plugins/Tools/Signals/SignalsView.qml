@@ -98,7 +98,7 @@ Item {
             max: 0
             tickCount: 4
             labelsColor: "white"
-            labelsFont.pointSize: Qt.application.font.pointSize * 0.7
+            labelsFont.pixelSize: Qt.application.font.pixelSize * 0.7
             gridLineColor: "#555"
         }
 

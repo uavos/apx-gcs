@@ -204,7 +204,7 @@ ActionButton {
                 visible: showText
                 verticalAlignment: _descrText.visible?Text.AlignTop:Text.AlignVCenter
                 font.family: control.font.family
-                font.pointSize: titleSize
+                font.pixelSize: titleSize
                 text: control.text
                 color: control.enabled?textColor:disabledTextColor
             }

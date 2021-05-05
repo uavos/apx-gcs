@@ -36,7 +36,7 @@ RowLayout {
     Text {
         Layout.fillHeight: true
         verticalAlignment: Qt.AlignVCenter
-        font.pointSize: control.valueSize
+        font.pixelSize: control.valueSize
         color: Material.color(Material.Green)
         text: scText.nativeText
     }
@@ -50,7 +50,7 @@ RowLayout {
         topPadding: 0
         bottomPadding: 0
         //height: MenuStyle.itemSize
-        font.pointSize: control.valueSize
+        font.pixelSize: control.valueSize
         color: _textInput.activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         placeholderText: qsTr("Key Sequence")
         text: fact.text

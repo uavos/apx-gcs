@@ -393,7 +393,7 @@ QFont AppRoot::get_font(QString family, qreal size, bool bold, bool shaping)
         size = 5;
 
     QFont f(family);
-    f.setPointSizeF(size);
+    f.setPixelSize(size);
     f.setBold(bold);
 
     f.setKerning(false);
@@ -435,6 +435,6 @@ QFont AppRoot::font_icons(qreal size)
 QFont AppRoot::font_fixed(qreal size)
 {
     auto f = App::getMonospaceFont();
-    f.setPointSizeF(size < 5 ? 5 : size);
+    f.setPixelSize(size < 5 ? 5 : size);
     return f;
 }

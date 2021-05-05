@@ -480,7 +480,7 @@ QFont App::getMonospaceFont()
 void App::updateAppFont()
 {
     auto f = font();
-    f.setPointSizeF(12 * scale());
+    f.setPixelSize(12 * scale());
     setFont(f);
 }
 //=============================================================================

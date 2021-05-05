@@ -133,7 +133,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         verticalAlignment: Text.AlignVCenter
-                        font.pointSize: Style.fontSize
+                        font.pixelSize: Style.fontSize
                         placeholderText: qsTr("Search")+"..."
                         selectByMouse: true
                         text: listView.model.filter

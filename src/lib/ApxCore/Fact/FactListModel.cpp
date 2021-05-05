@@ -81,7 +81,7 @@ QVariant FactListModel::data(const QModelIndex &index, int role) const
     QVariant ret = item ? item->data(index.column(), role) : QVariant();
     if (role == Qt::FontRole) {
         auto font = ret.value<QFont>();
-        font.setPointSizeF(App::font().pointSizeF());
+        font.setPixelSize(App::font().pixelSize());
     }
     return ret;
 }
