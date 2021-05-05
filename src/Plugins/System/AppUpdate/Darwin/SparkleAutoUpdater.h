@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SPARKLEAUTOUPDATER_H
-#define SPARKLEAUTOUPDATER_H
+#pragma once
 
 #include <QString>
 
@@ -42,5 +41,3 @@ private:
     class Private;
     Private *d;
 };
-
-#endif

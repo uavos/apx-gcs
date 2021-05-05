@@ -22,7 +22,7 @@
 #include "TelemetryReqRead.h"
 #include "Database.h"
 #define MAX_CACHE_RECORDS 25000000
-//=============================================================================
+
 bool DBReqTelemetryFindCache::run(QSqlQuery &query)
 {
     //check for invalid cache (telemetry hash is null)
@@ -69,7 +69,7 @@ bool DBReqTelemetryFindCache::run(QSqlQuery &query)
     emit cacheFound(telemetryID);
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryMakeCache::run(QSqlQuery &query)
 {
     QElapsedTimer t0;
@@ -201,7 +201,7 @@ bool DBReqTelemetryMakeCache::run(QSqlQuery &query)
     }
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryMakeStats::run(QSqlQuery &query)
 {
     QElapsedTimer t0;
@@ -366,7 +366,7 @@ bool DBReqTelemetryMakeStats::run(QSqlQuery &query)
     emit statsUpdated(telemetryID, stats);
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryReadData::run(QSqlQuery &query)
 {
     //QTime t0;
@@ -455,8 +455,7 @@ bool DBReqTelemetryReadData::run(QSqlQuery &query)
 
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 bool DBReqTelemetryReadEvents::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM TelemetryCacheData"
@@ -471,7 +470,7 @@ bool DBReqTelemetryReadEvents::run(QSqlQuery &query)
     emit eventsLoaded(v);
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryReadEvent::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM TelemetryCacheData"
@@ -497,7 +496,7 @@ bool DBReqTelemetryReadEvent::run(QSqlQuery &query)
     emit eventLoaded(query.value("value").toString(), query.value("uid").toString(), false);
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryReadConfData::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM TelemetryCacheData"
@@ -512,8 +511,7 @@ bool DBReqTelemetryReadConfData::run(QSqlQuery &query)
     emit confLoaded(v);
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 bool DBReqTelemetryReadSharedHashId::run(QSqlQuery &query)
 {
     if (hash.isEmpty()) {
@@ -542,7 +540,7 @@ bool DBReqTelemetryReadSharedHashId::run(QSqlQuery &query)
     emit foundID(telemetryID);
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryFindDataHash::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM Telemetry"
@@ -556,7 +554,7 @@ bool DBReqTelemetryFindDataHash::run(QSqlQuery &query)
     emit foundID(telemetryID);
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryDeleteRecord::run(QSqlQuery &query)
 {
     query.prepare("DELETE FROM Telemetry WHERE key=?");
@@ -566,4 +564,3 @@ bool DBReqTelemetryDeleteRecord::run(QSqlQuery &query)
     emit deletedID(telemetryID);
     return true;
 }
-//=============================================================================

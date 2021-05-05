@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef NotifyItem_H
-#define NotifyItem_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class NotifyItem : public Fact
 {
     Q_OBJECT
@@ -42,5 +41,3 @@ private slots:
 signals:
     void archive();
 };
-//=============================================================================
-#endif

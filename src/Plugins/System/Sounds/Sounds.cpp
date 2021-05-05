@@ -23,7 +23,7 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <Fact/Fact.h>
-//=============================================================================
+
 Sounds::Sounds(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -145,7 +145,7 @@ Sounds::Sounds(Fact *parent)
 
     engineChanged();
 }
-//=============================================================================
+
 void Sounds::engineChanged()
 {
     if (tts) {
@@ -263,7 +263,7 @@ void Sounds::enabledChanged()
             effect->stop();
     }
 }
-//=============================================================================
+
 void Sounds::play(QString text)
 {
     //qDebug() << text;
@@ -278,7 +278,7 @@ void Sounds::play(QString text)
     //qDebug()<<"play"<<text;
     say(text.replace(':', ' ').simplified().toLower(), false);
 }
-//=============================================================================
+
 void Sounds::queue(QSound *e)
 {
     if (effect) {
@@ -290,7 +290,7 @@ void Sounds::queue(QSound *e)
     e->play();
     effectTimer.start();
 }
-//=============================================================================
+
 void Sounds::effectTimeout()
 {
     if (effect && (!effect->isFinished())) {
@@ -300,7 +300,7 @@ void Sounds::effectTimeout()
     effect = nullptr;
     sayNext();
 }
-//=============================================================================
+
 void Sounds::say(const QString &text, bool ttsForce)
 {
     //qDebug() << text;
@@ -385,4 +385,3 @@ void Sounds::ttsStateChanged(QTextToSpeech::State state)
         return;
     QTimer::singleShot(0, this, &Sounds::sayNext);
 }
-//=============================================================================

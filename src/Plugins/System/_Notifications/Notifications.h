@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Notifications_H
-#define Notifications_H
-//=============================================================================
+#pragma once
+
 #include <App/AppNotify.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #include <QtCore>
 class NotifyItem;
-//=============================================================================
+
 class Notifications : public Fact
 {
     Q_OBJECT
@@ -46,5 +45,3 @@ private slots:
     void appNotification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
     void updateItems();
 };
-//=============================================================================
-#endif

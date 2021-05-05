@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppInstances_H
-#define AppInstances_H
+#pragma once
+
 #include <QLocalServer>
 #include <QtCore>
-//=============================================================================
+
 class AppInstances : public QObject
 {
     Q_OBJECT
@@ -49,5 +49,3 @@ private slots:
 signals:
     void messageReceived(QString message);
 };
-//=============================================================================
-#endif

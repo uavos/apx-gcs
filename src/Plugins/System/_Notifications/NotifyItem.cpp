@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "NotifyItem.h"
-//=============================================================================
+
 NotifyItem::NotifyItem(Fact *fact, Fact *parent)
     : Fact(parent, QString("notify_%1").arg(fact->name()), "", "")
     , m_fact(fact)
@@ -31,15 +31,13 @@ NotifyItem::NotifyItem(Fact *fact, Fact *parent)
     //connect(fact, &Fact::progressChanged, this, &NotifyItem::updateProgress);
     //updateProgress();
 }
-//=============================================================================
+
 void NotifyItem::factRemoved()
 {
     deleteFact();
 }
-//=============================================================================
+
 void NotifyItem::updateProgress()
 {
     setProgress(m_fact->progress());
 }
-//=============================================================================
-//=============================================================================

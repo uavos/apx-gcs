@@ -27,7 +27,7 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-//=============================================================================
+
 DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const DatalinkPort *port)
     : Fact(port ? parent->f_list : parent,
            port ? "port#" : tr("add"),
@@ -192,7 +192,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     }
     updateStatus();
 }
-//=============================================================================
+
 void DatalinkPort::defaults()
 {
     f_enable->setValue(true);
@@ -220,14 +220,14 @@ void DatalinkPort::defaultUrl()
         break;
     }
 }
-//=============================================================================
+
 void DatalinkPort::removeTriggered()
 {
     setParentFact(nullptr);
     ports->save();
     deleteLater();
 }
-//=============================================================================
+
 void DatalinkPort::updateStatus()
 {
     int type = f_type->value().toInt();
@@ -250,7 +250,7 @@ void DatalinkPort::updateStatus()
     }
     setTitle(st.join(": "));
 }
-//=============================================================================
+
 void DatalinkPort::updateRoutingValue()
 {
     if (_blockUpdateRoutingValue)
@@ -312,7 +312,7 @@ void DatalinkPort::updateConnectionNetwork()
     f_connection->setRxNetwork(rxNetwork);
     f_connection->setTxNetwork(txNetwork);
 }
-//=============================================================================
+
 void DatalinkPort::syncUrlEnum()
 {
     QStringList st;
@@ -339,4 +339,3 @@ void DatalinkPort::syncUrlEnum()
     if (f_url->text().isEmpty() && (!st.isEmpty()))
         f_url->setValue(st.first());
 }
-//=============================================================================

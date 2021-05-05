@@ -145,13 +145,13 @@ void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
                        .arg(dArea[0]->sY, 0, 'f', 2)
                        .arg(dArea[1]->sY, 0, 'f', 2));
 }
-//==============================================================================
+
 void CompassFrame::action_toggled(bool checked)
 {
     if (!checked)
         return;
 }
-//==============================================================================
+
 void CompassFrame::oncheckBoxTraceChange(int val)
 {
     if (val) {
@@ -166,7 +166,7 @@ void CompassFrame::oncheckBoxTraceChange(int val)
         }
     }
 }
-//==============================================================================
+
 void CompassFrame::onbuttonClearPressed()
 {
     for (int i = 0; i < 3; i++) {

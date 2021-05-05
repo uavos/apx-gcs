@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatalinkRemote_H
-#define DatalinkRemote_H
-//=============================================================================
+#pragma once
+
 #include "DatalinkTcpSocket.h"
 #include <QtCore>
 class Datalink;
-//=============================================================================
+
 class DatalinkRemote : public DatalinkTcpSocket
 {
     Q_OBJECT
@@ -57,5 +56,3 @@ private slots:
 public slots:
     void updateTimeout();
 };
-//=============================================================================
-#endif

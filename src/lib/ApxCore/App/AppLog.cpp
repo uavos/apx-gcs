@@ -21,15 +21,15 @@
  */
 #include "AppLog.h"
 #include "AppDirs.h"
-//=============================================================================
+
 APX_LOGGING_CATEGORY(ApplicationLog, "app")
 APX_LOGGING_CATEGORY(ConsoleLog, "console")
-//=============================================================================
+
 static QtMessageHandler messageHandlerChain = nullptr;
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
 AppLog *AppLog::_instance = nullptr;
 QMutex AppLog::_mutex;
-//=============================================================================
+
 AppLog::AppLog(QObject *parent)
     : QObject(parent)
     , appLogStream(nullptr)
@@ -60,7 +60,7 @@ AppLog::AppLog(QObject *parent)
 
     messageHandlerChain = qInstallMessageHandler(messageHandler);
 }
-//============================================================================
+
 AppLog::~AppLog()
 {
     qInstallMessageHandler(messageHandlerChain);
@@ -78,13 +78,12 @@ AppLog::~AppLog()
         delete stream;
     }
 }
-//=============================================================================
+
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     AppLog::instance()->message(type, context, message);
 }
-//============================================================================
-//============================================================================
+
 void AppLog::add(const QString &categoryName, const QString &fileName, bool silent)
 {
     QDir dir(QFileInfo(AppDirs::logs().absoluteFilePath(fileName)).absoluteDir());
@@ -103,7 +102,7 @@ void AppLog::add(const QString &categoryName, const QString &fileName, bool sile
     if (silent)
         AppLog::_instance->silentCategories.append(categoryName);
 }
-//=============================================================================
+
 void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     if (!silentCategories.contains(context.category))
@@ -142,7 +141,7 @@ void AppLog::message(QtMsgType type, const QMessageLogContext &context, const QS
         }
     }
 }
-//=============================================================================
+
 bool AppLog::display(const QMessageLogContext &context)
 {
     QString cat(context.category);
@@ -153,5 +152,3 @@ bool AppLog::display(const QMessageLogContext &context)
     //if(cat==ConsoleLog().categoryName())return true;
     return false;
 }
-//=============================================================================
-//=============================================================================

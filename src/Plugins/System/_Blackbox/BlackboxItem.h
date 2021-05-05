@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BlackboxItem_H
-#define BlackboxItem_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 class BlackboxReader;
-//=============================================================================
+
 class BlackboxItem : public Fact
 {
     Q_OBJECT
@@ -58,5 +57,5 @@ public slots:
     virtual void download();
     virtual void stop();
 };
-//=============================================================================
+
 #endif

@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppNotifyListModel_H
-#define AppNotifyListModel_H
-//=============================================================================
+#pragma once
+
 #include "AppNotify.h"
 #include <QtCore>
-//=============================================================================
+
 class AppNotifyListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -77,5 +76,3 @@ protected:
 signals:
     void countChanged();
 };
-//=============================================================================
-#endif

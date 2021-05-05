@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef NODESPLUGIN_H
-#define NODESPLUGIN_H
+#pragma once
 
 #include "NodesFrame.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class NodesPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -34,9 +33,6 @@ class NodesPlugin : public PluginInterface
 public:
     QObject *createControl() { return new NodesFrame(); }
     int flags() { return Widget | Restore | Launcher; }
-    QString title() { return tr("Vehicle parameters"); }
-    QString descr() { return tr("Hardware tuning"); }
+
     QString icon() { return "puzzle"; }
 };
-//=============================================================================
-#endif

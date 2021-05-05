@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SimPlugin_H
-#define SimPlugin_H
+#pragma once
+
 #include "Simulator.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class SimPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -34,5 +34,3 @@ public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override { return new Simulator(); }
 };
-//=============================================================================
-#endif // SimPlugin_H

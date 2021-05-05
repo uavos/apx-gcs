@@ -21,7 +21,7 @@
  */
 #include "TelemetryReqWrite.h"
 #include "Database.h"
-//=============================================================================
+
 bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
 {
     query.prepare(
@@ -39,7 +39,7 @@ bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
     //qDebug() << telemetryID;
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 {
     if (!telemetryID) {
@@ -69,7 +69,7 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
     }
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryWriteEvent::run(QSqlQuery &query)
 {
     //qDebug() << telemetryID;
@@ -86,7 +86,7 @@ bool DBReqTelemetryWriteEvent::run(QSqlQuery &query)
         return false;
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryWriteInfo::run(QSqlQuery &query)
 {
     bool bMod = restore;
@@ -107,7 +107,7 @@ bool DBReqTelemetryWriteInfo::run(QSqlQuery &query)
     }
     return true;
 }
-//=============================================================================
+
 bool DBReqTelemetryWriteSharedInfo::run(QSqlQuery &query)
 {
     info = filterNullValues(info);
@@ -132,5 +132,3 @@ bool DBReqTelemetryWriteSharedInfo::run(QSqlQuery &query)
     }
     return true;
 }
-//=============================================================================
-//=============================================================================

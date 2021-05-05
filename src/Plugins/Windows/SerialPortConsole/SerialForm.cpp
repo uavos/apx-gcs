@@ -29,7 +29,7 @@
 #include <Vehicles/Vehicles.h>
 
 #include "ui_SerialForm.h"
-//==============================================================================
+
 SerialForm::SerialForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::SerialForm)
@@ -55,7 +55,7 @@ SerialForm::SerialForm(QWidget *parent)
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &SerialForm::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
 }
-//==============================================================================
+
 void SerialForm::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)
@@ -69,7 +69,7 @@ void SerialForm::closeEvent(QCloseEvent *event)
     QSettings().setValue(objectName() + "_port", ui->ePortID->value());
     emit finished();
 }
-//=============================================================================
+
 void SerialForm::vehicleSelected(Vehicle *vehicle)
 {
     for (auto c : clist)
@@ -79,7 +79,7 @@ void SerialForm::vehicleSelected(Vehicle *vehicle)
         return;
     clist.append(connect(protocol->data(), &PData::serialData, this, &SerialForm::serialData));
 }
-//==============================================================================
+
 void SerialForm::btnReset()
 {
     if (dumpFile.isOpen())
@@ -122,7 +122,7 @@ void SerialForm::btnSend()
     auto vehicle = Vehicles::instance()->current();
     vehicle->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
 }
-//==============================================================================
+
 void SerialForm::serialData(uint portNo, QByteArray ba)
 {
     if (static_cast<int>(portNo) != ui->ePortID->value())
@@ -209,8 +209,7 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
     ui->textEdit->insertPlainText(s);
     ui->textEdit->moveCursor(QTextCursor::End);
 }
-//==============================================================================
-//==============================================================================
+
 void SerialForm::btnForward()
 {
     /*if (uart.isOpen()) {
@@ -226,7 +225,7 @@ void SerialForm::btnForward()
     connect(socketNotifier, SIGNAL(activated(int)), this, SLOT(uartRead()));
     apxMsg() << tr("Serial port forwarding started") + "...";*/
 }
-//==============================================================================
+
 void SerialForm::uartRead()
 {
     /*if (!uart.isOpen())
@@ -239,6 +238,3 @@ void SerialForm::uartRead()
     Vehicles::instance()->current()->sendSerial(ui->ePortID->value(), ba);
     QTimer::singleShot(100, this, SLOT(uartRead()));*/
 }
-//=============================================================================
-//==============================================================================
-//==============================================================================

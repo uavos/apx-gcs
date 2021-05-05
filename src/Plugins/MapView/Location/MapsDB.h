@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MapsDB_H
-#define MapsDB_H
-//=============================================================================
+#pragma once
+
 #include <Database/DatabaseSession.h>
 #include <QtCore>
-//=============================================================================
+
 class MapsDB : public DatabaseSession
 {
     Q_OBJECT
@@ -38,7 +37,7 @@ signals:
     void tileLoaded(quint64 uid, QByteArray data);
     void tileNotExists(quint64 uid);
 };
-//=============================================================================
+
 class DBReqTileProviders : public DatabaseRequest
 {
     Q_OBJECT
@@ -56,7 +55,7 @@ protected:
 signals:
     void providersLoaded(QHash<quint8, quint64> v);
 };
-//=============================================================================
+
 class DBReqLoadTile : public DatabaseRequest
 {
     Q_OBJECT
@@ -82,7 +81,7 @@ signals:
     void tileLoaded(quint64 uid, QByteArray data);
     void tileNotExists(quint64 uid);
 };
-//=============================================================================
+
 class DBReqSaveTile : public DatabaseRequest
 {
     Q_OBJECT
@@ -107,6 +106,3 @@ private:
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
-//=============================================================================
-#endif

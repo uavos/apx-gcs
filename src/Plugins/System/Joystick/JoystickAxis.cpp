@@ -24,7 +24,6 @@
 #include <App/AppLog.h>
 #include <cmath>
 
-//=============================================================================
 JoystickAxis::JoystickAxis(Fact *parent)
     : Fact(parent,
            QString("axis%1").arg(parent->size()),
@@ -41,7 +40,7 @@ JoystickAxis::JoystickAxis(Fact *parent)
     connect(f_hyst, &Fact::valueChanged, this, [this]() { _hyst = f_hyst->value().toDouble(); });
     connect(f_hyst, &Fact::valueChanged, this, &JoystickAxis::updateDescr);
 }
-//=============================================================================
+
 void JoystickAxis::updateDescr()
 {
     QStringList st;
@@ -51,7 +50,7 @@ void JoystickAxis::updateDescr()
         st << QString("value: %1").arg(QString::number(_value, 'f', 2));
     setDescr(st.join(' '));
 }
-//=============================================================================
+
 void JoystickAxis::update(qreal v)
 {
     v = round(v * 100) / 100.0;
@@ -75,7 +74,7 @@ void JoystickAxis::update(qreal v)
     s.replace("$", QString("(%1)").arg(v));
     App::jsexec(s);
 }
-//=============================================================================
+
 void JoystickAxis::loadConfig(const QJsonObject &config)
 {
     setValue(config["scr"].toString());
@@ -89,4 +88,3 @@ QJsonObject JoystickAxis::saveConfig()
     v.insert("hyst", f_hyst->value().toDouble());
     return v;
 }
-//=============================================================================

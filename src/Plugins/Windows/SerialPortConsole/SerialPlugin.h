@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SerialPLUGIN_H
-#define SerialPLUGIN_H
+#pragma once
 
 #include "SerialForm.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class SerialPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -38,5 +37,3 @@ public:
     QString descr() { return tr("Data manipulation tool"); }
     QString icon() { return "serial-port"; }
 };
-//=============================================================================
-#endif // SerialPLUGIN_H

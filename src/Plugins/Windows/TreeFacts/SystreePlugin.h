@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SystreePlugin_H
-#define SystreePlugin_H
+#pragma once
 
 #include <App/AppRoot.h>
 #include <App/PluginInterface.h>
 #include <Fact/Fact.h>
 #include <TreeModel/FactTreeView.h>
 #include <QtCore>
-//=============================================================================
+
 class SystreePlugin : public PluginInterface
 {
     Q_OBJECT
@@ -40,5 +39,3 @@ public:
     QString descr() { return tr("Application tree view"); }
     QString icon() { return "file-tree"; }
 };
-//=============================================================================
-#endif

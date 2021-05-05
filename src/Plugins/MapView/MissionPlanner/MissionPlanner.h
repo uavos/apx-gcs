@@ -19,9 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MissionPlanner_H
-#define MissionPlanner_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QGeoShape>
@@ -29,7 +28,7 @@
 #include <QtCore>
 class Vehicle;
 class VehicleMission;
-//=============================================================================
+
 class MissionPlanner : public Fact
 {
     Q_OBJECT
@@ -65,5 +64,3 @@ signals:
     void clickCoordinateChanged();
     void areaChanged();
 };
-//=============================================================================
-#endif

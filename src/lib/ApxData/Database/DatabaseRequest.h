@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatabaseRequest_H
-#define DatabaseRequest_H
-//=============================================================================
+#pragma once
+
 #include <QtCore>
 #include <QtSql>
 class DatabaseSession;
-//=============================================================================
+
 class DatabaseRequest : public QObject
 {
     Q_OBJECT
@@ -117,5 +116,3 @@ signals:
     void queryResults(DatabaseRequest::Records records);
     void dbModified();
 };
-//=============================================================================
-#endif

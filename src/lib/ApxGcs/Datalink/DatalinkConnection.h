@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatalinkConnection_H
-#define DatalinkConnection_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class DatalinkConnection : public Fact
 {
     Q_OBJECT
@@ -117,5 +116,3 @@ signals:
     void blockControlsChanged();
     void blockServiceChanged();
 };
-//=============================================================================
-#endif

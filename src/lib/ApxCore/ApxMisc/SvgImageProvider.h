@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SVGIMAGEPROVIDER_H_
-#define SVGIMAGEPROVIDER_H_
+#pragma once
 
 #include <QMap>
 #include <QObject>
@@ -46,5 +45,3 @@ private:
     QString m_basePath;
     QMap<QString, QPointF> m_center;
 };
-
-#endif // ifndef SVGIMAGEPROVIDER_H_

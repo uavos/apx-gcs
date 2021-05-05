@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SitesPlugin_H
-#define SitesPlugin_H
+#pragma once
+
 #include "Sites.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class SitesPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -35,5 +35,3 @@ public:
     QObject *createControl() override { return new Sites(); }
     QStringList depends() override { return QStringList() << "MissionPlanner"; }
 };
-//=============================================================================
-#endif

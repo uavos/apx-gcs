@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppSettings_H
-#define AppSettings_H
-//=============================================================================
+#pragma once
+
 #include <App/AppDirs.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class AppSettings : public Fact
 {
     Q_OBJECT
@@ -43,5 +42,3 @@ private:
     static AppSettings *_instance;
     DelayedEvent scaleEvent;
 };
-//=============================================================================
-#endif

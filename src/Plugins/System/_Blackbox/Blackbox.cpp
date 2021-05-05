@@ -28,7 +28,7 @@
 #include <Fact/Fact.h>
 #include <Nodes/NodeItem.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 Blackbox::Blackbox(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -41,7 +41,7 @@ Blackbox::Blackbox(Fact *parent)
 
     f_import = new BlackboxFile(this);
 }
-//=============================================================================
+
 void Blackbox::nodeNotify(NodeItem *node)
 {
     if (!node->dataValid())
@@ -67,4 +67,3 @@ void Blackbox::nodeNotify(NodeItem *node)
         }
     }
 }
-//=============================================================================

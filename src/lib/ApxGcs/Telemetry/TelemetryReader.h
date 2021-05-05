@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryReader_H
-#define TelemetryReader_H
+#pragma once
+
 #include <ApxMisc/DelayedEvent.h>
 #include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
@@ -29,7 +29,7 @@
 
 #include "TelemetryReaderDataReq.h"
 class LookupTelemetry;
-//=============================================================================
+
 class TelemetryReader : public Fact
 {
     Q_OBJECT
@@ -118,5 +118,3 @@ signals:
     void totalSizeChanged();
     void totalTimeChanged();
 };
-//=============================================================================
-#endif

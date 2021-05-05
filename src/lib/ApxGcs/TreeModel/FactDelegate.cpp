@@ -25,7 +25,7 @@
 #include "FactDelegateScript.h"
 #include "FactTreeModel.h"
 #include <QtWidgets>
-//=============================================================================
+
 FactDelegate::FactDelegate(QObject *parent)
     : QItemDelegate(parent)
 {
@@ -37,7 +37,7 @@ FactDelegate::~FactDelegate()
 {
     delete progressBar;
 }
-//=============================================================================
+
 QWidget *FactDelegate::createEditor(QWidget *parent,
                                     const QStyleOptionViewItem &option,
                                     const QModelIndex &index) const
@@ -209,7 +209,7 @@ void FactDelegate::setModelData(QWidget *editor,
     }
     QItemDelegate::setModelData(editor, model, index);
 }
-//=============================================================================
+
 void FactDelegate::paint(QPainter *painter,
                          const QStyleOptionViewItem &option,
                          const QModelIndex &index) const
@@ -224,7 +224,7 @@ void FactDelegate::paint(QPainter *painter,
     }
     QItemDelegate::paint(painter, option, index);
 }
-//=============================================================================
+
 bool FactDelegate::drawProgress(QPainter *painter,
                                 const QStyleOptionViewItem &option,
                                 const QModelIndex &index,
@@ -255,7 +255,7 @@ bool FactDelegate::drawProgress(QPainter *painter,
     painter->restore();
     return true;
 }
-//=============================================================================
+
 QSize FactDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     return QItemDelegate::sizeHint(option, index);
@@ -263,4 +263,3 @@ QSize FactDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
   sz.setHeight(QFontMetrics(option.font).height());
   return sz;*/
 }
-//=============================================================================

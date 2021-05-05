@@ -22,7 +22,7 @@
 #include "AppSettings.h"
 #include <App/App.h>
 #include <App/AppDirs.h>
-//=============================================================================
+
 AppSettings *AppSettings::_instance = nullptr;
 AppSettings::AppSettings(Fact *parent)
     : Fact(parent,
@@ -120,4 +120,3 @@ AppSettings::AppSettings(Fact *parent)
         QString("ui.__defineGetter__('%1', function(){ return apx.settings.graphics.%1.value; });")
             .arg("test"));
 }
-//=============================================================================

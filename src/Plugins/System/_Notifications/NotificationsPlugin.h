@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef NotificationsPlugin_H
-#define NotificationsPlugin_H
+#pragma once
+
 #include "Notifications.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class NotificationsPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -34,5 +34,3 @@ public:
     int flags() override { return Feature | System; }
     QObject *createControl() override { return new Notifications(); }
 };
-//=============================================================================
-#endif

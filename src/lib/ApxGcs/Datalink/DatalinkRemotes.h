@@ -19,16 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatalinkRemotes_H
-#define DatalinkRemotes_H
-//=============================================================================
+#pragma once
+
 #include "DatalinkConnection.h"
 #include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
 class Datalink;
 class DatalinkRemote;
-//=============================================================================
+
 class DatalinkRemotes : public Fact
 {
     Q_OBJECT
@@ -75,5 +74,3 @@ protected:
 signals:
     void connectedCountChanged();
 };
-//=============================================================================
-#endif

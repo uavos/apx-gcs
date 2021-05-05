@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef VIDEOTHREAD_H
-#define VIDEOTHREAD_H
+#pragma once
 
 #include <atomic>
 #include <functional>
@@ -137,5 +136,3 @@ signals:
     void frameReceived(QImage image);
     void errorOccured(QString error);
 };
-
-#endif // VIDEOTHREAD_H

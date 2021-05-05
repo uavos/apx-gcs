@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MapPrefs.h"
-//=============================================================================
+
 MapPrefs::MapPrefs(Fact *parent)
     : Fact(parent, "prefs", tr("Preferences"), tr("Map view settings"), Action | IconOnly, "wrench")
 {
@@ -41,4 +41,3 @@ MapPrefs::MapPrefs(Fact *parent)
                       Text | PersistentValue,
                       "terrain");
 }
-//=============================================================================

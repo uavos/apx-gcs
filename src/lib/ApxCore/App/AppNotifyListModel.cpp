@@ -21,7 +21,7 @@
  */
 #include "AppNotifyListModel.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
 AppNotifyListModel::AppNotifyListModel(AppNotify *appNotify)
     : QAbstractListModel(appNotify)
 {
@@ -33,14 +33,13 @@ AppNotifyListModel::~AppNotifyListModel()
 {
     qDeleteAll(m_items);
 }
-//=============================================================================
-//=============================================================================
+
 int AppNotifyListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return m_items.size();
 }
-//=============================================================================
+
 QHash<int, QByteArray> AppNotifyListModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
@@ -53,7 +52,7 @@ QHash<int, QByteArray> AppNotifyListModel::roleNames() const
     roles[AppNotifyListModel::TimestampRole] = "timestamp";
     return roles;
 }
-//=============================================================================
+
 QVariant AppNotifyListModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
@@ -77,8 +76,7 @@ QVariant AppNotifyListModel::data(const QModelIndex &index, int role) const
     }
     return QVariant();
 }
-//=============================================================================
-//=============================================================================
+
 void AppNotifyListModel::notification(QString msg,
                                       QString subsystem,
                                       AppNotify::NotifyFlags flags,
@@ -106,7 +104,7 @@ void AppNotifyListModel::notification(QString msg,
     emit countChanged();
     //qDebug()<<"rows"<<rowCount();
 }
-//=============================================================================
+
 void AppNotifyListModel::updateItem(int row, const QVariant &value, int role)
 {
     if (row < 0 || row >= rowCount())
@@ -146,7 +144,7 @@ void AppNotifyListModel::updateItem(int row, const QVariant &value, int role)
     QModelIndex i = index(row, 0);
     emit dataChanged(i, i, QVector<int>() << role);
 }
-//=============================================================================
+
 void AppNotifyListModel::clear()
 {
     beginResetModel();

@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef QueueWorker_H
-#define QueueWorker_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class QueueWorker : public QThread
 {
     Q_OBJECT
@@ -52,5 +51,3 @@ signals:
 public slots:
     void stop();
 };
-//=============================================================================
-#endif

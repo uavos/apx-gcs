@@ -25,7 +25,7 @@
 #include <ApxMisc/MaterialIcon.h>
 #include <QHeaderView>
 #include <QtWidgets>
-//=============================================================================
+
 FactTreeView::FactTreeView(QWidget *parent)
     : QTreeView(parent)
 {
@@ -51,15 +51,14 @@ FactTreeView::FactTreeView(QWidget *parent)
 
     setFont(QGuiApplication::font());
 }
-//=============================================================================
-//=============================================================================
+
 FactProxyModel::FactProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
     , m_rootFact(nullptr)
 {
     setDynamicSortFilter(false);
 }
-//=============================================================================
+
 void FactProxyModel::setRootFact(Fact *fact)
 {
     m_rootFact = fact;
@@ -69,7 +68,7 @@ Fact *FactProxyModel::rootFact() const
 {
     return m_rootFact;
 }
-//=============================================================================
+
 bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow, Fact::FACT_MODEL_COLUMN_NAME, sourceParent);
@@ -104,7 +103,7 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     }
     return showThis(index);
 }
-//=============================================================================
+
 bool FactProxyModel::showThis(const QModelIndex index) const
 {
     if (showThisItem(index))
@@ -138,7 +137,7 @@ bool FactProxyModel::showThisFact(Fact *f) const
 {
     return f->showThis(filterRegExp());
 }
-//=============================================================================
+
 bool FactProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
     //only first col sorted
@@ -155,8 +154,7 @@ bool FactProxyModel::lessThan(Fact *left, Fact *right) const
 {
     return left->lessThan(right);
 }
-//=============================================================================
-//=============================================================================
+
 FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation, QWidget *parent)
     : QWidget(parent)
 {
@@ -213,7 +211,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     connect(tree, &FactTreeView::collapsed, this, &FactTreeWidget::collapsed);
     connect(tree, &FactTreeView::expanded, this, &FactTreeWidget::expanded);
 }
-//=============================================================================
+
 void FactTreeWidget::filterChanged()
 {
     QString s = eFilter->text();
@@ -230,7 +228,7 @@ void FactTreeWidget::filterChanged()
         emit treeReset();
     }
 }
-//=============================================================================
+
 void FactTreeWidget::doubleClicked(const QModelIndex &index)
 {
     QModelIndex idx = proxy->mapToSource(index);
@@ -244,7 +242,7 @@ void FactTreeWidget::doubleClicked(const QModelIndex &index)
     rootList.append(QPointer<Fact>(fPrev));
     updateActions();
 }
-//=============================================================================
+
 void FactTreeWidget::collapsed(const QModelIndex &index)
 {
     Fact *f = index.data(Fact::ModelDataRole).value<Fact *>();
@@ -260,7 +258,7 @@ void FactTreeWidget::expanded(const QModelIndex &index)
         model->expandedFacts.append(f);
     //qDebug()<<"exp"<<f->path();
 }
-//=============================================================================
+
 void FactTreeWidget::updateActions()
 {
     //Fact *f=tree->rootIndex().data(FactListModel::ModelDataRole).value<Fact*>();
@@ -269,13 +267,13 @@ void FactTreeWidget::updateActions()
     aBack->setEnabled(bBack);
     //qDebug()<<"upd";
 }
-//=============================================================================
+
 void FactTreeWidget::resetFilter()
 {
     tree->setFocus();
     eFilter->clear();
 }
-//=============================================================================
+
 void FactTreeWidget::setRoot(Fact *fact)
 {
     if (!model->expandedFacts.contains(fact))
@@ -297,7 +295,7 @@ void FactTreeWidget::setRoot(Fact *fact)
     }
     updateActions();
 }
-//=============================================================================
+
 void FactTreeWidget::back()
 {
     //qDebug()<<"back";
@@ -306,7 +304,7 @@ void FactTreeWidget::back()
         return;
     setRoot(rootList.last());
 }
-//=============================================================================
+
 void FactTreeWidget::factRemoved()
 {
     resetFilter();
@@ -327,4 +325,3 @@ void FactTreeWidget::factRemoved()
     if (fact == proxy->rootFact())
         back();
 }
-//=============================================================================

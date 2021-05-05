@@ -19,10 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PluginInterface_H
-#define PluginInterface_H
+#pragma once
+
 #include <QtPlugin>
-//=============================================================================
+
 class PluginInterface : public QObject
 {
     Q_OBJECT
@@ -59,9 +59,7 @@ public:
 
     virtual bool closeEvent() { return true; }
 };
-//=============================================================================
+
 QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(PluginInterface, "com.uavos.gcs.PluginInterface/1.0")
 QT_END_NAMESPACE
-//=============================================================================
-#endif

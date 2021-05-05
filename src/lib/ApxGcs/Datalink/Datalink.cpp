@@ -22,7 +22,7 @@
 #include "Datalink.h"
 
 #include <App/App.h>
-//=============================================================================
+
 Datalink::Datalink(Fact *parent)
     : Fact(parent, "datalink", tr("Datalink"), tr("Communication and networks"), Group)
     , bReadOnly(false)
@@ -87,7 +87,7 @@ Datalink::Datalink(Fact *parent)
 
     App::jsync(this);
 }
-//=============================================================================
+
 void Datalink::addConnection(DatalinkConnection *c)
 {
     connections.append(c);
@@ -100,7 +100,7 @@ void Datalink::addConnection(DatalinkConnection *c)
     connect(c, &Fact::activeChanged, this, &Datalink::updateStatus);
     updateStatus();
 }
-//=============================================================================
+
 void Datalink::updateStatus()
 {
     int cnt = connections.size();
@@ -122,7 +122,7 @@ void Datalink::updateStatus()
         setActive(acnt > 0);
     }
 }
-//=============================================================================
+
 void Datalink::readonlyChanged()
 {
     bReadOnly = f_readonly->value().toBool();
@@ -131,7 +131,7 @@ void Datalink::readonlyChanged()
     else
         apxMsg() << tr("Uplink allowed");
 }
-//=============================================================================
+
 void Datalink::heartbeatTimeout()
 {
     if (!f_hbeat->value().toBool())
@@ -145,8 +145,7 @@ void Datalink::hbeatChanged()
     else
         heartbeatTimer.stop();
 }
-//=============================================================================
-//=============================================================================
+
 void Datalink::connectionPacketReceived(QByteArray packet, quint16 network)
 {
     //qDebug()<<"R"<<packet.toHex().toUpper();
@@ -185,8 +184,7 @@ void Datalink::sendPacket(QByteArray packet)
     }
     emit packetTransmitted(packet);
 }
-//=============================================================================
-//=============================================================================
+
 bool Datalink::valid() const
 {
     return m_valid;
@@ -222,4 +220,3 @@ void Datalink::setErrcnt(const uint &v)
     m_errcnt = v;
     emit errcntChanged();
 }
-//=============================================================================

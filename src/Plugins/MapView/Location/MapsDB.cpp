@@ -23,7 +23,7 @@
 #include "TileLoader.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-//=============================================================================
+
 MapsDB::MapsDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, "maps", sessionName, "v2")
 {
@@ -58,8 +58,7 @@ MapsDB::MapsDB(QObject *parent, QString sessionName)
         Qt::QueuedConnection);
     reqProviders->exec();
 }
-//=============================================================================
-//=============================================================================
+
 bool DBReqTileProviders::run(QSqlQuery &query)
 {
     QHash<quint8, quint64> providersMap;
@@ -96,7 +95,7 @@ bool DBReqTileProviders::run(QSqlQuery &query)
     emit providersLoaded(providersMap);
     return true;
 }
-//=============================================================================
+
 bool DBReqLoadTile::run(QSqlQuery &query)
 {
     connect(this, &DBReqLoadTile::tileLoaded, db, &MapsDB::tileLoaded, Qt::QueuedConnection);
@@ -114,7 +113,7 @@ bool DBReqLoadTile::run(QSqlQuery &query)
     }
     return true;
 }
-//=============================================================================
+
 bool DBReqSaveTile::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM Tiles WHERE providerID = ? AND hash = ?");
@@ -145,4 +144,3 @@ bool DBReqSaveTile::run(QSqlQuery &query)
     }
     return query.exec();
 }
-//=============================================================================

@@ -19,14 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Sounds_H
-#define Sounds_H
+#pragma once
+
 #include <QSound>
 #include <QTextToSpeech>
 #include <QtCore>
 
 #include <Fact/Fact.h>
-//=============================================================================
+
 class Sounds : public Fact
 {
     Q_OBJECT
@@ -78,5 +78,3 @@ private slots:
 public slots:
     void play(QString text);
 };
-//=============================================================================
-#endif

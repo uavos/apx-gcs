@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SiteEdit_H
-#define SiteEdit_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <Mission/LookupMissions.h>
 #include <QtCore>
 #include <QtLocation>
 class LookupMissions;
-//=============================================================================
+
 class SiteEdit : public Fact
 {
     Q_OBJECT
@@ -72,5 +71,3 @@ signals:
 
     void siteEdited(QVariantMap item);
 };
-//=============================================================================
-#endif

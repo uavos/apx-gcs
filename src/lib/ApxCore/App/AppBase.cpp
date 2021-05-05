@@ -25,7 +25,7 @@
 
 #include <app_def.h>
 #include <QIcon>
-//=============================================================================
+
 #ifdef Q_OS_MAC
 #include <mach-o/arch.h>
 static QByteArray getCpuId()
@@ -57,9 +57,9 @@ static QByteArray getCpuId()
     return QByteArray(reinterpret_cast<const char *>(info), sizeof(info));
 }
 #endif
-//=============================================================================
+
 AppBase *AppBase::_instance = nullptr;
-//=============================================================================
+
 AppBase::AppBase(int &argc, char **argv, const QString &name)
     : QApplication(argc, argv)
 {
@@ -197,7 +197,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         apxConsoleW() << tr("Application is not installed");
     }
 }
-//=============================================================================
+
 QString AppBase::aboutString()
 {
     QStringList lines;
@@ -260,7 +260,7 @@ QString AppBase::compilerString()
     return QLatin1String("<unknown compiler>");
 #endif
 }
-//=============================================================================
+
 bool AppBase::install()
 {
     if (installed()) {
@@ -343,4 +343,3 @@ bool AppBase::install()
     }
     return rv;
 }
-//=============================================================================

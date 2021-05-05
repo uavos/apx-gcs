@@ -19,16 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactDelegate_H
-#define FactDelegate_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QItemDelegate>
 #include <QProgressBar>
 #include <QStyledItemDelegate>
 #include <QtCore>
 #include <QtWidgets>
-//=============================================================================
+
 class FactDelegate : public QItemDelegate //QStyledItemDelegate
 {
     Q_OBJECT
@@ -56,5 +55,3 @@ private:
                       const QModelIndex &index,
                       int progress) const;
 };
-//=============================================================================
-#endif

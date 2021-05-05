@@ -22,7 +22,7 @@
 #include "TelemetryPlot.h"
 #include <QJSEngine>
 #include <QtGui>
-//=============================================================================
+
 TelemetryPlot::TelemetryPlot(QWidget *parent)
     : QwtPlot(parent)
     , calc(nullptr)
@@ -95,7 +95,7 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
 
     canvas()->setCursor(Qt::ArrowCursor);
 }
-//=============================================================================
+
 TelemetryPlot::~TelemetryPlot()
 {
     delete zoomer;
@@ -109,7 +109,7 @@ TelemetryPlot::~TelemetryPlot()
     delete picker;
     delete timeCursor;
 }
-//=============================================================================
+
 QwtPlotCurve *TelemetryPlot::addCurve(const QString &name,
                                       const QString &descr,
                                       const QString &units,
@@ -139,7 +139,7 @@ QwtPlotCurve *TelemetryPlot::addCurve(const QString &name,
         w->setToolTip(s);
     return curve;
 }
-//=============================================================================
+
 void TelemetryPlot::addEvent(double time, const QString &text, QColor color)
 {
     QwtPlotMarker *m = new QwtPlotMarker();
@@ -164,7 +164,7 @@ void TelemetryPlot::addEvent(double time, const QString &text, QColor color)
     m->attach(this);
     events.append(m);
 }
-//=============================================================================
+
 void TelemetryPlot::resetData()
 {
     qDeleteAll(events);
@@ -184,7 +184,7 @@ void TelemetryPlot::resetData()
     resetZoom();
     setTimeCursor(0);
 }
-//=============================================================================
+
 void TelemetryPlot::restoreSettings()
 {
     QStringList st;
@@ -208,7 +208,7 @@ void TelemetryPlot::restoreSettings()
         showCurve(itemToInfo(curve), (curve == calc) ? false : st.contains(curve->title().text()));
     }
 }
-//=============================================================================
+
 void TelemetryPlot::saveSettings()
 {
     QSettings sx;
@@ -223,7 +223,7 @@ void TelemetryPlot::saveSettings()
             sx.remove(s);
     }
 }
-//=============================================================================
+
 void TelemetryPlot::showCurves(bool on, const QStringList &names, bool toggle)
 {
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
@@ -246,7 +246,7 @@ void TelemetryPlot::showCurves(bool on, const QStringList &names, bool toggle)
     }
     resetZoom();
 }
-//=============================================================================
+
 void TelemetryPlot::pointSelected(const QPointF &pos)
 {
     double x = pos.x();
@@ -268,7 +268,7 @@ quint64 TelemetryPlot::timeCursorValue()
 {
     return timeCursor->xValue() * 1000.0;
 }
-//=============================================================================
+
 void TelemetryPlot::showCurve(const QVariant &itemInfo, bool on, int index)
 {
     Q_UNUSED(index);
@@ -300,7 +300,7 @@ void TelemetryPlot::showCurve(const QVariant &itemInfo, bool on, int index)
     else
         replot();
 }
-//=============================================================================
+
 void TelemetryPlot::refreshCalculated()
 {
     bool ok;
@@ -411,7 +411,7 @@ void TelemetryPlot::refreshCalculated()
     //resetZoom();
     replot();
 }
-//=============================================================================
+
 void TelemetryPlot::setProgress(int v)
 {
     if (m_progress == v)
@@ -419,7 +419,7 @@ void TelemetryPlot::setProgress(int v)
     m_progress = v;
     emit progressChanged(v);
 }
-//=============================================================================
+
 void TelemetryPlot::resetZoom()
 {
     double vmax = 0.0, vmin = 0.0, tMax = 0.0;
@@ -451,7 +451,7 @@ void TelemetryPlot::resetZoom()
     //QCoreApplication::processEvents();
     replot();
 }
-//=============================================================================
+
 void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
 {
     //collect curves
@@ -489,8 +489,7 @@ void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
 
     replot();
 }
-//=============================================================================
-//=============================================================================
+
 bool TelemetryPlot::eventsVisible() const
 {
     return m_eventsVisible;
@@ -505,7 +504,7 @@ void TelemetryPlot::setEventsVisible(bool v)
     }
     replot();
 }
-//=============================================================================
+
 void TelemetryPlot::mouseReleaseEvent(QMouseEvent *event)
 {
     QwtPlot::mouseReleaseEvent(event);
@@ -513,9 +512,7 @@ void TelemetryPlot::mouseReleaseEvent(QMouseEvent *event)
         resetZoom();
     //qDebug()<<event;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 QwtText PlotPicker::trackerText(const QPoint &pos) const
 {
     double t = plot()->invTransform(QwtPlot::xBottom, pos.x());
@@ -543,7 +540,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
     s += "</table>";
     return QwtText(s);
 }
-//=============================================================================
+
 double PlotPicker::sampleValue(const QwtPlotCurve *curve, double t) const
 {
     if (curve->data()->size() < 50) {
@@ -591,7 +588,7 @@ double PlotPicker::sampleValue(const QwtPlotCurve *curve, double t) const
             return p.y();
     }
 }
-//=============================================================================
+
 void LegendItem::paintEvent(QPaintEvent *e)
 {
     const QRect cr = contentsRect();
@@ -614,7 +611,7 @@ void LegendItem::paintEvent(QPaintEvent *e)
     painter.drawPixmap(identRect, icon());
     painter.restore();
 }
-//=============================================================================
+
 void PlotMagnifier::widgetMouseMoveEvent(QMouseEvent *mouseEvent)
 {
     mwPos = mouseEvent->pos();
@@ -662,11 +659,11 @@ void PlotMagnifier::rescale(double factor)
     if (doReplot)
         plt->replot();
 }
-//=============================================================================
+
 PlotLegend::PlotLegend(QWidget *parent)
     : QwtLegend(parent)
 {}
-//=============================================================================
+
 QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
 {
     Q_UNUSED(data)
@@ -678,4 +675,3 @@ QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
     connect(w, SIGNAL(checked(bool)), this, SLOT(itemChecked(bool)));
     return w;
 }
-//=============================================================================

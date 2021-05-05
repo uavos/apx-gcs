@@ -19,14 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Joystick_H
-#define Joystick_H
+#pragma once
+
 #include <QtCore>
 
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 #include <SDL.h>
-//=============================================================================
+
 class Joystick : public Fact
 {
     Q_OBJECT
@@ -66,5 +66,3 @@ private:
 signals:
     void save();
 };
-//=============================================================================
-#endif

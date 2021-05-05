@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TerminalPlugin_H
-#define TerminalPlugin_H
+#pragma once
+
 #include "Terminal.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class TerminalPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -34,5 +34,3 @@ public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override { return new Terminal(); }
 };
-//=============================================================================
-#endif // TerminalPlugin_H

@@ -20,26 +20,26 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "DatabaseLookupModel.h"
-//=============================================================================
+
 DatabaseLookupModel::DatabaseLookupModel(QObject *parent)
     : QAbstractListModel(parent)
     , ordered(true)
     , qmlMapSafe(false)
 {}
-//=============================================================================
+
 int DatabaseLookupModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return _items.size();
 }
-//=============================================================================
+
 QHash<int, QByteArray> DatabaseLookupModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[ValuesRole] = "values";
     return roles;
 }
-//=============================================================================
+
 QVariantMap DatabaseLookupModel::get(int i) const
 {
     return _items.value(i, QVariantMap());
@@ -55,7 +55,7 @@ bool DatabaseLookupModel::set(int i, QVariantMap v)
     emit itemEdited(i, v);
     return true;
 }
-//=============================================================================
+
 QVariant DatabaseLookupModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
@@ -68,8 +68,7 @@ QVariant DatabaseLookupModel::data(const QModelIndex &index, int role) const
     }
     return QVariant();
 }
-//=============================================================================
-//=============================================================================
+
 int DatabaseLookupModel::count() const
 {
     return rowCount();
@@ -90,7 +89,7 @@ void DatabaseLookupModel::resetFilter()
 {
     setFilter(QString());
 }
-//=============================================================================
+
 void DatabaseLookupModel::syncItems(ItemsList list)
 {
     //QTime t0;
@@ -182,7 +181,7 @@ void DatabaseLookupModel::syncItems(ItemsList list)
     emit synced();
     //qDebug()<<t0.elapsed()<<"ms";
 }
-//=============================================================================
+
 int DatabaseLookupModel::indexOf(const QString &name, const QVariant &value) const
 {
     for (int i = 0; i < _items.size(); ++i) {
@@ -191,4 +190,3 @@ int DatabaseLookupModel::indexOf(const QString &name, const QVariant &value) con
     }
     return -1;
 }
-//=============================================================================

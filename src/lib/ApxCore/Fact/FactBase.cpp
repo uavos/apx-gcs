@@ -93,7 +93,6 @@ bool FactBase::bindedProperty(Fact *src, QString name)
     return false;
 }
 
-//=============================================================================
 const FactList &FactBase::facts() const
 {
     return m_facts;
@@ -102,7 +101,7 @@ const FactList &FactBase::actions() const
 {
     return m_actions;
 }
-//=============================================================================
+
 void FactBase::addChild(Fact *item)
 {
     //item->Qobject::setParent(this);
@@ -164,7 +163,7 @@ void FactBase::moveChild(Fact *item, int n, bool safeMode)
     for (int i = 0; i < m_facts.count(); ++i)
         child(i)->updateNum();
 }
-//=============================================================================
+
 void FactBase::deleteFact()
 {
     setParentFact(nullptr);
@@ -200,17 +199,17 @@ void FactBase::move(int n, bool safeMode)
     if (p)
         p->moveChild(static_cast<Fact *>(this), n, safeMode);
 }
-//=============================================================================
+
 int FactBase::num() const
 {
     return m_num;
 }
-//=============================================================================
+
 Fact *FactBase::child(int n) const
 {
     return m_facts.value(n, nullptr);
 }
-//=============================================================================
+
 int FactBase::indexOfChild(Fact *item) const
 {
     return m_facts.indexOf(item);
@@ -221,7 +220,7 @@ int FactBase::indexInParent() const
                ? parentFact()->indexOfChild(static_cast<Fact *>(const_cast<FactBase *>(this)))
                : -1;
 }
-//=============================================================================
+
 Fact *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
 {
     for (auto i : m_facts) {
@@ -230,7 +229,7 @@ Fact *FactBase::child(const QString &name, Qt::CaseSensitivity cs) const
     }
     return nullptr;
 }
-//=============================================================================
+
 QStringList FactBase::pathStringList(int maxLevel) const
 {
     QStringList st;
@@ -311,7 +310,7 @@ QString FactBase::jspath() const
     }
     return st.join('.');
 }
-//=============================================================================
+
 void FactBase::updateNum()
 {
     int v = indexInParent();
@@ -335,7 +334,7 @@ void FactBase::updateChildrenNums()
     for (auto i : m_facts)
         i->updateNum();
 }
-//=============================================================================
+
 FactBase::Flag FactBase::treeType(void) const
 {
     return m_treeType;

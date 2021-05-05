@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactTreeView_H
-#define FactTreeView_H
-//=============================================================================
+#pragma once
+
 #include <QStyledItemDelegate>
 #include <QtCore>
 #include <QtWidgets>
 class Fact;
 class FactTreeModel;
-//=============================================================================
+
 class FactTreeView : public QTreeView
 {
     Q_OBJECT
@@ -36,7 +35,7 @@ public:
 
     QSize sizeHint() const override { return viewportSizeHint(); }
 };
-//=============================================================================
+
 class FactProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -57,7 +56,7 @@ private:
     bool showThis(const QModelIndex index) const;
     bool showThisItem(const QModelIndex index) const;
 };
-//=============================================================================
+
 class FactTreeWidget : public QWidget
 {
     Q_OBJECT
@@ -92,5 +91,3 @@ public slots:
 signals:
     void treeReset();
 };
-//=============================================================================
-#endif

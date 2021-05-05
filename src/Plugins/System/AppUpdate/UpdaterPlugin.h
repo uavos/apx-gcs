@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef UpdaterPlugin_H
-#define UpdaterPlugin_H
+#pragma once
+
 #include "Updater.h"
 #include <App/AppSettings.h>
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class UpdaterPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -38,5 +38,3 @@ public:
         return new Updater(AppSettings::instance()->f_application);
     }
 };
-//=============================================================================
-#endif // UpdaterPlugin_H

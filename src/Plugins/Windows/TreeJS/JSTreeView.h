@@ -19,20 +19,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef JSTreeView_H
-#define JSTreeView_H
-//=============================================================================
+#pragma once
+
 #include <TreeModel/JSTreeModel.h>
 #include <QtCore>
 #include <QtWidgets>
-//=============================================================================
+
 class JSTreeView : public QTreeView
 {
     Q_OBJECT
 public:
     JSTreeView(QWidget *parent = 0);
 };
-//=============================================================================
+
 class JSTreeProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -49,7 +48,7 @@ private:
     QPointer<JSTreeItem> m_rootItem;
     bool showThis(const QModelIndex index) const;
 };
-//=============================================================================
+
 class JSTreeWidget : public QWidget
 {
     Q_OBJECT
@@ -85,5 +84,3 @@ public slots:
 signals:
     void treeReset();
 };
-//=============================================================================
-#endif

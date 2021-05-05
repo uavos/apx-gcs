@@ -24,7 +24,7 @@
 #include <App/App.h>
 #include <Mission/VehicleMission.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 MissionPlanner::MissionPlanner(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -70,8 +70,7 @@ MissionPlanner::MissionPlanner(Fact *parent)
 
     qml = loadQml("qrc:/MissionPlannerPlugin.qml");
 }
-//=============================================================================
-//=============================================================================
+
 Vehicle *MissionPlanner::vehicle() const
 {
     return Vehicles::instance()->current();
@@ -80,9 +79,7 @@ VehicleMission *MissionPlanner::mission() const
 {
     return vehicle()->f_mission;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 QGeoCoordinate MissionPlanner::clickCoordinate() const
 {
     return m_clickCoordinate;
@@ -105,4 +102,3 @@ void MissionPlanner::setArea(const QGeoShape &v)
     m_area = v;
     emit areaChanged();
 }
-//=============================================================================

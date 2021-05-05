@@ -28,7 +28,7 @@
 #include <Telemetry/TelemetryRecorder.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     : Fact(parent, "reader")
     , protocol(nullptr)
@@ -52,7 +52,7 @@ BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     vehicle->setParentFact(this);
     bind(vehicle);
 }
-//=============================================================================
+
 void BlackboxReader::processData(QByteArray data)
 {
     //qDebug() << data.toHex().toUpper();
@@ -77,4 +77,3 @@ void BlackboxReader::processData(QByteArray data)
         protocol->downlinkData(packet.left(static_cast<int>(cnt)));
     }
 }
-//=============================================================================

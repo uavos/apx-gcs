@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef QueueJob_H
-#define QueueJob_H
+#pragma once
+
 #include "QueueWorker.h"
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class QueueJob : public Fact
 {
     Q_OBJECT
@@ -50,5 +50,3 @@ signals:
     void finished(Fact *f, QVariantMap result);
     void jobDone(QVariantMap latestResult);
 };
-//=============================================================================
-#endif

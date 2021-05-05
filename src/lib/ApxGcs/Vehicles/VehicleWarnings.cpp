@@ -22,7 +22,7 @@
 #include "VehicleWarnings.h"
 #include "Vehicle.h"
 #include <App/App.h>
-//=============================================================================
+
 VehicleWarnings::VehicleWarnings(Vehicle *parent)
     : Fact(parent,
            "warnings",
@@ -47,7 +47,7 @@ VehicleWarnings::VehicleWarnings(Vehicle *parent)
     showTimer.setInterval(5000);
     connect(&showTimer, &QTimer::timeout, this, &VehicleWarnings::showTimerTimeout);
 }
-//=============================================================================
+
 void VehicleWarnings::warning(const QString &msg)
 {
     createItem(msg, WARNING);
@@ -58,7 +58,7 @@ void VehicleWarnings::error(const QString &msg)
     createItem(msg, ERROR);
     App::sound("error");
 }
-//=============================================================================
+
 Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
 {
     Fact *fact = nullptr;
@@ -108,7 +108,7 @@ Fact *VehicleWarnings::createItem(const QString &msg, MsgType kind)
     showTimerTimeout();
     return fact;
 }
-//=============================================================================
+
 void VehicleWarnings::showTimerTimeout()
 {
     if (showList.isEmpty()) {
@@ -133,5 +133,3 @@ void VehicleWarnings::showTimerTimeout()
         showTimer.start();
     }
 }
-//=============================================================================
-//=============================================================================

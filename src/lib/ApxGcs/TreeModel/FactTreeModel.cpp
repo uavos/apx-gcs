@@ -22,7 +22,7 @@
 #include "FactTreeModel.h"
 #include <Fact/Fact.h>
 #include <QDomDocument>
-//=============================================================================
+
 FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
     : QAbstractItemModel(parent)
     , root(root)
@@ -31,13 +31,12 @@ FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
     updateTimer.setInterval(500);
     connect(&updateTimer, &QTimer::timeout, this, &FactTreeModel::updateTimerTimeout);
 }
-//=============================================================================
-//=============================================================================
+
 QHash<int, QByteArray> FactTreeModel::roleNames() const
 {
     return root->model()->roleNames();
 }
-//=============================================================================
+
 QVariant FactTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -47,7 +46,7 @@ QVariant FactTreeModel::data(const QModelIndex &index, int role) const
         return QVariant();
     return f->data(index.column(), role);
 }
-//=============================================================================
+
 bool FactTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if ((!index.isValid()) || (role != Qt::EditRole)
@@ -63,8 +62,7 @@ bool FactTreeModel::setData(const QModelIndex &index, const QVariant &value, int
     //if(rv)emit dataChanged(index,index);//layoutChanged();
     return rv;
 }
-//=============================================================================
-//=============================================================================
+
 QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
@@ -82,7 +80,7 @@ QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent)
     checkConnections(childFact);
     return factIndex(childFact, column);
 }
-//=============================================================================
+
 QModelIndex FactTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -98,7 +96,7 @@ QModelIndex FactTreeModel::parent(const QModelIndex &index) const
     checkConnections(p);
     return factIndex(p);
 }
-//=============================================================================
+
 int FactTreeModel::rowCount(const QModelIndex &parent) const
 {
     Fact *parentFact;
@@ -110,13 +108,13 @@ int FactTreeModel::rowCount(const QModelIndex &parent) const
         parentFact = fact(parent);
     return parentFact->size();
 }
-//=============================================================================
+
 int FactTreeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return Fact::FACT_MODEL_COLUMN_CNT;
 }
-//=============================================================================
+
 QVariant FactTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(orientation)
@@ -132,7 +130,7 @@ QVariant FactTreeModel::headerData(int section, Qt::Orientation orientation, int
     }
     return QVariant();
 }
-//=============================================================================
+
 Qt::ItemFlags FactTreeModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags fx = Qt::NoItemFlags;
@@ -156,7 +154,7 @@ Qt::ItemFlags FactTreeModel::flags(const QModelIndex &index) const
     }
     return fx;
 }
-//=============================================================================
+
 Fact *FactTreeModel::fact(const QModelIndex &index) const
 {
     return qobject_cast<Fact *>(static_cast<QObject *>(index.internalPointer()));
@@ -167,7 +165,7 @@ QModelIndex FactTreeModel::factIndex(FactBase *item, int column) const
         return QModelIndex();
     return createIndex(item->num(), column, item);
 }
-//=============================================================================
+
 void FactTreeModel::checkConnections(Fact *fact) const
 {
     if (!conFactLayout.contains(fact)) {
@@ -191,7 +189,7 @@ void FactTreeModel::checkConnections(Fact *fact) const
         connect(fact, &Fact::visibleChanged, this, &FactTreeModel::visibleChanged);
     }
 }
-//=============================================================================
+
 void FactTreeModel::recursiveDisconnect(Fact *fact)
 {
     for (int i = 0; i < fact->size(); ++i) {
@@ -217,7 +215,7 @@ void FactTreeModel::recursiveDisconnect(Fact *fact)
     //resetInternalData();
     conFactLayout.removeOne(fact);
 }
-//=============================================================================
+
 void FactTreeModel::itemToBeInserted(int row, FactBase *item)
 {
     Fact *fact = qobject_cast<Fact *>(item->parentFact());
@@ -249,7 +247,7 @@ void FactTreeModel::itemMoved(FactBase *)
 {
     endMoveRows();
 }
-//=============================================================================
+
 void FactTreeModel::textChanged()
 {
     if (!sender())
@@ -303,7 +301,7 @@ void FactTreeModel::visibleChanged()
     emit layoutAboutToBeChanged();
     emit layoutChanged();
 }
-//=============================================================================
+
 void FactTreeModel::updateTimerTimeout()
 {
     updateTimer.stop();
@@ -329,5 +327,3 @@ void FactTreeModel::itemDestroyed()
     expandedFacts.removeAll(qobject_cast<Fact *>(sender()));
     //updateList.removeAll(QPointer<Fact>(static_cast<Fact*>(sender())));
 }
-//=============================================================================
-//=============================================================================

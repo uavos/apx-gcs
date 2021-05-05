@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Telemetry_H
-#define Telemetry_H
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 class Vehicle;
@@ -29,7 +29,7 @@ class LookupTelemetry;
 class TelemetryReader;
 class TelemetryPlayer;
 class TelemetryShare;
-//=============================================================================
+
 class Telemetry : public Fact
 {
     Q_OBJECT
@@ -57,5 +57,3 @@ private slots:
 
     void recordLoaded();
 };
-//=============================================================================
-#endif

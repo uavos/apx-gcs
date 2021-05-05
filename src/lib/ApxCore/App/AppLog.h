@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppLog_H
-#define AppLog_H
+#pragma once
+
 #include <QLoggingCategory>
 #include <QMessageLogContext>
 #include <QMessageLogger>
 #include <QtCore>
-//=============================================================================
+
 Q_DECLARE_LOGGING_CATEGORY(ApplicationLog)
 Q_DECLARE_LOGGING_CATEGORY(ConsoleLog)
 
@@ -97,14 +97,3 @@ signals:
     void warningMessage(QString msg);
     void consoleMessage(QString msg);
 };
-
-//block standard behavior
-//#undef qDebug
-//#undef qWarning
-//#define qWarning(...)   warning("Use apxDebug instead")
-
-//#undef qDebug
-//#define qDebug(...)   warning("Use apxDebug instead")
-
-//=============================================================================
-#endif

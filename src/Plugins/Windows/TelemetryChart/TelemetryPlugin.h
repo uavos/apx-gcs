@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TELEMETRYPLUGIN_H
-#define TELEMETRYPLUGIN_H
+#pragma once
 
 #include "TelemetryFrame.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class TelemetryPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -38,5 +37,3 @@ public:
     QString descr() { return tr("Recorded data chart"); }
     QString icon() { return "chart-line"; }
 };
-//=============================================================================
-#endif // TelemetryPlugin_H

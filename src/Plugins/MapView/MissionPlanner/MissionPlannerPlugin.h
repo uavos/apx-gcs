@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MissionPlannerPlugin_H
-#define MissionPlannerPlugin_H
+#pragma once
+
 #include "MissionPlanner.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class MissionPlannerPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -35,5 +35,3 @@ public:
     QObject *createControl() override { return new MissionPlanner(); }
     QStringList depends() override { return QStringList() << "Location"; }
 };
-//=============================================================================
-#endif // MissionPlannerPlugin_H

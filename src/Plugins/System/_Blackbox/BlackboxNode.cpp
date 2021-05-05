@@ -32,7 +32,7 @@
 #include <Nodes/Nodes.h>
 
 #include <xbus/XbusNodeBlackbox.h>
-//=============================================================================
+
 BlackboxNode::BlackboxNode(Fact *parent, NodeItem *node)
     : BlackboxItem(parent, node->name(), "", "", Group, node->sn())
     , node(node)
@@ -74,7 +74,7 @@ BlackboxNode::BlackboxNode(Fact *parent, NodeItem *node)
 
     updateActions();
 }
-//=============================================================================
+
 void BlackboxNode::updateTotals()
 {
     quint64 begin = f_begin->value().toUInt();
@@ -86,7 +86,7 @@ void BlackboxNode::updateTotals()
     updateStats();
     updateActions();
 }
-//=============================================================================
+
 void BlackboxNode::addCommand(Fact *fact)
 {
     if (!fact->name().contains("read", Qt::CaseInsensitive)) {
@@ -97,7 +97,7 @@ void BlackboxNode::addCommand(Fact *fact)
     bb_read = fact->userData.toUInt();
     connect(fact, &Fact::triggered, this, &Fact::trigger);
 }
-//=============================================================================
+
 void BlackboxNode::request(Operation op, QByteArray data)
 {
     if (progress() < 0)
@@ -223,4 +223,3 @@ void BlackboxNode::serviceDataReceived(quint16 cmd, QByteArray data)
     //error
     apxMsgW() << tr("Unknown blackbox response") << cmd << data.size();
 }
-//=============================================================================

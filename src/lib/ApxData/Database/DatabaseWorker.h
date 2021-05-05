@@ -19,16 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatabaseWorker_H
-#define DatabaseWorker_H
-//=============================================================================
+#pragma once
+
 #include "DatabaseRequest.h"
 #include <atomic>
 #include <deque>
 #include <QtCore>
 #include <QtSql>
 class DatabaseSession;
-//=============================================================================
+
 class DatabaseWorker : public QThread
 {
     Q_OBJECT
@@ -63,5 +62,3 @@ private:
 signals:
     void infoChanged();
 };
-//=============================================================================
-#endif

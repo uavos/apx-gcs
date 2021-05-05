@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Sites_H
-#define Sites_H
-//=============================================================================
+#pragma once
+
 #include "LookupSites.h"
 #include "SiteEdit.h"
 #include <Fact/Fact.h>
 #include <QtCore>
 #include <QtLocation>
-//=============================================================================
+
 class Sites : public Fact
 {
     Q_OBJECT
@@ -52,5 +51,3 @@ private slots:
     void dbRemoveSite(QVariantMap item);
     void dbUpdateSite(QVariantMap item);
 };
-//=============================================================================
-#endif

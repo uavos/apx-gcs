@@ -24,11 +24,11 @@
 #include "TileLoader.h"
 #include <App/AppLog.h>
 #include <QtLocation/private/qgeotilespec_p.h>
-//=============================================================================
+
 static const unsigned char pngSignature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00};
 static const unsigned char jpegSignature[] = {0xFF, 0xD8, 0xFF, 0x00};
 static const unsigned char gifSignature[] = {0x47, 0x49, 0x46, 0x38, 0x00};
-//=============================================================================
+
 GeoMapReply::GeoMapReply(const QGeoTileSpec &spec, GeoTileFetcher *fetcher)
     : QGeoTiledMapReply(spec, fetcher)
 {
@@ -44,13 +44,13 @@ GeoMapReply::GeoMapReply(const QGeoTileSpec &spec, GeoTileFetcher *fetcher)
     connect(loader, &TileLoader::tileError, this, &GeoMapReply::tileError);
     loader->loadTile(_uid);
 }
-//=============================================================================
+
 GeoMapReply::~GeoMapReply()
 {
     abort();
     //qDebug()<<"~GeoMapReply";
 }
-//=============================================================================
+
 void GeoMapReply::tileLoaded(quint64 uid, QByteArray data)
 {
     if (uid != _uid)
@@ -69,14 +69,13 @@ void GeoMapReply::tileError(quint64 uid, QString errorString)
     setError(QGeoTiledMapReply::CommunicationError, errorString);
     setFinished(true);
 }
-//=============================================================================
+
 void GeoMapReply::abort()
 {
     if (TileLoader::instance())
         TileLoader::instance()->loadCancel(_uid);
 }
-//=============================================================================
-//=============================================================================
+
 QString GeoMapReply::getImageFormat(const QByteArray &image)
 {
     QString format;
@@ -94,4 +93,3 @@ QString GeoMapReply::getImageFormat(const QByteArray &image)
     }
     return format;
 }
-//=============================================================================

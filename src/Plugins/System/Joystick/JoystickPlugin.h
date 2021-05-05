@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef JoystickPlugin_H
-#define JoystickPlugin_H
+#pragma once
+
 #include "Joysticks.h"
 #include <App/AppSettings.h>
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class JoystickPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -38,5 +38,3 @@ public:
         return new Joysticks(AppSettings::instance()->f_interface);
     }
 };
-//=============================================================================
-#endif // JoystickPlugin_H

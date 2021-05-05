@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryReqWrite_H
-#define TelemetryReqWrite_H
-//=============================================================================
+#pragma once
+
 #include "TelemetryDB.h"
 #include <QtCore>
-//=============================================================================
+
 class DBReqTelemetryNewRecord : public DBReqTelemetry
 {
     Q_OBJECT
@@ -54,7 +53,7 @@ protected:
 signals:
     void idUpdated(quint64 telemetryID);
 };
-//=============================================================================
+
 class DBReqTelemetryWriteBase : public DBReqTelemetry
 {
     Q_OBJECT
@@ -71,7 +70,7 @@ public:
 protected:
     bool uplink;
 };
-//=============================================================================
+
 class DBReqTelemetryWriteData : public DBReqTelemetryWriteBase
 {
     Q_OBJECT
@@ -90,7 +89,7 @@ private:
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
+
 class DBReqTelemetryWriteEvent : public DBReqTelemetryWriteBase
 {
     Q_OBJECT
@@ -115,7 +114,7 @@ private:
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
+
 class DBReqTelemetryWriteInfo : public DBReqTelemetry
 {
     Q_OBJECT
@@ -135,7 +134,7 @@ private:
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
+
 class DBReqTelemetryWriteSharedInfo : public DBReqTelemetry
 {
     Q_OBJECT
@@ -153,6 +152,3 @@ private:
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
-//=============================================================================
-#endif

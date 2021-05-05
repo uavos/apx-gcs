@@ -19,15 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GeoPlugin_H
-#define GeoPlugin_H
+#pragma once
+
 #include "TileLoader.h"
 #include <App/PluginInterface.h>
 #include <QtCore/QObject>
 #include <QtCore>
 #include <QtLocation/QGeoServiceProviderFactory>
 #include <QtPlugin>
-//=============================================================================
+
 class GeoPlugin : public PluginInterface, public QGeoServiceProviderFactory
 {
     Q_OBJECT
@@ -57,5 +57,3 @@ public:
                                                   QGeoServiceProvider::Error *error,
                                                   QString *errorString) const override;
 };
-//=============================================================================
-#endif

@@ -19,10 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ApxDirs_H
-#define ApxDirs_H
+#pragma once
+
 #include <QtCore>
-//=============================================================================
+
 class AppDirs
 {
 public:
@@ -49,5 +49,3 @@ public:
     //HELPERS
     static bool copyPath(QString sourceDir, QString destinationDir);
 };
-//=============================================================================
-#endif

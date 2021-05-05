@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KMLOVERLAYPLUGIN_H
-#define KMLOVERLAYPLUGIN_H
+#pragma once
 
 #include "kmloverlay.h"
 #include <App/PluginInterface.h>
@@ -36,5 +35,3 @@ public:
     QObject *createControl() override { return new KmlOverlay(); }
     QStringList depends() override { return QStringList() << "MissionPlanner"; }
 };
-
-#endif //KMLOVERLAYPLUGIN_H

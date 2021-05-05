@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "DelayedEvent.h"
-//=============================================================================
+
 DelayedEvent::DelayedEvent(int interval, bool forceTimeout, QObject *parent)
     : QTimer(parent)
     , forceTimeout(forceTimeout)
@@ -31,11 +31,10 @@ DelayedEvent::DelayedEvent(int interval, bool forceTimeout, QObject *parent)
     connect(this, &QTimer::timeout, this, [this]() { time.start(); });
     time.start();
 }
-//=============================================================================
+
 void DelayedEvent::schedule()
 {
     if (forceTimeout && isActive() && time.elapsed() >= (interval() * 5))
         return;
     start();
 }
-//=============================================================================

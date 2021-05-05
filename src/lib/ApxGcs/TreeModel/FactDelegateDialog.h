@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactDelegateDialog_H
-#define FactDelegateDialog_H
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtWidgets>
-//=============================================================================
+
 class FactDelegateDialog : public QDialog
 {
     Q_OBJECT
@@ -58,5 +58,3 @@ private slots:
     void doSaveGeometry();
     void doRestoreGeometry();
 };
-//=============================================================================
-#endif

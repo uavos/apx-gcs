@@ -26,7 +26,7 @@
 #include <QPainter>
 #include <QPalette>
 #include <QSvgRenderer>
-//=============================================================================
+
 QHash<QString, QString> MaterialIcon::map;
 
 MaterialIcon::MaterialIcon(const QString &name, const QColor &color)
@@ -34,7 +34,7 @@ MaterialIcon::MaterialIcon(const QString &name, const QColor &color)
 {
     //https://materialdesignicons.com/
 }
-//=============================================================================
+
 QIcon MaterialIcon::icon(const QString &name, const QColor &color) const
 {
     QString c = getChar(name);
@@ -47,7 +47,7 @@ QIcon MaterialIcon::icon(const QString &name, const QColor &color) const
     engine->setBaseColor(color);
     return QIcon(engine);
 }
-//=============================================================================
+
 QString MaterialIcon::getChar(const QString &name)
 {
     if (map.isEmpty())
@@ -61,7 +61,7 @@ QString MaterialIcon::getChar(const QString &name)
     }
     return c;
 }
-//=============================================================================
+
 void MaterialIcon::updateMap()
 {
     QFile res;
@@ -94,8 +94,7 @@ void MaterialIcon::updateMap()
     if (map.isEmpty())
         map.insert("", QChar('\0'));
 }
-//=============================================================================
-//=============================================================================
+
 QFontIconEngine::QFontIconEngine()
     : QIconEngine()
 {}
@@ -108,7 +107,7 @@ void QFontIconEngine::paint(QPainter *painter,
 
     QFont font = QFont(mFontFamily);
     int drawSize = rect.height(); //qRound(rect.height() * 0.8);
-    font.setPixelSize(drawSize > 1 ? drawSize : 1);
+    font.setPixelSize(drawSize < 5 ? 5 : drawSize);
 
     QColor penColor;
     if (!mBaseColor.isValid())
@@ -157,5 +156,3 @@ QIconEngine *QFontIconEngine::clone() const
     engine->setBaseColor(mBaseColor);
     return engine;
 }
-//=============================================================================
-//=============================================================================

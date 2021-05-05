@@ -28,7 +28,7 @@
 #include <QAction>
 
 #include <Database/DatabaseLookup.h>
-//=============================================================================
+
 NodesFrame::NodesFrame(QWidget *parent)
     : QWidget(parent)
     , vehicle(nullptr)
@@ -61,7 +61,7 @@ NodesFrame::NodesFrame(QWidget *parent)
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &NodesFrame::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
 }
-//=============================================================================
+
 void NodesFrame::vehicleSelected(Vehicle *v)
 {
     if (vehicle)
@@ -118,7 +118,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
 
     updateActions();
 }
-//=============================================================================
+
 void NodesFrame::updateActions(void)
 {
     bool bMod = vehicle->f_nodes->modified();
@@ -132,7 +132,7 @@ void NodesFrame::updateActions(void)
     }
     aUndo->setEnabled(bMod);
 }
-//=============================================================================
+
 void NodesFrame::treeContextMenu(const QPoint &pos)
 {
     //scan selected items
@@ -173,7 +173,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
     if (!m.isEmpty())
         m.exec(treeWidget->tree->mapToGlobal(pos));
 }
-//=============================================================================
+
 void NodesFrame::aUndo_triggered(void)
 {
     treeWidget->tree->setFocus();
@@ -195,7 +195,7 @@ void NodesFrame::aDefaults_triggered(void)
     if (list.isEmpty())
         vehicle->f_nodes->restoreDefaults();
 }
-//=============================================================================
+
 void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
 {
     if (fact->menu()) {
@@ -294,4 +294,3 @@ void NodesFrame::updateMenuTitles(QMenu *menu)
         updateMenuTitles(i);
     }
 }
-//=============================================================================

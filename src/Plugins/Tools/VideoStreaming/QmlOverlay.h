@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef QmlOverlay_H
-#define QmlOverlay_H
+#pragma once
 
 #include <QImage>
 #include <QtCore>
@@ -74,5 +73,3 @@ private:
     void createFbo(const QSize &size);
     void destroyFbo();
 };
-
-#endif

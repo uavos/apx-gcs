@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Updater_H
-#define Updater_H
+#pragma once
+
 #include <QtCore>
 
 #include <ApxMisc/DelayedEvent.h>
@@ -31,7 +31,7 @@
 #ifdef Q_OS_LINUX
 #include <AppImageAutoUpdater.h>
 #endif
-//=============================================================================
+
 class Updater : public Fact
 {
     Q_OBJECT
@@ -57,5 +57,3 @@ public slots:
     void check();
     void checkInBackground();
 };
-//=============================================================================
-#endif

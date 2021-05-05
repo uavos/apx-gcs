@@ -29,7 +29,7 @@
 #include <xbus/XbusVehicle.h>
 
 #include <Protocols/PStream.h>
-//=============================================================================
+
 DatalinkConnection::DatalinkConnection(Fact *parent,
                                        const QString &name,
                                        const QString &title,
@@ -55,7 +55,7 @@ DatalinkConnection::DatalinkConnection(Fact *parent,
     connect(this, &DatalinkConnection::statusChanged, this, &DatalinkConnection::updateTitle);
     setUrl(title);
 }
-//=============================================================================
+
 void DatalinkConnection::updateDescr()
 {
     const QMetaEnum &e = QMetaEnum::fromType<Datalink::NetworkMask>();
@@ -86,7 +86,7 @@ void DatalinkConnection::updateTitle()
         s = QString("%1 [%2]").arg(s).arg(sx);
     setTitle(s);
 }
-//=============================================================================
+
 void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
 {
     if (!(activated() && active()))
@@ -95,7 +95,7 @@ void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
         return;
     write(packet);
 }
-//=============================================================================
+
 void DatalinkConnection::readDataAvailable()
 {
     QByteArray packet = read();
@@ -123,7 +123,7 @@ void DatalinkConnection::closed()
 {
     setActive(false);
 }
-//=============================================================================
+
 bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
 {
     PStreamReader stream(packet);
@@ -145,7 +145,7 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
 
     return true;
 }
-//=============================================================================
+
 void DatalinkConnection::open()
 {
     qWarning() << "not implemented";
@@ -164,8 +164,7 @@ void DatalinkConnection::write(const QByteArray &packet)
     Q_UNUSED(packet)
     qWarning() << "not implemented";
 }
-//=============================================================================
-//=============================================================================
+
 QString DatalinkConnection::url() const
 {
     return m_url;
@@ -243,4 +242,3 @@ void DatalinkConnection::setBlockService(const bool &v)
     m_blockService = v;
     emit blockServiceChanged();
 }
-//=============================================================================

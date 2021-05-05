@@ -27,7 +27,7 @@
 #include <App/AppLog.h>
 
 #include <tcp_ports.h>
-//=============================================================================
+
 DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
     : DatalinkTcpSocket(parent,
                         new QTcpSocket(),
@@ -58,7 +58,7 @@ DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
 
     updateStats();
 }
-//=============================================================================
+
 void DatalinkRemote::setRemoteUrl(QUrl url)
 {
     //qDebug()<<url<<url.isValid()<<url.toString();
@@ -85,26 +85,26 @@ QUrl DatalinkRemote::fixUrl(QUrl url)
     }
     return url;
 }
-//=============================================================================
+
 void DatalinkRemote::updateStats()
 {
     if (time.isValid()) {
         int t = time.elapsed() / 1000;
         setDescr(QString("%1 (%2)")
                      .arg(t >= 60 ? tr("No service") : tr("Alive"))
-                     .arg(t == 0 ? tr("now")
-                                 : t >= 60 ? QString("%1 %2").arg(t / 60).arg(tr("min"))
-                                           : QString("%1 %2").arg(t).arg(tr("sec"))));
+                     .arg(t == 0    ? tr("now")
+                          : t >= 60 ? QString("%1 %2").arg(t / 60).arg(tr("min"))
+                                    : QString("%1 %2").arg(t).arg(tr("sec"))));
         updateStatsTimer.start(t > 60 ? 60000 : 5000);
     }
 }
-//=============================================================================
+
 void DatalinkRemote::updateTimeout()
 {
     time.start();
     updateStatsTimer.start(1000);
 }
-//=============================================================================
+
 void DatalinkRemote::reconnect()
 {
     if (activated()) {
@@ -115,7 +115,7 @@ void DatalinkRemote::reconnect()
     }
     apxMsg() << QString("#%1: %2").arg(tr("server disconnected")).arg(title());
 }
-//=============================================================================
+
 void DatalinkRemote::open()
 {
     //check if already present in connections
@@ -136,7 +136,7 @@ void DatalinkRemote::open()
     retry++;
     connectToHost(hostAddress, hostPort);
 }
-//=============================================================================
+
 void DatalinkRemote::hostLookupDone(QHostInfo info)
 {
     if (info.error() != QHostInfo::NoError) {
@@ -147,4 +147,3 @@ void DatalinkRemote::hostLookupDone(QHostInfo info)
     hostAddress = info.addresses().first();
     open();
 }
-//=============================================================================

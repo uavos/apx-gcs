@@ -19,11 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppNotify_H
-#define AppNotify_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
-//=============================================================================
+
 class AppNotify : public QObject
 {
     Q_OBJECT
@@ -71,5 +70,3 @@ signals:
     void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(AppNotify::NotifyFlags)
-//=============================================================================
-#endif

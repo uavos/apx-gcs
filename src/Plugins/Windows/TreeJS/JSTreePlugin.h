@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SystreePlugin_H
-#define SystreePlugin_H
+#pragma once
 
 #include "JSTreeView.h"
 #include <App/App.h>
 #include <App/PluginInterface.h>
 #include <TreeModel/JSTreeModel.h>
 #include <QtCore>
-//=============================================================================
+
 class SystreePlugin : public PluginInterface
 {
     Q_OBJECT
@@ -40,5 +39,3 @@ public:
     QString descr() { return tr("Developer JavaScript tree view"); }
     QString icon() { return "developer-board"; }
 };
-//=============================================================================
-#endif

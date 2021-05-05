@@ -24,7 +24,7 @@
 #include <Fact/Fact.h>
 
 AppNotify *AppNotify::_instance = nullptr;
-//=============================================================================
+
 AppNotify::AppNotify(QObject *parent)
     : QObject(parent)
 {
@@ -41,8 +41,7 @@ AppNotify::AppNotify(QObject *parent)
             &AppNotify::logWarningMessage,
             Qt::QueuedConnection);
 }
-//=============================================================================
-//=============================================================================
+
 void AppNotify::report(QString msg, AppNotify::NotifyFlags flags, QString subsystem)
 {
     emit notification(msg, subsystem, flags, nullptr);
@@ -59,5 +58,3 @@ void AppNotify::logWarningMessage(QString msg)
 {
     emit notification(msg, QString(), Console | Warning, nullptr);
 }
-//=============================================================================
-//=============================================================================

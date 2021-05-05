@@ -22,7 +22,7 @@
 
 #include "RunGuard.h"
 #include <QCryptographicHash>
-//=============================================================================
+
 namespace {
 
 QString generateKeyHash(const QString &key, const QString &salt)

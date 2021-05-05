@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SourceEdit_H
-#define SourceEdit_H
+#pragma once
+
 #include <QPlainTextEdit>
 #include <QSyntaxHighlighter>
 class Highlighter;
-//=============================================================================
+
 class SourceEdit : public QPlainTextEdit
 {
     Q_OBJECT
@@ -43,7 +43,7 @@ protected:
 public slots:
     void cleanText();
 };
-//=============================================================================
+
 class Highlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
@@ -73,5 +73,3 @@ private:
 
     QTextCharFormat multiLineCommentFormat;
 };
-//=============================================================================
-#endif

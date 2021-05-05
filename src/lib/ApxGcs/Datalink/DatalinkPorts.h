@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatalinkPorts_H
-#define DatalinkPorts_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 class DatalinkPort;
 class Datalink;
-//=============================================================================
+
 class DatalinkPorts : public Fact
 {
     Q_OBJECT
@@ -59,5 +58,3 @@ public slots:
     void load();
     void save();
 };
-//=============================================================================
-#endif

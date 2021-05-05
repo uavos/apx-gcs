@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryReqRead_H
-#define TelemetryReqRead_H
-//=============================================================================
+#pragma once
+
 #include "TelemetryDB.h"
 #include <QtCore>
-//=============================================================================
+
 class DBReqTelemetryFindCache : public DBReqTelemetry
 {
     Q_OBJECT
@@ -46,7 +45,7 @@ signals:
     void cacheFound(quint64 telemetryID);
     void cacheNotFound(quint64 telemetryID);
 };
-//=============================================================================
+
 class DBReqTelemetryMakeCache : public DBReqTelemetryFindCache
 {
     Q_OBJECT
@@ -63,7 +62,7 @@ protected:
     bool forceUpdate;
     bool run(QSqlQuery &query);
 };
-//=============================================================================
+
 class DBReqTelemetryMakeStats : public DBReqTelemetryMakeCache
 { //will make cache and stats
     Q_OBJECT
@@ -80,7 +79,7 @@ signals:
     void statsFound(quint64 telemetryID, QVariantMap stats);
     void statsUpdated(quint64 telemetryID, QVariantMap stats);
 };
-//=============================================================================
+
 class DBReqTelemetryReadData : public DBReqTelemetry
 {
     Q_OBJECT
@@ -107,8 +106,7 @@ signals:
                     DatabaseRequest::Records records,
                     QMap<quint64, QString> fieldNames);
 };
-//=============================================================================
-//=============================================================================
+
 //Player
 class DBReqTelemetryReadEvents : public DBReqTelemetry
 {
@@ -129,7 +127,7 @@ protected:
 signals:
     void eventsLoaded(DatabaseRequest::Records records);
 };
-//=============================================================================
+
 class DBReqTelemetryReadEvent : public DBReqTelemetry
 {
     Q_OBJECT
@@ -151,7 +149,7 @@ protected:
 signals:
     void eventLoaded(QString value, QString uid, bool uplink);
 };
-//=============================================================================
+
 class DBReqTelemetryReadConfData : public DBReqTelemetry
 {
     Q_OBJECT
@@ -171,8 +169,7 @@ protected:
 signals:
     void confLoaded(DatabaseRequest::Records records);
 };
-//=============================================================================
-//=============================================================================
+
 //share
 class DBReqTelemetryReadSharedHashId : public DBReqTelemetry
 {
@@ -197,7 +194,7 @@ signals:
     void foundID(quint64 telemetryID);
     void foundHash(QString hash);
 };
-//=============================================================================
+
 class DBReqTelemetryFindDataHash : public DBReqTelemetry
 {
     Q_OBJECT
@@ -216,7 +213,7 @@ protected:
 signals:
     void foundID(quint64 telemetryID);
 };
-//=============================================================================
+
 class DBReqTelemetryDeleteRecord : public DBReqTelemetry
 {
     Q_OBJECT
@@ -234,5 +231,3 @@ protected:
 signals:
     void deletedID(quint64 telemetryID);
 };
-//=============================================================================
-#endif
