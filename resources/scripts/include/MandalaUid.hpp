@@ -974,7 +974,7 @@ namespace est
             enum { lon = 0x414 };
             enum { hmsl = 0x415 };
             enum { agl = 0x416 };
-            enum { course = 0x417 };
+            enum { bearing = 0x417 };
             enum { speed = 0x418 };
             enum { altitude = 0x419 };
             enum { vspeed = 0x41a };
@@ -1169,7 +1169,7 @@ namespace cmd
             enum { lat = 0x641 };
             enum { lon = 0x642 };
             enum { hmsl = 0x643 };
-            enum { course = 0x644 };
+            enum { bearing = 0x644 };
             enum { airspeed = 0x645 };
             enum { altitude = 0x646 };
             enum { vspeed = 0x647 };

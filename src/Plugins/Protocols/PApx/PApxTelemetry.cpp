@@ -264,7 +264,7 @@ bool PApxTelemetry::unpack_xpdr(PStreamReader &stream)
     values.insert(mandala::est::nav::pos::altitude::uid, xpdr.alt);
 
     values.insert(mandala::est::nav::pos::speed::uid, xpdr.speed);
-    values.insert(mandala::est::nav::pos::course::uid, xpdr.course);
+    values.insert(mandala::est::nav::pos::bearing::uid, xpdr.bearing);
     values.insert(mandala::cmd::nav::proc::mode::uid, xpdr.mode);
 
     emit xpdrData(values);

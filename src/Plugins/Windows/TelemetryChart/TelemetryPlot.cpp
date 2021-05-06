@@ -305,7 +305,7 @@ void TelemetryPlot::refreshCalculated()
 {
     bool ok;
     if (expCalc.isEmpty())
-        expCalc = "est.att.yaw-est.calc.course";
+        expCalc = "est.att.yaw-est.calc.bearing";
     QString exp = QInputDialog::getText(nullptr,
                                         tr("Calculated field"),
                                         tr("JavaScript expression:"),

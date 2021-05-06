@@ -495,10 +495,12 @@ Item {
                 id: tecsFlag
                 height: pfdScene.flagHeight
                 fact: f_tecs
+                property bool controlled: false
                 readonly property real v: fact.value
-                show: v > 0 && v < 1
+                show: (controlled||v > 0) && v < 1
                 text: fact.name.toUpperCase()
                 status_reset: 1
+                onVChanged: if(v>0 && v<1) controlled=true
                 CleanText {
                     readonly property real v: tecsFlag.v
                     fact: tecsFlag.fact

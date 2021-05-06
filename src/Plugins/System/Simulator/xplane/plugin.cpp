@@ -53,7 +53,7 @@ static struct
     XPLMDataRef psi;
     XPLMDataRef lat, lon, alt;
     XPLMDataRef vx, vy, vz;
-    XPLMDataRef course;
+    XPLMDataRef bearing;
     XPLMDataRef airspeed;
     XPLMDataRef agl;
     XPLMDataRef rpm;
@@ -294,7 +294,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     xp.lon = XPLMFindDataRef("sim/flightmodel/position/longitude");
     xp.alt = XPLMFindDataRef("sim/flightmodel/position/elevation");
 
-    xp.course = XPLMFindDataRef("sim/flightmodel/position/hpath");
+    xp.bearing = XPLMFindDataRef("sim/flightmodel/position/hpath");
 
     xp.vx = XPLMFindDataRef("sim/flightmodel/position/local_vx");
     xp.vy = XPLMFindDataRef("sim/flightmodel/position/local_vy");

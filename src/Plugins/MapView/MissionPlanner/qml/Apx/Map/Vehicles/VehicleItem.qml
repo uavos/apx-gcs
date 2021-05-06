@@ -41,8 +41,8 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property real f_pitch: vm.est.att.pitch.value
     readonly property real f_yaw: vm.est.att.yaw.value
     readonly property real f_altitude: vm.est.pos.altitude.value
-    readonly property real f_cmd_course: vm.cmd.pos.course.value
-    readonly property real f_course: vm.est.pos.course.value
+    readonly property real f_cmd_bearing: vm.cmd.pos.bearing.value
+    readonly property real f_bearing: vm.est.pos.bearing.value
     readonly property real f_windHdg: vm.est.wind.heading.value
     readonly property real f_windSpd: vm.est.wind.speed.value
     readonly property int f_mode: vm.cmd.proc.mode.value
@@ -213,7 +213,7 @@ MapQuickItem {  //to be used inside MapComponent only
             transform: Rotation{
                 origin.x: cmdCrsArrow.width/2
                 origin.y: cmdCrsArrow.height
-                property real v: f_cmd_course
+                property real v: f_cmd_bearing
                 angle: v-map.bearing
                 Behavior on v { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             }
@@ -231,7 +231,7 @@ MapQuickItem {  //to be used inside MapComponent only
             transform: Rotation{
                 origin.x: crsArrow.width/2
                 origin.y: crsArrow.height
-                property real v: f_course
+                property real v: f_bearing
                 angle: v-map.bearing
                 Behavior on v { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             }

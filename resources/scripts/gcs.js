@@ -163,7 +163,7 @@ function jsw_Y(v, h) { cmd.rc.yaw = limit(v, -1, 1); }
 
 // Encoders
 function inc_ALT(v) { cmd.pos.altitude = limit(cmd.pos.altitude + v, 0, 30000); }
-function inc_CRS(v) { cmd.pos.course = bound(cmd.pos.course + v); }
+function inc_CRS(v) { cmd.pos.bearing = bound(cmd.pos.bearing + v); }
 function inc_SPD(v) { cmd.pos.airspeed = limit(cmd.pos.airspeed + v, 0, 100); }
 function inc_ADJ(v) { cmd.proc.adj = limit(cmd.proc.adj + v, -100, +100); }
 function inc_FLAPS(v) { ctr.wing.flaps = limit(ctr.wing.flaps + v, 0, 1); }

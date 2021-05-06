@@ -46,7 +46,7 @@ protected:
     QGeoPath getPath();
 
 private:
-    int icourse;
+    int m_bearing;
 
 private slots:
     void updateTitle();

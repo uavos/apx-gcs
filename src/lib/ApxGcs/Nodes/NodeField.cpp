@@ -76,6 +76,8 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
     setOption(ModifiedTrack);
     setUnits(funits);
 
+    // TODO increment property
+
     if (_type == "real") {
         setDataType(Float);
         setPrecision(6);

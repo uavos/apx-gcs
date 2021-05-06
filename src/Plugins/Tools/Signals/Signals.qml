@@ -69,7 +69,7 @@ Rectangle {
             }
             SignalButton {
                 text: "Y"
-                values: [ mandala.cmd.pos.course, mandala.cmd.att.yaw, mandala.est.att.yaw ]
+                values: [ mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw ]
             }
             SignalButton {
                 text: "Axy"

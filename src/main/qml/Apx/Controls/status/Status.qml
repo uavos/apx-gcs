@@ -229,8 +229,8 @@ Rectangle {
                 text: qsTr("LR")
                 fact: f_radius
                 visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
-                property real v: fact.value
-                value: v>=1000?(v/1000).toFixed(1):v.toFixed()
+                value: apx.distanceToString(fact.value)
+                valueScale: 0.8
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }

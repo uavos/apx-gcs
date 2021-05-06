@@ -3,8 +3,7 @@
         "en_US": "Vicki",
         "ru_RU": "Milena"
     },
-    "phrases":
-        [
+    "phrases": [
         {
             "msg": "configuration updated",
             "say": "configuration accepted"
@@ -115,7 +114,6 @@
             "msg": "throttle override off",
             "say": "throttle control"
         },
-
         {
             "_comment": "# ------ MODE -----------------"
         },
@@ -125,7 +123,7 @@
         },
         {
             "msg": "procedure UAV",
-            "say": "course control"
+            "say": "heading control"
         },
         {
             "msg": "procedure STBY",
@@ -149,9 +147,8 @@
         },
         {
             "msg": "procedure LANDING",
-            "say": "landing procedure initiated"
+            "say": "landing"
         },
-
         {
             "_comment": "# ------ TAXI -----------------"
         },
@@ -164,7 +161,6 @@
         {
             "msg": "taxi finished"
         },
-
         {
             "_comment": "# ------ TAKEOFF -----------------"
         },
@@ -249,7 +245,6 @@
             "msg": "landing gear floating",
             "say": "in flight"
         },
-
         {
             "_comment": "# ------ touchdown -----------------"
         },
