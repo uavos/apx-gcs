@@ -716,6 +716,7 @@ Item {
                 text: (thrcut && value==0)?qsTr("CUT"):(value*100).toFixed()
                 toolTip: fact.title +"[%]"+", "+f_reg_thrcut.title+" ("+qsTr("red")+"), "+f_reg_throvr.title+" ("+qsTr("blue")+"), "+f_reg_thr.title+" ("+qsTr("yellow")+")"
                 show: true
+                bold: thrcut
                 blinking: value>=0.98
                 frame: !(thrctr || throvr || thrcut)
                 type: throvr

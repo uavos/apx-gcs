@@ -112,6 +112,7 @@ MissionObject {
 
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90))
+    property variant appCircleCoordinateDefault: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadiusDefault,f_heading+(f_type===0?-90:90))
     property real appCircleRadiusDefault: f_approach/2
     property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
 
@@ -158,8 +159,8 @@ MissionObject {
         c.border.width=Qt.binding(function(){return appCircleLineWidth})
         c.opacity=Qt.binding(function(){return appCircleOpacity})
         c.visible=Qt.binding(function(){return appCircleVisible})
-        c.center=Qt.binding(function(){return appCircleCoordinate})
-        c.radius=Qt.binding(function(){return appCircleRadius})
+        c.center=appCircleCoordinateDefault //Qt.binding(function(){return appCircleCoordinate})
+        c.radius=appCircleRadiusDefault //Qt.binding(function(){return appCircleRadius})
 
         //delta rect
         c=createMapComponent(deltaC)

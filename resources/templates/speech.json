@@ -147,7 +147,7 @@
         },
         {
             "msg": "procedure LANDING",
-            "say": "landing"
+            "say": "landing procedure initiated"
         },
         {
             "_comment": "# ------ TAXI -----------------"
