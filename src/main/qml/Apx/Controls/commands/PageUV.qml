@@ -57,7 +57,7 @@ RowLayout {
         Layout.alignment: Qt.AlignTop
         key: f_mode.text
         controls: {
-            "TAXI": [btnCANCEL,btnATAXI,btnBRK_TAXI],
+            "TAXI": [btnCANCEL,btnATAXI,btnINC,btnDEC,btnBRK_TAXI],
             "TAKEOFF": [btnCANCEL,btnNEXT,btnBRK],
             "LANDING": [btnCANCEL,btnNEXT,btnBRK,btnAIRBRK],
             "WPT": [btnINC,btnDEC],

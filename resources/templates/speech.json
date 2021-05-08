@@ -25,6 +25,9 @@
             "msg": "waypoint passed"
         },
         {
+            "msg": "point passed"
+        },
+        {
             "msg": "engine start"
         },
         {
