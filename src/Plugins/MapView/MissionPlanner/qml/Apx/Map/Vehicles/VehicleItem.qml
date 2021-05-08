@@ -49,8 +49,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
     readonly property bool f_LDTO: f_mode === proc_mode_LANDING || f_mode === proc_mode_TAKEOFF
 
-    readonly property var f_xtrack: mandala.est.wpt.xtrack
-    readonly property var f_thdg: mandala.est.wpt.thdg
+    readonly property real m_xtrack: mandala.est.wpt.xtrack.value
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
@@ -159,7 +158,6 @@ MapQuickItem {  //to be used inside MapComponent only
             opacity: ui.effects?(active?0.9:0.7):1
             scale: active?1:0.6
 
-
             transform: [
                 Scale {
                     origin.x: image.width/2
@@ -252,6 +250,29 @@ MapQuickItem {  //to be used inside MapComponent only
                 angle: vyaw-map.bearing
             }
         }
+        Image {
+            id: xtrackArrow
+            source: "../icons/hdg-arrow.svg"
+            z: image.z-10
+            sourceSize.height: image.width*2
+            fillMode: Image.PreserveAspectFit
+            visible: active && isTrack
+            anchors.bottom: image.verticalCenter
+            anchors.horizontalCenter: image.horizontalCenter
+            readonly property real max: image.width*0.8
+            readonly property real value: limit(-m_xtrack,-max,max)
+            transform: [
+                Translate{
+                    x: xtrackArrow.value
+                },
+                Rotation{
+                    origin.x: xtrackArrow.width/2
+                    origin.y: xtrackArrow.height
+                    angle: vyaw-map.bearing
+                }
+            ]
+        }
+
         SvgImage {
             id: windArrow
             z: image.z-100
@@ -270,22 +291,6 @@ MapQuickItem {  //to be used inside MapComponent only
             opacity: ui.effects?0.9:1
             property real v: f_windHdg
             Behavior on v { enabled: ui.smooth; RotationAnimation {duration: 1000; direction: RotationAnimation.Shortest; } }
-        }
-
-        Image {
-            id: xtrackArrow
-            source: "../icons/hdg-arrow.svg"
-            z: image.z-200
-            sourceSize.height: image.width*2
-            fillMode: Image.PreserveAspectFit
-            visible: active
-            anchors.centerIn: image
-            anchors.horizontalCenterOffset: f_xtrack.value
-            transform: Rotation{
-                origin.x: crsArrow.width/2
-                origin.y: crsArrow.height/2
-                angle: vyaw-map.bearing
-            }
         }
 
 
