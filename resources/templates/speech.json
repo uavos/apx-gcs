@@ -28,6 +28,9 @@
             "msg": "point passed"
         },
         {
+            "msg": "taxiway passed"
+        },
+        {
             "msg": "engine start"
         },
         {
