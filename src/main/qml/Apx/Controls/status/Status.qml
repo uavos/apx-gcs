@@ -35,7 +35,7 @@ Rectangle {
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_dist: mandala.est.wpt.dist
-    readonly property var f_energy: mandala.est.sys.energy
+    readonly property var f_fuel: mandala.est.sys.fuel
     readonly property var f_wpidx: mandala.cmd.proc.wp
     readonly property var f_loops: mandala.cmd.proc.loops
     readonly property var f_xtrack: mandala.est.wpt.xtrack
@@ -188,7 +188,7 @@ Rectangle {
             }
             ValueButton {
                 text: qsTr("FL")
-                fact: f_energy
+                fact: f_fuel
                 value: fact.value.toFixed(1)
                 visible: ui.test || fact.value>0
                 valueScale: 0.8
