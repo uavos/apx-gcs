@@ -146,7 +146,7 @@
             "say": "taxi mode"
         },
         {
-            "msg": "procedure LANDING",
+            "msg": "landing stage init",
             "say": "landing procedure initiated"
         },
         {
@@ -191,6 +191,10 @@
         {
             "msg": "takeoff stage finished",
             "say": "takeoff finished"
+        },
+        {
+            "msg": "takeoff action failure",
+            "say": "takeoff denied"
         },
         {
             "msg": "takeoff cancelled"
