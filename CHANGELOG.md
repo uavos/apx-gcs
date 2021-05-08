@@ -1,3 +1,17 @@
+# [APX Ground Control v11.0.199](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.199) (05/08/21)
+
+> Branch: `main`\
+> Date: `05/08/21 16:18:26`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/4254a3cf919d1d4df35bd748ab26be72359ee393...2f85b8fb890eec22324ef47bd7c813904ed22e95)
+
+## New Features
+* simulator slip angle simulation
+* crosstrack error map display
+* taxiway select buttons
+
+## Bug Fixes
+* runway shows original circle on landing
+
 # [APX Ground Control v11.0.190](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.190) (05/05/21)
 
 > Branch: `main`\
