@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KMLOVERLAY_H
-#define KMLOVERLAY_H
+#pragma once
 
 #include "kmlpolygonsmodel.h"
 #include <Fact/Fact.h>
@@ -58,5 +57,3 @@ private slots:
 signals:
     void centerChanged();
 };
-
-#endif //KMLOVERLAY_H

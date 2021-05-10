@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BlackboxNode_H
-#define BlackboxNode_H
-//=============================================================================
+#pragma once
+
 #include "BlackboxItem.h"
 #include <Fact/Fact.h>
 class NodeItem;
 class Vehicle;
-//=============================================================================
+
 class BlackboxNode : public BlackboxItem
 {
     Q_OBJECT
@@ -68,5 +67,5 @@ public slots:
     void download() override;
     void stop() override;
 };
-//=============================================================================
+
 #endif

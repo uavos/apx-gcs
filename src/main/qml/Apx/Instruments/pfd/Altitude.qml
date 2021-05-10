@@ -34,10 +34,11 @@ ControlArea {
     readonly property var f_ref_hmsl: mandala.est.ref.hmsl
 
     readonly property var f_agl: mandala.est.pos.agl
+    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
 
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
-    readonly property bool m_agl_valid: m_agl_status
+    readonly property bool m_agl_valid: m_ahrs_hagl
 
 
 
@@ -234,7 +235,7 @@ ControlArea {
         Text {
             visible: f_agl.value>0
             text: f_agl.value.toFixed(f_agl.value>10?0:1)
-            color: "yellow"
+            color: m_agl_status?"yellow":"red"
             anchors.right: parent.left
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter

@@ -22,7 +22,7 @@
 #include "DatabaseWorker.h"
 #include "DatabaseSession.h"
 #include <App/AppLog.h>
-//=============================================================================
+
 DatabaseWorker::DatabaseWorker(DatabaseSession *db, QObject *parent)
     : QThread(parent)
     , db(db)
@@ -115,7 +115,7 @@ void DatabaseWorker::run()
     }
     queue.clear();
 }
-//=============================================================================
+
 void DatabaseWorker::request(DatabaseRequest *req)
 {
     if (req && !isInterruptionRequested()) {
@@ -128,7 +128,7 @@ void DatabaseWorker::request(DatabaseRequest *req)
         }
     }
 }
-//=============================================================================
+
 int DatabaseWorker::queueSize()
 {
     QReadLocker lock(&queueMutex);
@@ -138,7 +138,7 @@ int DatabaseWorker::rate()
 {
     return m_rate;
 }
-//=============================================================================
+
 bool DatabaseWorker::infoUpdate(bool force)
 {
     if (isInterruptionRequested())
@@ -157,13 +157,13 @@ bool DatabaseWorker::infoUpdate(bool force)
     emit infoChanged();
     return true;
 }
-//=============================================================================
+
 void DatabaseWorker::enqueue(DatabaseRequest *req)
 {
     QWriteLocker lock(&queueMutex);
     queue.push_back(req);
 }
-//=============================================================================
+
 void DatabaseWorker::eraseRequests(int count)
 {
     QWriteLocker lock(&queueMutex);

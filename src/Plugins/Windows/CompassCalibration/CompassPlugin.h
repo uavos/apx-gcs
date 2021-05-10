@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMPASSPLUGIN_H
-#define COMPASSPLUGIN_H
+#pragma once
 
 #include "CompassFrame.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class CompassPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -38,5 +37,3 @@ public:
     QString descr() { return tr("Hard-iron compensation"); }
     QString icon() { return "compass"; }
 };
-//=============================================================================
-#endif // CompassPlugin_H

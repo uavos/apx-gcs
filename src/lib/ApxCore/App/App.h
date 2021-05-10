@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef App_H
-#define App_H
+#pragma once
+
 #include <QApplication>
 #include <QFont>
 #include <QQuickWindow>
@@ -36,7 +36,7 @@
 #include "AppPrefs.h"
 #include "AppRoot.h"
 #include "AppSettings.h"
-//=============================================================================
+
 class App : public AppBase
 {
     Q_OBJECT
@@ -164,5 +164,3 @@ signals:
     void windowChanged();
     void scaleChanged();
 };
-//=============================================================================
-#endif

@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KMLGEOPOLYGON_H
-#define KMLGEOPOLYGON_H
+#pragma once
 
 #include <QGeoPolygon>
 #include <QPolygon>
@@ -70,5 +69,3 @@ private:
 signals:
     void colorChanged();
 };
-
-#endif // KMLGEOPOLYGON_H

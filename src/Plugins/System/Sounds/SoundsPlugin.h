@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SoundsPlugin_H
-#define SoundsPlugin_H
+#pragma once
+
 #include "Sounds.h"
 #include <App/AppSettings.h>
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class SoundsPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -35,5 +35,3 @@ public:
     int flags() override { return Feature | System; }
     QObject *createControl() override { return new Sounds(AppSettings::instance()->f_interface); }
 };
-//=============================================================================
-#endif // SoundsPlugin_H

@@ -261,7 +261,7 @@ bool FactData::updateValue(const QVariant &v)
     }
     return true;
 }
-//=============================================================================
+
 int FactData::enumValue(const QVariant &v) const
 {
     if (m_enumStrings.isEmpty())
@@ -360,7 +360,6 @@ QVariant FactData::_type_value(const QVariant &v) const
     return v;
 }
 
-//=============================================================================
 static double cint(double x)
 {
     double i;
@@ -425,7 +424,7 @@ QString FactData::toText(const QVariant &v) const
     }
     return v.toString();
 }
-//=============================================================================
+
 bool FactData::isZero() const
 {
     if (treeType() == Group) {
@@ -470,8 +469,7 @@ bool FactData::isDefault() const
 
     return value() == defaultValue();
 }
-//=============================================================================
-//=============================================================================
+
 bool FactData::modified() const
 {
     return m_modified;
@@ -651,7 +649,7 @@ void FactData::setDefaultValue(const QVariant &v)
     m_defaultValue = v;
     emit defaultValueChanged();
 }
-//=============================================================================
+
 QString FactData::mandalaToString(quint16 pid_raw) const
 {
     Q_UNUSED(pid_raw)
@@ -662,7 +660,7 @@ quint16 FactData::stringToMandala(const QString &s) const
     Q_UNUSED(s)
     return 0;
 }
-//=============================================================================
+
 void FactData::copyValuesFrom(const FactData *item)
 {
     for (int i = 0; i < size(); ++i) {

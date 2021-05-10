@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatabaseLookup_H
-#define DatabaseLookup_H
-//=============================================================================
+#pragma once
+
 #include "DatabaseLookupModel.h"
 #include "DatabaseRequest.h"
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class DatabaseLookup : public Fact
 {
     Q_OBJECT
@@ -74,5 +73,3 @@ signals:
     //internal loading
     void _itemsLoaded(DatabaseLookupModel::ItemsList list);
 };
-//=============================================================================
-#endif

@@ -25,7 +25,7 @@
 #include <Database/MissionsDB.h>
 
 #include <App/AppRoot.h>
-//=============================================================================
+
 LookupSites::LookupSites(Sites *sites)
     : DatabaseLookup(sites,
                      "lookup",
@@ -43,7 +43,7 @@ LookupSites::LookupSites(Sites *sites)
 
     disconnect(db, &DatabaseSession::modified, this, nullptr);
 }
-//=============================================================================
+
 bool LookupSites::fixItemDataThr(QVariantMap *item)
 {
     mutex.lock();
@@ -60,7 +60,7 @@ bool LookupSites::fixItemDataThr(QVariantMap *item)
     }
     return true;
 }
-//=============================================================================
+
 void LookupSites::updateRect()
 {
     QGeoRectangle r = m_area.boundingGeoRectangle();
@@ -90,7 +90,7 @@ void LookupSites::updateRect()
     mutex.unlock();
     defaultLookup();
 }
-//=============================================================================
+
 void LookupSites::defaultLookup()
 {
     if (reqRect.isEmpty())
@@ -107,8 +107,7 @@ void LookupSites::defaultLookup()
           v);
     //qDebug()<<reqRect;
 }
-//=============================================================================
-//=============================================================================
+
 QGeoShape LookupSites::area() const
 {
     return m_area;
@@ -120,4 +119,3 @@ void LookupSites::setArea(const QGeoShape &v)
     m_area = v;
     emit areaChanged();
 }
-//=============================================================================

@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KMLPARSER_H
-#define KMLPARSER_H
+#pragma once
 
 #include <functional>
 #include <QColor>
@@ -60,5 +59,3 @@ private:
     void polygonHolesCallback(const QDomElement &el, KmlPolygon &polygon);
     QList<QGeoCoordinate> parseCoordinates(const QString &text);
 };
-
-#endif // KMLPARSER_H

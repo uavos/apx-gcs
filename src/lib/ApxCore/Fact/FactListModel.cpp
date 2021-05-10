@@ -24,7 +24,7 @@
 
 #include <App/App.h>
 #include <algorithm>
-//=============================================================================
+
 FactListModel::FactListModel(Fact *fact)
     : QAbstractListModel(fact)
     , fact(fact)
@@ -40,7 +40,7 @@ FactListModel::FactListModel(Fact *fact)
         scheduleSync();
     }
 }
-//=============================================================================
+
 void FactListModel::connectFact(Fact *fact)
 {
     connect(fact, &Fact::itemInserted, this, &FactListModel::scheduleSync, Qt::QueuedConnection);
@@ -49,13 +49,12 @@ void FactListModel::connectFact(Fact *fact)
     connect(fact, &Fact::optionsChanged, this, &FactListModel::scheduleSync);
     connect(fact, &Fact::triggered, this, &FactListModel::resetFilter);
 }
-//=============================================================================int FactListModel::rowCount(const QModelIndex & parent) const
 int FactListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return _items.size();
 }
-//=============================================================================
+
 QHash<int, QByteArray> FactListModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
@@ -66,12 +65,12 @@ QHash<int, QByteArray> FactListModel::roleNames() const
     roles[Fact::TextRole] = "text";
     return roles;
 }
-//=============================================================================
+
 Fact *FactListModel::get(int i) const
 {
     return _items.value(i, nullptr);
 }
-//=============================================================================
+
 QVariant FactListModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
@@ -81,11 +80,12 @@ QVariant FactListModel::data(const QModelIndex &index, int role) const
     QVariant ret = item ? item->data(index.column(), role) : QVariant();
     if (role == Qt::FontRole) {
         auto font = ret.value<QFont>();
-        font.setPointSizeF(App::font().pointSizeF());
+        int sz = App::font().pixelSize();
+        font.setPixelSize(sz < 5 ? 5 : sz);
     }
     return ret;
 }
-//=============================================================================
+
 bool FactListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (index.row() < 0 || index.row() >= rowCount() || role != Qt::EditRole)
@@ -93,8 +93,7 @@ bool FactListModel::setData(const QModelIndex &index, const QVariant &value, int
     Fact *item = _items.at(index.row());
     return item ? item->setValue(value) : false;
 }
-//=============================================================================
-//=============================================================================
+
 int FactListModel::count() const
 {
     return rowCount();
@@ -116,7 +115,7 @@ void FactListModel::resetFilter()
 {
     setFilter(QString());
 }
-//=============================================================================
+
 void FactListModel::populate(ItemsList *list, Fact *f)
 {
     bool flt = (this->fact->options() & Fact::FilterModel) && !filter().isEmpty();
@@ -179,7 +178,7 @@ void FactListModel::populate(ItemsList *list, Fact *f)
         }
     }
 }
-//=============================================================================
+
 void FactListModel::scheduleSync()
 {
     resetFilter();
@@ -235,4 +234,3 @@ void FactListModel::syncModel(const ItemsList &list)
     if (bLayoutChanged)
         emit layoutChanged();
 }
-//=============================================================================

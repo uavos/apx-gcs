@@ -212,6 +212,17 @@ QString AppRoot::timeToString(quint64 v, bool seconds)
         return QString("%1").arg(QTime(0, 0, 0).addSecs(i).toString(sf));
     return QString("%1d%2").arg(d).arg(QTime(0, 0, 0).addSecs(i).toString(sf));
 }
+QString AppRoot::timeString(bool seconds)
+{
+    auto t = QTime::currentTime();
+    QString fmt("HH");
+    if (seconds) {
+        fmt.append(":mm:ss");
+    } else {
+        fmt.append(t.second() & 1 ? '.' : ':').append("mm");
+    }
+    return t.toString(fmt);
+}
 QString AppRoot::dateToString(quint64 v)
 {
     QDateTime d = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(v));
@@ -382,7 +393,7 @@ QFont AppRoot::get_font(QString family, qreal size, bool bold, bool shaping)
         size = 5;
 
     QFont f(family);
-    f.setPointSizeF(size);
+    f.setPixelSize(size);
     f.setBold(bold);
 
     f.setKerning(false);
@@ -424,6 +435,6 @@ QFont AppRoot::font_icons(qreal size)
 QFont AppRoot::font_fixed(qreal size)
 {
     auto f = App::getMonospaceFont();
-    f.setPointSizeF(size < 5 ? 5 : size);
+    f.setPixelSize(size < 5 ? 5 : size);
     return f;
 }

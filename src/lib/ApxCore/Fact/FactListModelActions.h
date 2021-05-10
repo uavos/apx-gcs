@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactListModelActions_H
-#define FactListModelActions_H
-//=============================================================================
+#pragma once
+
 #include <QtCore>
 class Fact;
-//=============================================================================
+
 class FactListModelActions : public QAbstractListModel
 {
     Q_OBJECT
@@ -42,5 +41,3 @@ protected:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 };
-//=============================================================================
-#endif

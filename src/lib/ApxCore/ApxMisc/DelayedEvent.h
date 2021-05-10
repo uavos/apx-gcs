@@ -19,11 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DelayedEvent_H
-#define DelayedEvent_H
-//=============================================================================
+#pragma once
+
 #include <QtCore>
-//=============================================================================
+
 class DelayedEvent : public QTimer
 {
     Q_OBJECT
@@ -41,5 +40,3 @@ public slots:
 signals:
     void triggered();
 };
-//=============================================================================
-#endif

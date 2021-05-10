@@ -35,7 +35,7 @@ Rectangle {
     readonly property var f_hmsl: mandala.est.pos.hmsl
     readonly property var f_eta: mandala.est.wpt.eta
     readonly property var f_dist: mandala.est.wpt.dist
-    readonly property var f_energy: mandala.est.sys.energy
+    readonly property var f_fuel: mandala.est.sys.fuel
     readonly property var f_wpidx: mandala.cmd.proc.wp
     readonly property var f_loops: mandala.cmd.proc.loops
     readonly property var f_xtrack: mandala.est.wpt.xtrack
@@ -64,7 +64,7 @@ Rectangle {
 
     border.width: 0
     color: "#000"
-    implicitWidth: itemHeight*3
+    implicitWidth: itemHeight*3.2
     implicitHeight: layout.implicitHeight
 
     readonly property real itemHeight: height/15//*ui.scale
@@ -188,7 +188,7 @@ Rectangle {
             }
             ValueButton {
                 text: qsTr("FL")
-                fact: f_energy
+                fact: f_fuel
                 value: fact.value.toFixed(1)
                 visible: ui.test || fact.value>0
                 valueScale: 0.8
@@ -229,8 +229,8 @@ Rectangle {
                 text: qsTr("LR")
                 fact: f_radius
                 visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
-                property real v: fact.value
-                value: v>=1000?(v/1000).toFixed(1):v.toFixed()
+                value: apx.distanceToString(fact.value)
+                valueScale: 0.8
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
             }

@@ -32,13 +32,13 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QtQml>
-//=============================================================================
+
 GeoTiledMap::GeoTiledMap(QGeoTiledMappingManagerEngine *engine, QObject *parent)
     : QGeoTiledMap(engine, parent)
 {
     setPrefetchStyle(PrefetchTwoNeighbourLayers); //PrefetchTwoNeighbourLayers);//NoPrefetching);
 }
-//=============================================================================
+
 GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap &parameters,
                                                            QGeoServiceProvider::Error *error,
                                                            QString *errorString)
@@ -107,11 +107,10 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap &pa
     *error = QGeoServiceProvider::NoError;
     errorString->clear();
 }
-//=============================================================================
+
 GeoTiledMappingManagerEngine::~GeoTiledMappingManagerEngine() {}
-//=============================================================================
+
 QGeoMap *GeoTiledMappingManagerEngine::createMap()
 {
     return new GeoTiledMap(this);
 }
-//=============================================================================

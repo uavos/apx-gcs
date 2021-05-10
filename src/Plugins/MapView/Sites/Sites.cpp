@@ -22,7 +22,7 @@
 #include "Sites.h"
 #include <App/App.h>
 #include <Database/MissionsDB.h>
-//=============================================================================
+
 Sites::Sites(Fact *parent)
     : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Sites"), tr("Geographic objects"), Group)
     , f_edit(nullptr)
@@ -41,7 +41,7 @@ Sites::Sites(Fact *parent)
 
     loadQml("qrc:/" PLUGIN_NAME "/SitesPlugin.qml");
 }
-//=============================================================================
+
 void Sites::appLoaded()
 {
     //qDebug()<<"appLoaded";
@@ -54,8 +54,7 @@ void Sites::appLoaded()
     f->setIcon("city");
     connect(f, &SiteEdit::addTriggered, f_add, &SiteEdit::addTriggered);
 }
-//=============================================================================
-//=============================================================================
+
 void Sites::createEditor(QVariantMap item)
 {
     //qDebug()<<item.value("title").toString();
@@ -98,8 +97,7 @@ void Sites::syncEditorFromModel()
     }
     f_edit->setModelData(f_lookup->dbModel()->get(i));
 }
-//=============================================================================
-//=============================================================================
+
 void Sites::dbAddSite(QVariantMap item)
 {
     //qDebug()<<item;
@@ -119,7 +117,7 @@ void Sites::dbAddSite(QVariantMap item)
         Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
+
 void Sites::dbRemoveSite(QVariantMap item)
 {
     destroyEditor(item);
@@ -141,7 +139,7 @@ void Sites::dbRemoveSite(QVariantMap item)
         Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
+
 void Sites::dbUpdateSite(QVariantMap item)
 {
     //qDebug()<<item;
@@ -165,4 +163,3 @@ void Sites::dbUpdateSite(QVariantMap item)
         Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================

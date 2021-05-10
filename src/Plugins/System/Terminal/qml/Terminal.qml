@@ -43,7 +43,7 @@ Rectangle {
         anchors.fill: parent
 
 
-        ListView {
+        ListView { // TODO better handling of max lines and auto scroll
             id: listView
             Layout.fillWidth: true
             Layout.fillHeight: true

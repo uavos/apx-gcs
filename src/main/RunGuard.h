@@ -20,12 +20,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RUNGUARD_H
-#define RUNGUARD_H
+#pragma once
+
 #include <QObject>
 #include <QSharedMemory>
 #include <QSystemSemaphore>
-//=============================================================================
+
 class RunGuard
 {
 public:
@@ -46,5 +46,3 @@ private:
 
     Q_DISABLE_COPY(RunGuard)
 };
-//=============================================================================
-#endif

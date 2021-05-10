@@ -23,7 +23,7 @@
 #include <App/App.h>
 #include <QTextBlock>
 #include <QTextDocumentFragment>
-//=============================================================================
+
 SourceEdit::SourceEdit(QWidget *parent)
     : QPlainTextEdit(parent)
 {
@@ -41,13 +41,13 @@ QFont SourceEdit::getFont()
 {
     return m_font;
 }
-//=============================================================================
+
 void SourceEdit::addKeywords(const QStringList &words)
 {
     foreach (QString w, words)
         highlighter->addRule(QString("\\b%1\\b").arg(w), "orange", "bold");
 }
-//=============================================================================
+
 void SourceEdit::keyPressEvent(QKeyEvent *event)
 {
     Qt::KeyboardModifiers m = event->modifiers();
@@ -121,7 +121,7 @@ void SourceEdit::keyPressEvent(QKeyEvent *event)
     }
     QPlainTextEdit::keyPressEvent(event);
 }
-//=============================================================================
+
 void SourceEdit::cleanText()
 {
     for (QTextBlock block = document()->begin(); block != document()->end(); block = block.next()) {
@@ -134,8 +134,7 @@ void SourceEdit::cleanText()
         cur.insertText(s.remove(QRegExp("\\s+$")));
     }
 }
-//=============================================================================
-//=============================================================================
+
 Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
@@ -289,4 +288,3 @@ void Highlighter::highlightBlock(const QString &text)
         startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
     }
 }
-//=============================================================================

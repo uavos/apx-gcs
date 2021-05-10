@@ -28,13 +28,13 @@ Item {
 
     readonly property bool m_status: mandala.est.wind.status.value > 0
     readonly property real m_wspd: mandala.est.wind.speed.value
-    readonly property real m_whdg: mandala.est.wind.heading.value
+    readonly property int m_whdg: mandala.est.wind.heading.value
 
-    implicitWidth: Style.buttonSize*3
+    implicitWidth: Style.buttonSize*2.5
     implicitHeight: implicitWidth
 
     readonly property int spacing: 0
-    readonly property real fontSize: Style.buttonSize*0.8
+    readonly property real fontSize: Style.buttonSize*0.7
 
     //internal
     readonly property int arrowSize: height-textItem.height-spacing
@@ -68,7 +68,7 @@ Item {
         id: textHdg
         color: control.color
         text: (Math.round(apx.angle360(image.v+180)/5)*5).toFixed(0)
-        font: apx.font_narrow(fontSize*0.6)
+        font: apx.font_narrow(fontSize*0.7)
         rotation: image.rotation
         anchors.centerIn: image
     }

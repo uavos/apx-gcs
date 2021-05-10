@@ -22,9 +22,9 @@
 #include "FactDelegateDialog.h"
 #include <ApxMisc/MaterialIcon.h>
 #include <Nodes/Nodes.h>
-//=============================================================================
+
 QHash<Fact *, FactDelegateDialog *> FactDelegateDialog::dlgMap;
-//=============================================================================
+
 FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
     : QDialog(parent)
     , fact(fact)
@@ -96,12 +96,12 @@ FactDelegateDialog::~FactDelegateDialog()
     //qDebug()<<"delete FactDelegateDialog";
     dlgMap.remove(dlgMap.key(this));
 }
-//=============================================================================
+
 void FactDelegateDialog::addAction(QAction *a)
 {
     toolBar->insertAction(aSep, a);
 }
-//=============================================================================
+
 void FactDelegateDialog::setWidget(QWidget *w)
 {
     QSizePolicy sp = w->sizePolicy();
@@ -125,7 +125,7 @@ void FactDelegateDialog::setWidget(QWidget *w)
     doRestoreGeometry();
     show();
 }
-//=============================================================================
+
 void FactDelegateDialog::closeEvent(QCloseEvent *event)
 {
     doSaveGeometry();
@@ -135,7 +135,7 @@ void FactDelegateDialog::closeEvent(QCloseEvent *event)
     }
     QDialog::closeEvent(event);
 }
-//=============================================================================
+
 void FactDelegateDialog::doSaveGeometry()
 {
     QSettings sx;
@@ -147,7 +147,7 @@ void FactDelegateDialog::doSaveGeometry()
         }
     }
 }
-//=============================================================================
+
 void FactDelegateDialog::doRestoreGeometry()
 {
     QSettings sx;
@@ -159,4 +159,3 @@ void FactDelegateDialog::doRestoreGeometry()
         }
     }
 }
-//=============================================================================

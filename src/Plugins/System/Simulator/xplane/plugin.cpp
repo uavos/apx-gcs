@@ -53,7 +53,7 @@ static struct
     XPLMDataRef psi;
     XPLMDataRef lat, lon, alt;
     XPLMDataRef vx, vy, vz;
-    XPLMDataRef course;
+    XPLMDataRef bearing;
     XPLMDataRef airspeed;
     XPLMDataRef agl;
     XPLMDataRef rpm;
@@ -61,6 +61,7 @@ static struct
     XPLMDataRef rho;
     XPLMDataRef air_temp;
     XPLMDataRef room_temp;
+    XPLMDataRef slip;
     //output
     /*XPLMDataRef ail,elv,thr,rud,flap,brakes;
   //display
@@ -151,6 +152,8 @@ void parse_sensors(void)
     float rho = (float) XPLMGetDataf(xp.rho);
     float at = (float) XPLMGetDataf(xp.air_temp);
     sim_bundle.baro_mbar = rho * 287.1f * (at + 273.15f) / 100.0f;
+
+    sim_bundle.slip = XPLMGetDataf(xp.slip);
 }
 
 static void parse_rx(const void *data, size_t size)
@@ -294,7 +297,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     xp.lon = XPLMFindDataRef("sim/flightmodel/position/longitude");
     xp.alt = XPLMFindDataRef("sim/flightmodel/position/elevation");
 
-    xp.course = XPLMFindDataRef("sim/flightmodel/position/hpath");
+    xp.bearing = XPLMFindDataRef("sim/flightmodel/position/hpath");
 
     xp.vx = XPLMFindDataRef("sim/flightmodel/position/local_vx");
     xp.vy = XPLMFindDataRef("sim/flightmodel/position/local_vy");
@@ -308,6 +311,9 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     xp.altitude = XPLMFindDataRef("sim/flightmodel/misc/h_ind2");
     xp.rho = XPLMFindDataRef("sim/weather/rho");
     xp.air_temp = XPLMFindDataRef("sim/weather/temperature_ambient_c");
+
+    // xp.slip = XPLMFindDataRef("sim/flightmodel/misc/slip");
+    xp.slip = XPLMFindDataRef("sim/cockpit2/gauges/indicators/sideslip_degrees");
 
     //  xp.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
     //  xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");

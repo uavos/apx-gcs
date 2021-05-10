@@ -27,8 +27,6 @@ import Apx.Common 1.0
 Item {
     id: control
 
-    implicitWidth: 100
-
     height: width*0.18
 
     property color color: "#fff"
@@ -39,8 +37,8 @@ Item {
     property real value: 0
     visible: value > 0
 
-    readonly property int lineWidth: Math.max(1,1*ui.scale)
-    readonly property int markSize: control.height*0.5
+    readonly property real lineWidth: Math.max(1,1*ui.scale)
+    readonly property real markSize: control.height*0.5
 
 
     //BoundingRect { }
@@ -54,7 +52,7 @@ Item {
         anchors.right: (alignment&Qt.AlignRight)?control.right:undefined
         anchors.left: (alignment&Qt.AlignLeft)?control.left:undefined
         anchors.horizontalCenter: (alignment&Qt.AlignHCenter)?control.horizontalCenter:undefined
-        anchors.bottomMargin: 2
+        anchors.bottomMargin: Style.spacing
     }
 
     Rectangle {

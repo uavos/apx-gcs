@@ -24,7 +24,7 @@
 #include "DatalinkPort.h"
 #include <App/AppLog.h>
 #include <App/AppSettings.h>
-//=============================================================================
+
 DatalinkPorts::DatalinkPorts(Datalink *datalink)
     : Fact(datalink,
            "ports",
@@ -44,7 +44,7 @@ DatalinkPorts::DatalinkPorts(Datalink *datalink)
 
     updateStatus();
 }
-//=============================================================================
+
 void DatalinkPorts::updateStatus()
 {
     int cnt = f_list->size();
@@ -64,20 +64,20 @@ void DatalinkPorts::updateStatus()
         setActive(acnt > 0);
     }
 }
-//=============================================================================
+
 void DatalinkPorts::addTriggered()
 {
     addPort(new DatalinkPort(this, datalink, f_add));
     save();
     f_add->defaults();
 }
-//=============================================================================
+
 void DatalinkPorts::addPort(DatalinkPort *port)
 {
     connect(port, &Fact::valueChanged, this, &DatalinkPorts::updateStatus);
     connect(port, &Fact::activeChanged, this, &DatalinkPorts::updateStatus);
 }
-//=============================================================================
+
 void DatalinkPorts::load()
 {
     QFile file(AppDirs::prefs().filePath("ports.json"));
@@ -102,7 +102,7 @@ void DatalinkPorts::save()
     file.write(f_list->toJsonDocument().toJson());
     file.close();
 }
-//=============================================================================
+
 QStringList DatalinkPorts::activeSerialPorts() const
 {
     QStringList st;
@@ -113,7 +113,7 @@ QStringList DatalinkPorts::activeSerialPorts() const
     }
     return st;
 }
-//=============================================================================
+
 QList<DatalinkPort *> DatalinkPorts::serialPorts() const
 {
     QList<DatalinkPort *> list;
@@ -127,7 +127,7 @@ QList<DatalinkPort *> DatalinkPorts::serialPorts() const
     }
     return list;
 }
-//=============================================================================
+
 void DatalinkPorts::blockSerialPorts()
 {
     for (auto port : serialPorts()) {
@@ -152,4 +152,3 @@ void DatalinkPorts::unblockSerialPorts()
     qDebug() << "Ports unblocked" << blockedPorts.size();
     blockedPorts.clear();
 }
-//=============================================================================

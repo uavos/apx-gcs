@@ -23,7 +23,7 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
-//=============================================================================
+
 Updater::Updater(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -73,19 +73,19 @@ void Updater::initUpdaterImpl()
     m_impl = new AppImageAutoUpdater(this);
 #endif
 }
-//=============================================================================
+
 void Updater::check()
 {
     if (m_impl)
         m_impl->checkForUpdates();
 }
-//=============================================================================
+
 void Updater::checkInBackground()
 {
     if (m_impl)
         m_impl->checkForUpdatesInBackground();
 }
-//=============================================================================
+
 void Updater::updateAuto()
 {
     bool v = f_auto->value().toBool();
@@ -95,4 +95,3 @@ void Updater::updateAuto()
         checkInBackground();
     }
 }
-//=============================================================================

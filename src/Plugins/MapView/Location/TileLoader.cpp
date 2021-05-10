@@ -27,9 +27,9 @@
 #include <Database/Database.h>
 #include <Fact/Fact.h>
 #include <QImage>
-//=============================================================================
+
 #define Random(low, high) ((int) (low + qrand() % (high - low)))
-//=============================================================================
+
 TileLoader *TileLoader::_instance = nullptr;
 TileLoader::TileLoader(Fact *parent)
     : Fact(parent,
@@ -79,15 +79,14 @@ TileLoader::~TileLoader()
     _instance = nullptr;
     abort();
 }
-//=============================================================================
+
 void TileLoader::updateStatus()
 {
     int cnt = requestCount();
     setValue(cnt > 0 ? QString::number(cnt) : "");
     setProgress(cnt > 0 ? 0 : -1);
 }
-//=============================================================================
-//=============================================================================
+
 void TileLoader::loadTile(quint64 uid)
 {
     (new DBReqLoadTile(db, type(uid), dbHash(uid), uid))->exec();
@@ -98,7 +97,7 @@ void TileLoader::loadCancel(quint64 uid)
     Q_UNUSED(uid)
     //qDebug()<<"Cancel: "<<uid;
 }
-//=============================================================================
+
 bool TileLoader::checkImage(const QByteArray &data)
 {
     QImage image;
@@ -108,7 +107,7 @@ bool TileLoader::checkImage(const QByteArray &data)
     }
     return true;
 }
-//=============================================================================
+
 void TileLoader::abort()
 {
     foreach (QNetworkReply *reply, reqMap.keys()) {
@@ -118,7 +117,7 @@ void TileLoader::abort()
     reqMap.clear();
     downloads.clear();
 }
-//=============================================================================
+
 void TileLoader::download(quint64 uid)
 {
     //qDebug()<<"download"<<uid;
@@ -198,7 +197,7 @@ void TileLoader::download(quint64 uid)
         emit requestCountChanged();
     }
 }
-//=============================================================================
+
 QNetworkReply *TileLoader::downloadRequest(QNetworkRequest *request)
 {
 #if !defined(__mobile__)
@@ -222,7 +221,7 @@ QNetworkReply *TileLoader::downloadRequest(QNetworkRequest *request)
 #endif
     return reply;
 }
-//=============================================================================
+
 bool TileLoader::checkGoogleVersion(QNetworkRequest *request)
 {
     if (!versionGoogleMaps.isEmpty())
@@ -234,7 +233,7 @@ bool TileLoader::checkGoogleVersion(QNetworkRequest *request)
     request->setRawHeader("Referrer", "https://www.google.com/maps/preview");
     return false;
 }
-//=============================================================================
+
 void TileLoader::getSecGoogleWords(int x, int y, QString &sec1, QString &sec2)
 {
     sec1 = ""; // after &x=...
@@ -245,13 +244,12 @@ void TileLoader::getSecGoogleWords(int x, int y, QString &sec1, QString &sec2)
         sec1 = "&s=";
     }
 }
-//=============================================================================
+
 int TileLoader::getServerNum(int x, int y, int max)
 {
     return (x + 2 * y) % max;
 }
-//=============================================================================
-//=============================================================================
+
 void TileLoader::networkReplyFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
@@ -277,7 +275,7 @@ void TileLoader::networkReplyFinished()
 
     //qDebug()<<"downloaded"<<uid;
 }
-//=============================================================================
+
 void TileLoader::networkReplyError(QNetworkReply::NetworkError error)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
@@ -295,7 +293,7 @@ void TileLoader::networkReplyError(QNetworkReply::NetworkError error)
         emit tileError(uid, reply->errorString());
     }
 }
-//=============================================================================
+
 void TileLoader::versionReplyFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
@@ -349,4 +347,3 @@ void TileLoader::versionReplyFinished()
     }
     pendingDownloads.clear();
 }
-//=============================================================================

@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef JoystickAxis_H
-#define JoystickAxis_H
+#pragma once
+
 #include <QtCore>
 
 #include <Fact/Fact.h>
-//=============================================================================
+
 class JoystickAxis : public Fact
 {
     Q_OBJECT
@@ -45,5 +45,3 @@ private:
 private slots:
     void updateDescr();
 };
-//=============================================================================
-#endif

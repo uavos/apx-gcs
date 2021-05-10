@@ -25,7 +25,6 @@
 
 #include "ui_ServosForm.h"
 
-//==============================================================================
 ServosForm::ServosForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ServosForm)
@@ -39,14 +38,14 @@ ServosForm::ServosForm(QWidget *parent)
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &ServosForm::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
 }
-//=============================================================================
+
 void ServosForm::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event)
     disconnect(this);
     emit finished();
 }
-//=============================================================================
+
 void ServosForm::vehicleSelected(Vehicle *vehicle)
 {
     for (auto c : clist)
@@ -56,7 +55,7 @@ void ServosForm::vehicleSelected(Vehicle *vehicle)
         return;
     clist.append(connect(protocol->data(), &PData::serialData, this, &ServosForm::serialData));
 }
-//==============================================================================
+
 void ServosForm::btnFind()
 {
     ui->cbAdr->clear();
@@ -64,7 +63,7 @@ void ServosForm::btnFind()
     apxMsg() << tr("Scanning for servos").append("...");
     do_find();
 }
-//==============================================================================
+
 void ServosForm::btnMove()
 {
     sendVolz(0xDD,
@@ -72,7 +71,7 @@ void ServosForm::btnMove()
              0x1000 + (ui->eAdr->value() & 0x7F));
     apxMsg() << tr("Servo moved");
 }
-//==============================================================================
+
 void ServosForm::btnSetAdr()
 {
     switch (ui->tabWidget->currentIndex()) {
@@ -87,7 +86,7 @@ void ServosForm::btnSetAdr()
     }
     apxMsg() << tr("Address set");
 }
-//==============================================================================
+
 void ServosForm::serialData(quint16 portNo, QByteArray ba)
 {
     if ((int) portNo != ui->ePortID->value())
@@ -97,7 +96,7 @@ void ServosForm::serialData(quint16 portNo, QByteArray ba)
         return;
     ui->cbAdr->addItem(QString("%1").arg((int) ba.at(1), 16), QVariant(ba.at(1)));
 }
-//==============================================================================
+
 void ServosForm::do_find(void)
 {
     sendVolz(0x92, counter++, 0x00);
@@ -106,7 +105,7 @@ void ServosForm::do_find(void)
     else
         apxMsg() << tr("Scan finished");
 }
-//==============================================================================
+
 void ServosForm::sendVolz(uint cmd, uint id, uint arg)
 {
     QByteArray pack;
@@ -132,7 +131,7 @@ void ServosForm::sendVolz(uint cmd, uint id, uint arg)
     auto vehicle = Vehicles::instance()->current();
     vehicle->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
 }
-//==============================================================================
+
 void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
 {
     qInfo() << QString("SBUS ADDR %1-%2: %3").arg(servoID >> 16).arg(servoID & 0xFFFF).arg(newAddr);
@@ -177,4 +176,3 @@ void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
         return;
     protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
 }
-//==============================================================================

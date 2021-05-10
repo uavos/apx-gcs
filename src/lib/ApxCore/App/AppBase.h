@@ -19,10 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppBase_H
-#define AppBase_H
+#pragma once
+
 #include <QApplication>
-//=============================================================================
+
 class AppBase : public QApplication
 {
     Q_OBJECT
@@ -71,5 +71,3 @@ private:
     QString m_installDir;
     QString m_bundlePath;
 };
-//=============================================================================
-#endif

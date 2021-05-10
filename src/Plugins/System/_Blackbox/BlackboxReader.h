@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BlackboxReader_H
-#define BlackboxReader_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <xbus/uart/EscDecoder.h>
 class Vehicle;
 class ProtocolVehicle;
-//=============================================================================
+
 class BlackboxReader : public Fact
 {
     Q_OBJECT
@@ -43,5 +42,3 @@ private:
 
     EscDecoder<1024 * 8> esc_reader;
 };
-//=============================================================================
-#endif

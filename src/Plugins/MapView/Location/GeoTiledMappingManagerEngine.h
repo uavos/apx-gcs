@@ -19,20 +19,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GeoTiledMappingManagerEngine_H
-#define GeoTiledMappingManagerEngine_H
+#pragma once
+
 #include <QtLocation/QGeoServiceProvider>
 #include <QtLocation/private/qgeotiledmap_p.h>
 #include <QtLocation/private/qgeotiledmappingmanagerengine_p.h>
 #define MAX_MAP_ZOOM (20.0)
-//=============================================================================
+
 class GeoTiledMap : public QGeoTiledMap
 {
     Q_OBJECT
 public:
     GeoTiledMap(QGeoTiledMappingManagerEngine *engine, QObject *parent = nullptr);
 };
-//=============================================================================
+
 class GeoTiledMappingManagerEngine : public QGeoTiledMappingManagerEngine
 {
     Q_OBJECT
@@ -43,5 +43,3 @@ public:
     ~GeoTiledMappingManagerEngine();
     QGeoMap *createMap();
 };
-//=============================================================================
-#endif

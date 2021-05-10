@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SERVOSPLUGIN_H
-#define SERVOSPLUGIN_H
+#pragma once
 
 #include "ServosForm.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class ServosPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -38,5 +37,3 @@ public:
     QString descr() { return tr("Addressing and testing"); }
     QString icon() { return "screwdriver"; }
 };
-//=============================================================================
-#endif // SERVOSPLUGIN_H

@@ -44,7 +44,7 @@ MissionObject {
     property bool f_current: (m_twidx) === num
     property bool f_taxi: m_mode === proc_mode_TAXI
     property var path: fact?fact.geoPath:0
-    property real f_course: fact?fact.course:0
+    property real f_bearing: fact?fact.bearing:0
     property bool f_first: num === 0
     property int num: fact?fact.num:0
 
@@ -70,7 +70,7 @@ MissionObject {
                         origin.x: crsArrow.width/2
                         origin.y: -crsArrow.height
                         axis.z: 1
-                        angle: taxiwayItem.f_course-map.bearing
+                        angle: taxiwayItem.f_bearing-map.bearing
                     }
                     radius: ui.antialiasing?4:0
                     opacity: ui.effects?0.6:1

@@ -27,7 +27,7 @@
 #include <QDesktopServices>
 
 APX_LOGGING_CATEGORY(SimLog, "Simulator")
-//=============================================================================
+
 Simulator::Simulator(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -56,11 +56,6 @@ Simulator::Simulator(Fact *parent)
     f_stop->setEnabled(false);
     connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
-    /*QMetaEnum m=QMetaEnum::fromType<QStandardPaths::StandardLocation>();
-  for(int i=0;i<m.keyCount();++i) {
-    qDebug()<<m.key(i)<<QStandardPaths::standardLocations((QStandardPaths::StandardLocation)m.value(i));
-  }*/
-    //QStandardPaths::GenericConfigLocation
     f_type = new Fact(this,
                       "type",
                       tr("Type"),
@@ -69,10 +64,7 @@ Simulator::Simulator(Fact *parent)
     f_type->setIcon("package-variant");
 
     f_oXplane = new Fact(this, "oxplane", tr("X-Plane"), tr("Run X-Plane on start"), Bool);
-    //f_oXplane->setValue(true);
-    f_oAHRS = new Fact(this, "oahrs", tr("AHRS"), tr("Enable AHRS XKF simulation"), Bool);
-    f_oNoise = new Fact(this, "onoise", tr("Noise"), tr("Sensors noise simulation"), Bool);
-    f_oDLHD = new Fact(this, "odlhd", tr("DLHD"), tr("Higher precision downlink"), Bool);
+    connect(f_oXplane, &Fact::triggered, this, &Simulator::launchXplane);
 
     f_cmd = new Fact(this,
                      "cmd",
@@ -80,11 +72,10 @@ Simulator::Simulator(Fact *parent)
                      tr("Command line arguments"),
                      Text | PersistentValue);
     f_cmd->setDefaultValue(
-        "--window=400x400 --no_sound --no_fshaders --no_vshaders --no_glsl --no_sprites "
+        "--window=200x200 --no_sound --no_fshaders --no_vshaders --no_glsl --no_sprites "
         "--no_aniso_filtering --no_pixel_counters --no_pbos --no_fbos --no_vbos");
 
     //shiva
-    //pShiva.setProgram(QCoreApplication::applicationDirPath() + "/shiva");
     pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
     connect(&pShiva,
             QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -141,12 +132,13 @@ void Simulator::detectXplane()
     QStringList st;
     QFileInfoList files;
     QStringList locations;
-    locations<<QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-    locations<<QStandardPaths::writableLocation(QStandardPaths::HomeLocation)+"/.x-plane";
+    locations << QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+    locations << QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.x-plane";
 
     for (auto i : locations) {
         files = QDir(i, "x-plane_install*.txt").entryInfoList();
-        if(!files.isEmpty())break;
+        if (!files.isEmpty())
+            break;
     }
 
     foreach (QFileInfo fi, files) {
@@ -197,10 +189,19 @@ void Simulator::detectXplane()
         f_type->setEnabled(true);
     }
 }
-//=============================================================================
+
 void Simulator::launch()
 {
-    apxMsg() << tr("Launching SIL simulation").append("...");
+    apxMsg() << tr("Launching simulation").append("...");
+
+    if (f_oXplane->value().toBool())
+        launchXplane();
+
+    launchShiva();
+}
+void Simulator::launchXplane()
+{
+    apxMsg() << tr("Launching X-Plane").append("...");
 
     QString xplaneDir;
     xplaneDir = xplaneDirs.value(f_type->value().toInt());
@@ -251,6 +252,12 @@ void Simulator::launch()
 
         break;
     }
+    if (!xplaneDir.isEmpty())
+        _launchXplane(xplaneDir);
+}
+void Simulator::launchShiva()
+{
+    apxMsg() << tr("Launching SIL").append("...");
 
     //launch shiva
     pShivaKill();
@@ -275,16 +282,9 @@ void Simulator::launch()
 
         pShiva.start();
     }
-
-    if (f_oXplane->value().toBool() && (!xplaneDir.isEmpty())) {
-        //QTimer::singleShot(1000, this, [xplaneDir]() {
-        //QtConcurrent::run(&Simulator::launchXplane, xplaneDir);
-        //});
-        launchXplane(xplaneDir);
-    }
 }
-//=============================================================================
-void Simulator::launchXplane(QString xplaneDir)
+
+void Simulator::_launchXplane(QString xplaneDir)
 {
     //mount image
     QFileInfoList fiList;
@@ -329,8 +329,7 @@ void Simulator::launchXplane(QString xplaneDir)
         apxMsgW() << tr("Failed to start X-Plane app") << exe;
     }
 }
-//=============================================================================
-//=============================================================================
+
 void Simulator::pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     Q_UNUSED(exitCode)
@@ -345,4 +344,3 @@ void Simulator::pShivaErrorOccurred(QProcess::ProcessError error)
 {
     apxMsgW() << pShiva.errorString() << error;
 }
-//=============================================================================

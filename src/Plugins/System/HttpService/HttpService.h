@@ -45,7 +45,7 @@ private:
     Fact *c_gps_lat;
     Fact *c_gps_lon;
     Fact *c_gps_hmsl;
-    Fact *c_course;
+    Fact *c_bearing;
     Fact *c_roll;
     Fact *c_pitch;
 private slots:

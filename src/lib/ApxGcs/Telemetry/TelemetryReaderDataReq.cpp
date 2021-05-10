@@ -21,7 +21,7 @@
  */
 #include "TelemetryReaderDataReq.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
 bool TelemetryReaderDataReq::run(QSqlQuery &query)
 {
     if (!DBReqTelemetryReadData::run(query))
@@ -197,7 +197,7 @@ bool TelemetryReaderDataReq::run(QSqlQuery &query)
 
     return true;
 }
-//=============================================================================
+
 void TelemetryReaderDataReq::addEventFact(quint64 time,
                                           const QString &name,
                                           const QString &value,
@@ -254,4 +254,3 @@ void TelemetryReaderDataReq::addEventFact(quint64 time,
         return;
     f->setProperty("time", QVariant::fromValue(time));
 }
-//=============================================================================

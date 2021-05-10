@@ -31,7 +31,7 @@
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicles.h>
-//=============================================================================
+
 Telemetry::Telemetry(Vehicle *parent)
     : Fact(parent,
            "telemetry",
@@ -94,7 +94,7 @@ Telemetry::Telemetry(Vehicle *parent)
     descr_s = descr();
     updateStatus();
 }
-//=============================================================================
+
 void Telemetry::updateStatus()
 {
     if (f_recorder)
@@ -124,7 +124,7 @@ void Telemetry::updateDescr()
     } else
         setDescr(descr_s);
 }
-//=============================================================================
+
 void Telemetry::recordFactTriggered(Fact *f)
 {
     const QString &s = f->name();
@@ -138,7 +138,7 @@ void Telemetry::recordFactTriggered(Fact *f)
             f_player->f_time->setValue(f->property("time").toULongLong() - 1);
     }
 }
-//=============================================================================
+
 void Telemetry::recordLoaded()
 {
     if (!Vehicles::instance()->current()->isIdentified())
@@ -162,4 +162,3 @@ void Telemetry::recordLoaded()
         }
     }
 }
-//=============================================================================

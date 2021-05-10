@@ -45,6 +45,8 @@ ValueButton {
     readonly property APX.Vehicle vehicle: apx.vehicles.current
     readonly property int err: vehicle.protocol?vehicle.protocol.errcnt:0
     
+    valueScale: 0.8
+
     Timer {
         id: errTimer
         interval: 5000

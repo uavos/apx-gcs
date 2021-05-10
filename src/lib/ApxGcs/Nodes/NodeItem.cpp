@@ -503,9 +503,7 @@ void NodeItem::importValues(QVariantMap values)
     }
 }
 
-//=============================================================================
 // Protocols connection
-//=============================================================================
 
 void NodeItem::identReceived(QVariantMap ident)
 {

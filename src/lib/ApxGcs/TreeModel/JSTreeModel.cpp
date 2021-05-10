@@ -25,7 +25,7 @@
 #include <QFontDatabase>
 #include <QGuiApplication>
 #include <QJSValueIterator>
-//=============================================================================
+
 JSTreeModel::JSTreeModel(QJSEngine *e)
     : QAbstractItemModel(e)
     , e(e)
@@ -34,7 +34,7 @@ JSTreeModel::JSTreeModel(QJSEngine *e)
     root = new JSTreeItem(nullptr, "root", e->globalObject());
     root->QObject::setParent(this);
 }
-//=============================================================================
+
 QHash<int, QByteArray> JSTreeModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
@@ -45,7 +45,7 @@ QHash<int, QByteArray> JSTreeModel::roleNames() const
     roles[TextRole] = "text";
     return roles;
 }
-//=============================================================================
+
 JSTreeItem *JSTreeModel::item(const QModelIndex &index) const
 {
     return qobject_cast<JSTreeItem *>(static_cast<QObject *>(index.internalPointer()));
@@ -56,9 +56,7 @@ QModelIndex JSTreeModel::itemIndex(JSTreeItem *item, int column) const
         return QModelIndex();
     return createIndex(item->num(), column, item);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 QVariant JSTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -133,7 +131,7 @@ QVariant JSTreeModel::data(const QModelIndex &index, int role) const
     }
     return QVariant();
 }
-//=============================================================================
+
 bool JSTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if ((!index.isValid()) || (role != Qt::EditRole) || index.column() != JS_MODEL_COLUMN_VALUE)
@@ -148,8 +146,7 @@ bool JSTreeModel::setData(const QModelIndex &index, const QVariant &value, int r
     //if(rv)emit dataChanged(index,index);//layoutChanged();
     return rv;
 }
-//=============================================================================
-//=============================================================================
+
 QModelIndex JSTreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
@@ -166,7 +163,7 @@ QModelIndex JSTreeModel::index(int row, int column, const QModelIndex &parent) c
         return QModelIndex();
     return itemIndex(childTreeItem, column);
 }
-//=============================================================================
+
 QModelIndex JSTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -182,7 +179,7 @@ QModelIndex JSTreeModel::parent(const QModelIndex &index) const
         return QModelIndex();
     return itemIndex(parentTreeItem);
 }
-//=============================================================================
+
 int JSTreeModel::rowCount(const QModelIndex &parent) const
 {
     JSTreeItem *parentTreeItem;
@@ -194,13 +191,13 @@ int JSTreeModel::rowCount(const QModelIndex &parent) const
         parentTreeItem = item(parent);
     return parentTreeItem->size();
 }
-//=============================================================================
+
 int JSTreeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return JS_MODEL_COLUMN_CNT;
 }
-//=============================================================================
+
 QVariant JSTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(orientation)
@@ -216,7 +213,7 @@ QVariant JSTreeModel::headerData(int section, Qt::Orientation orientation, int r
     }
     return QVariant();
 }
-//=============================================================================
+
 Qt::ItemFlags JSTreeModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags fx = Qt::NoItemFlags;
@@ -230,9 +227,7 @@ Qt::ItemFlags JSTreeModel::flags(const QModelIndex &index) const
         return fx;
     return fx | Qt::ItemIsEditable;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 JSTreeItem::JSTreeItem(JSTreeItem *parent, const QString &name, const QJSValue &value)
     : QObject(parent)
     , parentItem(parent)
@@ -265,7 +260,7 @@ JSTreeItem::JSTreeItem(JSTreeItem *parent, const QString &name, const QJSValue &
             descr.append(" MAP");
     }
 }
-//=============================================================================
+
 QJSValue JSTreeItem::value() const
 {
     if (!parentItem)
@@ -412,4 +407,3 @@ bool JSTreeItem::showThis(const QRegExp &regexp)
         return false;
     return path().contains(regexp);
 }
-//=============================================================================

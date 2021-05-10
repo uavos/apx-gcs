@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BlackboxFile_H
-#define BlackboxFile_H
-//=============================================================================
+#pragma once
+
 #include "BlackboxItem.h"
 #include <Fact/Fact.h>
-//=============================================================================
+
 class BlackboxFile : public BlackboxItem
 {
     Q_OBJECT
@@ -47,5 +46,3 @@ public slots:
     virtual void download();
     virtual void stop();
 };
-//=============================================================================
-#endif

@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef AppWindow_H
-#define AppWindow_H
+#pragma once
+
 #include "AppPlugins.h"
 #include <Fact/Fact.h>
 #include <QWindow>
-//=============================================================================
+
 class AppWindow : public Fact
 {
     Q_OBJECT
@@ -52,5 +52,3 @@ private slots:
     void saveStateDo();
     void restoreState();
 };
-//=============================================================================
-#endif

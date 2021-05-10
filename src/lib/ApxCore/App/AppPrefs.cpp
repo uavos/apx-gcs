@@ -24,7 +24,7 @@
 #include "AppLog.h"
 
 AppPrefs *AppPrefs::_instance = nullptr;
-//=============================================================================
+
 AppPrefs::AppPrefs(QObject *parent)
     : QObject(parent)
 {
@@ -36,7 +36,7 @@ AppPrefs::AppPrefs(QObject *parent)
         dir.mkpath(".");
     m_settings = new QSettings(this);
 }
-//=============================================================================
+
 void AppPrefs::saveFile(const QString &name, const QString &v)
 {
     QFile file(AppDirs::prefs().absoluteFilePath(name));
@@ -63,8 +63,7 @@ QString AppPrefs::loadFile(const QString &name, const QString &defaultValue)
         s = defaultValue;
     return s;
 }
-//=============================================================================
-//=============================================================================
+
 void AppPrefs::saveValue(const QString &name, const QVariant &v, const QString &path)
 {
     if (loadValue(name, path) == v)
@@ -161,4 +160,3 @@ QStringList AppPrefs::allKeys(const QString &path)
         m_settings->endGroup();
     return v;
 }
-//=============================================================================

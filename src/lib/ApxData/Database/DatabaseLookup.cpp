@@ -21,7 +21,7 @@
  */
 #include "DatabaseLookup.h"
 #include "DatabaseSession.h"
-//=============================================================================
+
 DatabaseLookup::DatabaseLookup(Fact *parent,
                                const QString &name,
                                const QString &title,
@@ -62,7 +62,7 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
     modelSyncTimer.setInterval(500);
     connect(&modelSyncTimer, &QTimer::timeout, this, &DatabaseLookup::loadItems);
 }
-//=============================================================================
+
 QString DatabaseLookup::filter() const
 {
     return static_cast<DatabaseLookupModel *>(m_model)->filter();
@@ -71,7 +71,7 @@ DatabaseLookupModel *DatabaseLookup::dbModel() const
 {
     return static_cast<DatabaseLookupModel *>(m_model);
 }
-//=============================================================================
+
 void DatabaseLookup::query(const QString &queryString, const QVariantList &bindValues)
 {
     //qDebug()<<"updateQuery"<<queryString<<bindValues;
@@ -131,11 +131,10 @@ void DatabaseLookup::loadItems()
 {
     static_cast<DatabaseLookupModel *>(model())->syncItems(recordsItems);
 }
-//=============================================================================
+
 void DatabaseLookup::triggerItem(QVariantMap modelData)
 {
     emit itemTriggered(modelData);
 }
-//=============================================================================
+
 void DatabaseLookup::defaultLookup() {}
-//=============================================================================

@@ -26,12 +26,12 @@
 #include "Joystick.h"
 #include <SDL.h>
 #include <QtConcurrent>
-//=============================================================================
+
 static int sdlWaitEvent()
 {
     return SDL_WaitEventTimeout(nullptr, 500);
 }
-//=============================================================================
+
 Joysticks::Joysticks(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -62,7 +62,7 @@ Joysticks::Joysticks(Fact *parent)
     connect(f_enabled, &Fact::valueChanged, this, &Joysticks::updateEnabled);
     updateEnabled();
 }
-//=============================================================================
+
 void Joysticks::updateStatus()
 {
     int acnt = 0, cnt = 0;
@@ -105,7 +105,7 @@ void Joysticks::watcherFinished()
     waitEvent();
     //qDebug()<<watcher.result();
 }
-//=============================================================================
+
 void Joysticks::update()
 {
     SDL_Event event;
@@ -174,7 +174,7 @@ void Joysticks::processEvent(const SDL_Event &event)
     } break;
     }
 }
-//=============================================================================
+
 void Joysticks::scan()
 {
     QMap<QString, Joystick *> uids;
@@ -198,7 +198,7 @@ void Joysticks::scan()
             map.insert(j->instanceID, j);
     }
 }
-//=============================================================================
+
 Joystick *Joysticks::addJoystick(int device_index, QString uid)
 {
     Joystick *j = new Joystick(f_list, device_index, uid);
@@ -252,7 +252,7 @@ Joystick *Joysticks::addJoystick(int device_index, QString uid)
 
     return j;
 }
-//=============================================================================
+
 int Joysticks::configIndex(const QJsonObject &config)
 {
     QString conf = QJsonDocument(config["config"].toObject()).toJson();
@@ -271,7 +271,7 @@ void Joysticks::updateConfEnums()
         j->f_conf->setValue(0);
     }
 }
-//=============================================================================
+
 void Joysticks::loadConfigs()
 {
     configs.clear();
@@ -310,7 +310,7 @@ void Joysticks::loadConfigs()
     }
     updateConfEnums();
 }
-//=============================================================================
+
 void Joysticks::saveConfigs()
 {
     QJsonObject json;
@@ -331,4 +331,3 @@ void Joysticks::saveConfigs()
     file.close();
     loadConfigs();
 }
-//=============================================================================

@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Simulator_H
-#define Simulator_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
 Q_DECLARE_LOGGING_CATEGORY(SimLog)
-//=============================================================================
+
 class Simulator : public Fact
 {
     Q_OBJECT
@@ -41,10 +40,6 @@ public:
 
     Fact *f_oXplane;
 
-    Fact *f_oAHRS;
-    Fact *f_oNoise;
-    Fact *f_oDLHD;
-
     Fact *f_cmd;
 
 private:
@@ -58,14 +53,14 @@ private:
 
     void pShivaKill();
 
+    void _launchXplane(QString xplaneDir);
+
 private slots:
     void detectXplane();
     void launch();
-
-    void launchXplane(QString xplaneDir);
+    void launchXplane();
+    void launchShiva();
 
     void pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void pShivaErrorOccurred(QProcess::ProcessError error);
 };
-//=============================================================================
-#endif

@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactValue_H
-#define FactValue_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QVariant>
 #include <QtCore>
-//=============================================================================
+
 class FactValueBase : public QObject
 {
     Q_OBJECT
@@ -53,7 +52,7 @@ protected:
 signals:
     void valueChanged();
 };
-//=============================================================================
+
 template<typename T>
 class FactValue : public FactValueBase
 {
@@ -68,5 +67,3 @@ public:
     }
     operator T() const { return qvariant_cast<T>(f->value()); }
 };
-//=============================================================================
-#endif

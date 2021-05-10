@@ -23,7 +23,7 @@
 #include <App/AppLog.h>
 #include <QLocalSocket>
 const char *AppInstances::ack = "ack";
-//=============================================================================
+
 AppInstances::AppInstances(QObject *parent)
     : QObject(parent)
     , lockFile(QDir::temp().absoluteFilePath(QCoreApplication::applicationName() + ".lock"))
@@ -62,12 +62,12 @@ AppInstances::AppInstances(QObject *parent)
         apxMsg() << tr("Local server error") << localServer.errorString();
     }
 }
-//=============================================================================
+
 bool AppInstances::isClient()
 {
     return m_client;
 }
-//=============================================================================
+
 void AppInstances::newConnection()
 {
     QLocalSocket *socket = localServer.nextPendingConnection();
@@ -107,7 +107,7 @@ void AppInstances::newConnection()
     socket->waitForBytesWritten(1000);
     emit messageReceived(message); // ##(might take a long time to return)
 }
-//=============================================================================
+
 bool AppInstances::sendMessage(const QString &message, int timeout, bool block)
 {
     if (!isClient())
@@ -142,4 +142,3 @@ bool AppInstances::sendMessage(const QString &message, int timeout, bool block)
         socket.waitForDisconnected(-1);
     return res;
 }
-//=============================================================================

@@ -163,7 +163,7 @@ Item {
             id: sideslip_moving_image
             elementName: "sideslip-moving"
             //smooth: ui.antialiasing
-            rotation: -m_slip
+            rotation: m_slip
             Behavior on rotation { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
             fillMode: Image.PreserveAspectFit
             width: roll_scale_image.width
@@ -175,7 +175,7 @@ Item {
         PfdImage {
             id: sideslip_cmd
             elementName: m_reg_yaw==reg_yaw_slip?"sideslip-cmd":"sideslip-cmd-dash"
-            rotation: -m_cmd_slip
+            rotation: m_cmd_slip
             visible: m_reg_yaw > reg_yaw_hdg
             Behavior on rotation { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
             fillMode: Image.PreserveAspectFit

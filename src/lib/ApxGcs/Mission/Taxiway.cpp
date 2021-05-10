@@ -59,6 +59,6 @@ QGeoPath Taxiway::getPath()
     //update properties
     setDistance(distance);
     setTime(distance / spd);
-    setCourse(azimuth);
+    setBearing(azimuth);
     return p;
 }

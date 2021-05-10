@@ -35,7 +35,7 @@
 #include <Vehicles/Vehicles.h>
 
 #include <QDesktopServices>
-//=============================================================================
+
 AppMenu::AppMenu(Fact *parent)
     : Fact(parent, "sysmenu", tr("Menu"), tr("Application system menu"), Action | IconOnly, "menu")
 {
@@ -128,7 +128,7 @@ AppMenu::AppMenu(Fact *parent)
             &AppMenu::createMenuBar,
             Qt::QueuedConnection);
 }
-//=============================================================================
+
 void AppMenu::updateVehicleTools()
 {
     Vehicle *v = Vehicles::instance()->current();
@@ -155,7 +155,7 @@ void AppMenu::updateVehicleSelect()
         connect(a, &Fact::triggered, f, &Fact::trigger);
     }
 }
-//=============================================================================
+
 void AppMenu::createMenuBar()
 {
     if (_menuBar)
@@ -211,4 +211,3 @@ void AppMenu::updateMenu(Fact *fact)
         //qDebug() << a->text() << a->menuRole() << f->path();
     }
 }
-//=============================================================================

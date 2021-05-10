@@ -19,9 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatabaseSession_H
-#define DatabaseSession_H
-//=============================================================================
+#pragma once
+
 #include "DatabaseWorker.h"
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
@@ -29,7 +28,7 @@
 #include <QtCore>
 #include <QtSql>
 class Database;
-//=============================================================================
+
 class DatabaseSession : public Fact //, public QSqlDatabase
 {
     Q_OBJECT
@@ -103,7 +102,7 @@ protected:
 signals:
     void capacityChanged();
 };
-//=============================================================================
+
 class DBReqMakeTable : public DatabaseRequest
 {
     Q_OBJECT
@@ -182,5 +181,3 @@ private:
 protected:
     bool run(QSqlQuery &query);
 };
-//=============================================================================
-#endif

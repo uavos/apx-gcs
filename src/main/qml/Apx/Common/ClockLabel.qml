@@ -35,19 +35,9 @@ Item {
         font: apx.font_narrow(control.height)
         verticalAlignment: Text.AlignVCenter
         color: "#fff"
-        text: ("0"+hours.toFixed()).slice(-2)+(seconds&1?":":".")+("0"+minutes.toFixed()).slice(-2) //+":"+("0"+seconds.toFixed()).slice(-2)
-        property int hours: 0
-        property int minutes: 0
-        property int seconds: 0
-        function timeChanged() {
-            var date = new Date;
-            hours = date.getHours()
-            minutes = date.getMinutes()
-            seconds = date.getUTCSeconds();
-        }
         Timer {
             interval: 500; running: true; repeat: true;
-            onTriggered: textItem.timeChanged()
+            onTriggered: textItem.text=apx.timeString()
         }
     }
     //Rectangle { anchors.fill: control; color: "#80ffffff" }

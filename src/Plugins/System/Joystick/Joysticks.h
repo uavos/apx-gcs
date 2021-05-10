@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Joysticks_H
-#define Joysticks_H
+#pragma once
+
 #include <SDL.h>
 #include <QtConcurrent>
 #include <QtCore>
@@ -28,7 +28,7 @@
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 class Joystick;
-//=============================================================================
+
 class Joysticks : public Fact
 {
     Q_OBJECT
@@ -73,5 +73,3 @@ private slots:
     void loadConfigs();
     void saveConfigs();
 };
-//=============================================================================
-#endif

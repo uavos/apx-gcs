@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GeoTileFetcher_H
-#define GeoTileFetcher_H
+#pragma once
+
 #include <QtLocation/private/qgeotilefetcher_p.h>
 class TileLoader;
 class QGeoTiledMappingManagerEngine;
-//=============================================================================
+
 class GeoTileFetcher : public QGeoTileFetcher
 {
     Q_OBJECT
@@ -35,5 +35,3 @@ public:
 protected:
     QGeoTiledMapReply *getTileImage(const QGeoTileSpec &spec);
 };
-//=============================================================================
-#endif

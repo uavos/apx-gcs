@@ -21,7 +21,7 @@
  */
 #include "DatalinkStats.h"
 #include "Datalink.h"
-//=============================================================================
+
 DatalinkStats::DatalinkStats(Datalink *parent)
     : Fact(parent,
            "stats",
@@ -47,8 +47,7 @@ DatalinkStats::DatalinkStats(Datalink *parent)
         f_total->countData(sz);
     });
 }
-//=============================================================================
-//=============================================================================
+
 DatalinkStatsCounter::DatalinkStatsCounter(DatalinkStats *parent,
                                            QString name,
                                            QString title,
@@ -81,14 +80,14 @@ DatalinkStatsCounter::DatalinkStatsCounter(DatalinkStats *parent,
 
     time.start();
 }
-//=============================================================================
+
 void DatalinkStatsCounter::countData(uint size)
 {
     packetCnt++;
     dataCnt += size;
     f_cnt->setValue(packetCnt);
 }
-//=============================================================================
+
 void DatalinkStatsCounter::updateTimerTimeout()
 {
     //data count
@@ -101,14 +100,14 @@ void DatalinkStatsCounter::updateTimerTimeout()
     f_rate->setValue(QString::number((packetCnt - packetCntT) * 1000 / t) + "/sec");
     packetCntT = packetCnt;
 }
-//=============================================================================
+
 double DatalinkStatsCounter::getRate(double *v, uint dcnt, uint t)
 {
     double vt = (double) dcnt / (double) t * 1000.0;
     *v = (*v) * 0.5 + vt * 0.5;
     return *v;
 }
-//=============================================================================
+
 QString DatalinkStatsCounter::dataToString(uint v)
 {
     if (v < 1024)
@@ -120,4 +119,3 @@ QString DatalinkStatsCounter::dataToString(uint v)
     else
         return QString("%1 GB").arg(v / (1024.0 * 1024.0 * 1024.0), 0, 'f', 3);
 }
-//=============================================================================

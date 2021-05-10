@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Blackbox_H
-#define Blackbox_H
+#pragma once
+
 #include <QtCore>
 
 #include <Fact/Fact.h>
 class NodeItem;
-//=============================================================================
+
 class Blackbox : public Fact
 {
     Q_OBJECT
@@ -37,5 +37,3 @@ public:
 private slots:
     void nodeNotify(NodeItem *node);
 };
-//=============================================================================
-#endif

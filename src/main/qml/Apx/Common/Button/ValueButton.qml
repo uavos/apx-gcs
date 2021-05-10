@@ -59,7 +59,7 @@ ActionButton {
     property color valueHighlightColor: "#30ffffff"
 
     property real valueScale: 1
-    property real valueSize: height * valueScale
+    property real valueSize: (height>3?height*valueScale:3) 
 
     textBold: false
     

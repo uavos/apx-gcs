@@ -19,11 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MapPrefs_H
-#define MapPrefs_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
-//=============================================================================
+
 class MapPrefs : public Fact
 {
     Q_OBJECT
@@ -34,5 +33,3 @@ public:
     Fact *f_provider;
     Fact *f_type;
 };
-//=============================================================================
-#endif

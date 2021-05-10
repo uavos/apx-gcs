@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef NodesFrame_H
-#define NodesFrame_H
-//=============================================================================
+#pragma once
+
 #include <TreeModel/FactTreeView.h>
 #include <Vehicles/Vehicles.h>
 #include <QtWidgets>
-//=============================================================================
+
 class NodesFrame : public QWidget
 {
     Q_OBJECT
@@ -71,5 +70,3 @@ private slots:
     void aUndo_triggered(void);
     void aDefaults_triggered(void);
 };
-//=============================================================================
-#endif

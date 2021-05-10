@@ -21,7 +21,7 @@
  */
 #include "DatabaseRequest.h"
 #include "DatabaseSession.h"
-//=============================================================================
+
 DatabaseRequest::DatabaseRequest(DatabaseSession *db)
     : QObject()
     , isSynchronous(false)
@@ -63,7 +63,7 @@ bool DatabaseRequest::execSynchronous()
     future.wait();
     return future.get();
 }
-//=============================================================================
+
 void DatabaseRequest::finish(bool error)
 {
     if (isSynchronous)
@@ -75,7 +75,7 @@ void DatabaseRequest::finish(bool error)
     else
         emit finished(Success);
 }
-//=============================================================================
+
 bool DatabaseRequest::run(QSqlQuery &query)
 {
     if (queryString.isEmpty())
@@ -91,21 +91,19 @@ bool DatabaseRequest::run(QSqlQuery &query)
     emit queryResults(queryRecords(query));
     return true;
 }
-//=============================================================================
-//=============================================================================
+
 void DatabaseRequest::discard()
 {
     if (m_discarded)
         return;
     m_discarded = true;
 }
-//=============================================================================
+
 bool DatabaseRequest::discarded()
 {
     return m_discarded;
 }
-//=============================================================================
-//=============================================================================
+
 void DatabaseRequest::recordUpdateQuery(QSqlQuery &query,
                                         const Records &records,
                                         int i,
@@ -143,7 +141,7 @@ void DatabaseRequest::recordInsertQuery(QSqlQuery &query,
         query.addBindValue(r.at(i));
     }
 }
-//=============================================================================
+
 bool DatabaseRequest::recordUpdateQuery(QSqlQuery &query,
                                         QVariantMap values,
                                         const QString &table,
@@ -184,7 +182,7 @@ bool DatabaseRequest::recordInsertQuery(QSqlQuery &query,
     }
     return true;
 }
-//=============================================================================
+
 QVariantMap DatabaseRequest::filterNullValues(QVariantMap values)
 {
     foreach (QString key, values.keys()) {
@@ -215,7 +213,7 @@ QVariantMap DatabaseRequest::filterFields(QString tableName, QVariantMap values)
     }
     return values;
 }
-//=============================================================================
+
 QStringList DatabaseRequest::fieldNames(QSqlQuery &query)
 {
     QStringList st;
@@ -233,7 +231,7 @@ QVariantList DatabaseRequest::values(QSqlQuery &query, const QStringList &names)
     }
     return v;
 }
-//=============================================================================
+
 DatabaseRequest::Records DatabaseRequest::queryRecords(QSqlQuery &query) const
 {
     Records records;
@@ -267,7 +265,7 @@ QVariantMap DatabaseRequest::queryRecord(Records &records, QVariantMap info, int
     }
     return info;
 }
-//=============================================================================
+
 void DatabaseRequest::getHash(QCryptographicHash &h, const Records &records) const
 {
     for (int i = 0; i < records.names.size(); ++i) {
@@ -307,4 +305,3 @@ void DatabaseRequest::getHash(QCryptographicHash &h, QSqlQuery &query) const
         }
     } while (query.next());
 }
-//=============================================================================

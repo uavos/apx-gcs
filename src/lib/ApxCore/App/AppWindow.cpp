@@ -24,7 +24,7 @@
 #include <QCoreApplication>
 #include <QScreen>
 #include <QWidget>
-//=============================================================================
+
 AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
     : Fact(parent,
            plugin->name.toLower(),
@@ -56,7 +56,7 @@ AppWindow::AppWindow(Fact *parent, AppPlugin *plugin)
         connect(this, &Fact::valueChanged, this, &Fact::savePresistentValue, Qt::QueuedConnection);
     }
 }
-//=============================================================================
+
 void AppWindow::updateWidget()
 {
     if (value().toBool()) {
@@ -139,7 +139,7 @@ void AppWindow::updateWidget()
         return;
     }
 }
-//=============================================================================
+
 void AppWindow::applicationStateChanged(Qt::ApplicationState state)
 {
     //qDebug() << state << w;
@@ -174,7 +174,7 @@ void AppWindow::applicationVisibilityChanged(QWindow::Visibility visibility)
     }
     blockWidgetVisibilityEvent = false;
 }
-//=============================================================================
+
 void AppWindow::widgetVisibilityChanged(QWindow::Visibility visibility)
 {
     //qDebug() << visibility;
@@ -192,8 +192,7 @@ void AppWindow::widgetVisibilityChanged(QWindow::Visibility visibility)
     //saveState();
     blockWidgetVisibilityEvent = false;
 }
-//=============================================================================
-//=============================================================================
+
 void AppWindow::saveState()
 {
     saveStateTimer.start();
@@ -230,7 +229,7 @@ void AppWindow::saveStateDo()
     s.beginGroup(parentFact()->name());
     s.setValue(name(), w->saveGeometry());
 }
-//=============================================================================
+
 void AppWindow::restoreState()
 {
     if (!w)
@@ -239,10 +238,8 @@ void AppWindow::restoreState()
     s.beginGroup(parentFact()->name());
     w->restoreGeometry(s.value(name()).toByteArray());
 }
-//=============================================================================
-//=============================================================================
+
 bool AppWindow::showLauncher()
 {
     return plugin->interface->flags() & PluginInterface::Launcher;
 }
-//=============================================================================

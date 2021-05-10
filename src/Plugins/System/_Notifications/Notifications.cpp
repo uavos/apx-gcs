@@ -23,7 +23,7 @@
 #include "NotifyItem.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
-//=============================================================================
+
 Notifications::Notifications(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -39,7 +39,7 @@ Notifications::Notifications(Fact *parent)
 
     loadQml("qrc:/" PLUGIN_NAME "/NotificationsPlugin.qml");
 }
-//=============================================================================
+
 void Notifications::appNotification(QString msg,
                                     QString subsystem,
                                     AppNotify::NotifyFlags flags,
@@ -52,8 +52,7 @@ void Notifications::appNotification(QString msg,
     newItems.append(fact);
     notifyEvent.schedule();
 }
-//=============================================================================
-//=============================================================================
+
 void Notifications::updateItems()
 {
     for (int i = 0; i < newItems.size(); ++i) {
@@ -73,7 +72,7 @@ void Notifications::updateItems()
     }
     newItems.clear();
 }
-//=============================================================================
+
 void Notifications::createItem(Fact *fact)
 {
     NotifyItem *f = items.value(fact);
@@ -83,6 +82,3 @@ void Notifications::createItem(Fact *fact)
     f = new NotifyItem(fact, this);
     items.insert(fact, f);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================

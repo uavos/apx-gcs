@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FactTreeModel_H
-#define FactTreeModel_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QtCore>
-//=============================================================================
+
 class FactTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -83,5 +82,3 @@ private slots:
     void updateTimerTimeout();
     void itemDestroyed();
 };
-//=============================================================================
-#endif

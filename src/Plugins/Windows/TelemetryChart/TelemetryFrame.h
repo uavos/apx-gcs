@@ -19,9 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryFrame_H
-#define TelemetryFrame_H
-//-----------------------------------------------------------------------------
+#pragma once
+
 #include "TelemetryPlot.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
@@ -29,7 +28,7 @@
 #include <Telemetry/TelemetryReader.h>
 //#include <Telemetry/TelemetryShare.h>
 #include <QtCore>
-//=============================================================================
+
 class TelemetryFrame : public QWidget
 {
     Q_OBJECT
@@ -103,5 +102,3 @@ private slots:
     void playerTimeChanged();
     void updatePlotPlayerTime();
 };
-//=============================================================================
-#endif

@@ -43,7 +43,7 @@ void HttpService::vehicleSelected(Vehicle *vehicle)
     c_gps_lat = vehicle->f_mandala->fact(mandala::est::nav::pos::lat::uid);
     c_gps_lon = vehicle->f_mandala->fact(mandala::est::nav::pos::lon::uid);
     c_gps_hmsl = vehicle->f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
-    c_course = vehicle->f_mandala->fact(mandala::est::nav::pos::course::uid);
+    c_bearing = vehicle->f_mandala->fact(mandala::est::nav::pos::bearing::uid);
     c_roll = vehicle->f_mandala->fact(mandala::est::nav::att::roll::uid);
     c_pitch = vehicle->f_mandala->fact(mandala::est::nav::att::pitch::uid);
 }
@@ -503,7 +503,9 @@ QString HttpService::reply_chase()
     xml.writeTextElement("latitude", c_gps_lat->valueText());
     xml.writeTextElement("altitude", c_gps_hmsl->valueText());
     xml.writeTextElement("heading",
-                         QString("%1").arg(AppRoot::angle360(c_course->value().toDouble()), 0, 'f'));
+                         QString("%1").arg(AppRoot::angle360(c_bearing->value().toDouble()),
+                                           0,
+                                           'f'));
     xml.writeTextElement("tilt", QString("%1").arg(c_pitch->value().toDouble() + 90.0));
     xml.writeTextElement("roll", QString("%1").arg(-c_roll->value().toDouble()));
     xml.writeTextElement("altitudeMode", "absolute");
@@ -546,7 +548,9 @@ QString HttpService::reply_chase_upd()
     xml.writeTextElement("latitude", c_gps_lat->valueText());
     xml.writeTextElement("altitude", c_gps_hmsl->valueText());
     xml.writeTextElement("heading",
-                         QString("%1").arg(AppRoot::angle360(c_course->value().toDouble()), 0, 'f'));
+                         QString("%1").arg(AppRoot::angle360(c_bearing->value().toDouble()),
+                                           0,
+                                           'f'));
     xml.writeTextElement("tilt", QString("%1").arg(c_pitch->value().toDouble() + 90.0));
     xml.writeTextElement("roll", QString("%1").arg(-c_roll->value().toDouble()));
     xml.writeTextElement("altitudeMode", "absolute");

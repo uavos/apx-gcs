@@ -45,7 +45,7 @@ MissionObject {
     property int f_time: fact?fact.time:0
     property int f_totalTime: fact?fact.totalTime:0
     property string actionsText: fact?fact.actions.text:""
-    property real f_course: fact?fact.course:0
+    property real f_bearing: fact?fact.bearing:0
     property bool f_first: num === 0
     property bool f_warning: fact?fact.warning:false
     property bool f_reachable: fact?fact.reachable:false
@@ -139,7 +139,7 @@ MissionObject {
                         origin.x: crsArrow.width/2
                         origin.y: -crsArrow.width
                         axis.z: 1
-                        angle: waypointItem.f_course-map.bearing
+                        angle: waypointItem.f_bearing-map.bearing
                     }
                     radius: ui.antialiasing?1:0
                     opacity: ui.effects?0.6:1

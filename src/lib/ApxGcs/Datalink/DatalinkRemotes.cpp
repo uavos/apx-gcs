@@ -26,7 +26,7 @@
 #include <App/AppLog.h>
 
 #include <tcp_ports.h>
-//=============================================================================
+
 DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     : Fact(datalink,
            "hosts",
@@ -76,7 +76,7 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     discover();
     updateStatus();
 }
-//=============================================================================
+
 DatalinkRemote *DatalinkRemotes::registerHost(QUrl url)
 {
     DatalinkRemote *c = remoteByAddr(QHostAddress(url.host()));
@@ -101,8 +101,7 @@ DatalinkRemote *DatalinkRemotes::remoteByAddr(QHostAddress addr)
     }
     return nullptr;
 }
-//=============================================================================
-//=============================================================================
+
 void DatalinkRemotes::discover(void)
 {
     if (f_discover->value().toBool()) {
@@ -150,8 +149,7 @@ void DatalinkRemotes::discoverRead(void)
         c->updateTimeout();
     }
 }
-//=============================================================================
-//=============================================================================
+
 void DatalinkRemotes::updateStatus()
 {
     //count connected
@@ -170,7 +168,7 @@ void DatalinkRemotes::updateStatus()
     else
         setValue(QVariant());
 }
-//=============================================================================
+
 void DatalinkRemotes::connectTriggered()
 {
     QUrl url = DatalinkRemote::fixUrl(f_url->text());
@@ -180,7 +178,7 @@ void DatalinkRemotes::connectTriggered()
     DatalinkRemote *c = registerHost(url);
     c->setValue(true);
 }
-//=============================================================================
+
 int DatalinkRemotes::connectedCount() const
 {
     return m_connectedCount;
@@ -192,4 +190,3 @@ void DatalinkRemotes::setConnectedCount(int v)
     m_connectedCount = v;
     emit connectedCountChanged();
 }
-//=============================================================================

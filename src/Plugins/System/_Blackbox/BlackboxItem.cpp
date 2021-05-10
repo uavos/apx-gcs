@@ -23,7 +23,7 @@
 #include "BlackboxReader.h"
 
 #include <App/AppLog.h>
-//=============================================================================
+
 BlackboxItem::BlackboxItem(Fact *parent,
                            const QString &name,
                            const QString &title,
@@ -55,7 +55,7 @@ BlackboxItem::BlackboxItem(Fact *parent,
 
     stop();
 }
-//=============================================================================
+
 void BlackboxItem::updateActions()
 {
     bool enb = enabled();
@@ -70,7 +70,7 @@ void BlackboxItem::updateStats()
     f_stats->setTitle(totalSize ? title().append(": ").append(parentFact()->title()) : tr("Empty"));
     f_stats->setValue(QString("%1 MB").arg(totalSize / 1024.0 / 1024.0, 0, 'f', 2));
 }
-//=============================================================================
+
 void BlackboxItem::getStats()
 {
     f_stats->setTitle(tr("Getting blackbox info"));
@@ -95,4 +95,3 @@ void BlackboxItem::stop()
         reader = nullptr;
     }
 }
-//=============================================================================

@@ -26,7 +26,7 @@
 
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
-    , icourse(0)
+    , m_bearing(0)
     , m_reachable(false)
     , m_warning(false)
 {
@@ -86,7 +86,7 @@ QGeoPath Waypoint::getPath()
     if (turnR <= 0)
         turnR = 100;
     double turnRate = (360.0 / (2.0 * M_PI)) * spd / turnR;
-    double crs = m_course;
+    double crs = m_bearing;
     double distance = 0;
     MissionItem *prev = prevItem();
     QGeoCoordinate dest(coordinate());
@@ -116,7 +116,7 @@ QGeoPath Waypoint::getPath()
         } else {
             pt = prev->coordinate();
             if (prev->geoPath().path().size() > 1) {
-                crs = prev->course();
+                crs = prev->bearing();
                 wptLine = f_type->text().toLower() == "track";
             } else
                 wptLine = true;
@@ -172,20 +172,20 @@ QGeoPath Waypoint::getPath()
     setDistance(distance);
     setTime(distance / spd);
 
-    //end course
-    if (p.path().size() == 2 && crs == m_course) {
+    //end bearing
+    if (p.path().size() == 2 && crs == m_bearing) {
         crs = p.path().first().azimuthTo(p.path().at(1));
     }
     crs = AppRoot::angle(crs);
     int icrs = (int) (crs / 10) * 10;
-    if (icourse != icrs) {
-        icourse = icrs;
+    if (m_bearing != icrs) {
+        m_bearing = icrs;
         //force next item to be updated
         MissionItem *next = nextItem();
         if (next)
             next->resetPath();
     }
-    setCourse(crs);
+    setBearing(crs);
 
     return p;
 }

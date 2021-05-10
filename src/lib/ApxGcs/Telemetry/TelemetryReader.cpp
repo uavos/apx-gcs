@@ -30,7 +30,7 @@
 #include <Database/TelemetryReqWrite.h>
 
 #include <QGeoCoordinate>
-//=============================================================================
+
 TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
     : Fact(parent, "reader", "", "", Group, "progress-download")
     , lookup(lookup)
@@ -72,19 +72,19 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
 
     updateRecordInfo();
 }
-//==============================================================================
+
 void TelemetryReader::updateStatus()
 {
     const QString &s = AppRoot::timeToString(totalTime() / 1000, true);
     setValue(s);
 }
-//==============================================================================
+
 void TelemetryReader::loadCurrent()
 {
     if (!lookup->recordId())
         lookup->f_latest->trigger();
 }
-//==============================================================================
+
 void TelemetryReader::updateRecordInfo()
 {
     QVariantMap info = lookup->recordInfo();
@@ -126,7 +126,7 @@ void TelemetryReader::updateRecordInfo()
 
     emit statsAvailable();
 }
-//==============================================================================
+
 void TelemetryReader::load()
 {
     f_reload->setEnabled(false);
@@ -150,7 +150,7 @@ void TelemetryReader::load()
             Qt::QueuedConnection);
     req->exec();
 }
-//==============================================================================
+
 void TelemetryReader::reloadTriggered()
 {
     quint64 key = lookup->recordId();
@@ -159,8 +159,7 @@ void TelemetryReader::reloadTriggered()
     Database::instance()->telemetry->markCacheInvalid(key);
     load();
 }
-//==============================================================================
-//==============================================================================
+
 void TelemetryReader::dbCacheNotFound(quint64 telemetryID)
 {
     if (telemetryID != lookup->recordId())
@@ -200,8 +199,7 @@ void TelemetryReader::dbLoadData()
         req->exec();
     }
 }
-//=============================================================================
-//=============================================================================
+
 void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
 {
     Q_UNUSED(stats)
@@ -296,8 +294,7 @@ void TelemetryReader::changeThread(Fact *fact, QThread *thread)
     for (auto i : fact->facts())
         changeThread(i, thread);
 }
-//=============================================================================
-//=============================================================================
+
 void TelemetryReader::notesChanged()
 {
     if (blockNotesChange)
@@ -315,9 +312,7 @@ void TelemetryReader::notesChanged()
         Qt::QueuedConnection);
     req->exec();
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 quint64 TelemetryReader::totalSize() const
 {
     return m_totalSize;
@@ -340,4 +335,3 @@ void TelemetryReader::setTotalTime(quint64 v)
     m_totalTime = v;
     emit totalTimeChanged();
 }
-//=============================================================================

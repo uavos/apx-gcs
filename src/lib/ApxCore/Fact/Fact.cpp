@@ -67,7 +67,7 @@ Fact::Fact(QObject *parent,
     //append to parent
     setParentFact(qobject_cast<Fact *>(parent));
 }
-//=============================================================================
+
 void Fact::onOptionsChanged()
 {
     if (options() & ProgressTrack) {
@@ -92,7 +92,7 @@ void Fact::onOptionsChanged()
         break;
     }
 }
-//=============================================================================
+
 QVariant Fact::data(int col, int role) const
 {
     switch (role) {
@@ -194,7 +194,7 @@ QVariant Fact::data(int col, int role) const
     }
     return QVariant();
 }
-//=============================================================================
+
 QString Fact::toolTip() const
 {
     QStringList st;
@@ -220,7 +220,7 @@ QString Fact::toolTip() const
         st << QString("Default: %1").arg(defaultValue().toString());
     return st.join('\n');
 }
-//=============================================================================
+
 QByteArray Fact::hash() const
 {
     QCryptographicHash h(QCryptographicHash::Sha1);
@@ -246,13 +246,13 @@ void Fact::hashData(QCryptographicHash *h) const
 
     h->addData(text().toUtf8());
 }
-//=============================================================================
+
 bool Fact::setValue(const QVariant &v)
 {
     setScnt(scnt() + 1);
     return FactData::setValue(v);
 }
-//=============================================================================
+
 bool Fact::hasParent(Fact *parent) const
 {
     for (const Fact *i = parentFact(); i; i = i->parentFact()) {
@@ -265,7 +265,7 @@ bool Fact::hasChild(Fact *child) const
 {
     return facts().contains(child);
 }
-//=============================================================================
+
 QVariant Fact::findValue(const QString &namePath)
 {
     Fact *f = findChild(namePath);
@@ -277,7 +277,7 @@ QVariant Fact::findValue(const QString &namePath)
         return f->text();
     return f->value();
 }
-//=============================================================================
+
 Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
 {
     FactList slist;
@@ -304,7 +304,7 @@ Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
         apxConsoleW() << "Fact not found:" << factNamePath; //<<sender();
     return nullptr;
 }
-//=============================================================================
+
 Fact *Fact::childByTitle(const QString &factTitle) const
 {
     for (int i = 0; i < size(); ++i) {
@@ -314,7 +314,7 @@ Fact *Fact::childByTitle(const QString &factTitle) const
     }
     return nullptr;
 }
-//=============================================================================
+
 QString Fact::titlePath(const QChar pathDelimiter) const
 {
     QString s;
@@ -338,7 +338,7 @@ QString Fact::pTitle() const
 {
     return title().simplified().replace('/', '_').replace('\n', ' ').replace('=', ' ');
 }
-//=============================================================================
+
 Fact *Fact::factByTitlePath(const QString &spath) const
 {
     int del = spath.indexOf('/');
@@ -363,7 +363,7 @@ Fact *Fact::factByTitlePath(const QString &spath) const
     }
     return nullptr;
 }
-//=============================================================================
+
 bool Fact::lessThan(Fact *other) const
 {
     //no sorting by default
@@ -383,7 +383,7 @@ bool Fact::showThis(QRegExp re) const
         return true;
     return false;
 }
-//=============================================================================
+
 void Fact::trigger(QVariantMap opts)
 {
     if (!enabled())
@@ -403,14 +403,14 @@ void Fact::trigger(QVariantMap opts)
     if (binding() && size() <= 0)
         binding()->trigger(opts);
 }
-//=============================================================================
+
 QObject *Fact::loadQml(const QString &qmlFile)
 {
     QVariantMap opts;
     opts.insert("fact", QVariant::fromValue(this));
     return App::loadQml(qmlFile, opts);
 }
-//=============================================================================
+
 void Fact::updateBinding(Fact *src)
 {
     if (m_binding == src)
@@ -462,14 +462,13 @@ void Fact::updateBinding(Fact *src)
     }
 }
 
-//=============================================================================
 Fact *Fact::createAction(Fact *parent)
 {
     Fact *f = new Fact(parent, name(), "", "", Action | dataType() | options(), icon());
     f->setBinding(this);
     return f;
 }
-//=============================================================================
+
 void Fact::setValues(const QVariantMap &values)
 {
     foreach (const QString &key, values.keys()) {
@@ -586,7 +585,7 @@ void Fact::fromVariant(const QVariant &var)
         return;
     setValue(var);
 }
-//=============================================================================
+
 Fact *Fact::mandala() const
 {
     for (const Fact *f = this; f; f = f->parentFact()) {
@@ -610,8 +609,7 @@ quint16 Fact::stringToMandala(const QString &s) const
     Fact *m = mandala();
     return m ? m->stringToMandala(s) : 0;
 }
-//=============================================================================
-//=============================================================================
+
 void Fact::updateModels()
 {
     if (size() > 0) {
@@ -633,7 +631,7 @@ void Fact::updateModels()
         }
     }
 }
-//=============================================================================
+
 FactBase::Flags Fact::flags(void) const
 {
     return treeType() | dataType() | options();

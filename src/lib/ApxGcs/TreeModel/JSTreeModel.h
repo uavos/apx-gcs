@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef JSTreeModel_H
-#define JSTreeModel_H
-//=============================================================================
+#pragma once
+
 #include <QJSEngine>
 #include <QtCore>
-//=============================================================================
+
 class JSTreeItem : public QObject
 {
     Q_OBJECT
@@ -63,7 +62,7 @@ private:
     int m_size;
     void updateSize();
 };
-//=============================================================================
+
 class JSTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -107,5 +106,3 @@ protected:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 };
-//=============================================================================
-#endif

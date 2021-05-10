@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "QueueWorker.h"
-//=============================================================================
+
 QueueWorker::QueueWorker()
     : QThread()
 {
@@ -37,25 +37,24 @@ QueueWorker::~QueueWorker()
         //terminate();
     }
 }
-//=============================================================================
+
 void QueueWorker::exec(Fact *f)
 {
     fact = f;
 }
-//=============================================================================
+
 void QueueWorker::threadFinished()
 {
     emit workFinished(fact, result);
 }
-//=============================================================================
+
 void QueueWorker::run()
 {
     emit progress(fact, 0);
 }
-//=============================================================================
+
 void QueueWorker::stop()
 {
     requestInterruption();
     emit stopRequested();
 }
-//=============================================================================

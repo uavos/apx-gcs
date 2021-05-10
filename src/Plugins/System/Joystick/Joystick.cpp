@@ -25,7 +25,7 @@
 #include <App/AppLog.h>
 
 #include "JoystickAxis.h"
-//=============================================================================
+
 Joystick::Joystick(Fact *parent, int device_index, QString uid)
     : Fact(parent, "j#", "", "", Group | Bool | FlatModel)
     , device_index(device_index)
@@ -122,12 +122,12 @@ Joystick::~Joystick()
     if (dev)
         SDL_JoystickClose(dev);
 }
-//=============================================================================
+
 QString Joystick::juid() const
 {
     return QString("%1:%2:%3").arg(device_index).arg(devName).arg(uid);
 }
-//=============================================================================
+
 void Joystick::updateDevice(bool connected)
 {
     if (connected) {
@@ -187,8 +187,7 @@ void Joystick::updateHat(int i, quint8 v)
         App::jsexec(s);
     }
 }
-//=============================================================================
-//=============================================================================
+
 void Joystick::loadConfig(const QJsonObject &config)
 {
     //clear
@@ -223,7 +222,7 @@ void Joystick::loadConfig(const QJsonObject &config)
         f->setValue(v["scr"]);
     }
 }
-//=============================================================================
+
 QJsonObject Joystick::saveConfig()
 {
     QJsonObject config;
@@ -253,4 +252,3 @@ QJsonObject Joystick::saveConfig()
     config.insert("config", conf);
     return config;
 }
-//=============================================================================

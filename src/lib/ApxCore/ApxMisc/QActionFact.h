@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef QActionFact_H
-#define QActionFact_H
-//=============================================================================
+#pragma once
+
 #include <Fact/Fact.h>
 #include <QAction>
 #include <QtCore>
-//=============================================================================
+
 class QActionFact : public QAction
 {
     Q_OBJECT
@@ -45,5 +44,3 @@ private slots:
 
     void actionTriggered(bool checked);
 };
-//=============================================================================
-#endif

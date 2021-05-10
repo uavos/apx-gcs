@@ -19,9 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TelemetryPlot_H
-#define TelemetryPlot_H
-//-----------------------------------------------------------------------------
+#pragma once
+
 #include <QtWidgets>
 #include <qwt_legend.h>
 #include <qwt_legend_label.h>
@@ -41,7 +40,7 @@
 #include <qwt_series_data.h>
 #include <qwt_symbol.h>
 #include <qwt_text.h>
-//=============================================================================
+
 class TelemetryPlot : public QwtPlot
 {
     Q_OBJECT
@@ -110,7 +109,7 @@ public slots:
     bool eventsVisible() const;
     void setEventsVisible(bool v);
 };
-//=============================================================================
+
 class PlotPicker : public QwtPlotPicker
 {
     Q_OBJECT
@@ -129,7 +128,7 @@ protected:
 private:
     double sampleValue(const QwtPlotCurve *curve, double t) const;
 };
-//=============================================================================
+
 class PlotMagnifier : public QwtPlotMagnifier
 {
     Q_OBJECT
@@ -145,7 +144,7 @@ protected:
     void rescale(double factor);
     void widgetMouseMoveEvent(QMouseEvent *mouseEvent);
 };
-//=============================================================================
+
 class LegendItem : public QwtLegendLabel
 {
 public:
@@ -156,12 +155,10 @@ public:
 protected:
     void paintEvent(QPaintEvent *e);
 };
-//=============================================================================
+
 class PlotLegend : public QwtLegend
 {
 public:
     PlotLegend(QWidget *parent = 0);
     QWidget *createWidget(const QwtLegendData &data) const;
 };
-//=============================================================================
-#endif

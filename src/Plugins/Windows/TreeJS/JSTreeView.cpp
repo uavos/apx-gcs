@@ -24,7 +24,7 @@
 #include <TreeModel/JSTreeModel.h>
 #include <QHeaderView>
 #include <QtWidgets>
-//=============================================================================
+
 JSTreeView::JSTreeView(QWidget *parent)
     : QTreeView(parent)
 {
@@ -50,15 +50,14 @@ JSTreeView::JSTreeView(QWidget *parent)
 
     setFont(QGuiApplication::font());
 }
-//=============================================================================
-//=============================================================================
+
 JSTreeProxyModel::JSTreeProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
     , m_rootItem(nullptr)
 {
     setDynamicSortFilter(false);
 }
-//=============================================================================
+
 void JSTreeProxyModel::setRootItem(JSTreeItem *jsItem)
 {
     m_rootItem = jsItem;
@@ -68,7 +67,7 @@ JSTreeItem *JSTreeProxyModel::rootItem() const
 {
     return m_rootItem;
 }
-//=============================================================================
+
 bool JSTreeProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow,
@@ -104,7 +103,7 @@ bool JSTreeProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &source
     }
     return showThis(index);
 }
-//=============================================================================
+
 bool JSTreeProxyModel::showThis(const QModelIndex index) const
 {
     QModelIndex useIndex = sourceModel()->index(index.row(), 0, index.parent());
@@ -137,7 +136,7 @@ bool JSTreeProxyModel::showThis(const QModelIndex index) const
   }*/
     return false;
 }
-//=============================================================================
+
 bool JSTreeProxyModel::lessThan2(const QModelIndex &left, const QModelIndex &right) const
 {
     //only first col sorted
@@ -150,8 +149,7 @@ bool JSTreeProxyModel::lessThan2(const QModelIndex &left, const QModelIndex &rig
         return QSortFilterProxyModel::lessThan(left, right);
     return JSTreeItem::lessThan(item_left, item_right);
 }
-//=============================================================================
-//=============================================================================
+
 JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, QWidget *parent)
     : QWidget(parent)
 {
@@ -208,7 +206,7 @@ JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, Q
     connect(tree, &JSTreeView::collapsed, this, &JSTreeWidget::collapsed);
     connect(tree, &JSTreeView::expanded, this, &JSTreeWidget::expanded);
 }
-//=============================================================================
+
 void JSTreeWidget::filterChanged()
 {
     QString s = eFilter->text();
@@ -223,7 +221,7 @@ void JSTreeWidget::filterChanged()
         emit treeReset();
     }
 }
-//=============================================================================
+
 void JSTreeWidget::doubleClicked(const QModelIndex &index)
 {
     QModelIndex idx = proxy->mapToSource(index);
@@ -237,7 +235,7 @@ void JSTreeWidget::doubleClicked(const QModelIndex &index)
     rootList.append(QPointer<JSTreeItem>(fPrev));
     updateActions();
 }
-//=============================================================================
+
 void JSTreeWidget::collapsed(const QModelIndex &index)
 {
     Q_UNUSED(index)
@@ -253,7 +251,7 @@ void JSTreeWidget::expanded(const QModelIndex &index)
   if(!model->expandedFacts.contains(f))model->expandedFacts.append(f);
   //qDebug()<<"exp"<<f->path();*/
 }
-//=============================================================================
+
 void JSTreeWidget::updateActions()
 {
     //JSTreeItem *f=tree->rootIndex().data(FactListModel::ModelDataRole).value<Fact*>();
@@ -262,13 +260,13 @@ void JSTreeWidget::updateActions()
     aBack->setEnabled(bBack);
     //qDebug()<<"upd";
 }
-//=============================================================================
+
 void JSTreeWidget::resetFilter()
 {
     tree->setFocus();
     eFilter->clear();
 }
-//=============================================================================
+
 void JSTreeWidget::setRoot(JSTreeItem *jsItem)
 {
     //if(!model->expandedFacts.contains(jsItem))model->expandedFacts.append(jsItem);
@@ -289,7 +287,7 @@ void JSTreeWidget::setRoot(JSTreeItem *jsItem)
     updateActions();
     lbPath->setText(jsItem->path());
 }
-//=============================================================================
+
 void JSTreeWidget::back()
 {
     //qDebug()<<"back";
@@ -298,7 +296,7 @@ void JSTreeWidget::back()
         return;
     setRoot(rootList.last());
 }
-//=============================================================================
+
 void JSTreeWidget::jsItemRemoved()
 {
     /*resetFilter();
@@ -316,4 +314,3 @@ void JSTreeWidget::jsItemRemoved()
   }
   if(jsItem==proxy->rootItem())back();*/
 }
-//=============================================================================

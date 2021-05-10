@@ -33,7 +33,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     : Fact(parent, name, title, descr, Group | ModifiedGroup)
     , group(parent)
     , blockUpdateCoordinate(false)
-    , m_course(0)
+    , m_bearing(0)
     , m_time(0)
     , m_distance(0)
     , m_totalDistance(0)
@@ -254,16 +254,16 @@ void MissionItem::setGeoPath(const QGeoPath &v)
     m_geoPath = v;
     emit geoPathChanged();
 }
-double MissionItem::course() const
+double MissionItem::bearing() const
 {
-    return m_course;
+    return m_bearing;
 }
-void MissionItem::setCourse(const double &v)
+void MissionItem::setBearing(const double &v)
 {
-    if (m_course == v)
+    if (m_bearing == v)
         return;
-    m_course = v;
-    emit courseChanged();
+    m_bearing = v;
+    emit bearingChanged();
 }
 uint MissionItem::time() const
 {

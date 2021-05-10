@@ -33,6 +33,7 @@ import Apx.Common 1.0
 import Apx.Controls 1.0
 
 ColumnLayout {
+    id: control
     spacing: Style.spacing*2
     
     readonly property APX.Vehicle vehicle: apx.vehicles.current
@@ -60,12 +61,10 @@ ColumnLayout {
         delegate: RowLayout{
             spacing: Style.spacing
             TextButton {
-                id: missionItem
-
                 size: Style.buttonSize*0.7
 
                 toolTip: modelData?modelData.descr:""
-                
+
                 text: {
                     if(!modelData)return ""
                     var a=[]

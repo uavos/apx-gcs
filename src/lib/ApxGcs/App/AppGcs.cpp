@@ -24,14 +24,13 @@
 #include <App/AppLog.h>
 #include <QFileDialog>
 
-//=============================================================================
 AppGcs *AppGcs::_instance = nullptr;
 AppGcs::AppGcs(int &argc, char **argv, const QString &name, const QUrl &_url)
     : App(argc, argv, name, _url)
 {
     _instance = this;
 }
-//=============================================================================
+
 void AppGcs::loadServices()
 {
     App::loadServices();
@@ -52,7 +51,7 @@ void AppGcs::loadServices()
 
     jsync(f_apx);
 }
-//=============================================================================
+
 void AppGcs::openFile(AppGcs::FileType type)
 {
     QString title;
@@ -106,5 +105,3 @@ void AppGcs::openFile(AppGcs::FileType type)
         emit fileOpenRequest(fname);
     }
 }
-//=============================================================================
-//=============================================================================

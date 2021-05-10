@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SvgMaterialIcon_H
-#define SvgMaterialIcon_H
-//=============================================================================
+#pragma once
+
 #include <QIcon>
 #include <QIconEngine>
 #include <QQmlEngine>
 #include <QtCore>
-//=============================================================================
+
 class MaterialIcon : public QIcon
 {
 public:
@@ -40,7 +39,7 @@ private:
 
     QIcon icon(const QString &name, const QColor &color) const;
 };
-//=============================================================================
+
 class QFontIconEngine : public QIconEngine
 {
 public:
@@ -60,5 +59,3 @@ private:
     QString mLetter;
     QColor mBaseColor;
 };
-//=============================================================================
-#endif

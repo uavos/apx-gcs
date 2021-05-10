@@ -25,7 +25,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-//=============================================================================
+
 DatabaseSession::DatabaseSession(QObject *parent,
                                  const QString &name,
                                  const QString &sessionName,
@@ -115,17 +115,17 @@ DatabaseSession::~DatabaseSession()
     //QSqlDatabase::removeDatabase(sessionName);
     //qDebug()<<"DB"<<sessionName<<"closed";
 }
-//=============================================================================
+
 int DatabaseSession::queueSize()
 {
     return m_worker->queueSize();
 }
-//=============================================================================
+
 void DatabaseSession::modifiedNotify()
 {
     modifiedTimer.start();
 }
-//=============================================================================
+
 void DatabaseSession::updateInfo()
 {
     int qsz = queueSize();
@@ -153,7 +153,7 @@ void DatabaseSession::updateCapacity()
     m_capacity = v;
     emit capacityChanged();
 }
-//=============================================================================
+
 QStringList DatabaseSession::tableFields(QString tableName) const
 {
     return _tableFields.value(tableName);
@@ -162,7 +162,7 @@ void DatabaseSession::updateTableFields(const QString tableName, QStringList fie
 {
     _tableFields.insert(tableName, fields);
 }
-//=============================================================================
+
 bool DatabaseSession::transaction(QSqlQuery &query)
 {
     if (!sql.isOpen())
@@ -175,7 +175,7 @@ bool DatabaseSession::transaction(QSqlQuery &query)
     //if(!inTransaction)mutex.unlock();
     return inTransaction;
 }
-//=============================================================================
+
 bool DatabaseSession::commit(QSqlQuery &query, bool forceError)
 {
     if (!sql.isOpen())
@@ -206,7 +206,7 @@ bool DatabaseSession::rollback(QSqlQuery &query)
     bool rv = query.exec();
     return rv;
 }
-//=============================================================================
+
 void DatabaseSession::disable()
 {
     QReadLocker locker(&m_workerLock);
@@ -224,7 +224,7 @@ void DatabaseSession::request(DatabaseRequest *req)
         return;
     m_worker->request(req);
 }
-//=============================================================================
+
 void DatabaseSession::vacuumTriggered()
 {
     DBReqVacuum *req = new DBReqVacuum(this);
@@ -237,7 +237,7 @@ void DatabaseSession::vacuumTriggered()
     f_vacuum->setProgress(0);
     req->exec();
 }
-//=============================================================================
+
 void DatabaseSession::analyzeTriggered()
 {
     DBReqAnalyze *req = new DBReqAnalyze(this);
@@ -250,15 +250,12 @@ void DatabaseSession::analyzeTriggered()
     f_analyze->setProgress(0);
     req->exec();
 }
-//=============================================================================
-//=============================================================================
+
 quint64 DatabaseSession::capacity() const
 {
     return m_capacity;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 bool DBReqMakeTable::run(QSqlQuery &query)
 {
     query.prepare(QString("PRAGMA table_info('%1')").arg(tableName));
@@ -318,7 +315,7 @@ bool DBReqMakeTable::run(QSqlQuery &query)
     }
     return true;
 }
-//=============================================================================
+
 bool DBReqMakeIndex::run(QSqlQuery &query)
 {
     const QString &s = QString("CREATE%3 INDEX IF NOT EXISTS idx_%1_%2 ON %1 (%4);")
@@ -333,7 +330,7 @@ bool DBReqMakeIndex::run(QSqlQuery &query)
     db->commit(query);
     return true;
 }
-//=============================================================================
+
 bool DBReqVacuum::run(QSqlQuery &query)
 {
     QElapsedTimer t0;
@@ -347,7 +344,7 @@ bool DBReqVacuum::run(QSqlQuery &query)
     apxMsg() << tr("Optimized") << name << t0.elapsed() << "ms";
     return true;
 }
-//=============================================================================
+
 bool DBReqAnalyze::run(QSqlQuery &query)
 {
     QElapsedTimer t0;
@@ -364,4 +361,3 @@ bool DBReqAnalyze::run(QSqlQuery &query)
     apxMsg() << "OK" << name << t0.elapsed() << "ms";
     return true;
 }
-//=============================================================================

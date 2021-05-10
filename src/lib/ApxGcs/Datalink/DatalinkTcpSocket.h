@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatalinkTcpSocket_H
-#define DatalinkTcpSocket_H
+#pragma once
+
 #include "DatalinkConnection.h"
 #include <QtCore>
 #include <QtNetwork>
-//=============================================================================
+
 class DatalinkTcpSocket : public DatalinkConnection
 {
     Q_OBJECT
@@ -87,5 +87,3 @@ signals:
     void disconnected();
     void error();
 };
-//=============================================================================
-#endif

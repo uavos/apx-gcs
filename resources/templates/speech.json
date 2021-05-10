@@ -3,8 +3,7 @@
         "en_US": "Vicki",
         "ru_RU": "Milena"
     },
-    "phrases":
-        [
+    "phrases": [
         {
             "msg": "configuration updated",
             "say": "configuration accepted"
@@ -24,6 +23,12 @@
         },
         {
             "msg": "waypoint passed"
+        },
+        {
+            "msg": "point passed"
+        },
+        {
+            "msg": "taxiway passed"
         },
         {
             "msg": "engine start"
@@ -115,7 +120,6 @@
             "msg": "throttle override off",
             "say": "throttle control"
         },
-
         {
             "_comment": "# ------ MODE -----------------"
         },
@@ -125,7 +129,7 @@
         },
         {
             "msg": "procedure UAV",
-            "say": "course control"
+            "say": "heading control"
         },
         {
             "msg": "procedure STBY",
@@ -148,10 +152,9 @@
             "say": "taxi mode"
         },
         {
-            "msg": "procedure LANDING",
+            "msg": "landing stage init",
             "say": "landing procedure initiated"
         },
-
         {
             "_comment": "# ------ TAXI -----------------"
         },
@@ -164,7 +167,6 @@
         {
             "msg": "taxi finished"
         },
-
         {
             "_comment": "# ------ TAKEOFF -----------------"
         },
@@ -195,6 +197,10 @@
         {
             "msg": "takeoff stage finished",
             "say": "takeoff finished"
+        },
+        {
+            "msg": "takeoff action failure",
+            "say": "takeoff denied"
         },
         {
             "msg": "takeoff cancelled"
@@ -249,7 +255,6 @@
             "msg": "landing gear floating",
             "say": "in flight"
         },
-
         {
             "_comment": "# ------ touchdown -----------------"
         },

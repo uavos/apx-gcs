@@ -31,7 +31,7 @@
 #include <QColor>
 #include <QtGui>
 #include <QtNetwork>
-//=============================================================================
+
 TelemetryFrame::TelemetryFrame(QWidget *parent)
     : QWidget(parent)
     , pcopy(nullptr)
@@ -196,8 +196,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     updateProgress();
     updateStatus();
 }
-//=============================================================================
-//=============================================================================
+
 void TelemetryFrame::updateStats()
 {
     //update title
@@ -245,8 +244,7 @@ void TelemetryFrame::updateStatus()
     lbStatus->adjustSize();
     lbStatus->move(r.right() + 8, r.y() + r.height() / 2 - lbStatus->height() / 2);
 }
-//=============================================================================
-//=============================================================================
+
 void TelemetryFrame::updateData()
 {
     resetPlot();
@@ -327,8 +325,7 @@ void TelemetryFrame::updateData()
 
     plot->resetZoom();
 }
-//=============================================================================
-//=============================================================================
+
 void TelemetryFrame::resetPlot()
 {
     if (aReplay->isChecked())
@@ -337,13 +334,13 @@ void TelemetryFrame::resetPlot()
         aShowEvents->trigger();
     plot->resetData();
 }
-//=============================================================================
+
 void TelemetryFrame::eNotes_returnPressed(void)
 {
     reader->f_notes->setValue(eNotes->text().trimmed());
     plot->setFocus();
 }
-//=============================================================================
+
 void TelemetryFrame::aSplit_triggered(void)
 {
     if (!((QAction *) sender())->isChecked()) {
@@ -358,14 +355,14 @@ void TelemetryFrame::aSplit_triggered(void)
     vlayout->addWidget(pcopy);
     //connect(pcopy,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
 }
-//=============================================================================
+
 void TelemetryFrame::aShowEvents_triggered(void)
 {
     plot->setEventsVisible(aShowEvents->isChecked());
     if (pcopy)
         pcopy->setEventsVisible(aShowEvents->isChecked());
 }
-//=============================================================================
+
 void TelemetryFrame::avCLR_triggered(void)
 {
     plot->showCurves(false);
@@ -398,9 +395,7 @@ void TelemetryFrame::avCTR_triggered(void)
 {
     plot->showCurves(true, ctr_fields, true);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
 void TelemetryFrame::aReplay_triggered(void)
 {
     bool bShow = aReplay->isChecked();
@@ -418,17 +413,17 @@ void TelemetryFrame::aReplay_triggered(void)
 
     playerTimeChanged();
 }
-//=============================================================================
+
 void TelemetryFrame::playerSliderMoved()
 {
     player->f_time->setValue(playerSlider->value());
 }
-//=============================================================================
+
 void TelemetryFrame::plotTimeCursorMoved()
 {
     player->f_time->setValue(plot->timeCursorValue());
 }
-//=============================================================================
+
 void TelemetryFrame::playerTimeChanged()
 {
     if (plotCursorUpdateTimer.isActive())
@@ -442,4 +437,3 @@ void TelemetryFrame::updatePlotPlayerTime()
     plot->setTimeCursor(t, reader->totalSize() < 3000000);
     lbPlayerTime->setText(AppRoot::timemsToString(t));
 }
-//=============================================================================

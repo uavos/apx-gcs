@@ -230,11 +230,11 @@ QVariant PApxTelemetry::raw_value(const void *src, mandala::type_id_e type)
     case mandala::type_dword:
         return QVariant::fromValue(xbus::telemetry::raw_value<mandala::dword_t>(src, type));
     case mandala::type_word:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::word_t>(src, type));
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::word_t>(src, type));
     case mandala::type_byte:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::byte_t>(src, type));
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::byte_t>(src, type));
     case mandala::type_option:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::option_t>(src, type));
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::option_t>(src, type));
     }
 }
 
@@ -264,7 +264,7 @@ bool PApxTelemetry::unpack_xpdr(PStreamReader &stream)
     values.insert(mandala::est::nav::pos::altitude::uid, xpdr.alt);
 
     values.insert(mandala::est::nav::pos::speed::uid, xpdr.speed);
-    values.insert(mandala::est::nav::pos::course::uid, xpdr.course);
+    values.insert(mandala::est::nav::pos::bearing::uid, xpdr.bearing);
     values.insert(mandala::cmd::nav::proc::mode::uid, xpdr.mode);
 
     emit xpdrData(values);

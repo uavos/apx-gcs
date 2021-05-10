@@ -25,7 +25,7 @@
 #include <App/AppLog.h>
 
 #include <QFileDialog>
-//=============================================================================
+
 BlackboxFile::BlackboxFile(Fact *parent)
     : BlackboxItem(parent, "imp", tr("Import"), tr("Import binary data from file"), Group)
 {
@@ -33,7 +33,7 @@ BlackboxFile::BlackboxFile(Fact *parent)
     f_stats->setIcon("folder-open");
     f_callsign->setValue("FILE");
 }
-//=============================================================================
+
 void BlackboxFile::updateStats()
 {
     totalSize = fi.size();
@@ -41,7 +41,7 @@ void BlackboxFile::updateStats()
     f_stats->setDescr(fi.fileName());
     updateActions();
 }
-//=============================================================================
+
 void BlackboxFile::readNext()
 {
     if (!file.isOpen())
@@ -58,7 +58,7 @@ void BlackboxFile::readNext()
 
     QTimer::singleShot(1, this, &BlackboxFile::readNext);
 }
-//=============================================================================
+
 void BlackboxFile::getStats()
 {
     fi = QFileInfo();
@@ -104,4 +104,3 @@ void BlackboxFile::stop()
     BlackboxItem::stop();
     file.close();
 }
-//=============================================================================

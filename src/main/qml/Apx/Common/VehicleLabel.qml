@@ -34,12 +34,13 @@ Item {
     id: control
 
     property real fontSize: Style.fontSize
-    property real fontSizeInfo: fontSize*0.6
+    property real fontSizeInfo: fontSize*0.8
     readonly property real dotSize: fontSize/2
 
     property APX.Vehicle vehicle
 
     property bool showDots: true
+    property bool showInfo: true
 
     property color colorFG: vehicle.active?"#fff":"#aaa"
     property color colorBG: {
@@ -114,25 +115,27 @@ Item {
     ColumnLayout {
         id: textLayout
         spacing: 0
-        Label {
+        Text {
             Layout.minimumWidth: control.fontSize
             horizontalAlignment: Text.AlignLeft
             font: apx.font(control.fontSize,true)
             text: callsign
             color: colorFG
         }
-        Label {
+        Text {
             id: infoText
             Layout.fillHeight: true
             Layout.minimumWidth: control.fontSizeInfo
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font: apx.font(control.fontSizeInfo)
+            font: apx.font_narrow(control.fontSizeInfo)
+            lineHeight: 0.75
             text: vehicle.info
             color: colorFG
 
-            visible: !bLOCAL
+            visible: showInfo && !bLOCAL
 
+            // make sure implicit width always increase, never decrease
             onImplicitWidthChanged: {
                 if(vehicle.isIdentified)
                     timerWidthUpdate.start()
@@ -140,7 +143,7 @@ Item {
             property Timer timerWidthUpdate: Timer {
                 interval: 100
                 onTriggered: {
-                    infoText.Layout.minimumWidth=Math.max(infoText.Layout.minimumWidth,implicitWidth)
+                    infoText.Layout.minimumWidth=Math.max(infoText.Layout.minimumWidth,infoText.contentWidth)
                 }
             }
         }

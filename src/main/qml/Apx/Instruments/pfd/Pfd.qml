@@ -495,10 +495,12 @@ Item {
                 id: tecsFlag
                 height: pfdScene.flagHeight
                 fact: f_tecs
+                property bool controlled: false
                 readonly property real v: fact.value
-                show: v > 0 && v < 1
+                show: (controlled||v > 0) && v < 1
                 text: fact.name.toUpperCase()
                 status_reset: 1
+                onVChanged: if(v>0 && v<1) controlled=true
                 CleanText {
                     readonly property real v: tecsFlag.v
                     fact: tecsFlag.fact
@@ -714,6 +716,7 @@ Item {
                 text: (thrcut && value==0)?qsTr("CUT"):(value*100).toFixed()
                 toolTip: fact.title +"[%]"+", "+f_reg_thrcut.title+" ("+qsTr("red")+"), "+f_reg_throvr.title+" ("+qsTr("blue")+"), "+f_reg_thr.title+" ("+qsTr("yellow")+")"
                 show: true
+                bold: thrcut
                 blinking: value>=0.98
                 frame: !(thrctr || throvr || thrcut)
                 type: throvr

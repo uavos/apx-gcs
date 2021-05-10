@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SerialFORM_H
-#define SerialFORM_H
+#pragma once
 
 #include <QWidget>
 #include <QtCore>
@@ -63,5 +62,3 @@ private slots:
 signals:
     void finished();
 };
-
-#endif // SerialFORM_H

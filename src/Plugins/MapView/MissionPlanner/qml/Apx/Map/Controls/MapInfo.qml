@@ -32,7 +32,7 @@ RowLayout {
     // mouse coordinate
     Item {
         id: site
-        Layout.alignment: Qt.AlignBottom
+        Layout.alignment: Qt.AlignVCenter
 
         implicitWidth: loaderSite.implicitWidth
         implicitHeight: loaderSite.implicitHeight
@@ -73,7 +73,7 @@ RowLayout {
     BusyIndicator {
         id: busy
 
-        Layout.alignment: Qt.AlignBottom
+        Layout.alignment: Qt.AlignVCenter
 
         property var fact: apx.tools?apx.tools.location:null
         property string text: fact?fact.text:""
@@ -101,7 +101,7 @@ RowLayout {
     }
 
     ValueButton {
-        Layout.alignment: Qt.AlignBottom
+        Layout.alignment: Qt.AlignVCenter
 
         size: control.size
         fact: apx.tools?apx.tools.location.offline:null
@@ -118,7 +118,7 @@ RowLayout {
     // map scale and distance measure
     Item {
         id: scale
-        Layout.alignment: Qt.AlignBottom
+        Layout.alignment: Qt.AlignVCenter
 
         implicitWidth: loaderScale.implicitWidth
         implicitHeight: loaderScale.implicitHeight
@@ -132,12 +132,12 @@ RowLayout {
 
             Component {
                 id: scaleC
-                MapScale { width: 100 }
+                MapScale { width: Style.buttonSize*3 }
             }
 
             Component {
                 id: distC
-                MapDistance { width: 100 }
+                MapDistance { width: Style.buttonSize*3 }
             }
         }
         ToolTipArea {
@@ -150,7 +150,7 @@ RowLayout {
     // travel path
     Item {
         id: pathItem
-        Layout.alignment: Qt.AlignBottom
+        Layout.alignment: Qt.AlignVCenter
 
         implicitHeight: control.size
         implicitWidth: Math.max(icon.width+textItem.implicitWidth, height*4)

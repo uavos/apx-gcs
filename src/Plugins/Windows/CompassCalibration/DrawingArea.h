@@ -20,8 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DRAWINGAREA_H
-#define DRAWINGAREA_H
+#pragma once
+
 #include <QtWidgets>
 
 class DrawingArea : public QWidget
@@ -61,5 +61,3 @@ protected:
     void resizeEvent(QResizeEvent *event);
     int heightForWidth(int w) const { return w; }
 };
-
-#endif // DRAWINGAREA_H

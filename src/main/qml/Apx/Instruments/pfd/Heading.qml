@@ -29,8 +29,8 @@ Item {
     readonly property int m_mode: mandala.cmd.proc.mode.value
 
     readonly property var f_yaw: mandala.est.att.yaw
-    readonly property var f_course: mandala.est.pos.course
-    readonly property var f_cmd_course: mandala.cmd.pos.course
+    readonly property var f_bearing: mandala.est.pos.bearing
+    readonly property var f_cmd_bearing: mandala.cmd.pos.bearing
     readonly property var f_thdg: mandala.est.wpt.thdg
     readonly property var f_adj: mandala.cmd.proc.adj
 
@@ -124,11 +124,11 @@ Item {
                 }
             }
         }
-        //gps course bug triangle
+        //gps bearing bug triangle
         PfdImage {
             id: hdg_crs_bug
             elementName: "hdg-crs-bug"
-            property double value: apx.angle(f_course.value-f_yaw.value)
+            property double value: apx.angle(f_bearing.value-f_yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             //smooth: ui.antialiasing
             border: 1
@@ -138,13 +138,13 @@ Item {
             anchors.horizontalCenterOffset: apx.limit(apx.angle(value),-valueShiftMax,valueShiftMax)*num2scaleWidth
             height: bottomHeight
             width: elementBounds.width*height/elementBounds.height
-            ToolTipArea { text: f_course.descr }
+            ToolTipArea { text: f_bearing.descr }
         }
-        //cmd course bug arrow
+        //cmd bearing bug arrow
         PfdImage {
             id: hdg_cmd_bug
             elementName: "hdg-cmd-bug"
-            property double value: apx.angle(f_cmd_course.value-f_yaw.value)
+            property double value: apx.angle(f_cmd_bearing.value-f_yaw.value)
             Behavior on value { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
             //smooth: ui.antialiasing
             border: 1
@@ -154,7 +154,7 @@ Item {
             anchors.horizontalCenterOffset: apx.limit(apx.angle(value),-valueShiftMax,valueShiftMax)*num2scaleWidth
             height: bottomHeight
             width: elementBounds.width*height/elementBounds.height
-            ToolTipArea { text: f_cmd_course.descr }
+            ToolTipArea { text: f_cmd_bearing.descr }
         }
         //rw hdg bug arrow
         PfdImage {
@@ -305,7 +305,7 @@ Item {
         //propagateComposedEvents: true
         onClicked: {
             if(isShiftControl) f_adj.setValue(f_adj.value-1)
-            else f_cmd_course.setValue(apx.angle(f_cmd_course.value-15))
+            else f_cmd_bearing.setValue(apx.angle(f_cmd_bearing.value-15))
         }
     }
     MouseArea {
@@ -315,7 +315,7 @@ Item {
         //propagateComposedEvents: true
         onClicked: {
             if(isShiftControl) f_adj.setValue(f_adj.value+1)
-            else f_cmd_course.setValue(apx.angle(f_cmd_course.value+15))
+            else f_cmd_bearing.setValue(apx.angle(f_cmd_bearing.value+15))
         }
     }
 

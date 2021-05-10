@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LookupSites_H
-#define LookupSites_H
-//=============================================================================
+#pragma once
+
 #include <Database/DatabaseLookup.h>
 #include <QGeoCoordinate>
 #include <QGeoRectangle>
 #include <QtCore>
 class Sites;
-//=============================================================================
+
 class LookupSites : public DatabaseLookup
 {
     Q_OBJECT
@@ -61,5 +60,3 @@ private:
 signals:
     void areaChanged();
 };
-//=============================================================================
-#endif

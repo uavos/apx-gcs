@@ -22,8 +22,7 @@
 
 // Credits to Pavel Mikhadzionak <pmv@uavos.com>
 
-#ifndef GSTPLAYER_H
-#define GSTPLAYER_H
+#pragma once
 
 #include "QmlOverlay.h"
 #include "videothread.h"
@@ -118,5 +117,3 @@ signals:
 
     void overlayNumbersChanged(); //fwd from qml only
 };
-
-#endif //GSTPLAYER_H

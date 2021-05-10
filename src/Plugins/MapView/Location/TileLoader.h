@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TileLoader_H
-#define TileLoader_H
+#pragma once
+
 #include "MapsDB.h"
 #include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
-//=============================================================================
+
 class TileLoader : public Fact
 {
     Q_OBJECT
@@ -101,5 +101,3 @@ signals:
 
     void requestCountChanged();
 };
-//=============================================================================
-#endif

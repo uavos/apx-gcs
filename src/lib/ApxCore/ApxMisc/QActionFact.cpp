@@ -21,7 +21,7 @@
  */
 #include "QActionFact.h"
 #include <ApxMisc/MaterialIcon.h>
-//=============================================================================
+
 QActionFact::QActionFact(Fact *f, const QColor &iconColor)
     : QAction(f)
     , fact(f)
@@ -60,7 +60,7 @@ QActionFact::QActionFact(Fact *f, const QColor &iconColor)
     updateVisible();
     updateChecked();
 }
-//=============================================================================
+
 void QActionFact::updateText()
 {
     setText(fact->title());
@@ -81,7 +81,7 @@ void QActionFact::updateVisible()
 {
     setVisible(fact->visible());
 }
-//=============================================================================
+
 void QActionFact::updateChecked()
 {
     if (!isCheckable())
@@ -97,6 +97,3 @@ void QActionFact::actionTriggered(bool checked)
         return;
     }
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================

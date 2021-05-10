@@ -21,7 +21,7 @@
  */
 #include "SiteEdit.h"
 #include <App/App.h>
-//=============================================================================
+
 SiteEdit::SiteEdit(Fact *parent,
                    const QString &name,
                    const QString &title,
@@ -70,7 +70,7 @@ SiteEdit::SiteEdit(Fact *parent,
     connect(f_latitude, &Fact::valueChanged, this, &SiteEdit::saveToModelData);
     connect(f_longitude, &Fact::valueChanged, this, &SiteEdit::saveToModelData);
 }
-//=============================================================================
+
 void SiteEdit::reset()
 {
     modelData.remove("title");
@@ -80,7 +80,7 @@ void SiteEdit::reset()
     modelData["lon"] = c.longitude();
     loadFromModelData();
 }
-//=============================================================================
+
 void SiteEdit::loadFromModelData()
 {
     blockUpdateItemData = true;
@@ -121,11 +121,9 @@ void SiteEdit::updateFromEditedModelData(int i, QVariantMap v)
     setModelData(v);
     emit siteEdited(modelData);
 }
-//=============================================================================
+
 void SiteEdit::lookupMissions()
 {
     QGeoCoordinate c(modelData.value("lat").toDouble(), modelData.value("lon").toDouble());
     f_missions->dbLookupMissionsByArea(c, modelData.value("title").toString());
 }
-//=============================================================================
-//=============================================================================

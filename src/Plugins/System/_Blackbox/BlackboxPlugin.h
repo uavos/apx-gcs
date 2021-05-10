@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BlackboxPlugin_H
-#define BlackboxPlugin_H
+#pragma once
+
 #include "Blackbox.h"
 #include <App/PluginInterface.h>
 #include <QtCore>
-//=============================================================================
+
 class BlackboxPlugin : public PluginInterface
 {
     Q_OBJECT
@@ -34,5 +34,3 @@ public:
     int flags() override { return Feature | Tool; }
     QObject *createControl() override { return new Blackbox(); }
 };
-//=============================================================================
-#endif // BlackboxPlugin_H

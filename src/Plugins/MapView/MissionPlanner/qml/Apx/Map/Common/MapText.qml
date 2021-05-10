@@ -35,7 +35,7 @@ Rectangle {
     property real margins: 0
     property real rightMargin: 0
     property real minWidth: 0
-    property real minHeight: font.pointSize+mapText.margins*2+1
+    property real minHeight: font.pixelSize+mapText.margins*2+1
 
     Behavior on implicitWidth { enabled: ui.smooth; NumberAnimation {duration: 100; } }
     Behavior on implicitHeight { enabled: ui.smooth; NumberAnimation {duration: 100; } }

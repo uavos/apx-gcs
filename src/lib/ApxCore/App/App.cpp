@@ -39,7 +39,6 @@
 #include <QStyleFactory>
 #include <QtQuick>
 
-//=============================================================================
 App *App::_instance = nullptr;
 App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     : AppBase(argc, argv, name)
@@ -302,7 +301,6 @@ AppPlugin *App::plugin(QString name)
     return _instance->plugins->plugin(name);
 }
 
-//=============================================================================
 void App::appStateChanged(Qt::ApplicationState state)
 {
     if (m_window && state == Qt::ApplicationActive) {
@@ -310,8 +308,7 @@ void App::appStateChanged(Qt::ApplicationState state)
             m_window->raise();
     }
 }
-//=============================================================================
-//=============================================================================
+
 void App::registerUiComponent(QObject *item, QString name)
 {
     if (!m_engine)
@@ -321,7 +318,7 @@ void App::registerUiComponent(QObject *item, QString name)
     setGlobalProperty(QString("ui.%1").arg(name), obj);
     emit uiComponentLoaded(name, obj);
 }
-//=============================================================================
+
 QJSValue App::jsexec(const QString &s)
 {
     if (!_instance->engine())
@@ -396,7 +393,7 @@ void App::setContextProperty(const QString name, QObject *object)
     QQmlEngine::setObjectOwnership(object, QQmlEngine::CppOwnership);
     e->rootContext()->setContextProperty(name, object);
 }
-//=============================================================================
+
 void App::loadFonts()
 {
     apxConsole() << QObject::tr("Loading fonts").append("...");
@@ -480,16 +477,16 @@ QFont App::getMonospaceFont()
 void App::updateAppFont()
 {
     auto f = font();
-    f.setPointSizeF(12 * scale());
+    qreal sz = 12 * scale();
+    f.setPixelSize(sz < 5 ? 5 : sz);
     setFont(f);
 }
-//=============================================================================
+
 QString App::materialIconChar(const QString &name)
 {
     return MaterialIcon::getChar(name);
 }
-//=============================================================================
-//=============================================================================
+
 void App::loadTranslations()
 {
     apxConsole() << QObject::tr("Loading translations").append("...");
@@ -530,8 +527,7 @@ void App::loadTranslator(const QString &fileName)
     installTranslator(translator);
     apxConsole() << "Translator added:" << QFileInfo(fileName).fileName();
 }
-//=============================================================================
-//=============================================================================
+
 QQuickWindow *App::window() const
 {
     return m_window;
@@ -576,4 +572,3 @@ QString App::lang() const
 {
     return m_lang;
 }
-//=============================================================================

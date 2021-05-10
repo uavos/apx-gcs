@@ -19,9 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef Datalink_H
-#define Datalink_H
-//=============================================================================
+#pragma once
+
 #include "DatalinkConnection.h"
 #include "DatalinkPorts.h"
 #include "DatalinkRemotes.h"
@@ -29,7 +28,7 @@
 #include "DatalinkStats.h"
 #include <Fact/Fact.h>
 #include <Protocols/Protocols.h>
-//=============================================================================
+
 class Datalink : public Fact
 {
     Q_OBJECT
@@ -111,5 +110,3 @@ signals:
     void onlineChanged();
     void errcntChanged();
 };
-//=============================================================================
-#endif

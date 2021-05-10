@@ -19,11 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DatabaseLookupModel_H
-#define DatabaseLookupModel_H
-//=============================================================================
+#pragma once
+
 #include <QtCore>
-//=============================================================================
+
 class DatabaseLookupModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -79,5 +78,3 @@ signals:
     void countChanged();
     void filterChanged();
 };
-//=============================================================================
-#endif

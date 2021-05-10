@@ -38,7 +38,7 @@ class MissionItem : public Fact
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
-    Q_PROPERTY(double course READ course NOTIFY courseChanged)
+    Q_PROPERTY(double bearing READ bearing NOTIFY bearingChanged)
     Q_PROPERTY(uint time READ time NOTIFY timeChanged)
     Q_PROPERTY(uint distance READ distance NOTIFY distanceChanged)
 
@@ -101,8 +101,8 @@ public:
     QGeoPath geoPath() const;
     void setGeoPath(const QGeoPath &v);
 
-    double course() const;
-    void setCourse(const double &v);
+    double bearing() const;
+    void setBearing(const double &v);
 
     uint time() const; //travelled time to current wp from previous [s]
     void setTime(uint v);
@@ -122,7 +122,7 @@ public:
 protected:
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
-    double m_course;
+    double m_bearing;
     uint m_time;
     uint m_distance;
 
@@ -134,7 +134,7 @@ protected:
 signals:
     void coordinateChanged();
     void geoPathChanged();
-    void courseChanged();
+    void bearingChanged();
     void timeChanged();
     void distanceChanged();
 

@@ -35,14 +35,14 @@ MapCircle {
     property real lon: mandala.est.pos.lon.value
     property real altitude: mandala.est.pos.altitude.value
     property real gSpeed: mandala.est.pos.speed.value
-    property real course: mandala.est.pos.course.value
+    property real bearing: mandala.est.pos.bearing.value
     property real gps_Vdown: mandala.est.rel.vd.value
 
     //calculate Energy Circle based on Ground Speed and descending rate
     property bool gPerfOk: gSpeed>0.5 && gps_Vdown>0.5
     property real gPerf: 0
     property real distance: altitude*gPerf
-    center: QtPositioning.coordinate(lat,lon).atDistanceAndAzimuth(distance,course)
+    center: QtPositioning.coordinate(lat,lon).atDistanceAndAzimuth(distance,bearing)
 
     /*onGSpeedChanged: {
         if(gSpeed>0.5 && gps_Vdown>0.5){

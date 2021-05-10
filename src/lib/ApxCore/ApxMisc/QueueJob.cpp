@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "QueueJob.h"
-//=============================================================================
+
 QueueJob::QueueJob(Fact *parent,
                    const QString &name,
                    const QString &title,
@@ -34,7 +34,7 @@ QueueJob::QueueJob(Fact *parent,
     connect(worker, &QueueWorker::workFinished, this, &QueueJob::itemFinished, Qt::QueuedConnection);
     connect(this, &Fact::sizeChanged, this, &QueueJob::next);
 }
-//==============================================================================
+
 void QueueJob::next()
 {
     if (worker->isRunning())
@@ -71,12 +71,10 @@ void QueueJob::itemFinished(Fact *f, QVariantMap result)
         }
     }
 }
-//=============================================================================
+
 void QueueJob::stop()
 {
     deleteChildren();
     worker->stop();
     setProgress(-1);
 }
-//=============================================================================
-//=============================================================================
