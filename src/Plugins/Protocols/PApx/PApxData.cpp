@@ -254,11 +254,12 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
     switch (uid) {
     default:
         break;
-    case mandala::cmd::nav::pos::uid: {
+    case mandala::cmd::nav::pos::uid:
+    case mandala::est::nav::ref::uid: {
         QVariantList v = value.value<QVariantList>();
         if (v.size() != 2)
             break;
-        sendBundleT<mandala::bundle::cmd_pos_s>(uid, {v.at(0).toDouble(), v.at(1).toDouble()});
+        sendBundleT<mandala::bundle::pos_ll_s>(uid, {v.at(0).toDouble(), v.at(1).toDouble()});
         return;
     }
     }

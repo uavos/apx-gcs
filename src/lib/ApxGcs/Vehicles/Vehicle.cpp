@@ -373,12 +373,10 @@ void Vehicle::setHomePoint(QGeoCoordinate c)
         return;
     if (!c.isValid())
         return;
-    apxMsgW() << "Not implemented";
-    //    MandalaFact::BundleValues values;
-    //    values.insert(mandala::est::nav::ref::lat::meta.uid, c.latitude());
-    //    values.insert(mandala::est::nav::ref::lon::meta.uid, c.longitude());
-    //    values.insert(mandala::est::nav::ref::hmsl::meta.uid, f_ref_hmsl->value());
-    //    f_ref->sendBundle(values);
+    QVariantList value;
+    value << c.latitude();
+    value << c.longitude();
+    emit sendValue(mandala::est::nav::ref::uid, value);
 }
 void Vehicle::sendPositionFix(QGeoCoordinate c)
 {
