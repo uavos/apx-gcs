@@ -114,34 +114,46 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     }
 
     // field updates from remote gcs
-    if (uid == mandala::cmd::env::nmt::upd::uid && pid.pri == xbus::pri_request) {
+    if (uid == mandala::cmd::env::nmt::upd::uid) {
         // qDebug() << stream.available();
         if (stream.available() < sizeof(xbus::node::conf::fid_t))
             return;
+
+        auto pos_s = stream.pos();
 
         xbus::node::conf::fid_t fid;
         stream >> fid;
         trace()->block(QString::number(fid >> 8));
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
-        auto fidx = fid >> 8;
-        if (fidx >= _field_types.size())
-            return;
-        auto aidx = fid & 0xFF;
-        auto name = _field_names.at(fidx);
-        auto array = _field_arrays.at(fidx);
-        if (array > 0) {
-            if (aidx >= array)
+
+        if (pid.pri == xbus::pri_response) {
+            // intrercept conf saved response
+            stream.reset(pos_s);
+            if (fid == 0xFFFFFFFF) {
+                emit confSaved();
+            }
+        } else if (pid.pri == xbus::pri_request) {
+            auto fidx = fid >> 8;
+            if (fidx >= _field_types.size())
                 return;
-            name.append(QString("_%1").arg(aidx + 1));
-        }
-        if (name == _script_field)
+            auto aidx = fid & 0xFF;
+            auto name = _field_names.at(fidx);
+            auto array = _field_arrays.at(fidx);
+            if (array > 0) {
+                if (aidx >= array)
+                    return;
+                name.append(QString("_%1").arg(aidx + 1));
+            }
+            if (name == _script_field)
+                return;
+            auto value = read_param(stream, _field_types.at(fidx));
+            QVariantMap values;
+            values.insert(name, value);
+            emit confUpdated(values);
             return;
-        auto value = read_param(stream, _field_types.at(fidx));
-        QVariantMap values;
-        values.insert(name, value);
-        emit confUpdated(values);
-        return;
+        } else
+            return;
     }
 
     // node messages
