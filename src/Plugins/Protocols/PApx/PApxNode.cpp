@@ -69,12 +69,16 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     mandala::uid_t uid = pid.uid;
 
     if (uid == mandala::cmd::env::nmt::search::uid) {
-        if (!upgrading())
-            requestIdent();
+        if (upgrading())
+            return;
+        if (pid.pri != xbus::pri_response)
+            return;
+
+        requestIdent();
         return;
     }
 
-    //filter zero sized responses if any
+    //filter zero sized packets if any
     if (stream.available() == 0)
         return;
 
@@ -111,7 +115,8 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
     // field updates from remote gcs
     if (uid == mandala::cmd::env::nmt::upd::uid && pid.pri == xbus::pri_request) {
-        if (stream.available() != sizeof(xbus::node::conf::fid_t))
+        // qDebug() << stream.available();
+        if (stream.available() < sizeof(xbus::node::conf::fid_t))
             return;
 
         xbus::node::conf::fid_t fid;
@@ -123,8 +128,15 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         if (fidx >= _field_types.size())
             return;
         auto aidx = fid & 0xFF;
-        // TODO read updates of arrays
         auto name = _field_names.at(fidx);
+        auto array = _field_arrays.at(fidx);
+        if (array > 0) {
+            if (aidx >= array)
+                return;
+            name.append(QString("_%1").arg(aidx + 1));
+        }
+        if (name == _script_field)
+            return;
         auto value = read_param(stream, _field_types.at(fidx));
         QVariantMap values;
         values.insert(name, value);
@@ -153,10 +165,12 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
         emit messageReceived((msg_type_e) t, msg);
 
-        if (!_nodes->local() && !_nodes->upgrading()
-            && msg.contains(QString("node: %1: initialized").arg(title()), Qt::CaseInsensitive)) {
-            requestIdent();
-        }
+        if (_nodes->local() || _nodes->upgrading())
+            return;
+        if (!msg.contains(QString("node: %1: initialized").arg(title()), Qt::CaseInsensitive))
+            return;
+
+        requestIdent();
         return;
     }
 
@@ -256,6 +270,7 @@ void PApxNode::updateFiles(QStringList fnames)
             connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseConfData);
         } else if (i == "script") {
             connect(f, &PApxNodeFile::downloaded, this, &PApxNode::parseScriptData);
+            connect(f, &PApxNodeFile::uploaded, this, &PApxNode::parseScriptDataUpload);
         }
     }
 }
@@ -379,11 +394,11 @@ void PApxNode::dictCacheMissing(QString hash)
     }
     requestDictDownload();
 }
-void PApxNode::parseDictData(PApxNode *_node,
+void PApxNode::parseDictData(PApxNode *node,
                              const xbus::node::file::info_s &info,
                              const QByteArray data)
 {
-    Q_UNUSED(_node)
+    Q_UNUSED(node)
 
     PStreamReader stream(data);
 
@@ -530,11 +545,18 @@ void PApxNode::parseDictData(PApxNode *_node,
     emit dictReceived(dict);
 }
 
-void PApxNode::parseConfData(PApxNode *_node,
+void PApxNode::requestConf()
+{
+    // save request for sequential script requests
+    _req_conf = new PApxNodeRequestFileRead(this, "conf");
+    connect(_req_conf, &PApxNodeRequest::finished, this, [this]() { _req_conf = {}; });
+}
+
+void PApxNode::parseConfData(PApxNode *node,
                              const xbus::node::file::info_s &info,
                              const QByteArray data)
 {
-    Q_UNUSED(_node)
+    Q_UNUSED(node)
 
     PStreamReader stream(data);
 
@@ -655,7 +677,8 @@ void PApxNode::parseConfData(PApxNode *_node,
 
     // store values and download script
     _values = values;
-    new PApxNodeRequestFileRead(this, "script");
+    if (_req_conf)
+        new PApxNodeRequestFileRead(this, "script");
 }
 template<typename T, typename Tout = T>
 static QVariant _read_param(PStreamReader &stream)
@@ -667,8 +690,6 @@ static QVariant _read_param(PStreamReader &stream)
 template<typename _T>
 static QVariant _read_param_str(PStreamReader &stream)
 {
-    if (stream.available() < sizeof(_T))
-        return QVariant();
     size_t pos_s = stream.pos();
     const char *s = stream.read_string(sizeof(_T));
     if (!s)
@@ -764,11 +785,18 @@ QVariant PApxNode::textToOption(QVariant value, size_t fidx)
     return value;
 }
 
-void PApxNode::parseScriptData(PApxNode *_node,
+void PApxNode::parseScriptDataUpload(PApxNode *node,
+                                     const xbus::node::file::info_s &info,
+                                     const QByteArray data)
+{
+    _script_value = info.hash;
+    parseScriptData(node, info, data);
+}
+void PApxNode::parseScriptData(PApxNode *node,
                                const xbus::node::file::info_s &info,
                                const QByteArray data)
 {
-    Q_UNUSED(_node)
+    Q_UNUSED(node)
 
     //qDebug() << "script data" << info.size << data.size();
     // check script hash

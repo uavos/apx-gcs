@@ -63,7 +63,7 @@ public:
     // requests
     void requestIdent() override { new PApxNodeRequestIdent(this); }
     void requestDict() override;
-    void requestConf() override { new PApxNodeRequestFileRead(this, "conf"); }
+    void requestConf() override;
     void requestUpdate(QVariantMap values) override;
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
@@ -80,6 +80,7 @@ private:
     PApxNodes *_nodes;
     PApxRequest _req;
     QList<PApxNodeRequest *> _requests;
+    PApxNodeRequest *_req_conf{};
 
     QMap<QString, PApxNodeFile *> _files_map;
 
@@ -105,11 +106,14 @@ private slots:
     void dictCacheLoaded(QVariantMap dict);
     void dictCacheMissing(QString hash);
 
-    void parseDictData(PApxNode *_node, const xbus::node::file::info_s &info, const QByteArray data);
-    void parseConfData(PApxNode *_node, const xbus::node::file::info_s &info, const QByteArray data);
-    void parseScriptData(PApxNode *_node,
+    void parseDictData(PApxNode *node, const xbus::node::file::info_s &info, const QByteArray data);
+    void parseConfData(PApxNode *node, const xbus::node::file::info_s &info, const QByteArray data);
+    void parseScriptData(PApxNode *node,
                          const xbus::node::file::info_s &info,
                          const QByteArray data);
+    void parseScriptDataUpload(PApxNode *node,
+                               const xbus::node::file::info_s &info,
+                               const QByteArray data);
 
 signals:
     void request_scheduled(PApxNodeRequest *req);

@@ -127,8 +127,9 @@ private slots:
     void updateFlightState();
     void updateGeoPath();
 
-private slots:
     void updateActive();
+
+    void packetReceived(mandala::uid_t uid);
 
 signals:
     void selected();

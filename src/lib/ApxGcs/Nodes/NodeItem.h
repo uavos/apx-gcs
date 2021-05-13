@@ -51,6 +51,8 @@ public:
     auto protocol() const { return _protocol; }
 
     auto const &fields() const { return m_fields; }
+    NodeField *field(QString name) const;
+
     auto nodes() const { return _nodes; }
     auto ident() const { return _ident; }
 

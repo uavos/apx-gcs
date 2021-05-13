@@ -77,15 +77,6 @@ void PApxVehicle::process_downlink(PStreamReader &stream)
 
     if (static_cast<PApxNodes *>(m_nodes)->process_downlink(pid, stream)) {
         setStreamType(NMT);
-        /*if (!isLocal()
-            && (mandala::cmd::env::nmt::search::match(uid)
-                || mandala::cmd::env::nmt::ident::match(uid)
-                || mandala::cmd::env::nmt::file::match(uid))) {
-            //return;
-            stream.reset();
-            vehicles->local->trace_downlink(pid);
-            vehicles->local->downlink(stream);
-        }*/
         return;
     }
 

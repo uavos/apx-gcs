@@ -36,27 +36,37 @@ PApxMission::PApxMission(PApxVehicle *parent)
 {
     // notify mission available on ident update if files found
     connect(parent->nodes(), &PNodes::node_available, this, [this](PNode *node) {
-        connect(node, &PNode::identReceived, this, [this, node]() {
-            if (static_cast<PApxNode *>(node)->file(file_name))
-                emit missionAvailable();
-        });
+        connect(node, &PNode::identReceived, this, &PApxMission::updateFiles);
     });
 }
 
-void PApxMission::requestMission()
+void PApxMission::updateFiles()
 {
     auto f = _file();
     if (!f)
         return;
     connect(f, &PApxNodeFile::downloaded, this, &PApxMission::parseMissionData, Qt::UniqueConnection);
+    connect(f, &PApxNodeFile::uploaded, this, &PApxMission::parseMissionData, Qt::UniqueConnection);
+    emit missionAvailable();
+}
+
+void PApxMission::requestMission()
+{
+    auto f = _file();
+    if (!f) {
+        apxMsgW() << tr("Mission source unavailable");
+        return;
+    }
     new PApxNodeRequestFileRead(f->node(), file_name);
 }
 
 void PApxMission::updateMission(QVariant var)
 {
     auto f = _file();
-    if (!f)
+    if (!f) {
+        apxMsgW() << tr("Mission storage unavailable");
         return;
+    }
     auto req = new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var.value<QVariantMap>()));
     connect(req, &PApxNodeRequestFile::uploaded, this, &PMission::missionUpdated);
 }
@@ -81,7 +91,6 @@ PApxNodeFile *PApxMission::_file() const
         if (f)
             return f;
     }
-    apxMsgW() << tr("Mission source unavailable");
     return nullptr;
 }
 QVariantMap PApxMission::_unpack(PStreamReader &stream)

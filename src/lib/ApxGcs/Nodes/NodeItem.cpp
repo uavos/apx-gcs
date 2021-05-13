@@ -503,6 +503,37 @@ void NodeItem::importValues(QVariantMap values)
     }
 }
 
+NodeField *NodeItem::field(QString name) const
+{
+    QRegExp re("_(\\d+)$");
+    auto a = re.indexIn(name);
+    int aidx = -1;
+    if (a > 1) {
+        auto i = re.cap(1).toInt() - 1;
+        if (i < 0) {
+            qWarning() << "array" << name;
+            return nullptr;
+        }
+        name = name.left(a);
+        aidx = i;
+    }
+    NodeField *f = nullptr;
+    for (auto i : m_fields) {
+        if (i->fpath() != name)
+            continue;
+        f = i;
+        break;
+    }
+    if (!f)
+        return nullptr;
+    if (aidx < 0 && f->size() <= 0)
+        return f;
+
+    if (aidx >= f->size())
+        return nullptr;
+    return qobject_cast<NodeField *>(f->child(aidx));
+}
+
 // Protocols connection
 
 void NodeItem::identReceived(QVariantMap ident)
@@ -662,15 +693,17 @@ void NodeItem::confReceived(QVariantMap values)
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath)) {
-            qWarning() << "missing data for:" << fpath;
+            //qWarning() << "missing data for:" << fpath;
             continue;
         }
         fields.append(fpath);
         f->fromVariant(values.value(fpath));
     }
 
-    if (valid())
+    if (valid()) {
+        backup();
         return;
+    }
 
     // report missing fields
     for (auto fpath : values.keys()) {
@@ -691,15 +724,21 @@ void NodeItem::confReceived(QVariantMap values)
 }
 void NodeItem::confUpdated(QVariantMap values)
 {
+    // updated from another GCS instance
     if (!valid())
         return;
-    for (auto f : m_fields) {
-        QString fpath = f->fpath();
-        if (!values.contains(fpath))
+    for (auto name : values.keys()) {
+        auto f = field(name);
+        if (!f)
             continue;
-        f->fromVariant(values.value(fpath));
-        apxMsgW() << tr("Field modified").append(':') << fpath.append(':') << f->text();
+        f->fromVariant(values.take(name));
+        f->backup();
+        apxMsg() << tr("Updated").append(':') << name.append(':') << f->text();
     }
+    if (values.isEmpty())
+        return;
+
+    apxMsgW() << tr("Fields not found").append(':') << values.keys();
 }
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)

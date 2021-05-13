@@ -67,6 +67,8 @@ private:
 
     void process_downlink(QByteArray packet) override;
 
+    bool check_vuid(PApxVehicle *v, uint8_t n, uint8_t seq);
+
 private slots:
     void updateLocal();
 };

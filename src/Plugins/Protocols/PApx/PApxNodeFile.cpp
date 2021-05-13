@@ -56,26 +56,52 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
         return;
 
     case xbus::node::file::ropen:
-    case xbus::node::file::wopen:
         if (!is_response)
             return;
         check_info(stream);
+
         if (!(_info.flags.bits.readable && _info.flags.bits.oread))
             break;
 
         reset();
         _size = _info.size;
         _offset = _info.offset;
-        _opened = true;
+        _open_op = op;
+        //qDebug() << "opened read" << _size << _offset;
+        return;
+
+    case xbus::node::file::wopen:
+        if (!is_response)
+            return;
+        check_info(stream);
+
+        if (!(_info.flags.bits.writable && _info.flags.bits.owrite))
+            break;
+
+        reset();
+        _size = 65536 * 1024;
+        _offset = _info.offset;
+        _open_op = op;
+        //qDebug() << "opened write" << _offset;
         return;
 
     case xbus::node::file::close:
         if (!is_response)
             return;
-        if (!check_info(stream))
+        if (_open_op == xbus::node::file::ropen) {
+            if (!check_info(stream))
+                break;
+        } else if (_open_op == xbus::node::file::wopen) {
+            // uploads from another GCS
+            check_info(stream);
+            _size = _data.size();
+            _info.size = _size;
+            _info.hash = _hash;
+            if (_size == 0)
+                break;
+        } else
             break;
-        if (!_opened)
-            break;
+
         if (_size == 0 && _info.size == 0 && _data.size() == 0) {
             qDebug() << "download ok:" << name() << "empty";
         } else {
@@ -89,7 +115,11 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             qDebug() << "download ok:" << name() << _size << "bytes" << QString::number(_hash, 16);
         }
 
-        emit downloaded(_node, _info, _data);
+        if (_open_op == xbus::node::file::ropen)
+            emit downloaded(_node, _info, _data);
+        else
+            emit uploaded(_node, _info, _data);
+
         break;
 
     case xbus::node::file::read:
@@ -97,7 +127,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             return;
         if (!_info.flags.bits.oread)
             break;
-        if (!_size || !_opened)
+        if (!_size || _open_op != xbus::node::file::ropen)
             break;
         if (!read(stream))
             break;
@@ -108,7 +138,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             return;
         if (!_info.flags.bits.owrite)
             break;
-        if (!_size || !_opened)
+        if (!_size || _open_op != xbus::node::file::wopen)
             break;
         if (!read(stream))
             break;
@@ -139,7 +169,7 @@ bool PApxNodeFile::read(PStreamReader &stream)
     _offset += size;
     _tcnt += size;
 
-    //qDebug() << "rd:" << offset;
+    //qDebug() << "rd:" << offset << size;
 
     if (_tcnt > _size)
         return false;
@@ -157,7 +187,7 @@ void PApxNodeFile::reset()
 
     _data.clear();
 
-    _opened = false;
+    _open_op = xbus::node::file::idle;
 
     setValue(QVariant());
     setProgress(-1);

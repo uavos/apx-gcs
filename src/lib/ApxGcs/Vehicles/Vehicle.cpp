@@ -150,13 +150,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         _storage->saveVehicleInfo();
 
         // counters
-        connect(protocol, &PVehicle::packetReceived, this, [this](mandala::uid_t uid) {
-            if (mandala::cmd::env::match(uid)) {
-                MandalaFact *f = f_mandala->fact(uid);
-                if (f)
-                    f->count_rx();
-            }
-        });
+        connect(protocol, &PVehicle::packetReceived, this, &Vehicle::packetReceived);
 
         // forward telemetry stamp to notify plugins
         connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
@@ -195,6 +189,15 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     updateInfo();
 
     App::jsync(this);
+}
+
+void Vehicle::packetReceived(mandala::uid_t uid)
+{
+    if (mandala::cmd::env::match(uid)) {
+        MandalaFact *f = f_mandala->fact(uid);
+        if (f)
+            f->count_rx();
+    }
 }
 
 void Vehicle::updateActive()

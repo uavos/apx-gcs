@@ -52,4 +52,6 @@ private slots:
     void parseMissionData(PApxNode *_node,
                           const xbus::node::file::info_s &info,
                           const QByteArray data);
+
+    void updateFiles();
 };
