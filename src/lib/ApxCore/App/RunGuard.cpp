@@ -39,8 +39,7 @@ QString generateKeyHash(const QString &key, const QString &salt)
 } // namespace
 
 RunGuard::RunGuard(const QString &key)
-    : key(key)
-    , memLockKey(generateKeyHash(key, "_memLockKey"))
+    : memLockKey(generateKeyHash(key, "_memLockKey"))
     , sharedmemKey(generateKeyHash(key, "_sharedmemKey"))
     , sharedMem(sharedmemKey)
     , memLock(memLockKey, 1)

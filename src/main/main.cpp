@@ -20,20 +20,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QApplication>
-// #include <QGLWidget>
-// #include <QProcessEnvironment>
-// #include <QQuickStyle>
-// #include <QStyleFactory>
 #include <QtCore>
-// #include <QtQuick>
 
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
-
-//#include "RunGuard.h"
-
-//void checkPaths();
 
 /*void crash_handler(int sig) {
  fprintf(stdout,"\nCRASH\n");
@@ -104,26 +95,6 @@ int main(int argc, char *argv[])
                argv,
                "Ground Control",
                QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
-
-    //check instances
-    /*if(!QSettings().value("multipleInstances").toBool()){
-    RunGuard guard("instance.gcs.uavos.com");
-    if(!guard.tryToRun()){
-      apxConsoleW()<<QObject::tr("Another application instance is running");
-      if(!QSettings().value("multipleInstances").toBool()){
-        return 0;
-      }
-    }
-  }
-
-
-  // directories..
-  checkPaths();
-
-  if(QCoreApplication::arguments().contains("-x"))
-    QSettings().setValue("maximized", true);
-
-*/
 
     int rv = app.exec();
     qInstallMessageHandler(nullptr);

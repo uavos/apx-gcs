@@ -29,7 +29,7 @@
 class RunGuard
 {
 public:
-    RunGuard(const QString &key);
+    explicit RunGuard(const QString &key);
     ~RunGuard();
 
     bool isAnotherRunning();
@@ -37,7 +37,6 @@ public:
     void release();
 
 private:
-    const QString key;
     const QString memLockKey;
     const QString sharedmemKey;
 

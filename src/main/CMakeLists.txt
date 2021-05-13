@@ -1,6 +1,7 @@
 set(target ${PROJECT_NAME})
 
-apx_glob_srcs("main.cpp" "qml")
+apx_glob_srcs("*.[ch]*" "qml")
+
 add_executable(${target} ${SRCS})
 
 apx_qrc(${target} BASE "qml" SRCS "**")
