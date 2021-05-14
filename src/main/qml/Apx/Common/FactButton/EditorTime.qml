@@ -30,6 +30,6 @@ EditorInt {
     }
 
     valueFromText: function(text, locale) {
-        return apx.timeFromString(text)
+        return apx.timeFromString(text,true)
     }
 }

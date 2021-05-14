@@ -94,6 +94,8 @@ bool FactData::setValue(const QVariant &v)
 }
 bool FactData::updateValue(const QVariant &v)
 {
+    // TODO optimize update value variants performance
+
     //filter the same
     const QVariant &v_prev = value();
 
@@ -177,7 +179,7 @@ bool FactData::updateValue(const QVariant &v)
 
         int enumIndex = enumValue(vx);
         if (enumIndex >= 0) {
-            m_value = enumIndex; //enumText(enumIndex);
+            m_value = enumIndex;
             break;
         }
         if (m_enumStrings.size() > 1)
@@ -190,21 +192,18 @@ bool FactData::updateValue(const QVariant &v)
             vi = s.toLongLong(&ok, 16);
             if (!ok)
                 return false;
+        } else if (u == "s") {
+            vi = static_cast<long long>(AppRoot::timeFromString(s, true));
+            ok = true;
+        } else if (u == "min") {
+            vi = static_cast<long long>(AppRoot::timeFromString(s, false));
+            ok = true;
         } else if (!_check_int(vx)) {
-            if (u == "time" && s.contains(':')) {
-                vi = static_cast<long long>(AppRoot::timeFromString(s));
-                ok = true;
-            }
-            if (!ok && u == "hex") {
+            vi = s.toLongLong(&ok);
+            if (!ok)
+                vi = static_cast<long long>(round(s.toDouble(&ok)));
+            if (!ok)
                 vi = s.toLongLong(&ok, 16);
-            }
-            if (!ok) {
-                vi = s.toLongLong(&ok);
-                if (!ok)
-                    vi = static_cast<long long>(round(s.toDouble(&ok)));
-                if (!ok)
-                    vi = s.toLongLong(&ok, 16);
-            }
             if (!ok)
                 return false;
         } else {
@@ -379,10 +378,6 @@ QString FactData::toText(const QVariant &v) const
             return v.toString();
     }
     if (t == Int) {
-        if (units() == "hex")
-            return QString::number(v.toUInt(), 16).toUpper();
-        if (units() == "time")
-            return AppRoot::timeToString(v.toUInt(), true);
         if (units() == "mandala")
             return mandalaToString(static_cast<quint32>(v.toUInt()));
         return QString::number(v.toString().toLongLong());
@@ -596,6 +591,21 @@ void FactData::updateText()
     default:
         break;
     case Int:
+        if (units() == "hex")
+            v = QString::number(v.toUInt(), 16).toUpper();
+        else if (units() == "s")
+            v = AppRoot::timeToString(v.toUInt(), true);
+        else if (units() == "min")
+            v = AppRoot::timeToString(v.toUInt() * 60, false);
+        else {
+            bool ok;
+            v.toFloat(&ok);
+            if (!ok)
+                break;
+        }
+        v = _string_with_units(v);
+        break;
+
     case Float: {
         bool ok;
         v.toFloat(&ok);

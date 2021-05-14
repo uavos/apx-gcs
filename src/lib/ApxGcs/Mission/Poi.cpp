@@ -45,7 +45,7 @@ Poi::Poi(MissionGroup *parent)
 
     f_time = new MissionField(this, "timeout", tr("Time"), tr("Loiter time limit"), Int);
     f_time->setEnumStrings(QStringList() << "default");
-    f_time->setUnits("time");
+    f_time->setUnits("s");
     f_time->setMin(0);
     f_time->setMax(60 * 60 * 24);
 

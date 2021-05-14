@@ -27,33 +27,13 @@
 class Area : public MissionItem
 {
     Q_OBJECT
-    Q_PROPERTY(QGeoCoordinate radiusAreant READ radiusAreant WRITE setRadiusAreant NOTIFY
-                   radiusAreantChanged)
 
 public:
     explicit Area(MissionGroup *parent);
 
     Fact *f_hmsl;
-    Fact *f_radius;
-    Fact *f_loops;
-    Fact *f_time;
-
-protected:
-    QGeoRectangle boundingGeoRectangle() const;
 
 private slots:
     void updateTitle();
     void updateDescr();
-
-public slots:
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    QGeoCoordinate radiusAreant() const;
-    void setRadiusAreant(const QGeoCoordinate &v);
-
-protected:
-signals:
-    void radiusAreantChanged();
 };

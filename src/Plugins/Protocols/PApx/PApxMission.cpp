@@ -424,7 +424,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         e.hmsl = pi.value("hmsl").toInt();
         e.radius = pi.value("radius").toInt();
         e.loops = pi.value("loops").toUInt();
-        e.timeout = AppRoot::timeFromString(pi.value("timeout").toString());
+        e.timeout = AppRoot::timeFromString(pi.value("timeout").toString(), true);
         e.write(&stream);
         fhdr.cnt.pi++;
     }
