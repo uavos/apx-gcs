@@ -70,13 +70,12 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             case mandala::type_dword:
                 setDataType(Int);
                 setMin(0);
-                setMax(QVariant::fromValue(0xFFFFFFFFll));
                 setDefaultValue(0);
                 break;
             case mandala::type_word:
                 setDataType(Int);
                 setMin(0);
-                setMax(QVariant::fromValue(0xFFFFu));
+                setMax(QVariant::fromValue(0xFFFF));
                 setDefaultValue(0);
                 break;
             case mandala::type_byte:
@@ -136,19 +135,13 @@ bool MandalaFact::setValue(const QVariant &v)
     return rv;
 }
 
-bool MandalaFact::setValueLocal(const QVariant &v)
-{
-    //don't send uplink
-    return Fact::setValue(v);
-}
-
 void MandalaFact::setValueFromStream(const QVariant &v)
 {
     //qDebug() << v;
     if (_convert_value)
-        setValueLocal(QVariant::fromValue(v.toDouble() * _conversion_factor));
+        setRawValueLocal(QVariant::fromValue(v.toDouble() * _conversion_factor));
     else
-        setValueLocal(v);
+        setRawValueLocal(v);
     count_rx();
 }
 QVariant MandalaFact::getValueForStream() const
@@ -157,6 +150,15 @@ QVariant MandalaFact::getValueForStream() const
         return value().toDouble() / _conversion_factor;
     else
         return value();
+}
+
+bool MandalaFact::setRawValueLocal(QVariant v)
+{
+    if (m_value == v)
+        return false;
+    m_value.swap(v);
+    emit valueChanged();
+    return true;
 }
 
 void MandalaFact::count_rx()
@@ -185,7 +187,7 @@ void MandalaFact::send()
     sendTime.start();
     m_tree->sendValue(uid(), getValueForStream());
 }
-QVariant MandalaFact::data(int col, int role) const
+QVariant MandalaFact::data(int col, int role)
 {
     switch (role) {
     case Qt::DisplayRole:

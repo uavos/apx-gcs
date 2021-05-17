@@ -227,7 +227,7 @@ QVariantMap Vehicle::get_info() const
         vehicle.insert("time", _lastSeenTime);
     return vehicle;
 }
-QVariant Vehicle::toVariant() const
+QVariant Vehicle::toVariant()
 {
     if (isReplay())
         return {};

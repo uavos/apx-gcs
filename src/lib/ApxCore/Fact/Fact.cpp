@@ -93,7 +93,7 @@ void Fact::onOptionsChanged()
     }
 }
 
-QVariant Fact::data(int col, int role) const
+QVariant Fact::data(int col, int role)
 {
     switch (role) {
     case ModelDataRole:
@@ -174,7 +174,9 @@ QVariant Fact::data(int col, int role) const
                 return QVariant();
             }
         }
-        if (role == Qt::EditRole && enumStrings().size() <= 1) {
+        if (role == Qt::EditRole)
+            return editorText();
+        /*if (role == Qt::EditRole && enumStrings().size() <= 1) {
             if (dataType() == Bool)
                 return value().toBool();
             if (dataType() == Int)
@@ -186,7 +188,7 @@ QVariant Fact::data(int col, int role) const
                     return s;
                 return value().toDouble();
             }
-        }
+        }*/
         return s;
     }
     case Fact::FACT_MODEL_COLUMN_DESCR:
@@ -218,6 +220,14 @@ QString Fact::toolTip() const
     }
     if (!defaultValue().isNull())
         st << QString("Default: %1").arg(defaultValue().toString());
+    if (!min().isNull())
+        st << QString("Min: %1").arg(min().toString());
+    if (!max().isNull())
+        st << QString("Max: %1").arg(max().toString());
+    if (increment() > 0)
+        st << QString("Increment: %1").arg(increment());
+    if (precision() >= 0)
+        st << QString("Precision: %1").arg(precision());
     return st.join('\n');
 }
 
@@ -244,13 +254,7 @@ void Fact::hashData(QCryptographicHash *h) const
     h->addData(QString::number(size()).toUtf8());
     h->addData(enumStrings().join("").toUtf8());
 
-    h->addData(text().toUtf8());
-}
-
-bool Fact::setValue(const QVariant &v)
-{
-    setScnt(scnt() + 1);
-    return FactData::setValue(v);
+    h->addData(value().toString().toUtf8());
 }
 
 bool Fact::hasParent(Fact *parent) const
@@ -477,7 +481,7 @@ void Fact::setValues(const QVariantMap &values)
             f->setValue(values.value(key));
     }
 }
-QJsonDocument Fact::toJsonDocument() const
+QJsonDocument Fact::toJsonDocument()
 {
     return QJsonDocument::fromVariant(toVariant());
 }
@@ -503,7 +507,7 @@ QVariant Fact::parseJsonDocument(QByteArray data)
     return {};
 }
 
-QVariant Fact::toVariant() const
+QVariant Fact::toVariant()
 {
     if (treeType() == Action || !visible())
         return {};
@@ -911,15 +915,4 @@ void Fact::setOpt(const QString &name, const QVariant &v)
         m_opts.insert(name, v);
     }
     emit optsChanged();
-}
-int Fact::scnt() const
-{
-    return m_scnt;
-}
-void Fact::setScnt(const int v)
-{
-    if (m_scnt == v)
-        return;
-    m_scnt = v;
-    emit scntChanged();
 }

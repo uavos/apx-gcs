@@ -856,43 +856,60 @@ void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json,
 
     auto m = meta.value(name).value<QVariantMap>();
 
-    auto descr = jso.value("descr").toString();
-    auto title = jso.value("title").toString();
-
-    if (!is_group) {
-        if (descr.isEmpty()) {
-            descr = title;
-        } else if (!title.isEmpty()) {
-            descr.prepend(title + "\n");
+    do {
+        if (m.contains("version")) {
+            auto mver = QVersionNumber::fromString(m.value("version").toString());
+            auto nver = QVersionNumber::fromString(version);
+            if (nver < mver)
+                break;
+            m.clear();
         }
-    }
 
-    descr = descr.trimmed();
+        auto descr = jso.value("descr").toString();
+        auto title = jso.value("title").toString();
 
-    if (descr.isEmpty())
-        descr = m.value("descr").toString();
-
-    m.insert("version", version);
-    m.insert("descr", descr);
-
-    // default values
-    if (jso.contains("default")) {
-        auto def = jso.value("default");
-        if (def.isObject()) {
-            auto jsdef = def.toObject();
-            for (auto key : jsdef.keys()) {
-                auto kname = name + "." + key;
-                auto km = meta.value(kname).value<QVariantMap>();
-                auto v = jsdef.value(key).toVariant();
-                km.insert("def", v);
-                meta.insert(kname, km);
+        if (!is_group) {
+            if (descr.isEmpty()) {
+                descr = title;
+            } else if (!title.isEmpty()) {
+                descr.prepend(title + "\n");
             }
-        } else {
-            auto v = def.toVariant();
-            m.insert("def", v);
         }
-    }
-    meta.insert(name, m);
+
+        descr = descr.trimmed();
+
+        if (descr.isEmpty())
+            descr = m.value("descr").toString();
+
+        m.insert("version", version);
+        m.insert("descr", descr);
+
+        // default values
+        if (jso.contains("default")) {
+            auto def = jso.value("default");
+            if (def.isObject()) {
+                auto jsdef = def.toObject();
+                for (auto key : jsdef.keys()) {
+                    auto kname = name + "." + key;
+                    auto km = meta.value(kname).value<QVariantMap>();
+                    auto v = jsdef.value(key).toVariant();
+                    km.insert("def", v);
+                    meta.insert(kname, km);
+                }
+            } else {
+                auto v = def.toVariant();
+                m.insert("def", v);
+            }
+        }
+
+        for (auto n : {"min", "max", "increment", "decimal"}) {
+            if (jso.contains(n)) {
+                m.insert(n, jso.value(n).toVariant());
+            }
+        }
+
+        meta.insert(name, m);
+    } while (0);
 
     // parse child objects
     if (!is_group)

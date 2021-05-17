@@ -281,7 +281,7 @@ void VehicleMission::clearMission()
     App::jsync(this);
 }
 
-QVariant VehicleMission::toVariant() const
+QVariant VehicleMission::toVariant()
 {
     auto m = Fact::toVariant().value<QVariantMap>();
 

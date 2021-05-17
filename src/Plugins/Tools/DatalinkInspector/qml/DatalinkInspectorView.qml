@@ -79,7 +79,6 @@ ListView {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            //listView.footerItem.focusRequested()
             listView.scrollToEnd()
         }
     }

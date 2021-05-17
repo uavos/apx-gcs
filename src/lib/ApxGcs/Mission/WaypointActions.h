@@ -38,7 +38,7 @@ public:
     Fact *f_script;
     Fact *f_poi;
 
-    QVariant toVariant() const override;
+    QVariant toVariant() override;
 
 private:
     bool blockActionsValueChanged;

@@ -306,7 +306,7 @@ QString Nodes::getConfigTitle()
     return st.first();
 }
 
-QVariant Nodes::toVariant() const
+QVariant Nodes::toVariant()
 {
     QVariantList list;
     for (auto i : nodes()) {

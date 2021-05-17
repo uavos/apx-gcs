@@ -31,5 +31,5 @@ MissionField::MissionField(
 
 void MissionField::hashData(QCryptographicHash *h) const
 {
-    h->addData(text().toUtf8());
+    h->addData(value().toString().toUtf8());
 }

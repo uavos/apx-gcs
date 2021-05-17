@@ -114,7 +114,7 @@ void MissionItem::hashData(QCryptographicHash *h) const
     }
 }
 
-QVariant MissionItem::toVariant() const
+QVariant MissionItem::toVariant()
 {
     QVariant v = Fact::toVariant();
     if (v.isNull())

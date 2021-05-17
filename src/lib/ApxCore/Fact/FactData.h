@@ -38,6 +38,7 @@ class FactData : public FactBase
     Q_PROPERTY(int precision READ precision WRITE setPrecision NOTIFY precisionChanged)
     Q_PROPERTY(QVariant min READ min WRITE setMin NOTIFY minChanged)
     Q_PROPERTY(QVariant max READ max WRITE setMax NOTIFY maxChanged)
+    Q_PROPERTY(qreal increment READ increment WRITE setIncrement NOTIFY incrementChanged)
 
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString descr READ descr WRITE setDescr NOTIFY descrChanged)
@@ -121,22 +122,26 @@ public:
     void setModified(const bool &v);
 
     int precision(void) const;
-    void setPrecision(const int &v);
+    void setPrecision(int v);
     QVariant min(void) const;
     void setMin(const QVariant &v);
     QVariant max(void) const;
     void setMax(const QVariant &v);
+    qreal increment(void) const;
+    void setIncrement(qreal v);
 
     QString title(void) const;
     virtual void setTitle(const QString &v);
     QString descr(void) const;
     virtual void setDescr(const QString &v);
 
-    QString valueText() const;
+    QString valueText();
     void setValueText(const QString &v);
 
-    QString text() const;
+    QString text();
     void setText(const QString &v);
+
+    Q_INVOKABLE QString editorText();
 
     virtual const QStringList &enumStrings() const;
     void setEnumStrings(const QStringList &v);
@@ -160,11 +165,16 @@ protected:
     int m_precision{-1};
     QVariant m_min;
     QVariant m_max;
+    qreal m_increment{};
 
     QString m_title;
     QString m_descr;
+
     QString m_valueText;
+    bool m_valueTextUpdated{};
+
     QString m_text;
+    bool m_textUpdated{};
 
     QStringList m_enumStrings;
 
@@ -184,6 +194,7 @@ signals:
     void precisionChanged();
     void minChanged();
     void maxChanged();
+    void incrementChanged();
 
     void titleChanged();
     void descrChanged();

@@ -192,7 +192,7 @@ void NodeItem::confSaved()
     storage->saveNodeConfig();
 }
 
-QVariant NodeItem::data(int col, int role) const
+QVariant NodeItem::data(int col, int role)
 {
     switch (role) {
     case Qt::DisplayRole:
@@ -451,7 +451,7 @@ QVariantMap NodeItem::get_values() const
     }
     return m;
 }
-QVariant NodeItem::toVariant() const
+QVariant NodeItem::toVariant()
 {
     QVariantMap m;
     m.insert("info", get_info());

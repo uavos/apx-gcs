@@ -35,7 +35,7 @@ import "../Button"
 import ".."
 
 ActionButton {
-    id: control
+    id: factButton
 
     onFactChanged: {
         if(!fact) fact=factC.createObject(this)
@@ -116,18 +116,9 @@ ActionButton {
     property bool showNext: expandable
     property bool showDescr: descr
 
-    //focus requests
-    signal focusRequested()
-    signal focusFree()
-
-    property bool bFocusRequest: false
-    onFocusRequested: bFocusRequest=true
-    onFocusFree: forceActiveFocus()
-
     property bool held: false
 
     onTriggered: {
-        focusRequested()
         if(isScript) openDialog("EditorScript")
     }
 
@@ -146,9 +137,9 @@ ActionButton {
     //Drag.keys: String(parent) //fact.parentFact?fact.parentFact.name:"root"
 
     DropArea {
-        enabled: control.draggable
+        enabled: factButton.draggable
         anchors { fill: parent; margins: 10 }
-        //keys: String(control.parent)
+        //keys: String(factButton.parent)
         onEntered: {
             //console.log(drag.source.title+" -> "+title)
             if(fact)drag.source.fact.move(fact.num)
@@ -156,7 +147,7 @@ ActionButton {
     }
 
 
-    textSize: 0.55 * control.height
+    textSize: 0.55 * factButton.height
 
     property real titleSize: textSize * 1
     property real descrSize: textSize * 0.56
@@ -176,8 +167,8 @@ ActionButton {
             id: titleLayout
             // anchors.fill: parent
 
-            readonly property bool showIcon: control.showIcon && control.iconName
-            readonly property bool showText: control.showText && control.text
+            readonly property bool showIcon: factButton.showIcon && factButton.iconName
+            readonly property bool showText: factButton.showText && factButton.text
 
             implicitWidth: (showIcon?_icon.implicitWidth:0)
                          + (showText?_titleText.implicitWidth+Style.spacing:0)
@@ -192,7 +183,7 @@ ActionButton {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                sourceComponent: control.iconC
+                sourceComponent: factButton.iconC
             }
 
             Text {
@@ -203,10 +194,10 @@ ActionButton {
                 anchors.leftMargin: Style.spacing
                 visible: showText
                 verticalAlignment: _descrText.visible?Text.AlignTop:Text.AlignVCenter
-                font.family: control.font.family
+                font.family: factButton.font.family
                 font.pixelSize: titleSize<5?5:titleSize
-                text: control.text
-                color: control.enabled?textColor:disabledTextColor
+                text: factButton.text
+                color: factButton.enabled?textColor:disabledTextColor
             }
             Text {
                 id: _descrText
@@ -219,8 +210,8 @@ ActionButton {
                 visible: _titleText.visible && showDescr && text
                 verticalAlignment: Text.AlignBottom
                 font: apx.font_condenced(descrSize)
-                text: control.descr
-                color: control.enabled?descrColor:disabledTextColor
+                text: factButton.descr
+                color: factButton.enabled?descrColor:disabledTextColor
                 elide: Text.ElideMiddle
                 clip: true
             }
@@ -235,7 +226,7 @@ ActionButton {
                 size: nextSize
                 verticalAlignment: Text.AlignVCenter
                 name: "chevron-right"
-                color: control.enabled?Material.secondaryTextColor:Material.hintTextColor
+                color: factButton.enabled?Material.secondaryTextColor:Material.hintTextColor
             }
 
             // value
@@ -286,7 +277,7 @@ ActionButton {
         parent: contentItem
         z: -1
         asynchronous: true
-        active: control.progress>=0
+        active: factButton.progress>=0
         anchors.fill: parent
         anchors.margins: 1
         sourceComponent: Component {
@@ -295,7 +286,7 @@ ActionButton {
                 contentItem.implicitHeight: height-2
                 opacity: 0.7
                 to: 100
-                property int v: control.progress
+                property int v: factButton.progress
                 value: v
                 visible: v>=0
                 indeterminate: v==0
@@ -325,8 +316,7 @@ ActionButton {
             qml="Option"
             break
         case Fact.Int:
-            if(units==="time")qml="Time"
-            else if(units==="mandala")break
+            if(units==="mandala")break
             else qml="Int"
             break
         case Fact.Float:
@@ -341,7 +331,7 @@ ActionButton {
     function openDialog(name)
     {
         if(!fact)return
-        var c=Qt.createComponent(name+".qml",control)
+        var c=Qt.createComponent(name+".qml",factButton)
         if(c.status===Component.Ready) {
             c.createObject(ui.window,{"fact": fact});
         }
@@ -355,9 +345,9 @@ ActionButton {
             Ripple {
                 id: ripple
                 clipRadius: 2
-                anchor: control
+                anchor: factButton
                 active: false
-                color: control.flat && control.highlighted ? control.Material.highlightedRippleColor : control.Material.rippleColor
+                color: factButton.flat && factButton.highlighted ? factButton.Material.highlightedRippleColor : factButton.Material.rippleColor
                 Timer {
                     interval: 500
                     repeat: true

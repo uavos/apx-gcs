@@ -119,7 +119,7 @@ void WaypointActions::actionsValueChanged()
     }
 }
 
-QVariant WaypointActions::toVariant() const
+QVariant WaypointActions::toVariant()
 {
     QVariantMap m;
     for (auto i : facts()) {

@@ -44,7 +44,7 @@ public:
     Fact *f_usr;
     Fact *f_sys;
 
-    QVariant toVariant() const override;
+    QVariant toVariant() override;
     void fromVariant(const QVariant &var) override;
 
 private:

@@ -79,17 +79,6 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
                 e = le;
                 break;
             }
-            /*if (units == "s") {
-                QTimeEdit *te = new QTimeEdit(parent);
-                te->setDisplayFormat("HH:mm:ss");
-                e = te;
-                break;
-            } else if (units == "min") {
-                QTimeEdit *te = new QTimeEdit(parent);
-                te->setDisplayFormat("HH:mm");
-                e = te;
-                break;
-            } else */
             if (units == "mandala") {
                 QPushButton *btn = createButton(parent);
                 connect(btn, &QPushButton::clicked, this, [f, btn]() {
@@ -189,21 +178,8 @@ void FactDelegate::setEditorData(QWidget *editor, const QModelIndex &index) cons
 {
     if (qobject_cast<QPushButton *>(editor))
         return;
-    if (qobject_cast<QTimeEdit *>(editor)) {
-        QTimeEdit *te = static_cast<QTimeEdit *>(editor);
-        auto v = index.data(Qt::EditRole).toUInt();
-        if (te->displayFormat().endsWith(":mm"))
-            v *= 60;
-        QTime t = QTime(0, 0).addSecs(v);
-        te->setTime(t);
+    if (editor->hasFocus())
         return;
-    }
-    /*if (qobject_cast<FactDelegateMandala *>(editor)) {
-        FactDelegateMandala *e = static_cast<FactDelegateMandala *>(editor);
-        e->setCurrentText(index.data(Qt::EditRole).toString());
-        return;
-    }
-    qDebug() << index.data(Qt::EditRole);*/
     QItemDelegate::setEditorData(editor, index);
 }
 void FactDelegate::setModelData(QWidget *editor,
@@ -215,14 +191,6 @@ void FactDelegate::setModelData(QWidget *editor,
     Fact *f = index.data(Fact::ModelDataRole).value<Fact *>();
     if (!f->dataType())
         return;
-    if (qobject_cast<QTimeEdit *>(editor)) {
-        QTimeEdit *te = static_cast<QTimeEdit *>(editor);
-        auto v = -te->time().secsTo(QTime(0, 0));
-        if (te->displayFormat().endsWith(":mm"))
-            v /= 60;
-        model->setData(index, v, Qt::EditRole);
-        return;
-    }
     QItemDelegate::setModelData(editor, model, index);
 }
 

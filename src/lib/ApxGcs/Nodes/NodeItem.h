@@ -70,7 +70,7 @@ public:
     QVariantMap get_values() const;
 
     //Fact override
-    QVariant toVariant() const override;
+    QVariant toVariant() override;
     void fromVariant(const QVariant &var) override;
 
     void updateAlive(bool alive);
@@ -78,7 +78,7 @@ public:
 protected:
     QTimer statusTimer;
 
-    QVariant data(int col, int role) const override;
+    QVariant data(int col, int role) override;
     QString toolTip() const override;
 
 private:

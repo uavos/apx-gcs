@@ -41,12 +41,12 @@ ComboBox {
     padding: 0
     property real paddingScale: 0.8
 
-    leftPadding: padding + (!control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
-    rightPadding: padding + (control.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
+    leftPadding: padding + (!editor.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
+    rightPadding: padding + (editor.mirrored || !indicator || !indicator.visible ? 0 : indicator.width*paddingScale + spacing)
 
     flat: true
 
-    font: apx.font_narrow(control.valueSize)
+    font: apx.font_narrow(factButton.valueSize)
 
     background.implicitWidth: contentItem.implicitWidth
 
@@ -55,7 +55,7 @@ ComboBox {
     Component.onCompleted: updateIndex()
     onActivated: {
         fact.setValue(textAt(index))
-        parent.forceActiveFocus();
+        factButton.forceActiveFocus();
     }
     property string value: fact.text
     onValueChanged: updateIndex()
@@ -64,23 +64,23 @@ ComboBox {
     Connections {
         target: listView
         function onMovementStarted() {
-            if(control.popup)
-                control.popup.close()
+            if(factButton.popup)
+                factButton.popup.close()
         }
     }
     delegate: ItemDelegate {
         text: modelData
         width: popup.width
-        highlighted: text === fact.text
+        highlighted: text === editor.value
         font: editor.font
         Component.onCompleted: popup.width=Math.max(popup.width, implicitWidth)
     }
 
     contentItem: Text {
         leftPadding: height/4
-        rightPadding: 0 //control.indicator.width + control.spacing
+        rightPadding: 0 
 
-        text: editor.displayText
+        text: editor.value
         font: editor.font
         color: editor.enabled ? editor.Material.foreground : editor.Material.hintTextColor
         verticalAlignment: Text.AlignVCenter
@@ -89,8 +89,7 @@ ComboBox {
 
     function updateIndex()
     {
-        //currentIndex=find(value)
-        editor.currentIndex=fact.enumStrings.indexOf(control.value)
+        editor.currentIndex=fact.enumStrings.indexOf(editor.value)
         //console.log(currentIndex,value,count,find(value))
     }
 }

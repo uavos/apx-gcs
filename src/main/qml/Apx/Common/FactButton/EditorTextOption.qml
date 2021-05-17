@@ -35,13 +35,13 @@ EditorOption {
         id: textInput
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignRight
-        font: apx.font_narrow(control.valueSize)
+        font: apx.font_narrow(factButton.valueSize)
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text
         selectByMouse: true
         onEditingFinished: {
             fact.setValue(text);
-            control.focusFree();
+            factButton.forceActiveFocus();
         }
         onActiveFocusChanged: if(activeFocus)selectAll();
     }
@@ -59,17 +59,4 @@ EditorOption {
         border.width: 0
         opacity: 0.3
     }
-
-    Connections {
-        target: control
-        function onFocusRequested(){ checkFocusRequest() }
-    }
-    Component.onCompleted: checkFocusRequest()
-    function checkFocusRequest()
-    {
-        if(!control.bFocusRequest)return
-        control.bFocusRequest=false
-        editor.forceActiveFocus()
-    }
-
 }

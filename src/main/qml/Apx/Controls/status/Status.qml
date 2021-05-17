@@ -229,7 +229,7 @@ Rectangle {
                 text: qsTr("LR")
                 fact: f_radius
                 visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
-                value: apx.distanceToString(fact.value)
+                value: apx.distanceToString(Math.abs(fact.value))
                 valueScale: 0.8
                 Layout.fillWidth: true
                 Layout.preferredHeight: itemHeight
