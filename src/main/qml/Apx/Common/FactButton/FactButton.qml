@@ -116,6 +116,10 @@ ActionButton {
     property bool showNext: expandable
     property bool showDescr: descr
 
+
+    ToolTip.visible: pressed
+    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+
     property bool held: false
 
     onTriggered: {
