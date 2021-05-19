@@ -43,6 +43,9 @@ public:
     QByteArray loadData(QString fileName);
     bool saveData(QByteArray data, QString fileName);
 
+    Q_INVOKABLE virtual bool exportRequest(QString format, QString fileName) { return false; }
+    Q_INVOKABLE virtual bool importRequest(QString format, QString fileName) { return false; }
+
 protected:
     QString _dataTitle;
     QDir _defaultDir;
@@ -52,8 +55,6 @@ protected:
     QStringList _importFormats;
 
     virtual QString getDefaultTitle() { return QString(); }
-    virtual bool exportRequest(QString format, QString fileName) { return false; }
-    virtual bool importRequest(QString format, QString fileName) { return false; }
 
 protected slots:
     void exportTriggered();

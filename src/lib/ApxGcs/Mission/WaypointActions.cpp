@@ -40,6 +40,17 @@ WaypointActions::WaypointActions(Waypoint *parent)
     f_speed->setUnits("m/s");
     f_speed->setMin(0);
     f_speed->setMax(1000);
+
+    f_poi = new MissionField(this, "poi", tr("POI"), tr("Linked Point Of Interest"), Int);
+    f_poi->setEnumStrings(QStringList() << "off");
+    f_poi->setMin(0);
+
+    f_script = new MissionField(this,
+                                "script",
+                                tr("Script"),
+                                tr("Execute VM script (@function) on waypoint"),
+                                Text);
+
     f_shot = new MissionField(this, "shot", tr("Shot"), tr("Make a cam shot on waypoint"), Enum);
     f_shot->setEnumStrings(QStringList() << "off"
                                          << "single"
@@ -54,14 +65,6 @@ WaypointActions::WaypointActions(Waypoint *parent)
     f_dshot->setUnits("m");
     f_dshot->setMin(0);
 
-    f_script = new MissionField(this,
-                                "script",
-                                tr("Script"),
-                                tr("Execute VM script (@function) on waypoint"),
-                                Text);
-    f_poi = new MissionField(this, "poi", tr("POI"), tr("Linked Point Of Interest"), Int);
-    f_poi->setEnumStrings(QStringList() << "off");
-    f_poi->setMin(0);
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 
