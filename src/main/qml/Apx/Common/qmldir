@@ -20,6 +20,7 @@ RecLabel        1.0 RecLabel.qml
 BoundingRect    1.0 BoundingRect.qml
 ToolTipArea     1.0 ToolTipArea.qml
 MaterialIcon    1.0 MaterialIcon.qml
+LogListView     1.0 LogListView.qml
 
 FactButton      1.0 FactButton/FactButton.qml
 

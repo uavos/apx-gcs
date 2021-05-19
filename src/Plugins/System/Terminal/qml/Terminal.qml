@@ -43,15 +43,13 @@ Rectangle {
         anchors.fill: parent
 
 
-        ListView { // TODO better handling of max lines and auto scroll
+        LogListView {
             id: listView
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth: 300
             Layout.preferredHeight: 400
-
-            clip: true
 
             spacing: lineSpace
 
@@ -77,59 +75,13 @@ Rectangle {
                     easing.type: Easing.OutCubic
                 }
             }
-
-
-            ScrollBar.vertical: ScrollBar {
-                width: Style.spacing*2
-                active: !listView.atYEnd
-            }
-            boundsBehavior: Flickable.StopAtBounds
-            readonly property bool scrolling: dragging||flicking
-            property bool stickEnd: false
-            onAtYEndChanged: {
-                if(atYEnd)stickEnd=scrolling
-                else if(stickEnd)scrollToEnd()
-                else if(!(scrolling||atYEnd||scrollTimer.running)) scrollToEnd()//scrollTimerEnd.start()
-            }
-            onScrollingChanged: {
-                //console.log(scrolling)
-                if(scrolling && (!atYEnd)){
-                    scrollTimer.stop()
-                    stickEnd=false
-                }//else scrollTimer.restart()
-            }
-            Timer {
-                id: scrollTimer
-                interval: 2000
-                onTriggered: scrollTimerEnd.start()
-            }
-            Timer {
-                id: scrollTimerEnd
-                interval: 1
-                onTriggered: if(!listView.scrolling)listView.scrollToEnd()
-            }
-
-            Component.onCompleted: scrollToEnd()
-
-            focus: false
-            keyNavigationEnabled: false
-
+            
             footer: TerminalExec {
                 width: parent.width
                 onFocused: listView.scrollToEnd()
             }
 
-            function scrollToEnd()
-            {
-                positionViewAtEnd()
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    listView.footerItem.focusRequested()
-                    listView.scrollToEnd()
-                }
-            }
+            onClicked: listView.footerItem.focusRequested()
         }
     }
 }

@@ -21,7 +21,7 @@
  */
 #include "PTraceListModel.h"
 
-#define PTRACE_MAX_ROWS 10000
+#define PTRACE_MAX_ROWS 1000
 
 PTraceListModel::PTraceListModel(QObject *parent)
     : QAbstractListModel(parent)

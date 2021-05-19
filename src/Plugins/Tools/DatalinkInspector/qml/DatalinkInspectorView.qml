@@ -24,62 +24,13 @@ import QtQuick.Controls 2.12
 
 import Apx.Common 1.0
 
-ListView {
+LogListView {
     id: listView
-
-    clip: true
-    spacing: Style.spacing/2
 
     model: plugin_fact.packetsModel
 
     delegate: DatalinkInspectorPacket {
         width: listView.width
         packet: model.blocks
-    }
-
-    ScrollBar.vertical: ScrollBar {
-        width: Style.buttonSize/4
-        active: !listView.atYEnd
-    }
-    boundsBehavior: Flickable.StopAtBounds
-    readonly property bool scrolling: dragging||flicking
-    property bool stickEnd: false
-    onAtYEndChanged: {
-        if(atYEnd)stickEnd=scrolling
-        else if(stickEnd)scrollToEnd()
-        else if(!(scrolling||atYEnd||scrollTimer.running)) scrollToEnd()//scrollTimerEnd.start()
-    }
-    onScrollingChanged: {
-        //console.log(scrolling)
-        if(scrolling && (!atYEnd)){
-            scrollTimer.stop()
-            stickEnd=false
-        }//else scrollTimer.restart()
-    }
-    Timer {
-        id: scrollTimer
-        interval: 2000
-        onTriggered: scrollTimerEnd.start()
-    }
-    Timer {
-        id: scrollTimerEnd
-        interval: 1
-        onTriggered: if(!listView.scrolling)listView.scrollToEnd()
-    }
-
-    Component.onCompleted: scrollToEnd()
-
-    focus: false
-    keyNavigationEnabled: false
-
-    function scrollToEnd()
-    {
-        positionViewAtEnd()
-    }
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            listView.scrollToEnd()
-        }
     }
 }
