@@ -43,6 +43,7 @@ Dialog {
     modal: false
     closePolicy: Popup.NoAutoClose
 
+
     x: Math.max(0, (parent.width-width)/2)
     y: Math.max(0, (parent.height-height)/2)
 
@@ -57,25 +58,46 @@ Dialog {
 
     function compile()
     {
-        fact.script.setSource(fact.script.title, editedText)
+        fact.script.setSource(editedTitle, editedText)
     }
 
+    property alias editedTitle: scriptName.text
     property alias editedText: textArea.text
 
-    contentItem: ScrollView {
+    contentItem: ColumnLayout {
         implicitHeight: Style.buttonSize*25
         implicitWidth: Style.buttonSize*25
-        TextArea {
-            id: textArea
+    
+        TextField {
+            id: scriptName
+            Layout.fillWidth: true
+            Layout.margins: Style.spacing
+            placeholderText: qsTr("Script title")
             selectByMouse: true
-            selectByKeyboard: true
-            text: value
-            textFormat: TextEdit.PlainText
-            wrapMode: Text.NoWrap
-            font: apx.font_fixed(Style.buttonSize*0.4)
+            font: apx.font_narrow(Style.fontSize)
+            text: fact.script.title
             background: Rectangle {
-                border.color: "#aaa"
-                color: "#000"
+                color: "#353637"
+                border.width: 0
+            }
+        }
+
+        ScrollView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: Style.spacing
+            TextArea {
+                id: textArea
+                selectByMouse: true
+                selectByKeyboard: true
+                text: value
+                textFormat: TextEdit.PlainText
+                wrapMode: Text.NoWrap
+                font: apx.font_fixed(Style.buttonSize*0.4)
+                background: Rectangle {
+                    border.color: "#aaa"
+                    color: "#000"
+                }
             }
         }
     }
