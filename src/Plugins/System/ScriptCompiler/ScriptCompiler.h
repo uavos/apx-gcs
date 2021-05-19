@@ -35,9 +35,12 @@ class ScriptCompiler : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QString cc MEMBER m_cc);
+    Q_PROPERTY(Fact *vscode MEMBER f_vscode);
 
 public:
     explicit ScriptCompiler(QObject *parent = nullptr);
+
+    Fact *f_vscode;
 
 private:
     QNetworkAccessManager net;

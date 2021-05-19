@@ -87,6 +87,16 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     connect(aCompile, &QAction::triggered, this, &FactDelegateScript::updateFactValue);
 
     connect(eTitle, &QLineEdit::editingFinished, aCompile, &QAction::trigger);
+
+    // open vscode
+    auto cc_plugin = App::plugin("ScriptCompiler");
+    if (cc_plugin) {
+        auto c = cc_plugin->control;
+        auto use_vscode = c->property("vscode").value<Fact *>()->value().toBool();
+        if (use_vscode) {
+            launch_vscode();
+        }
+    }
 }
 void FactDelegateScript::updateEditorText()
 {
@@ -194,4 +204,31 @@ void FactDelegateScript::logView_itemClicked(QListWidgetItem *item)
             editor->setTextCursor(text_cursor);
         }
     }
+}
+
+void FactDelegateScript::launch_vscode()
+{
+    auto exec = QStandardPaths::findExecutable("code");
+    if (exec.isEmpty()) {
+        qWarning() << "vscode not found";
+        return;
+    }
+    auto title = eTitle->text();
+    if (title.isEmpty()) {
+        apxMsgW() << tr("Script title is empty");
+        return;
+    }
+
+    QDir workspace = AppDirs::scripts();
+    QDir src = QDir(AppDirs::scripts().absoluteFilePath("src"));
+    if (!src.exists())
+        src.mkpath(".");
+
+    QString fname = src.absoluteFilePath(title + ".cpp");
+    nodeScript->saveToFile(fname);
+
+    QStringList args;
+    args << workspace.absolutePath();
+    args << fname;
+    QProcess::startDetached(exec, args);
 }

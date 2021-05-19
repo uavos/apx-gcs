@@ -163,6 +163,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
 
     return e;
 }
+
 QPushButton *FactDelegate::createButton(QWidget *parent) const
 {
     QPushButton *btn = new QPushButton(parent);

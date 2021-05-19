@@ -4,7 +4,7 @@
  * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
  * All rights reserved
  *
- * This file is part of APX Ground Control.
+ * This file is part of APX Shared Libraries.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,46 +19,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include <apx.h>
 
-#include "FactDelegateDialog.h"
-
-class NodeScript;
-class SourceEdit;
-
-class FactDelegateScript : public FactDelegateDialog
+int main()
 {
-    Q_OBJECT
-public:
-    explicit FactDelegateScript(Fact *fact, QWidget *parent = 0);
+    // register task to be called by mandala vmexec packet
+    task("test");
 
-protected:
-    bool aboutToUpload(void) override;
-    bool aboutToClose(void) override;
+    return 0;
+}
 
-private:
-    NodeScript *nodeScript;
-
-    QAction *aCompile;
-    QAction *aLoad;
-    QAction *aSave;
-
-    SourceEdit *editor;
-    QListWidget *logList;
-
-    QLineEdit *eTitle;
-
-    void launch_vscode();
-
-    //data
-private slots:
-    void aSave_triggered(void);
-    void aLoad_triggered(void);
-
-    void logView_itemClicked(QListWidgetItem *item);
-
-    void updateLog();
-
-    void updateEditorText();
-    void updateFactValue();
-};
+EXPORT void test()
+{
+    // can be called by:
+    // - GCS with terminal command `vmexec("test")`
+    // - Mission waypoint action Script `test`
+    printf("called test");
+}
