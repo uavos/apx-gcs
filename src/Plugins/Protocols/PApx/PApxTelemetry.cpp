@@ -93,7 +93,7 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
             stream >> part;
             stream >> parts;
             _request_format_part = 0;
-            qDebug() << "format:" << part << parts << stream.available();
+            //qDebug() << "format:" << part << parts << stream.available();
             if (!decoder.decode_format(part, parts, stream)) {
                 qWarning() << decoder.valid() << decoder.slots_cnt();
                 break;

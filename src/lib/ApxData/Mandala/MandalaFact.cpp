@@ -321,6 +321,8 @@ int MandalaFact::getPrecision()
             return 2;
         if (u == "l/h")
             return 2;
+        if (u == "u/h")
+            return 2;
         if (u == "l")
             return 2;
         if (u == "a/h")
