@@ -187,9 +187,9 @@ Rectangle {
                 Layout.preferredHeight: itemHeight
             }
             ValueButton {
-                text: qsTr("FL")
+                text: qsTr("F")
                 fact: f_fuel
-                value: fact.value.toFixed(1)
+                value: fact.value.toFixed()
                 visible: ui.test || fact.value>0
                 valueScale: 0.8
                 Layout.fillWidth: true
