@@ -58,8 +58,8 @@ void Sites::appLoaded()
 void Sites::createEditor(QVariantMap item)
 {
     //qDebug()<<item.value("title").toString();
-    //    if (f_edit)
-    //        f_edit->deleteFact();
+    if (f_edit)
+        f_edit->deleteFact();
     f_edit = new SiteEdit(this, "edit", tr("Edit site"), tr("Edit area parameters"), item);
     f_edit->setIcon("cog");
     connect(f_edit, &SiteEdit::removed, this, [this]() { f_edit = nullptr; });
@@ -70,8 +70,6 @@ void Sites::createEditor(QVariantMap item)
             f_edit,
             &SiteEdit::updateFromEditedModelData);
     connect(f_lookup->dbModel(), &DatabaseLookupModel::synced, this, &Sites::syncEditorFromModel);
-
-    App::jsync(this);
 }
 void Sites::destroyEditor(QVariantMap item)
 {
@@ -83,8 +81,6 @@ void Sites::destroyEditor(QVariantMap item)
         return;
     f_edit->deleteFact();
     f_edit = nullptr;
-
-    App::jsync(this);
 }
 void Sites::syncEditorFromModel()
 {

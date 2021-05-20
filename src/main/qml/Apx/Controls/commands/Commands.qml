@@ -82,8 +82,8 @@ Rectangle {
                 showText: false
                 showIcon: true
                 //valueScale: 0.6
-                value: fact.value?fact.value:0
-                warning: !value
+                value: fact.value?fact.value:""
+                warning: vehicle.isIdentified && !value
                 active: fact.modified || fact.progress>=0 || (!fact.valid)
                 enabled: true
             }

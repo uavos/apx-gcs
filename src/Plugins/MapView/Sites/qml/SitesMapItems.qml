@@ -49,7 +49,7 @@ MapItemGroup {
     //triggered site in lookup - focus on map
     Connections {
         target: sites.lookup
-        function onItemTriggered(){
+        function onItemTriggered(modelData){
             map.showCoordinate(QtPositioning.coordinate(modelData.lat,modelData.lon))
         }
     }
