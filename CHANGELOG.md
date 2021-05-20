@@ -1,3 +1,28 @@
+# [APX Ground Control v11.0.221](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.221) (05/20/21)
+
+> Branch: `main`\
+> Date: `05/20/21 17:15:21`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/a14bcb5131f7d42477dbceedec712aca1f4b70c4...e9e9e456ac12af6ef61c60baa0d3212021858137)
+
+## New Features
+* home point update function
+* run guard to detect multiple GCS instances
+* multi GCS node parameters updates
+* time units editors and delegates
+* file sharing available to JS context
+* vscode script editor option
+* default sim config update
+* qml script edit with title field
+
+## Bug Fixes
+* runway map item circle coordinate
+* mission runway option pack
+* nodes config save when updated from remote GCS
+* Fact buttons tooltips by press and hold
+* POI timeout in minutes
+* terminal list views auto scrolling
+* sites editor
+
 # [APX Ground Control v11.0.199](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.199) (05/08/21)
 
 > Branch: `main`\
